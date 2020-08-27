@@ -19,7 +19,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/vdaas/vald/internal/errors"
+	"github.com/pkg/errors"
 	"go.uber.org/goleak"
 )
 

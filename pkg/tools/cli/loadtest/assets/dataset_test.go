@@ -17,176 +17,33 @@ package assets
 
 import (
 	"reflect"
-	"sync"
 	"testing"
 
-	"github.com/vdaas/vald/internal/errors"
+	"github.com/pkg/errors"
 	"go.uber.org/goleak"
 )
 
-func Test_identity(t *testing.T) {
-	type args struct {
-		dim int
+func Test_dataset_Name(t *testing.T) {
+	type fields struct {
+		name         string
+		dimension    int
+		distanceType string
+		objectType   string
 	}
-	type want struct {
-		want func() (Dataset, error)
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, func() (Dataset, error)) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got func() (Dataset, error)) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           dim: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           dim: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-
-			got := identity(test.args.dim)
-			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_random(t *testing.T) {
-	type args struct {
-		dim  int
-		size int
-	}
-	type want struct {
-		want func() (Dataset, error)
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, func() (Dataset, error)) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got func() (Dataset, error)) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           dim: 0,
-		           size: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           dim: 0,
-		           size: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-
-			got := random(test.args.dim, test.args.size)
-			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_datasetDir(t *testing.T) {
 	type want struct {
 		want string
-		err  error
 	}
 	type test struct {
 		name       string
+		fields     fields
 		want       want
-		checkFunc  func(want, string, error) error
+		checkFunc  func(want, string) error
 		beforeFunc func()
 		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want, got string, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
+	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+			return errors.Errorf("got = %v, want %v", got, w.want)
 		}
 		return nil
 	}
@@ -195,6 +52,12 @@ func Test_datasetDir(t *testing.T) {
 		/*
 		   {
 		       name: "test_case_1",
+		       fields: fields {
+		           name: "",
+		           dimension: 0,
+		           distanceType: "",
+		           objectType: "",
+		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
 		   },
@@ -205,6 +68,12 @@ func Test_datasetDir(t *testing.T) {
 		   func() test {
 		       return test {
 		           name: "test_case_2",
+		           fields: fields {
+		           name: "",
+		           dimension: 0,
+		           distanceType: "",
+		           objectType: "",
+		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
 		       }
@@ -214,7 +83,7 @@ func Test_datasetDir(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -224,8 +93,347 @@ func Test_datasetDir(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
+			d := &dataset{
+				name:         test.fields.name,
+				dimension:    test.fields.dimension,
+				distanceType: test.fields.distanceType,
+				objectType:   test.fields.objectType,
+			}
 
-			got, err := smallDatasetDir()
+			got := d.Name()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_dataset_Dimension(t *testing.T) {
+	type fields struct {
+		name         string
+		dimension    int
+		distanceType string
+		objectType   string
+	}
+	type want struct {
+		want int
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, int) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got int) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           name: "",
+		           dimension: 0,
+		           distanceType: "",
+		           objectType: "",
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           name: "",
+		           dimension: 0,
+		           distanceType: "",
+		           objectType: "",
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			d := &dataset{
+				name:         test.fields.name,
+				dimension:    test.fields.dimension,
+				distanceType: test.fields.distanceType,
+				objectType:   test.fields.objectType,
+			}
+
+			got := d.Dimension()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_dataset_DistanceType(t *testing.T) {
+	type fields struct {
+		name         string
+		dimension    int
+		distanceType string
+		objectType   string
+	}
+	type want struct {
+		want string
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, string) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got string) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           name: "",
+		           dimension: 0,
+		           distanceType: "",
+		           objectType: "",
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           name: "",
+		           dimension: 0,
+		           distanceType: "",
+		           objectType: "",
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			d := &dataset{
+				name:         test.fields.name,
+				dimension:    test.fields.dimension,
+				distanceType: test.fields.distanceType,
+				objectType:   test.fields.objectType,
+			}
+
+			got := d.DistanceType()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_dataset_ObjectType(t *testing.T) {
+	type fields struct {
+		name         string
+		dimension    int
+		distanceType string
+		objectType   string
+	}
+	type want struct {
+		want string
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, string) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got string) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           name: "",
+		           dimension: 0,
+		           distanceType: "",
+		           objectType: "",
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           name: "",
+		           dimension: 0,
+		           distanceType: "",
+		           objectType: "",
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			d := &dataset{
+				name:         test.fields.name,
+				dimension:    test.fields.dimension,
+				distanceType: test.fields.distanceType,
+				objectType:   test.fields.objectType,
+			}
+
+			got := d.ObjectType()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_findDir(t *testing.T) {
+	type args struct {
+		path string
+	}
+	type want struct {
+		want string
+		err  error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, string, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got string, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got = %v, want %v", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           path: "",
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           path: "",
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got, err := findDir(test.args.path)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -251,7 +459,7 @@ func TestData(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got func() (Dataset, error)) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+			return errors.Errorf("got = %v, want %v", got, w.want)
 		}
 		return nil
 	}
@@ -285,7 +493,7 @@ func TestData(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -298,1637 +506,6 @@ func TestData(t *testing.T) {
 
 			got := Data(test.args.name)
 			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_dataset_Train(t *testing.T) {
-	type fields struct {
-		train              [][]float32
-		trainAsFloat64     [][]float64
-		trainOnce          sync.Once
-		query              [][]float32
-		queryAsFloat64     [][]float64
-		queryOnce          sync.Once
-		distances          [][]float32
-		distancesAsFloat64 [][]float64
-		distancesOnce      sync.Once
-		neighbors          [][]int
-		ids                []string
-		name               string
-		dimension          int
-		distanceType       string
-		objectType         string
-	}
-	type want struct {
-		want [][]float32
-	}
-	type test struct {
-		name       string
-		fields     fields
-		want       want
-		checkFunc  func(want, [][]float32) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, got [][]float32) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           train: nil,
-		           trainAsFloat64: nil,
-		           trainOnce: nil,
-		           query: nil,
-		           queryAsFloat64: nil,
-		           queryOnce: nil,
-		           distances: nil,
-		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
-		           neighbors: nil,
-		           ids: nil,
-		           name: "",
-		           dimension: 0,
-		           distanceType: "",
-		           objectType: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           train: nil,
-		           trainAsFloat64: nil,
-		           trainOnce: nil,
-		           query: nil,
-		           queryAsFloat64: nil,
-		           queryOnce: nil,
-		           distances: nil,
-		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
-		           neighbors: nil,
-		           ids: nil,
-		           name: "",
-		           dimension: 0,
-		           distanceType: "",
-		           objectType: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			d := &dataset{
-				train:              test.fields.train,
-				trainAsFloat64:     test.fields.trainAsFloat64,
-				trainOnce:          test.fields.trainOnce,
-				query:              test.fields.query,
-				queryAsFloat64:     test.fields.queryAsFloat64,
-				queryOnce:          test.fields.queryOnce,
-				distances:          test.fields.distances,
-				distancesAsFloat64: test.fields.distancesAsFloat64,
-				distancesOnce:      test.fields.distancesOnce,
-				neighbors:          test.fields.neighbors,
-				ids:                test.fields.ids,
-				name:               test.fields.name,
-				dimension:          test.fields.dimension,
-				distanceType:       test.fields.distanceType,
-				objectType:         test.fields.objectType,
-			}
-
-			got := d.Train()
-			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_dataset_TrainAsFloat64(t *testing.T) {
-	type fields struct {
-		train              [][]float32
-		trainAsFloat64     [][]float64
-		trainOnce          sync.Once
-		query              [][]float32
-		queryAsFloat64     [][]float64
-		queryOnce          sync.Once
-		distances          [][]float32
-		distancesAsFloat64 [][]float64
-		distancesOnce      sync.Once
-		neighbors          [][]int
-		ids                []string
-		name               string
-		dimension          int
-		distanceType       string
-		objectType         string
-	}
-	type want struct {
-		want [][]float64
-	}
-	type test struct {
-		name       string
-		fields     fields
-		want       want
-		checkFunc  func(want, [][]float64) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, got [][]float64) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           train: nil,
-		           trainAsFloat64: nil,
-		           trainOnce: nil,
-		           query: nil,
-		           queryAsFloat64: nil,
-		           queryOnce: nil,
-		           distances: nil,
-		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
-		           neighbors: nil,
-		           ids: nil,
-		           name: "",
-		           dimension: 0,
-		           distanceType: "",
-		           objectType: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           train: nil,
-		           trainAsFloat64: nil,
-		           trainOnce: nil,
-		           query: nil,
-		           queryAsFloat64: nil,
-		           queryOnce: nil,
-		           distances: nil,
-		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
-		           neighbors: nil,
-		           ids: nil,
-		           name: "",
-		           dimension: 0,
-		           distanceType: "",
-		           objectType: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			d := &dataset{
-				train:              test.fields.train,
-				trainAsFloat64:     test.fields.trainAsFloat64,
-				trainOnce:          test.fields.trainOnce,
-				query:              test.fields.query,
-				queryAsFloat64:     test.fields.queryAsFloat64,
-				queryOnce:          test.fields.queryOnce,
-				distances:          test.fields.distances,
-				distancesAsFloat64: test.fields.distancesAsFloat64,
-				distancesOnce:      test.fields.distancesOnce,
-				neighbors:          test.fields.neighbors,
-				ids:                test.fields.ids,
-				name:               test.fields.name,
-				dimension:          test.fields.dimension,
-				distanceType:       test.fields.distanceType,
-				objectType:         test.fields.objectType,
-			}
-
-			got := d.TrainAsFloat64()
-			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_dataset_Query(t *testing.T) {
-	type fields struct {
-		train              [][]float32
-		trainAsFloat64     [][]float64
-		trainOnce          sync.Once
-		query              [][]float32
-		queryAsFloat64     [][]float64
-		queryOnce          sync.Once
-		distances          [][]float32
-		distancesAsFloat64 [][]float64
-		distancesOnce      sync.Once
-		neighbors          [][]int
-		ids                []string
-		name               string
-		dimension          int
-		distanceType       string
-		objectType         string
-	}
-	type want struct {
-		want [][]float32
-	}
-	type test struct {
-		name       string
-		fields     fields
-		want       want
-		checkFunc  func(want, [][]float32) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, got [][]float32) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           train: nil,
-		           trainAsFloat64: nil,
-		           trainOnce: nil,
-		           query: nil,
-		           queryAsFloat64: nil,
-		           queryOnce: nil,
-		           distances: nil,
-		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
-		           neighbors: nil,
-		           ids: nil,
-		           name: "",
-		           dimension: 0,
-		           distanceType: "",
-		           objectType: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           train: nil,
-		           trainAsFloat64: nil,
-		           trainOnce: nil,
-		           query: nil,
-		           queryAsFloat64: nil,
-		           queryOnce: nil,
-		           distances: nil,
-		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
-		           neighbors: nil,
-		           ids: nil,
-		           name: "",
-		           dimension: 0,
-		           distanceType: "",
-		           objectType: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			d := &dataset{
-				train:              test.fields.train,
-				trainAsFloat64:     test.fields.trainAsFloat64,
-				trainOnce:          test.fields.trainOnce,
-				query:              test.fields.query,
-				queryAsFloat64:     test.fields.queryAsFloat64,
-				queryOnce:          test.fields.queryOnce,
-				distances:          test.fields.distances,
-				distancesAsFloat64: test.fields.distancesAsFloat64,
-				distancesOnce:      test.fields.distancesOnce,
-				neighbors:          test.fields.neighbors,
-				ids:                test.fields.ids,
-				name:               test.fields.name,
-				dimension:          test.fields.dimension,
-				distanceType:       test.fields.distanceType,
-				objectType:         test.fields.objectType,
-			}
-
-			got := d.Query()
-			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_dataset_QueryAsFloat64(t *testing.T) {
-	type fields struct {
-		train              [][]float32
-		trainAsFloat64     [][]float64
-		trainOnce          sync.Once
-		query              [][]float32
-		queryAsFloat64     [][]float64
-		queryOnce          sync.Once
-		distances          [][]float32
-		distancesAsFloat64 [][]float64
-		distancesOnce      sync.Once
-		neighbors          [][]int
-		ids                []string
-		name               string
-		dimension          int
-		distanceType       string
-		objectType         string
-	}
-	type want struct {
-		want [][]float64
-	}
-	type test struct {
-		name       string
-		fields     fields
-		want       want
-		checkFunc  func(want, [][]float64) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, got [][]float64) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           train: nil,
-		           trainAsFloat64: nil,
-		           trainOnce: nil,
-		           query: nil,
-		           queryAsFloat64: nil,
-		           queryOnce: nil,
-		           distances: nil,
-		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
-		           neighbors: nil,
-		           ids: nil,
-		           name: "",
-		           dimension: 0,
-		           distanceType: "",
-		           objectType: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           train: nil,
-		           trainAsFloat64: nil,
-		           trainOnce: nil,
-		           query: nil,
-		           queryAsFloat64: nil,
-		           queryOnce: nil,
-		           distances: nil,
-		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
-		           neighbors: nil,
-		           ids: nil,
-		           name: "",
-		           dimension: 0,
-		           distanceType: "",
-		           objectType: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			d := &dataset{
-				train:              test.fields.train,
-				trainAsFloat64:     test.fields.trainAsFloat64,
-				trainOnce:          test.fields.trainOnce,
-				query:              test.fields.query,
-				queryAsFloat64:     test.fields.queryAsFloat64,
-				queryOnce:          test.fields.queryOnce,
-				distances:          test.fields.distances,
-				distancesAsFloat64: test.fields.distancesAsFloat64,
-				distancesOnce:      test.fields.distancesOnce,
-				neighbors:          test.fields.neighbors,
-				ids:                test.fields.ids,
-				name:               test.fields.name,
-				dimension:          test.fields.dimension,
-				distanceType:       test.fields.distanceType,
-				objectType:         test.fields.objectType,
-			}
-
-			got := d.QueryAsFloat64()
-			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_dataset_Distances(t *testing.T) {
-	type fields struct {
-		train              [][]float32
-		trainAsFloat64     [][]float64
-		trainOnce          sync.Once
-		query              [][]float32
-		queryAsFloat64     [][]float64
-		queryOnce          sync.Once
-		distances          [][]float32
-		distancesAsFloat64 [][]float64
-		distancesOnce      sync.Once
-		neighbors          [][]int
-		ids                []string
-		name               string
-		dimension          int
-		distanceType       string
-		objectType         string
-	}
-	type want struct {
-		want [][]float32
-	}
-	type test struct {
-		name       string
-		fields     fields
-		want       want
-		checkFunc  func(want, [][]float32) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, got [][]float32) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           train: nil,
-		           trainAsFloat64: nil,
-		           trainOnce: nil,
-		           query: nil,
-		           queryAsFloat64: nil,
-		           queryOnce: nil,
-		           distances: nil,
-		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
-		           neighbors: nil,
-		           ids: nil,
-		           name: "",
-		           dimension: 0,
-		           distanceType: "",
-		           objectType: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           train: nil,
-		           trainAsFloat64: nil,
-		           trainOnce: nil,
-		           query: nil,
-		           queryAsFloat64: nil,
-		           queryOnce: nil,
-		           distances: nil,
-		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
-		           neighbors: nil,
-		           ids: nil,
-		           name: "",
-		           dimension: 0,
-		           distanceType: "",
-		           objectType: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			d := &dataset{
-				train:              test.fields.train,
-				trainAsFloat64:     test.fields.trainAsFloat64,
-				trainOnce:          test.fields.trainOnce,
-				query:              test.fields.query,
-				queryAsFloat64:     test.fields.queryAsFloat64,
-				queryOnce:          test.fields.queryOnce,
-				distances:          test.fields.distances,
-				distancesAsFloat64: test.fields.distancesAsFloat64,
-				distancesOnce:      test.fields.distancesOnce,
-				neighbors:          test.fields.neighbors,
-				ids:                test.fields.ids,
-				name:               test.fields.name,
-				dimension:          test.fields.dimension,
-				distanceType:       test.fields.distanceType,
-				objectType:         test.fields.objectType,
-			}
-
-			got := d.Distances()
-			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_dataset_DistancesAsFloat64(t *testing.T) {
-	type fields struct {
-		train              [][]float32
-		trainAsFloat64     [][]float64
-		trainOnce          sync.Once
-		query              [][]float32
-		queryAsFloat64     [][]float64
-		queryOnce          sync.Once
-		distances          [][]float32
-		distancesAsFloat64 [][]float64
-		distancesOnce      sync.Once
-		neighbors          [][]int
-		ids                []string
-		name               string
-		dimension          int
-		distanceType       string
-		objectType         string
-	}
-	type want struct {
-		want [][]float64
-	}
-	type test struct {
-		name       string
-		fields     fields
-		want       want
-		checkFunc  func(want, [][]float64) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, got [][]float64) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           train: nil,
-		           trainAsFloat64: nil,
-		           trainOnce: nil,
-		           query: nil,
-		           queryAsFloat64: nil,
-		           queryOnce: nil,
-		           distances: nil,
-		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
-		           neighbors: nil,
-		           ids: nil,
-		           name: "",
-		           dimension: 0,
-		           distanceType: "",
-		           objectType: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           train: nil,
-		           trainAsFloat64: nil,
-		           trainOnce: nil,
-		           query: nil,
-		           queryAsFloat64: nil,
-		           queryOnce: nil,
-		           distances: nil,
-		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
-		           neighbors: nil,
-		           ids: nil,
-		           name: "",
-		           dimension: 0,
-		           distanceType: "",
-		           objectType: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			d := &dataset{
-				train:              test.fields.train,
-				trainAsFloat64:     test.fields.trainAsFloat64,
-				trainOnce:          test.fields.trainOnce,
-				query:              test.fields.query,
-				queryAsFloat64:     test.fields.queryAsFloat64,
-				queryOnce:          test.fields.queryOnce,
-				distances:          test.fields.distances,
-				distancesAsFloat64: test.fields.distancesAsFloat64,
-				distancesOnce:      test.fields.distancesOnce,
-				neighbors:          test.fields.neighbors,
-				ids:                test.fields.ids,
-				name:               test.fields.name,
-				dimension:          test.fields.dimension,
-				distanceType:       test.fields.distanceType,
-				objectType:         test.fields.objectType,
-			}
-
-			got := d.DistancesAsFloat64()
-			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_dataset_Neighbors(t *testing.T) {
-	type fields struct {
-		train              [][]float32
-		trainAsFloat64     [][]float64
-		trainOnce          sync.Once
-		query              [][]float32
-		queryAsFloat64     [][]float64
-		queryOnce          sync.Once
-		distances          [][]float32
-		distancesAsFloat64 [][]float64
-		distancesOnce      sync.Once
-		neighbors          [][]int
-		ids                []string
-		name               string
-		dimension          int
-		distanceType       string
-		objectType         string
-	}
-	type want struct {
-		want [][]int
-	}
-	type test struct {
-		name       string
-		fields     fields
-		want       want
-		checkFunc  func(want, [][]int) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, got [][]int) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           train: nil,
-		           trainAsFloat64: nil,
-		           trainOnce: nil,
-		           query: nil,
-		           queryAsFloat64: nil,
-		           queryOnce: nil,
-		           distances: nil,
-		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
-		           neighbors: nil,
-		           ids: nil,
-		           name: "",
-		           dimension: 0,
-		           distanceType: "",
-		           objectType: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           train: nil,
-		           trainAsFloat64: nil,
-		           trainOnce: nil,
-		           query: nil,
-		           queryAsFloat64: nil,
-		           queryOnce: nil,
-		           distances: nil,
-		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
-		           neighbors: nil,
-		           ids: nil,
-		           name: "",
-		           dimension: 0,
-		           distanceType: "",
-		           objectType: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			d := &dataset{
-				train:              test.fields.train,
-				trainAsFloat64:     test.fields.trainAsFloat64,
-				trainOnce:          test.fields.trainOnce,
-				query:              test.fields.query,
-				queryAsFloat64:     test.fields.queryAsFloat64,
-				queryOnce:          test.fields.queryOnce,
-				distances:          test.fields.distances,
-				distancesAsFloat64: test.fields.distancesAsFloat64,
-				distancesOnce:      test.fields.distancesOnce,
-				neighbors:          test.fields.neighbors,
-				ids:                test.fields.ids,
-				name:               test.fields.name,
-				dimension:          test.fields.dimension,
-				distanceType:       test.fields.distanceType,
-				objectType:         test.fields.objectType,
-			}
-
-			got := d.Neighbors()
-			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_dataset_IDs(t *testing.T) {
-	type fields struct {
-		train              [][]float32
-		trainAsFloat64     [][]float64
-		trainOnce          sync.Once
-		query              [][]float32
-		queryAsFloat64     [][]float64
-		queryOnce          sync.Once
-		distances          [][]float32
-		distancesAsFloat64 [][]float64
-		distancesOnce      sync.Once
-		neighbors          [][]int
-		ids                []string
-		name               string
-		dimension          int
-		distanceType       string
-		objectType         string
-	}
-	type want struct {
-		want []string
-	}
-	type test struct {
-		name       string
-		fields     fields
-		want       want
-		checkFunc  func(want, []string) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, got []string) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           train: nil,
-		           trainAsFloat64: nil,
-		           trainOnce: nil,
-		           query: nil,
-		           queryAsFloat64: nil,
-		           queryOnce: nil,
-		           distances: nil,
-		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
-		           neighbors: nil,
-		           ids: nil,
-		           name: "",
-		           dimension: 0,
-		           distanceType: "",
-		           objectType: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           train: nil,
-		           trainAsFloat64: nil,
-		           trainOnce: nil,
-		           query: nil,
-		           queryAsFloat64: nil,
-		           queryOnce: nil,
-		           distances: nil,
-		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
-		           neighbors: nil,
-		           ids: nil,
-		           name: "",
-		           dimension: 0,
-		           distanceType: "",
-		           objectType: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			d := &dataset{
-				train:              test.fields.train,
-				trainAsFloat64:     test.fields.trainAsFloat64,
-				trainOnce:          test.fields.trainOnce,
-				query:              test.fields.query,
-				queryAsFloat64:     test.fields.queryAsFloat64,
-				queryOnce:          test.fields.queryOnce,
-				distances:          test.fields.distances,
-				distancesAsFloat64: test.fields.distancesAsFloat64,
-				distancesOnce:      test.fields.distancesOnce,
-				neighbors:          test.fields.neighbors,
-				ids:                test.fields.ids,
-				name:               test.fields.name,
-				dimension:          test.fields.dimension,
-				distanceType:       test.fields.distanceType,
-				objectType:         test.fields.objectType,
-			}
-
-			got := d.IDs()
-			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_dataset_Name(t *testing.T) {
-	type fields struct {
-		train              [][]float32
-		trainAsFloat64     [][]float64
-		trainOnce          sync.Once
-		query              [][]float32
-		queryAsFloat64     [][]float64
-		queryOnce          sync.Once
-		distances          [][]float32
-		distancesAsFloat64 [][]float64
-		distancesOnce      sync.Once
-		neighbors          [][]int
-		ids                []string
-		name               string
-		dimension          int
-		distanceType       string
-		objectType         string
-	}
-	type want struct {
-		want string
-	}
-	type test struct {
-		name       string
-		fields     fields
-		want       want
-		checkFunc  func(want, string) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, got string) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           train: nil,
-		           trainAsFloat64: nil,
-		           trainOnce: nil,
-		           query: nil,
-		           queryAsFloat64: nil,
-		           queryOnce: nil,
-		           distances: nil,
-		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
-		           neighbors: nil,
-		           ids: nil,
-		           name: "",
-		           dimension: 0,
-		           distanceType: "",
-		           objectType: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           train: nil,
-		           trainAsFloat64: nil,
-		           trainOnce: nil,
-		           query: nil,
-		           queryAsFloat64: nil,
-		           queryOnce: nil,
-		           distances: nil,
-		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
-		           neighbors: nil,
-		           ids: nil,
-		           name: "",
-		           dimension: 0,
-		           distanceType: "",
-		           objectType: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			d := &dataset{
-				train:              test.fields.train,
-				trainAsFloat64:     test.fields.trainAsFloat64,
-				trainOnce:          test.fields.trainOnce,
-				query:              test.fields.query,
-				queryAsFloat64:     test.fields.queryAsFloat64,
-				queryOnce:          test.fields.queryOnce,
-				distances:          test.fields.distances,
-				distancesAsFloat64: test.fields.distancesAsFloat64,
-				distancesOnce:      test.fields.distancesOnce,
-				neighbors:          test.fields.neighbors,
-				ids:                test.fields.ids,
-				name:               test.fields.name,
-				dimension:          test.fields.dimension,
-				distanceType:       test.fields.distanceType,
-				objectType:         test.fields.objectType,
-			}
-
-			got := d.Name()
-			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_dataset_Dimension(t *testing.T) {
-	type fields struct {
-		train              [][]float32
-		trainAsFloat64     [][]float64
-		trainOnce          sync.Once
-		query              [][]float32
-		queryAsFloat64     [][]float64
-		queryOnce          sync.Once
-		distances          [][]float32
-		distancesAsFloat64 [][]float64
-		distancesOnce      sync.Once
-		neighbors          [][]int
-		ids                []string
-		name               string
-		dimension          int
-		distanceType       string
-		objectType         string
-	}
-	type want struct {
-		want int
-	}
-	type test struct {
-		name       string
-		fields     fields
-		want       want
-		checkFunc  func(want, int) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, got int) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           train: nil,
-		           trainAsFloat64: nil,
-		           trainOnce: nil,
-		           query: nil,
-		           queryAsFloat64: nil,
-		           queryOnce: nil,
-		           distances: nil,
-		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
-		           neighbors: nil,
-		           ids: nil,
-		           name: "",
-		           dimension: 0,
-		           distanceType: "",
-		           objectType: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           train: nil,
-		           trainAsFloat64: nil,
-		           trainOnce: nil,
-		           query: nil,
-		           queryAsFloat64: nil,
-		           queryOnce: nil,
-		           distances: nil,
-		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
-		           neighbors: nil,
-		           ids: nil,
-		           name: "",
-		           dimension: 0,
-		           distanceType: "",
-		           objectType: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			d := &dataset{
-				train:              test.fields.train,
-				trainAsFloat64:     test.fields.trainAsFloat64,
-				trainOnce:          test.fields.trainOnce,
-				query:              test.fields.query,
-				queryAsFloat64:     test.fields.queryAsFloat64,
-				queryOnce:          test.fields.queryOnce,
-				distances:          test.fields.distances,
-				distancesAsFloat64: test.fields.distancesAsFloat64,
-				distancesOnce:      test.fields.distancesOnce,
-				neighbors:          test.fields.neighbors,
-				ids:                test.fields.ids,
-				name:               test.fields.name,
-				dimension:          test.fields.dimension,
-				distanceType:       test.fields.distanceType,
-				objectType:         test.fields.objectType,
-			}
-
-			got := d.Dimension()
-			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_dataset_DistanceType(t *testing.T) {
-	type fields struct {
-		train              [][]float32
-		trainAsFloat64     [][]float64
-		trainOnce          sync.Once
-		query              [][]float32
-		queryAsFloat64     [][]float64
-		queryOnce          sync.Once
-		distances          [][]float32
-		distancesAsFloat64 [][]float64
-		distancesOnce      sync.Once
-		neighbors          [][]int
-		ids                []string
-		name               string
-		dimension          int
-		distanceType       string
-		objectType         string
-	}
-	type want struct {
-		want string
-	}
-	type test struct {
-		name       string
-		fields     fields
-		want       want
-		checkFunc  func(want, string) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, got string) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           train: nil,
-		           trainAsFloat64: nil,
-		           trainOnce: nil,
-		           query: nil,
-		           queryAsFloat64: nil,
-		           queryOnce: nil,
-		           distances: nil,
-		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
-		           neighbors: nil,
-		           ids: nil,
-		           name: "",
-		           dimension: 0,
-		           distanceType: "",
-		           objectType: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           train: nil,
-		           trainAsFloat64: nil,
-		           trainOnce: nil,
-		           query: nil,
-		           queryAsFloat64: nil,
-		           queryOnce: nil,
-		           distances: nil,
-		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
-		           neighbors: nil,
-		           ids: nil,
-		           name: "",
-		           dimension: 0,
-		           distanceType: "",
-		           objectType: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			d := &dataset{
-				train:              test.fields.train,
-				trainAsFloat64:     test.fields.trainAsFloat64,
-				trainOnce:          test.fields.trainOnce,
-				query:              test.fields.query,
-				queryAsFloat64:     test.fields.queryAsFloat64,
-				queryOnce:          test.fields.queryOnce,
-				distances:          test.fields.distances,
-				distancesAsFloat64: test.fields.distancesAsFloat64,
-				distancesOnce:      test.fields.distancesOnce,
-				neighbors:          test.fields.neighbors,
-				ids:                test.fields.ids,
-				name:               test.fields.name,
-				dimension:          test.fields.dimension,
-				distanceType:       test.fields.distanceType,
-				objectType:         test.fields.objectType,
-			}
-
-			got := d.DistanceType()
-			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_dataset_ObjectType(t *testing.T) {
-	type fields struct {
-		train              [][]float32
-		trainAsFloat64     [][]float64
-		trainOnce          sync.Once
-		query              [][]float32
-		queryAsFloat64     [][]float64
-		queryOnce          sync.Once
-		distances          [][]float32
-		distancesAsFloat64 [][]float64
-		distancesOnce      sync.Once
-		neighbors          [][]int
-		ids                []string
-		name               string
-		dimension          int
-		distanceType       string
-		objectType         string
-	}
-	type want struct {
-		want string
-	}
-	type test struct {
-		name       string
-		fields     fields
-		want       want
-		checkFunc  func(want, string) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, got string) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           train: nil,
-		           trainAsFloat64: nil,
-		           trainOnce: nil,
-		           query: nil,
-		           queryAsFloat64: nil,
-		           queryOnce: nil,
-		           distances: nil,
-		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
-		           neighbors: nil,
-		           ids: nil,
-		           name: "",
-		           dimension: 0,
-		           distanceType: "",
-		           objectType: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           train: nil,
-		           trainAsFloat64: nil,
-		           trainOnce: nil,
-		           query: nil,
-		           queryAsFloat64: nil,
-		           queryOnce: nil,
-		           distances: nil,
-		           distancesAsFloat64: nil,
-		           distancesOnce: nil,
-		           neighbors: nil,
-		           ids: nil,
-		           name: "",
-		           dimension: 0,
-		           distanceType: "",
-		           objectType: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			d := &dataset{
-				train:              test.fields.train,
-				trainAsFloat64:     test.fields.trainAsFloat64,
-				trainOnce:          test.fields.trainOnce,
-				query:              test.fields.query,
-				queryAsFloat64:     test.fields.queryAsFloat64,
-				queryOnce:          test.fields.queryOnce,
-				distances:          test.fields.distances,
-				distancesAsFloat64: test.fields.distancesAsFloat64,
-				distancesOnce:      test.fields.distancesOnce,
-				neighbors:          test.fields.neighbors,
-				ids:                test.fields.ids,
-				name:               test.fields.name,
-				dimension:          test.fields.dimension,
-				distanceType:       test.fields.distanceType,
-				objectType:         test.fields.objectType,
-			}
-
-			got := d.ObjectType()
-			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_float32To64(t *testing.T) {
-	type args struct {
-		x [][]float32
-	}
-	type want struct {
-		wantY [][]float64
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, [][]float64) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, gotY [][]float64) error {
-		if !reflect.DeepEqual(gotY, w.wantY) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotY, w.wantY)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           x: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           x: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-
-			gotY := float32To64(test.args.x)
-			if err := test.checkFunc(test.want, gotY); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 

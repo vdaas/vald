@@ -45,10 +45,10 @@ func Test_loadFloat32(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got interface{}, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+			return errors.Errorf("got = %v, want %v", got, w.want)
 		}
 		return nil
 	}
@@ -88,7 +88,7 @@ func Test_loadFloat32(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -129,10 +129,10 @@ func Test_loadInt(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got interface{}, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+			return errors.Errorf("got = %v, want %v", got, w.want)
 		}
 		return nil
 	}
@@ -172,7 +172,7 @@ func Test_loadInt(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -213,13 +213,13 @@ func Test_loadDataset(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotDim int, gotVec interface{}, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
 		if !reflect.DeepEqual(gotDim, w.wantDim) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotDim, w.wantDim)
+			return errors.Errorf("got = %v, want %v", gotDim, w.wantDim)
 		}
 		if !reflect.DeepEqual(gotVec, w.wantVec) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotVec, w.wantVec)
+			return errors.Errorf("got = %v, want %v", gotVec, w.wantVec)
 		}
 		return nil
 	}
@@ -257,7 +257,7 @@ func Test_loadDataset(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -299,22 +299,22 @@ func TestLoad(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotTrain [][]float32, gotTest [][]float32, gotDistances [][]float32, gotNeighbors [][]int, gotDim int, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
 		if !reflect.DeepEqual(gotTrain, w.wantTrain) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotTrain, w.wantTrain)
+			return errors.Errorf("got = %v, want %v", gotTrain, w.wantTrain)
 		}
 		if !reflect.DeepEqual(gotTest, w.wantTest) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotTest, w.wantTest)
+			return errors.Errorf("got = %v, want %v", gotTest, w.wantTest)
 		}
 		if !reflect.DeepEqual(gotDistances, w.wantDistances) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotDistances, w.wantDistances)
+			return errors.Errorf("got = %v, want %v", gotDistances, w.wantDistances)
 		}
 		if !reflect.DeepEqual(gotNeighbors, w.wantNeighbors) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotNeighbors, w.wantNeighbors)
+			return errors.Errorf("got = %v, want %v", gotNeighbors, w.wantNeighbors)
 		}
 		if !reflect.DeepEqual(gotDim, w.wantDim) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotDim, w.wantDim)
+			return errors.Errorf("got = %v, want %v", gotDim, w.wantDim)
 		}
 		return nil
 	}
@@ -348,7 +348,7 @@ func TestLoad(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -361,372 +361,6 @@ func TestLoad(t *testing.T) {
 
 			gotTrain, gotTest, gotDistances, gotNeighbors, gotDim, err := Load(test.args.path)
 			if err := test.checkFunc(test.want, gotTrain, gotTest, gotDistances, gotNeighbors, gotDim, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func TestCreateRandomIDs(t *testing.T) {
-	type args struct {
-		n int
-	}
-	type want struct {
-		wantIds []string
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, []string) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, gotIds []string) error {
-		if !reflect.DeepEqual(gotIds, w.wantIds) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotIds, w.wantIds)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           n: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           n: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-
-			gotIds := CreateRandomIDs(test.args.n)
-			if err := test.checkFunc(test.want, gotIds); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func TestCreateRandomIDsWithLength(t *testing.T) {
-	type args struct {
-		n int
-		l int
-	}
-	type want struct {
-		wantIds []string
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, []string) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, gotIds []string) error {
-		if !reflect.DeepEqual(gotIds, w.wantIds) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotIds, w.wantIds)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           n: 0,
-		           l: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           n: 0,
-		           l: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-
-			gotIds := CreateRandomIDsWithLength(test.args.n, test.args.l)
-			if err := test.checkFunc(test.want, gotIds); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func TestCreateSerialIDs(t *testing.T) {
-	type args struct {
-		n int
-	}
-	type want struct {
-		want []string
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, []string) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got []string) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           n: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           n: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-
-			got := CreateSerialIDs(test.args.n)
-			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func TestLoadDataWithRandomIDs(t *testing.T) {
-	type args struct {
-		path string
-	}
-	type want struct {
-		want Dataset
-		err  error
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, Dataset, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got Dataset, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           path: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           path: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-
-			got, err := LoadDataWithRandomIDs(test.args.path)
-			if err := test.checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func TestLoadDataWithSerialIDs(t *testing.T) {
-	type args struct {
-		path string
-	}
-	type want struct {
-		want Dataset
-		err  error
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, Dataset, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got Dataset, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           path: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           path: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-
-			got, err := LoadDataWithSerialIDs(test.args.path)
-			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
