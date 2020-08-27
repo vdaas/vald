@@ -9,6 +9,8 @@ on:
        - '*.*.*-*'
        - 'v*.*.*-*'
     paths:
+      - 'go.mod'
+      - 'go.sum'
       - 'internal/**'
       - '!internal/**/*_test.go'
       - '!internal/db/**'
@@ -22,6 +24,8 @@ on:
       - 'versions/NGT_VERSION'
   pull_request:
     paths:
+      - 'go.mod'
+      - 'go.sum'
       - 'internal/**'
       - '!internal/**/*_test.go'
       - '!internal/db/**'
