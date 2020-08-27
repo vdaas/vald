@@ -66,7 +66,13 @@ SWAP_TAG             ?= latest
 BINDIR ?= /usr/local/bin
 
 UNAME := $(eval UNAME := $(shell uname))$(UNAME)
+
+ifeq ($(UNAME),Linux)
 CPU_INFO_FLAGS := $(eval CPU_INFO_FLAGS := $(shell cat /proc/cpuinfo | grep flags | cut -d " " -f 2- | head -1))$(CPU_INFO_FLAGS)
+else
+CPU_INFO_FLAGS := ""
+endif
+
 GIT_COMMIT := $(eval GIT_COMMIT := $(shell git rev-list -1 HEAD))$(GIT_COMMIT)
 
 MAKELISTS := Makefile $(shell find Makefile.d -type f -regex ".*\.mk")
@@ -244,7 +250,6 @@ format: \
 	license \
 	update/goimports \
 	format/yaml
-	# format/docker
 
 .PHONY: update/goimports
 ## run goimports for all go files
@@ -324,11 +329,16 @@ ngt/install: /usr/local/include/NGT/Capi.h
 .PHONY: tensorflow/install
 ## install TensorFlow for C
 tensorflow/install: /usr/local/lib/libtensorflow.so
+ifeq ($(UNAME),Darwin)
+/usr/local/lib/libtensorflow.so:
+	brew install libtensorflow@1
+else
 /usr/local/lib/libtensorflow.so:
 	curl -LO https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-$(TENSORFLOW_C_VERSION).tar.gz
 	tar -C /usr/local -xzf libtensorflow-cpu-linux-x86_64-$(TENSORFLOW_C_VERSION).tar.gz
 	rm -f libtensorflow-cpu-linux-x86_64-$(TENSORFLOW_C_VERSION).tar.gz
 	ldconfig
+endif
 
 .PHONY: lint
 ## run lints

@@ -13,6 +13,7 @@ replace (
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql master
 	github.com/gocql/gocql => github.com/gocql/gocql master
 	github.com/gogo/protobuf => github.com/gogo/protobuf master
+	github.com/googleapis/gnostic => github.com/googleapis/gnostic v0.4.0
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.12.0
 	github.com/gorilla/mux => github.com/gorilla/mux master
 	github.com/gorilla/websocket => github.com/gorilla/websocket master
@@ -22,40 +23,6 @@ replace (
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.18.8
 	k8s.io/apimachinery => k8s.io/apimachinery v0.18.8
 	k8s.io/client-go => k8s.io/client-go v0.18.8
+	k8s.io/metrics => k8s.io/metrics v0.18.8
 	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.6.2
-)
-
-require (
-	cloud.google.com/go master
-	contrib.go.opencensus.io/exporter/jaeger master
-	contrib.go.opencensus.io/exporter/prometheus master
-	contrib.go.opencensus.io/exporter/stackdriver master
-	github.com/aws/aws-sdk-go v1.33.17
-	github.com/cespare/xxhash/v2 master
-	github.com/cockroachdb/errors master
-	github.com/envoyproxy/protoc-gen-validate master
-	github.com/fsnotify/fsnotify master
-	github.com/go-redis/redis/v7 master
-	github.com/go-sql-driver/mysql master
-	github.com/gocraft/dbr/v2 master
-	github.com/gogo/protobuf master
-	github.com/google/go-cmp master
-	github.com/gorilla/mux master
-	github.com/hashicorp/go-version master
-	github.com/json-iterator/go master
-	github.com/klauspost/compress master
-	github.com/kpango/fastime master
-	github.com/kpango/fuid master
-	github.com/kpango/gache master
-	github.com/kpango/glg master
-	github.com/scylladb/gocqlx master
-	go.opencensus.io master
-	go.uber.org/automaxprocs master
-	go.uber.org/goleak master
-	gonum.org/v1/hdf5 master
-	gonum.org/v1/plot master
-	google.golang.org/api master
-	google.golang.org/genproto master
-	google.golang.org/grpc master
-	gopkg.in/yaml.v2 master
 )
