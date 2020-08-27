@@ -92,8 +92,7 @@ type gobReader struct {
 // Read returns the number of bytes for read p (0 <= n <= len(p)).
 // If any errors occurs, it will return an error.
 func (gr *gobReader) Read(p []byte) (n int, err error) {
-	err = gr.decoder.Decode(&p)
-	if err != nil {
+	if err = gr.decoder.Decode(&p); err != nil {
 		return 0, err
 	}
 
@@ -113,8 +112,7 @@ type gobWriter struct {
 // write returns the number of bytes written from p (0 <= n <= len(p)).
 // if any errors occurs, it will return an error.
 func (gw *gobWriter) Write(p []byte) (n int, err error) {
-	err = gw.encoder.Encode(&p)
-	if err != nil {
+	if err = gw.encoder.Encode(&p); err != nil {
 		return 0, err
 	}
 

@@ -67,7 +67,7 @@ func TestNewGob(t *testing.T) {
 		},
 
 		{
-			name: "returns (nil, error) when option apply fails",
+			name: "returns (nil, error) when option is not nil and option apply fails",
 			args: args{
 				opts: []GobOption{
 					func(c *gobCompressor) error {
