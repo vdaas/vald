@@ -409,21 +409,21 @@ If you need the value outside the if statement, please use the following style:
 <tbody><tr><td>
 
 ```go
-conn, err := net.Dial("tcp", "localhost:80")
-if err != nil {
-    // handle error
-}
-// use the conn
-```
-
-</td><td>
-
-```go
 if conn, err := net.Dial("tcp", "localhost:80");  err != nil {
     // handle error
 } else {
     // use the conn
 }
+```
+
+</td><td>
+
+```go
+conn, err := net.Dial("tcp", "localhost:80")
+if err != nil {
+    // handle error
+}
+// use the conn
 ```
 
 </td></tr></tbody></table>
