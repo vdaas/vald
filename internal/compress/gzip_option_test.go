@@ -61,7 +61,10 @@ func TestWithGzipGob(t *testing.T) {
 			},
 			want: want{
 				obj: &T{
-					gobc: new(gobCompressor),
+					gobc: func() (c Compressor) {
+						c, _ = NewGob()
+						return
+					}(),
 				},
 			},
 		},

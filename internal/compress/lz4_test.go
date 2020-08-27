@@ -22,48 +22,10 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/vdaas/vald/internal/compress/lz4"
 	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
 )
-
-func TestLZ4CompressVector(t *testing.T) {
-	tests := []struct {
-		vector []float32
-	}{
-		{
-			vector: []float32{0.1, 0.2, 0.3},
-		},
-		{
-			vector: []float32{0.4, 0.2, 0.3, 0.1},
-		},
-		{
-			vector: []float32{0.1, 0.5, 0.12, 0.13, 1.0},
-		},
-	}
-
-	for _, tc := range tests {
-		lz4c, err := NewLZ4()
-		if err != nil {
-			t.Fatalf("initialize failed: %s", err)
-		}
-
-		compressed, err := lz4c.CompressVector(tc.vector)
-		if err != nil {
-			t.Fatalf("Compress failed: %s", err)
-		}
-
-		decompressed, err := lz4c.DecompressVector(compressed)
-		if err != nil {
-			t.Fatalf("Decompress failed: %s", err)
-		}
-		t.Logf("converted: origin %+v, compressed -> decompressed %+v", tc.vector, decompressed)
-		for i := range tc.vector {
-			if tc.vector[i] != decompressed[i] {
-				t.Fatalf("Invalid convert: origin %+v, compressed -> decompressed %+v", tc.vector, decompressed)
-			}
-		}
-	}
-}
 
 func TestNewLZ4(t *testing.T) {
 	type args struct {
@@ -91,31 +53,54 @@ func TestNewLZ4(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           opts: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           opts: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns (Compressor, nil) when option is empty",
+			args: args{
+				opts: nil,
+			},
+			want: want{
+				want: &lz4Compressor{
+					gobc: func() (gob Compressor) {
+						gob, _ = NewGob()
+						return
+					}(),
+					compressionLevel: 0,
+					lz4:              lz4.New(),
+				},
+			},
+		},
+		{
+			name: "returns (Compressor, nil) when option is not empty",
+			args: args{
+				opts: []LZ4Option{
+					WithLZ4CompressionLevel(-1),
+				},
+			},
+			want: want{
+				want: &lz4Compressor{
+					gobc: func() (gob Compressor) {
+						gob, _ = NewGob()
+						return
+					}(),
+					compressionLevel: -1,
+					lz4:              lz4.New(),
+				},
+			},
+		},
+		{
+			name: "returns (nil, error) when option apply fails",
+			args: args{
+				opts: []LZ4Option{
+					func(*lz4Compressor) error {
+						return errors.New("opts err")
+					},
+				},
+			},
+			want: want{
+				want: nil,
+				err:  errors.New("opts err"),
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -147,6 +132,7 @@ func Test_lz4Compressor_CompressVector(t *testing.T) {
 	type fields struct {
 		gobc             Compressor
 		compressionLevel int
+		lz4              lz4.LZ4
 	}
 	type want struct {
 		want []byte
@@ -171,39 +157,145 @@ func Test_lz4Compressor_CompressVector(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           vector: nil,
-		       },
-		       fields: fields {
-		           gobc: nil,
-		           compressionLevel: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           vector: nil,
-		           },
-		           fields: fields {
-		           gobc: nil,
-		           compressionLevel: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns ([]byte, nil) when no error occurs",
+			args: args{
+				vector: []float32{0.1, 0.2, 0.3},
+			},
+			fields: fields{
+				gobc: &MockCompressor{
+					CompressVectorFunc: func(vector []float32) (bytes []byte, err error) {
+						return []byte("vdaas/vald"), nil
+					},
+				},
+				compressionLevel: 0,
+				lz4: &lz4.MockLZ4{
+					NewWriterLevelFunc: func(w io.Writer, level int) lz4.Writer {
+						return &lz4.MockWriter{
+							WriteFunc: w.Write,
+							FlushFunc: func() error {
+								return nil
+							},
+							CloseFunc: func() error {
+								return nil
+							},
+						}
+					},
+				},
+			},
+			want: want{
+				want: []byte("vdaas/vald"),
+			},
+		},
+		{
+			name: "returns (nil, error) when compress vector fails",
+			args: args{
+				vector: []float32{0.1, 0.2, 0.3},
+			},
+			fields: fields{
+				gobc: &MockCompressor{
+					CompressVectorFunc: func(vector []float32) (bytes []byte, err error) {
+						return nil, errors.New("compress err")
+					},
+				},
+			},
+			want: want{
+				want: nil,
+				err:  errors.New("compress err"),
+			},
+		},
+		{
+			name: "returns (nil, error) when Write fails",
+			args: args{
+				vector: []float32{0.1, 0.2, 0.3},
+			},
+			fields: fields{
+				gobc: &MockCompressor{
+					CompressVectorFunc: func(vector []float32) (bytes []byte, err error) {
+						return []byte("vdaas/vald"), nil
+					},
+				},
+				compressionLevel: 0,
+				lz4: &lz4.MockLZ4{
+					NewWriterLevelFunc: func(w io.Writer, level int) lz4.Writer {
+						return &lz4.MockWriter{
+							WriteFunc: func(p []byte) (int, error) {
+								return 0, errors.New("write err")
+							},
+							CloseFunc: func() error {
+								return nil
+							},
+						}
+					},
+				},
+			},
+			want: want{
+				want: nil,
+				err:  errors.New("write err"),
+			},
+		},
+		{
+			name: "returns (nil, error) when Flush fails",
+			args: args{
+				vector: []float32{0.1, 0.2, 0.3},
+			},
+			fields: fields{
+				gobc: &MockCompressor{
+					CompressVectorFunc: func(vector []float32) (bytes []byte, err error) {
+						return []byte("vdaas/vald"), nil
+					},
+				},
+				compressionLevel: 0,
+				lz4: &lz4.MockLZ4{
+					NewWriterLevelFunc: func(w io.Writer, level int) lz4.Writer {
+						return &lz4.MockWriter{
+							WriteFunc: w.Write,
+							FlushFunc: func() error {
+								return errors.New("flush err")
+							},
+							CloseFunc: func() error {
+								return nil
+							},
+						}
+					},
+				},
+			},
+			want: want{
+				want: nil,
+				err:  errors.New("flush err"),
+			},
+		},
+		{
+			name: "returns (nil, error) when Close fails",
+			args: args{
+				vector: []float32{0.1, 0.2, 0.3},
+			},
+			fields: fields{
+				gobc: &MockCompressor{
+					CompressVectorFunc: func(vector []float32) (bytes []byte, err error) {
+						return []byte("vdaas/vald"), nil
+					},
+				},
+				compressionLevel: 0,
+				lz4: &lz4.MockLZ4{
+					NewWriterLevelFunc: func(w io.Writer, level int) lz4.Writer {
+						return &lz4.MockWriter{
+							WriteFunc: w.Write,
+							FlushFunc: func() error {
+								return nil
+							},
+							CloseFunc: func() error {
+								return errors.New("close err")
+							},
+						}
+					},
+				},
+			},
+			want: want{
+				want: nil,
+				err:  errors.New("close err"),
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -221,6 +313,7 @@ func Test_lz4Compressor_CompressVector(t *testing.T) {
 			l := &lz4Compressor{
 				gobc:             test.fields.gobc,
 				compressionLevel: test.fields.compressionLevel,
+				lz4:              test.fields.lz4,
 			}
 
 			got, err := l.CompressVector(test.args.vector)
@@ -232,6 +325,73 @@ func Test_lz4Compressor_CompressVector(t *testing.T) {
 	}
 }
 
+func Test_E2E_lz4Compressor_CompressVector(t *testing.T) {
+	type args struct {
+		vector []float32
+	}
+	type want struct {
+		want []float32
+		err  error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, []byte, error, Compressor) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got []byte, err error, l Compressor) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		decompressed, err := l.DecompressVector(got)
+		if err != nil {
+			return errors.Errorf("decompress error: %v", err)
+		}
+		if !reflect.DeepEqual(decompressed, w.want) {
+			return errors.Errorf("got = %v, want %v", decompressed, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "returns ([]byte, nil) when no error occurs",
+			args: args{
+				vector: []float32{0.1, 0.2, 0.3},
+			},
+			want: want{
+				want: []float32{0.1, 0.2, 0.3},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			l, err := NewLZ4()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			got, err := l.CompressVector(test.args.vector)
+			if err := test.checkFunc(test.want, got, err, l); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
 func Test_lz4Compressor_DecompressVector(t *testing.T) {
 	type args struct {
 		bs []byte
@@ -239,6 +399,7 @@ func Test_lz4Compressor_DecompressVector(t *testing.T) {
 	type fields struct {
 		gobc             Compressor
 		compressionLevel int
+		lz4              lz4.LZ4
 	}
 	type want struct {
 		want []float32
@@ -263,39 +424,82 @@ func Test_lz4Compressor_DecompressVector(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           bs: nil,
-		       },
-		       fields: fields {
-		           gobc: nil,
-		           compressionLevel: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           bs: nil,
-		           },
-		           fields: fields {
-		           gobc: nil,
-		           compressionLevel: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns ([]float32, nil) when no error occurs",
+			args: args{
+				bs: []byte("vdaas/vald"),
+			},
+			fields: fields{
+				gobc: &MockCompressor{
+					DecompressVectorFunc: func(bytes []byte) (vector []float32, err error) {
+						return []float32{0.1, 0.2, 0.3}, nil
+					},
+				},
+				compressionLevel: 0,
+				lz4: &lz4.MockLZ4{
+					NewReaderFunc: func(r io.Reader) lz4.Reader {
+						return &lz4.MockReader{
+							ReadFunc: r.Read,
+						}
+					},
+				},
+			},
+			want: want{
+				want: []float32{0.1, 0.2, 0.3},
+			},
+		},
+		{
+			name: "returns (nil, error) when Copy fails",
+			args: args{
+				bs: []byte("vdaas/vald"),
+			},
+			fields: fields{
+				gobc: &MockCompressor{
+					DecompressVectorFunc: func(bytes []byte) (vector []float32, err error) {
+						return []float32{0.1, 0.2, 0.3}, nil
+					},
+				},
+				compressionLevel: 0,
+				lz4: &lz4.MockLZ4{
+					NewReaderFunc: func(r io.Reader) lz4.Reader {
+						return &lz4.MockReader{
+							ReadFunc: func(p []byte) (int, error) {
+								return 0, errors.New("copy err")
+							},
+						}
+					},
+				},
+			},
+			want: want{
+				want: nil,
+				err:  errors.New("copy err"),
+			},
+		},
+		{
+			name: "returns (nil, error) when decompresse fails",
+			args: args{
+				bs: []byte("vdaas/vald"),
+			},
+			fields: fields{
+				gobc: &MockCompressor{
+					DecompressVectorFunc: func(bytes []byte) (vector []float32, err error) {
+						return nil, errors.New("decompresse err")
+					},
+				},
+				compressionLevel: 0,
+				lz4: &lz4.MockLZ4{
+					NewReaderFunc: func(r io.Reader) lz4.Reader {
+						return &lz4.MockReader{
+							ReadFunc: r.Read,
+						}
+					},
+				},
+			},
+			want: want{
+				want: nil,
+				err:  errors.New("decompresse err"),
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -313,6 +517,7 @@ func Test_lz4Compressor_DecompressVector(t *testing.T) {
 			l := &lz4Compressor{
 				gobc:             test.fields.gobc,
 				compressionLevel: test.fields.compressionLevel,
+				lz4:              test.fields.lz4,
 			}
 
 			got, err := l.DecompressVector(test.args.bs)
@@ -331,6 +536,7 @@ func Test_lz4Compressor_Reader(t *testing.T) {
 	type fields struct {
 		gobc             Compressor
 		compressionLevel int
+		lz4              lz4.LZ4
 	}
 	type want struct {
 		want io.ReadCloser
@@ -355,39 +561,31 @@ func Test_lz4Compressor_Reader(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           src: nil,
-		       },
-		       fields: fields {
-		           gobc: nil,
-		           compressionLevel: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           src: nil,
-		           },
-		           fields: fields {
-		           gobc: nil,
-		           compressionLevel: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			var (
+				src = new(lz4Reader)
+				r   = new(lz4Reader)
+			)
+			return test{
+				name: "returns (io.ReadCloser, nil) when no error occurs",
+				args: args{
+					src: src,
+				},
+				fields: fields{
+					lz4: &lz4.MockLZ4{
+						NewReaderFunc: func(io.Reader) lz4.Reader {
+							return r
+						},
+					},
+				},
+				want: want{
+					want: &lz4Reader{
+						src: src,
+						r:   r,
+					},
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
@@ -405,6 +603,7 @@ func Test_lz4Compressor_Reader(t *testing.T) {
 			l := &lz4Compressor{
 				gobc:             test.fields.gobc,
 				compressionLevel: test.fields.compressionLevel,
+				lz4:              test.fields.lz4,
 			}
 
 			got, err := l.Reader(test.args.src)
@@ -423,6 +622,7 @@ func Test_lz4Compressor_Writer(t *testing.T) {
 	type fields struct {
 		gobc             Compressor
 		compressionLevel int
+		lz4              lz4.LZ4
 	}
 	type want struct {
 		want io.WriteCloser
@@ -447,39 +647,31 @@ func Test_lz4Compressor_Writer(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           dst: nil,
-		       },
-		       fields: fields {
-		           gobc: nil,
-		           compressionLevel: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           dst: nil,
-		           },
-		           fields: fields {
-		           gobc: nil,
-		           compressionLevel: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			var (
+				dst = new(lz4.MockWriter)
+				w   = new(lz4.MockWriter)
+			)
+			return test{
+				name: "returns (io.WriteCloser, nil) when no erro occurs",
+				args: args{
+					dst: dst,
+				},
+				fields: fields{
+					lz4: &lz4.MockLZ4{
+						NewWriterFunc: func(io.Writer) lz4.Writer {
+							return w
+						},
+					},
+				},
+				want: want{
+					want: &lz4Writer{
+						dst: dst,
+						w:   w,
+					},
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
@@ -497,6 +689,7 @@ func Test_lz4Compressor_Writer(t *testing.T) {
 			l := &lz4Compressor{
 				gobc:             test.fields.gobc,
 				compressionLevel: test.fields.compressionLevel,
+				lz4:              test.fields.lz4,
 			}
 
 			got, err := l.Writer(test.args.dst)
@@ -539,39 +732,23 @@ func Test_lz4Reader_Read(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           p: nil,
-		       },
-		       fields: fields {
-		           src: nil,
-		           r: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           p: nil,
-		           },
-		           fields: fields {
-		           src: nil,
-		           r: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns (n, nil) when read success",
+			args: args{
+				p: []byte{},
+			},
+			fields: fields{
+				r: &MockReadCloser{
+					ReadFunc: func(p []byte) (int, error) {
+						return 10, nil
+					},
+				},
+			},
+			want: want{
+				wantN: 10,
+				err:   nil,
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -623,33 +800,24 @@ func Test_lz4Reader_Close(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           src: nil,
-		           r: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           src: nil,
-		           r: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns nil when readClose success",
+			fields: fields{
+				src: &MockReadCloser{
+					CloseFunc: func() error {
+						return nil
+					},
+				},
+				r: &MockReadCloser{
+					CloseFunc: func() error {
+						return nil
+					},
+				},
+			},
+			want: want{
+				err: nil,
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -709,39 +877,23 @@ func Test_lz4Writer_Write(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           p: nil,
-		       },
-		       fields: fields {
-		           dst: nil,
-		           w: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           p: nil,
-		           },
-		           fields: fields {
-		           dst: nil,
-		           w: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns (n, nil) when write success",
+			args: args{
+				p: []byte{},
+			},
+			fields: fields{
+				w: &MockWriteCloser{
+					WriteFunc: func(p []byte) (int, error) {
+						return 10, nil
+					},
+				},
+			},
+			want: want{
+				wantN: 10,
+				err:   nil,
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -793,33 +945,42 @@ func Test_lz4Writer_Close(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           dst: nil,
-		           w: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           dst: nil,
-		           w: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns nil when writeClose success",
+			fields: fields{
+				dst: &MockWriteCloser{
+					CloseFunc: func() error {
+						return nil
+					},
+				},
+				w: &MockWriteCloser{
+					CloseFunc: func() error {
+						return nil
+					},
+				},
+			},
+			want: want{
+				err: nil,
+			},
+		},
+		{
+			name: "returns error when close fails",
+			fields: fields{
+				dst: &MockWriteCloser{
+					CloseFunc: func() error {
+						return nil
+					},
+				},
+				w: &MockWriteCloser{
+					CloseFunc: func() error {
+						return errors.New("close err")
+					},
+				},
+			},
+			want: want{
+				err: errors.New("close err"),
+			},
+		},
 	}
 
 	for _, test := range tests {

@@ -22,6 +22,7 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 )
 
+// Option represents the functional option for reader.
 type Option func(r *reader)
 
 var (
@@ -32,6 +33,7 @@ var (
 	}
 )
 
+// WithErrGroup returns the option to set the eg.
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(r *reader) {
 		if eg != nil {
@@ -40,6 +42,7 @@ func WithErrGroup(eg errgroup.Group) Option {
 	}
 }
 
+// WithService returns the option to set the service.
 func WithService(s *s3.S3) Option {
 	return func(r *reader) {
 		if s != nil {
@@ -48,34 +51,43 @@ func WithService(s *s3.S3) Option {
 	}
 }
 
+// WithBucket returns the option to set the bucket.
 func WithBucket(bucket string) Option {
 	return func(r *reader) {
 		r.bucket = bucket
 	}
 }
 
+// WithKey returns the option to set the key.
 func WithKey(key string) Option {
 	return func(r *reader) {
 		r.key = key
 	}
 }
 
+// WithMaxChunkSize retunrs the option to set the maxChunkSize.
 func WithMaxChunkSize(size int64) Option {
 	return func(r *reader) {
 		r.maxChunkSize = size
 	}
 }
 
+// WithBackoff returns the option to set the backoffEnabled.
 func WithBackoff(enabled bool) Option {
 	return func(r *reader) {
 		r.backoffEnabled = enabled
 	}
 }
 
+// WithBackoffOpts returns the option to set the backoffOpts.
 func WithBackoffOpts(opts ...backoff.Option) Option {
 	return func(r *reader) {
+		if opts == nil {
+			return
+		}
 		if r.backoffOpts == nil {
 			r.backoffOpts = opts
+			return
 		}
 
 		r.backoffOpts = append(r.backoffOpts, opts...)

@@ -60,4 +60,5 @@ data:
       auto_index_duration_limit: {{ $index.indexer.auto_index_duration_limit }}
       auto_index_check_duration: {{ $index.indexer.auto_index_check_duration }}
       auto_index_length: {{ $index.indexer.auto_index_length }}
+      creation_pool_size: {{ $index.indexer.creation_pool_size }}
 {{- end }}
