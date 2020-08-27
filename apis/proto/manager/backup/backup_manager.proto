@@ -23,7 +23,7 @@ option java_multiple_files = true;
 option java_package = "org.vdaas.vald.manager.backup";
 option java_outer_classname = "ValdBackupManager";
 
-import "payload.proto";
+import "payload/payload.proto";
 import "google/api/annotations.proto";
 import "pb/gql.proto";
 

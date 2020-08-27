@@ -23,7 +23,7 @@ option java_multiple_files = true;
 option java_package = "org.vdaas.vald.manager.replication.controller";
 option java_outer_classname = "ValdReplicationManagerController";
 
-import "payload.proto";
+import "payload/payload.proto";
 import "google/api/annotations.proto";
 import "pb/gql.proto";
 

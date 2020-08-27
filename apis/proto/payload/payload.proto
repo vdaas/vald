@@ -56,7 +56,6 @@ message Search {
     float radius = 3;
     float epsilon = 4;
     int64 timeout = 5;
-    Filter.Config filters = 6;
   }
 
   message Response { 
@@ -66,58 +65,6 @@ message Search {
 
   message Responses { 
     repeated Response responses = 1; 
-  }
-}
-
-message Filter {
-  message Target {
-    string host = 1;
-    uint32 port = 2;
-  }
-  message Config{
-    repeated string targets = 1;
-  }
-}
-
-message Insert {
-  message Request {
-    Object.Vector vector = 1 [ (validate.rules).repeated .min_items = 2 ];
-    Config config = 2;
-  }
-  message MultiRequest {
-    repeated Request requests = 1;
-  }
-  message Config {
-    bool enable_strict_check = 1;
-    Filter.Config filters = 2;
-  }
-}
-
-message Update {
-  message Request {
-    Object.Vector vector = 1 [ (validate.rules).repeated .min_items = 2 ];
-    Config config = 2;
-  }
-  message MultiRequest {
-    repeated Request requests = 1;
-  }
-  message Config {
-    bool enable_strict_check = 1;
-    Filter.Config filters = 2;
-  }
-}
-
-message Upsert {
-  message Request {
-    Object.Vector vector = 1 [ (validate.rules).repeated .min_items = 2 ];
-    Config config = 2;
-  }
-  message MultiRequest {
-    repeated Request requests = 1;
-  }
-  message Config {
-    bool enable_strict_check = 1;
-    Filter.Config filters = 2;
   }
 }
 
