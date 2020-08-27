@@ -50,29 +50,18 @@ type Cassandra interface {
 	Query(stmt string, names []string) *Queryx
 }
 
-type Session = gocql.Session
-type Cmp = qb.Cmp
-type BatchBuilder = qb.BatchBuilder
-type InsertBuilder = qb.InsertBuilder
-type DeleteBuilder = qb.DeleteBuilder
-type UpdateBuilder = qb.UpdateBuilder
-type Queryx = gocqlx.Queryx
+type (
+	Session       = gocql.Session
+	Cmp           = qb.Cmp
+	BatchBuilder  = qb.BatchBuilder
+	InsertBuilder = qb.InsertBuilder
+	DeleteBuilder = qb.DeleteBuilder
+	UpdateBuilder = qb.UpdateBuilder
+	Queryx        = gocqlx.Queryx
+)
 
-type client struct {
-	hosts          []string
-	cqlVersion     string
-	protoVersion   int
-	timeout        time.Duration
-	connectTimeout time.Duration
-	port           int
-	keyspace       string
-	numConns       int
-	consistency    gocql.Consistency
-	compressor     gocql.Compressor
-	username       string
-	password       string
-	authProvider   func(h *gocql.HostInfo) (gocql.Authenticator, error)
-	retryPolicy    struct {
+type (
+	retryPolicy struct {
 		numRetries  int
 		minDuration time.Duration
 		maxDuration time.Duration
@@ -93,36 +82,55 @@ type client struct {
 		dcHost    string
 		whiteList []string
 	}
-	socketKeepalive          time.Duration
-	maxPreparedStmts         int
-	maxRoutingKeyInfo        int
-	pageSize                 int
-	serialConsistency        gocql.SerialConsistency
-	tls                      *tls.Config
-	tlsCertPath              string
-	tlsKeyPath               string
-	tlsCAPath                string
-	enableHostVerification   bool
-	defaultTimestamp         bool
-	reconnectInterval        time.Duration
-	maxWaitSchemaAgreement   time.Duration
-	ignorePeerAddr           bool
-	disableInitialHostLookup bool
-	disableNodeStatusEvents  bool
-	disableTopologyEvents    bool
-	disableSchemaEvents      bool
-	disableSkipMetadata      bool
-	queryObserver            QueryObserver
-	batchObserver            BatchObserver
-	connectObserver          ConnectObserver
-	frameHeaderObserver      FrameHeaderObserver
-	defaultIdempotence       bool
-	dialer                   gocql.Dialer
-	writeCoalesceWaitTime    time.Duration
+	client struct {
+		hosts                    []string
+		cqlVersion               string
+		protoVersion             int
+		timeout                  time.Duration
+		connectTimeout           time.Duration
+		port                     int
+		keyspace                 string
+		numConns                 int
+		consistency              gocql.Consistency
+		compressor               gocql.Compressor
+		username                 string
+		password                 string
+		authProvider             func(h *gocql.HostInfo) (gocql.Authenticator, error)
+		retryPolicy              retryPolicy
+		reconnectionPolicy       reconnectionPolicy
+		poolConfig               poolConfig
+		hostFilter               hostFilter
+		socketKeepalive          time.Duration
+		maxPreparedStmts         int
+		maxRoutingKeyInfo        int
+		pageSize                 int
+		serialConsistency        gocql.SerialConsistency
+		tls                      *tls.Config
+		tlsCertPath              string
+		tlsKeyPath               string
+		tlsCAPath                string
+		enableHostVerification   bool
+		defaultTimestamp         bool
+		reconnectInterval        time.Duration
+		maxWaitSchemaAgreement   time.Duration
+		ignorePeerAddr           bool
+		disableInitialHostLookup bool
+		disableNodeStatusEvents  bool
+		disableTopologyEvents    bool
+		disableSchemaEvents      bool
+		disableSkipMetadata      bool
+		queryObserver            QueryObserver
+		batchObserver            BatchObserver
+		connectObserver          ConnectObserver
+		frameHeaderObserver      FrameHeaderObserver
+		defaultIdempotence       bool
+		dialer                   gocql.Dialer
+		writeCoalesceWaitTime    time.Duration
 
-	cluster *gocql.ClusterConfig
-	session *gocql.Session
-}
+		cluster *gocql.ClusterConfig
+		session *gocql.Session
+	}
+)
 
 func New(opts ...Option) (Cassandra, error) {
 	c := new(client)
