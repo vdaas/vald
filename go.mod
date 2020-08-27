@@ -7,7 +7,7 @@ replace (
 	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.34.7
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/cockroachdb/errors => github.com/cockroachdb/errors v1.7.4-0.20200821164133-7540597692ae
-	github.com/coreos/etcd => go.etcd.io/etcd v0.5.0-alpha.5.0.20200425165423-262c93980547
+	github.com/coreos/etcd => go.etcd.io/etcd v0.0.0-20200520232829-54ba9589114f
 	github.com/docker/docker => github.com/moby/moby v17.12.0-ce-rc1.0.20200618181300-9dc6525e6118+incompatible
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.4.1
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.5.1-0.20200818111213-46351a889297
@@ -28,12 +28,12 @@ replace (
 )
 
 require (
-	cloud.google.com/go v0.62.0
+	cloud.google.com/go v0.64.0
 	code.cloudfoundry.org/bytefmt v0.0.0-20200131002437-cf55d5288a48
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
 	contrib.go.opencensus.io/exporter/prometheus v0.2.0
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.4
-	github.com/aws/aws-sdk-go v1.30.15
+	github.com/aws/aws-sdk-go v1.23.20
 	github.com/cespare/xxhash/v2 v2.1.1
 	github.com/cockroachdb/errors v1.6.1
 	github.com/danielvladco/go-proto-gql/pb v0.6.1
@@ -43,9 +43,8 @@ require (
 	github.com/gocql/gocql v0.0.0-20200131111108-92af2e088537
 	github.com/gocraft/dbr/v2 v2.7.0
 	github.com/gogo/protobuf v1.3.1
-	github.com/google/go-cmp v0.5.1
+	github.com/google/go-cmp v0.5.2
 	github.com/google/gofuzz v1.2.0
-	github.com/googleapis/gax-go v1.0.3 // indirect
 	github.com/gorilla/mux v1.7.1
 	github.com/hashicorp/go-version v1.2.1
 	github.com/json-iterator/go v1.1.10
@@ -58,18 +57,14 @@ require (
 	github.com/pierrec/lz4/v3 v3.3.2
 	github.com/scylladb/gocqlx v1.5.0
 	github.com/tensorflow/tensorflow v0.0.0-00010101000000-000000000000
-	github.com/vdaas/vald/apis v0.0.0-20191116110024-e4d8aeefc026
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
 	github.com/yahoojapan/ngtd v0.0.0-20200424071638-9872bbae3700
 	go.opencensus.io v0.22.4
 	go.uber.org/automaxprocs v1.3.0
 	go.uber.org/goleak v1.1.10
-	golang.org/x/build v0.0.0-20200826212054-6f3f3533f4b0 // indirect
 	golang.org/x/net v0.0.0-20200822124328-c89045814202
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
 	golang.org/x/sys v0.0.0-20200826173525-f9321e4c35a6
-	golang.org/x/tools v0.0.0-20200827010519-17fd2f27a9e3 // indirect
-	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/netlib v0.0.0-20200824093956-f0ca4b3a5ef5 // indirect
 	gonum.org/v1/plot v0.7.0
