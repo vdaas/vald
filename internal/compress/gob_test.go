@@ -161,7 +161,7 @@ func Test_gobCompressor_CompressVector(t *testing.T) {
 		},
 
 		{
-			name: "returns (nil, error) when dncode fails",
+			name: "returns (nil, error) when decode fails",
 			args: args{
 				vector: []float32{
 					1, 2, 3,
