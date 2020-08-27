@@ -6,6 +6,7 @@
   "settings": {
     "terminal.integrated.shell.linux": "/bin/bash",
     "go.useGoProxyToCheckForToolUpdates": false,
+    "go.useLanguageServer": true,
     "go.autocompleteUnimportedPackages": true,
     "go.buildOnSave": true,
     "go.vetOnSave": true,

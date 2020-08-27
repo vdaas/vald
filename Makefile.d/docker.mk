@@ -194,7 +194,7 @@ docker/name/dev-container:
 .PHONY: docker/build/dev-container
 ## build dev-container image
 docker/build/dev-container: docker/build/ci-container
-	docker build -f dockers/dev/base/Dockerfile -t $(REPO)/$(DEV_CONTAINER_IMAGE) .
+	docker build -f dockers/dev/Dockerfile -t $(REPO)/$(DEV_CONTAINER_IMAGE) .
 
 .PHONY: docker/name/operator/helm
 docker/name/operator/helm:

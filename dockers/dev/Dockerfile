@@ -14,62 +14,49 @@
 # limitations under the License.
 #
 
-FROM vdaas/vald-ci-container:latest AS builder
+FROM vdaas/vald-ci-container:latest AS vald
 
-ENV DEBIAN_FRONTEND noninteractive
-
-ENV PATH=$PATH:$GOROOT/bin
+FROM mcr.microsoft.com/vscode/devcontainers/go:1 AS base
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    apt-utils \
-    git \
-    openssh-client \
-    less \
-    iproute2 \
-    procps \
+    build-essential \
+    cmake \
     curl \
-    wget \
-    unzip \
-    nano \
+    libhdf5-dev \
+    g++ \
+    gawk \
+    gcc \
+    git \
+    graphviz \
+    nodejs \
+    npm \
     jq \
-    lsb-release \
-    ca-certificates \
-    apt-transport-https \
-    dialog \
-    gnupg2 \
-    libc6 \
-    libgcc1 \
-    libgssapi-krb5-2 \
-    libicu[0-9][0-9] \
-    liblttng-ust0 \
-    libstdc++6 \
-    zlib1g \
-    zsh \
-    locales \
-    sudo \
+    sed \
+    zip \
+    unzip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-ENV GO111MODULE on
-RUN go get -x \
-    golang.org/x/tools/gopls \
-    honnef.co/go/tools/... \
-    golang.org/x/tools/cmd/gorename \
-    golang.org/x/tools/cmd/goimports \
-    golang.org/x/tools/cmd/guru \
-    golang.org/x/lint/golint \
-    github.com/mdempsky/gocode \
-    github.com/cweill/gotests/... \
-    github.com/haya14busa/goplay/cmd/goplay \
-    github.com/sqs/goreturns \
-    github.com/josharian/impl \
-    github.com/davidrjenni/reftools/cmd/fillstruct \
-    github.com/uudashr/gopkgs/v2/cmd/gopkgs \
-    github.com/ramya-rao-a/go-outline \
-    github.com/acroca/go-symbols \
-    github.com/godoctor/godoctor \
-    github.com/rogpeppe/godef \
-    github.com/zmb3/gogetdoc \
-    github.com/fatih/gomodifytags \
-    github.com/mgechev/revive \
-    github.com/go-delve/delve/cmd/dlv
+WORKDIR ${GOPATH}/src/github.com/vdaas/vald
+
+COPY Makefile .
+COPY Makefile.d Makefile.d
+COPY versions versions
+
+RUN make ngt/install
+RUN make tensorflow/install
+
+RUN make helm/install
+RUN make helm-docs/install
+RUN make kind/install
+RUN make valdcli/install
+
+COPY --from=vald /usr/local/bin/protoc     /usr/local/bin/protoc
+COPY --from=vald /usr/local/include/google /usr/local/include/google
+
+COPY --from=vald /usr/local/bin/kubectl      /usr/local/bin/kubectl
+COPY --from=vald /usr/local/bin/yq           /usr/local/bin/yq
+COPY --from=vald ${GOPATH}/bin/golangci-lint ${GOPATH}/bin/golangci-lint
+COPY --from=vald ${GOPATH}/bin/reviewdog     ${GOPATH}/bin/reviewdog
+
+WORKDIR ${GOPATH}
