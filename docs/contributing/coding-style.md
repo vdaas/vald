@@ -12,8 +12,11 @@ Code formatting and naming conventions affect coding readability and maintainabi
 
 But having tools to format source code doesn't mean you do not need to care the formatting of the code, for example:
 
+<table>
+<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<tbody><tr><td>
+
 ```go
-// bad
 badStr := "apiVersion: v1\n" +
    "kind: Service\n" +
    "metadata:\n" +
@@ -24,8 +27,11 @@ badStr := "apiVersion: v1\n" +
    "      port: 3000\n" +
    "      targetPort: 3000\n" +
    "      protocol: TCP\n"
+```
 
-// good
+</td><td>
+
+```go
 goodStr := `apiVersion: v1
 kind: Service
 metadata:
@@ -38,6 +44,8 @@ spec:
       protocol: TCP
 `
 ```
+
+</td></tr></tbody></table>
 
 ### Project Layout
 
@@ -101,29 +109,40 @@ It makes Vald easier to read and search the target source code in Vald.
 
 For example, the interface declaration should have higher priority than struct or function declaration, hence it should be put above other declaration.
 
+<table>
+<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<tbody><tr><td>
+
 ```go
-// bad
 type S struct {}
 
 func (s *S) fn() {}
 
 type I interface {}
+```
 
-// good
+</td><td>
+
+```go
 type I interface {}
 
 type S struct {}
 
 func (s *S) fn() {}
 ```
+
+</td></tr></tbody></table>
 
 #### Group similar definition
 
 Group similar definitions such as struct or interface declaration.
 We should not group interface and struct declaration in the same block, for example:
 
+<table>
+<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<tbody><tr><td>
+
 ```go
-// bad
 type (
     I interface {}
     I2 interface {}
@@ -131,7 +150,11 @@ type (
     s struct {}
     s2 struct {}
 )
+```
 
+</td><td>
+
+```go
 // good
 type (
     I interface {}
@@ -143,6 +166,8 @@ type (
     s2 struct {}
 )
 ```
+
+</td></tr></tbody></table>
 
 ### Interfaces
 
@@ -372,22 +397,29 @@ if err != nil {
 
 If you need the value outside the if statement, please use the following style:
 
+<table>
+<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<tbody><tr><td>
+
 ```go
-// good
 conn, err := net.Dial("tcp", "localhost:80")
 if err != nil {
     // handle error
 }
 // use the conn
-addr := conn.LocalAddr()
+```
 
-// bad
+</td><td>
+
+```go
 if conn, err := net.Dial("tcp", "localhost:80");  err != nil {
     // handle error
 } else {
     // use the conn
 }
 ```
+
+</td></tr></tbody></table>
 
 ### Logging
 
