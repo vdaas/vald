@@ -27,6 +27,10 @@ import (
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
+// Option represents the functional option for client.
+// It wraps the gocql.ClusterConfig to the function option implementation.
+// Please refer to the following link for more information.
+// https://pkg.go.dev/github.com/gocql/gocql?tab=doc#ClusterConfig
 type Option func(*client) error
 
 var (
@@ -60,6 +64,7 @@ var (
 	}
 )
 
+// WithHosts returns the option to set the hosts
 func WithHosts(hosts ...string) Option {
 	return func(c *client) error {
 		if len(hosts) == 0 {
@@ -74,6 +79,7 @@ func WithHosts(hosts ...string) Option {
 	}
 }
 
+// WithDialer returns the option to set the dialer
 func WithDialer(der gocql.Dialer) Option {
 	return func(c *client) error {
 		if der != nil {
@@ -83,6 +89,7 @@ func WithDialer(der gocql.Dialer) Option {
 	}
 }
 
+// WithCQLVersion returns the option to set the CQL version
 func WithCQLVersion(version string) Option {
 	return func(c *client) error {
 		c.cqlVersion = version
@@ -90,6 +97,7 @@ func WithCQLVersion(version string) Option {
 	}
 }
 
+// WithProtoVersion returns the option to set the proto version
 func WithProtoVersion(version int) Option {
 	return func(c *client) error {
 		c.protoVersion = version
@@ -97,6 +105,7 @@ func WithProtoVersion(version int) Option {
 	}
 }
 
+// WithTimeout returns the option to set the cassandra connect timeout time
 func WithTimeout(dur string) Option {
 	return func(c *client) error {
 		if dur == "" {
@@ -111,6 +120,7 @@ func WithTimeout(dur string) Option {
 	}
 }
 
+// WithConnectTimeout returns the option to set the cassandra initial connection timeout
 func WithConnectTimeout(dur string) Option {
 	return func(c *client) error {
 		if dur == "" {
@@ -125,6 +135,7 @@ func WithConnectTimeout(dur string) Option {
 	}
 }
 
+// WithPort returns the option to set the port number
 func WithPort(port int) Option {
 	return func(c *client) error {
 		c.port = port
@@ -132,6 +143,7 @@ func WithPort(port int) Option {
 	}
 }
 
+// WithKeyspace returns the option to set the keyspace
 func WithKeyspace(keyspace string) Option {
 	return func(c *client) error {
 		c.keyspace = keyspace
@@ -139,6 +151,7 @@ func WithKeyspace(keyspace string) Option {
 	}
 }
 
+// WithNumConns returns the option to set the number of connection per host
 func WithNumConns(numConns int) Option {
 	return func(c *client) error {
 		c.numConns = numConns
