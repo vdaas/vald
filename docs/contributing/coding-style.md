@@ -386,7 +386,8 @@ To reduce human mistake that missing the error checking, please check the error 
 <tbody><tr><td>
 
 ```go
-if err := fn(); err != nil {
+err := fn()
+if err != nil {
     // handle error
 }
 ```
@@ -394,8 +395,7 @@ if err := fn(); err != nil {
 </td><td>
 
 ```go
-err := fn()
-if err != nil {
+if err := fn(); err != nil {
     // handle error
 }
 ```
