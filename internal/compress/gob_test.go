@@ -28,45 +28,6 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
-func TestGobCompressVector(t *testing.T) {
-	tests := []struct {
-		vector []float32
-	}{
-		{
-			vector: []float32{0.1, 0.2, 0.3},
-		},
-		{
-			vector: []float32{0.4, 0.2, 0.3, 0.1},
-		},
-		{
-			vector: []float32{0.1, 0.5, 0.12, 0.13, 1.0},
-		},
-	}
-
-	for _, tc := range tests {
-		gobc, err := NewGob()
-		if err != nil {
-			t.Fatalf("initialize failed: %s", err)
-		}
-
-		compressed, err := gobc.CompressVector(tc.vector)
-		if err != nil {
-			t.Fatalf("Compress failed: %s", err)
-		}
-
-		decompressed, err := gobc.DecompressVector(compressed)
-		if err != nil {
-			t.Fatalf("Decompress failed: %s", err)
-		}
-		t.Logf("converted: origin %+v, compressed -> decompressed %+v", tc.vector, decompressed)
-		for i := range tc.vector {
-			if tc.vector[i] != decompressed[i] {
-				t.Fatalf("Invalid convert: origin %+v, compressed -> decompressed %+v", tc.vector, decompressed)
-			}
-		}
-	}
-}
-
 func TestNewGob(t *testing.T) {
 	type args struct {
 		opts []GobOption
@@ -248,6 +209,74 @@ func Test_gobCompressor_CompressVector(t *testing.T) {
 	}
 }
 
+func Test_E2E_gobCompressor_CompressVector(t *testing.T) {
+	type args struct {
+		vector []float32
+	}
+	type want struct {
+		want []float32
+		err  error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, []byte, error, Compressor) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+
+	defaultCheckFunc := func(w want, got []byte, err error, l Compressor) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		decompressed, err := l.DecompressVector(got)
+		if err != nil {
+			return errors.Errorf("decompress error: %v", err)
+		}
+		if !reflect.DeepEqual(decompressed, w.want) {
+			return errors.Errorf("got = %v, want %v", decompressed, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "returns ([]byte, nil) when no error occurs",
+			args: args{
+				vector: []float32{0.1, 0.2, 0.3},
+			},
+			want: want{
+				want: []float32{0.1, 0.2, 0.3},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			g, err := NewGob()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			got, err := g.CompressVector(test.args.vector)
+			if err := test.checkFunc(test.want, got, err, g); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
 func Test_gobCompressor_DecompressVector(t *testing.T) {
 	type args struct {
 		bs []byte
@@ -263,7 +292,6 @@ func Test_gobCompressor_DecompressVector(t *testing.T) {
 		name       string
 		args       args
 		fields     fields
-		g          *gobCompressor
 		want       want
 		checkFunc  func(want, []float32, error) error
 		beforeFunc func(args)
@@ -368,7 +396,6 @@ func Test_gobCompressor_Reader(t *testing.T) {
 		name       string
 		args       args
 		fields     fields
-		g          *gobCompressor
 		want       want
 		checkFunc  func(want, io.ReadCloser, error) error
 		beforeFunc func(args)
