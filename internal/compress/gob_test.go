@@ -61,9 +61,7 @@ func TestNewGob(t *testing.T) {
 			},
 			want: want{
 				want: &gobCompressor{
-					transcoder: func() gob.Transcoder {
-						return gob.New()
-					}(),
+					transcoder: gob.New(),
 				},
 			},
 		},
@@ -147,7 +145,7 @@ func Test_gobCompressor_CompressVector(t *testing.T) {
 					NewEncoderFunc: func(w io.Writer) gob.Encoder {
 						return &gob.MockEncoder{
 							EncodeFunc: func(e interface{}) error {
-								w.Write([]byte("vald"))
+								_, _ = w.Write([]byte("vald"))
 								return nil
 							},
 						}
