@@ -35,7 +35,7 @@ require (
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.4
 	github.com/aws/aws-sdk-go v1.23.20
 	github.com/cespare/xxhash/v2 v2.1.1
-	github.com/cockroachdb/errors v1.6.1
+	github.com/cockroachdb/errors v1.7.3
 	github.com/danielvladco/go-proto-gql/pb v0.6.1
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/fsnotify/fsnotify v1.4.9
