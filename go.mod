@@ -46,7 +46,7 @@ require (
 	github.com/gogo/protobuf v1.3.1
 	github.com/google/go-cmp v0.5.2
 	github.com/google/gofuzz v1.2.0
-	github.com/gorilla/mux v1.7.1
+	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/go-version v1.2.1
 	github.com/json-iterator/go v1.1.10
 	github.com/klauspost/compress v1.10.11
