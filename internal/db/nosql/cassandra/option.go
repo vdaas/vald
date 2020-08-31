@@ -92,7 +92,9 @@ func WithDialer(der gocql.Dialer) Option {
 // WithCQLVersion returns the option to set the CQL version
 func WithCQLVersion(version string) Option {
 	return func(c *client) error {
-		c.cqlVersion = version
+		if len(version) != 0 {
+			c.cqlVersion = version
+		}
 		return nil
 	}
 }
@@ -146,7 +148,9 @@ func WithPort(port int) Option {
 // WithKeyspace returns the option to set the keyspace
 func WithKeyspace(keyspace string) Option {
 	return func(c *client) error {
-		c.keyspace = keyspace
+		if len(keyspace) != 0 {
+			c.keyspace = keyspace
+		}
 		return nil
 	}
 }
