@@ -130,11 +130,7 @@ func TestWithHosts(t *testing.T) {
 						hosts: []string{"vald.vdaas.org", "hosts1"},
 					},
 				}
-				if err := defaultCheckFunc(w, obj, err); err != nil {
-					return err
-				}
-
-				return nil
+				return defaultCheckFunc(w, obj, err)
 			},
 		},
 	}
