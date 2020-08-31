@@ -102,7 +102,9 @@ func WithCQLVersion(version string) Option {
 // WithProtoVersion returns the option to set the proto version
 func WithProtoVersion(version int) Option {
 	return func(c *client) error {
-		c.protoVersion = version
+		if version >= 0 {
+			c.protoVersion = version
+		}
 		return nil
 	}
 }
@@ -140,7 +142,9 @@ func WithConnectTimeout(dur string) Option {
 // WithPort returns the option to set the port number
 func WithPort(port int) Option {
 	return func(c *client) error {
-		c.port = port
+		if port > 0 {
+			c.port = port
+		}
 		return nil
 	}
 }
@@ -158,7 +162,9 @@ func WithKeyspace(keyspace string) Option {
 // WithNumConns returns the option to set the number of connection per host
 func WithNumConns(numConns int) Option {
 	return func(c *client) error {
-		c.numConns = numConns
+		if numConns > 0 {
+			c.numConns = numConns
+		}
 		return nil
 	}
 }
