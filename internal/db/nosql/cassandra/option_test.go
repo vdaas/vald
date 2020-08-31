@@ -325,6 +325,9 @@ func TestWithProtoVersion(t *testing.T) {
 	type args struct {
 		version int
 	}
+	type fields struct {
+		protoVersion int
+	}
 	type want struct {
 		obj *T
 		err error
@@ -332,6 +335,7 @@ func TestWithProtoVersion(t *testing.T) {
 	type test struct {
 		name       string
 		args       args
+		fields     fields
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
@@ -359,6 +363,20 @@ func TestWithProtoVersion(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "do not set version when version<0",
+			args: args{
+				version: -1,
+			},
+			fields: fields{
+				protoVersion: 10,
+			},
+			want: want{
+				obj: &T{
+					protoVersion: 10,
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -375,7 +393,9 @@ func TestWithProtoVersion(t *testing.T) {
 			}
 
 			got := WithProtoVersion(test.args.version)
-			obj := new(T)
+			obj := &T{
+				protoVersion: test.fields.protoVersion,
+			}
 			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -555,6 +575,9 @@ func TestWithPort(t *testing.T) {
 	type args struct {
 		port int
 	}
+	type fields struct {
+		port int
+	}
 	type want struct {
 		obj *T
 		err error
@@ -562,6 +585,7 @@ func TestWithPort(t *testing.T) {
 	type test struct {
 		name       string
 		args       args
+		fields     fields
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
@@ -590,6 +614,20 @@ func TestWithPort(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "do not set port when port<=0",
+			args: args{
+				port: -1,
+			},
+			fields: fields{
+				port: 8080,
+			},
+			want: want{
+				obj: &T{
+					port: 8080,
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -606,7 +644,9 @@ func TestWithPort(t *testing.T) {
 			}
 
 			got := WithPort(test.args.port)
-			obj := new(T)
+			obj := &T{
+				port: test.fields.port,
+			}
 			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -702,6 +742,9 @@ func TestWithNumConns(t *testing.T) {
 	type args struct {
 		numConns int
 	}
+	type fields struct {
+		numConns int
+	}
 	type want struct {
 		obj *T
 		err error
@@ -709,6 +752,7 @@ func TestWithNumConns(t *testing.T) {
 	type test struct {
 		name       string
 		args       args
+		fields     fields
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
@@ -736,6 +780,20 @@ func TestWithNumConns(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "do not set num conn when numConn<=0",
+			args: args{
+				numConns: -1,
+			},
+			fields: fields{
+				numConns: 100,
+			},
+			want: want{
+				obj: &T{
+					numConns: 100,
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -752,7 +810,9 @@ func TestWithNumConns(t *testing.T) {
 			}
 
 			got := WithNumConns(test.args.numConns)
-			obj := new(T)
+			obj := &T{
+				numConns: test.fields.numConns,
+			}
 			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
