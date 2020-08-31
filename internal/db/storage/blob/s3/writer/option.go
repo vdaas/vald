@@ -81,7 +81,7 @@ func WithContentType(ct string) Option {
 // WithMaxPartSize returns the option to set max for writer.
 func WithMaxPartSize(max int64) Option {
 	return func(w *writer) {
-		if max > s3manager.DefaultUploadPartSize {
+		if max > s3manager.MinUploadPartSize {
 			w.maxPartSize = max
 		}
 	}
