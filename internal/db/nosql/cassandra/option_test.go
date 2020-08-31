@@ -239,6 +239,9 @@ func TestWithDialer(t *testing.T) {
 
 func TestWithCQLVersion(t *testing.T) {
 	type T = client
+	type fields struct {
+		cqlVersion string
+	}
 	type args struct {
 		version string
 	}
@@ -248,6 +251,7 @@ func TestWithCQLVersion(t *testing.T) {
 	}
 	type test struct {
 		name       string
+		fields     fields
 		args       args
 		want       want
 		checkFunc  func(want, *T, error) error
@@ -276,6 +280,20 @@ func TestWithCQLVersion(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "do not set version when version is empty",
+			fields: fields{
+				cqlVersion: "1.0",
+			},
+			args: args{
+				version: "",
+			},
+			want: want{
+				obj: &T{
+					cqlVersion: "1.0",
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -292,7 +310,9 @@ func TestWithCQLVersion(t *testing.T) {
 			}
 
 			got := WithCQLVersion(test.args.version)
-			obj := new(T)
+			obj := &T{
+				cqlVersion: test.fields.cqlVersion,
+			}
 			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -599,6 +619,9 @@ func TestWithKeyspace(t *testing.T) {
 	type args struct {
 		keyspace string
 	}
+	type fields struct {
+		keyspace string
+	}
 	type want struct {
 		obj *T
 		err error
@@ -606,6 +629,7 @@ func TestWithKeyspace(t *testing.T) {
 	type test struct {
 		name       string
 		args       args
+		fields     fields
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
@@ -633,6 +657,20 @@ func TestWithKeyspace(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "do not set keyspace when keyspace is empty",
+			args: args{
+				keyspace: "",
+			},
+			fields: fields{
+				keyspace: "keyspace",
+			},
+			want: want{
+				obj: &T{
+					keyspace: "keyspace",
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -649,7 +687,9 @@ func TestWithKeyspace(t *testing.T) {
 			}
 
 			got := WithKeyspace(test.args.keyspace)
-			obj := new(T)
+			obj := &T{
+				keyspace: test.fields.keyspace,
+			}
 			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
