@@ -18,9 +18,11 @@ package writer
 
 import (
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/vdaas/vald/internal/errgroup"
 )
 
+// Option represents the functional option for writer.
 type Option func(w *writer)
 
 var (
@@ -31,6 +33,7 @@ var (
 	}
 )
 
+// WithErrGroup returns the option to set eg for writer.
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(w *writer) {
 		if eg != nil {
@@ -39,6 +42,7 @@ func WithErrGroup(eg errgroup.Group) Option {
 	}
 }
 
+// WithService returns the option to set s for writer.
 func WithService(s *s3.S3) Option {
 	return func(w *writer) {
 		if s != nil {
@@ -47,28 +51,38 @@ func WithService(s *s3.S3) Option {
 	}
 }
 
+// WithBucket returns the option to set bucket for writer.
 func WithBucket(bucket string) Option {
 	return func(w *writer) {
-		w.bucket = bucket
+		if len(bucket) != 0 {
+			w.bucket = bucket
+		}
 	}
 }
 
+// WithKey returns the option to set key for writer.
 func WithKey(key string) Option {
 	return func(w *writer) {
-		w.key = key
+		if len(key) != 0 {
+			w.key = key
+		}
 	}
 }
 
+// WithContentType returns the option to set ct for writer.
 func WithContentType(ct string) Option {
 	return func(w *writer) {
-		if ct != "" {
+		if len(ct) != 0 {
 			w.contentType = ct
 		}
 	}
 }
 
+// WithMaxPartSize returns the option to set max for writer.
 func WithMaxPartSize(max int64) Option {
 	return func(w *writer) {
-		w.maxPartSize = max
+		if max > s3manager.DefaultUploadPartSize {
+			w.maxPartSize = max
+		}
 	}
 }
