@@ -26,7 +26,7 @@ const (
 )
 
 func BenchmarkBVecs(b *testing.B) {
-	bv, err := NewBVecs(bvecsFile)
+	bv, err := NewUint8Vectors(bvecsFile)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -40,29 +40,22 @@ func BenchmarkBVecs(b *testing.B) {
 	b.Run(bvecsFile, func(bb *testing.B) {
 		bb.ReportAllocs()
 		bb.ResetTimer()
-		for n := 0; n < b.N; n++ {
-			v, err := bv.Load(i)
+		for n := 0; n < bb.N; n++ {
+			_, err := bv.Load(i)
 			switch err {
 			case nil:
 				i++
-				continue
 			case ErrOutOfBounds:
-				if err := bv.Close(); err != nil {
-					bb.Fatal(err)
-				}
-				bv, err = NewBVecs(bvecsFile)
 				i = 0
-			}
-			if err != nil {
+			default:
 				bb.Fatal(err)
 			}
-			bb.Log(v)
 		}
 	})
 }
 
 func BenchmarkFVecs(b *testing.B) {
-	fv, err := NewFVecs(fvecsFile)
+	fv, err := NewFloatVectors(fvecsFile)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -76,29 +69,22 @@ func BenchmarkFVecs(b *testing.B) {
 	b.Run(fvecsFile, func(bb *testing.B) {
 		bb.ReportAllocs()
 		bb.ResetTimer()
-		for n := 0; n < b.N; n++ {
-			v, err := fv.Load(i)
+		for n := 0; n < bb.N; n++ {
+			_, err := fv.Load(i)
 			switch err {
 			case nil:
 				i++
-				continue
 			case ErrOutOfBounds:
-				if err := fv.Close(); err != nil {
-					bb.Fatal(err)
-				}
-				fv, err = NewFVecs(fvecsFile)
 				i = 0
-			}
-			if err != nil {
+			default:
 				bb.Fatal(err)
 			}
-			bb.Log(v)
 		}
 	})
 }
 
 func BenchmarkIVecs(b *testing.B) {
-	iv, err := NewIVecs(ivecsFile)
+	iv, err := NewInt32Vectors(ivecsFile)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -112,23 +98,16 @@ func BenchmarkIVecs(b *testing.B) {
 	b.Run(ivecsFile, func(bb *testing.B) {
 		bb.ReportAllocs()
 		bb.ResetTimer()
-		for n := 0; n < b.N; n++ {
-			v, err := iv.Load(i)
+		for n := 0; n < bb.N; n++ {
+			_, err := iv.Load(i)
 			switch err {
 			case nil:
 				i++
-				continue
 			case ErrOutOfBounds:
-				if err := iv.Close(); err != nil {
-					bb.Fatal(err)
-				}
-				iv, err = NewIVecs(ivecsFile)
 				i = 0
-			}
-			if err != nil {
+			default:
 				bb.Fatal(err)
 			}
-			bb.Log(v)
 		}
 	})
 }

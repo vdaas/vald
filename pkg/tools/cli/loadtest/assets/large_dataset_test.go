@@ -119,10 +119,10 @@ func Test_largeDataset_Train(t *testing.T) {
 	}
 	type fields struct {
 		dataset     *dataset
-		train       x1b.X1b
-		query       x1b.X1b
+		train       x1b.BillionScaleVectors
+		query       x1b.BillionScaleVectors
 		groundTruth [][]int
-		distances   x1b.Fvecs
+		distances   x1b.FloatVectors
 	}
 	type want struct {
 		want interface{}
@@ -220,10 +220,10 @@ func Test_largeDataset_Train(t *testing.T) {
 func Test_largeDataset_TrainSize(t *testing.T) {
 	type fields struct {
 		dataset     *dataset
-		train       x1b.X1b
-		query       x1b.X1b
+		train       x1b.BillionScaleVectors
+		query       x1b.BillionScaleVectors
 		groundTruth [][]int
-		distances   x1b.Fvecs
+		distances   x1b.FloatVectors
 	}
 	type want struct {
 		want int
@@ -313,10 +313,10 @@ func Test_largeDataset_Query(t *testing.T) {
 	}
 	type fields struct {
 		dataset     *dataset
-		train       x1b.X1b
-		query       x1b.X1b
+		train       x1b.BillionScaleVectors
+		query       x1b.BillionScaleVectors
 		groundTruth [][]int
-		distances   x1b.Fvecs
+		distances   x1b.FloatVectors
 	}
 	type want struct {
 		want interface{}
@@ -414,10 +414,10 @@ func Test_largeDataset_Query(t *testing.T) {
 func Test_largeDataset_QuerySize(t *testing.T) {
 	type fields struct {
 		dataset     *dataset
-		train       x1b.X1b
-		query       x1b.X1b
+		train       x1b.BillionScaleVectors
+		query       x1b.BillionScaleVectors
 		groundTruth [][]int
-		distances   x1b.Fvecs
+		distances   x1b.FloatVectors
 	}
 	type want struct {
 		want int
@@ -507,10 +507,10 @@ func Test_largeDataset_Distance(t *testing.T) {
 	}
 	type fields struct {
 		dataset     *dataset
-		train       x1b.X1b
-		query       x1b.X1b
+		train       x1b.BillionScaleVectors
+		query       x1b.BillionScaleVectors
 		groundTruth [][]int
-		distances   x1b.Fvecs
+		distances   x1b.FloatVectors
 	}
 	type want struct {
 		want []float32
@@ -608,10 +608,10 @@ func Test_largeDataset_Distance(t *testing.T) {
 func Test_largeDataset_DistanceSize(t *testing.T) {
 	type fields struct {
 		dataset     *dataset
-		train       x1b.X1b
-		query       x1b.X1b
+		train       x1b.BillionScaleVectors
+		query       x1b.BillionScaleVectors
 		groundTruth [][]int
-		distances   x1b.Fvecs
+		distances   x1b.FloatVectors
 	}
 	type want struct {
 		want int
@@ -701,10 +701,10 @@ func Test_largeDataset_Neighbor(t *testing.T) {
 	}
 	type fields struct {
 		dataset     *dataset
-		train       x1b.X1b
-		query       x1b.X1b
+		train       x1b.BillionScaleVectors
+		query       x1b.BillionScaleVectors
 		groundTruth [][]int
-		distances   x1b.Fvecs
+		distances   x1b.FloatVectors
 	}
 	type want struct {
 		want []int
@@ -802,10 +802,10 @@ func Test_largeDataset_Neighbor(t *testing.T) {
 func Test_largeDataset_NeighborSize(t *testing.T) {
 	type fields struct {
 		dataset     *dataset
-		train       x1b.X1b
-		query       x1b.X1b
+		train       x1b.BillionScaleVectors
+		query       x1b.BillionScaleVectors
 		groundTruth [][]int
-		distances   x1b.Fvecs
+		distances   x1b.FloatVectors
 	}
 	type want struct {
 		want int
@@ -892,10 +892,10 @@ func Test_largeDataset_NeighborSize(t *testing.T) {
 func Test_largeDataset_Dimension(t *testing.T) {
 	type fields struct {
 		dataset     *dataset
-		train       x1b.X1b
-		query       x1b.X1b
+		train       x1b.BillionScaleVectors
+		query       x1b.BillionScaleVectors
 		groundTruth [][]int
-		distances   x1b.Fvecs
+		distances   x1b.FloatVectors
 	}
 	type want struct {
 		want int
@@ -982,10 +982,10 @@ func Test_largeDataset_Dimension(t *testing.T) {
 func Test_largeDataset_DistanceType(t *testing.T) {
 	type fields struct {
 		dataset     *dataset
-		train       x1b.X1b
-		query       x1b.X1b
+		train       x1b.BillionScaleVectors
+		query       x1b.BillionScaleVectors
 		groundTruth [][]int
-		distances   x1b.Fvecs
+		distances   x1b.FloatVectors
 	}
 	type want struct {
 		want string
@@ -1072,10 +1072,10 @@ func Test_largeDataset_DistanceType(t *testing.T) {
 func Test_largeDataset_ObjectType(t *testing.T) {
 	type fields struct {
 		dataset     *dataset
-		train       x1b.X1b
-		query       x1b.X1b
+		train       x1b.BillionScaleVectors
+		query       x1b.BillionScaleVectors
 		groundTruth [][]int
-		distances   x1b.Fvecs
+		distances   x1b.FloatVectors
 	}
 	type want struct {
 		want string
@@ -1162,10 +1162,10 @@ func Test_largeDataset_ObjectType(t *testing.T) {
 func Test_largeDataset_Name(t *testing.T) {
 	type fields struct {
 		dataset     *dataset
-		train       x1b.X1b
-		query       x1b.X1b
+		train       x1b.BillionScaleVectors
+		query       x1b.BillionScaleVectors
 		groundTruth [][]int
-		distances   x1b.Fvecs
+		distances   x1b.FloatVectors
 	}
 	type want struct {
 		want string

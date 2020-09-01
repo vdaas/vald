@@ -992,18 +992,18 @@ func TestNewBVecs(t *testing.T) {
 		fname string
 	}
 	type want struct {
-		want Bvecs
+		want Uint8Vectors
 		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, Bvecs, error) error
+		checkFunc  func(want, Uint8Vectors, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got Bvecs, err error) error {
+	defaultCheckFunc := func(w want, got Uint8Vectors, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
@@ -1053,7 +1053,7 @@ func TestNewBVecs(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got, err := NewBVecs(test.args.fname)
+			got, err := NewUint8Vectors(test.args.fname)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1067,18 +1067,18 @@ func TestNewFVecs(t *testing.T) {
 		fname string
 	}
 	type want struct {
-		want Fvecs
+		want FloatVectors
 		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, Fvecs, error) error
+		checkFunc  func(want, FloatVectors, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got Fvecs, err error) error {
+	defaultCheckFunc := func(w want, got FloatVectors, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
@@ -1128,7 +1128,7 @@ func TestNewFVecs(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got, err := NewFVecs(test.args.fname)
+			got, err := NewFloatVectors(test.args.fname)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1142,18 +1142,18 @@ func TestNewIVecs(t *testing.T) {
 		fname string
 	}
 	type want struct {
-		want Ivecs
+		want Int32Vectors
 		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, Ivecs, error) error
+		checkFunc  func(want, Int32Vectors, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got Ivecs, err error) error {
+	defaultCheckFunc := func(w want, got Int32Vectors, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
@@ -1203,7 +1203,7 @@ func TestNewIVecs(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got, err := NewIVecs(test.args.fname)
+			got, err := NewInt32Vectors(test.args.fname)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1217,18 +1217,18 @@ func TestOpen(t *testing.T) {
 		fname string
 	}
 	type want struct {
-		want X1b
+		want BillionScaleVectors
 		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, X1b, error) error
+		checkFunc  func(want, BillionScaleVectors, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got X1b, err error) error {
+	defaultCheckFunc := func(w want, got BillionScaleVectors, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}

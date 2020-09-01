@@ -33,25 +33,25 @@ var (
 	ErrUnsupportedFileType = errors.New("unsupported file type")
 )
 
-type X1b interface {
+type BillionScaleVectors interface {
 	Load(i int) (interface{}, error)
 	Dimension() int
 	Size() int
 	Close() error
 }
 
-type Bvecs interface {
-	X1b
+type Uint8Vectors interface {
+	BillionScaleVectors
 	LoadUint8(i int) ([]uint8, error)
 }
 
-type Fvecs interface {
-	X1b
+type FloatVectors interface {
+	BillionScaleVectors
 	LoadFloat32(i int) ([]float32, error)
 }
 
-type Ivecs interface {
-	X1b
+type Int32Vectors interface {
+	BillionScaleVectors
 	LoadInt32(i int) ([]int32, error)
 }
 
@@ -78,7 +78,9 @@ func open(fname string, elementSize int) (f *file, err error) {
 		return nil, err
 	}
 	defer func() {
-		err = errors.Wrap(err, fp.Close().Error())
+		if e := fp.Close(); e != nil {
+			err = errors.Wrap(err, e.Error())
+		}
 	}()
 
 	fi, err := fp.Stat()
@@ -157,7 +159,7 @@ func (iv *ivecs) Load(i int) (interface{}, error) {
 	return iv.LoadInt32(i)
 }
 
-func NewBVecs(fname string) (Bvecs, error) {
+func NewUint8Vectors(fname string) (Uint8Vectors, error) {
 	f, err := open(fname, 1)
 	if err != nil {
 		return nil, err
@@ -165,7 +167,7 @@ func NewBVecs(fname string) (Bvecs, error) {
 	return &bvecs{f}, nil
 }
 
-func NewFVecs(fname string) (Fvecs, error) {
+func NewFloatVectors(fname string) (FloatVectors, error) {
 	f, err := open(fname, 4)
 	if err != nil {
 		return nil, err
@@ -173,7 +175,7 @@ func NewFVecs(fname string) (Fvecs, error) {
 	return &fvecs{f}, nil
 }
 
-func NewIVecs(fname string) (Ivecs, error) {
+func NewInt32Vectors(fname string) (Int32Vectors, error) {
 	f, err := open(fname, 4)
 	if err != nil {
 		return nil, err
@@ -181,14 +183,14 @@ func NewIVecs(fname string) (Ivecs, error) {
 	return &ivecs{f}, nil
 }
 
-func Open(fname string) (X1b, error) {
+func Open(fname string) (BillionScaleVectors, error) {
 	switch filepath.Ext(fname) {
 	case ".bvecs":
-		return NewBVecs(fname)
+		return NewUint8Vectors(fname)
 	case ".fvecs":
-		return NewFVecs(fname)
+		return NewFloatVectors(fname)
 	case ".ivecs":
-		return NewIVecs(fname)
+		return NewInt32Vectors(fname)
 	default:
 		return nil, ErrUnsupportedFileType
 	}

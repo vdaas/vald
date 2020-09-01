@@ -22,17 +22,21 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
+const (
+	largeDatasetPath = "hack/benchmark/assets/dataset/large"
+)
+
 type largeDataset struct {
 	*dataset
-	train       x1b.X1b
-	query       x1b.X1b
+	train       x1b.BillionScaleVectors
+	query       x1b.BillionScaleVectors
 	groundTruth [][]int
-	distances   x1b.Fvecs
+	distances   x1b.FloatVectors
 }
 
 func loadLargeData(trainFileName, queryFileName, groundTruthFileName, distanceFileName, name, distanceType, objectType string) func() (Dataset, error) {
 	return func() (Dataset, error) {
-		dir, err := findDir("hack/benchmark/assets/dataset/large")
+		dir, err := findDir(largeDatasetPath)
 		if err != nil {
 			return nil, err
 		}
@@ -49,17 +53,15 @@ func loadLargeData(trainFileName, queryFileName, groundTruthFileName, distanceFi
 		if tdim != qdim {
 			return nil, errors.New("dimension must be same train and query.")
 		}
-		iv, err := x1b.NewIVecs(filepath.Join(dir, groundTruthFileName))
+		iv, err := x1b.NewInt32Vectors(filepath.Join(dir, groundTruthFileName))
 		if err != nil {
 			return nil, err
 		}
 		groundTruth := make([][]int, 0, iv.Size())
 		for i := 0; ; i++ {
 			gt32, err := iv.LoadInt32(i)
-			if err != nil {
-				if err == ErrOutOfBounds {
-					break
-				}
+			if err == ErrOutOfBounds {
+				break
 			}
 			gt := make([]int, 0, len(gt32))
 			for _, v := range gt32 {
@@ -68,7 +70,7 @@ func loadLargeData(trainFileName, queryFileName, groundTruthFileName, distanceFi
 			groundTruth = append(groundTruth, gt)
 		}
 
-		distances, err := x1b.NewFVecs(filepath.Join(dir, distanceFileName))
+		distances, err := x1b.NewFloatVectors(filepath.Join(dir, distanceFileName))
 		if err != nil {
 			return nil, err
 		}

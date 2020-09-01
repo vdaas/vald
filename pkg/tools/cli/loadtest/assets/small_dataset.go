@@ -21,6 +21,10 @@ import (
 	"path/filepath"
 )
 
+const (
+	smallDatasetPath = "hack/benchmark/assets/dataset"
+)
+
 type smallDataset struct {
 	*dataset
 	train     [][]float32
@@ -31,7 +35,7 @@ type smallDataset struct {
 
 func loadSmallData(fileName, datasetName, distanceType, objectType string) func() (Dataset, error) {
 	return func() (Dataset, error) {
-		dir, err := findDir("hack/benchmark/assets/dataset")
+		dir, err := findDir(smallDatasetPath)
 		if err != nil {
 			return nil, err
 		}
