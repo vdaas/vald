@@ -8,6 +8,7 @@ replace (
 	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.25.14-0.20200831182635-53b8efeabc3a
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/cockroachdb/errors => github.com/cockroachdb/errors v1.7.4-0.20200821164133-7540597692ae
+	github.com/cockroachdb/sentry-go => github.com/getsentry/sentry-go v0.7.1-0.20200813145726-23c562d005a5
 	github.com/coreos/etcd => go.etcd.io/etcd v0.0.0-20200520232829-54ba9589114f
 	github.com/docker/docker => github.com/moby/moby v17.12.0-ce-rc1.0.20200618181300-9dc6525e6118+incompatible
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.4.1
@@ -21,6 +22,7 @@ replace (
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.12.0
 	github.com/gorilla/mux => github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.3-0.20200822210332-78ab81e2420a
+	github.com/hailocab/go-hostpool => github.com/bitly/go-hostpool v0.1.0
 	github.com/klauspost/compress => github.com/klauspost/compress v1.10.12-0.20200818095508-f5ee0f4fc064
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.0+incompatible
 	github.com/yudai/pp => github.com/k0kubun/pp v1.3.1-0.20200505181502-f5c257df338e
@@ -47,6 +49,7 @@ require (
 	github.com/danielvladco/go-proto-gql/pb v0.6.1
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/fsnotify/fsnotify v1.4.9
+	github.com/getsentry/sentry-go v0.7.0 // indirect
 	github.com/go-redis/redis/v7 v7.4.0
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gocql/gocql v0.0.0-20200131111108-92af2e088537

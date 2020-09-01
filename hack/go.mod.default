@@ -8,6 +8,7 @@ replace (
 	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go master
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/cockroachdb/errors => github.com/cockroachdb/errors master
+	github.com/cockroachdb/sentry-go => github.com/getsentry/sentry-go master
 	github.com/coreos/etcd =>  go.etcd.io/etcd v0.0.0-20200520232829-54ba9589114f
 	github.com/docker/docker => github.com/moby/moby v19.03.12
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.4.1
@@ -21,6 +22,7 @@ replace (
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.12.0
 	github.com/gorilla/mux => github.com/gorilla/mux master
 	github.com/gorilla/websocket => github.com/gorilla/websocket master
+	github.com/hailocab/go-hostpool => github.com/bitly/go-hostpool master
 	github.com/klauspost/compress => github.com/klauspost/compress master
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.0
 	github.com/yudai/pp => github.com/k0kubun/pp master
