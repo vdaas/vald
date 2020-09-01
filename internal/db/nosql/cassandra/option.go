@@ -193,8 +193,12 @@ var (
 	}
 )
 
+// WithConsistency returns the option to set the cassandra consistency type
 func WithConsistency(consistency string) Option {
 	return func(c *client) error {
+		if len(consistency) == 0 {
+			return nil
+		}
 		actual, ok := consistenciesMap[strings.TrimSpace(strings.Trim(strings.Trim(strings.ToLower(consistency), "_"), "-"))]
 		if !ok {
 			return errors.ErrCassandraInvalidConsistencyType(consistency)
@@ -227,43 +231,62 @@ func WithSerialConsistency(consistency string) Option {
 	}
 }
 
+// WithCompressor returns the option to set the cassandra compressor
 func WithCompressor(compressor gocql.Compressor) Option {
 	return func(c *client) error {
-		c.compressor = compressor
+		if compressor != nil {
+			c.compressor = compressor
+		}
 		return nil
 	}
 }
 
+// WithUsername returns the option to set the cassandra user name
 func WithUsername(username string) Option {
 	return func(c *client) error {
-		c.username = username
+		if len(username) != 0 {
+			c.username = username
+		}
 		return nil
 	}
 }
 
+// WithPassword returns the option to set the cassandra password
 func WithPassword(password string) Option {
 	return func(c *client) error {
-		c.password = password
+		if len(password) != 0 {
+			c.password = password
+		}
 		return nil
 	}
 }
 
+// WithAuthProvider returns the option to set the cassandra auth provider
 func WithAuthProvider(authProvider func(h *gocql.HostInfo) (gocql.Authenticator, error)) Option {
 	return func(c *client) error {
-		c.authProvider = authProvider
+		if authProvider != nil {
+			c.authProvider = authProvider
+		}
 		return nil
 	}
 }
 
+// WithRetryPolicyNumRetries returns the option to set the cassandra number of retries
 func WithRetryPolicyNumRetries(n int) Option {
 	return func(c *client) error {
-		c.retryPolicy.numRetries = n
+		if n > 0 {
+			c.retryPolicy.numRetries = n
+		}
 		return nil
 	}
 }
 
+// WithRetryPolicyMinDuration returns the option to set the cassandra retry min duration
 func WithRetryPolicyMinDuration(minDuration string) Option {
 	return func(c *client) error {
+		if len(minDuration) == 0 {
+			return nil
+		}
 		d, err := timeutil.Parse(minDuration)
 		if err != nil {
 			return err
@@ -273,8 +296,12 @@ func WithRetryPolicyMinDuration(minDuration string) Option {
 	}
 }
 
+// WithRetryPolicyMaxDuration returns the option to set the cassandra retry max duration
 func WithRetryPolicyMaxDuration(maxDuration string) Option {
 	return func(c *client) error {
+		if len(maxDuration) == 0 {
+			return nil
+		}
 		d, err := timeutil.Parse(maxDuration)
 		if err != nil {
 			return err
@@ -284,8 +311,12 @@ func WithRetryPolicyMaxDuration(maxDuration string) Option {
 	}
 }
 
+// WithReconnectionPolicyInitialInterval returns the option to set the cassandra reconnection initial interval
 func WithReconnectionPolicyInitialInterval(initialInterval string) Option {
 	return func(c *client) error {
+		if len(initialInterval) == 0 {
+			return nil
+		}
 		d, err := timeutil.Parse(initialInterval)
 		if err != nil {
 			return err
@@ -297,7 +328,9 @@ func WithReconnectionPolicyInitialInterval(initialInterval string) Option {
 
 func WithReconnectionPolicyMaxRetries(maxRetries int) Option {
 	return func(c *client) error {
-		c.reconnectionPolicy.maxRetries = maxRetries
+		if maxRetries > 0 {
+			c.reconnectionPolicy.maxRetries = maxRetries
+		}
 		return nil
 	}
 }
