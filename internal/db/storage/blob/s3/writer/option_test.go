@@ -38,12 +38,16 @@ func TestWithErrGroup(t *testing.T) {
 	type args struct {
 		eg errgroup.Group
 	}
+	type fields struct {
+		eg errgroup.Group
+	}
 	type want struct {
 		obj *T
 	}
 	type test struct {
 		name       string
 		args       args
+		fields     fields
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(args)
@@ -75,8 +79,13 @@ func TestWithErrGroup(t *testing.T) {
 			args: args{
 				eg: nil,
 			},
+			fields: fields{
+				eg: errgroup.Get(),
+			},
 			want: want{
-				obj: new(T),
+				obj: &T{
+					eg: errgroup.Get(),
+				},
 			},
 		},
 	}
@@ -95,7 +104,9 @@ func TestWithErrGroup(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			got := WithErrGroup(test.args.eg)
-			obj := new(T)
+			obj := &T{
+				eg: test.fields.eg,
+			}
 			got(obj)
 			if err := test.checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
@@ -109,12 +120,16 @@ func TestWithService(t *testing.T) {
 	type args struct {
 		s *s3.S3
 	}
+	type fields struct {
+		service *s3.S3
+	}
 	type want struct {
 		obj *T
 	}
 	type test struct {
 		name       string
 		args       args
+		fields     fields
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(args)
@@ -145,13 +160,19 @@ func TestWithService(t *testing.T) {
 		}(),
 
 		func() test {
+			s := new(s3.S3)
 			return test{
 				name: "set nothing when s is nil",
 				args: args{
 					s: nil,
 				},
+				fields: fields{
+					service: s,
+				},
 				want: want{
-					obj: new(T),
+					obj: &T{
+						service: s,
+					},
 				},
 			}
 		}(),
@@ -171,7 +192,9 @@ func TestWithService(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			got := WithService(test.args.s)
-			obj := new(T)
+			obj := &T{
+				service: test.fields.service,
+			}
 			got(obj)
 			if err := test.checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
@@ -218,7 +241,7 @@ func TestWithBucket(t *testing.T) {
 		},
 
 		{
-			name: "set success when bucket is empty",
+			name: "set nothing when bucket is empty",
 			args: args{
 				bucket: "",
 			},
@@ -289,7 +312,7 @@ func TestWithKey(t *testing.T) {
 		},
 
 		{
-			name: "set success when key is empty",
+			name: "set nothing when key is empty",
 			args: args{
 				key: "",
 			},
@@ -360,7 +383,7 @@ func TestWithMaxPartSize(t *testing.T) {
 		},
 
 		{
-			name: "set success when max is smaller then MinUploadPartSize",
+			name: "set nothing when max is smaller then MinUploadPartSize",
 			args: args{
 				max: 10,
 			},
