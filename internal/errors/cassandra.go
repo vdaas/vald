@@ -66,6 +66,10 @@ var (
 	ErrCassandraHostDownDetected = func(err error, nodeInfo string) error {
 		return Wrapf(err, "error cassandra host down detected\t%s", nodeInfo)
 	}
+
+	ErrCassandraInvalidPort = func(p int) error {
+		return Errorf("invalid port number: %s", p)
+	}
 )
 
 type ErrCassandraNotFoundIdentity struct {

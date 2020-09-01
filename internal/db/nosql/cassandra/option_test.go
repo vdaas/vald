@@ -619,6 +619,7 @@ func TestWithPort(t *testing.T) {
 				port: 8080,
 			},
 			want: want{
+				err: errors.ErrCassandraInvalidPort(-1),
 				obj: &T{
 					port: 8080,
 				},
