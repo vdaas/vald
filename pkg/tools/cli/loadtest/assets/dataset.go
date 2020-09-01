@@ -112,6 +112,7 @@ func Data(name string) func() (Dataset, error) {
 		sd, _ := strconv.ParseFloat(l[4], 64)
 		return gaussian(d, s, m, sd)
 	}
+
 	switch name {
 	case "fashion-mnist":
 		return loadSmallData("fashion-mnist-784-euclidean.hdf5", name, "l2", "float")

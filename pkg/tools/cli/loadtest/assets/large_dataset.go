@@ -84,7 +84,6 @@ func loadLargeData(trainFileName, queryFileName, groundTruthFileName, distanceFi
 			groundTruth: groundTruth,
 			distances:   distances,
 		}, nil
-
 	}
 }
 
