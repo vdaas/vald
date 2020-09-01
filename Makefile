@@ -240,7 +240,8 @@ update: \
 	deps \
 	proto/all \
 	license \
-	update/goimports
+	update/goimports \
+	deps
 
 
 .PHONY: format
@@ -269,6 +270,13 @@ deps: \
 	proto/deps \
 	goimports/install \
 	prettier/install
+	go clean -cache -modcache -testcache -i -r
+	rm -rf \
+		/go/pkg \
+		$(GOCACHE) \
+		./go.sum \
+		./go.mod
+	cp ./hack/go.mod.default ./go.mod
 	go mod tidy
 
 .PHONY: goimports/install
