@@ -3,7 +3,7 @@ module github.com/vdaas/vald
 go 1.15
 
 replace (
-	cloud.google.com/go => cloud.google.com/go v0.65.1-0.20200831191605-7eaa0d184c6a
+	cloud.google.com/go => cloud.google.com/go v0.65.1-0.20200901105746-d9ddc50a94e7
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0+incompatible
 	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.25.14-0.20200831182635-53b8efeabc3a
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
@@ -18,7 +18,7 @@ replace (
 	github.com/gogo/googleapis => github.com/gogo/googleapis v1.4.0
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2-0.20200807193113-deb6fe8ca7c6
 	github.com/google/go-cmp => github.com/google/go-cmp v0.5.2
-	github.com/googleapis/gnostic => github.com/googleapis/gnostic v0.5.1
+	github.com/googleapis/gnostic => github.com/googleapis/gnostic v0.4.0
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.12.0
 	github.com/gorilla/mux => github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.3-0.20200822210332-78ab81e2420a
@@ -29,11 +29,11 @@ replace (
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
 	google.golang.org/grpc => google.golang.org/grpc v1.33.0-dev.0.20200828165940-d8ef479ab79a
 	google.golang.org/protobuf => google.golang.org/protobuf v1.25.1-0.20200817165314-16365ed3d8cf
-	k8s.io/api => k8s.io/api v0.19.0
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.19.0
-	k8s.io/apimachinery => k8s.io/apimachinery v0.19.0
-	k8s.io/client-go => k8s.io/client-go v0.19.0
-	k8s.io/metrics => k8s.io/metrics v0.19.0
+	k8s.io/api => k8s.io/api v0.18.8
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.18.8
+	k8s.io/apimachinery => k8s.io/apimachinery v0.18.8
+	k8s.io/client-go => k8s.io/client-go v0.18.8
+	k8s.io/metrics => k8s.io/metrics v0.18.8
 	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.6.2
 )
 
@@ -84,9 +84,9 @@ require (
 	google.golang.org/genproto v0.0.0-20200831141814-d751682dd103
 	google.golang.org/grpc v1.31.0
 	gopkg.in/yaml.v2 v2.3.0
-	k8s.io/api v0.19.0
-	k8s.io/apimachinery v0.19.0
-	k8s.io/client-go v0.19.0
+	k8s.io/api v0.18.8
+	k8s.io/apimachinery v0.18.8
+	k8s.io/client-go v0.18.8
 	k8s.io/metrics v0.0.0-00010101000000-000000000000
 	sigs.k8s.io/controller-runtime v0.0.0-00010101000000-000000000000
 )
