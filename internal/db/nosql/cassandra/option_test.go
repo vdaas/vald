@@ -611,6 +611,17 @@ func TestWithPort(t *testing.T) {
 			},
 		},
 		{
+			name: "set port success (boundary)",
+			args: args{
+				port: 65535,
+			},
+			want: want{
+				obj: &T{
+					port: 65535,
+				},
+			},
+		},
+		{
 			name: "do not set port when port<=0",
 			args: args{
 				port: -1,
@@ -620,6 +631,21 @@ func TestWithPort(t *testing.T) {
 			},
 			want: want{
 				err: errors.ErrCassandraInvalidPort(-1),
+				obj: &T{
+					port: 8080,
+				},
+			},
+		},
+		{
+			name: "do not set port when port > 65535",
+			args: args{
+				port: 65536,
+			},
+			fields: fields{
+				port: 8080,
+			},
+			want: want{
+				err: errors.ErrCassandraInvalidPort(65536),
 				obj: &T{
 					port: 8080,
 				},
