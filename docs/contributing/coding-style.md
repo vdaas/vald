@@ -452,7 +452,7 @@ In Vald, the functional option pattern is widely used in Vald.
 You can refer to [this section](#Struct-initialization) for more details of the use case of this pattern.
 
 We strongly recommend the following implementation to set the value using functional option.
-If set to an invalid value, it should return the error defined in the [internal/errors/option.go](https://github.com/vdaas/vald/blob/master/internal/errors/option.go).
+If the invalid value is set to the functional option, the `ErrInvalidOption` error defined in the [internal/errors/option.go](https://github.com/vdaas/vald/blob/master/internal/errors/option.go) should be returned.
 
 ```go
 func WithVersion(version string) Option {
