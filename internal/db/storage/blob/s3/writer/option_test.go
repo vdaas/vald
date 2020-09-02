@@ -204,7 +204,6 @@ func TestWithService(t *testing.T) {
 			obj := &T{
 				service: test.fields.service,
 			}
-			got(obj)
 			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -280,7 +279,6 @@ func TestWithBucket(t *testing.T) {
 			}
 			got := WithBucket(test.args.bucket)
 			obj := new(T)
-			got(obj)
 			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -356,7 +354,6 @@ func TestWithKey(t *testing.T) {
 			}
 			got := WithKey(test.args.key)
 			obj := new(T)
-			got(obj)
 			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -432,7 +429,6 @@ func TestWithMaxPartSize(t *testing.T) {
 			}
 			got := WithMaxPartSize(test.args.max)
 			obj := new(T)
-			got(obj)
 			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
