@@ -3,32 +3,32 @@ module github.com/vdaas/vald
 go 1.15
 
 replace (
-	cloud.google.com/go => cloud.google.com/go v0.65.1-0.20200901105746-d9ddc50a94e7
+	cloud.google.com/go => cloud.google.com/go v0.65.0
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0+incompatible
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.25.14-0.20200831182635-53b8efeabc3a
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.34.15
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
-	github.com/cockroachdb/errors => github.com/cockroachdb/errors v1.7.4-0.20200821164133-7540597692ae
+	github.com/cockroachdb/errors => github.com/cockroachdb/errors v1.7.3
 	github.com/cockroachdb/sentry-go => github.com/getsentry/sentry-go v0.7.1-0.20200813145726-23c562d005a5
 	github.com/coreos/etcd => go.etcd.io/etcd v0.0.0-20200520232829-54ba9589114f
-	github.com/docker/docker => github.com/moby/moby v17.12.0-ce-rc1.0.20200618181300-9dc6525e6118+incompatible
+	github.com/docker/docker => github.com/moby/moby v1.13.1
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.4.1
-	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.5.1-0.20200818111213-46351a889297
+	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.5.0
 	github.com/gobwas/pool => github.com/gobwas/pool v0.2.1
 	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20200815110948-5378c8f664e9
 	github.com/gogo/googleapis => github.com/gogo/googleapis v1.4.0
-	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2-0.20200807193113-deb6fe8ca7c6
+	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.1
 	github.com/google/go-cmp => github.com/google/go-cmp v0.5.2
 	github.com/googleapis/gnostic => github.com/googleapis/gnostic v0.4.0
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.12.0
 	github.com/gorilla/mux => github.com/gorilla/mux v1.8.0
-	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.3-0.20200822210332-78ab81e2420a
+	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.2
 	github.com/hailocab/go-hostpool => github.com/monzo/go-hostpool v0.0.0-20200724120130-287edbb29340
-	github.com/klauspost/compress => github.com/klauspost/compress v1.10.12-0.20200901102623-c0f3c32e3951
+	github.com/klauspost/compress => github.com/klauspost/compress v1.10.11
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.0+incompatible
-	github.com/yudai/pp => github.com/k0kubun/pp v1.3.1-0.20200505181502-f5c257df338e
+	github.com/yudai/pp => github.com/k0kubun/pp v3.0.1+incompatible
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
-	google.golang.org/grpc => google.golang.org/grpc v1.33.0-dev.0.20200828165940-d8ef479ab79a
-	google.golang.org/protobuf => google.golang.org/protobuf v1.25.1-0.20200817165314-16365ed3d8cf
+	google.golang.org/grpc => google.golang.org/grpc v1.31.1
+	google.golang.org/protobuf => google.golang.org/protobuf v1.25.0
 	k8s.io/api => k8s.io/api v0.18.8
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.18.8
 	k8s.io/apimachinery => k8s.io/apimachinery v0.18.8
@@ -38,7 +38,7 @@ replace (
 )
 
 require (
-	cloud.google.com/go v0.62.0
+	cloud.google.com/go v0.65.0
 	code.cloudfoundry.org/bytefmt v0.0.0-20200131002437-cf55d5288a48
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
 	contrib.go.opencensus.io/exporter/prometheus v0.2.0
@@ -55,7 +55,7 @@ require (
 	github.com/gocql/gocql v0.0.0-20200131111108-92af2e088537
 	github.com/gocraft/dbr/v2 v2.7.0
 	github.com/gogo/protobuf v1.3.1
-	github.com/google/go-cmp v0.5.1
+	github.com/google/go-cmp v0.5.2
 	github.com/google/gofuzz v1.2.0
 	github.com/gorilla/mux v1.7.1
 	github.com/hashicorp/go-version v1.2.1
@@ -80,9 +80,9 @@ require (
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/netlib v0.0.0-20200824093956-f0ca4b3a5ef5 // indirect
 	gonum.org/v1/plot v0.7.0
-	google.golang.org/api v0.30.0
-	google.golang.org/genproto v0.0.0-20200831141814-d751682dd103
-	google.golang.org/grpc v1.31.0
+	google.golang.org/api v0.31.0
+	google.golang.org/genproto v0.0.0-20200901141002-b3bf27a9dbd1
+	google.golang.org/grpc v1.31.1
 	gopkg.in/yaml.v2 v2.3.0
 	k8s.io/api v0.18.8
 	k8s.io/apimachinery v0.18.8
