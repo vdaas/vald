@@ -27,7 +27,7 @@ type session struct {
 
 type Session interface {
 	Select(column ...string) SelectStmt
-	Begin() (Tx, error)
+	Begin() (*dbr.Tx, error)
 	Close()
 	PingContext(ctx context.Context) error
 }
@@ -39,17 +39,17 @@ func NewSession(conn *dbr.Connection, event EventReceiver) Session {
 }
 
 func (s *session) Select(column ...string) SelectStmt {
-	return s.Select(column...)
+	return s.Session.Select(column...)
 }
 
-func (s *session) Begin() (Tx, error) {
-	return s.Begin()
+func (s *session) Begin() (*dbr.Tx, error) {
+	return s.Session.Begin()
 }
 
 func (s *session) Close() {
-	s.Close()
+	s.Session.Close()
 }
 
 func (s *session) PingContext(ctx context.Context) error {
-	return s.PingContext(ctx)
+	return s.Session.PingContext(ctx)
 }

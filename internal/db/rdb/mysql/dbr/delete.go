@@ -28,13 +28,13 @@ type deleteStmt struct {
 
 type DeleteStmt interface {
 	ExecContext(ctx context.Context) (sql.Result, error)
-	Where(query interface{}, value ...interface{}) DeleteStmt
+	// Where(query interface{}, value ...interface{}) DeleteStmt
 }
 
 func (stmt *deleteStmt) ExecContext(ctx context.Context) (sql.Result, error) {
-	return stmt.ExecContext(ctx)
+	return stmt.DeleteStmt.ExecContext(ctx)
 }
 
 func (stmt *deleteStmt) Where(query string, value ...interface{}) DeleteStmt {
-	return stmt.Where(query, value)
+	return stmt.DeleteStmt.Where(query, value...)
 }
