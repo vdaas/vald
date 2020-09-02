@@ -34,29 +34,29 @@ type Tx interface {
 }
 
 func (t *tx) Commit() error {
-	return t.Commit()
+	return t.Tx.Commit()
 }
 
 func (t *tx) Rollback() error {
-	return t.Rollback()
+	return t.Tx.Rollback()
 }
 
 func (t *tx) RollbackUnlessCommitted() {
-	t.RollbackUnlessCommitted()
+	t.Tx.RollbackUnlessCommitted()
 }
 
 func (t *tx) InsertBySql(query string, value ...interface{}) InsertStmt {
-	return t.InsertBySql(query, value...)
+	return t.Tx.InsertBySql(query, value...)
 }
 
 func (t *tx) InsertInto(table string) InsertStmt {
-	return t.InsertInto(table)
+	return t.Tx.InsertInto(table)
 }
 
 func (t *tx) Select(column ...string) SelectStmt {
-	return t.Select(column...)
+	return t.Tx.Select(column...)
 }
 
 func (t *tx) DeleteFrom(table string) DeleteStmt {
-	return t.DeleteFrom(table)
+	return t.Tx.DeleteFrom(table)
 }

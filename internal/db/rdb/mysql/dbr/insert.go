@@ -27,13 +27,13 @@ type insertStmt struct {
 }
 
 type InsertStmt interface {
-	Columns(column ...string) InsertStmt
+	// Columns(column ...string) InsertStmt
 	ExecContext(ctx context.Context) (sql.Result, error)
-	Record(structValue interface{}) InsertStmt
+	// Record(structValue interface{}) InsertStmt
 }
 
 func (stmt *insertStmt) Columns(column ...string) InsertStmt {
-	return stmt.Columns(column...)
+	return stmt.InsertStmt.Columns(column...)
 }
 
 func (stmt *insertStmt) ExecContext(ctx context.Context) (sql.Result, error) {
@@ -41,5 +41,5 @@ func (stmt *insertStmt) ExecContext(ctx context.Context) (sql.Result, error) {
 }
 
 func (stmt *insertStmt) Record(structValue interface{}) InsertStmt {
-	return stmt.Record(structValue)
+	return stmt.InsertStmt.Record(structValue)
 }
