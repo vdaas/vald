@@ -20,10 +20,11 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/errors"
 )
 
 // Option represents the functional option for writer.
-type Option func(w *writer)
+type Option func(w *writer) error
 
 var (
 	defaultOpts = []Option{
@@ -35,54 +36,66 @@ var (
 
 // WithErrGroup returns the option to set eg for writer.
 func WithErrGroup(eg errgroup.Group) Option {
-	return func(w *writer) {
-		if eg != nil {
-			w.eg = eg
+	return func(w *writer) error {
+		if eg == nil {
+			return errors.ErrNilObject
 		}
+		w.eg = eg
+		return nil
 	}
 }
 
 // WithService returns the option to set s for writer.
 func WithService(s *s3.S3) Option {
-	return func(w *writer) {
-		if s != nil {
-			w.service = s
+	return func(w *writer) error {
+		if s == nil {
+			return errors.ErrNilObject
 		}
+		w.service = s
+		return nil
 	}
 }
 
 // WithBucket returns the option to set bucket for writer.
 func WithBucket(bucket string) Option {
-	return func(w *writer) {
-		if len(bucket) != 0 {
-			w.bucket = bucket
+	return func(w *writer) error {
+		if len(bucket) == 0 {
+			return errors.ErrEmptyString
 		}
+		w.bucket = bucket
+		return nil
 	}
 }
 
 // WithKey returns the option to set key for writer.
 func WithKey(key string) Option {
-	return func(w *writer) {
-		if len(key) != 0 {
-			w.key = key
+	return func(w *writer) error {
+		if len(key) == 0 {
+			return errors.ErrEmptyString
 		}
+		w.key = key
+		return nil
 	}
 }
 
 // WithContentType returns the option to set ct for writer.
 func WithContentType(ct string) Option {
-	return func(w *writer) {
-		if len(ct) != 0 {
-			w.contentType = ct
+	return func(w *writer) error {
+		if len(ct) == 0 {
+			return errors.ErrEmptyString
 		}
+		w.contentType = ct
+		return nil
 	}
 }
 
 // WithMaxPartSize returns the option to set max for writer.
 func WithMaxPartSize(max int64) Option {
-	return func(w *writer) {
-		if max > s3manager.MinUploadPartSize {
-			w.maxPartSize = max
+	return func(w *writer) error {
+		if max < s3manager.MinUploadPartSize {
+			return errors.ErrInvalidNumber(max)
 		}
+		w.maxPartSize = max
+		return nil
 	}
 }

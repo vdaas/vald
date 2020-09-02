@@ -43,18 +43,22 @@ func TestWithErrGroup(t *testing.T) {
 	}
 	type want struct {
 		obj *T
+		err error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *T) error
+		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
 
-	defaultCheckFunc := func(w want, obj *T) error {
+	defaultCheckFunc := func(w want, obj *T, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
 		if !reflect.DeepEqual(obj, w.obj) {
 			return errors.Errorf("got = %v, want %v", obj, w.obj)
 		}
@@ -75,7 +79,7 @@ func TestWithErrGroup(t *testing.T) {
 		},
 
 		{
-			name: "set nothing when eg is nil",
+			name: "returns error when eg is nil",
 			args: args{
 				eg: nil,
 			},
@@ -86,6 +90,7 @@ func TestWithErrGroup(t *testing.T) {
 				obj: &T{
 					eg: errgroup.Get(),
 				},
+				err: errors.ErrNilObject,
 			},
 		},
 	}
@@ -107,8 +112,7 @@ func TestWithErrGroup(t *testing.T) {
 			obj := &T{
 				eg: test.fields.eg,
 			}
-			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -125,18 +129,22 @@ func TestWithService(t *testing.T) {
 	}
 	type want struct {
 		obj *T
+		err error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *T) error
+		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
 
-	defaultCheckFunc := func(w want, obj *T) error {
+	defaultCheckFunc := func(w want, obj *T, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
 		if !reflect.DeepEqual(obj, w.obj) {
 			return errors.Errorf("got = %v, want %v", obj, w.obj)
 		}
@@ -162,7 +170,7 @@ func TestWithService(t *testing.T) {
 		func() test {
 			s := new(s3.S3)
 			return test{
-				name: "set nothing when s is nil",
+				name: "returns error when s is nil",
 				args: args{
 					s: nil,
 				},
@@ -173,6 +181,7 @@ func TestWithService(t *testing.T) {
 					obj: &T{
 						service: s,
 					},
+					err: errors.ErrNilObject,
 				},
 			}
 		}(),
@@ -196,7 +205,7 @@ func TestWithService(t *testing.T) {
 				service: test.fields.service,
 			}
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -210,17 +219,21 @@ func TestWithBucket(t *testing.T) {
 	}
 	type want struct {
 		obj *T
+		err error
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, *T) error
+		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
 
-	defaultCheckFunc := func(w want, obj *T) error {
+	defaultCheckFunc := func(w want, obj *T, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
 		if !reflect.DeepEqual(obj, w.obj) {
 			return errors.Errorf("got = %v, want %v", obj, w.obj)
 		}
@@ -241,12 +254,13 @@ func TestWithBucket(t *testing.T) {
 		},
 
 		{
-			name: "set nothing when bucket is empty",
+			name: "returns error when bucket is empty",
 			args: args{
 				bucket: "",
 			},
 			want: want{
 				obj: new(T),
+				err: errors.ErrEmptyString,
 			},
 		},
 	}
@@ -267,7 +281,7 @@ func TestWithBucket(t *testing.T) {
 			got := WithBucket(test.args.bucket)
 			obj := new(T)
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -281,17 +295,21 @@ func TestWithKey(t *testing.T) {
 	}
 	type want struct {
 		obj *T
+		err error
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, *T) error
+		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
 
-	defaultCheckFunc := func(w want, obj *T) error {
+	defaultCheckFunc := func(w want, obj *T, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
 		if !reflect.DeepEqual(obj, w.obj) {
 			return errors.Errorf("got = %v, want %v", obj, w.obj)
 		}
@@ -312,12 +330,13 @@ func TestWithKey(t *testing.T) {
 		},
 
 		{
-			name: "set nothing when key is empty",
+			name: "returns error when key is empty",
 			args: args{
 				key: "",
 			},
 			want: want{
 				obj: new(T),
+				err: errors.ErrEmptyString,
 			},
 		},
 	}
@@ -338,7 +357,7 @@ func TestWithKey(t *testing.T) {
 			got := WithKey(test.args.key)
 			obj := new(T)
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -352,17 +371,21 @@ func TestWithMaxPartSize(t *testing.T) {
 	}
 	type want struct {
 		obj *T
+		err error
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, *T) error
+		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
 
-	defaultCheckFunc := func(w want, obj *T) error {
+	defaultCheckFunc := func(w want, obj *T, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
 		if !reflect.DeepEqual(obj, w.obj) {
 			return errors.Errorf("got = %v, want %v", obj, w.obj)
 		}
@@ -383,12 +406,13 @@ func TestWithMaxPartSize(t *testing.T) {
 		},
 
 		{
-			name: "set nothing when max is smaller then MinUploadPartSize",
+			name: "returns error when max is smaller then MinUploadPartSize",
 			args: args{
 				max: 10,
 			},
 			want: want{
 				obj: new(T),
+				err: errors.ErrInvalidNumber(10),
 			},
 		},
 	}
@@ -409,7 +433,7 @@ func TestWithMaxPartSize(t *testing.T) {
 			got := WithMaxPartSize(test.args.max)
 			obj := new(T)
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
