@@ -30,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/net/http/client"
 	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/observability"
+	metrics "github.com/vdaas/vald/internal/observability/metrics/agent/sidecar"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -59,16 +60,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		so observer.StorageObserver
 		bs storage.Storage
 	)
-
-	var obs observability.Observability
-	if cfg.Observability.Enabled {
-		obs, err = observability.NewWithConfig(cfg.Observability)
-		if err != nil {
-			return nil, err
-		}
-		// TODO observe something
-		_ = obs
-	}
 
 	dialer, err := tcp.NewDialer(cfg.AgentSidecar.Client.TCP.Opts()...)
 	if err != nil {
@@ -131,7 +122,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 
-	so, err = observer.New(
+	observerOpts := []observer.Option{
 		observer.WithErrGroup(eg),
 		observer.WithWatch(cfg.AgentSidecar.WatchEnabled),
 		observer.WithTicker(cfg.AgentSidecar.AutoBackupEnabled),
@@ -139,7 +130,22 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		observer.WithPostStopTimeout(cfg.AgentSidecar.PostStopTimeout),
 		observer.WithDir(cfg.AgentSidecar.WatchDir),
 		observer.WithBlobStorage(bs),
-	)
+	}
+
+	var metricsHook metrics.MetricsHook
+	if cfg.Observability.Enabled {
+		metricsHook, err = metrics.New()
+		if err != nil {
+			return nil, err
+		}
+
+		observerOpts = append(
+			observerOpts,
+			observer.WithHooks(metricsHook),
+		)
+	}
+
+	so, err = observer.New(observerOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +166,16 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		}),
 	}
 
+	var obs observability.Observability
 	if cfg.Observability.Enabled {
+		obs, err = observability.NewWithConfig(
+			cfg.Observability,
+			metricsHook,
+		)
+		if err != nil {
+			return nil, err
+		}
+
 		grpcServerOptions = append(
 			grpcServerOptions,
 			server.WithGRPCOption(
