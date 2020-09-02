@@ -9,7 +9,7 @@ replace (
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/cockroachdb/errors => github.com/cockroachdb/errors v1.7.3
 	github.com/cockroachdb/sentry-go => github.com/getsentry/sentry-go v0.7.1-0.20200813145726-23c562d005a5
-	github.com/coreos/etcd => go.etcd.io/etcd v0.0.0-20200520232829-54ba9589114f
+	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
 	github.com/docker/docker => github.com/moby/moby v1.13.1
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.4.1
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.5.0
