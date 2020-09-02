@@ -1,5 +1,34 @@
 # CHANGELOG
 
+## v0.0.52
+
+### Docker images
+
+component | docker pull
+--------- | -----------
+agent NGT | `docker pull vdaas/vald-agent-ngt:v0.0.52`
+agent sidecar | `docker pull vdaas/vald-agent-sidecar:v0.0.52`
+discoverer K8s | `docker pull vdaas/vald-discoverer-k8s:v0.0.52`
+gateway | `docker pull vdaas/vald-gateway:v0.0.52`
+backup manager MySQL | `docker pull vdaas/vald-manager-backup-mysql:v0.0.52`
+backup manager Cassandra | `docker pull vdaas/vald-manager-backup-cassandra:v0.0.52`
+compressor | `docker pull vdaas/vald-manager-compressor:v0.0.52`
+meta Redis | `docker pull vdaas/vald-meta-redis:v0.0.52`
+meta Cassandra | `docker pull vdaas/vald-meta-cassandra:v0.0.52`
+index manager | `docker pull vdaas/vald-manager-index:v0.0.52`
+Helm operator | `docker pull vdaas/vald-helm-operator:v0.0.52`
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v0.0.52)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v0.0.52/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v0.0.52/charts/vald-helm-operator/README.md)
+
+### Changes
+- add build stage for operator-sdk docker v1.0.0 permission changes ([#665](https://github.com/vdaas/vald/pull/665))
+- :robot: Automatically update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE ([#663](https://github.com/vdaas/vald/pull/663))
+- :robot: Automatically update k8s manifests ([#664](https://github.com/vdaas/vald/pull/664))
+
+
 ## v0.0.51
 
 ### Docker images
