@@ -1,5 +1,71 @@
 # CHANGELOG
 
+## v0.0.51
+
+### Docker images
+
+component | docker pull
+--------- | -----------
+agent NGT | `docker pull vdaas/vald-agent-ngt:v0.0.51`
+agent sidecar | `docker pull vdaas/vald-agent-sidecar:v0.0.51`
+discoverer K8s | `docker pull vdaas/vald-discoverer-k8s:v0.0.51`
+gateway | `docker pull vdaas/vald-gateway:v0.0.51`
+backup manager MySQL | `docker pull vdaas/vald-manager-backup-mysql:v0.0.51`
+backup manager Cassandra | `docker pull vdaas/vald-manager-backup-cassandra:v0.0.51`
+compressor | `docker pull vdaas/vald-manager-compressor:v0.0.51`
+meta Redis | `docker pull vdaas/vald-meta-redis:v0.0.51`
+meta Cassandra | `docker pull vdaas/vald-meta-cassandra:v0.0.51`
+index manager | `docker pull vdaas/vald-manager-index:v0.0.51`
+Helm operator | `docker pull vdaas/vald-helm-operator:v0.0.51`
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v0.0.51)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v0.0.51/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v0.0.51/charts/vald-helm-operator/README.md)
+
+### Changes
+- update deps ([#660](https://github.com/vdaas/vald/pull/660))
+- add metrics for indexer and sidecar ([#642](https://github.com/vdaas/vald/pull/642))
+- :pencil2: fix indents in helm chart of vald-helm-operator ([#658](https://github.com/vdaas/vald/pull/658))
+- :white_check_mark: Add test for internal/compress/gob.go ([#646](https://github.com/vdaas/vald/pull/646))
+- Upgrade go mod default: k8s.io/xxx v0.18.8 ([#645](https://github.com/vdaas/vald/pull/645))
+- [Coding guideline] Add implementation and grouping section ([#641](https://github.com/vdaas/vald/pull/641))
+- :white_check_mark: add internal/compress/lz4 test ([#643](https://github.com/vdaas/vald/pull/643))
+- Add test case for `s3/option.go` ([#640](https://github.com/vdaas/vald/pull/640))
+- Refactoring and Add test code for `compress` ([#622](https://github.com/vdaas/vald/pull/622))
+- [ImgBot] Optimize images ([#639](https://github.com/vdaas/vald/pull/639))
+- Add operation guide ([#541](https://github.com/vdaas/vald/pull/541))
+- :white_check_mark: add internal/s3/reader/option test ([#630](https://github.com/vdaas/vald/pull/630))
+- :bug: Fix indexer's creation_pool_size field ([#637](https://github.com/vdaas/vald/pull/637))
+- :wrench: revise languagetool rules: disable EN_QUOTES ([#635](https://github.com/vdaas/vald/pull/635))
+- :wrench: revise languagetool rules: disable TYPOS, DASH_RULE ([#634](https://github.com/vdaas/vald/pull/634))
+- :wrench: revise languagetool rules ([#633](https://github.com/vdaas/vald/pull/633))
+- [ImgBot] Optimize images ([#632](https://github.com/vdaas/vald/pull/632))
+- Add upsert flow in architecture doc ([#627](https://github.com/vdaas/vald/pull/627))
+- Add DB metrics & traces: Redis, MySQL ([#623](https://github.com/vdaas/vald/pull/623))
+- :white_check_mark: add internal/db/rdb/mysql/model test ([#628](https://github.com/vdaas/vald/pull/628))
+- :wrench: upload sarif only for HIGH or CRITICAL ([#629](https://github.com/vdaas/vald/pull/629))
+- :white_check_mark: add internal/db/rdb/mysql/option test ([#626](https://github.com/vdaas/vald/pull/626))
+- Add internal/net test ([#615](https://github.com/vdaas/vald/pull/615))
+- :white_check_mark: Add test for gzip_option ([#625](https://github.com/vdaas/vald/pull/625))
+- :pencil: change showing image method ([#624](https://github.com/vdaas/vald/pull/624))
+- :white_check_mark: Add internal/compress/zstd_option test ([#621](https://github.com/vdaas/vald/pull/621))
+- use distroless for base image ([#605](https://github.com/vdaas/vald/pull/605))
+- :pencil: Coding guideline: Add error checking section ([#614](https://github.com/vdaas/vald/pull/614))
+- :white_check_mark: add internal/compress/lz4_option test ([#619](https://github.com/vdaas/vald/pull/619))
+- :white_check_mark: fix test fail ([#616](https://github.com/vdaas/vald/pull/616))
+- :white_check_mark: Add test of internal/worker/queue_option ([#613](https://github.com/vdaas/vald/pull/613))
+- [ImgBot] Optimize images ([#617](https://github.com/vdaas/vald/pull/617))
+- :pencil: Add update dataflow in architecture document ([#601](https://github.com/vdaas/vald/pull/601))
+- Add internal/worker/worker test ([#602](https://github.com/vdaas/vald/pull/602))
+- :recycle: refactor load test ([#552](https://github.com/vdaas/vald/pull/552))
+- :white_check_mark: Add test case for internal/kvs/redis/option.go ([#611](https://github.com/vdaas/vald/pull/611))
+- :white_check_mark: create internal/worker/queue test ([#606](https://github.com/vdaas/vald/pull/606))
+- :white_check_mark: :recycle: Add internal roundtrip test code ([#589](https://github.com/vdaas/vald/pull/589))
+- :pencil: Documentation/performance/loadtest ([#610](https://github.com/vdaas/vald/pull/610))
+- :robot: Automatically update k8s manifests ([#609](https://github.com/vdaas/vald/pull/609))
+
+
 ## v0.0.50
 
 ### Docker images
