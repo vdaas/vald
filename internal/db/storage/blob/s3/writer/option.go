@@ -38,7 +38,7 @@ var (
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(w *writer) error {
 		if eg == nil {
-			return errors.ErrNilObject
+			return errors.ErrInvalidOption("errgroup", eg)
 		}
 		w.eg = eg
 		return nil
@@ -49,7 +49,7 @@ func WithErrGroup(eg errgroup.Group) Option {
 func WithService(s *s3.S3) Option {
 	return func(w *writer) error {
 		if s == nil {
-			return errors.ErrNilObject
+			return errors.ErrInvalidOption("service", s)
 		}
 		w.service = s
 		return nil
@@ -60,7 +60,7 @@ func WithService(s *s3.S3) Option {
 func WithBucket(bucket string) Option {
 	return func(w *writer) error {
 		if len(bucket) == 0 {
-			return errors.ErrEmptyString
+			return errors.ErrInvalidOption("bucket", bucket)
 		}
 		w.bucket = bucket
 		return nil
@@ -71,7 +71,7 @@ func WithBucket(bucket string) Option {
 func WithKey(key string) Option {
 	return func(w *writer) error {
 		if len(key) == 0 {
-			return errors.ErrEmptyString
+			return errors.ErrInvalidOption("key", key)
 		}
 		w.key = key
 		return nil
@@ -82,7 +82,7 @@ func WithKey(key string) Option {
 func WithContentType(ct string) Option {
 	return func(w *writer) error {
 		if len(ct) == 0 {
-			return errors.ErrEmptyString
+			return errors.ErrInvalidOption("contentType", ct)
 		}
 		w.contentType = ct
 		return nil
@@ -93,7 +93,7 @@ func WithContentType(ct string) Option {
 func WithMaxPartSize(max int64) Option {
 	return func(w *writer) error {
 		if max < s3manager.MinUploadPartSize {
-			return errors.ErrInvalidNumber(max)
+			return errors.ErrInvalidOption("maxPartSize", max)
 		}
 		w.maxPartSize = max
 		return nil
