@@ -453,7 +453,12 @@ You can refer to [this section](#Struct-initialization) for more details of the 
 
 We strongly recommend the following implementation to set the value using functional option.
 
-If the invalid value is set to the functional option, the `ErrInvalidOption` error defined in the [internal/errors/option.go](https://github.com/vdaas/vald/blob/master/internal/errors/option.go) should be returned.
+If an invalid value is set to the functional option, the `ErrInvalidOption` error defined in the [internal/errors/option.go](https://github.com/vdaas/vald/blob/master/internal/errors/option.go) should be returned.
+
+The name argument (the first argument) of the `ErrInvalidOption` error should be the same as the functional option name without the `With` prefix. 
+
+For example, the functional option name `WithVersion` should return the error with the argument `name` as `version`.
+
 
 ```go
 func WithVersion(version string) Option {
