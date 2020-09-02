@@ -36,7 +36,7 @@ func New() DBR {
 	return new(db)
 }
 
-func (*db) Open(driver string, dsn string, log EventReceiver) (*Connection, error) {
+func (*db) Open(driver, dsn string, log EventReceiver) (*Connection, error) {
 	return dbr.Open(driver, dsn, log)
 }
 

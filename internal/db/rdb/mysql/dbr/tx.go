@@ -23,11 +23,11 @@ type tx struct {
 	*dbr.Tx
 }
 
-type Tx = interface {
+type Tx interface {
 	Commit() error
 	Rollback() error
 	RollbackUnlessCommitted()
-	InsertBySql(query string, value interface{}) InsertStmt
+	InsertBySql(query string, value ...interface{}) InsertStmt
 	InsertInto(table string) InsertStmt
 	Select(column ...string) SelectStmt
 	DeleteFrom(table string) DeleteStmt
@@ -45,8 +45,8 @@ func (t *tx) RollbackUnlessCommitted() {
 	t.RollbackUnlessCommitted()
 }
 
-func (t *tx) InsertBySql(query string, value interface{}) InsertStmt {
-	return t.InsertBySql(query, value)
+func (t *tx) InsertBySql(query string, value ...interface{}) InsertStmt {
+	return t.InsertBySql(query, value...)
 }
 
 func (t *tx) InsertInto(table string) InsertStmt {

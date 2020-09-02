@@ -24,7 +24,7 @@ import (
 	"testing"
 	"time"
 
-	dbr "github.com/gocraft/dbr/v2"
+	"github.com/vdaas/vald/internal/db/rdb/mysql/dbr"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/tcp"
@@ -127,9 +127,10 @@ func Test_mySQLClient_Open(t *testing.T) {
 		tlsConfig            *tls.Config
 		maxOpenConns         int
 		maxIdleConns         int
-		session              *dbr.Session
+		session              dbr.Session
 		connected            atomic.Value
 		eventReceiver        EventReceiver
+		dbr                  dbr.DBR
 	}
 	type want struct {
 		err error
@@ -177,6 +178,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 		           session: nil,
 		           connected: nil,
 		           eventReceiver: nil,
+		           dbr: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -211,6 +213,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 		           session: nil,
 		           connected: nil,
 		           eventReceiver: nil,
+		           dbr: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -251,6 +254,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 				session:              test.fields.session,
 				connected:            test.fields.connected,
 				eventReceiver:        test.fields.eventReceiver,
+				dbr:                  test.fields.dbr,
 			}
 
 			err := m.Open(test.args.ctx)
@@ -283,9 +287,10 @@ func Test_mySQLClient_Ping(t *testing.T) {
 		tlsConfig            *tls.Config
 		maxOpenConns         int
 		maxIdleConns         int
-		session              *dbr.Session
+		session              dbr.Session
 		connected            atomic.Value
 		eventReceiver        EventReceiver
+		dbr                  dbr.DBR
 	}
 	type want struct {
 		err error
@@ -333,6 +338,7 @@ func Test_mySQLClient_Ping(t *testing.T) {
 		           session: nil,
 		           connected: nil,
 		           eventReceiver: nil,
+		           dbr: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -367,6 +373,7 @@ func Test_mySQLClient_Ping(t *testing.T) {
 		           session: nil,
 		           connected: nil,
 		           eventReceiver: nil,
+		           dbr: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -407,6 +414,7 @@ func Test_mySQLClient_Ping(t *testing.T) {
 				session:              test.fields.session,
 				connected:            test.fields.connected,
 				eventReceiver:        test.fields.eventReceiver,
+				dbr:                  test.fields.dbr,
 			}
 
 			err := m.Ping(test.args.ctx)
@@ -439,9 +447,10 @@ func Test_mySQLClient_Close(t *testing.T) {
 		tlsConfig            *tls.Config
 		maxOpenConns         int
 		maxIdleConns         int
-		session              *dbr.Session
+		session              dbr.Session
 		connected            atomic.Value
 		eventReceiver        EventReceiver
+		dbr                  dbr.DBR
 	}
 	type want struct {
 		err error
@@ -489,6 +498,7 @@ func Test_mySQLClient_Close(t *testing.T) {
 		           session: nil,
 		           connected: nil,
 		           eventReceiver: nil,
+		           dbr: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -523,6 +533,7 @@ func Test_mySQLClient_Close(t *testing.T) {
 		           session: nil,
 		           connected: nil,
 		           eventReceiver: nil,
+		           dbr: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -563,6 +574,7 @@ func Test_mySQLClient_Close(t *testing.T) {
 				session:              test.fields.session,
 				connected:            test.fields.connected,
 				eventReceiver:        test.fields.eventReceiver,
+				dbr:                  test.fields.dbr,
 			}
 
 			err := m.Close(test.args.ctx)
@@ -596,9 +608,10 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 		tlsConfig            *tls.Config
 		maxOpenConns         int
 		maxIdleConns         int
-		session              *dbr.Session
+		session              dbr.Session
 		connected            atomic.Value
 		eventReceiver        EventReceiver
+		dbr                  dbr.DBR
 	}
 	type want struct {
 		want MetaVector
@@ -651,6 +664,7 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 		           session: nil,
 		           connected: nil,
 		           eventReceiver: nil,
+		           dbr: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -686,6 +700,7 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 		           session: nil,
 		           connected: nil,
 		           eventReceiver: nil,
+		           dbr: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -726,6 +741,7 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 				session:              test.fields.session,
 				connected:            test.fields.connected,
 				eventReceiver:        test.fields.eventReceiver,
+				dbr:                  test.fields.dbr,
 			}
 
 			got, err := m.GetMeta(test.args.ctx, test.args.uuid)
@@ -759,9 +775,10 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 		tlsConfig            *tls.Config
 		maxOpenConns         int
 		maxIdleConns         int
-		session              *dbr.Session
+		session              dbr.Session
 		connected            atomic.Value
 		eventReceiver        EventReceiver
+		dbr                  dbr.DBR
 	}
 	type want struct {
 		want []string
@@ -814,6 +831,7 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 		           session: nil,
 		           connected: nil,
 		           eventReceiver: nil,
+		           dbr: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -849,6 +867,7 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 		           session: nil,
 		           connected: nil,
 		           eventReceiver: nil,
+		           dbr: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -889,6 +908,7 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 				session:              test.fields.session,
 				connected:            test.fields.connected,
 				eventReceiver:        test.fields.eventReceiver,
+				dbr:                  test.fields.dbr,
 			}
 
 			got, err := m.GetIPs(test.args.ctx, test.args.uuid)
@@ -993,9 +1013,10 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 		tlsConfig            *tls.Config
 		maxOpenConns         int
 		maxIdleConns         int
-		session              *dbr.Session
+		session              dbr.Session
 		connected            atomic.Value
 		eventReceiver        EventReceiver
+		dbr                  dbr.DBR
 	}
 	type want struct {
 		err error
@@ -1044,6 +1065,7 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 		           session: nil,
 		           connected: nil,
 		           eventReceiver: nil,
+		           dbr: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1079,6 +1101,7 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 		           session: nil,
 		           connected: nil,
 		           eventReceiver: nil,
+		           dbr: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1119,6 +1142,7 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 				session:              test.fields.session,
 				connected:            test.fields.connected,
 				eventReceiver:        test.fields.eventReceiver,
+				dbr:                  test.fields.dbr,
 			}
 
 			err := m.SetMeta(test.args.ctx, test.args.mv)
@@ -1152,9 +1176,10 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 		tlsConfig            *tls.Config
 		maxOpenConns         int
 		maxIdleConns         int
-		session              *dbr.Session
+		session              dbr.Session
 		connected            atomic.Value
 		eventReceiver        EventReceiver
+		dbr                  dbr.DBR
 	}
 	type want struct {
 		err error
@@ -1203,6 +1228,7 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 		           session: nil,
 		           connected: nil,
 		           eventReceiver: nil,
+		           dbr: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1238,6 +1264,7 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 		           session: nil,
 		           connected: nil,
 		           eventReceiver: nil,
+		           dbr: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1278,6 +1305,7 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 				session:              test.fields.session,
 				connected:            test.fields.connected,
 				eventReceiver:        test.fields.eventReceiver,
+				dbr:                  test.fields.dbr,
 			}
 
 			err := m.SetMetas(test.args.ctx, test.args.metas...)
@@ -1292,8 +1320,9 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 func Test_deleteMetaWithTx(t *testing.T) {
 	type args struct {
 		ctx  context.Context
-		tx   *dbr.Tx
+		tx   dbr.Tx
 		uuid string
+		dbr  dbr.DBR
 	}
 	type want struct {
 		err error
@@ -1321,6 +1350,7 @@ func Test_deleteMetaWithTx(t *testing.T) {
 		           ctx: nil,
 		           tx: nil,
 		           uuid: "",
+		           dbr: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1336,6 +1366,7 @@ func Test_deleteMetaWithTx(t *testing.T) {
 		           ctx: nil,
 		           tx: nil,
 		           uuid: "",
+		           dbr: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1357,7 +1388,7 @@ func Test_deleteMetaWithTx(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			err := deleteMetaWithTx(test.args.ctx, test.args.tx, test.args.uuid)
+			err := deleteMetaWithTx(test.args.ctx, test.args.tx, test.args.uuid, test.args.dbr)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1388,9 +1419,10 @@ func Test_mySQLClient_DeleteMeta(t *testing.T) {
 		tlsConfig            *tls.Config
 		maxOpenConns         int
 		maxIdleConns         int
-		session              *dbr.Session
+		session              dbr.Session
 		connected            atomic.Value
 		eventReceiver        EventReceiver
+		dbr                  dbr.DBR
 	}
 	type want struct {
 		err error
@@ -1439,6 +1471,7 @@ func Test_mySQLClient_DeleteMeta(t *testing.T) {
 		           session: nil,
 		           connected: nil,
 		           eventReceiver: nil,
+		           dbr: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1474,6 +1507,7 @@ func Test_mySQLClient_DeleteMeta(t *testing.T) {
 		           session: nil,
 		           connected: nil,
 		           eventReceiver: nil,
+		           dbr: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1514,6 +1548,7 @@ func Test_mySQLClient_DeleteMeta(t *testing.T) {
 				session:              test.fields.session,
 				connected:            test.fields.connected,
 				eventReceiver:        test.fields.eventReceiver,
+				dbr:                  test.fields.dbr,
 			}
 
 			err := m.DeleteMeta(test.args.ctx, test.args.uuid)
@@ -1547,9 +1582,10 @@ func Test_mySQLClient_DeleteMetas(t *testing.T) {
 		tlsConfig            *tls.Config
 		maxOpenConns         int
 		maxIdleConns         int
-		session              *dbr.Session
+		session              dbr.Session
 		connected            atomic.Value
 		eventReceiver        EventReceiver
+		dbr                  dbr.DBR
 	}
 	type want struct {
 		err error
@@ -1598,6 +1634,7 @@ func Test_mySQLClient_DeleteMetas(t *testing.T) {
 		           session: nil,
 		           connected: nil,
 		           eventReceiver: nil,
+		           dbr: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1633,6 +1670,7 @@ func Test_mySQLClient_DeleteMetas(t *testing.T) {
 		           session: nil,
 		           connected: nil,
 		           eventReceiver: nil,
+		           dbr: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1673,6 +1711,7 @@ func Test_mySQLClient_DeleteMetas(t *testing.T) {
 				session:              test.fields.session,
 				connected:            test.fields.connected,
 				eventReceiver:        test.fields.eventReceiver,
+				dbr:                  test.fields.dbr,
 			}
 
 			err := m.DeleteMetas(test.args.ctx, test.args.uuids...)
@@ -1707,9 +1746,10 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 		tlsConfig            *tls.Config
 		maxOpenConns         int
 		maxIdleConns         int
-		session              *dbr.Session
+		session              dbr.Session
 		connected            atomic.Value
 		eventReceiver        EventReceiver
+		dbr                  dbr.DBR
 	}
 	type want struct {
 		err error
@@ -1759,6 +1799,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 		           session: nil,
 		           connected: nil,
 		           eventReceiver: nil,
+		           dbr: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1795,6 +1836,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 		           session: nil,
 		           connected: nil,
 		           eventReceiver: nil,
+		           dbr: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1835,6 +1877,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 				session:              test.fields.session,
 				connected:            test.fields.connected,
 				eventReceiver:        test.fields.eventReceiver,
+				dbr:                  test.fields.dbr,
 			}
 
 			err := m.SetIPs(test.args.ctx, test.args.uuid, test.args.ips...)
@@ -1868,9 +1911,10 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 		tlsConfig            *tls.Config
 		maxOpenConns         int
 		maxIdleConns         int
-		session              *dbr.Session
+		session              dbr.Session
 		connected            atomic.Value
 		eventReceiver        EventReceiver
+		dbr                  dbr.DBR
 	}
 	type want struct {
 		err error
@@ -1919,6 +1963,7 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 		           session: nil,
 		           connected: nil,
 		           eventReceiver: nil,
+		           dbr: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1954,6 +1999,7 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 		           session: nil,
 		           connected: nil,
 		           eventReceiver: nil,
+		           dbr: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1994,6 +2040,7 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 				session:              test.fields.session,
 				connected:            test.fields.connected,
 				eventReceiver:        test.fields.eventReceiver,
+				dbr:                  test.fields.dbr,
 			}
 
 			err := m.RemoveIPs(test.args.ctx, test.args.ips...)
