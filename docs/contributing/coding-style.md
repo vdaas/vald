@@ -452,13 +452,15 @@ In Vald, the functional option pattern is widely used in Vald.
 You can refer to [this section](#Struct-initialization) for more details of the use case of this pattern.
 
 We strongly recommend the following implementation to set the value using functional option.
+If set to an invalid value, it should return the error defined in the [internal/errors/option.go](https://github.com/vdaas/vald/blob/master/internal/errors/option.go).
 
 ```go
 func WithVersion(version string) Option {
     return func(c *client) error {
-        if len(version) != 0 {
-            c.version = version
+        if len(version) == 0 {
+            return errors.ErrEmptyString
         }
+        c.version = version
         return nil
     }
 }
@@ -470,7 +472,7 @@ We recommend the following implementation to parse the time string and set the t
 func WithTimeout(dur string) Option {
     func(c *client) error {
         if dur == "" {
-            return nil
+            return errors.ErrEmptyString
         }
         d, err := timeutil.Parse(dur)
         if err != nil {
@@ -488,7 +490,7 @@ We recommend the following implementation to append the value to the slice if th
 func WithHosts(hosts ...string) Option {
     return func(c *client) error {
         if len(hosts) == 0 {
-            return nil
+            return ErrEmptySlice
         }
         if c.hosts == nil {
             c.hosts = hosts
