@@ -16,6 +16,8 @@
 package dbr
 
 import (
+	"context"
+
 	dbr "github.com/gocraft/dbr/v2"
 )
 
@@ -25,7 +27,9 @@ type session struct {
 
 type Session interface {
 	Select(column ...string) SelectStmt
-	Begin() (tx, error)
+	Begin() (Tx, error)
+	Close()
+	PingContext(ctx context.Context) error
 }
 
 func NewSession(conn *dbr.Connection, event EventReceiver) Session {
@@ -38,6 +42,14 @@ func (s *session) Select(column ...string) SelectStmt {
 	return s.Select(column...)
 }
 
-func (s *session) Begin() (tx, error) {
+func (s *session) Begin() (Tx, error) {
 	return s.Begin()
+}
+
+func (s *session) Close() {
+	s.Close()
+}
+
+func (s *session) PingContext(ctx context.Context) error {
+	return s.PingContext(ctx)
 }
