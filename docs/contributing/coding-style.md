@@ -472,7 +472,7 @@ We recommend the following implementation to parse the time string and set the t
 func WithTimeout(dur string) Option {
     func(c *client) error {
         if dur == "" {
-            return errors.ErrEmptyString
+            return errors.ErrInvalidOption("dur", dur)
         }
         d, err := timeutil.Parse(dur)
         if err != nil {
