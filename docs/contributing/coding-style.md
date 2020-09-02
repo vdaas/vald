@@ -490,7 +490,7 @@ We recommend the following implementation to append the value to the slice if th
 func WithHosts(hosts ...string) Option {
     return func(c *client) error {
         if len(hosts) == 0 {
-            return ErrEmptySlice
+            return errors.ErrInvalidOption("hosts", hosts)
         }
         if c.hosts == nil {
             c.hosts = hosts
