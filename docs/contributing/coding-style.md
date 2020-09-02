@@ -458,7 +458,7 @@ If the invalid value is set to the functional option, the `ErrInvalidOption` err
 func WithVersion(version string) Option {
     return func(c *client) error {
         if len(version) == 0 {
-            return errors.ErrEmptyString
+            return errors.ErrInvalidOption("version", version)
         }
         c.version = version
         return nil
