@@ -20,10 +20,10 @@ metadata:
   name: vald-manager-index-config
   labels:
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v0.0.50
+    helm.sh/chart: vald-v0.0.51
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v0.0.50
+    app.kubernetes.io/version: v0.0.51
     app.kubernetes.io/component: manager-index
 data:
   config.yaml: |
@@ -306,3 +306,4 @@ data:
       auto_index_duration_limit: 30m
       auto_index_check_duration: 1m
       auto_index_length: 100
+      creation_pool_size: 10000

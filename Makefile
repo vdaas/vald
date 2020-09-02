@@ -241,8 +241,8 @@ update: \
 	clean \
 	deps \
 	proto/all \
-	format
-
+	format \
+	go/deps
 
 .PHONY: format
 ## format go codes
@@ -265,13 +265,31 @@ format/yaml:
 	    "k8s/**/*.yaml"
 
 .PHONY: deps
-## install dependencies
+## resolve dependencies
 deps: \
 	proto/deps \
+	deps/install
+
+.PHONY: deps/install
+## install dependencies
+deps/install: \
 	goimports/install \
-	prettier/install
+	prettier/install \
+	go/deps
+
+.PHONY: go/deps
+## install Go package dependencies
+go/deps:
+	go clean -cache -modcache -testcache -i -r
+	rm -rf \
+		/go/pkg \
+		$(GOCACHE) \
+		./go.sum \
+		./go.mod
+	cp ./hack/go.mod.default ./go.mod
 	go mod tidy
 	go get -u all 2>/dev/null || true
+
 
 .PHONY: goimports/install
 goimports/install:
@@ -280,7 +298,7 @@ goimports/install:
 
 .PHONY: prettier/install
 prettier/install:
-	npm install -g prettier
+	npm install -g npm prettier
 
 .PHONY: version/vald
 ## print vald version

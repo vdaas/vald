@@ -18,53 +18,15 @@
 package compress
 
 import (
-	"encoding/gob"
 	"io"
 	"reflect"
 	"testing"
 
-	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
+
+	"github.com/vdaas/vald/internal/compress/gob"
+	"github.com/vdaas/vald/internal/errors"
 )
-
-func TestGobCompressVector(t *testing.T) {
-	tests := []struct {
-		vector []float32
-	}{
-		{
-			vector: []float32{0.1, 0.2, 0.3},
-		},
-		{
-			vector: []float32{0.4, 0.2, 0.3, 0.1},
-		},
-		{
-			vector: []float32{0.1, 0.5, 0.12, 0.13, 1.0},
-		},
-	}
-
-	for _, tc := range tests {
-		gobc, err := NewGob()
-		if err != nil {
-			t.Fatalf("initialize failed: %s", err)
-		}
-
-		compressed, err := gobc.CompressVector(tc.vector)
-		if err != nil {
-			t.Fatalf("Compress failed: %s", err)
-		}
-
-		decompressed, err := gobc.DecompressVector(compressed)
-		if err != nil {
-			t.Fatalf("Decompress failed: %s", err)
-		}
-		t.Logf("converted: origin %+v, compressed -> decompressed %+v", tc.vector, decompressed)
-		for i := range tc.vector {
-			if tc.vector[i] != decompressed[i] {
-				t.Fatalf("Invalid convert: origin %+v, compressed -> decompressed %+v", tc.vector, decompressed)
-			}
-		}
-	}
-}
 
 func TestNewGob(t *testing.T) {
 	type args struct {
@@ -92,31 +54,32 @@ func TestNewGob(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           opts: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "returns (Compressor, nil) when option is empty",
+			args: args{
+				opts: nil,
+			},
+			want: want{
+				want: &gobCompressor{
+					transcoder: gob.New(),
+				},
+			},
+		},
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           opts: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns (nil, error) when option is not nil and option apply fails",
+			args: args{
+				opts: []GobOption{
+					func(c *gobCompressor) error {
+						return errors.New("err")
+					},
+				},
+			},
+			want: want{
+				want: nil,
+				err:  errors.New("err"),
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -136,7 +99,6 @@ func TestNewGob(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -145,6 +107,9 @@ func Test_gobCompressor_CompressVector(t *testing.T) {
 	type args struct {
 		vector []float32
 	}
+	type fields struct {
+		transcoder gob.Transcoder
+	}
 	type want struct {
 		want []byte
 		err  error
@@ -152,7 +117,7 @@ func Test_gobCompressor_CompressVector(t *testing.T) {
 	type test struct {
 		name       string
 		args       args
-		g          *gobCompressor
+		fields     fields
 		want       want
 		checkFunc  func(want, []byte, error) error
 		beforeFunc func(args)
@@ -168,31 +133,54 @@ func Test_gobCompressor_CompressVector(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           vector: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "returns ([]byte, nil) when no error occurs",
+			args: args{
+				vector: []float32{
+					1, 2, 3,
+				},
+			},
+			fields: fields{
+				transcoder: &gob.MockTranscoder{
+					NewEncoderFunc: func(w io.Writer) gob.Encoder {
+						return &gob.MockEncoder{
+							EncodeFunc: func(e interface{}) error {
+								_, _ = w.Write([]byte("vald"))
+								return nil
+							},
+						}
+					},
+				},
+			},
+			want: want{
+				want: []byte("vald"),
+				err:  nil,
+			},
+		},
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           vector: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns (nil, error) when decode fails",
+			args: args{
+				vector: []float32{
+					1, 2, 3,
+				},
+			},
+			fields: fields{
+				transcoder: &gob.MockTranscoder{
+					NewEncoderFunc: func(w io.Writer) gob.Encoder {
+						return &gob.MockEncoder{
+							EncodeFunc: func(e interface{}) error {
+								return errors.New("err")
+							},
+						}
+					},
+				},
+			},
+			want: want{
+				want: nil,
+				err:  errors.New("err"),
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -207,20 +195,21 @@ func Test_gobCompressor_CompressVector(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			g := &gobCompressor{}
+			g := &gobCompressor{
+				transcoder: test.fields.transcoder,
+			}
 
 			got, err := g.CompressVector(test.args.vector)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
-func Test_gobCompressor_DecompressVector(t *testing.T) {
+func Test_E2E_gobCompressor_CompressVector(t *testing.T) {
 	type args struct {
-		bs []byte
+		vector []float32
 	}
 	type want struct {
 		want []float32
@@ -229,7 +218,78 @@ func Test_gobCompressor_DecompressVector(t *testing.T) {
 	type test struct {
 		name       string
 		args       args
-		g          *gobCompressor
+		want       want
+		checkFunc  func(want, []byte, error, Compressor) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+
+	defaultCheckFunc := func(w want, got []byte, err error, l Compressor) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got error = %v, want %v", err, w.err)
+		}
+		decompressed, err := l.DecompressVector(got)
+		if err != nil {
+			return errors.Errorf("decompress error: %v", err)
+		}
+		if !reflect.DeepEqual(decompressed, w.want) {
+			return errors.Errorf("got = %v, want %v", decompressed, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "returns ([]byte, nil) when no error occurs",
+			args: args{
+				vector: []float32{0.1, 0.2, 0.3},
+			},
+			want: want{
+				want: []float32{0.1, 0.2, 0.3},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			g, err := NewGob()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			got, err := g.CompressVector(test.args.vector)
+			if err := test.checkFunc(test.want, got, err, g); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_gobCompressor_DecompressVector(t *testing.T) {
+	type args struct {
+		bs []byte
+	}
+	type fields struct {
+		transcoder gob.Transcoder
+	}
+	type want struct {
+		want []float32
+		err  error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
 		want       want
 		checkFunc  func(want, []float32, error) error
 		beforeFunc func(args)
@@ -245,31 +305,54 @@ func Test_gobCompressor_DecompressVector(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           bs: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "returns ([]float32, nil) when no error occurs",
+			args: args{
+				bs: []byte{},
+			},
+			fields: fields{
+				transcoder: &gob.MockTranscoder{
+					NewDecoderFunc: func(io.Reader) gob.Decoder {
+						return &gob.MockDecoder{
+							DecodeFunc: func(e interface{}) error {
+								reflect.ValueOf(e).Elem().Set(reflect.ValueOf(&[]float32{
+									1, 2, 3,
+								}).Elem())
+								return nil
+							},
+						}
+					},
+				},
+			},
+			want: want{
+				want: []float32{
+					1, 2, 3,
+				},
+				err: nil,
+			},
+		},
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           bs: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns (nil, error) when decode fails",
+			args: args{
+				bs: []byte{},
+			},
+			fields: fields{
+				transcoder: &gob.MockTranscoder{
+					NewDecoderFunc: func(io.Reader) gob.Decoder {
+						return &gob.MockDecoder{
+							DecodeFunc: func(interface{}) error {
+								return errors.New("err")
+							},
+						}
+					},
+				},
+			},
+			want: want{
+				want: nil,
+				err:  errors.New("err"),
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -284,13 +367,14 @@ func Test_gobCompressor_DecompressVector(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			g := &gobCompressor{}
+			g := &gobCompressor{
+				transcoder: test.fields.transcoder,
+			}
 
 			got, err := g.DecompressVector(test.args.bs)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -299,6 +383,9 @@ func Test_gobCompressor_Reader(t *testing.T) {
 	type args struct {
 		src io.ReadCloser
 	}
+	type fields struct {
+		transcodr gob.Transcoder
+	}
 	type want struct {
 		want io.ReadCloser
 		err  error
@@ -306,7 +393,7 @@ func Test_gobCompressor_Reader(t *testing.T) {
 	type test struct {
 		name       string
 		args       args
-		g          *gobCompressor
+		fields     fields
 		want       want
 		checkFunc  func(want, io.ReadCloser, error) error
 		beforeFunc func(args)
@@ -322,31 +409,30 @@ func Test_gobCompressor_Reader(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           src: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           src: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			rc := new(MockReadCloser)
+			dec := new(gob.MockDecoder)
+			return test{
+				name: "returns (io.ReadCloser, nil)",
+				args: args{
+					src: rc,
+				},
+				fields: fields{
+					transcodr: &gob.MockTranscoder{
+						NewDecoderFunc: func(r io.Reader) gob.Decoder {
+							return dec
+						},
+					},
+				},
+				want: want{
+					want: &gobReader{
+						src:     rc,
+						decoder: dec,
+					},
+					err: nil,
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
@@ -361,7 +447,9 @@ func Test_gobCompressor_Reader(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			g := &gobCompressor{}
+			g := &gobCompressor{
+				transcoder: test.fields.transcodr,
+			}
 
 			got, err := g.Reader(test.args.src)
 			if err := test.checkFunc(test.want, got, err); err != nil {
@@ -376,6 +464,9 @@ func Test_gobCompressor_Writer(t *testing.T) {
 	type args struct {
 		dst io.WriteCloser
 	}
+	type fields struct {
+		transcoder gob.Transcoder
+	}
 	type want struct {
 		want io.WriteCloser
 		err  error
@@ -383,7 +474,7 @@ func Test_gobCompressor_Writer(t *testing.T) {
 	type test struct {
 		name       string
 		args       args
-		g          *gobCompressor
+		fields     fields
 		want       want
 		checkFunc  func(want, io.WriteCloser, error) error
 		beforeFunc func(args)
@@ -399,31 +490,30 @@ func Test_gobCompressor_Writer(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           dst: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           dst: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			wc := new(MockWriteCloser)
+			enc := new(gob.MockEncoder)
+			return test{
+				name: "returns (io.WriterCloser, nil)",
+				args: args{
+					dst: wc,
+				},
+				fields: fields{
+					transcoder: &gob.MockTranscoder{
+						NewEncoderFunc: func(w io.Writer) gob.Encoder {
+							return enc
+						},
+					},
+				},
+				want: want{
+					want: &gobWriter{
+						dst:     wc,
+						encoder: enc,
+					},
+					err: nil,
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
@@ -438,13 +528,14 @@ func Test_gobCompressor_Writer(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			g := &gobCompressor{}
+			g := &gobCompressor{
+				transcoder: test.fields.transcoder,
+			}
 
 			got, err := g.Writer(test.args.dst)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -455,7 +546,7 @@ func Test_gobReader_Read(t *testing.T) {
 	}
 	type fields struct {
 		src     io.ReadCloser
-		decoder *gob.Decoder
+		decoder gob.Decoder
 	}
 	type want struct {
 		wantN int
@@ -480,39 +571,42 @@ func Test_gobReader_Read(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           p: nil,
-		       },
-		       fields: fields {
-		           src: nil,
-		           decoder: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "returns (n, nil) when no error occurs",
+			args: args{
+				p: []byte{},
+			},
+			fields: fields{
+				decoder: &gob.MockDecoder{
+					DecodeFunc: func(e interface{}) error {
+						reflect.ValueOf(e).Elem().Set(reflect.ValueOf([]byte("vald")))
+						return nil
+					},
+				},
+			},
+			want: want{
+				wantN: 4,
+				err:   nil,
+			},
+		},
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           p: nil,
-		           },
-		           fields: fields {
-		           src: nil,
-		           decoder: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns (0, error) when decode fails",
+			args: args{
+				p: []byte{},
+			},
+			fields: fields{
+				decoder: &gob.MockDecoder{
+					DecodeFunc: func(e interface{}) error {
+						return errors.New("err")
+					},
+				},
+			},
+			want: want{
+				wantN: 0,
+				err:   errors.New("err"),
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -528,7 +622,6 @@ func Test_gobReader_Read(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			gr := &gobReader{
-				src:     test.fields.src,
 				decoder: test.fields.decoder,
 			}
 
@@ -536,7 +629,6 @@ func Test_gobReader_Read(t *testing.T) {
 			if err := test.checkFunc(test.want, gotN, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -564,33 +656,19 @@ func Test_gobReader_Close(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           src: nil,
-		           decoder: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           src: nil,
-		           decoder: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns nil",
+			fields: fields{
+				src: &MockReadCloser{
+					CloseFunc: func() error {
+						return nil
+					},
+				},
+			},
+			want: want{
+				err: nil,
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -606,15 +684,13 @@ func Test_gobReader_Close(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			gr := &gobReader{
-				src:     test.fields.src,
-				decoder: test.fields.decoder,
+				src: test.fields.src,
 			}
 
 			err := gr.Close()
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -625,7 +701,7 @@ func Test_gobWriter_Write(t *testing.T) {
 	}
 	type fields struct {
 		dst     io.WriteCloser
-		encoder *gob.Encoder
+		encoder gob.Encoder
 	}
 	type want struct {
 		wantN int
@@ -650,39 +726,42 @@ func Test_gobWriter_Write(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           p: nil,
-		       },
-		       fields: fields {
-		           dst: nil,
-		           encoder: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "returns (n, nil) when no error occurs",
+			args: args{
+				p: []byte{},
+			},
+			fields: fields{
+				encoder: &gob.MockEncoder{
+					EncodeFunc: func(e interface{}) error {
+						reflect.ValueOf(e).Elem().Set(reflect.ValueOf([]byte("vald")))
+						return nil
+					},
+				},
+			},
+			want: want{
+				wantN: 4,
+				err:   nil,
+			},
+		},
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           p: nil,
-		           },
-		           fields: fields {
-		           dst: nil,
-		           encoder: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns (0, error) when encode fails",
+			args: args{
+				p: []byte{},
+			},
+			fields: fields{
+				encoder: &gob.MockEncoder{
+					EncodeFunc: func(e interface{}) error {
+						return errors.New("err")
+					},
+				},
+			},
+			want: want{
+				wantN: 0,
+				err:   errors.New("err"),
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -698,7 +777,6 @@ func Test_gobWriter_Write(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			gw := &gobWriter{
-				dst:     test.fields.dst,
 				encoder: test.fields.encoder,
 			}
 
@@ -706,7 +784,6 @@ func Test_gobWriter_Write(t *testing.T) {
 			if err := test.checkFunc(test.want, gotN, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -714,7 +791,7 @@ func Test_gobWriter_Write(t *testing.T) {
 func Test_gobWriter_Close(t *testing.T) {
 	type fields struct {
 		dst     io.WriteCloser
-		encoder *gob.Encoder
+		encoder gob.Encoder
 	}
 	type want struct {
 		err error
@@ -734,33 +811,19 @@ func Test_gobWriter_Close(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           dst: nil,
-		           encoder: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           dst: nil,
-		           encoder: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns nil",
+			fields: fields{
+				dst: &MockWriteCloser{
+					CloseFunc: func() error {
+						return nil
+					},
+				},
+			},
+			want: want{
+				err: nil,
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -776,15 +839,13 @@ func Test_gobWriter_Close(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			gw := &gobWriter{
-				dst:     test.fields.dst,
-				encoder: test.fields.encoder,
+				dst: test.fields.dst,
 			}
 
 			err := gw.Close()
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
