@@ -90,7 +90,7 @@ func TestWithErrGroup(t *testing.T) {
 				obj: &T{
 					eg: errgroup.Get(),
 				},
-				err: errors.ErrNilObject,
+				err: errors.ErrInvalidOption("errgroup", nil),
 			},
 		},
 	}
@@ -169,10 +169,11 @@ func TestWithService(t *testing.T) {
 
 		func() test {
 			s := new(s3.S3)
+			var ss *s3.S3
 			return test{
 				name: "returns error when s is nil",
 				args: args{
-					s: nil,
+					s: ss,
 				},
 				fields: fields{
 					service: s,
@@ -181,7 +182,7 @@ func TestWithService(t *testing.T) {
 					obj: &T{
 						service: s,
 					},
-					err: errors.ErrNilObject,
+					err: errors.ErrInvalidOption("service", ss),
 				},
 			}
 		}(),
@@ -259,7 +260,7 @@ func TestWithBucket(t *testing.T) {
 			},
 			want: want{
 				obj: new(T),
-				err: errors.ErrEmptyString,
+				err: errors.ErrInvalidOption("bucket", ""),
 			},
 		},
 	}
@@ -334,7 +335,7 @@ func TestWithKey(t *testing.T) {
 			},
 			want: want{
 				obj: new(T),
-				err: errors.ErrEmptyString,
+				err: errors.ErrInvalidOption("key", ""),
 			},
 		},
 	}
@@ -409,7 +410,7 @@ func TestWithMaxPartSize(t *testing.T) {
 			},
 			want: want{
 				obj: new(T),
-				err: errors.ErrInvalidNumber(10),
+				err: errors.ErrInvalidOption("maxPartSize", 10),
 			},
 		},
 	}
