@@ -26,24 +26,24 @@ type selectStmt struct {
 }
 
 type SelectStmt interface {
-	From(table interface{}) SelectStmt
-	Where(query interface{}, value ...interface{}) SelectStmt
-	Limit(n uint64) SelectStmt
+	// From(table interface{}) SelectStmt
+	// Where(query interface{}, value ...interface{}) SelectStmt
+	// Limit(n uint64) SelectStmt
 	LoadContext(ctx context.Context, value interface{}) (int, error)
 }
 
 func (stmt *selectStmt) From(table interface{}) SelectStmt {
-	return stmt.From(table)
+	return stmt.SelectStmt.From(table)
 }
 
 func (stmt *selectStmt) Where(query interface{}, value ...interface{}) SelectStmt {
-	return stmt.Where(query, value)
+	return stmt.SelectStmt.Where(query, value...)
 }
 
 func (stmt *selectStmt) Limit(n uint64) SelectStmt {
-	return stmt.Limit(n)
+	return stmt.SelectStmt.Limit(n)
 }
 
 func (stmt *selectStmt) LoadContext(ctx context.Context, value interface{}) (int, error) {
-	return stmt.LoadContext(ctx, value)
+	return stmt.SelectStmt.LoadContext(ctx, value)
 }
