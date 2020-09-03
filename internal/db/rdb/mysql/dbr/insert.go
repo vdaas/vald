@@ -19,27 +19,29 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/gocraft/dbr"
+	dbr "github.com/gocraft/dbr/v2"
 )
+
+type InsertStmt interface {
+	Columns(column ...string) InsertStmt
+	ExecContext(ctx context.Context) (sql.Result, error)
+	Record(structValue interface{}) InsertStmt
+}
 
 type insertStmt struct {
 	*dbr.InsertStmt
 }
 
-type InsertStmt interface {
-	// Columns(column ...string) InsertStmt
-	ExecContext(ctx context.Context) (sql.Result, error)
-	// Record(structValue interface{}) InsertStmt
-}
-
 func (stmt *insertStmt) Columns(column ...string) InsertStmt {
-	return stmt.InsertStmt.Columns(column...)
+	stmt.InsertStmt = stmt.InsertStmt.Columns(column...)
+	return stmt
 }
 
 func (stmt *insertStmt) ExecContext(ctx context.Context) (sql.Result, error) {
-	return stmt.ExecContext(ctx)
+	return stmt.InsertStmt.ExecContext(ctx)
 }
 
 func (stmt *insertStmt) Record(structValue interface{}) InsertStmt {
-	return stmt.InsertStmt.Record(structValue)
+	stmt.InsertStmt = stmt.InsertStmt.Record(structValue)
+	return stmt
 }

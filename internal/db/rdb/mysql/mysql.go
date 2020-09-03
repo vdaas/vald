@@ -25,7 +25,6 @@ import (
 	"time"
 
 	"github.com/go-sql-driver/mysql"
-	// dbr "github.com/gocraft/dbr/v2"
 	"github.com/vdaas/vald/internal/db/rdb/mysql/dbr"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -126,7 +125,7 @@ func (m *mySQLClient) Open(ctx context.Context) error {
 	conn.SetMaxIdleConns(m.maxIdleConns)
 	conn.SetMaxOpenConns(m.maxOpenConns)
 
-	m.session = dbr.NewSession(conn, nil)
+	m.session = dbr.NewSession(*conn, nil)
 	m.connected.Store(true)
 
 	return m.Ping(ctx)
