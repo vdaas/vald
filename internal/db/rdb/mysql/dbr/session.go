@@ -21,29 +21,34 @@ import (
 	dbr "github.com/gocraft/dbr/v2"
 )
 
-type session struct {
-	*dbr.Session
-}
-
 type Session interface {
 	Select(column ...string) SelectStmt
-	Begin() (*dbr.Tx, error)
+	Begin() (*tx, error)
 	Close()
 	PingContext(ctx context.Context) error
 }
 
-func NewSession(conn *dbr.Connection, event EventReceiver) Session {
+type session struct {
+	*dbr.Session
+}
+
+func NewSession(conn Connection, event EventReceiver) Session {
 	return &session{
 		conn.NewSession(event),
 	}
 }
 
 func (s *session) Select(column ...string) SelectStmt {
-	return s.Session.Select(column...)
+	return &selectStmt{
+		s.Session.Select(column...),
+	}
 }
 
-func (s *session) Begin() (*dbr.Tx, error) {
-	return s.Session.Begin()
+func (s *session) Begin() (*tx, error) {
+	t, err := s.Session.Begin()
+	return &tx{
+		t,
+	}, err
 }
 
 func (s *session) Close() {
