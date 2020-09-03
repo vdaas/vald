@@ -479,7 +479,7 @@ func TestWithContentType(t *testing.T) {
 		},
 
 		{
-			name: "set success when ct is not empty",
+			name: "returns error when ct is empty",
 			args: args{
 				ct: "",
 			},
