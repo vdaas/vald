@@ -24,7 +24,7 @@ import (
 type Session interface {
 	Select(column ...string) SelectStmt
 	Begin() (*tx, error)
-	Close()
+	Close() error
 	PingContext(ctx context.Context) error
 }
 
@@ -32,29 +32,29 @@ type session struct {
 	*dbr.Session
 }
 
-func NewSession(conn Connection, event EventReceiver) Session {
+func NewSession(conn *Connection, event EventReceiver) Session {
 	return &session{
 		conn.NewSession(event),
 	}
 }
 
-func (s *session) Select(column ...string) SelectStmt {
+func (sess *session) Select(column ...string) SelectStmt {
 	return &selectStmt{
-		s.Session.Select(column...),
+		sess.Session.Select(column...),
 	}
 }
 
-func (s *session) Begin() (*tx, error) {
-	t, err := s.Session.Begin()
+func (sess *session) Begin() (*tx, error) {
+	t, err := sess.Session.Begin()
 	return &tx{
 		t,
 	}, err
 }
 
-func (s *session) Close() {
-	s.Session.Close()
+func (sess *session) Close() error {
+	return sess.Session.Close()
 }
 
-func (s *session) PingContext(ctx context.Context) error {
-	return s.Session.PingContext(ctx)
+func (sess *session) PingContext(ctx context.Context) error {
+	return sess.Session.PingContext(ctx)
 }
