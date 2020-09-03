@@ -23,8 +23,8 @@ import (
 	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/s3"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/s3/s3manager"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -32,10 +32,11 @@ import (
 )
 
 type writer struct {
-	eg      errgroup.Group
-	service *s3.S3
-	bucket  string
-	key     string
+	eg        errgroup.Group
+	s3manager s3manager.S3Manager
+	service   *s3.S3
+	bucket    string
+	key       string
 
 	contentType string
 	maxPartSize int64
@@ -44,13 +45,17 @@ type writer struct {
 	wg *sync.WaitGroup
 }
 
+// Writer represents an interface to write to s3.
 type Writer interface {
 	Open(ctx context.Context) error
 	io.WriteCloser
 }
 
+// New returns Writer implementation.
 func New(opts ...Option) Writer {
-	w := new(writer)
+	w := &writer{
+		s3manager: s3manager.New(),
+	}
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(w); err != nil {
 			log.Warn(errors.ErrOptionFailed(err, reflect.ValueOf(opt)))
@@ -100,9 +105,9 @@ func (w *writer) Write(p []byte) (n int, err error) {
 }
 
 func (w *writer) upload(ctx context.Context, body io.Reader) (err error) {
-	uploader := s3manager.NewUploaderWithClient(
+	uploader := w.s3manager.NewUploaderWithClient(
 		w.service,
-		func(u *s3manager.Uploader) {
+		func(u *s3manager.Uploade) {
 			u.PartSize = w.maxPartSize
 		},
 	)
