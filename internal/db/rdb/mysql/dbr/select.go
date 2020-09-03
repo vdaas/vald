@@ -21,27 +21,30 @@ import (
 	dbr "github.com/gocraft/dbr/v2"
 )
 
+type SelectStmt interface {
+	From(table interface{}) SelectStmt
+	Where(query interface{}, value ...interface{}) SelectStmt
+	Limit(n uint64) SelectStmt
+	LoadContext(ctx context.Context, value interface{}) (int, error)
+}
+
 type selectStmt struct {
 	*dbr.SelectStmt
 }
 
-type SelectStmt interface {
-	// From(table interface{}) SelectStmt
-	// Where(query interface{}, value ...interface{}) SelectStmt
-	// Limit(n uint64) SelectStmt
-	LoadContext(ctx context.Context, value interface{}) (int, error)
-}
-
 func (stmt *selectStmt) From(table interface{}) SelectStmt {
-	return stmt.SelectStmt.From(table)
+	stmt.SelectStmt = stmt.SelectStmt.From(table)
+	return stmt
 }
 
 func (stmt *selectStmt) Where(query interface{}, value ...interface{}) SelectStmt {
-	return stmt.SelectStmt.Where(query, value...)
+	stmt.SelectStmt = stmt.SelectStmt.Where(query, value...)
+	return stmt
 }
 
 func (stmt *selectStmt) Limit(n uint64) SelectStmt {
-	return stmt.SelectStmt.Limit(n)
+	stmt.SelectStmt = stmt.SelectStmt.Limit(n)
+	return stmt
 }
 
 func (stmt *selectStmt) LoadContext(ctx context.Context, value interface{}) (int, error) {

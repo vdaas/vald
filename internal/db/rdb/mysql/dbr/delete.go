@@ -22,19 +22,20 @@ import (
 	dbr "github.com/gocraft/dbr/v2"
 )
 
-type deleteStmt struct {
-	*dbr.DeleteStmt
-}
-
 type DeleteStmt interface {
 	ExecContext(ctx context.Context) (sql.Result, error)
-	// Where(query interface{}, value ...interface{}) DeleteStmt
+	Where(query interface{}, value ...interface{}) DeleteStmt
+}
+
+type deleteStmt struct {
+	*dbr.DeleteStmt
 }
 
 func (stmt *deleteStmt) ExecContext(ctx context.Context) (sql.Result, error) {
 	return stmt.DeleteStmt.ExecContext(ctx)
 }
 
-func (stmt *deleteStmt) Where(query string, value ...interface{}) DeleteStmt {
-	return stmt.DeleteStmt.Where(query, value...)
+func (stmt *deleteStmt) Where(query interface{}, value ...interface{}) DeleteStmt {
+	stmt.DeleteStmt = stmt.DeleteStmt.Where(query, value...)
+	return stmt
 }

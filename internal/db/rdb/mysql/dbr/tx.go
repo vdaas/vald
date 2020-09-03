@@ -19,10 +19,6 @@ import (
 	dbr "github.com/gocraft/dbr/v2"
 )
 
-type tx struct {
-	*dbr.Tx
-}
-
 type Tx interface {
 	Commit() error
 	Rollback() error
@@ -31,6 +27,10 @@ type Tx interface {
 	InsertInto(table string) InsertStmt
 	Select(column ...string) SelectStmt
 	DeleteFrom(table string) DeleteStmt
+}
+
+type tx struct {
+	*dbr.Tx
 }
 
 func (t *tx) Commit() error {
@@ -46,17 +46,25 @@ func (t *tx) RollbackUnlessCommitted() {
 }
 
 func (t *tx) InsertBySql(query string, value ...interface{}) InsertStmt {
-	return t.Tx.InsertBySql(query, value...)
+	return &insertStmt{
+		t.Tx.InsertBySql(query, value...),
+	}
 }
 
 func (t *tx) InsertInto(table string) InsertStmt {
-	return t.Tx.InsertInto(table)
+	return &insertStmt{
+		t.Tx.InsertInto(table),
+	}
 }
 
 func (t *tx) Select(column ...string) SelectStmt {
-	return t.Tx.Select(column...)
+	return &selectStmt{
+		t.Tx.Select(column...),
+	}
 }
 
 func (t *tx) DeleteFrom(table string) DeleteStmt {
-	return t.Tx.DeleteFrom(table)
+	return &deleteStmt{
+		t.Tx.DeleteFrom(table),
+	}
 }
