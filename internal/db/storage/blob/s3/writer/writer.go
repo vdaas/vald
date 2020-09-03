@@ -23,7 +23,7 @@ import (
 	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/vdaas/vald/internal/db/storage/blob/s3/sdk/s3"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/sdk/s3/s3iface"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/sdk/s3/s3manager"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -34,7 +34,7 @@ import (
 type writer struct {
 	eg        errgroup.Group
 	s3manager s3manager.S3Manager
-	service   *s3.S3
+	service   s3iface.S3API
 	bucket    string
 	key       string
 
