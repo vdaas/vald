@@ -19,6 +19,11 @@ import (
 	dbr "github.com/gocraft/dbr/v2"
 )
 
+type DBR interface {
+	Open(driver, dsn string, log EventReceiver) (*Connection, error)
+	Eq(col string, val interface{}) Builder
+}
+
 type (
 	Builder       = dbr.Builder
 	Connection    = dbr.Connection
@@ -26,11 +31,6 @@ type (
 )
 
 type db struct{}
-
-type DBR interface {
-	Open(driver, dsn string, log EventReceiver) (*Connection, error)
-	Eq(col string, val interface{}) Builder
-}
 
 func New() DBR {
 	return new(db)
