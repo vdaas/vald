@@ -23,8 +23,8 @@ import (
 	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/vdaas/vald/internal/db/storage/blob/s3/s3"
-	"github.com/vdaas/vald/internal/db/storage/blob/s3/s3/s3manager"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/sdk/s3"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/sdk/s3/s3manager"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
