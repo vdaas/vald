@@ -508,6 +508,21 @@ func WithHosts(hosts ...string) Option {
 }
 ```
 
+We recommend the following implementation to apply the options.
+
+If the option failed to apply, an error wrapped with `ErrOptionFailed` defined in the [internal/errors/errors.go](https://github.com/vdaas/vald/blob/master/internal/errors/errors.go) should be returned.
+
+```go
+func New(opts ...Option) (Server, error) {
+    srv := new(server)
+    for _, opt := range opts {
+        if err := opt(srv); err != nil {
+            return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+        }
+    }
+}
+```
+
 ## Program comments
 
 Program comments make easier to understand the source code. We suggest not to write many comments inside the source code unless the source code is very complicated and confusing; otherwise we should divide the source code into methods to keep the readability and usability of the source code.
