@@ -125,7 +125,7 @@ func (m *mySQLClient) Open(ctx context.Context) error {
 	conn.SetMaxIdleConns(m.maxIdleConns)
 	conn.SetMaxOpenConns(m.maxOpenConns)
 
-	m.session = dbr.NewSession(*conn, nil)
+	m.session = dbr.NewSession(conn, nil)
 	m.connected.Store(true)
 
 	return m.Ping(ctx)
