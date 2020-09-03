@@ -57,17 +57,17 @@ spec:
             - "--watches-file=./watches.yaml"
             {{- if .Values.enableLeaderElection }}
             - "--enable-leader-election"
-            - "--leader-election-id {{ default .Values.name .Values.leaderElectionID }}"
-            - "--leader-election-namespace ${POD_NAMESPACE}"
+            - "--leader-election-id={{ default .Values.name .Values.leaderElectionID }}"
+            - "--leader-election-namespace={{ .Release.Namespace }}"
             {{- end }}
             {{- if .Values.enableMetrics }}
-            - "--metrics-addr \":{{ .Values.metricsPort }}\"}"
+            - "--metrics-addr=:{{ .Values.metricsPort }}"
             {{- end }}
-            - "--reconcile-period {{ .Values.reconcilePeriod }}"
-            - "--max-concurrent-reconciles {{ .Values.maxConcurrentReconciles }}"
-            - "--zap-encoder {{ .Values.logging.format }}"
-            - "--zap-level {{ .Values.logging.level }}"
-            - "--zap-stacktrace-level {{ .Values.logging.stacktraceLevel }}"
+            - "--reconcile-period={{ .Values.reconcilePeriod }}"
+            - "--max-concurrent-reconciles={{ .Values.maxConcurrentReconciles }}"
+            - "--zap-encoder={{ .Values.logging.format }}"
+            - "--zap-log-level={{ .Values.logging.level }}"
+            - "--zap-stacktrace-level={{ .Values.logging.stacktraceLevel }}"
           {{- if .Values.enableMetrics }}
           ports:
             - name: prometheus
@@ -75,10 +75,6 @@ spec:
               containerPort: {{ .Values.metricsPort }}
           {{- end }}
           env:
-            - name: POD_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
             - name: POD_NAME
               valueFrom:
                 fieldRef:
