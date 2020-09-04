@@ -28,6 +28,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"strconv"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -789,6 +790,7 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 				},
 				afterFunc: func(args) {
 					cancel()
+					time.Sleep(500 * time.Millisecond)
 				},
 			}
 		}(),
@@ -1045,7 +1047,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 				args: args{
 					dctx:    context.Background(),
 					network: "tcp",
-					addr:    addr + ":" + string(port),
+					addr:    addr + ":" + strconv.FormatUint(uint64(port), 10),
 				},
 				fields: fields{
 					der: &net.Dialer{
@@ -1057,10 +1059,10 @@ func Test_dialer_cachedDialer(t *testing.T) {
 					dnsCache: true,
 				},
 				checkFunc: func(d *dialer, w want, gotConn net.Conn, err error) error {
-					if err == nil {
-						return errors.New("err is nil")
+					if err != nil {
+						return errors.New("err is not nil")
 					}
-					if gotConn != nil {
+					if gotConn == nil {
 						return errors.New("conn is nil")
 					}
 
@@ -1096,7 +1098,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 				args: args{
 					dctx:    context.Background(),
 					network: "tcp",
-					addr:    addr + ":" + string(port),
+					addr:    addr + ":" + strconv.FormatUint(uint64(port), 10),
 				},
 				fields: fields{
 					der: &net.Dialer{
@@ -1109,10 +1111,10 @@ func Test_dialer_cachedDialer(t *testing.T) {
 					tlsConfig: new(tls.Config),
 				},
 				checkFunc: func(d *dialer, w want, gotConn net.Conn, err error) error {
-					if err == nil {
-						return errors.New("err is nil")
+					if err != nil {
+						return errors.New("err is not nil")
 					}
-					if gotConn != nil {
+					if gotConn == nil {
 						return errors.New("conn is nil")
 					}
 

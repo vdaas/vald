@@ -228,7 +228,7 @@ func TestWithQueueCheckDuration(t *testing.T) {
 			},
 			want: want{
 				obj: new(T),
-				err: stderrors.New("time: invalid duration invalid"),
+				err: stderrors.New("time: invalid duration \"invalid\""),
 			},
 		},
 	}
