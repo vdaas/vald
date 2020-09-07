@@ -7,22 +7,22 @@ import (
 )
 
 type (
-	// Uploade is type alias of s3manager.Uploader.
-	Uploade = s3manager.Uploader
-	// UploadInput is type alias of s3manager.UploadeInput.
+	// Uploader is type alias of s3manager.Uploader.
+	Uploader = s3manager.Uploader
+	// UploadInput is type alias of s3manager.UploadInput.
 	UploadInput = s3manager.UploadInput
-	// UploadOutput is type alias of s3manager.UploadeOutput.
+	// UploadOutput is type alias of s3manager.UploadOutput.
 	UploadOutput = s3manager.UploadOutput
 )
 
-// Uploader represents an interface to upload to s3.
-type Uploader interface {
-	UploadWithContext(ctx aws.Context, input *UploadInput, opts ...func(*Uploade)) (*UploadOutput, error)
+// Upload represents an interface to upload to s3.
+type Upload interface {
+	UploadWithContext(ctx aws.Context, input *UploadInput, opts ...func(*Uploader)) (*UploadOutput, error)
 }
 
 // S3Manager represents an interface to create object of s3manager package.
 type S3Manager interface {
-	NewUploaderWithClient(svc s3iface.S3API, options ...func(*Uploade)) Uploader
+	NewUploaderWithClient(svc s3iface.S3API, options ...func(*Uploader)) Upload
 }
 
 type s3mngr struct{}
@@ -32,6 +32,6 @@ func New() S3Manager {
 	return new(s3mngr)
 }
 
-func (*s3mngr) NewUploaderWithClient(svc s3iface.S3API, options ...func(*Uploade)) Uploader {
+func (*s3mngr) NewUploaderWithClient(svc s3iface.S3API, options ...func(*Uploader)) Upload {
 	return s3manager.NewUploaderWithClient(svc, options...)
 }
