@@ -1317,12 +1317,33 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 	}
 }
 
-func Test_deleteMetaWithTx(t *testing.T) {
+func Test_mySQLClient_deleteMetaWithTx(t *testing.T) {
 	type args struct {
 		ctx  context.Context
 		tx   dbr.Tx
 		uuid string
-		dbr  dbr.DBR
+	}
+	type fields struct {
+		db                   string
+		host                 string
+		port                 int
+		user                 string
+		pass                 string
+		name                 string
+		charset              string
+		timezone             string
+		initialPingTimeLimit time.Duration
+		initialPingDuration  time.Duration
+		connMaxLifeTime      time.Duration
+		dialer               tcp.Dialer
+		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
+		tlsConfig            *tls.Config
+		maxOpenConns         int
+		maxIdleConns         int
+		session              dbr.Session
+		connected            atomic.Value
+		eventReceiver        EventReceiver
+		dbr                  dbr.DBR
 	}
 	type want struct {
 		err error
@@ -1330,6 +1351,7 @@ func Test_deleteMetaWithTx(t *testing.T) {
 	type test struct {
 		name       string
 		args       args
+		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
@@ -1350,6 +1372,27 @@ func Test_deleteMetaWithTx(t *testing.T) {
 		           ctx: nil,
 		           tx: nil,
 		           uuid: "",
+		       },
+		       fields: fields {
+		           db: "",
+		           host: "",
+		           port: 0,
+		           user: "",
+		           pass: "",
+		           name: "",
+		           charset: "",
+		           timezone: "",
+		           initialPingTimeLimit: nil,
+		           initialPingDuration: nil,
+		           connMaxLifeTime: nil,
+		           dialer: nil,
+		           dialerFunc: nil,
+		           tlsConfig: nil,
+		           maxOpenConns: 0,
+		           maxIdleConns: 0,
+		           session: nil,
+		           connected: nil,
+		           eventReceiver: nil,
 		           dbr: nil,
 		       },
 		       want: want{},
@@ -1366,6 +1409,27 @@ func Test_deleteMetaWithTx(t *testing.T) {
 		           ctx: nil,
 		           tx: nil,
 		           uuid: "",
+		           },
+		           fields: fields {
+		           db: "",
+		           host: "",
+		           port: 0,
+		           user: "",
+		           pass: "",
+		           name: "",
+		           charset: "",
+		           timezone: "",
+		           initialPingTimeLimit: nil,
+		           initialPingDuration: nil,
+		           connMaxLifeTime: nil,
+		           dialer: nil,
+		           dialerFunc: nil,
+		           tlsConfig: nil,
+		           maxOpenConns: 0,
+		           maxIdleConns: 0,
+		           session: nil,
+		           connected: nil,
+		           eventReceiver: nil,
 		           dbr: nil,
 		           },
 		           want: want{},
@@ -1387,8 +1451,30 @@ func Test_deleteMetaWithTx(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
+			m := &mySQLClient{
+				db:                   test.fields.db,
+				host:                 test.fields.host,
+				port:                 test.fields.port,
+				user:                 test.fields.user,
+				pass:                 test.fields.pass,
+				name:                 test.fields.name,
+				charset:              test.fields.charset,
+				timezone:             test.fields.timezone,
+				initialPingTimeLimit: test.fields.initialPingTimeLimit,
+				initialPingDuration:  test.fields.initialPingDuration,
+				connMaxLifeTime:      test.fields.connMaxLifeTime,
+				dialer:               test.fields.dialer,
+				dialerFunc:           test.fields.dialerFunc,
+				tlsConfig:            test.fields.tlsConfig,
+				maxOpenConns:         test.fields.maxOpenConns,
+				maxIdleConns:         test.fields.maxIdleConns,
+				session:              test.fields.session,
+				connected:            test.fields.connected,
+				eventReceiver:        test.fields.eventReceiver,
+				dbr:                  test.fields.dbr,
+			}
 
-			err := deleteMetaWithTx(test.args.ctx, test.args.tx, test.args.uuid, test.args.dbr)
+			err := m.deleteMetaWithTx(test.args.ctx, test.args.tx, test.args.uuid)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
