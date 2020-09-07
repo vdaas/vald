@@ -47,8 +47,7 @@
           "format": "int64"
         },
         "indexing": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         }
       }
     },

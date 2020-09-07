@@ -76,13 +76,12 @@ func (e *ErrCassandraNotFoundIdentity) Error() string {
 	return e.err.Error()
 }
 
+func (e *ErrCassandraNotFoundIdentity) Unwrap() error {
+	return e.err
+}
+
 func IsErrCassandraNotFound(err error) bool {
-	switch err.(type) {
-	case *ErrCassandraNotFoundIdentity:
-		return true
-	default:
-		return false
-	}
+	return As(err, &ErrCassandraNotFoundIdentity{})
 }
 
 type ErrCassandraUnavailableIdentity struct {
@@ -93,11 +92,10 @@ func (e *ErrCassandraUnavailableIdentity) Error() string {
 	return e.err.Error()
 }
 
+func (e *ErrCassandraUnavailableIdentity) Unwrap() error {
+	return e.err
+}
+
 func IsErrCassandraUnavailable(err error) bool {
-	switch err.(type) {
-	case *ErrCassandraUnavailableIdentity:
-		return true
-	default:
-		return false
-	}
+	return As(err, &ErrCassandraUnavailableIdentity{})
 }
