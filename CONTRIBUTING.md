@@ -90,8 +90,10 @@ Follow these steps to make a contribution to any of our open source repositories
 1. Ensure that you have completed our [CLA Agreement](https://cla-assistant.io/vdaas/vald)
 2. Set your name and email (these should match the information on your submitted CLA)
 
-        git config --global user.name "Firstname Lastname"
-        git config --global user.email "your_email@example.com"
+    ```bash
+    git config --global user.name "Firstname Lastname"
+    git config --global user.email "your_email@example.com"
+    ```
 
 
 ### How to contributing source code
@@ -121,6 +123,6 @@ Name your branches with prefixes: `[type]/[area]/[description]`
 
 * `type` = feature, bug, refactoring, benchmark, security, documentation, dependencies, ci, ...
 * `area` (\*) = gateway, meta, manager-backup, manager-replication, ...
-* `description` = branch description. description must be hyphenated.
+* `description` = branch description. description must be hyphenated. please use [a-zA-Z0-9] and hyphen as characters, do not use any other characters.
 
 (\*) If you changed multiple areas, please list up each area with "-".
