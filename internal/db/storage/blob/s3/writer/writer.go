@@ -19,6 +19,7 @@ package writer
 import (
 	"context"
 	"io"
+	"reflect"
 	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -51,7 +52,9 @@ type Writer interface {
 func New(opts ...Option) Writer {
 	w := new(writer)
 	for _, opt := range append(defaultOpts, opts...) {
-		opt(w)
+		if err := opt(w); err != nil {
+			log.Warn(errors.ErrOptionFailed(err, reflect.ValueOf(opt)))
+		}
 	}
 
 	return w

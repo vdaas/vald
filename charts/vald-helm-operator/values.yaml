@@ -17,6 +17,7 @@
 # @schema {"name": "name", "type": "string"}
 # name -- name of the deployment
 name: vald-helm-operator
+
 # @schema {"name": "replicas", "type": "integer"}
 # replicas -- number of replicas
 replicas: 2
@@ -51,6 +52,32 @@ serviceAccount:
   # serviceAccount.name -- name of service account
   name: vald-helm-operator
 
+# @schema {"name": "service", "type": "object"}
+service:
+  # @schema {"name": "service.enabled", "type": "boolean"}
+  # service.enabled -- service enabled
+  enabled: true
+  # @schema {"name": "service.annotations", "type": "object"}
+  # service.annotations -- service annotations
+  annotations: {}
+  # @schema {"name": "service.labels", "type": "object"}
+  # service.labels -- service labels
+  labels: {}
+  # @schema {"name": "service.type", "type": "string", "enum": ["ClusterIP", "LoadBalancer", "NodePort"]}
+  # service.type -- service type: ClusterIP, LoadBalancer or NodePort
+  type: ClusterIP
+  # @schema {"name": "service.externalTrafficPolicy", "type": "string"}
+  # service.externalTrafficPolicy -- external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+  externalTrafficPolicy: ""
+
+# @schema {"name": "annotations", "type": "object"}
+# annotations -- deployment annotations
+annotations: {}
+
+# @schema {"name": "podAnnotations", "type": "object"}
+# podAnnotations -- pod annotations
+podAnnotations: {}
+
 # @schema {"name": "resources", "type": "object"}
 # resources -- kubernetes resources of pod
 resources: {}
@@ -67,13 +94,37 @@ tolerations: []
 # affinity -- affinity
 affinity: {}
 
+# @schema {"name": "enableLeaderElection", "type": "boolean"}
+# enableLeaderElection -- enable leader election for controller manager.
+enableLeaderElection: true
+
+# @schema {"name": "leaderElectionID", "type": "string"}
+# leaderElectionID -- name of the configmap that is used for holding the leader lock.
+leaderElectionID: vald-helm-operator
+
 # @schema {"name": "reconcilePeriod", "type": "string"}
 # reconcilePeriod -- reconcile duration of operator
 reconcilePeriod: 1m
 
-# @schema {"name": "maxWorkers", "type": "integer"}
-# maxWorkers -- number of workers inside one operator pod
-maxWorkers: 1
+# @schema {"name": "enableMetrics", "type": "boolean"}
+# enableMetrics -- enable metrics endpoint
+enableMetrics: true
+
+# @schema {"name": "metricsPort", "type": "integer"}
+# metricsPort -- port of metrics endpoint
+metricsPort: 6061
+
+# @schema {"name": "maxConcurrentReconciles", "type": "integer"}
+# maxConcurrentReconciles -- max number of concurrent reconciles
+maxConcurrentReconciles: 1
+
+# @schema {"name": "namespaced", "type": "boolean"}
+# namespaced -- if it is true, operator will behave as a namespace-scoped operator, if it is false, it will behave as a cluster-scoped operator.
+namespaced: true
+
+# @schema {"name": "watchNamespaces", "type": "string"}
+# watchNamespaces -- comma separated names of namespaces to watch, if it is empty, the namespace that the operator exists in is used.
+watchNamespaces: ""
 
 # @schema {"name": "logging", "type": "object"}
 logging:
@@ -86,6 +137,3 @@ logging:
   # @schema {"name": "logging.format", "type": "string", "enum": ["console", "json"]}
   # logging.format -- logging format of operator (console or json)
   format: console
-  # @schema {"name": "logging.timeEncoding", "type": "string", "enum": ["epoch", "millis", "nano", "iso8601"]}
-  # logging.timeEncoding -- logging time format of operator (epoch, millis, nano, or iso8601)
-  timeEncoding: iso8601

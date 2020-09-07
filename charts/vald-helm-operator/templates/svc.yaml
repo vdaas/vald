@@ -13,25 +13,39 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- $discoverer := .Values.discoverer -}}
-{{- if and $discoverer.enabled $discoverer.clusterRoleBinding.enabled }}
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
+{{- if .Values.service.enabled }}
+apiVersion: v1
+kind: Service
 metadata:
-  name: {{ $discoverer.clusterRoleBinding.name }}
+  name: {{ .Values.name }}
+  {{- if .Values.service.annotations }}
+  annotations:
+    {{- toYaml .Values.service.annotations | nindent 4 }}
+  {{- end }}
   labels:
     app.kubernetes.io/name: {{ include "vald.name" . }}
     helm.sh/chart: {{ include "vald.chart" . }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/version: {{ .Chart.Version }}
-    app.kubernetes.io/component: discoverer
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: {{ $discoverer.clusterRole.name }}
-subjects:
-  - kind: ServiceAccount
-    name: {{ $discoverer.serviceAccount.name }}
-    namespace: {{ .Release.Namespace }}
+    app.kubernetes.io/component: helm-operator
+    {{- if .Values.service.labels }}
+    {{- toYaml .Values.service.labels | nindent 4 }}
+    {{- end }}
+spec:
+  ports:
+    - name: prometheus
+      port: {{ .Values.metricsPort }}
+      targetPort: {{ .Values.metricsPort }}
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: {{ include "vald.name" . }}
+    app.kubernetes.io/component: helm-operator
+  {{- if eq .Values.service.type "ClusterIP" }}
+  clusterIP: None
+  {{- end }}
+  type: {{ .Values.service.type }}
+  {{- if .Values.service.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ .Values.service.externalTrafficPolicy }}
+  {{- end }}
 {{- end }}
