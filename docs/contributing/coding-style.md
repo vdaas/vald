@@ -453,12 +453,20 @@ You can refer to [this section](#Struct-initialization) for more details of the 
 
 We strongly recommend the following implementation to set the value using functional option.
 
+If an invalid value is set to the functional option, the `ErrInvalidOption` error defined in the [internal/errors/option.go](https://github.com/vdaas/vald/blob/master/internal/errors/option.go) should be returned.
+
+The name argument (the first argument) of the `ErrInvalidOption` error should be the same as the functional option name without the `With` prefix. 
+
+For example, the functional option name `WithVersion` should return the error with the argument `name` as `version`.
+
+
 ```go
 func WithVersion(version string) Option {
     return func(c *client) error {
-        if len(version) != 0 {
-            c.version = version
+        if len(version) == 0 {
+            return errors.ErrInvalidOption("version", version)
         }
+        c.version = version
         return nil
     }
 }
@@ -470,7 +478,7 @@ We recommend the following implementation to parse the time string and set the t
 func WithTimeout(dur string) Option {
     func(c *client) error {
         if dur == "" {
-            return nil
+            return errors.ErrInvalidOption("timeout", dur)
         }
         d, err := timeutil.Parse(dur)
         if err != nil {
@@ -488,7 +496,7 @@ We recommend the following implementation to append the value to the slice if th
 func WithHosts(hosts ...string) Option {
     return func(c *client) error {
         if len(hosts) == 0 {
-            return nil
+            return errors.ErrInvalidOption("hosts", hosts)
         }
         if c.hosts == nil {
             c.hosts = hosts
@@ -496,6 +504,21 @@ func WithHosts(hosts ...string) Option {
             c.hosts = append(c.hosts, hosts...)
         }
         return nil
+    }
+}
+```
+
+We recommend the following implementation to apply the options.
+
+If the option failed to apply, an error wrapped with `ErrOptionFailed` defined in the [internal/errors/errors.go](https://github.com/vdaas/vald/blob/master/internal/errors/errors.go) should be returned.
+
+```go
+func New(opts ...Option) (Server, error) {
+    srv := new(server)
+    for _, opt := range opts {
+        if err := opt(srv); err != nil {
+            return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+        }
     }
 }
 ```

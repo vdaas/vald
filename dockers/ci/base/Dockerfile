@@ -26,6 +26,7 @@ COPY Makefile .
 COPY Makefile.d Makefile.d
 COPY apis/proto apis/proto
 COPY versions versions
+COPY hack/go.mod.default hack/go.mod.default
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libhdf5-dev \

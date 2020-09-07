@@ -18,6 +18,18 @@ kind: Deployment
 metadata:
   name: {{ .Values.name }}
   namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Values.name }}
+    app.kubernetes.io/name: {{ include "vald.name" . }}
+    helm.sh/chart: {{ include "vald.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.Version }}
+    app.kubernetes.io/component: helm-operator
+  {{- if .Values.annotations }}
+  annotations:
+    {{- toYaml .Values.annotations | nindent 4 }}
+  {{- end }}
 spec:
   replicas: {{ .Values.replicas }}
   selector:
@@ -27,6 +39,13 @@ spec:
     metadata:
       labels:
         name: {{ .Values.name }}
+        app.kubernetes.io/name: {{ include "vald.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: helm-operator
+      {{- if .Values.podAnnotations }}
+      annotations:
+        {{- toYaml .Values.podAnnotations | nindent 8 }}
+      {{- end }}
     spec:
       serviceAccountName: {{ .Values.serviceAccount.name }}
       containers:
@@ -34,23 +53,42 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
-            - "--reconcile-period {{ .Values.reconcilePeriod }}"
-            - "--max-workers {{ .Values.maxWorkers }}"
-            - "--zap-encoder {{ .Values.logging.format }}"
-            - "--zap-level {{ .Values.logging.level }}"
-            - "--zap-stacktrace-level {{ .Values.logging.stacktraceLevel }}"
-            - "--zap-time-encoding {{ .Values.logging.timeEncoding }}"
+            - "run"
+            - "--watches-file=./watches.yaml"
+            {{- if .Values.enableLeaderElection }}
+            - "--enable-leader-election"
+            - "--leader-election-id={{ default .Values.name .Values.leaderElectionID }}"
+            - "--leader-election-namespace={{ .Release.Namespace }}"
+            {{- end }}
+            {{- if .Values.enableMetrics }}
+            - "--metrics-addr=:{{ .Values.metricsPort }}"
+            {{- end }}
+            - "--reconcile-period={{ .Values.reconcilePeriod }}"
+            - "--max-concurrent-reconciles={{ .Values.maxConcurrentReconciles }}"
+            - "--zap-encoder={{ .Values.logging.format }}"
+            - "--zap-log-level={{ .Values.logging.level }}"
+            - "--zap-stacktrace-level={{ .Values.logging.stacktraceLevel }}"
+          {{- if .Values.enableMetrics }}
+          ports:
+            - name: prometheus
+              protocol: TCP
+              containerPort: {{ .Values.metricsPort }}
+          {{- end }}
           env:
-            - name: WATCH_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
             - name: POD_NAME
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
-            - name: OPERATOR_NAME
-              value: "{{ .Values.name }}"
+            {{- if .Values.namespaced }}
+            - name: WATCH_NAMESPACE
+              {{- if .Values.watchNamespaces }}
+              value: {{ .Values.watchNamespaces }}
+              {{- else }}
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+              {{- end }}
+            {{- end }}
           {{- with .Values.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
