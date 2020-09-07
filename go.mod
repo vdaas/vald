@@ -7,7 +7,6 @@ replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0+incompatible
 	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.34.18
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
-
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
 	github.com/docker/docker => github.com/moby/moby v1.13.1
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.4.1
@@ -22,9 +21,7 @@ replace (
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.2
 	github.com/hailocab/go-hostpool => github.com/monzo/go-hostpool v0.0.0-20200724120130-287edbb29340
 	github.com/hydrogen18/memlistener => github.com/hydrogen18/memlistener v0.0.0-20200120041712-dcc25e7acd91
-
-	github.com/klauspost/compress => github.com/klauspost/compress v1.10.11
-
+	github.com/klauspost/compress => github.com/klauspost/compress v1.10.12-0.20200903102441-28b892527237
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.0+incompatible
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
 	google.golang.org/grpc => google.golang.org/grpc v1.31.1

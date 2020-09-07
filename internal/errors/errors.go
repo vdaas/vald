@@ -94,9 +94,7 @@ var (
 		return nil
 	}
 
-	Unwrap = func(err error) error {
-		return errors.Unwrap(err)
-	}
+	Unwrap = errors.Unwrap
 
 	Errorf = func(format string, args ...interface{}) error {
 		if format != "" && args != nil && len(args) > 0 {

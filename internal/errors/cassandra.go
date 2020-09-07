@@ -36,9 +36,7 @@ var (
 		}
 	}
 
-	ErrCassandraUnavailable = func() error {
-		return NewErrCassandraUnavailableIdentity()
-	}
+	ErrCassandraUnavailable = NewErrCassandraUnavailableIdentity
 
 	ErrCassandraNotFound = func(keys ...string) error {
 		switch {

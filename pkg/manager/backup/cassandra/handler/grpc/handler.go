@@ -69,7 +69,7 @@ func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Re
 			if span != nil {
 				span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
 			}
-			return nil, status.WrapWithUnavailable(fmt.Sprintf("GetVector API Cassandra unavailable"), err, info.Get())
+			return nil, status.WrapWithUnavailable("GetVector API Cassandra unavailable", err, info.Get())
 
 		default:
 			log.Errorf("[GetVector]\tunknown error\t%+v", err)
