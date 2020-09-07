@@ -26,6 +26,7 @@ import (
 	"github.com/scylladb/gocqlx"
 	"github.com/scylladb/gocqlx/qb"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 )
 
 var (
@@ -136,7 +137,12 @@ func New(opts ...Option) (Cassandra, error) {
 	c := new(client)
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(c); err != nil {
-			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+			err = errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+			if errors.Is(err, errors.ErrCriticalOption) {
+				return nil, err
+			}
+			log.Warn(err)
+
 		}
 	}
 

@@ -23,4 +23,7 @@ var (
 		}
 		return Errorf("invalid option. name: %s, val: %#v", name, val)
 	}
+
+	// ErrCriticalOption represent the critical option error
+	ErrCriticalOption = New("critical option error")
 )

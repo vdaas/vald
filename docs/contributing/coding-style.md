@@ -508,6 +508,24 @@ func WithHosts(hosts ...string) Option {
 }
 ```
 
+If the functional option error is a critical error, we should wrap it with `ErrCriticalOption` error and return it to the caller side to decide the next action.
+
+```go
+func WithConnectTimeout(dur string) Option {
+	return func(c *client) error {
+		if dur == "" {
+            return errors.ErrInvalidOption("connectTimeout", dur)
+		}
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			return errors.Wrap(errors.ErrCriticalOption, err.Error())
+		}
+		c.connectTimeout = d
+		return nil
+	}
+}
+```
+
 We recommend the following implementation to apply the options.
 
 If the option failed to apply, an error wrapped with `ErrOptionFailed` defined in the [internal/errors/errors.go](https://github.com/vdaas/vald/blob/master/internal/errors/errors.go) should be returned.
@@ -517,7 +535,11 @@ func New(opts ...Option) (Server, error) {
     srv := new(server)
     for _, opt := range opts {
         if err := opt(srv); err != nil {
-            return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+            err = errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+            if errors.Is(err, errors.ErrCriticalOption) {
+                return nil, err
+            }
+            log.Warn(err)
         }
     }
 }
