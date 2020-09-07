@@ -19,15 +19,25 @@ package writer
 import (
 	"context"
 	"io"
+	"os"
 	"reflect"
 	"sync"
 	"testing"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/sdk/s3/s3iface"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/sdk/s3/s3manager"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"go.uber.org/goleak"
 )
+
+func TestMain(m *testing.M) {
+	log.Init()
+	os.Exit(m.Run())
+}
 
 func TestNew(t *testing.T) {
 	type args struct {
@@ -51,36 +61,44 @@ func TestNew(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           opts: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "returns writer when option is empty",
+			args: args{
+				opts: nil,
+			},
+			want: want{
+				want: &writer{
+					eg:          errgroup.Get(),
+					contentType: "application/octet-stream",
+					maxPartSize: 64 * 1024 * 1024,
+					s3manager:   s3manager.New(),
+				},
+			},
+		},
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           opts: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns writer and outputs the warn when option is not empty",
+			args: args{
+				opts: []Option{
+					func(w *writer) error {
+						return errors.New("err")
+					},
+				},
+			},
+			want: want{
+				want: &writer{
+					eg:          errgroup.Get(),
+					contentType: "application/octet-stream",
+					maxPartSize: 64 * 1024 * 1024,
+					s3manager:   s3manager.New(),
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -95,7 +113,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -106,6 +123,7 @@ func Test_writer_Open(t *testing.T) {
 	}
 	type fields struct {
 		eg          errgroup.Group
+		s3manager   s3manager.S3Manager
 		service     *s3.S3
 		bucket      string
 		key         string
@@ -132,54 +150,34 @@ func Test_writer_Open(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		       },
-		       fields: fields {
-		           eg: nil,
-		           service: nil,
-		           bucket: "",
-		           key: "",
-		           maxPartSize: 0,
-		           pw: nil,
-		           wg: sync.WaitGroup{},
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           },
-		           fields: fields {
-		           eg: nil,
-		           service: nil,
-		           bucket: "",
-		           key: "",
-		           maxPartSize: 0,
-		           pw: nil,
-		           wg: sync.WaitGroup{},
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns nil when no error occurs",
+			args: args{
+				ctx: nil,
+			},
+			fields: fields{
+				eg: errgroup.Get(),
+				s3manager: &MockS3Manager{
+					NewUploaderWithClientFunc: func(s3iface.S3API, ...func(*s3manager.Uploader)) s3manager.UploadClient {
+						return &MockUploadClient{
+							UploadWithContextFunc: func(aws.Context, *s3manager.UploadInput, ...func(*s3manager.Uploader)) (*s3manager.UploadOutput, error) {
+								return &s3manager.UploadOutput{
+									Location: "location",
+								}, nil
+							},
+						}
+					},
+				},
+			},
+			want: want{
+				err: nil,
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -191,6 +189,7 @@ func Test_writer_Open(t *testing.T) {
 			}
 			w := &writer{
 				eg:          test.fields.eg,
+				s3manager:   test.fields.s3manager,
 				service:     test.fields.service,
 				bucket:      test.fields.bucket,
 				key:         test.fields.key,
@@ -236,48 +235,39 @@ func Test_writer_Close(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           eg: nil,
-		           service: nil,
-		           bucket: "",
-		           key: "",
-		           maxPartSize: 0,
-		           pw: nil,
-		           wg: sync.WaitGroup{},
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "returns nil when no error occurs",
+			fields: fields{
+				pw: &MockWriteCloser{
+					CloseFunc: func() error {
+						return nil
+					},
+				},
+				wg: new(sync.WaitGroup),
+			},
+			want: want{
+				err: nil,
+			},
+		},
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           eg: nil,
-		           service: nil,
-		           bucket: "",
-		           key: "",
-		           maxPartSize: 0,
-		           pw: nil,
-		           wg: sync.WaitGroup{},
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns error when close error occurs",
+			fields: fields{
+				pw: &MockWriteCloser{
+					CloseFunc: func() error {
+						return errors.New("err")
+					},
+				},
+			},
+			want: want{
+				err: errors.New("err"),
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -342,54 +332,58 @@ func Test_writer_Write(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           p: nil,
-		       },
-		       fields: fields {
-		           eg: nil,
-		           service: nil,
-		           bucket: "",
-		           key: "",
-		           maxPartSize: 0,
-		           pw: nil,
-		           wg: sync.WaitGroup{},
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "returns nil When the write success",
+			args: args{
+				p: []byte{},
+			},
+			fields: fields{
+				pw: &MockWriteCloser{
+					WriteFunc: func(p []byte) (n int, err error) {
+						return 10, nil
+					},
+				},
+			},
+			want: want{
+				wantN: 10,
+				err:   nil,
+			},
+		},
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           p: nil,
-		           },
-		           fields: fields {
-		           eg: nil,
-		           service: nil,
-		           bucket: "",
-		           key: "",
-		           maxPartSize: 0,
-		           pw: nil,
-		           wg: sync.WaitGroup{},
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns error When there is no writer",
+			args: args{
+				p: []byte{},
+			},
+			fields: fields{
+				pw: nil,
+			},
+			want: want{
+				err: errors.ErrStorageWriterNotOpened,
+			},
+		},
+
+		{
+			name: "returns error When the write fails",
+			args: args{
+				p: []byte{},
+			},
+			fields: fields{
+				pw: &MockWriteCloser{
+					WriteFunc: func(p []byte) (n int, err error) {
+						return 0, errors.New("err")
+					},
+				},
+			},
+			want: want{
+				err: errors.New("err"),
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -425,6 +419,7 @@ func Test_writer_upload(t *testing.T) {
 	}
 	type fields struct {
 		eg          errgroup.Group
+		s3manager   s3manager.S3Manager
 		service     *s3.S3
 		bucket      string
 		key         string
@@ -438,7 +433,7 @@ func Test_writer_upload(t *testing.T) {
 	type test struct {
 		name       string
 		args       args
-		fields     fields
+		fieldsFunc func(*testing.T) fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
@@ -451,56 +446,82 @@ func Test_writer_upload(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           body: nil,
-		       },
-		       fields: fields {
-		           eg: nil,
-		           service: nil,
-		           bucket: "",
-		           key: "",
-		           maxPartSize: 0,
-		           pw: nil,
-		           wg: sync.WaitGroup{},
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "returns nil when no error occurs",
+			args: args{
+				ctx:  context.Background(),
+				body: nil,
+			},
+			fieldsFunc: func(t *testing.T) fields {
+				t.Helper()
+				return fields{
+					s3manager: &MockS3Manager{
+						NewUploaderWithClientFunc: func(_ s3iface.S3API, opts ...func(*s3manager.Uploader)) s3manager.UploadClient {
+							u := new(s3manager.Uploader)
+							for _, opt := range opts {
+								opt(u)
+							}
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           body: nil,
-		           },
-		           fields: fields {
-		           eg: nil,
-		           service: nil,
-		           bucket: "",
-		           key: "",
-		           maxPartSize: 0,
-		           pw: nil,
-		           wg: sync.WaitGroup{},
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+							if !reflect.DeepEqual(u.PartSize, int64(100)) {
+								t.Errorf("PartSize is invalid. want: %v, but got: %v", 100, u.PartSize)
+							}
+
+							return &MockUploadClient{
+								UploadWithContextFunc: func(aws.Context, *s3manager.UploadInput, ...func(*s3manager.Uploader)) (*s3manager.UploadOutput, error) {
+									return &s3manager.UploadOutput{
+										Location: "location",
+									}, nil
+								},
+							}
+						},
+					},
+					maxPartSize: 100,
+				}
+			},
+			want: want{
+				err: nil,
+			},
+		},
+
+		{
+			name: "returns error when upload fails",
+			args: args{
+				ctx:  context.Background(),
+				body: nil,
+			},
+			fieldsFunc: func(t *testing.T) fields {
+				t.Helper()
+				return fields{
+					s3manager: &MockS3Manager{
+						NewUploaderWithClientFunc: func(_ s3iface.S3API, opts ...func(*s3manager.Uploader)) s3manager.UploadClient {
+							u := new(s3manager.Uploader)
+							for _, opt := range opts {
+								opt(u)
+							}
+
+							if !reflect.DeepEqual(u.PartSize, int64(100)) {
+								t.Errorf("PartSize is invalid. want: %v, but got: %v", 100, u.PartSize)
+							}
+
+							return &MockUploadClient{
+								UploadWithContextFunc: func(aws.Context, *s3manager.UploadInput, ...func(*s3manager.Uploader)) (*s3manager.UploadOutput, error) {
+									return nil, errors.New("err")
+								},
+							}
+						},
+					},
+					maxPartSize: 100,
+				}
+			},
+			want: want{
+				err: errors.New("err"),
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -510,21 +531,24 @@ func Test_writer_upload(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
+
+			fields := test.fieldsFunc(t)
+
 			w := &writer{
-				eg:          test.fields.eg,
-				service:     test.fields.service,
-				bucket:      test.fields.bucket,
-				key:         test.fields.key,
-				maxPartSize: test.fields.maxPartSize,
-				pw:          test.fields.pw,
-				wg:          test.fields.wg,
+				eg:          fields.eg,
+				s3manager:   fields.s3manager,
+				service:     fields.service,
+				bucket:      fields.bucket,
+				key:         fields.key,
+				maxPartSize: fields.maxPartSize,
+				pw:          fields.pw,
+				wg:          fields.wg,
 			}
 
 			err := w.upload(test.args.ctx, test.args.body)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
