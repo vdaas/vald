@@ -21,8 +21,13 @@ import (
 	"github.com/klauspost/compress/zstd"
 )
 
-// EOption is type alias of zstd.EOption.
-type EOption = zstd.EOption
+type (
+	// EOption is type alias of zstd.EOption.
+	EOption = zstd.EOption
+
+	// DOption is type alias of zstd.DOption.
+	DOption = zstd.DOption
+)
 
 // Encoder represents an interface for Encoder of zstd.
 type Encoder interface {
@@ -39,8 +44,8 @@ type Decoder interface {
 
 // Zstd is an interface to create Writer and Reader implementation.
 type Zstd interface {
-	NewWriter(w io.Writer, opts ...zstd.EOption) (Encoder, error)
-	NewReader(r io.Reader, opts ...zstd.DOption) (Decoder, error)
+	NewWriter(w io.Writer, opts ...EOption) (Encoder, error)
+	NewReader(r io.Reader, opts ...DOption) (Decoder, error)
 }
 
 type compress struct{}
@@ -51,11 +56,11 @@ func New() Zstd {
 }
 
 // NewWriter returns Encoder implementation.
-func (*compress) NewWriter(w io.Writer, opts ...zstd.EOption) (Encoder, error) {
+func (*compress) NewWriter(w io.Writer, opts ...EOption) (Encoder, error) {
 	return zstd.NewWriter(w, opts...)
 }
 
 // NewReader returns Decoder implementation.
-func (*compress) NewReader(r io.Reader, opts ...zstd.DOption) (Decoder, error) {
+func (*compress) NewReader(r io.Reader, opts ...DOption) (Decoder, error) {
 	return zstd.NewReader(r, opts...)
 }

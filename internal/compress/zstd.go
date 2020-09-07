@@ -32,6 +32,7 @@ type zstdCompressor struct {
 	zstd     zstd.Zstd
 }
 
+// NewZstd returns the zstd compressor object or any initialization error.
 func NewZstd(opts ...ZstdOption) (Compressor, error) {
 	c := &zstdCompressor{
 		zstd: zstd.New(),

@@ -24,7 +24,23 @@ import (
 
 	"github.com/vdaas/vald/internal/compress/zstd"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/test/comparator"
 	"go.uber.org/goleak"
+)
+
+var (
+	zstdCompressorComparatorOptions = []comparator.Option{
+		comparator.AllowUnexported(zstdCompressor{}),
+		comparator.Comparer(func(x, y gobCompressor) bool {
+			return reflect.DeepEqual(x, y)
+		}),
+		comparator.Comparer(func(x, y zstd.EOption) bool {
+			if (x == nil && y != nil) || (x != nil && y == nil) {
+				return false
+			}
+			return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
+		}),
+	}
 )
 
 func TestZstdCompressVector(t *testing.T) {
@@ -86,37 +102,64 @@ func TestNewZstd(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		if diff := comparator.Diff(w.want, got, zstdCompressorComparatorOptions...); diff != "" {
+			return errors.Errorf("err: %s", diff)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           opts: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           opts: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return zstd when option is nil",
+			args: args{
+				opts: nil,
+			},
+			want: want{
+				want: &zstdCompressor{
+					gobc: func() Compressor {
+						gobc, _ := NewGob()
+						return gobc
+					}(),
+					eoptions: []zstd.EOption{
+						zstd.WithEncoderLevel(3),
+					},
+					zstd: zstd.New(),
+				},
+			},
+		},
+		{
+			name: "set zstd option when option is not nil",
+			args: args{
+				opts: []ZstdOption{
+					WithZstdCompressionLevel(2),
+				},
+			},
+			want: want{
+				want: &zstdCompressor{
+					gobc: func() Compressor {
+						gobc, _ := NewGob()
+						return gobc
+					}(),
+					eoptions: []zstd.EOption{
+						zstd.WithEncoderLevel(3),
+						zstd.WithEncoderLevel(2),
+					},
+					zstd: zstd.New(),
+				},
+			},
+		},
+		{
+			name: "set zstd option when option return error",
+			args: args{
+				opts: []ZstdOption{
+					func(*zstdCompressor) error {
+						return errors.New("opts err")
+					},
+				},
+			},
+			want: want{
+				err: errors.New("opts err"),
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -148,6 +191,7 @@ func Test_zstdCompressor_CompressVector(t *testing.T) {
 	type fields struct {
 		gobc     Compressor
 		eoptions []zstd.EOption
+		zstd     zstd.Zstd
 	}
 	type want struct {
 		want []byte
@@ -172,39 +216,151 @@ func Test_zstdCompressor_CompressVector(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           vector: nil,
-		       },
-		       fields: fields {
-		           gobc: nil,
-		           eoptions: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           vector: nil,
-		           },
-		           fields: fields {
-		           gobc: nil,
-		           eoptions: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return compressed vector",
+			args: args{
+				vector: []float32{0.1, 0.2, 0.3},
+			},
+			fields: fields{
+				gobc: &MockCompressor{
+					CompressVectorFunc: func(vector []float32) (bytes []byte, err error) {
+						return ([]byte("vdaas/vald")), nil
+					},
+				},
+				zstd: &zstd.MockZstd{
+					NewWriterFunc: func(w io.Writer, opts ...zstd.EOption) (zstd.Encoder, error) {
+						return &zstd.MockEncoder{
+							WriteFunc: func([]byte) (int, error) {
+								return 0, nil
+							},
+							CloseFunc: func() error {
+								return nil
+							},
+							ReadFromFunc: func(r io.Reader) (int64, error) {
+								return io.Copy(w, r)
+							},
+						}, nil
+					},
+				},
+			},
+			want: want{
+				want: []byte("vdaas/vald"),
+			},
+		},
+		{
+			name: "return error when gobc failed to compress vector",
+			args: args{
+				vector: []float32{0.1, 0.2, 0.3},
+			},
+			fields: fields{
+				gobc: &MockCompressor{
+					CompressVectorFunc: func(vector []float32) (bytes []byte, err error) {
+						return nil, errors.New("gobc err")
+					},
+				},
+				zstd: &zstd.MockZstd{
+					NewWriterFunc: func(w io.Writer, opts ...zstd.EOption) (zstd.Encoder, error) {
+						return &zstd.MockEncoder{
+							WriteFunc: func([]byte) (int, error) {
+								return 0, nil
+							},
+							CloseFunc: func() error {
+								return nil
+							},
+							ReadFromFunc: func(r io.Reader) (int64, error) {
+								return io.Copy(w, r)
+							},
+						}, nil
+					},
+				},
+			},
+			want: want{
+				err: errors.New("gobc err"),
+			},
+		},
+		{
+			name: "return error when writer cannot be init",
+			args: args{
+				vector: []float32{0.1, 0.2, 0.3},
+			},
+			fields: fields{
+				gobc: &MockCompressor{
+					CompressVectorFunc: func(vector []float32) (bytes []byte, err error) {
+						return ([]byte("vdaas/vald")), nil
+					},
+				},
+				zstd: &zstd.MockZstd{
+					NewWriterFunc: func(w io.Writer, opts ...zstd.EOption) (zstd.Encoder, error) {
+						return nil, errors.New("new writer err")
+					},
+				},
+			},
+			want: want{
+				err: errors.New("new writer err"),
+			},
+		},
+		{
+			name: "return error when writer cannot read from source",
+			args: args{
+				vector: []float32{0.1, 0.2, 0.3},
+			},
+			fields: fields{
+				gobc: &MockCompressor{
+					CompressVectorFunc: func(vector []float32) (bytes []byte, err error) {
+						return ([]byte("vdaas/vald")), nil
+					},
+				},
+				zstd: &zstd.MockZstd{
+					NewWriterFunc: func(w io.Writer, opts ...zstd.EOption) (zstd.Encoder, error) {
+						return &zstd.MockEncoder{
+							WriteFunc: func([]byte) (int, error) {
+								return 0, nil
+							},
+							CloseFunc: func() error {
+								return nil
+							},
+							ReadFromFunc: func(r io.Reader) (int64, error) {
+								return 0, errors.New("readFrom err")
+							},
+						}, nil
+					},
+				},
+			},
+			want: want{
+				err: errors.New("readFrom err"),
+			},
+		},
+		{
+			name: "return error when writer cannot be closed",
+			args: args{
+				vector: []float32{0.1, 0.2, 0.3},
+			},
+			fields: fields{
+				gobc: &MockCompressor{
+					CompressVectorFunc: func(vector []float32) (bytes []byte, err error) {
+						return ([]byte("vdaas/vald")), nil
+					},
+				},
+				zstd: &zstd.MockZstd{
+					NewWriterFunc: func(w io.Writer, opts ...zstd.EOption) (zstd.Encoder, error) {
+						return &zstd.MockEncoder{
+							WriteFunc: func([]byte) (int, error) {
+								return 0, nil
+							},
+							CloseFunc: func() error {
+								return errors.New("close err")
+							},
+							ReadFromFunc: func(r io.Reader) (int64, error) {
+								return io.Copy(w, r)
+							},
+						}, nil
+					},
+				},
+			},
+			want: want{
+				err: errors.New("close err"),
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -222,6 +378,7 @@ func Test_zstdCompressor_CompressVector(t *testing.T) {
 			z := &zstdCompressor{
 				gobc:     test.fields.gobc,
 				eoptions: test.fields.eoptions,
+				zstd:     test.fields.zstd,
 			}
 
 			got, err := z.CompressVector(test.args.vector)
@@ -240,6 +397,7 @@ func Test_zstdCompressor_DecompressVector(t *testing.T) {
 	type fields struct {
 		gobc     Compressor
 		eoptions []zstd.EOption
+		zstd     zstd.Zstd
 	}
 	type want struct {
 		want []float32
@@ -264,39 +422,117 @@ func Test_zstdCompressor_DecompressVector(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           bs: nil,
-		       },
-		       fields: fields {
-		           gobc: nil,
-		           eoptions: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           bs: nil,
-		           },
-		           fields: fields {
-		           gobc: nil,
-		           eoptions: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return decompress data",
+			args: args{
+				bs: []byte("vdaas/vald"),
+			},
+			fields: fields{
+				gobc: &MockCompressor{
+					DecompressVectorFunc: func(bytes []byte) (vector []float32, err error) {
+						return []float32{0.1, 0.2, 0.3}, nil
+					},
+				},
+				zstd: &zstd.MockZstd{
+					NewReaderFunc: func(r io.Reader, opts ...zstd.DOption) (zstd.Decoder, error) {
+						return &zstd.MockDecoder{
+							ReadFunc: func([]byte) (int, error) {
+								return 0, nil
+							},
+							CloseFunc: func() {
+							},
+							WriteToFunc: func(w io.Writer) (int64, error) {
+								return io.Copy(w, r)
+							},
+						}, nil
+					},
+				},
+			},
+			want: want{
+				want: []float32{0.1, 0.2, 0.3},
+			},
+		},
+		{
+			name: "return error when failed to init reader",
+			args: args{
+				bs: []byte("vdaas/vald"),
+			},
+			fields: fields{
+				gobc: &MockCompressor{
+					DecompressVectorFunc: func(bytes []byte) (vector []float32, err error) {
+						return []float32{0.1, 0.2, 0.3}, nil
+					},
+				},
+				zstd: &zstd.MockZstd{
+					NewReaderFunc: func(r io.Reader, opts ...zstd.DOption) (zstd.Decoder, error) {
+						return nil, errors.New("new reader err")
+					},
+				},
+			},
+			want: want{
+				err: errors.New("new reader err"),
+			},
+		},
+		{
+			name: "return error when error write to buffer",
+			args: args{
+				bs: []byte("vdaas/vald"),
+			},
+			fields: fields{
+				gobc: &MockCompressor{
+					DecompressVectorFunc: func(bytes []byte) (vector []float32, err error) {
+						return []float32{0.1, 0.2, 0.3}, nil
+					},
+				},
+				zstd: &zstd.MockZstd{
+					NewReaderFunc: func(r io.Reader, opts ...zstd.DOption) (zstd.Decoder, error) {
+						return &zstd.MockDecoder{
+							ReadFunc: func([]byte) (int, error) {
+								return 0, nil
+							},
+							CloseFunc: func() {
+							},
+							WriteToFunc: func(w io.Writer) (int64, error) {
+								return 0, errors.New("write to err")
+							},
+						}, nil
+					},
+				},
+			},
+			want: want{
+				err: errors.New("write to err"),
+			},
+		},
+		{
+			name: "return error when error to decompress vecotr",
+			args: args{
+				bs: []byte("vdaas/vald"),
+			},
+			fields: fields{
+				gobc: &MockCompressor{
+					DecompressVectorFunc: func(bytes []byte) (vector []float32, err error) {
+						return nil, errors.New("decom vec err")
+					},
+				},
+				zstd: &zstd.MockZstd{
+					NewReaderFunc: func(r io.Reader, opts ...zstd.DOption) (zstd.Decoder, error) {
+						return &zstd.MockDecoder{
+							ReadFunc: func([]byte) (int, error) {
+								return 0, nil
+							},
+							CloseFunc: func() {
+							},
+							WriteToFunc: func(w io.Writer) (int64, error) {
+								return 0, nil
+							},
+						}, nil
+					},
+				},
+			},
+			want: want{
+				err: errors.New("decom vec err"),
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -314,6 +550,7 @@ func Test_zstdCompressor_DecompressVector(t *testing.T) {
 			z := &zstdCompressor{
 				gobc:     test.fields.gobc,
 				eoptions: test.fields.eoptions,
+				zstd:     test.fields.zstd,
 			}
 
 			got, err := z.DecompressVector(test.args.bs)
@@ -332,6 +569,7 @@ func Test_zstdCompressor_Reader(t *testing.T) {
 	type fields struct {
 		gobc     Compressor
 		eoptions []zstd.EOption
+		zstd     zstd.Zstd
 	}
 	type want struct {
 		want io.ReadCloser
@@ -356,39 +594,53 @@ func Test_zstdCompressor_Reader(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           src: nil,
-		       },
-		       fields: fields {
-		           gobc: nil,
-		           eoptions: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           src: nil,
-		           },
-		           fields: fields {
-		           gobc: nil,
-		           eoptions: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			d := &zstd.MockDecoder{
+				ReadFunc: func([]byte) (int, error) {
+					return 0, nil
+				},
+				CloseFunc: func() {
+				},
+				WriteToFunc: func(w io.Writer) (int64, error) {
+					return 0, nil
+				},
+			}
+			return test{
+				name: "return read closer",
+				args: args{
+					src: nil,
+				},
+				fields: fields{
+					zstd: &zstd.MockZstd{
+						NewReaderFunc: func(r io.Reader, opts ...zstd.DOption) (zstd.Decoder, error) {
+							return d, nil
+						},
+					},
+				},
+				want: want{
+					want: &zstdReader{
+						src: nil,
+						r:   d,
+					},
+				},
+			}
+		}(),
+		{
+			name: "return closer error when failed to init reader",
+			args: args{
+				src: nil,
+			},
+			fields: fields{
+				zstd: &zstd.MockZstd{
+					NewReaderFunc: func(r io.Reader, opts ...zstd.DOption) (zstd.Decoder, error) {
+						return nil, errors.New("new reader err")
+					},
+				},
+			},
+			want: want{
+				err: errors.New("new reader err"),
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -406,6 +658,7 @@ func Test_zstdCompressor_Reader(t *testing.T) {
 			z := &zstdCompressor{
 				gobc:     test.fields.gobc,
 				eoptions: test.fields.eoptions,
+				zstd:     test.fields.zstd,
 			}
 
 			got, err := z.Reader(test.args.src)
@@ -424,6 +677,7 @@ func Test_zstdCompressor_Writer(t *testing.T) {
 	type fields struct {
 		gobc     Compressor
 		eoptions []zstd.EOption
+		zstd     zstd.Zstd
 	}
 	type want struct {
 		want io.WriteCloser
@@ -448,39 +702,53 @@ func Test_zstdCompressor_Writer(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           dst: nil,
-		       },
-		       fields: fields {
-		           gobc: nil,
-		           eoptions: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           dst: nil,
-		           },
-		           fields: fields {
-		           gobc: nil,
-		           eoptions: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			e := &zstd.MockEncoder{
+				WriteFunc: func([]byte) (int, error) {
+					return 0, nil
+				},
+				CloseFunc: func() error {
+					return nil
+				},
+				ReadFromFunc: func(r io.Reader) (int64, error) {
+					return 0, nil
+				},
+			}
+			return test{
+				name: "return writer",
+				args: args{
+					dst: nil,
+				},
+				fields: fields{
+					zstd: &zstd.MockZstd{
+						NewWriterFunc: func(w io.Writer, opts ...zstd.EOption) (zstd.Encoder, error) {
+							return e, nil
+						},
+					},
+				},
+				want: want{
+					want: &zstdWriter{
+						dst: nil,
+						w:   e,
+					}},
+			}
+		}(),
+		{
+			name: "return error when failed to init writer",
+			args: args{
+				dst: nil,
+			},
+			fields: fields{
+				zstd: &zstd.MockZstd{
+					NewWriterFunc: func(w io.Writer, opts ...zstd.EOption) (zstd.Encoder, error) {
+						return nil, errors.New("new writer err")
+					},
+				},
+			},
+			want: want{
+				err: errors.New("new writer err"),
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -498,6 +766,7 @@ func Test_zstdCompressor_Writer(t *testing.T) {
 			z := &zstdCompressor{
 				gobc:     test.fields.gobc,
 				eoptions: test.fields.eoptions,
+				zstd:     test.fields.zstd,
 			}
 
 			got, err := z.Writer(test.args.dst)
@@ -540,39 +809,39 @@ func Test_zstdReader_Read(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           p: nil,
-		       },
-		       fields: fields {
-		           src: nil,
-		           r: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           p: nil,
-		           },
-		           fields: fields {
-		           src: nil,
-		           r: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns n when read success",
+			args: args{
+				p: []byte{},
+			},
+			fields: fields{
+				r: &MockReadCloser{
+					ReadFunc: func(p []byte) (int, error) {
+						return 10, nil
+					},
+				},
+			},
+			want: want{
+				wantN: 10,
+				err:   nil,
+			},
+		},
+		{
+			name: "returns error when read failed",
+			args: args{
+				p: []byte{},
+			},
+			fields: fields{
+				r: &MockReadCloser{
+					ReadFunc: func(p []byte) (int, error) {
+						return 0, errors.New("read err")
+					},
+				},
+			},
+			want: want{
+				err: errors.New("read err"),
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -624,33 +893,32 @@ func Test_zstdReader_Close(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           src: nil,
-		           r: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           src: nil,
-		           r: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns nil when close success",
+			fields: fields{
+				src: &MockReadCloser{
+					CloseFunc: func() error {
+						return nil
+					},
+				},
+			},
+			want: want{
+				err: nil,
+			},
+		},
+		{
+			name: "returns error when failed close",
+			fields: fields{
+				src: &MockReadCloser{
+					CloseFunc: func() error {
+						return errors.New("close err")
+					},
+				},
+			},
+			want: want{
+				err: errors.New("close err"),
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -710,39 +978,39 @@ func Test_zstdWriter_Write(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           p: nil,
-		       },
-		       fields: fields {
-		           dst: nil,
-		           w: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           p: nil,
-		           },
-		           fields: fields {
-		           dst: nil,
-		           w: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns n when write success",
+			args: args{
+				p: []byte{},
+			},
+			fields: fields{
+				w: &MockWriteCloser{
+					WriteFunc: func(p []byte) (int, error) {
+						return 10, nil
+					},
+				},
+			},
+			want: want{
+				wantN: 10,
+				err:   nil,
+			},
+		},
+		{
+			name: "returns error when write failed",
+			args: args{
+				p: []byte{},
+			},
+			fields: fields{
+				w: &MockWriteCloser{
+					WriteFunc: func(p []byte) (int, error) {
+						return 0, errors.New("write err")
+					},
+				},
+			},
+			want: want{
+				err: errors.New("write err"),
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -794,33 +1062,78 @@ func Test_zstdWriter_Close(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           dst: nil,
-		           w: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           dst: nil,
-		           w: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns nil when close success",
+			fields: fields{
+				dst: &MockWriteCloser{
+					CloseFunc: func() error {
+						return nil
+					},
+				},
+				w: &MockWriteCloser{
+					CloseFunc: func() error {
+						return nil
+					},
+				},
+			},
+			want: want{
+				err: nil,
+			},
+		},
+		{
+			name: "returns error when w close failed",
+			fields: fields{
+				dst: &MockWriteCloser{
+					CloseFunc: func() error {
+						return nil
+					},
+				},
+				w: &MockWriteCloser{
+					CloseFunc: func() error {
+						return errors.New("w close err")
+					},
+				},
+			},
+			want: want{
+				err: errors.New("w close err"),
+			},
+		},
+		{
+			name: "returns error when dst close failed",
+			fields: fields{
+				dst: &MockWriteCloser{
+					CloseFunc: func() error {
+						return errors.New("dst close err")
+					},
+				},
+				w: &MockWriteCloser{
+					CloseFunc: func() error {
+						return nil
+					},
+				},
+			},
+			want: want{
+				err: errors.New("dst close err"),
+			},
+		},
+		{
+			name: "returns error when dst and close failed",
+			fields: fields{
+				dst: &MockWriteCloser{
+					CloseFunc: func() error {
+						return errors.New("dst close err")
+					},
+				},
+				w: &MockWriteCloser{
+					CloseFunc: func() error {
+						return errors.New("w close err")
+					},
+				},
+			},
+			want: want{
+				err: errors.Wrap(errors.New("dst close err"), "w close err"),
+			},
+		},
 	}
 
 	for _, test := range tests {
