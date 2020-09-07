@@ -335,19 +335,32 @@ func (m *mySQLClient) SetMetas(ctx context.Context, metas ...MetaVector) error {
 	return tx.Commit()
 }
 
-func deleteMetaWithTx(ctx context.Context, tx dbr.Tx, uuid string, dbr dbr.DBR) error {
-	_, err := tx.DeleteFrom(metaVectorTableName).Where(dbr.Eq(uuidColumnName, uuid)).ExecContext(ctx)
+func (m *mySQLClient) deleteMetaWithTx(ctx context.Context, tx dbr.Tx, uuid string) error {
+	_, err := tx.DeleteFrom(metaVectorTableName).Where(m.dbr.Eq(uuidColumnName, uuid)).ExecContext(ctx)
 	if err != nil {
 		return err
 	}
 
-	_, err = tx.DeleteFrom(podIPTableName).Where(dbr.Eq(uuidColumnName, uuid)).ExecContext(ctx)
+	_, err = tx.DeleteFrom(podIPTableName).Where(m.dbr.Eq(uuidColumnName, uuid)).ExecContext(ctx)
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
+// 
+// func deleteMetaWithTx(ctx context.Context, tx dbr.Tx, uuid string, dbr dbr.DBR) error {
+// 	_, err := tx.DeleteFrom(metaVectorTableName).Where(dbr.Eq(uuidColumnName, uuid)).ExecContext(ctx)
+// 	if err != nil {
+// 		return err
+// 	}
+// 
+// 	_, err = tx.DeleteFrom(podIPTableName).Where(dbr.Eq(uuidColumnName, uuid)).ExecContext(ctx)
+// 	if err != nil {
+// 		return err
+// 	}
+// 
+// 	return nil
+// }
 
 func (m *mySQLClient) DeleteMeta(ctx context.Context, uuid string) error {
 	if !m.connected.Load().(bool) {
@@ -360,7 +373,7 @@ func (m *mySQLClient) DeleteMeta(ctx context.Context, uuid string) error {
 	}
 	defer tx.RollbackUnlessCommitted()
 
-	err = deleteMetaWithTx(ctx, tx, uuid, m.dbr)
+	err = m.deleteMetaWithTx(ctx, tx, uuid)
 	if err != nil {
 		return err
 	}
@@ -380,7 +393,7 @@ func (m *mySQLClient) DeleteMetas(ctx context.Context, uuids ...string) error {
 	defer tx.RollbackUnlessCommitted()
 
 	for _, uuid := range uuids {
-		err = deleteMetaWithTx(ctx, tx, uuid, m.dbr)
+		err = m.deleteMetaWithTx(ctx, tx, uuid)
 		if err != nil {
 			return err
 		}
