@@ -15,14 +15,14 @@ type (
 	UploadOutput = s3manager.UploadOutput
 )
 
-// Upload represents an interface to upload to s3.
-type Upload interface {
+// UploadClient represents an interface to upload to s3.
+type UploadClient interface {
 	UploadWithContext(ctx aws.Context, input *UploadInput, opts ...func(*Uploader)) (*UploadOutput, error)
 }
 
 // S3Manager represents an interface to create object of s3manager package.
 type S3Manager interface {
-	NewUploaderWithClient(svc s3iface.S3API, options ...func(*Uploader)) Upload
+	NewUploaderWithClient(svc s3iface.S3API, options ...func(*Uploader)) UploadClient
 }
 
 type s3mngr struct{}
@@ -32,6 +32,6 @@ func New() S3Manager {
 	return new(s3mngr)
 }
 
-func (*s3mngr) NewUploaderWithClient(svc s3iface.S3API, options ...func(*Uploader)) Upload {
+func (*s3mngr) NewUploaderWithClient(svc s3iface.S3API, options ...func(*Uploader)) UploadClient {
 	return s3manager.NewUploaderWithClient(svc, options...)
 }

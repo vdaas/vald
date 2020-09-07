@@ -105,7 +105,7 @@ func (w *writer) Write(p []byte) (n int, err error) {
 }
 
 func (w *writer) upload(ctx context.Context, body io.Reader) (err error) {
-	upload := w.s3manager.NewUploaderWithClient(
+	client := w.s3manager.NewUploaderWithClient(
 		w.service,
 		func(u *s3manager.Uploader) {
 			u.PartSize = w.maxPartSize
@@ -118,7 +118,7 @@ func (w *writer) upload(ctx context.Context, body io.Reader) (err error) {
 		ContentType: aws.String(w.contentType),
 	}
 
-	res, err := upload.UploadWithContext(ctx, input)
+	res, err := client.UploadWithContext(ctx, input)
 	if err != nil {
 		log.Error("upload failed with error: ", err)
 		return err
