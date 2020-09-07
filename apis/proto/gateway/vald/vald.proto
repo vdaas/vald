@@ -28,7 +28,7 @@ import "google/api/annotations.proto";
 
 
 service Vald {
-  option (gql.svc_type) = QUERY;
+  
   rpc Exists(payload.Object.ID) returns (payload.Object.ID) {
     option (google.api.http).get = "/exists/{id}";
   }
@@ -55,7 +55,7 @@ service Vald {
       post : "/insert"
       body : "*"
     };
-    option (gql.rpc_type) = MUTATION;
+    
   }
   rpc StreamInsert(stream payload.Object.Vector)
       returns (stream payload.Object.Location) {}
@@ -66,7 +66,7 @@ service Vald {
       post : "/update"
       body : "*"
     };
-    option (gql.rpc_type) = MUTATION;
+    
   }
   rpc StreamUpdate(stream payload.Object.Vector)
       returns (stream payload.Object.Location) {}
@@ -77,7 +77,7 @@ service Vald {
       post : "/upsert"
       body : "*"
     };
-    option (gql.rpc_type) = MUTATION;
+    
   }
   rpc StreamUpsert(stream payload.Object.Vector)
       returns (stream payload.Object.Location) {}
@@ -85,7 +85,7 @@ service Vald {
 
   rpc Remove(payload.Object.ID) returns (payload.Object.Location) {
     option (google.api.http).delete = "/remove/{id}";
-    option (gql.rpc_type) = MUTATION;
+    
   }
   rpc StreamRemove(stream payload.Object.ID) returns (stream payload.Object.Location) {}
   rpc MultiRemove(payload.Object.IDs) returns (payload.Object.Locations) {}

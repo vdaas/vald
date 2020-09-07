@@ -5,9 +5,9 @@ go 1.15
 replace (
 	cloud.google.com/go => cloud.google.com/go v0.65.0
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0+incompatible
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.34.15
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.34.18
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
-	github.com/cockroachdb/errors => github.com/cockroachdb/errors v1.7.3
+	github.com/cockroachdb/errors => github.com/cockroachdb/errors v1.7.4
 	github.com/cockroachdb/sentry-go => github.com/getsentry/sentry-go v0.7.1-0.20200813145726-23c562d005a5
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
 	github.com/docker/docker => github.com/moby/moby v1.13.1
@@ -46,7 +46,6 @@ require (
 	github.com/aws/aws-sdk-go v1.23.20
 	github.com/cespare/xxhash/v2 v2.1.1
 	github.com/cockroachdb/errors v1.6.1
-	github.com/danielvladco/go-proto-gql/pb v0.6.1
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/getsentry/sentry-go v0.7.0 // indirect
@@ -74,14 +73,13 @@ require (
 	go.opencensus.io v0.22.4
 	go.uber.org/automaxprocs v1.3.0
 	go.uber.org/goleak v1.1.10
-	golang.org/x/net v0.0.0-20200822124328-c89045814202
+	golang.org/x/net v0.0.0-20200904194848-62affa334b73
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
-	golang.org/x/sys v0.0.0-20200831180312-196b9ba8737a
+	golang.org/x/sys v0.0.0-20200905004654-be1d3432aa8f
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
-	gonum.org/v1/netlib v0.0.0-20200824093956-f0ca4b3a5ef5 // indirect
-	gonum.org/v1/plot v0.7.0
+	gonum.org/v1/plot v0.8.0
 	google.golang.org/api v0.31.0
-	google.golang.org/genproto v0.0.0-20200901141002-b3bf27a9dbd1
+	google.golang.org/genproto v0.0.0-20200904004341-0bd0a958aa1d
 	google.golang.org/grpc v1.31.1
 	gopkg.in/yaml.v2 v2.3.0
 	k8s.io/api v0.18.8

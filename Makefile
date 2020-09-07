@@ -43,6 +43,7 @@ VERSION := $(eval VALD_VERSION := $(shell cat versions/VALD_VERSION))$(VALD_VERS
 NGT_VERSION := $(eval NGT_VERSION := $(shell cat versions/NGT_VERSION))$(NGT_VERSION)
 NGT_REPO = github.com/yahoojapan/NGT
 
+GOPROXY=direct
 GO_VERSION := $(eval GO_VERSION := $(shell cat versions/GO_VERSION))$(GO_VERSION)
 GOOS := $(eval GOOS := $(shell go env GOOS))$(GOOS)
 GOARCH := $(eval GOARCH := $(shell go env GOARCH))$(GOARCH)
@@ -110,7 +111,8 @@ NUMPANES  ?= 4
 BODY = ""
 
 PROTO_PATHS = \
-	$(GOPATH)/srg/$(GOPKG) \
+	$(GOPATH)/src \
+	$(GOPATH)/src/$(GOPKG) \
 	$(GOPATH)/src/github.com/googleapis/googleapis
 
 GO_SOURCES = $(eval GO_SOURCES := $(shell find \

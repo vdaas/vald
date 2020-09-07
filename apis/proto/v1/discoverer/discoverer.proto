@@ -28,7 +28,7 @@ import "google/api/annotations.proto";
 
 
 service Discoverer {
-  option (gql.svc_type) = QUERY;
+  
   rpc Pods(payload.Discoverer.Request) returns (payload.Info.Pods) {
     option (google.api.http) = {
       post : "/discover/pods"

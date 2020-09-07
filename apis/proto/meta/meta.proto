@@ -28,7 +28,7 @@ import "google/api/annotations.proto";
 
 
 service Meta {
-  option (gql.svc_type) = QUERY;
+  
   rpc GetMeta(payload.Meta.Key) returns (payload.Meta.Val) {
     option (google.api.http).post = "/meta";
   }

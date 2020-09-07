@@ -25,7 +25,6 @@ option java_outer_classname = "ValdPayload";
 
 import "github.com/envoyproxy/protoc-gen-validate/validate/validate.proto";
 
-
 message Search {
   message Request {
     repeated float vector = 1 [ (validate.rules).repeated .min_items = 2 ];

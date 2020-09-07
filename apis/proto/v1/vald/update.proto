@@ -28,13 +28,13 @@ import "google/api/annotations.proto";
 
 
 service Update {
-  option (gql.svc_type) = QUERY;
+  
   rpc Update(payload.Update.Request) returns (payload.Object.Location) {
     option (google.api.http) = {
       post : "/update"
       body : "*"
     };
-    option (gql.rpc_type) = MUTATION;
+    
   }
   rpc StreamUpdate(stream payload.Update.Request)
       returns (stream payload.Object.Location) {}

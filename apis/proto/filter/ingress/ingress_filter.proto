@@ -42,7 +42,7 @@ service IngressFilter {
       post : "/vector"
       body : "*"
     };
-    option (gql.rpc_type) = MUTATION;
+    
   }
   rpc StreamFilterVector(stream payload.Object.Vector)
       returns (stream payload.Object.Vector) {}

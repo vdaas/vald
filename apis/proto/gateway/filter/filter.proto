@@ -42,7 +42,7 @@ service Filter {
       post : "/insert/object"
       body : "*"
     };
-    option (gql.rpc_type) = MUTATION;
+    
   }
   rpc StreamInsertObject(stream payload.Object.Blob)
       returns (stream payload.Object.Location) {}
@@ -53,7 +53,7 @@ service Filter {
       post : "/update/object"
       body : "*"
     };
-    option (gql.rpc_type) = MUTATION;
+    
   }
   rpc StreamUpdateObject(stream payload.Object.Blob)
       returns (stream payload.Object.Location) {}
@@ -64,7 +64,7 @@ service Filter {
       post : "/upsert/object"
       body : "*"
     };
-    option (gql.rpc_type) = MUTATION;
+    
   }
   rpc StreamUpsertObject(stream payload.Object.Blob)
       returns (stream payload.Object.Location) {}
