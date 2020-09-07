@@ -79,7 +79,7 @@ require (
 	golang.org/x/sys v0.0.0-20200831180312-196b9ba8737a
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/netlib v0.0.0-20200824093956-f0ca4b3a5ef5 // indirect
-	gonum.org/v1/plot v0.7.0
+	gonum.org/v1/plot v0.8.0
 	google.golang.org/api v0.31.0
 	google.golang.org/genproto v0.0.0-20200901141002-b3bf27a9dbd1
 	google.golang.org/grpc v1.31.1
