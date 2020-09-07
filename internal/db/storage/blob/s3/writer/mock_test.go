@@ -37,22 +37,3 @@ func (m *MockWriteCloser) Write(p []byte) (n int, err error) {
 func (m *MockWriteCloser) Close() error {
 	return m.CloseFunc()
 }
-
-// MockGroup represents mock of errorgroup.Group.
-type MockGroup struct {
-	GoFunc         func(func() error)
-	LimitationFunc func(int)
-	WaitFunc       func() error
-}
-
-func (m *MockGroup) Go(f func() error) {
-	m.GoFunc(f)
-}
-
-func (m *MockGroup) Limitation(n int) {
-	m.LimitationFunc(n)
-}
-
-func (m *MockGroup) Wait() error {
-	return m.WaitFunc()
-}
