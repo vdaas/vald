@@ -44,7 +44,7 @@ func TestDNS_Bind(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *DNS) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -125,7 +125,7 @@ func TestDialer_Bind(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *Dialer) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -206,7 +206,7 @@ func TestTCP_Bind(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *TCP) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -287,7 +287,7 @@ func TestTCP_Opts(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got []tcp.DialerOption) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}

@@ -70,7 +70,7 @@ func Test_dialerCache_IP(t *testing.T) {
 	}
 	defaultCheckFunc := func(d *dialerCache, w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -195,7 +195,7 @@ func Test_dialerCache_Len(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got uint32) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -253,14 +253,14 @@ func TestNewDialer(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotDer Dialer, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %+v, want %+v", err, w.err)
+			return errors.Errorf("got_error: \"%+v\",\n\t\t\t\twant: \"%+v\"", err, w.err)
 		}
 
 		if w.wantDer == nil && gotDer == nil {
 			return nil
 		}
 		if w.wantDer == nil && gotDer != nil || w.wantDer != nil && gotDer == nil {
-			return errors.Errorf("got der: %+v, want der: %+v", gotDer, w.wantDer)
+			return errors.Errorf("got: \"%+v\",\n\t\t\t\twant: \"%+v\"", gotDer, w.wantDer)
 		}
 
 		want := w.wantDer.(*dialer)
@@ -426,7 +426,7 @@ func Test_dialer_GetDialer(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got func(ctx context.Context, network, addr string) (net.Conn, error)) error {
 		if reflect.ValueOf(w.want).Pointer() != reflect.ValueOf(got).Pointer() {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -506,10 +506,10 @@ func Test_dialer_lookup(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *dialerCache, err error, d *dialer) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -530,7 +530,7 @@ func Test_dialer_lookup(t *testing.T) {
 			},
 			checkFunc: func(w want, got *dialerCache, err error, d *dialer) error {
 				if !errors.Is(err, w.err) {
-					return errors.Errorf("got error = %v, want %v", err, w.err)
+					return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 				}
 
 				if got.Len() == 0 {
@@ -555,7 +555,7 @@ func Test_dialer_lookup(t *testing.T) {
 			},
 			checkFunc: func(w want, got *dialerCache, err error, d *dialer) error {
 				if !errors.Is(err, w.err) {
-					return errors.Errorf("got error = %v, want %v", err, w.err)
+					return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 				}
 
 				if got.Len() == 0 {
@@ -856,10 +856,10 @@ func Test_dialer_DialContext(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got net.Conn, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -941,10 +941,10 @@ func Test_dialer_cachedDialer(t *testing.T) {
 	}
 	defaultCheckFunc := func(d *dialer, w want, gotConn net.Conn, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotConn, w.wantConn) {
-			return errors.Errorf("got = %v, want %v", gotConn, w.wantConn)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotConn, w.wantConn)
 		}
 		return nil
 	}
@@ -1437,7 +1437,7 @@ func Test_dialer_dial(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got net.Conn, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if got == nil {
 			return errors.New("got is nil")
@@ -1494,7 +1494,7 @@ func Test_dialer_dial(t *testing.T) {
 			},
 			checkFunc: func(w want, got net.Conn, err error) error {
 				if !errors.Is(err, w.err) {
-					return errors.Errorf("got error = %v, want %v", err, w.err)
+					return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 				}
 
 				if got != nil {
@@ -1522,7 +1522,7 @@ func Test_dialer_dial(t *testing.T) {
 			},
 			checkFunc: func(w want, got net.Conn, err error) error {
 				if !errors.Is(err, w.err) {
-					return errors.Errorf("got error = %v, want %v", err, w.err)
+					return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 				}
 
 				if got != nil {
@@ -1550,7 +1550,7 @@ func Test_dialer_dial(t *testing.T) {
 			},
 			checkFunc: func(w want, got net.Conn, err error) error {
 				if !errors.Is(err, w.err) {
-					return errors.Errorf("got error = %v, want %v", err, w.err)
+					return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 				}
 
 				if got != nil {
@@ -1577,7 +1577,7 @@ func Test_dialer_dial(t *testing.T) {
 			},
 			checkFunc: func(w want, got net.Conn, err error) error {
 				if !errors.Is(err, w.err) {
-					return errors.Errorf("got error = %v, want %v", err, w.err)
+					return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 				}
 
 				if got != nil {

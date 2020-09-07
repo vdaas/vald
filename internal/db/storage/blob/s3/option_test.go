@@ -56,10 +56,10 @@ func TestWithErrGroup(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -138,10 +138,10 @@ func TestWithSession(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -220,10 +220,10 @@ func TestWithBucket(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -295,10 +295,10 @@ func TestWithMaxPartSize(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -389,10 +389,10 @@ func TestWithMaxChunkSize(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -485,10 +485,10 @@ func TestWithReaderBackoff(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -554,7 +554,7 @@ func TestWithReaderBackoffOpts(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 
 		opts := []cmp.Option{
@@ -568,7 +568,7 @@ func TestWithReaderBackoffOpts(t *testing.T) {
 			}),
 		}
 		if diff := cmp.Diff(w.obj, obj, opts...); diff != "" {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 
 		return nil

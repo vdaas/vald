@@ -56,10 +56,10 @@ func TestWithTimezone(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -126,10 +126,10 @@ func TestWithCharset(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -197,10 +197,10 @@ func TestWithDB(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -268,10 +268,10 @@ func TestWithHost(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -339,10 +339,10 @@ func TestWithPort(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -410,10 +410,10 @@ func TestWithUser(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -484,10 +484,10 @@ func TestWithPass(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -555,10 +555,10 @@ func TestWithName(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -626,10 +626,10 @@ func TestWithInitialPingTimeLimit(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -708,10 +708,10 @@ func TestWithInitialPingDuration(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -790,10 +790,10 @@ func TestWithConnectionLifeTimeLimit(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -872,10 +872,10 @@ func TestWithMaxIdleConns(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -943,10 +943,10 @@ func TestWithMaxOpenConns(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -1014,10 +1014,10 @@ func TestWithTLSConfig(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -1090,7 +1090,7 @@ func TestWithDialerFunc(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if reflect.ValueOf(w.obj.dialerFunc).Pointer() != reflect.ValueOf(obj.dialerFunc).Pointer() {
 			return errors.Errorf("got dialerFunc = %p, want %p", obj.dialerFunc, w.obj.dialerFunc)
@@ -1168,10 +1168,10 @@ func TestWithDialer(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -1246,10 +1246,10 @@ func TestWithEventReceiver(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}

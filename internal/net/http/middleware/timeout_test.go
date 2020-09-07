@@ -221,7 +221,7 @@ func Test_timeout_Wrap(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got rest.Func) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}

@@ -48,7 +48,7 @@ func TestServers_Bind(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *Servers) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -145,7 +145,7 @@ func TestServers_GetGRPCStreamConcurrency(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotC int) error {
 		if !reflect.DeepEqual(gotC, w.wantC) {
-			return errors.Errorf("got = %v, want %v", gotC, w.wantC)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotC, w.wantC)
 		}
 		return nil
 	}
@@ -241,7 +241,7 @@ func TestHTTP_Bind(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *HTTP) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -340,7 +340,7 @@ func TestGRPC_Bind(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *GRPC) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -450,7 +450,7 @@ func TestGRPCKeepalive_Bind(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *GRPCKeepalive) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -542,7 +542,7 @@ func TestServer_Bind(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *Server) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -643,7 +643,7 @@ func TestServer_Opts(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got []server.Option) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}

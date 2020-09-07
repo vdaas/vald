@@ -46,7 +46,7 @@ func TestTLS_Bind(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *TLS) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -161,7 +161,7 @@ func TestTLS_Opts(t *testing.T) {
 				}
 			}
 			if !ok {
-				return errors.Errorf("got = %v, want %v", got, w.want)
+				return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 			}
 		}
 		return nil

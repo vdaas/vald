@@ -70,7 +70,7 @@ var (
 	Wrap = func(err error, msg string) error {
 		if err != nil {
 			if msg != "" {
-				return fmt.Errorf("%s :\t%w", msg, err)
+				return fmt.Errorf("%s: %w", msg, err)
 			}
 			return err
 		}
@@ -80,7 +80,7 @@ var (
 	Wrapf = func(err error, format string, args ...interface{}) error {
 		if err != nil {
 			if format != "" && len(args) > 0 {
-				return fmt.Errorf(fmt.Sprintf(format, args...)+" :\t%w", err)
+				return Wrap(err, fmt.Sprintf(format, args...))
 			}
 			return err
 		}
@@ -105,6 +105,28 @@ var (
 		return nil
 	}
 
+	Is = func(err, target error) bool {
+		if target == nil {
+			return err == target
+		}
+
+		isComparable := reflect.TypeOf(target).Comparable()
+		for {
+			if isComparable && (err == target || err.Error() == target.Error()) {
+				return true
+			}
+			if x, ok := err.(interface {
+				Is(error) bool
+			}); ok && x.Is(target) {
+				return true
+			}
+			if uerr := Unwrap(err); uerr == nil {
+				return err.Error() == target.Error()
+			} else {
+				err = uerr
+			}
+		}
+	}
+
 	As = errors.As
-	Is = errors.Is
 )

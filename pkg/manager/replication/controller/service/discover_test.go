@@ -51,10 +51,10 @@ func TestNew(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotRp Replicator, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotRp, w.wantRp) {
-			return errors.Errorf("got = %v, want %v", gotRp, w.wantRp)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRp, w.wantRp)
 		}
 		return nil
 	}
@@ -137,10 +137,10 @@ func Test_replicator_Start(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got <-chan error, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -249,10 +249,10 @@ func Test_replicator_GetCurrentPodIPs(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got []string, got1 bool) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		if !reflect.DeepEqual(got1, w.want1) {
-			return errors.Errorf("got = %v, want %v", got1, w.want1)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got1, w.want1)
 		}
 		return nil
 	}
@@ -358,7 +358,7 @@ func Test_replicator_SendRecoveryRequest(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
