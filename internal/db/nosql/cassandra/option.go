@@ -133,8 +133,11 @@ func WithConnectTimeout(dur string) Option {
 		}
 		d, err := timeutil.Parse(dur)
 		if err != nil {
-			return err
+			return &errors.ErrCriticalOption{
+				Err: err,
+			}
 		}
+
 		c.connectTimeout = d
 		return nil
 	}
@@ -144,7 +147,7 @@ func WithConnectTimeout(dur string) Option {
 func WithPort(port int) Option {
 	return func(c *client) error {
 		if port <= 0 || port > math.MaxUint16 {
-			return errors.ErrCassandraInvalidPort(port)
+			return errors.ErrInvalidOption("port", port)
 		}
 		c.port = port
 		return nil

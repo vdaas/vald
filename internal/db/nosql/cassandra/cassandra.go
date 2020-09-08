@@ -137,12 +137,12 @@ func New(opts ...Option) (Cassandra, error) {
 	c := new(client)
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(c); err != nil {
-			err = errors.ErrOptionFailed(err, reflect.ValueOf(opt))
-			if errors.Is(err, errors.ErrCriticalOption) {
-				return nil, err
-			}
-			log.Warn(err)
+			werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+			log.Warn(werr)
 
+			if errors.IsCriticalOptionError(err) {
+				return nil, werr
+			}
 		}
 	}
 

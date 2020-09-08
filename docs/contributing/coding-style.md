@@ -508,21 +508,23 @@ func WithHosts(hosts ...string) Option {
 }
 ```
 
-If the functional option error is a critical error, we should wrap it with `ErrCriticalOption` error and return it to the caller side to decide the next action.
+If the functional option error is a critical error, we should wrap it with the `ErrCriticalOption` error and return it to the caller side to decide the next action.
 
 ```go
 func WithConnectTimeout(dur string) Option {
-	return func(c *client) error {
-		if dur == "" {
+    return func(c *client) error {
+        if dur == "" {
             return errors.ErrInvalidOption("connectTimeout", dur)
-		}
-		d, err := timeutil.Parse(dur)
-		if err != nil {
-			return errors.Wrap(errors.ErrCriticalOption, err.Error())
-		}
-		c.connectTimeout = d
-		return nil
-	}
+        }
+        d, err := timeutil.Parse(dur)
+        if err != nil {
+            return &errors.ErrCriticalOption{
+                Err: err,
+            }
+        }
+        c.connectTimeout = d
+        return nil
+    }
 }
 ```
 
@@ -535,11 +537,12 @@ func New(opts ...Option) (Server, error) {
     srv := new(server)
     for _, opt := range opts {
         if err := opt(srv); err != nil {
-            err = errors.ErrOptionFailed(err, reflect.ValueOf(opt))
-            if errors.Is(err, errors.ErrCriticalOption) {
-                return nil, err
+            werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+            log.Warn(werr)
+
+            if errors.IsCriticalOptionError(err) {
+                return nil, werr
             }
-            log.Warn(err)
         }
     }
 }

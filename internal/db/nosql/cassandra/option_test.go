@@ -529,7 +529,7 @@ func TestWithConnectTimeout(t *testing.T) {
 				dur: "dummy",
 			},
 			want: want{
-				err: errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration dummy"),
+				err: &errors.ErrCriticalOption{errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration \"dummy\"")},
 				obj: &T{},
 			},
 		},
@@ -630,7 +630,7 @@ func TestWithPort(t *testing.T) {
 				port: 8080,
 			},
 			want: want{
-				err: errors.ErrCassandraInvalidPort(-1),
+				err: errors.ErrInvalidOption("port", -1),
 				obj: &T{
 					port: 8080,
 				},
@@ -645,7 +645,7 @@ func TestWithPort(t *testing.T) {
 				port: 8080,
 			},
 			want: want{
-				err: errors.ErrCassandraInvalidPort(65536),
+				err: errors.ErrInvalidOption("port", 65536),
 				obj: &T{
 					port: 8080,
 				},

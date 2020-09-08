@@ -23,7 +23,22 @@ var (
 		}
 		return Errorf("invalid option. name: %s, val: %#v", name, val)
 	}
-
-	// ErrCriticalOption represent the critical option error
-	ErrCriticalOption = New("critical option error")
 )
+
+// ErrCriticalOption represent the critical option error
+type ErrCriticalOption struct {
+	Err error
+}
+
+func (e *ErrCriticalOption) Error() string {
+	return e.Err.Error()
+}
+
+func IsCriticalOptionError(err error) bool {
+	switch err.(type) {
+	case *ErrCriticalOption:
+		return true
+	default:
+		return false
+	}
+}
