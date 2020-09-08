@@ -17,30 +17,22 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: vald-discoverer
+  name: vald-helm-operator
   labels:
-    app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v0.0.53
+    app.kubernetes.io/name: vald-helm-operator
+    helm.sh/chart: vald-helm-operator-v0.0.53
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
     app.kubernetes.io/version: v0.0.53
-    app.kubernetes.io/component: discoverer
+    app.kubernetes.io/component: helm-operator
 spec:
   ports:
-    - name: grpc
-      port: 8081
-      targetPort: 8081
-      protocol: TCP
-    - name: readiness
-      port: 3001
-      targetPort: 3001
-      protocol: TCP
-    - name: pprof
-      port: 6060
-      targetPort: 6060
+    - name: prometheus
+      port: 6061
+      targetPort: 6061
       protocol: TCP
   selector:
-    app.kubernetes.io/name: vald
-    app.kubernetes.io/component: discoverer
+    app.kubernetes.io/name: vald-helm-operator
+    app.kubernetes.io/component: helm-operator
   clusterIP: None
   type: ClusterIP

@@ -19,6 +19,14 @@ kind: Deployment
 metadata:
   name: vald-helm-operator
   namespace: default
+  labels:
+    app: vald-helm-operator
+    app.kubernetes.io/name: vald-helm-operator
+    helm.sh/chart: vald-helm-operator-v0.0.53
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: v0.0.53
+    app.kubernetes.io/component: helm-operator
 spec:
   replicas: 2
   selector:
@@ -28,27 +36,37 @@ spec:
     metadata:
       labels:
         name: vald-helm-operator
+        app.kubernetes.io/name: vald-helm-operator
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/component: helm-operator
     spec:
       serviceAccountName: vald-helm-operator
       containers:
         - name: vald-helm-operator
-          image: "vdaas/vald-helm-operator:v0.0.52"
+          image: "vdaas/vald-helm-operator:v0.0.53"
           imagePullPolicy: Always
           args:
-            - "--reconcile-period 1m"
-            - "--max-workers 1"
-            - "--zap-encoder console"
-            - "--zap-level info"
-            - "--zap-stacktrace-level error"
-            - "--zap-time-encoding iso8601"
+            - "run"
+            - "--watches-file=./watches.yaml"
+            - "--enable-leader-election"
+            - "--leader-election-id=vald-helm-operator"
+            - "--leader-election-namespace=default"
+            - "--metrics-addr=:6061"
+            - "--reconcile-period=1m"
+            - "--max-concurrent-reconciles=1"
+            - "--zap-encoder=console"
+            - "--zap-log-level=info"
+            - "--zap-stacktrace-level=error"
+          ports:
+            - name: prometheus
+              protocol: TCP
+              containerPort: 6061
           env:
-            - name: WATCH_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
             - name: POD_NAME
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
-            - name: OPERATOR_NAME
-              value: "vald-helm-operator"
+            - name: WATCH_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace

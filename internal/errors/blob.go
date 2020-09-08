@@ -45,7 +45,7 @@ func (e *ErrBlobNoSuchBucket) Unwrap() error {
 }
 
 func IsErrBlobNoSuchBucket(err error) bool {
-	var target error = new(ErrBlobNoSuchBucket)
+	target := new(ErrBlobNoSuchBucket)
 	return As(err, &target)
 }
 
@@ -62,6 +62,6 @@ func (e *ErrBlobNoSuchKey) Unwrap() error {
 }
 
 func IsErrBlobNoSuchKey(err error) bool {
-	var target error = new(ErrBlobNoSuchKey)
+	target := new(ErrBlobNoSuchKey)
 	return As(err, &target)
 }

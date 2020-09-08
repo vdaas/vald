@@ -79,7 +79,7 @@ func (e *ErrCassandraNotFoundIdentity) Unwrap() error {
 }
 
 func IsErrCassandraNotFound(err error) bool {
-	var target error = new(ErrCassandraNotFoundIdentity)
+	target := new(ErrCassandraNotFoundIdentity)
 	return As(err, &target)
 }
 
@@ -96,6 +96,6 @@ func (e *ErrCassandraUnavailableIdentity) Unwrap() error {
 }
 
 func IsErrCassandraUnavailable(err error) bool {
-	var target error = new(ErrCassandraUnavailableIdentity)
+	target := new(ErrCassandraUnavailableIdentity)
 	return As(err, &target)
 }
