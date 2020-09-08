@@ -538,8 +538,10 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	}
 	n.indexing.Store(true)
 	atomic.StoreUint64(&n.ic, 0)
+	runtime.GC()
 	t := time.Now().UnixNano()
 	defer n.indexing.Store(false)
+	defer runtime.GC()
 
 	log.Infof("create index operation started, uncommitted indexes = %d", ic)
 	delList := make([]string, 0, ic)
@@ -644,6 +646,7 @@ func (n *ngt) SaveIndex(ctx context.Context) (err error) {
 }
 
 func (n *ngt) saveIndex(ctx context.Context) (err error) {
+	defer runtime.GC()
 	eg, ctx := errgroup.New(ctx)
 
 	eg.Go(safety.RecoverFunc(func() error {
