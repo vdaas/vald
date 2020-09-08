@@ -53,7 +53,7 @@ func TestWithRoundTripper(t *testing.T) {
 
 	defaultCheckFunc := func(w want, got *T) error {
 		if !reflect.DeepEqual(got, w.obj) {
-			return errors.Errorf("got = %v, want %v", got, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.obj)
 		}
 		return nil
 	}
@@ -117,7 +117,7 @@ func TestWithBackoff(t *testing.T) {
 
 	defaultCheckFunc := func(w want, got *T) error {
 		if !reflect.DeepEqual(got, w.obj) {
-			return errors.Errorf("got = %v, want %v", got, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.obj)
 		}
 		return nil
 	}

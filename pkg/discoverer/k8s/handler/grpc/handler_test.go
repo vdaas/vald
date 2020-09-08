@@ -48,10 +48,10 @@ func TestNew(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotDs DiscovererServer, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotDs, w.wantDs) {
-			return errors.Errorf("got = %v, want %v", gotDs, w.wantDs)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotDs, w.wantDs)
 		}
 		return nil
 	}
@@ -212,10 +212,10 @@ func Test_server_Pods(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *payload.Info_Pods, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -307,10 +307,10 @@ func Test_server_Nodes(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *payload.Info_Nodes, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -396,7 +396,7 @@ func Test_singleflightKey(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}

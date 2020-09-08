@@ -39,7 +39,7 @@ func Test_compressAlgorithm_String(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -104,7 +104,7 @@ func TestCompressAlgorithm(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got compressAlgorithm) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -176,7 +176,7 @@ func TestCompressCore_Bind(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *CompressCore) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -255,7 +255,7 @@ func TestCompressor_Bind(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *Compressor) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -337,7 +337,7 @@ func TestCompressorRegisterer_Bind(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *CompressorRegisterer) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}

@@ -43,7 +43,7 @@ func TestWithError(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T) error {
 		if reflect.ValueOf(w.obj.errorFn).Pointer() != reflect.ValueOf(obj.errorFn).Pointer() {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -115,7 +115,7 @@ func TestWithWarn(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T) error {
 		if reflect.ValueOf(w.obj.warnFn).Pointer() != reflect.ValueOf(obj.warnFn).Pointer() {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}

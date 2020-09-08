@@ -41,7 +41,7 @@ func Test_identity(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got func() (Dataset, error)) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -113,7 +113,7 @@ func Test_random(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got func() (Dataset, error)) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -183,10 +183,10 @@ func Test_datasetDir(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got string, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -251,7 +251,7 @@ func TestData(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got func() (Dataset, error)) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -336,7 +336,7 @@ func Test_dataset_Train(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got [][]float32) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -466,7 +466,7 @@ func Test_dataset_TrainAsFloat64(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got [][]float64) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -596,7 +596,7 @@ func Test_dataset_Query(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got [][]float32) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -726,7 +726,7 @@ func Test_dataset_QueryAsFloat64(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got [][]float64) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -856,7 +856,7 @@ func Test_dataset_Distances(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got [][]float32) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -986,7 +986,7 @@ func Test_dataset_DistancesAsFloat64(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got [][]float64) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1116,7 +1116,7 @@ func Test_dataset_Neighbors(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got [][]int) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1246,7 +1246,7 @@ func Test_dataset_IDs(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got []string) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1376,7 +1376,7 @@ func Test_dataset_Name(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1506,7 +1506,7 @@ func Test_dataset_Dimension(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got int) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1636,7 +1636,7 @@ func Test_dataset_DistanceType(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1766,7 +1766,7 @@ func Test_dataset_ObjectType(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1882,7 +1882,7 @@ func Test_float32To64(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotY [][]float64) error {
 		if !reflect.DeepEqual(gotY, w.wantY) {
-			return errors.Errorf("got = %v, want %v", gotY, w.wantY)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotY, w.wantY)
 		}
 		return nil
 	}

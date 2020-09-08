@@ -49,10 +49,10 @@ func TestNew(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got Client, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -133,10 +133,10 @@ func Test_ngtdClient_Exists(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *client.ObjectID, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -232,10 +232,10 @@ func Test_ngtdClient_Search(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *client.SearchResponse, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -331,10 +331,10 @@ func Test_ngtdClient_SearchByID(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *client.SearchResponse, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -430,7 +430,7 @@ func Test_ngtdClient_StreamSearch(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -528,7 +528,7 @@ func Test_ngtdClient_StreamSearchByID(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -625,7 +625,7 @@ func Test_ngtdClient_Insert(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -721,7 +721,7 @@ func Test_ngtdClient_StreamInsert(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -818,7 +818,7 @@ func Test_ngtdClient_MultiInsert(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -913,7 +913,7 @@ func Test_ngtdClient_Update(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -1009,7 +1009,7 @@ func Test_ngtdClient_StreamUpdate(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -1106,7 +1106,7 @@ func Test_ngtdClient_MultiUpdate(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -1201,7 +1201,7 @@ func Test_ngtdClient_Remove(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -1297,7 +1297,7 @@ func Test_ngtdClient_StreamRemove(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -1394,7 +1394,7 @@ func Test_ngtdClient_MultiRemove(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -1490,10 +1490,10 @@ func Test_ngtdClient_GetObject(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *client.ObjectVector, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1589,7 +1589,7 @@ func Test_ngtdClient_StreamGetObject(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -1686,7 +1686,7 @@ func Test_ngtdClient_CreateIndex(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -1780,7 +1780,7 @@ func Test_ngtdClient_SaveIndex(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -1873,7 +1873,7 @@ func Test_ngtdClient_CreateAndSaveIndex(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -1968,10 +1968,10 @@ func Test_ngtdClient_IndexInfo(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *client.InfoIndex, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -2057,7 +2057,7 @@ func Test_searchRequestToNgtdSearchRequest(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *proto.SearchRequest) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -2128,7 +2128,7 @@ func Test_searchIDRequestToNgtdSearchRequest(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *proto.SearchRequest) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -2199,7 +2199,7 @@ func Test_ngtdSearchResponseToSearchResponse(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *client.SearchResponse) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -2270,7 +2270,7 @@ func Test_ngtdGetObjectResponseToObjectVector(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *client.ObjectVector) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -2341,7 +2341,7 @@ func Test_objectVectorToNGTDInsertRequest(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *proto.InsertRequest) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -2412,7 +2412,7 @@ func Test_objectIDToNGTDRemoveRequest(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *proto.RemoveRequest) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -2483,7 +2483,7 @@ func Test_objectIDToNGTDGetObjectRequest(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *proto.GetObjectRequest) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -2554,7 +2554,7 @@ func Test_controlCreateIndexRequestToCreateIndexRequest(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *proto.CreateIndexRequest) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -2626,10 +2626,10 @@ func Test_getSizeAndEpsilon(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotSize int32, gotEpsilon float32) error {
 		if !reflect.DeepEqual(gotSize, w.wantSize) {
-			return errors.Errorf("got = %v, want %v", gotSize, w.wantSize)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotSize, w.wantSize)
 		}
 		if !reflect.DeepEqual(gotEpsilon, w.wantEpsilon) {
-			return errors.Errorf("got = %v, want %v", gotEpsilon, w.wantEpsilon)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotEpsilon, w.wantEpsilon)
 		}
 		return nil
 	}
@@ -2700,7 +2700,7 @@ func Test_tofloat64(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotOut []float64) error {
 		if !reflect.DeepEqual(gotOut, w.wantOut) {
-			return errors.Errorf("got = %v, want %v", gotOut, w.wantOut)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOut, w.wantOut)
 		}
 		return nil
 	}
