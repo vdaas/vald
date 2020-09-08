@@ -48,7 +48,7 @@ func TestWithCache(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T) error {
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -125,7 +125,7 @@ func TestWithDNSRefreshDuration(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T) error {
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -204,7 +204,7 @@ func TestWithDNSCacheExpiration(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T) error {
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -285,7 +285,7 @@ func TestWithDialerTimeout(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, obj *T) error {
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -363,7 +363,7 @@ func TestWithDialerKeepAlive(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T) error {
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -441,7 +441,7 @@ func TestWithTLS(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T) error {
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -506,7 +506,7 @@ func TestWithEnableDNSCache(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T) error {
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -559,7 +559,7 @@ func TestWithDisableDNSCache(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T) error {
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -612,7 +612,7 @@ func TestWithEnableDialerDualStack(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T) error {
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -665,7 +665,7 @@ func TestWithDisableDialerDualStack(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T) error {
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}

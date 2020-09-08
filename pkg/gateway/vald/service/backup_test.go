@@ -46,10 +46,10 @@ func TestNewBackup(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotBu Backup, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotBu, w.wantBu) {
-			return errors.Errorf("got = %v, want %v", gotBu, w.wantBu)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotBu, w.wantBu)
 		}
 		return nil
 	}
@@ -126,10 +126,10 @@ func Test_backup_Start(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got <-chan error, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -219,10 +219,10 @@ func Test_backup_GetObject(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotVec *payload.Backup_MetaVector, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotVec, w.wantVec) {
-			return errors.Errorf("got = %v, want %v", gotVec, w.wantVec)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotVec, w.wantVec)
 		}
 		return nil
 	}
@@ -314,10 +314,10 @@ func Test_backup_GetLocation(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotIpList []string, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotIpList, w.wantIpList) {
-			return errors.Errorf("got = %v, want %v", gotIpList, w.wantIpList)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotIpList, w.wantIpList)
 		}
 		return nil
 	}
@@ -408,7 +408,7 @@ func Test_backup_Register(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -499,7 +499,7 @@ func Test_backup_RegisterMultiple(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -590,7 +590,7 @@ func Test_backup_Remove(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -681,7 +681,7 @@ func Test_backup_RemoveMultiple(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}

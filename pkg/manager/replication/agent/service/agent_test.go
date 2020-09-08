@@ -37,7 +37,7 @@ func TestNew(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got Replicator) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}

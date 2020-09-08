@@ -132,9 +132,9 @@ func (c *client) getMulti(ctx context.Context, prefix string, keys ...string) (v
 		err = res.Err()
 		if err != nil {
 			if err == redis.Nil {
-				err = errors.Wrap(err, errors.ErrRedisNotFound(k).Error())
+				err = errors.Wrap(errors.ErrRedisNotFound(k), err.Error())
 			} else {
-				err = errors.Wrap(err, errors.ErrRedisGetOperationFailed(k, err).Error())
+				err = errors.Wrap(errors.ErrRedisGetOperationFailed(k, err), err.Error())
 			}
 			vals = append(vals, "")
 			continue
@@ -156,11 +156,21 @@ func (c *client) Set(ctx context.Context, key, val string) (err error) {
 	}
 	err = kv.Err()
 	if err != nil {
-		return errors.Wrap(c.db.Del(vkKey).Err(), errors.ErrRedisSetOperationFailed(kvKey, err).Error())
+		err = errors.ErrRedisSetOperationFailed(kvKey, err)
+		dberr := c.db.Del(vkKey).Err()
+		if dberr != nil {
+			err = errors.Wrap(err, dberr.Error())
+		}
+		return err
 	}
 	err = vk.Err()
 	if err != nil {
-		return errors.Wrap(c.db.Del(kvKey).Err(), errors.ErrRedisSetOperationFailed(vkKey, err).Error())
+		err = errors.ErrRedisSetOperationFailed(vkKey, err)
+		dberr := c.db.Del(kvKey).Err()
+		if dberr != nil {
+			err = errors.Wrap(err, dberr.Error())
+		}
+		return err
 	}
 	return nil
 }
@@ -185,12 +195,20 @@ func (c *client) SetMultiple(ctx context.Context, kvs map[string]string) (err er
 	}
 	for vkKey, res := range kvress {
 		if err = res.Err(); err != nil {
-			err = errors.Wrap(c.db.Del(vkKey).Err(), errors.ErrRedisSetOperationFailed(vks[vkKey], err).Error())
+			err = errors.ErrRedisSetOperationFailed(vks[vkKey], err)
+			dberr := c.db.Del(vkKey).Err()
+			if dberr != nil {
+				err = errors.Wrap(err, dberr.Error())
+			}
 		}
 	}
 	for kvKey, res := range vkress {
 		if err = res.Err(); err != nil {
-			err = errors.Wrap(c.db.Del(kvKey).Err(), errors.ErrRedisSetOperationFailed(kvs[kvKey], err).Error())
+			err = errors.ErrRedisSetOperationFailed(kvs[kvKey], err)
+			dberr := c.db.Del(kvKey).Err()
+			if dberr != nil {
+				err = errors.Wrap(err, dberr.Error())
+			}
 		}
 	}
 	return err
@@ -260,7 +278,12 @@ func (c *client) deleteMulti(ctx context.Context, pfx, pfxInv string, keys ...st
 	var errs error
 	for k, res := range ress {
 		if err = res.Err(); err != nil {
-			errs = errors.Wrap(errs, errors.ErrRedisDeleteOperationFailed(k, err).Error())
+			err = errors.ErrRedisDeleteOperationFailed(k, err)
+			if errs == nil {
+				errs = err
+			} else {
+				errs = errors.Wrap(err, errs.Error())
+			}
 			continue
 		}
 	}

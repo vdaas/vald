@@ -45,10 +45,10 @@ func Test_loadFloat32(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got interface{}, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -129,10 +129,10 @@ func Test_loadInt(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got interface{}, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -213,13 +213,13 @@ func Test_loadDataset(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotDim int, gotVec interface{}, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotDim, w.wantDim) {
-			return errors.Errorf("got = %v, want %v", gotDim, w.wantDim)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotDim, w.wantDim)
 		}
 		if !reflect.DeepEqual(gotVec, w.wantVec) {
-			return errors.Errorf("got = %v, want %v", gotVec, w.wantVec)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotVec, w.wantVec)
 		}
 		return nil
 	}
@@ -299,22 +299,22 @@ func TestLoad(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotTrain [][]float32, gotTest [][]float32, gotDistances [][]float32, gotNeighbors [][]int, gotDim int, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotTrain, w.wantTrain) {
-			return errors.Errorf("got = %v, want %v", gotTrain, w.wantTrain)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotTrain, w.wantTrain)
 		}
 		if !reflect.DeepEqual(gotTest, w.wantTest) {
-			return errors.Errorf("got = %v, want %v", gotTest, w.wantTest)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotTest, w.wantTest)
 		}
 		if !reflect.DeepEqual(gotDistances, w.wantDistances) {
-			return errors.Errorf("got = %v, want %v", gotDistances, w.wantDistances)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotDistances, w.wantDistances)
 		}
 		if !reflect.DeepEqual(gotNeighbors, w.wantNeighbors) {
-			return errors.Errorf("got = %v, want %v", gotNeighbors, w.wantNeighbors)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotNeighbors, w.wantNeighbors)
 		}
 		if !reflect.DeepEqual(gotDim, w.wantDim) {
-			return errors.Errorf("got = %v, want %v", gotDim, w.wantDim)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotDim, w.wantDim)
 		}
 		return nil
 	}
@@ -385,7 +385,7 @@ func TestCreateRandomIDs(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotIds []string) error {
 		if !reflect.DeepEqual(gotIds, w.wantIds) {
-			return errors.Errorf("got = %v, want %v", gotIds, w.wantIds)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotIds, w.wantIds)
 		}
 		return nil
 	}
@@ -457,7 +457,7 @@ func TestCreateRandomIDsWithLength(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotIds []string) error {
 		if !reflect.DeepEqual(gotIds, w.wantIds) {
-			return errors.Errorf("got = %v, want %v", gotIds, w.wantIds)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotIds, w.wantIds)
 		}
 		return nil
 	}
@@ -530,7 +530,7 @@ func TestCreateSerialIDs(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got []string) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -602,10 +602,10 @@ func TestLoadDataWithRandomIDs(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got Dataset, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -677,10 +677,10 @@ func TestLoadDataWithSerialIDs(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got Dataset, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}

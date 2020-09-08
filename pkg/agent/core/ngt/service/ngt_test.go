@@ -53,10 +53,10 @@ func TestNew(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotNn NGT, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotNn, w.wantNn) {
-			return errors.Errorf("got = %v, want %v", gotNn, w.wantNn)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotNn, w.wantNn)
 		}
 		return nil
 	}
@@ -155,7 +155,7 @@ func Test_ngt_initNGT(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -323,7 +323,7 @@ func Test_ngt_loadKVS(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -489,7 +489,7 @@ func Test_ngt_Start(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got <-chan error) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -665,10 +665,10 @@ func Test_ngt_Search(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got []model.Distance, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -850,10 +850,10 @@ func Test_ngt_SearchByID(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotDst []model.Distance, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotDst, w.wantDst) {
-			return errors.Errorf("got = %v, want %v", gotDst, w.wantDst)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotDst, w.wantDst)
 		}
 		return nil
 	}
@@ -1032,7 +1032,7 @@ func Test_ngt_Insert(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -1209,7 +1209,7 @@ func Test_ngt_insert(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -1387,7 +1387,7 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -1560,7 +1560,7 @@ func Test_ngt_Update(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -1734,7 +1734,7 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -1906,7 +1906,7 @@ func Test_ngt_Delete(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -2079,7 +2079,7 @@ func Test_ngt_delete(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -2253,7 +2253,7 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -2426,10 +2426,10 @@ func Test_ngt_GetObject(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotVec []float32, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotVec, w.wantVec) {
-			return errors.Errorf("got = %v, want %v", gotVec, w.wantVec)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotVec, w.wantVec)
 		}
 		return nil
 	}
@@ -2602,7 +2602,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -2776,7 +2776,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -2948,7 +2948,7 @@ func Test_ngt_saveIndex(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -3121,7 +3121,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -3296,10 +3296,10 @@ func Test_ngt_Exists(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotOid uint32, gotOk bool) error {
 		if !reflect.DeepEqual(gotOid, w.wantOid) {
-			return errors.Errorf("got = %v, want %v", gotOid, w.wantOid)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOid, w.wantOid)
 		}
 		if !reflect.DeepEqual(gotOk, w.wantOk) {
-			return errors.Errorf("got = %v, want %v", gotOk, w.wantOk)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOk, w.wantOk)
 		}
 		return nil
 	}
@@ -3472,10 +3472,10 @@ func Test_ngt_insertCache(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *vcache, got1 bool) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		if !reflect.DeepEqual(got1, w.want1) {
-			return errors.Errorf("got = %v, want %v", got1, w.want1)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got1, w.want1)
 		}
 		return nil
 	}
@@ -3643,7 +3643,7 @@ func Test_ngt_IsIndexing(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -3809,7 +3809,7 @@ func Test_ngt_UUIDs(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotUuids []string) error {
 		if !reflect.DeepEqual(gotUuids, w.wantUuids) {
-			return errors.Errorf("got = %v, want %v", gotUuids, w.wantUuids)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotUuids, w.wantUuids)
 		}
 		return nil
 	}
@@ -3977,7 +3977,7 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotUuids []string) error {
 		if !reflect.DeepEqual(gotUuids, w.wantUuids) {
-			return errors.Errorf("got = %v, want %v", gotUuids, w.wantUuids)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotUuids, w.wantUuids)
 		}
 		return nil
 	}
@@ -4139,7 +4139,7 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got uint64) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -4301,7 +4301,7 @@ func Test_ngt_Len(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got uint64) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -4463,7 +4463,7 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got uint64) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -4625,7 +4625,7 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got uint64) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -4791,7 +4791,7 @@ func Test_ngt_Close(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}

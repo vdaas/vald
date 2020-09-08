@@ -43,11 +43,11 @@ func TestNew(t *testing.T) {
 		wantr, gotr := w.want.(*retry), got.(*retry)
 
 		if reflect.ValueOf(wantr.errorFn).Pointer() != reflect.ValueOf(gotr.errorFn).Pointer() {
-			return errors.Errorf("errorFn: got = %v, want %v", gotr, wantr)
+			return errors.Errorf("errorFn: got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotr, wantr)
 		}
 
 		if reflect.ValueOf(wantr.warnFn).Pointer() != reflect.ValueOf(gotr.warnFn).Pointer() {
-			return errors.Errorf("warnFn: got = %v, want %v", gotr, wantr)
+			return errors.Errorf("warnFn: got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotr, wantr)
 		}
 
 		return nil

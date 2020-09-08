@@ -48,10 +48,10 @@ func TestNew(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotSo StorageObserver, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotSo, w.wantSo) {
-			return errors.Errorf("got = %v, want %v", gotSo, w.wantSo)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotSo, w.wantSo)
 		}
 		return nil
 	}
@@ -136,10 +136,10 @@ func Test_observer_Start(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got <-chan error, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -259,7 +259,7 @@ func Test_observer_PostStop(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -380,10 +380,10 @@ func Test_observer_startTicker(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got <-chan error, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -504,10 +504,10 @@ func Test_observer_startBackupLoop(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got <-chan error, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -628,7 +628,7 @@ func Test_observer_onWrite(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -751,7 +751,7 @@ func Test_observer_onCreate(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -873,10 +873,10 @@ func Test_observer_isValidMetadata(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got bool, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -990,7 +990,7 @@ func Test_observer_terminate(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -1104,7 +1104,7 @@ func Test_observer_requestBackup(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -1224,7 +1224,7 @@ func Test_observer_backup(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}

@@ -53,7 +53,7 @@ func TestInit(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got Logger) error {
 		if !reflect.DeepEqual(got, l) {
-			return errors.Errorf("got = %v, want %v", got, w.l)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.l)
 		}
 		return nil
 	}
@@ -130,7 +130,7 @@ func Test_getLogger(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got Logger) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -200,7 +200,7 @@ func TestBold(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -282,7 +282,7 @@ func TestDebug(t *testing.T) {
 				},
 				checkFunc: func(w want) error {
 					if !reflect.DeepEqual(got, w.vals) {
-						return errors.Errorf("got = %v, want %v", got, w.vals)
+						return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.vals)
 					}
 					return nil
 				},
@@ -360,10 +360,10 @@ func TestDebugf(t *testing.T) {
 				},
 				checkFunc: func(w want) error {
 					if !reflect.DeepEqual(gotFormat, w.format) {
-						return errors.Errorf("format got = %v, want %v", gotFormat, w.format)
+						return errors.Errorf("format got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotFormat, w.format)
 					}
 					if !reflect.DeepEqual(gotVals, w.vals) {
-						return errors.Errorf("format got = %v, want %v", gotVals, w.vals)
+						return errors.Errorf("format got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotVals, w.vals)
 					}
 					return nil
 				},
@@ -434,7 +434,7 @@ func TestInfo(t *testing.T) {
 				},
 				checkFunc: func(want) error {
 					if !reflect.DeepEqual(got, w.vals) {
-						return errors.Errorf("got = %v, want %v", got, w.vals)
+						return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.vals)
 					}
 					return nil
 				},
@@ -512,10 +512,10 @@ func TestInfof(t *testing.T) {
 				},
 				checkFunc: func(w want) error {
 					if !reflect.DeepEqual(gotFormat, w.format) {
-						return errors.Errorf("format got = %v, want %v", gotFormat, w.format)
+						return errors.Errorf("format got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotFormat, w.format)
 					}
 					if !reflect.DeepEqual(gotVals, w.vals) {
-						return errors.Errorf("format got = %v, want %v", gotVals, w.vals)
+						return errors.Errorf("format got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotVals, w.vals)
 					}
 					return nil
 				},
@@ -586,7 +586,7 @@ func TestWarn(t *testing.T) {
 				},
 				checkFunc: func(want) error {
 					if !reflect.DeepEqual(got, w.vals) {
-						return errors.Errorf("got = %v, want %v", got, w.vals)
+						return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.vals)
 					}
 					return nil
 				},
@@ -664,10 +664,10 @@ func TestWarnf(t *testing.T) {
 				},
 				checkFunc: func(w want) error {
 					if !reflect.DeepEqual(gotFormat, w.format) {
-						return errors.Errorf("format got = %v, want %v", gotFormat, w.format)
+						return errors.Errorf("format got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotFormat, w.format)
 					}
 					if !reflect.DeepEqual(gotVals, w.vals) {
-						return errors.Errorf("format got = %v, want %v", gotVals, w.vals)
+						return errors.Errorf("format got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotVals, w.vals)
 					}
 					return nil
 				},
@@ -738,7 +738,7 @@ func TestError(t *testing.T) {
 				},
 				checkFunc: func(w want) error {
 					if !reflect.DeepEqual(got, w.vals) {
-						return errors.Errorf("got = %v, want %v", got, w.vals)
+						return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.vals)
 					}
 					return nil
 				},
@@ -816,10 +816,10 @@ func TestErrorf(t *testing.T) {
 				},
 				checkFunc: func(w want) error {
 					if !reflect.DeepEqual(gotFormat, w.format) {
-						return errors.Errorf("format got = %v, want %v", gotFormat, w.format)
+						return errors.Errorf("format got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotFormat, w.format)
 					}
 					if !reflect.DeepEqual(gotVals, w.vals) {
-						return errors.Errorf("format got = %v, want %v", gotVals, w.vals)
+						return errors.Errorf("format got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotVals, w.vals)
 					}
 					return nil
 				},
@@ -890,7 +890,7 @@ func TestFatal(t *testing.T) {
 				},
 				checkFunc: func(w want) error {
 					if !reflect.DeepEqual(got, w.vals) {
-						return errors.Errorf("got = %v, want %v", got, w.vals)
+						return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.vals)
 					}
 					return nil
 				},
@@ -968,10 +968,10 @@ func TestFatalf(t *testing.T) {
 				},
 				checkFunc: func(w want) error {
 					if !reflect.DeepEqual(gotFormat, w.format) {
-						return errors.Errorf("format got = %v, want %v", gotFormat, w.format)
+						return errors.Errorf("format got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotFormat, w.format)
 					}
 					if !reflect.DeepEqual(gotVals, w.vals) {
-						return errors.Errorf("format got = %v, want %v", gotVals, w.vals)
+						return errors.Errorf("format got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotVals, w.vals)
 					}
 					return nil
 				},

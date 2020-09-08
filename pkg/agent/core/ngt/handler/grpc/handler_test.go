@@ -48,7 +48,7 @@ func TestNew(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got Server) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -126,10 +126,10 @@ func Test_server_Exists(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Object_ID, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got = %v, want %v", gotRes, w.wantRes)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
 		return nil
 	}
@@ -221,10 +221,10 @@ func Test_server_Search(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *payload.Search_Response, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -316,10 +316,10 @@ func Test_server_SearchByID(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *payload.Search_Response, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -406,10 +406,10 @@ func Test_toSearchResponse(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Search_Response, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got = %v, want %v", gotRes, w.wantRes)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
 		return nil
 	}
@@ -487,7 +487,7 @@ func Test_server_StreamSearch(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -575,7 +575,7 @@ func Test_server_StreamSearchByID(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -665,10 +665,10 @@ func Test_server_Insert(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got = %v, want %v", gotRes, w.wantRes)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
 		return nil
 	}
@@ -758,7 +758,7 @@ func Test_server_StreamInsert(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -848,10 +848,10 @@ func Test_server_MultiInsert(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got = %v, want %v", gotRes, w.wantRes)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
 		return nil
 	}
@@ -943,10 +943,10 @@ func Test_server_Update(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got = %v, want %v", gotRes, w.wantRes)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
 		return nil
 	}
@@ -1036,7 +1036,7 @@ func Test_server_StreamUpdate(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -1126,10 +1126,10 @@ func Test_server_MultiUpdate(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got = %v, want %v", gotRes, w.wantRes)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
 		return nil
 	}
@@ -1221,10 +1221,10 @@ func Test_server_Remove(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got = %v, want %v", gotRes, w.wantRes)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
 		return nil
 	}
@@ -1314,7 +1314,7 @@ func Test_server_StreamRemove(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -1404,10 +1404,10 @@ func Test_server_MultiRemove(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got = %v, want %v", gotRes, w.wantRes)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
 		return nil
 	}
@@ -1499,10 +1499,10 @@ func Test_server_GetObject(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Object_Vector, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got = %v, want %v", gotRes, w.wantRes)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
 		return nil
 	}
@@ -1592,7 +1592,7 @@ func Test_server_StreamGetObject(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -1682,10 +1682,10 @@ func Test_server_CreateIndex(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got = %v, want %v", gotRes, w.wantRes)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
 		return nil
 	}
@@ -1777,10 +1777,10 @@ func Test_server_SaveIndex(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got = %v, want %v", gotRes, w.wantRes)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
 		return nil
 	}
@@ -1872,10 +1872,10 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got = %v, want %v", gotRes, w.wantRes)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
 		return nil
 	}
@@ -1967,10 +1967,10 @@ func Test_server_IndexInfo(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Info_Index_Count, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got = %v, want %v", gotRes, w.wantRes)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
 		return nil
 	}

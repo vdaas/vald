@@ -43,10 +43,10 @@ func TestNewConfig(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotCfg *Data, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotCfg, w.wantCfg) {
-			return errors.Errorf("got = %v, want %v", gotCfg, w.wantCfg)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotCfg, w.wantCfg)
 		}
 		return nil
 	}

@@ -46,10 +46,10 @@ func TestNew(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotS Stackdriver, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotS, w.wantS) {
-			return errors.Errorf("got = %v, want %v", gotS, w.wantS)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotS, w.wantS)
 		}
 		return nil
 	}
@@ -125,7 +125,7 @@ func Test_prof_Start(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}

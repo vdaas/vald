@@ -63,11 +63,11 @@ func (e *ErrRedisNotFoundIdentity) Error() string {
 	return e.err.Error()
 }
 
+func (e *ErrRedisNotFoundIdentity) Unwrap() error {
+	return e.err
+}
+
 func IsErrRedisNotFound(err error) bool {
-	switch err.(type) {
-	case *ErrRedisNotFoundIdentity:
-		return true
-	default:
-		return false
-	}
+	target := new(ErrRedisNotFoundIdentity)
+	return As(err, &target)
 }

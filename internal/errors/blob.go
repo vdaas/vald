@@ -40,13 +40,13 @@ func (e *ErrBlobNoSuchBucket) Error() string {
 	return e.err.Error()
 }
 
+func (e *ErrBlobNoSuchBucket) Unwrap() error {
+	return e.err
+}
+
 func IsErrBlobNoSuchBucket(err error) bool {
-	switch err.(type) {
-	case *ErrBlobNoSuchBucket:
-		return true
-	default:
-		return false
-	}
+	target := new(ErrBlobNoSuchBucket)
+	return As(err, &target)
 }
 
 type ErrBlobNoSuchKey struct {
@@ -57,11 +57,11 @@ func (e *ErrBlobNoSuchKey) Error() string {
 	return e.err.Error()
 }
 
+func (e *ErrBlobNoSuchKey) Unwrap() error {
+	return e.err
+}
+
 func IsErrBlobNoSuchKey(err error) bool {
-	switch err.(type) {
-	case *ErrBlobNoSuchKey:
-		return true
-	default:
-		return false
-	}
+	target := new(ErrBlobNoSuchKey)
+	return As(err, &target)
 }

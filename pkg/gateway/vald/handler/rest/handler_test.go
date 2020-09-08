@@ -45,7 +45,7 @@ func TestNew(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got Handler) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -122,10 +122,10 @@ func Test_handler_Index(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got int, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -213,10 +213,10 @@ func Test_handler_Search(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotCode int, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotCode, w.wantCode) {
-			return errors.Errorf("got = %v, want %v", gotCode, w.wantCode)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotCode, w.wantCode)
 		}
 		return nil
 	}
@@ -304,10 +304,10 @@ func Test_handler_SearchByID(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotCode int, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotCode, w.wantCode) {
-			return errors.Errorf("got = %v, want %v", gotCode, w.wantCode)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotCode, w.wantCode)
 		}
 		return nil
 	}
@@ -395,10 +395,10 @@ func Test_handler_Insert(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotCode int, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotCode, w.wantCode) {
-			return errors.Errorf("got = %v, want %v", gotCode, w.wantCode)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotCode, w.wantCode)
 		}
 		return nil
 	}
@@ -486,10 +486,10 @@ func Test_handler_MultiInsert(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotCode int, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotCode, w.wantCode) {
-			return errors.Errorf("got = %v, want %v", gotCode, w.wantCode)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotCode, w.wantCode)
 		}
 		return nil
 	}
@@ -577,10 +577,10 @@ func Test_handler_Update(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotCode int, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotCode, w.wantCode) {
-			return errors.Errorf("got = %v, want %v", gotCode, w.wantCode)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotCode, w.wantCode)
 		}
 		return nil
 	}
@@ -668,10 +668,10 @@ func Test_handler_MultiUpdate(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotCode int, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotCode, w.wantCode) {
-			return errors.Errorf("got = %v, want %v", gotCode, w.wantCode)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotCode, w.wantCode)
 		}
 		return nil
 	}
@@ -759,10 +759,10 @@ func Test_handler_Remove(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotCode int, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotCode, w.wantCode) {
-			return errors.Errorf("got = %v, want %v", gotCode, w.wantCode)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotCode, w.wantCode)
 		}
 		return nil
 	}
@@ -850,10 +850,10 @@ func Test_handler_MultiRemove(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotCode int, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotCode, w.wantCode) {
-			return errors.Errorf("got = %v, want %v", gotCode, w.wantCode)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotCode, w.wantCode)
 		}
 		return nil
 	}
@@ -941,10 +941,10 @@ func Test_handler_GetObject(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotCode int, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotCode, w.wantCode) {
-			return errors.Errorf("got = %v, want %v", gotCode, w.wantCode)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotCode, w.wantCode)
 		}
 		return nil
 	}
@@ -1032,10 +1032,10 @@ func Test_handler_Exists(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotCode int, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotCode, w.wantCode) {
-			return errors.Errorf("got = %v, want %v", gotCode, w.wantCode)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotCode, w.wantCode)
 		}
 		return nil
 	}
