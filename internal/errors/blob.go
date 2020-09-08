@@ -45,7 +45,8 @@ func (e *ErrBlobNoSuchBucket) Unwrap() error {
 }
 
 func IsErrBlobNoSuchBucket(err error) bool {
-	return As(err, &ErrBlobNoSuchBucket{})
+	var target error = new(ErrBlobNoSuchBucket)
+	return As(err, &target)
 }
 
 type ErrBlobNoSuchKey struct {
@@ -61,5 +62,6 @@ func (e *ErrBlobNoSuchKey) Unwrap() error {
 }
 
 func IsErrBlobNoSuchKey(err error) bool {
-	return As(err, &ErrBlobNoSuchKey{})
+	var target error = new(ErrBlobNoSuchKey)
+	return As(err, &target)
 }
