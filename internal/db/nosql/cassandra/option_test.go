@@ -529,7 +529,7 @@ func TestWithConnectTimeout(t *testing.T) {
 				dur: "dummy",
 			},
 			want: want{
-				err: &errors.ErrCriticalOption{errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration \"dummy\"")},
+				err: errors.NewErrCriticalOption(errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration \"dummy\"")),
 				obj: &T{},
 			},
 		},

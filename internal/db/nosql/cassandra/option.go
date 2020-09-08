@@ -133,9 +133,7 @@ func WithConnectTimeout(dur string) Option {
 		}
 		d, err := timeutil.Parse(dur)
 		if err != nil {
-			return &errors.ErrCriticalOption{
-				Err: err,
-			}
+			return errors.NewErrCriticalOption(err)
 		}
 
 		c.connectTimeout = d

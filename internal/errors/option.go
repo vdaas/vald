@@ -27,11 +27,17 @@ var (
 
 // ErrCriticalOption represent the critical option error
 type ErrCriticalOption struct {
-	Err error
+	err error
+}
+
+func NewErrCriticalOption(err error) error {
+	return &ErrCriticalOption{
+		err: err,
+	}
 }
 
 func (e *ErrCriticalOption) Error() string {
-	return e.Err.Error()
+	return e.err.Error()
 }
 
 func IsCriticalOptionError(err error) bool {
