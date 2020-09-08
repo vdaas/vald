@@ -47,10 +47,10 @@ func TestNew(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got Cassandra, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -182,7 +182,7 @@ func Test_client_Open(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -443,7 +443,7 @@ func Test_client_Close(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -705,7 +705,7 @@ func Test_client_Query(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *Queryx) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -910,10 +910,10 @@ func TestSelect(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotStmt string, gotNames []string) error {
 		if !reflect.DeepEqual(gotStmt, w.wantStmt) {
-			return errors.Errorf("got = %v, want %v", gotStmt, w.wantStmt)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotStmt, w.wantStmt)
 		}
 		if !reflect.DeepEqual(gotNames, w.wantNames) {
-			return errors.Errorf("got = %v, want %v", gotNames, w.wantNames)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotNames, w.wantNames)
 		}
 		return nil
 	}
@@ -989,7 +989,7 @@ func TestDelete(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *DeleteBuilder) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1063,7 +1063,7 @@ func TestInsert(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *InsertBuilder) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1136,7 +1136,7 @@ func TestUpdate(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *UpdateBuilder) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1203,7 +1203,7 @@ func TestBatch(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *BatchBuilder) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1268,7 +1268,7 @@ func TestEq(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got Cmp) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1339,7 +1339,7 @@ func TestIn(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got Cmp) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1410,7 +1410,7 @@ func TestContains(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got Cmp) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1482,7 +1482,7 @@ func TestWrapErrorWithKeys(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}

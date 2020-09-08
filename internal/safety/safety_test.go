@@ -60,7 +60,7 @@ func TestRecoverFunc(t *testing.T) {
 		}
 
 		if (w.want == nil && got != nil) || (w.want != nil && got == nil) {
-			return errors.Errorf("got = %v, want %v", got, w)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w)
 		}
 		wantErr := w.want()
 		if !errors.Is(gotErr, wantErr) {
@@ -178,7 +178,7 @@ func TestRecoverWithoutPanicFunc(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got func() error) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -250,7 +250,7 @@ func Test_recoverFunc(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got func() error) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}

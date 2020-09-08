@@ -49,7 +49,7 @@ func TestNew(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got PodWatcher) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -130,10 +130,10 @@ func Test_reconciler_Reconcile(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotRes reconcile.Result, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got = %v, want %v", gotRes, w.wantRes)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
 		return nil
 	}
@@ -233,7 +233,7 @@ func Test_reconciler_GetName(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -332,7 +332,7 @@ func Test_reconciler_NewReconciler(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got reconcile.Reconciler) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -434,7 +434,7 @@ func Test_reconciler_For(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got runtime.Object) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -528,7 +528,7 @@ func Test_reconciler_Owns(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got runtime.Object) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -623,10 +623,10 @@ func Test_reconciler_Watches(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *source.Kind, got1 handler.EventHandler) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		if !reflect.DeepEqual(got1, w.want1) {
-			return errors.Errorf("got = %v, want %v", got1, w.want1)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got1, w.want1)
 		}
 		return nil
 	}

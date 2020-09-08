@@ -46,10 +46,10 @@ func TestNewFilter(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotEf Filter, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotEf, w.wantEf) {
-			return errors.Errorf("got = %v, want %v", gotEf, w.wantEf)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotEf, w.wantEf)
 		}
 		return nil
 	}
@@ -127,10 +127,10 @@ func Test_filter_Start(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got <-chan error, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -218,10 +218,10 @@ func Test_filter_FilterSearch(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *payload.Search_Response, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}

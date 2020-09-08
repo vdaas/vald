@@ -47,7 +47,7 @@ func TestNew(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got Server) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -126,10 +126,10 @@ func Test_server_GetVector(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Backup_Compressed_MetaVector, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got = %v, want %v", gotRes, w.wantRes)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
 		return nil
 	}
@@ -219,10 +219,10 @@ func Test_server_Locations(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Info_IPs, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got = %v, want %v", gotRes, w.wantRes)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
 		return nil
 	}
@@ -312,10 +312,10 @@ func Test_server_Register(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got = %v, want %v", gotRes, w.wantRes)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
 		return nil
 	}
@@ -405,10 +405,10 @@ func Test_server_RegisterMulti(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got = %v, want %v", gotRes, w.wantRes)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
 		return nil
 	}
@@ -498,10 +498,10 @@ func Test_server_Remove(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got = %v, want %v", gotRes, w.wantRes)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
 		return nil
 	}
@@ -591,10 +591,10 @@ func Test_server_RemoveMulti(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got = %v, want %v", gotRes, w.wantRes)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
 		return nil
 	}
@@ -684,10 +684,10 @@ func Test_server_RegisterIPs(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got = %v, want %v", gotRes, w.wantRes)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
 		return nil
 	}
@@ -777,10 +777,10 @@ func Test_server_RemoveIPs(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got = %v, want %v", gotRes, w.wantRes)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
 		return nil
 	}
@@ -865,10 +865,10 @@ func Test_toBackupMetaVector(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Backup_Compressed_MetaVector, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got = %v, want %v", gotRes, w.wantRes)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
 		return nil
 	}
@@ -942,10 +942,10 @@ func Test_toModelMetaVector(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotRes *model.MetaVector, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got = %v, want %v", gotRes, w.wantRes)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
 		return nil
 	}

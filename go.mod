@@ -7,25 +7,22 @@ replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0+incompatible
 	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.34.18
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
-	github.com/cockroachdb/errors => github.com/cockroachdb/errors v1.7.4
-	github.com/cockroachdb/sentry-go => github.com/getsentry/sentry-go v0.7.1-0.20200813145726-23c562d005a5
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
 	github.com/docker/docker => github.com/moby/moby v1.13.1
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.4.1
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.5.0
-	github.com/gobwas/pool => github.com/gobwas/pool v0.2.1
 	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20200815110948-5378c8f664e9
 	github.com/gogo/googleapis => github.com/gogo/googleapis v1.4.0
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.1
 	github.com/google/go-cmp => github.com/google/go-cmp v0.5.2
+	github.com/google/pprof => github.com/google/pprof v0.0.0-20200905233945-acf8798be1f7
 	github.com/googleapis/gnostic => github.com/googleapis/gnostic v0.4.0
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.12.0
-	github.com/gorilla/mux => github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.2
 	github.com/hailocab/go-hostpool => github.com/monzo/go-hostpool v0.0.0-20200724120130-287edbb29340
-	github.com/klauspost/compress => github.com/klauspost/compress v1.10.11
+	github.com/hydrogen18/memlistener => github.com/hydrogen18/memlistener v0.0.0-20200120041712-dcc25e7acd91
+	github.com/klauspost/compress => github.com/klauspost/compress v1.10.12-0.20200903102441-28b892527237
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.0+incompatible
-	github.com/yudai/pp => github.com/k0kubun/pp v3.0.1+incompatible
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
 	google.golang.org/grpc => google.golang.org/grpc v1.31.1
 	google.golang.org/protobuf => google.golang.org/protobuf v1.25.0
@@ -45,10 +42,8 @@ require (
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.4
 	github.com/aws/aws-sdk-go v1.23.20
 	github.com/cespare/xxhash/v2 v2.1.1
-	github.com/cockroachdb/errors v1.6.1
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/fsnotify/fsnotify v1.4.9
-	github.com/getsentry/sentry-go v0.7.0 // indirect
 	github.com/go-redis/redis/v7 v7.4.0
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gocql/gocql v0.0.0-20200131111108-92af2e088537
@@ -56,10 +51,10 @@ require (
 	github.com/gogo/protobuf v1.3.1
 	github.com/google/go-cmp v0.5.2
 	github.com/google/gofuzz v1.2.0
-	github.com/gorilla/mux v1.7.1
+	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/go-version v1.2.1
 	github.com/json-iterator/go v1.1.10
-	github.com/klauspost/compress v1.9.0
+	github.com/klauspost/compress v0.0.0-00010101000000-000000000000
 	github.com/kpango/fastime v1.0.16
 	github.com/kpango/fuid v0.0.0-20200823100533-287aa95e0641
 	github.com/kpango/gache v1.2.3

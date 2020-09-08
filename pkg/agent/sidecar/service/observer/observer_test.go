@@ -49,10 +49,10 @@ func TestNew(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotSo StorageObserver, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotSo, w.wantSo) {
-			return errors.Errorf("got = %v, want %v", gotSo, w.wantSo)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotSo, w.wantSo)
 		}
 		return nil
 	}
@@ -123,6 +123,7 @@ func Test_observer_Start(t *testing.T) {
 		tickerEnabled   bool
 		storage         storage.Storage
 		ch              chan struct{}
+		hooks           []Hook
 	}
 	type want struct {
 		want <-chan error
@@ -139,10 +140,10 @@ func Test_observer_Start(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got <-chan error, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -165,6 +166,7 @@ func Test_observer_Start(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -190,6 +192,7 @@ func Test_observer_Start(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -222,6 +225,7 @@ func Test_observer_Start(t *testing.T) {
 				tickerEnabled:   test.fields.tickerEnabled,
 				storage:         test.fields.storage,
 				ch:              test.fields.ch,
+				hooks:           test.fields.hooks,
 			}
 
 			got, err := o.Start(test.args.ctx)
@@ -249,6 +253,7 @@ func Test_observer_PostStop(t *testing.T) {
 		tickerEnabled   bool
 		storage         storage.Storage
 		ch              chan struct{}
+		hooks           []Hook
 	}
 	type want struct {
 		err error
@@ -264,7 +269,7 @@ func Test_observer_PostStop(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -287,6 +292,7 @@ func Test_observer_PostStop(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -312,6 +318,7 @@ func Test_observer_PostStop(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -344,6 +351,7 @@ func Test_observer_PostStop(t *testing.T) {
 				tickerEnabled:   test.fields.tickerEnabled,
 				storage:         test.fields.storage,
 				ch:              test.fields.ch,
+				hooks:           test.fields.hooks,
 			}
 
 			err := o.PostStop(test.args.ctx)
@@ -371,6 +379,7 @@ func Test_observer_startTicker(t *testing.T) {
 		tickerEnabled   bool
 		storage         storage.Storage
 		ch              chan struct{}
+		hooks           []Hook
 	}
 	type want struct {
 		want <-chan error
@@ -387,10 +396,10 @@ func Test_observer_startTicker(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got <-chan error, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -413,6 +422,7 @@ func Test_observer_startTicker(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -438,6 +448,7 @@ func Test_observer_startTicker(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -470,6 +481,7 @@ func Test_observer_startTicker(t *testing.T) {
 				tickerEnabled:   test.fields.tickerEnabled,
 				storage:         test.fields.storage,
 				ch:              test.fields.ch,
+				hooks:           test.fields.hooks,
 			}
 
 			got, err := o.startTicker(test.args.ctx)
@@ -497,6 +509,7 @@ func Test_observer_startBackupLoop(t *testing.T) {
 		tickerEnabled   bool
 		storage         storage.Storage
 		ch              chan struct{}
+		hooks           []Hook
 	}
 	type want struct {
 		want <-chan error
@@ -513,10 +526,10 @@ func Test_observer_startBackupLoop(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got <-chan error, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -539,6 +552,7 @@ func Test_observer_startBackupLoop(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -564,6 +578,7 @@ func Test_observer_startBackupLoop(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -596,6 +611,7 @@ func Test_observer_startBackupLoop(t *testing.T) {
 				tickerEnabled:   test.fields.tickerEnabled,
 				storage:         test.fields.storage,
 				ch:              test.fields.ch,
+				hooks:           test.fields.hooks,
 			}
 
 			got, err := o.startBackupLoop(test.args.ctx)
@@ -624,6 +640,7 @@ func Test_observer_onWrite(t *testing.T) {
 		tickerEnabled   bool
 		storage         storage.Storage
 		ch              chan struct{}
+		hooks           []Hook
 	}
 	type want struct {
 		err error
@@ -639,7 +656,7 @@ func Test_observer_onWrite(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -663,6 +680,7 @@ func Test_observer_onWrite(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -689,6 +707,7 @@ func Test_observer_onWrite(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -721,6 +740,7 @@ func Test_observer_onWrite(t *testing.T) {
 				tickerEnabled:   test.fields.tickerEnabled,
 				storage:         test.fields.storage,
 				ch:              test.fields.ch,
+				hooks:           test.fields.hooks,
 			}
 
 			err := o.onWrite(test.args.ctx, test.args.name)
@@ -749,6 +769,7 @@ func Test_observer_onCreate(t *testing.T) {
 		tickerEnabled   bool
 		storage         storage.Storage
 		ch              chan struct{}
+		hooks           []Hook
 	}
 	type want struct {
 		err error
@@ -764,7 +785,7 @@ func Test_observer_onCreate(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -788,6 +809,7 @@ func Test_observer_onCreate(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -814,6 +836,7 @@ func Test_observer_onCreate(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -846,6 +869,7 @@ func Test_observer_onCreate(t *testing.T) {
 				tickerEnabled:   test.fields.tickerEnabled,
 				storage:         test.fields.storage,
 				ch:              test.fields.ch,
+				hooks:           test.fields.hooks,
 			}
 
 			err := o.onCreate(test.args.ctx, test.args.name)
@@ -870,6 +894,7 @@ func Test_observer_isValidMetadata(t *testing.T) {
 		tickerEnabled   bool
 		storage         storage.Storage
 		ch              chan struct{}
+		hooks           []Hook
 	}
 	type want struct {
 		want bool
@@ -885,10 +910,10 @@ func Test_observer_isValidMetadata(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got bool, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -908,6 +933,7 @@ func Test_observer_isValidMetadata(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -930,6 +956,7 @@ func Test_observer_isValidMetadata(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -962,6 +989,7 @@ func Test_observer_isValidMetadata(t *testing.T) {
 				tickerEnabled:   test.fields.tickerEnabled,
 				storage:         test.fields.storage,
 				ch:              test.fields.ch,
+				hooks:           test.fields.hooks,
 			}
 
 			got, err := o.isValidMetadata()
@@ -986,6 +1014,7 @@ func Test_observer_terminate(t *testing.T) {
 		tickerEnabled   bool
 		storage         storage.Storage
 		ch              chan struct{}
+		hooks           []Hook
 	}
 	type want struct {
 		err error
@@ -1000,7 +1029,7 @@ func Test_observer_terminate(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -1020,6 +1049,7 @@ func Test_observer_terminate(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1042,6 +1072,7 @@ func Test_observer_terminate(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1074,6 +1105,7 @@ func Test_observer_terminate(t *testing.T) {
 				tickerEnabled:   test.fields.tickerEnabled,
 				storage:         test.fields.storage,
 				ch:              test.fields.ch,
+				hooks:           test.fields.hooks,
 			}
 
 			err := o.terminate()
@@ -1101,6 +1133,7 @@ func Test_observer_requestBackup(t *testing.T) {
 		tickerEnabled   bool
 		storage         storage.Storage
 		ch              chan struct{}
+		hooks           []Hook
 	}
 	type want struct {
 		err error
@@ -1116,7 +1149,7 @@ func Test_observer_requestBackup(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -1139,6 +1172,7 @@ func Test_observer_requestBackup(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1164,6 +1198,7 @@ func Test_observer_requestBackup(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1196,6 +1231,7 @@ func Test_observer_requestBackup(t *testing.T) {
 				tickerEnabled:   test.fields.tickerEnabled,
 				storage:         test.fields.storage,
 				ch:              test.fields.ch,
+				hooks:           test.fields.hooks,
 			}
 
 			err := o.requestBackup(test.args.ctx)
@@ -1223,6 +1259,7 @@ func Test_observer_backup(t *testing.T) {
 		tickerEnabled   bool
 		storage         storage.Storage
 		ch              chan struct{}
+		hooks           []Hook
 	}
 	type want struct {
 		err error
@@ -1238,7 +1275,7 @@ func Test_observer_backup(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -1261,6 +1298,7 @@ func Test_observer_backup(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1286,6 +1324,7 @@ func Test_observer_backup(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1318,6 +1357,7 @@ func Test_observer_backup(t *testing.T) {
 				tickerEnabled:   test.fields.tickerEnabled,
 				storage:         test.fields.storage,
 				ch:              test.fields.ch,
+				hooks:           test.fields.hooks,
 			}
 
 			err := o.backup(test.args.ctx)

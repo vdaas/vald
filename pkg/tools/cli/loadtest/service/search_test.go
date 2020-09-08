@@ -20,12 +20,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	igrpc "github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/config"
 	"go.uber.org/goleak"
+	"golang.org/x/sync/errgroup"
 )
 
 func Test_searchRequestProvider(t *testing.T) {
@@ -48,13 +48,13 @@ func Test_searchRequestProvider(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got func() interface{}, got1 int, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		if !reflect.DeepEqual(got1, w.want1) {
-			return errors.Errorf("got = %v, want %v", got1, w.want1)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got1, w.want1)
 		}
 		return nil
 	}
@@ -88,6 +88,7 @@ func Test_searchRequestProvider(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -109,6 +110,7 @@ func Test_searchRequestProvider(t *testing.T) {
 }
 
 func Test_loader_newSearch(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		eg               errgroup.Group
 		client           igrpc.Client
@@ -137,10 +139,10 @@ func Test_loader_newSearch(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got loadFunc, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -232,6 +234,7 @@ func Test_loader_newSearch(t *testing.T) {
 }
 
 func Test_loader_newStreamSearch(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		eg               errgroup.Group
 		client           igrpc.Client
@@ -260,10 +263,10 @@ func Test_loader_newStreamSearch(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got loadFunc, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -319,6 +322,7 @@ func Test_loader_newStreamSearch(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()

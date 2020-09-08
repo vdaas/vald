@@ -50,10 +50,10 @@ func TestNew(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotDsc Discoverer, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotDsc, w.wantDsc) {
-			return errors.Errorf("got = %v, want %v", gotDsc, w.wantDsc)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotDsc, w.wantDsc)
 		}
 		return nil
 	}
@@ -144,10 +144,10 @@ func Test_discoverer_Start(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got <-chan error, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -286,10 +286,10 @@ func Test_discoverer_GetPods(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotPods *payload.Info_Pods, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotPods, w.wantPods) {
-			return errors.Errorf("got = %v, want %v", gotPods, w.wantPods)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotPods, w.wantPods)
 		}
 		return nil
 	}
@@ -428,10 +428,10 @@ func Test_discoverer_GetNodes(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotNodes *payload.Info_Nodes, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotNodes, w.wantNodes) {
-			return errors.Errorf("got = %v, want %v", gotNodes, w.wantNodes)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotNodes, w.wantNodes)
 		}
 		return nil
 	}

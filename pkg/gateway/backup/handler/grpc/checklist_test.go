@@ -52,7 +52,7 @@ func Test_checkList_Exists(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -240,7 +240,7 @@ func Test_entryCheckList_tryStore(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -322,7 +322,7 @@ func Test_entryCheckList_unexpungeLocked(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotWasExpunged bool) error {
 		if !reflect.DeepEqual(gotWasExpunged, w.wantWasExpunged) {
-			return errors.Errorf("got = %v, want %v", gotWasExpunged, w.wantWasExpunged)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotWasExpunged, w.wantWasExpunged)
 		}
 		return nil
 	}
@@ -564,7 +564,7 @@ func Test_entryCheckList_tryExpungeLocked(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotIsExpunged bool) error {
 		if !reflect.DeepEqual(gotIsExpunged, w.wantIsExpunged) {
-			return errors.Errorf("got = %v, want %v", gotIsExpunged, w.wantIsExpunged)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotIsExpunged, w.wantIsExpunged)
 		}
 		return nil
 	}

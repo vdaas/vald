@@ -49,10 +49,10 @@ func TestNew(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotC Conn, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotC, w.wantC) {
-			return errors.Errorf("got = %v, want %v", gotC, w.wantC)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotC, w.wantC)
 		}
 		return nil
 	}
@@ -144,10 +144,10 @@ func Test_pool_Connect(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotC Conn, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotC, w.wantC) {
-			return errors.Errorf("got = %v, want %v", gotC, w.wantC)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotC, w.wantC)
 		}
 		return nil
 	}
@@ -288,10 +288,10 @@ func Test_pool_load(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotPc *poolConn, gotOk bool) error {
 		if !reflect.DeepEqual(gotPc, w.wantPc) {
-			return errors.Errorf("got = %v, want %v", gotPc, w.wantPc)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotPc, w.wantPc)
 		}
 		if !reflect.DeepEqual(gotOk, w.wantOk) {
-			return errors.Errorf("got = %v, want %v", gotOk, w.wantOk)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOk, w.wantOk)
 		}
 		return nil
 	}
@@ -432,10 +432,10 @@ func Test_pool_connect(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotC Conn, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotC, w.wantC) {
-			return errors.Errorf("got = %v, want %v", gotC, w.wantC)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotC, w.wantC)
 		}
 		return nil
 	}
@@ -571,7 +571,7 @@ func Test_pool_Disconnect(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -707,10 +707,10 @@ func Test_pool_dial(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotConn *ClientConn, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotConn, w.wantConn) {
-			return errors.Errorf("got = %v, want %v", gotConn, w.wantConn)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotConn, w.wantConn)
 		}
 		return nil
 	}
@@ -852,7 +852,7 @@ func Test_pool_IsHealthy(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -992,7 +992,7 @@ func Test_pool_Do(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -1129,10 +1129,10 @@ func Test_pool_Get(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *ClientConn, got1 bool) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		if !reflect.DeepEqual(got1, w.want1) {
-			return errors.Errorf("got = %v, want %v", got1, w.want1)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got1, w.want1)
 		}
 		return nil
 	}
@@ -1267,10 +1267,10 @@ func Test_pool_get(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *ClientConn, got1 bool) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		if !reflect.DeepEqual(got1, w.want1) {
-			return errors.Errorf("got = %v, want %v", got1, w.want1)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got1, w.want1)
 		}
 		return nil
 	}
@@ -1406,7 +1406,7 @@ func Test_pool_Len(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got uint64) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1536,7 +1536,7 @@ func Test_pool_Size(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got uint64) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1671,10 +1671,10 @@ func Test_pool_lookupIPAddr(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotIps []string, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotIps, w.wantIps) {
-			return errors.Errorf("got = %v, want %v", gotIps, w.wantIps)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotIps, w.wantIps)
 		}
 		return nil
 	}
@@ -1816,10 +1816,10 @@ func Test_pool_Reconnect(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotC Conn, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotC, w.wantC) {
-			return errors.Errorf("got = %v, want %v", gotC, w.wantC)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotC, w.wantC)
 		}
 		return nil
 	}
@@ -1961,7 +1961,7 @@ func Test_pool_scanGRPCPort(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -2085,7 +2085,7 @@ func Test_isGRPCPort(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -2160,7 +2160,7 @@ func Test_isHealthy(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}

@@ -47,7 +47,7 @@ func TestObservability_Bind(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *Observability) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -137,7 +137,7 @@ func TestCollector_Bind(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *Collector) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -217,7 +217,7 @@ func TestStackdriver_Bind(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *Stackdriver) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}

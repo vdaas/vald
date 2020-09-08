@@ -256,7 +256,7 @@ format: \
 .PHONY: update/goimports
 ## run goimports for all go files
 update/goimports:
-	find ./ -type f -regex ".*\.go" | xargs goimports -w
+	find ./ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs goimports -w
 
 .PHONY: format/yaml
 format/yaml:

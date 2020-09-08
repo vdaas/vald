@@ -49,10 +49,10 @@ func TestWithQueueBuffer(t *testing.T) {
 
 	defaultCheckFunc := func(w want, got *T, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.obj) {
-			return errors.Errorf("got = %v, want %v", got, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.obj)
 		}
 		return nil
 	}
@@ -122,10 +122,10 @@ func TestWithQueueErrGroup(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *T, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.obj) {
-			return errors.Errorf("got = %v, want %v", got, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.obj)
 		}
 		return nil
 	}
@@ -192,7 +192,7 @@ func TestWithQueueCheckDuration(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want = %v", err, w.err)
+			return errors.Errorf("got_error: \"%+v\",\n\t\t\t\twant: \"%+v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(obj, w.obj) {
 			return errors.Errorf("got = %v, want = %v", obj, w.obj)

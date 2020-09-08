@@ -45,10 +45,10 @@ func TestNew(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotR runner.Runner, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotR, w.wantR) {
-			return errors.Errorf("got = %v, want %v", gotR, w.wantR)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotR, w.wantR)
 		}
 		return nil
 	}

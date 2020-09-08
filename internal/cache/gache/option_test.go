@@ -201,7 +201,7 @@ func TestWithExpiredHook(t *testing.T) {
 				},
 				checkFunc: func(w want, g *T) error {
 					if reflect.ValueOf(w.want.expiredHook).Pointer() != reflect.ValueOf(g.expiredHook).Pointer() {
-						return errors.Errorf("got = %v, want %v", g, w)
+						return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", g, w)
 					}
 					return nil
 				},

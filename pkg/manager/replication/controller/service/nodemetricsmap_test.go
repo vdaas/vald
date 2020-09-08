@@ -46,7 +46,7 @@ func Test_newEntryNodeMetricsMap(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *entryNodeMetricsMap) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -127,10 +127,10 @@ func Test_nodeMetricsMap_Load(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotValue mnode.Node, gotOk bool) error {
 		if !reflect.DeepEqual(gotValue, w.wantValue) {
-			return errors.Errorf("got = %v, want %v", gotValue, w.wantValue)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotValue, w.wantValue)
 		}
 		if !reflect.DeepEqual(gotOk, w.wantOk) {
-			return errors.Errorf("got = %v, want %v", gotOk, w.wantOk)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOk, w.wantOk)
 		}
 		return nil
 	}
@@ -222,10 +222,10 @@ func Test_entryNodeMetricsMap_load(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotValue mnode.Node, gotOk bool) error {
 		if !reflect.DeepEqual(gotValue, w.wantValue) {
-			return errors.Errorf("got = %v, want %v", gotValue, w.wantValue)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotValue, w.wantValue)
 		}
 		if !reflect.DeepEqual(gotOk, w.wantOk) {
-			return errors.Errorf("got = %v, want %v", gotOk, w.wantOk)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOk, w.wantOk)
 		}
 		return nil
 	}
@@ -401,7 +401,7 @@ func Test_entryNodeMetricsMap_tryStore(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -483,7 +483,7 @@ func Test_entryNodeMetricsMap_unexpungeLocked(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotWasExpunged bool) error {
 		if !reflect.DeepEqual(gotWasExpunged, w.wantWasExpunged) {
-			return errors.Errorf("got = %v, want %v", gotWasExpunged, w.wantWasExpunged)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotWasExpunged, w.wantWasExpunged)
 		}
 		return nil
 	}
@@ -649,10 +649,10 @@ func Test_nodeMetricsMap_LoadOrStore(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotActual mnode.Node, gotLoaded bool) error {
 		if !reflect.DeepEqual(gotActual, w.wantActual) {
-			return errors.Errorf("got = %v, want %v", gotActual, w.wantActual)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotActual, w.wantActual)
 		}
 		if !reflect.DeepEqual(gotLoaded, w.wantLoaded) {
-			return errors.Errorf("got = %v, want %v", gotLoaded, w.wantLoaded)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLoaded, w.wantLoaded)
 		}
 		return nil
 	}
@@ -751,13 +751,13 @@ func Test_entryNodeMetricsMap_tryLoadOrStore(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotActual mnode.Node, gotLoaded bool, gotOk bool) error {
 		if !reflect.DeepEqual(gotActual, w.wantActual) {
-			return errors.Errorf("got = %v, want %v", gotActual, w.wantActual)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotActual, w.wantActual)
 		}
 		if !reflect.DeepEqual(gotLoaded, w.wantLoaded) {
-			return errors.Errorf("got = %v, want %v", gotLoaded, w.wantLoaded)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLoaded, w.wantLoaded)
 		}
 		if !reflect.DeepEqual(gotOk, w.wantOk) {
-			return errors.Errorf("got = %v, want %v", gotOk, w.wantOk)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOk, w.wantOk)
 		}
 		return nil
 	}
@@ -932,7 +932,7 @@ func Test_entryNodeMetricsMap_delete(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotHadValue bool) error {
 		if !reflect.DeepEqual(gotHadValue, w.wantHadValue) {
-			return errors.Errorf("got = %v, want %v", gotHadValue, w.wantHadValue)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotHadValue, w.wantHadValue)
 		}
 		return nil
 	}
@@ -1267,7 +1267,7 @@ func Test_entryNodeMetricsMap_tryExpungeLocked(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotIsExpunged bool) error {
 		if !reflect.DeepEqual(gotIsExpunged, w.wantIsExpunged) {
-			return errors.Errorf("got = %v, want %v", gotIsExpunged, w.wantIsExpunged)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotIsExpunged, w.wantIsExpunged)
 		}
 		return nil
 	}

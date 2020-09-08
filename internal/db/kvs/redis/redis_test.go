@@ -68,7 +68,7 @@ func TestNew(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotRc Connector, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(w.wantRc, gotRc) {
 			return errors.Errorf("got = %v, want = %v", gotRc, w.wantRc)
@@ -105,7 +105,7 @@ func TestNew(t *testing.T) {
 				},
 				checkFunc: func(w want, gotRc Connector, err error) error {
 					if !errors.Is(err, w.err) {
-						return errors.Errorf("got error = %v, want %v", err, w.err)
+						return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 					}
 
 					return nil
@@ -159,10 +159,10 @@ func Test_redisClient_ping(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotR Redis, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotR, w.wantR) {
-			return errors.Errorf("got = %v, want %v", gotR, w.wantR)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotR, w.wantR)
 		}
 		return nil
 	}
@@ -296,7 +296,7 @@ func Test_redisClient_setClient(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -466,10 +466,10 @@ func Test_redisClient_newSentinelClient(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *redis.Client, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -545,7 +545,7 @@ func Test_redisClient_newSentinelClient(t *testing.T) {
 				},
 				checkFunc: func(w want, gotc *redis.Client, err error) error {
 					if !errors.Is(err, w.err) {
-						return errors.Errorf("got error = %v, want %v", err, w.err)
+						return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 					}
 					if gotc == nil {
 						return errors.New("got is nil")
@@ -687,10 +687,10 @@ func Test_redisClient_newClusterClient(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *redis.ClusterClient, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -782,7 +782,7 @@ func Test_redisClient_newClusterClient(t *testing.T) {
 				},
 				checkFunc: func(w want, gotc *redis.ClusterClient, err error) error {
 					if !errors.Is(err, w.err) {
-						return errors.Errorf("got error = %v, want %v", err, w.err)
+						return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 					}
 					if gotc == nil {
 						return errors.New("got is nil")
@@ -934,10 +934,10 @@ func Test_redisClient_Connect(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got Redis, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}

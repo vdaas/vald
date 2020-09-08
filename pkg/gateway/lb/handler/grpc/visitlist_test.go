@@ -52,10 +52,10 @@ func Test_visitList_Load(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotValue bool, gotOk bool) error {
 		if !reflect.DeepEqual(gotValue, w.wantValue) {
-			return errors.Errorf("got = %v, want %v", gotValue, w.wantValue)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotValue, w.wantValue)
 		}
 		if !reflect.DeepEqual(gotOk, w.wantOk) {
-			return errors.Errorf("got = %v, want %v", gotOk, w.wantOk)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOk, w.wantOk)
 		}
 		return nil
 	}

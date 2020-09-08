@@ -54,7 +54,7 @@ func TestWithErrGroup(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T) error {
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -120,7 +120,7 @@ func TestWithService(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T) error {
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -187,7 +187,7 @@ func TestWithBucket(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T) error {
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -253,7 +253,7 @@ func TestWithKey(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T) error {
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -318,7 +318,7 @@ func TestWithMaxChunkSize(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *T) error {
 		if !reflect.DeepEqual(got, w.obj) {
-			return errors.Errorf("got = %v, want %v", got, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.obj)
 		}
 		return nil
 	}
@@ -394,7 +394,7 @@ func TestWithBackoff(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *T) error {
 		if !reflect.DeepEqual(got, w.obj) {
-			return errors.Errorf("got = %v, want %v", got, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.obj)
 		}
 		return nil
 	}
@@ -471,7 +471,7 @@ func TestWithBackoffOpts(t *testing.T) {
 			}),
 		}
 		if diff := cmp.Diff(w.obj, got, opts...); diff != "" {
-			return errors.Errorf("got = %v, want %v", got, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.obj)
 		}
 		return nil
 	}
