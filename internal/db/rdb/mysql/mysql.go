@@ -141,7 +141,7 @@ func (m *mySQLClient) Ping(ctx context.Context) (err error) {
 				err = errors.ErrMySQLConnectionPingFailed
 			}
 			cerr := ctx.Err()
-			if cerr != nil{
+			if cerr != nil {
 				err = errors.Wrap(err, cerr.Error())
 			}
 			return err
