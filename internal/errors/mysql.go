@@ -57,7 +57,8 @@ func (e *ErrMySQLNotFoundIdentity) Unwrap() error {
 }
 
 func IsErrMySQLNotFound(err error) bool {
-	return As(err, &ErrMySQLNotFoundIdentity{})
+	target := new(ErrMySQLNotFoundIdentity)
+	return As(err, &target)
 }
 
 type ErrMySQLInvalidArgumentIdentity struct {
@@ -73,5 +74,6 @@ func (e *ErrMySQLInvalidArgumentIdentity) Unwrap() error {
 }
 
 func IsErrMySQLInvalidArgument(err error) bool {
-	return As(err, &ErrMySQLInvalidArgumentIdentity{})
+	target := new(ErrMySQLInvalidArgumentIdentity)
+	return As(err, &target)
 }
