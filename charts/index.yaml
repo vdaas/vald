@@ -2,7 +2,42 @@ apiVersion: v1
 entries:
   vald:
   - apiVersion: v2
-    created: "2020-09-02T10:38:43.244523596Z"
+    created: "2020-09-08T02:50:56.041297336Z"
+    description: A distributed high scalable & high-speed approximate nearest neighbor
+      search engine
+    digest: 2dd28fd4fa05cd7008051654fd651a8d09baa17a5dc53d9b69c5d11adebb98fa
+    home: https://vald.vdaas.org
+    icon: https://raw.githubusercontent.com/vdaas/vald/master/assets/image/svg/icon_color.svg
+    keywords:
+    - Vald
+    - NGT
+    - vector
+    - search
+    - approximate-nearest-neighbor-search
+    - nearest-neighbor-search
+    - vector-search-engine
+    - similarity-search
+    - image-search
+    - Kubernetes
+    - k8s
+    - AI
+    - artificial-intelligence
+    maintainers:
+    - email: kpango@vdaas.org
+      name: kpango
+    - email: rinx@vdaas.org
+      name: rinx
+    - email: ksk@vdaas.org
+      name: kmrmt
+    name: vald
+    sources:
+    - https://github.com/vdaas/vald
+    type: application
+    urls:
+    - https://vald.vdaas.org/charts/vald-v0.0.53.tgz
+    version: v0.0.53
+  - apiVersion: v2
+    created: "2020-09-08T02:50:56.028398468Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: 3a629e9886829e96cafd434a36b8ca2edb3c82b849c3e72592511e745a237dd6
@@ -37,7 +72,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-v0.0.52.tgz
     version: v0.0.52
   - apiVersion: v2
-    created: "2020-09-02T10:38:43.22936932Z"
+    created: "2020-09-08T02:50:56.012791766Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: d1443344914b2b019d6ab873e46012e8736bbd8f82db70007924743928783d2a
@@ -72,7 +107,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-v0.0.51.tgz
     version: v0.0.51
   - apiVersion: v2
-    created: "2020-09-02T10:38:43.216078453Z"
+    created: "2020-09-08T02:50:56.000709309Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: f4974a3212905b8bd699957b4b4809d54a7bdeecc355d80de072570975d2dc7b
@@ -107,7 +142,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-v0.0.50.tgz
     version: v0.0.50
   - apiVersion: v2
-    created: "2020-09-02T10:38:43.196193352Z"
+    created: "2020-09-08T02:50:55.979692436Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: cef91ae5787e0a3381a29401ff5cb44040815bf735353488901c93819904ee9a
@@ -142,7 +177,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-v0.0.49.tgz
     version: v0.0.49
   - apiVersion: v2
-    created: "2020-09-02T10:38:43.181374977Z"
+    created: "2020-09-08T02:50:55.968866095Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: 0115edece3255c06bd4c2f3f327951d3ba0d96d697012b7d2b606ce3286a8c70
@@ -177,7 +212,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-v0.0.48.tgz
     version: v0.0.48
   - apiVersion: v2
-    created: "2020-09-02T10:38:43.167495007Z"
+    created: "2020-09-08T02:50:55.956357333Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: f53cc910a602d6af5f9689d3e53d3bda6eefcd3969ba93497ae13e30798c7b09
@@ -212,7 +247,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-v0.0.47.tgz
     version: v0.0.47
   - apiVersion: v2
-    created: "2020-09-02T10:38:43.153398336Z"
+    created: "2020-09-08T02:50:55.944055173Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: 71c1ffb5492038d22ba8b76ccde2f74004568d7f646ab74f21a1fa0ae2c561f2
@@ -247,7 +282,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-v0.0.46.tgz
     version: v0.0.46
   - apiVersion: v2
-    created: "2020-09-02T10:38:43.141297975Z"
+    created: "2020-09-08T02:50:55.932064917Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: 219678b71f0512fef3b1873f77c349fdf7c00f7bf21042f745a35ed2e5ad942f
@@ -282,7 +317,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-v0.0.45.tgz
     version: v0.0.45
   - apiVersion: v2
-    created: "2020-09-02T10:38:43.129145513Z"
+    created: "2020-09-08T02:50:55.920626968Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: a521ac7f2f9af10e3e3ba51872c48f8bd1de00804f095722131d53725c661449
@@ -317,7 +352,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-v0.0.44.tgz
     version: v0.0.44
   - apiVersion: v2
-    created: "2020-09-02T10:38:43.115938146Z"
+    created: "2020-09-08T02:50:55.908578812Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: af4e7f1281e25e10849c9ef55355bed9a69922ff57af3005a3fef30ea264eafb
@@ -352,7 +387,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-v0.0.43.tgz
     version: v0.0.43
   - apiVersion: v2
-    created: "2020-09-02T10:38:43.104154387Z"
+    created: "2020-09-08T02:50:55.89613255Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: cced613993da2c1f501ad07ddfdbdcfa8fa1dc77905ba9ba86647292eb86e0e9
@@ -376,7 +411,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-v0.0.42.tgz
     version: v0.0.42
   - apiVersion: v2
-    created: "2020-09-02T10:38:43.090095116Z"
+    created: "2020-09-08T02:50:55.885038206Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: 91d026906f7ea2d79db24da620914a493d0f171f21364ef4734a8d571218309a
@@ -400,7 +435,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-v0.0.41.tgz
     version: v0.0.41
   - apiVersion: v2
-    created: "2020-09-02T10:38:43.079570163Z"
+    created: "2020-09-08T02:50:55.873194752Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: 2f4c272081388c5362ab49886fa339f3ad69fa03eb8e91245610a0f18842a32b
@@ -424,7 +459,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-v0.0.40.tgz
     version: v0.0.40
   - apiVersion: v2
-    created: "2020-09-02T10:38:43.06125647Z"
+    created: "2020-09-08T02:50:55.85761135Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: d573f885277b91d7164f652847fe7c2aa821d16eddc73c952eb63ece87bf7295
@@ -448,7 +483,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-v0.0.39.tgz
     version: v0.0.39
   - apiVersion: v2
-    created: "2020-09-02T10:38:43.050264914Z"
+    created: "2020-09-08T02:50:55.846446505Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: 3ce51e1f0d217835c93f836733966bf8f21b395f718cd5e85eb176f0d525be52
@@ -472,7 +507,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-v0.0.38.tgz
     version: v0.0.38
   - apiVersion: v2
-    created: "2020-09-02T10:38:43.038523255Z"
+    created: "2020-09-08T02:50:55.835000356Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: 0a7aa47735a423ec4092f8c125eb8c6cd245539e7d5df0a998b0b9449149a7db
@@ -496,7 +531,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-v0.0.37.tgz
     version: v0.0.37
   - apiVersion: v2
-    created: "2020-09-02T10:38:43.028799106Z"
+    created: "2020-09-08T02:50:55.82605254Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: 81b91b22fb7672e537caf3ad50e9505c7c72de8edf7012a633903fcea7a31377
@@ -520,7 +555,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-v0.0.36.tgz
     version: v0.0.36
   - apiVersion: v2
-    created: "2020-09-02T10:38:43.020309663Z"
+    created: "2020-09-08T02:50:55.816696618Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: cf4741a46cb5a096f361700e7b3b53d2c366c30cc57ba420916896edeebae5b6
@@ -544,7 +579,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-v0.0.35.tgz
     version: v0.0.35
   - apiVersion: v2
-    created: "2020-09-02T10:38:43.012181822Z"
+    created: "2020-09-08T02:50:55.807409197Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: e28a79f6bfd123d7bfc42e9e9b3e7c8a4b8771fa20706fddec138f3ce3b27061
@@ -568,7 +603,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-v0.0.34.tgz
     version: v0.0.34
   - apiVersion: v2
-    created: "2020-09-02T10:38:43.002628674Z"
+    created: "2020-09-08T02:50:55.798102676Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: 98ccec2987daa6c5c78746568deeeebb3549166516f70fca0028a73efec0c977
@@ -592,7 +627,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-v0.0.33.tgz
     version: v0.0.33
   - apiVersion: v2
-    created: "2020-09-02T10:38:42.992365322Z"
+    created: "2020-09-08T02:50:55.790479777Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: 7f318003fd057c9f03e1ca66708628e944a80922e0b91867e3e70e1f58e16cf9
@@ -616,7 +651,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-v0.0.32.tgz
     version: v0.0.32
   - apiVersion: v2
-    created: "2020-09-02T10:38:42.982906874Z"
+    created: "2020-09-08T02:50:55.781349359Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: d3b92a3dca2ca670ae5c03484006bc9b1a51c55ee8dc285cd61652c28874c63e
@@ -640,7 +675,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-v0.0.31.tgz
     version: v0.0.31
   - apiVersion: v2
-    created: "2020-09-02T10:38:42.974765732Z"
+    created: "2020-09-08T02:50:55.773354455Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: f8cf39a35710f038c2b71177553899ff1d6220267aeb2b70cb8bd6882924a77d
@@ -664,7 +699,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-v0.0.30.tgz
     version: v0.0.30
   - apiVersion: v2
-    created: "2020-09-02T10:38:42.965787987Z"
+    created: "2020-09-08T02:50:55.764593841Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: 38e41793363944b07a8b454e4192ba4685bf012e9069bc8033c3ba41acdef29f
@@ -688,7 +723,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-v0.0.29.tgz
     version: v0.0.29
   - apiVersion: v2
-    created: "2020-09-02T10:38:42.956161538Z"
+    created: "2020-09-08T02:50:55.754892815Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: c1cd9f82d75ddccdac526b4497c714160167824d03c9449b31d5dbd19b4f27d1
@@ -713,7 +748,7 @@ entries:
     version: v0.0.28
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-09-02T10:38:42.947547294Z"
+    created: "2020-09-08T02:50:55.746555307Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: 2b459ae728c9d53aea062f8979fc8427c3bad5422264105406fb9061171ee5e4
@@ -737,7 +772,7 @@ entries:
     version: v0.0.27
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-09-02T10:38:42.938546049Z"
+    created: "2020-09-08T02:50:55.738286899Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: 48d2959fd0f88374fb915e6f0edeba65e7235d2733d98581b3825a4e583fe827
@@ -761,7 +796,7 @@ entries:
     version: v0.0.26
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-09-02T10:38:42.931424213Z"
+    created: "2020-09-08T02:50:55.730495798Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: f86b6cdaca404a028551085a23bbb815672253f12c2ae67599a0515f74b9ac47
@@ -771,7 +806,7 @@ entries:
     version: v0.0.25
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-09-02T10:38:42.923426672Z"
+    created: "2020-09-08T02:50:55.723817811Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: c068551246b9e905d50e0ce719c97738f1789dbac16e609672e404742bc47ab8
@@ -781,7 +816,7 @@ entries:
     version: v0.0.24
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-09-02T10:38:42.916750538Z"
+    created: "2020-09-08T02:50:55.717968335Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: ba0b0f540f3d83279affdf86fea5df58f9eef80e2b69fd44be08afef80c853cd
@@ -791,7 +826,7 @@ entries:
     version: v0.0.23
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-09-02T10:38:42.910106604Z"
+    created: "2020-09-08T02:50:55.711855256Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: 1c02960e489c8c55c061e9b4a99b481b2326bed1855ef908227d2495ae69d9b1
@@ -801,7 +836,7 @@ entries:
     version: v0.0.22
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-09-02T10:38:42.89353242Z"
+    created: "2020-09-08T02:50:55.705939279Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: 7fd2c6f4a89b64ca4aecf061b787c6f0f549c036c0c54f2d26bf4186f448c02b
@@ -811,7 +846,7 @@ entries:
     version: v0.0.21
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-09-02T10:38:42.886274784Z"
+    created: "2020-09-08T02:50:55.699980202Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: 75edd76b4beca28150c89abc289f80b44124ee043e89d99a8172d45aa250d53f
@@ -821,7 +856,7 @@ entries:
     version: v0.0.20
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-09-02T10:38:42.878833246Z"
+    created: "2020-09-08T02:50:55.693246014Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: 955d71b9f646e3327718b0de462fefdc5ed8b223d6c8e5c228fe3e010e185276
@@ -831,7 +866,7 @@ entries:
     version: v0.0.19
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-09-02T10:38:42.873546419Z"
+    created: "2020-09-08T02:50:55.682294472Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: 85fd599a5addc5f0dbefd04e8e1321ba7c07e91e5180e81cf1a5f684f014c5a0
@@ -841,7 +876,7 @@ entries:
     version: v0.0.18
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-09-02T10:38:42.868309293Z"
+    created: "2020-09-08T02:50:55.675721586Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: eabfd9da9727a9fdabc879179df9e660915b693a800469af1fea861eedb23651
@@ -851,7 +886,7 @@ entries:
     version: v0.0.17
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-09-02T10:38:42.860717554Z"
+    created: "2020-09-08T02:50:55.670235615Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: df734fc8c778639f72e236f3a6e5b9424511bbfaa29c4f5e805ccc8590b8780e
@@ -861,7 +896,7 @@ entries:
     version: v0.0.16
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-09-02T10:38:42.855137126Z"
+    created: "2020-09-08T02:50:55.664329438Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: 05f0fd52428d9ed8d7ea342faeacc44995e7f45385997a27f4660b68067cd6f5
@@ -871,7 +906,7 @@ entries:
     version: v0.0.15
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-09-02T10:38:42.847748988Z"
+    created: "2020-09-08T02:50:55.659272173Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: 62d06a8aa72da92ebf5420ea2ca4a65ae4c7424de10984f9217673fde8e37d6b
@@ -881,7 +916,7 @@ entries:
     version: v0.0.14
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-09-02T10:38:42.84217176Z"
+    created: "2020-09-08T02:50:55.653836602Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: 4f2e58484324dfde7b964f7b4fe52b4e1b9c168900805559b8b4c808a382af65
@@ -891,7 +926,7 @@ entries:
     version: v0.0.13
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-09-02T10:38:42.836969534Z"
+    created: "2020-09-08T02:50:55.647365618Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: b4b03e5ff29578eeb495750deff13e5e322e6e39bcaa3431be121ea157cd3369
@@ -901,7 +936,7 @@ entries:
     version: v0.0.12
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-09-02T10:38:42.829893398Z"
+    created: "2020-09-08T02:50:55.642960861Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: b6ef538ea736096ee1aa51078998010cb3655c75bbb915de6ce5236cd7b782f6
@@ -911,7 +946,7 @@ entries:
     version: v0.0.11
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-09-02T10:38:42.824621671Z"
+    created: "2020-09-08T02:50:55.636957883Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: 18e7fd5dbc900a660f38eb845f53f9a34a68d2e1e0419acdc177a394e860bbe2
@@ -921,7 +956,7 @@ entries:
     version: v0.0.10
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-09-02T10:38:43.268412417Z"
+    created: "2020-09-08T02:50:56.064667839Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: 0d5d9da800193d2651396cfa9afbacb4877e8323b1a4ef2dfb6ddb9927a6c245
@@ -931,7 +966,7 @@ entries:
     version: v0.0.9
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-09-02T10:38:43.262136885Z"
+    created: "2020-09-08T02:50:56.05857316Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: 48340b41f4eb17c6c9291f31d14daa83124ee43fe2d3bd876e7156f5206f6f0f
@@ -941,7 +976,7 @@ entries:
     version: v0.0.8
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-09-02T10:38:43.255487852Z"
+    created: "2020-09-08T02:50:56.052692484Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: dad491638c9abe550bca1df24c2cfd3c9a99d5272c40c5c4a5a169c62cafca40
@@ -951,7 +986,7 @@ entries:
     version: v0.0.7
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-09-02T10:38:43.249763023Z"
+    created: "2020-09-08T02:50:56.046248Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: d8424275f550854062f4573c72b7d1b4059408cdfb92b3af5d80410b56aea868
@@ -961,7 +996,7 @@ entries:
     version: v0.0.6
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-09-02T10:38:43.203217288Z"
+    created: "2020-09-08T02:50:55.986244721Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: 690df2ae4e3b5a92695f7b61bc38fc2d4b63ddf34a84f1e588110941bb20b06e
@@ -971,7 +1006,7 @@ entries:
     version: v0.0.5
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-09-02T10:38:43.068759608Z"
+    created: "2020-09-08T02:50:55.862821517Z"
     description: A distributed high scalable & high-speed approximate nearest neighbor
       search engine
     digest: ea9397e79f0b8fa6ab38bbcc133af30c9779d4660ee0f550026c0b8f2ac5f27a
@@ -981,9 +1016,44 @@ entries:
     version: v0.0.4
   vald-helm-operator:
   - apiVersion: v2
-    created: "2020-09-02T10:38:42.813109413Z"
+    created: "2020-09-08T02:50:55.630901304Z"
     description: A Helm chart for vald-helm-operator
-    digest: fce6317ca9080521ceddd62d5a974dacd177ca87573de5b4db2c30f05922a474
+    digest: 8dbaee8c7eba0d112a52075fa8898d6d1450f7af2d45cf42385e7e1c6f95bb2a
+    home: https://vald.vdaas.org
+    icon: https://raw.githubusercontent.com/vdaas/vald/master/assets/image/svg/icon_color.svg
+    keywords:
+    - Vald
+    - NGT
+    - vector
+    - search
+    - approximate-nearest-neighbor-search
+    - nearest-neighbor-search
+    - vector-search-engine
+    - similarity-search
+    - image-search
+    - operator
+    - Kubernetes
+    - k8s
+    - AI
+    - artificial-intelligence
+    maintainers:
+    - email: kpango@vdaas.org
+      name: kpango
+    - email: rinx@vdaas.org
+      name: rinx
+    - email: ksk@vdaas.org
+      name: kmrmt
+    name: vald-helm-operator
+    sources:
+    - https://github.com/vdaas/vald
+    type: application
+    urls:
+    - https://vald.vdaas.org/charts/vald-helm-operator-v0.0.53.tgz
+    version: v0.0.53
+  - apiVersion: v2
+    created: "2020-09-08T02:50:55.630088193Z"
+    description: A Helm chart for vald-helm-operator
+    digest: 9d3331801224fe56de25f6c031eeffe52b6d24c7c08ec9f0baccd147b3dfa954
     home: https://vald.vdaas.org
     icon: https://raw.githubusercontent.com/vdaas/vald/master/assets/image/svg/icon_color.svg
     keywords:
@@ -1016,7 +1086,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-helm-operator-v0.0.52.tgz
     version: v0.0.52
   - apiVersion: v2
-    created: "2020-09-02T10:38:42.812378809Z"
+    created: "2020-09-08T02:50:55.629216682Z"
     description: A Helm chart for vald-helm-operator
     digest: 1695939a47097cd8438103d6c6c17fbe9421c56467f676a8945e170d598f72fa
     home: https://vald.vdaas.org
@@ -1051,7 +1121,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-helm-operator-v0.0.51.tgz
     version: v0.0.51
   - apiVersion: v2
-    created: "2020-09-02T10:38:42.811738306Z"
+    created: "2020-09-08T02:50:55.628467572Z"
     description: A Helm chart for vald-helm-operator
     digest: 70dbda4e72f3b4ca39f95293f980ea97102eeb71a81a3e8f6d65411d836f43c3
     home: https://vald.vdaas.org
@@ -1086,7 +1156,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-helm-operator-v0.0.50.tgz
     version: v0.0.50
   - apiVersion: v2
-    created: "2020-09-02T10:38:42.810986402Z"
+    created: "2020-09-08T02:50:55.627780263Z"
     description: A Helm chart for vald-helm-operator
     digest: d84bbd630b3592a02dc5a1219318fd79061238e62f594c43019a3f93452b7e59
     home: https://vald.vdaas.org
@@ -1121,7 +1191,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-helm-operator-v0.0.49.tgz
     version: v0.0.49
   - apiVersion: v2
-    created: "2020-09-02T10:38:42.810203098Z"
+    created: "2020-09-08T02:50:55.627059554Z"
     description: A Helm chart for vald-helm-operator
     digest: 1c39c503a0e897ed6acf7538a3ba4ca9a379c823675e34075e596941f0e578c8
     home: https://vald.vdaas.org
@@ -1156,7 +1226,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-helm-operator-v0.0.48.tgz
     version: v0.0.48
   - apiVersion: v2
-    created: "2020-09-02T10:38:42.809424794Z"
+    created: "2020-09-08T02:50:55.626292644Z"
     description: A Helm chart for vald-helm-operator
     digest: d92c2e7e652a5cb117d64faa44133de4de8d21229cf8760b40a92fde2ae22d31
     home: https://vald.vdaas.org
@@ -1191,7 +1261,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-helm-operator-v0.0.47.tgz
     version: v0.0.47
   - apiVersion: v2
-    created: "2020-09-02T10:38:42.80873069Z"
+    created: "2020-09-08T02:50:55.625589735Z"
     description: A Helm chart for vald-helm-operator
     digest: ca8a1c46cdc88bf55e5439e9943da25667400e02c5b278ddc718e8e825bedb5f
     home: https://vald.vdaas.org
@@ -1226,7 +1296,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-helm-operator-v0.0.46.tgz
     version: v0.0.46
   - apiVersion: v2
-    created: "2020-09-02T10:38:42.808051787Z"
+    created: "2020-09-08T02:50:55.624879726Z"
     description: A Helm chart for vald-helm-operator
     digest: 359464788331b03e994be594175c82763008039d721fde043ecbf0ef047679e8
     home: https://vald.vdaas.org
@@ -1261,7 +1331,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-helm-operator-v0.0.45.tgz
     version: v0.0.45
   - apiVersion: v2
-    created: "2020-09-02T10:38:42.807372084Z"
+    created: "2020-09-08T02:50:55.624063215Z"
     description: A Helm chart for vald-helm-operator
     digest: 2d0a09d1cdb552810c8575c37747375f51262af03417719f390507030ab89249
     home: https://vald.vdaas.org
@@ -1296,7 +1366,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-helm-operator-v0.0.44.tgz
     version: v0.0.44
   - apiVersion: v2
-    created: "2020-09-02T10:38:42.80668548Z"
+    created: "2020-09-08T02:50:55.623153703Z"
     description: A Helm chart for vald-helm-operator
     digest: 24191583367f5882d79f1e821b7cf2696d2ee05e838161f10077c4c36c6f79f6
     home: https://vald.vdaas.org
@@ -1331,7 +1401,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-helm-operator-v0.0.43.tgz
     version: v0.0.43
   - apiVersion: v2
-    created: "2020-09-02T10:38:42.805967976Z"
+    created: "2020-09-08T02:50:55.622271992Z"
     description: A Helm chart for vald-helm-operator
     digest: 0a0e331d2c3041f954163b093881e177cef237dc1109264a6845bb347bfd4033
     home: https://vdaas.org
@@ -1354,7 +1424,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-helm-operator-v0.0.42.tgz
     version: v0.0.42
   - apiVersion: v2
-    created: "2020-09-02T10:38:42.805282773Z"
+    created: "2020-09-08T02:50:55.621431681Z"
     description: A Helm chart for vald-helm-operator
     digest: ef5f438c7dfbbf19876bac2e789f8af4775ca223d16446c8433ef7743b026ace
     home: https://vdaas.org
@@ -1377,7 +1447,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-helm-operator-v0.0.41.tgz
     version: v0.0.41
   - apiVersion: v2
-    created: "2020-09-02T10:38:42.80460907Z"
+    created: "2020-09-08T02:50:55.620505969Z"
     description: A Helm chart for vald-helm-operator
     digest: 0072278fc9da6c4749ab2722fd8cbdede00a9f9b59bc95ffb6e20d733a25da42
     home: https://vdaas.org
@@ -1400,7 +1470,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-helm-operator-v0.0.40.tgz
     version: v0.0.40
   - apiVersion: v2
-    created: "2020-09-02T10:38:42.803967866Z"
+    created: "2020-09-08T02:50:55.619648858Z"
     description: A Helm chart for vald-helm-operator
     digest: 077fc9230e0705e6484e0885d0baa3c8578ead8d20a70c338024ac0452610b72
     home: https://vdaas.org
@@ -1423,7 +1493,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-helm-operator-v0.0.39.tgz
     version: v0.0.39
   - apiVersion: v2
-    created: "2020-09-02T10:38:42.803154162Z"
+    created: "2020-09-08T02:50:55.61905055Z"
     description: A Helm chart for vald-helm-operator
     digest: ea2b81241b3207b8e7c601c0d92089b99446f809c0e24d242d4b9a78a6d51f1f
     home: https://vdaas.org
@@ -1446,7 +1516,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-helm-operator-v0.0.38.tgz
     version: v0.0.38
   - apiVersion: v2
-    created: "2020-09-02T10:38:42.801044252Z"
+    created: "2020-09-08T02:50:55.618449442Z"
     description: A Helm chart for vald-helm-operator
     digest: 899aee91dbefa4f24cc5456f233a393dd77dd77396619696aea928f2e4186e64
     home: https://vdaas.org
@@ -1469,7 +1539,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-helm-operator-v0.0.37.tgz
     version: v0.0.37
   - apiVersion: v2
-    created: "2020-09-02T10:38:42.800091147Z"
+    created: "2020-09-08T02:50:55.617814034Z"
     description: A Helm chart for vald-helm-operator
     digest: a2537fcbcf04944a570e18c66923945577c8b37fb588016c171d823cd94cc506
     home: https://vdaas.org
@@ -1492,7 +1562,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-helm-operator-v0.0.36.tgz
     version: v0.0.36
   - apiVersion: v2
-    created: "2020-09-02T10:38:42.799521344Z"
+    created: "2020-09-08T02:50:55.616696819Z"
     description: A Helm chart for vald-helm-operator
     digest: 8cfef6481c9d16e449fd21c1c19055ab18e061ec0f401e5a46c50b72778b5b93
     home: https://vdaas.org
@@ -1515,7 +1585,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-helm-operator-v0.0.35.tgz
     version: v0.0.35
   - apiVersion: v2
-    created: "2020-09-02T10:38:42.798914541Z"
+    created: "2020-09-08T02:50:55.616093212Z"
     description: A Helm chart for vald-helm-operator
     digest: ba32b18326d9cfab6bd7717609071d146886612f6d54af107a9e6b0da2fc4760
     home: https://vdaas.org
@@ -1538,7 +1608,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-helm-operator-v0.0.34.tgz
     version: v0.0.34
   - apiVersion: v2
-    created: "2020-09-02T10:38:42.798246237Z"
+    created: "2020-09-08T02:50:55.615447303Z"
     description: A Helm chart for vald-helm-operator
     digest: 17342006d3fdbe505c631884e645555ef1752918764cdc5bf089e51e824d4159
     home: https://vdaas.org
@@ -1561,7 +1631,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-helm-operator-v0.0.33.tgz
     version: v0.0.33
   - apiVersion: v2
-    created: "2020-09-02T10:38:42.797571934Z"
+    created: "2020-09-08T02:50:55.614895996Z"
     description: A Helm chart for vald-helm-operator
     digest: 77b3adbf6f96f24942f0eaa865e93b0c964d5b78a912db0878f73957d9f9e1fc
     home: https://vdaas.org
@@ -1584,7 +1654,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-helm-operator-v0.0.32.tgz
     version: v0.0.32
   - apiVersion: v2
-    created: "2020-09-02T10:38:42.796938331Z"
+    created: "2020-09-08T02:50:55.614317588Z"
     description: A Helm chart for vald-helm-operator
     digest: 634b1db062c951c0cddffb81273ab4d8092562cc989a23418a8259d2f02cc7c3
     home: https://vdaas.org
@@ -1607,7 +1677,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-helm-operator-v0.0.31.tgz
     version: v0.0.31
   - apiVersion: v2
-    created: "2020-09-02T10:38:42.796073326Z"
+    created: "2020-09-08T02:50:55.613808982Z"
     description: A Helm chart for vald-helm-operator
     digest: 5656235f8ec42b950a9c959f616fda5f21cbf3e6647790c3f6d017b62d449947
     home: https://vdaas.org
@@ -1630,7 +1700,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-helm-operator-v0.0.30.tgz
     version: v0.0.30
   - apiVersion: v2
-    created: "2020-09-02T10:38:42.795456323Z"
+    created: "2020-09-08T02:50:55.613216474Z"
     description: A Helm chart for vald-helm-operator
     digest: 113303894642b44981677f909bd2f760e1ac456af744ba40c656396acdb7f146
     home: https://vdaas.org
@@ -1653,7 +1723,7 @@ entries:
     - https://vald.vdaas.org/charts/vald-helm-operator-v0.0.29.tgz
     version: v0.0.29
   - apiVersion: v2
-    created: "2020-09-02T10:38:42.79484712Z"
+    created: "2020-09-08T02:50:55.612610366Z"
     description: A Helm chart for vald-helm-operator
     digest: 84cb3e0be85473abb1440d3cff733bff121560ec4c22d9cb7e40d5ef9a8518d4
     home: https://vdaas.org
@@ -1677,7 +1747,7 @@ entries:
     version: v0.0.28
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-09-02T10:38:42.794284917Z"
+    created: "2020-09-08T02:50:55.611940358Z"
     description: A Helm chart for vald-helm-operator
     digest: c73d1a23c1a18512bbce7b9a51cb9517dee11f698773de82061d89b65de07da6
     home: https://vdaas.org
@@ -1700,7 +1770,7 @@ entries:
     version: v0.0.27
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2020-09-02T10:38:42.793707914Z"
+    created: "2020-09-08T02:50:55.61133455Z"
     description: A Helm chart for vald-helm-operator
     digest: 1495d758dd086675d505738d05f6638598eddff772814adc75c0a6397af9c328
     home: https://vdaas.org
@@ -1721,4 +1791,4 @@ entries:
     urls:
     - https://vald.vdaas.org/charts/vald-helm-operator-v0.0.26.tgz
     version: v0.0.26
-generated: "2020-09-02T10:38:42.792968711Z"
+generated: "2020-09-08T02:50:55.61058384Z"
