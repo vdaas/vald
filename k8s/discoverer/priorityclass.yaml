@@ -20,10 +20,10 @@ metadata:
   name: vald-discoverer-priority
   labels:
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v0.0.52
+    helm.sh/chart: vald-v0.0.54
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v0.0.52
+    app.kubernetes.io/version: v0.0.54
     app.kubernetes.io/component: discoverer
 value: 1e+06
 globalDefault: false

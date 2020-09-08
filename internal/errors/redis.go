@@ -68,5 +68,6 @@ func (e *ErrRedisNotFoundIdentity) Unwrap() error {
 }
 
 func IsErrRedisNotFound(err error) bool {
-	return As(err, &ErrRedisNotFoundIdentity{})
+	target := new(ErrRedisNotFoundIdentity)
+	return As(err, &target)
 }

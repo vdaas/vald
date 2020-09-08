@@ -79,7 +79,8 @@ func (e *ErrCassandraNotFoundIdentity) Unwrap() error {
 }
 
 func IsErrCassandraNotFound(err error) bool {
-	return As(err, &ErrCassandraNotFoundIdentity{})
+	target := new(ErrCassandraNotFoundIdentity)
+	return As(err, &target)
 }
 
 type ErrCassandraUnavailableIdentity struct {
@@ -95,5 +96,6 @@ func (e *ErrCassandraUnavailableIdentity) Unwrap() error {
 }
 
 func IsErrCassandraUnavailable(err error) bool {
-	return As(err, &ErrCassandraUnavailableIdentity{})
+	target := new(ErrCassandraUnavailableIdentity)
+	return As(err, &target)
 }

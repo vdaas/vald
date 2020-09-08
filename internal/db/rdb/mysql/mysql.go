@@ -135,7 +135,16 @@ func (m *mySQLClient) Ping(ctx context.Context) (err error) {
 	for {
 		select {
 		case <-pctx.Done():
-			return errors.Wrap(errors.Wrap(err, errors.ErrMySQLConnectionPingFailed.Error()), ctx.Err().Error())
+			if err != nil {
+				err = errors.Wrap(errors.ErrMySQLConnectionPingFailed, err.Error())
+			} else {
+				err = errors.ErrMySQLConnectionPingFailed
+			}
+			cerr := ctx.Err()
+			if cerr != nil {
+				err = errors.Wrap(err, cerr.Error())
+			}
+			return err
 		case <-tick.C:
 			err = m.session.PingContext(ctx)
 			if err == nil {
