@@ -21,6 +21,7 @@ import (
 	dbr "github.com/gocraft/dbr/v2"
 )
 
+// Session represents the interface to handle session.
 type Session interface {
 	Select(column ...string) SelectStmt
 	Begin() (*tx, error)
@@ -32,18 +33,19 @@ type session struct {
 	*dbr.Session
 }
 
-func NewSession(conn *Connection, event EventReceiver) Session {
-	return &session{
-		conn.NewSession(event),
-	}
+// NewNNewSession creates the session with event and returns the Session interface.
+func NewSession(conn *connection, event EventReceiver) Session {
+	return conn.NewSession(event)
 }
 
+// SeleSelect creates and returns the SelectStmt.
 func (sess *session) Select(column ...string) SelectStmt {
 	return &selectStmt{
 		sess.Session.Select(column...),
 	}
 }
 
+// Begin creates the transaction using given session.
 func (sess *session) Begin() (*tx, error) {
 	t, err := sess.Session.Begin()
 	return &tx{
@@ -51,10 +53,15 @@ func (sess *session) Begin() (*tx, error) {
 	}, err
 }
 
+// Close closes the database and prevents new queries from starting.
+// Close then waits for all queries that have started processing on the server to finish.
+// Close returns the errro if something goes worng during close.
 func (sess *session) Close() error {
 	return sess.Session.Close()
 }
 
+// PingContext verifies a connection to the database is still alive,
+// establishing a connection if necessary.
 func (sess *session) PingContext(ctx context.Context) error {
 	return sess.Session.PingContext(ctx)
 }
