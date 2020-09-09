@@ -121,8 +121,10 @@ Your pull request is much more likely to be accepted if:
 
 Name your branches with prefixes: `[type]/[area]/[description]`
 
-* `type` = feature, bug, refactoring, benchmark, security, documentation, dependencies, ci, ...
-* `area` (\*) = gateway, meta, manager-backup, manager-replication, ...
-* `description` = branch description. description must be hyphenated. please use [a-zA-Z0-9] and hyphen as characters, do not use any other characters.
+| Field       | Explanation                           | nameing rule      |
+| :---        | :---                                  | :---              |
+| type        | type represents the PR type           | feature, bug, refactoring, benchmark, security, documentation, dependencies, ci, ... |
+| area        | this field represents area of context | gateway, meta, manager-backup, manager-replication, ... |
+| description | summarized description of your branch | Branch description. The description must be hyphenated. Please use [a-zA-Z0-9] and hyphen as characters, do not use any other characters. |
 
 (\*) If you changed multiple areas, please list up each area with "-".
