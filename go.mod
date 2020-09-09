@@ -76,7 +76,7 @@ require (
 	gonum.org/v1/plot v0.8.0
 	google.golang.org/api v0.31.0
 	google.golang.org/genproto v0.0.0-20200904004341-0bd0a958aa1d
-	google.golang.org/grpc v1.31.1
+	google.golang.org/grpc v1.32.0
 	gopkg.in/yaml.v2 v2.3.0
 	k8s.io/api v0.18.8
 	k8s.io/apimachinery v0.18.8
