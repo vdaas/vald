@@ -88,8 +88,7 @@ GRAPHQLS = $(PROTOS:apis/proto/%.proto=apis/graphql/%.pb.graphqls)
 GQLCODES = $(GRAPHQLS:apis/graphql/%.pb.graphqls=apis/graphql/%.generated.go)
 PBDOCS = $(PROTOS:apis/proto/%.proto=apis/docs/%.md)
 
-CFLAGS ?= -mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl
-CXXFLAGS ?= $(CFLAGS)
+NGT_BUILD_OPTIONS ?= -DNGT_AVX_DISABLED=ON
 
 BENCH_DATASET_MD5S := $(eval BENCH_DATASET_MD5S := $(shell find $(BENCH_DATASET_MD5_DIR) -type f -regex ".*\.md5"))$(BENCH_DATASET_MD5S)
 BENCH_DATASETS = $(BENCH_DATASET_MD5S:$(BENCH_DATASET_MD5_DIR)/%.md5=$(BENCH_DATASET_HDF5_DIR)/%.hdf5)
@@ -335,7 +334,7 @@ ngt/install: /usr/local/include/NGT/Capi.h
 	curl -LO https://github.com/yahoojapan/NGT/archive/v$(NGT_VERSION).tar.gz
 	tar zxf v$(NGT_VERSION).tar.gz -C /tmp
 	cd /tmp/NGT-$(NGT_VERSION) && \
-	    cmake -DCMAKE_C_FLAGS="$(CFLAGS)" -DCMAKE_CXX_FLAGS="$(CXXFLAGS)" .
+	    cmake $(NGT_BUILD_OPTIONS) .
 	make -j -C /tmp/NGT-$(NGT_VERSION)
 	make install -C /tmp/NGT-$(NGT_VERSION)
 	rm -rf v$(NGT_VERSION).tar.gz

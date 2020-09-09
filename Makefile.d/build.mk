@@ -34,9 +34,7 @@ cmd/agent/core/ngt/ngt: \
 	$(PBGOS) \
 	$(shell find ./cmd/agent/core/ngt -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
 	$(shell find ./pkg/agent/core/ngt ./pkg/agent/internal -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
-	export CFLAGS="$(CFLAGS)" \
-	    && export CXXFLAGS="$(CXXFLAGS)" \
-	    && export CGO_ENABLED=1 \
+	export CGO_ENABLED=1 \
 	    && export CGO_CXXFLAGS="-g -Ofast -march=native" \
 	    && export CGO_FFLAGS="-g -Ofast -march=native" \
 	    && export CGO_LDFLAGS="-g -Ofast -march=native" \
