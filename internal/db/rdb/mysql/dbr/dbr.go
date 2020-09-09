@@ -19,27 +19,38 @@ import (
 	dbr "github.com/gocraft/dbr/v2"
 )
 
+// DBR repreesnts the interface to create connection to MySQL.
 type DBR interface {
-	Open(driver, dsn string, log EventReceiver) (*Connection, error)
+	Open(driver, dsn string, log EventReceiver) (*connection, error)
 	Eq(col string, val interface{}) Builder
 }
 
 type (
-	Builder       = dbr.Builder
-	Connection    = dbr.Connection
+	// Builder is a type alias of dbr.Builder.
+	Builder = dbr.Builder
+
+	// EventReceiver is a type alias of dbr.EventReceiver.
 	EventReceiver = dbr.EventReceiver
 )
 
 type db struct{}
 
+
+// New returns the new db struct 
 func New() DBR {
 	return new(db)
 }
 
-func (*db) Open(driver, dsn string, log EventReceiver) (*Connection, error) {
-	return dbr.Open(driver, dsn, log)
+// Open returns the connection of db.
+// When any error occures, it will return the error.
+func (*db) Open(driver, dsn string, log EventReceiver) (*connection, error) {
+	conn, err := dbr.Open(driver, dsn, log)
+	return &connection{
+		conn,
+	}, err
 }
 
+// Eq returns the built SQL statement made from col name and the value.
 func (*db) Eq(col string, val interface{}) Builder {
 	return dbr.Eq(col, val)
 }

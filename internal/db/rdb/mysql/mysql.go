@@ -347,20 +347,6 @@ func (m *mySQLClient) deleteMetaWithTx(ctx context.Context, tx dbr.Tx, uuid stri
 	}
 	return nil
 }
-// 
-// func deleteMetaWithTx(ctx context.Context, tx dbr.Tx, uuid string, dbr dbr.DBR) error {
-// 	_, err := tx.DeleteFrom(metaVectorTableName).Where(dbr.Eq(uuidColumnName, uuid)).ExecContext(ctx)
-// 	if err != nil {
-// 		return err
-// 	}
-// 
-// 	_, err = tx.DeleteFrom(podIPTableName).Where(dbr.Eq(uuidColumnName, uuid)).ExecContext(ctx)
-// 	if err != nil {
-// 		return err
-// 	}
-// 
-// 	return nil
-// }
 
 func (m *mySQLClient) DeleteMeta(ctx context.Context, uuid string) error {
 	if !m.connected.Load().(bool) {
