@@ -21,6 +21,7 @@ import (
 	dbr "github.com/gocraft/dbr/v2"
 )
 
+// SelectStmt represents the interface to get data from database.
 type SelectStmt interface {
 	From(table interface{}) SelectStmt
 	Where(query interface{}, value ...interface{}) SelectStmt
@@ -32,21 +33,25 @@ type selectStmt struct {
 	*dbr.SelectStmt
 }
 
+// From specifies table to select from.
 func (stmt *selectStmt) From(table interface{}) SelectStmt {
 	stmt.SelectStmt = stmt.SelectStmt.From(table)
 	return stmt
 }
 
+// Where adds a where condition.
 func (stmt *selectStmt) Where(query interface{}, value ...interface{}) SelectStmt {
 	stmt.SelectStmt = stmt.SelectStmt.Where(query, value...)
 	return stmt
 }
 
+// Limit adds a limit condition.
 func (stmt *selectStmt) Limit(n uint64) SelectStmt {
 	stmt.SelectStmt = stmt.SelectStmt.Limit(n)
 	return stmt
 }
 
+// LoadContext gets the result of select.
 func (stmt *selectStmt) LoadContext(ctx context.Context, value interface{}) (int, error) {
 	return stmt.SelectStmt.LoadContext(ctx, value)
 }

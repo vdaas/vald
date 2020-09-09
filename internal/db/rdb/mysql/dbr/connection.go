@@ -16,29 +16,21 @@
 package dbr
 
 import (
-	"context"
-	"database/sql"
-
 	dbr "github.com/gocraft/dbr/v2"
 )
 
-// DeleteStmt represents the interface to execute delete data.
-type DeleteStmt interface {
-	ExecContext(ctx context.Context) (sql.Result, error)
-	Where(query interface{}, value ...interface{}) DeleteStmt
+// Connection represents the interface to handle connection of database.
+type Connection interface {
+	NewSession(event EventReceiver) Session
 }
 
-type deleteStmt struct {
-	*dbr.DeleteStmt
+type connection struct {
+	*dbr.Connection
 }
 
-// ExecContext runs deleting data from database.
-func (stmt *deleteStmt) ExecContext(ctx context.Context) (sql.Result, error) {
-	return stmt.DeleteStmt.ExecContext(ctx)
-}
-
-// Where adds a where condition.
-func (stmt *deleteStmt) Where(query interface{}, value ...interface{}) DeleteStmt {
-	stmt.DeleteStmt = stmt.DeleteStmt.Where(query, value...)
-	return stmt
+// NewSession instantiates a Session from Connection.
+func (c *connection) NewSession(event EventReceiver) Session {
+	return &session{
+		c.Connection.NewSession(event),
+	}
 }
