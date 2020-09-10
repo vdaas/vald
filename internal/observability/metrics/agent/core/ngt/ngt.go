@@ -146,7 +146,7 @@ func (n *ngtMetrics) View() []*metrics.View {
 			Aggregation: metrics.LastValue(),
 		},
 		&metrics.View{
-			Name:        "ngt_is_indexing",
+			Name:        "ngt_is_saving",
 			Description: n.isSaving.Description(),
 			Measure:     &n.isSaving,
 			Aggregation: metrics.LastValue(),
