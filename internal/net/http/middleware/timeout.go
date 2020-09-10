@@ -78,7 +78,7 @@ func (t *timeout) Wrap(h rest.Func) rest.Func {
 		case <-ctx.Done():
 			// timeout passed or parent context canceled first,
 			// it is the responsibility for handler to response to the user
-			return http.StatusRequestTimeout, errors.ErrHandlerTimeout(ctx.Err(), time.Unix(0, fastime.UnixNanoNow()-start))
+			return http.StatusRequestTimeout, errors.ErrHandlerTimeout(ctx.Err(), time.Duration(fastime.UnixNanoNow()-start))
 		}
 	}
 }

@@ -58,8 +58,10 @@ type NGT interface {
 	Exists(string) (uint32, bool)
 	CreateAndSaveIndex(ctx context.Context, poolSize uint32) (err error)
 	IsIndexing() bool
+	IsSaving() bool
 	Len() uint64
 	NumberOfCreateIndexExecution() uint64
+	NumberOfProactiveGCExecution() uint64
 	UUIDs(context.Context) (uuids []string)
 	UncommittedUUIDs() (uuids []string)
 	DeleteVCacheLen() uint64
@@ -83,6 +85,7 @@ type ngt struct {
 	// counters
 	ic    uint64 // insert count
 	nocie uint64 // number of create index execution
+	nogce uint64 // number of proactive GC execution
 
 	// configurations
 	inMem bool // in-memory mode
@@ -96,6 +99,8 @@ type ngt struct {
 	minLit    time.Duration // minimum load index timeout
 	maxLit    time.Duration // maximum load index timeout
 	litFactor time.Duration // load index timeout factor
+
+	enableProactiveGC bool // if this value is true, agent component will purge GC memory more proactive
 
 	path string // index path
 
@@ -537,10 +542,10 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	}
 	n.indexing.Store(true)
 	atomic.StoreUint64(&n.ic, 0)
-	runtime.GC()
+	n.gc()
 	t := time.Now().UnixNano()
 	defer n.indexing.Store(false)
-	defer runtime.GC()
+	defer n.gc()
 
 	log.Infof("create index operation started, uncommitted indexes = %d", ic)
 	delList := make([]string, 0, ic)
@@ -650,7 +655,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 	for n.IsIndexing() || n.IsSaving() {
 	}
 	n.saving.Store(true)
-	defer runtime.GC()
+	defer n.gc()
 	defer n.saving.Store(false)
 
 	eg, ctx := errgroup.New(ctx)
@@ -772,6 +777,17 @@ func (n *ngt) UncommittedUUIDs() (uuids []string) {
 
 func (n *ngt) NumberOfCreateIndexExecution() uint64 {
 	return atomic.LoadUint64(&n.nocie)
+}
+
+func (n *ngt) NumberOfProactiveGCExecution() uint64 {
+	return atomic.LoadUint64(&n.nogce)
+}
+
+func (n *ngt) gc() {
+	if n.enableProactiveGC {
+		runtime.GC()
+		atomic.AddUint64(&n.nogce, 1)
+	}
 }
 
 func (n *ngt) Len() uint64 {

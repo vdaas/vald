@@ -31,7 +31,9 @@ type ngtMetrics struct {
 	insertVCacheCount         metrics.Int64Measure
 	deleteVCacheCount         metrics.Int64Measure
 	completedCreateIndexTotal metrics.Int64Measure
+	executedProactiveGCTotal  metrics.Int64Measure
 	isIndexing                metrics.Int64Measure
+	isSaving                  metrics.Int64Measure
 }
 
 func New(n service.NGT) metrics.Metric {
@@ -57,9 +59,17 @@ func New(n service.NGT) metrics.Metric {
 			metrics.ValdOrg+"/ngt/completed_create_index_total",
 			"the cumulative count of completed create index execution",
 			metrics.UnitDimensionless),
+		executedProactiveGCTotal: *metrics.Int64(
+			metrics.ValdOrg+"/ngt/executed_proactive_gc_total",
+			"the cumulative count of proactive GC execution",
+			metrics.UnitDimensionless),
 		isIndexing: *metrics.Int64(
 			metrics.ValdOrg+"/ngt/is_indexing",
 			"currently indexing or not",
+			metrics.UnitDimensionless),
+		isSaving: *metrics.Int64(
+			metrics.ValdOrg+"/ngt/is_saving",
+			"currently saving or not",
 			metrics.UnitDimensionless),
 	}
 }
@@ -70,13 +80,20 @@ func (n *ngtMetrics) Measurement(ctx context.Context) ([]metrics.Measurement, er
 		isIndexing = 1
 	}
 
+	var isSaving int64
+	if n.ngt.IsSaving() {
+		isSaving = 1
+	}
+
 	return []metrics.Measurement{
 		n.indexCount.M(int64(n.ngt.Len())),
 		n.uncommittedIndexCount.M(int64(n.ngt.InsertVCacheLen() + n.ngt.DeleteVCacheLen())),
 		n.insertVCacheCount.M(int64(n.ngt.InsertVCacheLen())),
 		n.deleteVCacheCount.M(int64(n.ngt.DeleteVCacheLen())),
 		n.completedCreateIndexTotal.M(int64(n.ngt.NumberOfCreateIndexExecution())),
+		n.executedProactiveGCTotal.M(int64(n.ngt.NumberOfProactiveGCExecution())),
 		n.isIndexing.M(isIndexing),
+		n.isSaving.M(isSaving),
 	}, nil
 }
 
@@ -117,9 +134,21 @@ func (n *ngtMetrics) View() []*metrics.View {
 			Aggregation: metrics.LastValue(),
 		},
 		&metrics.View{
+			Name:        "ngt_executed_proactive_gc_total",
+			Description: n.executedProactiveGCTotal.Description(),
+			Measure:     &n.executedProactiveGCTotal,
+			Aggregation: metrics.LastValue(),
+		},
+		&metrics.View{
 			Name:        "ngt_is_indexing",
 			Description: n.isIndexing.Description(),
 			Measure:     &n.isIndexing,
+			Aggregation: metrics.LastValue(),
+		},
+		&metrics.View{
+			Name:        "ngt_is_indexing",
+			Description: n.isSaving.Description(),
+			Measure:     &n.isSaving,
 			Aggregation: metrics.LastValue(),
 		},
 	}
