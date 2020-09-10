@@ -536,11 +536,12 @@ func New(opts ...Option) (Server, error) {
     for _, opt := range opts {
         if err := opt(srv); err != nil {
             werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
-            log.Warn(werr)
 
             if errors.IsCriticalOptionError(err) {
+                log.Error(werr)
                 return nil, werr
             }
+            log.Warn(werr)
         }
     }
 }
