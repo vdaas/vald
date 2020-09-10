@@ -34,7 +34,7 @@ type session struct {
 }
 
 // NewNNewSession creates the session with event and returns the Session interface.
-func NewSession(conn *connection, event EventReceiver) Session {
+func NewSession(conn Connection, event EventReceiver) Session {
 	return conn.NewSession(event)
 }
 
