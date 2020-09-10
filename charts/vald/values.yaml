@@ -1286,7 +1286,7 @@ agent:
     # timeout duration will be calculated by (index count to be loaded) * (factor).
     load_index_timeout_factor: 1ms
     # @schema {"name": "agent.ngt.enable_proactive_gc", "type": "boolean"}
-    # agent.ngt.enable_proactive_gc -- proactive gc enabled
+    # agent.ngt.enable_proactive_gc -- enable proactive GC call for reducing heap memory allocation
     enable_proactive_gc: true
   # @schema {"name": "agent.sidecar", "type": "object"}
   sidecar:
