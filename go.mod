@@ -21,7 +21,6 @@ replace (
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.12.0
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.2
 	github.com/hailocab/go-hostpool => github.com/monzo/go-hostpool v0.0.0-20200724120130-287edbb29340
-	github.com/hydrogen18/memlistener => github.com/hydrogen18/memlistener v0.0.0-20200120041712-dcc25e7acd91
 	github.com/klauspost/compress => github.com/klauspost/compress v1.11.1-0.20200908135004-a2bf5b1ec3aa
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.0+incompatible
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
