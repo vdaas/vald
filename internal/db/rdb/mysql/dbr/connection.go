@@ -16,12 +16,17 @@
 package dbr
 
 import (
+	"time"
+
 	dbr "github.com/gocraft/dbr/v2"
 )
 
 // Connection represents the interface to handle connection of database.
 type Connection interface {
 	NewSession(event EventReceiver) Session
+	SetConnMaxLifetime(d time.Duration)
+	SetMaxIdleConns(n int)
+	SetMaxOpenConns(n int)
 }
 
 type connection struct {
@@ -29,8 +34,23 @@ type connection struct {
 }
 
 // NewSession instantiates a Session from Connection.
-func (c *connection) NewSession(event EventReceiver) Session {
+func (conn *connection) NewSession(event EventReceiver) Session {
 	return &session{
-		c.Connection.NewSession(event),
+		conn.Connection.NewSession(event),
 	}
+}
+
+// SetConnMaxLifetime sets the maximum amount of time a connection may be reused.
+func (conn *connection) SetConnMaxLifetime(d time.Duration) {
+	conn.Connection.SetConnMaxLifetime(d)
+}
+
+// SetMaxIdleConns sets the maximum number of connections in the idle connection pool.
+func (conn *connection) SetMaxIdleConns(n int) {
+	conn.Connection.SetMaxIdleConns(n)
+}
+
+// SetMaxOpenConns sets the maximum number of open connections to the database.
+func (conn *connection) SetMaxOpenConns(n int) {
+	conn.Connection.SetMaxOpenConns(n)
 }

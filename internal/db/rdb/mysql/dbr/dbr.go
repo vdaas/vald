@@ -21,7 +21,7 @@ import (
 
 // DBR repreesnts the interface to create connection to MySQL.
 type DBR interface {
-	Open(driver, dsn string, log EventReceiver) (*connection, error)
+	Open(driver, dsn string, log EventReceiver) (Connection, error)
 	Eq(col string, val interface{}) Builder
 }
 
@@ -42,7 +42,7 @@ func New() DBR {
 
 // Open returns the connection of db.
 // When any error occures, it will return the error.
-func (*db) Open(driver, dsn string, log EventReceiver) (*connection, error) {
+func (*db) Open(driver, dsn string, log EventReceiver) (Connection, error) {
 	conn, err := dbr.Open(driver, dsn, log)
 	return &connection{
 		conn,
