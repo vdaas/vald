@@ -651,8 +651,16 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 		return
 	}
 	atomic.SwapUint64(&n.lastNoice, noice)
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
 	// wait for not indexing & not saving
 	for n.IsIndexing() || n.IsSaving() {
+		runtime.Gosched()
+		select{
+		case <- ctx.Done():
+			return ctx.Err()
+		case <-ticker.C:
+		}
 	}
 	n.saving.Store(true)
 	defer n.gc()
