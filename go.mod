@@ -7,6 +7,7 @@ replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0+incompatible
 	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.34.20
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
+	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
 	github.com/docker/docker => github.com/moby/moby v1.13.1
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.4.1

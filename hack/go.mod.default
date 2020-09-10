@@ -7,6 +7,7 @@ replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0
 	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go latest
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
+	github.com/chzyer/logex => github.com/chzyer/logex master
 	github.com/coreos/etcd =>  go.etcd.io/etcd latest
 	github.com/docker/docker => github.com/moby/moby latest
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate latest

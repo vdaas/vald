@@ -656,8 +656,8 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 	// wait for not indexing & not saving
 	for n.IsIndexing() || n.IsSaving() {
 		runtime.Gosched()
-		select{
-		case <- ctx.Done():
+		select {
+		case <-ctx.Done():
 			return ctx.Err()
 		case <-ticker.C:
 		}
