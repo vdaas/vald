@@ -76,8 +76,9 @@ type ngt struct {
 	dvc  *vcaches // deletion vector cache
 
 	// statuses
-	indexing atomic.Value
-	saveMu   sync.Mutex // creating or saving index
+	indexing  atomic.Value
+	saving    atomic.Value
+	lastNoice uint64 // last number of create index execution this value prevent unnecessary saveindex.
 
 	// counters
 	ic    uint64 // insert count
@@ -154,6 +155,7 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 	}
 
 	n.indexing.Store(false)
+	n.saving.Store(false)
 
 	return n, nil
 }
@@ -333,7 +335,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 }
 
 func (n *ngt) Search(vec []float32, size uint32, epsilon, radius float32) ([]model.Distance, error) {
-	if n.indexing.Load().(bool) {
+	if n.IsIndexing() {
 		return make([]model.Distance, 0), nil
 	}
 	sr, err := n.core.Search(vec, int(size), epsilon, radius)
@@ -360,7 +362,7 @@ func (n *ngt) Search(vec []float32, size uint32, epsilon, radius float32) ([]mod
 }
 
 func (n *ngt) SearchByID(uuid string, size uint32, epsilon, radius float32) (dst []model.Distance, err error) {
-	if n.indexing.Load().(bool) {
+	if n.IsIndexing() {
 		log.Debug("SearchByID\t now indexing...")
 		return make([]model.Distance, 0), nil
 	}
@@ -526,10 +528,7 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 		}
 	}()
 
-	n.saveMu.Lock()
-	defer n.saveMu.Unlock()
-
-	if n.indexing.Load().(bool) {
+	if n.IsIndexing() || n.IsSaving() {
 		return nil
 	}
 	ic := atomic.LoadUint64(&n.ic)
@@ -634,10 +633,6 @@ func (n *ngt) SaveIndex(ctx context.Context) (err error) {
 			span.End()
 		}
 	}()
-
-	n.saveMu.Lock()
-	defer n.saveMu.Unlock()
-
 	if len(n.path) != 0 && !n.inMem {
 		err = n.saveIndex(ctx)
 	}
@@ -646,7 +641,18 @@ func (n *ngt) SaveIndex(ctx context.Context) (err error) {
 }
 
 func (n *ngt) saveIndex(ctx context.Context) (err error) {
+	noice := atomic.LoadUint64(&n.nocie)
+	if atomic.LoadUint64(&n.lastNoice) == noice {
+		return
+	}
+	atomic.SwapUint64(&n.lastNoice, noice)
+	// wait for not indexing & not saving
+	for n.IsIndexing() || n.IsSaving() {
+	}
+	n.saving.Store(true)
 	defer runtime.GC()
+	defer n.saving.Store(false)
+
 	eg, ctx := errgroup.New(ctx)
 
 	eg.Go(safety.RecoverFunc(func() error {
@@ -733,8 +739,14 @@ func (n *ngt) insertCache(uuid string) (*vcache, bool) {
 	return nil, false
 }
 
+func (n *ngt) IsSaving() bool {
+	s, ok := n.saving.Load().(bool)
+	return s && ok
+}
+
 func (n *ngt) IsIndexing() bool {
-	return n.indexing.Load().(bool)
+	i, ok := n.indexing.Load().(bool)
+	return i && ok
 }
 
 func (n *ngt) UUIDs(ctx context.Context) (uuids []string) {
