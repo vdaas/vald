@@ -78,6 +78,9 @@ type NGT struct {
 
 	// LoadIndexTimeoutFactor represents a factor of load index timeout
 	LoadIndexTimeoutFactor string `yaml:"load_index_timeout_factor" json:"load_index_timeout_factor"`
+
+	// EnableProactiveGC enables more proactive GC call for reducing heap memory allocation
+	EnableProactiveGC bool `yaml:"enable_proactive_gc" json:"enable_proactive_gc"`
 }
 
 // Bind returns NGT object whose some string value is filed value or environment value.

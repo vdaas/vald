@@ -58,8 +58,10 @@ type NGT interface {
 	Exists(string) (uint32, bool)
 	CreateAndSaveIndex(ctx context.Context, poolSize uint32) (err error)
 	IsIndexing() bool
+	IsSaving() bool
 	Len() uint64
 	NumberOfCreateIndexExecution() uint64
+	NumberOfProactiveGCExecution() uint64
 	UUIDs(context.Context) (uuids []string)
 	UncommittedUUIDs() (uuids []string)
 	DeleteVCacheLen() uint64
@@ -76,12 +78,14 @@ type ngt struct {
 	dvc  *vcaches // deletion vector cache
 
 	// statuses
-	indexing atomic.Value
-	saveMu   sync.Mutex // creating or saving index
+	indexing  atomic.Value
+	saving    atomic.Value
+	lastNoice uint64 // last number of create index execution this value prevent unnecessary saveindex.
 
 	// counters
 	ic    uint64 // insert count
 	nocie uint64 // number of create index execution
+	nogce uint64 // number of proactive GC execution
 
 	// configurations
 	inMem bool // in-memory mode
@@ -95,6 +99,8 @@ type ngt struct {
 	minLit    time.Duration // minimum load index timeout
 	maxLit    time.Duration // maximum load index timeout
 	litFactor time.Duration // load index timeout factor
+
+	enableProactiveGC bool // if this value is true, agent component will purge GC memory more proactive
 
 	path string // index path
 
@@ -154,6 +160,7 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 	}
 
 	n.indexing.Store(false)
+	n.saving.Store(false)
 
 	return n, nil
 }
@@ -333,7 +340,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 }
 
 func (n *ngt) Search(vec []float32, size uint32, epsilon, radius float32) ([]model.Distance, error) {
-	if n.indexing.Load().(bool) {
+	if n.IsIndexing() {
 		return make([]model.Distance, 0), nil
 	}
 	sr, err := n.core.Search(vec, int(size), epsilon, radius)
@@ -360,7 +367,7 @@ func (n *ngt) Search(vec []float32, size uint32, epsilon, radius float32) ([]mod
 }
 
 func (n *ngt) SearchByID(uuid string, size uint32, epsilon, radius float32) (dst []model.Distance, err error) {
-	if n.indexing.Load().(bool) {
+	if n.IsIndexing() {
 		log.Debug("SearchByID\t now indexing...")
 		return make([]model.Distance, 0), nil
 	}
@@ -526,10 +533,7 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 		}
 	}()
 
-	n.saveMu.Lock()
-	defer n.saveMu.Unlock()
-
-	if n.indexing.Load().(bool) {
+	if n.IsIndexing() || n.IsSaving() {
 		return nil
 	}
 	ic := atomic.LoadUint64(&n.ic)
@@ -538,8 +542,10 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	}
 	n.indexing.Store(true)
 	atomic.StoreUint64(&n.ic, 0)
+	n.gc()
 	t := time.Now().UnixNano()
 	defer n.indexing.Store(false)
+	defer n.gc()
 
 	log.Infof("create index operation started, uncommitted indexes = %d", ic)
 	delList := make([]string, 0, ic)
@@ -632,10 +638,6 @@ func (n *ngt) SaveIndex(ctx context.Context) (err error) {
 			span.End()
 		}
 	}()
-
-	n.saveMu.Lock()
-	defer n.saveMu.Unlock()
-
 	if len(n.path) != 0 && !n.inMem {
 		err = n.saveIndex(ctx)
 	}
@@ -644,6 +646,26 @@ func (n *ngt) SaveIndex(ctx context.Context) (err error) {
 }
 
 func (n *ngt) saveIndex(ctx context.Context) (err error) {
+	noice := atomic.LoadUint64(&n.nocie)
+	if atomic.LoadUint64(&n.lastNoice) == noice {
+		return
+	}
+	atomic.SwapUint64(&n.lastNoice, noice)
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
+	// wait for not indexing & not saving
+	for n.IsIndexing() || n.IsSaving() {
+		runtime.Gosched()
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-ticker.C:
+		}
+	}
+	n.saving.Store(true)
+	defer n.gc()
+	defer n.saving.Store(false)
+
 	eg, ctx := errgroup.New(ctx)
 
 	eg.Go(safety.RecoverFunc(func() error {
@@ -730,8 +752,14 @@ func (n *ngt) insertCache(uuid string) (*vcache, bool) {
 	return nil, false
 }
 
+func (n *ngt) IsSaving() bool {
+	s, ok := n.saving.Load().(bool)
+	return s && ok
+}
+
 func (n *ngt) IsIndexing() bool {
-	return n.indexing.Load().(bool)
+	i, ok := n.indexing.Load().(bool)
+	return i && ok
 }
 
 func (n *ngt) UUIDs(ctx context.Context) (uuids []string) {
@@ -757,6 +785,17 @@ func (n *ngt) UncommittedUUIDs() (uuids []string) {
 
 func (n *ngt) NumberOfCreateIndexExecution() uint64 {
 	return atomic.LoadUint64(&n.nocie)
+}
+
+func (n *ngt) NumberOfProactiveGCExecution() uint64 {
+	return atomic.LoadUint64(&n.nogce)
+}
+
+func (n *ngt) gc() {
+	if n.enableProactiveGC {
+		runtime.GC()
+		atomic.AddUint64(&n.nogce, 1)
+	}
 }
 
 func (n *ngt) Len() uint64 {

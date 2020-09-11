@@ -44,10 +44,10 @@ func TestNew(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotO Observer, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotO, w.wantO) {
-			return errors.Errorf("got = %v, want %v", gotO, w.wantO)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotO, w.wantO)
 		}
 		return nil
 	}
@@ -130,10 +130,10 @@ func Test_cassandraMetrics_Measurement(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got []metrics.Measurement, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -264,10 +264,10 @@ func Test_cassandraMetrics_MeasurementWithTags(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got []metrics.MeasurementWithTags, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -393,7 +393,7 @@ func Test_cassandraMetrics_View(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got []*metrics.View) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}

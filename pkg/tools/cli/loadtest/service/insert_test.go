@@ -22,7 +22,6 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
-	igrpc "github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/config"
 	"go.uber.org/goleak"
@@ -566,7 +565,7 @@ func Test_loader_newInsert(t *testing.T) {
 	t.Parallel()
 	type fields struct {
 		eg               errgroup.Group
-		client           igrpc.Client
+		client           grpc.Client
 		addr             string
 		concurrency      int
 		batchSize        int
@@ -690,7 +689,7 @@ func Test_loader_newStreamInsert(t *testing.T) {
 	t.Parallel()
 	type fields struct {
 		eg               errgroup.Group
-		client           igrpc.Client
+		client           grpc.Client
 		addr             string
 		concurrency      int
 		batchSize        int
