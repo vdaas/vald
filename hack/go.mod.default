@@ -7,6 +7,7 @@ replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0
 	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go latest
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
+	github.com/chzyer/logex => github.com/chzyer/logex master
 	github.com/coreos/etcd =>  go.etcd.io/etcd latest
 	github.com/docker/docker => github.com/moby/moby latest
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate latest
@@ -20,7 +21,6 @@ replace (
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud latest
 	github.com/gorilla/websocket => github.com/gorilla/websocket latest
 	github.com/hailocab/go-hostpool => github.com/monzo/go-hostpool latest
-	github.com/hydrogen18/memlistener => github.com/hydrogen18/memlistener master
 	github.com/klauspost/compress => github.com/klauspost/compress master
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.0
 	golang.org/x/crypto => golang.org/x/crypto latest

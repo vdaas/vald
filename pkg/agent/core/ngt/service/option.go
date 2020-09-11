@@ -43,6 +43,7 @@ var (
 		WithDefaultPoolSize(core.DefaultPoolSize),
 		WithDefaultRadius(core.DefaultRadius),
 		WithDefaultEpsilon(core.DefaultEpsilon),
+		WithProactiveGC(true),
 	}
 )
 
@@ -218,10 +219,18 @@ func WithDefaultRadius(rad float32) Option {
 		return nil
 	}
 }
+
 func WithDefaultEpsilon(epsilon float32) Option {
 	return func(n *ngt) error {
 		n.epsilon = epsilon
 
+		return nil
+	}
+}
+
+func WithProactiveGC(enabled bool) Option {
+	return func(n *ngt) error {
+		n.enableProactiveGC = enabled
 		return nil
 	}
 }

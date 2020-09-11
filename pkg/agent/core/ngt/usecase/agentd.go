@@ -62,6 +62,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithDefaultPoolSize(cfg.NGT.DefaultPoolSize),
 		service.WithDefaultRadius(cfg.NGT.DefaultRadius),
 		service.WithDefaultEpsilon(cfg.NGT.DefaultEpsilon),
+		service.WithProactiveGC(cfg.NGT.EnableProactiveGC),
 	)
 	if err != nil {
 		return nil, err
