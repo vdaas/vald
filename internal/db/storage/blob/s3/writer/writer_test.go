@@ -263,6 +263,16 @@ func Test_writer_Close(t *testing.T) {
 				err: errors.New("err"),
 			},
 		},
+
+		{
+			name: "returns nil when no error occurs and writer dose not exist",
+			fields: fields{
+				wg: new(sync.WaitGroup),
+			},
+			want: want{
+				err: nil,
+			},
+		},
 	}
 
 	for _, test := range tests {
