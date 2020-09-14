@@ -512,17 +512,18 @@ If the functional option error is a critical error, we should wrap it with the `
 
 ```go
 func WithConnectTimeout(dur string) Option {
-    return func(c *client) error {
-        if dur == "" {
+	return func(c *client) error {
+		if dur == "" {
             return errors.ErrInvalidOption("connectTimeout", dur)
-        }
-        d, err := timeutil.Parse(dur)
-        if err != nil {
-            return errors.NewErrCriticalOption(err)
-        }
-        c.connectTimeout = d
-        return nil
-    }
+		}
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			return errors.NewErrCriticalOptionWithError("connectTimeout", dur, err)
+		}
+
+		c.connectTimeout = d
+		return nil
+	}
 }
 ```
 
@@ -536,7 +537,6 @@ func New(opts ...Option) (Server, error) {
     for _, opt := range opts {
         if err := opt(srv); err != nil {
             werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
-
             if errors.IsCriticalOptionError(err) {
                 log.Error(werr)
                 return nil, werr

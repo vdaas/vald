@@ -129,7 +129,7 @@ func WithTimeout(dur string) Option {
 func WithConnectTimeout(dur string) Option {
 	return func(c *client) error {
 		if dur == "" {
-			return nil
+			return errors.ErrInvalidOption("connectTimeout", dur)
 		}
 		d, err := timeutil.Parse(dur)
 		if err != nil {
