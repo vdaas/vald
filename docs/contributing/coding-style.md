@@ -451,14 +451,22 @@ The implementation may differ based on your use case.
 In Vald, the functional option pattern is widely used in Vald.
 You can refer to [this section](#Struct-initialization) for more details of the use case of this pattern.
 
+We provide the following errors to describe the error to apply the option.
+
+| Error | Description |
+|----|----|
+| errors.ErrInvalidOption | Error to apply the option, and the error is ignorable |
+| errors.ErrInvalidOptionWithError | Error to apply the option with error return from the library (e.g. time.Parse error), and the error is ignorable |
+| errors.NewErrCriticalOption | Critical error to apply the option, the error cannot be ignore and should be handle |
+| errors.NewErrCriticalOptionWithError | Critical error to apply the option with error return from the library, the error cannot be ignore and should be handle |
+
 We strongly recommend the following implementation to set the value using functional option.
 
 If an invalid value is set to the functional option, the `ErrInvalidOption` error defined in the [internal/errors/option.go](https://github.com/vdaas/vald/blob/master/internal/errors/option.go) should be returned.
 
-The name argument (the first argument) of the `ErrInvalidOption` error should be the same as the functional option name without the `With` prefix. 
+The name argument (the first argument) of the `ErrInvalidOption` error should be the same as the functional option name without the `With` prefix.
 
 For example, the functional option name `WithVersion` should return the error with the argument `name` as `version`.
-
 
 ```go
 func WithVersion(version string) Option {
@@ -482,7 +490,7 @@ func WithTimeout(dur string) Option {
         }
         d, err := timeutil.Parse(dur)
         if err != nil {
-            return err
+            return errors.ErrInvalidOptionWithError("timeout", dur, err)
         }
         c.timeout = d
         return nil
@@ -508,7 +516,7 @@ func WithHosts(hosts ...string) Option {
 }
 ```
 
-If the functional option error is a critical error, we should wrap it with the `ErrCriticalOption` error and return it to the caller side to decide the next action.
+If the functional option error is a critical error, we should return `ErrCriticalOption` error instead of `ErrInvalidOption`.
 
 ```go
 func WithConnectTimeout(dur string) Option {
@@ -527,9 +535,11 @@ func WithConnectTimeout(dur string) Option {
 }
 ```
 
-We recommend the following implementation to apply the options.
+In the caller side, we need to handle the error returned from the functional option.
 
 If the option failed to apply, an error wrapped with `ErrOptionFailed` defined in the [internal/errors/errors.go](https://github.com/vdaas/vald/blob/master/internal/errors/errors.go) should be returned.
+
+We recommend the following implementation to apply the options.
 
 ```go
 func New(opts ...Option) (Server, error) {
