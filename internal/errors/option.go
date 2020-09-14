@@ -23,6 +23,10 @@ var (
 		}
 		return Errorf("invalid option. name: %s, val: %#v", name, val)
 	}
+
+	ErrInvalidOptionWithError = func(name string, val interface{}, err error) error {
+		return Wrap(ErrInvalidOption(name, val), err.Error())
+	}
 )
 
 // ErrCriticalOption represent the critical option error
@@ -30,14 +34,20 @@ type ErrCriticalOption struct {
 	err error
 }
 
-func NewErrCriticalOption(err error) error {
+func NewErrCriticalOption(name string, val interface{}) error {
 	return &ErrCriticalOption{
-		err: err,
+		err: ErrInvalidOption(name, val),
+	}
+}
+
+func NewErrCriticalOptionWithError(name string, val interface{}, err error) error {
+	return &ErrCriticalOption{
+		err: ErrInvalidOptionWithError(name, val, err),
 	}
 }
 
 func (e *ErrCriticalOption) Error() string {
-	return e.err.Error()
+	return Wrap(e.err, "invalid critical option").Error()
 }
 
 func IsCriticalOptionError(err error) bool {

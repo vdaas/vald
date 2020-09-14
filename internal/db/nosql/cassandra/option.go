@@ -69,7 +69,7 @@ var (
 func WithHosts(hosts ...string) Option {
 	return func(c *client) error {
 		if len(hosts) == 0 {
-			return nil
+			return errors.NewErrCriticalOption("hosts", hosts)
 		}
 		if c.hosts == nil {
 			c.hosts = hosts
@@ -133,7 +133,7 @@ func WithConnectTimeout(dur string) Option {
 		}
 		d, err := timeutil.Parse(dur)
 		if err != nil {
-			return errors.NewErrCriticalOption(err)
+			return errors.NewErrCriticalOptionWithError("connectTimeout", dur, err)
 		}
 
 		c.connectTimeout = d
