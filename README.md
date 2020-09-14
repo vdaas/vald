@@ -67,9 +67,10 @@ Go to [Get Started](./docs/tutorial/get-started.md) page to try out Vald :)
     - gRPC APIs can be triggered by any programming languages which support gRPC.
     - REST API is also supported.```
 
-## Requirement
+## Requirements
 
-kubernetes 1.17~
+- Kubernetes 1.17~
+- AVX2 instructions (required by Vald Agent NGT)
 
 ## Get Started
 
