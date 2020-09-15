@@ -214,12 +214,14 @@ func (n *ngt) create() (err error) {
 			return err
 		}
 	}
+	path := C.CString(n.idxPath)
+	defer C.free(unsafe.Pointer(path))
 	if !n.inMemory {
-		n.index = C.ngt_create_graph_and_tree(C.CString(n.idxPath), n.prop, n.ebuf)
+		n.index = C.ngt_create_graph_and_tree(path, n.prop, n.ebuf)
 		if n.index == nil {
 			return n.newGoError(n.ebuf)
 		}
-		if C.ngt_save_index(n.index, C.CString(n.idxPath), n.ebuf) == ErrorCode {
+		if C.ngt_save_index(n.index, path, n.ebuf) == ErrorCode {
 			return n.newGoError(n.ebuf)
 		}
 	} else {
@@ -237,7 +239,9 @@ func (n *ngt) open() error {
 		return errors.ErrIndexNotFound
 	}
 
-	n.index = C.ngt_open_index(C.CString(n.idxPath), n.ebuf)
+	path := C.CString(n.idxPath)
+	defer C.free(unsafe.Pointer(path))
+	n.index = C.ngt_open_index(path, n.ebuf)
 	if n.index == nil {
 		return n.newGoError(n.ebuf)
 	}
@@ -277,18 +281,27 @@ func (n *ngt) Search(vec []float32, size int, epsilon, radius float32) ([]Search
 	if radius == 0 {
 		radius = n.radius
 	}
+	cvec := (*C.float)(&vec[0])
+	defer C.free(unsafe.Pointer(cvec))
+	csize := *(*C.size_t)(unsafe.Pointer(&size))
+	defer C.free(unsafe.Pointer(&csize))
+	cepsilon := *(*C.float)(unsafe.Pointer(&epsilon))
+	defer C.free(unsafe.Pointer(&cepsilon))
+	cradius := *(*C.float)(unsafe.Pointer(&radius))
+	defer C.free(unsafe.Pointer(&cradius))
 
 	n.mu.RLock()
 	ret := C.ngt_search_index_as_float(
 		n.index,
-		(*C.float)(&vec[0]),
+		// *(*C.float)(unsafe.Pointer(&vec[0])),
+		cvec,
 		n.dimension,
-		// C.size_t(size),
-		*(*C.size_t)(unsafe.Pointer(&size)),
-		// C.float(epsilon),
-		*(*C.float)(unsafe.Pointer(&epsilon)),
-		*(*C.float)(unsafe.Pointer(&radius)),
-		// C.float(radius),
+		csize,
+		cepsilon,
+		cradius,
+		// *(*C.size_t)(unsafe.Pointer(&size)),
+		// *(*C.float)(unsafe.Pointer(&epsilon)),
+		// *(*C.float)(unsafe.Pointer(&radius)),
 		results,
 		n.ebuf)
 
@@ -308,7 +321,9 @@ func (n *ngt) Search(vec []float32, size int, epsilon, radius float32) ([]Search
 
 	result := make([]SearchResult, rsize)
 	for i := 0; i < rsize; i++ {
-		d := C.ngt_get_result(results, C.uint32_t(i), n.ebuf)
+		idx := C.uint32_t(i)
+		defer C.free(unsafe.Pointer(&idx))
+		d := C.ngt_get_result(results, idx, n.ebuf)
 		if d.id == 0 && d.distance == 0 {
 			result[i] = SearchResult{0, 0, n.newGoError(n.ebuf)}
 		} else {
@@ -322,8 +337,12 @@ func (n *ngt) Search(vec []float32, size int, epsilon, radius float32) ([]Search
 // Insert returns NGT object id.
 // This only stores not indexing, you must call CreateIndex and SaveIndex.
 func (n *ngt) Insert(vec []float32) (uint, error) {
+	cvec := (*C.float)(&vec[0])
+	defer C.free(unsafe.Pointer(cvec))
+	cdim := C.uint32_t(n.dimension)
+	defer C.free(unsafe.Pointer(&cdim))
 	n.mu.Lock()
-	id := C.ngt_insert_index_as_float(n.index, (*C.float)(&vec[0]), C.uint32_t(n.dimension), n.ebuf)
+	id := C.ngt_insert_index_as_float(n.index, cvec, cdim, n.ebuf)
 	n.mu.Unlock()
 	if id == 0 {
 		return 0, n.newGoError(n.ebuf)
@@ -359,11 +378,14 @@ func (n *ngt) BulkInsert(vecs [][]float32) ([]uint, []error) {
 	ids := make([]uint, 0, len(vecs))
 	errs := make([]error, 0, len(vecs))
 
-	var id uint
 	n.mu.Lock()
 	for _, vec := range vecs {
+		cvec := (*C.float)(&vec[0])
+		defer C.free(unsafe.Pointer(cvec))
+		cdim := C.uint32_t(n.dimension)
+		defer C.free(unsafe.Pointer(&cdim))
 		// n.mu.Lock()
-		id = uint(C.ngt_insert_index_as_float(n.index, (*C.float)(&vec[0]), C.uint32_t(n.dimension), n.ebuf))
+		id := uint(C.ngt_insert_index_as_float(n.index, cvec, cdim, n.ebuf))
 		// n.mu.Unlock()
 		if id == 0 {
 			errs = append(errs, n.newGoError(n.ebuf))
@@ -424,8 +446,10 @@ func (n *ngt) CreateIndex(poolSize uint32) error {
 	if poolSize == 0 {
 		poolSize = n.poolSize
 	}
+	cpool := C.uint32_t(poolSize)
+	defer C.free(unsafe.Pointer(&cpool))
 	n.mu.Lock()
-	ret := C.ngt_create_index(n.index, C.uint32_t(poolSize), n.ebuf)
+	ret := C.ngt_create_index(n.index, cpool, n.ebuf)
 	if ret == ErrorCode {
 		ne := n.ebuf
 		n.mu.Unlock()
@@ -439,8 +463,10 @@ func (n *ngt) CreateIndex(poolSize uint32) error {
 // SaveIndex stores NGT index to storage.
 func (n *ngt) SaveIndex() error {
 	if !n.inMemory {
+		path := C.CString(n.idxPath)
+		defer C.free(unsafe.Pointer(path))
 		n.mu.Lock()
-		ret := C.ngt_save_index(n.index, C.CString(n.idxPath), n.ebuf)
+		ret := C.ngt_save_index(n.index, path, n.ebuf)
 		if ret == ErrorCode {
 			ne := n.ebuf
 			n.mu.Unlock()
@@ -454,8 +480,10 @@ func (n *ngt) SaveIndex() error {
 
 // Remove removes from NGT index.
 func (n *ngt) Remove(id uint) error {
+	oid := C.ObjectID(id)
+	defer C.free(unsafe.Pointer(&oid))
 	n.mu.Lock()
-	ret := C.ngt_remove_index(n.index, C.ObjectID(id), n.ebuf)
+	ret := C.ngt_remove_index(n.index, oid, n.ebuf)
 	if ret == ErrorCode {
 		ne := n.ebuf
 		n.mu.Unlock()
@@ -470,7 +498,9 @@ func (n *ngt) Remove(id uint) error {
 func (n *ngt) BulkRemove(ids ...uint) error {
 	n.mu.Lock()
 	for _, id := range ids {
-		if C.ngt_remove_index(n.index, C.ObjectID(id), n.ebuf) == ErrorCode {
+		oid := C.ObjectID(id)
+		defer C.free(unsafe.Pointer(&oid))
+		if C.ngt_remove_index(n.index, oid, n.ebuf) == ErrorCode {
 			ne := n.ebuf
 			n.mu.Unlock()
 			return n.newGoError(ne)
@@ -484,10 +514,12 @@ func (n *ngt) BulkRemove(ids ...uint) error {
 func (n *ngt) GetVector(id uint) ([]float32, error) {
 	dimension := int(n.dimension)
 	var ret []float32
+	oid := C.ObjectID(id)
+	defer C.free(unsafe.Pointer(&oid))
 	switch n.objectType {
 	case Float:
 		n.mu.RLock()
-		results := C.ngt_get_object_as_float(n.ospace, C.ObjectID(id), n.ebuf)
+		results := C.ngt_get_object_as_float(n.ospace, oid, n.ebuf)
 		n.mu.RUnlock()
 		if results == nil {
 			return nil, n.newGoError(n.ebuf)
@@ -498,7 +530,7 @@ func (n *ngt) GetVector(id uint) ([]float32, error) {
 		// }
 	case Uint8:
 		n.mu.RLock()
-		results := C.ngt_get_object_as_integer(n.ospace, C.ObjectID(id), n.ebuf)
+		results := C.ngt_get_object_as_integer(n.ospace, oid, n.ebuf)
 		n.mu.RUnlock()
 		if results == nil {
 			return nil, n.newGoError(n.ebuf)
