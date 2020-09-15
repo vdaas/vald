@@ -42,7 +42,7 @@ func NewBulkInsertCommit(poolSize uint32, opts ...StrategyOption) benchmark.Stra
 				for i := 0; i < size; i++ {
 					arr, err := dataset.Train(i)
 					if err != nil {
-						break
+						b.Fatal(err)
 					}
 					v = append(v, arr.([]float32))
 				}
@@ -68,7 +68,7 @@ func NewBulkInsertCommit(poolSize uint32, opts ...StrategyOption) benchmark.Stra
 				for i := 0; i < size; i++ {
 					arr, err := dataset.Train(i)
 					if err != nil {
-						break
+						b.Fatal(err)
 					}
 					v = append(v, float32To64(arr.([]float32)))
 				}

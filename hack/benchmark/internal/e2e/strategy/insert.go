@@ -58,8 +58,7 @@ func (isrt *insert) run(ctx context.Context, b *testing.B, c client.Client, data
 		for i := 0; i < bb.N; i++ {
 			v, err := dataset.Train(cnt % dataset.TrainSize())
 			if err != nil {
-				cnt = 0
-				break
+				b.Fatal(err)
 			}
 			isrt.do(ctx, bb, c, fmt.Sprint(cnt), v.([]float32))
 			cnt++
@@ -80,8 +79,7 @@ func (isrt *insert) runParallel(ctx context.Context, b *testing.B, c client.Clie
 				n := int(atomic.AddInt64(&cnt, 1)) - 1
 				v, err := dataset.Train(n % dataset.TrainSize())
 				if err != nil {
-					cnt = 0
-					break
+					b.Fatal(err)
 				}
 
 				isrt.do(ctx, bb, c, fmt.Sprint(cnt), v.([]float32))

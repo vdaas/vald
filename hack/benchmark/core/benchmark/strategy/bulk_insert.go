@@ -46,7 +46,7 @@ func NewBulkInsert(opts ...StrategyOption) benchmark.Strategy {
 				for i := 0; i < size; i++ {
 					arr, err := dataset.Train(i)
 					if err != nil {
-						break
+						b.Fatal(err)
 					}
 					v = append(v, arr.([]float32))
 				}
@@ -72,7 +72,7 @@ func NewBulkInsert(opts ...StrategyOption) benchmark.Strategy {
 				for i := 0; i < size; i++ {
 					arr, err := dataset.Train(i)
 					if err != nil {
-						break
+						b.Fatal(err)
 					}
 					v = append(v, float32To64(arr.([]float32)))
 				}
