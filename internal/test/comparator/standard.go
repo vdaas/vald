@@ -19,6 +19,7 @@ import (
 	"sync/atomic"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/vdaas/vald/internal/errgroup"
 )
 
@@ -30,10 +31,13 @@ type (
 )
 
 var (
-	AllowUnexported = cmp.AllowUnexported
-	Comparer        = cmp.Comparer
-	Diff            = cmp.Diff
-	Equal           = cmp.Equal
+	AllowUnexported  = cmp.AllowUnexported
+	IgnoreUnexported = cmpopts.IgnoreUnexported
+	Comparer         = cmp.Comparer
+	Diff             = cmp.Diff
+	Equal            = cmp.Equal
+	IgnoreTypes      = cmpopts.IgnoreTypes
+	IgnoreFields     = cmpopts.IgnoreFields
 )
 
 /*

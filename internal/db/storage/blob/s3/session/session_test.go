@@ -17,12 +17,53 @@
 package session
 
 import (
+	"net/http"
 	"reflect"
 	"testing"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/endpoints"
+	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/test/comparator"
 	"go.uber.org/goleak"
+)
+
+var (
+	atop = func(s string) *string {
+		return &s
+	}
+	btop = func(b bool) *bool {
+		return &b
+	}
+	itop = func(i int) *int {
+		return &i
+	}
+
+	handlerListComparator = func(x, y request.HandlerList) bool {
+		return reflect.DeepEqual(x, y)
+	}
+	stringPointerComparator = func(x, y *string) bool {
+		return reflect.DeepEqual(x, y)
+	}
+
+	awsConfigComparatorOpts = []comparator.Option{
+		comparator.AllowUnexported(aws.Config{}),
+	}
+	awsConfigComparator = func(x, y aws.Config) bool {
+		return comparator.Diff(x, y, awsConfigComparatorOpts...) == ""
+	}
+
+	sessionComparatorOpts = []comparator.Option{
+		comparator.IgnoreUnexported(session.Session{}),
+		comparator.Comparer(handlerListComparator),
+		comparator.Comparer(stringPointerComparator),
+
+		comparator.IgnoreFields(aws.Config{}, "EndpointResolver", "Credentials", "Logger"),
+		comparator.IgnoreTypes(request.Handlers{}),
+	}
 )
 
 func TestNew(t *testing.T) {
@@ -131,67 +172,400 @@ func Test_sess_Session(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+
+		if diff := comparator.Diff(w.want, got, sessionComparatorOpts...); diff != "" {
+			return errors.New(diff)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           endpoint: "",
-		           region: "",
-		           accessKey: "",
-		           secretAccessKey: "",
-		           token: "",
-		           maxRetries: 0,
-		           forcePathStyle: false,
-		           useAccelerate: false,
-		           useARNRegion: false,
-		           useDualStack: false,
-		           enableSSL: false,
-		           enableParamValidation: false,
-		           enable100Continue: false,
-		           enableContentMD5Validation: false,
-		           enableEndpointDiscovery: false,
-		           enableEndpointHostPrefix: false,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           endpoint: "",
-		           region: "",
-		           accessKey: "",
-		           secretAccessKey: "",
-		           token: "",
-		           maxRetries: 0,
-		           forcePathStyle: false,
-		           useAccelerate: false,
-		           useARNRegion: false,
-		           useDualStack: false,
-		           enableSSL: false,
-		           enableParamValidation: false,
-		           enable100Continue: false,
-		           enableContentMD5Validation: false,
-		           enableEndpointDiscovery: false,
-		           enableEndpointHostPrefix: false,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "set endpoint success",
+			fields: fields{
+				endpoint: "127.0.0.1",
+				region:   "jp",
+			},
+			want: want{
+				want: &session.Session{
+					Config: &aws.Config{
+						Endpoint:                      atop("127.0.0.1"),
+						Region:                        atop("jp"),
+						DisableSSL:                    btop(true),
+						HTTPClient:                    &http.Client{},
+						LogLevel:                      aws.LogLevel(aws.LogLevelType(uint(0))),
+						MaxRetries:                    itop(0),
+						DisableParamValidation:        btop(true),
+						S3ForcePathStyle:              btop(false),
+						S3Disable100Continue:          btop(true),
+						S3UseAccelerate:               btop(false),
+						S3DisableContentMD5Validation: btop(true),
+						S3UseARNRegion:                btop(false),
+						UseDualStack:                  btop(false),
+						EnableEndpointDiscovery:       btop(false),
+						DisableEndpointHostPrefix:     btop(true),
+						STSRegionalEndpoint:           endpoints.LegacySTSEndpoint,
+						S3UsEast1RegionalEndpoint:     endpoints.LegacyS3UsEast1Endpoint,
+					},
+				},
+			},
+		},
+		{
+			name: "set cred success",
+			fields: fields{
+				accessKey:       "abc",
+				secretAccessKey: "def",
+			},
+			want: want{
+				want: &session.Session{
+					Config: &aws.Config{
+						Region: atop(""),
+						Credentials: func() *credentials.Credentials {
+							creds := credentials.NewStaticCredentials(
+								"abc",
+								"def",
+								"",
+							)
+							_, _ = creds.Get()
+							return creds
+						}(),
+						DisableSSL:                    btop(true),
+						HTTPClient:                    &http.Client{},
+						LogLevel:                      aws.LogLevel(aws.LogLevelType(uint(0))),
+						MaxRetries:                    itop(0),
+						DisableParamValidation:        btop(true),
+						S3ForcePathStyle:              btop(false),
+						S3Disable100Continue:          btop(true),
+						S3UseAccelerate:               btop(false),
+						S3DisableContentMD5Validation: btop(true),
+						S3UseARNRegion:                btop(false),
+						UseDualStack:                  btop(false),
+						EnableEndpointDiscovery:       btop(false),
+						DisableEndpointHostPrefix:     btop(true),
+						STSRegionalEndpoint:           endpoints.LegacySTSEndpoint,
+						S3UsEast1RegionalEndpoint:     endpoints.LegacyS3UsEast1Endpoint,
+					},
+				},
+			},
+		},
+		{
+			name: "set maxretries success",
+			fields: fields{
+				maxRetries: 999,
+			},
+			want: want{
+				want: &session.Session{
+					Config: &aws.Config{
+						Region:                        atop(""),
+						Credentials:                   nil,
+						DisableSSL:                    btop(true),
+						HTTPClient:                    &http.Client{},
+						LogLevel:                      aws.LogLevel(aws.LogLevelType(uint(0))),
+						MaxRetries:                    itop(999),
+						DisableParamValidation:        btop(true),
+						S3ForcePathStyle:              btop(false),
+						S3Disable100Continue:          btop(true),
+						S3UseAccelerate:               btop(false),
+						S3DisableContentMD5Validation: btop(true),
+						S3UseARNRegion:                btop(false),
+						UseDualStack:                  btop(false),
+						EnableEndpointDiscovery:       btop(false),
+						DisableEndpointHostPrefix:     btop(true),
+						STSRegionalEndpoint:           endpoints.LegacySTSEndpoint,
+						S3UsEast1RegionalEndpoint:     endpoints.LegacyS3UsEast1Endpoint,
+					},
+				},
+			},
+		},
+		{
+			name: "set forcepathstyle success",
+			fields: fields{
+				forcePathStyle: true,
+			},
+			want: want{
+				want: &session.Session{
+					Config: &aws.Config{
+						Region:                        atop(""),
+						Credentials:                   nil,
+						DisableSSL:                    btop(true),
+						HTTPClient:                    &http.Client{},
+						LogLevel:                      aws.LogLevel(aws.LogLevelType(uint(0))),
+						MaxRetries:                    itop(0),
+						DisableParamValidation:        btop(true),
+						S3ForcePathStyle:              btop(true),
+						S3Disable100Continue:          btop(true),
+						S3UseAccelerate:               btop(false),
+						S3DisableContentMD5Validation: btop(true),
+						S3UseARNRegion:                btop(false),
+						UseDualStack:                  btop(false),
+						EnableEndpointDiscovery:       btop(false),
+						DisableEndpointHostPrefix:     btop(true),
+						STSRegionalEndpoint:           endpoints.LegacySTSEndpoint,
+						S3UsEast1RegionalEndpoint:     endpoints.LegacyS3UsEast1Endpoint,
+					},
+				},
+			},
+		},
+		{
+			name: "set useAccelerate success",
+			fields: fields{
+				useAccelerate: true,
+			},
+			want: want{
+				want: &session.Session{
+					Config: &aws.Config{
+						Region:                        atop(""),
+						Credentials:                   nil,
+						DisableSSL:                    btop(true),
+						HTTPClient:                    &http.Client{},
+						LogLevel:                      aws.LogLevel(aws.LogLevelType(uint(0))),
+						MaxRetries:                    itop(0),
+						DisableParamValidation:        btop(true),
+						S3ForcePathStyle:              btop(false),
+						S3Disable100Continue:          btop(true),
+						S3UseAccelerate:               btop(true),
+						S3DisableContentMD5Validation: btop(true),
+						S3UseARNRegion:                btop(false),
+						UseDualStack:                  btop(false),
+						EnableEndpointDiscovery:       btop(false),
+						DisableEndpointHostPrefix:     btop(true),
+						STSRegionalEndpoint:           endpoints.LegacySTSEndpoint,
+						S3UsEast1RegionalEndpoint:     endpoints.LegacyS3UsEast1Endpoint,
+					},
+				},
+			},
+		},
+		{
+			name: "set useARNRegion success",
+			fields: fields{
+				useARNRegion: true,
+			},
+			want: want{
+				want: &session.Session{
+					Config: &aws.Config{
+						Region:                        atop(""),
+						Credentials:                   nil,
+						DisableSSL:                    btop(true),
+						HTTPClient:                    &http.Client{},
+						LogLevel:                      aws.LogLevel(aws.LogLevelType(uint(0))),
+						MaxRetries:                    itop(0),
+						DisableParamValidation:        btop(true),
+						S3ForcePathStyle:              btop(false),
+						S3Disable100Continue:          btop(true),
+						S3UseAccelerate:               btop(false),
+						S3DisableContentMD5Validation: btop(true),
+						S3UseARNRegion:                btop(true),
+						UseDualStack:                  btop(false),
+						EnableEndpointDiscovery:       btop(false),
+						DisableEndpointHostPrefix:     btop(true),
+						STSRegionalEndpoint:           endpoints.LegacySTSEndpoint,
+						S3UsEast1RegionalEndpoint:     endpoints.LegacyS3UsEast1Endpoint,
+					},
+				},
+			},
+		},
+		{
+			name: "set useDualStack success",
+			fields: fields{
+				useDualStack: true,
+			},
+			want: want{
+				want: &session.Session{
+					Config: &aws.Config{
+						Region:                        atop(""),
+						Credentials:                   nil,
+						DisableSSL:                    btop(true),
+						HTTPClient:                    &http.Client{},
+						LogLevel:                      aws.LogLevel(aws.LogLevelType(uint(0))),
+						MaxRetries:                    itop(0),
+						DisableParamValidation:        btop(true),
+						S3ForcePathStyle:              btop(false),
+						S3Disable100Continue:          btop(true),
+						S3UseAccelerate:               btop(false),
+						S3DisableContentMD5Validation: btop(true),
+						S3UseARNRegion:                btop(false),
+						UseDualStack:                  btop(true),
+						EnableEndpointDiscovery:       btop(false),
+						DisableEndpointHostPrefix:     btop(true),
+						STSRegionalEndpoint:           endpoints.LegacySTSEndpoint,
+						S3UsEast1RegionalEndpoint:     endpoints.LegacyS3UsEast1Endpoint,
+					},
+				},
+			},
+		},
+		{
+			name: "set enableEndpointDiscovery success",
+			fields: fields{
+				enableEndpointDiscovery: true,
+			},
+			want: want{
+				want: &session.Session{
+					Config: &aws.Config{
+						Region:                        atop(""),
+						Credentials:                   nil,
+						DisableSSL:                    btop(true),
+						HTTPClient:                    &http.Client{},
+						LogLevel:                      aws.LogLevel(aws.LogLevelType(uint(0))),
+						MaxRetries:                    itop(0),
+						DisableParamValidation:        btop(true),
+						S3ForcePathStyle:              btop(false),
+						S3Disable100Continue:          btop(true),
+						S3UseAccelerate:               btop(false),
+						S3DisableContentMD5Validation: btop(true),
+						S3UseARNRegion:                btop(false),
+						UseDualStack:                  btop(false),
+						EnableEndpointDiscovery:       btop(true),
+						DisableEndpointHostPrefix:     btop(true),
+						STSRegionalEndpoint:           endpoints.LegacySTSEndpoint,
+						S3UsEast1RegionalEndpoint:     endpoints.LegacyS3UsEast1Endpoint,
+					},
+				},
+			},
+		},
+		{
+			name: "set enableSSL success",
+			fields: fields{
+				enableSSL: true,
+			},
+			want: want{
+				want: &session.Session{
+					Config: &aws.Config{
+						Region:      atop(""),
+						Credentials: nil,
+						//DisableSSL:                    btop(false),
+						HTTPClient:                    &http.Client{},
+						LogLevel:                      aws.LogLevel(aws.LogLevelType(uint(0))),
+						MaxRetries:                    itop(0),
+						DisableParamValidation:        btop(true),
+						S3ForcePathStyle:              btop(false),
+						S3Disable100Continue:          btop(true),
+						S3UseAccelerate:               btop(false),
+						S3DisableContentMD5Validation: btop(true),
+						S3UseARNRegion:                btop(false),
+						UseDualStack:                  btop(false),
+						EnableEndpointDiscovery:       btop(false),
+						DisableEndpointHostPrefix:     btop(true),
+						STSRegionalEndpoint:           endpoints.LegacySTSEndpoint,
+						S3UsEast1RegionalEndpoint:     endpoints.LegacyS3UsEast1Endpoint,
+					},
+				},
+			},
+		},
+		{
+			name: "set EnableParamValdiation success",
+			fields: fields{
+				enableParamValidation: true,
+			},
+			want: want{
+				want: &session.Session{
+					Config: &aws.Config{
+						Region:                        atop(""),
+						Credentials:                   nil,
+						DisableSSL:                    btop(true),
+						HTTPClient:                    &http.Client{},
+						LogLevel:                      aws.LogLevel(aws.LogLevelType(uint(0))),
+						MaxRetries:                    itop(0),
+						S3ForcePathStyle:              btop(false),
+						S3Disable100Continue:          btop(true),
+						S3UseAccelerate:               btop(false),
+						S3DisableContentMD5Validation: btop(true),
+						S3UseARNRegion:                btop(false),
+						UseDualStack:                  btop(false),
+						EnableEndpointDiscovery:       btop(false),
+						DisableEndpointHostPrefix:     btop(true),
+						STSRegionalEndpoint:           endpoints.LegacySTSEndpoint,
+						S3UsEast1RegionalEndpoint:     endpoints.LegacyS3UsEast1Endpoint,
+						//DisableParamValidation:        btop(true),
+					},
+				},
+			},
+		},
+		{
+			name: "set Enable100Conitnue success",
+			fields: fields{
+				enable100Continue: true,
+			},
+			want: want{
+				want: &session.Session{
+					Config: &aws.Config{
+						Region:           atop(""),
+						Credentials:      nil,
+						DisableSSL:       btop(true),
+						HTTPClient:       &http.Client{},
+						LogLevel:         aws.LogLevel(aws.LogLevelType(uint(0))),
+						MaxRetries:       itop(0),
+						S3ForcePathStyle: btop(false),
+						//S3Disable100Continue:          btop(true),
+						S3UseAccelerate:               btop(false),
+						S3DisableContentMD5Validation: btop(true),
+						S3UseARNRegion:                btop(false),
+						UseDualStack:                  btop(false),
+						EnableEndpointDiscovery:       btop(false),
+						DisableEndpointHostPrefix:     btop(true),
+						STSRegionalEndpoint:           endpoints.LegacySTSEndpoint,
+						S3UsEast1RegionalEndpoint:     endpoints.LegacyS3UsEast1Endpoint,
+						DisableParamValidation:        btop(true),
+					},
+				},
+			},
+		},
+		{
+			name: "set ContentMD5Validation success",
+			fields: fields{
+				enableContentMD5Validation: true,
+			},
+			want: want{
+				want: &session.Session{
+					Config: &aws.Config{
+						Region:               atop(""),
+						Credentials:          nil,
+						DisableSSL:           btop(true),
+						HTTPClient:           &http.Client{},
+						LogLevel:             aws.LogLevel(aws.LogLevelType(uint(0))),
+						MaxRetries:           itop(0),
+						S3ForcePathStyle:     btop(false),
+						S3Disable100Continue: btop(true),
+						S3UseAccelerate:      btop(false),
+						// S3DisableContentMD5Validation: btop(true),
+						S3UseARNRegion:            btop(false),
+						UseDualStack:              btop(false),
+						EnableEndpointDiscovery:   btop(false),
+						DisableEndpointHostPrefix: btop(true),
+						STSRegionalEndpoint:       endpoints.LegacySTSEndpoint,
+						S3UsEast1RegionalEndpoint: endpoints.LegacyS3UsEast1Endpoint,
+						DisableParamValidation:    btop(true),
+					},
+				},
+			},
+		},
+		{
+			name: "set endpointHostPrefix success",
+			fields: fields{
+				enableEndpointHostPrefix: true,
+			},
+			want: want{
+				want: &session.Session{
+					Config: &aws.Config{
+						Region:                        atop(""),
+						Credentials:                   nil,
+						DisableSSL:                    btop(true),
+						HTTPClient:                    &http.Client{},
+						LogLevel:                      aws.LogLevel(aws.LogLevelType(uint(0))),
+						MaxRetries:                    itop(0),
+						S3ForcePathStyle:              btop(false),
+						S3Disable100Continue:          btop(true),
+						S3UseAccelerate:               btop(false),
+						S3DisableContentMD5Validation: btop(true),
+						S3UseARNRegion:                btop(false),
+						UseDualStack:                  btop(false),
+						EnableEndpointDiscovery:       btop(false),
+						//DisableEndpointHostPrefix:     btop(true),
+						STSRegionalEndpoint:       endpoints.LegacySTSEndpoint,
+						S3UsEast1RegionalEndpoint: endpoints.LegacyS3UsEast1Endpoint,
+						DisableParamValidation:    btop(true),
+					},
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
