@@ -50,21 +50,21 @@ var fileDescriptor_f8168beed818734d = []byte{
 	0x4b, 0x32, 0x4a, 0x93, 0xf4, 0x92, 0xf3, 0x73, 0xf5, 0xcb, 0x52, 0x12, 0x13, 0x8b, 0x21, 0x2a,
 	0x51, 0x35, 0x17, 0x24, 0x56, 0xe6, 0xe4, 0x27, 0xa6, 0xc0, 0x68, 0x88, 0x01, 0x52, 0x32, 0xe9,
 	0xf9, 0xf9, 0xe9, 0x39, 0xa9, 0x20, 0xb5, 0xfa, 0x89, 0x79, 0x79, 0xf9, 0x25, 0x89, 0x25, 0x99,
-	0xf9, 0x79, 0xc5, 0x10, 0x59, 0xa3, 0x97, 0xcc, 0x5c, 0x6c, 0xc1, 0x60, 0xfb, 0x84, 0xfc, 0xe1,
+	0xf9, 0x79, 0xc5, 0x10, 0x59, 0xa3, 0xa7, 0xcc, 0x5c, 0x6c, 0xc1, 0x60, 0xfb, 0x84, 0xfc, 0xe1,
 	0x2c, 0x71, 0x3d, 0x98, 0x11, 0x10, 0x01, 0xbd, 0xa0, 0xd4, 0xc2, 0xd2, 0xd4, 0xe2, 0x12, 0x29,
 	0x09, 0x4c, 0x89, 0xe2, 0x82, 0xfc, 0xbc, 0xe2, 0x54, 0x25, 0xa1, 0xa6, 0xcb, 0x4f, 0x26, 0x33,
 	0xf1, 0x28, 0xb1, 0x43, 0x5d, 0x6f, 0xc5, 0xa8, 0x25, 0x14, 0xc1, 0xc5, 0x05, 0x51, 0xe6, 0x54,
 	0xe9, 0xe9, 0x22, 0x24, 0x89, 0xae, 0xd7, 0xd3, 0x85, 0xb0, 0xb1, 0xa2, 0x60, 0x63, 0xf9, 0x95,
 	0xb8, 0xa0, 0xc6, 0xea, 0x67, 0xa6, 0x80, 0x4c, 0x76, 0xe7, 0xe2, 0x09, 0x2e, 0x29, 0x4a, 0x4d,
 	0xcc, 0x25, 0xdf, 0xc1, 0x0c, 0x1a, 0x8c, 0x06, 0x8c, 0x42, 0xbe, 0x5c, 0x02, 0xc8, 0x06, 0x91,
-	0xef, 0x50, 0x88, 0x71, 0x5e, 0x5c, 0xdc, 0xbe, 0xa5, 0x39, 0x25, 0x99, 0x50, 0x67, 0xc9, 0xa0,
-	0x2b, 0x07, 0x4b, 0xc2, 0x0c, 0x93, 0xc4, 0x65, 0x58, 0x31, 0xc8, 0x34, 0xa1, 0x00, 0x2e, 0x7e,
-	0x24, 0xb3, 0xc0, 0x2e, 0x93, 0xc3, 0x6a, 0x1e, 0xc2, 0x79, 0xf8, 0x4d, 0x74, 0x8a, 0x3e, 0xf1,
-	0x48, 0x8e, 0xf1, 0xc2, 0x23, 0x39, 0xc6, 0x07, 0x8f, 0xe4, 0x18, 0xb9, 0xa4, 0xf2, 0x8b, 0xd2,
-	0xf5, 0xc0, 0x69, 0x49, 0x0f, 0x94, 0x96, 0xf4, 0x12, 0x0b, 0x32, 0xf5, 0xca, 0x0c, 0xc1, 0x6c,
-	0x27, 0x68, 0x42, 0x08, 0x60, 0x8c, 0x52, 0xc7, 0x93, 0xf0, 0xd2, 0x8b, 0x0a, 0x92, 0x61, 0x89,
-	0x36, 0x89, 0x0d, 0x9c, 0x9e, 0x8c, 0x01, 0x01, 0x00, 0x00, 0xff, 0xff, 0x5f, 0xa9, 0x61, 0x92,
-	0xd1, 0x02, 0x00, 0x00,
+	0xef, 0x50, 0x88, 0x71, 0x1e, 0x5c, 0xdc, 0xbe, 0xa5, 0x39, 0x25, 0x99, 0x50, 0x67, 0xc9, 0xa0,
+	0x2b, 0x07, 0x4b, 0xc2, 0x0c, 0x93, 0xc4, 0x65, 0x58, 0xb1, 0x12, 0x83, 0x90, 0x1f, 0x17, 0x3f,
+	0x92, 0x49, 0x60, 0x77, 0xc9, 0x61, 0x35, 0x0d, 0xe1, 0x38, 0x7c, 0xe6, 0x39, 0x45, 0x9f, 0x78,
+	0x24, 0xc7, 0x78, 0xe1, 0x91, 0x1c, 0xe3, 0x83, 0x47, 0x72, 0x8c, 0x5c, 0x52, 0xf9, 0x45, 0xe9,
+	0x7a, 0xe0, 0x74, 0xa4, 0x07, 0x4a, 0x47, 0x7a, 0x89, 0x05, 0x99, 0x7a, 0x65, 0x86, 0x60, 0xb6,
+	0x13, 0x34, 0x11, 0x04, 0x30, 0x46, 0xa9, 0xe3, 0x49, 0x74, 0xe9, 0x45, 0x05, 0xc9, 0xb0, 0x04,
+	0x9b, 0xc4, 0x06, 0x4e, 0x4b, 0xc6, 0x80, 0x00, 0x00, 0x00, 0xff, 0xff, 0x21, 0x86, 0xc5, 0x29,
+	0xcd, 0x02, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -83,8 +83,8 @@ type SearchClient interface {
 	SearchByID(ctx context.Context, in *payload.Search_IDRequest, opts ...grpc.CallOption) (*payload.Search_Response, error)
 	StreamSearch(ctx context.Context, opts ...grpc.CallOption) (Search_StreamSearchClient, error)
 	StreamSearchByID(ctx context.Context, opts ...grpc.CallOption) (Search_StreamSearchByIDClient, error)
-	MultiSearch(ctx context.Context, opts ...grpc.CallOption) (Search_MultiSearchClient, error)
-	MultiSearchByID(ctx context.Context, opts ...grpc.CallOption) (Search_MultiSearchByIDClient, error)
+	MultiSearch(ctx context.Context, in *payload.Search_MultiRequest, opts ...grpc.CallOption) (*payload.Search_Responses, error)
+	MultiSearchByID(ctx context.Context, in *payload.Search_MultiIDRequest, opts ...grpc.CallOption) (*payload.Search_Responses, error)
 }
 
 type searchClient struct {
@@ -175,72 +175,22 @@ func (x *searchStreamSearchByIDClient) Recv() (*payload.Search_Response, error) 
 	return m, nil
 }
 
-func (c *searchClient) MultiSearch(ctx context.Context, opts ...grpc.CallOption) (Search_MultiSearchClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_Search_serviceDesc.Streams[2], "/vald.Search/MultiSearch", opts...)
+func (c *searchClient) MultiSearch(ctx context.Context, in *payload.Search_MultiRequest, opts ...grpc.CallOption) (*payload.Search_Responses, error) {
+	out := new(payload.Search_Responses)
+	err := c.cc.Invoke(ctx, "/vald.Search/MultiSearch", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &searchMultiSearchClient{stream}
-	return x, nil
+	return out, nil
 }
 
-type Search_MultiSearchClient interface {
-	Send(*payload.Search_MultiRequest) error
-	CloseAndRecv() (*payload.Search_Responses, error)
-	grpc.ClientStream
-}
-
-type searchMultiSearchClient struct {
-	grpc.ClientStream
-}
-
-func (x *searchMultiSearchClient) Send(m *payload.Search_MultiRequest) error {
-	return x.ClientStream.SendMsg(m)
-}
-
-func (x *searchMultiSearchClient) CloseAndRecv() (*payload.Search_Responses, error) {
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	m := new(payload.Search_Responses)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *searchClient) MultiSearchByID(ctx context.Context, opts ...grpc.CallOption) (Search_MultiSearchByIDClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_Search_serviceDesc.Streams[3], "/vald.Search/MultiSearchByID", opts...)
+func (c *searchClient) MultiSearchByID(ctx context.Context, in *payload.Search_MultiIDRequest, opts ...grpc.CallOption) (*payload.Search_Responses, error) {
+	out := new(payload.Search_Responses)
+	err := c.cc.Invoke(ctx, "/vald.Search/MultiSearchByID", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &searchMultiSearchByIDClient{stream}
-	return x, nil
-}
-
-type Search_MultiSearchByIDClient interface {
-	Send(*payload.Search_MultiIDRequest) error
-	CloseAndRecv() (*payload.Search_Responses, error)
-	grpc.ClientStream
-}
-
-type searchMultiSearchByIDClient struct {
-	grpc.ClientStream
-}
-
-func (x *searchMultiSearchByIDClient) Send(m *payload.Search_MultiIDRequest) error {
-	return x.ClientStream.SendMsg(m)
-}
-
-func (x *searchMultiSearchByIDClient) CloseAndRecv() (*payload.Search_Responses, error) {
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	m := new(payload.Search_Responses)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
+	return out, nil
 }
 
 // SearchServer is the server API for Search service.
@@ -249,8 +199,8 @@ type SearchServer interface {
 	SearchByID(context.Context, *payload.Search_IDRequest) (*payload.Search_Response, error)
 	StreamSearch(Search_StreamSearchServer) error
 	StreamSearchByID(Search_StreamSearchByIDServer) error
-	MultiSearch(Search_MultiSearchServer) error
-	MultiSearchByID(Search_MultiSearchByIDServer) error
+	MultiSearch(context.Context, *payload.Search_MultiRequest) (*payload.Search_Responses, error)
+	MultiSearchByID(context.Context, *payload.Search_MultiIDRequest) (*payload.Search_Responses, error)
 }
 
 // UnimplementedSearchServer can be embedded to have forward compatible implementations.
@@ -269,11 +219,11 @@ func (*UnimplementedSearchServer) StreamSearch(srv Search_StreamSearchServer) er
 func (*UnimplementedSearchServer) StreamSearchByID(srv Search_StreamSearchByIDServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamSearchByID not implemented")
 }
-func (*UnimplementedSearchServer) MultiSearch(srv Search_MultiSearchServer) error {
-	return status.Errorf(codes.Unimplemented, "method MultiSearch not implemented")
+func (*UnimplementedSearchServer) MultiSearch(ctx context.Context, req *payload.Search_MultiRequest) (*payload.Search_Responses, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method MultiSearch not implemented")
 }
-func (*UnimplementedSearchServer) MultiSearchByID(srv Search_MultiSearchByIDServer) error {
-	return status.Errorf(codes.Unimplemented, "method MultiSearchByID not implemented")
+func (*UnimplementedSearchServer) MultiSearchByID(ctx context.Context, req *payload.Search_MultiIDRequest) (*payload.Search_Responses, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method MultiSearchByID not implemented")
 }
 
 func RegisterSearchServer(s *grpc.Server, srv SearchServer) {
@@ -368,56 +318,40 @@ func (x *searchStreamSearchByIDServer) Recv() (*payload.Search_IDRequest, error)
 	return m, nil
 }
 
-func _Search_MultiSearch_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(SearchServer).MultiSearch(&searchMultiSearchServer{stream})
-}
-
-type Search_MultiSearchServer interface {
-	SendAndClose(*payload.Search_Responses) error
-	Recv() (*payload.Search_MultiRequest, error)
-	grpc.ServerStream
-}
-
-type searchMultiSearchServer struct {
-	grpc.ServerStream
-}
-
-func (x *searchMultiSearchServer) SendAndClose(m *payload.Search_Responses) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func (x *searchMultiSearchServer) Recv() (*payload.Search_MultiRequest, error) {
-	m := new(payload.Search_MultiRequest)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
+func _Search_MultiSearch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(payload.Search_MultiRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return m, nil
+	if interceptor == nil {
+		return srv.(SearchServer).MultiSearch(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/vald.Search/MultiSearch",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SearchServer).MultiSearch(ctx, req.(*payload.Search_MultiRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _Search_MultiSearchByID_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(SearchServer).MultiSearchByID(&searchMultiSearchByIDServer{stream})
-}
-
-type Search_MultiSearchByIDServer interface {
-	SendAndClose(*payload.Search_Responses) error
-	Recv() (*payload.Search_MultiIDRequest, error)
-	grpc.ServerStream
-}
-
-type searchMultiSearchByIDServer struct {
-	grpc.ServerStream
-}
-
-func (x *searchMultiSearchByIDServer) SendAndClose(m *payload.Search_Responses) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func (x *searchMultiSearchByIDServer) Recv() (*payload.Search_MultiIDRequest, error) {
-	m := new(payload.Search_MultiIDRequest)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
+func _Search_MultiSearchByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(payload.Search_MultiIDRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return m, nil
+	if interceptor == nil {
+		return srv.(SearchServer).MultiSearchByID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/vald.Search/MultiSearchByID",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SearchServer).MultiSearchByID(ctx, req.(*payload.Search_MultiIDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 var _Search_serviceDesc = grpc.ServiceDesc{
@@ -432,6 +366,14 @@ var _Search_serviceDesc = grpc.ServiceDesc{
 			MethodName: "SearchByID",
 			Handler:    _Search_SearchByID_Handler,
 		},
+		{
+			MethodName: "MultiSearch",
+			Handler:    _Search_MultiSearch_Handler,
+		},
+		{
+			MethodName: "MultiSearchByID",
+			Handler:    _Search_MultiSearchByID_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
@@ -444,16 +386,6 @@ var _Search_serviceDesc = grpc.ServiceDesc{
 			StreamName:    "StreamSearchByID",
 			Handler:       _Search_StreamSearchByID_Handler,
 			ServerStreams: true,
-			ClientStreams: true,
-		},
-		{
-			StreamName:    "MultiSearch",
-			Handler:       _Search_MultiSearch_Handler,
-			ClientStreams: true,
-		},
-		{
-			StreamName:    "MultiSearchByID",
-			Handler:       _Search_MultiSearchByID_Handler,
 			ClientStreams: true,
 		},
 	},

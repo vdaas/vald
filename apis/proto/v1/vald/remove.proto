@@ -29,10 +29,7 @@ import "google/api/annotations.proto";
 
 service Remove {
   
-  rpc Remove(payload.Remove.Request) returns (payload.Object.Location) {
-    option (google.api.http).delete = "/remove/{id}";
-    
-  }
+  rpc Remove(payload.Remove.Request) returns (payload.Object.Location) {}
   rpc StreamRemove(stream payload.Remove.Request) returns (stream payload.Object.Location) {}
   rpc MultiRemove(payload.Remove.MultiRequest) returns (payload.Object.Locations) {}
 }

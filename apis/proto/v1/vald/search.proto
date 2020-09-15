@@ -45,9 +45,9 @@ service Search {
       returns (stream payload.Search.Response) {}
   rpc StreamSearchByID(stream payload.Search.IDRequest)
       returns (stream payload.Search.Response) {}
-  rpc MultiSearch(stream payload.Search.MultiRequest)
+  rpc MultiSearch(payload.Search.MultiRequest)
       returns (payload.Search.Responses) {}
-  rpc MultiSearchByID(stream payload.Search.MultiIDRequest)
+  rpc MultiSearchByID(payload.Search.MultiIDRequest)
       returns (payload.Search.Responses) {}
 
 }

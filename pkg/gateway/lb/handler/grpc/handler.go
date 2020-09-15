@@ -55,7 +55,7 @@ func New(opts ...Option) vald.Server {
 	for _, opt := range append(defaultOpts, opts...) {
 		opt(s)
 	}
-	return s
+	return nil
 }
 
 func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *payload.Object_ID, err error) {
@@ -391,7 +391,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 		}
 		return nil, status.WrapWithInvalidArgument("Search API invalid vector argument", err, req, info.Get())
 	}
-	if req.GetConfig().GetEnableStrictCheck() {
+	if !req.GetConfig().GetSkipStrictExistCheck() {
 		id, err := s.Exists(ctx, &payload.Object_ID{
 			Id: uuid,
 		})
@@ -471,7 +471,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 	ids := make([]string, 0, len(vecs))
 	for _, vec := range vecs {
 		uuid := vec.GetVector().GetId()
-		if vec.GetConfig().GetEnableStrictCheck() {
+		if !vec.GetConfig().GetSkipStrictExistCheck() {
 			id, err := s.Exists(ctx, &payload.Object_ID{
 				Id: uuid,
 			})
@@ -528,8 +528,13 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 		}
 	}()
 
-	res, err = s.Remove(ctx, &payload.Object_ID{
-		Id: req.GetVector().GetId(),
+	res, err = s.Remove(ctx, &payload.Remove_Request{
+		Id: &payload.Object_ID{
+			Id: req.GetVector().GetId(),
+		},
+		Config: &payload.Remove_Config{
+			SkipStrictExistCheck: req.GetConfig().GetSkipStrictExistCheck(),
+		},
 	})
 	if err != nil {
 		if span != nil {
@@ -541,8 +546,8 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 	res, err = s.Insert(ctx, &payload.Insert_Request{
 		Vector: req.GetVector(),
 		Config: &payload.Insert_Config{
-			EnableStrictCheck: false,
-			Filters:           req.GetConfig().Filters,
+			SkipStrictExistCheck: false,
+			Filters:              req.GetConfig().Filters,
 		},
 	})
 	if err != nil {
@@ -578,18 +583,27 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 	vecs := reqs.GetRequests()
 	ids := make([]string, 0, len(vecs))
 	ireqs := make([]*payload.Insert_Request, 0, len(vecs))
+	rreqs := make([]*payload.Remove_Request, 0, len(vecs))
 	for _, vec := range vecs {
 		ids = append(ids, vec.GetVector().GetId())
 		ireqs = append(ireqs, &payload.Insert_Request{
 			Vector: vec.GetVector(),
 			Config: &payload.Insert_Config{
-				EnableStrictCheck: vec.GetConfig().GetEnableStrictCheck(),
-				Filters:           vec.GetConfig().GetFilters(),
+				SkipStrictExistCheck: vec.GetConfig().GetSkipStrictExistCheck(),
+				Filters:              vec.GetConfig().GetFilters(),
+			},
+		})
+		rreqs = append(rreqs, &payload.Remove_Request{
+			Id: &payload.Object_ID{
+				Id: vec.GetVector().GetId(),
+			},
+			Config: &payload.Remove_Config{
+				SkipStrictExistCheck: vec.GetConfig().GetSkipStrictExistCheck(),
 			},
 		})
 	}
-	locs, err := s.MultiRemove(ctx, &payload.Object_IDs{
-		Ids: ids,
+	locs, err := s.MultiRemove(ctx, &payload.Remove_MultiRequest{
+		Requests: rreqs,
 	})
 	if err != nil {
 		if span != nil {
@@ -628,16 +642,16 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 		loc, err = s.Insert(ctx, &payload.Insert_Request{
 			Vector: vec,
 			Config: &payload.Insert_Config{
-				EnableStrictCheck: false,
-				Filters:           filters,
+				SkipStrictExistCheck: false,
+				Filters:              filters,
 			},
 		})
 	} else {
 		loc, err = s.Update(ctx, &payload.Update_Request{
 			Vector: vec,
 			Config: &payload.Update_Config{
-				EnableStrictCheck: false,
-				Filters:           filters,
+				SkipStrictExistCheck: false,
+				Filters:              filters,
 			},
 		})
 	}
@@ -690,16 +704,16 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 			insertReqs = append(insertReqs, &payload.Insert_Request{
 				Vector: vec,
 				Config: &payload.Insert_Config{
-					EnableStrictCheck: false,
-					Filters:           filters,
+					SkipStrictExistCheck: false,
+					Filters:              filters,
 				},
 			})
 		} else {
 			updateReqs = append(updateReqs, &payload.Update_Request{
 				Vector: vec,
 				Config: &payload.Update_Config{
-					EnableStrictCheck: false,
-					Filters:           filters,
+					SkipStrictExistCheck: false,
+					Filters:              filters,
 				},
 			})
 
@@ -765,7 +779,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 	}), nil
 }
 
-func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (locs *payload.Object_Location, err error) {
+func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".Remove")
 	defer func() {
 		if span != nil {
@@ -773,7 +787,8 @@ func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (locs *paylo
 		}
 	}()
 
-	if true {
+	id := req.GetId()
+	if !req.GetConfig().GetSkipStrictExistCheck() {
 		sid, err := s.Exists(ctx, id)
 		if err != nil || sid == nil || len(sid.GetId()) == 0 {
 			err = errors.ErrObjectNotFound(err, id.GetId())
@@ -782,7 +797,7 @@ func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (locs *paylo
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
 			return nil, status.WrapWithNotFound(
-				fmt.Sprintf("Remove API ID = %v not found", id.GetId()), err, info.Get())
+				fmt.Sprintf("Remove API ID = %v not found", id), err, info.Get())
 		}
 	}
 	var mu sync.Mutex
@@ -796,7 +811,7 @@ func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (locs *paylo
 				span.End()
 			}
 		}()
-		loc, err := vc.Remove(ctx, id, copts...)
+		loc, err := vc.Remove(ctx, req, copts...)
 		if err != nil {
 			log.Debug(err)
 			if span != nil {
@@ -829,37 +844,37 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) error {
 	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Object_ID) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			return s.Remove(ctx, data.(*payload.Object_ID))
+			return s.Remove(ctx, data.(*payload.Remove_Request))
 		})
 }
 
-func (s *server) MultiRemove(ctx context.Context, req *payload.Object_IDs) (locs *payload.Object_Locations, err error) {
+func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequest) (locs *payload.Object_Locations, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".MultiRemove")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-
-	if true {
-		for _, id := range ids.GetIds() {
-			sid, err := s.Exists(ctx, &payload.Object_ID{
-				Id: id,
-			})
+	ids := make([]string, 0, len(reqs.GetRequests()))
+	for _, req := range reqs.GetRequests() {
+		id := req.GetId()
+		ids = append(ids, id.GetId())
+		if !req.GetConfig().GetSkipStrictExistCheck() {
+			sid, err := s.Exists(ctx, id)
 			if err != nil || sid == nil || len(sid.GetId()) == 0 {
-				err = errors.ErrObjectNotFound(err, id)
+				err = errors.ErrObjectNotFound(err, id.GetId())
 				log.Error(err)
 				if span != nil {
 					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 				}
 				return nil, status.WrapWithNotFound(
-					fmt.Sprintf("MultiRemove API ID = %v not found", id), err, info.Get())
+					fmt.Sprintf("MultiRemove API ID = %v not found", id.GetId()), err, info.Get())
 			}
 		}
 	}
 	var mu sync.Mutex
 	locs = &payload.Object_Locations{
-		Locations: make([]*payload.Object_Location, 0, len(ids.GetIds())),
+		Locations: make([]*payload.Object_Location, 0, len(reqs.GetRequests())),
 	}
 	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
 		ctx, span := trace.StartSpan(ctx, apiName+".MultiRemove/"+target)
@@ -868,7 +883,7 @@ func (s *server) MultiRemove(ctx context.Context, req *payload.Object_IDs) (locs
 				span.End()
 			}
 		}()
-		loc, err := vc.MultiRemove(ctx, ids, copts...)
+		loc, err := vc.MultiRemove(ctx, reqs, copts...)
 		if err != nil {
 			log.Debug(err)
 			if span != nil {
@@ -885,9 +900,9 @@ func (s *server) MultiRemove(ctx context.Context, req *payload.Object_IDs) (locs
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("MultiRemove API failed to request uuids %v ", ids.GetIds()), err, info.Get())
+		return nil, status.WrapWithInternal(fmt.Sprintf("MultiRemove API failed to request uuids %v ", ids), err, info.Get())
 	}
-	return location.ReStructure(ids.GetIds(), locs), nil
+	return location.ReStructure(ids, locs), nil
 }
 
 func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (vec *payload.Object_Vector, err error) {

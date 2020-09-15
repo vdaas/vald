@@ -38,5 +38,5 @@ service Upsert {
   }
   rpc StreamUpsert(stream payload.Upsert.Request)
       returns (stream payload.Object.Location) {}
-  rpc MultiUpsert(payload.Update.MultiRequest) returns (payload.Object.Locations) {}
+  rpc MultiUpsert(payload.Upsert.MultiRequest) returns (payload.Object.Locations) {}
 }
