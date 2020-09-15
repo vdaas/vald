@@ -43,6 +43,7 @@ const (
 	asterisk            = "*"
 )
 
+// MySQL represents the interface to handle MySQL operation.
 type MySQL interface {
 	Open(ctx context.Context) error
 	Close(ctx context.Context) error
@@ -73,6 +74,8 @@ type mySQLClient struct {
 	dbr                  dbr.DBR
 }
 
+// New creates the new mySQLClient with option.
+// It will return error when set option is failed.
 func New(opts ...Option) (MySQL, error) {
 	m := &mySQLClient{
 		dbr: dbr.New(),
@@ -86,6 +89,8 @@ func New(opts ...Option) (MySQL, error) {
 	return m, nil
 }
 
+// Open opens the connection with MySQL.
+// It will return error when connectiong to MySQL ends with fail.
 func (m *mySQLClient) Open(ctx context.Context) error {
 	if m.dialer != nil {
 		m.dialer.StartDialerCache(ctx)
@@ -131,6 +136,8 @@ func (m *mySQLClient) Open(ctx context.Context) error {
 	return m.Ping(ctx)
 }
 
+// Ping check the conection of MySQL database.
+// If the connection is closed, it returns error.
 func (m *mySQLClient) Ping(ctx context.Context) (err error) {
 	pctx, cancel := context.WithTimeout(ctx, m.initialPingTimeLimit)
 	defer cancel()
@@ -143,13 +150,13 @@ func (m *mySQLClient) Ping(ctx context.Context) (err error) {
 			} else {
 				err = errors.ErrMySQLConnectionPingFailed
 			}
-			cerr := ctx.Err()
+			cerr := pctx.Err()
 			if cerr != nil {
 				err = errors.Wrap(err, cerr.Error())
 			}
 			return err
 		case <-tick.C:
-			err = m.session.PingContext(ctx)
+			err = m.session.PingContext(pctx)
 			if err == nil {
 				return nil
 			}
@@ -158,6 +165,8 @@ func (m *mySQLClient) Ping(ctx context.Context) (err error) {
 	}
 }
 
+// Close closes the connection of MySQL database.
+// If the connection is already closed or closing conncection is failed, it returns error.
 func (m *mySQLClient) Close(ctx context.Context) error {
 	if m.connected.Load().(bool) {
 		m.session.Close()
@@ -166,6 +175,7 @@ func (m *mySQLClient) Close(ctx context.Context) error {
 	return nil
 }
 
+// GetMeta gets the metadata and podIPs which have index of metadata's vector.
 func (m *mySQLClient) GetMeta(ctx context.Context, uuid string) (MetaVector, error) {
 	if !m.connected.Load().(bool) {
 		return nil, errors.ErrMySQLConnectionClosed
