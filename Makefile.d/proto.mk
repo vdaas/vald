@@ -19,11 +19,6 @@ proto/all: \
 	pbgo \
 	pbdoc \
 	swagger
-	# mv apis/docs/payload/docs.md ./docs.md
-	# sed -i -E "s%#payload%apis/docs/payload/docs.md#payload%g" apis/docs
-	# mv ./docs.md apis/docs/payload/docs.md
-	# swagger \
-	# graphql
 
 .PHONY: pbgo
 pbgo: $(PBGOS)
@@ -31,16 +26,13 @@ pbgo: $(PBGOS)
 .PHONY: swagger
 swagger: $(SWAGGERS)
 
-.PHONY: graphql
-graphql: $(GRAPHQLS) $(GQLCODES)
-
 .PHONY: pbdoc
 pbdoc: $(PBDOCS)
 
 .PHONY: proto/clean
 ## clean proto artifacts
 proto/clean:
-	rm -rf apis/grpc apis/swagger apis/graphql apis/docs
+	rm -rf apis/grpc apis/swagger apis/docs
 
 .PHONY: proto/paths/print
 ## print proto paths
@@ -50,7 +42,6 @@ proto/paths/print:
 .PHONY: proto/deps
 ## install protobuf dependencies
 proto/deps: \
-	$(GOPATH)/bin/gqlgen \
 	$(GOPATH)/bin/protoc-gen-doc \
 	$(GOPATH)/bin/protoc-gen-go \
 	$(GOPATH)/bin/protoc-gen-gogo \
@@ -58,9 +49,6 @@ proto/deps: \
 	$(GOPATH)/bin/protoc-gen-gogofast \
 	$(GOPATH)/bin/protoc-gen-gogofaster \
 	$(GOPATH)/bin/protoc-gen-gogoslick \
-	$(GOPATH)/bin/protoc-gen-gogqlgen \
-	$(GOPATH)/bin/protoc-gen-gql \
-	$(GOPATH)/bin/protoc-gen-gqlgencfg \
 	$(GOPATH)/bin/protoc-gen-grpc-gateway \
 	$(GOPATH)/bin/protoc-gen-swagger \
 	$(GOPATH)/bin/protoc-gen-validate \
@@ -116,15 +104,6 @@ $(GOPATH)/bin/protoc-gen-grpc-gateway:
 $(GOPATH)/bin/protoc-gen-swagger:
 	$(call go-get, github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger)
 
-$(GOPATH)/bin/protoc-gen-gql:
-	$(call go-get-no-mod, github.com/danielvladco/go-proto-gql/protoc-gen-gql)
-
-$(GOPATH)/bin/protoc-gen-gogqlgen:
-	$(call go-get-no-mod, github.com/danielvladco/go-proto-gql/protoc-gen-gogqlgen)
-
-$(GOPATH)/bin/protoc-gen-gqlgencfg:
-	$(call go-get-no-mod, github.com/danielvladco/go-proto-gql/protoc-gen-gqlgencfg)
-
 $(GOPATH)/bin/protoc-gen-validate:
 	$(call go-get, github.com/envoyproxy/protoc-gen-validate)
 
@@ -137,12 +116,8 @@ $(GOPATH)/bin/protoc-gen-doc:
 $(GOPATH)/bin/swagger:
 	$(call go-get, github.com/go-swagger/go-swagger/cmd/swagger)
 
-$(GOPATH)/bin/gqlgen:
-	$(call go-get, github.com/99designs/gqlgen)
-
 $(PBGOS): \
 	$(PROTOS) \
-	$(GOPATH)/bin/gqlgen \
 	$(GOPATH)/bin/protoc-gen-doc \
 	$(GOPATH)/bin/protoc-gen-go \
 	$(GOPATH)/bin/protoc-gen-gogo \
@@ -150,9 +125,6 @@ $(PBGOS): \
 	$(GOPATH)/bin/protoc-gen-gogofast \
 	$(GOPATH)/bin/protoc-gen-gogofaster \
 	$(GOPATH)/bin/protoc-gen-gogoslick \
-	$(GOPATH)/bin/protoc-gen-gogqlgen \
-	$(GOPATH)/bin/protoc-gen-gql \
-	$(GOPATH)/bin/protoc-gen-gqlgencfg \
 	$(GOPATH)/bin/protoc-gen-grpc-gateway \
 	$(GOPATH)/bin/protoc-gen-swagger \
 	$(GOPATH)/bin/protoc-gen-validate \
@@ -169,7 +141,6 @@ $(PBGOS): \
 
 $(SWAGGERS): \
 	$(PROTOS) \
-	$(GOPATH)/bin/gqlgen \
 	$(GOPATH)/bin/protoc-gen-doc \
 	$(GOPATH)/bin/protoc-gen-go \
 	$(GOPATH)/bin/protoc-gen-gogo \
@@ -177,9 +148,6 @@ $(SWAGGERS): \
 	$(GOPATH)/bin/protoc-gen-gogofast \
 	$(GOPATH)/bin/protoc-gen-gogofaster \
 	$(GOPATH)/bin/protoc-gen-gogoslick \
-	$(GOPATH)/bin/protoc-gen-gogqlgen \
-	$(GOPATH)/bin/protoc-gen-gql \
-	$(GOPATH)/bin/protoc-gen-gqlgencfg \
 	$(GOPATH)/bin/protoc-gen-grpc-gateway \
 	$(GOPATH)/bin/protoc-gen-swagger \
 	$(GOPATH)/bin/protoc-gen-validate \
@@ -192,59 +160,8 @@ $(SWAGGERS): \
 	$(call mkdir, $(dir $@))
 	$(call protoc-gen, $(patsubst apis/swagger/%.swagger.json,apis/proto/%.proto,$@), --swagger_out=json_names_for_fields=true:$(dir $@))
 
-$(GRAPHQLS): \
-	$(PROTOS) \
-	$(GOPATH)/bin/gqlgen \
-	$(GOPATH)/bin/protoc-gen-doc \
-	$(GOPATH)/bin/protoc-gen-go \
-	$(GOPATH)/bin/protoc-gen-gogo \
-	$(GOPATH)/bin/protoc-gen-gofast \
-	$(GOPATH)/bin/protoc-gen-gogofast \
-	$(GOPATH)/bin/protoc-gen-gogofaster \
-	$(GOPATH)/bin/protoc-gen-gogoslick \
-	$(GOPATH)/bin/protoc-gen-gogqlgen \
-	$(GOPATH)/bin/protoc-gen-gql \
-	$(GOPATH)/bin/protoc-gen-gqlgencfg \
-	$(GOPATH)/bin/protoc-gen-grpc-gateway \
-	$(GOPATH)/bin/protoc-gen-swagger \
-	$(GOPATH)/bin/protoc-gen-validate \
-	$(GOPATH)/bin/swagger \
-	$(GOPATH)/src/google.golang.org/genproto \
-	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
-	$(GOPATH)/src/github.com/googleapis/googleapis \
-	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
-	@$(call green, "generating pb.graphqls files...")
-	$(call mkdir, $(dir $@))
-	$(call protoc-gen, $(patsubst apis/graphql/%.pb.graphqls,apis/proto/%.proto,$@), --gql_out=paths=source_relative:$(dir $@))
-
-$(GQLCODES): \
-	$(PROTOS) \
-	$(GOPATH)/bin/gqlgen \
-	$(GOPATH)/bin/protoc-gen-doc \
-	$(GOPATH)/bin/protoc-gen-go \
-	$(GOPATH)/bin/protoc-gen-gogo \
-	$(GOPATH)/bin/protoc-gen-gofast \
-	$(GOPATH)/bin/protoc-gen-gogofast \
-	$(GOPATH)/bin/protoc-gen-gogofaster \
-	$(GOPATH)/bin/protoc-gen-gogoslick \
-	$(GOPATH)/bin/protoc-gen-gogqlgen \
-	$(GOPATH)/bin/protoc-gen-gql \
-	$(GOPATH)/bin/protoc-gen-gqlgencfg \
-	$(GOPATH)/bin/protoc-gen-grpc-gateway \
-	$(GOPATH)/bin/protoc-gen-swagger \
-	$(GOPATH)/bin/protoc-gen-validate \
-	$(GOPATH)/bin/swagger \
-	$(GOPATH)/src/google.golang.org/genproto \
-	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
-	$(GOPATH)/src/github.com/googleapis/googleapis \
-	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
-	@$(call green, "generating graphql generated.go files...")
-	$(call mkdir, $(dir $@))
-	sh hack/graphql/gqlgen.sh $(dir $@) $(patsubst apis/graphql/%.generated.go,apis/graphql/%.pb.graphqls,$@) $@
-
 $(PBDOCS): \
 	$(PROTOS) \
-	$(GOPATH)/bin/gqlgen \
 	$(GOPATH)/bin/protoc-gen-doc \
 	$(GOPATH)/bin/protoc-gen-go \
 	$(GOPATH)/bin/protoc-gen-gogo \
@@ -252,9 +169,6 @@ $(PBDOCS): \
 	$(GOPATH)/bin/protoc-gen-gogofast \
 	$(GOPATH)/bin/protoc-gen-gogofaster \
 	$(GOPATH)/bin/protoc-gen-gogoslick \
-	$(GOPATH)/bin/protoc-gen-gogqlgen \
-	$(GOPATH)/bin/protoc-gen-gql \
-	$(GOPATH)/bin/protoc-gen-gqlgencfg \
 	$(GOPATH)/bin/protoc-gen-grpc-gateway \
 	$(GOPATH)/bin/protoc-gen-swagger \
 	$(GOPATH)/bin/protoc-gen-validate \
@@ -265,4 +179,4 @@ $(PBDOCS): \
 	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
 	@$(call green, "generating documents...")
 	$(call mkdir, $(dir $@))
-	$(call protoc-gen, $(patsubst apis/docs/%.md,apis/proto/%.proto,$@), --plugin=protoc-gen-doc=$(GOPATH)/bin/protoc-gen-doc --doc_opt=markdown$(COMMA)docs.md --doc_out=$(dir $@))
+	$(call protoc-gen, $(PROTOS), --plugin=protoc-gen-doc=$(GOPATH)/bin/protoc-gen-doc --doc_opt=markdown$(COMMA)docs.md --doc_out=$(dir $@))
