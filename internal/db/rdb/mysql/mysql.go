@@ -90,7 +90,7 @@ func New(opts ...Option) (MySQL, error) {
 }
 
 // Open opens the connection with MySQL.
-// It will return error when connectiong to MySQL ends with fail.
+// It will return error when connecting to MySQL ends with fail.
 func (m *mySQLClient) Open(ctx context.Context) error {
 	if m.dialer != nil {
 		m.dialer.StartDialerCache(ctx)
@@ -136,7 +136,7 @@ func (m *mySQLClient) Open(ctx context.Context) error {
 	return m.Ping(ctx)
 }
 
-// Ping check the conection of MySQL database.
+// Ping check the connection of MySQL database.
 // If the connection is closed, it returns error.
 func (m *mySQLClient) Ping(ctx context.Context) (err error) {
 	pctx, cancel := context.WithTimeout(ctx, m.initialPingTimeLimit)

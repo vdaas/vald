@@ -30,17 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/tcp"
-	"github.com/vdaas/vald/internal/test/comparator"
 	"go.uber.org/goleak"
-)
-
-var (
-	mysqlComparatorOptions = []comparator.Option{
-		comparator.AllowUnexported(mySQLClient{}),
-		comparator.Comparer(func(x, y dbr.DBR) bool {
-			return reflect.DeepEqual(x, y)
-		}),
-	}
 )
 
 func TestMain(m *testing.M) {
@@ -77,7 +67,7 @@ func TestNew(t *testing.T) {
 		func() test {
 			m := new(mySQLClient)
 			for _, opt := range defaultOpts {
-				opt(m)
+				_ = opt(m)
 			}
 			m.dbr = dbr.New()
 			return test{
@@ -94,7 +84,7 @@ func TestNew(t *testing.T) {
 			}
 			m := new(mySQLClient)
 			for _, opt := range append(defaultOpts, opts...) {
-				opt(m)
+				_ = opt(m)
 			}
 			m.dbr = dbr.New()
 			return test{
@@ -757,7 +747,7 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 				name: "return (nil, error) when meta is not found",
 				args: args{
 					ctx:  ctx,
-					uuid: uuid,
+					uuid: "vdaas-01",
 				},
 				fields: fields{
 					session: &dbr.MockSession{
@@ -806,8 +796,7 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
 			uuid := "vdaas-01"
-			var m *meta
-			m = &meta{
+			m := &meta{
 				ID:     1,
 				UUID:   uuid,
 				Vector: []byte("0.1,0.2"),
@@ -870,8 +859,7 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
 			uuid := "vdaas-01"
-			var m *meta
-			m = &meta{
+			m := &meta{
 				ID:     1,
 				UUID:   uuid,
 				Vector: []byte("0.1,0.2"),
@@ -1167,7 +1155,7 @@ func Test_validateMeta(t *testing.T) {
 				args: args{
 					meta: m,
 				},
-				want:      want{},
+				want: want{},
 			}
 		}(),
 		func() test {
