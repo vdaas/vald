@@ -22,7 +22,7 @@ import (
 	"reflect"
 
 	gmeta "github.com/vdaas/vald/apis/grpc/meta"
-	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/cache"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"

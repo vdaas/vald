@@ -21,7 +21,7 @@ import (
 	"reflect"
 
 	"github.com/vdaas/vald/apis/grpc/manager/compressor"
-	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 )
