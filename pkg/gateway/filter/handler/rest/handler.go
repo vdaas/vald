@@ -20,7 +20,7 @@ package rest
 import (
 	"net/http"
 
-	"github.com/vdaas/vald/apis/grpc/gateway/vald"
+	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/net/http/dump"
 	"github.com/vdaas/vald/internal/net/http/json"
@@ -41,7 +41,7 @@ type Handler interface {
 }
 
 type handler struct {
-	vald vald.ValdServer
+	vald vald.Server
 }
 
 func New(opts ...Option) Handler {

@@ -15,7 +15,7 @@
 //
 package location
 
-import "github.com/vdaas/vald/apis/grpc/payload"
+import "github.com/vdaas/vald/apis/grpc/v1/payload"
 
 func ReStructure(uuids []string, locs *payload.Object_Locations) *payload.Object_Locations {
 	if locs == nil {

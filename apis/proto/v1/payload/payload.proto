@@ -85,7 +85,7 @@ message Insert {
     repeated Request requests = 1;
   }
   message Config {
-    bool enable_strict_check = 1;
+    bool skip_strict_exist_check = 1;
     Filter.Config filters = 2;
   }
 }
@@ -99,7 +99,7 @@ message Update {
     repeated Request requests = 1;
   }
   message Config {
-    bool enable_strict_check = 1;
+    bool skip_strict_exist_check = 1;
     Filter.Config filters = 2;
   }
 }
@@ -113,8 +113,21 @@ message Upsert {
     repeated Request requests = 1;
   }
   message Config {
-    bool enable_strict_check = 1;
+    bool skip_strict_exist_check = 1;
     Filter.Config filters = 2;
+  }
+}
+
+message Remove {
+  message Request {
+    Object.ID id = 1;
+    Config config = 2;
+  }
+  message MultiRequest {
+    repeated Request requests = 1;
+  }
+  message Config {
+    bool skip_strict_exist_check = 1;
   }
 }
 

@@ -21,7 +21,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/vdaas/vald/apis/grpc/gateway/vald"
+	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	client "github.com/vdaas/vald/internal/client/gateway/vald"
 	"github.com/vdaas/vald/internal/errgroup"
@@ -47,7 +47,7 @@ type server struct {
 
 const apiName = "vald/gateway-backup"
 
-func New(opts ...Option) vald.ValdServer {
+func New(opts ...Option) vald.Server {
 	s := new(server)
 
 	for _, opt := range append(defaultOpts, opts...) {

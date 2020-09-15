@@ -23,7 +23,7 @@ import (
 
 	"github.com/kpango/fuid"
 	"github.com/vdaas/vald/apis/grpc/gateway/filter"
-	"github.com/vdaas/vald/apis/grpc/gateway/vald"
+	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	client "github.com/vdaas/vald/internal/client/gateway/vald"
 	"github.com/vdaas/vald/internal/errgroup"
@@ -39,7 +39,7 @@ import (
 )
 
 type Server interface {
-	vald.ValdServer
+	vald.Server
 	filter.FilterServer
 }
 
@@ -53,7 +53,7 @@ type server struct {
 
 const apiName = "vald/gateway-filter"
 
-func New(opts ...Option) vald.ValdServer {
+func New(opts ...Option) vald.Server {
 	s := new(server)
 
 	for _, opt := range append(defaultOpts, opts...) {
@@ -80,7 +80,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 			span.End()
 		}
 	}()
-	res, err = s.search(ctx, func(ctx context.Context, vc vald.ValdClient, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+	res, err = s.search(ctx, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
 		return vc.Search(ctx, req, copts...)
 	})
 	if err != nil {
@@ -100,7 +100,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 			span.End()
 		}
 	}()
-	res, err = s.search(ctx, func(ctx context.Context, vc vald.ValdClient, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+	res, err = s.search(ctx, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
 		return vc.SearchByID(ctx, req, copts...)
 	})
 	if err != nil {
@@ -113,7 +113,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 }
 
 func (s *server) search(ctx context.Context,
-	f func(ctx context.Context, vc vald.ValdClient, copts ...grpc.CallOption) (*payload.Search_Response, error)) (
+	f func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error)) (
 	res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".search")
 	defer func() {

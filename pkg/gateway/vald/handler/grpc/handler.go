@@ -150,7 +150,6 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 
 	eg.Go(safety.RecoverFunc(func() error {
 		defer cancel()
-		// cl := new(checkList)
 		visited := make(map[string]bool, len(res.Results))
 		mu := sync.RWMutex{}
 		return s.gateway.BroadCast(ectx, func(ctx context.Context, target string, vc vald.ValdClient, copts ...grpc.CallOption) error {
@@ -174,10 +173,6 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 				} else {
 					mu.RUnlock()
 				}
-				// if !cl.Exists(id) {
-				// 	dch <- dist
-				// 	cl.Check(id)
-				// }
 			}
 			return nil
 		})
