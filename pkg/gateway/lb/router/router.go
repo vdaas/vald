@@ -65,6 +65,23 @@ func New(opts ...Option) http.Handler {
 				"/search/{id}",
 				h.SearchByID,
 			},
+
+			{
+				"Multi Search",
+				[]string{
+					http.MethodPost,
+				},
+				"/search/multi",
+				h.MultiSearch,
+			},
+			{
+				"Multi Search By ID",
+				[]string{
+					http.MethodGet,
+				},
+				"/search//multi/{id}",
+				h.MultiSearchByID,
+			},
 			{
 				"Insert",
 				[]string{
@@ -100,6 +117,26 @@ func New(opts ...Option) http.Handler {
 				},
 				"/update/multi",
 				h.MultiUpdate,
+			},
+			{
+				"Upsert",
+				[]string{
+					http.MethodPost,
+					http.MethodPatch,
+					http.MethodPut,
+				},
+				"/upsert",
+				h.Upsert,
+			},
+			{
+				"Multiple Upsert",
+				[]string{
+					http.MethodPost,
+					http.MethodPatch,
+					http.MethodPut,
+				},
+				"/upsert/multi",
+				h.MultiUpsert,
 			},
 			{
 				"Remove",

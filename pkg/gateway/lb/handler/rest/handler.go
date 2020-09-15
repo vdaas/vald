@@ -20,7 +20,7 @@ package rest
 import (
 	"net/http"
 
-	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/net/http/dump"
 	"github.com/vdaas/vald/internal/net/http/json"
@@ -31,10 +31,14 @@ type Handler interface {
 	Exists(w http.ResponseWriter, r *http.Request) (int, error)
 	Search(w http.ResponseWriter, r *http.Request) (int, error)
 	SearchByID(w http.ResponseWriter, r *http.Request) (int, error)
+	MultiSearch(w http.ResponseWriter, r *http.Request) (int, error)
+	MultiSearchByID(w http.ResponseWriter, r *http.Request) (int, error)
 	Insert(w http.ResponseWriter, r *http.Request) (int, error)
 	MultiInsert(w http.ResponseWriter, r *http.Request) (int, error)
 	Update(w http.ResponseWriter, r *http.Request) (int, error)
 	MultiUpdate(w http.ResponseWriter, r *http.Request) (int, error)
+	Upsert(w http.ResponseWriter, r *http.Request) (int, error)
+	MultiUpsert(w http.ResponseWriter, r *http.Request) (int, error)
 	Remove(w http.ResponseWriter, r *http.Request) (int, error)
 	MultiRemove(w http.ResponseWriter, r *http.Request) (int, error)
 	GetObject(w http.ResponseWriter, r *http.Request) (int, error)
@@ -74,43 +78,71 @@ func (h *handler) SearchByID(w http.ResponseWriter, r *http.Request) (code int, 
 	})
 }
 
+func (h *handler) MultiSearch(w http.ResponseWriter, r *http.Request) (code int, err error) {
+	var req *payload.Search_MultiRequest
+	return json.Handler(w, r, &req, func() (interface{}, error) {
+		return h.vald.MultiSearch(r.Context(), req)
+	})
+}
+
+func (h *handler) MultiSearchByID(w http.ResponseWriter, r *http.Request) (code int, err error) {
+	var req *payload.Search_MultiIDRequest
+	return json.Handler(w, r, &req, func() (interface{}, error) {
+		return h.vald.MultiSearchByID(r.Context(), req)
+	})
+}
+
 func (h *handler) Insert(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Object_Vector
+	var req *payload.Insert_Request
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.vald.Insert(r.Context(), req)
 	})
 }
 
 func (h *handler) MultiInsert(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Object_Vectors
+	var req *payload.Insert_MultiRequest
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.vald.MultiInsert(r.Context(), req)
 	})
 }
 
 func (h *handler) Update(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Object_Vector
+	var req *payload.Update_Request
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.vald.Update(r.Context(), req)
 	})
 }
 
 func (h *handler) MultiUpdate(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Object_Vectors
+	var req *payload.Update_MultiRequest
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.vald.MultiUpdate(r.Context(), req)
 	})
 }
 
+func (h *handler) Upsert(w http.ResponseWriter, r *http.Request) (code int, err error) {
+	var req *payload.Upsert_Request
+	return json.Handler(w, r, &req, func() (interface{}, error) {
+		return h.vald.Upsert(r.Context(), req)
+	})
+}
+
+func (h *handler) MultiUpsert(w http.ResponseWriter, r *http.Request) (code int, err error) {
+	var req *payload.Upsert_MultiRequest
+	return json.Handler(w, r, &req, func() (interface{}, error) {
+		return h.vald.MultiUpsert(r.Context(), req)
+	})
+}
+
 func (h *handler) Remove(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Object_ID
+	var req *payload.Remove_Request
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.vald.Remove(r.Context(), req)
 	})
 }
 
 func (h *handler) MultiRemove(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Object_IDs
+	var req *payload.Remove_MultiRequest
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.vald.MultiRemove(r.Context(), req)
 	})
