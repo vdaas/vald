@@ -1168,7 +1168,6 @@ func Test_validateMeta(t *testing.T) {
 					meta: m,
 				},
 				want:      want{},
-				checkFunc: defaultCheckFunc,
 			}
 		}(),
 		func() test {
@@ -1181,7 +1180,6 @@ func Test_validateMeta(t *testing.T) {
 				want: want{
 					err: errors.ErrRequiredMemberNotFilled("vector"),
 				},
-				checkFunc: defaultCheckFunc,
 			}
 		}(),
 	}
