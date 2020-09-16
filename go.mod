@@ -74,7 +74,7 @@ require (
 	golang.org/x/sys v0.0.0-20200909081042-eff7692f9009
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/plot v0.8.0
-	google.golang.org/api v0.31.0
+	google.golang.org/api v0.32.0
 	google.golang.org/genproto v0.0.0-20200904004341-0bd0a958aa1d
 	google.golang.org/grpc v1.31.1
 	gopkg.in/yaml.v2 v2.3.0
