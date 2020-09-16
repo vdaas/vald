@@ -124,4 +124,3 @@ func (s *MockSelect) Limit(n uint64) SelectStmt {
 func (s *MockSelect) LoadContext(ctx context.Context, value interface{}) (int, error) {
 	return s.LoadContextFunc(ctx, value)
 }
-
