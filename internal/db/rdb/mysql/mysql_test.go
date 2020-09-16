@@ -100,7 +100,7 @@ func TestNew(t *testing.T) {
 		func() test {
 			m := new(mySQLClient)
 			for _, opt := range defaultOpts {
-				opt(m)
+				_ = opt(m)
 			}
 			m.dbr = dbr.New()
 			err := errors.New("error")
