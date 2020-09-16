@@ -321,9 +321,10 @@ func (n *ngt) Search(vec []float32, size int, epsilon, radius float32) ([]Search
 
 	result := make([]SearchResult, rsize)
 	for i := 0; i < rsize; i++ {
-		idx := C.uint32_t(i)
-		defer C.free(unsafe.Pointer(&idx))
-		d := C.ngt_get_result(results, idx, n.ebuf)
+		// idx := C.uint32_t(i)
+		// defer C.free(unsafe.Pointer(&idx))
+		// d := C.ngt_get_result(results, idx, n.ebuf)
+		d := C.ngt_get_result(results, C.uint32_t(i), n.ebuf)
 		if d.id == 0 && d.distance == 0 {
 			result[i] = SearchResult{0, 0, n.newGoError(n.ebuf)}
 		} else {
@@ -339,10 +340,11 @@ func (n *ngt) Search(vec []float32, size int, epsilon, radius float32) ([]Search
 func (n *ngt) Insert(vec []float32) (uint, error) {
 	cvec := (*C.float)(&vec[0])
 	defer C.free(unsafe.Pointer(cvec))
-	cdim := C.uint32_t(n.dimension)
-	defer C.free(unsafe.Pointer(&cdim))
+	// cdim := C.uint32_t(n.dimension)
+	// defer C.free(unsafe.Pointer(&cdim))
 	n.mu.Lock()
-	id := C.ngt_insert_index_as_float(n.index, cvec, cdim, n.ebuf)
+	// id := C.ngt_insert_index_as_float(n.index, cvec, cdim, n.ebuf)
+	id := C.ngt_insert_index_as_float(n.index, cvec, C.uint32_t(n.dimension), n.ebuf)
 	n.mu.Unlock()
 	if id == 0 {
 		return 0, n.newGoError(n.ebuf)
@@ -382,10 +384,10 @@ func (n *ngt) BulkInsert(vecs [][]float32) ([]uint, []error) {
 	for _, vec := range vecs {
 		cvec := (*C.float)(&vec[0])
 		defer C.free(unsafe.Pointer(cvec))
-		cdim := C.uint32_t(n.dimension)
-		defer C.free(unsafe.Pointer(&cdim))
+		// cdim := C.uint32_t(n.dimension)
+		// defer C.free(unsafe.Pointer(cdim))
 		// n.mu.Lock()
-		id := uint(C.ngt_insert_index_as_float(n.index, cvec, cdim, n.ebuf))
+		id := uint(C.ngt_insert_index_as_float(n.index, cvec, C.uint32_t(n.dimension), n.ebuf))
 		// n.mu.Unlock()
 		if id == 0 {
 			errs = append(errs, n.newGoError(n.ebuf))
@@ -446,10 +448,11 @@ func (n *ngt) CreateIndex(poolSize uint32) error {
 	if poolSize == 0 {
 		poolSize = n.poolSize
 	}
-	cpool := C.uint32_t(poolSize)
-	defer C.free(unsafe.Pointer(&cpool))
+	// cpool := C.uint32_t(poolSize)
+	// defer C.free(unsafe.Pointer(&cpool))
 	n.mu.Lock()
-	ret := C.ngt_create_index(n.index, cpool, n.ebuf)
+	ret := C.ngt_create_index(n.index, C.uint32_t(poolSize), n.ebuf)
+	// ret := C.ngt_create_index(n.index, cpool, n.ebuf)
 	if ret == ErrorCode {
 		ne := n.ebuf
 		n.mu.Unlock()
