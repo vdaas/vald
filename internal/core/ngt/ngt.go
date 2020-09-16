@@ -443,8 +443,8 @@ func (n *ngt) CreateIndex(poolSize uint32) error {
 // SaveIndex stores NGT index to storage.
 func (n *ngt) SaveIndex() error {
 	if !n.inMemory {
-	path := C.CString(n.idxPath)
-	defer C.free(unsafe.Pointer(path))
+		path := C.CString(n.idxPath)
+		defer C.free(unsafe.Pointer(path))
 		n.mu.Lock()
 		ret := C.ngt_save_index(n.index, path, n.ebuf)
 		if ret == ErrorCode {
