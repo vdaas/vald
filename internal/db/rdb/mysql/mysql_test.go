@@ -78,20 +78,13 @@ func TestNew(t *testing.T) {
 			}
 		}(),
 		func() test {
-			n := "vald"
-			opts := []Option{
-				WithName(n),
-			}
 			m := new(mySQLClient)
-			for _, opt := range append(defaultOpts, opts...) {
+			for _, opt := range defaultOpts {
 				_ = opt(m)
 			}
 			m.dbr = dbr.New()
 			return test{
 				name: "return (MySQL, nil) when opts is not empty",
-				args: args{
-					opts: opts,
-				},
 				want: want{
 					want: m,
 				},
@@ -213,10 +206,9 @@ func Test_mySQLClient_Open(t *testing.T) {
 							return nil
 						},
 					},
-					connected: func() atomic.Value {
-						v := new(atomic.Value)
+					connected: func() (v atomic.Value) {
 						v.Store(false)
-						return *v
+						return
 					}(),
 					dbr: &dbr.MockDBR{
 						OpenFunc: func(driver, dsn string, log EventReceiver) (dbr.Connection, error) {
@@ -274,10 +266,9 @@ func Test_mySQLClient_Open(t *testing.T) {
 							return nil
 						},
 					},
-					connected: func() atomic.Value {
-						v := new(atomic.Value)
+					connected: func() (v atomic.Value) {
 						v.Store(false)
-						return *v
+						return
 					}(),
 					dbr: &dbr.MockDBR{
 						OpenFunc: func(driver, dsn string, log EventReceiver) (dbr.Connection, error) {
@@ -326,10 +317,9 @@ func Test_mySQLClient_Open(t *testing.T) {
 					connMaxLifeTime:      1 * time.Microsecond,
 					maxOpenConns:         10,
 					maxIdleConns:         10,
-					connected: func() atomic.Value {
-						v := new(atomic.Value)
+					connected: func() (v atomic.Value) {
 						v.Store(false)
-						return *v
+						return
 					}(),
 					dbr: &dbr.MockDBR{
 						OpenFunc: func(driver, dsn string, log EventReceiver) (dbr.Connection, error) {
@@ -453,7 +443,7 @@ func Test_mySQLClient_Ping(t *testing.T) {
 					ctx: ctx,
 				},
 				fields: fields{
-					initialPingTimeLimit: 100 * time.Microsecond,
+					initialPingTimeLimit: 15 * time.Microsecond,
 					initialPingDuration:  1 * time.Microsecond,
 					session: &dbr.MockSession{
 						PingContextFunc: func(ctx context.Context) error {
@@ -562,10 +552,9 @@ func Test_mySQLClient_Close(t *testing.T) {
 			},
 			fields: fields{
 				session: &dbr.MockSession{},
-				connected: func() atomic.Value {
-					v := new(atomic.Value)
+				connected: func() (v atomic.Value) {
 					v.Store(false)
-					return *v
+					return
 				}(),
 			},
 			want: want{},
@@ -581,10 +570,9 @@ func Test_mySQLClient_Close(t *testing.T) {
 						return nil
 					},
 				},
-				connected: func() atomic.Value {
-					v := new(atomic.Value)
+				connected: func() (v atomic.Value) {
 					v.Store(true)
-					return *v
+					return
 				}(),
 			},
 			want: want{},
@@ -676,10 +664,9 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 					uuid: "",
 				},
 				fields: fields{
-					connected: func() atomic.Value {
-						v := new(atomic.Value)
+					connected: func() (v atomic.Value) {
 						v.Store(false)
-						return *v
+						return
 					}(),
 				},
 				want: want{
@@ -719,10 +706,9 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 							return m
 						},
 					},
-					connected: func() atomic.Value {
-						v := new(atomic.Value)
+					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return *v
+						return
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
@@ -772,10 +758,9 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 							return s
 						},
 					},
-					connected: func() atomic.Value {
-						v := new(atomic.Value)
+					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return *v
+						return
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
@@ -835,10 +820,9 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 							return s
 						},
 					},
-					connected: func() atomic.Value {
-						v := new(atomic.Value)
+					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return *v
+						return
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
@@ -905,10 +889,9 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 							return s
 						},
 					},
-					connected: func() atomic.Value {
-						v := new(atomic.Value)
+					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return *v
+						return
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
