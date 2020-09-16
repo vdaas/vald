@@ -68,7 +68,7 @@ func TestWithHosts(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, *T, error) error
-		beforeFunc func(args)
+		beforeFunc func(*T)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
@@ -112,29 +112,15 @@ func TestWithHosts(t *testing.T) {
 		{
 			name: "set host twice success",
 			args: args{
-				hosts: []string{"vald.vdaas.org"},
+				hosts: []string{"hosts1"},
+			},
+			beforeFunc: func(obj *T) {
+				WithHosts("vald.vdaas.org")(obj)
 			},
 			want: want{
 				obj: &T{
-					hosts: []string{"vald.vdaas.org"},
+					hosts: []string{"vald.vdaas.org", "hosts1"},
 				},
-			},
-			checkFunc: func(w want, obj *T, err error) error {
-				if err := defaultCheckFunc(w, obj, err); err != nil {
-					return err
-				}
-
-				// set host to the same obj again
-				if err := WithHosts("hosts1")(obj); err != nil {
-					return err
-				}
-
-				w = want{
-					obj: &T{
-						hosts: []string{"vald.vdaas.org", "hosts1"},
-					},
-				}
-				return defaultCheckFunc(w, obj, err)
 			},
 		},
 	}
@@ -142,19 +128,18 @@ func TestWithHosts(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
 
 			got := WithHosts(test.args.hosts...)
 			obj := new(T)
+			if test.beforeFunc != nil {
+				test.beforeFunc(obj)
+			}
 			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
