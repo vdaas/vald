@@ -211,6 +211,7 @@ func TestWithDialer(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
+				err: errors.NewErrInvalidOption("dialer", nil),
 			},
 		},
 	}
@@ -282,17 +283,18 @@ func TestWithCQLVersion(t *testing.T) {
 			},
 		},
 		{
-			name: "do not set version when version is empty",
-			fields: fields{
-				cqlVersion: "1.0",
-			},
+			name: "return error when version is empty",
 			args: args{
 				version: "",
+			},
+			fields: fields{
+				cqlVersion: "1.0",
 			},
 			want: want{
 				obj: &T{
 					cqlVersion: "1.0",
 				},
+				err: errors.NewErrInvalidOption("cqlVersion", ""),
 			},
 		},
 	}
@@ -366,7 +368,7 @@ func TestWithProtoVersion(t *testing.T) {
 			},
 		},
 		{
-			name: "do not set version when version<0",
+			name: "return when version<0",
 			args: args{
 				version: -1,
 			},
@@ -377,6 +379,7 @@ func TestWithProtoVersion(t *testing.T) {
 				obj: &T{
 					protoVersion: 10,
 				},
+				err: errors.NewErrInvalidOption("protoVersion", -1),
 			},
 		},
 	}
@@ -457,12 +460,13 @@ func TestWithTimeout(t *testing.T) {
 			},
 		},
 		{
-			name: "set timeout success if the time is empty",
+			name: "return error if the time is empty",
 			args: args{
 				dur: "",
 			},
 			want: want{
 				obj: &T{},
+				err: errors.NewErrInvalidOption("timeout", ""),
 			},
 		},
 	}
@@ -541,7 +545,7 @@ func TestWithConnectTimeout(t *testing.T) {
 			},
 		},
 		{
-			name: "set timeout success if the time is nil",
+			name: "return error if the time is empty",
 			args: args{
 				dur: "",
 			},
@@ -630,7 +634,7 @@ func TestWithPort(t *testing.T) {
 			},
 		},
 		{
-			name: "do not set port when port<=0",
+			name: "return error when port<=0",
 			args: args{
 				port: -1,
 			},
@@ -645,7 +649,7 @@ func TestWithPort(t *testing.T) {
 			},
 		},
 		{
-			name: "do not set port when port > 65535",
+			name: "return error when port > 65535",
 			args: args{
 				port: 65536,
 			},
@@ -730,7 +734,7 @@ func TestWithKeyspace(t *testing.T) {
 			},
 		},
 		{
-			name: "do not set keyspace when keyspace is empty",
+			name: "return error when keyspace is empty",
 			args: args{
 				keyspace: "",
 			},
@@ -741,6 +745,7 @@ func TestWithKeyspace(t *testing.T) {
 				obj: &T{
 					keyspace: "keyspace",
 				},
+				err: errors.NewErrInvalidOption("keyspace", ""),
 			},
 		},
 	}
@@ -814,7 +819,7 @@ func TestWithNumConns(t *testing.T) {
 			},
 		},
 		{
-			name: "do not set num conn when numConn<=0",
+			name: "return error when numConn<=0",
 			args: args{
 				numConns: -1,
 			},
@@ -825,6 +830,7 @@ func TestWithNumConns(t *testing.T) {
 				obj: &T{
 					numConns: 100,
 				},
+				err: errors.NewErrInvalidOption("numConns", -1),
 			},
 		},
 	}

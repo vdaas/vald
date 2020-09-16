@@ -83,9 +83,10 @@ func WithHosts(hosts ...string) Option {
 // WithDialer returns the option to set the dialer
 func WithDialer(der gocql.Dialer) Option {
 	return func(c *client) error {
-		if der != nil {
-			c.dialer = der
+		if der == nil {
+			return errors.NewErrInvalidOption("dialer", der)
 		}
+		c.dialer = der
 		return nil
 	}
 }
@@ -93,9 +94,10 @@ func WithDialer(der gocql.Dialer) Option {
 // WithCQLVersion returns the option to set the CQL version
 func WithCQLVersion(version string) Option {
 	return func(c *client) error {
-		if len(version) != 0 {
-			c.cqlVersion = version
+		if len(version) == 0 {
+			return errors.NewErrInvalidOption("cqlVersion", version)
 		}
+		c.cqlVersion = version
 		return nil
 	}
 }
@@ -103,9 +105,10 @@ func WithCQLVersion(version string) Option {
 // WithProtoVersion returns the option to set the proto version
 func WithProtoVersion(version int) Option {
 	return func(c *client) error {
-		if version >= 0 {
-			c.protoVersion = version
+		if version < 0 {
+			return errors.NewErrInvalidOption("protoVersion", version)
 		}
+		c.protoVersion = version
 		return nil
 	}
 }
@@ -114,7 +117,7 @@ func WithProtoVersion(version int) Option {
 func WithTimeout(dur string) Option {
 	return func(c *client) error {
 		if dur == "" {
-			return nil
+			return errors.NewErrInvalidOption("timeout", dur)
 		}
 		d, err := timeutil.Parse(dur)
 		if err != nil {
@@ -155,9 +158,10 @@ func WithPort(port int) Option {
 // WithKeyspace returns the option to set the keyspace
 func WithKeyspace(keyspace string) Option {
 	return func(c *client) error {
-		if len(keyspace) != 0 {
-			c.keyspace = keyspace
+		if len(keyspace) == 0 {
+			return errors.NewErrInvalidOption("keyspace", keyspace)
 		}
+		c.keyspace = keyspace
 		return nil
 	}
 }
@@ -165,9 +169,10 @@ func WithKeyspace(keyspace string) Option {
 // WithNumConns returns the option to set the number of connection per host
 func WithNumConns(numConns int) Option {
 	return func(c *client) error {
-		if numConns >= 0 {
-			c.numConns = numConns
+		if numConns < 0 {
+			return errors.NewErrInvalidOption("numConns", numConns)
 		}
+		c.numConns = numConns
 		return nil
 	}
 }
