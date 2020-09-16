@@ -456,7 +456,7 @@ We provide the following errors to describe the error to apply the option.
 | Error | Description |
 |----|----|
 | errors.ErrInvalidOption | Error to apply the option, and the error is ignorable |
-| errors.ErrCriticalOption | Critical error to apply the option, the error cannot be ignore and should be handle |
+| errors.ErrCriticalOption | Critical error to apply the option, the error cannot be ignored and should be handled |
 
 We strongly recommend the following implementation to set the value using functional option.
 
