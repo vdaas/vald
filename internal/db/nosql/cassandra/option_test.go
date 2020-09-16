@@ -95,7 +95,7 @@ func TestWithHosts(t *testing.T) {
 			},
 		},
 		{
-			name: "set host success if hosts is nil",
+			name: "return error if hosts is nil",
 			args: args{
 				hosts: nil,
 			},
@@ -205,7 +205,7 @@ func TestWithDialer(t *testing.T) {
 			}
 		}(),
 		{
-			name: "set dialer success if dialer is nil",
+			name: "return error if dialer is nil",
 			args: args{
 				der: nil,
 			},
@@ -368,7 +368,7 @@ func TestWithProtoVersion(t *testing.T) {
 			},
 		},
 		{
-			name: "return when version<0",
+			name: "return error when version < 0",
 			args: args{
 				version: -1,
 			},
@@ -634,7 +634,7 @@ func TestWithPort(t *testing.T) {
 			},
 		},
 		{
-			name: "return error when port<=0",
+			name: "return error when port <= 0",
 			args: args{
 				port: -1,
 			},
@@ -643,6 +643,21 @@ func TestWithPort(t *testing.T) {
 			},
 			want: want{
 				err: errors.NewErrInvalidOption("port", -1),
+				obj: &T{
+					port: 8080,
+				},
+			},
+		},
+		{
+			name: "return error when port == 0",
+			args: args{
+				port: 0,
+			},
+			fields: fields{
+				port: 8080,
+			},
+			want: want{
+				err: errors.NewErrInvalidOption("port", 0),
 				obj: &T{
 					port: 8080,
 				},
@@ -819,7 +834,7 @@ func TestWithNumConns(t *testing.T) {
 			},
 		},
 		{
-			name: "return error when numConn<=0",
+			name: "return error when numConn < 0",
 			args: args{
 				numConns: -1,
 			},
@@ -831,6 +846,20 @@ func TestWithNumConns(t *testing.T) {
 					numConns: 100,
 				},
 				err: errors.NewErrInvalidOption("numConns", -1),
+			},
+		},
+		{
+			name: "set numConn success when numConn = 0",
+			args: args{
+				numConns: 0,
+			},
+			fields: fields{
+				numConns: 100,
+			},
+			want: want{
+				obj: &T{
+					numConns: 0,
+				},
 			},
 		},
 	}

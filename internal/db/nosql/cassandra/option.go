@@ -116,7 +116,7 @@ func WithProtoVersion(version int) Option {
 // WithTimeout returns the option to set the cassandra connect timeout time
 func WithTimeout(dur string) Option {
 	return func(c *client) error {
-		if dur == "" {
+		if len(dur) == 0 {
 			return errors.NewErrInvalidOption("timeout", dur)
 		}
 		d, err := timeutil.Parse(dur)
@@ -131,7 +131,7 @@ func WithTimeout(dur string) Option {
 // WithConnectTimeout returns the option to set the cassandra initial connection timeout
 func WithConnectTimeout(dur string) Option {
 	return func(c *client) error {
-		if dur == "" {
+		if len(dur) == 0 {
 			return errors.NewErrInvalidOption("connectTimeout", dur)
 		}
 		d, err := timeutil.Parse(dur)
