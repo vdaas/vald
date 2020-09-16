@@ -15,34 +15,51 @@
 //
 package errors
 
-var (
-	// ErrInvalidOption returns invalid option error.
-	ErrInvalidOption = func(name string, val interface{}) error {
-		if val == nil {
-			return Errorf("invalid option. name: %s, val: nil", name)
-		}
-		return Errorf("invalid option. name: %s, val: %#v", name, val)
+import (
+	"fmt"
+	"strings"
+)
+
+// ErrInvalidOption represent the invalid option error
+type ErrInvalidOption struct {
+	name string
+	val  interface{}
+	errs []error
+}
+
+func NewErrInvalidOption(name string, val interface{}, errs ...error) error {
+	return &ErrInvalidOption{
+		name: name,
+		val:  val,
+		errs: errs,
+	}
+}
+
+func (e *ErrInvalidOption) Error() string {
+	if len(e.errs) == 0 {
+		return fmt.Sprintf("invalid option, name: %s, val: %#v", e.name, e.val)
 	}
 
-	ErrInvalidOptionWithError = func(name string, val interface{}, err error) error {
-		return Wrap(ErrInvalidOption(name, val), err.Error())
+	errStrs := make([]string, 0, len(e.errs))
+	for i := 0; i < len(e.errs); i++ {
+		errStrs[i] = e.errs[i].Error()
 	}
-)
+
+	return fmt.Sprintf("invalid option, name: %s, val: %#v, error: %v", e.name, e.val, strings.Join(errStrs, ", "))
+}
+
+/*
+   ErrCriticalOption
+*/
 
 // ErrCriticalOption represent the critical option error
 type ErrCriticalOption struct {
 	err error
 }
 
-func NewErrCriticalOption(name string, val interface{}) error {
+func NewErrCriticalOption(name string, val interface{}, errs ...error) error {
 	return &ErrCriticalOption{
-		err: ErrInvalidOption(name, val),
-	}
-}
-
-func NewErrCriticalOptionWithError(name string, val interface{}, err error) error {
-	return &ErrCriticalOption{
-		err: ErrInvalidOptionWithError(name, val, err),
+		err: NewErrInvalidOption(name, val, errs...),
 	}
 }
 

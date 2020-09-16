@@ -103,6 +103,10 @@ func TestWithHosts(t *testing.T) {
 				obj: &T{
 					hosts: nil,
 				},
+				err: func() error {
+					var nilStr []string
+					return errors.NewErrInvalidOption("hosts", nilStr)
+				}(),
 			},
 		},
 		{
@@ -255,7 +259,7 @@ func TestWithCQLVersion(t *testing.T) {
 		afterFunc  func(args)
 	}
 
-  defaultCheckFunc := func(w want, obj *T, err error) error {
+	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
@@ -339,7 +343,7 @@ func TestWithProtoVersion(t *testing.T) {
 		afterFunc  func(args)
 	}
 
-  defaultCheckFunc := func(w want, obj *T, err error) error {
+	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
@@ -418,7 +422,7 @@ func TestWithTimeout(t *testing.T) {
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-  
+
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
@@ -532,7 +536,7 @@ func TestWithConnectTimeout(t *testing.T) {
 				dur: "dummy",
 			},
 			want: want{
-				err: errors.NewErrCriticalOption(errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration \"dummy\"")),
+				err: errors.NewErrCriticalOption("connectTimeout", "dummy", errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration \"dummy\"")),
 				obj: &T{},
 			},
 		},
@@ -543,6 +547,7 @@ func TestWithConnectTimeout(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
+				err: errors.NewErrInvalidOption("connectTimeout", ""),
 			},
 		},
 	}
@@ -633,7 +638,7 @@ func TestWithPort(t *testing.T) {
 				port: 8080,
 			},
 			want: want{
-				err: errors.ErrInvalidOption("port", -1),
+				err: errors.NewErrInvalidOption("port", -1),
 				obj: &T{
 					port: 8080,
 				},
@@ -648,7 +653,7 @@ func TestWithPort(t *testing.T) {
 				port: 8080,
 			},
 			want: want{
-				err: errors.ErrInvalidOption("port", 65536),
+				err: errors.NewErrInvalidOption("port", 65536),
 				obj: &T{
 					port: 8080,
 				},
@@ -701,7 +706,7 @@ func TestWithKeyspace(t *testing.T) {
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-  
+
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
@@ -786,7 +791,7 @@ func TestWithNumConns(t *testing.T) {
 		afterFunc  func(args)
 	}
 
-  defaultCheckFunc := func(w want, obj *T, err error) error {
+	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}

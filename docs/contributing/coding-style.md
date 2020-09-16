@@ -456,9 +456,7 @@ We provide the following errors to describe the error to apply the option.
 | Error | Description |
 |----|----|
 | errors.ErrInvalidOption | Error to apply the option, and the error is ignorable |
-| errors.ErrInvalidOptionWithError | Error to apply the option with error return from the library (e.g. time.Parse error), and the error is ignorable |
-| errors.NewErrCriticalOption | Critical error to apply the option, the error cannot be ignore and should be handle |
-| errors.NewErrCriticalOptionWithError | Critical error to apply the option with error return from the library, the error cannot be ignore and should be handle |
+| errors.ErrCriticalOption | Critical error to apply the option, the error cannot be ignore and should be handle |
 
 We strongly recommend the following implementation to set the value using functional option.
 
@@ -466,13 +464,14 @@ If an invalid value is set to the functional option, the `ErrInvalidOption` erro
 
 The name argument (the first argument) of the `ErrInvalidOption` error should be the same as the functional option name without the `With` prefix.
 
+
 For example, the functional option name `WithVersion` should return the error with the argument `name` as `version`.
 
 ```go
 func WithVersion(version string) Option {
     return func(c *client) error {
         if len(version) == 0 {
-            return errors.ErrInvalidOption("version", version)
+            return errors.NewErrInvalidOption("version", version)
         }
         c.version = version
         return nil
@@ -486,11 +485,11 @@ We recommend the following implementation to parse the time string and set the t
 func WithTimeout(dur string) Option {
     func(c *client) error {
         if dur == "" {
-            return errors.ErrInvalidOption("timeout", dur)
+            return errors.NewErrInvalidOption("timeout", dur)
         }
         d, err := timeutil.Parse(dur)
         if err != nil {
-            return errors.ErrInvalidOptionWithError("timeout", dur, err)
+            return errors.NewErrInvalidOption("timeout", dur, err)
         }
         c.timeout = d
         return nil
@@ -504,7 +503,7 @@ We recommend the following implementation to append the value to the slice if th
 func WithHosts(hosts ...string) Option {
     return func(c *client) error {
         if len(hosts) == 0 {
-            return errors.ErrInvalidOption("hosts", hosts)
+            return errors.NewErrInvalidOption("hosts", hosts)
         }
         if c.hosts == nil {
             c.hosts = hosts
@@ -522,11 +521,11 @@ If the functional option error is a critical error, we should return `ErrCritica
 func WithConnectTimeout(dur string) Option {
     return func(c *client) error {
         if dur == "" {
-            return errors.ErrInvalidOption("connectTimeout", dur)
+            return errors.NewErrInvalidOption("connectTimeout", dur)
         }
         d, err := timeutil.Parse(dur)
         if err != nil {
-            return errors.NewErrCriticalOptionWithError("connectTimeout", dur, err)
+            return errors.NewErrCriticalOption("connectTimeout", dur, err)
         }
 
         c.connectTimeout = d
