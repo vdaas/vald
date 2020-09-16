@@ -281,30 +281,20 @@ func (n *ngt) Search(vec []float32, size int, epsilon, radius float32) ([]Search
 	if radius == 0 {
 		radius = n.radius
 	}
-	// cvec := (*C.float)(&vec[0])
-	// defer C.free(unsafe.Pointer(cvec))
-	// csize := *(*C.size_t)(unsafe.Pointer(&size))
-	// defer C.free(unsafe.Pointer(&csize))
-	// cepsilon := *(*C.float)(unsafe.Pointer(&epsilon))
-	// defer C.free(unsafe.Pointer(&cepsilon))
-	// cradius := *(*C.float)(unsafe.Pointer(&radius))
-	// defer C.free(unsafe.Pointer(&cradius))
 
 	n.mu.RLock()
 	ret := C.ngt_search_index_as_float(
 		n.index,
-		(*C.float)(unsafe.Pointer(&vec[0])),
-		// cvec,
+		(*C.float)(&vec[0]),
 		n.dimension,
-		// csize,
-		// cepsilon,
-		// cradius,
+		// C.size_t(size),
 		*(*C.size_t)(unsafe.Pointer(&size)),
+		// C.float(epsilon),
 		*(*C.float)(unsafe.Pointer(&epsilon)),
 		*(*C.float)(unsafe.Pointer(&radius)),
+		// C.float(radius),
 		results,
 		n.ebuf)
-	defer C.free(unsafe.Pointer(&ret))
 
 	if ret == ErrorCode {
 		// TODO global lock取るのどうする問題
@@ -316,16 +306,12 @@ func (n *ngt) Search(vec []float32, size int, epsilon, radius float32) ([]Search
 	n.mu.RUnlock()
 
 	rsize := int(C.ngt_get_result_size(results, n.ebuf))
-	defer C.free(unsafe.Pointer(&rsize))
 	if rsize == -1 {
 		return nil, n.newGoError(n.ebuf)
 	}
 
 	result := make([]SearchResult, rsize)
 	for i := 0; i < rsize; i++ {
-		// idx := C.uint32_t(i)
-		// defer C.free(unsafe.Pointer(&idx))
-		// d := C.ngt_get_result(results, idx, n.ebuf)
 		d := C.ngt_get_result(results, C.uint32_t(i), n.ebuf)
 		if d.id == 0 && d.distance == 0 {
 			result[i] = SearchResult{0, 0, n.newGoError(n.ebuf)}
@@ -340,14 +326,8 @@ func (n *ngt) Search(vec []float32, size int, epsilon, radius float32) ([]Search
 // Insert returns NGT object id.
 // This only stores not indexing, you must call CreateIndex and SaveIndex.
 func (n *ngt) Insert(vec []float32) (uint, error) {
-	// cvec := (*C.float)(&vec[0])
-	// defer C.free(unsafe.Pointer(cvec))
-	// cdim := C.uint32_t(n.dimension)
-	// defer C.free(unsafe.Pointer(&cdim))
 	n.mu.Lock()
-	// id := C.ngt_insert_index_as_float(n.index, cvec, cdim, n.ebuf)
 	id := C.ngt_insert_index_as_float(n.index, (*C.float)(&vec[0]), C.uint32_t(n.dimension), n.ebuf)
-	defer C.free(unsafe.Pointer(&id))
 	n.mu.Unlock()
 	if id == 0 {
 		return 0, n.newGoError(n.ebuf)
@@ -383,19 +363,16 @@ func (n *ngt) BulkInsert(vecs [][]float32) ([]uint, []error) {
 	ids := make([]uint, 0, len(vecs))
 	errs := make([]error, 0, len(vecs))
 
+	var id uint
 	n.mu.Lock()
 	for _, vec := range vecs {
-		// cvec := (*C.float)(&vec[0])
-		// defer C.free(unsafe.Pointer(&vec))
-		// cdim := C.uint32_t(n.dimension)
-		// defer C.free(unsafe.Pointer(cdim))
-		// id := uint(C.ngt_insert_index_as_float(n.index, cvec, cdim, n.ebuf))
-		id := C.ngt_insert_index_as_float(n.index, (*C.float)(&vec[0]), C.uint32_t(n.dimension), n.ebuf)
-		defer C.free(unsafe.Pointer(&id))
+		// n.mu.Lock()
+		id = uint(C.ngt_insert_index_as_float(n.index, (*C.float)(&vec[0]), C.uint32_t(n.dimension), n.ebuf))
+		// n.mu.Unlock()
 		if id == 0 {
 			errs = append(errs, n.newGoError(n.ebuf))
 		}
-		ids = append(ids, uint(id))
+		ids = append(ids, id)
 	}
 	n.mu.Unlock()
 
@@ -451,12 +428,8 @@ func (n *ngt) CreateIndex(poolSize uint32) error {
 	if poolSize == 0 {
 		poolSize = n.poolSize
 	}
-	// cpool := C.uint32_t(poolSize)
-	// defer C.free(unsafe.Pointer(&cpool))
 	n.mu.Lock()
 	ret := C.ngt_create_index(n.index, C.uint32_t(poolSize), n.ebuf)
-	defer C.free(unsafe.Pointer(&ret))
-	// ret := C.ngt_create_index(n.index, cpool, n.ebuf)
 	if ret == ErrorCode {
 		ne := n.ebuf
 		n.mu.Unlock()
@@ -470,8 +443,8 @@ func (n *ngt) CreateIndex(poolSize uint32) error {
 // SaveIndex stores NGT index to storage.
 func (n *ngt) SaveIndex() error {
 	if !n.inMemory {
-		path := C.CString(n.idxPath)
-		defer C.free(unsafe.Pointer(path))
+	path := C.CString(n.idxPath)
+	defer C.free(unsafe.Pointer(path))
 		n.mu.Lock()
 		ret := C.ngt_save_index(n.index, path, n.ebuf)
 		if ret == ErrorCode {
@@ -487,10 +460,8 @@ func (n *ngt) SaveIndex() error {
 
 // Remove removes from NGT index.
 func (n *ngt) Remove(id uint) error {
-	oid := C.ObjectID(id)
-	defer C.free(unsafe.Pointer(&oid))
 	n.mu.Lock()
-	ret := C.ngt_remove_index(n.index, oid, n.ebuf)
+	ret := C.ngt_remove_index(n.index, C.ObjectID(id), n.ebuf)
 	if ret == ErrorCode {
 		ne := n.ebuf
 		n.mu.Unlock()
@@ -505,9 +476,7 @@ func (n *ngt) Remove(id uint) error {
 func (n *ngt) BulkRemove(ids ...uint) error {
 	n.mu.Lock()
 	for _, id := range ids {
-		oid := C.ObjectID(id)
-		defer C.free(unsafe.Pointer(&oid))
-		if C.ngt_remove_index(n.index, oid, n.ebuf) == ErrorCode {
+		if C.ngt_remove_index(n.index, C.ObjectID(id), n.ebuf) == ErrorCode {
 			ne := n.ebuf
 			n.mu.Unlock()
 			return n.newGoError(ne)
@@ -521,12 +490,10 @@ func (n *ngt) BulkRemove(ids ...uint) error {
 func (n *ngt) GetVector(id uint) ([]float32, error) {
 	dimension := int(n.dimension)
 	var ret []float32
-	oid := C.ObjectID(id)
-	defer C.free(unsafe.Pointer(&oid))
 	switch n.objectType {
 	case Float:
 		n.mu.RLock()
-		results := C.ngt_get_object_as_float(n.ospace, oid, n.ebuf)
+		results := C.ngt_get_object_as_float(n.ospace, C.ObjectID(id), n.ebuf)
 		n.mu.RUnlock()
 		if results == nil {
 			return nil, n.newGoError(n.ebuf)
@@ -537,7 +504,7 @@ func (n *ngt) GetVector(id uint) ([]float32, error) {
 		// }
 	case Uint8:
 		n.mu.RLock()
-		results := C.ngt_get_object_as_integer(n.ospace, oid, n.ebuf)
+		results := C.ngt_get_object_as_integer(n.ospace, C.ObjectID(id), n.ebuf)
 		n.mu.RUnlock()
 		if results == nil {
 			return nil, n.newGoError(n.ebuf)
