@@ -546,7 +546,9 @@ func New(opts ...Option) (Server, error) {
     for _, opt := range opts {
         if err := opt(srv); err != nil {
             werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
-            if errors.IsCriticalOptionError(err) {
+
+            e := new(errors.ErrCriticalOption)
+			if errors.As(err, &e) {
                 log.Error(werr)
                 return nil, werr
             }
