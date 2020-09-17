@@ -331,6 +331,64 @@ func Test_mySQLClient_Open(t *testing.T) {
 				},
 			}
 		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			err := errors.ErrMySQLConnectionPingFailed
+			return test{
+				name: "returns error when Ping failed",
+				args: args{
+					ctx: ctx,
+				},
+				fields: fields{
+					db:                   "vdaas",
+					host:                 "vald.com",
+					port:                 3306,
+					user:                 "vdaas",
+					pass:                 "vald",
+					name:                 "vald-user",
+					charset:              "utf8bm4j",
+					timezone:             "Local",
+					initialPingTimeLimit: 1 * time.Microsecond,
+					initialPingDuration:  10 * time.Microsecond,
+					connMaxLifeTime:      1 * time.Microsecond,
+					tlsConfig:            new(tls.Config),
+					maxOpenConns:         100,
+					maxIdleConns:         100,
+					session: &dbr.MockSession{
+						PingContextFunc: func(ctx context.Context) error {
+							return nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(false)
+						return
+					}(),
+					dbr: &dbr.MockDBR{
+						OpenFunc: func(driver, dsn string, log EventReceiver) (dbr.Connection, error) {
+							conn := &dbr.MockConn{
+								NewSessionFunc: func(event EventReceiver) dbr.Session {
+									return &dbr.MockSession{
+										PingContextFunc: func(ctx context.Context) error {
+											return nil
+										},
+									}
+								},
+								SetConnMaxLifetimeFunc: func(d time.Duration) {},
+								SetMaxIdleConnsFunc:    func(n int) {},
+								SetMaxOpenConnsFunc:    func(n int) {},
+							}
+							return conn, nil
+						},
+					},
+				},
+				want: want{
+					err: err,
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
@@ -829,7 +887,7 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 				Vector: []byte("0.1,0.2"),
 			}
 			p := []podIP{
-				podIP{
+				{
 					ID: 1,
 					IP: "192.168.1.12",
 				},
