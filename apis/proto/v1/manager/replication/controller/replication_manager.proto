@@ -27,7 +27,7 @@ import "github.com/vdaas/vald/apis/proto/v1/payload/payload.proto";
 import "google/api/annotations.proto";
 
 
-service Replication {
+service ReplicationController {
   
   rpc ReplicationInfo(payload.Empty) returns (payload.Replication.Agents) {
     option (google.api.http).get = "/replication/info";
