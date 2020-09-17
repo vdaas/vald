@@ -35,7 +35,7 @@ func (d *MockDBR) Eq(col string, val interface{}) Builder {
 
 type MockSession struct {
 	SelectFunc      func(column ...string) SelectStmt
-	BeginFunc       func() (*tx, error)
+	BeginFunc       func() (Tx, error)
 	CloseFunc       func() error
 	PingContextFunc func(ctx context.Context) error
 }
@@ -44,7 +44,7 @@ func (s *MockSession) Select(column ...string) SelectStmt {
 	return s.SelectFunc(column...)
 }
 
-func (s *MockSession) Begin() (*tx, error) {
+func (s *MockSession) Begin() (Tx, error) {
 	return s.BeginFunc()
 }
 
