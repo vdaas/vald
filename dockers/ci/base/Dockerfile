@@ -15,10 +15,10 @@
 #
 
 FROM vdaas/vald-base:latest AS builder
-ARG PROTOBUF_VERSION=3.11.4
-ARG GOLANGCI_LINT_VERSION=v1.23.6
-ARG REVIEWDOG_VERSION=v0.9.17
-ARG YQ_VERSION=3.2.1
+ARG PROTOBUF_VERSION=3.13.0
+ARG GOLANGCI_LINT_VERSION=v1.31.0
+ARG REVIEWDOG_VERSION=v0.10.2
+ARG YQ_VERSION=3.3.4
 
 WORKDIR ${GOPATH}/src/github.com/vdaas/vald
 
@@ -71,3 +71,5 @@ RUN curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download
     && chmod a+x /usr/local/bin/yq
 
 ENV PATH=$PATH:$GOPATH/bin
+
+RUN rm -rf ${GOPATH}/src/github.com/vdaas/vald/*
