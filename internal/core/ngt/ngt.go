@@ -214,12 +214,14 @@ func (n *ngt) create() (err error) {
 			return err
 		}
 	}
+	path := C.CString(n.idxPath)
+	defer C.free(unsafe.Pointer(path))
 	if !n.inMemory {
-		n.index = C.ngt_create_graph_and_tree(C.CString(n.idxPath), n.prop, n.ebuf)
+		n.index = C.ngt_create_graph_and_tree(path, n.prop, n.ebuf)
 		if n.index == nil {
 			return n.newGoError(n.ebuf)
 		}
-		if C.ngt_save_index(n.index, C.CString(n.idxPath), n.ebuf) == ErrorCode {
+		if C.ngt_save_index(n.index, path, n.ebuf) == ErrorCode {
 			return n.newGoError(n.ebuf)
 		}
 	} else {
@@ -237,7 +239,9 @@ func (n *ngt) open() error {
 		return errors.ErrIndexNotFound
 	}
 
-	n.index = C.ngt_open_index(C.CString(n.idxPath), n.ebuf)
+	path := C.CString(n.idxPath)
+	defer C.free(unsafe.Pointer(path))
+	n.index = C.ngt_open_index(path, n.ebuf)
 	if n.index == nil {
 		return n.newGoError(n.ebuf)
 	}
@@ -453,8 +457,10 @@ func (n *ngt) CreateIndex(poolSize uint32) error {
 // SaveIndex stores NGT index to storage.
 func (n *ngt) SaveIndex() error {
 	if !n.inMemory {
+		path := C.CString(n.idxPath)
+		defer C.free(unsafe.Pointer(path))
 		n.mu.Lock()
-		ret := C.ngt_save_index(n.index, C.CString(n.idxPath), n.ebuf)
+		ret := C.ngt_save_index(n.index, path, n.ebuf)
 		if ret == ErrorCode {
 			ne := n.ebuf
 			n.mu.Unlock()

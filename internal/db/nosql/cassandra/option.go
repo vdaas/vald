@@ -19,6 +19,7 @@ package cassandra
 
 import (
 	"crypto/tls"
+	"math"
 	"strings"
 	"time"
 
@@ -27,6 +28,10 @@ import (
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
+// Option represents the functional option for client.
+// It wraps the gocql.ClusterConfig to the function option implementation.
+// Please refer to the following link for more information.
+// https://pkg.go.dev/github.com/gocql/gocql?tab=doc#ClusterConfig
 type Option func(*client) error
 
 var (
@@ -60,10 +65,11 @@ var (
 	}
 )
 
+// WithHosts returns the option to set the hosts
 func WithHosts(hosts ...string) Option {
 	return func(c *client) error {
 		if len(hosts) == 0 {
-			return nil
+			return errors.NewErrInvalidOption("hosts", hosts)
 		}
 		if c.hosts == nil {
 			c.hosts = hosts
@@ -74,33 +80,44 @@ func WithHosts(hosts ...string) Option {
 	}
 }
 
+// WithDialer returns the option to set the dialer
 func WithDialer(der gocql.Dialer) Option {
 	return func(c *client) error {
-		if der != nil {
-			c.dialer = der
+		if der == nil {
+			return errors.NewErrInvalidOption("dialer", der)
 		}
+		c.dialer = der
 		return nil
 	}
 }
 
+// WithCQLVersion returns the option to set the CQL version
 func WithCQLVersion(version string) Option {
 	return func(c *client) error {
+		if len(version) == 0 {
+			return errors.NewErrInvalidOption("cqlVersion", version)
+		}
 		c.cqlVersion = version
 		return nil
 	}
 }
 
+// WithProtoVersion returns the option to set the proto version
 func WithProtoVersion(version int) Option {
 	return func(c *client) error {
+		if version < 0 {
+			return errors.NewErrInvalidOption("protoVersion", version)
+		}
 		c.protoVersion = version
 		return nil
 	}
 }
 
+// WithTimeout returns the option to set the cassandra connect timeout time
 func WithTimeout(dur string) Option {
 	return func(c *client) error {
-		if dur == "" {
-			return nil
+		if len(dur) == 0 {
+			return errors.NewErrInvalidOption("timeout", dur)
 		}
 		d, err := timeutil.Parse(dur)
 		if err != nil {
@@ -111,36 +128,50 @@ func WithTimeout(dur string) Option {
 	}
 }
 
+// WithConnectTimeout returns the option to set the cassandra initial connection timeout
 func WithConnectTimeout(dur string) Option {
 	return func(c *client) error {
-		if dur == "" {
-			return nil
+		if len(dur) == 0 {
+			return errors.NewErrInvalidOption("connectTimeout", dur)
 		}
 		d, err := timeutil.Parse(dur)
 		if err != nil {
-			return err
+			return errors.NewErrCriticalOption("connectTimeout", dur, err)
 		}
+
 		c.connectTimeout = d
 		return nil
 	}
 }
 
+// WithPort returns the option to set the port number
 func WithPort(port int) Option {
 	return func(c *client) error {
+		if port <= 0 || port > math.MaxUint16 {
+			return errors.NewErrInvalidOption("port", port)
+		}
 		c.port = port
 		return nil
 	}
 }
 
+// WithKeyspace returns the option to set the keyspace
 func WithKeyspace(keyspace string) Option {
 	return func(c *client) error {
+		if len(keyspace) == 0 {
+			return errors.NewErrInvalidOption("keyspace", keyspace)
+		}
 		c.keyspace = keyspace
 		return nil
 	}
 }
 
+// WithNumConns returns the option to set the number of connection per host
 func WithNumConns(numConns int) Option {
 	return func(c *client) error {
+		if numConns < 0 {
+			return errors.NewErrInvalidOption("numConns", numConns)
+		}
 		c.numConns = numConns
 		return nil
 	}

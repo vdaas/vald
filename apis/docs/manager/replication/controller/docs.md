@@ -4,7 +4,7 @@
 ## Table of Contents
 
 - [apis/proto/manager/replication/controller/replication_manager.proto](#apis/proto/manager/replication/controller/replication_manager.proto)
-    - [Replication](#replication_manager.Replication)
+    - [ReplicationController](#replication_manager.ReplicationController)
   
 - [Scalar Value Types](#scalar-value-types)
 
@@ -23,9 +23,9 @@
  
 
 
-<a name="replication_manager.Replication"></a>
+<a name="replication_manager.ReplicationController"></a>
 
-### Replication
+### ReplicationController
 
 
 | Method Name | Request Type | Response Type | Description |

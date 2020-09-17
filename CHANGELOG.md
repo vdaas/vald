@@ -1,5 +1,42 @@
 # CHANGELOG
 
+## v0.0.56
+
+### Docker images
+
+component | docker pull
+--------- | -----------
+agent NGT | `docker pull vdaas/vald-agent-ngt:v0.0.56`
+agent sidecar | `docker pull vdaas/vald-agent-sidecar:v0.0.56`
+discoverer K8s | `docker pull vdaas/vald-discoverer-k8s:v0.0.56`
+gateway | `docker pull vdaas/vald-gateway:v0.0.56`
+backup manager MySQL | `docker pull vdaas/vald-manager-backup-mysql:v0.0.56`
+backup manager Cassandra | `docker pull vdaas/vald-manager-backup-cassandra:v0.0.56`
+compressor | `docker pull vdaas/vald-manager-compressor:v0.0.56`
+meta Redis | `docker pull vdaas/vald-meta-redis:v0.0.56`
+meta Cassandra | `docker pull vdaas/vald-meta-cassandra:v0.0.56`
+index manager | `docker pull vdaas/vald-manager-index:v0.0.56`
+Helm operator | `docker pull vdaas/vald-helm-operator:v0.0.56`
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v0.0.56)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v0.0.56/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v0.0.56/charts/vald-helm-operator/README.md)
+
+### Changes
+- add C.free & delete ivc before core.BulkInsert C' function executing for reducing memory usage ([#701](https://github.com/vdaas/vald/pull/701))
+- Add cassandra option test ([#644](https://github.com/vdaas/vald/pull/644))
+- :memo: build single artifact from pbdocs task ([#699](https://github.com/vdaas/vald/pull/699))
+- improve CI builds: use DOCKER_BUILDKIT ([#706](https://github.com/vdaas/vald/pull/706))
+- :robot: Automatically update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE ([#695](https://github.com/vdaas/vald/pull/695))
+- :pencil: add AVX2 to Requirements section ([#686](https://github.com/vdaas/vald/pull/686))
+- :pencil: update contributing guide ([#678](https://github.com/vdaas/vald/pull/678))
+- Use runtime.GC for reducing indexing memory & replace saveMu with atomic busy loop for race control ([#682](https://github.com/vdaas/vald/pull/682))
+- :white_check_mark: :recycle: Implement zstd test ([#676](https://github.com/vdaas/vald/pull/676))
+- :sparkles: use internal client ([#618](https://github.com/vdaas/vald/pull/618))
+- :robot: Automatically update k8s manifests ([#684](https://github.com/vdaas/vald/pull/684))
+
+
 ## v0.0.55
 
 ### Docker images

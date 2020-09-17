@@ -23,6 +23,8 @@ jobs:
     - name: Build the Docker image
       run: |
         make docker/build/ci-container
+      env:
+        DOCKER_BUILDKIT: 1
     - name: Login to GitHub package registry
       run: |
         echo ${GITHUB_TOKEN} | docker login docker.pkg.github.com --username ${GITHUB_USER} --password-stdin

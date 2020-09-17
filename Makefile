@@ -89,8 +89,7 @@ BENCH_DATASET_HDF5_DIR = $(BENCH_DATASET_BASE_DIR)/$(BENCH_DATASET_HDF5_DIR_NAME
 PROTOS := $(eval PROTOS := $(shell find apis/proto -type f -regex ".*\.proto"))$(PROTOS)
 PBGOS = $(PROTOS:apis/proto/%.proto=apis/grpc/%.pb.go)
 SWAGGERS = $(PROTOS:apis/proto/%.proto=apis/swagger/%.swagger.json)
-GRAPHQLS = $(PROTOS:apis/proto/%.proto=apis/graphql/%.pb.graphqls)
-GQLCODES = $(GRAPHQLS:apis/graphql/%.pb.graphqls=apis/graphql/%.generated.go)
+# PBDOCS = apis/docs/docs.md
 PBDOCS = $(PROTOS:apis/proto/%.proto=apis/docs/%.md)
 
 CFLAGS ?= -mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl
@@ -204,7 +203,6 @@ clean:
 		./*.log \
 		./*.svg \
 		./apis/docs \
-		./apis/graphql \
 		./apis/swagger \
 		./bench \
 		./pprof \

@@ -20,12 +20,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/config"
 	"go.uber.org/goleak"
-	"golang.org/x/sync/errgroup"
 )
 
 func Test_searchRequestProvider(t *testing.T) {

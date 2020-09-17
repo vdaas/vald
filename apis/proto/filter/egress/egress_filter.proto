@@ -24,8 +24,6 @@ option java_package = "org.vdaas.vald.filter.egress";
 option java_outer_classname = "ValdEgressFilter";
 
 import "github.com/vdaas/vald/apis/proto/payload/payload.proto";
-import "google/api/annotations.proto";
-
 
 service EgressFilter {
   

@@ -13,24 +13,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+package cassandra
 
-syntax = "proto3";
+import (
+	"context"
+	"net"
+)
 
-package errors;
+type DialerMock struct {
+	DialContextFunc func(ctx context.Context, network, addr string) (net.Conn, error)
+}
 
-option go_package = "github.com/vdaas/vald/apis/grpc/v1/errors";
-option java_multiple_files = true;
-option java_package = "org.vdaas.vald.api.v1.errors";
-option java_outer_classname = "ValdErrors";
-
-message Errors {
-  message RPC {
-    string type = 1;
-    string msg = 2;
-    repeated string details = 3;
-    string instance = 4;
-    int64 status = 5;
-    string error = 6;
-    repeated RPC roots = 7;
-  }
+func (dm *DialerMock) DialContext(ctx context.Context, network, addr string) (net.Conn, error) {
+	return dm.DialContextFunc(ctx, network, addr)
 }
