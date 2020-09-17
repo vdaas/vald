@@ -23,7 +23,7 @@ option java_multiple_files = true;
 option java_package = "org.vdaas.vald.filter.ingress";
 option java_outer_classname = "ValdIngressFilter";
 
-import "github.com/vdaas/vald/apis/proto/payload/payload.proto";
+import "apis/proto/payload/payload.proto";
 import "google/api/annotations.proto";
 
 
@@ -42,7 +42,7 @@ service IngressFilter {
       post : "/vector"
       body : "*"
     };
-    
+
   }
   rpc StreamFilterVector(stream payload.Object.Vector)
       returns (stream payload.Object.Vector) {}

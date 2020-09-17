@@ -23,7 +23,7 @@ option java_multiple_files = true;
 option java_package = "org.vdaas.vald.api.v1.vald";
 option java_outer_classname = "Filter";
 
-import "github.com/vdaas/vald/apis/proto/v1/payload/payload.proto";
+import "apis/proto/v1/payload/payload.proto";
 import "google/api/annotations.proto";
 
 
@@ -42,7 +42,7 @@ service Filter {
       post : "/insert/object"
       body : "*"
     };
-    
+
   }
   rpc StreamInsertObject(stream payload.Object.Blob)
       returns (stream payload.Object.Location) {}
@@ -53,7 +53,7 @@ service Filter {
       post : "/update/object"
       body : "*"
     };
-    
+
   }
   rpc StreamUpdateObject(stream payload.Object.Blob)
       returns (stream payload.Object.Location) {}
@@ -64,7 +64,7 @@ service Filter {
       post : "/upsert/object"
       body : "*"
     };
-    
+
   }
   rpc StreamUpsertObject(stream payload.Object.Blob)
       returns (stream payload.Object.Location) {}

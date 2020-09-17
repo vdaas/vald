@@ -23,18 +23,18 @@ option java_multiple_files = true;
 option java_package = "org.vdaas.vald.api.v1.vald";
 option java_outer_classname = "Update";
 
-import "github.com/vdaas/vald/apis/proto/v1/payload/payload.proto";
+import "apis/proto/v1/payload/payload.proto";
 import "google/api/annotations.proto";
 
 
 service Update {
-  
+
   rpc Update(payload.Update.Request) returns (payload.Object.Location) {
     option (google.api.http) = {
       post : "/update"
       body : "*"
     };
-    
+
   }
   rpc StreamUpdate(stream payload.Update.Request)
       returns (stream payload.Object.Location) {}

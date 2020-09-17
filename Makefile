@@ -67,6 +67,7 @@ SWAP_TAG             ?= latest
 BINDIR ?= /usr/local/bin
 
 UNAME := $(eval UNAME := $(shell uname))$(UNAME)
+PWD := $(eval PWD := $(shell pwd))$(PWD)
 
 ifeq ($(UNAME),Linux)
 CPU_INFO_FLAGS := $(eval CPU_INFO_FLAGS := $(shell cat /proc/cpuinfo | grep flags | cut -d " " -f 2- | head -1))$(CPU_INFO_FLAGS)
@@ -87,10 +88,11 @@ BENCH_DATASET_MD5_DIR = $(BENCH_DATASET_BASE_DIR)/$(BENCH_DATASET_MD5_DIR_NAME)
 BENCH_DATASET_HDF5_DIR = $(BENCH_DATASET_BASE_DIR)/$(BENCH_DATASET_HDF5_DIR_NAME)
 
 PROTOS := $(eval PROTOS := $(shell find apis/proto -type f -regex ".*\.proto"))$(PROTOS)
+PROTOS_V0 := $(eval PROTOS_V0 := $(filter-out apis/proto/v%.proto,$(PROTOS)))$(PROTOS_V0)
+PROTOS_V1 := $(eval PROTOS_V1 := $(filter apis/proto/v1/%.proto,$(PROTOS)))$(PROTOS_V1)
 PBGOS = $(PROTOS:apis/proto/%.proto=apis/grpc/%.pb.go)
 SWAGGERS = $(PROTOS:apis/proto/%.proto=apis/swagger/%.swagger.json)
-# PBDOCS = apis/docs/docs.md
-PBDOCS = $(PROTOS:apis/proto/%.proto=apis/docs/%.md)
+PBDOCS = apis/docs/v0/docs.md apis/docs/v1/docs.md
 
 CFLAGS ?= -mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl
 CXXFLAGS ?= $(CFLAGS)
@@ -110,6 +112,7 @@ NUMPANES  ?= 4
 BODY = ""
 
 PROTO_PATHS = \
+	$(PWD) \
 	$(GOPATH)/src \
 	$(GOPATH)/src/$(GOPKG) \
 	$(GOPATH)/src/github.com/googleapis/googleapis

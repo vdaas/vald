@@ -23,12 +23,12 @@ option java_multiple_files = true;
 option java_package = "org.vdaas.vald.api.v1.manager.replication.agent";
 option java_outer_classname = "ValdReplicationManagerAgent";
 
-import "github.com/vdaas/vald/apis/proto/v1/payload/payload.proto";
+import "apis/proto/v1/payload/payload.proto";
 import "google/api/annotations.proto";
 
 
 service Replication {
-  
+
   rpc Recover(payload.Replication.Recovery) returns (payload.Empty)  {
     option (google.api.http).post = "/replication/recover";
   }
