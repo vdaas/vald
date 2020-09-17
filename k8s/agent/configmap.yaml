@@ -20,10 +20,10 @@ metadata:
   name: vald-agent-ngt-config
   labels:
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v0.0.55
+    helm.sh/chart: vald-v0.0.56
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v0.0.55
+    app.kubernetes.io/version: v0.0.56
     app.kubernetes.io/component: agent
 data:
   config.yaml: |
@@ -182,6 +182,7 @@ data:
       dimension: 4096
       distance_type: l2
       enable_in_memory_mode: true
+      enable_proactive_gc: true
       index_path: ""
       initial_delay_max_duration: 3m
       load_index_timeout_factor: 1ms
