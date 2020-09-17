@@ -27,7 +27,7 @@ import "payload.proto";
 import "google/api/annotations.proto";
 import "pb/gql.proto";
 
-service Replication {
+service ReplicationController {
   option (gql.svc_type) = QUERY;
   rpc ReplicationInfo(payload.Empty) returns (payload.Replication.Agents) {
     option (google.api.http).get = "/replication/info";
