@@ -115,7 +115,7 @@ func TestWithHosts(t *testing.T) {
 				hosts: []string{"hosts1"},
 			},
 			beforeFunc: func(obj *T) {
-				WithHosts("vald.vdaas.org")(obj)
+				_ = WithHosts("vald.vdaas.org")(obj)
 			},
 			want: want{
 				obj: &T{
