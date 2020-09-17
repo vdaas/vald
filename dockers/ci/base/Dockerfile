@@ -72,4 +72,4 @@ RUN curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download
 
 ENV PATH=$PATH:$GOPATH/bin
 
-RUN rm -rf ${GOPATH}/src/github.com/vdaas/vald/*
+RUN rm -rf "${GOPATH}/src/github.com/vdaas/vald/*"
