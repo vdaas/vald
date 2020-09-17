@@ -14,31 +14,39 @@
 // limitations under the License.
 //
 
-package kvs
+// Package mysql provides mysql metrics functions
+package mysql
 
 import (
 	"context"
 	"reflect"
+	"sync"
 	"testing"
 
+	"github.com/vdaas/vald/internal/db/rdb/mysql"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/observability/metrics"
 	"go.uber.org/goleak"
 )
 
 func TestNew(t *testing.T) {
 	type want struct {
-		want BidiMap
+		wantE EventReceiver
+		err   error
 	}
 	type test struct {
 		name       string
 		want       want
-		checkFunc  func(want, BidiMap) error
+		checkFunc  func(want, EventReceiver, error) error
 		beforeFunc func()
 		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want, got BidiMap) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+	defaultCheckFunc := func(w want, gotE EventReceiver, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotE, w.wantE) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotE, w.wantE)
 		}
 		return nil
 	}
@@ -77,8 +85,8 @@ func TestNew(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got := New()
-			if err := test.checkFunc(test.want, got); err != nil {
+			gotE, err := New()
+			if err := test.checkFunc(test.want, gotE, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -86,489 +94,421 @@ func TestNew(t *testing.T) {
 	}
 }
 
-func Test_bidi_Get(t *testing.T) {
-	type args struct {
-		key string
-	}
-	type fields struct {
-		ou [slen]*ou
-		uo [slen]*uo
-		l  uint64
-	}
-	type want struct {
-		want  uint32
-		want1 bool
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, uint32, bool) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got uint32, got1 bool) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		if !reflect.DeepEqual(got1, w.want1) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got1, w.want1)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           key: "",
-		       },
-		       fields: fields {
-		           ou: nil,
-		           uo: nil,
-		           l: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           key: "",
-		           },
-		           fields: fields {
-		           ou: nil,
-		           uo: nil,
-		           l: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			b := &bidi{
-				ou: test.fields.ou,
-				uo: test.fields.uo,
-				l:  test.fields.l,
-			}
-
-			got, got1 := b.Get(test.args.key)
-			if err := test.checkFunc(test.want, got, got1); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_bidi_GetInverse(t *testing.T) {
-	type args struct {
-		val uint32
-	}
-	type fields struct {
-		ou [slen]*ou
-		uo [slen]*uo
-		l  uint64
-	}
-	type want struct {
-		want  string
-		want1 bool
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, string, bool) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got string, got1 bool) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		if !reflect.DeepEqual(got1, w.want1) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got1, w.want1)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           val: 0,
-		       },
-		       fields: fields {
-		           ou: nil,
-		           uo: nil,
-		           l: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           val: 0,
-		           },
-		           fields: fields {
-		           ou: nil,
-		           uo: nil,
-		           l: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			b := &bidi{
-				ou: test.fields.ou,
-				uo: test.fields.uo,
-				l:  test.fields.l,
-			}
-
-			got, got1 := b.GetInverse(test.args.val)
-			if err := test.checkFunc(test.want, got, got1); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_bidi_Set(t *testing.T) {
-	type args struct {
-		key string
-		val uint32
-	}
-	type fields struct {
-		ou [slen]*ou
-		uo [slen]*uo
-		l  uint64
-	}
-	type want struct {
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want) error {
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           key: "",
-		           val: 0,
-		       },
-		       fields: fields {
-		           ou: nil,
-		           uo: nil,
-		           l: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           key: "",
-		           val: 0,
-		           },
-		           fields: fields {
-		           ou: nil,
-		           uo: nil,
-		           l: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			b := &bidi{
-				ou: test.fields.ou,
-				uo: test.fields.uo,
-				l:  test.fields.l,
-			}
-
-			b.Set(test.args.key, test.args.val)
-			if err := test.checkFunc(test.want); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_bidi_Delete(t *testing.T) {
-	type args struct {
-		key string
-	}
-	type fields struct {
-		ou [slen]*ou
-		uo [slen]*uo
-		l  uint64
-	}
-	type want struct {
-		wantVal uint32
-		wantOk  bool
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, uint32, bool) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, gotVal uint32, gotOk bool) error {
-		if !reflect.DeepEqual(gotVal, w.wantVal) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotVal, w.wantVal)
-		}
-		if !reflect.DeepEqual(gotOk, w.wantOk) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOk, w.wantOk)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           key: "",
-		       },
-		       fields: fields {
-		           ou: nil,
-		           uo: nil,
-		           l: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           key: "",
-		           },
-		           fields: fields {
-		           ou: nil,
-		           uo: nil,
-		           l: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			b := &bidi{
-				ou: test.fields.ou,
-				uo: test.fields.uo,
-				l:  test.fields.l,
-			}
-
-			gotVal, gotOk := b.Delete(test.args.key)
-			if err := test.checkFunc(test.want, gotVal, gotOk); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_bidi_DeleteInverse(t *testing.T) {
-	type args struct {
-		val uint32
-	}
-	type fields struct {
-		ou [slen]*ou
-		uo [slen]*uo
-		l  uint64
-	}
-	type want struct {
-		wantKey string
-		wantOk  bool
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, string, bool) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, gotKey string, gotOk bool) error {
-		if !reflect.DeepEqual(gotKey, w.wantKey) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotKey, w.wantKey)
-		}
-		if !reflect.DeepEqual(gotOk, w.wantOk) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOk, w.wantOk)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           val: 0,
-		       },
-		       fields: fields {
-		           ou: nil,
-		           uo: nil,
-		           l: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           val: 0,
-		           },
-		           fields: fields {
-		           ou: nil,
-		           uo: nil,
-		           l: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			b := &bidi{
-				ou: test.fields.ou,
-				uo: test.fields.uo,
-				l:  test.fields.l,
-			}
-
-			gotKey, gotOk := b.DeleteInverse(test.args.val)
-			if err := test.checkFunc(test.want, gotKey, gotOk); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_bidi_Range(t *testing.T) {
+func Test_mysqlMetrics_Measurement(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		f   func(string, uint32) bool
 	}
 	type fields struct {
-		ou [slen]*ou
-		uo [slen]*uo
-		l  uint64
+		queryTotal        metrics.Int64Measure
+		queryLatency      metrics.Float64Measure
+		mu                sync.Mutex
+		ms                []metrics.Measurement
+		NullEventReceiver mysql.NullEventReceiver
+	}
+	type want struct {
+		want []metrics.Measurement
+		err  error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, []metrics.Measurement, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got []metrics.Measurement, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		       },
+		       fields: fields {
+		           queryTotal: nil,
+		           queryLatency: nil,
+		           mu: sync.Mutex{},
+		           ms: nil,
+		           NullEventReceiver: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           },
+		           fields: fields {
+		           queryTotal: nil,
+		           queryLatency: nil,
+		           mu: sync.Mutex{},
+		           ms: nil,
+		           NullEventReceiver: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			mm := &mysqlMetrics{
+				queryTotal:        test.fields.queryTotal,
+				queryLatency:      test.fields.queryLatency,
+				mu:                test.fields.mu,
+				ms:                test.fields.ms,
+				NullEventReceiver: test.fields.NullEventReceiver,
+			}
+
+			got, err := mm.Measurement(test.args.ctx)
+			if err := test.checkFunc(test.want, got, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_mysqlMetrics_MeasurementWithTags(t *testing.T) {
+	type args struct {
+		ctx context.Context
+	}
+	type fields struct {
+		queryTotal        metrics.Int64Measure
+		queryLatency      metrics.Float64Measure
+		mu                sync.Mutex
+		ms                []metrics.Measurement
+		NullEventReceiver mysql.NullEventReceiver
+	}
+	type want struct {
+		want []metrics.MeasurementWithTags
+		err  error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, []metrics.MeasurementWithTags, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got []metrics.MeasurementWithTags, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		       },
+		       fields: fields {
+		           queryTotal: nil,
+		           queryLatency: nil,
+		           mu: sync.Mutex{},
+		           ms: nil,
+		           NullEventReceiver: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           },
+		           fields: fields {
+		           queryTotal: nil,
+		           queryLatency: nil,
+		           mu: sync.Mutex{},
+		           ms: nil,
+		           NullEventReceiver: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			mm := &mysqlMetrics{
+				queryTotal:        test.fields.queryTotal,
+				queryLatency:      test.fields.queryLatency,
+				mu:                test.fields.mu,
+				ms:                test.fields.ms,
+				NullEventReceiver: test.fields.NullEventReceiver,
+			}
+
+			got, err := mm.MeasurementWithTags(test.args.ctx)
+			if err := test.checkFunc(test.want, got, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_mysqlMetrics_View(t *testing.T) {
+	type fields struct {
+		queryTotal        metrics.Int64Measure
+		queryLatency      metrics.Float64Measure
+		mu                sync.Mutex
+		ms                []metrics.Measurement
+		NullEventReceiver mysql.NullEventReceiver
+	}
+	type want struct {
+		want []*metrics.View
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, []*metrics.View) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got []*metrics.View) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           queryTotal: nil,
+		           queryLatency: nil,
+		           mu: sync.Mutex{},
+		           ms: nil,
+		           NullEventReceiver: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           queryTotal: nil,
+		           queryLatency: nil,
+		           mu: sync.Mutex{},
+		           ms: nil,
+		           NullEventReceiver: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			mm := &mysqlMetrics{
+				queryTotal:        test.fields.queryTotal,
+				queryLatency:      test.fields.queryLatency,
+				mu:                test.fields.mu,
+				ms:                test.fields.ms,
+				NullEventReceiver: test.fields.NullEventReceiver,
+			}
+
+			got := mm.View()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_mysqlMetrics_SpanStart(t *testing.T) {
+	type args struct {
+		ctx       context.Context
+		eventName string
+		query     string
+	}
+	type fields struct {
+		queryTotal        metrics.Int64Measure
+		queryLatency      metrics.Float64Measure
+		mu                sync.Mutex
+		ms                []metrics.Measurement
+		NullEventReceiver mysql.NullEventReceiver
+	}
+	type want struct {
+		want context.Context
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, context.Context) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got context.Context) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           eventName: "",
+		           query: "",
+		       },
+		       fields: fields {
+		           queryTotal: nil,
+		           queryLatency: nil,
+		           mu: sync.Mutex{},
+		           ms: nil,
+		           NullEventReceiver: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           eventName: "",
+		           query: "",
+		           },
+		           fields: fields {
+		           queryTotal: nil,
+		           queryLatency: nil,
+		           mu: sync.Mutex{},
+		           ms: nil,
+		           NullEventReceiver: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			mm := &mysqlMetrics{
+				queryTotal:        test.fields.queryTotal,
+				queryLatency:      test.fields.queryLatency,
+				mu:                test.fields.mu,
+				ms:                test.fields.ms,
+				NullEventReceiver: test.fields.NullEventReceiver,
+			}
+
+			got := mm.SpanStart(test.args.ctx, test.args.eventName, test.args.query)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_mysqlMetrics_SpanError(t *testing.T) {
+	type args struct {
+		ctx context.Context
+		err error
+	}
+	type fields struct {
+		queryTotal        metrics.Int64Measure
+		queryLatency      metrics.Float64Measure
+		mu                sync.Mutex
+		ms                []metrics.Measurement
+		NullEventReceiver mysql.NullEventReceiver
 	}
 	type want struct {
 	}
@@ -591,12 +531,14 @@ func Test_bidi_Range(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           f: nil,
+		           err: nil,
 		       },
 		       fields: fields {
-		           ou: nil,
-		           uo: nil,
-		           l: 0,
+		           queryTotal: nil,
+		           queryLatency: nil,
+		           mu: sync.Mutex{},
+		           ms: nil,
+		           NullEventReceiver: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -610,12 +552,14 @@ func Test_bidi_Range(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           f: nil,
+		           err: nil,
 		           },
 		           fields: fields {
-		           ou: nil,
-		           uo: nil,
-		           l: 0,
+		           queryTotal: nil,
+		           queryLatency: nil,
+		           mu: sync.Mutex{},
+		           ms: nil,
+		           NullEventReceiver: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -636,13 +580,15 @@ func Test_bidi_Range(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			b := &bidi{
-				ou: test.fields.ou,
-				uo: test.fields.uo,
-				l:  test.fields.l,
+			mm := &mysqlMetrics{
+				queryTotal:        test.fields.queryTotal,
+				queryLatency:      test.fields.queryLatency,
+				mu:                test.fields.mu,
+				ms:                test.fields.ms,
+				NullEventReceiver: test.fields.NullEventReceiver,
 			}
 
-			b.Range(test.args.ctx, test.args.f)
+			mm.SpanError(test.args.ctx, test.args.err)
 			if err := test.checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -650,27 +596,29 @@ func Test_bidi_Range(t *testing.T) {
 	}
 }
 
-func Test_bidi_Len(t *testing.T) {
+func Test_mysqlMetrics_SpanFinish(t *testing.T) {
+	type args struct {
+		ctx context.Context
+	}
 	type fields struct {
-		ou [slen]*ou
-		uo [slen]*uo
-		l  uint64
+		queryTotal        metrics.Int64Measure
+		queryLatency      metrics.Float64Measure
+		mu                sync.Mutex
+		ms                []metrics.Measurement
+		NullEventReceiver mysql.NullEventReceiver
 	}
 	type want struct {
-		want uint64
 	}
 	type test struct {
 		name       string
+		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, uint64) error
-		beforeFunc func()
-		afterFunc  func()
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got uint64) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
+	defaultCheckFunc := func(w want) error {
 		return nil
 	}
 	tests := []test{
@@ -678,10 +626,15 @@ func Test_bidi_Len(t *testing.T) {
 		/*
 		   {
 		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		       },
 		       fields: fields {
-		           ou: nil,
-		           uo: nil,
-		           l: 0,
+		           queryTotal: nil,
+		           queryLatency: nil,
+		           mu: sync.Mutex{},
+		           ms: nil,
+		           NullEventReceiver: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -693,10 +646,15 @@ func Test_bidi_Len(t *testing.T) {
 		   func() test {
 		       return test {
 		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           },
 		           fields: fields {
-		           ou: nil,
-		           uo: nil,
-		           l: 0,
+		           queryTotal: nil,
+		           queryLatency: nil,
+		           mu: sync.Mutex{},
+		           ms: nil,
+		           NullEventReceiver: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -709,25 +667,26 @@ func Test_bidi_Len(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			b := &bidi{
-				ou: test.fields.ou,
-				uo: test.fields.uo,
-				l:  test.fields.l,
+			mm := &mysqlMetrics{
+				queryTotal:        test.fields.queryTotal,
+				queryLatency:      test.fields.queryLatency,
+				mu:                test.fields.mu,
+				ms:                test.fields.ms,
+				NullEventReceiver: test.fields.NullEventReceiver,
 			}
 
-			got := b.Len()
-			if err := test.checkFunc(test.want, got); err != nil {
+			mm.SpanFinish(test.args.ctx)
+			if err := test.checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

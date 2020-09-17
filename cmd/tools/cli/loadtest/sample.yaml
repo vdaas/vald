@@ -21,7 +21,7 @@ logging:
   logger: glg
   level: info
   format: raw
-service: agent
+service: gateway
 operation: insert
 dataset: fashion-mnist
 concurrency: 100
@@ -44,6 +44,8 @@ client:
     max_retry_rpc_buffer_size: 0
     max_send_msg_size: 0
     wait_for_ready: true
+  connection_pool:
+    enable_dns_resolver: true
   dial_option:
     enable_backoff: false
     initial_connection_window_size: 0

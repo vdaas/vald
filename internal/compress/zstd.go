@@ -32,6 +32,7 @@ type zstdCompressor struct {
 	zstd     zstd.Zstd
 }
 
+// NewZstd returns the zstd compressor object or any initialization error.
 func NewZstd(opts ...ZstdOption) (Compressor, error) {
 	c := &zstdCompressor{
 		zstd: zstd.New(),
@@ -45,6 +46,8 @@ func NewZstd(opts ...ZstdOption) (Compressor, error) {
 	return c, nil
 }
 
+// CompressVector compresses the data given and returns the compressed data.
+// If CompressVector fails, it will return an error.
 func (z *zstdCompressor) CompressVector(vector []float32) ([]byte, error) {
 	gob, err := z.gobc.CompressVector(vector)
 	if err != nil {
@@ -70,6 +73,8 @@ func (z *zstdCompressor) CompressVector(vector []float32) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// DecompressVector decompresses the compressed data and returns the data.
+// If decompress fails, it will return an error.
 func (z *zstdCompressor) DecompressVector(bs []byte) ([]float32, error) {
 	buf := new(bytes.Buffer)
 	zr, err := z.zstd.NewReader(bytes.NewReader(bs))
@@ -91,6 +96,7 @@ func (z *zstdCompressor) DecompressVector(bs []byte) ([]float32, error) {
 	return vec, nil
 }
 
+// Reader returns io.ReadCloser implementation.
 func (z *zstdCompressor) Reader(src io.ReadCloser) (io.ReadCloser, error) {
 	r, err := z.zstd.NewReader(src)
 	if err != nil {
@@ -103,6 +109,7 @@ func (z *zstdCompressor) Reader(src io.ReadCloser) (io.ReadCloser, error) {
 	}, nil
 }
 
+// Writer returns io.WriteCloser implementation.
 func (z *zstdCompressor) Writer(dst io.WriteCloser) (io.WriteCloser, error) {
 	w, err := z.zstd.NewWriter(dst, z.eoptions...)
 	if err != nil {
@@ -120,10 +127,13 @@ type zstdReader struct {
 	r   io.Reader
 }
 
+// Read returns the number of bytes for read p (0 <= n <= len(p)).
+// If any errors occurs, it will return an error.
 func (z *zstdReader) Read(p []byte) (n int, err error) {
 	return z.r.Read(p)
 }
 
+// Close closes the reader.
 func (z *zstdReader) Close() error {
 	return z.src.Close()
 }
@@ -133,10 +143,13 @@ type zstdWriter struct {
 	w   io.WriteCloser
 }
 
+// Write returns the number of bytes written from p (0 <= n <= len(p)).
+// If any errors occurs, it will return an error.
 func (z *zstdWriter) Write(p []byte) (n int, err error) {
 	return z.w.Write(p)
 }
 
+// Close closes the writer.
 func (z *zstdWriter) Close() (err error) {
 	err = z.w.Close()
 	if err != nil {

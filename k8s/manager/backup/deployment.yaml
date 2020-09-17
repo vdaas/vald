@@ -21,10 +21,10 @@ metadata:
   labels:
     app: vald-manager-backup
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v0.0.54
+    helm.sh/chart: vald-v0.0.55
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v0.0.54
+    app.kubernetes.io/version: v0.0.55
     app.kubernetes.io/component: manager-backup
 spec:
   progressDeadlineSeconds: 600
@@ -46,7 +46,7 @@ spec:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/component: manager-backup
       annotations:
-        checksum/configmap: 6a978e9a9a5b8ca8a2f387aa7a271358c4e2662e56277625ef1b2a004522967f
+        checksum/configmap: e8b157075f8e70b72213a4fd429604cd4e03625f9b6a521cf0142ee5bcf585c2
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-manager-backup

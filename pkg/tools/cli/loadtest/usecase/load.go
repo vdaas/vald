@@ -72,13 +72,10 @@ func (r *run) PreStart(ctx context.Context) (err error) {
 
 // Start runs load test and returns error if occurred.
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
-	// TODO: related to #557
-	/*
-		rech, err := r.client.StartConnectionMonitor(ctx)
-		if err != nil {
-			return nil, err
-		}
-	*/
+	rech, err := r.client.StartConnectionMonitor(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	lech := r.loader.Do(ctx)
 
@@ -103,7 +100,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			select {
 			case <-ctx.Done():
 				return finalize()
-			//case err = <-rech: // TODO: related to #557
+			case err = <-rech:
 			case err = <-lech:
 			}
 			if err != nil {
