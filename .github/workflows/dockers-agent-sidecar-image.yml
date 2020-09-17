@@ -53,6 +53,8 @@ jobs:
     - name: Build the Docker image
       run: |
         make docker/build/agent-sidecar
+      env:
+        DOCKER_BUILDKIT: 1
     - name: login to DockerHub
       run: |
         echo ${DOCKERHUB_PASS} | docker login --username ${DOCKERHUB_USER} --password-stdin

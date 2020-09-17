@@ -17,6 +17,8 @@ jobs:
         imagename=`make docker/name/agent-ngt`
         docker tag ${imagename} ${imagename}:${{ github.sha }}
         echo "::set-output name=IMAGE_NAME::${imagename}"
+      env:
+        DOCKER_BUILDKIT: 1
     - name: Run vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
@@ -47,6 +49,8 @@ jobs:
         imagename=`make docker/name/agent-sidecar`
         docker tag ${imagename} ${imagename}:${{ github.sha }}
         echo "::set-output name=IMAGE_NAME::${imagename}"
+      env:
+        DOCKER_BUILDKIT: 1
     - name: Run vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
@@ -77,6 +81,8 @@ jobs:
         imagename=`make docker/name/discoverer-k8s`
         docker tag ${imagename} ${imagename}:${{ github.sha }}
         echo "::set-output name=IMAGE_NAME::${imagename}"
+      env:
+        DOCKER_BUILDKIT: 1
     - name: Run vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
@@ -107,6 +113,8 @@ jobs:
         imagename=`make docker/name/gateway-vald`
         docker tag ${imagename} ${imagename}:${{ github.sha }}
         echo "::set-output name=IMAGE_NAME::${imagename}"
+      env:
+        DOCKER_BUILDKIT: 1
     - name: Run vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
@@ -137,6 +145,8 @@ jobs:
         imagename=`make docker/name/meta-redis`
         docker tag ${imagename} ${imagename}:${{ github.sha }}
         echo "::set-output name=IMAGE_NAME::${imagename}"
+      env:
+        DOCKER_BUILDKIT: 1
     - name: Run vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
@@ -167,6 +177,8 @@ jobs:
         imagename=`make docker/name/meta-cassandra`
         docker tag ${imagename} ${imagename}:${{ github.sha }}
         echo "::set-output name=IMAGE_NAME::${imagename}"
+      env:
+        DOCKER_BUILDKIT: 1
     - name: Run vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
@@ -197,6 +209,8 @@ jobs:
         imagename=`make docker/name/backup-manager-mysql`
         docker tag ${imagename} ${imagename}:${{ github.sha }}
         echo "::set-output name=IMAGE_NAME::${imagename}"
+      env:
+        DOCKER_BUILDKIT: 1
     - name: Run vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
@@ -227,6 +241,8 @@ jobs:
         imagename=`make docker/name/backup-manager-cassandra`
         docker tag ${imagename} ${imagename}:${{ github.sha }}
         echo "::set-output name=IMAGE_NAME::${imagename}"
+      env:
+        DOCKER_BUILDKIT: 1
     - name: Run vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
@@ -257,6 +273,8 @@ jobs:
         imagename=`make docker/name/manager-compressor`
         docker tag ${imagename} ${imagename}:${{ github.sha }}
         echo "::set-output name=IMAGE_NAME::${imagename}"
+      env:
+        DOCKER_BUILDKIT: 1
     - name: Run vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
@@ -287,6 +305,8 @@ jobs:
         imagename=`make docker/name/manager-index`
         docker tag ${imagename} ${imagename}:${{ github.sha }}
         echo "::set-output name=IMAGE_NAME::${imagename}"
+      env:
+        DOCKER_BUILDKIT: 1
     - name: Run vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
@@ -317,6 +337,8 @@ jobs:
         imagename=`make docker/name/operator/helm`
         docker tag ${imagename} ${imagename}:${{ github.sha }}
         echo "::set-output name=IMAGE_NAME::${imagename}"
+      env:
+        DOCKER_BUILDKIT: 1
     - name: Run vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
@@ -347,6 +369,8 @@ jobs:
         imagename=`make docker/name/loadtest`
         docker tag ${imagename} ${imagename}:${{ github.sha }}
         echo "::set-output name=IMAGE_NAME::${imagename}"
+      env:
+        DOCKER_BUILDKIT: 1
     - name: Run vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
