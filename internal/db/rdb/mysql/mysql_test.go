@@ -230,9 +230,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 				},
 				want: want{},
 				afterFunc: func(args) {
-					go func() {
-						cancel()
-					}()
+					cancel()
 				},
 			}
 		}(),
@@ -290,9 +288,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 				},
 				want: want{},
 				afterFunc: func(args) {
-					go func() {
-						cancel()
-					}()
+					cancel()
 				},
 			}
 		}(),
@@ -331,9 +327,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 					err: errors.ErrMySQLConnectionClosed,
 				},
 				afterFunc: func(args) {
-					go func() {
-						cancel()
-					}()
+					cancel()
 				},
 			}
 		}(),
@@ -428,9 +422,7 @@ func Test_mySQLClient_Ping(t *testing.T) {
 				},
 				want: want{},
 				afterFunc: func(args) {
-					go func() {
-						cancel()
-					}()
+					cancel()
 				},
 			}
 		}(),
@@ -455,9 +447,7 @@ func Test_mySQLClient_Ping(t *testing.T) {
 					err: errors.Wrap(errors.Wrap(errors.ErrMySQLConnectionPingFailed, err.Error()), context.DeadlineExceeded.Error()),
 				},
 				afterFunc: func(args) {
-					go func() {
-						cancel()
-					}()
+					cancel()
 				},
 			}
 		}(),
@@ -481,9 +471,7 @@ func Test_mySQLClient_Ping(t *testing.T) {
 					err: errors.ErrMySQLConnectionPingFailed,
 				},
 				afterFunc: func(args) {
-					go func() {
-						cancel()
-					}()
+					cancel()
 				},
 			}
 		}(),
@@ -673,9 +661,7 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 					err: errors.ErrMySQLConnectionClosed,
 				},
 				afterFunc: func(args) {
-					go func() {
-						cancel()
-					}()
+					cancel()
 				},
 			}
 		}(),
@@ -720,9 +706,7 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 					err: err,
 				},
 				afterFunc: func(args) {
-					go func() {
-						cancel()
-					}()
+					cancel()
 				},
 			}
 		}(),
@@ -772,9 +756,7 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 					err: errors.ErrRequiredElementNotFoundByUUID(uuid),
 				},
 				afterFunc: func(args) {
-					go func() {
-						cancel()
-					}()
+					cancel()
 				},
 			}
 		}(),
@@ -834,9 +816,7 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 					err: errors.New("not found"),
 				},
 				afterFunc: func(args) {
-					go func() {
-						cancel()
-					}()
+					cancel()
 				},
 			}
 		}(),
@@ -848,11 +828,12 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 				UUID:   uuid,
 				Vector: []byte("0.1,0.2"),
 			}
-			var p []podIP
-			p = append(p, podIP{
-				ID: 1,
-				IP: "192.168.1.12",
-			})
+			p := []podIP{
+				podIP{
+					ID: 1,
+					IP: "192.168.1.12",
+				},
+			}
 			return test{
 				name: "return (metaVector, nil) when select success",
 				args: args{
@@ -906,9 +887,7 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 					},
 				},
 				afterFunc: func(args) {
-					go func() {
-						cancel()
-					}()
+					cancel()
 				},
 			}
 		}(),
