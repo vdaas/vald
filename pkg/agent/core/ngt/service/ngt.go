@@ -542,7 +542,6 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	}
 	n.indexing.Store(true)
 	atomic.StoreUint64(&n.ic, 0)
-	n.gc()
 	t := time.Now().UnixNano()
 	defer n.indexing.Store(false)
 	defer n.gc()
@@ -591,6 +590,10 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 		}
 		return true
 	})
+	for _, uuid := range uuids {
+		n.ivc.Delete(uuid)
+	}
+	n.gc()
 	log.Info("create index insert index phase started")
 	log.Debugf("inserting index: %#v", vecs)
 	oids, errs := n.core.BulkInsert(vecs)
@@ -607,7 +610,6 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	log.Info("create index insert kvs phase started")
 	log.Debugf("uuids = %#v\t\toids = %#v", uuids, oids)
 	for i, uuid := range uuids {
-		n.ivc.Delete(uuid)
 		if len(oids) > i {
 			oid := uint32(oids[i])
 			if oid != 0 {
