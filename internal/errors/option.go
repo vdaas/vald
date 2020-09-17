@@ -15,37 +15,43 @@
 //
 package errors
 
-import (
-	"fmt"
-	"strings"
-)
-
 // ErrInvalidOption represent the invalid option error
 type ErrInvalidOption struct {
-	name string
-	val  interface{}
-	errs []error
+	err    error
+	origin error
 }
 
 func NewErrInvalidOption(name string, val interface{}, errs ...error) error {
+	if len(errs) == 0 {
+		return &ErrInvalidOption{
+			err: Errorf("invalid option, name: %s, val: %v", name, val),
+		}
+	}
+	var e error
+	for _, err := range errs {
+		if err == nil {
+			continue
+		}
+
+		if e != nil {
+			e = Wrap(err, e.Error())
+		} else {
+			e = err
+		}
+	}
+
 	return &ErrInvalidOption{
-		name: name,
-		val:  val,
-		errs: errs,
+		err:    Wrapf(e, "invalid option, name: %s, val: %v", name, val),
+		origin: e,
 	}
 }
 
 func (e *ErrInvalidOption) Error() string {
-	if len(e.errs) == 0 {
-		return fmt.Sprintf("invalid option, name: %s, val: %#v", e.name, e.val)
-	}
+	return e.err.Error()
+}
 
-	errStrs := make([]string, 0, len(e.errs))
-	for i := 0; i < len(e.errs); i++ {
-		errStrs[i] = e.errs[i].Error()
-	}
-
-	return fmt.Sprintf("invalid option, name: %s, val: %#v, error: %v", e.name, e.val, strings.Join(errStrs, ", "))
+func (e *ErrInvalidOption) Unwrap() error {
+	return e.origin
 }
 
 /*
@@ -54,24 +60,40 @@ func (e *ErrInvalidOption) Error() string {
 
 // ErrCriticalOption represent the critical option error
 type ErrCriticalOption struct {
-	err error
+	err    error
+	origin error
 }
 
 func NewErrCriticalOption(name string, val interface{}, errs ...error) error {
+	if len(errs) == 0 {
+		return &ErrCriticalOption{
+			err: Errorf("invalid critical option, name: %s, val: %v", name, val),
+		}
+	}
+
+	var e error
+	for _, err := range errs {
+		if err == nil {
+			continue
+		}
+
+		if e != nil {
+			e = Wrap(err, e.Error())
+		} else {
+			e = err
+		}
+	}
+
 	return &ErrCriticalOption{
-		err: NewErrInvalidOption(name, val, errs...),
+		err:    Wrapf(e, "invalid critical option, name: %s, val: %v", name, val),
+		origin: e,
 	}
 }
 
 func (e *ErrCriticalOption) Error() string {
-	return Wrap(e.err, "invalid critical option").Error()
+	return e.err.Error()
 }
 
-func IsCriticalOptionError(err error) bool {
-	switch err.(type) {
-	case *ErrCriticalOption:
-		return true
-	default:
-		return false
-	}
+func (e *ErrCriticalOption) Unwrap() error {
+	return e.origin
 }
