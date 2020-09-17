@@ -451,20 +451,27 @@ The implementation may differ based on your use case.
 In Vald, the functional option pattern is widely used in Vald.
 You can refer to [this section](#Struct-initialization) for more details of the use case of this pattern.
 
+We provide the following errors to describe the error to apply the option.
+
+| Error | Description |
+|----|----|
+| errors.ErrInvalidOption | Error to apply the option, and the error is ignorable |
+| errors.ErrCriticalOption | Critical error to apply the option, the error cannot be ignored and should be handled |
+
 We strongly recommend the following implementation to set the value using functional option.
 
 If an invalid value is set to the functional option, the `ErrInvalidOption` error defined in the [internal/errors/option.go](https://github.com/vdaas/vald/blob/master/internal/errors/option.go) should be returned.
 
-The name argument (the first argument) of the `ErrInvalidOption` error should be the same as the functional option name without the `With` prefix. 
+The name argument (the first argument) of the `ErrInvalidOption` error should be the same as the functional option name without the `With` prefix.
+
 
 For example, the functional option name `WithVersion` should return the error with the argument `name` as `version`.
-
 
 ```go
 func WithVersion(version string) Option {
     return func(c *client) error {
         if len(version) == 0 {
-            return errors.ErrInvalidOption("version", version)
+            return errors.NewErrInvalidOption("version", version)
         }
         c.version = version
         return nil
@@ -478,11 +485,11 @@ We recommend the following implementation to parse the time string and set the t
 func WithTimeout(dur string) Option {
     func(c *client) error {
         if dur == "" {
-            return errors.ErrInvalidOption("timeout", dur)
+            return errors.NewErrInvalidOption("timeout", dur)
         }
         d, err := timeutil.Parse(dur)
         if err != nil {
-            return err
+            return errors.NewErrInvalidOption("timeout", dur, err)
         }
         c.timeout = d
         return nil
@@ -496,7 +503,7 @@ We recommend the following implementation to append the value to the slice if th
 func WithHosts(hosts ...string) Option {
     return func(c *client) error {
         if len(hosts) == 0 {
-            return errors.ErrInvalidOption("hosts", hosts)
+            return errors.NewErrInvalidOption("hosts", hosts)
         }
         if c.hosts == nil {
             c.hosts = hosts
@@ -508,16 +515,44 @@ func WithHosts(hosts ...string) Option {
 }
 ```
 
-We recommend the following implementation to apply the options.
+If the functional option error is a critical error, we should return `ErrCriticalOption` error instead of `ErrInvalidOption`.
+
+```go
+func WithConnectTimeout(dur string) Option {
+    return func(c *client) error {
+        if dur == "" {
+            return errors.NewErrInvalidOption("connectTimeout", dur)
+        }
+        d, err := timeutil.Parse(dur)
+        if err != nil {
+            return errors.NewErrCriticalOption("connectTimeout", dur, err)
+        }
+
+        c.connectTimeout = d
+        return nil
+    }
+}
+```
+
+In the caller side, we need to handle the error returned from the functional option.
 
 If the option failed to apply, an error wrapped with `ErrOptionFailed` defined in the [internal/errors/errors.go](https://github.com/vdaas/vald/blob/master/internal/errors/errors.go) should be returned.
+
+We recommend the following implementation to apply the options.
 
 ```go
 func New(opts ...Option) (Server, error) {
     srv := new(server)
     for _, opt := range opts {
         if err := opt(srv); err != nil {
-            return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+            werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+
+            e := new(errors.ErrCriticalOption)
+			if errors.As(err, &e) {
+                log.Error(werr)
+                return nil, werr
+            }
+            log.Warn(werr)
         }
     }
 }

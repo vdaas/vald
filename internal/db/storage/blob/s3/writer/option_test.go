@@ -90,7 +90,7 @@ func TestWithErrGroup(t *testing.T) {
 				obj: &T{
 					eg: errgroup.Get(),
 				},
-				err: errors.ErrInvalidOption("errgroup", nil),
+				err: errors.NewErrInvalidOption("errgroup", nil),
 			},
 		},
 	}
@@ -182,7 +182,7 @@ func TestWithService(t *testing.T) {
 					obj: &T{
 						service: s,
 					},
-					err: errors.ErrInvalidOption("service", ss),
+					err: errors.NewErrInvalidOption("service", ss),
 				},
 			}
 		}(),
@@ -260,7 +260,7 @@ func TestWithBucket(t *testing.T) {
 			},
 			want: want{
 				obj: new(T),
-				err: errors.ErrInvalidOption("bucket", ""),
+				err: errors.NewErrInvalidOption("bucket", ""),
 			},
 		},
 	}
@@ -335,7 +335,7 @@ func TestWithKey(t *testing.T) {
 			},
 			want: want{
 				obj: new(T),
-				err: errors.ErrInvalidOption("key", ""),
+				err: errors.NewErrInvalidOption("key", ""),
 			},
 		},
 	}
@@ -410,7 +410,7 @@ func TestWithMaxPartSize(t *testing.T) {
 			},
 			want: want{
 				obj: new(T),
-				err: errors.ErrInvalidOption("maxPartSize", 10),
+				err: errors.NewErrInvalidOption("maxPartSize", 10),
 			},
 		},
 	}
@@ -485,7 +485,7 @@ func TestWithContentType(t *testing.T) {
 			},
 			want: want{
 				obj: new(T),
-				err: errors.ErrInvalidOption("contentType", ""),
+				err: errors.NewErrInvalidOption("contentType", ""),
 			},
 		},
 	}
