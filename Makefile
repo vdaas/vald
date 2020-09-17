@@ -67,6 +67,7 @@ SWAP_TAG             ?= latest
 BINDIR ?= /usr/local/bin
 
 UNAME := $(eval UNAME := $(shell uname))$(UNAME)
+PWD := $(eval PWD := $(shell pwd))$(PWD)
 
 ifeq ($(UNAME),Linux)
 CPU_INFO_FLAGS := $(eval CPU_INFO_FLAGS := $(shell cat /proc/cpuinfo | grep flags | cut -d " " -f 2- | head -1))$(CPU_INFO_FLAGS)
@@ -111,6 +112,7 @@ NUMPANES  ?= 4
 BODY = ""
 
 PROTO_PATHS = \
+	$(PWD) \
 	$(GOPATH)/src \
 	$(GOPATH)/src/$(GOPKG) \
 	$(GOPATH)/src/github.com/googleapis/googleapis

@@ -23,12 +23,12 @@ option java_multiple_files = true;
 option java_package = "org.vdaas.vald.api.v1.meta";
 option java_outer_classname = "meta";
 
-import "github.com/vdaas/vald/apis/proto/v1/payload/payload.proto";
+import "apis/proto/v1/payload/payload.proto";
 import "google/api/annotations.proto";
 
 
 service Meta {
-  
+
   rpc GetMeta(payload.Meta.Key) returns (payload.Meta.Val) {
     option (google.api.http).post = "/meta";
   }

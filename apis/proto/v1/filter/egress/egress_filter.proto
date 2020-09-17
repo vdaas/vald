@@ -23,12 +23,12 @@ option java_multiple_files = true;
 option java_package = "org.vdaas.vald.api.v1.filter.egress";
 option java_outer_classname = "ValdEgressFilter";
 
-import "github.com/vdaas/vald/apis/proto/v1/payload/payload.proto";
+import "apis/proto/v1/payload/payload.proto";
 import "google/api/annotations.proto";
 
 
 service EgressFilter {
-  
+
   rpc Filter(payload.Object.Distance) returns (payload.Object.Distance) {}
   rpc StreamFilter(stream payload.Object.Distance)
       returns (stream payload.Object.Distance) {}

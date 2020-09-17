@@ -23,12 +23,12 @@ option java_multiple_files = true;
 option java_package = "org.vdaas.vald.api.v1.discoverer";
 option java_outer_classname = "Discoverer";
 
-import "github.com/vdaas/vald/apis/proto/v1/payload/payload.proto";
+import "apis/proto/v1/payload/payload.proto";
 import "google/api/annotations.proto";
 
 
 service Discoverer {
-  
+
   rpc Pods(payload.Discoverer.Request) returns (payload.Info.Pods) {
     option (google.api.http) = {
       post : "/discover/pods"

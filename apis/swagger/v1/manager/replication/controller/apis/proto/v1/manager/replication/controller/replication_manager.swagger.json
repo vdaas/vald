@@ -13,7 +13,7 @@
   "paths": {
     "/replication/info": {
       "get": {
-        "operationId": "Replication_ReplicationInfo",
+        "operationId": "ReplicationController_ReplicationInfo",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -29,7 +29,7 @@
           }
         },
         "tags": [
-          "Replication"
+          "ReplicationController"
         ]
       }
     }
