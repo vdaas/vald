@@ -24,7 +24,7 @@ import (
 // Session represents the interface to handle session.
 type Session interface {
 	Select(column ...string) SelectStmt
-	Begin() (*tx, error)
+	Begin() (Tx, error)
 	Close() error
 	PingContext(ctx context.Context) error
 }
@@ -46,10 +46,10 @@ func (sess *session) Select(column ...string) SelectStmt {
 }
 
 // Begin creates the transaction using given session.
-func (sess *session) Begin() (*tx, error) {
+func (sess *session) Begin() (Tx, error) {
 	t, err := sess.Session.Begin()
 	return &tx{
-		t,
+		Tx: t,
 	}, err
 }
 
