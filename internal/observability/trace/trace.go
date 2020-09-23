@@ -19,37 +19,41 @@ package trace
 
 import (
 	"context"
+	"sync"
 
-	"go.opencensus.io/trace"
+	"go.opentelemetry.io/otel/api/global"
+	"go.opentelemetry.io/otel/api/trace"
+	sdk "go.opentelemetry.io/otel/sdk/trace"
 )
 
 var (
 	enabled bool
 
-	BoolAttribute    = trace.BoolAttribute
-	Float64Attribute = trace.Float64Attribute
-	Int64Attribute   = trace.Int64Attribute
-	StringAttribute  = trace.StringAttribute
+	FromContext = trace.SpanFromContext
 
-	FromContext = trace.FromContext
+	instance *tracer
+	once     sync.Once
 )
 
 type Span = trace.Span
 
 type Tracer interface {
 	Start(ctx context.Context)
+	StartSpan(ctx context.Context, name string, opts ...trace.StartOption) (context.Context, *Span)
 }
 
 type tracer struct {
+	name         string
+	tracer       trace.Tracer
 	samplingRate float64
 }
 
 func StartSpan(ctx context.Context, name string, opts ...trace.StartOption) (context.Context, *Span) {
-	if !enabled {
+	if !enabled || instance == nil {
 		return ctx, nil
 	}
 
-	return trace.StartSpan(ctx, name, opts...)
+	return tracer.StartSpan(ctx, name, opts...)
 }
 
 func New(opts ...TraceOption) Tracer {
@@ -65,9 +69,23 @@ func New(opts ...TraceOption) Tracer {
 }
 
 func (t *tracer) Start(ctx context.Context) {
-	trace.ApplyConfig(
-		trace.Config{
-			DefaultSampler: trace.ProbabilitySampler(t.samplingRate),
-		},
+	global.SetTraceProvider(
+		sdk.NewProvider(
+			sdk.WithConfig(
+				sdk.Config{
+					DefaultSampler: sdk.ProbabilitySampler(t.samplingRate),
+				},
+			),
+		),
 	)
+
+	t.tracer = global.Tracer(t.name)
+
+	once.Do(func() {
+		instance = t
+	})
+}
+
+func (t *tracer) StartSpan(ctx context.Context, name string, opts ...trace.StartOption) (context.Context, *Span) {
+	return t.tracer.Start(ctx, name, opts...)
 }

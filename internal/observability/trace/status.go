@@ -18,124 +18,29 @@
 package trace
 
 import (
-	"go.opencensus.io/trace"
+	"go.opentelemetry.io/otel/api/trace"
+	"go.opentelemetry.io/otel/codes"
 )
 
-func StatusCodeOK(msg string) trace.Status {
-	return trace.Status{
-		Code:    trace.StatusCodeOK,
-		Message: msg,
-	}
-}
+var (
+	WithErrorStatus = trace.WithErrorStatus
+	WithErrorTime   = trace.WithErrorTime
 
-func StatusCodeCancelled(msg string) trace.Status {
-	return trace.Status{
-		Code:    trace.StatusCodeCancelled,
-		Message: msg,
-	}
-}
-
-func StatusCodeUnknown(msg string) trace.Status {
-	return trace.Status{
-		Code:    trace.StatusCodeUnknown,
-		Message: msg,
-	}
-}
-
-func StatusCodeInvalidArgument(msg string) trace.Status {
-	return trace.Status{
-		Code:    trace.StatusCodeInvalidArgument,
-		Message: msg,
-	}
-}
-
-func StatusCodeDeadlineExceeded(msg string) trace.Status {
-	return trace.Status{
-		Code:    trace.StatusCodeDeadlineExceeded,
-		Message: msg,
-	}
-}
-
-func StatusCodeNotFound(msg string) trace.Status {
-	return trace.Status{
-		Code:    trace.StatusCodeNotFound,
-		Message: msg,
-	}
-}
-
-func StatusCodeAlreadyExists(msg string) trace.Status {
-	return trace.Status{
-		Code:    trace.StatusCodeAlreadyExists,
-		Message: msg,
-	}
-}
-
-func StatusCodePermissionDenied(msg string) trace.Status {
-	return trace.Status{
-		Code:    trace.StatusCodePermissionDenied,
-		Message: msg,
-	}
-}
-
-func StatusCodeResourceExhausted(msg string) trace.Status {
-	return trace.Status{
-		Code:    trace.StatusCodeResourceExhausted,
-		Message: msg,
-	}
-}
-
-func StatusCodeFailedPrecondition(msg string) trace.Status {
-	return trace.Status{
-		Code:    trace.StatusCodeFailedPrecondition,
-		Message: msg,
-	}
-}
-
-func StatusCodeAborted(msg string) trace.Status {
-	return trace.Status{
-		Code:    trace.StatusCodeAborted,
-		Message: msg,
-	}
-}
-
-func StatusCodeOutOfRange(msg string) trace.Status {
-	return trace.Status{
-		Code:    trace.StatusCodeOutOfRange,
-		Message: msg,
-	}
-}
-
-func StatusCodeUnimplemented(msg string) trace.Status {
-	return trace.Status{
-		Code:    trace.StatusCodeUnimplemented,
-		Message: msg,
-	}
-}
-
-func StatusCodeInternal(msg string) trace.Status {
-	return trace.Status{
-		Code:    trace.StatusCodeInternal,
-		Message: msg,
-	}
-}
-
-func StatusCodeUnavailable(msg string) trace.Status {
-	return trace.Status{
-		Code:    trace.StatusCodeUnavailable,
-		Message: msg,
-	}
-}
-
-func StatusCodeDataLoss(msg string) trace.Status {
-	return trace.Status{
-		Code:    trace.StatusCodeDataLoss,
-		Message: msg,
-	}
-}
-
-func StatusCodeUnauthenticated(msg string) trace.Status {
-	return trace.Status{
-		Code:    trace.StatusCodeUnauthenticated,
-		Message: msg,
-	}
-}
+	OK                 = codes.OK
+	Canceled           = codes.Canceled
+	Unknown            = codes.Unknown
+	InvalidArgument    = codes.InvalidArgument
+	DeadlineExceeded   = codes.DeadlineExceeded
+	NotFound           = codes.NotFound
+	AlreadyExists      = codes.AlreadyExists
+	PermissionDenied   = codes.PermissionDenied
+	ResourceExhausted  = codes.ResourceExhausted
+	FailedPrecondition = codes.FailedPrecondition
+	Aborted            = codes.Aborted
+	OutOfRange         = codes.OutOfRange
+	Unimplemented      = codes.Unimplemented
+	Internal           = codes.Internal
+	Unavailable        = codes.Unavailable
+	DataLoss           = codes.DataLoss
+	Unauthenticated    = codes.Unauthenticated
+)

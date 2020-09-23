@@ -21,9 +21,18 @@ type TraceOption func(*tracer)
 
 var (
 	traceDefaultOpts = []TraceOption{
+		WithName("vald.vdaas.org/tracer"),
 		WithSamplingRate(1.0),
 	}
 )
+
+func WithName(name string) TraceOption {
+	return func(t *tracer) {
+		if name != "" {
+			t.name = name
+		}
+	}
+}
 
 func WithSamplingRate(rate float64) TraceOption {
 	return func(t *tracer) {
