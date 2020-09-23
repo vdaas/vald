@@ -18,6 +18,7 @@ package session
 
 import (
 	"net/http"
+	"os"
 	"reflect"
 	"testing"
 
@@ -27,6 +28,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"go.uber.org/goleak"
 )
@@ -64,7 +66,17 @@ var (
 		comparator.IgnoreFields(aws.Config{}, "EndpointResolver", "Credentials", "Logger"),
 		comparator.IgnoreTypes(request.Handlers{}),
 	}
+
+	// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
+	goleakIgnoreOptions = []goleak.Option{
+		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+	}
 )
+
+func TestMain(m *testing.M) {
+	log.Init()
+	os.Exit(m.Run())
+}
 
 func TestNew(t *testing.T) {
 	type args struct {
@@ -88,36 +100,57 @@ func TestNew(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           opts: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           opts: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return initialized session with no option",
+			args: args{
+				opts: nil,
+			},
+			want: want{
+				want: &sess{
+					maxRetries:                 -1,
+					forcePathStyle:             false,
+					useAccelerate:              false,
+					useARNRegion:               false,
+					useDualStack:               false,
+					enableSSL:                  true,
+					enableParamValidation:      true,
+					enable100Continue:          true,
+					enableContentMD5Validation: true,
+					enableEndpointDiscovery:    false,
+					enableEndpointHostPrefix:   true,
+				},
+			},
+		},
+		{
+			name: "return and log session when set option error",
+			args: args{
+				opts: []Option{
+					func(s *sess) error {
+						return errors.NewErrInvalidOption("dummy", "")
+					},
+				},
+			},
+			want: want{
+				want: &sess{
+					maxRetries:                 -1,
+					forcePathStyle:             false,
+					useAccelerate:              false,
+					useARNRegion:               false,
+					useDualStack:               false,
+					enableSSL:                  true,
+					enableParamValidation:      true,
+					enable100Continue:          true,
+					enableContentMD5Validation: true,
+					enableEndpointDiscovery:    false,
+					enableEndpointHostPrefix:   true,
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -155,6 +188,7 @@ func Test_sess_Session(t *testing.T) {
 		enableContentMD5Validation bool
 		enableEndpointDiscovery    bool
 		enableEndpointHostPrefix   bool
+		client                     *http.Client
 	}
 	type want struct {
 		want *session.Session
@@ -566,11 +600,43 @@ func Test_sess_Session(t *testing.T) {
 				},
 			},
 		},
+		func() test {
+			c := new(http.Client)
+			return test{
+				name: "set httpclient success",
+				fields: fields{
+					client: c,
+				},
+				want: want{
+					want: &session.Session{
+						Config: &aws.Config{
+							Region:                        atop(""),
+							Credentials:                   nil,
+							DisableSSL:                    btop(true),
+							HTTPClient:                    c,
+							LogLevel:                      aws.LogLevel(aws.LogLevelType(uint(0))),
+							MaxRetries:                    itop(0),
+							S3ForcePathStyle:              btop(false),
+							S3Disable100Continue:          btop(true),
+							S3UseAccelerate:               btop(false),
+							S3DisableContentMD5Validation: btop(true),
+							S3UseARNRegion:                btop(false),
+							UseDualStack:                  btop(false),
+							EnableEndpointDiscovery:       btop(false),
+							DisableEndpointHostPrefix:     btop(true),
+							STSRegionalEndpoint:           endpoints.LegacySTSEndpoint,
+							S3UsEast1RegionalEndpoint:     endpoints.LegacyS3UsEast1Endpoint,
+							DisableParamValidation:        btop(true),
+						},
+					},
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -597,6 +663,7 @@ func Test_sess_Session(t *testing.T) {
 				enableContentMD5Validation: test.fields.enableContentMD5Validation,
 				enableEndpointDiscovery:    test.fields.enableEndpointDiscovery,
 				enableEndpointHostPrefix:   test.fields.enableEndpointHostPrefix,
+				client:                     test.fields.client,
 			}
 
 			got, err := s.Session()
