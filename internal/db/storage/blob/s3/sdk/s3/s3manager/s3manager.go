@@ -32,6 +32,7 @@ func New() S3Manager {
 	return new(s3mngr)
 }
 
+// NewUploaderWithClient returns UploadClient implementation.
 func (*s3mngr) NewUploaderWithClient(svc s3iface.S3API, options ...func(*Uploader)) UploadClient {
 	return s3manager.NewUploaderWithClient(svc, options...)
 }
