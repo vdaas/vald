@@ -17,18 +17,32 @@
 package reader
 
 import (
+	"bytes"
 	"context"
 	"io"
+	"io/ioutil"
+	"os"
 	"reflect"
 	"sync"
 	"testing"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/vdaas/vald/internal/backoff"
+	ctxio "github.com/vdaas/vald/internal/db/storage/blob/s3/reader/io"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"go.uber.org/goleak"
 )
+
+func TestMain(m *testing.M) {
+	log.Init()
+	os.Exit(m.Run())
+}
 
 func TestNew(t *testing.T) {
 	type args struct {
@@ -106,12 +120,15 @@ func Test_reader_Open(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		eg      errgroup.Group
-		service *s3.S3
-		bucket  string
-		key     string
-		pr      io.ReadCloser
-		wg      *sync.WaitGroup
+		eg             errgroup.Group
+		backoffEnabled bool
+		service        s3iface.S3API
+		bucket         string
+		key            string
+		pr             io.ReadCloser
+		wg             *sync.WaitGroup
+		ctxio          ctxio.IO
+		backoffOpts    []backoff.Option
 	}
 	type want struct {
 		err error
@@ -123,7 +140,7 @@ func Test_reader_Open(t *testing.T) {
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(args, *testing.T)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -132,75 +149,237 @@ func Test_reader_Open(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		       },
-		       fields: fields {
-		           eg: nil,
-		           service: nil,
-		           bucket: "",
-		           key: "",
-		           pr: nil,
-		           wg: sync.WaitGroup{},
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			ctx := context.Background()
+			cctx, cancel := context.WithCancel(ctx)
+			eg, _ := errgroup.New(ctx)
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           },
-		           fields: fields {
-		           eg: nil,
-		           service: nil,
-		           bucket: "",
-		           key: "",
-		           pr: nil,
-		           wg: sync.WaitGroup{},
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			return test{
+				name: "returns nil when context was canceled",
+				args: args{
+					ctx: cctx,
+				},
+				fields: fields{
+					eg: eg,
+				},
+				want: want{
+					err: nil,
+				},
+				beforeFunc: func(args) {
+					cancel()
+				},
+				afterFunc: func(_ args, t *testing.T) {
+					t.Helper()
+					if err := eg.Wait(); !errors.Is(err, context.Canceled) {
+						t.Errorf("want: %v, but got: %v", context.Canceled, err)
+					}
+				},
+			}
+		}(),
+
+		func() test {
+			ctx := context.Background()
+			cctx, cancel := context.WithCancel(ctx)
+			eg, _ := errgroup.New(ctx)
+
+			wantErr := errors.New("err")
+			return test{
+				name: "returns nil when backoff enable and s3 service returns error",
+				args: args{
+					ctx: cctx,
+				},
+				fields: fields{
+					eg: eg,
+					service: &MockS3API{
+						GetObjectWithContextFunc: func(aws.Context, *s3.GetObjectInput, ...request.Option) (*s3.GetObjectOutput, error) {
+							return nil, wantErr
+						},
+					},
+					backoffEnabled: true,
+					backoffOpts: []backoff.Option{
+						backoff.WithRetryCount(1),
+					},
+				},
+				want: want{
+					err: nil,
+				},
+				afterFunc: func(_ args, t *testing.T) {
+					t.Helper()
+
+					if err := eg.Wait(); !errors.Is(err, wantErr) {
+						t.Errorf("want: %v, but got: %v", wantErr, err)
+					}
+
+					cancel()
+				},
+			}
+		}(),
+
+		func() test {
+			ctx := context.Background()
+			cctx, cancel := context.WithCancel(ctx)
+			eg, _ := errgroup.New(ctx)
+
+			wantErr := errors.New("err")
+			return test{
+				name: "returns nil when backoff disable and s3 service returns error",
+				args: args{
+					ctx: cctx,
+				},
+				fields: fields{
+					eg: eg,
+					service: &MockS3API{
+						GetObjectWithContextFunc: func(aws.Context, *s3.GetObjectInput, ...request.Option) (*s3.GetObjectOutput, error) {
+							return nil, wantErr
+						},
+					},
+				},
+				want: want{
+					err: nil,
+				},
+				afterFunc: func(_ args, t *testing.T) {
+					t.Helper()
+
+					if err := eg.Wait(); !errors.Is(err, wantErr) {
+						t.Errorf("want: %v, but got: %v", wantErr, err)
+					}
+
+					cancel()
+				},
+			}
+		}(),
+
+		func() test {
+			ctx := context.Background()
+			cctx, cancel := context.WithCancel(ctx)
+			eg, _ := errgroup.New(ctx)
+
+			wantErr := errors.New("err")
+			return test{
+				name: "returns nil when backoff disable and reader copy fails",
+				args: args{
+					ctx: cctx,
+				},
+				fields: fields{
+					eg: eg,
+					service: &MockS3API{
+						GetObjectWithContextFunc: func(aws.Context, *s3.GetObjectInput, ...request.Option) (*s3.GetObjectOutput, error) {
+							return new(s3.GetObjectOutput), nil
+						},
+					},
+					ctxio: &MockIO{
+						NewReaderWithContextFunc: func(ctx context.Context, r io.Reader) (io.Reader, error) {
+							return nil, wantErr
+						},
+						NewReadCloserWithContextFunc: func(ctx context.Context, r io.ReadCloser) (io.ReadCloser, error) {
+							return &MockReadCloser{
+								CloseFunc: func() error {
+									return nil
+								},
+								ReadFunc: func(p []byte) (n int, err error) {
+									return 1, io.EOF
+								},
+							}, nil
+						},
+					},
+				},
+				want: want{
+					err: nil,
+				},
+				afterFunc: func(_ args, t *testing.T) {
+					t.Helper()
+
+					if err := eg.Wait(); !errors.Is(err, wantErr) {
+						t.Errorf("want: %v, but got: %v", wantErr, err)
+					}
+
+					cancel()
+				},
+			}
+		}(),
+
+		func() test {
+			ctx := context.Background()
+			cctx, cancel := context.WithCancel(ctx)
+			eg, _ := errgroup.New(ctx)
+
+			wantErr := errors.New("err")
+			return test{
+				name: "returns nil when backoff disable and reader copy fails",
+				args: args{
+					ctx: cctx,
+				},
+				fields: fields{
+					eg: eg,
+					service: &MockS3API{
+						GetObjectWithContextFunc: func(aws.Context, *s3.GetObjectInput, ...request.Option) (*s3.GetObjectOutput, error) {
+							return new(s3.GetObjectOutput), nil
+						},
+					},
+					ctxio: &MockIO{
+						NewReaderWithContextFunc: func(ctx context.Context, r io.Reader) (io.Reader, error) {
+							return &MockReadCloser{
+								ReadFunc: func(p []byte) (n int, err error) {
+									return 0, wantErr
+								},
+							}, nil
+						},
+						NewReadCloserWithContextFunc: func(ctx context.Context, r io.ReadCloser) (io.ReadCloser, error) {
+							return &MockReadCloser{
+								CloseFunc: func() error {
+									return nil
+								},
+								ReadFunc: func(p []byte) (n int, err error) {
+									return 1, io.EOF
+								},
+							}, nil
+						},
+					},
+				},
+				want: want{
+					err: nil,
+				},
+				afterFunc: func(_ args, t *testing.T) {
+					t.Helper()
+
+					if err := eg.Wait(); !errors.Is(err, wantErr) {
+						t.Errorf("want: %v, but got: %v", wantErr, err)
+					}
+
+					cancel()
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(test.args, t)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
 			r := &reader{
-				eg:      test.fields.eg,
-				service: test.fields.service,
-				bucket:  test.fields.bucket,
-				key:     test.fields.key,
-				pr:      test.fields.pr,
-				wg:      test.fields.wg,
+				eg:             test.fields.eg,
+				service:        test.fields.service,
+				bucket:         test.fields.bucket,
+				key:            test.fields.key,
+				pr:             test.fields.pr,
+				wg:             test.fields.wg,
+				ctxio:          test.fields.ctxio,
+				backoffEnabled: test.fields.backoffEnabled,
+				backoffOpts:    test.fields.backoffOpts,
 			}
 
 			err := r.Open(test.args.ctx)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -411,7 +590,7 @@ func Test_reader_getObjectWithBackoff(t *testing.T) {
 	}
 	type fields struct {
 		eg             errgroup.Group
-		service        *s3.S3
+		service        s3iface.S3API
 		bucket         string
 		key            string
 		pr             io.ReadCloser
@@ -419,6 +598,7 @@ func Test_reader_getObjectWithBackoff(t *testing.T) {
 		backoffEnabled bool
 		backoffOpts    []backoff.Option
 		maxChunkSize   int64
+		ctxio          ctxio.IO
 	}
 	type want struct {
 		want io.Reader
@@ -443,62 +623,70 @@ func Test_reader_getObjectWithBackoff(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           offset: 0,
-		           length: 0,
-		       },
-		       fields: fields {
-		           eg: nil,
-		           service: nil,
-		           bucket: "",
-		           key: "",
-		           pr: nil,
-		           wg: nil,
-		           backoffEnabled: false,
-		           backoffOpts: nil,
-		           maxChunkSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "returns error when s3 service returns error and backoff fails",
+			args: args{
+				ctx:    context.Background(),
+				offset: 1,
+				length: 10,
+			},
+			fields: fields{
+				service: &MockS3API{
+					GetObjectWithContextFunc: func(aws.Context, *s3.GetObjectInput, ...request.Option) (*s3.GetObjectOutput, error) {
+						return new(s3.GetObjectOutput), nil
+					},
+				},
+				ctxio: &MockIO{
+					NewReadCloserWithContextFunc: func(ctx context.Context, r io.ReadCloser) (io.ReadCloser, error) {
+						return &MockReadCloser{
+							CloseFunc: func() error {
+								return nil
+							},
+							ReadFunc: func(p []byte) (n int, err error) {
+								return 1, io.EOF
+							},
+						}, nil
+					},
+				},
+			},
+			want: want{
+				want: func() *bytes.Buffer {
+					buf := new(bytes.Buffer)
+					var b byte
+					buf.WriteByte(b)
+					return buf
+				}(),
+				err: nil,
+			},
+		},
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           offset: 0,
-		           length: 0,
-		           },
-		           fields: fields {
-		           eg: nil,
-		           service: nil,
-		           bucket: "",
-		           key: "",
-		           pr: nil,
-		           wg: nil,
-		           backoffEnabled: false,
-		           backoffOpts: nil,
-		           maxChunkSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns error when s3 service returns error and backoff fails",
+			args: args{
+				ctx:    context.Background(),
+				offset: 1,
+				length: 10,
+			},
+			fields: fields{
+				service: &MockS3API{
+					GetObjectWithContextFunc: func(aws.Context, *s3.GetObjectInput, ...request.Option) (*s3.GetObjectOutput, error) {
+						return nil, errors.New("err")
+					},
+				},
+				backoffEnabled: false,
+				backoffOpts: []backoff.Option{
+					backoff.WithRetryCount(1),
+				},
+			},
+			want: want{
+				err: errors.New("err"),
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -518,13 +706,13 @@ func Test_reader_getObjectWithBackoff(t *testing.T) {
 				backoffEnabled: test.fields.backoffEnabled,
 				backoffOpts:    test.fields.backoffOpts,
 				maxChunkSize:   test.fields.maxChunkSize,
+				ctxio:          test.fields.ctxio,
 			}
 
 			got, err := r.getObjectWithBackoff(test.args.ctx, test.args.offset, test.args.length)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -537,7 +725,7 @@ func Test_reader_getObject(t *testing.T) {
 	}
 	type fields struct {
 		eg             errgroup.Group
-		service        *s3.S3
+		service        s3iface.S3API
 		bucket         string
 		key            string
 		pr             io.ReadCloser
@@ -545,6 +733,7 @@ func Test_reader_getObject(t *testing.T) {
 		backoffEnabled bool
 		backoffOpts    []backoff.Option
 		maxChunkSize   int64
+		ctxio          ctxio.IO
 	}
 	type want struct {
 		want io.Reader
@@ -569,62 +758,223 @@ func Test_reader_getObject(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           offset: 0,
-		           length: 0,
-		       },
-		       fields: fields {
-		           eg: nil,
-		           service: nil,
-		           bucket: "",
-		           key: "",
-		           pr: nil,
-		           wg: nil,
-		           backoffEnabled: false,
-		           backoffOpts: nil,
-		           maxChunkSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "returns (io.Reader, nil) when no error occurs",
+			args: args{
+				ctx:    context.Background(),
+				offset: 2,
+				length: 10,
+			},
+			fields: fields{
+				service: &MockS3API{
+					GetObjectWithContextFunc: func(aws.Context, *s3.GetObjectInput, ...request.Option) (*s3.GetObjectOutput, error) {
+						return new(s3.GetObjectOutput), nil
+					},
+				},
+				ctxio: &MockIO{
+					NewReadCloserWithContextFunc: func(ctx context.Context, r io.ReadCloser) (io.ReadCloser, error) {
+						return &MockReadCloser{
+							CloseFunc: func() error {
+								return nil
+							},
+							ReadFunc: func(p []byte) (n int, err error) {
+								return 1, io.EOF
+							},
+						}, nil
+					},
+				},
+			},
+			want: want{
+				want: func() *bytes.Buffer {
+					buf := new(bytes.Buffer)
+					var b byte
+					buf.WriteByte(b)
+					return buf
+				}(),
+				err: nil,
+			},
+		},
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           offset: 0,
-		           length: 0,
-		           },
-		           fields: fields {
-		           eg: nil,
-		           service: nil,
-		           bucket: "",
-		           key: "",
-		           pr: nil,
-		           wg: nil,
-		           backoffEnabled: false,
-		           backoffOpts: nil,
-		           maxChunkSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns (io.Reader, nil) when reader close error occurs and output warning",
+			args: args{
+				ctx:    context.Background(),
+				offset: 2,
+				length: 10,
+			},
+			fields: fields{
+				service: &MockS3API{
+					GetObjectWithContextFunc: func(aws.Context, *s3.GetObjectInput, ...request.Option) (*s3.GetObjectOutput, error) {
+						return new(s3.GetObjectOutput), nil
+					},
+				},
+				ctxio: &MockIO{
+					NewReadCloserWithContextFunc: func(ctx context.Context, r io.ReadCloser) (io.ReadCloser, error) {
+						return &MockReadCloser{
+							CloseFunc: func() error {
+								return errors.New("err")
+							},
+							ReadFunc: func(p []byte) (n int, err error) {
+								return 1, io.EOF
+							},
+						}, nil
+					},
+				},
+			},
+			want: want{
+				want: func() *bytes.Buffer {
+					buf := new(bytes.Buffer)
+					var b byte
+					buf.WriteByte(b)
+					return buf
+				}(),
+				err: nil,
+			},
+		},
+
+		{
+			name: "returns nil when s3 service returns error and error code is ErrBlobNoSuchBucket",
+			args: args{
+				ctx:    context.Background(),
+				offset: 2,
+				length: 10,
+			},
+			fields: fields{
+				service: &MockS3API{
+					GetObjectWithContextFunc: func(aws.Context, *s3.GetObjectInput, ...request.Option) (*s3.GetObjectOutput, error) {
+						return nil, awserr.New(s3.ErrCodeNoSuchBucket, "", nil)
+					},
+				},
+				bucket: "vald",
+			},
+			want: want{
+				want: ioutil.NopCloser(bytes.NewReader(nil)),
+				err:  nil,
+			},
+		},
+
+		{
+			name: "returns nil when s3 service returns error and error code is ErrCodeNoSuchKey",
+			args: args{
+				ctx:    context.Background(),
+				offset: 2,
+				length: 10,
+			},
+			fields: fields{
+				service: &MockS3API{
+					GetObjectWithContextFunc: func(aws.Context, *s3.GetObjectInput, ...request.Option) (*s3.GetObjectOutput, error) {
+						return nil, awserr.New(s3.ErrCodeNoSuchKey, "", nil)
+					},
+				},
+				key: "vald",
+			},
+			want: want{
+				want: ioutil.NopCloser(bytes.NewReader(nil)),
+				err:  nil,
+			},
+		},
+
+		{
+			name: "returns nil when s3 service returns error and error code is ErrCodeNoSuchKey",
+			args: args{
+				ctx:    context.Background(),
+				offset: 2,
+				length: 10,
+			},
+			fields: fields{
+				service: &MockS3API{
+					GetObjectWithContextFunc: func(aws.Context, *s3.GetObjectInput, ...request.Option) (*s3.GetObjectOutput, error) {
+						return nil, awserr.New("InvalidRange", "", nil)
+					},
+				},
+			},
+			want: want{
+				want: ioutil.NopCloser(bytes.NewReader(nil)),
+				err:  nil,
+			},
+		},
+
+		{
+			name: "returns s3 error when s3 service returns error and error code is `Invalid`",
+			args: args{
+				ctx:    context.Background(),
+				offset: 2,
+				length: 10,
+			},
+			fields: fields{
+				service: &MockS3API{
+					GetObjectWithContextFunc: func(aws.Context, *s3.GetObjectInput, ...request.Option) (*s3.GetObjectOutput, error) {
+						return nil, awserr.New("Invalid", "", nil)
+					},
+				},
+			},
+			want: want{
+				want: nil,
+				err:  awserr.New("Invalid", "", nil),
+			},
+		},
+
+		{
+			name: "returns error when reader creation fails",
+			args: args{
+				ctx:    context.Background(),
+				offset: 2,
+				length: 10,
+			},
+			fields: fields{
+				service: &MockS3API{
+					GetObjectWithContextFunc: func(aws.Context, *s3.GetObjectInput, ...request.Option) (*s3.GetObjectOutput, error) {
+						return new(s3.GetObjectOutput), nil
+					},
+				},
+				ctxio: &MockIO{
+					NewReadCloserWithContextFunc: func(ctx context.Context, r io.ReadCloser) (io.ReadCloser, error) {
+						return nil, errors.New("err")
+					},
+				},
+			},
+			want: want{
+				want: nil,
+				err:  errors.New("err"),
+			},
+		},
+
+		{
+			name: "returns error when failed to copy to buffer",
+			args: args{
+				ctx:    context.Background(),
+				offset: 2,
+				length: 10,
+			},
+			fields: fields{
+				service: &MockS3API{
+					GetObjectWithContextFunc: func(aws.Context, *s3.GetObjectInput, ...request.Option) (*s3.GetObjectOutput, error) {
+						return new(s3.GetObjectOutput), nil
+					},
+				},
+				ctxio: &MockIO{
+					NewReadCloserWithContextFunc: func(ctx context.Context, r io.ReadCloser) (io.ReadCloser, error) {
+						return &MockReadCloser{
+							CloseFunc: func() error {
+								return nil
+							},
+							ReadFunc: func(p []byte) (n int, err error) {
+								return 0, errors.New("err")
+							},
+						}, nil
+					},
+				},
+			},
+			want: want{
+				want: nil,
+				err:  errors.New("err"),
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -644,13 +994,13 @@ func Test_reader_getObject(t *testing.T) {
 				backoffEnabled: test.fields.backoffEnabled,
 				backoffOpts:    test.fields.backoffOpts,
 				maxChunkSize:   test.fields.maxChunkSize,
+				ctxio:          test.fields.ctxio,
 			}
 
 			got, err := r.getObject(test.args.ctx, test.args.offset, test.args.length)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

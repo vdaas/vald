@@ -27,22 +27,25 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/vdaas/vald/internal/backoff"
+	ctxio "github.com/vdaas/vald/internal/db/storage/blob/s3/reader/io"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-	ctxio "github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 )
 
 type reader struct {
 	eg      errgroup.Group
-	service *s3.S3
+	service s3iface.S3API
 	bucket  string
 	key     string
 
 	pr io.ReadCloser
 	wg *sync.WaitGroup
+
+	ctxio ctxio.IO
 
 	backoffEnabled bool
 	backoffOpts    []backoff.Option
@@ -94,7 +97,7 @@ func (r *reader) Open(ctx context.Context) (err error) {
 				return err
 			}
 
-			body, err = ctxio.NewReaderWithContext(ctx, body)
+			body, err = r.ctxio.NewReaderWithContext(ctx, body)
 			if err != nil {
 				return err
 			}
@@ -164,7 +167,7 @@ func (r *reader) getObject(ctx context.Context, offset, length int64) (io.Reader
 		return nil, err
 	}
 
-	res, err := ctxio.NewReadCloserWithContext(ctx, resp.Body)
+	res, err := r.ctxio.NewReadCloserWithContext(ctx, resp.Body)
 	if err != nil {
 		return nil, err
 	}
