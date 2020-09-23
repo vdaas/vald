@@ -36,20 +36,18 @@ func BenchmarkBVecs(b *testing.B) {
 		}
 	}()
 
-	i := 0
 	b.Run(bvecsFile, func(bb *testing.B) {
 		bb.ReportAllocs()
 		bb.ResetTimer()
+
+		i := 0
+		size := bv.Size()
 		for n := 0; n < bb.N; n++ {
-			_, err := bv.Load(i)
-			switch err {
-			case nil:
-				i++
-			case ErrOutOfBounds:
-				i = 0
-			default:
+			_, err := bv.Load(i % size)
+			if err != nil {
 				bb.Fatal(err)
 			}
+			i++
 		}
 	})
 }
@@ -65,20 +63,18 @@ func BenchmarkFVecs(b *testing.B) {
 		}
 	}()
 
-	i := 0
 	b.Run(fvecsFile, func(bb *testing.B) {
 		bb.ReportAllocs()
 		bb.ResetTimer()
+
+		i := 0
+		size := fv.Size()
 		for n := 0; n < bb.N; n++ {
-			_, err := fv.Load(i)
-			switch err {
-			case nil:
-				i++
-			case ErrOutOfBounds:
-				i = 0
-			default:
+			_, err := fv.Load(i % size)
+			if err != nil {
 				bb.Fatal(err)
 			}
+			i++
 		}
 	})
 }
@@ -94,20 +90,18 @@ func BenchmarkIVecs(b *testing.B) {
 		}
 	}()
 
-	i := 0
 	b.Run(ivecsFile, func(bb *testing.B) {
 		bb.ReportAllocs()
 		bb.ResetTimer()
+
+		i := 0
+		size := iv.Size()
 		for n := 0; n < bb.N; n++ {
-			_, err := iv.Load(i)
-			switch err {
-			case nil:
-				i++
-			case ErrOutOfBounds:
-				i = 0
-			default:
+			_, err := iv.Load(i % size)
+			if err != nil {
 				bb.Fatal(err)
 			}
+			i++
 		}
 	})
 }
