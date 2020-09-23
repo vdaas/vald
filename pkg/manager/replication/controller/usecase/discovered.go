@@ -57,7 +57,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	grpcServerOptions := []server.Option{
 		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
-			controller.RegisterReplicationServer(srv, g)
+			controller.RegisterReplicationControllerServer(srv, g)
 		}),
 		server.WithGRPCOption(
 			grpc.ChainUnaryInterceptor(grpc.RecoverInterceptor()),
