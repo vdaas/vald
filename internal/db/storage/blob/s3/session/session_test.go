@@ -122,7 +122,30 @@ func TestNew(t *testing.T) {
 			},
 		},
 		{
-			name: "return and log session when set option error",
+			name: "return session with option",
+			args: args{
+				opts: []Option{
+					WithMaxRetries(5),
+				},
+			},
+			want: want{
+				want: &sess{
+					maxRetries:                 5,
+					forcePathStyle:             false,
+					useAccelerate:              false,
+					useARNRegion:               false,
+					useDualStack:               false,
+					enableSSL:                  true,
+					enableParamValidation:      true,
+					enable100Continue:          true,
+					enableContentMD5Validation: true,
+					enableEndpointDiscovery:    false,
+					enableEndpointHostPrefix:   true,
+				},
+			},
+		},
+		{
+			name: "return default option and logging session error when set option error",
 			args: args{
 				opts: []Option{
 					func(s *sess) error {
