@@ -2129,9 +2129,9 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 		metas []MetaVector
 	}
 	type fields struct {
-		session              dbr.Session
-		connected            atomic.Value
-		dbr                  dbr.DBR
+		session   dbr.Session
+		connected atomic.Value
+		dbr       dbr.DBR
 	}
 	type want struct {
 		err error
@@ -2248,7 +2248,7 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 			return test{
 				name: "return error when insertbysql ExecContext returns error",
 				args: args{
-					ctx: ctx,
+					ctx:   ctx,
 					metas: m,
 				},
 				fields: fields{
@@ -2298,8 +2298,8 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 			return test{
 				name: "return error when select loadcontext returns error",
 				args: args{
-					ctx: ctx,
-					metas:  m,
+					ctx:   ctx,
+					metas: m,
 				},
 				fields: fields{
 					session: &mock.MockSession{
@@ -2368,7 +2368,7 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 			return test{
 				name: "return error when elem not found by uuid",
 				args: args{
-					ctx: ctx,
+					ctx:   ctx,
 					metas: m,
 				},
 				fields: fields{
@@ -2447,12 +2447,12 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 			}
 			var m []MetaVector
 			m = append(m, meta)
-			
+
 			err := errors.New("delete ExecContext error")
 			return test{
 				name: "return error when delete ExecContext returns error",
 				args: args{
-					ctx: ctx,
+					ctx:   ctx,
 					metas: m,
 				},
 				fields: fields{
@@ -2546,8 +2546,8 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 			return test{
 				name: "return error when insert ExecContext returns error",
 				args: args{
-					ctx: ctx,
-					metas:  m,
+					ctx:   ctx,
+					metas: m,
 				},
 				fields: fields{
 					session: &mock.MockSession{
@@ -2653,8 +2653,8 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 			return test{
 				name: "return error when tx.Commit returns error",
 				args: args{
-					ctx: ctx,
-					metas:  m,
+					ctx:   ctx,
+					metas: m,
 				},
 				fields: fields{
 					session: &mock.MockSession{
@@ -2762,8 +2762,8 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 			return test{
 				name: "return nil when setMeta ends with success",
 				args: args{
-					ctx: ctx,
-					metas:  m,
+					ctx:   ctx,
+					metas: m,
 				},
 				fields: fields{
 					session: &mock.MockSession{
@@ -2869,9 +2869,9 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &mySQLClient{
-				session:              test.fields.session,
-				connected:            test.fields.connected,
-				dbr:                  test.fields.dbr,
+				session:   test.fields.session,
+				connected: test.fields.connected,
+				dbr:       test.fields.dbr,
 			}
 
 			err := m.SetMetas(test.args.ctx, test.args.metas...)
