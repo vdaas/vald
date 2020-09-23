@@ -35,17 +35,17 @@ func TestNew(t *testing.T) {
 		opts []Option
 	}
 	type want struct {
-		want controller.ReplicationServer
+		want controller.ReplicationControllerServer
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, controller.ReplicationServer) error
+		checkFunc  func(want, controller.ReplicationControllerServer) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got controller.ReplicationServer) error {
+	defaultCheckFunc := func(w want, got controller.ReplicationControllerServer) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
