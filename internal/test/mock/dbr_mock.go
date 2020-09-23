@@ -149,7 +149,7 @@ type MockInsert struct {
 	RecordFunc      func(structValue interface{}) dbr.InsertStmt
 }
 
-func (s *MockInsert) Colums(column ...string) dbr.InsertStmt {
+func (s *MockInsert) Columns(column ...string) dbr.InsertStmt {
 	return s.ColumnsFunc(column...)
 }
 
@@ -159,4 +159,17 @@ func (s *MockInsert) ExecContext(ctx context.Context) (sql.Result, error) {
 
 func (s *MockInsert) Record(structValue interface{}) dbr.InsertStmt {
 	return s.RecordFunc(structValue)
+}
+
+type MockDelete struct {
+	ExecContextFunc func(ctx context.Context) (sql.Result, error)
+	WhereFunc       func(query interface{}, value ...interface{}) dbr.DeleteStmt
+}
+
+func (s *MockDelete) ExecContext(ctx context.Context) (sql.Result, error) {
+	return s.ExecContextFunc(ctx)
+}
+
+func (s *MockDelete) Where(query interface{}, value ...interface{}) dbr.DeleteStmt {
+	return s.WhereFunc(query, value...)
 }

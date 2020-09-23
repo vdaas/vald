@@ -19,6 +19,7 @@ package mysql
 import (
 	"context"
 	"crypto/tls"
+	"database/sql"
 	"os"
 	"reflect"
 	"sync/atomic"
@@ -1384,25 +1385,752 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 		mv  MetaVector
 	}
 	type fields struct {
-		db                   string
-		host                 string
-		port                 int
-		user                 string
-		pass                 string
-		name                 string
-		charset              string
-		timezone             string
-		initialPingTimeLimit time.Duration
-		initialPingDuration  time.Duration
-		connMaxLifeTime      time.Duration
-		dialer               tcp.Dialer
-		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
-		tlsConfig            *tls.Config
-		maxOpenConns         int
-		maxIdleConns         int
+		session   dbr.Session
+		connected atomic.Value
+		dbr       dbr.DBR
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			m := new(metaVector)
+			return test{
+				name: "return error when mysql connection is closed",
+				args: args{
+					ctx: ctx,
+					mv:  m,
+				},
+				fields: fields{
+					connected: func() (v atomic.Value) {
+						v.Store(false)
+						return
+					}(),
+				},
+				want: want{
+					err: errors.ErrMySQLConnectionClosed,
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			m := new(metaVector)
+			err := errors.New("session.Begin error")
+			return test{
+				name: "return error when session.Begin fails",
+				args: args{
+					ctx: ctx,
+					mv:  m,
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							return nil, err
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+				},
+				want: want{
+					err: err,
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			m := new(metaVector)
+			return test{
+				name: "return error when meta vector is invalid",
+				args: args{
+					ctx: ctx,
+					mv:  m,
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							tx := new(mock.MockTx)
+							tx.RollbackFunc = func() error {
+								return nil
+							}
+							tx.RollbackUnlessCommittedFunc = func() {}
+							return tx, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+				},
+				want: want{
+					err: errors.ErrRequiredMemberNotFilled("vector"),
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			m := new(metaVector)
+			m.meta.Vector = []byte("0.1,0.2,0.9")
+			err := errors.New("insertbysql ExecContext error")
+			return test{
+				name: "return error when insertbysql ExecContext returns error",
+				args: args{
+					ctx: ctx,
+					mv:  m,
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							tx := new(mock.MockTx)
+							tx.RollbackFunc = func() error {
+								return nil
+							}
+							tx.RollbackUnlessCommittedFunc = func() {}
+							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
+								s := new(mock.MockInsert)
+								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
+									return s
+								}
+								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+									return nil, err
+								}
+								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
+									return s
+								}
+								return s
+							}
+							return tx, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+				},
+				want: want{
+					err: err,
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			m := new(metaVector)
+			m.meta.Vector = []byte("0.1,0.2,0.9")
+			err := errors.New("loadcontext error")
+			return test{
+				name: "return error when select loadcontext returns error",
+				args: args{
+					ctx: ctx,
+					mv:  m,
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							tx := new(mock.MockTx)
+							tx.RollbackFunc = func() error {
+								return nil
+							}
+							tx.RollbackUnlessCommittedFunc = func() {}
+							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
+								s := new(mock.MockInsert)
+								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
+									return s
+								}
+								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+									return nil, nil
+								}
+								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
+									return s
+								}
+								return s
+							}
+							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
+								s := new(mock.MockSelect)
+								s.FromFunc = func(table interface{}) dbr.SelectStmt {
+									return s
+								}
+								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+									return s
+								}
+								s.LimitFunc = func(n uint64) dbr.SelectStmt {
+									return s
+								}
+								s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+									return 0, err
+								}
+								return s
+							}
+							return tx, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					dbr: &mock.MockDBR{
+						EqFunc: func(col string, val interface{}) dbr.Builder {
+							return dbr.New().Eq(col, val)
+						},
+					},
+				},
+				want: want{
+					err: err,
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			m := new(metaVector)
+			m.meta.Vector = []byte("0.1,0.2,0.9")
+			return test{
+				name: "return error when elem not found by uuid",
+				args: args{
+					ctx: ctx,
+					mv:  m,
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							tx := new(mock.MockTx)
+							tx.RollbackFunc = func() error {
+								return nil
+							}
+							tx.RollbackUnlessCommittedFunc = func() {}
+							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
+								s := new(mock.MockInsert)
+								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
+									return s
+								}
+								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+									return nil, nil
+								}
+								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
+									return s
+								}
+								return s
+							}
+							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
+								s := new(mock.MockSelect)
+								s.FromFunc = func(table interface{}) dbr.SelectStmt {
+									return s
+								}
+								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+									return s
+								}
+								s.LimitFunc = func(n uint64) dbr.SelectStmt {
+									return s
+								}
+								s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+									var id int64
+									if reflect.TypeOf(value) == reflect.TypeOf(&id) {
+										id = int64(len(m.podIPs))
+										reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
+										return 1, nil
+									}
+									return 0, errors.New("error")
+								}
+								return s
+							}
+							return tx, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					dbr: &mock.MockDBR{
+						EqFunc: func(col string, val interface{}) dbr.Builder {
+							return dbr.New().Eq(col, val)
+						},
+					},
+				},
+				want: want{
+					err: errors.ErrRequiredElementNotFoundByUUID(""),
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			m := new(metaVector)
+			m.meta.Vector = []byte("0.1,0.2,0.9")
+			m.podIPs = []podIP{
+				{
+					ID: 1,
+					IP: "192.168.1.12",
+				},
+			}
+			err := errors.New("delete ExecContext error")
+			return test{
+				name: "return error when delete ExecContext returns error",
+				args: args{
+					ctx: ctx,
+					mv:  m,
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							tx := new(mock.MockTx)
+							tx.RollbackFunc = func() error {
+								return nil
+							}
+							tx.RollbackUnlessCommittedFunc = func() {}
+							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
+								s := new(mock.MockInsert)
+								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
+									return s
+								}
+								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+									return nil, nil
+								}
+								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
+									return s
+								}
+								return s
+							}
+							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
+								s := new(mock.MockSelect)
+								s.FromFunc = func(table interface{}) dbr.SelectStmt {
+									return s
+								}
+								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+									return s
+								}
+								s.LimitFunc = func(n uint64) dbr.SelectStmt {
+									return s
+								}
+								s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+									var id int64
+									if reflect.TypeOf(value) == reflect.TypeOf(&id) {
+										id = int64(len(m.podIPs))
+										reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
+										return 1, nil
+									}
+									return 0, errors.New("error")
+								}
+								return s
+							}
+							tx.DeleteFromFunc = func(table string) dbr.DeleteStmt {
+								s := new(mock.MockDelete)
+								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+									return nil, err
+								}
+								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+									return s
+								}
+								return s
+							}
+
+							return tx, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					dbr: &mock.MockDBR{
+						EqFunc: func(col string, val interface{}) dbr.Builder {
+							return dbr.New().Eq(col, val)
+						},
+					},
+				},
+				want: want{
+					err: err,
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			m := new(metaVector)
+			m.meta.Vector = []byte("0.1,0.2,0.9")
+			m.podIPs = []podIP{
+				{
+					ID: 1,
+					IP: "192.168.1.12",
+				},
+			}
+			err := errors.New("insert ExecContext error")
+			return test{
+				name: "return error when insert ExecContext returns error",
+				args: args{
+					ctx: ctx,
+					mv:  m,
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							tx := new(mock.MockTx)
+							tx.RollbackFunc = func() error {
+								return nil
+							}
+							tx.RollbackUnlessCommittedFunc = func() {}
+							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
+								s := new(mock.MockInsert)
+								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
+									return s
+								}
+								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+									return nil, nil
+								}
+								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
+									return s
+								}
+								return s
+							}
+							tx.InsertIntoFunc = func(table string) dbr.InsertStmt {
+								s := new(mock.MockInsert)
+								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
+									return s
+								}
+								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+									return nil, err
+								}
+								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
+									return s
+								}
+								return s
+							}
+							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
+								s := new(mock.MockSelect)
+								s.FromFunc = func(table interface{}) dbr.SelectStmt {
+									return s
+								}
+								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+									return s
+								}
+								s.LimitFunc = func(n uint64) dbr.SelectStmt {
+									return s
+								}
+								s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+									var id int64
+									if reflect.TypeOf(value) == reflect.TypeOf(&id) {
+										id = int64(len(m.podIPs))
+										reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
+										return 1, nil
+									}
+									return 0, errors.New("error")
+								}
+								return s
+							}
+							tx.DeleteFromFunc = func(table string) dbr.DeleteStmt {
+								s := new(mock.MockDelete)
+								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+									return nil, nil
+								}
+								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+									return s
+								}
+								return s
+							}
+
+							return tx, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					dbr: &mock.MockDBR{
+						EqFunc: func(col string, val interface{}) dbr.Builder {
+							return dbr.New().Eq(col, val)
+						},
+					},
+				},
+				want: want{
+					err: err,
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			m := new(metaVector)
+			m.meta.Vector = []byte("0.1,0.2,0.9")
+			m.podIPs = []podIP{
+				{
+					ID: 1,
+					IP: "192.168.1.12",
+				},
+			}
+			err := errors.New("tx.Commit error")
+			return test{
+				name: "return error when tx.Commit returns error",
+				args: args{
+					ctx: ctx,
+					mv:  m,
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							tx := new(mock.MockTx)
+							tx.CommitFunc = func() error {
+								return err
+							}
+							tx.RollbackFunc = func() error {
+								return nil
+							}
+							tx.RollbackUnlessCommittedFunc = func() {}
+							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
+								s := new(mock.MockInsert)
+								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
+									return s
+								}
+								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+									return nil, nil
+								}
+								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
+									return s
+								}
+								return s
+							}
+							tx.InsertIntoFunc = func(table string) dbr.InsertStmt {
+								s := new(mock.MockInsert)
+								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
+									return s
+								}
+								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+									return nil, nil
+								}
+								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
+									return s
+								}
+								return s
+							}
+							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
+								s := new(mock.MockSelect)
+								s.FromFunc = func(table interface{}) dbr.SelectStmt {
+									return s
+								}
+								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+									return s
+								}
+								s.LimitFunc = func(n uint64) dbr.SelectStmt {
+									return s
+								}
+								s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+									var id int64
+									if reflect.TypeOf(value) == reflect.TypeOf(&id) {
+										id = int64(len(m.podIPs))
+										reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
+										return 1, nil
+									}
+									return 0, errors.New("error")
+								}
+								return s
+							}
+							tx.DeleteFromFunc = func(table string) dbr.DeleteStmt {
+								s := new(mock.MockDelete)
+								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+									return nil, nil
+								}
+								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+									return s
+								}
+								return s
+							}
+
+							return tx, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					dbr: &mock.MockDBR{
+						EqFunc: func(col string, val interface{}) dbr.Builder {
+							return dbr.New().Eq(col, val)
+						},
+					},
+				},
+				want: want{
+					err: err,
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			m := new(metaVector)
+			m.meta.Vector = []byte("0.1,0.2,0.9")
+			m.podIPs = []podIP{
+				{
+					ID: 1,
+					IP: "192.168.1.12",
+				},
+			}
+			return test{
+				name: "return nil when setMeta ends with success",
+				args: args{
+					ctx: ctx,
+					mv:  m,
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							tx := new(mock.MockTx)
+							tx.CommitFunc = func() error {
+								return nil
+							}
+							tx.RollbackFunc = func() error {
+								return nil
+							}
+							tx.RollbackUnlessCommittedFunc = func() {}
+							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
+								s := new(mock.MockInsert)
+								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
+									return s
+								}
+								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+									return nil, nil
+								}
+								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
+									return s
+								}
+								return s
+							}
+							tx.InsertIntoFunc = func(table string) dbr.InsertStmt {
+								s := new(mock.MockInsert)
+								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
+									return s
+								}
+								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+									return nil, nil
+								}
+								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
+									return s
+								}
+								return s
+							}
+							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
+								s := new(mock.MockSelect)
+								s.FromFunc = func(table interface{}) dbr.SelectStmt {
+									return s
+								}
+								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+									return s
+								}
+								s.LimitFunc = func(n uint64) dbr.SelectStmt {
+									return s
+								}
+								s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+									var id int64
+									if reflect.TypeOf(value) == reflect.TypeOf(&id) {
+										id = int64(len(m.podIPs))
+										reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
+										return 1, nil
+									}
+									return 0, errors.New("error")
+								}
+								return s
+							}
+							tx.DeleteFromFunc = func(table string) dbr.DeleteStmt {
+								s := new(mock.MockDelete)
+								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+									return nil, nil
+								}
+								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+									return s
+								}
+								return s
+							}
+
+							return tx, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					dbr: &mock.MockDBR{
+						EqFunc: func(col string, val interface{}) dbr.Builder {
+							return dbr.New().Eq(col, val)
+						},
+					},
+				},
+				want: want{},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			m := &mySQLClient{
+				session:   test.fields.session,
+				connected: test.fields.connected,
+				dbr:       test.fields.dbr,
+			}
+
+			err := m.SetMeta(test.args.ctx, test.args.mv)
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_mySQLClient_SetMetas(t *testing.T) {
+	type args struct {
+		ctx   context.Context
+		metas []MetaVector
+	}
+	type fields struct {
 		session              dbr.Session
 		connected            atomic.Value
-		eventReceiver        EventReceiver
 		dbr                  dbr.DBR
 	}
 	type want struct {
@@ -1426,33 +2154,701 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 	tests := []test{
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
+			var m []MetaVector
 			return test{
-				name: "test_case_2",
+				name: "return error when mysql connection is closed",
 				args: args{
-					ctx: ctx,
-					mv:  nil,
+					ctx:   ctx,
+					metas: m,
 				},
 				fields: fields{
-					// initialPingTimeLimit: nil,
-					// initialPingDuration:  nil,
-					// connMaxLifeTime:      nil,
-					// dialer:               nil,
-					// dialerFunc:           nil,
-					// tlsConfig:            nil,
-					// maxOpenConns:         0,
-					// maxIdleConns:         0,
-					session: &mock.MockSession{},
 					connected: func() (v atomic.Value) {
 						v.Store(false)
 						return
 					}(),
-					eventReceiver: nil,
-					dbr:           nil,
 				},
-				want:      want{
+				want: want{
 					err: errors.ErrMySQLConnectionClosed,
 				},
-				checkFunc: defaultCheckFunc,
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			var m []MetaVector
+			err := errors.New("session.Begin error")
+			return test{
+				name: "return error when session.Begin fails",
+				args: args{
+					ctx:   ctx,
+					metas: m,
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							return nil, err
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+				},
+				want: want{
+					err: err,
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			var m []MetaVector
+			m = append(m, new(metaVector))
+			return test{
+				name: "return error when meta vector is invalid",
+				args: args{
+					ctx:   ctx,
+					metas: m,
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							tx := new(mock.MockTx)
+							tx.RollbackFunc = func() error {
+								return nil
+							}
+							tx.RollbackUnlessCommittedFunc = func() {}
+							return tx, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+				},
+				want: want{
+					err: errors.ErrRequiredMemberNotFilled("vector"),
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			meta := new(metaVector)
+			meta.meta.Vector = []byte("0.1,0.2,0.9")
+			var m []MetaVector
+			m = append(m, meta)
+			err := errors.New("insertbysql ExecContext error")
+			return test{
+				name: "return error when insertbysql ExecContext returns error",
+				args: args{
+					ctx: ctx,
+					metas: m,
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							tx := new(mock.MockTx)
+							tx.RollbackFunc = func() error {
+								return nil
+							}
+							tx.RollbackUnlessCommittedFunc = func() {}
+							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
+								s := new(mock.MockInsert)
+								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
+									return s
+								}
+								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+									return nil, err
+								}
+								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
+									return s
+								}
+								return s
+							}
+							return tx, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+				},
+				want: want{
+					err: err,
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			meta := new(metaVector)
+			meta.meta.Vector = []byte("0.1,0.2,0.9")
+			var m []MetaVector
+			m = append(m, meta)
+			err := errors.New("loadcontext error")
+			return test{
+				name: "return error when select loadcontext returns error",
+				args: args{
+					ctx: ctx,
+					metas:  m,
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							tx := new(mock.MockTx)
+							tx.RollbackFunc = func() error {
+								return nil
+							}
+							tx.RollbackUnlessCommittedFunc = func() {}
+							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
+								s := new(mock.MockInsert)
+								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
+									return s
+								}
+								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+									return nil, nil
+								}
+								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
+									return s
+								}
+								return s
+							}
+							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
+								s := new(mock.MockSelect)
+								s.FromFunc = func(table interface{}) dbr.SelectStmt {
+									return s
+								}
+								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+									return s
+								}
+								s.LimitFunc = func(n uint64) dbr.SelectStmt {
+									return s
+								}
+								s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+									return 0, err
+								}
+								return s
+							}
+							return tx, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					dbr: &mock.MockDBR{
+						EqFunc: func(col string, val interface{}) dbr.Builder {
+							return dbr.New().Eq(col, val)
+						},
+					},
+				},
+				want: want{
+					err: err,
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			meta := new(metaVector)
+			meta.meta.Vector = []byte("0.1,0.2,0.9")
+			var m []MetaVector
+			m = append(m, meta)
+			return test{
+				name: "return error when elem not found by uuid",
+				args: args{
+					ctx: ctx,
+					metas: m,
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							tx := new(mock.MockTx)
+							tx.RollbackFunc = func() error {
+								return nil
+							}
+							tx.RollbackUnlessCommittedFunc = func() {}
+							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
+								s := new(mock.MockInsert)
+								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
+									return s
+								}
+								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+									return nil, nil
+								}
+								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
+									return s
+								}
+								return s
+							}
+							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
+								s := new(mock.MockSelect)
+								s.FromFunc = func(table interface{}) dbr.SelectStmt {
+									return s
+								}
+								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+									return s
+								}
+								s.LimitFunc = func(n uint64) dbr.SelectStmt {
+									return s
+								}
+								s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+									var id int64
+									if reflect.TypeOf(value) == reflect.TypeOf(&id) {
+										id = int64(len(m[0].GetIPs()))
+										reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
+										return 1, nil
+									}
+									return 0, errors.New("error")
+								}
+								return s
+							}
+							return tx, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					dbr: &mock.MockDBR{
+						EqFunc: func(col string, val interface{}) dbr.Builder {
+							return dbr.New().Eq(col, val)
+						},
+					},
+				},
+				want: want{
+					err: errors.ErrRequiredElementNotFoundByUUID(""),
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			meta := new(metaVector)
+			meta.meta.Vector = []byte("0.1,0.2,0.9")
+			meta.podIPs = []podIP{
+				{
+					ID: 1,
+					IP: "192.168.1.12",
+				},
+			}
+			var m []MetaVector
+			m = append(m, meta)
+			
+			err := errors.New("delete ExecContext error")
+			return test{
+				name: "return error when delete ExecContext returns error",
+				args: args{
+					ctx: ctx,
+					metas: m,
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							tx := new(mock.MockTx)
+							tx.RollbackFunc = func() error {
+								return nil
+							}
+							tx.RollbackUnlessCommittedFunc = func() {}
+							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
+								s := new(mock.MockInsert)
+								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
+									return s
+								}
+								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+									return nil, nil
+								}
+								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
+									return s
+								}
+								return s
+							}
+							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
+								s := new(mock.MockSelect)
+								s.FromFunc = func(table interface{}) dbr.SelectStmt {
+									return s
+								}
+								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+									return s
+								}
+								s.LimitFunc = func(n uint64) dbr.SelectStmt {
+									return s
+								}
+								s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+									var id int64
+									if reflect.TypeOf(value) == reflect.TypeOf(&id) {
+										id = int64(len(m[0].GetIPs()))
+										reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
+										return 1, nil
+									}
+									return 0, errors.New("error")
+								}
+								return s
+							}
+							tx.DeleteFromFunc = func(table string) dbr.DeleteStmt {
+								s := new(mock.MockDelete)
+								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+									return nil, err
+								}
+								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+									return s
+								}
+								return s
+							}
+
+							return tx, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					dbr: &mock.MockDBR{
+						EqFunc: func(col string, val interface{}) dbr.Builder {
+							return dbr.New().Eq(col, val)
+						},
+					},
+				},
+				want: want{
+					err: err,
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			meta := new(metaVector)
+			meta.meta.Vector = []byte("0.1,0.2,0.9")
+			meta.podIPs = []podIP{
+				{
+					ID: 1,
+					IP: "192.168.1.12",
+				},
+			}
+			var m []MetaVector
+			m = append(m, meta)
+			err := errors.New("insert ExecContext error")
+			return test{
+				name: "return error when insert ExecContext returns error",
+				args: args{
+					ctx: ctx,
+					metas:  m,
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							tx := new(mock.MockTx)
+							tx.RollbackFunc = func() error {
+								return nil
+							}
+							tx.RollbackUnlessCommittedFunc = func() {}
+							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
+								s := new(mock.MockInsert)
+								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
+									return s
+								}
+								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+									return nil, nil
+								}
+								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
+									return s
+								}
+								return s
+							}
+							tx.InsertIntoFunc = func(table string) dbr.InsertStmt {
+								s := new(mock.MockInsert)
+								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
+									return s
+								}
+								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+									return nil, err
+								}
+								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
+									return s
+								}
+								return s
+							}
+							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
+								s := new(mock.MockSelect)
+								s.FromFunc = func(table interface{}) dbr.SelectStmt {
+									return s
+								}
+								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+									return s
+								}
+								s.LimitFunc = func(n uint64) dbr.SelectStmt {
+									return s
+								}
+								s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+									var id int64
+									if reflect.TypeOf(value) == reflect.TypeOf(&id) {
+										id = int64(len(m[0].GetIPs()))
+										reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
+										return 1, nil
+									}
+									return 0, errors.New("error")
+								}
+								return s
+							}
+							tx.DeleteFromFunc = func(table string) dbr.DeleteStmt {
+								s := new(mock.MockDelete)
+								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+									return nil, nil
+								}
+								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+									return s
+								}
+								return s
+							}
+
+							return tx, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					dbr: &mock.MockDBR{
+						EqFunc: func(col string, val interface{}) dbr.Builder {
+							return dbr.New().Eq(col, val)
+						},
+					},
+				},
+				want: want{
+					err: err,
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			meta := new(metaVector)
+			meta.meta.Vector = []byte("0.1,0.2,0.9")
+			meta.podIPs = []podIP{
+				{
+					ID: 1,
+					IP: "192.168.1.12",
+				},
+			}
+			var m []MetaVector
+			m = append(m, meta)
+			err := errors.New("tx.Commit error")
+			return test{
+				name: "return error when tx.Commit returns error",
+				args: args{
+					ctx: ctx,
+					metas:  m,
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							tx := new(mock.MockTx)
+							tx.CommitFunc = func() error {
+								return err
+							}
+							tx.RollbackFunc = func() error {
+								return nil
+							}
+							tx.RollbackUnlessCommittedFunc = func() {}
+							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
+								s := new(mock.MockInsert)
+								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
+									return s
+								}
+								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+									return nil, nil
+								}
+								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
+									return s
+								}
+								return s
+							}
+							tx.InsertIntoFunc = func(table string) dbr.InsertStmt {
+								s := new(mock.MockInsert)
+								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
+									return s
+								}
+								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+									return nil, nil
+								}
+								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
+									return s
+								}
+								return s
+							}
+							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
+								s := new(mock.MockSelect)
+								s.FromFunc = func(table interface{}) dbr.SelectStmt {
+									return s
+								}
+								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+									return s
+								}
+								s.LimitFunc = func(n uint64) dbr.SelectStmt {
+									return s
+								}
+								s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+									var id int64
+									if reflect.TypeOf(value) == reflect.TypeOf(&id) {
+										id = int64(len(m[0].GetIPs()))
+										reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
+										return 1, nil
+									}
+									return 0, errors.New("error")
+								}
+								return s
+							}
+							tx.DeleteFromFunc = func(table string) dbr.DeleteStmt {
+								s := new(mock.MockDelete)
+								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+									return nil, nil
+								}
+								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+									return s
+								}
+								return s
+							}
+
+							return tx, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					dbr: &mock.MockDBR{
+						EqFunc: func(col string, val interface{}) dbr.Builder {
+							return dbr.New().Eq(col, val)
+						},
+					},
+				},
+				want: want{
+					err: err,
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			meta := new(metaVector)
+			meta.meta.Vector = []byte("0.1,0.2,0.9")
+			meta.podIPs = []podIP{
+				{
+					ID: 1,
+					IP: "192.168.1.12",
+				},
+			}
+			var m []MetaVector
+			m = append(m, meta)
+			return test{
+				name: "return nil when setMeta ends with success",
+				args: args{
+					ctx: ctx,
+					metas:  m,
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							tx := new(mock.MockTx)
+							tx.CommitFunc = func() error {
+								return nil
+							}
+							tx.RollbackFunc = func() error {
+								return nil
+							}
+							tx.RollbackUnlessCommittedFunc = func() {}
+							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
+								s := new(mock.MockInsert)
+								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
+									return s
+								}
+								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+									return nil, nil
+								}
+								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
+									return s
+								}
+								return s
+							}
+							tx.InsertIntoFunc = func(table string) dbr.InsertStmt {
+								s := new(mock.MockInsert)
+								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
+									return s
+								}
+								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+									return nil, nil
+								}
+								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
+									return s
+								}
+								return s
+							}
+							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
+								s := new(mock.MockSelect)
+								s.FromFunc = func(table interface{}) dbr.SelectStmt {
+									return s
+								}
+								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+									return s
+								}
+								s.LimitFunc = func(n uint64) dbr.SelectStmt {
+									return s
+								}
+								s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+									var id int64
+									if reflect.TypeOf(value) == reflect.TypeOf(&id) {
+										id = int64(len(m[0].GetIPs()))
+										reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
+										return 1, nil
+									}
+									return 0, errors.New("error")
+								}
+								return s
+							}
+							tx.DeleteFromFunc = func(table string) dbr.DeleteStmt {
+								s := new(mock.MockDelete)
+								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+									return nil, nil
+								}
+								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+									return s
+								}
+								return s
+							}
+
+							return tx, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					dbr: &mock.MockDBR{
+						EqFunc: func(col string, val interface{}) dbr.Builder {
+							return dbr.New().Eq(col, val)
+						},
+					},
+				},
+				want: want{},
 				afterFunc: func(args) {
 					cancel()
 				},
@@ -1473,188 +2869,8 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &mySQLClient{
-				db:                   test.fields.db,
-				host:                 test.fields.host,
-				port:                 test.fields.port,
-				user:                 test.fields.user,
-				pass:                 test.fields.pass,
-				name:                 test.fields.name,
-				charset:              test.fields.charset,
-				timezone:             test.fields.timezone,
-				initialPingTimeLimit: test.fields.initialPingTimeLimit,
-				initialPingDuration:  test.fields.initialPingDuration,
-				connMaxLifeTime:      test.fields.connMaxLifeTime,
-				dialer:               test.fields.dialer,
-				dialerFunc:           test.fields.dialerFunc,
-				tlsConfig:            test.fields.tlsConfig,
-				maxOpenConns:         test.fields.maxOpenConns,
-				maxIdleConns:         test.fields.maxIdleConns,
 				session:              test.fields.session,
 				connected:            test.fields.connected,
-				eventReceiver:        test.fields.eventReceiver,
-				dbr:                  test.fields.dbr,
-			}
-
-			err := m.SetMeta(test.args.ctx, test.args.mv)
-			if err := test.checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_mySQLClient_SetMetas(t *testing.T) {
-	type args struct {
-		ctx   context.Context
-		metas []MetaVector
-	}
-	type fields struct {
-		db                   string
-		host                 string
-		port                 int
-		user                 string
-		pass                 string
-		name                 string
-		charset              string
-		timezone             string
-		initialPingTimeLimit time.Duration
-		initialPingDuration  time.Duration
-		connMaxLifeTime      time.Duration
-		dialer               tcp.Dialer
-		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
-		tlsConfig            *tls.Config
-		maxOpenConns         int
-		maxIdleConns         int
-		session              dbr.Session
-		connected            atomic.Value
-		eventReceiver        EventReceiver
-		dbr                  dbr.DBR
-	}
-	type want struct {
-		err error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           metas: nil,
-		       },
-		       fields: fields {
-		           db: "",
-		           host: "",
-		           port: 0,
-		           user: "",
-		           pass: "",
-		           name: "",
-		           charset: "",
-		           timezone: "",
-		           initialPingTimeLimit: nil,
-		           initialPingDuration: nil,
-		           connMaxLifeTime: nil,
-		           dialer: nil,
-		           dialerFunc: nil,
-		           tlsConfig: nil,
-		           maxOpenConns: 0,
-		           maxIdleConns: 0,
-		           session: nil,
-		           connected: nil,
-		           eventReceiver: nil,
-		           dbr: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           metas: nil,
-		           },
-		           fields: fields {
-		           db: "",
-		           host: "",
-		           port: 0,
-		           user: "",
-		           pass: "",
-		           name: "",
-		           charset: "",
-		           timezone: "",
-		           initialPingTimeLimit: nil,
-		           initialPingDuration: nil,
-		           connMaxLifeTime: nil,
-		           dialer: nil,
-		           dialerFunc: nil,
-		           tlsConfig: nil,
-		           maxOpenConns: 0,
-		           maxIdleConns: 0,
-		           session: nil,
-		           connected: nil,
-		           eventReceiver: nil,
-		           dbr: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			m := &mySQLClient{
-				db:                   test.fields.db,
-				host:                 test.fields.host,
-				port:                 test.fields.port,
-				user:                 test.fields.user,
-				pass:                 test.fields.pass,
-				name:                 test.fields.name,
-				charset:              test.fields.charset,
-				timezone:             test.fields.timezone,
-				initialPingTimeLimit: test.fields.initialPingTimeLimit,
-				initialPingDuration:  test.fields.initialPingDuration,
-				connMaxLifeTime:      test.fields.connMaxLifeTime,
-				dialer:               test.fields.dialer,
-				dialerFunc:           test.fields.dialerFunc,
-				tlsConfig:            test.fields.tlsConfig,
-				maxOpenConns:         test.fields.maxOpenConns,
-				maxIdleConns:         test.fields.maxIdleConns,
-				session:              test.fields.session,
-				connected:            test.fields.connected,
-				eventReceiver:        test.fields.eventReceiver,
 				dbr:                  test.fields.dbr,
 			}
 
