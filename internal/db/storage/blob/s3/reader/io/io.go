@@ -7,7 +7,7 @@ import (
 	iio "github.com/vdaas/vald/internal/io"
 )
 
-// IO represents an interface for context io.
+// IO represents an interface to create object for io.
 type IO interface {
 	NewReaderWithContext(ctx context.Context, r io.Reader) (io.Reader, error)
 	NewReadCloserWithContext(ctx context.Context, r io.ReadCloser) (io.ReadCloser, error)
@@ -15,7 +15,7 @@ type IO interface {
 
 type ctxio struct{}
 
-// New returns CtxIO implementation.
+// New returns IO implementation.
 func New() IO {
 	return new(ctxio)
 }
@@ -25,7 +25,7 @@ func (*ctxio) NewReaderWithContext(ctx context.Context, r io.Reader) (io.Reader,
 	return iio.NewReaderWithContext(ctx, r)
 }
 
-// NewReadCNewReadCloserWithContext calls io.NewReadCloserWithContext.
+// NewReadCloserWithContext calls io.NewReadCloserWithContext.
 func (*ctxio) NewReadCloserWithContext(ctx context.Context, r io.ReadCloser) (io.ReadCloser, error) {
 	return iio.NewReadCloserWithContext(ctx, r)
 }
