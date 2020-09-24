@@ -77,7 +77,24 @@ func TestNew(t *testing.T) {
 		},
 
 		{
-			name: "returns writer and outputs the warn when option is not empty",
+			name: "returns writer when option is not empty",
+			args: args{
+				opts: []Option{
+					WithContentType("vdaas"),
+				},
+			},
+			want: want{
+				want: &writer{
+					eg:          errgroup.Get(),
+					contentType: "vdaas",
+					maxPartSize: 64 * 1024 * 1024,
+					s3manager:   s3manager.New(),
+				},
+			},
+		},
+
+		{
+			name: "returns writer and outputs the warn when option is not empty and option apply fails",
 			args: args{
 				opts: []Option{
 					func(w *writer) error {
