@@ -28,7 +28,7 @@ import (
 func TestWithReplicator(t *testing.T) {
 	type T = interface{}
 	type args struct {
-		rpl controller.ReplicationServer
+		rpl controller.ReplicationControllerServer
 	}
 	type want struct {
 		obj *T

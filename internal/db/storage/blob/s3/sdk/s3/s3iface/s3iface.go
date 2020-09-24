@@ -13,31 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+package s3iface
 
-// Package grpc provides grpc server logic
-package grpc
+import "github.com/aws/aws-sdk-go/service/s3/s3iface"
 
-import (
-	"context"
-
-	"github.com/vdaas/vald/apis/grpc/manager/replication/controller"
-	"github.com/vdaas/vald/apis/grpc/payload"
-	"github.com/vdaas/vald/pkg/manager/replication/controller/service"
-)
-
-type server struct {
-	controller service.Replicator
-}
-
-func New(opts ...Option) controller.ReplicationControllerServer {
-	s := new(server)
-
-	for _, opt := range append(defaultOpts, opts...) {
-		opt(s)
-	}
-	return s
-}
-
-func (s *server) ReplicationInfo(ctx context.Context, _ *payload.Empty) (res *payload.Replication_Agents, err error) {
-	return nil, nil
-}
+// S3API is type alias for s3iface.S3API.
+type S3API = s3iface.S3API
