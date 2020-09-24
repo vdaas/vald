@@ -1122,3 +1122,375 @@ func Test_handler_Exists(t *testing.T) {
 		})
 	}
 }
+
+func Test_handler_MultiSearch(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		w http.ResponseWriter
+		r *http.Request
+	}
+	type fields struct {
+		vald vald.Server
+	}
+	type want struct {
+		wantCode int
+		err      error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, int, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotCode int, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotCode, w.wantCode) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotCode, w.wantCode)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           w: nil,
+		           r: nil,
+		       },
+		       fields: fields {
+		           vald: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           w: nil,
+		           r: nil,
+		           },
+		           fields: fields {
+		           vald: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			h := &handler{
+				vald: test.fields.vald,
+			}
+
+			gotCode, err := h.MultiSearch(test.args.w, test.args.r)
+			if err := test.checkFunc(test.want, gotCode, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_handler_MultiSearchByID(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		w http.ResponseWriter
+		r *http.Request
+	}
+	type fields struct {
+		vald vald.Server
+	}
+	type want struct {
+		wantCode int
+		err      error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, int, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotCode int, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotCode, w.wantCode) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotCode, w.wantCode)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           w: nil,
+		           r: nil,
+		       },
+		       fields: fields {
+		           vald: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           w: nil,
+		           r: nil,
+		           },
+		           fields: fields {
+		           vald: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			h := &handler{
+				vald: test.fields.vald,
+			}
+
+			gotCode, err := h.MultiSearchByID(test.args.w, test.args.r)
+			if err := test.checkFunc(test.want, gotCode, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_handler_Upsert(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		w http.ResponseWriter
+		r *http.Request
+	}
+	type fields struct {
+		vald vald.Server
+	}
+	type want struct {
+		wantCode int
+		err      error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, int, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotCode int, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotCode, w.wantCode) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotCode, w.wantCode)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           w: nil,
+		           r: nil,
+		       },
+		       fields: fields {
+		           vald: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           w: nil,
+		           r: nil,
+		           },
+		           fields: fields {
+		           vald: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			h := &handler{
+				vald: test.fields.vald,
+			}
+
+			gotCode, err := h.Upsert(test.args.w, test.args.r)
+			if err := test.checkFunc(test.want, gotCode, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_handler_MultiUpsert(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		w http.ResponseWriter
+		r *http.Request
+	}
+	type fields struct {
+		vald vald.Server
+	}
+	type want struct {
+		wantCode int
+		err      error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, int, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotCode int, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotCode, w.wantCode) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotCode, w.wantCode)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           w: nil,
+		           r: nil,
+		       },
+		       fields: fields {
+		           vald: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           w: nil,
+		           r: nil,
+		           },
+		           fields: fields {
+		           vald: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			h := &handler{
+				vald: test.fields.vald,
+			}
+
+			gotCode, err := h.MultiUpsert(test.args.w, test.args.r)
+			if err := test.checkFunc(test.want, gotCode, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}

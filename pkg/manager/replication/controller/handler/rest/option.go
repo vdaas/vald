@@ -27,7 +27,7 @@ var (
 	defaultOpts = []Option{}
 )
 
-func WithReplicator(rpl controller.ReplicationServer) Option {
+func WithReplicator(rpl controller.ReplicationControllerServer) Option {
 	return func(h *handler) {
 		if rpl != nil {
 			h.rpl = rpl

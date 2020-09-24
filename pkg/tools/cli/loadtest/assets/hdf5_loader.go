@@ -16,9 +16,6 @@
 package assets
 
 import (
-	"strconv"
-
-	"github.com/kpango/fuid"
 	"github.com/vdaas/vald/internal/errors"
 	"gonum.org/v1/hdf5"
 )
@@ -118,67 +115,4 @@ func Load(path string) (train, test, distances [][]float32, neighbors [][]int, d
 	}
 
 	return train, test, distances, neighbors, dim, nil
-}
-
-// CreateRandomIDs generates random string IDs.
-func CreateRandomIDs(n int) (ids []string) {
-	ids = make([]string, 0, n)
-	for i := 0; i < n; i++ {
-		ids = append(ids, fuid.String())
-	}
-	return ids
-}
-
-// CreateRandomIDsWithLength generates random string IDs that have specified length.
-func CreateRandomIDsWithLength(n, l int) (ids []string) {
-	ids = make([]string, 0, n)
-	for i := 0; i < n; i++ {
-		id := fuid.String()
-		for len(id) < l {
-			id = id + fuid.String()
-		}
-		ids = append(ids, id[:l])
-	}
-	return ids
-}
-
-// CreateSerialIDs generates serial number IDs.
-func CreateSerialIDs(n int) []string {
-	ids := make([]string, 0, n)
-	for i := 0; i < n; i++ {
-		ids = append(ids, strconv.Itoa(i))
-	}
-	return ids
-}
-
-// LoadDataWithRandomIDs returns approximate nearest neighbor benchmark dataset with random IDs.
-func LoadDataWithRandomIDs(path string) (Dataset, error) {
-	train, test, distances, neighbors, dim, err := Load(path)
-	if err != nil {
-		return nil, err
-	}
-	return &dataset{
-		train:     train,
-		query:     test,
-		distances: distances,
-		neighbors: neighbors,
-		ids:       CreateRandomIDs(len(train)),
-		dimension: dim,
-	}, nil
-}
-
-// LoadDataWithSerialIDs returns approximate nearest neighbor benchmark dataset with serial IDs.
-func LoadDataWithSerialIDs(path string) (Dataset, error) {
-	train, test, distances, neighbors, dim, err := Load(path)
-	if err != nil {
-		return nil, err
-	}
-	return &dataset{
-		train:     train,
-		query:     test,
-		distances: distances,
-		neighbors: neighbors,
-		ids:       CreateSerialIDs(len(train)),
-		dimension: dim,
-	}, nil
 }

@@ -107,7 +107,7 @@ func Test_handler_Index(t *testing.T) {
 		r *http.Request
 	}
 	type fields struct {
-		rpl controller.ReplicationServer
+		rpl controller.ReplicationControllerServer
 	}
 	type want struct {
 		want int

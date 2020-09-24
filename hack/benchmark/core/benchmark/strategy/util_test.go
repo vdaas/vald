@@ -25,7 +25,6 @@ import (
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/hack/benchmark/internal/core"
 	"github.com/vdaas/vald/internal/errors"
-
 	"go.uber.org/goleak"
 )
 
@@ -255,6 +254,79 @@ func Test_insertAndCreateIndex64(t *testing.T) {
 
 			gotIds, err := insertAndCreateIndex64(test.args.ctx, test.args.c, test.args.dataset)
 			if err := test.checkFunc(test.want, gotIds, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_float32To64(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		x []float32
+	}
+	type want struct {
+		wantY []float64
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, []float64) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotY []float64) error {
+		if !reflect.DeepEqual(gotY, w.wantY) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotY, w.wantY)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           x: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           x: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			gotY := float32To64(test.args.x)
+			if err := test.checkFunc(test.want, gotY); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 

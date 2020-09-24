@@ -24,6 +24,7 @@ AGENT_SIDECAR_IMAGE             = $(NAME)-agent-sidecar
 BACKUP_GATEWAY_IMAGE            = $(NAME)-backup-gateway
 BASE_IMAGE                      = $(NAME)-base
 CI_CONTAINER_IMAGE              = $(NAME)-ci-container
+DEV_CONTAINER_IMAGE             = $(NAME)-dev-container
 DISCOVERER_IMAGE                = $(NAME)-discoverer-k8s
 FILTER_GATEWAY_IMAGE            = $(NAME)-filter-gateway
 GATEWAY_IMAGE                   = $(NAME)-gateway
@@ -99,6 +100,31 @@ CXXFLAGS ?= $(CFLAGS)
 
 BENCH_DATASET_MD5S := $(eval BENCH_DATASET_MD5S := $(shell find $(BENCH_DATASET_MD5_DIR) -type f -regex ".*\.md5"))$(BENCH_DATASET_MD5S)
 BENCH_DATASETS = $(BENCH_DATASET_MD5S:$(BENCH_DATASET_MD5_DIR)/%.md5=$(BENCH_DATASET_HDF5_DIR)/%.hdf5)
+
+BENCH_LARGE_DATASET_BASE_DIR = $(BENCH_DATASET_BASE_DIR)/large/dataset
+
+SIFT1B_ROOT_DIR = $(BENCH_LARGE_DATASET_BASE_DIR)/sift1b
+
+SIFT1B_BASE_FILE = $(SIFT1B_ROOT_DIR)/bigann_base.bvecs
+SIFT1B_LEARN_FILE = $(SIFT1B_ROOT_DIR)/bigann_learn.bvecs
+SIFT1B_QUERY_FILE = $(SIFT1B_ROOT_DIR)/bigann_query.bvecs
+SIFT1B_GROUNDTRUTH_DIR = $(SIFT1B_ROOT_DIR)/gnd
+
+SIFT1B_BASE_URL = ftp://ftp.irisa.fr/local/texmex/corpus/
+
+DEEP1B_ROOT_DIR = $(BENCH_LARGE_DATASET_BASE_DIR)/deep1b
+
+DEEP1B_BASE_FILE = $(DEEP1B_ROOT_DIR)/deep1B_base.fvecs
+DEEP1B_LEARN_FILE = $(DEEP1B_ROOT_DIR)/deep1B_learn.fvecs
+DEEP1B_QUERY_FILE = $(DEEP1B_ROOT_DIR)/deep1B_queries.fvecs
+DEEP1B_GROUNDTRUTH_FILE = $(DEEP1B_ROOT_DIR)/deep1B_groundtruth.ivecs
+
+DEEP1B_BASE_DIR = $(DEEP1B_ROOT_DIR)/base
+DEEP1B_BASE_CHUNK_FILES = $(shell printf "$(DEEP1B_BASE_DIR)/base_%02d\n" {0..36})
+DEEP1B_LEARN_DIR = $(DEEP1B_ROOT_DIR)/learn
+DEEP1B_LEARN_CHUNK_FILES = $(shell printf "$(DEEP1B_LEARN_DIR)/learn_%02d\n" {0..13})
+
+DEEP1B_API_URL = https://cloud-api.yandex.net/v1/disk/public/resources/download?public_key=https://yadi.sk/d/11eDCm7Dsn9GA&path=
 
 DATASET_ARGS ?= identity-128
 ADDRESS_ARGS ?= ""

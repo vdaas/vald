@@ -29,7 +29,7 @@ func TestWithReplicator(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		rpl controller.ReplicationServer
+		rpl controller.ReplicationControllerServer
 	}
 	type want struct {
 		obj *T

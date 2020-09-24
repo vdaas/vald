@@ -25,6 +25,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	client "github.com/vdaas/vald/internal/client/gateway/vald"
+	client "github.com/vdaas/vald/internal/client/v1/client/gateway/vald"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -2229,6 +2230,224 @@ func Test_server_StreamGetObject(t *testing.T) {
 
 			err := s.StreamGetObject(test.args.stream)
 			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_server_MultiSearch(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ctx  context.Context
+		reqs *payload.Search_MultiRequest
+	}
+	type fields struct {
+		eg                errgroup.Group
+		metadata          service.Meta
+		gateway           client.Client
+		copts             []grpc.CallOption
+		streamConcurrency int
+	}
+	type want struct {
+		wantRes *payload.Search_Responses
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *payload.Search_Responses, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRes *payload.Search_Responses, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           reqs: nil,
+		       },
+		       fields: fields {
+		           eg: nil,
+		           metadata: nil,
+		           gateway: nil,
+		           copts: nil,
+		           streamConcurrency: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           reqs: nil,
+		           },
+		           fields: fields {
+		           eg: nil,
+		           metadata: nil,
+		           gateway: nil,
+		           copts: nil,
+		           streamConcurrency: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			s := &server{
+				eg:                test.fields.eg,
+				metadata:          test.fields.metadata,
+				gateway:           test.fields.gateway,
+				copts:             test.fields.copts,
+				streamConcurrency: test.fields.streamConcurrency,
+			}
+
+			gotRes, err := s.MultiSearch(test.args.ctx, test.args.reqs)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_server_MultiSearchByID(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ctx  context.Context
+		reqs *payload.Search_MultiIDRequest
+	}
+	type fields struct {
+		eg                errgroup.Group
+		metadata          service.Meta
+		gateway           client.Client
+		copts             []grpc.CallOption
+		streamConcurrency int
+	}
+	type want struct {
+		wantRes *payload.Search_Responses
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *payload.Search_Responses, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRes *payload.Search_Responses, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           reqs: nil,
+		       },
+		       fields: fields {
+		           eg: nil,
+		           metadata: nil,
+		           gateway: nil,
+		           copts: nil,
+		           streamConcurrency: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           reqs: nil,
+		           },
+		           fields: fields {
+		           eg: nil,
+		           metadata: nil,
+		           gateway: nil,
+		           copts: nil,
+		           streamConcurrency: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			s := &server{
+				eg:                test.fields.eg,
+				metadata:          test.fields.metadata,
+				gateway:           test.fields.gateway,
+				copts:             test.fields.copts,
+				streamConcurrency: test.fields.streamConcurrency,
+			}
+
+			gotRes, err := s.MultiSearchByID(test.args.ctx, test.args.reqs)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 

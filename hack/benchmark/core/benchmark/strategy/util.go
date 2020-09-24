@@ -43,10 +43,20 @@ func wrapErrors(errs []error) (wrapped error) {
 }
 
 func insertAndCreateIndex32(ctx context.Context, c core.Core32, dataset assets.Dataset) (ids []uint, err error) {
-	train := dataset.Train()
-	ids = make([]uint, 0, len(train)*bulkInsertCnt)
+	ids = make([]uint, 0, dataset.TrainSize()*bulkInsertCnt)
 
+	n := 0
 	for i := 0; i < bulkInsertCnt; i++ {
+		train := make([][]float32, 0, dataset.TrainSize()/bulkInsertCnt)
+		for j := 0; j < len(train); j++ {
+			v, err := dataset.Train(n)
+			if err != nil {
+				n = 0
+				break
+			}
+			train = append(train, v.([]float32))
+			n++
+		}
 		inserted, errs := c.BulkInsert(train)
 		err = wrapErrors(errs)
 		if err != nil {
@@ -55,7 +65,7 @@ func insertAndCreateIndex32(ctx context.Context, c core.Core32, dataset assets.D
 		ids = append(ids, inserted...)
 	}
 
-	err = c.CreateIndex(uint32((len(train) * bulkInsertCnt) / 100))
+	err = c.CreateIndex(uint32((dataset.TrainSize() * bulkInsertCnt) / 100))
 	if err != nil {
 		return nil, err
 	}
@@ -63,10 +73,20 @@ func insertAndCreateIndex32(ctx context.Context, c core.Core32, dataset assets.D
 }
 
 func insertAndCreateIndex64(ctx context.Context, c core.Core64, dataset assets.Dataset) (ids []uint, err error) {
-	train := dataset.TrainAsFloat64()
-	ids = make([]uint, 0, len(train)*bulkInsertCnt)
+	ids = make([]uint, 0, dataset.TrainSize()*bulkInsertCnt)
 
+	n := 0
 	for i := 0; i < bulkInsertCnt; i++ {
+		train := make([][]float64, 0, dataset.TrainSize()/bulkInsertCnt)
+		for j := 0; j < len(train); j++ {
+			v, err := dataset.Train(n)
+			if err != nil {
+				n = 0
+				break
+			}
+			train = append(train, float32To64(v.([]float32)))
+			n++
+		}
 		inserted, errs := c.BulkInsert(train)
 		err = wrapErrors(errs)
 		if err != nil {
@@ -75,9 +95,17 @@ func insertAndCreateIndex64(ctx context.Context, c core.Core64, dataset assets.D
 		ids = append(ids, inserted...)
 	}
 
-	err = c.CreateIndex(uint32((len(train) * bulkInsertCnt) / 100))
+	err = c.CreateIndex(uint32((dataset.TrainSize() * bulkInsertCnt) / 100))
 	if err != nil {
 		return nil, err
 	}
 	return
+}
+
+func float32To64(x []float32) (y []float64) {
+	y = make([]float64, len(x))
+	for i, a := range x {
+		y[i] = float64(a)
+	}
+	return y
 }
