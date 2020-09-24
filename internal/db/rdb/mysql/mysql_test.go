@@ -2799,33 +2799,15 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 	}
 }
 
-func Test_mySQLClient_deleteMetaWithTx(t *testing.T) {
+func Test_mySQLClient_deleteMeta(t *testing.T) {
 	type args struct {
-		ctx  context.Context
-		tx   dbr.Tx
-		uuid string
+		ctx context.Context
+		val interface{}
 	}
 	type fields struct {
-		db                   string
-		host                 string
-		port                 int
-		user                 string
-		pass                 string
-		name                 string
-		charset              string
-		timezone             string
-		initialPingTimeLimit time.Duration
-		initialPingDuration  time.Duration
-		connMaxLifeTime      time.Duration
-		dialer               tcp.Dialer
-		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
-		tlsConfig            *tls.Config
-		maxOpenConns         int
-		maxIdleConns         int
-		session              dbr.Session
-		connected            atomic.Value
-		eventReceiver        EventReceiver
-		dbr                  dbr.DBR
+		session   dbr.Session
+		connected atomic.Value
+		dbr       dbr.DBR
 	}
 	type want struct {
 		err error
@@ -2846,84 +2828,209 @@ func Test_mySQLClient_deleteMetaWithTx(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           tx: nil,
-		           uuid: "",
-		       },
-		       fields: fields {
-		           db: "",
-		           host: "",
-		           port: 0,
-		           user: "",
-		           pass: "",
-		           name: "",
-		           charset: "",
-		           timezone: "",
-		           initialPingTimeLimit: nil,
-		           initialPingDuration: nil,
-		           connMaxLifeTime: nil,
-		           dialer: nil,
-		           dialerFunc: nil,
-		           tlsConfig: nil,
-		           maxOpenConns: 0,
-		           maxIdleConns: 0,
-		           session: nil,
-		           connected: nil,
-		           eventReceiver: nil,
-		           dbr: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           tx: nil,
-		           uuid: "",
-		           },
-		           fields: fields {
-		           db: "",
-		           host: "",
-		           port: 0,
-		           user: "",
-		           pass: "",
-		           name: "",
-		           charset: "",
-		           timezone: "",
-		           initialPingTimeLimit: nil,
-		           initialPingDuration: nil,
-		           connMaxLifeTime: nil,
-		           dialer: nil,
-		           dialerFunc: nil,
-		           tlsConfig: nil,
-		           maxOpenConns: 0,
-		           maxIdleConns: 0,
-		           session: nil,
-		           connected: nil,
-		           eventReceiver: nil,
-		           dbr: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			err := errors.ErrMySQLConnectionClosed
+			return test{
+				name: "return error when session.Begin fails",
+				args: args{
+					ctx: ctx,
+					val: "vald-01",
+				},
+				fields: fields{
+					connected: func() (v atomic.Value) {
+						v.Store(false)
+						return
+					}(),
+				},
+				want: want{
+					err: err,
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			err := errors.ErrMySQLTransactionNotCreated
+			return test{
+				name: "return error when transacton is nil",
+				args: args{
+					ctx: ctx,
+					val: "vald-01",
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							return nil, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+				},
+				want: want{
+					err: err,
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			err := errors.New("metaVectorTableName error")
+			return test{
+				name: "return error when DeleteFromFunc(metaVectorTableName) fails",
+				args: args{
+					ctx: ctx,
+					val: "vald-01",
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							return &mock.MockTx{
+								CommitFunc: func() error {
+									return nil
+								},
+								RollbackUnlessCommittedFunc: func() {},
+								DeleteFromFunc: func(table string) dbr.DeleteStmt {
+									s := new(mock.MockDelete)
+									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+										if table == "meta_vector" {
+											return nil, err
+										}
+										return nil, nil
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+										return s
+									}
+									return s
+								},
+							}, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					dbr: &mock.MockDBR{
+						EqFunc: func(col string, val interface{}) dbr.Builder {
+							return dbr.New().Eq(col, val)
+						},
+					},
+				},
+				want: want{
+					err: err,
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			err := errors.New("podIPTableNmae error")
+			return test{
+				name: "return error when DeleteFromFunc(podIPTableNmae) fails",
+				args: args{
+					ctx: ctx,
+					val: "vald-01",
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							return &mock.MockTx{
+								CommitFunc: func() error {
+									return nil
+								},
+								RollbackUnlessCommittedFunc: func() {},
+								DeleteFromFunc: func(table string) dbr.DeleteStmt {
+									s := new(mock.MockDelete)
+									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+										if table == "pod_ip" {
+											return nil, err
+										}
+										return nil, nil
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+										return s
+									}
+									return s
+								},
+							}, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					dbr: &mock.MockDBR{
+						EqFunc: func(col string, val interface{}) dbr.Builder {
+							return dbr.New().Eq(col, val)
+						},
+					},
+				},
+				want: want{
+					err: err,
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "return nil when no error occurs",
+				args: args{
+					ctx: ctx,
+					val: "vald-01",
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							return &mock.MockTx{
+								CommitFunc: func() error {
+									return nil
+								},
+								RollbackUnlessCommittedFunc: func() {},
+								DeleteFromFunc: func(table string) dbr.DeleteStmt {
+									s := new(mock.MockDelete)
+									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+										return nil, nil
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+										return s
+									}
+									return s
+								},
+							}, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					dbr: &mock.MockDBR{
+						EqFunc: func(col string, val interface{}) dbr.Builder {
+							return dbr.New().Eq(col, val)
+						},
+					},
+				},
+				want: want{},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -2934,29 +3041,12 @@ func Test_mySQLClient_deleteMetaWithTx(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &mySQLClient{
-				db:                   test.fields.db,
-				host:                 test.fields.host,
-				port:                 test.fields.port,
-				user:                 test.fields.user,
-				pass:                 test.fields.pass,
-				name:                 test.fields.name,
-				charset:              test.fields.charset,
-				timezone:             test.fields.timezone,
-				initialPingTimeLimit: test.fields.initialPingTimeLimit,
-				initialPingDuration:  test.fields.initialPingDuration,
-				connMaxLifeTime:      test.fields.connMaxLifeTime,
-				dialer:               test.fields.dialer,
-				dialerFunc:           test.fields.dialerFunc,
-				tlsConfig:            test.fields.tlsConfig,
-				maxOpenConns:         test.fields.maxOpenConns,
-				maxIdleConns:         test.fields.maxIdleConns,
-				session:              test.fields.session,
-				connected:            test.fields.connected,
-				eventReceiver:        test.fields.eventReceiver,
-				dbr:                  test.fields.dbr,
+				session:   test.fields.session,
+				connected: test.fields.connected,
+				dbr:       test.fields.dbr,
 			}
 
-			err := m.deleteMetaWithTx(test.args.ctx, test.args.tx, test.args.uuid)
+			err := m.deleteMeta(test.args.ctx, test.args.val)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -2971,26 +3061,9 @@ func Test_mySQLClient_DeleteMeta(t *testing.T) {
 		uuid string
 	}
 	type fields struct {
-		db                   string
-		host                 string
-		port                 int
-		user                 string
-		pass                 string
-		name                 string
-		charset              string
-		timezone             string
-		initialPingTimeLimit time.Duration
-		initialPingDuration  time.Duration
-		connMaxLifeTime      time.Duration
-		dialer               tcp.Dialer
-		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
-		tlsConfig            *tls.Config
-		maxOpenConns         int
-		maxIdleConns         int
-		session              dbr.Session
-		connected            atomic.Value
-		eventReceiver        EventReceiver
-		dbr                  dbr.DBR
+		session   dbr.Session
+		connected atomic.Value
+		dbr       dbr.DBR
 	}
 	type want struct {
 		err error
@@ -3011,82 +3084,101 @@ func Test_mySQLClient_DeleteMeta(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           uuid: "",
-		       },
-		       fields: fields {
-		           db: "",
-		           host: "",
-		           port: 0,
-		           user: "",
-		           pass: "",
-		           name: "",
-		           charset: "",
-		           timezone: "",
-		           initialPingTimeLimit: nil,
-		           initialPingDuration: nil,
-		           connMaxLifeTime: nil,
-		           dialer: nil,
-		           dialerFunc: nil,
-		           tlsConfig: nil,
-		           maxOpenConns: 0,
-		           maxIdleConns: 0,
-		           session: nil,
-		           connected: nil,
-		           eventReceiver: nil,
-		           dbr: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           uuid: "",
-		           },
-		           fields: fields {
-		           db: "",
-		           host: "",
-		           port: 0,
-		           user: "",
-		           pass: "",
-		           name: "",
-		           charset: "",
-		           timezone: "",
-		           initialPingTimeLimit: nil,
-		           initialPingDuration: nil,
-		           connMaxLifeTime: nil,
-		           dialer: nil,
-		           dialerFunc: nil,
-		           tlsConfig: nil,
-		           maxOpenConns: 0,
-		           maxIdleConns: 0,
-		           session: nil,
-		           connected: nil,
-		           eventReceiver: nil,
-		           dbr: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "return nil when deleteMeta success with empty-uuid",
+				args: args{
+					ctx:  ctx,
+					uuid: "",
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							return &mock.MockTx{
+								CommitFunc: func() error {
+									return nil
+								},
+								RollbackUnlessCommittedFunc: func() {},
+								DeleteFromFunc: func(table string) dbr.DeleteStmt {
+									s := new(mock.MockDelete)
+									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+										return nil, nil
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+										return s
+									}
+									return s
+								},
+							}, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					dbr: &mock.MockDBR{
+						EqFunc: func(col string, val interface{}) dbr.Builder {
+							return dbr.New().Eq(col, val)
+						},
+					},
+				},
+				want: want{},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "return nil when deleteMeta success with uuid",
+				args: args{
+					ctx:  ctx,
+					uuid: "vald-01",
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							return &mock.MockTx{
+								CommitFunc: func() error {
+									return nil
+								},
+								RollbackUnlessCommittedFunc: func() {},
+								DeleteFromFunc: func(table string) dbr.DeleteStmt {
+									s := new(mock.MockDelete)
+									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+										return nil, nil
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+										return s
+									}
+									return s
+								},
+							}, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					dbr: &mock.MockDBR{
+						EqFunc: func(col string, val interface{}) dbr.Builder {
+							return dbr.New().Eq(col, val)
+						},
+					},
+				},
+				want: want{},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -3097,26 +3189,9 @@ func Test_mySQLClient_DeleteMeta(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &mySQLClient{
-				db:                   test.fields.db,
-				host:                 test.fields.host,
-				port:                 test.fields.port,
-				user:                 test.fields.user,
-				pass:                 test.fields.pass,
-				name:                 test.fields.name,
-				charset:              test.fields.charset,
-				timezone:             test.fields.timezone,
-				initialPingTimeLimit: test.fields.initialPingTimeLimit,
-				initialPingDuration:  test.fields.initialPingDuration,
-				connMaxLifeTime:      test.fields.connMaxLifeTime,
-				dialer:               test.fields.dialer,
-				dialerFunc:           test.fields.dialerFunc,
-				tlsConfig:            test.fields.tlsConfig,
-				maxOpenConns:         test.fields.maxOpenConns,
-				maxIdleConns:         test.fields.maxIdleConns,
-				session:              test.fields.session,
-				connected:            test.fields.connected,
-				eventReceiver:        test.fields.eventReceiver,
-				dbr:                  test.fields.dbr,
+				session:   test.fields.session,
+				connected: test.fields.connected,
+				dbr:       test.fields.dbr,
 			}
 
 			err := m.DeleteMeta(test.args.ctx, test.args.uuid)
@@ -3134,26 +3209,9 @@ func Test_mySQLClient_DeleteMetas(t *testing.T) {
 		uuids []string
 	}
 	type fields struct {
-		db                   string
-		host                 string
-		port                 int
-		user                 string
-		pass                 string
-		name                 string
-		charset              string
-		timezone             string
-		initialPingTimeLimit time.Duration
-		initialPingDuration  time.Duration
-		connMaxLifeTime      time.Duration
-		dialer               tcp.Dialer
-		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
-		tlsConfig            *tls.Config
-		maxOpenConns         int
-		maxIdleConns         int
-		session              dbr.Session
-		connected            atomic.Value
-		eventReceiver        EventReceiver
-		dbr                  dbr.DBR
+		session   dbr.Session
+		connected atomic.Value
+		dbr       dbr.DBR
 	}
 	type want struct {
 		err error
@@ -3174,82 +3232,104 @@ func Test_mySQLClient_DeleteMetas(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           uuids: nil,
-		       },
-		       fields: fields {
-		           db: "",
-		           host: "",
-		           port: 0,
-		           user: "",
-		           pass: "",
-		           name: "",
-		           charset: "",
-		           timezone: "",
-		           initialPingTimeLimit: nil,
-		           initialPingDuration: nil,
-		           connMaxLifeTime: nil,
-		           dialer: nil,
-		           dialerFunc: nil,
-		           tlsConfig: nil,
-		           maxOpenConns: 0,
-		           maxIdleConns: 0,
-		           session: nil,
-		           connected: nil,
-		           eventReceiver: nil,
-		           dbr: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           uuids: nil,
-		           },
-		           fields: fields {
-		           db: "",
-		           host: "",
-		           port: 0,
-		           user: "",
-		           pass: "",
-		           name: "",
-		           charset: "",
-		           timezone: "",
-		           initialPingTimeLimit: nil,
-		           initialPingDuration: nil,
-		           connMaxLifeTime: nil,
-		           dialer: nil,
-		           dialerFunc: nil,
-		           tlsConfig: nil,
-		           maxOpenConns: 0,
-		           maxIdleConns: 0,
-		           session: nil,
-		           connected: nil,
-		           eventReceiver: nil,
-		           dbr: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "return nil when deleteMetas success with empty uuids",
+				args: args{
+					ctx:   ctx,
+					uuids: []string{},
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							return &mock.MockTx{
+								CommitFunc: func() error {
+									return nil
+								},
+								RollbackUnlessCommittedFunc: func() {},
+								DeleteFromFunc: func(table string) dbr.DeleteStmt {
+									s := new(mock.MockDelete)
+									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+										return nil, nil
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+										return s
+									}
+									return s
+								},
+							}, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					dbr: &mock.MockDBR{
+						EqFunc: func(col string, val interface{}) dbr.Builder {
+							return dbr.New().Eq(col, val)
+						},
+					},
+				},
+				want: want{},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "return nil when deleteMetas success with uuids",
+				args: args{
+					ctx: ctx,
+					uuids: []string{
+						"vald-01",
+						"vald-02",
+					},
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							return &mock.MockTx{
+								CommitFunc: func() error {
+									return nil
+								},
+								RollbackUnlessCommittedFunc: func() {},
+								DeleteFromFunc: func(table string) dbr.DeleteStmt {
+									s := new(mock.MockDelete)
+									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+										return nil, nil
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+										return s
+									}
+									return s
+								},
+							}, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					dbr: &mock.MockDBR{
+						EqFunc: func(col string, val interface{}) dbr.Builder {
+							return dbr.New().Eq(col, val)
+						},
+					},
+				},
+				want: want{},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -3260,26 +3340,9 @@ func Test_mySQLClient_DeleteMetas(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &mySQLClient{
-				db:                   test.fields.db,
-				host:                 test.fields.host,
-				port:                 test.fields.port,
-				user:                 test.fields.user,
-				pass:                 test.fields.pass,
-				name:                 test.fields.name,
-				charset:              test.fields.charset,
-				timezone:             test.fields.timezone,
-				initialPingTimeLimit: test.fields.initialPingTimeLimit,
-				initialPingDuration:  test.fields.initialPingDuration,
-				connMaxLifeTime:      test.fields.connMaxLifeTime,
-				dialer:               test.fields.dialer,
-				dialerFunc:           test.fields.dialerFunc,
-				tlsConfig:            test.fields.tlsConfig,
-				maxOpenConns:         test.fields.maxOpenConns,
-				maxIdleConns:         test.fields.maxIdleConns,
-				session:              test.fields.session,
-				connected:            test.fields.connected,
-				eventReceiver:        test.fields.eventReceiver,
-				dbr:                  test.fields.dbr,
+				session:   test.fields.session,
+				connected: test.fields.connected,
+				dbr:       test.fields.dbr,
 			}
 
 			err := m.DeleteMetas(test.args.ctx, test.args.uuids...)
@@ -3298,26 +3361,9 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 		ips  []string
 	}
 	type fields struct {
-		db                   string
-		host                 string
-		port                 int
-		user                 string
-		pass                 string
-		name                 string
-		charset              string
-		timezone             string
-		initialPingTimeLimit time.Duration
-		initialPingDuration  time.Duration
-		connMaxLifeTime      time.Duration
-		dialer               tcp.Dialer
-		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
-		tlsConfig            *tls.Config
-		maxOpenConns         int
-		maxIdleConns         int
-		session              dbr.Session
-		connected            atomic.Value
-		eventReceiver        EventReceiver
-		dbr                  dbr.DBR
+		session   dbr.Session
+		connected atomic.Value
+		dbr       dbr.DBR
 	}
 	type want struct {
 		err error
@@ -3338,84 +3384,347 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           uuid: "",
-		           ips: nil,
-		       },
-		       fields: fields {
-		           db: "",
-		           host: "",
-		           port: 0,
-		           user: "",
-		           pass: "",
-		           name: "",
-		           charset: "",
-		           timezone: "",
-		           initialPingTimeLimit: nil,
-		           initialPingDuration: nil,
-		           connMaxLifeTime: nil,
-		           dialer: nil,
-		           dialerFunc: nil,
-		           tlsConfig: nil,
-		           maxOpenConns: 0,
-		           maxIdleConns: 0,
-		           session: nil,
-		           connected: nil,
-		           eventReceiver: nil,
-		           dbr: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           uuid: "",
-		           ips: nil,
-		           },
-		           fields: fields {
-		           db: "",
-		           host: "",
-		           port: 0,
-		           user: "",
-		           pass: "",
-		           name: "",
-		           charset: "",
-		           timezone: "",
-		           initialPingTimeLimit: nil,
-		           initialPingDuration: nil,
-		           connMaxLifeTime: nil,
-		           dialer: nil,
-		           dialerFunc: nil,
-		           tlsConfig: nil,
-		           maxOpenConns: 0,
-		           maxIdleConns: 0,
-		           session: nil,
-		           connected: nil,
-		           eventReceiver: nil,
-		           dbr: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			err := errors.ErrMySQLConnectionClosed
+			return test{
+				name: "return error when MySQL connection is closed",
+				args: args{
+					ctx:  ctx,
+					uuid: "vald-01",
+					ips: []string{
+						"192.168.1.1",
+						"192.168.1.2",
+					},
+				},
+				fields: fields{
+					connected: func() (v atomic.Value) {
+						v.Store(false)
+						return
+					}(),
+				},
+				want: want{
+					err: err,
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			err := errors.New("session.Begin error")
+			return test{
+				name: "return error when session.Begin return error",
+				args: args{
+					ctx:  ctx,
+					uuid: "vald-01",
+					ips: []string{
+						"192.168.1.1",
+						"192.168.1.2",
+					},
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							return nil, err
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+				},
+				want: want{
+					err: err,
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			err := errors.New("LoadContext error")
+			return test{
+				name: "return error when select LoadContext return error",
+				args: args{
+					ctx:  ctx,
+					uuid: "vald-01",
+					ips: []string{
+						"192.168.1.1",
+						"192.168.1.2",
+					},
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							return &mock.MockTx{
+								CommitFunc: func() error {
+									return nil
+								},
+								RollbackUnlessCommittedFunc: func() {},
+								SelectFunc: func(column ...string) dbr.SelectStmt {
+									s := new(mock.MockSelect)
+									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.LimitFunc = func(n uint64) dbr.SelectStmt {
+										return s
+									}
+									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+										var id int64
+										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
+											id = 1
+											reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
+											return 1, err
+										}
+										return 0, errors.New("error")
+									}
+									return s
+								},
+							}, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					dbr: &mock.MockDBR{
+						EqFunc: func(col string, val interface{}) dbr.Builder {
+							return dbr.New().Eq(col, val)
+						},
+					},
+				},
+				want: want{
+					err: err,
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "return error when element not found by uuid",
+				args: args{
+					ctx:  ctx,
+					uuid: "vald-01",
+					ips: []string{
+						"192.168.1.1",
+						"192.168.1.2",
+					},
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							return &mock.MockTx{
+								CommitFunc: func() error {
+									return nil
+								},
+								RollbackUnlessCommittedFunc: func() {},
+								SelectFunc: func(column ...string) dbr.SelectStmt {
+									s := new(mock.MockSelect)
+									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.LimitFunc = func(n uint64) dbr.SelectStmt {
+										return s
+									}
+									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+										var id int64
+										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
+											reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
+											return 1, nil
+										}
+										return 0, errors.New("error")
+									}
+									return s
+								},
+							}, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					dbr: &mock.MockDBR{
+						EqFunc: func(col string, val interface{}) dbr.Builder {
+							return dbr.New().Eq(col, val)
+						},
+					},
+				},
+				want: want{
+					err: errors.ErrRequiredElementNotFoundByUUID("vald-01"),
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			err := errors.New("ExecContext error")
+			return test{
+				name: "return error when InsertInto.ExecContext fails",
+				args: args{
+					ctx:  ctx,
+					uuid: "vald-01",
+					ips: []string{
+						"192.168.1.1",
+						"192.168.1.2",
+					},
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							return &mock.MockTx{
+								CommitFunc: func() error {
+									return nil
+								},
+								RollbackUnlessCommittedFunc: func() {},
+								InsertIntoFunc: func(table string) dbr.InsertStmt {
+									s := new(mock.MockInsert)
+									s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
+										return s
+									}
+									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+										return nil, err
+									}
+									s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
+										return s
+									}
+									return s
+								},
+								SelectFunc: func(column ...string) dbr.SelectStmt {
+									s := new(mock.MockSelect)
+									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.LimitFunc = func(n uint64) dbr.SelectStmt {
+										return s
+									}
+									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+										var id int64
+										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
+											id = 1
+											reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
+											return 1, nil
+										}
+										return 0, errors.New("error")
+									}
+									return s
+								},
+							}, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					dbr: &mock.MockDBR{
+						EqFunc: func(col string, val interface{}) dbr.Builder {
+							return dbr.New().Eq(col, val)
+						},
+					},
+				},
+				want: want{
+					err: err,
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "return nil when setIPs success",
+				args: args{
+					ctx:  ctx,
+					uuid: "vald-01",
+					ips: []string{
+						"192.168.1.1",
+						"192.168.1.2",
+					},
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							return &mock.MockTx{
+								CommitFunc: func() error {
+									return nil
+								},
+								RollbackUnlessCommittedFunc: func() {},
+								InsertIntoFunc: func(table string) dbr.InsertStmt {
+									s := new(mock.MockInsert)
+									s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
+										return s
+									}
+									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+										return nil, nil
+									}
+									s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
+										return s
+									}
+									return s
+								},
+								SelectFunc: func(column ...string) dbr.SelectStmt {
+									s := new(mock.MockSelect)
+									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.LimitFunc = func(n uint64) dbr.SelectStmt {
+										return s
+									}
+									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+										var id int64
+										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
+											id = 1
+											reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
+											return 1, nil
+										}
+										return 0, errors.New("error")
+									}
+									return s
+								},
+							}, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					dbr: &mock.MockDBR{
+						EqFunc: func(col string, val interface{}) dbr.Builder {
+							return dbr.New().Eq(col, val)
+						},
+					},
+				},
+				want: want{},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -3426,26 +3735,9 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &mySQLClient{
-				db:                   test.fields.db,
-				host:                 test.fields.host,
-				port:                 test.fields.port,
-				user:                 test.fields.user,
-				pass:                 test.fields.pass,
-				name:                 test.fields.name,
-				charset:              test.fields.charset,
-				timezone:             test.fields.timezone,
-				initialPingTimeLimit: test.fields.initialPingTimeLimit,
-				initialPingDuration:  test.fields.initialPingDuration,
-				connMaxLifeTime:      test.fields.connMaxLifeTime,
-				dialer:               test.fields.dialer,
-				dialerFunc:           test.fields.dialerFunc,
-				tlsConfig:            test.fields.tlsConfig,
-				maxOpenConns:         test.fields.maxOpenConns,
-				maxIdleConns:         test.fields.maxIdleConns,
-				session:              test.fields.session,
-				connected:            test.fields.connected,
-				eventReceiver:        test.fields.eventReceiver,
-				dbr:                  test.fields.dbr,
+				session:   test.fields.session,
+				connected: test.fields.connected,
+				dbr:       test.fields.dbr,
 			}
 
 			err := m.SetIPs(test.args.ctx, test.args.uuid, test.args.ips...)
@@ -3463,26 +3755,9 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 		ips []string
 	}
 	type fields struct {
-		db                   string
-		host                 string
-		port                 int
-		user                 string
-		pass                 string
-		name                 string
-		charset              string
-		timezone             string
-		initialPingTimeLimit time.Duration
-		initialPingDuration  time.Duration
-		connMaxLifeTime      time.Duration
-		dialer               tcp.Dialer
-		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
-		tlsConfig            *tls.Config
-		maxOpenConns         int
-		maxIdleConns         int
-		session              dbr.Session
-		connected            atomic.Value
-		eventReceiver        EventReceiver
-		dbr                  dbr.DBR
+		session   dbr.Session
+		connected atomic.Value
+		dbr       dbr.DBR
 	}
 	type want struct {
 		err error
@@ -3503,82 +3778,167 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           ips: nil,
-		       },
-		       fields: fields {
-		           db: "",
-		           host: "",
-		           port: 0,
-		           user: "",
-		           pass: "",
-		           name: "",
-		           charset: "",
-		           timezone: "",
-		           initialPingTimeLimit: nil,
-		           initialPingDuration: nil,
-		           connMaxLifeTime: nil,
-		           dialer: nil,
-		           dialerFunc: nil,
-		           tlsConfig: nil,
-		           maxOpenConns: 0,
-		           maxIdleConns: 0,
-		           session: nil,
-		           connected: nil,
-		           eventReceiver: nil,
-		           dbr: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           ips: nil,
-		           },
-		           fields: fields {
-		           db: "",
-		           host: "",
-		           port: 0,
-		           user: "",
-		           pass: "",
-		           name: "",
-		           charset: "",
-		           timezone: "",
-		           initialPingTimeLimit: nil,
-		           initialPingDuration: nil,
-		           connMaxLifeTime: nil,
-		           dialer: nil,
-		           dialerFunc: nil,
-		           tlsConfig: nil,
-		           maxOpenConns: 0,
-		           maxIdleConns: 0,
-		           session: nil,
-		           connected: nil,
-		           eventReceiver: nil,
-		           dbr: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			err := errors.ErrMySQLConnectionClosed
+			return test{
+				name: "return error when MySQL connection is closed",
+				args: args{
+					ctx: ctx,
+					ips: []string{
+						"192.168.1.1",
+						"192.168.1.2",
+					},
+				},
+				fields: fields{
+					connected: func() (v atomic.Value) {
+						v.Store(false)
+						return
+					}(),
+				},
+				want: want{
+					err: err,
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			err := errors.New("session.Begin error")
+			return test{
+				name: "return error when session.Begin fails",
+				args: args{
+					ctx: ctx,
+					ips: []string{
+						"192.168.1.1",
+						"192.168.1.2",
+					},
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							return nil, err
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+				},
+				want: want{
+					err: err,
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			err := errors.New("ExecContext error")
+			return test{
+				name: "return error when delete.ExecContext fails",
+				args: args{
+					ctx: ctx,
+					ips: []string{
+						"192.168.1.1",
+						"192.168.1.2",
+					},
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							return &mock.MockTx{
+								CommitFunc: func() error {
+									return nil
+								},
+								RollbackUnlessCommittedFunc: func() {},
+								DeleteFromFunc: func(table string) dbr.DeleteStmt {
+									s := new(mock.MockDelete)
+									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+										return nil, err
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+										return s
+									}
+									return s
+								},
+							}, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					dbr: &mock.MockDBR{
+						EqFunc: func(col string, val interface{}) dbr.Builder {
+							return dbr.New().Eq(col, val)
+						},
+					},
+				},
+				want: want{
+					err: err,
+				},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "return nil when removeIPs success",
+				args: args{
+					ctx: ctx,
+					ips: []string{
+						"192.168.1.1",
+						"192.168.1.2",
+					},
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							return &mock.MockTx{
+								CommitFunc: func() error {
+									return nil
+								},
+								RollbackUnlessCommittedFunc: func() {},
+								DeleteFromFunc: func(table string) dbr.DeleteStmt {
+									s := new(mock.MockDelete)
+									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+										return nil, nil
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+										return s
+									}
+									return s
+								},
+							}, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					dbr: &mock.MockDBR{
+						EqFunc: func(col string, val interface{}) dbr.Builder {
+							return dbr.New().Eq(col, val)
+						},
+					},
+				},
+				want: want{},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -3589,26 +3949,9 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &mySQLClient{
-				db:                   test.fields.db,
-				host:                 test.fields.host,
-				port:                 test.fields.port,
-				user:                 test.fields.user,
-				pass:                 test.fields.pass,
-				name:                 test.fields.name,
-				charset:              test.fields.charset,
-				timezone:             test.fields.timezone,
-				initialPingTimeLimit: test.fields.initialPingTimeLimit,
-				initialPingDuration:  test.fields.initialPingDuration,
-				connMaxLifeTime:      test.fields.connMaxLifeTime,
-				dialer:               test.fields.dialer,
-				dialerFunc:           test.fields.dialerFunc,
-				tlsConfig:            test.fields.tlsConfig,
-				maxOpenConns:         test.fields.maxOpenConns,
-				maxIdleConns:         test.fields.maxIdleConns,
-				session:              test.fields.session,
-				connected:            test.fields.connected,
-				eventReceiver:        test.fields.eventReceiver,
-				dbr:                  test.fields.dbr,
+				session:   test.fields.session,
+				connected: test.fields.connected,
+				dbr:       test.fields.dbr,
 			}
 
 			err := m.RemoveIPs(test.args.ctx, test.args.ips...)

@@ -349,59 +349,43 @@ func (m *mySQLClient) SetMetas(ctx context.Context, metas ...MetaVector) error {
 	return tx.Commit()
 }
 
-func (m *mySQLClient) deleteMetaWithTx(ctx context.Context, tx dbr.Tx, uuid string) error {
-	_, err := tx.DeleteFrom(metaVectorTableName).Where(m.dbr.Eq(uuidColumnName, uuid)).ExecContext(ctx)
+func (m *mySQLClient) deleteMeta(ctx context.Context, val interface{}) error {
+	if !m.connected.Load().(bool) {
+		return errors.ErrMySQLConnectionClosed
+	}
+
+	tx, err := m.session.Begin()
+	if err != nil {
+		return err
+	}
+	if tx == nil {
+		return errors.ErrMySQLTransactionNotCreated
+	}
+	defer tx.RollbackUnlessCommitted()
+
+	_, err = tx.DeleteFrom(metaVectorTableName).Where(m.dbr.Eq(uuidColumnName, val)).ExecContext(ctx)
 	if err != nil {
 		return err
 	}
 
-	_, err = tx.DeleteFrom(podIPTableName).Where(m.dbr.Eq(uuidColumnName, uuid)).ExecContext(ctx)
+	_, err = tx.DeleteFrom(podIPTableName).Where(m.dbr.Eq(uuidColumnName, val)).ExecContext(ctx)
 	if err != nil {
 		return err
 	}
-	return nil
+	return tx.Commit()
 }
 
+// DeleteMeta deletes metadata from meta_vector and podIPs from pod_ip using by input meta's uuid
 func (m *mySQLClient) DeleteMeta(ctx context.Context, uuid string) error {
-	if !m.connected.Load().(bool) {
-		return errors.ErrMySQLConnectionClosed
-	}
-
-	tx, err := m.session.Begin()
-	if err != nil {
-		return err
-	}
-	defer tx.RollbackUnlessCommitted()
-
-	err = m.deleteMetaWithTx(ctx, tx, uuid)
-	if err != nil {
-		return err
-	}
-
-	return tx.Commit()
+	return m.deleteMeta(ctx, uuid)
 }
 
+// DeleteMetas deletes multiple metadata and podIPs using input the metas' uuid list same as DeleteMeta()
 func (m *mySQLClient) DeleteMetas(ctx context.Context, uuids ...string) error {
-	if !m.connected.Load().(bool) {
-		return errors.ErrMySQLConnectionClosed
-	}
-
-	tx, err := m.session.Begin()
-	if err != nil {
-		return err
-	}
-	defer tx.RollbackUnlessCommitted()
-
-	for _, uuid := range uuids {
-		err = m.deleteMetaWithTx(ctx, tx, uuid)
-		if err != nil {
-			return err
-		}
-	}
-
-	return tx.Commit()
+	return m.deleteMeta(ctx, uuids)
 }
 
+// SetIPs sets the podIPs into database using by input of the meta vectors' uuid and the podips
 func (m *mySQLClient) SetIPs(ctx context.Context, uuid string, ips ...string) error {
 	if !m.connected.Load().(bool) {
 		return errors.ErrMySQLConnectionClosed
@@ -434,6 +418,7 @@ func (m *mySQLClient) SetIPs(ctx context.Context, uuid string, ips ...string) er
 	return tx.Commit()
 }
 
+// RemoveIPs delete the podIPs from database using by input of the podips
 func (m *mySQLClient) RemoveIPs(ctx context.Context, ips ...string) error {
 	if !m.connected.Load().(bool) {
 		return errors.ErrMySQLConnectionClosed
@@ -445,11 +430,9 @@ func (m *mySQLClient) RemoveIPs(ctx context.Context, ips ...string) error {
 	}
 	defer tx.RollbackUnlessCommitted()
 
-	for _, ip := range ips {
-		_, err = tx.DeleteFrom(podIPTableName).Where(m.dbr.Eq(ipColumnName, ip)).ExecContext(ctx)
-		if err != nil {
-			return err
-		}
+	_, err = tx.DeleteFrom(podIPTableName).Where(m.dbr.Eq(ipColumnName, ips)).ExecContext(ctx)
+	if err != nil {
+		return err
 	}
 
 	return tx.Commit()
