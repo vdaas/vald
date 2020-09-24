@@ -201,11 +201,15 @@ var (
 	}
 )
 
+// WithConsistency returns the option to set the cassandra consistency level
 func WithConsistency(consistency string) Option {
 	return func(c *client) error {
+		if len(consistency) == 0 {
+			return errors.NewErrInvalidOption("consistency", consistency)
+		}
 		actual, ok := consistenciesMap[strings.TrimSpace(strings.Trim(strings.Trim(strings.ToLower(consistency), "_"), "-"))]
 		if !ok {
-			return errors.ErrCassandraInvalidConsistencyType(consistency)
+			return errors.NewErrCriticalOption("consistency", consistency)
 		}
 		c.consistency = actual
 		return nil
@@ -221,50 +225,71 @@ var (
 	}
 )
 
+// WithSerialConsistency returns the option to set the cassandra serial consistency level
 func WithSerialConsistency(consistency string) Option {
 	return func(c *client) error {
 		if len(consistency) == 0 {
-			return nil
+			return errors.NewErrInvalidOption("serialConsistency", consistency)
 		}
 		actual, ok := serialConsistenciesMap[strings.TrimSpace(strings.Trim(strings.Trim(strings.ToLower(consistency), "_"), "-"))]
 		if !ok {
-			return errors.ErrCassandraInvalidConsistencyType(consistency)
+			return errors.NewErrCriticalOption("serialConsistency", consistency)
 		}
 		c.serialConsistency = actual
 		return nil
 	}
 }
 
+// WithCompressor returns the option to set the compressor
 func WithCompressor(compressor gocql.Compressor) Option {
 	return func(c *client) error {
+		if compressor == nil {
+			return errors.NewErrInvalidOption("compressor", compressor)
+		}
 		c.compressor = compressor
 		return nil
 	}
 }
 
+// WithUsername returns the option to set the username
 func WithUsername(username string) Option {
 	return func(c *client) error {
+		if len(username) == 0 {
+			return errors.NewErrInvalidOption("username", username)
+		}
 		c.username = username
 		return nil
 	}
 }
 
+// WithPassword returns the option to set the password
 func WithPassword(password string) Option {
 	return func(c *client) error {
+		if len(password) == 0 {
+			return errors.NewErrInvalidOption("password", password)
+		}
 		c.password = password
 		return nil
 	}
 }
 
+// WithAuthProvider returns the option to set the auth provider
 func WithAuthProvider(authProvider func(h *gocql.HostInfo) (gocql.Authenticator, error)) Option {
 	return func(c *client) error {
+		if authProvider == nil {
+			return errors.NewErrInvalidOption("authProvider", authProvider)
+		}
 		c.authProvider = authProvider
 		return nil
 	}
 }
 
+// WithRetryPolicyNumRetries returns the option to set the number of retries
 func WithRetryPolicyNumRetries(n int) Option {
 	return func(c *client) error {
+		if n < 0 {
+			return errors.NewErrInvalidOption("retryPolicyNumRetries", n)
+		}
 		c.retryPolicy.numRetries = n
 		return nil
 	}
