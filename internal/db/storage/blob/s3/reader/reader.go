@@ -206,7 +206,7 @@ func (r *reader) Close() error {
 	return nil
 }
 
-// Read reads up to len(p) bytes into p. It returns the number of bytes.
+// Read reads up to len(p) bytes and returns the number of bytes read.
 func (r *reader) Read(p []byte) (n int, err error) {
 	if r.pr == nil {
 		return 0, errors.ErrStorageReaderNotOpened
