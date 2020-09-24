@@ -29,13 +29,16 @@ import (
 )
 
 func searchRequestProvider(dataset assets.Dataset) (func() interface{}, int, error) {
-	v := dataset.Query()
-	size := len(v)
+	size := dataset.QuerySize()
 	idx := int32(-1)
 	return func() (ret interface{}) {
 		if i := int(atomic.AddInt32(&idx, 1)); i < size {
+			v, err := dataset.Query(i)
+			if err != nil {
+				return nil
+			}
 			ret = &payload.Search_Request{
-				Vector: v[i],
+				Vector: v.([]float32),
 			}
 		}
 		return ret
