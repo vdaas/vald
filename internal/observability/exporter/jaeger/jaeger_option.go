@@ -18,14 +18,15 @@
 package jaeger
 
 import (
-	"contrib.go.opencensus.io/exporter/jaeger"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"go.opentelemetry.io/otel/exporter/trace/jaeger"
 )
 
-type JaegerOption func(*jaegerOptions) error
+type Option func(*exp) error
 
 var (
-	jaegerDefaultOpts = []JaegerOption{
+	defaultOpts = []Option{
 		WithServiceName("vald"),
 		WithOnErrorFunc(func(err error) {
 			if err != nil {
@@ -35,63 +36,119 @@ var (
 	}
 )
 
-func WithCollectorEndpoint(cep string) JaegerOption {
-	return func(jo *jaegerOptions) error {
-		if cep != "" {
-			jo.CollectorEndpoint = cep
+func WithCollectorEndpoint(endpoint string) Option {
+	return func(e *exp) error {
+		if endpoint == "" {
+			return nil
+		}
+
+		e.collectorEndpoint = endpoint
+
+		return nil
+	}
+}
+
+func WithAgentEndpoint(endpoint string) Option {
+	return func(e *exp) error {
+		if endpoint == "" {
+			return nil
+		}
+
+		e.agentEndpoint = endpoint
+
+		return nil
+	}
+}
+
+func WithUsername(username string) Option {
+	return func(e *exp) error {
+		if username == "" {
+			return nil
+		}
+
+		if e.collectorOpts == nil {
+			e.collectorOpts = []jaeger.CollectorEndpointOption{
+				jaeger.WithUsername(username),
+			}
+		} else {
+			e.collectorOpts = append(
+				e.collectorOpts,
+				jaeger.WithUsername(username),
+			)
+		}
+
+		return nil
+	}
+}
+
+func WithPassword(password string) Option {
+	return func(e *exp) error {
+		if password == "" {
+			return nil
+		}
+
+		if e.collectorOpts == nil {
+			e.collectorOpts = []jaeger.CollectorEndpointOption{
+				jaeger.WithPassword(password),
+			}
+		} else {
+			e.collectorOpts = append(
+				e.collectorOpts,
+				jaeger.WithPassword(password),
+			)
+		}
+
+		return nil
+	}
+}
+
+func WithServiceName(name string) Option {
+	return func(e *exp) error {
+		if name != "" {
+			e.name = name
 		}
 		return nil
 	}
 }
 
-func WithAgentEndpoint(aep string) JaegerOption {
-	return func(jo *jaegerOptions) error {
-		if aep != "" {
-			jo.AgentEndpoint = aep
+func WithBufferMaxCount(count int) Option {
+	return func(e *exp) error {
+		if count < 0 {
+			return errors.NewErrInvalidOption("bufferMaxCount", count)
 		}
+
+		if e.options == nil {
+			e.options = []jaeger.Option{
+				jaeger.WithBufferMaxCount(count),
+			}
+		} else {
+			e.options = append(
+				e.options,
+				jaeger.WithBufferMaxCount(count),
+			)
+		}
+
 		return nil
 	}
 }
 
-func WithUsername(username string) JaegerOption {
-	return func(jo *jaegerOptions) error {
-		if username != "" {
-			jo.Username = username
+func WithOnErrorFunc(f func(error)) Option {
+	return func(e *exp) error {
+		if f == nil {
+			return errors.NewErrInvalidOption("onErrorFunc", f)
 		}
-		return nil
-	}
-}
 
-func WithPassword(password string) JaegerOption {
-	return func(jo *jaegerOptions) error {
-		if password != "" {
-			jo.Password = password
+		if e.options == nil {
+			e.options = []jaeger.Option{
+				jaeger.WithOnError(f),
+			}
+		} else {
+			e.options = append(
+				e.options,
+				jaeger.WithOnError(f),
+			)
 		}
-		return nil
-	}
-}
 
-func WithServiceName(serviceName string) JaegerOption {
-	return func(jo *jaegerOptions) error {
-		if serviceName != "" {
-			jo.Process = jaeger.Process{ServiceName: serviceName}
-		}
-		return nil
-	}
-}
-
-func WithBufferMaxCount(cnt int) JaegerOption {
-	return func(jo *jaegerOptions) error {
-		jo.BufferMaxCount = cnt
-		return nil
-	}
-}
-
-func WithOnErrorFunc(f func(error)) JaegerOption {
-	return func(jo *jaegerOptions) error {
-		if f != nil {
-			jo.OnError = f
-		}
 		return nil
 	}
 }

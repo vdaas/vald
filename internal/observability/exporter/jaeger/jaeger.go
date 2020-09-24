@@ -19,51 +19,69 @@ package jaeger
 
 import (
 	"context"
+	"reflect"
 
-	"contrib.go.opencensus.io/exporter/jaeger"
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/exporter"
-	"go.opencensus.io/trace"
+	"go.opentelemetry.io/otel/exporter/trace/jaeger"
 )
-
-type jaegerOptions = jaeger.Options
 
 type Jaeger interface {
 	exporter.Exporter
+	Exporter() *jaeger.Exporter
 }
 
 type exp struct {
 	exporter *jaeger.Exporter
-	options  jaegerOptions
+	name     string
+
+	collectorEndpoint string
+	agentEndpoint     string
+
+	options       []jaeger.Option
+	collectorOpts []jaeger.CollectorEndpointOption
 }
 
-func New(opts ...JaegerOption) (j Jaeger, err error) {
-	jo := new(jaegerOptions)
+func New(opts ...Option) (j Jaeger, err error) {
+	e := new(exp)
 
-	for _, opt := range append(jaegerDefaultOpts, opts...) {
-		err = opt(jo)
-		if err != nil {
-			return nil, err
+	for _, opt := range append(defaultOpts, opts...) {
+		if err = opt(e); err != nil {
+			werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+
+			er := new(errors.ErrCriticalOption)
+			if errors.As(err, &er) {
+				log.Error(werr)
+				return nil, werr
+			}
+			log.Warn(werr)
 		}
 	}
 
-	return &exp{
-		options: *jo,
-	}, nil
+	return e, nil
 }
 
 func (e *exp) Start(ctx context.Context) (err error) {
-	e.exporter, err = jaeger.NewExporter(e.options)
-	if err != nil {
-		return err
+	e.exporter, err = jaeger.NewExporter(e.endpoint(), e.options...)
+
+	return err
+}
+
+func (e *exp) endpoint() jaeger.EndpointOption {
+	if e.collectorEndpoint != "" {
+		return jaeger.WithCollectorEndpoint(e.collectorEndpoint, e.collectorOpts...)
 	}
 
-	trace.RegisterExporter(e.exporter)
-
-	return nil
+	return jaeger.WithAgentEndpoint(e.agentEndpoint)
 }
 
 func (e *exp) Stop(ctx context.Context) {
 	if e.exporter != nil {
 		e.exporter.Flush()
 	}
+}
+
+func (e *exp) Exporter() *jaeger.Exporter {
+	return e.exporter
 }

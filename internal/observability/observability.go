@@ -32,7 +32,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/internal/observability/metrics/grpc"
 	"github.com/vdaas/vald/internal/observability/profiler"
-	pstackdriver "github.com/vdaas/vald/internal/observability/profiler/stackdriver"
+	sdprof "github.com/vdaas/vald/internal/observability/profiler/stackdriver"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 )
@@ -54,36 +54,18 @@ type observability struct {
 
 func NewWithConfig(cfg *config.Observability, metrics ...metrics.Metric) (Observability, error) {
 	opts := make([]Option, 0)
+	traceOpts := make([]trace.Option, 0)
 	exps := make([]exporter.Exporter, 0)
 	profs := make([]profiler.Profiler, 0)
 
-	col, err := collector.New(
-		collector.WithDuration(cfg.Collector.Duration),
-		collector.WithVersionInfo(
-			cfg.Collector.Metrics.EnableVersionInfo,
-			cfg.Collector.Metrics.VersionInfoLabels...,
-		),
-		collector.WithMemoryMetrics(cfg.Collector.Metrics.EnableMemory),
-		collector.WithGoroutineMetrics(cfg.Collector.Metrics.EnableGoroutine),
-		collector.WithCGOMetrics(cfg.Collector.Metrics.EnableCGO),
-		collector.WithMetrics(metrics...),
-	)
+	col, err := newCollector(cfg.Collector, metrics...)
 	if err != nil {
 		return nil, err
 	}
 	opts = append(opts, WithCollector(col))
 
-	if cfg.Trace.Enabled {
-		opts = append(opts,
-			WithTracer(trace.New(trace.WithSamplingRate(cfg.Trace.SamplingRate))),
-		)
-	}
-
 	if cfg.Prometheus.Enabled {
-		prom, err := prometheus.New(
-			prometheus.WithEndpoint(cfg.Prometheus.Endpoint),
-			prometheus.WithNamespace(cfg.Prometheus.Namespace),
-		)
+		prom, err := newPrometheus(cfg.Prometheus)
 		if err != nil {
 			return nil, err
 		}
@@ -92,52 +74,17 @@ func NewWithConfig(cfg *config.Observability, metrics ...metrics.Metric) (Observ
 	}
 
 	if cfg.Jaeger.Enabled {
-		jae, err := jaeger.New(
-			jaeger.WithCollectorEndpoint(cfg.Jaeger.CollectorEndpoint),
-			jaeger.WithAgentEndpoint(cfg.Jaeger.AgentEndpoint),
-			jaeger.WithUsername(cfg.Jaeger.Username),
-			jaeger.WithPassword(cfg.Jaeger.Password),
-			jaeger.WithServiceName(cfg.Jaeger.ServiceName),
-			jaeger.WithBufferMaxCount(cfg.Jaeger.BufferMaxCount),
-		)
+		jae, err := newJaeger(cfg.Jaeger)
 		if err != nil {
 			return nil, err
 		}
 
 		exps = append(exps, jae)
-	}
-
-	sdClientOpts := []google.Option{
-		google.WithAPIKey(cfg.Stackdriver.Client.APIKey),
-		google.WithAudiences(cfg.Stackdriver.Client.Audiences...),
-		google.WithCredentialsFile(cfg.Stackdriver.Client.CredentialsFile),
-		google.WithCredentialsJSON(cfg.Stackdriver.Client.CredentialsJSON),
-		google.WithEndpoint(cfg.Stackdriver.Client.Endpoint),
-		google.WithQuotaProject(cfg.Stackdriver.Client.QuotaProject),
-		google.WithRequestReason(cfg.Stackdriver.Client.RequestReason),
-		google.WithScopes(cfg.Stackdriver.Client.Scopes...),
-		google.WithUserAgent(cfg.Stackdriver.Client.UserAgent),
-		google.WithTelemetry(cfg.Stackdriver.Client.TelemetryEnabled),
-		google.WithAuthentication(cfg.Stackdriver.Client.AuthenticationEnabled),
+		traceOpts = append(traceOpts, trace.WithSyncer(jae.Exporter()))
 	}
 
 	if cfg.Stackdriver.Exporter.MonitoringEnabled || cfg.Stackdriver.Exporter.TracingEnabled {
-		sdex, err := stackdriver.New(
-			stackdriver.WithProjectID(cfg.Stackdriver.ProjectID),
-			stackdriver.WithMonitoring(cfg.Stackdriver.Exporter.MonitoringEnabled),
-			stackdriver.WithTracing(cfg.Stackdriver.Exporter.TracingEnabled),
-			stackdriver.WithLocation(cfg.Stackdriver.Exporter.Location),
-			stackdriver.WithBundleDelayThreshold(cfg.Stackdriver.Exporter.BundleDelayThreshold),
-			stackdriver.WithBundleCountThreshold(cfg.Stackdriver.Exporter.BundleCountThreshold),
-			stackdriver.WithTraceSpansBufferMaxBytes(cfg.Stackdriver.Exporter.TraceSpansBufferMaxBytes),
-			stackdriver.WithMetricPrefix(cfg.Stackdriver.Exporter.MetricPrefix),
-			stackdriver.WithSkipCMD(cfg.Stackdriver.Exporter.SkipCMD),
-			stackdriver.WithTimeout(cfg.Stackdriver.Exporter.Timeout),
-			stackdriver.WithReportingInterval(cfg.Stackdriver.Exporter.ReportingInterval),
-			stackdriver.WithNumberOfWorkers(cfg.Stackdriver.Exporter.NumberOfWorkers),
-			stackdriver.WithMonitoringClientOptions(sdClientOpts...),
-			stackdriver.WithTraceClientOptions(sdClientOpts...),
-		)
+		sdex, err := newStackdriverExporter(cfg.Stackdriver)
 		if err != nil {
 			return nil, err
 		}
@@ -146,27 +93,26 @@ func NewWithConfig(cfg *config.Observability, metrics ...metrics.Metric) (Observ
 	}
 
 	if cfg.Stackdriver.Profiler.Enabled {
-		sdp, err := pstackdriver.New(
-			pstackdriver.WithProjectID(cfg.Stackdriver.ProjectID),
-			pstackdriver.WithService(cfg.Stackdriver.Profiler.Service),
-			pstackdriver.WithServiceVersion(cfg.Stackdriver.Profiler.ServiceVersion),
-			pstackdriver.WithDebugLogging(cfg.Stackdriver.Profiler.DebugLogging),
-			pstackdriver.WithMutexProfiling(cfg.Stackdriver.Profiler.MutexProfiling),
-			pstackdriver.WithCPUProfiling(cfg.Stackdriver.Profiler.CPUProfiling),
-			pstackdriver.WithAllocProfiling(cfg.Stackdriver.Profiler.AllocProfiling),
-			pstackdriver.WithHeapProfiling(cfg.Stackdriver.Profiler.HeapProfiling),
-			pstackdriver.WithGoroutineProfiling(cfg.Stackdriver.Profiler.GoroutineProfiling),
-			pstackdriver.WithAllocForceGC(cfg.Stackdriver.Profiler.AllocForceGC),
-			pstackdriver.WithAPIAddr(cfg.Stackdriver.Profiler.APIAddr),
-			pstackdriver.WithInstance(cfg.Stackdriver.Profiler.Instance),
-			pstackdriver.WithZone(cfg.Stackdriver.Profiler.Zone),
-			pstackdriver.WithClientOptions(sdClientOpts...),
-		)
+		sdp, err := newStackdriverProfiler(cfg.Stackdriver)
 		if err != nil {
 			return nil, err
 		}
 
 		profs = append(profs, sdp)
+	}
+
+	if cfg.Trace.Enabled {
+		tr, err := trace.New(
+			append(
+				traceOpts,
+				trace.WithSamplingRate(cfg.Trace.SamplingRate),
+			)...,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		opts = append(opts, WithTracer(tr))
 	}
 
 	opts = append(
@@ -176,6 +122,94 @@ func NewWithConfig(cfg *config.Observability, metrics ...metrics.Metric) (Observ
 	)
 
 	return New(opts...)
+}
+
+func newCollector(cfg *config.Collector, metrics ...metrics.Metric) (collector.Collector, error) {
+	return collector.New(
+		collector.WithDuration(cfg.Duration),
+		collector.WithVersionInfo(
+			cfg.Metrics.EnableVersionInfo,
+			cfg.Metrics.VersionInfoLabels...,
+		),
+		collector.WithMemoryMetrics(cfg.Metrics.EnableMemory),
+		collector.WithGoroutineMetrics(cfg.Metrics.EnableGoroutine),
+		collector.WithCGOMetrics(cfg.Metrics.EnableCGO),
+		collector.WithMetrics(metrics...),
+	)
+}
+
+func newPrometheus(cfg *config.Prometheus) (prometheus.Prometheus, error) {
+	return prometheus.New(
+		prometheus.WithEndpoint(cfg.Endpoint),
+		prometheus.WithNamespace(cfg.Namespace),
+	)
+}
+
+func newJaeger(cfg *config.Jaeger) (jaeger.Jaeger, error) {
+	return jaeger.New(
+		jaeger.WithCollectorEndpoint(cfg.CollectorEndpoint),
+		jaeger.WithAgentEndpoint(cfg.AgentEndpoint),
+		jaeger.WithUsername(cfg.Username),
+		jaeger.WithPassword(cfg.Password),
+		jaeger.WithServiceName(cfg.ServiceName),
+		jaeger.WithBufferMaxCount(cfg.BufferMaxCount),
+	)
+}
+
+func stackdriverClientOpts(cfg *config.Stackdriver) []google.Option {
+	return []google.Option{
+		google.WithAPIKey(cfg.Client.APIKey),
+		google.WithAudiences(cfg.Client.Audiences...),
+		google.WithCredentialsFile(cfg.Client.CredentialsFile),
+		google.WithCredentialsJSON(cfg.Client.CredentialsJSON),
+		google.WithEndpoint(cfg.Client.Endpoint),
+		google.WithQuotaProject(cfg.Client.QuotaProject),
+		google.WithRequestReason(cfg.Client.RequestReason),
+		google.WithScopes(cfg.Client.Scopes...),
+		google.WithUserAgent(cfg.Client.UserAgent),
+		google.WithTelemetry(cfg.Client.TelemetryEnabled),
+		google.WithAuthentication(cfg.Client.AuthenticationEnabled),
+	}
+}
+
+func newStackdriverExporter(cfg *config.Stackdriver) (stackdriver.Stackdriver, error) {
+	clientOpts := stackdriverClientOpts(cfg)
+	return stackdriver.New(
+		stackdriver.WithProjectID(cfg.ProjectID),
+		stackdriver.WithMonitoring(cfg.Exporter.MonitoringEnabled),
+		stackdriver.WithTracing(cfg.Exporter.TracingEnabled),
+		stackdriver.WithLocation(cfg.Exporter.Location),
+		stackdriver.WithBundleDelayThreshold(cfg.Exporter.BundleDelayThreshold),
+		stackdriver.WithBundleCountThreshold(cfg.Exporter.BundleCountThreshold),
+		stackdriver.WithTraceSpansBufferMaxBytes(cfg.Exporter.TraceSpansBufferMaxBytes),
+		stackdriver.WithMetricPrefix(cfg.Exporter.MetricPrefix),
+		stackdriver.WithSkipCMD(cfg.Exporter.SkipCMD),
+		stackdriver.WithTimeout(cfg.Exporter.Timeout),
+		stackdriver.WithReportingInterval(cfg.Exporter.ReportingInterval),
+		stackdriver.WithNumberOfWorkers(cfg.Exporter.NumberOfWorkers),
+		stackdriver.WithMonitoringClientOptions(clientOpts...),
+		stackdriver.WithTraceClientOptions(clientOpts...),
+	)
+}
+
+func newStackdriverProfiler(cfg *config.Stackdriver) (sdprof.Stackdriver, error) {
+	clientOpts := stackdriverClientOpts(cfg)
+	return sdprof.New(
+		sdprof.WithProjectID(cfg.ProjectID),
+		sdprof.WithService(cfg.Profiler.Service),
+		sdprof.WithServiceVersion(cfg.Profiler.ServiceVersion),
+		sdprof.WithDebugLogging(cfg.Profiler.DebugLogging),
+		sdprof.WithMutexProfiling(cfg.Profiler.MutexProfiling),
+		sdprof.WithCPUProfiling(cfg.Profiler.CPUProfiling),
+		sdprof.WithAllocProfiling(cfg.Profiler.AllocProfiling),
+		sdprof.WithHeapProfiling(cfg.Profiler.HeapProfiling),
+		sdprof.WithGoroutineProfiling(cfg.Profiler.GoroutineProfiling),
+		sdprof.WithAllocForceGC(cfg.Profiler.AllocForceGC),
+		sdprof.WithAPIAddr(cfg.Profiler.APIAddr),
+		sdprof.WithInstance(cfg.Profiler.Instance),
+		sdprof.WithZone(cfg.Profiler.Zone),
+		sdprof.WithClientOptions(clientOpts...),
+	)
 }
 
 func New(opts ...Option) (Observability, error) {

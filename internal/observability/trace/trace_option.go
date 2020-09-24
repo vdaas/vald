@@ -17,27 +17,55 @@
 // Package trace provides trace function.
 package trace
 
-type TraceOption func(*tracer)
+import (
+	"github.com/vdaas/vald/internal/errors"
+	export "go.opentelemetry.io/otel/sdk/export/trace"
+	sdk "go.opentelemetry.io/otel/sdk/trace"
+)
+
+type Option func(*tracer) error
 
 var (
-	traceDefaultOpts = []TraceOption{
+	traceDefaultOpts = []Option{
 		WithName("vald.vdaas.org/tracer"),
 		WithSamplingRate(1.0),
 	}
 )
 
-func WithName(name string) TraceOption {
-	return func(t *tracer) {
+func WithName(name string) Option {
+	return func(t *tracer) error {
 		if name != "" {
 			t.name = name
 		}
+
+		return nil
 	}
 }
 
-func WithSamplingRate(rate float64) TraceOption {
-	return func(t *tracer) {
+func WithSamplingRate(rate float64) Option {
+	return func(t *tracer) error {
 		if rate >= 0.0 && rate <= 1.0 {
 			t.samplingRate = rate
 		}
+
+		return nil
+	}
+}
+
+func WithSyncer(syncer export.SpanSyncer) Option {
+	return func(t *tracer) error {
+		if syncer == nil {
+			return errors.NewErrInvalidOption("syncer", syncer)
+		}
+
+		if t.providerOpts == nil {
+			t.providerOpts = []sdk.ProviderOption{
+				sdk.WithSyncer(syncer),
+			}
+		} else {
+			t.providerOpts = append(t.providerOpts, sdk.WithSyncer(syncer))
+		}
+
+		return nil
 	}
 }
