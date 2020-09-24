@@ -1513,17 +1513,11 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
 							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
-								s := new(mock.MockInsert)
-								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
-									return s
+								return &mock.MockInsert{
+									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
+										return nil, err
+									},
 								}
-								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
-									return nil, err
-								}
-								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
-									return s
-								}
-								return s
 							}
 							return tx, nil
 						},
@@ -1561,17 +1555,11 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
 							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
-								s := new(mock.MockInsert)
-								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
-									return s
+								return &mock.MockInsert{
+									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
+										return nil, nil
+									},
 								}
-								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
-									return nil, nil
-								}
-								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
-									return s
-								}
-								return s
 							}
 							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
 								s := new(mock.MockSelect)
@@ -1629,17 +1617,11 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
 							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
-								s := new(mock.MockInsert)
-								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
-									return s
+								return &mock.MockInsert{
+									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
+										return nil, nil
+									},
 								}
-								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
-									return nil, nil
-								}
-								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
-									return s
-								}
-								return s
 							}
 							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
 								s := new(mock.MockSelect)
@@ -1710,17 +1692,11 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
 							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
-								s := new(mock.MockInsert)
-								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
-									return s
+								return &mock.MockInsert{
+									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
+										return nil, nil
+									},
 								}
-								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
-									return nil, nil
-								}
-								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
-									return s
-								}
-								return s
 							}
 							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
 								s := new(mock.MockSelect)
@@ -1802,17 +1778,11 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
 							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
-								s := new(mock.MockInsert)
-								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
-									return s
+								return &mock.MockInsert{
+									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
+										return nil, nil
+									},
 								}
-								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
-									return nil, nil
-								}
-								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
-									return s
-								}
-								return s
 							}
 							tx.InsertIntoFunc = func(table string) dbr.InsertStmt {
 								s := new(mock.MockInsert)
@@ -1910,17 +1880,11 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
 							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
-								s := new(mock.MockInsert)
-								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
-									return s
+								return &mock.MockInsert{
+									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
+										return nil, nil
+									},
 								}
-								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
-									return nil, nil
-								}
-								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
-									return s
-								}
-								return s
 							}
 							tx.InsertIntoFunc = func(table string) dbr.InsertStmt {
 								s := new(mock.MockInsert)
@@ -2017,17 +1981,11 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
 							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
-								s := new(mock.MockInsert)
-								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
-									return s
+								return &mock.MockInsert{
+									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
+										return nil, nil
+									},
 								}
-								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
-									return nil, nil
-								}
-								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
-									return s
-								}
-								return s
 							}
 							tx.InsertIntoFunc = func(table string) dbr.InsertStmt {
 								s := new(mock.MockInsert)
@@ -2260,17 +2218,11 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
 							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
-								s := new(mock.MockInsert)
-								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
-									return s
+								return &mock.MockInsert{
+									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
+										return nil, err
+									},
 								}
-								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
-									return nil, err
-								}
-								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
-									return s
-								}
-								return s
 							}
 							return tx, nil
 						},
@@ -2310,17 +2262,11 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
 							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
-								s := new(mock.MockInsert)
-								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
-									return s
+								return &mock.MockInsert{
+									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
+										return nil, err
+									},
 								}
-								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
-									return nil, nil
-								}
-								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
-									return s
-								}
-								return s
 							}
 							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
 								s := new(mock.MockSelect)
@@ -2380,17 +2326,11 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
 							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
-								s := new(mock.MockInsert)
-								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
-									return s
+								return &mock.MockInsert{
+									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
+										return nil, nil
+									},
 								}
-								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
-									return nil, nil
-								}
-								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
-									return s
-								}
-								return s
 							}
 							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
 								s := new(mock.MockSelect)
@@ -2464,17 +2404,11 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
 							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
-								s := new(mock.MockInsert)
-								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
-									return s
+								return &mock.MockInsert{
+									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
+										return nil, nil
+									},
 								}
-								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
-									return nil, nil
-								}
-								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
-									return s
-								}
-								return s
 							}
 							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
 								s := new(mock.MockSelect)
@@ -2558,17 +2492,11 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
 							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
-								s := new(mock.MockInsert)
-								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
-									return s
+								return &mock.MockInsert{
+									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
+										return nil, nil
+									},
 								}
-								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
-									return nil, nil
-								}
-								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
-									return s
-								}
-								return s
 							}
 							tx.InsertIntoFunc = func(table string) dbr.InsertStmt {
 								s := new(mock.MockInsert)
@@ -2668,17 +2596,11 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
 							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
-								s := new(mock.MockInsert)
-								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
-									return s
+								return &mock.MockInsert{
+									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
+										return nil, nil
+									},
 								}
-								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
-									return nil, nil
-								}
-								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
-									return s
-								}
-								return s
 							}
 							tx.InsertIntoFunc = func(table string) dbr.InsertStmt {
 								s := new(mock.MockInsert)
@@ -2777,17 +2699,11 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
 							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
-								s := new(mock.MockInsert)
-								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
-									return s
+								return &mock.MockInsert{
+									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
+										return nil, nil
+									},
 								}
-								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
-									return nil, nil
-								}
-								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
-									return s
-								}
-								return s
 							}
 							tx.InsertIntoFunc = func(table string) dbr.InsertStmt {
 								s := new(mock.MockInsert)
