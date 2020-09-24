@@ -67,7 +67,7 @@ func TestNew(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns writer when option is empty",
+			name: "returns reader when option is empty",
 			args: args{
 				opts: nil,
 			},
@@ -81,7 +81,7 @@ func TestNew(t *testing.T) {
 		},
 
 		{
-			name: "returns writer when option is not empty",
+			name: "returns reader when option is not empty",
 			args: args{
 				opts: []Option{
 					WithBackoff(true),
@@ -133,6 +133,7 @@ func Test_reader_Open(t *testing.T) {
 		wg             *sync.WaitGroup
 		ctxio          ctxio.IO
 		backoffOpts    []backoff.Option
+		maxChunkSize   int64
 	}
 	type want struct {
 		err error
@@ -145,6 +146,7 @@ func Test_reader_Open(t *testing.T) {
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args, *testing.T)
+		hookFunc   func(*reader)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -159,7 +161,7 @@ func Test_reader_Open(t *testing.T) {
 			eg, _ := errgroup.New(ctx)
 
 			return test{
-				name: "returns nil when context was canceled",
+				name: "returns nil when context is canceled",
 				args: args{
 					ctx: cctx,
 				},
@@ -188,7 +190,7 @@ func Test_reader_Open(t *testing.T) {
 
 			wantErr := errors.New("err")
 			return test{
-				name: "returns nil when backoff enable and s3 service returns error",
+				name: "returns nil when backoff is enabled and s3 service returns an error",
 				args: args{
 					ctx: cctx,
 				},
@@ -226,7 +228,7 @@ func Test_reader_Open(t *testing.T) {
 
 			wantErr := errors.New("err")
 			return test{
-				name: "returns nil when backoff disable and s3 service returns error",
+				name: "returns nil when backoff is disabled and s3 service returns an error",
 				args: args{
 					ctx: cctx,
 				},
@@ -260,7 +262,7 @@ func Test_reader_Open(t *testing.T) {
 
 			wantErr := errors.New("err")
 			return test{
-				name: "returns nil when backoff disable and reader copy fails",
+				name: "returns nil when backoff is disabled and the reader creation fails",
 				args: args{
 					ctx: cctx,
 				},
@@ -309,7 +311,7 @@ func Test_reader_Open(t *testing.T) {
 
 			wantErr := errors.New("err")
 			return test{
-				name: "returns nil when backoff disable and reader copy fails",
+				name: "returns nil when backoff is disabled and the reader copy fails",
 				args: args{
 					ctx: cctx,
 				},
@@ -334,7 +336,7 @@ func Test_reader_Open(t *testing.T) {
 									return nil
 								},
 								ReadFunc: func(p []byte) (n int, err error) {
-									return 1, io.EOF
+									return 0, io.EOF
 								},
 							}, nil
 						},
@@ -348,6 +350,84 @@ func Test_reader_Open(t *testing.T) {
 
 					if err := eg.Wait(); !errors.Is(err, wantErr) {
 						t.Errorf("want: %v, but got: %v", wantErr, err)
+					}
+
+					cancel()
+				},
+			}
+		}(),
+
+		func() test {
+			ctx := context.Background()
+			cctx, cancel := context.WithCancel(ctx)
+			eg, _ := errgroup.New(ctx)
+
+			roopCnt := 0
+			return test{
+				name: "returns nil when backoff is disable and multiple reads success",
+				args: args{
+					ctx: cctx,
+				},
+				fields: fields{
+					eg:           eg,
+					maxChunkSize: 10,
+					service: &MockS3API{
+						GetObjectWithContextFunc: func(aws.Context, *s3.GetObjectInput, ...request.Option) (*s3.GetObjectOutput, error) {
+							return new(s3.GetObjectOutput), nil
+						},
+					},
+					ctxio: &MockIO{
+						NewReaderWithContextFunc: func(ctx context.Context, r io.Reader) (io.Reader, error) {
+							return &MockReadCloser{
+								ReadFunc: func(p []byte) (n int, err error) {
+									if roopCnt == 0 {
+										roopCnt++
+										return 10, io.EOF
+									}
+									return 0, io.EOF
+								},
+							}, nil
+						},
+						NewReadCloserWithContextFunc: func(ctx context.Context, r io.ReadCloser) (io.ReadCloser, error) {
+							return &MockReadCloser{
+								CloseFunc: func() error {
+									return nil
+								},
+								ReadFunc: func(p []byte) (n int, err error) {
+									return 10, io.EOF
+								},
+							}, nil
+						},
+					},
+				},
+				want: want{
+					err: nil,
+				},
+				hookFunc: func(r *reader) {
+					go func() {
+						bytes := [][]byte{
+							make([]byte, 10),
+							make([]byte, 0),
+						}
+						for {
+							select {
+							case <-cctx.Done():
+								return
+							default:
+								if roopCnt == 0 {
+									r.Read(bytes[0])
+								} else {
+									r.Read(bytes[1])
+								}
+							}
+						}
+					}()
+				},
+				afterFunc: func(_ args, t *testing.T) {
+					t.Helper()
+
+					if err := eg.Wait(); err != nil {
+						t.Errorf("want: %v, but got: %v", nil, err)
 					}
 
 					cancel()
@@ -378,9 +458,13 @@ func Test_reader_Open(t *testing.T) {
 				ctxio:          test.fields.ctxio,
 				backoffEnabled: test.fields.backoffEnabled,
 				backoffOpts:    test.fields.backoffOpts,
+				maxChunkSize:   test.fields.maxChunkSize,
 			}
 
 			err := r.Open(test.args.ctx)
+			if test.hookFunc != nil {
+				test.hookFunc(r)
+			}
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -430,7 +514,7 @@ func Test_reader_Close(t *testing.T) {
 		},
 
 		{
-			name: "returns nil when close is nil",
+			name: "returns nil when the close is nil",
 			fields: fields{
 				wg: new(sync.WaitGroup),
 			},
@@ -440,7 +524,7 @@ func Test_reader_Close(t *testing.T) {
 		},
 
 		{
-			name: "returns nil when close fails",
+			name: "returns nil when the close fails",
 			fields: fields{
 				pr: &MockReadCloser{
 					CloseFunc: func() error {
@@ -538,6 +622,17 @@ func Test_reader_Read(t *testing.T) {
 		},
 
 		{
+			name: "returns error when read is nil",
+			args: args{
+				p: []byte{},
+			},
+			want: want{
+				wantN: 0,
+				err:   errors.ErrStorageReaderNotOpened,
+			},
+		},
+
+		{
 			name: "returns error when read fails",
 			args: args{
 				p: []byte{},
@@ -628,7 +723,7 @@ func Test_reader_getObjectWithBackoff(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns error when s3 service returns error and backoff fails",
+			name: "returns (Reader, nil) when no error occurs",
 			args: args{
 				ctx:    context.Background(),
 				offset: 1,
@@ -763,7 +858,7 @@ func Test_reader_getObject(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns (io.Reader, nil) when no error occurs",
+			name: "returns (Reader, nil) when no error occurs",
 			args: args{
 				ctx:    context.Background(),
 				offset: 2,
@@ -800,7 +895,7 @@ func Test_reader_getObject(t *testing.T) {
 		},
 
 		{
-			name: "returns (io.Reader, nil) when reader close error occurs and output warning",
+			name: "returns (Reader, nil) when the reader close error occurs and output warning",
 			args: args{
 				ctx:    context.Background(),
 				offset: 2,
