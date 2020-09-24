@@ -31,6 +31,7 @@ MANAGER_BACKUP_CASSANDRA_IMAGE  = $(NAME)-manager-backup-cassandra
 MANAGER_COMPRESSOR_IMAGE        = $(NAME)-manager-compressor
 MANAGER_INDEX_IMAGE             = $(NAME)-manager-index
 CI_CONTAINER_IMAGE              = $(NAME)-ci-container
+DEV_CONTAINER_IMAGE             = $(NAME)-dev-container
 HELM_OPERATOR_IMAGE             = $(NAME)-helm-operator
 LOADTEST_IMAGE                  = $(NAME)-loadtest
 

@@ -1,0 +1,50 @@
+name: 'Build docker image: dev-container'
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'dockers/ci/**'
+      - 'dockers/dev/**'
+  pull_request:
+    paths:
+      - 'dockers/ci/**'
+      - 'dockers/dev/**'
+  schedule:
+    - cron: '0 1 * * *'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 10
+    - name: Build the Docker image
+      run: |
+        make docker/build/dev-container
+    - name: Login to GitHub package registry
+      run: |
+        echo ${GITHUB_TOKEN} | docker login docker.pkg.github.com --username ${GITHUB_USER} --password-stdin
+      env:
+        GITHUB_USER: ${{ secrets.DISPATCH_USER }}
+        GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+    - name: push to GitHub package registry (master)
+      if: github.ref == 'refs/heads/master'
+      run: |
+        originname=`make docker/name/dev-container`
+        imagename=`make docker/name/dev-container | sed -e 's:vdaas:docker.pkg.github.com/vdaas/vald:'`
+        docker tag ${originname} ${imagename}:nightly
+        docker push ${imagename}:nightly
+    - name: Login to DockerHub
+      run: |
+        echo ${DOCKERHUB_PASS} | docker login --username ${DOCKERHUB_USER} --password-stdin
+      env:
+        DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+        DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
+    - name: push to DockerHub (master)
+      if: github.ref == 'refs/heads/master'
+      run: |
+        imagename=`make docker/name/dev-container`
+        docker tag ${imagename} ${imagename}:nightly
+        docker push ${imagename}:nightly
