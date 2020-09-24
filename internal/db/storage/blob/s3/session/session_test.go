@@ -145,7 +145,7 @@ func TestNew(t *testing.T) {
 			},
 		},
 		{
-			name: "return default option and logging session error when set option error",
+			name: "return initialized session and logging session error when set option error",
 			args: args{
 				opts: []Option{
 					func(s *sess) error {
