@@ -238,7 +238,7 @@ func validateMeta(meta MetaVector) error {
 	return nil
 }
 
-// SSetMeta records metadata at meta_vector table and set of (podIP, uuid) at podIPtable through same transaction.
+// SetMeta records metadata at meta_vector table and set of (podIP, uuid) at podIPtable through same transaction.
 // If error occurs it will rollback by defer function.
 func (m *mySQLClient) SetMeta(ctx context.Context, mv MetaVector) error {
 	if !m.connected.Load().(bool) {
