@@ -19,5 +19,18 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 )
 
-// S3 is type alias for s3.S3.
-type S3 = s3.S3
+type (
+	// S3 is type alias for s3.S3.
+	S3 = s3.S3
+	// GetObjectInput is type alias for s3.GetObjectInput.
+	GetObjectInput = s3.GetObjectInput
+	// GetObjectOutput is type alias for s3.GetObjectOutput.
+	GetObjectOutput = s3.GetObjectOutput
+)
+
+const (
+	// ErrCodeNoSuchBucket is an alias for s3.ErrCodeNoSuchBucket.
+	ErrCodeNoSuchBucket = s3.ErrCodeNoSuchBucket
+	// ErrCodeNoSuchKey is an alias for s3.ErrCodeNoSuchKey.
+	ErrCodeNoSuchKey = s3.ErrCodeNoSuchKey
+)
