@@ -36,7 +36,10 @@ docker/name/base:
 .PHONY: docker/build/base
 ## build base image
 docker/build/base:
-	docker build -f dockers/base/Dockerfile -t $(REPO)/$(BASE_IMAGE) .
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
+	    -f dockers/base/Dockerfile \
+	    -t $(REPO)/$(BASE_IMAGE) .
 
 .PHONY: docker/name/agent-ngt
 docker/name/agent-ngt:
@@ -45,7 +48,8 @@ docker/name/agent-ngt:
 .PHONY: docker/build/agent-ngt
 ## build agent-ngt image
 docker/build/agent-ngt: docker/build/base
-	docker build \
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
 	    -f dockers/agent/core/ngt/Dockerfile \
 	    -t $(REPO)/$(AGENT_IMAGE) . \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
@@ -59,7 +63,8 @@ docker/name/agent-sidecar:
 .PHONY: docker/build/agent-sidecar
 ## build agent-sidecar image
 docker/build/agent-sidecar: docker/build/base
-	docker build \
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
 	    -f dockers/agent/sidecar/Dockerfile \
 	    -t $(REPO)/$(AGENT_SIDECAR_IMAGE) . \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
@@ -73,7 +78,8 @@ docker/name/discoverer-k8s:
 .PHONY: docker/build/discoverer-k8s
 ## build discoverer-k8s image
 docker/build/discoverer-k8s: docker/build/base
-	docker build \
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
 	    -f dockers/discoverer/k8s/Dockerfile \
 	    -t $(REPO)/$(DISCOVERER_IMAGE) . \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
@@ -87,7 +93,8 @@ docker/name/gateway-vald:
 .PHONY: docker/build/gateway-vald
 ## build gateway-vald image
 docker/build/gateway-vald: docker/build/base
-	docker build \
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
 	    -f dockers/gateway/vald/Dockerfile \
 	    -t $(REPO)/$(GATEWAY_IMAGE) . \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
@@ -101,7 +108,8 @@ docker/name/meta-redis:
 .PHONY: docker/build/meta-redis
 ## build meta-redis image
 docker/build/meta-redis: docker/build/base
-	docker build \
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
 	    -f dockers/meta/redis/Dockerfile \
 	    -t $(REPO)/$(META_REDIS_IMAGE) . \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
@@ -115,7 +123,8 @@ docker/name/meta-cassandra:
 .PHONY: docker/build/meta-cassandra
 ## build meta-cassandra image
 docker/build/meta-cassandra: docker/build/base
-	docker build \
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
 	    -f dockers/meta/cassandra/Dockerfile \
 	    -t $(REPO)/$(META_CASSANDRA_IMAGE) . \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
@@ -129,7 +138,8 @@ docker/name/backup-manager-mysql:
 .PHONY: docker/build/backup-manager-mysql
 ## build backup-manager-mysql image
 docker/build/backup-manager-mysql: docker/build/base
-	docker build \
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
 	    -f dockers/manager/backup/mysql/Dockerfile \
 	    -t $(REPO)/$(MANAGER_BACKUP_MYSQL_IMAGE) . \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
@@ -143,7 +153,8 @@ docker/name/backup-manager-cassandra:
 .PHONY: docker/build/backup-manager-cassandra
 ## build backup-manager-cassandra image
 docker/build/backup-manager-cassandra: docker/build/base
-	docker build \
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
 	    -f dockers/manager/backup/cassandra/Dockerfile \
 	    -t $(REPO)/$(MANAGER_BACKUP_CASSANDRA_IMAGE) . \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
@@ -157,7 +168,8 @@ docker/name/manager-compressor:
 .PHONY: docker/build/manager-compressor
 ## build manager-compressor image
 docker/build/manager-compressor: docker/build/base
-	docker build \
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
 	    -f dockers/manager/compressor/Dockerfile \
 	    -t $(REPO)/$(MANAGER_COMPRESSOR_IMAGE) . \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
@@ -171,7 +183,8 @@ docker/name/manager-index:
 .PHONY: docker/build/manager-index
 ## build manager-index image
 docker/build/manager-index: docker/build/base
-	docker build \
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
 	    -f dockers/manager/index/Dockerfile \
 	    -t $(REPO)/$(MANAGER_INDEX_IMAGE) . \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
@@ -185,7 +198,10 @@ docker/name/ci-container:
 .PHONY: docker/build/ci-container
 ## build ci-container image
 docker/build/ci-container: docker/build/base
-	docker build -f dockers/ci/base/Dockerfile -t $(REPO)/$(CI_CONTAINER_IMAGE) .
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
+	    -f dockers/ci/base/Dockerfile \
+	    -t $(REPO)/$(CI_CONTAINER_IMAGE) .
 
 .PHONY: docker/name/dev-container
 docker/name/dev-container:
@@ -194,7 +210,10 @@ docker/name/dev-container:
 .PHONY: docker/build/dev-container
 ## build dev-container image
 docker/build/dev-container: docker/build/ci-container
-	docker build -f dockers/dev/Dockerfile -t $(REPO)/$(DEV_CONTAINER_IMAGE) .
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
+	    -f dockers/dev/Dockerfile \
+	    -t $(REPO)/$(DEV_CONTAINER_IMAGE) .
 
 .PHONY: docker/name/operator/helm
 docker/name/operator/helm:
@@ -203,7 +222,8 @@ docker/name/operator/helm:
 .PHONY: docker/build/operator/helm
 ## build helm-operator image
 docker/build/operator/helm:
-	docker build \
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
 	    -f dockers/operator/helm/Dockerfile \
 	    -t $(REPO)/$(HELM_OPERATOR_IMAGE) . \
 	    --build-arg OPERATOR_SDK_VERSION=$(OPERATOR_SDK_VERSION)
@@ -215,4 +235,7 @@ docker/name/loadtest:
 .PHONY: docker/build/loadtest
 ## build loadtest image
 docker/build/loadtest: docker/build/base
-	docker build -f dockers/tools/cli/loadtest/Dockerfile -t $(REPO)/$(LOADTEST_IMAGE) .
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
+	    -f dockers/tools/cli/loadtest/Dockerfile \
+	    -t $(REPO)/$(LOADTEST_IMAGE) .
