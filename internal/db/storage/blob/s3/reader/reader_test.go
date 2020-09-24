@@ -415,9 +415,9 @@ func Test_reader_Open(t *testing.T) {
 								return
 							default:
 								if roopCnt == 0 {
-									r.Read(bytes[0])
+									_, _ = r.Read(bytes[0])
 								} else {
-									r.Read(bytes[1])
+									_, _ = r.Read(bytes[1])
 								}
 							}
 						}
