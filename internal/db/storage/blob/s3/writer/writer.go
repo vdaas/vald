@@ -65,6 +65,8 @@ func New(opts ...Option) Writer {
 	return w
 }
 
+// Open creates io.Pipe. When the write method is called, the written data will be uploaded to s3.
+// Open method returns an error to align the interface, but it doesn't actually return an error.
 func (w *writer) Open(ctx context.Context) (err error) {
 	w.wg = new(sync.WaitGroup)
 
@@ -84,6 +86,7 @@ func (w *writer) Open(ctx context.Context) (err error) {
 	return err
 }
 
+// Close closes the writer.
 func (w *writer) Close() error {
 	if w.pw != nil {
 		return w.pw.Close()
@@ -96,6 +99,7 @@ func (w *writer) Close() error {
 	return nil
 }
 
+// Write writes len(p) bytes from p to the underlying data stream. The written data will be uploaded to s3.
 func (w *writer) Write(p []byte) (n int, err error) {
 	if w.pw == nil {
 		return 0, errors.ErrStorageWriterNotOpened
