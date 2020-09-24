@@ -21,21 +21,25 @@ import (
 	"context"
 
 	"contrib.go.opencensus.io/exporter/stackdriver"
+	"github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace"
 	"github.com/vdaas/vald/internal/observability/exporter"
-	"go.opencensus.io/trace"
 )
 
 type Stackdriver interface {
 	exporter.Exporter
+	Exporter() *trace.Exporter
 }
 
 type exp struct {
-	exporter *stackdriver.Exporter
+	exporter  *stackdriver.Exporter
+	texporter *trace.Exporter
 
 	monitoringEnabled bool
 	tracingEnabled    bool
 
 	*stackdriver.Options
+
+	topts []trace.Option
 }
 
 func New(opts ...Option) (s Stackdriver, err error) {
@@ -68,7 +72,13 @@ func (e *exp) Start(ctx context.Context) (err error) {
 	}
 
 	if e.tracingEnabled {
-		trace.RegisterExporter(e.exporter)
+		e.texporter, err = trace.NewExporter(
+			append(
+				e.topts,
+				trace.WithTraceClientOptions(e.TraceClientOptions),
+				trace.WithContext(ctx),
+			)...,
+		)
 	}
 
 	return nil
@@ -82,4 +92,12 @@ func (e *exp) Stop(ctx context.Context) {
 
 		e.exporter.Flush()
 	}
+
+	if e.texporter != nil {
+		e.texporter.Flush()
+	}
+}
+
+func (e *exp) Exporter() *trace.Exporter {
+	return e.texporter
 }

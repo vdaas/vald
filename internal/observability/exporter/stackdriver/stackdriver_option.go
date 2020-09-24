@@ -20,6 +20,7 @@ package stackdriver
 import (
 	"contrib.go.opencensus.io/exporter/stackdriver"
 	"contrib.go.opencensus.io/exporter/stackdriver/monitoredresource"
+	"github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/client/google"
 	"github.com/vdaas/vald/internal/observability/metrics"
@@ -61,8 +62,18 @@ func WithTracing(enabled bool) Option {
 
 func WithProjectID(pid string) Option {
 	return func(e *exp) error {
-		if pid != "" {
-			e.ProjectID = pid
+		if pid == "" {
+			return nil
+		}
+
+		e.ProjectID = pid
+
+		if e.topts == nil {
+			e.topts = []trace.Option{
+				trace.WithProjectID(pid),
+			}
+		} else {
+			e.topts = append(e.topts, trace.WithProjectID(pid))
 		}
 
 		return nil
@@ -81,8 +92,18 @@ func WithLocation(loc string) Option {
 
 func WithOnErrorFunc(f func(error)) Option {
 	return func(e *exp) error {
-		if f != nil {
-			e.OnError = f
+		if f == nil {
+			return nil
+		}
+
+		e.OnError = f
+
+		if e.topts == nil {
+			e.topts = []trace.Option{
+				trace.WithOnError(f),
+			}
+		} else {
+			e.topts = append(e.topts, trace.WithOnError(f))
 		}
 
 		return nil
@@ -142,6 +163,14 @@ func WithBundleDelayThreshold(dur string) Option {
 
 		e.BundleDelayThreshold = d
 
+		if e.topts == nil {
+			e.topts = []trace.Option{
+				trace.WithBundleDelayThreshold(d),
+			}
+		} else {
+			e.topts = append(e.topts, trace.WithBundleDelayThreshold(d))
+		}
+
 		return nil
 	}
 }
@@ -150,6 +179,14 @@ func WithBundleCountThreshold(cnt int) Option {
 	return func(e *exp) error {
 		e.BundleCountThreshold = cnt
 
+		if e.topts == nil {
+			e.topts = []trace.Option{
+				trace.WithBundleCountThreshold(cnt),
+			}
+		} else {
+			e.topts = append(e.topts, trace.WithBundleCountThreshold(cnt))
+		}
+
 		return nil
 	}
 }
@@ -157,6 +194,14 @@ func WithBundleCountThreshold(cnt int) Option {
 func WithTraceSpansBufferMaxBytes(bs int) Option {
 	return func(e *exp) error {
 		e.TraceSpansBufferMaxBytes = bs
+
+		if e.topts == nil {
+			e.topts = []trace.Option{
+				trace.WithBufferMaxBytes(bs),
+			}
+		} else {
+			e.topts = append(e.topts, trace.WithBufferMaxBytes(bs))
+		}
 
 		return nil
 	}
@@ -232,6 +277,14 @@ func WithTimeout(dur string) Option {
 
 		e.Timeout = d
 
+		if e.topts == nil {
+			e.topts = []trace.Option{
+				trace.WithTimeout(d),
+			}
+		} else {
+			e.topts = append(e.topts, trace.WithTimeout(d))
+		}
+
 		return nil
 	}
 }
@@ -256,6 +309,14 @@ func WithReportingInterval(dur string) Option {
 func WithNumberOfWorkers(n int) Option {
 	return func(e *exp) error {
 		e.NumberOfWorkers = n
+
+		if e.topts == nil {
+			e.topts = []trace.Option{
+				trace.WithMaxNumberOfWorkers(n),
+			}
+		} else {
+			e.topts = append(e.topts, trace.WithMaxNumberOfWorkers(n))
+		}
 
 		return nil
 	}
