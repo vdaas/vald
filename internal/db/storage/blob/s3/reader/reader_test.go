@@ -66,36 +66,40 @@ func TestNew(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           opts: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "returns writer when option is empty",
+			args: args{
+				opts: nil,
+			},
+			want: want{
+				want: &reader{
+					eg:             errgroup.Get(),
+					maxChunkSize:   512 * 1024 * 1024,
+					backoffEnabled: false,
+				},
+			},
+		},
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           opts: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns writer when option is not empty",
+			args: args{
+				opts: []Option{
+					WithBackoff(true),
+				},
+			},
+			want: want{
+				want: &reader{
+					eg:             errgroup.Get(),
+					maxChunkSize:   512 * 1024 * 1024,
+					backoffEnabled: true,
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
