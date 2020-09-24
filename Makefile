@@ -145,6 +145,7 @@ GO_SOURCES = $(eval GO_SOURCES := $(shell find \
 		-not -path './cmd/cli/*' \
 		-not -path './internal/core/ngt/*' \
 		-not -path './internal/test/comparator/*' \
+		-not -path './internal/test/mock/*' \
 		-not -path './hack/benchmark/internal/client/ngtd/*' \
 		-not -path './hack/benchmark/internal/starter/agent/*' \
 		-not -path './hack/benchmark/internal/starter/external/*' \
@@ -165,6 +166,7 @@ GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell find \
 		-not -path './cmd/cli/*' \
 		-not -path './internal/core/ngt/*' \
 		-not -path './internal/test/comparator/*' \
+		-not -path './internal/test/mock/*' \
 		-not -path './hack/benchmark/internal/client/ngtd/*' \
 		-not -path './hack/benchmark/internal/starter/agent/*' \
 		-not -path './hack/benchmark/internal/starter/external/*' \
