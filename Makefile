@@ -200,7 +200,7 @@ all: clean deps
 ## clean
 clean:
 	go clean -cache -modcache -testcache -i -r
-	mv ./apis/grpc/v1/vald/server.go /tmp/server.go
+	mv ./apis/grpc/v1/vald/vald.go /tmp/vald.go
 	rm -rf \
 		/go/pkg \
 		./*.log \
@@ -214,7 +214,7 @@ clean:
 		./go.sum \
 		./go.mod
 	mkdir -p ./apis/grpc/v1/vald
-	mv /tmp/server.go ./apis/grpc/v1/vald/server.go
+	mv /tmp/vald.go ./apis/grpc/v1/vald/vald.go
 	cp ./hack/go.mod.default ./go.mod
 
 .PHONY: license

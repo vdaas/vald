@@ -546,7 +546,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 	res, err = s.Insert(ctx, &payload.Insert_Request{
 		Vector: req.GetVector(),
 		Config: &payload.Insert_Config{
-			SkipStrictExistCheck: false,
+			SkipStrictExistCheck: true,
 			Filters:              req.GetConfig().Filters,
 		},
 	})
@@ -589,7 +589,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 		ireqs = append(ireqs, &payload.Insert_Request{
 			Vector: vec.GetVector(),
 			Config: &payload.Insert_Config{
-				SkipStrictExistCheck: vec.GetConfig().GetSkipStrictExistCheck(),
+				SkipStrictExistCheck: true,
 				Filters:              vec.GetConfig().GetFilters(),
 			},
 		})
@@ -639,10 +639,11 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 		Id: uuid,
 	})
 	if err != nil {
+		log.Debugf("Upsert API metadata exists check to Agent error:\t%s", err.Error())
 		loc, err = s.Insert(ctx, &payload.Insert_Request{
 			Vector: vec,
 			Config: &payload.Insert_Config{
-				SkipStrictExistCheck: false,
+				SkipStrictExistCheck: true,
 				Filters:              filters,
 			},
 		})
@@ -650,7 +651,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 		loc, err = s.Update(ctx, &payload.Update_Request{
 			Vector: vec,
 			Config: &payload.Update_Config{
-				SkipStrictExistCheck: false,
+				SkipStrictExistCheck: true,
 				Filters:              filters,
 			},
 		})
@@ -704,7 +705,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 			insertReqs = append(insertReqs, &payload.Insert_Request{
 				Vector: vec,
 				Config: &payload.Insert_Config{
-					SkipStrictExistCheck: false,
+					SkipStrictExistCheck: true,
 					Filters:              filters,
 				},
 			})
@@ -712,7 +713,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 			updateReqs = append(updateReqs, &payload.Update_Request{
 				Vector: vec,
 				Config: &payload.Update_Config{
-					SkipStrictExistCheck: false,
+					SkipStrictExistCheck: true,
 					Filters:              filters,
 				},
 			})

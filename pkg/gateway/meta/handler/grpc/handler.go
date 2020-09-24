@@ -20,11 +20,12 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/kpango/fuid"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
-	client "github.com/vdaas/vald/internal/client/gateway/vald"
+	client "github.com/vdaas/vald/internal/client/v1/client/gateway/vald"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
@@ -155,7 +156,7 @@ func (s *server) search(ctx context.Context,
 	return res, err
 }
 
-func (s *server) StreamSearch(stream vald.Vald_StreamSearchServer) error {
+func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) error {
 	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamSearch")
 	defer func() {
 		if span != nil {
@@ -169,7 +170,7 @@ func (s *server) StreamSearch(stream vald.Vald_StreamSearchServer) error {
 		})
 }
 
-func (s *server) StreamSearchByID(stream vald.Vald_StreamSearchByIDServer) error {
+func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) error {
 	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamSearchByID")
 	defer func() {
 		if span != nil {
@@ -183,33 +184,109 @@ func (s *server) StreamSearchByID(stream vald.Vald_StreamSearchByIDServer) error
 		})
 }
 
-func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *payload.Object_Location, err error) {
+func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequest) (res *payload.Search_Responses, errs error) {
+	ctx, span := trace.StartSpan(ctx, apiName+".MultiSearch")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
+	res = &payload.Search_Responses{
+		Responses: make([]*payload.Search_Response, len(reqs.Requests)),
+	}
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+	for i, req := range reqs.Requests {
+		idx, query := i, req
+		wg.Add(1)
+		s.eg.Go(func() error {
+			defer wg.Done()
+			r, err := s.Search(ctx, query)
+			if err != nil {
+				if span != nil {
+					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+				}
+				mu.Lock()
+				errs = errors.Wrap(errs, status.WrapWithNotFound(fmt.Sprintf("MultiSearch API vector %v's search request result not found", query.GetVector()), err, info.Get()).Error())
+				mu.Unlock()
+				return nil
+			}
+			res.Responses[idx] = r
+			return nil
+		})
+	}
+	wg.Wait()
+	return res, errs
+}
+
+func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_MultiIDRequest) (res *payload.Search_Responses, errs error) {
+	ctx, span := trace.StartSpan(ctx, apiName+".MultiSearchByID")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
+	res = &payload.Search_Responses{
+		Responses: make([]*payload.Search_Response, len(reqs.Requests)),
+	}
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+	for i, req := range reqs.Requests {
+		idx, query := i, req
+		wg.Add(1)
+		s.eg.Go(func() error {
+			defer wg.Done()
+			r, err := s.SearchByID(ctx, query)
+			if err != nil {
+				if span != nil {
+					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+				}
+				mu.Lock()
+				errs = errors.Wrap(errs, status.WrapWithNotFound(fmt.Sprintf("MultiSearchByID API uuid %v's search by id request result not found", query.GetId()), err, info.Get()).Error())
+				mu.Unlock()
+				return nil
+			}
+			res.Responses[idx] = r
+			return nil
+		})
+	}
+	wg.Wait()
+	return res, errs
+}
+
+func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".Insert")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	meta := vec.GetId()
-	exists, err := s.metadata.Exists(ctx, meta)
-	if err != nil {
-		log.Debug(err)
-		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+	meta := req.GetVector().GetId()
+
+	if !req.GetConfig().GetSkipStrictExistCheck() {
+		exists, err := s.metadata.Exists(ctx, meta)
+		if err != nil {
+			log.Debug(err)
+			if span != nil {
+				span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			}
+			return nil, status.WrapWithInternal(
+				fmt.Sprintf("Insert API meta %s couldn't check meta already exists or not", meta), err, info.Get())
 		}
-		return nil, status.WrapWithInternal(
-			fmt.Sprintf("Insert API meta %s couldn't check meta already exists or not", meta), err, info.Get())
-	}
-	if exists {
-		err = errors.Wrap(err, errors.ErrMetaDataAlreadyExists(meta).Error())
-		if span != nil {
-			span.SetStatus(trace.StatusCodeAlreadyExists(err.Error()))
+		if exists {
+			err = errors.Wrap(err, errors.ErrMetaDataAlreadyExists(meta).Error())
+			if span != nil {
+				span.SetStatus(trace.StatusCodeAlreadyExists(err.Error()))
+			}
+			return nil, status.WrapWithAlreadyExists(fmt.Sprintf("Insert API meta %s already exists", meta), err, info.Get())
 		}
-		return nil, status.WrapWithAlreadyExists(fmt.Sprintf("Insert API meta %s already exists", meta), err, info.Get())
+		req.Config.SkipStrictExistCheck = true
 	}
 	uuid := fuid.String()
-	vec.Id = uuid
-	loc, err := s.gateway.Insert(ctx, vec, s.copts...)
+	req.Vector.Id = uuid
+	loc, err := s.gateway.Insert(ctx, req, s.copts...)
 	if err != nil {
 		err = errors.Wrapf(err, "Insert API (do multiple) failed to Insert uuid = %s\tmeta = %s\t info = %#v", uuid, meta, info.Get())
 		log.Debug(err)
@@ -229,7 +306,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 	return loc, nil
 }
 
-func (s *server) StreamInsert(stream vald.Vald_StreamInsertServer) error {
+func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) error {
 	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamInsert")
 	defer func() {
 		if span != nil {
@@ -239,47 +316,50 @@ func (s *server) StreamInsert(stream vald.Vald_StreamInsertServer) error {
 	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Object_Vector) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			return s.Insert(ctx, data.(*payload.Object_Vector))
+			return s.Insert(ctx, data.(*payload.Insert_Request))
 		})
 }
 
-func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Object_Locations, err error) {
+func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequest) (res *payload.Object_Locations, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".MultiInsert")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	metaMap := make(map[string]string, len(vecs.GetVectors()))
-	metas := make([]string, 0, len(vecs.GetVectors()))
-	for i, vec := range vecs.GetVectors() {
+
+	metaMap := make(map[string]string, len(reqs.GetRequests()))
+	metas := make([]string, 0, len(reqs.GetRequests()))
+
+	for i, req := range reqs.GetRequests() {
+		vec := req.GetVector()
 		uuid := fuid.String()
 		meta := vec.GetId()
 		metaMap[uuid] = meta
 		metas = append(metas, meta)
-		vecs.Vectors[i].Id = uuid
+		reqs.Requests[i].Vector.Id = uuid
+		if !req.GetConfig().GetSkipStrictExistCheck() {
+			exists, err := s.metadata.Exists(ctx, meta)
+			if err != nil {
+				log.Debug(err)
+				if span != nil {
+					span.SetStatus(trace.StatusCodeInternal(err.Error()))
+				}
+				return nil, status.WrapWithInternal(
+					fmt.Sprintf("MultiInsert API couldn't check metadata exists or not metas = %v", metas), err, info.Get())
+			}
+			if exists {
+				if span != nil {
+					span.SetStatus(trace.StatusCodeAlreadyExists(err.Error()))
+				}
+				return nil, status.WrapWithAlreadyExists(
+					fmt.Sprintf("MultiInsert API failed metadata already exists meta = %s", meta), err, info.Get())
+			}
+			reqs.Requests[i].Config.SkipStrictExistCheck = true
+		}
 	}
 
-	for _, meta := range metas {
-		exists, err := s.metadata.Exists(ctx, meta)
-		if err != nil {
-			log.Debug(err)
-			if span != nil {
-				span.SetStatus(trace.StatusCodeInternal(err.Error()))
-			}
-			return nil, status.WrapWithInternal(
-				fmt.Sprintf("MultiInsert API couldn't check metadata exists or not metas = %v", metas), err, info.Get())
-		}
-		if exists {
-			if span != nil {
-				span.SetStatus(trace.StatusCodeAlreadyExists(err.Error()))
-			}
-			return nil, status.WrapWithAlreadyExists(
-				fmt.Sprintf("MultiInsert API failed metadata already exists meta = %s", meta), err, info.Get())
-		}
-	}
-
-	res, err = s.gateway.MultiInsert(ctx, vecs, s.copts...)
+	res, err = s.gateway.MultiInsert(ctx, reqs, s.copts...)
 	if err != nil {
 		log.Debug(err)
 		if span != nil {
@@ -299,14 +379,14 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 	return res, nil
 }
 
-func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *payload.Object_Location, err error) {
+func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".Update")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	meta := vec.GetId()
+	meta := req.GetVector().GetId()
 	uuid, err := s.metadata.GetUUID(ctx, meta)
 	if err != nil {
 		if span != nil {
@@ -314,19 +394,19 @@ func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *p
 		}
 		return nil, status.WrapWithNotFound(fmt.Sprintf("Update API failed GetUUID meta = %s", meta), err, info.Get())
 	}
-	vec.Id = uuid
-	res, err = s.gateway.Update(ctx, vec, s.copts...)
+	req.Vector.Id = uuid
+	res, err = s.gateway.Update(ctx, req, s.copts...)
 	if err != nil {
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("Update API failed request %#v", vec), err, info.Get())
+		return nil, status.WrapWithInternal(fmt.Sprintf("Update API failed request %#v", req), err, info.Get())
 	}
 
 	return res, nil
 }
 
-func (s *server) StreamUpdate(stream vald.Vald_StreamUpdateServer) error {
+func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) error {
 	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamUpdate")
 	defer func() {
 		if span != nil {
@@ -336,20 +416,20 @@ func (s *server) StreamUpdate(stream vald.Vald_StreamUpdateServer) error {
 	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Object_Vector) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			return s.Update(ctx, data.(*payload.Object_Vector))
+			return s.Update(ctx, data.(*payload.Update_Request))
 		})
 }
 
-func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Object_Locations, err error) {
+func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequest) (res *payload.Object_Locations, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".MultiUpdate")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	ids := make([]string, 0, len(vecs.GetVectors()))
-	for _, vec := range vecs.GetVectors() {
-		ids = append(ids, vec.GetId())
+	ids := make([]string, 0, len(reqs.GetRequests()))
+	for _, req := range reqs.GetRequests() {
+		ids = append(ids, req.GetVector().GetId())
 	}
 	metas, err := s.metadata.GetUUIDs(ctx, ids...)
 	if err != nil {
@@ -358,10 +438,12 @@ func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) 
 		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("MultiUpdate API failed MultiUpdate request %#v", ids), err, info.Get())
 	}
-	for i := range vecs.GetVectors() {
-		vecs.Vectors[i].Id = metas[i]
+
+	for i, meta := range metas {
+		reqs.Requests[i].Vector.Id = meta
 	}
-	res, err = s.MultiUpdate(ctx, vecs)
+
+	res, err = s.MultiUpdate(ctx, reqs)
 	if err != nil {
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
@@ -371,7 +453,7 @@ func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) 
 	return res, err
 }
 
-func (s *server) Upsert(ctx context.Context, vec *payload.Object_Vector) (loc *payload.Object_Location, err error) {
+func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".Upsert")
 	defer func() {
 		if span != nil {
@@ -379,27 +461,40 @@ func (s *server) Upsert(ctx context.Context, vec *payload.Object_Vector) (loc *p
 		}
 	}()
 
-	exists, err := s.metadata.Exists(ctx, vec.GetId())
+	meta := req.GetVector().GetId()
+	exists, err := s.metadata.Exists(ctx, meta)
 	if err != nil {
 		log.Debugf("Upsert API metadata exists check error:\t%s", err.Error())
 	}
 
 	if exists {
-		loc, err = s.Update(ctx, vec)
+		loc, err = s.Update(ctx, &payload.Update_Request{
+			Config: &payload.Update_Config{
+				Filters:              req.GetConfig().GetFilters(),
+				SkipStrictExistCheck: true,
+			},
+			Vector: req.GetVector(),
+		})
 	} else {
-		loc, err = s.Insert(ctx, vec)
+		loc, err = s.Insert(ctx, &payload.Insert_Request{
+			Config: &payload.Insert_Config{
+				Filters:              req.GetConfig().GetFilters(),
+				SkipStrictExistCheck: true,
+			},
+			Vector: req.GetVector(),
+		})
 	}
 	if err != nil {
-		log.Debugf("Upsert API failed to process request uuid:\t%s\terror:\t%s", vec.GetId(), err.Error())
+		log.Debugf("Upsert API failed to process request uuid:\t%s\terror:\t%s", meta, err.Error())
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("Upsert API failed to process request %s", vec.GetId()), err, info.Get())
+		return nil, status.WrapWithInternal(fmt.Sprintf("Upsert API failed to process request %s", meta), err, info.Get())
 	}
 	return loc, nil
 }
 
-func (s *server) StreamUpsert(stream vald.Vald_StreamUpsertServer) error {
+func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) error {
 	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamUpsert")
 	defer func() {
 		if span != nil {
@@ -409,11 +504,11 @@ func (s *server) StreamUpsert(stream vald.Vald_StreamUpsertServer) error {
 	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Object_Vector) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			return s.Upsert(ctx, data.(*payload.Object_Vector))
+			return s.Upsert(ctx, data.(*payload.Upsert_Request))
 		})
 }
 
-func (s *server) MultiUpsert(ctx context.Context, vecs *payload.Object_Vectors) (*payload.Object_Locations, error) {
+func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Update_MultiRequest) (*payload.Object_Locations, error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".MultiUpsert")
 	defer func() {
 		if span != nil {
@@ -421,10 +516,11 @@ func (s *server) MultiUpsert(ctx context.Context, vecs *payload.Object_Vectors) 
 		}
 	}()
 
-	insertVecs := make([]*payload.Object_Vector, 0, len(vecs.GetVectors()))
-	updateVecs := make([]*payload.Object_Vector, 0, len(vecs.GetVectors()))
+	insertVecs := make([]*payload.Object_Vector, 0, len(reqs.GetRequests()))
+	updateVecs := make([]*payload.Object_Vector, 0, len(reqs.GetRequests()))
 
-	ids := make([]string, 0, len(vecs.GetVectors()))
+	ids := make([]string, 0, len(reqs.GetRequests()))
+
 	for _, vec := range vecs.GetVectors() {
 		ids = append(ids, vec.GetId())
 		exists, err := s.metadata.Exists(ctx, vec.GetId())
