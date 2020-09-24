@@ -202,6 +202,7 @@ func (m *mySQLClient) GetMeta(ctx context.Context, uuid string) (MetaVector, err
 	}, nil
 }
 
+// GetIPs gets the pod ips which have index of requested uuids' metadata's vector.
 func (m *mySQLClient) GetIPs(ctx context.Context, uuid string) ([]string, error) {
 	if !m.connected.Load().(bool) {
 		return nil, errors.ErrMySQLConnectionClosed
@@ -237,6 +238,8 @@ func validateMeta(meta MetaVector) error {
 	return nil
 }
 
+// SetMeta records metadata at meta_vector table and set of (podIP, uuid) at podIPtable through same transaction.
+// If error occurs it will rollback by defer function.
 func (m *mySQLClient) SetMeta(ctx context.Context, mv MetaVector) error {
 	if !m.connected.Load().(bool) {
 		return errors.ErrMySQLConnectionClosed
@@ -289,6 +292,7 @@ func (m *mySQLClient) SetMeta(ctx context.Context, mv MetaVector) error {
 	return tx.Commit()
 }
 
+// SetMetas records multiple metadata like as SetMeta().
 func (m *mySQLClient) SetMetas(ctx context.Context, metas ...MetaVector) error {
 	if !m.connected.Load().(bool) {
 		return errors.ErrMySQLConnectionClosed
