@@ -51,13 +51,6 @@ var (
 		return reflect.DeepEqual(x, y)
 	}
 
-	awsConfigComparatorOpts = []comparator.Option{
-		comparator.AllowUnexported(aws.Config{}),
-	}
-	awsConfigComparator = func(x, y aws.Config) bool {
-		return comparator.Diff(x, y, awsConfigComparatorOpts...) == ""
-	}
-
 	sessionComparatorOpts = []comparator.Option{
 		comparator.IgnoreUnexported(session.Session{}),
 		comparator.Comparer(handlerListComparator),
