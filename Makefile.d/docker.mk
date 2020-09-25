@@ -39,7 +39,8 @@ docker/build/base:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/base/Dockerfile \
-	    -t $(REPO)/$(BASE_IMAGE) .
+	    -t $(REPO)/$(BASE_IMAGE) . \
+	    --build-arg GO_VERSION=$(GO_VERSION)
 
 .PHONY: docker/name/agent-ngt
 docker/name/agent-ngt:
@@ -52,6 +53,7 @@ docker/build/agent-ngt: docker/build/base
 	    $(DOCKER_OPTS) \
 	    -f dockers/agent/core/ngt/Dockerfile \
 	    -t $(REPO)/$(AGENT_IMAGE):$(TAG) . \
+	    --build-arg BASE_TAG=$(TAG) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
