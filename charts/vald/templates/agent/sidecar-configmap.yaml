@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if and .Values.agent.enabled .Values.agent.sidecar.enabled }}
+{{- if and .Values.agent.enabled (or .Values.agent.sidecar.enabled .Values.agent.sidecar.initContainerEnabled) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
