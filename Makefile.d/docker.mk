@@ -51,7 +51,7 @@ docker/build/agent-ngt: docker/build/base
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/agent/core/ngt/Dockerfile \
-	    -t $(REPO)/$(AGENT_IMAGE) . \
+	    -t $(REPO)/$(AGENT_IMAGE):$(TAG) . \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
@@ -66,7 +66,7 @@ docker/build/agent-sidecar: docker/build/base
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/agent/sidecar/Dockerfile \
-	    -t $(REPO)/$(AGENT_SIDECAR_IMAGE) . \
+	    -t $(REPO)/$(AGENT_SIDECAR_IMAGE):$(TAG) . \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
@@ -81,7 +81,7 @@ docker/build/discoverer-k8s: docker/build/base
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/discoverer/k8s/Dockerfile \
-	    -t $(REPO)/$(DISCOVERER_IMAGE) . \
+	    -t $(REPO)/$(DISCOVERER_IMAGE):$(TAG) . \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
@@ -96,7 +96,7 @@ docker/build/gateway-vald: docker/build/base
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/gateway/vald/Dockerfile \
-	    -t $(REPO)/$(GATEWAY_IMAGE) . \
+	    -t $(REPO)/$(GATEWAY_IMAGE):$(TAG) . \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
@@ -111,7 +111,7 @@ docker/build/meta-redis: docker/build/base
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/meta/redis/Dockerfile \
-	    -t $(REPO)/$(META_REDIS_IMAGE) . \
+	    -t $(REPO)/$(META_REDIS_IMAGE):$(TAG) . \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
@@ -126,7 +126,7 @@ docker/build/meta-cassandra: docker/build/base
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/meta/cassandra/Dockerfile \
-	    -t $(REPO)/$(META_CASSANDRA_IMAGE) . \
+	    -t $(REPO)/$(META_CASSANDRA_IMAGE):$(TAG) . \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
@@ -141,7 +141,7 @@ docker/build/backup-manager-mysql: docker/build/base
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/manager/backup/mysql/Dockerfile \
-	    -t $(REPO)/$(MANAGER_BACKUP_MYSQL_IMAGE) . \
+	    -t $(REPO)/$(MANAGER_BACKUP_MYSQL_IMAGE):$(TAG) . \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
@@ -156,7 +156,7 @@ docker/build/backup-manager-cassandra: docker/build/base
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/manager/backup/cassandra/Dockerfile \
-	    -t $(REPO)/$(MANAGER_BACKUP_CASSANDRA_IMAGE) . \
+	    -t $(REPO)/$(MANAGER_BACKUP_CASSANDRA_IMAGE):$(TAG) . \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
@@ -171,7 +171,7 @@ docker/build/manager-compressor: docker/build/base
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/manager/compressor/Dockerfile \
-	    -t $(REPO)/$(MANAGER_COMPRESSOR_IMAGE) . \
+	    -t $(REPO)/$(MANAGER_COMPRESSOR_IMAGE):$(TAG) . \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
@@ -186,7 +186,7 @@ docker/build/manager-index: docker/build/base
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/manager/index/Dockerfile \
-	    -t $(REPO)/$(MANAGER_INDEX_IMAGE) . \
+	    -t $(REPO)/$(MANAGER_INDEX_IMAGE):$(TAG) . \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
@@ -201,7 +201,7 @@ docker/build/ci-container: docker/build/base
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/ci/base/Dockerfile \
-	    -t $(REPO)/$(CI_CONTAINER_IMAGE) .
+	    -t $(REPO)/$(CI_CONTAINER_IMAGE):$(TAG) .
 
 .PHONY: docker/name/dev-container
 docker/name/dev-container:
@@ -213,7 +213,7 @@ docker/build/dev-container: docker/build/ci-container
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/dev/Dockerfile \
-	    -t $(REPO)/$(DEV_CONTAINER_IMAGE) .
+	    -t $(REPO)/$(DEV_CONTAINER_IMAGE):$(TAG) .
 
 .PHONY: docker/name/operator/helm
 docker/name/operator/helm:
@@ -225,7 +225,7 @@ docker/build/operator/helm:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/operator/helm/Dockerfile \
-	    -t $(REPO)/$(HELM_OPERATOR_IMAGE) . \
+	    -t $(REPO)/$(HELM_OPERATOR_IMAGE):$(TAG) . \
 	    --build-arg OPERATOR_SDK_VERSION=$(OPERATOR_SDK_VERSION)
 
 .PHONY: docker/name/loadtest
@@ -238,4 +238,4 @@ docker/build/loadtest: docker/build/base
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/tools/cli/loadtest/Dockerfile \
-	    -t $(REPO)/$(LOADTEST_IMAGE) .
+	    -t $(REPO)/$(LOADTEST_IMAGE):$(TAG) .

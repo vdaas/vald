@@ -18,7 +18,7 @@ REPO                           ?= vdaas
 NAME                            = vald
 GOPKG                           = github.com/$(REPO)/$(NAME)
 DATETIME                        = $(eval DATETIME := $(shell date -u +%Y/%m/%d_%H:%M:%S%z))$(DATETIME)
-TAG                             = $(eval TAG := $(shell date -u +%Y%m%d-%H%M%S))$(TAG)
+TAG                            ?= latest
 BASE_IMAGE                      = $(NAME)-base
 AGENT_IMAGE                     = $(NAME)-agent-ngt
 AGENT_SIDECAR_IMAGE             = $(NAME)-agent-sidecar
