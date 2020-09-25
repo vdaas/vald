@@ -101,7 +101,7 @@ jobs:
           docker/build/agent-ngt
       env:
         DOCKER_BUILDKIT: 1
-        PLATFORMS: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/arm/v7
+        PLATFORMS: linux/amd64,linux/arm64,linux/arm/v7
         BUILDER: ${{ steps.buildx.outputs.name }}
     - name: Initialize CodeQL
       if: startsWith( github.ref, 'refs/tags/')
