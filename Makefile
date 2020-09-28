@@ -87,8 +87,13 @@ PBGOS = $(PROTOS:apis/proto/%.proto=apis/grpc/%.pb.go)
 SWAGGERS = $(PROTOS:apis/proto/%.proto=apis/swagger/%.swagger.json)
 PBDOCS = apis/docs/docs.md
 
+ifeq ($(GOARCH),amd64)
 CFLAGS ?= -mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl
 CXXFLAGS ?= $(CFLAGS)
+else
+CFLAGS ?=
+CXXFLAGS ?= $(CFLAGS)
+endif
 
 BENCH_DATASET_MD5S := $(eval BENCH_DATASET_MD5S := $(shell find $(BENCH_DATASET_MD5_DIR) -type f -regex ".*\.md5"))$(BENCH_DATASET_MD5S)
 BENCH_DATASETS = $(BENCH_DATASET_MD5S:$(BENCH_DATASET_MD5_DIR)/%.md5=$(BENCH_DATASET_HDF5_DIR)/%.hdf5)
