@@ -200,7 +200,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 					return nil
 				}
 				if !vl.Visited(dist.GetId()) {
-					select{
+					select {
 					case <-ectx.Done():
 						return nil
 					case dch <- dist:

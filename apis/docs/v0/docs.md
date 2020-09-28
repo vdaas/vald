@@ -43,7 +43,6 @@
 - [apis/proto/manager/replication/controller/replication_manager.proto](#apis/proto/manager/replication/controller/replication_manager.proto)
     - [ReplicationController](#replication_manager.ReplicationController)
   
-- [apis/proto/manager/traffic/traffic_manager.proto](#apis/proto/manager/traffic/traffic_manager.proto)
 - [apis/proto/meta/meta.proto](#apis/proto/meta/meta.proto)
     - [Meta](#meta_manager.Meta)
   
@@ -524,22 +523,6 @@
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
 | ReplicationInfo | [.payload.Empty](#payload.Empty) | [.payload.Replication.Agents](#payload.Replication.Agents) |  |
-
- 
-
-
-
-<a name="apis/proto/manager/traffic/traffic_manager.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## apis/proto/manager/traffic/traffic_manager.proto
-
-
- 
-
- 
-
- 
 
  
 

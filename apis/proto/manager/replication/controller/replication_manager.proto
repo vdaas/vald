@@ -26,7 +26,6 @@ option java_outer_classname = "ValdReplicationManagerController";
 import "apis/proto/payload/payload.proto";
 import "google/api/annotations.proto";
 
-
 service ReplicationController {
   rpc ReplicationInfo(payload.Empty) returns (payload.Replication.Agents) {
     option (google.api.http).get = "/replication/info";

@@ -26,7 +26,6 @@ option java_outer_classname = "ValdEgressFilter";
 import "apis/proto/payload/payload.proto";
 
 service EgressFilter {
-
   rpc Filter(payload.Object.Distance) returns (payload.Object.Distance) {}
   rpc StreamFilter(stream payload.Object.Distance)
       returns (stream payload.Object.Distance) {}

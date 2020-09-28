@@ -26,9 +26,7 @@ option java_outer_classname = "meta";
 import "apis/proto/payload/payload.proto";
 import "google/api/annotations.proto";
 
-
 service Meta {
-
   rpc GetMeta(payload.Meta.Key) returns (payload.Meta.Val) {
     option (google.api.http).post = "/meta";
   }

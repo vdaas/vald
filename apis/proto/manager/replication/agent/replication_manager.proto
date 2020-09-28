@@ -26,9 +26,7 @@ option java_outer_classname = "ValdReplicationManagerAgent";
 import "apis/proto/payload/payload.proto";
 import "google/api/annotations.proto";
 
-
 service Replication {
-
   rpc Recover(payload.Replication.Recovery) returns (payload.Empty)  {
     option (google.api.http).post = "/replication/recover";
   }

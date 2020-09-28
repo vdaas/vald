@@ -26,10 +26,7 @@ option java_outer_classname = "ValdBackupManager";
 import "apis/proto/payload/payload.proto";
 import "google/api/annotations.proto";
 
-
 service Backup {
-
-
   rpc GetVector(payload.Backup.GetVector.Request) returns (payload.Backup.Compressed.MetaVector) {
     option (google.api.http).get = "/vector/{uuid}";
   }
@@ -43,7 +40,6 @@ service Backup {
       post : "/register"
       body : "*"
     };
-
   }
 
   rpc RegisterMulti(payload.Backup.Compressed.MetaVectors) returns (payload.Empty) {
@@ -51,12 +47,10 @@ service Backup {
       post : "/register/multi"
       body : "*"
     };
-
   }
 
   rpc Remove(payload.Backup.Remove.Request) returns (payload.Empty) {
     option (google.api.http).delete = "/delete/{uuid}";
-
   }
 
   rpc RemoveMulti(payload.Backup.Remove.RequestMulti) returns (payload.Empty) {
@@ -64,7 +58,6 @@ service Backup {
       post : "/delete/multi"
       body : "*"
     };
-
   }
 
   rpc RegisterIPs(payload.Backup.IP.Register.Request) returns (payload.Empty) {
@@ -72,7 +65,6 @@ service Backup {
       post : "/ip"
       body : "*"
     };
-
   }
 
   rpc RemoveIPs(payload.Backup.IP.Remove.Request) returns (payload.Empty) {
@@ -80,6 +72,5 @@ service Backup {
       post : "/ip/delete"
       body : "*"
     };
-
   }
 }
