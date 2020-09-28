@@ -2875,7 +2875,6 @@ func Test_mySQLClient_deleteMeta(t *testing.T) {
 					err: err,
 				},
 				afterFunc: func(args) {
-
 					cancel()
 				},
 			}
