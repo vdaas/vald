@@ -39,7 +39,7 @@ docker/build/base:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/base/Dockerfile \
-	    -t $(REPO)/$(BASE_IMAGE) . \
+	    -t $(REPO)/$(BASE_IMAGE):$(TAG) . \
 	    --build-arg GO_VERSION=$(GO_VERSION)
 
 .PHONY: docker/name/agent-ngt

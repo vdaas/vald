@@ -94,7 +94,7 @@ jobs:
           TAG="${PRIMARY_TAG}" \
           docker/build/agent-ngt
         make \
-          REPO="ghcr.io/vdaas/vald"
+          REPO="ghcr.io/vdaas/vald" \
           DOCKER="docker buildx" \
           DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} --push" \
           TAG="${PRIMARY_TAG}" \
