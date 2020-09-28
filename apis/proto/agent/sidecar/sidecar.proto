@@ -25,7 +25,6 @@ option java_outer_classname = "ValdAgentSidecar";
 
 import "payload.proto";
 import "google/api/annotations.proto";
-import "pb/gql.proto";
 
 service Sidecar {
 }

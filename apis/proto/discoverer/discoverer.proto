@@ -25,10 +25,8 @@ option java_outer_classname = "Discoverer";
 
 import "payload.proto";
 import "google/api/annotations.proto";
-import "pb/gql.proto";
 
 service Discoverer {
-  option (gql.svc_type) = QUERY;
   rpc Pods(payload.Discoverer.Request) returns (payload.Info.Pods) {
     option (google.api.http) = {
       post : "/discover/pods"
