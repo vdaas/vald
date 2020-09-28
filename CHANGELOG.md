@@ -1,5 +1,38 @@
 # CHANGELOG
 
+## v0.0.57
+
+### Docker images
+
+component | docker pull
+--------- | -----------
+agent NGT | `docker pull vdaas/vald-agent-ngt:v0.0.57`
+agent sidecar | `docker pull vdaas/vald-agent-sidecar:v0.0.57`
+discoverer K8s | `docker pull vdaas/vald-discoverer-k8s:v0.0.57`
+gateway | `docker pull vdaas/vald-gateway:v0.0.57`
+backup manager MySQL | `docker pull vdaas/vald-manager-backup-mysql:v0.0.57`
+backup manager Cassandra | `docker pull vdaas/vald-manager-backup-cassandra:v0.0.57`
+compressor | `docker pull vdaas/vald-manager-compressor:v0.0.57`
+meta Redis | `docker pull vdaas/vald-meta-redis:v0.0.57`
+meta Cassandra | `docker pull vdaas/vald-meta-cassandra:v0.0.57`
+index manager | `docker pull vdaas/vald-manager-index:v0.0.57`
+Helm operator | `docker pull vdaas/vald-helm-operator:v0.0.57`
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v0.0.57)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v0.0.57/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v0.0.57/charts/vald-helm-operator/README.md)
+
+### Changes
+- fix duplicated search result ([#729](https://github.com/vdaas/vald/pull/729))
+- :recycle: enable to inject only agent-sidecar on initContainer mode without enabling sidecar mode ([#726](https://github.com/vdaas/vald/pull/726))
+- :sparkles: implement billion scale data ([#612](https://github.com/vdaas/vald/pull/612))
+- Add devcontainer ([#620](https://github.com/vdaas/vald/pull/620))
+- :white_check_makr: :recycle: Add test for s3/writer and Refactor. ([#672](https://github.com/vdaas/vald/pull/672))
+- CI-container: upgrade dependencies of & remove workdir contents ([#711](https://github.com/vdaas/vald/pull/711))
+- :robot: Automatically update k8s manifests ([#708](https://github.com/vdaas/vald/pull/708))
+
+
 ## v0.0.56
 
 ### Docker images
