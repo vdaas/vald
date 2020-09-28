@@ -3,46 +3,27 @@
 
 ## Table of Contents
 
-- [core/agent.proto](#core/agent.proto)
-    - [Agent](#core.Agent)
+- [ingress/ingress_filter.proto](#ingress/ingress_filter.proto)
+    - [IngressFilter](#ingress_filter.IngressFilter)
   
-- [sidecar/sidecar.proto](#sidecar/sidecar.proto)
-    - [Sidecar](#sidecar.Sidecar)
+- [egress/egress_filter.proto](#egress/egress_filter.proto)
+    - [EgressFilter](#egress_filter.EgressFilter)
   
-- [discoverer.proto](#discoverer.proto)
-    - [Discoverer](#discoverer.Discoverer)
+- [meta.proto](#meta.proto)
+    - [Meta](#meta_manager.Meta)
+  
+- [vald/vald.proto](#vald/vald.proto)
+    - [Vald](#vald.Vald)
   
 - [errors.proto](#errors.proto)
     - [Errors](#errors.Errors)
     - [Errors.RPC](#errors.Errors.RPC)
   
-- [egress/egress_filter.proto](#egress/egress_filter.proto)
-    - [EgressFilter](#egress_filter.EgressFilter)
+- [sidecar/sidecar.proto](#sidecar/sidecar.proto)
+    - [Sidecar](#sidecar.Sidecar)
   
-- [ingress/ingress_filter.proto](#ingress/ingress_filter.proto)
-    - [IngressFilter](#ingress_filter.IngressFilter)
-  
-- [vald/vald.proto](#vald/vald.proto)
-    - [Vald](#vald.Vald)
-  
-- [backup/backup_manager.proto](#backup/backup_manager.proto)
-    - [Backup](#backup_manager.Backup)
-  
-- [compressor/compressor.proto](#compressor/compressor.proto)
-    - [Backup](#compressor.Backup)
-  
-- [index/index_manager.proto](#index/index_manager.proto)
-    - [Index](#index_manager.Index)
-  
-- [replication/agent/replication_manager.proto](#replication/agent/replication_manager.proto)
-    - [Replication](#replication_manager.Replication)
-  
-- [replication/controller/replication_manager.proto](#replication/controller/replication_manager.proto)
-    - [ReplicationController](#replication_manager.ReplicationController)
-  
-- [traffic/traffic_manager.proto](#traffic/traffic_manager.proto)
-- [meta.proto](#meta.proto)
-    - [Meta](#meta_manager.Meta)
+- [core/agent.proto](#core/agent.proto)
+    - [Agent](#core.Agent)
   
 - [payload.proto](#payload.proto)
     - [Backup](#payload.Backup)
@@ -105,14 +86,33 @@
     - [Search.Request](#payload.Search.Request)
     - [Search.Response](#payload.Search.Response)
   
+- [discoverer.proto](#discoverer.proto)
+    - [Discoverer](#discoverer.Discoverer)
+  
+- [backup/backup_manager.proto](#backup/backup_manager.proto)
+    - [Backup](#backup_manager.Backup)
+  
+- [index/index_manager.proto](#index/index_manager.proto)
+    - [Index](#index_manager.Index)
+  
+- [compressor/compressor.proto](#compressor/compressor.proto)
+    - [Backup](#compressor.Backup)
+  
+- [traffic/traffic_manager.proto](#traffic/traffic_manager.proto)
+- [replication/agent/replication_manager.proto](#replication/agent/replication_manager.proto)
+    - [Replication](#replication_manager.Replication)
+  
+- [replication/controller/replication_manager.proto](#replication/controller/replication_manager.proto)
+    - [ReplicationController](#replication_manager.ReplicationController)
+  
 - [Scalar Value Types](#scalar-value-types)
 
 
 
-<a name="core/agent.proto"></a>
+<a name="ingress/ingress_filter.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## core/agent.proto
+## ingress/ingress_filter.proto
 
 
  
@@ -122,9 +122,96 @@
  
 
 
-<a name="core.Agent"></a>
+<a name="ingress_filter.IngressFilter"></a>
 
-### Agent
+### IngressFilter
+
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ------------|
+
+ 
+
+
+
+<a name="egress/egress_filter.proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## egress/egress_filter.proto
+
+
+ 
+
+ 
+
+ 
+
+
+<a name="egress_filter.EgressFilter"></a>
+
+### EgressFilter
+
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ------------|
+| Filter | [.payload.Search.Response](#payload.Search.Response) | [.payload.Search.Response](#payload.Search.Response) |  |
+| StreamFilter | [.payload.Object.Distance](#payload.Object.Distance) stream | [.payload.Object.Distance](#payload.Object.Distance) stream |  |
+
+ 
+
+
+
+<a name="meta.proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## meta.proto
+
+
+ 
+
+ 
+
+ 
+
+
+<a name="meta_manager.Meta"></a>
+
+### Meta
+
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ------------|
+| GetMeta | [.payload.Meta.Key](#payload.Meta.Key) | [.payload.Meta.Val](#payload.Meta.Val) |  |
+| GetMetas | [.payload.Meta.Keys](#payload.Meta.Keys) | [.payload.Meta.Vals](#payload.Meta.Vals) |  |
+| GetMetaInverse | [.payload.Meta.Val](#payload.Meta.Val) | [.payload.Meta.Key](#payload.Meta.Key) |  |
+| GetMetasInverse | [.payload.Meta.Vals](#payload.Meta.Vals) | [.payload.Meta.Keys](#payload.Meta.Keys) |  |
+| SetMeta | [.payload.Meta.KeyVal](#payload.Meta.KeyVal) | [.payload.Empty](#payload.Empty) |  |
+| SetMetas | [.payload.Meta.KeyVals](#payload.Meta.KeyVals) | [.payload.Empty](#payload.Empty) |  |
+| DeleteMeta | [.payload.Meta.Key](#payload.Meta.Key) | [.payload.Meta.Val](#payload.Meta.Val) |  |
+| DeleteMetas | [.payload.Meta.Keys](#payload.Meta.Keys) | [.payload.Meta.Vals](#payload.Meta.Vals) |  |
+| DeleteMetaInverse | [.payload.Meta.Val](#payload.Meta.Val) | [.payload.Meta.Key](#payload.Meta.Key) |  |
+| DeleteMetasInverse | [.payload.Meta.Vals](#payload.Meta.Vals) | [.payload.Meta.Keys](#payload.Meta.Keys) |  |
+
+ 
+
+
+
+<a name="vald/vald.proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## vald/vald.proto
+
+
+ 
+
+ 
+
+ 
+
+
+<a name="vald.Vald"></a>
+
+### Vald
 
 
 | Method Name | Request Type | Response Type | Description |
@@ -140,67 +227,14 @@
 | Update | [.payload.Object.Vector](#payload.Object.Vector) | [.payload.Empty](#payload.Empty) |  |
 | StreamUpdate | [.payload.Object.Vector](#payload.Object.Vector) stream | [.payload.Empty](#payload.Empty) stream |  |
 | MultiUpdate | [.payload.Object.Vectors](#payload.Object.Vectors) | [.payload.Empty](#payload.Empty) |  |
+| Upsert | [.payload.Object.Vector](#payload.Object.Vector) | [.payload.Empty](#payload.Empty) |  |
+| StreamUpsert | [.payload.Object.Vector](#payload.Object.Vector) stream | [.payload.Empty](#payload.Empty) stream |  |
+| MultiUpsert | [.payload.Object.Vectors](#payload.Object.Vectors) | [.payload.Empty](#payload.Empty) |  |
 | Remove | [.payload.Object.ID](#payload.Object.ID) | [.payload.Empty](#payload.Empty) |  |
 | StreamRemove | [.payload.Object.ID](#payload.Object.ID) stream | [.payload.Empty](#payload.Empty) stream |  |
 | MultiRemove | [.payload.Object.IDs](#payload.Object.IDs) | [.payload.Empty](#payload.Empty) |  |
-| GetObject | [.payload.Object.ID](#payload.Object.ID) | [.payload.Object.Vector](#payload.Object.Vector) |  |
-| StreamGetObject | [.payload.Object.ID](#payload.Object.ID) stream | [.payload.Object.Vector](#payload.Object.Vector) stream |  |
-| CreateIndex | [.payload.Control.CreateIndexRequest](#payload.Control.CreateIndexRequest) | [.payload.Empty](#payload.Empty) |  |
-| SaveIndex | [.payload.Empty](#payload.Empty) | [.payload.Empty](#payload.Empty) |  |
-| CreateAndSaveIndex | [.payload.Control.CreateIndexRequest](#payload.Control.CreateIndexRequest) | [.payload.Empty](#payload.Empty) |  |
-| IndexInfo | [.payload.Empty](#payload.Empty) | [.payload.Info.Index.Count](#payload.Info.Index.Count) |  |
-
- 
-
-
-
-<a name="sidecar/sidecar.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## sidecar/sidecar.proto
-
-
- 
-
- 
-
- 
-
-
-<a name="sidecar.Sidecar"></a>
-
-### Sidecar
-
-
-| Method Name | Request Type | Response Type | Description |
-| ----------- | ------------ | ------------- | ------------|
-
- 
-
-
-
-<a name="discoverer.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## discoverer.proto
-
-
- 
-
- 
-
- 
-
-
-<a name="discoverer.Discoverer"></a>
-
-### Discoverer
-
-
-| Method Name | Request Type | Response Type | Description |
-| ----------- | ------------ | ------------- | ------------|
-| Pods | [.payload.Discoverer.Request](#payload.Discoverer.Request) | [.payload.Info.Pods](#payload.Info.Pods) |  |
-| Nodes | [.payload.Discoverer.Request](#payload.Discoverer.Request) | [.payload.Info.Nodes](#payload.Info.Nodes) |  |
+| GetObject | [.payload.Object.ID](#payload.Object.ID) | [.payload.Backup.MetaVector](#payload.Backup.MetaVector) |  |
+| StreamGetObject | [.payload.Object.ID](#payload.Object.ID) stream | [.payload.Backup.MetaVector](#payload.Backup.MetaVector) stream |  |
 
  
 
@@ -253,10 +287,10 @@
 
 
 
-<a name="egress/egress_filter.proto"></a>
+<a name="sidecar/sidecar.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## egress/egress_filter.proto
+## sidecar/sidecar.proto
 
 
  
@@ -266,36 +300,9 @@
  
 
 
-<a name="egress_filter.EgressFilter"></a>
+<a name="sidecar.Sidecar"></a>
 
-### EgressFilter
-
-
-| Method Name | Request Type | Response Type | Description |
-| ----------- | ------------ | ------------- | ------------|
-| Filter | [.payload.Search.Response](#payload.Search.Response) | [.payload.Search.Response](#payload.Search.Response) |  |
-| StreamFilter | [.payload.Object.Distance](#payload.Object.Distance) stream | [.payload.Object.Distance](#payload.Object.Distance) stream |  |
-
- 
-
-
-
-<a name="ingress/ingress_filter.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## ingress/ingress_filter.proto
-
-
- 
-
- 
-
- 
-
-
-<a name="ingress_filter.IngressFilter"></a>
-
-### IngressFilter
+### Sidecar
 
 
 | Method Name | Request Type | Response Type | Description |
@@ -305,10 +312,10 @@
 
 
 
-<a name="vald/vald.proto"></a>
+<a name="core/agent.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## vald/vald.proto
+## core/agent.proto
 
 
  
@@ -318,9 +325,9 @@
  
 
 
-<a name="vald.Vald"></a>
+<a name="core.Agent"></a>
 
-### Vald
+### Agent
 
 
 | Method Name | Request Type | Response Type | Description |
@@ -336,211 +343,15 @@
 | Update | [.payload.Object.Vector](#payload.Object.Vector) | [.payload.Empty](#payload.Empty) |  |
 | StreamUpdate | [.payload.Object.Vector](#payload.Object.Vector) stream | [.payload.Empty](#payload.Empty) stream |  |
 | MultiUpdate | [.payload.Object.Vectors](#payload.Object.Vectors) | [.payload.Empty](#payload.Empty) |  |
-| Upsert | [.payload.Object.Vector](#payload.Object.Vector) | [.payload.Empty](#payload.Empty) |  |
-| StreamUpsert | [.payload.Object.Vector](#payload.Object.Vector) stream | [.payload.Empty](#payload.Empty) stream |  |
-| MultiUpsert | [.payload.Object.Vectors](#payload.Object.Vectors) | [.payload.Empty](#payload.Empty) |  |
 | Remove | [.payload.Object.ID](#payload.Object.ID) | [.payload.Empty](#payload.Empty) |  |
 | StreamRemove | [.payload.Object.ID](#payload.Object.ID) stream | [.payload.Empty](#payload.Empty) stream |  |
 | MultiRemove | [.payload.Object.IDs](#payload.Object.IDs) | [.payload.Empty](#payload.Empty) |  |
-| GetObject | [.payload.Object.ID](#payload.Object.ID) | [.payload.Backup.MetaVector](#payload.Backup.MetaVector) |  |
-| StreamGetObject | [.payload.Object.ID](#payload.Object.ID) stream | [.payload.Backup.MetaVector](#payload.Backup.MetaVector) stream |  |
-
- 
-
-
-
-<a name="backup/backup_manager.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## backup/backup_manager.proto
-
-
- 
-
- 
-
- 
-
-
-<a name="backup_manager.Backup"></a>
-
-### Backup
-
-
-| Method Name | Request Type | Response Type | Description |
-| ----------- | ------------ | ------------- | ------------|
-| GetVector | [.payload.Backup.GetVector.Request](#payload.Backup.GetVector.Request) | [.payload.Backup.Compressed.MetaVector](#payload.Backup.Compressed.MetaVector) |  |
-| Locations | [.payload.Backup.Locations.Request](#payload.Backup.Locations.Request) | [.payload.Info.IPs](#payload.Info.IPs) |  |
-| Register | [.payload.Backup.Compressed.MetaVector](#payload.Backup.Compressed.MetaVector) | [.payload.Empty](#payload.Empty) |  |
-| RegisterMulti | [.payload.Backup.Compressed.MetaVectors](#payload.Backup.Compressed.MetaVectors) | [.payload.Empty](#payload.Empty) |  |
-| Remove | [.payload.Backup.Remove.Request](#payload.Backup.Remove.Request) | [.payload.Empty](#payload.Empty) |  |
-| RemoveMulti | [.payload.Backup.Remove.RequestMulti](#payload.Backup.Remove.RequestMulti) | [.payload.Empty](#payload.Empty) |  |
-| RegisterIPs | [.payload.Backup.IP.Register.Request](#payload.Backup.IP.Register.Request) | [.payload.Empty](#payload.Empty) |  |
-| RemoveIPs | [.payload.Backup.IP.Remove.Request](#payload.Backup.IP.Remove.Request) | [.payload.Empty](#payload.Empty) |  |
-
- 
-
-
-
-<a name="compressor/compressor.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## compressor/compressor.proto
-
-
- 
-
- 
-
- 
-
-
-<a name="compressor.Backup"></a>
-
-### Backup
-
-
-| Method Name | Request Type | Response Type | Description |
-| ----------- | ------------ | ------------- | ------------|
-| GetVector | [.payload.Backup.GetVector.Request](#payload.Backup.GetVector.Request) | [.payload.Backup.MetaVector](#payload.Backup.MetaVector) |  |
-| Locations | [.payload.Backup.Locations.Request](#payload.Backup.Locations.Request) | [.payload.Info.IPs](#payload.Info.IPs) |  |
-| Register | [.payload.Backup.MetaVector](#payload.Backup.MetaVector) | [.payload.Empty](#payload.Empty) |  |
-| RegisterMulti | [.payload.Backup.MetaVectors](#payload.Backup.MetaVectors) | [.payload.Empty](#payload.Empty) |  |
-| Remove | [.payload.Backup.Remove.Request](#payload.Backup.Remove.Request) | [.payload.Empty](#payload.Empty) |  |
-| RemoveMulti | [.payload.Backup.Remove.RequestMulti](#payload.Backup.Remove.RequestMulti) | [.payload.Empty](#payload.Empty) |  |
-| RegisterIPs | [.payload.Backup.IP.Register.Request](#payload.Backup.IP.Register.Request) | [.payload.Empty](#payload.Empty) |  |
-| RemoveIPs | [.payload.Backup.IP.Remove.Request](#payload.Backup.IP.Remove.Request) | [.payload.Empty](#payload.Empty) |  |
-
- 
-
-
-
-<a name="index/index_manager.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## index/index_manager.proto
-
-
- 
-
- 
-
- 
-
-
-<a name="index_manager.Index"></a>
-
-### Index
-
-
-| Method Name | Request Type | Response Type | Description |
-| ----------- | ------------ | ------------- | ------------|
+| GetObject | [.payload.Object.ID](#payload.Object.ID) | [.payload.Object.Vector](#payload.Object.Vector) |  |
+| StreamGetObject | [.payload.Object.ID](#payload.Object.ID) stream | [.payload.Object.Vector](#payload.Object.Vector) stream |  |
+| CreateIndex | [.payload.Control.CreateIndexRequest](#payload.Control.CreateIndexRequest) | [.payload.Empty](#payload.Empty) |  |
+| SaveIndex | [.payload.Empty](#payload.Empty) | [.payload.Empty](#payload.Empty) |  |
+| CreateAndSaveIndex | [.payload.Control.CreateIndexRequest](#payload.Control.CreateIndexRequest) | [.payload.Empty](#payload.Empty) |  |
 | IndexInfo | [.payload.Empty](#payload.Empty) | [.payload.Info.Index.Count](#payload.Info.Index.Count) |  |
-
- 
-
-
-
-<a name="replication/agent/replication_manager.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## replication/agent/replication_manager.proto
-
-
- 
-
- 
-
- 
-
-
-<a name="replication_manager.Replication"></a>
-
-### Replication
-
-
-| Method Name | Request Type | Response Type | Description |
-| ----------- | ------------ | ------------- | ------------|
-| Recover | [.payload.Replication.Recovery](#payload.Replication.Recovery) | [.payload.Empty](#payload.Empty) |  |
-| Rebalance | [.payload.Replication.Rebalance](#payload.Replication.Rebalance) | [.payload.Empty](#payload.Empty) |  |
-| AgentInfo | [.payload.Empty](#payload.Empty) | [.payload.Replication.Agents](#payload.Replication.Agents) |  |
-
- 
-
-
-
-<a name="replication/controller/replication_manager.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## replication/controller/replication_manager.proto
-
-
- 
-
- 
-
- 
-
-
-<a name="replication_manager.ReplicationController"></a>
-
-### ReplicationController
-
-
-| Method Name | Request Type | Response Type | Description |
-| ----------- | ------------ | ------------- | ------------|
-| ReplicationInfo | [.payload.Empty](#payload.Empty) | [.payload.Replication.Agents](#payload.Replication.Agents) |  |
-
- 
-
-
-
-<a name="traffic/traffic_manager.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## traffic/traffic_manager.proto
-
-
- 
-
- 
-
- 
-
- 
-
-
-
-<a name="meta.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## meta.proto
-
-
- 
-
- 
-
- 
-
-
-<a name="meta_manager.Meta"></a>
-
-### Meta
-
-
-| Method Name | Request Type | Response Type | Description |
-| ----------- | ------------ | ------------- | ------------|
-| GetMeta | [.payload.Meta.Key](#payload.Meta.Key) | [.payload.Meta.Val](#payload.Meta.Val) |  |
-| GetMetas | [.payload.Meta.Keys](#payload.Meta.Keys) | [.payload.Meta.Vals](#payload.Meta.Vals) |  |
-| GetMetaInverse | [.payload.Meta.Val](#payload.Meta.Val) | [.payload.Meta.Key](#payload.Meta.Key) |  |
-| GetMetasInverse | [.payload.Meta.Vals](#payload.Meta.Vals) | [.payload.Meta.Keys](#payload.Meta.Keys) |  |
-| SetMeta | [.payload.Meta.KeyVal](#payload.Meta.KeyVal) | [.payload.Empty](#payload.Empty) |  |
-| SetMetas | [.payload.Meta.KeyVals](#payload.Meta.KeyVals) | [.payload.Empty](#payload.Empty) |  |
-| DeleteMeta | [.payload.Meta.Key](#payload.Meta.Key) | [.payload.Meta.Val](#payload.Meta.Val) |  |
-| DeleteMetas | [.payload.Meta.Keys](#payload.Meta.Keys) | [.payload.Meta.Vals](#payload.Meta.Vals) |  |
-| DeleteMetaInverse | [.payload.Meta.Val](#payload.Meta.Val) | [.payload.Meta.Key](#payload.Meta.Key) |  |
-| DeleteMetasInverse | [.payload.Meta.Vals](#payload.Meta.Vals) | [.payload.Meta.Keys](#payload.Meta.Keys) |  |
 
  
 
@@ -1389,6 +1200,195 @@
  
 
  
+
+ 
+
+
+
+<a name="discoverer.proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## discoverer.proto
+
+
+ 
+
+ 
+
+ 
+
+
+<a name="discoverer.Discoverer"></a>
+
+### Discoverer
+
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ------------|
+| Pods | [.payload.Discoverer.Request](#payload.Discoverer.Request) | [.payload.Info.Pods](#payload.Info.Pods) |  |
+| Nodes | [.payload.Discoverer.Request](#payload.Discoverer.Request) | [.payload.Info.Nodes](#payload.Info.Nodes) |  |
+
+ 
+
+
+
+<a name="backup/backup_manager.proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## backup/backup_manager.proto
+
+
+ 
+
+ 
+
+ 
+
+
+<a name="backup_manager.Backup"></a>
+
+### Backup
+
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ------------|
+| GetVector | [.payload.Backup.GetVector.Request](#payload.Backup.GetVector.Request) | [.payload.Backup.Compressed.MetaVector](#payload.Backup.Compressed.MetaVector) |  |
+| Locations | [.payload.Backup.Locations.Request](#payload.Backup.Locations.Request) | [.payload.Info.IPs](#payload.Info.IPs) |  |
+| Register | [.payload.Backup.Compressed.MetaVector](#payload.Backup.Compressed.MetaVector) | [.payload.Empty](#payload.Empty) |  |
+| RegisterMulti | [.payload.Backup.Compressed.MetaVectors](#payload.Backup.Compressed.MetaVectors) | [.payload.Empty](#payload.Empty) |  |
+| Remove | [.payload.Backup.Remove.Request](#payload.Backup.Remove.Request) | [.payload.Empty](#payload.Empty) |  |
+| RemoveMulti | [.payload.Backup.Remove.RequestMulti](#payload.Backup.Remove.RequestMulti) | [.payload.Empty](#payload.Empty) |  |
+| RegisterIPs | [.payload.Backup.IP.Register.Request](#payload.Backup.IP.Register.Request) | [.payload.Empty](#payload.Empty) |  |
+| RemoveIPs | [.payload.Backup.IP.Remove.Request](#payload.Backup.IP.Remove.Request) | [.payload.Empty](#payload.Empty) |  |
+
+ 
+
+
+
+<a name="index/index_manager.proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## index/index_manager.proto
+
+
+ 
+
+ 
+
+ 
+
+
+<a name="index_manager.Index"></a>
+
+### Index
+
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ------------|
+| IndexInfo | [.payload.Empty](#payload.Empty) | [.payload.Info.Index.Count](#payload.Info.Index.Count) |  |
+
+ 
+
+
+
+<a name="compressor/compressor.proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## compressor/compressor.proto
+
+
+ 
+
+ 
+
+ 
+
+
+<a name="compressor.Backup"></a>
+
+### Backup
+
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ------------|
+| GetVector | [.payload.Backup.GetVector.Request](#payload.Backup.GetVector.Request) | [.payload.Backup.MetaVector](#payload.Backup.MetaVector) |  |
+| Locations | [.payload.Backup.Locations.Request](#payload.Backup.Locations.Request) | [.payload.Info.IPs](#payload.Info.IPs) |  |
+| Register | [.payload.Backup.MetaVector](#payload.Backup.MetaVector) | [.payload.Empty](#payload.Empty) |  |
+| RegisterMulti | [.payload.Backup.MetaVectors](#payload.Backup.MetaVectors) | [.payload.Empty](#payload.Empty) |  |
+| Remove | [.payload.Backup.Remove.Request](#payload.Backup.Remove.Request) | [.payload.Empty](#payload.Empty) |  |
+| RemoveMulti | [.payload.Backup.Remove.RequestMulti](#payload.Backup.Remove.RequestMulti) | [.payload.Empty](#payload.Empty) |  |
+| RegisterIPs | [.payload.Backup.IP.Register.Request](#payload.Backup.IP.Register.Request) | [.payload.Empty](#payload.Empty) |  |
+| RemoveIPs | [.payload.Backup.IP.Remove.Request](#payload.Backup.IP.Remove.Request) | [.payload.Empty](#payload.Empty) |  |
+
+ 
+
+
+
+<a name="traffic/traffic_manager.proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## traffic/traffic_manager.proto
+
+
+ 
+
+ 
+
+ 
+
+ 
+
+
+
+<a name="replication/agent/replication_manager.proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## replication/agent/replication_manager.proto
+
+
+ 
+
+ 
+
+ 
+
+
+<a name="replication_manager.Replication"></a>
+
+### Replication
+
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ------------|
+| Recover | [.payload.Replication.Recovery](#payload.Replication.Recovery) | [.payload.Empty](#payload.Empty) |  |
+| Rebalance | [.payload.Replication.Rebalance](#payload.Replication.Rebalance) | [.payload.Empty](#payload.Empty) |  |
+| AgentInfo | [.payload.Empty](#payload.Empty) | [.payload.Replication.Agents](#payload.Replication.Agents) |  |
+
+ 
+
+
+
+<a name="replication/controller/replication_manager.proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## replication/controller/replication_manager.proto
+
+
+ 
+
+ 
+
+ 
+
+
+<a name="replication_manager.ReplicationController"></a>
+
+### ReplicationController
+
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ------------|
+| ReplicationInfo | [.payload.Empty](#payload.Empty) | [.payload.Replication.Agents](#payload.Replication.Agents) |  |
 
  
 

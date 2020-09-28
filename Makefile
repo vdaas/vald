@@ -134,7 +134,6 @@ PROTO_PATHS = \
 	$(GOPATH)/src/github.com/protocolbuffers/protobuf/src \
 	$(GOPATH)/src/github.com/gogo/protobuf/protobuf \
 	$(GOPATH)/src/github.com/googleapis/googleapis \
-	$(GOPATH)/src/github.com/danielvladco/go-proto-gql \
 	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
 
 GO_SOURCES = $(eval GO_SOURCES := $(shell find \
