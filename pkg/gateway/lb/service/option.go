@@ -14,23 +14,23 @@
 // limitations under the License.
 //
 
-// Package service
+// Package service represents gateway's service logic
 package service
 
 import (
-	"github.com/vdaas/vald/internal/client/discoverer"
+	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	"github.com/vdaas/vald/internal/errgroup"
 )
 
-type GWOption func(g *gateway) error
+type Option func(g *gateway) error
 
 var (
-	defaultGWOpts = []GWOption{
+	defaultGWOpts = []Option{
 		WithErrGroup(errgroup.Get()),
 	}
 )
 
-func WithDiscoverer(c discoverer.Client) GWOption {
+func WithDiscoverer(c discoverer.Client) Option {
 	return func(g *gateway) error {
 		if c != nil {
 			g.client = c
@@ -39,7 +39,7 @@ func WithDiscoverer(c discoverer.Client) GWOption {
 	}
 }
 
-func WithErrGroup(eg errgroup.Group) GWOption {
+func WithErrGroup(eg errgroup.Group) Option {
 	return func(g *gateway) error {
 		if eg != nil {
 			g.eg = eg

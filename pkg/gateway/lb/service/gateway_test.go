@@ -23,7 +23,7 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
-	"github.com/vdaas/vald/internal/client/discoverer"
+	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -33,7 +33,7 @@ import (
 func TestNewGateway(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		opts []GWOption
+		opts []Option
 	}
 	type want struct {
 		wantGw Gateway

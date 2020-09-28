@@ -14,13 +14,13 @@
 // limitations under the License.
 //
 
-// Package service
+// Package service represents gateway's service logic
 package service
 
 import (
 	"testing"
 
-	"github.com/vdaas/vald/internal/client/discoverer"
+	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	"github.com/vdaas/vald/internal/errgroup"
 	"go.uber.org/goleak"
 )

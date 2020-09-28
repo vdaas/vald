@@ -318,7 +318,7 @@ go/deps:
 		./go.sum \
 		./go.mod
 	cp ./hack/go.mod.default ./go.mod
-	go mod tidy
+	GOPRIVATE=$(GOPKG) go mod tidy
 	go get -u all 2>/dev/null || true
 
 

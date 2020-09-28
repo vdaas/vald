@@ -23,7 +23,7 @@ import (
 	"sync/atomic"
 
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
-	"github.com/vdaas/vald/internal/client/discoverer"
+	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -46,7 +46,7 @@ type gateway struct {
 	eg     errgroup.Group
 }
 
-func NewGateway(opts ...GWOption) (gw Gateway, err error) {
+func NewGateway(opts ...Option) (gw Gateway, err error) {
 	g := new(gateway)
 	for _, opt := range append(defaultGWOpts, opts...) {
 		if err := opt(g); err != nil {
