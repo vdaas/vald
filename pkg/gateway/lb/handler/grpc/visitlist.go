@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+// Package grpc provides grpc server logic
 package grpc
 
 import (
@@ -22,102 +23,100 @@ import (
 	"unsafe"
 )
 
-type visitList struct {
+type visitlist struct {
 	mu     sync.Mutex
 	read   atomic.Value
-	dirty  map[string]*entryVisitList
+	dirty  map[string]*entryVisitlist
 	misses int
 }
 
-type readOnlyVisitList struct {
-	m       map[string]*entryVisitList
+type readOnlyVisitlist struct {
+	m       map[string]*entryVisitlist
 	amended bool
 }
 
-var expungedVisitList = unsafe.Pointer(new(bool))
+var expungedVisitlist = unsafe.Pointer(new(struct{}))
 
-type entryVisitList struct {
+type entryVisitlist struct {
 	p unsafe.Pointer
 }
 
-// Load returns the value stored in the map for a key, or nil if no
-// value is present.
-func (m *visitList) Load(key string) (value bool, ok bool) {
-	read, _ := m.read.Load().(readOnlyVisitList)
-	e, ok := read.m[key]
-	if !ok && read.amended {
-		m.mu.Lock()
-		read, _ = m.read.Load().(readOnlyVisitList)
-		e, ok = read.m[key]
-		if !ok && read.amended {
-			e, ok = m.dirty[key]
-			m.misses++
-			if m.misses >= len(m.dirty) {
-				m.read.Store(readOnlyVisitList{m: m.dirty})
-				m.dirty = nil
-				m.misses = 0
-			}
-		}
-		m.mu.Unlock()
-	}
-	if !ok {
-		return value, false
-	}
-	p := atomic.LoadPointer(&e.p)
-	if p == nil || p == expungedVisitList {
-		return value, false
-	}
-	return *(*bool)(p), true
-}
-
-// Store sets the value for a key.
-func (m *visitList) Store(key string, value bool) {
-	read, _ := m.read.Load().(readOnlyVisitList)
+func (m *visitlist) Visited(key string) (loaded bool) {
+	value := struct{}{}
+	read, _ := m.read.Load().(readOnlyVisitlist)
 	if e, ok := read.m[key]; ok {
-		for {
-			p := atomic.LoadPointer(&e.p)
-			if p == expungedVisitList {
-				break
-			}
-			if atomic.CompareAndSwapPointer(&e.p, p, unsafe.Pointer(&value)) {
-				return
-			}
+		loaded, ok := e.visited(value)
+		if ok {
+			return loaded
 		}
 	}
 
 	m.mu.Lock()
-	read, _ = m.read.Load().(readOnlyVisitList)
+	read, _ = m.read.Load().(readOnlyVisitlist)
 	if e, ok := read.m[key]; ok {
-		if atomic.CompareAndSwapPointer(&e.p, expungedVisitList, nil) {
+		if atomic.CompareAndSwapPointer(&e.p, expungedVisitlist, nil) {
 			m.dirty[key] = e
 		}
-		atomic.StorePointer(&e.p, unsafe.Pointer(&value))
+		loaded, _ = e.visited(value)
 	} else if e, ok := m.dirty[key]; ok {
-		atomic.StorePointer(&e.p, unsafe.Pointer(&value))
+		loaded, _ = e.visited(value)
+		m.misses++
+		if m.misses < len(m.dirty) {
+			return
+		}
+		m.read.Store(readOnlyVisitlist{m: m.dirty})
+		m.dirty = nil
+		m.misses = 0
 	} else {
 		if !read.amended {
 			if m.dirty == nil {
-
-				read, _ := m.read.Load().(readOnlyVisitList)
-				m.dirty = make(map[string]*entryVisitList, len(read.m))
+				read, _ := m.read.Load().(readOnlyVisitlist)
+				m.dirty = make(map[string]*entryVisitlist, len(read.m))
 				for k, e := range read.m {
-					skip := false
-					p := atomic.LoadPointer(&e.p)
-					for p == nil {
-						if atomic.CompareAndSwapPointer(&e.p, nil, expungedVisitList) {
-							skip = true
-							break
-						}
-						p = atomic.LoadPointer(&e.p)
-					}
-					if !skip && p != expungedVisitList {
+					if !e.tryExpungeLocked() {
 						m.dirty[k] = e
 					}
 				}
 			}
-			m.read.Store(readOnlyVisitList{m: read.m, amended: true})
+			m.read.Store(readOnlyVisitlist{m: read.m, amended: true})
 		}
-		m.dirty[key] = &entryVisitList{p: unsafe.Pointer(&value)}
+		m.dirty[key] = &entryVisitlist{p: unsafe.Pointer(&value)}
+		loaded = false
 	}
 	m.mu.Unlock()
+	return loaded
+}
+
+func (e *entryVisitlist) visited(i struct{}) (visited, ok bool) {
+	p := atomic.LoadPointer(&e.p)
+	if p == expungedVisitlist {
+		return false, false
+	}
+	if p != nil {
+		return true, true
+	}
+	ic := i
+	for {
+		if atomic.CompareAndSwapPointer(&e.p, nil, unsafe.Pointer(&ic)) {
+			return false, true
+		}
+		p = atomic.LoadPointer(&e.p)
+		if p == expungedVisitlist {
+			return false, false
+		}
+		if p != nil {
+			return true, true
+		}
+	}
+}
+
+func (e *entryVisitlist) tryExpungeLocked() (isExpunged bool) {
+	p := atomic.LoadPointer(&e.p)
+	for p == nil {
+		if atomic.CompareAndSwapPointer(&e.p, nil, expungedVisitlist) {
+			return true
+		}
+		p = atomic.LoadPointer(&e.p)
+	}
+	return p == expungedVisitlist
 }

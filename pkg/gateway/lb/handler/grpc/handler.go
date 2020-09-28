@@ -180,9 +180,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 
 	eg.Go(safety.RecoverFunc(func() error {
 		defer cancel()
-		vl := new(visitList)
-		// visited := make(map[string]bool, len(res.Results))
-		// mu := sync.RWMutex{}
+		vl := new(visitlist)
 		return s.gateway.BroadCast(ectx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
 			ctx, span := trace.StartSpan(ctx, apiName+".search/"+target)
 			defer func() {
@@ -202,22 +200,13 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 				if dist.GetDistance() > math.Float32frombits(atomic.LoadUint32(&maxDist)) {
 					return nil
 				}
-				id := dist.GetId()
-				visited, ok := vl.Load(id)
-				if !ok || !visited {
-					vl.Store(id, true)
-					dch <- dist
+				if !vl.Visited(dist.GetId()) {
+					select{
+					case <-ectx.Done():
+						return nil
+					case dch <- dist:
+					}
 				}
-				// mu.RLock()
-				// if !visited[id] {
-				// 	mu.RUnlock()
-				// 	mu.Lock()
-				// 	visited[id] = true
-				// 	mu.Unlock()
-				// 	dch <- dist
-				// } else {
-				// 	mu.RUnlock()
-				// }
 			}
 			return nil
 		})
@@ -235,9 +224,12 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 			}
 			return res, nil
 		case dist := <-dch:
-			if len(res.GetResults()) >= num &&
-				dist.GetDistance() < math.Float32frombits(atomic.LoadUint32(&maxDist)) {
-				atomic.StoreUint32(&maxDist, math.Float32bits(dist.GetDistance()))
+			if len(res.GetResults()) >= num {
+				if dist.GetDistance() < math.Float32frombits(atomic.LoadUint32(&maxDist)) {
+					atomic.StoreUint32(&maxDist, math.Float32bits(dist.GetDistance()))
+				} else {
+					continue
+				}
 			}
 			switch len(res.GetResults()) {
 			case 0:

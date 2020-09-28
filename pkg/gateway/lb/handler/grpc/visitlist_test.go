@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+// Package grpc provides grpc server logic
 package grpc
 
 import (
@@ -21,12 +22,13 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
+	"unsafe"
 
 	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
 )
 
-func Test_visitList_Load(t *testing.T) {
+func Test_visitlist_Visited(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		key string
@@ -34,12 +36,107 @@ func Test_visitList_Load(t *testing.T) {
 	type fields struct {
 		mu     sync.Mutex
 		read   atomic.Value
-		dirty  map[string]*entryVisitList
+		dirty  map[string]*entryVisitlist
 		misses int
 	}
 	type want struct {
-		wantValue bool
-		wantOk    bool
+		wantLoaded bool
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, bool) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotLoaded bool) error {
+		if !reflect.DeepEqual(gotLoaded, w.wantLoaded) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLoaded, w.wantLoaded)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           key: "",
+		       },
+		       fields: fields {
+		           mu: sync.Mutex{},
+		           read: nil,
+		           dirty: nil,
+		           misses: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           key: "",
+		           },
+		           fields: fields {
+		           mu: sync.Mutex{},
+		           read: nil,
+		           dirty: nil,
+		           misses: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			m := &visitlist{
+				mu:     test.fields.mu,
+				read:   test.fields.read,
+				dirty:  test.fields.dirty,
+				misses: test.fields.misses,
+			}
+
+			gotLoaded := m.Visited(test.args.key)
+			if err := test.checkFunc(test.want, gotLoaded); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_entryVisitlist_visited(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		i struct{}
+	}
+	type fields struct {
+		p unsafe.Pointer
+	}
+	type want struct {
+		wantVisited bool
+		wantOk      bool
 	}
 	type test struct {
 		name       string
@@ -50,9 +147,9 @@ func Test_visitList_Load(t *testing.T) {
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotValue bool, gotOk bool) error {
-		if !reflect.DeepEqual(gotValue, w.wantValue) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotValue, w.wantValue)
+	defaultCheckFunc := func(w want, gotVisited bool, gotOk bool) error {
+		if !reflect.DeepEqual(gotVisited, w.wantVisited) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotVisited, w.wantVisited)
 		}
 		if !reflect.DeepEqual(gotOk, w.wantOk) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOk, w.wantOk)
@@ -65,13 +162,10 @@ func Test_visitList_Load(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           key: "",
+		           i: struct{}{},
 		       },
 		       fields: fields {
-		           mu: sync.Mutex{},
-		           read: nil,
-		           dirty: nil,
-		           misses: 0,
+		           p: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -84,13 +178,10 @@ func Test_visitList_Load(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           key: "",
+		           i: struct{}{},
 		           },
 		           fields: fields {
-		           mu: sync.Mutex{},
-		           read: nil,
-		           dirty: nil,
-		           misses: 0,
+		           p: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -112,15 +203,12 @@ func Test_visitList_Load(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			m := &visitList{
-				mu:     test.fields.mu,
-				read:   test.fields.read,
-				dirty:  test.fields.dirty,
-				misses: test.fields.misses,
+			e := &entryVisitlist{
+				p: test.fields.p,
 			}
 
-			gotValue, gotOk := m.Load(test.args.key)
-			if err := test.checkFunc(test.want, gotValue, gotOk); err != nil {
+			gotVisited, gotOk := e.visited(test.args.i)
+			if err := test.checkFunc(test.want, gotVisited, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -128,30 +216,26 @@ func Test_visitList_Load(t *testing.T) {
 	}
 }
 
-func Test_visitList_Store(t *testing.T) {
+func Test_entryVisitlist_tryExpungeLocked(t *testing.T) {
 	t.Parallel()
-	type args struct {
-		key   string
-		value bool
-	}
 	type fields struct {
-		mu     sync.Mutex
-		read   atomic.Value
-		dirty  map[string]*entryVisitList
-		misses int
+		p unsafe.Pointer
 	}
 	type want struct {
+		wantIsExpunged bool
 	}
 	type test struct {
 		name       string
-		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		checkFunc  func(want, bool) error
+		beforeFunc func()
+		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func(w want, gotIsExpunged bool) error {
+		if !reflect.DeepEqual(gotIsExpunged, w.wantIsExpunged) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotIsExpunged, w.wantIsExpunged)
+		}
 		return nil
 	}
 	tests := []test{
@@ -159,15 +243,8 @@ func Test_visitList_Store(t *testing.T) {
 		/*
 		   {
 		       name: "test_case_1",
-		       args: args {
-		           key: "",
-		           value: false,
-		       },
 		       fields: fields {
-		           mu: sync.Mutex{},
-		           read: nil,
-		           dirty: nil,
-		           misses: 0,
+		           p: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -179,15 +256,8 @@ func Test_visitList_Store(t *testing.T) {
 		   func() test {
 		       return test {
 		           name: "test_case_2",
-		           args: args {
-		           key: "",
-		           value: false,
-		           },
 		           fields: fields {
-		           mu: sync.Mutex{},
-		           read: nil,
-		           dirty: nil,
-		           misses: 0,
+		           p: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -201,25 +271,23 @@ func Test_visitList_Store(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc()
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			m := &visitList{
-				mu:     test.fields.mu,
-				read:   test.fields.read,
-				dirty:  test.fields.dirty,
-				misses: test.fields.misses,
+			e := &entryVisitlist{
+				p: test.fields.p,
 			}
 
-			m.Store(test.args.key, test.args.value)
-			if err := test.checkFunc(test.want); err != nil {
+			gotIsExpunged := e.tryExpungeLocked()
+			if err := test.checkFunc(test.want, gotIsExpunged); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
