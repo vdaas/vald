@@ -2832,7 +2832,7 @@ func Test_mySQLClient_deleteMeta(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.ErrMySQLConnectionClosed
 			return test{
-				name: "return error when session.Begin fails",
+				name: "return error when MySQL connection is closed",
 				args: args{
 					ctx: ctx,
 					val: "vald-01",
@@ -2847,6 +2847,35 @@ func Test_mySQLClient_deleteMeta(t *testing.T) {
 					err: err,
 				},
 				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			err := errors.New("Begin error")
+			return test{
+				name: "return error when session.Begin returns error",
+				args: args{
+					ctx: ctx,
+					val: "vald-01",
+				},
+				fields: fields{
+					session: &mock.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							return nil, err
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+				},
+				want: want{
+					err: err,
+				},
+				afterFunc: func(args) {
+
 					cancel()
 				},
 			}
@@ -2883,7 +2912,7 @@ func Test_mySQLClient_deleteMeta(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.New("metaVectorTableName error")
 			return test{
-				name: "return error when DeleteFromFunc(metaVectorTableName) fails",
+				name: "return error when DeleteFromFunc(metaVectorTableName) returns error",
 				args: args{
 					ctx: ctx,
 					val: "vald-01",
@@ -2934,7 +2963,7 @@ func Test_mySQLClient_deleteMeta(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.New("podIPTableNmae error")
 			return test{
-				name: "return error when DeleteFromFunc(podIPTableNmae) fails",
+				name: "return error when DeleteFromFunc(podIPTableNmae) returns error",
 				args: args{
 					ctx: ctx,
 					val: "vald-01",
@@ -3415,7 +3444,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.New("session.Begin error")
 			return test{
-				name: "return error when session.Begin return error",
+				name: "return error when session.Begin returns error",
 				args: args{
 					ctx:  ctx,
 					uuid: "vald-01",
@@ -3447,7 +3476,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.New("LoadContext error")
 			return test{
-				name: "return error when select LoadContext return error",
+				name: "return error when select LoadContext returns error",
 				args: args{
 					ctx:  ctx,
 					uuid: "vald-01",
@@ -3573,7 +3602,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.New("ExecContext error")
 			return test{
-				name: "return error when InsertInto.ExecContext fails",
+				name: "return error when InsertInto.ExecContext returns error",
 				args: args{
 					ctx:  ctx,
 					uuid: "vald-01",
@@ -3808,7 +3837,7 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.New("session.Begin error")
 			return test{
-				name: "return error when session.Begin fails",
+				name: "return error when session.Begin returns error",
 				args: args{
 					ctx: ctx,
 					ips: []string{
@@ -3839,7 +3868,7 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.New("ExecContext error")
 			return test{
-				name: "return error when delete.ExecContext fails",
+				name: "return error when delete.ExecContext returns error",
 				args: args{
 					ctx: ctx,
 					ips: []string{
