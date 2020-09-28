@@ -163,15 +163,13 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 					return nil
 				}
 				id := dist.GetId()
-				mu.RLock()
+				mu.Lock()
 				if !visited[id] {
-					mu.RUnlock()
-					mu.Lock()
 					visited[id] = true
 					mu.Unlock()
 					dch <- dist
 				} else {
-					mu.RUnlock()
+					mu.Unlock()
 				}
 			}
 			return nil
@@ -217,9 +215,12 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 			}
 			return res, nil
 		case dist := <-dch:
-			if len(res.GetResults()) >= num &&
-				dist.GetDistance() < math.Float32frombits(atomic.LoadUint32(&maxDist)) {
-				atomic.StoreUint32(&maxDist, math.Float32bits(dist.GetDistance()))
+			if len(res.GetResults()) >= num {
+				if dist.GetDistance() < math.Float32frombits(atomic.LoadUint32(&maxDist)) {
+					atomic.StoreUint32(&maxDist, math.Float32bits(dist.GetDistance()))
+				} else {
+					continue
+				}
 			}
 			switch len(res.GetResults()) {
 			case 0:
