@@ -177,7 +177,6 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 		timeout = s.timeout
 	}
 	ectx, cancel = context.WithTimeout(ectx, timeout)
-
 	eg.Go(safety.RecoverFunc(func() error {
 		defer cancel()
 		vl := new(visitlist)
