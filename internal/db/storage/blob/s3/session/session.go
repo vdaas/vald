@@ -18,10 +18,13 @@ package session
 
 import (
 	"net/http"
+	"reflect"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 )
 
 type sess struct {
@@ -46,19 +49,24 @@ type sess struct {
 	client *http.Client
 }
 
+// Session represents the interface to get AWS S3 session
 type Session interface {
 	Session() (*session.Session, error)
 }
 
+// New returns the session implementation
 func New(opts ...Option) Session {
 	s := new(sess)
 	for _, opt := range append(defaultOpts, opts...) {
-		opt(s)
+		if err := opt(s); err != nil {
+			log.Warn(errors.ErrOptionFailed(err, reflect.ValueOf(opt)))
+		}
 	}
 
 	return s
 }
 
+// Session returns the AWS S3 session or any error occurred
 func (s *sess) Session() (*session.Session, error) {
 	cfg := aws.NewConfig().WithRegion(s.region)
 
