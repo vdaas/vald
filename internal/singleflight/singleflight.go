@@ -62,7 +62,7 @@ func (g *group) Do(ctx context.Context, key string, fn func() (interface{}, erro
 	c.val, c.err = fn()
 	c.wg.Done()
 
-	g.m.Delete(key)
+	g.m.LoadAndDelete(key)
 
 	return c.val, c.err, atomic.LoadUint64(&c.dups) > 0
 }
