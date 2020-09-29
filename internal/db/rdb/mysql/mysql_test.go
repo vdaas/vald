@@ -182,11 +182,10 @@ func Test_mySQLClient_Open(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			return test{
 				name: "Open success with tls config when no error occurs",
 				args: args{
-					ctx: ctx,
+					ctx: context.Background(),
 				},
 				fields: fields{
 					db:                   "vdaas",
@@ -231,19 +230,15 @@ func Test_mySQLClient_Open(t *testing.T) {
 					},
 				},
 				want: want{},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			dialer, _ := tcp.NewDialer()
 			dialerFunc := dialer.GetDialer()
 			return test{
 				name: "Open success with dialer when no error occurs",
 				args: args{
-					ctx: ctx,
+					ctx: context.Background(),
 				},
 				fields: fields{
 					db:                   "vdaas",
@@ -289,17 +284,13 @@ func Test_mySQLClient_Open(t *testing.T) {
 					},
 				},
 				want: want{},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			return test{
-				name: "returns error when dbr.Open failed",
+				name: "returns error when dbr.Open returns error",
 				args: args{
-					ctx: ctx,
+					ctx: context.Background(),
 				},
 				fields: fields{
 					db:                   "vdaas",
@@ -328,18 +319,14 @@ func Test_mySQLClient_Open(t *testing.T) {
 				want: want{
 					err: errors.ErrMySQLConnectionClosed,
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.ErrMySQLConnectionPingFailed
 			return test{
-				name: "returns error when Ping failed",
+				name: "returns error when Ping fails",
 				args: args{
-					ctx: ctx,
+					ctx: context.Background(),
 				},
 				fields: fields{
 					db:                   "vdaas",
@@ -385,9 +372,6 @@ func Test_mySQLClient_Open(t *testing.T) {
 				},
 				want: want{
 					err: err,
-				},
-				afterFunc: func(args) {
-					cancel()
 				},
 			}
 		}(),
@@ -594,7 +578,7 @@ func Test_mySQLClient_Close(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "Close success when connection already closed",
+			name: "Close success when connection is already closed",
 			args: args{
 				ctx: context.Background(),
 			},
@@ -704,11 +688,10 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			return test{
 				name: "return (nil, error) when MySQL connection is closed",
 				args: args{
-					ctx:  ctx,
+					ctx:  context.Background(),
 					uuid: "",
 				},
 				fields: fields{
@@ -720,18 +703,14 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 				want: want{
 					err: errors.ErrMySQLConnectionClosed,
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.New("loadcontext error")
 			return test{
 				name: "return (nil, error) when LoadContext returns error",
 				args: args{
-					ctx: ctx,
+					ctx: context.Background(),
 				},
 				fields: fields{
 					session: &mock.MockSession{
@@ -765,18 +744,14 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 				want: want{
 					err: err,
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			uuid := "vdaas-01"
 			return test{
 				name: "return (nil, error) when meta is not found",
 				args: args{
-					ctx:  ctx,
+					ctx:  context.Background(),
 					uuid: "vdaas-01",
 				},
 				fields: fields{
@@ -815,13 +790,9 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 				want: want{
 					err: errors.ErrRequiredElementNotFoundByUUID(uuid),
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			uuid := "vdaas-01"
 			m := &meta{
 				ID:     1,
@@ -831,7 +802,7 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 			return test{
 				name: "return (nil, error) when podIPs are not found",
 				args: args{
-					ctx:  ctx,
+					ctx:  context.Background(),
 					uuid: uuid,
 				},
 				fields: fields{
@@ -875,13 +846,9 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 				want: want{
 					err: errors.New("not found"),
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			uuid := "vdaas-01"
 			m := &meta{
 				ID:     1,
@@ -897,7 +864,7 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 			return test{
 				name: "return (metaVector, nil) when select success",
 				args: args{
-					ctx:  ctx,
+					ctx:  context.Background(),
 					uuid: uuid,
 				},
 				fields: fields{
@@ -945,9 +912,6 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 						meta:   *m,
 						podIPs: p,
 					},
-				},
-				afterFunc: func(args) {
-					cancel()
 				},
 			}
 		}(),
@@ -1015,12 +979,11 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			uuid := "vdaas-01"
 			return test{
 				name: "return (nil, error) when connection closed",
 				args: args{
-					ctx:  ctx,
+					ctx:  context.Background(),
 					uuid: uuid,
 				},
 				fields: fields{
@@ -1038,19 +1001,15 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 				want: want{
 					err: errors.ErrMySQLConnectionClosed,
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			uuid := "vdaas-01"
 			err := errors.New("LoadContext error")
 			return test{
 				name: "return (nil, error) when LoadContext for id returns error",
 				args: args{
-					ctx:  ctx,
+					ctx:  context.Background(),
 					uuid: uuid,
 				},
 				fields: fields{
@@ -1089,18 +1048,14 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 				want: want{
 					err: err,
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			uuid := "vdaas-01"
 			return test{
 				name: "return (nil, error) when meta is not found",
 				args: args{
-					ctx:  ctx,
+					ctx:  context.Background(),
 					uuid: uuid,
 				},
 				fields: fields{
@@ -1139,13 +1094,9 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 				want: want{
 					err: errors.ErrRequiredElementNotFoundByUUID(uuid),
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			uuid := "vdaas-01"
 			p := []podIP{
 				{
@@ -1161,7 +1112,7 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 			return test{
 				name: "return (nil, error) when LoadContext for ips fails",
 				args: args{
-					ctx:  ctx,
+					ctx:  context.Background(),
 					uuid: uuid,
 				},
 				fields: fields{
@@ -1205,13 +1156,9 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 				want: want{
 					err: err,
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			uuid := "vdaas-01"
 			p := []podIP{
 				{
@@ -1230,7 +1177,7 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 			return test{
 				name: "return (ips, nil) when select success",
 				args: args{
-					ctx:  ctx,
+					ctx:  context.Background(),
 					uuid: uuid,
 				},
 				fields: fields{
@@ -1275,9 +1222,6 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 				},
 				want: want{
 					want: ips,
-				},
-				afterFunc: func(args) {
-					cancel()
 				},
 			}
 		}(),
@@ -1409,12 +1353,11 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			m := new(metaVector)
 			return test{
 				name: "return error when mysql connection is closed",
 				args: args{
-					ctx: ctx,
+					ctx: context.Background(),
 					mv:  m,
 				},
 				fields: fields{
@@ -1426,19 +1369,15 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 				want: want{
 					err: errors.ErrMySQLConnectionClosed,
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			m := new(metaVector)
 			err := errors.New("session.Begin error")
 			return test{
 				name: "return error when session.Begin fails",
 				args: args{
-					ctx: ctx,
+					ctx: context.Background(),
 					mv:  m,
 				},
 				fields: fields{
@@ -1455,18 +1394,14 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 				want: want{
 					err: err,
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			m := new(metaVector)
 			return test{
 				name: "return error when meta vector is invalid",
 				args: args{
-					ctx: ctx,
+					ctx: context.Background(),
 					mv:  m,
 				},
 				fields: fields{
@@ -1488,20 +1423,16 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 				want: want{
 					err: errors.ErrRequiredMemberNotFilled("vector"),
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			m := new(metaVector)
 			m.meta.Vector = []byte("0.1,0.2,0.9")
 			err := errors.New("insertbysql ExecContext error")
 			return test{
 				name: "return error when insertbysql ExecContext returns error",
 				args: args{
-					ctx: ctx,
+					ctx: context.Background(),
 					mv:  m,
 				},
 				fields: fields{
@@ -1530,20 +1461,16 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 				want: want{
 					err: err,
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			m := new(metaVector)
 			m.meta.Vector = []byte("0.1,0.2,0.9")
 			err := errors.New("loadcontext error")
 			return test{
 				name: "return error when select loadcontext returns error",
 				args: args{
-					ctx: ctx,
+					ctx: context.Background(),
 					mv:  m,
 				},
 				fields: fields{
@@ -1593,19 +1520,15 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 				want: want{
 					err: err,
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			m := new(metaVector)
 			m.meta.Vector = []byte("0.1,0.2,0.9")
 			return test{
 				name: "return error when elem not found by uuid",
 				args: args{
-					ctx: ctx,
+					ctx: context.Background(),
 					mv:  m,
 				},
 				fields: fields{
@@ -1661,13 +1584,9 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 				want: want{
 					err: errors.ErrRequiredElementNotFoundByUUID(""),
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			m := new(metaVector)
 			m.meta.Vector = []byte("0.1,0.2,0.9")
 			m.podIPs = []podIP{
@@ -1680,7 +1599,7 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 			return test{
 				name: "return error when delete ExecContext returns error",
 				args: args{
-					ctx: ctx,
+					ctx: context.Background(),
 					mv:  m,
 				},
 				fields: fields{
@@ -1747,13 +1666,9 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 				want: want{
 					err: err,
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			m := new(metaVector)
 			m.meta.Vector = []byte("0.1,0.2,0.9")
 			m.podIPs = []podIP{
@@ -1766,7 +1681,7 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 			return test{
 				name: "return error when insert ExecContext returns error",
 				args: args{
-					ctx: ctx,
+					ctx: context.Background(),
 					mv:  m,
 				},
 				fields: fields{
@@ -1846,13 +1761,9 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 				want: want{
 					err: err,
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			m := new(metaVector)
 			m.meta.Vector = []byte("0.1,0.2,0.9")
 			m.podIPs = []podIP{
@@ -1865,7 +1776,7 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 			return test{
 				name: "return error when tx.Commit returns error",
 				args: args{
-					ctx: ctx,
+					ctx: context.Background(),
 					mv:  m,
 				},
 				fields: fields{
@@ -1948,13 +1859,9 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 				want: want{
 					err: err,
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			m := new(metaVector)
 			m.meta.Vector = []byte("0.1,0.2,0.9")
 			m.podIPs = []podIP{
@@ -1966,7 +1873,7 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 			return test{
 				name: "return nil when setMeta ends with success",
 				args: args{
-					ctx: ctx,
+					ctx: context.Background(),
 					mv:  m,
 				},
 				fields: fields{
@@ -2047,9 +1954,6 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 					},
 				},
 				want: want{},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 	}
@@ -2111,12 +2015,11 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			var m []MetaVector
 			return test{
 				name: "return error when mysql connection is closed",
 				args: args{
-					ctx:   ctx,
+					ctx:   context.Background(),
 					metas: m,
 				},
 				fields: fields{
@@ -2128,19 +2031,15 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 				want: want{
 					err: errors.ErrMySQLConnectionClosed,
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			var m []MetaVector
 			err := errors.New("session.Begin error")
 			return test{
 				name: "return error when session.Begin fails",
 				args: args{
-					ctx:   ctx,
+					ctx:   context.Background(),
 					metas: m,
 				},
 				fields: fields{
@@ -2157,19 +2056,15 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 				want: want{
 					err: err,
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			var m []MetaVector
 			m = append(m, new(metaVector))
 			return test{
 				name: "return error when meta vector is invalid",
 				args: args{
-					ctx:   ctx,
+					ctx:   context.Background(),
 					metas: m,
 				},
 				fields: fields{
@@ -2191,13 +2086,9 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 				want: want{
 					err: errors.ErrRequiredMemberNotFilled("vector"),
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			meta := new(metaVector)
 			meta.meta.Vector = []byte("0.1,0.2,0.9")
 			var m []MetaVector
@@ -2206,7 +2097,7 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 			return test{
 				name: "return error when insertbysql ExecContext returns error",
 				args: args{
-					ctx:   ctx,
+					ctx:   context.Background(),
 					metas: m,
 				},
 				fields: fields{
@@ -2235,13 +2126,9 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 				want: want{
 					err: err,
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			meta := new(metaVector)
 			meta.meta.Vector = []byte("0.1,0.2,0.9")
 			var m []MetaVector
@@ -2250,7 +2137,7 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 			return test{
 				name: "return error when select loadcontext returns error",
 				args: args{
-					ctx:   ctx,
+					ctx:   context.Background(),
 					metas: m,
 				},
 				fields: fields{
@@ -2300,13 +2187,9 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 				want: want{
 					err: err,
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			meta := new(metaVector)
 			meta.meta.Vector = []byte("0.1,0.2,0.9")
 			var m []MetaVector
@@ -2314,7 +2197,7 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 			return test{
 				name: "return error when elem not found by uuid",
 				args: args{
-					ctx:   ctx,
+					ctx:   context.Background(),
 					metas: m,
 				},
 				fields: fields{
@@ -2370,13 +2253,9 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 				want: want{
 					err: errors.ErrRequiredElementNotFoundByUUID(""),
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			meta := new(metaVector)
 			meta.meta.Vector = []byte("0.1,0.2,0.9")
 			meta.podIPs = []podIP{
@@ -2392,7 +2271,7 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 			return test{
 				name: "return error when delete ExecContext returns error",
 				args: args{
-					ctx:   ctx,
+					ctx:   context.Background(),
 					metas: m,
 				},
 				fields: fields{
@@ -2459,13 +2338,9 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 				want: want{
 					err: err,
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			meta := new(metaVector)
 			meta.meta.Vector = []byte("0.1,0.2,0.9")
 			meta.podIPs = []podIP{
@@ -2480,7 +2355,7 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 			return test{
 				name: "return error when insert ExecContext returns error",
 				args: args{
-					ctx:   ctx,
+					ctx:   context.Background(),
 					metas: m,
 				},
 				fields: fields{
@@ -2560,13 +2435,9 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 				want: want{
 					err: err,
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			meta := new(metaVector)
 			meta.meta.Vector = []byte("0.1,0.2,0.9")
 			meta.podIPs = []podIP{
@@ -2581,7 +2452,7 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 			return test{
 				name: "return error when tx.Commit returns error",
 				args: args{
-					ctx:   ctx,
+					ctx:   context.Background(),
 					metas: m,
 				},
 				fields: fields{
@@ -2664,13 +2535,9 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 				want: want{
 					err: err,
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			meta := new(metaVector)
 			meta.meta.Vector = []byte("0.1,0.2,0.9")
 			meta.podIPs = []podIP{
@@ -2684,7 +2551,7 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 			return test{
 				name: "return nil when setMeta ends with success",
 				args: args{
-					ctx:   ctx,
+					ctx:   context.Background(),
 					metas: m,
 				},
 				fields: fields{
@@ -2765,9 +2632,6 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 					},
 				},
 				want: want{},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 	}
@@ -2829,12 +2693,11 @@ func Test_mySQLClient_deleteMeta(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.ErrMySQLConnectionClosed
 			return test{
 				name: "return error when MySQL connection is closed",
 				args: args{
-					ctx: ctx,
+					ctx: context.Background(),
 					val: "vald-01",
 				},
 				fields: fields{
@@ -2846,18 +2709,14 @@ func Test_mySQLClient_deleteMeta(t *testing.T) {
 				want: want{
 					err: err,
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.New("Begin error")
 			return test{
 				name: "return error when session.Begin returns error",
 				args: args{
-					ctx: ctx,
+					ctx: context.Background(),
 					val: "vald-01",
 				},
 				fields: fields{
@@ -2874,18 +2733,14 @@ func Test_mySQLClient_deleteMeta(t *testing.T) {
 				want: want{
 					err: err,
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.ErrMySQLTransactionNotCreated
 			return test{
 				name: "return error when transacton is nil",
 				args: args{
-					ctx: ctx,
+					ctx: context.Background(),
 					val: "vald-01",
 				},
 				fields: fields{
@@ -2902,18 +2757,14 @@ func Test_mySQLClient_deleteMeta(t *testing.T) {
 				want: want{
 					err: err,
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.New("metaVectorTableName error")
 			return test{
 				name: "return error when DeleteFromFunc(metaVectorTableName) returns error",
 				args: args{
-					ctx: ctx,
+					ctx: context.Background(),
 					val: "vald-01",
 				},
 				fields: fields{
@@ -2953,18 +2804,14 @@ func Test_mySQLClient_deleteMeta(t *testing.T) {
 				want: want{
 					err: err,
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.New("podIPTableNmae error")
 			return test{
 				name: "return error when DeleteFromFunc(podIPTableNmae) returns error",
 				args: args{
-					ctx: ctx,
+					ctx: context.Background(),
 					val: "vald-01",
 				},
 				fields: fields{
@@ -3004,17 +2851,13 @@ func Test_mySQLClient_deleteMeta(t *testing.T) {
 				want: want{
 					err: err,
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			return test{
 				name: "return nil when no error occurs",
 				args: args{
-					ctx: ctx,
+					ctx: context.Background(),
 					val: "vald-01",
 				},
 				fields: fields{
@@ -3049,9 +2892,6 @@ func Test_mySQLClient_deleteMeta(t *testing.T) {
 					},
 				},
 				want: want{},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 	}
@@ -3113,11 +2953,10 @@ func Test_mySQLClient_DeleteMeta(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			return test{
 				name: "return nil when deleteMeta success with empty-uuid",
 				args: args{
-					ctx:  ctx,
+					ctx:  context.Background(),
 					uuid: "",
 				},
 				fields: fields{
@@ -3152,17 +2991,13 @@ func Test_mySQLClient_DeleteMeta(t *testing.T) {
 					},
 				},
 				want: want{},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			return test{
 				name: "return nil when deleteMeta success with uuid",
 				args: args{
-					ctx:  ctx,
+					ctx:  context.Background(),
 					uuid: "vald-01",
 				},
 				fields: fields{
@@ -3197,9 +3032,6 @@ func Test_mySQLClient_DeleteMeta(t *testing.T) {
 					},
 				},
 				want: want{},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 	}
@@ -3261,11 +3093,10 @@ func Test_mySQLClient_DeleteMetas(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			return test{
 				name: "return nil when deleteMetas success with empty uuids",
 				args: args{
-					ctx:   ctx,
+					ctx:   context.Background(),
 					uuids: []string{},
 				},
 				fields: fields{
@@ -3300,17 +3131,13 @@ func Test_mySQLClient_DeleteMetas(t *testing.T) {
 					},
 				},
 				want: want{},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			return test{
 				name: "return nil when deleteMetas success with uuids",
 				args: args{
-					ctx: ctx,
+					ctx: context.Background(),
 					uuids: []string{
 						"vald-01",
 						"vald-02",
@@ -3348,9 +3175,6 @@ func Test_mySQLClient_DeleteMetas(t *testing.T) {
 					},
 				},
 				want: want{},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 	}
@@ -3413,12 +3237,11 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.ErrMySQLConnectionClosed
 			return test{
 				name: "return error when MySQL connection is closed",
 				args: args{
-					ctx:  ctx,
+					ctx:  context.Background(),
 					uuid: "vald-01",
 					ips: []string{
 						"192.168.1.1",
@@ -3434,18 +3257,14 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 				want: want{
 					err: err,
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.New("session.Begin error")
 			return test{
 				name: "return error when session.Begin returns error",
 				args: args{
-					ctx:  ctx,
+					ctx:  context.Background(),
 					uuid: "vald-01",
 					ips: []string{
 						"192.168.1.1",
@@ -3466,18 +3285,14 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 				want: want{
 					err: err,
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.New("LoadContext error")
 			return test{
 				name: "return error when select LoadContext returns error",
 				args: args{
-					ctx:  ctx,
+					ctx:  context.Background(),
 					uuid: "vald-01",
 					ips: []string{
 						"192.168.1.1",
@@ -3530,17 +3345,13 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 				want: want{
 					err: err,
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			return test{
 				name: "return error when element not found by uuid",
 				args: args{
-					ctx:  ctx,
+					ctx:  context.Background(),
 					uuid: "vald-01",
 					ips: []string{
 						"192.168.1.1",
@@ -3592,18 +3403,14 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 				want: want{
 					err: errors.ErrRequiredElementNotFoundByUUID("vald-01"),
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.New("ExecContext error")
 			return test{
 				name: "return error when InsertInto.ExecContext returns error",
 				args: args{
-					ctx:  ctx,
+					ctx:  context.Background(),
 					uuid: "vald-01",
 					ips: []string{
 						"192.168.1.1",
@@ -3669,17 +3476,13 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 				want: want{
 					err: err,
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			return test{
 				name: "return nil when setIPs success",
 				args: args{
-					ctx:  ctx,
+					ctx:  context.Background(),
 					uuid: "vald-01",
 					ips: []string{
 						"192.168.1.1",
@@ -3743,9 +3546,6 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 					},
 				},
 				want: want{},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 	}
@@ -3807,12 +3607,11 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.ErrMySQLConnectionClosed
 			return test{
 				name: "return error when MySQL connection is closed",
 				args: args{
-					ctx: ctx,
+					ctx: context.Background(),
 					ips: []string{
 						"192.168.1.1",
 						"192.168.1.2",
@@ -3827,18 +3626,14 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 				want: want{
 					err: err,
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.New("session.Begin error")
 			return test{
 				name: "return error when session.Begin returns error",
 				args: args{
-					ctx: ctx,
+					ctx: context.Background(),
 					ips: []string{
 						"192.168.1.1",
 						"192.168.1.2",
@@ -3858,18 +3653,14 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 				want: want{
 					err: err,
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.New("ExecContext error")
 			return test{
 				name: "return error when delete.ExecContext returns error",
 				args: args{
-					ctx: ctx,
+					ctx: context.Background(),
 					ips: []string{
 						"192.168.1.1",
 						"192.168.1.2",
@@ -3909,17 +3700,13 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 				want: want{
 					err: err,
 				},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			return test{
 				name: "return nil when removeIPs success",
 				args: args{
-					ctx: ctx,
+					ctx: context.Background(),
 					ips: []string{
 						"192.168.1.1",
 						"192.168.1.2",
@@ -3957,9 +3744,6 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 					},
 				},
 				want: want{},
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 	}

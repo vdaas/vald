@@ -375,17 +375,17 @@ func (m *mySQLClient) deleteMeta(ctx context.Context, val interface{}) error {
 	return tx.Commit()
 }
 
-// DeleteMeta deletes metadata from meta_vector and podIPs from pod_ip using by input meta's uuid
+// DeleteMeta deletes metadata from meta_vector table and podIPs from pod_ip table using meta's uuid.
 func (m *mySQLClient) DeleteMeta(ctx context.Context, uuid string) error {
 	return m.deleteMeta(ctx, uuid)
 }
 
-// DeleteMetas deletes multiple metadata and podIPs using input the metas' uuid list same as DeleteMeta()
+// DeleteMetas is the same as DeleteMeta() but it deletes multiple records.
 func (m *mySQLClient) DeleteMetas(ctx context.Context, uuids ...string) error {
 	return m.deleteMeta(ctx, uuids)
 }
 
-// SetIPs sets the podIPs into database using by input of the meta vectors' uuid and the podips
+// SetIPs insert the vector's uuid and the podIPs into database.
 func (m *mySQLClient) SetIPs(ctx context.Context, uuid string, ips ...string) error {
 	if !m.connected.Load().(bool) {
 		return errors.ErrMySQLConnectionClosed
@@ -418,7 +418,7 @@ func (m *mySQLClient) SetIPs(ctx context.Context, uuid string, ips ...string) er
 	return tx.Commit()
 }
 
-// RemoveIPs delete the podIPs from database using by input of the podips
+// RemoveIPs delete the podIPs from database by podIPs.
 func (m *mySQLClient) RemoveIPs(ctx context.Context, ips ...string) error {
 	if !m.connected.Load().(bool) {
 		return errors.ErrMySQLConnectionClosed
