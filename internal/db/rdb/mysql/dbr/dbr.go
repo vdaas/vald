@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+
 package dbr
 
 import (
@@ -35,7 +36,7 @@ type (
 
 type db struct{}
 
-// New returns the new db struct
+// New returns the new db struct.
 func New() DBR {
 	return new(db)
 }

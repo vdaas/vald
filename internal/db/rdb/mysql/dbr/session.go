@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+
 package dbr
 
 import (
@@ -33,7 +34,7 @@ type session struct {
 	*dbr.Session
 }
 
-// NewNNewSession creates the session with event and returns the Session interface.
+// NewSession creates the session with event and returns the Session interface.
 func NewSession(conn Connection, event EventReceiver) Session {
 	return conn.NewSession(event)
 }
