@@ -295,51 +295,71 @@ func WithRetryPolicyNumRetries(n int) Option {
 	}
 }
 
+// WithRetryPolicyMinDuration returns the option to set the retry min duration
 func WithRetryPolicyMinDuration(minDuration string) Option {
 	return func(c *client) error {
+		if len(minDuration) == 0 {
+			return errors.NewErrInvalidOption("retryPolicyMinDuration", minDuration)
+		}
 		d, err := timeutil.Parse(minDuration)
 		if err != nil {
-			return err
+			return errors.NewErrCriticalOption("retryPolicyMinDuration", minDuration, err)
 		}
 		c.retryPolicy.minDuration = d
 		return nil
 	}
 }
 
+// WithRetryPolicyMaxDuration returns the option to set the retry max duration
 func WithRetryPolicyMaxDuration(maxDuration string) Option {
 	return func(c *client) error {
+		if len(maxDuration) == 0 {
+			return errors.NewErrInvalidOption("retryPolicyMaxDuration", maxDuration)
+		}
 		d, err := timeutil.Parse(maxDuration)
 		if err != nil {
-			return err
+			return errors.NewErrCriticalOption("retryPolicyMaxDuration", maxDuration, err)
 		}
 		c.retryPolicy.maxDuration = d
 		return nil
 	}
 }
 
+// WithReconnectionPolicyInitialInterval returns the option to set the reconnect initial interval
 func WithReconnectionPolicyInitialInterval(initialInterval string) Option {
 	return func(c *client) error {
+		if len(initialInterval) == 0 {
+			return errors.NewErrInvalidOption("reconnectionPolicyInitialInterval", initialInterval)
+		}
 		d, err := timeutil.Parse(initialInterval)
 		if err != nil {
-			return err
+			return errors.NewErrCriticalOption("reconnectionPolicyInitialInterval", initialInterval, err)
 		}
 		c.reconnectionPolicy.initialInterval = d
 		return nil
 	}
 }
 
+// WithReconnectionPolicyMaxRetries returns the option to set the reconnect max retries
 func WithReconnectionPolicyMaxRetries(maxRetries int) Option {
 	return func(c *client) error {
+		if maxRetries < 0 {
+			return errors.NewErrInvalidOption("maxRetries", maxRetries)
+		}
 		c.reconnectionPolicy.maxRetries = maxRetries
 		return nil
 	}
 }
 
+// WithSocketKeepalive returns the option to set the socket keepalive time
 func WithSocketKeepalive(socketKeepalive string) Option {
 	return func(c *client) error {
+		if len(socketKeepalive) == 0 {
+			return errors.NewErrInvalidOption("socketKeepalive", socketKeepalive)
+		}
 		d, err := timeutil.Parse(socketKeepalive)
 		if err != nil {
-			return err
+			return errors.NewErrCriticalOption("socketKeepalive", socketKeepalive, err)
 		}
 		c.socketKeepalive = d
 		return nil
