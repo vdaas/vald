@@ -135,6 +135,81 @@ cmd/gateway/vald/vald: \
 	    -o $@ \
 	    $(dir $@)main.go
 
+cmd/gateway/lb/lb: \
+	$(GO_SOURCES_INTERNAL) \
+	$(PBGOS) \
+	$(shell find ./cmd/gateway/lb -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find ./pkg/gateway/lb -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	export CGO_ENABLED=1 \
+	    && export GO111MODULE=on \
+	    && go build \
+	    --ldflags "-s -w -linkmode 'external' \
+	    -extldflags '-static' \
+	    -X '$(GOPKG)/internal/info.Version=$(VERSION)' \
+	    -X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+	    -X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
+	    -X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
+	    -X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
+	    -X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
+	    -X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
+	    -X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)'" \
+	    -a \
+	    -tags netgo \
+	    -installsuffix netgo \
+	    -trimpath \
+	    -o $@ \
+	    $(dir $@)main.go
+
+cmd/gateway/meta/meta: \
+	$(GO_SOURCES_INTERNAL) \
+	$(PBGOS) \
+	$(shell find ./cmd/gateway/meta -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find ./pkg/gateway/meta -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	export CGO_ENABLED=1 \
+	    && export GO111MODULE=on \
+	    && go build \
+	    --ldflags "-s -w -linkmode 'external' \
+	    -extldflags '-static' \
+	    -X '$(GOPKG)/internal/info.Version=$(VERSION)' \
+	    -X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+	    -X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
+	    -X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
+	    -X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
+	    -X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
+	    -X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
+	    -X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)'" \
+	    -a \
+	    -tags netgo \
+	    -installsuffix netgo \
+	    -trimpath \
+	    -o $@ \
+	    $(dir $@)main.go
+
+cmd/gateway/backup/backup: \
+	$(GO_SOURCES_INTERNAL) \
+	$(PBGOS) \
+	$(shell find ./cmd/gateway/backup -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find ./pkg/gateway/backup -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	export CGO_ENABLED=1 \
+	    && export GO111MODULE=on \
+	    && go build \
+	    --ldflags "-s -w -linkmode 'external' \
+	    -extldflags '-static' \
+	    -X '$(GOPKG)/internal/info.Version=$(VERSION)' \
+	    -X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+	    -X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
+	    -X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
+	    -X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
+	    -X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
+	    -X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
+	    -X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)'" \
+	    -a \
+	    -tags netgo \
+	    -installsuffix netgo \
+	    -trimpath \
+	    -o $@ \
+	    $(dir $@)main.go
+
 cmd/meta/redis/meta: \
 	$(GO_SOURCES_INTERNAL) \
 	$(PBGOS) \

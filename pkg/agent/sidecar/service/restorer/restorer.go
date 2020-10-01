@@ -112,15 +112,14 @@ func (r *restorer) startRestore(ctx context.Context) (<-chan error, error) {
 		return ech, err
 	}
 
-	restore := func() (interface{}, error) {
+	restore := func() (interface{},bool, error) {
 		err := r.restore(ctx)
 		if err != nil {
 			log.Errorf("restoring failed: %s", err)
-
-			return nil, err
+			return nil, true, err
 		}
 
-		return nil, nil
+		return nil, false, nil
 	}
 
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
@@ -132,7 +131,7 @@ func (r *restorer) startRestore(ctx context.Context) (<-chan error, error) {
 
 			_, err = b.Do(ctx, restore)
 		} else {
-			_, err = restore()
+			_, _, err = restore()
 		}
 
 		if err != nil {

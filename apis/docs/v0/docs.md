@@ -19,9 +19,6 @@
 - [apis/proto/filter/egress/egress_filter.proto](#apis/proto/filter/egress/egress_filter.proto)
     - [EgressFilter](#egress_filter.EgressFilter)
   
-- [apis/proto/filter/ingress/ingress_filter.proto](#apis/proto/filter/ingress/ingress_filter.proto)
-    - [IngressFilter](#ingress_filter.IngressFilter)
-  
 - [apis/proto/gateway/vald/vald.proto](#apis/proto/gateway/vald/vald.proto)
     - [Vald](#vald.Vald)
   
@@ -268,35 +265,6 @@
 | ----------- | ------------ | ------------- | ------------|
 | Filter | [.payload.Search.Response](#payload.Search.Response) | [.payload.Search.Response](#payload.Search.Response) |  |
 | StreamFilter | [.payload.Object.Distance](#payload.Object.Distance) stream | [.payload.Object.Distance](#payload.Object.Distance) stream |  |
-
- 
-
-
-
-<a name="apis/proto/filter/ingress/ingress_filter.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## apis/proto/filter/ingress/ingress_filter.proto
-
-
- 
-
- 
-
- 
-
-
-<a name="ingress_filter.IngressFilter"></a>
-
-### IngressFilter
-
-
-| Method Name | Request Type | Response Type | Description |
-| ----------- | ------------ | ------------- | ------------|
-| GenVector | [.payload.Object.Blob](#payload.Object.Blob) | [.payload.Object.Vector](#payload.Object.Vector) |  |
-| StreamGenVector | [.payload.Object.Blob](#payload.Object.Blob) stream | [.payload.Object.Vector](#payload.Object.Vector) stream |  |
-| FilterVector | [.payload.Object.Vector](#payload.Object.Vector) | [.payload.Object.Vector](#payload.Object.Vector) |  |
-| StreamFilterVector | [.payload.Object.Vector](#payload.Object.Vector) stream | [.payload.Object.Vector](#payload.Object.Vector) stream |  |
 
  
 
