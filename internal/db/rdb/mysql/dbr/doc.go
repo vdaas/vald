@@ -14,16 +14,6 @@
 // limitations under the License.
 //
 
-// Package mysql provides the functions for handling vald's data with MySQL.
-package mysql
-
-import "context"
-
-type Setter interface {
-	SetMeta(ctx context.Context, meta MetaVector) error
-	SetMetas(ctx context.Context, metas ...MetaVector) error
-	DeleteMeta(ctx context.Context, uuid string) error
-	DeleteMetas(ctx context.Context, uuids ...string) error
-	SetIPs(ctx context.Context, uuid string, ips ...string) error
-	RemoveIPs(ctx context.Context, ips ...string) error
-}
+// Package dbr provides the dbr functions for handling with databases.
+// This package is wrapping package of "https://github.com/gocraft/dbr/v2".
+package dbr
