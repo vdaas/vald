@@ -21,7 +21,7 @@ import (
 	"net/http"
 
 	"github.com/vdaas/vald/internal/net/http/routing"
-	"github.com/vdaas/vald/pkg/gateway/lb/handler/rest"
+	"github.com/vdaas/vald/pkg/gateway/backup/handler/rest"
 )
 
 type router struct {
