@@ -16,24 +16,27 @@
 package comparator
 
 import (
-	"sync/atomic"
-
 	"github.com/google/go-cmp/cmp"
-	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
 type (
-	atomicValue = atomic.Value
-	errorGroup  = errgroup.Group
+	/*
+		atomicValue = atomic.Value
+		errorGroup  = errgroup.Group
+	*/
 
 	Option = cmp.Option
 )
 
 var (
-	AllowUnexported = cmp.AllowUnexported
-	Comparer        = cmp.Comparer
-	Diff            = cmp.Diff
-	Equal           = cmp.Equal
+	AllowUnexported  = cmp.AllowUnexported
+	IgnoreUnexported = cmpopts.IgnoreUnexported
+	Comparer         = cmp.Comparer
+	Diff             = cmp.Diff
+	Equal            = cmp.Equal
+	IgnoreTypes      = cmpopts.IgnoreTypes
+	IgnoreFields     = cmpopts.IgnoreFields
 )
 
 /*
