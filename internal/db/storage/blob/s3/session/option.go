@@ -22,6 +22,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
+// Option represents the functional option for session.
 type Option func(s *sess) error
 
 var (
@@ -40,6 +41,7 @@ var (
 	}
 )
 
+// WithEndpoint returns the option to set the endpoint.
 func WithEndpoint(ep string) Option {
 	return func(s *sess) error {
 		if len(ep) == 0 {
@@ -50,6 +52,7 @@ func WithEndpoint(ep string) Option {
 	}
 }
 
+// WithRegion returns the option to set the region.
 func WithRegion(rg string) Option {
 	return func(s *sess) error {
 		if len(rg) == 0 {
@@ -60,6 +63,7 @@ func WithRegion(rg string) Option {
 	}
 }
 
+// WithAccessKey returns the option to set the accessKey.
 func WithAccessKey(ak string) Option {
 	return func(s *sess) error {
 		if len(ak) == 0 {
@@ -70,6 +74,7 @@ func WithAccessKey(ak string) Option {
 	}
 }
 
+// WithSecretAccessKey returns the option to set the secretAccessKey.
 func WithSecretAccessKey(sak string) Option {
 	return func(s *sess) error {
 		if len(sak) == 0 {
@@ -80,6 +85,7 @@ func WithSecretAccessKey(sak string) Option {
 	}
 }
 
+// WithToken returns the option to set the token.
 func WithToken(tk string) Option {
 	return func(s *sess) error {
 		if len(tk) == 0 {
@@ -90,6 +96,7 @@ func WithToken(tk string) Option {
 	}
 }
 
+// WithMaxRetries returns the option to set the maxRetries.
 func WithMaxRetries(r int) Option {
 	return func(s *sess) error {
 		s.maxRetries = r
@@ -97,6 +104,7 @@ func WithMaxRetries(r int) Option {
 	}
 }
 
+// WithForcePathStyle returns the option to set the forcePathStyle.
 func WithForcePathStyle(enabled bool) Option {
 	return func(s *sess) error {
 		s.forcePathStyle = enabled
@@ -104,6 +112,7 @@ func WithForcePathStyle(enabled bool) Option {
 	}
 }
 
+// WithUseAccelerate returns the option to set the useAccelerate.
 func WithUseAccelerate(enabled bool) Option {
 	return func(s *sess) error {
 		s.useAccelerate = enabled
@@ -111,6 +120,7 @@ func WithUseAccelerate(enabled bool) Option {
 	}
 }
 
+// WithUseARNRegion returns the option to set the useARNRegion.
 func WithUseARNRegion(enabled bool) Option {
 	return func(s *sess) error {
 		s.useARNRegion = enabled
@@ -118,6 +128,7 @@ func WithUseARNRegion(enabled bool) Option {
 	}
 }
 
+// WithUseDualStack returns the option to set the useDualStack.
 func WithUseDualStack(enabled bool) Option {
 	return func(s *sess) error {
 		s.useDualStack = enabled
@@ -125,6 +136,7 @@ func WithUseDualStack(enabled bool) Option {
 	}
 }
 
+// WithEnableSSL returns the option to set the enableSSL.
 func WithEnableSSL(enabled bool) Option {
 	return func(s *sess) error {
 		s.enableSSL = enabled
@@ -132,6 +144,7 @@ func WithEnableSSL(enabled bool) Option {
 	}
 }
 
+// WithEnableParamValidation returns the option to set the enableParamValidation.
 func WithEnableParamValidation(enabled bool) Option {
 	return func(s *sess) error {
 		s.enableParamValidation = enabled
@@ -139,6 +152,7 @@ func WithEnableParamValidation(enabled bool) Option {
 	}
 }
 
+// WithEnable100Continue returns the option to set the enable100Continue.
 func WithEnable100Continue(enabled bool) Option {
 	return func(s *sess) error {
 		s.enable100Continue = enabled
@@ -146,6 +160,7 @@ func WithEnable100Continue(enabled bool) Option {
 	}
 }
 
+// WithEnableContentMD5Validation returns the option to set the enableContentMD5Validation.
 func WithEnableContentMD5Validation(enabled bool) Option {
 	return func(s *sess) error {
 		s.enableContentMD5Validation = enabled
@@ -153,6 +168,7 @@ func WithEnableContentMD5Validation(enabled bool) Option {
 	}
 }
 
+// WithEnableEndpointDiscovery returns the option to set the enableEndpointDiscovery.
 func WithEnableEndpointDiscovery(enabled bool) Option {
 	return func(s *sess) error {
 		s.enableEndpointDiscovery = enabled
@@ -160,6 +176,7 @@ func WithEnableEndpointDiscovery(enabled bool) Option {
 	}
 }
 
+// WithEnableEndpointHostPrefix returns the option to set the enableEndpointHostPrefix.
 func WithEnableEndpointHostPrefix(enabled bool) Option {
 	return func(s *sess) error {
 		s.enableEndpointHostPrefix = enabled
@@ -167,6 +184,7 @@ func WithEnableEndpointHostPrefix(enabled bool) Option {
 	}
 }
 
+// WithHTTPClient returns the option to set the client.
 func WithHTTPClient(client *http.Client) Option {
 	return func(s *sess) error {
 		if client == nil {
