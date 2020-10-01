@@ -145,7 +145,7 @@ cmd/gateway/lb/lb: \
 	$(shell find ./pkg/gateway/lb -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	export CGO_ENABLED=1 \
 	    && export GO111MODULE=on \
-	    && GOPRIVATE=$(GOPKG) go build \
+	    && go build \
 	    --ldflags "-s -w -linkmode 'external' \
 	    -extldflags '-static' \
 	    -X '$(GOPKG)/internal/info.Version=$(VERSION)' \
@@ -170,7 +170,7 @@ cmd/gateway/meta/meta: \
 	$(shell find ./pkg/gateway/meta -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	export CGO_ENABLED=1 \
 	    && export GO111MODULE=on \
-	    && GOPRIVATE=$(GOPKG) go build \
+	    && go build \
 	    --ldflags "-s -w -linkmode 'external' \
 	    -extldflags '-static' \
 	    -X '$(GOPKG)/internal/info.Version=$(VERSION)' \
@@ -195,7 +195,7 @@ cmd/gateway/backup/backup: \
 	$(shell find ./pkg/gateway/backup -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	export CGO_ENABLED=1 \
 	    && export GO111MODULE=on \
-	    && GOPRIVATE=$(GOPKG) go build \
+	    && go build \
 	    --ldflags "-s -w -linkmode 'external' \
 	    -extldflags '-static' \
 	    -X '$(GOPKG)/internal/info.Version=$(VERSION)' \

@@ -35,6 +35,9 @@ COPY apis/grpc .
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/pkg/${PKG}
 COPY pkg/${PKG} .
 
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/pkg/gateway/tool
+COPY pkg/gateway/tool .
+
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/cmd/${PKG}
 COPY cmd/${PKG} .
 
