@@ -21,6 +21,9 @@ binary/build: \
 	cmd/agent/sidecar/sidecar \
 	cmd/discoverer/k8s/discoverer \
 	cmd/gateway/vald/vald \
+	cmd/gateway/lb/lb \
+	cmd/gateway/meta/meta \
+	cmd/gateway/backup/backup \
 	cmd/meta/redis/meta \
 	cmd/meta/cassandra/meta \
 	cmd/manager/backup/mysql/backup \
@@ -417,6 +420,9 @@ binary/build/zip: \
 	artifacts/vald-agent-sidecar-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-discoverer-k8s-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-gateway-$(GOOS)-$(GOARCH).zip \
+	artifacts/vald-gateway-lb-$(GOOS)-$(GOARCH).zip \
+	artifacts/vald-gateway-meta-$(GOOS)-$(GOARCH).zip \
+	artifacts/vald-gateway-backup-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-meta-redis-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-meta-cassandra-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-manager-backup-mysql-$(GOOS)-$(GOARCH).zip \
@@ -437,6 +443,18 @@ artifacts/vald-discoverer-k8s-$(GOOS)-$(GOARCH).zip: cmd/discoverer/k8s/discover
 	zip --junk-paths $@ $<
 
 artifacts/vald-gateway-$(GOOS)-$(GOARCH).zip: cmd/gateway/vald/vald
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+
+artifacts/vald-gateway-lb-$(GOOS)-$(GOARCH).zip: cmd/gateway/lb/lb
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+
+artifacts/vald-gateway-meta-$(GOOS)-$(GOARCH).zip: cmd/gateway/meta/meta
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+
+artifacts/vald-gateway-backup-$(GOOS)-$(GOARCH).zip: cmd/gateway/backup/backup
 	$(call mkdir, $(dir $@))
 	zip --junk-paths $@ $<
 
