@@ -917,6 +917,17 @@ func TestWithConsistency(t *testing.T) {
 			},
 		},
 		{
+			name: "set consistency level success with complex string",
+			args: args{
+				consistency: "-One_",
+			},
+			want: want{
+				obj: &T{
+					consistency: gocql.One,
+				},
+			},
+		},
+		{
 			name: "return error when consistency is empty",
 			args: args{
 				consistency: "",
@@ -994,6 +1005,17 @@ func TestWithSerialConsistency(t *testing.T) {
 			name: "set serial consistency level success",
 			args: args{
 				consistency: "serial",
+			},
+			want: want{
+				obj: &T{
+					serialConsistency: gocql.Serial,
+				},
+			},
+		},
+		{
+			name: "set serial consistency level success with complex string",
+			args: args{
+				consistency: "-serial_",
 			},
 			want: want{
 				obj: &T{
