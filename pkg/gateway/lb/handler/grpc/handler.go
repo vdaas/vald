@@ -35,8 +35,8 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/pkg/gateway/internal/location"
 	"github.com/vdaas/vald/pkg/gateway/lb/service"
-	"github.com/vdaas/vald/pkg/gateway/tool/location"
 )
 
 type server struct {
