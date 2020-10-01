@@ -21,7 +21,7 @@ import (
 	"context"
 	"reflect"
 
-	gmeta "github.com/vdaas/vald/apis/grpc/meta"
+	gmeta "github.com/vdaas/vald/apis/grpc/v1/meta"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/cache"
 	"github.com/vdaas/vald/internal/errors"
@@ -59,7 +59,7 @@ const (
 	metaCacheKeyPref = "meta-"
 )
 
-func NewMeta(opts ...Option) (mi Meta, err error) {
+func New(opts ...Option) (mi Meta, err error) {
 	m := new(meta)
 	for _, opt := range append(defaultOpts, opts...) {
 		if err = opt(m); err != nil {

@@ -18,7 +18,7 @@
 package grpc
 
 import (
-	"github.com/vdaas/vald/internal/client/gateway/vald"
+	"github.com/vdaas/vald/internal/client/v1/client/gateway/vald"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/pkg/gateway/meta/service"
 )

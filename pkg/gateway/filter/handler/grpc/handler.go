@@ -22,10 +22,10 @@ import (
 	"fmt"
 
 	"github.com/kpango/fuid"
-	"github.com/vdaas/vald/apis/grpc/gateway/filter"
+	"github.com/vdaas/vald/apis/grpc/v1/gateway/filter"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
-	client "github.com/vdaas/vald/internal/client/gateway/vald"
+	client "github.com/vdaas/vald/internal/client/v1/client/gateway/vald"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"

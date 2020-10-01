@@ -20,7 +20,7 @@ import (
 	"context"
 
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
-	client "github.com/vdaas/vald/internal/client/gateway/vald"
+	client "github.com/vdaas/vald/internal/client/v1/client/gateway/vald"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -72,7 +72,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	if addrs := cfg.Meta.Client.Addrs; len(addrs) == 0 {
 		return nil, errors.ErrInvalidMetaDataConfig
 	}
-	metadata, err = service.NewMeta(
+	metadata, err = service.New(
 		service.WithMetaAddr(cfg.Meta.Client.Addrs[0]),
 		service.WithMetaClient(
 			grpc.New(metadataClientOptions...),

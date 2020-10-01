@@ -20,7 +20,7 @@ import (
 	"context"
 
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
-	client "github.com/vdaas/vald/internal/client/gateway/vald"
+	client "github.com/vdaas/vald/internal/client/v1/client/gateway/vald"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"

@@ -114,10 +114,16 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 		}
 		return nil, status.WrapWithInvalidArgument("Search API invalid vector argument", err, req, info.Get())
 	}
-	return s.search(ctx, req.GetConfig(),
-		func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
-			return vc.Search(ctx, req, copts...)
-		})
+	res, err = s.search(ctx, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+		return vc.Search(ctx, req, copts...)
+	})
+	if err != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
+		return nil, status.WrapWithInternal("Search API failed to process search request", err, req, info.Get())
+	}
+	return res, nil
 }
 
 func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) (
@@ -458,7 +464,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 			span.End()
 		}
 	}()
-	vecs := reqs.Requests
+	vecs := reqs.GetRequests()
 	ids := make([]string, 0, len(vecs))
 	for _, vec := range vecs {
 		uuid := vec.GetVector().GetId()
@@ -818,6 +824,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs 
 		return nil
 	})
 	if err != nil {
+		log.Debugf("Remove API failed to remove uuid:\t%s\terror:\t%s", id.GetId(), err.Error())
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
