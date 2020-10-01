@@ -68,8 +68,8 @@ jobs:
       uses: docker/login-action@v1
       with:
         registry: ghcr.io
-        username: ${{ secrets.DISPATCH_USER }}
-        password: ${{ secrets.DISPATCH_TOKEN }}
+        username: ${{ secrets.PACKAGE_USER }}
+        password: ${{ secrets.PACKAGE_TOKEN }}
     - name: Image name
       id: image_name
       run: |
