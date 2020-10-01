@@ -120,7 +120,7 @@ jobs:
         PLATFORMS: linux/amd64,linux/arm64
         BUILDER: ${{ steps.buildx.outputs.name }}
         CACHE_OPTS: "--cache-from=type=local,src=/tmp/.buildx-cache --cache-to=type=local,mode=max,dest=/tmp/.buildx-cache"
-        CACHE_OPTS_BASE: "--cache-from=type=local,src=/tmp/.buildx-cache-base --cache-to=type=local,mode=max,dest=/tmp/.buildx-cache-base"
+        CACHE_OPTS_BASE: "--cache-from=type=local,src=/tmp/.buildx-cache-base"
         LABEL_OPTS: "--label org.opencontainers.image.url=${{ github.event.repository.html_url }} --label org.opencontainers.image.source=${{ github.event.repository.html_url }} --label org.opencontainers.image.revision=${{ github.sha }}"
     - name: Initialize CodeQL
       if: startsWith( github.ref, 'refs/tags/')
