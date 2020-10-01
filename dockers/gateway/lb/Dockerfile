@@ -54,7 +54,7 @@ RUN make REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
 FROM ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
 LABEL maintainer "Vald team <vald@vdaas.org>"
 
-ENV APP_NAME vald
+ENV APP_NAME lb
 
 COPY --from=builder /usr/bin/${APP_NAME} /go/bin/${APP_NAME}
 
