@@ -21,7 +21,7 @@ import (
 	"context"
 
 	"github.com/vdaas/vald/apis/grpc/v1/gateway/vald"
-	"github.com/vdaas/vald/internal/client"
+	"github.com/vdaas/vald/internal/client/v1/v1/client"
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/net/grpc"
 )

@@ -21,7 +21,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/vdaas/vald/internal/client"
+	"github.com/vdaas/vald/internal/client/v1"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/http/json"
 )

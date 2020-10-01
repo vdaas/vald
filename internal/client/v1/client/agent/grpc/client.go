@@ -22,7 +22,7 @@ import (
 
 	agent "github.com/vdaas/vald/apis/grpc/v1/agent/core"
 	"github.com/vdaas/vald/apis/grpc/v1/gateway/vald"
-	"github.com/vdaas/vald/internal/client"
+	"github.com/vdaas/vald/internal/client/v1"
 	"github.com/vdaas/vald/internal/net/grpc"
 )
 
