@@ -34,6 +34,12 @@ type (
 
 	// EventReceiver is a type alias of dbr.EventReceiver.
 	EventReceiver = dbr.EventReceiver
+
+	// TracingEventReceiver is a type alias of dbr.TracingEventReceiver.
+	TracingEventReceiver = dbr.TracingEventReceiver
+
+	// NullEventReceiver is a type alias of dbr.NullEventReceiver.
+	NullEventReceiver = dbr.NullEventReceiver
 )
 
 type db struct{}
