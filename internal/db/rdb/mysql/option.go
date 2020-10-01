@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package mysql provides the functions for handling vald's data with MySQL.
 package mysql
 
 import (
