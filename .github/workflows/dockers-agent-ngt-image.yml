@@ -97,13 +97,13 @@ jobs:
       run: |
         make \
           DOCKER="docker buildx" \
-          DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS} --push" \
+          DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS} ${LABEL_OPTS} --push" \
           TAG="${PRIMARY_TAG}" \
           docker/build/agent-ngt
         make \
           REPO="ghcr.io/vdaas/vald" \
           DOCKER="docker buildx" \
-          DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS} --push" \
+          DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS} ${LABEL_OPTS} --push" \
           TAG="${PRIMARY_TAG}" \
           docker/build/agent-ngt
       env:
@@ -111,6 +111,7 @@ jobs:
         PLATFORMS: linux/amd64,linux/arm64
         BUILDER: ${{ steps.buildx.outputs.name }}
         CACHE_OPTS: "--cache-from=type=local,src=/tmp/.buildx-cache --cache-to=type=local,dest=/tmp/.buildx-cache"
+        LABEL_OPTS: "--label org.opencontainers.image.url=${{ github.event.repository.html_url }} --label org.opencontainers.image.source=${{ github.event.repository.html_url }} --label org.opencontainers.image.revision=${{ github.sha }}"
     - name: Initialize CodeQL
       if: startsWith( github.ref, 'refs/tags/')
       uses: github/codeql-action/init@v1
