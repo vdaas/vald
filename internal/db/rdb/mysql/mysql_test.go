@@ -950,10 +950,9 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 		uuid string
 	}
 	type fields struct {
-		session       dbr.Session
-		connected     atomic.Value
-		eventReceiver EventReceiver
-		dbr           dbr.DBR
+		session   dbr.Session
+		connected atomic.Value
+		dbr       dbr.DBR
 	}
 	type want struct {
 		want []string
