@@ -13,6 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+
+// Package reader provides the reader functions for handling with s3.
+// This package is wrapping package of "https://github.com/aws/aws-sdk-go".
 package reader
 
 import (
@@ -36,7 +39,7 @@ func (m *MockS3API) GetObjectWithContext(ctx aws.Context, in *s3.GetObjectInput,
 	return m.GetObjectWithContextFunc(ctx, in, opts...)
 }
 
-// MockIO represents mock for io.IO
+// MockIO represents mock for io.IO.
 type MockIO struct {
 	NewReaderWithContextFunc     func(ctx context.Context, r io.Reader) (io.Reader, error)
 	NewReadCloserWithContextFunc func(ctx context.Context, r io.ReadCloser) (io.ReadCloser, error)
