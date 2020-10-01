@@ -25,6 +25,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/vdaas/vald/internal/db/storage/blob"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/reader"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/writer"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
@@ -135,50 +137,20 @@ func Test_client_Open(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		       },
-		       fields: fields {
-		           eg: nil,
-		           session: nil,
-		           service: nil,
-		           bucket: "",
-		           maxPartSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           },
-		           fields: fields {
-		           eg: nil,
-		           session: nil,
-		           service: nil,
-		           bucket: "",
-		           maxPartSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns nil",
+			args: args{
+				ctx: context.Background(),
+			},
+			want: want{
+				err: nil,
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -200,7 +172,6 @@ func Test_client_Open(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -231,44 +202,17 @@ func Test_client_Close(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           eg: nil,
-		           session: nil,
-		           service: nil,
-		           bucket: "",
-		           maxPartSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           eg: nil,
-		           session: nil,
-		           service: nil,
-		           bucket: "",
-		           maxPartSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns nil",
+			want: want{
+				err: nil,
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -290,7 +234,6 @@ func Test_client_Close(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -306,6 +249,7 @@ func Test_client_Reader(t *testing.T) {
 		service     *s3.S3
 		bucket      string
 		maxPartSize int64
+		readWriter  readWriter
 	}
 	type want struct {
 		want io.ReadCloser
@@ -330,52 +274,62 @@ func Test_client_Reader(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           key: "",
-		       },
-		       fields: fields {
-		           eg: nil,
-		           session: nil,
-		           service: nil,
-		           bucket: "",
-		           maxPartSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			r := &MockReader{
+				OpenFunc: func(ctx context.Context) error {
+					return nil
+				},
+			}
+			return test{
+				name: "returns (ReadCloser, nil) when Open successes",
+				args: args{
+					ctx: context.Background(),
+					key: "key",
+				},
+				fields: fields{
+					readWriter: &MockRW{
+						NewReaderFunc: func(opts ...reader.Option) reader.Reader {
+							return r
+						},
+					},
+				},
+				want: want{
+					want: r,
+					err:  nil,
+				},
+			}
+		}(),
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           key: "",
-		           },
-		           fields: fields {
-		           eg: nil,
-		           session: nil,
-		           service: nil,
-		           bucket: "",
-		           maxPartSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			r := &MockReader{
+				OpenFunc: func(ctx context.Context) error {
+					return errors.New("err")
+				},
+			}
+			return test{
+				name: "returns (ReadCloser, error) when Open fails",
+				args: args{
+					ctx: context.Background(),
+					key: "key",
+				},
+				fields: fields{
+					readWriter: &MockRW{
+						NewReaderFunc: func(opts ...reader.Option) reader.Reader {
+							return r
+						},
+					},
+				},
+				want: want{
+					want: r,
+					err:  errors.New("err"),
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -391,13 +345,13 @@ func Test_client_Reader(t *testing.T) {
 				service:     test.fields.service,
 				bucket:      test.fields.bucket,
 				maxPartSize: test.fields.maxPartSize,
+				readWriter:  test.fields.readWriter,
 			}
 
 			got, err := c.Reader(test.args.ctx, test.args.key)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -413,6 +367,7 @@ func Test_client_Writer(t *testing.T) {
 		service     *s3.S3
 		bucket      string
 		maxPartSize int64
+		readWriter  readWriter
 	}
 	type want struct {
 		want io.WriteCloser
@@ -437,52 +392,62 @@ func Test_client_Writer(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           key: "",
-		       },
-		       fields: fields {
-		           eg: nil,
-		           session: nil,
-		           service: nil,
-		           bucket: "",
-		           maxPartSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			w := &MockWriter{
+				OpenFunc: func(ctx context.Context) error {
+					return nil
+				},
+			}
+			return test{
+				name: "returns (ReadCloser, nil) when Open successes",
+				args: args{
+					ctx: context.Background(),
+					key: "key",
+				},
+				fields: fields{
+					readWriter: &MockRW{
+						NewWriterFunc: func(opts ...writer.Option) writer.Writer {
+							return w
+						},
+					},
+				},
+				want: want{
+					want: w,
+					err:  nil,
+				},
+			}
+		}(),
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           key: "",
-		           },
-		           fields: fields {
-		           eg: nil,
-		           session: nil,
-		           service: nil,
-		           bucket: "",
-		           maxPartSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			w := &MockWriter{
+				OpenFunc: func(ctx context.Context) error {
+					return errors.New("err")
+				},
+			}
+			return test{
+				name: "returns (WriteCloser, error) when Open fails",
+				args: args{
+					ctx: context.Background(),
+					key: "key",
+				},
+				fields: fields{
+					readWriter: &MockRW{
+						NewWriterFunc: func(opts ...writer.Option) writer.Writer {
+							return w
+						},
+					},
+				},
+				want: want{
+					want: w,
+					err:  errors.New("err"),
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -498,13 +463,13 @@ func Test_client_Writer(t *testing.T) {
 				service:     test.fields.service,
 				bucket:      test.fields.bucket,
 				maxPartSize: test.fields.maxPartSize,
+				readWriter:  test.fields.readWriter,
 			}
 
 			got, err := c.Writer(test.args.ctx, test.args.key)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

@@ -31,6 +31,25 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
+type readWriter interface {
+	NewReader(opts ...reader.Option) reader.Reader
+	NewWriter(opts ...writer.Option) writer.Writer
+}
+
+type rw struct{}
+
+func newRW() readWriter {
+	return new(rw)
+}
+
+func (*rw) NewReader(opts ...reader.Option) reader.Reader {
+	return reader.New(opts...)
+}
+
+func (*rw) NewWriter(opts ...writer.Option) writer.Writer {
+	return writer.New(opts...)
+}
+
 type client struct {
 	eg      errgroup.Group
 	session *session.Session
@@ -42,10 +61,15 @@ type client struct {
 
 	readerBackoffEnabled bool
 	readerBackoffOpts    []backoff.Option
+
+	readWriter readWriter
 }
 
+// New returns Bucket implementation.
 func New(opts ...Option) (blob.Bucket, error) {
-	c := new(client)
+	c := &client{
+		readWriter: newRW(),
+	}
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(c); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
@@ -57,16 +81,19 @@ func New(opts ...Option) (blob.Bucket, error) {
 	return c, nil
 }
 
+// Open method returns an error to align the interface, but it doesn't actually return an error.
 func (c *client) Open(ctx context.Context) (err error) {
 	return nil
 }
 
+// Close method returns an error to align the interface, but it doesn't actually return an error.
 func (c *client) Close() error {
 	return nil
 }
 
+// Reader creates s3 reader and calls reader.Open.
 func (c *client) Reader(ctx context.Context, key string) (io.ReadCloser, error) {
-	r := reader.New(
+	r := c.readWriter.NewReader(
 		reader.WithErrGroup(c.eg),
 		reader.WithService(c.service),
 		reader.WithBucket(c.bucket),
@@ -79,8 +106,9 @@ func (c *client) Reader(ctx context.Context, key string) (io.ReadCloser, error) 
 	return r, r.Open(ctx)
 }
 
+// Writer creates s3 writer and calls writer.Open.
 func (c *client) Writer(ctx context.Context, key string) (io.WriteCloser, error) {
-	w := writer.New(
+	w := c.readWriter.NewWriter(
 		writer.WithErrGroup(c.eg),
 		writer.WithService(c.service),
 		writer.WithBucket(c.bucket),
