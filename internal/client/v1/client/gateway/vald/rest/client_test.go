@@ -22,7 +22,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/vdaas/vald/internal/client/v1"
+	"github.com/vdaas/vald/internal/client/v1/client"
 	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
 )
