@@ -3,9 +3,9 @@ module github.com/vdaas/vald
 go 1.15
 
 replace (
-	cloud.google.com/go => cloud.google.com/go v0.66.0
+	cloud.google.com/go => cloud.google.com/go v0.67.0
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0+incompatible
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.34.32
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.35.0
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
@@ -23,7 +23,7 @@ replace (
 	github.com/hailocab/go-hostpool => github.com/monzo/go-hostpool v0.0.0-20200724120130-287edbb29340
 	github.com/klauspost/compress => github.com/klauspost/compress v1.11.1-0.20200920090307-06dfa05f3474
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.0+incompatible
-	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
+	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20200930160638-afb6bcd081ae
 	google.golang.org/grpc => google.golang.org/grpc v1.32.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.25.0
 	k8s.io/api => k8s.io/api v0.18.9
@@ -68,14 +68,15 @@ require (
 	go.opencensus.io v0.22.4
 	go.uber.org/automaxprocs v1.3.0
 	go.uber.org/goleak v1.1.10
-	golang.org/x/net v0.0.0-20200927032502-5d4f70055728
-	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
-	golang.org/x/sys v0.0.0-20200926100807-9d91bd62050c
+	golang.org/x/net v0.0.0-20200930145003-4acb6c075d10
+	golang.org/x/sync v0.0.0-20200930132711-30421366ff76
+	golang.org/x/sys v0.0.0-20200930185726-fdedc70b468f
+	golang.org/x/tools v0.0.0-20200930213115-e57f6d466a48 // indirect
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/plot v0.8.0
 	google.golang.org/api v0.32.0
-	google.golang.org/genproto v0.0.0-20200925023002-c2d885f95484
-	google.golang.org/grpc v1.31.1
+	google.golang.org/genproto v0.0.0-20200930140634-01fc692af84b
+	google.golang.org/grpc v1.32.0
 	gopkg.in/yaml.v2 v2.3.0
 	k8s.io/api v0.18.9
 	k8s.io/apimachinery v0.18.9

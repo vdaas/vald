@@ -24,6 +24,20 @@
         }
       }
     },
+    "SearchResponse": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string"
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ObjectDistance"
+          }
+        }
+      }
+    },
     "protobufAny": {
       "type": "object",
       "properties": {

@@ -114,9 +114,10 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 		}
 		return nil, status.WrapWithInvalidArgument("Search API invalid vector argument", err, req, info.Get())
 	}
-	res, err = s.search(ctx, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
-		return vc.Search(ctx, req, copts...)
-	})
+	res, err = s.search(ctx, req.GetConfig(),
+		func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+			return vc.Search(ctx, req, copts...)
+		})
 	if err != nil {
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
@@ -150,13 +151,20 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		}
 		return nil, status.WrapWithNotFound(fmt.Sprintf("SearchByID API uuid %s's object not found", req.GetId()), err, info.Get())
 	}
-	return s.search(ctx, req.GetConfig(),
+	res, err = s.search(ctx, req.GetConfig(),
 		func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
 			return vc.Search(ctx, &payload.Search_Request{
 				Vector: vec.GetVector(),
 				Config: req.GetConfig(),
 			}, copts...)
 		})
+	if err != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
+		return nil, status.WrapWithInternal("SearchByID API failed to process search request", err, req, info.Get())
+	}
+	return res, nil
 }
 
 func (s *server) search(ctx context.Context, cfg *payload.Search_Config,

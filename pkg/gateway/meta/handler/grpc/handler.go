@@ -263,7 +263,7 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 	return res, errs
 }
 
-func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *payload.Object_Location, err error) {
+func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".Insert")
 	defer func() {
 		if span != nil {
@@ -277,7 +277,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 		}
-		return nil, status.WrapWithInvalidArgument("Search API invalid vector argument", err, req, info.Get())
+		return nil, status.WrapWithInvalidArgument("Insert API invalid vector argument", err, req, info.Get())
 	}
 	if !req.GetConfig().GetSkipStrictExistCheck() {
 		exists, err := s.metadata.Exists(ctx, meta)
@@ -300,7 +300,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 	}
 	uuid := fuid.String()
 	req.Vector.Id = uuid
-	loc, err := s.gateway.Insert(ctx, req, s.copts...)
+	loc, err = s.gateway.Insert(ctx, req, s.copts...)
 	if err != nil {
 		err = errors.Wrapf(err, "Insert API (do multiple) failed to Insert uuid = %s\tmeta = %s\t info = %#v", uuid, meta, info.Get())
 		log.Debug(err)
@@ -311,6 +311,15 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 	}
 	err = s.metadata.SetUUIDandMeta(ctx, uuid, meta)
 	if err != nil {
+		_, rerr := s.gateway.Remove(ctx, &payload.Remove_Request{
+			Id: &payload.Object_ID{
+				Id: uuid,
+			},
+		})
+		if rerr != nil {
+			err = errors.Wrap(err, rerr.Error())
+		}
+		err = errors.Wrapf(err, "Insert API (meta.SetUUIDandMeta) failed to Register Metadata Vectors = %#v\t info = %#v", req, info.Get())
 		log.Debug(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
@@ -374,21 +383,35 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 
 	res, err = s.gateway.MultiInsert(ctx, reqs, s.copts...)
 	if err != nil {
+		err = errors.Wrapf(err, "MultiInsert API failed to Insert info = %#v", info.Get())
 		log.Debug(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal("got error from MultiInsert API", err, info.Get())
+		return nil, status.WrapWithInternal(fmt.Sprintf("MultiInsert API failed to Insert error = %s", err.Error()), err, info.Get())
 	}
 
 	err = s.metadata.SetUUIDandMetas(ctx, metaMap)
 	if err != nil {
+		removeList := make([]*payload.Remove_Request, 0, len(reqs.GetRequests()))
+		for _, req := range reqs.GetRequests() {
+			removeList = append(removeList, &payload.Remove_Request{
+				Id: &payload.Object_ID{
+					Id: req.GetVector().GetId(),
+				},
+			})
+		}
+		_, rerr := s.gateway.MultiRemove(ctx, &payload.Remove_MultiRequest{
+			Requests: removeList,
+		}, s.copts...)
+		if rerr != nil {
+			err = errors.Wrap(err, rerr.Error())
+		}
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("MultiInsert API failed SetUUIDandMetas %#v", metaMap), err, info.Get())
 	}
-
 	return res, nil
 }
 
@@ -413,7 +436,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("Update API failed request %#v", req), err, info.Get())
+		return nil, status.WrapWithInternal(fmt.Sprintf("Update API failed to insert data for update %#v", req), err, info.Get())
 	}
 	return res, nil
 }
@@ -462,7 +485,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("MultiUpdate API failed MultiUpdate request %#v", ids), err, info.Get())
 	}
-	return res, err
+	return res, nil
 }
 
 func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *payload.Object_Location, err error) {
@@ -497,7 +520,6 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 			},
 		})
 	}
-
 	if err != nil {
 		log.Debugf("Upsert API failed to process request uuid:\t%s\terror:\t%s", meta, err.Error())
 		if span != nil {
@@ -566,47 +588,43 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 	updateLocs := make([]*payload.Object_Location, 0, len(updateReqs))
 
 	eg, ectx := errgroup.New(ctx)
-	eg.Go(safety.RecoverFunc(func() error {
-		if len(updateReqs) <= 0 {
-			return nil
-		}
-
-		ectx, span := trace.StartSpan(ectx, apiName+".MultiUpsert/Go-MultiUpdate")
-		defer func() {
-			if span != nil {
-				span.End()
+	if len(updateReqs) <= 0 {
+		eg.Go(safety.RecoverFunc(func() error {
+			ectx, span := trace.StartSpan(ectx, apiName+".MultiUpsert/Go-MultiUpdate")
+			defer func() {
+				if span != nil {
+					span.End()
+				}
+			}()
+			var err error
+			loc, err := s.MultiUpdate(ectx, &payload.Update_MultiRequest{
+				Requests: updateReqs,
+			})
+			if err == nil {
+				updateLocs = loc.GetLocations()
 			}
-		}()
-		var err error
-		loc, err := s.MultiUpdate(ectx, &payload.Update_MultiRequest{
-			Requests: updateReqs,
-		})
-		if err == nil {
-			updateLocs = loc.GetLocations()
-		}
-		return err
-	}))
-	eg.Go(safety.RecoverFunc(func() error {
-		if len(insertReqs) <= 0 {
-			return nil
-		}
+			return err
+		}))
+	}
+	if len(insertReqs) <= 0 {
+		eg.Go(safety.RecoverFunc(func() error {
 
-		ectx, span := trace.StartSpan(ectx, apiName+".MultiUpsert/Go-MultiInsert")
-		defer func() {
-			if span != nil {
-				span.End()
+			ectx, span := trace.StartSpan(ectx, apiName+".MultiUpsert/Go-MultiInsert")
+			defer func() {
+				if span != nil {
+					span.End()
+				}
+			}()
+			var err error
+			loc, err := s.MultiInsert(ectx, &payload.Insert_MultiRequest{
+				Requests: insertReqs,
+			})
+			if err == nil {
+				insertLocs = loc.GetLocations()
 			}
-		}()
-		var err error
-		loc, err := s.MultiInsert(ectx, &payload.Insert_MultiRequest{
-			Requests: insertReqs,
-		})
-		if err == nil {
-			insertLocs = loc.GetLocations()
-		}
-		return err
-	}))
-
+			return err
+		}))
+	}
 	err = eg.Wait()
 	if err != nil {
 		log.Debugf("MultiUpsert API failed to process request uuids:\t%s\terror:\t%s", ids, err.Error())
@@ -621,7 +639,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 	}), nil
 }
 
-func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs *payload.Object_Location, err error) {
+func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".Remove")
 	defer func() {
 		if span != nil {
@@ -639,7 +657,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs 
 	}
 
 	req.Id.Id = uuid
-	locs, err = s.gateway.Remove(ctx, req, s.copts...)
+	loc, err = s.gateway.Remove(ctx, req, s.copts...)
 	if err != nil {
 		log.Debugf("Remove API failed to process request uuid:\t%s\terror:\t%s", meta, err.Error())
 		if span != nil {
@@ -655,7 +673,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs 
 		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("Remove API failed Delete metadata uuid = %s", uuid), err, info.Get())
 	}
-	return locs, nil
+	return loc, nil
 }
 
 func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) error {

@@ -53,7 +53,7 @@ type server struct {
 
 const apiName = "vald/gateway-filter"
 
-func New(opts ...Option) vald.Server {
+func New(opts ...Option) vald.ServerWithFilter {
 	s := new(server)
 
 	for _, opt := range append(defaultOpts, opts...) {

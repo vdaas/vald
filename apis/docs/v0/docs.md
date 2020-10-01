@@ -266,7 +266,7 @@
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| Filter | [.payload.Object.Distance](#payload.Object.Distance) | [.payload.Object.Distance](#payload.Object.Distance) |  |
+| Filter | [.payload.Search.Response](#payload.Search.Response) | [.payload.Search.Response](#payload.Search.Response) |  |
 | StreamFilter | [.payload.Object.Distance](#payload.Object.Distance) stream | [.payload.Object.Distance](#payload.Object.Distance) stream |  |
 
  

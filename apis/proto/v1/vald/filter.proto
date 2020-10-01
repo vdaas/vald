@@ -53,7 +53,6 @@ service Filter {
       post : "/update/object"
       body : "*"
     };
-
   }
   rpc StreamUpdateObject(stream payload.Object.Blob)
       returns (stream payload.Object.Location) {}
@@ -64,7 +63,6 @@ service Filter {
       post : "/upsert/object"
       body : "*"
     };
-
   }
   rpc StreamUpsertObject(stream payload.Object.Blob)
       returns (stream payload.Object.Location) {}

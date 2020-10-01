@@ -54,6 +54,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		cfg.IngressFilter.Client.Opts(),
 		grpc.WithErrGroup(eg),
 	)
+
 	egressFilterClientOptions := append(
 		cfg.EgressFilter.Client.Opts(),
 		grpc.WithErrGroup(eg),
@@ -65,26 +66,21 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		if err != nil {
 			return nil, err
 		}
-		metadataClientOptions = append(
-			metadataClientOptions,
+		egressFilterClientOptions = append(
+			egressFilterClientOptions,
+			grpc.WithDialOptions(
+				grpc.WithStatsHandler(metric.NewClientHandler()),
+			),
+		)
+		ingressFilterClientOptions = append(
+			ingressFilterClientOptions,
 			grpc.WithDialOptions(
 				grpc.WithStatsHandler(metric.NewClientHandler()),
 			),
 		)
 	}
-
-	if addrs := cfg.Meta.Client.Addrs; len(addrs) == 0 {
-		return nil, errors.ErrInvalidMetaDataConfig
-	}
-	metadata, err = service.NewMeta(
-		service.WithMetaAddr(cfg.Meta.Client.Addrs[0]),
-		service.WithMetaClient(
-			grpc.New(metadataClientOptions...),
-		),
-		service.WithMetaCacheEnabled(cfg.Meta.EnableCache),
-		service.WithMetaCacheExpireDuration(cfg.Meta.CacheExpiration),
-		service.WithMetaCacheExpiredCheckDuration(cfg.Meta.ExpiredCacheCheckDuration),
-	)
+	// TODO do initialize here
+	filter, err = service.New()
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +101,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	grpcServerOptions := []server.Option{
 		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
-			vald.RegisterValdServer(srv, v)
+			vald.RegisterValdServerWithFilter(srv, v)
 		}),
 		server.WithPreStopFunction(func() error {
 			// TODO notify another gateway and scheduler
@@ -151,7 +147,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		cfg:           cfg,
 		server:        srv,
 		observability: obs,
-		metadata:      metadata,
+		filter:        filter,
 	}, nil
 }
 
@@ -164,13 +160,13 @@ func (r *run) PreStart(ctx context.Context) error {
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 6)
-	var mech, sech, oech <-chan error
+	var fech, sech, oech <-chan error
 	var err error
 	if r.observability != nil {
 		oech = r.observability.Start(ctx)
 	}
-	if r.metadata != nil {
-		mech, err = r.metadata.Start(ctx)
+	if r.filter != nil {
+		fech, err = r.filter.Start(ctx)
 		if err != nil {
 			close(ech)
 			return nil, err
@@ -184,7 +180,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			case <-ctx.Done():
 				return ctx.Err()
 			case err = <-oech:
-			case err = <-mech:
+			case err = <-fech:
 			case err = <-sech:
 			}
 			if err != nil {
