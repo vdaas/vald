@@ -1836,340 +1836,223 @@ func TestWithSocketKeepalive(t *testing.T) {
 }
 
 func TestWithMaxPreparedStmts(t *testing.T) {
-	type T = interface{}
+	type T = client
 	type args struct {
 		maxPreparedStmts int
 	}
 	type want struct {
 		obj *T
-		// Uncomment this line if the option returns an error, otherwise delete it
-		// err error
+		err error
 	}
 	type test struct {
-		name string
-		args args
-		want want
-		// Use the first line if the option returns an error. otherwise use the second line
-		// checkFunc  func(want, *T, error) error
-		// checkFunc  func(want, *T) error
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
 
-	// Uncomment this block if the option returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T, err error) error {
-	       if !errors.Is(err, w.err) {
-	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-	       }
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
-	       }
-	       return nil
-	   }
-	*/
-
-	// Uncomment this block if the option do not returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T) error {
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
-	       }
-	       return nil
-	   }
-	*/
+	defaultCheckFunc := func(w want, obj *T, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+		}
+		return nil
+	}
 
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           maxPreparedStmts: 0,
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           maxPreparedStmts: 0,
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
+		{
+			name: "set maxPreparedStmts success",
+			args: args{
+				maxPreparedStmts: 4,
+			},
+			want: want{
+				obj: &T{
+					maxPreparedStmts: 4,
+				},
+			},
+		},
+		{
+			name: "return error when maxPreparedStmts < 0",
+			args: args{
+				maxPreparedStmts: -1,
+			},
+			want: want{
+				obj: &T{},
+				err: errors.NewErrInvalidOption("maxPreparedStmts", -1),
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
 
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-
-			   got := WithMaxPreparedStmts(test.args.maxPreparedStmts)
-			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-			   got := WithMaxPreparedStmts(test.args.maxPreparedStmts)
-			   obj := new(T)
-			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
+			got := WithMaxPreparedStmts(test.args.maxPreparedStmts)
+			obj := new(T)
+			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+				tt.Errorf("error = %v", err)
+			}
 		})
 	}
 }
 
 func TestWithMaxRoutingKeyInfo(t *testing.T) {
-	type T = interface{}
+	type T = client
 	type args struct {
 		maxRoutingKeyInfo int
 	}
 	type want struct {
 		obj *T
-		// Uncomment this line if the option returns an error, otherwise delete it
-		// err error
+		err error
 	}
 	type test struct {
-		name string
-		args args
-		want want
-		// Use the first line if the option returns an error. otherwise use the second line
-		// checkFunc  func(want, *T, error) error
-		// checkFunc  func(want, *T) error
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
 
-	// Uncomment this block if the option returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T, err error) error {
-	       if !errors.Is(err, w.err) {
-	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-	       }
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
-	       }
-	       return nil
-	   }
-	*/
-
-	// Uncomment this block if the option do not returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T) error {
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
-	       }
-	       return nil
-	   }
-	*/
+	defaultCheckFunc := func(w want, obj *T, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+		}
+		return nil
+	}
 
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           maxRoutingKeyInfo: 0,
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           maxRoutingKeyInfo: 0,
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
+		{
+			name: "set maxRoutingKeyInfo success",
+			args: args{
+				maxRoutingKeyInfo: 4,
+			},
+			want: want{
+				obj: &T{
+					maxRoutingKeyInfo: 4,
+				},
+			},
+		},
+		{
+			name: "return error when maxRoutingKeyInfo < 0",
+			args: args{
+				maxRoutingKeyInfo: -1,
+			},
+			want: want{
+				obj: &T{},
+				err: errors.NewErrInvalidOption("maxRoutingKeyInfo", -1),
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
 
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-
-			   got := WithMaxRoutingKeyInfo(test.args.maxRoutingKeyInfo)
-			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-			   got := WithMaxRoutingKeyInfo(test.args.maxRoutingKeyInfo)
-			   obj := new(T)
-			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
+			got := WithMaxRoutingKeyInfo(test.args.maxRoutingKeyInfo)
+			obj := new(T)
+			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+				tt.Errorf("error = %v", err)
+			}
 		})
 	}
 }
 
 func TestWithPageSize(t *testing.T) {
-	type T = interface{}
+	type T = client
 	type args struct {
 		pageSize int
 	}
 	type want struct {
 		obj *T
-		// Uncomment this line if the option returns an error, otherwise delete it
-		// err error
+		err error
 	}
 	type test struct {
-		name string
-		args args
-		want want
-		// Use the first line if the option returns an error. otherwise use the second line
-		// checkFunc  func(want, *T, error) error
-		// checkFunc  func(want, *T) error
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
 
-	// Uncomment this block if the option returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T, err error) error {
-	       if !errors.Is(err, w.err) {
-	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-	       }
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
-	       }
-	       return nil
-	   }
-	*/
-
-	// Uncomment this block if the option do not returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T) error {
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
-	       }
-	       return nil
-	   }
-	*/
+	defaultCheckFunc := func(w want, obj *T, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+		}
+		return nil
+	}
 
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           pageSize: 0,
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           pageSize: 0,
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
+		{
+			name: "set pageSize success",
+			args: args{
+				pageSize: 4,
+			},
+			want: want{
+				obj: &T{
+					pageSize: 4,
+				},
+			},
+		},
+		{
+			name: "return error when pageSize < 0",
+			args: args{
+				pageSize: -1,
+			},
+			want: want{
+				obj: &T{},
+				err: errors.NewErrInvalidOption("pageSize", -1),
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
 
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-
-			   got := WithPageSize(test.args.pageSize)
-			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-			   got := WithPageSize(test.args.pageSize)
-			   obj := new(T)
-			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
+			got := WithPageSize(test.args.pageSize)
+			obj := new(T)
+			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+				tt.Errorf("error = %v", err)
+			}
 		})
 	}
 }

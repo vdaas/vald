@@ -366,22 +366,34 @@ func WithSocketKeepalive(socketKeepalive string) Option {
 	}
 }
 
+// WithMaxPreparedStmts returns the option to set the max prepared statement
 func WithMaxPreparedStmts(maxPreparedStmts int) Option {
 	return func(c *client) error {
+		if maxPreparedStmts < 0 {
+			return errors.NewErrInvalidOption("maxPreparedStmts", maxPreparedStmts)
+		}
 		c.maxPreparedStmts = maxPreparedStmts
 		return nil
 	}
 }
 
+// WithMaxRoutingKeyInfo returns the option to set the max routing key info
 func WithMaxRoutingKeyInfo(maxRoutingKeyInfo int) Option {
 	return func(c *client) error {
+		if maxRoutingKeyInfo < 0 {
+			return errors.NewErrInvalidOption("maxRoutingKeyInfo", maxRoutingKeyInfo)
+		}
 		c.maxRoutingKeyInfo = maxRoutingKeyInfo
 		return nil
 	}
 }
 
+// WithPageSize returns the option to set the page size
 func WithPageSize(pageSize int) Option {
 	return func(c *client) error {
+		if pageSize < 0 {
+			return errors.NewErrInvalidOption("pageSize", pageSize)
+		}
 		c.pageSize = pageSize
 		return nil
 	}
