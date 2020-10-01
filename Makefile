@@ -90,9 +90,15 @@ PBDOCS = apis/docs/docs.md
 ifeq ($(GOARCH),amd64)
 CFLAGS ?= -mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl
 CXXFLAGS ?= $(CFLAGS)
+EXTLDFLAGS ?= -m64
+else ifeq ($(GOARCH),arm64)
+CFLAGS ?=
+CXXFLAGS ?= $(CFLAGS)
+EXTLDFLAGS ?= -march=armv8-a
 else
 CFLAGS ?=
 CXXFLAGS ?= $(CFLAGS)
+EXTLDFLAGS ?=
 endif
 
 BENCH_DATASET_MD5S := $(eval BENCH_DATASET_MD5S := $(shell find $(BENCH_DATASET_MD5_DIR) -type f -regex ".*\.md5"))$(BENCH_DATASET_MD5S)
