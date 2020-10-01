@@ -197,8 +197,9 @@ GO_SOURCES_INTERNAL = $(eval GO_SOURCES_INTERNAL := $(shell find \
 GO_TEST_SOURCES = $(GO_SOURCES:%.go=%_test.go)
 GO_OPTION_TEST_SOURCES = $(GO_OPTION_SOURCES:%.go=%_test.go)
 
-DOCKER      ?= docker
-DOCKER_OPTS ?=
+DOCKER           ?= docker
+DOCKER_OPTS      ?=
+DOCKER_OPTS_BASE ?=
 
 DISTROLESS_IMAGE      ?= gcr.io/distroless/static
 DISTROLESS_IMAGE_TAG  ?= nonroot

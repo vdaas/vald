@@ -37,7 +37,7 @@ docker/name/base:
 ## build base image
 docker/build/base:
 	$(DOCKER) build \
-	    $(DOCKER_OPTS) \
+	    $(DOCKER_OPTS_BASE) \
 	    -f dockers/base/Dockerfile \
 	    -t $(REPO)/$(BASE_IMAGE):$(TAG) . \
 	    --build-arg GO_VERSION=$(GO_VERSION)

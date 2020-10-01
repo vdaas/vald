@@ -52,6 +52,13 @@ jobs:
       uses: docker/setup-buildx-action@v1
       with:
         buildkitd-flags: "--debug"
+    - name: Cache Docker layers (base)
+      uses: actions/cache@v2
+      with:
+        path: /tmp/.buildx-cache-base
+        key: ${{ runner.os }}-buildx-vald-base-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-buildx-vald-base-
     - name: Cache Docker layers
       uses: actions/cache@v2
       with:
@@ -98,12 +105,14 @@ jobs:
         make \
           DOCKER="docker buildx" \
           DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS} ${LABEL_OPTS} --push" \
+          DOCKER_OPTS_BASE="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS_BASE}" \
           TAG="${PRIMARY_TAG}" \
           docker/build/agent-sidecar
         make \
           REPO="ghcr.io/vdaas/vald" \
           DOCKER="docker buildx" \
           DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS} ${LABEL_OPTS} --push" \
+          DOCKER_OPTS_BASE="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS_BASE}" \
           TAG="${PRIMARY_TAG}" \
           docker/build/agent-sidecar
       env:
@@ -111,6 +120,7 @@ jobs:
         PLATFORMS: linux/amd64,linux/arm64
         BUILDER: ${{ steps.buildx.outputs.name }}
         CACHE_OPTS: "--cache-from=type=local,src=/tmp/.buildx-cache --cache-to=type=local,mode=max,dest=/tmp/.buildx-cache"
+        CACHE_OPTS_BASE: "--cache-from=type=local,src=/tmp/.buildx-cache-base --cache-to=type=local,mode=max,dest=/tmp/.buildx-cache-base"
         LABEL_OPTS: "--label org.opencontainers.image.url=${{ github.event.repository.html_url }} --label org.opencontainers.image.source=${{ github.event.repository.html_url }} --label org.opencontainers.image.revision=${{ github.sha }}"
     - name: Initialize CodeQL
       if: startsWith( github.ref, 'refs/tags/')
