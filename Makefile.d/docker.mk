@@ -212,7 +212,8 @@ docker/build/ci-container: docker/build/base
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/ci/base/Dockerfile \
-	    -t $(REPO)/$(CI_CONTAINER_IMAGE):$(TAG) .
+	    -t $(REPO)/$(CI_CONTAINER_IMAGE):$(TAG) . \
+	    --build-arg BASE_TAG=$(TAG)
 
 .PHONY: docker/name/dev-container
 docker/name/dev-container:
@@ -224,7 +225,8 @@ docker/build/dev-container: docker/build/ci-container
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/dev/Dockerfile \
-	    -t $(REPO)/$(DEV_CONTAINER_IMAGE):$(TAG) .
+	    -t $(REPO)/$(DEV_CONTAINER_IMAGE):$(TAG) . \
+	    --build-arg BASE_TAG=$(TAG)
 
 .PHONY: docker/name/operator/helm
 docker/name/operator/helm:
