@@ -110,14 +110,14 @@ jobs:
         make \
           DOCKER="docker buildx" \
           DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS} ${LABEL_OPTS} --push" \
-          DOCKER_OPTS_BASE="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS_BASE}" \
+          DOCKER_OPTS_BASE="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS_BASE} --load" \
           TAG="${PRIMARY_TAG}" \
           docker/build/discoverer-k8s
         make \
           REPO="ghcr.io/vdaas/vald" \
           DOCKER="docker buildx" \
           DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS} ${LABEL_OPTS} --push" \
-          DOCKER_OPTS_BASE="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS_BASE}" \
+          DOCKER_OPTS_BASE="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS_BASE} --load" \
           TAG="${PRIMARY_TAG}" \
           docker/build/discoverer-k8s
       env:
