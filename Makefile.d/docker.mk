@@ -69,6 +69,7 @@ docker/build/agent-sidecar: docker/build/base
 	    $(DOCKER_OPTS) \
 	    -f dockers/agent/sidecar/Dockerfile \
 	    -t $(REPO)/$(AGENT_SIDECAR_IMAGE):$(TAG) . \
+	    --build-arg BASE_TAG=$(TAG) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
@@ -84,6 +85,7 @@ docker/build/discoverer-k8s: docker/build/base
 	    $(DOCKER_OPTS) \
 	    -f dockers/discoverer/k8s/Dockerfile \
 	    -t $(REPO)/$(DISCOVERER_IMAGE):$(TAG) . \
+	    --build-arg BASE_TAG=$(TAG) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
@@ -99,6 +101,7 @@ docker/build/gateway-vald: docker/build/base
 	    $(DOCKER_OPTS) \
 	    -f dockers/gateway/vald/Dockerfile \
 	    -t $(REPO)/$(GATEWAY_IMAGE):$(TAG) . \
+	    --build-arg BASE_TAG=$(TAG) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
@@ -114,6 +117,7 @@ docker/build/meta-redis: docker/build/base
 	    $(DOCKER_OPTS) \
 	    -f dockers/meta/redis/Dockerfile \
 	    -t $(REPO)/$(META_REDIS_IMAGE):$(TAG) . \
+	    --build-arg BASE_TAG=$(TAG) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
@@ -129,6 +133,7 @@ docker/build/meta-cassandra: docker/build/base
 	    $(DOCKER_OPTS) \
 	    -f dockers/meta/cassandra/Dockerfile \
 	    -t $(REPO)/$(META_CASSANDRA_IMAGE):$(TAG) . \
+	    --build-arg BASE_TAG=$(TAG) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
@@ -144,6 +149,7 @@ docker/build/backup-manager-mysql: docker/build/base
 	    $(DOCKER_OPTS) \
 	    -f dockers/manager/backup/mysql/Dockerfile \
 	    -t $(REPO)/$(MANAGER_BACKUP_MYSQL_IMAGE):$(TAG) . \
+	    --build-arg BASE_TAG=$(TAG) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
@@ -159,6 +165,7 @@ docker/build/backup-manager-cassandra: docker/build/base
 	    $(DOCKER_OPTS) \
 	    -f dockers/manager/backup/cassandra/Dockerfile \
 	    -t $(REPO)/$(MANAGER_BACKUP_CASSANDRA_IMAGE):$(TAG) . \
+	    --build-arg BASE_TAG=$(TAG) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
@@ -174,6 +181,7 @@ docker/build/manager-compressor: docker/build/base
 	    $(DOCKER_OPTS) \
 	    -f dockers/manager/compressor/Dockerfile \
 	    -t $(REPO)/$(MANAGER_COMPRESSOR_IMAGE):$(TAG) . \
+	    --build-arg BASE_TAG=$(TAG) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
@@ -189,6 +197,7 @@ docker/build/manager-index: docker/build/base
 	    $(DOCKER_OPTS) \
 	    -f dockers/manager/index/Dockerfile \
 	    -t $(REPO)/$(MANAGER_INDEX_IMAGE):$(TAG) . \
+	    --build-arg BASE_TAG=$(TAG) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
