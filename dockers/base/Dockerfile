@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+ARG GO_VERSION
+
+FROM golang:${GO_VERSION}-buster AS golang
 
 FROM ubuntu:devel AS builder
 
@@ -22,6 +25,7 @@ ENV INITRD No
 ENV LANG en_US.UTF-8
 ENV GOROOT /opt/go
 ENV GOPATH /go
+ENV PATH ${PATH}:${GOROOT}/bin:${GOPATH}/bin
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
@@ -36,14 +40,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /opt
-COPY versions/GO_VERSION .
-RUN export GO_VERSION="$(cat GO_VERSION)" \
-    && curl -sSL -O "https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz" \
-    && tar zxf "go${GO_VERSION}.linux-amd64.tar.gz" \
-    && rm "go${GO_VERSION}.linux-amd64.tar.gz" \
-    && ln -s /opt/go/bin/go /usr/bin/ \
-    && mkdir $GOPATH
+COPY --from=golang /usr/local/go $GOROOT
+RUN mkdir $GOPATH
 
 WORKDIR ${GOPATH}/src/github.com/vdaas/vald
 

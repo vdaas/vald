@@ -42,50 +42,97 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
+    - name: Setup QEMU
+      uses: docker/setup-qemu-action@v1
       with:
-        fetch-depth: 10
-    - name: Overwrite version name
-      if: github.event_name == 'pull_request'
-      run: |
-        pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
-        echo "PR-${pr_num}" > versions/VALD_VERSION
-    - name: Build the Docker image
-      run: |
-        make docker/build/meta-cassandra
-      env:
-        DOCKER_BUILDKIT: 1
-    - name: login to DockerHub
+        platforms: all
+    - name: Setup Docker Buildx
+      id: buildx
+      uses: docker/setup-buildx-action@v1
+      with:
+        buildkitd-flags: "--debug"
+    - name: Cache Docker layers (base)
+      uses: actions/cache@v2
+      with:
+        path: /tmp/.buildx-cache-base
+        key: ${{ runner.os }}-buildx-vald-base-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-buildx-vald-base-
+    - name: Cache Docker layers
+      uses: actions/cache@v2
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-buildx-vald-meta-cassandra-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-buildx-vald-meta-cassandra-
+    - name: Login to DockerHub
       uses: docker/login-action@v1
       with:
         username: ${{ secrets.DOCKERHUB_USER }}
         password: ${{ secrets.DOCKERHUB_PASS }}
-    - name: push to DockerHub (master)
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ secrets.PACKAGE_USER }}
+        password: ${{ secrets.PACKAGE_TOKEN }}
+    - name: Image name
+      id: image_name
+      run: |
+        image_name=`make docker/name/meta-cassandra`
+        base_platforms=`make docker/platforms`
+        echo "::set-env name=IMAGE_NAME::${image_name}"
+        echo "::set-output name=IMAGE_NAME::${image_name}"
+        echo "::set-output name=BASE_PLATFORMS::${base_platforms}"
+    - name: Determine tag name (master)
       if: github.ref == 'refs/heads/master'
       run: |
-        imagename=`make docker/name/meta-cassandra`
-        docker tag ${imagename} ${imagename}:nightly
-        docker push ${imagename}:nightly
-    - name: push to DockerHub (pull request)
+        echo "::set-env name=PRIMARY_TAG::nightly"
+        echo "::set-env name=PLATFORMS::${PLATFORMS}"
+      env:
+        PLATFORMS: linux/amd64,linux/arm64
+    - name: Determine tag name (pull request)
       if: github.event_name == 'pull_request'
       run: |
-        imagename=`make docker/name/meta-cassandra`
         pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
-        docker tag ${imagename} ${imagename}:pr-${pr_num}
-        docker push ${imagename}:pr-${pr_num}
-    - name: push to DockerHub (tags)
+        echo "PR-${pr_num}" > versions/VALD_VERSION
+        echo "::set-env name=PRIMARY_TAG::pr-${pr_num}"
+        echo "::set-env name=PLATFORMS::${PLATFORMS}"
+      env:
+        PLATFORMS: linux/amd64
+    - name: Determine tag name (tags)
       if: startsWith( github.ref, 'refs/tags/')
-      id: push_to_dockerhub_tags
+      id: determine_tag
       run: |
-        imagename=`make docker/name/meta-cassandra`
-        docker push ${imagename}:latest
         tag_name=`echo $GITHUB_REF | sed -e 's:^refs/tags/::'`
-        docker tag ${imagename} ${imagename}:${tag_name}
-        docker push ${imagename}:${tag_name}
-        docker tag ${imagename} ${imagename}:nightly
-        docker push ${imagename}:nightly
-        echo "::set-output name=IMAGE_NAME::${imagename}"
         echo "::set-output name=TAG_NAME::${tag_name}"
+        echo "::set-env name=PRIMARY_TAG::${tag_name}"
+        echo "::set-env name=PLATFORMS::${PLATFORMS}"
+      env:
+        PLATFORMS: linux/amd64,linux/arm64
+    - name: Build and Push
+      run: |
+        make \
+          DOCKER="docker buildx" \
+          DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS} ${LABEL_OPTS} --push" \
+          DOCKER_OPTS_BASE="--platform ${BASE_PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS_BASE} --push" \
+          TAG="${PRIMARY_TAG}" \
+          docker/build/meta-cassandra
+        make \
+          REPO="ghcr.io/vdaas/vald" \
+          DOCKER="docker buildx" \
+          DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS} ${LABEL_OPTS} --push" \
+          DOCKER_OPTS_BASE="--platform ${BASE_PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS_BASE} --push" \
+          TAG="${PRIMARY_TAG}" \
+          docker/build/meta-cassandra
+      env:
+        DOCKER_BUILDKIT: 1
+        BASE_PLATFORMS: ${{ steps.image_name.outputs.BASE_PLATFORMS }}
+        BUILDER: ${{ steps.buildx.outputs.name }}
+        CACHE_OPTS: "--cache-from=type=local,src=/tmp/.buildx-cache --cache-to=type=local,mode=max,dest=/tmp/.buildx-cache"
+        CACHE_OPTS_BASE: "--cache-from=type=local,src=/tmp/.buildx-cache-base"
+        LABEL_OPTS: "--label org.opencontainers.image.url=${{ github.event.repository.html_url }} --label org.opencontainers.image.source=${{ github.event.repository.html_url }} --label org.opencontainers.image.revision=${{ github.sha }}"
     - name: Initialize CodeQL
       if: startsWith( github.ref, 'refs/tags/')
       uses: github/codeql-action/init@v1
@@ -93,13 +140,13 @@ jobs:
       if: startsWith( github.ref, 'refs/tags/')
       uses: aquasecurity/trivy-action@master
       with:
-        image-ref: "${{ steps.push_to_dockerhub_tags.outputs.IMAGE_NAME }}:${{ steps.push_to_dockerhub_tags.outputs.TAG_NAME }}"
+        image-ref: "${{ steps.image_name.outputs.IMAGE_NAME }}:${{ steps.determine_tag.outputs.TAG_NAME }}"
         format: 'table'
     - name: Run vulnerability scanner (sarif)
       if: startsWith( github.ref, 'refs/tags/')
       uses: aquasecurity/trivy-action@master
       with:
-        image-ref: "${{ steps.push_to_dockerhub_tags.outputs.IMAGE_NAME }}:${{ steps.push_to_dockerhub_tags.outputs.TAG_NAME }}"
+        image-ref: "${{ steps.image_name.outputs.IMAGE_NAME }}:${{ steps.determine_tag.outputs.TAG_NAME }}"
         format: 'template'
         template: '@/contrib/sarif.tpl'
         output: 'trivy-results.sarif'

@@ -11,7 +11,7 @@ jobs:
   e2e-deploy:
     name: e2e deploy test
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v1
       - name: wait for dockers

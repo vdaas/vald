@@ -14,7 +14,9 @@
 # limitations under the License.
 #
 
-FROM vdaas/vald-base:latest AS builder
+ARG BASE_TAG=latest
+
+FROM vdaas/vald-base:${BASE_TAG} AS builder
 ARG PROTOBUF_VERSION=3.13.0
 ARG GOLANGCI_LINT_VERSION=v1.31.0
 ARG REVIEWDOG_VERSION=v0.10.2

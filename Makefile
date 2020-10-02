@@ -18,7 +18,7 @@ REPO                           ?= vdaas
 NAME                            = vald
 GOPKG                           = github.com/$(REPO)/$(NAME)
 DATETIME                        = $(eval DATETIME := $(shell date -u +%Y/%m/%d_%H:%M:%S%z))$(DATETIME)
-TAG                             = $(eval TAG := $(shell date -u +%Y%m%d-%H%M%S))$(TAG)
+TAG                            ?= latest
 BASE_IMAGE                      = $(NAME)-base
 AGENT_IMAGE                     = $(NAME)-agent-ngt
 AGENT_SIDECAR_IMAGE             = $(NAME)-agent-sidecar
@@ -87,8 +87,19 @@ PBGOS = $(PROTOS:apis/proto/%.proto=apis/grpc/%.pb.go)
 SWAGGERS = $(PROTOS:apis/proto/%.proto=apis/swagger/%.swagger.json)
 PBDOCS = apis/docs/docs.md
 
+ifeq ($(GOARCH),amd64)
 CFLAGS ?= -mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl
 CXXFLAGS ?= $(CFLAGS)
+EXTLDFLAGS ?= -m64
+else ifeq ($(GOARCH),arm64)
+CFLAGS ?=
+CXXFLAGS ?= $(CFLAGS)
+EXTLDFLAGS ?= -march=armv8-a
+else
+CFLAGS ?=
+CXXFLAGS ?= $(CFLAGS)
+EXTLDFLAGS ?=
+endif
 
 BENCH_DATASET_MD5S := $(eval BENCH_DATASET_MD5S := $(shell find $(BENCH_DATASET_MD5_DIR) -type f -regex ".*\.md5"))$(BENCH_DATASET_MD5S)
 BENCH_DATASETS = $(BENCH_DATASET_MD5S:$(BENCH_DATASET_MD5_DIR)/%.md5=$(BENCH_DATASET_HDF5_DIR)/%.hdf5)
@@ -185,6 +196,10 @@ GO_SOURCES_INTERNAL = $(eval GO_SOURCES_INTERNAL := $(shell find \
 
 GO_TEST_SOURCES = $(GO_SOURCES:%.go=%_test.go)
 GO_OPTION_TEST_SOURCES = $(GO_OPTION_SOURCES:%.go=%_test.go)
+
+DOCKER           ?= docker
+DOCKER_OPTS      ?=
+DOCKER_OPTS_BASE ?=
 
 DISTROLESS_IMAGE      ?= gcr.io/distroless/static
 DISTROLESS_IMAGE_TAG  ?= nonroot
