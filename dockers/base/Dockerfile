@@ -25,6 +25,7 @@ ENV INITRD No
 ENV LANG en_US.UTF-8
 ENV GOROOT /opt/go
 ENV GOPATH /go
+ENV PATH ${PATH}:${GOROOT}/bin:${GOPATH}/bin
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
