@@ -70,7 +70,7 @@ jobs:
     - name: Image name
       id: image_name
       run: |
-        image_name=`make docker/name/helm-operator`
+        image_name=`make docker/name/operator/helm`
         echo "::set-env name=IMAGE_NAME::${image_name}"
         echo "::set-output name=IMAGE_NAME::${image_name}"
     - name: Determine tag name (master)
@@ -97,14 +97,14 @@ jobs:
           DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS} ${LABEL_OPTS} --push" \
           DOCKER_OPTS_BASE="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS_BASE}" \
           TAG="${PRIMARY_TAG}" \
-          docker/build/helm-operator
+          docker/build/operator/helm
         make \
           REPO="ghcr.io/vdaas/vald" \
           DOCKER="docker buildx" \
           DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS} ${LABEL_OPTS} --push" \
           DOCKER_OPTS_BASE="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS_BASE}" \
           TAG="${PRIMARY_TAG}" \
-          docker/build/helm-operator
+          docker/build/operator/helm
       env:
         DOCKER_BUILDKIT: 1
         PLATFORMS: linux/amd64,linux/arm64
