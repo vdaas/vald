@@ -14,11 +14,12 @@
 # limitations under the License.
 #
 
+ARG BASE_TAG=latest
 ARG DISTROLESS_IMAGE=gcr.io/distroless/static
 ARG DISTROLESS_IMAGE_TAG=nonroot
 ARG UPX_OPTIONS=-9
 
-FROM vdaas/vald-base:latest AS builder
+FROM vdaas/vald-base:${BASE_TAG} AS builder
 ARG UPX_OPTIONS
 
 ENV ORG vdaas
@@ -50,6 +51,8 @@ COPY Makefile.d .
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 COPY Makefile .
+RUN make ngt/install
+
 COPY .git .
 
 RUN make REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \

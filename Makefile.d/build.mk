@@ -46,7 +46,7 @@ cmd/agent/core/ngt/ngt: \
 	    && export GO111MODULE=on \
 	    && go build \
 	    --ldflags "-s -w -linkmode 'external' \
-	    -extldflags '-static -fPIC -m64 -pthread -fopenmp -std=c++17 -lstdc++ -lm' \
+	    -extldflags '-static -fPIC -pthread -fopenmp -std=c++17 -lstdc++ -lm $(EXTLDFLAGS)' \
 	    -X '$(GOPKG)/internal/info.Version=$(VERSION)' \
 	    -X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
 	    -X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \

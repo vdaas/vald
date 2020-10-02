@@ -19,12 +19,13 @@ ARG GROUP="vald.vdaas.org"
 ARG VALD_KIND="ValdRelease"
 ARG VALD_HELM_OPERATOR_KIND="ValdHelmOperatorRelease"
 
-FROM vdaas/vald-base:latest AS builder
+FROM ubuntu:devel AS builder
 ARG OPERATOR_SDK_VERSION
 ARG VERSION
 ARG GROUP
 ARG VALD_KIND
 ARG VALD_HELM_OPERATOR_KIND
+
 RUN { \
         echo "---"; \
         echo "- version: ${VERSION}"; \
@@ -40,6 +41,7 @@ RUN { \
 FROM quay.io/operator-framework/helm-operator:${OPERATOR_SDK_VERSION}
 LABEL maintainer "Vald team <vald@vdaas.org>"
 
+COPY --from=builder /tmp/watches.yaml ${HOME}/watches.yaml
+
 COPY charts/vald ${HOME}/helm-charts/vald
 COPY charts/vald-helm-operator ${HOME}/helm-charts/vald-helm-operator
-COPY --from=builder /tmp/watches.yaml ${HOME}/watches.yaml

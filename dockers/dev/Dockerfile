@@ -14,7 +14,9 @@
 # limitations under the License.
 #
 
-FROM vdaas/vald-ci-container:latest AS vald
+ARG BASE_TAG=latest
+
+FROM vdaas/vald-ci-container:${BASE_TAG} AS vald
 
 FROM mcr.microsoft.com/vscode/devcontainers/go:1 AS base
 
