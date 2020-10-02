@@ -23,6 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/google/go-cmp/cmp"
 	"github.com/vdaas/vald/internal/backoff"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/sdk/s3/s3iface"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
@@ -104,7 +105,7 @@ func TestWithErrGroup(t *testing.T) {
 func TestWithService(t *testing.T) {
 	type T = reader
 	type args struct {
-		s *s3.S3
+		s s3iface.S3API
 	}
 	type want struct {
 		obj *T

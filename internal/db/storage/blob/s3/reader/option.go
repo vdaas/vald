@@ -17,8 +17,8 @@
 package reader
 
 import (
-	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/vdaas/vald/internal/backoff"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/sdk/s3/s3iface"
 	"github.com/vdaas/vald/internal/errgroup"
 )
 
@@ -43,7 +43,7 @@ func WithErrGroup(eg errgroup.Group) Option {
 }
 
 // WithService returns the option to set the service.
-func WithService(s *s3.S3) Option {
+func WithService(s s3iface.S3API) Option {
 	return func(r *reader) {
 		if s != nil {
 			r.service = s
