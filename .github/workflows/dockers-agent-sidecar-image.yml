@@ -87,12 +87,18 @@ jobs:
       if: github.ref == 'refs/heads/master'
       run: |
         echo "::set-env name=PRIMARY_TAG::nightly"
+        echo "::set-env name=PLATFORMS::${PLATFORMS}"
+      env:
+        PLATFORMS: linux/amd64,linux/arm64
     - name: Determine tag name (pull request)
       if: github.event_name == 'pull_request'
       run: |
         pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
         echo "PR-${pr_num}" > versions/VALD_VERSION
         echo "::set-env name=PRIMARY_TAG::pr-${pr_num}"
+        echo "::set-env name=PLATFORMS::${PLATFORMS}"
+      env:
+        PLATFORMS: linux/amd64
     - name: Determine tag name (tags)
       if: startsWith( github.ref, 'refs/tags/')
       id: determine_tag
@@ -100,6 +106,9 @@ jobs:
         tag_name=`echo $GITHUB_REF | sed -e 's:^refs/tags/::'`
         echo "::set-output name=TAG_NAME::${tag_name}"
         echo "::set-env name=PRIMARY_TAG::${tag_name}"
+        echo "::set-env name=PLATFORMS::${PLATFORMS}"
+      env:
+        PLATFORMS: linux/amd64,linux/arm64
     - name: Build and Push
       run: |
         make \
@@ -117,7 +126,6 @@ jobs:
           docker/build/agent-sidecar
       env:
         DOCKER_BUILDKIT: 1
-        PLATFORMS: linux/amd64,linux/arm64
         BUILDER: ${{ steps.buildx.outputs.name }}
         CACHE_OPTS: "--cache-from=type=local,src=/tmp/.buildx-cache --cache-to=type=local,mode=max,dest=/tmp/.buildx-cache"
         CACHE_OPTS_BASE: "--cache-from=type=local,src=/tmp/.buildx-cache-base"
