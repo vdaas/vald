@@ -40,9 +40,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=golang /usr/local/go /opt/go
-RUN ln -s /opt/go/bin/go /usr/bin/ \
-    && mkdir $GOPATH
+COPY --from=golang /usr/local/go $GOROOT
+RUN mkdir $GOPATH
 
 WORKDIR ${GOPATH}/src/github.com/vdaas/vald
 
