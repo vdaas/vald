@@ -51,24 +51,20 @@ jobs:
       id: image_name
       run: |
         image_name=`make docker/name/base`
+        base_platforms=`make docker/platforms`
         echo "::set-env name=IMAGE_NAME::${image_name}"
         echo "::set-output name=IMAGE_NAME::${image_name}"
+        echo "::set-output name=BASE_PLATFORMS::${base_platforms}"
     - name: Determine tag name (master)
       if: github.ref == 'refs/heads/master'
       run: |
         echo "::set-env name=PRIMARY_TAG::nightly"
-        echo "::set-env name=PLATFORMS::${PLATFORMS}"
-      env:
-        PLATFORMS: linux/amd64,linux/arm64
     - name: Determine tag name (pull request)
       if: github.event_name == 'pull_request'
       run: |
         pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
         echo "PR-${pr_num}" > versions/VALD_VERSION
         echo "::set-env name=PRIMARY_TAG::pr-${pr_num}"
-        echo "::set-env name=PLATFORMS::${PLATFORMS}"
-      env:
-        PLATFORMS: linux/amd64
     - name: Determine tag name (tags)
       if: startsWith( github.ref, 'refs/tags/')
       id: determine_tag
@@ -76,9 +72,6 @@ jobs:
         tag_name=`echo $GITHUB_REF | sed -e 's:^refs/tags/::'`
         echo "::set-output name=TAG_NAME::${tag_name}"
         echo "::set-env name=PRIMARY_TAG::${tag_name}"
-        echo "::set-env name=PLATFORMS::${PLATFORMS}"
-      env:
-        PLATFORMS: linux/amd64,linux/arm64
     - name: Build and Push
       run: |
         make \
@@ -94,6 +87,7 @@ jobs:
           docker/build/base
       env:
         DOCKER_BUILDKIT: 1
+        PLATFORMS: ${{ steps.image_name.outputs.BASE_PLATFORMS }}
         BUILDER: ${{ steps.buildx.outputs.name }}
         CACHE_OPTS: "--cache-from=type=local,src=/tmp/.buildx-cache --cache-to=type=local,mode=max,dest=/tmp/.buildx-cache"
         LABEL_OPTS: "--label org.opencontainers.image.url=${{ github.event.repository.html_url }} --label org.opencontainers.image.source=${{ github.event.repository.html_url }} --label org.opencontainers.image.revision=${{ github.sha }}"

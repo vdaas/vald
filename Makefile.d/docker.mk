@@ -29,6 +29,10 @@ docker/build: \
 	docker/build/manager-index \
 	docker/build/helm-operator
 
+.PHONY: docker/platforms
+docker/platforms:
+	@echo "linux/amd64,linux/arm64"
+
 .PHONY: docker/name/base
 docker/name/base:
 	@echo "$(REPO)/$(BASE_IMAGE)"

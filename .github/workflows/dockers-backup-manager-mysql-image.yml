@@ -81,8 +81,10 @@ jobs:
       id: image_name
       run: |
         image_name=`make docker/name/backup-manager-mysql`
+        base_platforms=`make docker/platforms`
         echo "::set-env name=IMAGE_NAME::${image_name}"
         echo "::set-output name=IMAGE_NAME::${image_name}"
+        echo "::set-output name=BASE_PLATFORMS::${base_platforms}"
     - name: Determine tag name (master)
       if: github.ref == 'refs/heads/master'
       run: |
@@ -114,18 +116,19 @@ jobs:
         make \
           DOCKER="docker buildx" \
           DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS} ${LABEL_OPTS} --push" \
-          DOCKER_OPTS_BASE="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS_BASE} --load" \
+          DOCKER_OPTS_BASE="--platform ${BASE_PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS_BASE} --push" \
           TAG="${PRIMARY_TAG}" \
           docker/build/backup-manager-mysql
         make \
           REPO="ghcr.io/vdaas/vald" \
           DOCKER="docker buildx" \
           DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS} ${LABEL_OPTS} --push" \
-          DOCKER_OPTS_BASE="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS_BASE} --load" \
+          DOCKER_OPTS_BASE="--platform ${BASE_PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS_BASE} --push" \
           TAG="${PRIMARY_TAG}" \
           docker/build/backup-manager-mysql
       env:
         DOCKER_BUILDKIT: 1
+        BASE_PLATFORMS: ${{ steps.image_name.outputs.BASE_PLATFORMS }}
         BUILDER: ${{ steps.buildx.outputs.name }}
         CACHE_OPTS: "--cache-from=type=local,src=/tmp/.buildx-cache --cache-to=type=local,mode=max,dest=/tmp/.buildx-cache"
         CACHE_OPTS_BASE: "--cache-from=type=local,src=/tmp/.buildx-cache-base"
@@ -137,13 +140,13 @@ jobs:
       if: startsWith( github.ref, 'refs/tags/')
       uses: aquasecurity/trivy-action@master
       with:
-        image-ref: "${{ steps.push_to_dockerhub_tags.outputs.IMAGE_NAME }}:${{ steps.push_to_dockerhub_tags.outputs.TAG_NAME }}"
+        image-ref: "${{ steps.image_name.outputs.IMAGE_NAME }}:${{ steps.determine_tag.outputs.TAG_NAME }}"
         format: 'table'
     - name: Run vulnerability scanner (sarif)
       if: startsWith( github.ref, 'refs/tags/')
       uses: aquasecurity/trivy-action@master
       with:
-        image-ref: "${{ steps.push_to_dockerhub_tags.outputs.IMAGE_NAME }}:${{ steps.push_to_dockerhub_tags.outputs.TAG_NAME }}"
+        image-ref: "${{ steps.image_name.outputs.IMAGE_NAME }}:${{ steps.determine_tag.outputs.TAG_NAME }}"
         format: 'template'
         template: '@/contrib/sarif.tpl'
         output: 'trivy-results.sarif'
