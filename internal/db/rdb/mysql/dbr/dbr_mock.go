@@ -14,41 +14,39 @@
 // limitations under the License.
 //
 
-package mock
+package dbr
 
 import (
 	"context"
 	"database/sql"
 	"time"
-
-	"github.com/vdaas/vald/internal/db/rdb/mysql/dbr"
 )
 
 type MockDBR struct {
-	OpenFunc func(driver, dsn string, log dbr.EventReceiver) (dbr.Connection, error)
-	EqFunc   func(col string, val interface{}) dbr.Builder
+	OpenFunc func(driver, dsn string, log EventReceiver) (Connection, error)
+	EqFunc   func(col string, val interface{}) Builder
 }
 
-func (d *MockDBR) Open(driver, dsn string, log dbr.EventReceiver) (dbr.Connection, error) {
+func (d *MockDBR) Open(driver, dsn string, log EventReceiver) (Connection, error) {
 	return d.OpenFunc(driver, dsn, log)
 }
 
-func (d *MockDBR) Eq(col string, val interface{}) dbr.Builder {
+func (d *MockDBR) Eq(col string, val interface{}) Builder {
 	return d.EqFunc(col, val)
 }
 
 type MockSession struct {
-	SelectFunc      func(column ...string) dbr.SelectStmt
-	BeginFunc       func() (dbr.Tx, error)
+	SelectFunc      func(column ...string) SelectStmt
+	BeginFunc       func() (Tx, error)
 	CloseFunc       func() error
 	PingContextFunc func(ctx context.Context) error
 }
 
-func (s *MockSession) Select(column ...string) dbr.SelectStmt {
+func (s *MockSession) Select(column ...string) SelectStmt {
 	return s.SelectFunc(column...)
 }
 
-func (s *MockSession) Begin() (dbr.Tx, error) {
+func (s *MockSession) Begin() (Tx, error) {
 	return s.BeginFunc()
 }
 
@@ -64,10 +62,10 @@ type MockTx struct {
 	CommitFunc                  func() error
 	RollbackFunc                func() error
 	RollbackUnlessCommittedFunc func()
-	InsertBySqlFunc             func(query string, value ...interface{}) dbr.InsertStmt
-	InsertIntoFunc              func(table string) dbr.InsertStmt
-	SelectFunc                  func(column ...string) dbr.SelectStmt
-	DeleteFromFunc              func(table string) dbr.DeleteStmt
+	InsertBySqlFunc             func(query string, value ...interface{}) InsertStmt
+	InsertIntoFunc              func(table string) InsertStmt
+	SelectFunc                  func(column ...string) SelectStmt
+	DeleteFromFunc              func(table string) DeleteStmt
 }
 
 func (t *MockTx) Commit() error {
@@ -82,30 +80,30 @@ func (t *MockTx) RollbackUnlessCommitted() {
 	t.RollbackUnlessCommittedFunc()
 }
 
-func (t *MockTx) InsertBySql(query string, value ...interface{}) dbr.InsertStmt {
+func (t *MockTx) InsertBySql(query string, value ...interface{}) InsertStmt {
 	return t.InsertBySqlFunc(query, value...)
 }
 
-func (t *MockTx) InsertInto(table string) dbr.InsertStmt {
+func (t *MockTx) InsertInto(table string) InsertStmt {
 	return t.InsertIntoFunc(table)
 }
 
-func (t *MockTx) Select(column ...string) dbr.SelectStmt {
+func (t *MockTx) Select(column ...string) SelectStmt {
 	return t.SelectFunc(column...)
 }
 
-func (t *MockTx) DeleteFrom(table string) dbr.DeleteStmt {
+func (t *MockTx) DeleteFrom(table string) DeleteStmt {
 	return t.DeleteFromFunc(table)
 }
 
 type MockConn struct {
-	NewSessionFunc         func(event dbr.EventReceiver) dbr.Session
+	NewSessionFunc         func(event EventReceiver) Session
 	SetConnMaxLifetimeFunc func(d time.Duration)
 	SetMaxIdleConnsFunc    func(n int)
 	SetMaxOpenConnsFunc    func(n int)
 }
 
-func (c *MockConn) NewSession(event dbr.EventReceiver) dbr.Session {
+func (c *MockConn) NewSession(event EventReceiver) Session {
 	return c.NewSessionFunc(event)
 }
 
@@ -122,21 +120,21 @@ func (c *MockConn) SetMaxOpenConns(n int) {
 }
 
 type MockSelect struct {
-	FromFunc        func(table interface{}) dbr.SelectStmt
-	WhereFunc       func(query interface{}, value ...interface{}) dbr.SelectStmt
-	LimitFunc       func(n uint64) dbr.SelectStmt
+	FromFunc        func(table interface{}) SelectStmt
+	WhereFunc       func(query interface{}, value ...interface{}) SelectStmt
+	LimitFunc       func(n uint64) SelectStmt
 	LoadContextFunc func(ctx context.Context, value interface{}) (int, error)
 }
 
-func (s *MockSelect) From(table interface{}) dbr.SelectStmt {
+func (s *MockSelect) From(table interface{}) SelectStmt {
 	return s.FromFunc(table)
 }
 
-func (s *MockSelect) Where(query interface{}, value ...interface{}) dbr.SelectStmt {
+func (s *MockSelect) Where(query interface{}, value ...interface{}) SelectStmt {
 	return s.WhereFunc(query, value...)
 }
 
-func (s *MockSelect) Limit(n uint64) dbr.SelectStmt {
+func (s *MockSelect) Limit(n uint64) SelectStmt {
 	return s.LimitFunc(n)
 }
 
@@ -145,12 +143,12 @@ func (s *MockSelect) LoadContext(ctx context.Context, value interface{}) (int, e
 }
 
 type MockInsert struct {
-	ColumnsFunc     func(column ...string) dbr.InsertStmt
+	ColumnsFunc     func(column ...string) InsertStmt
 	ExecContextFunc func(ctx context.Context) (sql.Result, error)
-	RecordFunc      func(structValue interface{}) dbr.InsertStmt
+	RecordFunc      func(structValue interface{}) InsertStmt
 }
 
-func (s *MockInsert) Columns(column ...string) dbr.InsertStmt {
+func (s *MockInsert) Columns(column ...string) InsertStmt {
 	return s.ColumnsFunc(column...)
 }
 
@@ -158,19 +156,19 @@ func (s *MockInsert) ExecContext(ctx context.Context) (sql.Result, error) {
 	return s.ExecContextFunc(ctx)
 }
 
-func (s *MockInsert) Record(structValue interface{}) dbr.InsertStmt {
+func (s *MockInsert) Record(structValue interface{}) InsertStmt {
 	return s.RecordFunc(structValue)
 }
 
 type MockDelete struct {
 	ExecContextFunc func(ctx context.Context) (sql.Result, error)
-	WhereFunc       func(query interface{}, value ...interface{}) dbr.DeleteStmt
+	WhereFunc       func(query interface{}, value ...interface{}) DeleteStmt
 }
 
 func (s *MockDelete) ExecContext(ctx context.Context) (sql.Result, error) {
 	return s.ExecContextFunc(ctx)
 }
 
-func (s *MockDelete) Where(query interface{}, value ...interface{}) dbr.DeleteStmt {
+func (s *MockDelete) Where(query interface{}, value ...interface{}) DeleteStmt {
 	return s.WhereFunc(query, value...)
 }

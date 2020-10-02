@@ -31,7 +31,6 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/tcp"
-	"github.com/vdaas/vald/internal/test/mock"
 	"go.uber.org/goleak"
 )
 
@@ -202,7 +201,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 					tlsConfig:            new(tls.Config),
 					maxOpenConns:         100,
 					maxIdleConns:         100,
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						PingContextFunc: func(ctx context.Context) error {
 							return nil
 						},
@@ -211,11 +210,11 @@ func Test_mySQLClient_Open(t *testing.T) {
 						v.Store(false)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						OpenFunc: func(driver, dsn string, log EventReceiver) (dbr.Connection, error) {
-							conn := &mock.MockConn{
+							conn := &dbr.MockConn{
 								NewSessionFunc: func(event EventReceiver) dbr.Session {
-									return &mock.MockSession{
+									return &dbr.MockSession{
 										PingContextFunc: func(ctx context.Context) error {
 											return nil
 										},
@@ -256,7 +255,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 					dialerFunc:           dialerFunc,
 					maxOpenConns:         100,
 					maxIdleConns:         100,
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						PingContextFunc: func(ctx context.Context) error {
 							return nil
 						},
@@ -265,11 +264,11 @@ func Test_mySQLClient_Open(t *testing.T) {
 						v.Store(false)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						OpenFunc: func(driver, dsn string, log EventReceiver) (dbr.Connection, error) {
-							conn := &mock.MockConn{
+							conn := &dbr.MockConn{
 								NewSessionFunc: func(event EventReceiver) dbr.Session {
-									return &mock.MockSession{
+									return &dbr.MockSession{
 										PingContextFunc: func(ctx context.Context) error {
 											return nil
 										},
@@ -310,7 +309,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 						v.Store(false)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						OpenFunc: func(driver, dsn string, log EventReceiver) (dbr.Connection, error) {
 							return nil, errors.ErrMySQLConnectionClosed
 						},
@@ -343,7 +342,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 					tlsConfig:            new(tls.Config),
 					maxOpenConns:         100,
 					maxIdleConns:         100,
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						PingContextFunc: func(ctx context.Context) error {
 							return nil
 						},
@@ -352,11 +351,11 @@ func Test_mySQLClient_Open(t *testing.T) {
 						v.Store(false)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						OpenFunc: func(driver, dsn string, log EventReceiver) (dbr.Connection, error) {
-							conn := &mock.MockConn{
+							conn := &dbr.MockConn{
 								NewSessionFunc: func(event EventReceiver) dbr.Session {
-									return &mock.MockSession{
+									return &dbr.MockSession{
 										PingContextFunc: func(ctx context.Context) error {
 											return nil
 										},
@@ -458,7 +457,7 @@ func Test_mySQLClient_Ping(t *testing.T) {
 				fields: fields{
 					initialPingTimeLimit: 1 * time.Second,
 					initialPingDuration:  1 * time.Microsecond,
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						PingContextFunc: func(ctx context.Context) error {
 							return nil
 						},
@@ -481,7 +480,7 @@ func Test_mySQLClient_Ping(t *testing.T) {
 				fields: fields{
 					initialPingTimeLimit: 15 * time.Microsecond,
 					initialPingDuration:  1 * time.Microsecond,
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						PingContextFunc: func(ctx context.Context) error {
 							return err
 						},
@@ -505,7 +504,7 @@ func Test_mySQLClient_Ping(t *testing.T) {
 				fields: fields{
 					initialPingTimeLimit: 1 * time.Microsecond,
 					initialPingDuration:  10 * time.Microsecond,
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						PingContextFunc: func(ctx context.Context) error {
 							return nil
 						},
@@ -583,7 +582,7 @@ func Test_mySQLClient_Close(t *testing.T) {
 				ctx: context.Background(),
 			},
 			fields: fields{
-				session: &mock.MockSession{},
+				session: &dbr.MockSession{},
 				connected: func() (v atomic.Value) {
 					v.Store(false)
 					return
@@ -597,7 +596,7 @@ func Test_mySQLClient_Close(t *testing.T) {
 				ctx: context.Background(),
 			},
 			fields: fields{
-				session: &mock.MockSession{
+				session: &dbr.MockSession{
 					CloseFunc: func() error {
 						return nil
 					},
@@ -713,9 +712,9 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 					ctx: context.Background(),
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						SelectFunc: func(column ...string) dbr.SelectStmt {
-							m := new(mock.MockSelect)
+							m := new(dbr.MockSelect)
 							m.FromFunc = func(table interface{}) dbr.SelectStmt {
 								return m
 							}
@@ -735,7 +734,7 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 						v.Store(true)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
@@ -755,9 +754,9 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 					uuid: "vdaas-01",
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						SelectFunc: func(column ...string) dbr.SelectStmt {
-							s := new(mock.MockSelect)
+							s := new(dbr.MockSelect)
 							s.FromFunc = func(table interface{}) dbr.SelectStmt {
 								return s
 							}
@@ -781,7 +780,7 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 						v.Store(true)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
@@ -806,9 +805,9 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 					uuid: uuid,
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						SelectFunc: func(column ...string) dbr.SelectStmt {
-							s := new(mock.MockSelect)
+							s := new(dbr.MockSelect)
 							s.FromFunc = func(table interface{}) dbr.SelectStmt {
 								return s
 							}
@@ -837,7 +836,7 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 						v.Store(true)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
@@ -868,9 +867,9 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 					uuid: uuid,
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						SelectFunc: func(column ...string) dbr.SelectStmt {
-							s := new(mock.MockSelect)
+							s := new(dbr.MockSelect)
 							s.FromFunc = func(table interface{}) dbr.SelectStmt {
 								return s
 							}
@@ -901,7 +900,7 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 						v.Store(true)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
@@ -986,9 +985,9 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 					uuid: uuid,
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						SelectFunc: func(column ...string) dbr.SelectStmt {
-							s := new(mock.MockSelect)
+							s := new(dbr.MockSelect)
 							return s
 						},
 					},
@@ -1012,9 +1011,9 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 					uuid: uuid,
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						SelectFunc: func(column ...string) dbr.SelectStmt {
-							s := new(mock.MockSelect)
+							s := new(dbr.MockSelect)
 							s.FromFunc = func(table interface{}) dbr.SelectStmt {
 								return s
 							}
@@ -1038,7 +1037,7 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 						v.Store(true)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
@@ -1058,9 +1057,9 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 					uuid: uuid,
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						SelectFunc: func(column ...string) dbr.SelectStmt {
-							s := new(mock.MockSelect)
+							s := new(dbr.MockSelect)
 							s.FromFunc = func(table interface{}) dbr.SelectStmt {
 								return s
 							}
@@ -1084,7 +1083,7 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 						v.Store(true)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
@@ -1115,9 +1114,9 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 					uuid: uuid,
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						SelectFunc: func(column ...string) dbr.SelectStmt {
-							s := new(mock.MockSelect)
+							s := new(dbr.MockSelect)
 							s.FromFunc = func(table interface{}) dbr.SelectStmt {
 								return s
 							}
@@ -1146,7 +1145,7 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 						v.Store(true)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
@@ -1180,9 +1179,9 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 					uuid: uuid,
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						SelectFunc: func(column ...string) dbr.SelectStmt {
-							s := new(mock.MockSelect)
+							s := new(dbr.MockSelect)
 							s.FromFunc = func(table interface{}) dbr.SelectStmt {
 								return s
 							}
@@ -1213,7 +1212,7 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 						v.Store(true)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
@@ -1380,7 +1379,7 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 					mv:  m,
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
 							return nil, err
 						},
@@ -1404,9 +1403,9 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 					mv:  m,
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
-							tx := new(mock.MockTx)
+							tx := new(dbr.MockTx)
 							tx.RollbackFunc = func() error {
 								return nil
 							}
@@ -1435,15 +1434,15 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 					mv:  m,
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
-							tx := new(mock.MockTx)
+							tx := new(dbr.MockTx)
 							tx.RollbackFunc = func() error {
 								return nil
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
 							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
-								return &mock.MockInsert{
+								return &dbr.MockInsert{
 									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
 										return nil, err
 									},
@@ -1473,22 +1472,22 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 					mv:  m,
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
-							tx := new(mock.MockTx)
+							tx := new(dbr.MockTx)
 							tx.RollbackFunc = func() error {
 								return nil
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
 							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
-								return &mock.MockInsert{
+								return &dbr.MockInsert{
 									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
 									},
 								}
 							}
 							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
-								s := new(mock.MockSelect)
+								s := new(dbr.MockSelect)
 								s.FromFunc = func(table interface{}) dbr.SelectStmt {
 									return s
 								}
@@ -1510,7 +1509,7 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 						v.Store(true)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
@@ -1531,22 +1530,22 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 					mv:  m,
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
-							tx := new(mock.MockTx)
+							tx := new(dbr.MockTx)
 							tx.RollbackFunc = func() error {
 								return nil
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
 							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
-								return &mock.MockInsert{
+								return &dbr.MockInsert{
 									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
 									},
 								}
 							}
 							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
-								s := new(mock.MockSelect)
+								s := new(dbr.MockSelect)
 								s.FromFunc = func(table interface{}) dbr.SelectStmt {
 									return s
 								}
@@ -1574,7 +1573,7 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 						v.Store(true)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
@@ -1602,22 +1601,22 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 					mv:  m,
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
-							tx := new(mock.MockTx)
+							tx := new(dbr.MockTx)
 							tx.RollbackFunc = func() error {
 								return nil
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
 							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
-								return &mock.MockInsert{
+								return &dbr.MockInsert{
 									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
 									},
 								}
 							}
 							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
-								s := new(mock.MockSelect)
+								s := new(dbr.MockSelect)
 								s.FromFunc = func(table interface{}) dbr.SelectStmt {
 									return s
 								}
@@ -1639,7 +1638,7 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 								return s
 							}
 							tx.DeleteFromFunc = func(table string) dbr.DeleteStmt {
-								s := new(mock.MockDelete)
+								s := new(dbr.MockDelete)
 								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 									return nil, err
 								}
@@ -1656,7 +1655,7 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 						v.Store(true)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
@@ -1684,22 +1683,22 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 					mv:  m,
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
-							tx := new(mock.MockTx)
+							tx := new(dbr.MockTx)
 							tx.RollbackFunc = func() error {
 								return nil
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
 							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
-								return &mock.MockInsert{
+								return &dbr.MockInsert{
 									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
 									},
 								}
 							}
 							tx.InsertIntoFunc = func(table string) dbr.InsertStmt {
-								s := new(mock.MockInsert)
+								s := new(dbr.MockInsert)
 								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
 									return s
 								}
@@ -1712,7 +1711,7 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 								return s
 							}
 							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
-								s := new(mock.MockSelect)
+								s := new(dbr.MockSelect)
 								s.FromFunc = func(table interface{}) dbr.SelectStmt {
 									return s
 								}
@@ -1734,7 +1733,7 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 								return s
 							}
 							tx.DeleteFromFunc = func(table string) dbr.DeleteStmt {
-								s := new(mock.MockDelete)
+								s := new(dbr.MockDelete)
 								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 									return nil, nil
 								}
@@ -1751,7 +1750,7 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 						v.Store(true)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
@@ -1779,9 +1778,9 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 					mv:  m,
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
-							tx := new(mock.MockTx)
+							tx := new(dbr.MockTx)
 							tx.CommitFunc = func() error {
 								return err
 							}
@@ -1790,14 +1789,14 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
 							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
-								return &mock.MockInsert{
+								return &dbr.MockInsert{
 									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
 									},
 								}
 							}
 							tx.InsertIntoFunc = func(table string) dbr.InsertStmt {
-								s := new(mock.MockInsert)
+								s := new(dbr.MockInsert)
 								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
 									return s
 								}
@@ -1810,7 +1809,7 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 								return s
 							}
 							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
-								s := new(mock.MockSelect)
+								s := new(dbr.MockSelect)
 								s.FromFunc = func(table interface{}) dbr.SelectStmt {
 									return s
 								}
@@ -1832,7 +1831,7 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 								return s
 							}
 							tx.DeleteFromFunc = func(table string) dbr.DeleteStmt {
-								s := new(mock.MockDelete)
+								s := new(dbr.MockDelete)
 								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 									return nil, nil
 								}
@@ -1849,7 +1848,7 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 						v.Store(true)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
@@ -1876,9 +1875,9 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 					mv:  m,
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
-							tx := new(mock.MockTx)
+							tx := new(dbr.MockTx)
 							tx.CommitFunc = func() error {
 								return nil
 							}
@@ -1887,14 +1886,14 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
 							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
-								return &mock.MockInsert{
+								return &dbr.MockInsert{
 									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
 									},
 								}
 							}
 							tx.InsertIntoFunc = func(table string) dbr.InsertStmt {
-								s := new(mock.MockInsert)
+								s := new(dbr.MockInsert)
 								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
 									return s
 								}
@@ -1907,7 +1906,7 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 								return s
 							}
 							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
-								s := new(mock.MockSelect)
+								s := new(dbr.MockSelect)
 								s.FromFunc = func(table interface{}) dbr.SelectStmt {
 									return s
 								}
@@ -1929,7 +1928,7 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 								return s
 							}
 							tx.DeleteFromFunc = func(table string) dbr.DeleteStmt {
-								s := new(mock.MockDelete)
+								s := new(dbr.MockDelete)
 								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 									return nil, nil
 								}
@@ -1946,7 +1945,7 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 						v.Store(true)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
@@ -2042,7 +2041,7 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 					metas: m,
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
 							return nil, err
 						},
@@ -2067,9 +2066,9 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 					metas: m,
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
-							tx := new(mock.MockTx)
+							tx := new(dbr.MockTx)
 							tx.RollbackFunc = func() error {
 								return nil
 							}
@@ -2100,15 +2099,15 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 					metas: m,
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
-							tx := new(mock.MockTx)
+							tx := new(dbr.MockTx)
 							tx.RollbackFunc = func() error {
 								return nil
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
 							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
-								return &mock.MockInsert{
+								return &dbr.MockInsert{
 									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
 										return nil, err
 									},
@@ -2140,22 +2139,22 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 					metas: m,
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
-							tx := new(mock.MockTx)
+							tx := new(dbr.MockTx)
 							tx.RollbackFunc = func() error {
 								return nil
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
 							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
-								return &mock.MockInsert{
+								return &dbr.MockInsert{
 									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
 										return nil, err
 									},
 								}
 							}
 							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
-								s := new(mock.MockSelect)
+								s := new(dbr.MockSelect)
 								s.FromFunc = func(table interface{}) dbr.SelectStmt {
 									return s
 								}
@@ -2177,7 +2176,7 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 						v.Store(true)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
@@ -2200,22 +2199,22 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 					metas: m,
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
-							tx := new(mock.MockTx)
+							tx := new(dbr.MockTx)
 							tx.RollbackFunc = func() error {
 								return nil
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
 							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
-								return &mock.MockInsert{
+								return &dbr.MockInsert{
 									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
 									},
 								}
 							}
 							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
-								s := new(mock.MockSelect)
+								s := new(dbr.MockSelect)
 								s.FromFunc = func(table interface{}) dbr.SelectStmt {
 									return s
 								}
@@ -2243,7 +2242,7 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 						v.Store(true)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
@@ -2274,22 +2273,22 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 					metas: m,
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
-							tx := new(mock.MockTx)
+							tx := new(dbr.MockTx)
 							tx.RollbackFunc = func() error {
 								return nil
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
 							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
-								return &mock.MockInsert{
+								return &dbr.MockInsert{
 									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
 									},
 								}
 							}
 							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
-								s := new(mock.MockSelect)
+								s := new(dbr.MockSelect)
 								s.FromFunc = func(table interface{}) dbr.SelectStmt {
 									return s
 								}
@@ -2311,7 +2310,7 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 								return s
 							}
 							tx.DeleteFromFunc = func(table string) dbr.DeleteStmt {
-								s := new(mock.MockDelete)
+								s := new(dbr.MockDelete)
 								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 									return nil, err
 								}
@@ -2328,7 +2327,7 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 						v.Store(true)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
@@ -2358,22 +2357,22 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 					metas: m,
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
-							tx := new(mock.MockTx)
+							tx := new(dbr.MockTx)
 							tx.RollbackFunc = func() error {
 								return nil
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
 							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
-								return &mock.MockInsert{
+								return &dbr.MockInsert{
 									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
 									},
 								}
 							}
 							tx.InsertIntoFunc = func(table string) dbr.InsertStmt {
-								s := new(mock.MockInsert)
+								s := new(dbr.MockInsert)
 								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
 									return s
 								}
@@ -2386,7 +2385,7 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 								return s
 							}
 							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
-								s := new(mock.MockSelect)
+								s := new(dbr.MockSelect)
 								s.FromFunc = func(table interface{}) dbr.SelectStmt {
 									return s
 								}
@@ -2408,7 +2407,7 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 								return s
 							}
 							tx.DeleteFromFunc = func(table string) dbr.DeleteStmt {
-								s := new(mock.MockDelete)
+								s := new(dbr.MockDelete)
 								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 									return nil, nil
 								}
@@ -2425,7 +2424,7 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 						v.Store(true)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
@@ -2455,9 +2454,9 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 					metas: m,
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
-							tx := new(mock.MockTx)
+							tx := new(dbr.MockTx)
 							tx.CommitFunc = func() error {
 								return err
 							}
@@ -2466,14 +2465,14 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
 							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
-								return &mock.MockInsert{
+								return &dbr.MockInsert{
 									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
 									},
 								}
 							}
 							tx.InsertIntoFunc = func(table string) dbr.InsertStmt {
-								s := new(mock.MockInsert)
+								s := new(dbr.MockInsert)
 								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
 									return s
 								}
@@ -2486,7 +2485,7 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 								return s
 							}
 							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
-								s := new(mock.MockSelect)
+								s := new(dbr.MockSelect)
 								s.FromFunc = func(table interface{}) dbr.SelectStmt {
 									return s
 								}
@@ -2508,7 +2507,7 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 								return s
 							}
 							tx.DeleteFromFunc = func(table string) dbr.DeleteStmt {
-								s := new(mock.MockDelete)
+								s := new(dbr.MockDelete)
 								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 									return nil, nil
 								}
@@ -2525,7 +2524,7 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 						v.Store(true)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
@@ -2554,9 +2553,9 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 					metas: m,
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
-							tx := new(mock.MockTx)
+							tx := new(dbr.MockTx)
 							tx.CommitFunc = func() error {
 								return nil
 							}
@@ -2565,14 +2564,14 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
 							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
-								return &mock.MockInsert{
+								return &dbr.MockInsert{
 									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
 									},
 								}
 							}
 							tx.InsertIntoFunc = func(table string) dbr.InsertStmt {
-								s := new(mock.MockInsert)
+								s := new(dbr.MockInsert)
 								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
 									return s
 								}
@@ -2585,7 +2584,7 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 								return s
 							}
 							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
-								s := new(mock.MockSelect)
+								s := new(dbr.MockSelect)
 								s.FromFunc = func(table interface{}) dbr.SelectStmt {
 									return s
 								}
@@ -2607,7 +2606,7 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 								return s
 							}
 							tx.DeleteFromFunc = func(table string) dbr.DeleteStmt {
-								s := new(mock.MockDelete)
+								s := new(dbr.MockDelete)
 								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 									return nil, nil
 								}
@@ -2624,7 +2623,7 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 						v.Store(true)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
@@ -2719,7 +2718,7 @@ func Test_mySQLClient_deleteMeta(t *testing.T) {
 					val: "vald-01",
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
 							return nil, err
 						},
@@ -2743,7 +2742,7 @@ func Test_mySQLClient_deleteMeta(t *testing.T) {
 					val: "vald-01",
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
 							return nil, nil
 						},
@@ -2767,15 +2766,15 @@ func Test_mySQLClient_deleteMeta(t *testing.T) {
 					val: "vald-01",
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
-							return &mock.MockTx{
+							return &dbr.MockTx{
 								CommitFunc: func() error {
 									return nil
 								},
 								RollbackUnlessCommittedFunc: func() {},
 								DeleteFromFunc: func(table string) dbr.DeleteStmt {
-									s := new(mock.MockDelete)
+									s := new(dbr.MockDelete)
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 										if table == "meta_vector" {
 											return nil, err
@@ -2794,7 +2793,7 @@ func Test_mySQLClient_deleteMeta(t *testing.T) {
 						v.Store(true)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
@@ -2814,15 +2813,15 @@ func Test_mySQLClient_deleteMeta(t *testing.T) {
 					val: "vald-01",
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
-							return &mock.MockTx{
+							return &dbr.MockTx{
 								CommitFunc: func() error {
 									return nil
 								},
 								RollbackUnlessCommittedFunc: func() {},
 								DeleteFromFunc: func(table string) dbr.DeleteStmt {
-									s := new(mock.MockDelete)
+									s := new(dbr.MockDelete)
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 										if table == "pod_ip" {
 											return nil, err
@@ -2841,7 +2840,7 @@ func Test_mySQLClient_deleteMeta(t *testing.T) {
 						v.Store(true)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
@@ -2860,15 +2859,15 @@ func Test_mySQLClient_deleteMeta(t *testing.T) {
 					val: "vald-01",
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
-							return &mock.MockTx{
+							return &dbr.MockTx{
 								CommitFunc: func() error {
 									return nil
 								},
 								RollbackUnlessCommittedFunc: func() {},
 								DeleteFromFunc: func(table string) dbr.DeleteStmt {
-									s := new(mock.MockDelete)
+									s := new(dbr.MockDelete)
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
 									}
@@ -2884,7 +2883,7 @@ func Test_mySQLClient_deleteMeta(t *testing.T) {
 						v.Store(true)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
@@ -2959,15 +2958,15 @@ func Test_mySQLClient_DeleteMeta(t *testing.T) {
 					uuid: "",
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
-							return &mock.MockTx{
+							return &dbr.MockTx{
 								CommitFunc: func() error {
 									return nil
 								},
 								RollbackUnlessCommittedFunc: func() {},
 								DeleteFromFunc: func(table string) dbr.DeleteStmt {
-									s := new(mock.MockDelete)
+									s := new(dbr.MockDelete)
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
 									}
@@ -2983,7 +2982,7 @@ func Test_mySQLClient_DeleteMeta(t *testing.T) {
 						v.Store(true)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
@@ -3000,15 +2999,15 @@ func Test_mySQLClient_DeleteMeta(t *testing.T) {
 					uuid: "vald-01",
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
-							return &mock.MockTx{
+							return &dbr.MockTx{
 								CommitFunc: func() error {
 									return nil
 								},
 								RollbackUnlessCommittedFunc: func() {},
 								DeleteFromFunc: func(table string) dbr.DeleteStmt {
-									s := new(mock.MockDelete)
+									s := new(dbr.MockDelete)
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
 									}
@@ -3024,7 +3023,7 @@ func Test_mySQLClient_DeleteMeta(t *testing.T) {
 						v.Store(true)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
@@ -3099,15 +3098,15 @@ func Test_mySQLClient_DeleteMetas(t *testing.T) {
 					uuids: []string{},
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
-							return &mock.MockTx{
+							return &dbr.MockTx{
 								CommitFunc: func() error {
 									return nil
 								},
 								RollbackUnlessCommittedFunc: func() {},
 								DeleteFromFunc: func(table string) dbr.DeleteStmt {
-									s := new(mock.MockDelete)
+									s := new(dbr.MockDelete)
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
 									}
@@ -3123,7 +3122,7 @@ func Test_mySQLClient_DeleteMetas(t *testing.T) {
 						v.Store(true)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
@@ -3143,15 +3142,15 @@ func Test_mySQLClient_DeleteMetas(t *testing.T) {
 					},
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
-							return &mock.MockTx{
+							return &dbr.MockTx{
 								CommitFunc: func() error {
 									return nil
 								},
 								RollbackUnlessCommittedFunc: func() {},
 								DeleteFromFunc: func(table string) dbr.DeleteStmt {
-									s := new(mock.MockDelete)
+									s := new(dbr.MockDelete)
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
 									}
@@ -3167,7 +3166,7 @@ func Test_mySQLClient_DeleteMetas(t *testing.T) {
 						v.Store(true)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
@@ -3271,7 +3270,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 					},
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
 							return nil, err
 						},
@@ -3299,15 +3298,15 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 					},
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
-							return &mock.MockTx{
+							return &dbr.MockTx{
 								CommitFunc: func() error {
 									return nil
 								},
 								RollbackUnlessCommittedFunc: func() {},
 								SelectFunc: func(column ...string) dbr.SelectStmt {
-									s := new(mock.MockSelect)
+									s := new(dbr.MockSelect)
 									s.FromFunc = func(table interface{}) dbr.SelectStmt {
 										return s
 									}
@@ -3335,7 +3334,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 						v.Store(true)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
@@ -3358,15 +3357,15 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 					},
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
-							return &mock.MockTx{
+							return &dbr.MockTx{
 								CommitFunc: func() error {
 									return nil
 								},
 								RollbackUnlessCommittedFunc: func() {},
 								SelectFunc: func(column ...string) dbr.SelectStmt {
-									s := new(mock.MockSelect)
+									s := new(dbr.MockSelect)
 									s.FromFunc = func(table interface{}) dbr.SelectStmt {
 										return s
 									}
@@ -3393,7 +3392,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 						v.Store(true)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
@@ -3417,15 +3416,15 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 					},
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
-							return &mock.MockTx{
+							return &dbr.MockTx{
 								CommitFunc: func() error {
 									return nil
 								},
 								RollbackUnlessCommittedFunc: func() {},
 								InsertIntoFunc: func(table string) dbr.InsertStmt {
-									s := new(mock.MockInsert)
+									s := new(dbr.MockInsert)
 									s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
 										return s
 									}
@@ -3438,7 +3437,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 									return s
 								},
 								SelectFunc: func(column ...string) dbr.SelectStmt {
-									s := new(mock.MockSelect)
+									s := new(dbr.MockSelect)
 									s.FromFunc = func(table interface{}) dbr.SelectStmt {
 										return s
 									}
@@ -3466,7 +3465,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 						v.Store(true)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
@@ -3489,15 +3488,15 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 					},
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
-							return &mock.MockTx{
+							return &dbr.MockTx{
 								CommitFunc: func() error {
 									return nil
 								},
 								RollbackUnlessCommittedFunc: func() {},
 								InsertIntoFunc: func(table string) dbr.InsertStmt {
-									s := new(mock.MockInsert)
+									s := new(dbr.MockInsert)
 									s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
 										return s
 									}
@@ -3510,7 +3509,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 									return s
 								},
 								SelectFunc: func(column ...string) dbr.SelectStmt {
-									s := new(mock.MockSelect)
+									s := new(dbr.MockSelect)
 									s.FromFunc = func(table interface{}) dbr.SelectStmt {
 										return s
 									}
@@ -3538,7 +3537,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 						v.Store(true)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
@@ -3639,7 +3638,7 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 					},
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
 							return nil, err
 						},
@@ -3666,15 +3665,15 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 					},
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
-							return &mock.MockTx{
+							return &dbr.MockTx{
 								CommitFunc: func() error {
 									return nil
 								},
 								RollbackUnlessCommittedFunc: func() {},
 								DeleteFromFunc: func(table string) dbr.DeleteStmt {
-									s := new(mock.MockDelete)
+									s := new(dbr.MockDelete)
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 										return nil, err
 									}
@@ -3690,7 +3689,7 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 						v.Store(true)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
@@ -3712,15 +3711,15 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 					},
 				},
 				fields: fields{
-					session: &mock.MockSession{
+					session: &dbr.MockSession{
 						BeginFunc: func() (dbr.Tx, error) {
-							return &mock.MockTx{
+							return &dbr.MockTx{
 								CommitFunc: func() error {
 									return nil
 								},
 								RollbackUnlessCommittedFunc: func() {},
 								DeleteFromFunc: func(table string) dbr.DeleteStmt {
-									s := new(mock.MockDelete)
+									s := new(dbr.MockDelete)
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
 									}
@@ -3736,7 +3735,7 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 						v.Store(true)
 						return
 					}(),
-					dbr: &mock.MockDBR{
+					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val interface{}) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
