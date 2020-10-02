@@ -50,6 +50,9 @@ var (
 		comparator.Comparer(func(x, y hostFilter) bool {
 			return reflect.DeepEqual(x, y)
 		}),
+		comparator.Comparer(func(x, y func(h *gocql.HostInfo) (gocql.Authenticator, error)) bool {
+			return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
+		}),
 	}
 )
 
@@ -873,82 +876,81 @@ func TestWithNumConns(t *testing.T) {
 }
 
 func TestWithConsistency(t *testing.T) {
-	type T = interface{}
+	type T = client
 	type args struct {
 		consistency string
 	}
 	type want struct {
 		obj *T
-		// Uncomment this line if the option returns an error, otherwise delete it
-		// err error
+		err error
 	}
 	type test struct {
-		name string
-		args args
-		want want
-		// Use the first line if the option returns an error. otherwise use the second line
-		// checkFunc  func(want, *T, error) error
-		// checkFunc  func(want, *T) error
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
 
-	// Uncomment this block if the option returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T, err error) error {
-	       if !errors.Is(err, w.err) {
-	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-	       }
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
-	       }
-	       return nil
-	   }
-	*/
-
-	// Uncomment this block if the option do not returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T) error {
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
-	       }
-	       return nil
-	   }
-	*/
+	defaultCheckFunc := func(w want, obj *T, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if diff := comparator.Diff(obj, w.obj, clientComparatorOpts...); diff != "" {
+			return errors.New(diff)
+		}
+		return nil
+	}
 
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           consistency: "",
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           consistency: "",
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
+		{
+			name: "set consistency level success",
+			args: args{
+				consistency: "one",
+			},
+			want: want{
+				obj: &T{
+					consistency: gocql.One,
+				},
+			},
+		},
+		{
+			name: "set consistency level success with complex string",
+			args: args{
+				consistency: "-One_",
+			},
+			want: want{
+				obj: &T{
+					consistency: gocql.One,
+				},
+			},
+		},
+		{
+			name: "return error when consistency is empty",
+			args: args{
+				consistency: "",
+			},
+			want: want{
+				err: errors.NewErrInvalidOption("consistency", ""),
+				obj: &T{},
+			},
+		},
+		{
+			name: "return error when consistency is invalid",
+			args: args{
+				consistency: "dummy",
+			},
+			want: want{
+				err: errors.NewErrCriticalOption("consistency", "dummy"),
+				obj: &T{},
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -956,1581 +958,467 @@ func TestWithConsistency(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-
-			   got := WithConsistency(test.args.consistency)
-			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-			   got := WithConsistency(test.args.consistency)
-			   obj := new(T)
-			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-		})
-	}
-}
-
-func TestWithCompressor(t *testing.T) {
-	type T = interface{}
-	type args struct {
-		compressor gocql.Compressor
-	}
-	type want struct {
-		obj *T
-		// Uncomment this line if the option returns an error, otherwise delete it
-		// err error
-	}
-	type test struct {
-		name string
-		args args
-		want want
-		// Use the first line if the option returns an error. otherwise use the second line
-		// checkFunc  func(want, *T, error) error
-		// checkFunc  func(want, *T) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-
-	// Uncomment this block if the option returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T, err error) error {
-	       if !errors.Is(err, w.err) {
-	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-	       }
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
-	       }
-	       return nil
-	   }
-	*/
-
-	// Uncomment this block if the option do not returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T) error {
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
-	       }
-	       return nil
-	   }
-	*/
-
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           compressor: nil,
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           compressor: nil,
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
 			}
 
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-
-			   got := WithCompressor(test.args.compressor)
-			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-			   got := WithCompressor(test.args.compressor)
-			   obj := new(T)
-			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-		})
-	}
-}
-
-func TestWithUsername(t *testing.T) {
-	type T = interface{}
-	type args struct {
-		username string
-	}
-	type want struct {
-		obj *T
-		// Uncomment this line if the option returns an error, otherwise delete it
-		// err error
-	}
-	type test struct {
-		name string
-		args args
-		want want
-		// Use the first line if the option returns an error. otherwise use the second line
-		// checkFunc  func(want, *T, error) error
-		// checkFunc  func(want, *T) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-
-	// Uncomment this block if the option returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T, err error) error {
-	       if !errors.Is(err, w.err) {
-	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-	       }
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
-	       }
-	       return nil
-	   }
-	*/
-
-	// Uncomment this block if the option do not returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T) error {
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
-	       }
-	       return nil
-	   }
-	*/
-
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           username: "",
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           username: "",
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+			got := WithConsistency(test.args.consistency)
+			obj := new(T)
+			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+				tt.Errorf("error = %v", err)
 			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-
-			   got := WithUsername(test.args.username)
-			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-			   got := WithUsername(test.args.username)
-			   obj := new(T)
-			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-		})
-	}
-}
-
-func TestWithPassword(t *testing.T) {
-	type T = interface{}
-	type args struct {
-		password string
-	}
-	type want struct {
-		obj *T
-		// Uncomment this line if the option returns an error, otherwise delete it
-		// err error
-	}
-	type test struct {
-		name string
-		args args
-		want want
-		// Use the first line if the option returns an error. otherwise use the second line
-		// checkFunc  func(want, *T, error) error
-		// checkFunc  func(want, *T) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-
-	// Uncomment this block if the option returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T, err error) error {
-	       if !errors.Is(err, w.err) {
-	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-	       }
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
-	       }
-	       return nil
-	   }
-	*/
-
-	// Uncomment this block if the option do not returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T) error {
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
-	       }
-	       return nil
-	   }
-	*/
-
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           password: "",
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           password: "",
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-
-			   got := WithPassword(test.args.password)
-			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-			   got := WithPassword(test.args.password)
-			   obj := new(T)
-			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-		})
-	}
-}
-
-func TestWithAuthProvider(t *testing.T) {
-	type T = interface{}
-	type args struct {
-		authProvider func(h *gocql.HostInfo) (gocql.Authenticator, error)
-	}
-	type want struct {
-		obj *T
-		// Uncomment this line if the option returns an error, otherwise delete it
-		// err error
-	}
-	type test struct {
-		name string
-		args args
-		want want
-		// Use the first line if the option returns an error. otherwise use the second line
-		// checkFunc  func(want, *T, error) error
-		// checkFunc  func(want, *T) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-
-	// Uncomment this block if the option returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T, err error) error {
-	       if !errors.Is(err, w.err) {
-	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-	       }
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
-	       }
-	       return nil
-	   }
-	*/
-
-	// Uncomment this block if the option do not returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T) error {
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
-	       }
-	       return nil
-	   }
-	*/
-
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           authProvider: nil,
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           authProvider: nil,
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-
-			   got := WithAuthProvider(test.args.authProvider)
-			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-			   got := WithAuthProvider(test.args.authProvider)
-			   obj := new(T)
-			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-		})
-	}
-}
-
-func TestWithRetryPolicyNumRetries(t *testing.T) {
-	type T = interface{}
-	type args struct {
-		n int
-	}
-	type want struct {
-		obj *T
-		// Uncomment this line if the option returns an error, otherwise delete it
-		// err error
-	}
-	type test struct {
-		name string
-		args args
-		want want
-		// Use the first line if the option returns an error. otherwise use the second line
-		// checkFunc  func(want, *T, error) error
-		// checkFunc  func(want, *T) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-
-	// Uncomment this block if the option returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T, err error) error {
-	       if !errors.Is(err, w.err) {
-	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-	       }
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
-	       }
-	       return nil
-	   }
-	*/
-
-	// Uncomment this block if the option do not returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T) error {
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
-	       }
-	       return nil
-	   }
-	*/
-
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           n: 0,
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           n: 0,
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-
-			   got := WithRetryPolicyNumRetries(test.args.n)
-			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-			   got := WithRetryPolicyNumRetries(test.args.n)
-			   obj := new(T)
-			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-		})
-	}
-}
-
-func TestWithRetryPolicyMinDuration(t *testing.T) {
-	type T = interface{}
-	type args struct {
-		minDuration string
-	}
-	type want struct {
-		obj *T
-		// Uncomment this line if the option returns an error, otherwise delete it
-		// err error
-	}
-	type test struct {
-		name string
-		args args
-		want want
-		// Use the first line if the option returns an error. otherwise use the second line
-		// checkFunc  func(want, *T, error) error
-		// checkFunc  func(want, *T) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-
-	// Uncomment this block if the option returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T, err error) error {
-	       if !errors.Is(err, w.err) {
-	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-	       }
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
-	       }
-	       return nil
-	   }
-	*/
-
-	// Uncomment this block if the option do not returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T) error {
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
-	       }
-	       return nil
-	   }
-	*/
-
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           minDuration: "",
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           minDuration: "",
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-
-			   got := WithRetryPolicyMinDuration(test.args.minDuration)
-			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-			   got := WithRetryPolicyMinDuration(test.args.minDuration)
-			   obj := new(T)
-			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-		})
-	}
-}
-
-func TestWithRetryPolicyMaxDuration(t *testing.T) {
-	type T = interface{}
-	type args struct {
-		maxDuration string
-	}
-	type want struct {
-		obj *T
-		// Uncomment this line if the option returns an error, otherwise delete it
-		// err error
-	}
-	type test struct {
-		name string
-		args args
-		want want
-		// Use the first line if the option returns an error. otherwise use the second line
-		// checkFunc  func(want, *T, error) error
-		// checkFunc  func(want, *T) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-
-	// Uncomment this block if the option returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T, err error) error {
-	       if !errors.Is(err, w.err) {
-	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-	       }
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
-	       }
-	       return nil
-	   }
-	*/
-
-	// Uncomment this block if the option do not returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T) error {
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
-	       }
-	       return nil
-	   }
-	*/
-
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           maxDuration: "",
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           maxDuration: "",
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-
-			   got := WithRetryPolicyMaxDuration(test.args.maxDuration)
-			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-			   got := WithRetryPolicyMaxDuration(test.args.maxDuration)
-			   obj := new(T)
-			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-		})
-	}
-}
-
-func TestWithReconnectionPolicyInitialInterval(t *testing.T) {
-	type T = interface{}
-	type args struct {
-		initialInterval string
-	}
-	type want struct {
-		obj *T
-		// Uncomment this line if the option returns an error, otherwise delete it
-		// err error
-	}
-	type test struct {
-		name string
-		args args
-		want want
-		// Use the first line if the option returns an error. otherwise use the second line
-		// checkFunc  func(want, *T, error) error
-		// checkFunc  func(want, *T) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-
-	// Uncomment this block if the option returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T, err error) error {
-	       if !errors.Is(err, w.err) {
-	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-	       }
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
-	       }
-	       return nil
-	   }
-	*/
-
-	// Uncomment this block if the option do not returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T) error {
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
-	       }
-	       return nil
-	   }
-	*/
-
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           initialInterval: "",
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           initialInterval: "",
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-
-			   got := WithReconnectionPolicyInitialInterval(test.args.initialInterval)
-			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-			   got := WithReconnectionPolicyInitialInterval(test.args.initialInterval)
-			   obj := new(T)
-			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-		})
-	}
-}
-
-func TestWithReconnectionPolicyMaxRetries(t *testing.T) {
-	type T = interface{}
-	type args struct {
-		maxRetries int
-	}
-	type want struct {
-		obj *T
-		// Uncomment this line if the option returns an error, otherwise delete it
-		// err error
-	}
-	type test struct {
-		name string
-		args args
-		want want
-		// Use the first line if the option returns an error. otherwise use the second line
-		// checkFunc  func(want, *T, error) error
-		// checkFunc  func(want, *T) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-
-	// Uncomment this block if the option returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T, err error) error {
-	       if !errors.Is(err, w.err) {
-	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-	       }
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
-	       }
-	       return nil
-	   }
-	*/
-
-	// Uncomment this block if the option do not returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T) error {
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
-	       }
-	       return nil
-	   }
-	*/
-
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           maxRetries: 0,
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           maxRetries: 0,
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-
-			   got := WithReconnectionPolicyMaxRetries(test.args.maxRetries)
-			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-			   got := WithReconnectionPolicyMaxRetries(test.args.maxRetries)
-			   obj := new(T)
-			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-		})
-	}
-}
-
-func TestWithSocketKeepalive(t *testing.T) {
-	type T = interface{}
-	type args struct {
-		socketKeepalive string
-	}
-	type want struct {
-		obj *T
-		// Uncomment this line if the option returns an error, otherwise delete it
-		// err error
-	}
-	type test struct {
-		name string
-		args args
-		want want
-		// Use the first line if the option returns an error. otherwise use the second line
-		// checkFunc  func(want, *T, error) error
-		// checkFunc  func(want, *T) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-
-	// Uncomment this block if the option returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T, err error) error {
-	       if !errors.Is(err, w.err) {
-	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-	       }
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
-	       }
-	       return nil
-	   }
-	*/
-
-	// Uncomment this block if the option do not returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T) error {
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
-	       }
-	       return nil
-	   }
-	*/
-
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           socketKeepalive: "",
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           socketKeepalive: "",
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-
-			   got := WithSocketKeepalive(test.args.socketKeepalive)
-			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-			   got := WithSocketKeepalive(test.args.socketKeepalive)
-			   obj := new(T)
-			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-		})
-	}
-}
-
-func TestWithMaxPreparedStmts(t *testing.T) {
-	type T = interface{}
-	type args struct {
-		maxPreparedStmts int
-	}
-	type want struct {
-		obj *T
-		// Uncomment this line if the option returns an error, otherwise delete it
-		// err error
-	}
-	type test struct {
-		name string
-		args args
-		want want
-		// Use the first line if the option returns an error. otherwise use the second line
-		// checkFunc  func(want, *T, error) error
-		// checkFunc  func(want, *T) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-
-	// Uncomment this block if the option returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T, err error) error {
-	       if !errors.Is(err, w.err) {
-	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-	       }
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
-	       }
-	       return nil
-	   }
-	*/
-
-	// Uncomment this block if the option do not returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T) error {
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
-	       }
-	       return nil
-	   }
-	*/
-
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           maxPreparedStmts: 0,
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           maxPreparedStmts: 0,
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-
-			   got := WithMaxPreparedStmts(test.args.maxPreparedStmts)
-			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-			   got := WithMaxPreparedStmts(test.args.maxPreparedStmts)
-			   obj := new(T)
-			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-		})
-	}
-}
-
-func TestWithMaxRoutingKeyInfo(t *testing.T) {
-	type T = interface{}
-	type args struct {
-		maxRoutingKeyInfo int
-	}
-	type want struct {
-		obj *T
-		// Uncomment this line if the option returns an error, otherwise delete it
-		// err error
-	}
-	type test struct {
-		name string
-		args args
-		want want
-		// Use the first line if the option returns an error. otherwise use the second line
-		// checkFunc  func(want, *T, error) error
-		// checkFunc  func(want, *T) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-
-	// Uncomment this block if the option returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T, err error) error {
-	       if !errors.Is(err, w.err) {
-	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-	       }
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
-	       }
-	       return nil
-	   }
-	*/
-
-	// Uncomment this block if the option do not returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T) error {
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
-	       }
-	       return nil
-	   }
-	*/
-
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           maxRoutingKeyInfo: 0,
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           maxRoutingKeyInfo: 0,
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-
-			   got := WithMaxRoutingKeyInfo(test.args.maxRoutingKeyInfo)
-			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-			   got := WithMaxRoutingKeyInfo(test.args.maxRoutingKeyInfo)
-			   obj := new(T)
-			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-		})
-	}
-}
-
-func TestWithPageSize(t *testing.T) {
-	type T = interface{}
-	type args struct {
-		pageSize int
-	}
-	type want struct {
-		obj *T
-		// Uncomment this line if the option returns an error, otherwise delete it
-		// err error
-	}
-	type test struct {
-		name string
-		args args
-		want want
-		// Use the first line if the option returns an error. otherwise use the second line
-		// checkFunc  func(want, *T, error) error
-		// checkFunc  func(want, *T) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-
-	// Uncomment this block if the option returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T, err error) error {
-	       if !errors.Is(err, w.err) {
-	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-	       }
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
-	       }
-	       return nil
-	   }
-	*/
-
-	// Uncomment this block if the option do not returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T) error {
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
-	       }
-	       return nil
-	   }
-	*/
-
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           pageSize: 0,
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           pageSize: 0,
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-
-			   got := WithPageSize(test.args.pageSize)
-			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-			   got := WithPageSize(test.args.pageSize)
-			   obj := new(T)
-			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
 		})
 	}
 }
 
 func TestWithSerialConsistency(t *testing.T) {
-	type T = interface{}
+	type T = client
 	type args struct {
-		consistency gocql.SerialConsistency
+		consistency string
 	}
 	type want struct {
 		obj *T
-		// Uncomment this line if the option returns an error, otherwise delete it
-		// err error
+		err error
 	}
 	type test struct {
-		name string
-		args args
-		want want
-		// Use the first line if the option returns an error. otherwise use the second line
-		// checkFunc  func(want, *T, error) error
-		// checkFunc  func(want, *T) error
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
 
-	// Uncomment this block if the option returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T, err error) error {
-	       if !errors.Is(err, w.err) {
-	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-	       }
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
-	       }
-	       return nil
-	   }
-	*/
-
-	// Uncomment this block if the option do not returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T) error {
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
-	       }
-	       return nil
-	   }
-	*/
+	defaultCheckFunc := func(w want, obj *T, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if diff := comparator.Diff(obj, w.obj, clientComparatorOpts...); diff != "" {
+			return errors.New(diff)
+		}
+		return nil
+	}
 
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           consistency: nil,
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           consistency: nil,
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
+		{
+			name: "set serial consistency level success",
+			args: args{
+				consistency: "serial",
+			},
+			want: want{
+				obj: &T{
+					serialConsistency: gocql.Serial,
+				},
+			},
+		},
+		{
+			name: "set serial consistency level success with complex string",
+			args: args{
+				consistency: "-serial_",
+			},
+			want: want{
+				obj: &T{
+					serialConsistency: gocql.Serial,
+				},
+			},
+		},
+		{
+			name: "return error when consistency is empty",
+			args: args{
+				consistency: "",
+			},
+			want: want{
+				err: errors.NewErrInvalidOption("serialConsistency", ""),
+				obj: &T{},
+			},
+		},
+		{
+			name: "return error when consistency is invalid",
+			args: args{
+				consistency: "dummy",
+			},
+			want: want{
+				err: errors.NewErrCriticalOption("serialConsistency", "dummy"),
+				obj: &T{},
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := WithSerialConsistency(test.args.consistency)
+			obj := new(T)
+			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+func TestWithCompressor(t *testing.T) {
+	type T = client
+	type args struct {
+		compressor gocql.Compressor
+	}
+	type want struct {
+		obj *T
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+
+	defaultCheckFunc := func(w want, obj *T, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if diff := comparator.Diff(obj, w.obj, clientComparatorOpts...); diff != "" {
+			return errors.New(diff)
+		}
+		return nil
+	}
+
+	tests := []test{
+		{
+			name: "set compressor success",
+			args: args{
+				compressor: &gocql.SnappyCompressor{},
+			},
+			want: want{
+				obj: &T{
+					compressor: &gocql.SnappyCompressor{},
+				},
+			},
+		},
+		{
+			name: "return error when compressor is nil",
+			args: args{},
+			want: want{
+				obj: &T{},
+				err: errors.NewErrInvalidOption("compressor", nil),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := WithCompressor(test.args.compressor)
+			obj := new(T)
+			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestWithUsername(t *testing.T) {
+	type T = client
+	type args struct {
+		username string
+	}
+	type want struct {
+		obj *T
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+
+	defaultCheckFunc := func(w want, obj *T, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+		}
+		return nil
+	}
+
+	tests := []test{
+		{
+			name: "set username success",
+			args: args{
+				username: "user",
+			},
+			want: want{
+				obj: &T{
+					username: "user",
+				},
+			},
+		},
+		{
+			name: "return error when username is empty",
+			args: args{
+				username: "",
+			},
+			want: want{
+				err: errors.NewErrInvalidOption("username", ""),
+				obj: &T{},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := WithUsername(test.args.username)
+			obj := new(T)
+			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestWithPassword(t *testing.T) {
+	type T = client
+	type args struct {
+		password string
+	}
+	type want struct {
+		obj *T
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+
+	defaultCheckFunc := func(w want, obj *T, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+		}
+		return nil
+	}
+
+	tests := []test{
+		{
+			name: "set password success",
+			args: args{
+				password: "pass",
+			},
+			want: want{
+				obj: &T{
+					password: "pass",
+				},
+			},
+		},
+		{
+			name: "return error when password is empty",
+			args: args{
+				password: "",
+			},
+			want: want{
+				err: errors.NewErrInvalidOption("password", ""),
+				obj: &T{},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := WithPassword(test.args.password)
+			obj := new(T)
+			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestWithAuthProvider(t *testing.T) {
+	type T = client
+	type args struct {
+		authProvider func(h *gocql.HostInfo) (gocql.Authenticator, error)
+	}
+	type want struct {
+		obj *T
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+
+	defaultCheckFunc := func(w want, obj *T, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if diff := comparator.Diff(obj, w.obj, clientComparatorOpts...); diff != "" {
+			return errors.New(diff)
+		}
+		return nil
+	}
+
+	tests := []test{
+		func() test {
+			ap := func(h *gocql.HostInfo) (gocql.Authenticator, error) {
+				return nil, nil
+			}
+			return test{
+				name: "set auth provider success",
+				args: args{
+					authProvider: ap,
+				},
+				want: want{
+					obj: &T{
+						authProvider: ap,
+					},
+				},
+			}
+		}(),
+		{
+			name: "return error when auth provider is nil",
+			args: args{},
+			want: want{
+				obj: &T{},
+				err: errors.NewErrInvalidOption("authProvider", nil),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := WithAuthProvider(test.args.authProvider)
+			obj := new(T)
+			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestWithRetryPolicyNumRetries(t *testing.T) {
+	type T = client
+	type args struct {
+		n int
+	}
+	type want struct {
+		obj *T
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+
+	defaultCheckFunc := func(w want, obj *T, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+		}
+		return nil
+	}
+
+	tests := []test{
+		{
+			name: "set numRetries success",
+			args: args{
+				n: 4,
+			},
+			want: want{
+				obj: &T{
+					retryPolicy: retryPolicy{
+						numRetries: 4,
+					},
+				},
+			},
+		},
+		{
+			name: "return error when numRetries < 0",
+			args: args{
+				n: -1,
+			},
+			want: want{
+				obj: &T{},
+				err: errors.NewErrInvalidOption("retryPolicyNumRetries", -1),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -2538,31 +1426,654 @@ func TestWithSerialConsistency(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
 
-			   got := WithSerialConsistency(test.args.consistency)
-			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
+			got := WithRetryPolicyNumRetries(test.args.n)
+			obj := new(T)
+			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
 
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-			   got := WithSerialConsistency(test.args.consistency)
-			   obj := new(T)
-			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
+func TestWithRetryPolicyMinDuration(t *testing.T) {
+	type T = client
+	type args struct {
+		minDuration string
+	}
+	type want struct {
+		obj *T
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+
+	defaultCheckFunc := func(w want, obj *T, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+		}
+		return nil
+	}
+
+	tests := []test{
+		{
+			name: "set dur success",
+			args: args{
+				minDuration: "5s",
+			},
+			want: want{
+				obj: &T{
+					retryPolicy: retryPolicy{
+						minDuration: 5 * time.Second,
+					},
+				},
+			},
+		},
+		{
+			name: "return error if the time format is invalid",
+			args: args{
+				minDuration: "dummy",
+			},
+			want: want{
+				err: errors.NewErrCriticalOption("retryPolicyMinDuration", "dummy", errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration \"dummy\"")),
+				obj: &T{},
+			},
+		},
+		{
+			name: "return error if the time is empty",
+			args: args{
+				minDuration: "",
+			},
+			want: want{
+				obj: &T{},
+				err: errors.NewErrInvalidOption("retryPolicyMinDuration", ""),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := WithRetryPolicyMinDuration(test.args.minDuration)
+			obj := new(T)
+			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestWithRetryPolicyMaxDuration(t *testing.T) {
+	type T = client
+	type args struct {
+		maxDuration string
+	}
+	type want struct {
+		obj *T
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+
+	defaultCheckFunc := func(w want, obj *T, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+		}
+		return nil
+	}
+
+	tests := []test{
+		{
+			name: "set dur success",
+			args: args{
+				maxDuration: "5s",
+			},
+			want: want{
+				obj: &T{
+					retryPolicy: retryPolicy{
+						maxDuration: 5 * time.Second,
+					},
+				},
+			},
+		},
+		{
+			name: "return error if the time format is invalid",
+			args: args{
+				maxDuration: "dummy",
+			},
+			want: want{
+				err: errors.NewErrCriticalOption("retryPolicyMaxDuration", "dummy", errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration \"dummy\"")),
+				obj: &T{},
+			},
+		},
+		{
+			name: "return error if the time is empty",
+			args: args{
+				maxDuration: "",
+			},
+			want: want{
+				obj: &T{},
+				err: errors.NewErrInvalidOption("retryPolicyMaxDuration", ""),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := WithRetryPolicyMaxDuration(test.args.maxDuration)
+			obj := new(T)
+			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestWithReconnectionPolicyInitialInterval(t *testing.T) {
+	type T = client
+	type args struct {
+		initialInterval string
+	}
+	type want struct {
+		obj *T
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+
+	defaultCheckFunc := func(w want, obj *T, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+		}
+		return nil
+	}
+
+	tests := []test{
+		{
+			name: "set interval success",
+			args: args{
+				initialInterval: "5s",
+			},
+			want: want{
+				obj: &T{
+					reconnectionPolicy: reconnectionPolicy{
+						initialInterval: 5 * time.Second,
+					},
+				},
+			},
+		},
+		{
+			name: "return error if the time format is invalid",
+			args: args{
+				initialInterval: "dummy",
+			},
+			want: want{
+				err: errors.NewErrCriticalOption("reconnectionPolicyInitialInterval", "dummy", errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration \"dummy\"")),
+				obj: &T{},
+			},
+		},
+		{
+			name: "return error if the time is empty",
+			args: args{
+				initialInterval: "",
+			},
+			want: want{
+				obj: &T{},
+				err: errors.NewErrInvalidOption("reconnectionPolicyInitialInterval", ""),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := WithReconnectionPolicyInitialInterval(test.args.initialInterval)
+			obj := new(T)
+			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestWithReconnectionPolicyMaxRetries(t *testing.T) {
+	type T = client
+	type args struct {
+		maxRetries int
+	}
+	type want struct {
+		obj *T
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+
+	defaultCheckFunc := func(w want, obj *T, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+		}
+		return nil
+	}
+
+	tests := []test{
+		{
+			name: "set maxRetries success",
+			args: args{
+				maxRetries: 4,
+			},
+			want: want{
+				obj: &T{
+					reconnectionPolicy: reconnectionPolicy{
+						maxRetries: 4,
+					},
+				},
+			},
+		},
+		{
+			name: "return error when maxRetries < 0",
+			args: args{
+				maxRetries: -1,
+			},
+			want: want{
+				obj: &T{},
+				err: errors.NewErrInvalidOption("maxRetries", -1),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := WithReconnectionPolicyMaxRetries(test.args.maxRetries)
+			obj := new(T)
+			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestWithSocketKeepalive(t *testing.T) {
+	type T = client
+	type args struct {
+		socketKeepalive string
+	}
+	type want struct {
+		obj *T
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+
+	defaultCheckFunc := func(w want, obj *T, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "set socket keepalive success",
+			args: args{
+				socketKeepalive: "5s",
+			},
+			want: want{
+				obj: &T{
+					socketKeepalive: 5 * time.Second,
+				},
+			},
+		},
+		{
+			name: "return error if the time format is invalid",
+			args: args{
+				socketKeepalive: "dummy",
+			},
+			want: want{
+				err: errors.NewErrCriticalOption("socketKeepalive", "dummy", errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration \"dummy\"")),
+				obj: &T{},
+			},
+		},
+		{
+			name: "return error if the time is empty",
+			args: args{
+				socketKeepalive: "",
+			},
+			want: want{
+				obj: &T{},
+				err: errors.NewErrInvalidOption("socketKeepalive", ""),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := WithSocketKeepalive(test.args.socketKeepalive)
+			obj := new(T)
+			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestWithMaxPreparedStmts(t *testing.T) {
+	type T = client
+	type args struct {
+		maxPreparedStmts int
+	}
+	type want struct {
+		obj *T
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+
+	defaultCheckFunc := func(w want, obj *T, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+		}
+		return nil
+	}
+
+	tests := []test{
+		{
+			name: "set maxPreparedStmts success",
+			args: args{
+				maxPreparedStmts: 4,
+			},
+			want: want{
+				obj: &T{
+					maxPreparedStmts: 4,
+				},
+			},
+		},
+		{
+			name: "return error when maxPreparedStmts < 0",
+			args: args{
+				maxPreparedStmts: -1,
+			},
+			want: want{
+				obj: &T{},
+				err: errors.NewErrInvalidOption("maxPreparedStmts", -1),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := WithMaxPreparedStmts(test.args.maxPreparedStmts)
+			obj := new(T)
+			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestWithMaxRoutingKeyInfo(t *testing.T) {
+	type T = client
+	type args struct {
+		maxRoutingKeyInfo int
+	}
+	type want struct {
+		obj *T
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+
+	defaultCheckFunc := func(w want, obj *T, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+		}
+		return nil
+	}
+
+	tests := []test{
+		{
+			name: "set maxRoutingKeyInfo success",
+			args: args{
+				maxRoutingKeyInfo: 4,
+			},
+			want: want{
+				obj: &T{
+					maxRoutingKeyInfo: 4,
+				},
+			},
+		},
+		{
+			name: "return error when maxRoutingKeyInfo < 0",
+			args: args{
+				maxRoutingKeyInfo: -1,
+			},
+			want: want{
+				obj: &T{},
+				err: errors.NewErrInvalidOption("maxRoutingKeyInfo", -1),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := WithMaxRoutingKeyInfo(test.args.maxRoutingKeyInfo)
+			obj := new(T)
+			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestWithPageSize(t *testing.T) {
+	type T = client
+	type args struct {
+		pageSize int
+	}
+	type want struct {
+		obj *T
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+
+	defaultCheckFunc := func(w want, obj *T, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+		}
+		return nil
+	}
+
+	tests := []test{
+		{
+			name: "set pageSize success",
+			args: args{
+				pageSize: 4,
+			},
+			want: want{
+				obj: &T{
+					pageSize: 4,
+				},
+			},
+		},
+		{
+			name: "return error when pageSize < 0",
+			args: args{
+				pageSize: -1,
+			},
+			want: want{
+				obj: &T{},
+				err: errors.NewErrInvalidOption("pageSize", -1),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := WithPageSize(test.args.pageSize)
+			obj := new(T)
+			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+				tt.Errorf("error = %v", err)
+			}
 		})
 	}
 }

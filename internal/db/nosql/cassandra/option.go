@@ -201,11 +201,15 @@ var (
 	}
 )
 
+// WithConsistency returns the option to set the cassandra consistency level
 func WithConsistency(consistency string) Option {
 	return func(c *client) error {
+		if len(consistency) == 0 {
+			return errors.NewErrInvalidOption("consistency", consistency)
+		}
 		actual, ok := consistenciesMap[strings.TrimSpace(strings.Trim(strings.Trim(strings.ToLower(consistency), "_"), "-"))]
 		if !ok {
-			return errors.ErrCassandraInvalidConsistencyType(consistency)
+			return errors.NewErrCriticalOption("consistency", consistency)
 		}
 		c.consistency = actual
 		return nil
@@ -221,122 +225,175 @@ var (
 	}
 )
 
+// WithSerialConsistency returns the option to set the cassandra serial consistency level
 func WithSerialConsistency(consistency string) Option {
 	return func(c *client) error {
 		if len(consistency) == 0 {
-			return nil
+			return errors.NewErrInvalidOption("serialConsistency", consistency)
 		}
 		actual, ok := serialConsistenciesMap[strings.TrimSpace(strings.Trim(strings.Trim(strings.ToLower(consistency), "_"), "-"))]
 		if !ok {
-			return errors.ErrCassandraInvalidConsistencyType(consistency)
+			return errors.NewErrCriticalOption("serialConsistency", consistency)
 		}
 		c.serialConsistency = actual
 		return nil
 	}
 }
 
+// WithCompressor returns the option to set the compressor
 func WithCompressor(compressor gocql.Compressor) Option {
 	return func(c *client) error {
+		if compressor == nil {
+			return errors.NewErrInvalidOption("compressor", compressor)
+		}
 		c.compressor = compressor
 		return nil
 	}
 }
 
+// WithUsername returns the option to set the username
 func WithUsername(username string) Option {
 	return func(c *client) error {
+		if len(username) == 0 {
+			return errors.NewErrInvalidOption("username", username)
+		}
 		c.username = username
 		return nil
 	}
 }
 
+// WithPassword returns the option to set the password
 func WithPassword(password string) Option {
 	return func(c *client) error {
+		if len(password) == 0 {
+			return errors.NewErrInvalidOption("password", password)
+		}
 		c.password = password
 		return nil
 	}
 }
 
+// WithAuthProvider returns the option to set the auth provider
 func WithAuthProvider(authProvider func(h *gocql.HostInfo) (gocql.Authenticator, error)) Option {
 	return func(c *client) error {
+		if authProvider == nil {
+			return errors.NewErrInvalidOption("authProvider", authProvider)
+		}
 		c.authProvider = authProvider
 		return nil
 	}
 }
 
+// WithRetryPolicyNumRetries returns the option to set the number of retries
 func WithRetryPolicyNumRetries(n int) Option {
 	return func(c *client) error {
+		if n < 0 {
+			return errors.NewErrInvalidOption("retryPolicyNumRetries", n)
+		}
 		c.retryPolicy.numRetries = n
 		return nil
 	}
 }
 
+// WithRetryPolicyMinDuration returns the option to set the retry min duration
 func WithRetryPolicyMinDuration(minDuration string) Option {
 	return func(c *client) error {
+		if len(minDuration) == 0 {
+			return errors.NewErrInvalidOption("retryPolicyMinDuration", minDuration)
+		}
 		d, err := timeutil.Parse(minDuration)
 		if err != nil {
-			return err
+			return errors.NewErrCriticalOption("retryPolicyMinDuration", minDuration, err)
 		}
 		c.retryPolicy.minDuration = d
 		return nil
 	}
 }
 
+// WithRetryPolicyMaxDuration returns the option to set the retry max duration
 func WithRetryPolicyMaxDuration(maxDuration string) Option {
 	return func(c *client) error {
+		if len(maxDuration) == 0 {
+			return errors.NewErrInvalidOption("retryPolicyMaxDuration", maxDuration)
+		}
 		d, err := timeutil.Parse(maxDuration)
 		if err != nil {
-			return err
+			return errors.NewErrCriticalOption("retryPolicyMaxDuration", maxDuration, err)
 		}
 		c.retryPolicy.maxDuration = d
 		return nil
 	}
 }
 
+// WithReconnectionPolicyInitialInterval returns the option to set the reconnect initial interval
 func WithReconnectionPolicyInitialInterval(initialInterval string) Option {
 	return func(c *client) error {
+		if len(initialInterval) == 0 {
+			return errors.NewErrInvalidOption("reconnectionPolicyInitialInterval", initialInterval)
+		}
 		d, err := timeutil.Parse(initialInterval)
 		if err != nil {
-			return err
+			return errors.NewErrCriticalOption("reconnectionPolicyInitialInterval", initialInterval, err)
 		}
 		c.reconnectionPolicy.initialInterval = d
 		return nil
 	}
 }
 
+// WithReconnectionPolicyMaxRetries returns the option to set the reconnect max retries
 func WithReconnectionPolicyMaxRetries(maxRetries int) Option {
 	return func(c *client) error {
+		if maxRetries < 0 {
+			return errors.NewErrInvalidOption("maxRetries", maxRetries)
+		}
 		c.reconnectionPolicy.maxRetries = maxRetries
 		return nil
 	}
 }
 
+// WithSocketKeepalive returns the option to set the socket keepalive time
 func WithSocketKeepalive(socketKeepalive string) Option {
 	return func(c *client) error {
+		if len(socketKeepalive) == 0 {
+			return errors.NewErrInvalidOption("socketKeepalive", socketKeepalive)
+		}
 		d, err := timeutil.Parse(socketKeepalive)
 		if err != nil {
-			return err
+			return errors.NewErrCriticalOption("socketKeepalive", socketKeepalive, err)
 		}
 		c.socketKeepalive = d
 		return nil
 	}
 }
 
+// WithMaxPreparedStmts returns the option to set the max prepared statement
 func WithMaxPreparedStmts(maxPreparedStmts int) Option {
 	return func(c *client) error {
+		if maxPreparedStmts < 0 {
+			return errors.NewErrInvalidOption("maxPreparedStmts", maxPreparedStmts)
+		}
 		c.maxPreparedStmts = maxPreparedStmts
 		return nil
 	}
 }
 
+// WithMaxRoutingKeyInfo returns the option to set the max routing key info
 func WithMaxRoutingKeyInfo(maxRoutingKeyInfo int) Option {
 	return func(c *client) error {
+		if maxRoutingKeyInfo < 0 {
+			return errors.NewErrInvalidOption("maxRoutingKeyInfo", maxRoutingKeyInfo)
+		}
 		c.maxRoutingKeyInfo = maxRoutingKeyInfo
 		return nil
 	}
 }
 
+// WithPageSize returns the option to set the page size
 func WithPageSize(pageSize int) Option {
 	return func(c *client) error {
+		if pageSize < 0 {
+			return errors.NewErrInvalidOption("pageSize", pageSize)
+		}
 		c.pageSize = pageSize
 		return nil
 	}
