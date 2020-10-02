@@ -29,6 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/writer"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/test/comparator"
 	"go.uber.org/goleak"
 )
 
@@ -52,42 +53,91 @@ func TestNew(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+
+		if (w.want == nil && got != nil) || (w.want != nil && got == nil) {
+			return errors.Errorf("got: %v, want: %v", w.want, got)
+		} else if w.want == nil && got == nil {
+			return nil
 		}
+
+		wantC, gotC := w.want.(*client), got.(*client)
+
+		clientComparator := []comparator.Option{
+			comparator.AllowUnexported(*gotC),
+			comparator.Comparer(func(x, y *session.Session) bool {
+				return x != nil && y != nil
+			}),
+			comparator.Comparer(func(x, y *s3.S3) bool {
+				return x != nil && y != nil
+			}),
+			comparator.Comparer(func(x, y errgroup.Group) bool {
+				return reflect.DeepEqual(x, y)
+			}),
+		}
+
+		if diff := comparator.Diff(*wantC, *gotC, clientComparator...); diff != "" {
+			return errors.New(diff)
+		}
+
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           opts: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			return test{
+				name: "returns error when option is empty and s3 session is nil",
+				args: args{
+					opts: nil,
+				},
+				want: want{
+					want: nil,
+					err:  errors.ErrS3SessionNotFound,
+				},
+			}
+		}(),
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           opts: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			sess, _ := session.NewSession()
+			return test{
+				name: "returns error when option is not empty",
+				args: args{
+					opts: []Option{
+						WithSession(sess),
+					},
+				},
+				want: want{
+					want: &client{
+						eg:         errgroup.Get(),
+						session:    sess,
+						service:    s3.New(sess),
+						readWriter: newRW(),
+					},
+					err: nil,
+				},
+			}
+		}(),
+
+		func() test {
+			opts := []Option{
+				func(c *client) error {
+					return errors.New("err")
+				},
+			}
+			return test{
+				name: "returns error when option is not empty",
+				args: args{
+					opts: opts,
+				},
+				want: want{
+					want: nil,
+					err:  errors.ErrOptionFailed(errors.New("err"), reflect.ValueOf(opts[0])),
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -102,7 +152,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -468,6 +517,166 @@ func Test_client_Writer(t *testing.T) {
 
 			got, err := c.Writer(test.args.ctx, test.args.key)
 			if err := test.checkFunc(test.want, got, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_newRW(t *testing.T) {
+	type want struct {
+		want readWriter
+	}
+	type test struct {
+		name       string
+		want       want
+		checkFunc  func(want, readWriter) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got readWriter) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "returns readWriter",
+			want: want{
+				want: new(rw),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := newRW()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_rw_NewReader(t *testing.T) {
+	type args struct {
+		opts []reader.Option
+	}
+	type want struct {
+		want reader.Reader
+	}
+	type test struct {
+		name       string
+		args       args
+		r          *rw
+		want       want
+		checkFunc  func(want, reader.Reader) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got reader.Reader) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "returns reader.Reader",
+			args: args{
+				opts: nil,
+			},
+			want: want{
+				want: reader.New(),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			r := &rw{}
+
+			got := r.NewReader(test.args.opts...)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_rw_NewWriter(t *testing.T) {
+	type args struct {
+		opts []writer.Option
+	}
+	type want struct {
+		want writer.Writer
+	}
+	type test struct {
+		name       string
+		args       args
+		r          *rw
+		want       want
+		checkFunc  func(want, writer.Writer) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got writer.Writer) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "returns writer.Writer",
+			args: args{
+				opts: nil,
+			},
+			want: want{
+				want: writer.New(),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			r := &rw{}
+
+			got := r.NewWriter(test.args.opts...)
+			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

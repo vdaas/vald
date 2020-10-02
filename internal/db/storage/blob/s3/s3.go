@@ -76,6 +76,10 @@ func New(opts ...Option) (blob.Bucket, error) {
 		}
 	}
 
+	if c.session == nil {
+		return nil, errors.ErrS3SessionNotFound
+	}
+
 	c.service = s3.New(c.session)
 
 	return c, nil
