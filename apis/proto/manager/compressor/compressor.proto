@@ -23,7 +23,7 @@ option java_multiple_files = true;
 option java_package = "org.vdaas.vald.manager.compressor";
 option java_outer_classname = "ValdCompressor";
 
-import "payload.proto";
+import "apis/proto/payload/payload.proto";
 import "google/api/annotations.proto";
 
 service Backup {
@@ -33,7 +33,7 @@ service Backup {
 
   // rpc GetVectorsByOwner(payload.Backup.GetVector.Owner) returns (stream payload.Backup.MetaVector) {
   //   option (google.api.http).get = "/vector/{uuid}";
-  // } 
+  // }
 
   rpc Locations(payload.Backup.Locations.Request) returns (payload.Info.IPs) {
     option (google.api.http).get = "/locations/{uuid}";

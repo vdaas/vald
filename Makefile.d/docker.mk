@@ -110,6 +110,48 @@ docker/build/gateway-vald: docker/build/base
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
+.PHONY: docker/name/gateway-lb
+docker/name/gateway-lb:
+	@echo "$(REPO)/$(LB_GATEWAY_IMAGE)"
+
+.PHONY: docker/build/gateway-lb
+## build gateway-lb image
+docker/build/gateway-lb: docker/build/base
+	docker build \
+	    -f dockers/gateway/lb/Dockerfile \
+	    -t $(REPO)/$(LB_GATEWAY_IMAGE) . \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
+
+.PHONY: docker/name/gateway-meta
+docker/name/gateway-meta:
+	@echo "$(REPO)/$(META_GATEWAY_IMAGE)"
+
+.PHONY: docker/build/gateway-meta
+## build gateway-meta image
+docker/build/gateway-meta: docker/build/base
+	docker build \
+	    -f dockers/gateway/meta/Dockerfile \
+	    -t $(REPO)/$(META_GATEWAY_IMAGE) . \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
+
+.PHONY: docker/name/gateway-backup
+docker/name/gateway-backup:
+	@echo "$(REPO)/$(BACKUP_GATEWAY_IMAGE)"
+
+.PHONY: docker/build/gateway-backup
+## build gateway-backup image
+docker/build/gateway-backup: docker/build/base
+	docker build \
+	    -f dockers/gateway/backup/Dockerfile \
+	    -t $(REPO)/$(BACKUP_GATEWAY_IMAGE) . \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
+
 .PHONY: docker/name/meta-redis
 docker/name/meta-redis:
 	@echo "$(REPO)/$(META_REDIS_IMAGE)"
