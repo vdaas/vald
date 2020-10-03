@@ -161,7 +161,6 @@ $(SWAGGERS): \
 	$(call protoc-gen, $(patsubst apis/swagger/%.swagger.json,apis/proto/%.proto,$@), --swagger_out=json_names_for_fields=true:$(dir $@))
 
 $(PBDOCS): \
-	$(PROTOS) \
 	$(GOPATH)/bin/protoc-gen-doc \
 	$(GOPATH)/bin/protoc-gen-go \
 	$(GOPATH)/bin/protoc-gen-gogo \
@@ -177,6 +176,13 @@ $(PBDOCS): \
 	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
 	$(GOPATH)/src/github.com/googleapis/googleapis \
 	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
-	@$(call green, "generating documents...")
+
+apis/docs/v0/docs.md: $(PROTOS_V0)
+	@$(call green, "generating documents for API v0...")
 	$(call mkdir, $(dir $@))
-	$(call protoc-gen, $(PROTOS), --plugin=protoc-gen-doc=$(GOPATH)/bin/protoc-gen-doc --doc_opt=markdown$(COMMA)docs.md --doc_out=$(dir $@))
+	$(call protoc-gen, $(PROTOS_V0), --plugin=protoc-gen-doc=$(GOPATH)/bin/protoc-gen-doc --doc_opt=markdown$(COMMA)docs.md --doc_out=$(dir $@))
+
+apis/docs/v1/docs.md: $(PROTOS_V1)
+	@$(call green, "generating documents for API v1...")
+	$(call mkdir, $(dir $@))
+	$(call protoc-gen, $(PROTOS_V1), --plugin=protoc-gen-doc=$(GOPATH)/bin/protoc-gen-doc --doc_opt=markdown$(COMMA)docs.md --doc_out=$(dir $@))
