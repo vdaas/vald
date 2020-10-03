@@ -14,12 +14,5 @@
 // limitations under the License.
 //
 
+// Package mysql provides the functions for handling vald's data with MySQL.
 package mysql
-
-import "github.com/vdaas/vald/internal/db/rdb/mysql/dbr"
-
-type EventReceiver = dbr.EventReceiver
-
-type TracingEventReceiver = dbr.TracingEventReceiver
-
-type NullEventReceiver = dbr.NullEventReceiver

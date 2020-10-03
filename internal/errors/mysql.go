@@ -29,6 +29,8 @@ var (
 
 	ErrMySQLConnectionClosed = New("error MySQL connection closed")
 
+	ErrMySQLTransactionNotCreated = New("error MySQL transaction not created")
+
 	ErrRequiredElementNotFoundByUUID = func(uuid string) error {
 		return Wrapf(NewErrMySQLNotFoundIdentity(), "error required element not found, uuid: %s", uuid)
 	}
