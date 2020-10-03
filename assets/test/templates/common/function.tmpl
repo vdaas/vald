@@ -2,11 +2,12 @@
 {{- $f := . }}
 
 func {{ .TestName }}(t *testing.T) {
+    t.Parallel()
     {{- if .TestParameters }}
     type args struct {
-		{{- range .TestParameters }}
-				{{ Param . }} {{ .Type }}
-		{{- end}}
+        {{- range .TestParameters }}
+                {{ Param . }} {{ .Type }}
+        {{- end}}
     }
     {{- end }}
     {{- $hasFields := false -}}
@@ -109,6 +110,7 @@ func {{ .TestName }}(t *testing.T) {
     for {{- if (or .Subtests (not .IsNaked)) }} _, test := {{- end }} range tests {
         {{- if .Subtests }}
             t.Run(test.name, func(tt *testing.T) {
+                tt.Parallel()
                 defer goleak.VerifyNone(tt)
                 if test.beforeFunc != nil {
                     test.beforeFunc({{- if .TestParameters }} test.args {{- end }})
