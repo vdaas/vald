@@ -14,12 +14,6 @@
 // limitations under the License.
 //
 
-package mysql
-
-import "github.com/vdaas/vald/internal/db/rdb/mysql/dbr"
-
-type EventReceiver = dbr.EventReceiver
-
-type TracingEventReceiver = dbr.TracingEventReceiver
-
-type NullEventReceiver = dbr.NullEventReceiver
+// Package dbr provides the dbr functions for handling with databases.
+// This package is wrapping package of "https://github.com/gocraft/dbr/v2".
+package dbr
