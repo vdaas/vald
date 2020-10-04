@@ -13,109 +13,110 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if and .Values.compressor.enabled (eq .Values.compressor.kind "Deployment") }}
+{{- $compressor := .Values.manager.compressor -}}
+{{- if and $compressor.enabled (eq $compressor.kind "Deployment") }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.compressor.name }}
+  name: {{ $compressor.name }}
   labels:
-    app: {{ .Values.compressor.name }}
+    app: {{ $compressor.name }}
     app.kubernetes.io/name: {{ include "vald.name" . }}
     helm.sh/chart: {{ include "vald.chart" . }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/version: {{ .Chart.Version }}
     app.kubernetes.io/component: manager-compressor
-  {{- if .Values.compressor.annotations }}
+  {{- if $compressor.annotations }}
   annotations:
-    {{- toYaml .Values.compressor.annotations | nindent 4 }}
+    {{- toYaml $compressor.annotations | nindent 4 }}
   {{- end }}
 spec:
-  progressDeadlineSeconds: {{ .Values.compressor.progressDeadlineSeconds }}
-  {{- if not .Values.compressor.hpa.enabled }}
-  replicas: {{ .Values.compressor.minReplicas }}
+  progressDeadlineSeconds: {{ $compressor.progressDeadlineSeconds }}
+  {{- if not $compressor.hpa.enabled }}
+  replicas: {{ $compressor.minReplicas }}
   {{- end }}
-  revisionHistoryLimit: {{ .Values.compressor.revisionHistoryLimit }}
+  revisionHistoryLimit: {{ $compressor.revisionHistoryLimit }}
   selector:
     matchLabels:
-      app: {{ .Values.compressor.name }}
+      app: {{ $compressor.name }}
   strategy:
     rollingUpdate:
-      maxSurge: {{ .Values.compressor.rollingUpdate.maxSurge }}
-      maxUnavailable: {{ .Values.compressor.rollingUpdate.maxUnavailable }}
+      maxSurge: {{ $compressor.rollingUpdate.maxSurge }}
+      maxUnavailable: {{ $compressor.rollingUpdate.maxUnavailable }}
     type: RollingUpdate
   template:
     metadata:
       creationTimestamp: null
       labels:
-        app: {{ .Values.compressor.name }}
+        app: {{ $compressor.name }}
         app.kubernetes.io/name: {{ include "vald.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: manager-compressor
       annotations:
         checksum/configmap: {{ include (print $.Template.BasePath "/manager/compressor/configmap.yaml") . | sha256sum }}
-        {{- if .Values.compressor.podAnnotations }}
-        {{- toYaml .Values.compressor.podAnnotations | nindent 8 }}
+        {{- if $compressor.podAnnotations }}
+        {{- toYaml $compressor.podAnnotations | nindent 8 }}
         {{- end }}
     spec:
-      {{- if .Values.compressor.initContainers }}
+      {{- if $compressor.initContainers }}
       initContainers:
-        {{- $initContainers := dict "initContainers" .Values.compressor.initContainers "Values" .Values "namespace" .Release.Namespace -}}
+        {{- $initContainers := dict "initContainers" $compressor.initContainers "Values" .Values "namespace" .Release.Namespace -}}
         {{- include "vald.initContainers" $initContainers | trim | nindent 8 }}
       {{- end }}
       affinity:
-        {{- include "vald.affinity" .Values.compressor.affinity | nindent 8 }}
-      {{- if .Values.compressor.topologySpreadConstraints }}
+        {{- include "vald.affinity" $compressor.affinity | nindent 8 }}
+      {{- if $compressor.topologySpreadConstraints }}
       topologySpreadConstraints:
-        {{- toYaml .Values.compressor.topologySpreadConstraints | nindent 8 }}
+        {{- toYaml $compressor.topologySpreadConstraints | nindent 8 }}
       {{- end }}
       containers:
-        - name: {{ .Values.compressor.name }}
-          image: "{{ .Values.compressor.image.repository }}:{{ default .Values.defaults.image.tag .Values.compressor.image.tag }}"
-          imagePullPolicy: {{ .Values.compressor.image.pullPolicy }}
-          {{- $servers := dict "Values" .Values.compressor.server_config "default" .Values.defaults.server_config -}}
+        - name: {{ $compressor.name }}
+          image: "{{ $compressor.image.repository }}:{{ default .Values.defaults.image.tag $compressor.image.tag }}"
+          imagePullPolicy: {{ $compressor.image.pullPolicy }}
+          {{- $servers := dict "Values" $compressor.server_config "default" .Values.defaults.server_config -}}
           {{- include "vald.containerPorts" $servers | trim | nindent 10 }}
           resources:
-            {{- toYaml .Values.compressor.resources | nindent 12 }}
+            {{- toYaml $compressor.resources | nindent 12 }}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
-          {{- if .Values.compressor.env }}
+          {{- if $compressor.env }}
           env:
-            {{- toYaml .Values.compressor.env | nindent 12 }}
+            {{- toYaml $compressor.env | nindent 12 }}
           {{- end }}
           volumeMounts:
-            - name: {{ .Values.compressor.name }}-config
+            - name: {{ $compressor.name }}-config
               mountPath: /etc/server/
-            {{- if .Values.compressor.volumeMounts }}
-            {{- toYaml .Values.compressor.volumeMounts | nindent 12 }}
+            {{- if $compressor.volumeMounts }}
+            {{- toYaml $compressor.volumeMounts | nindent 12 }}
             {{- end }}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
-      terminationGracePeriodSeconds: {{ .Values.compressor.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ $compressor.terminationGracePeriodSeconds }}
       volumes:
         - configMap:
             defaultMode: 420
-            name: {{ .Values.compressor.name }}-config
-          name: {{ .Values.compressor.name }}-config
-        {{- if .Values.compressor.volumes }}
-        {{- toYaml .Values.compressor.volumes | nindent 8 }}
+            name: {{ $compressor.name }}-config
+          name: {{ $compressor.name }}-config
+        {{- if $compressor.volumes }}
+        {{- toYaml $compressor.volumes | nindent 8 }}
         {{- end }}
-      {{- if .Values.compressor.nodeName }}
-      nodeName: {{ .Values.compressor.nodeName }}
+      {{- if $compressor.nodeName }}
+      nodeName: {{ $compressor.nodeName }}
       {{- end }}
-      {{- if .Values.compressor.nodeSelector }}
+      {{- if $compressor.nodeSelector }}
       nodeSelector:
-        {{- toYaml .Values.compressor.nodeSelector | nindent 8 }}
+        {{- toYaml $compressor.nodeSelector | nindent 8 }}
       {{- end }}
-      {{- if .Values.compressor.tolerations }}
+      {{- if $compressor.tolerations }}
       tolerations:
-        {{- toYaml .Values.compressor.tolerations | nindent 8 }}
+        {{- toYaml $compressor.tolerations | nindent 8 }}
       {{- end }}
-      {{- if .Values.compressor.podPriority }}
-      {{- if .Values.compressor.podPriority.enabled }}
-      priorityClassName: {{ .Values.compressor.name }}-priority
+      {{- if $compressor.podPriority }}
+      {{- if $compressor.podPriority.enabled }}
+      priorityClassName: {{ $compressor.name }}-priority
       {{- end }}
       {{- end }}
 status:
