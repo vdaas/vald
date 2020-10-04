@@ -291,8 +291,12 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 								})
 								podsByNode[nodeName][namespace][appName] = p
 								nn, ok := nodeByName[nodeName]
-								if !ok {
+								if !ok || nn == nil {
 									nodeByName[nodeName] = new(payload.Info_Node)
+									nn, ok = nodeByName[nodeName]
+									if !ok {
+										continue
+									}
 								}
 								if nn.Pods == nil {
 									nodeByName[nodeName].Pods = new(payload.Info_Pods)
@@ -315,6 +319,8 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 							nodeByName[nodeName].Pods.Pods = p
 						}
 					}
+					d.nodeByName.Store(nodeByName)
+					d.podsByNode.Store(podsByNode)
 					return nil
 				}))
 				wg.Add(1)
@@ -328,6 +334,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 							podsByNamespace[namespace][appName] = p
 						}
 					}
+					d.podsByNamespace.Store(podsByNamespace)
 					return nil
 				}))
 				wg.Add(1)
@@ -339,14 +346,10 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 						})
 						podsByName[appName] = p
 					}
+					d.podsByName.Store(podsByName)
 					return nil
 				}))
 				wg.Wait()
-
-				d.podsByNode.Store(podsByNode)
-				d.podsByNamespace.Store(podsByNamespace)
-				d.podsByName.Store(podsByName)
-				d.nodeByName.Store(nodeByName)
 			case err = <-dech:
 				if err != nil {
 					ech <- err
