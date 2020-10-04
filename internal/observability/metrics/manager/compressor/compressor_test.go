@@ -25,11 +25,11 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/pkg/manager/compressor/service"
-
 	"go.uber.org/goleak"
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		c service.Compressor
 		r service.Registerer
@@ -83,7 +83,8 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -104,6 +105,7 @@ func TestNew(t *testing.T) {
 }
 
 func Test_compressorMetrics_Measurement(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -189,7 +191,8 @@ func Test_compressorMetrics_Measurement(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -220,6 +223,7 @@ func Test_compressorMetrics_Measurement(t *testing.T) {
 }
 
 func Test_compressorMetrics_MeasurementWithTags(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -305,7 +309,8 @@ func Test_compressorMetrics_MeasurementWithTags(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -336,6 +341,7 @@ func Test_compressorMetrics_MeasurementWithTags(t *testing.T) {
 }
 
 func Test_compressorMetrics_View(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		compressor                  service.Compressor
 		registerer                  service.Registerer
@@ -407,7 +413,8 @@ func Test_compressorMetrics_View(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}

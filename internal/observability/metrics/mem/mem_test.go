@@ -28,6 +28,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type want struct {
 		want metrics.Metric
 	}
@@ -68,6 +69,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -89,6 +91,7 @@ func TestNew(t *testing.T) {
 }
 
 func Test_memory_Measurement(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -192,6 +195,7 @@ func Test_memory_Measurement(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -229,6 +233,7 @@ func Test_memory_Measurement(t *testing.T) {
 }
 
 func Test_memory_MeasurementWithTags(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -332,6 +337,7 @@ func Test_memory_MeasurementWithTags(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -369,6 +375,7 @@ func Test_memory_MeasurementWithTags(t *testing.T) {
 }
 
 func Test_memory_View(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		alloc        metrics.Int64Measure
 		totalAlloc   metrics.Int64Measure
@@ -458,6 +465,7 @@ func Test_memory_View(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()

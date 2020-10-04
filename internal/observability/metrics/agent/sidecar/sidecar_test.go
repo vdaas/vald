@@ -30,6 +30,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type want struct {
 		want MetricsHook
 		err  error
@@ -74,6 +75,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -95,6 +97,7 @@ func TestNew(t *testing.T) {
 }
 
 func Test_sidecarMetrics_Measurement(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -180,6 +183,7 @@ func Test_sidecarMetrics_Measurement(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -211,6 +215,7 @@ func Test_sidecarMetrics_Measurement(t *testing.T) {
 }
 
 func Test_sidecarMetrics_MeasurementWithTags(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -296,6 +301,7 @@ func Test_sidecarMetrics_MeasurementWithTags(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -327,6 +333,7 @@ func Test_sidecarMetrics_MeasurementWithTags(t *testing.T) {
 }
 
 func Test_sidecarMetrics_View(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		uploadTotal    metrics.Int64Measure
 		uploadBytes    metrics.Int64Measure
@@ -398,6 +405,7 @@ func Test_sidecarMetrics_View(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -429,6 +437,7 @@ func Test_sidecarMetrics_View(t *testing.T) {
 }
 
 func Test_sidecarMetrics_BeforeProcess(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		info *observer.BackupInfo
@@ -517,6 +526,7 @@ func Test_sidecarMetrics_BeforeProcess(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -548,6 +558,7 @@ func Test_sidecarMetrics_BeforeProcess(t *testing.T) {
 }
 
 func Test_sidecarMetrics_AfterProcess(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		info *observer.BackupInfo
@@ -632,6 +643,7 @@ func Test_sidecarMetrics_AfterProcess(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)

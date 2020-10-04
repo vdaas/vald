@@ -21,9 +21,36 @@ type EgressFilter struct {
 	Client *GRPCClient `json:"client" yaml:"client"`
 }
 
+type IngressFilter struct {
+	Client *GRPCClient `json:"client,omitempty" yaml:"client"`
+	Search []string    `json:"search,omitempty" yaml:"search"`
+	Insert []string    `json:"insert,omitempty" yaml:"insert"`
+	Update []string    `json:"update,omitempty" yaml:"update"`
+	Upsert []string    `json:"upsert,omitempty" yaml:"upsert"`
+}
+
 func (e *EgressFilter) Bind() *EgressFilter {
 	if e.Client != nil {
 		e.Client.Bind()
 	}
 	return e
+}
+
+func (i *IngressFilter) Bind() *IngressFilter {
+	if i.Client != nil {
+		i.Client.Bind()
+	}
+	if i.Search != nil {
+		i.Search = GetActualValues(i.Search)
+	}
+	if i.Insert != nil {
+		i.Insert = GetActualValues(i.Insert)
+	}
+	if i.Update != nil {
+		i.Update = GetActualValues(i.Update)
+	}
+	if i.Upsert != nil {
+		i.Upsert = GetActualValues(i.Upsert)
+	}
+	return i
 }

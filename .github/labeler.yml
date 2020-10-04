@@ -31,8 +31,32 @@ area/filter/ingress:
 area/gateway:
   - apis/proto/vald/**/*
   - apis/grpc/vald/**/*
-  - cmd/gateway/**/*
-  - pkg/gateway/**/*
+  - cmd/gateway/vald/**/*
+  - pkg/gateway/vald/**/*
+
+area/gateway/lb:
+  - apis/proto/vald/**/*
+  - apis/grpc/vald/**/*
+  - cmd/gateway/lb/**/*
+  - pkg/gateway/lb/**/*
+
+area/gateway/meta:
+  - apis/proto/vald/**/*
+  - apis/grpc/vald/**/*
+  - cmd/gateway/meta/**/*
+  - pkg/gateway/meta/**/*
+
+area/gateway/backup:
+  - apis/proto/vald/**/*
+  - apis/grpc/vald/**/*
+  - cmd/gateway/backup/**/*
+  - pkg/gateway/backup/**/*
+
+area/gateway/filter:
+  - apis/proto/vald/**/*
+  - apis/grpc/vald/**/*
+  - cmd/gateway/filter/**/*
+  - pkg/gateway/filter/**/*
 
 area/manager/backup:
   - apis/proto/manager/backup/**/*

@@ -90,6 +90,7 @@ func dirwalk(dir string) []string {
 		switch filepath.Ext(file.Name()) {
 		case
 			".ai",
+			".all-contributorsrc",
 			".cfg",
 			".crt",
 			".default",
@@ -113,8 +114,8 @@ func dirwalk(dir string) []string {
 			".ssv",
 			".sum",
 			".svg",
-			".tpl",
 			".tmpl",
+			".tpl",
 			".txt",
 			".whitesource",
 			"LICENSE",
@@ -122,17 +123,17 @@ func dirwalk(dir string) []string {
 		default:
 			switch file.Name() {
 			case
-				"GO_VERSION",
-				"NGT_VERSION",
-				"VALD_VERSION",
-				"TENSORFLOW_C_VERSION",
 				"AUTHORS",
 				"CONTRIBUTORS",
+				"GO_VERSION",
+				"NGT_VERSION",
 				"Pipefile",
+				"TENSORFLOW_C_VERSION",
+				"VALD_VERSION",
 				"grp",
-				"src",
 				"obj",
 				"prf",
+				"src",
 				"tre":
 			default:
 				path, err := filepath.Abs(filepath.Join(dir, file.Name()))
@@ -146,7 +147,7 @@ func dirwalk(dir string) []string {
 	return paths
 }
 func readAndRewrite(path string) error {
-	f, err := os.Open(path)
+	f, err := os.OpenFile(path, os.O_RDWR|os.O_SYNC, os.ModePerm)
 	if err != nil {
 		return errors.Errorf("filepath %s, could not open", path)
 	}

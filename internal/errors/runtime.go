@@ -31,6 +31,6 @@ var (
 	}
 
 	ErrRuntimeError = func(err error, r runtime.Error) error {
-		return Wrap(err, Errorf("system paniced caused by runtime error: %v", r).Error())
+		return Wrap(err, Errorf("system panicked caused by runtime error: %v", r).Error())
 	}
 )

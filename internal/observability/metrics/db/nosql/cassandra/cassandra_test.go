@@ -30,6 +30,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type want struct {
 		wantO Observer
 		err   error
@@ -74,6 +75,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -95,6 +97,7 @@ func TestNew(t *testing.T) {
 }
 
 func Test_cassandraMetrics_Measurement(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -192,6 +195,7 @@ func Test_cassandraMetrics_Measurement(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -227,6 +231,7 @@ func Test_cassandraMetrics_Measurement(t *testing.T) {
 }
 
 func Test_cassandraMetrics_MeasurementWithTags(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -324,6 +329,7 @@ func Test_cassandraMetrics_MeasurementWithTags(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -359,6 +365,7 @@ func Test_cassandraMetrics_MeasurementWithTags(t *testing.T) {
 }
 
 func Test_cassandraMetrics_View(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		queryTotal         metrics.Int64Measure
 		queryAttemptsTotal metrics.Int64Measure
@@ -442,6 +449,7 @@ func Test_cassandraMetrics_View(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -477,6 +485,7 @@ func Test_cassandraMetrics_View(t *testing.T) {
 }
 
 func Test_cassandraMetrics_ObserveQuery(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		q   cassandra.ObservedQuery
@@ -569,6 +578,7 @@ func Test_cassandraMetrics_ObserveQuery(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)

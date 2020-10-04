@@ -30,6 +30,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type want struct {
 		wantE EventReceiver
 		err   error
@@ -74,6 +75,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -95,6 +97,7 @@ func TestNew(t *testing.T) {
 }
 
 func Test_mysqlMetrics_Measurement(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -171,6 +174,7 @@ func Test_mysqlMetrics_Measurement(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -199,6 +203,7 @@ func Test_mysqlMetrics_Measurement(t *testing.T) {
 }
 
 func Test_mysqlMetrics_MeasurementWithTags(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -275,6 +280,7 @@ func Test_mysqlMetrics_MeasurementWithTags(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -303,6 +309,7 @@ func Test_mysqlMetrics_MeasurementWithTags(t *testing.T) {
 }
 
 func Test_mysqlMetrics_View(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		queryTotal        metrics.Int64Measure
 		queryLatency      metrics.Float64Measure
@@ -365,6 +372,7 @@ func Test_mysqlMetrics_View(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -393,6 +401,7 @@ func Test_mysqlMetrics_View(t *testing.T) {
 }
 
 func Test_mysqlMetrics_SpanStart(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx       context.Context
 		eventName string
@@ -471,6 +480,7 @@ func Test_mysqlMetrics_SpanStart(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -499,6 +509,7 @@ func Test_mysqlMetrics_SpanStart(t *testing.T) {
 }
 
 func Test_mysqlMetrics_SpanError(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		err error
@@ -570,6 +581,7 @@ func Test_mysqlMetrics_SpanError(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -597,6 +609,7 @@ func Test_mysqlMetrics_SpanError(t *testing.T) {
 }
 
 func Test_mysqlMetrics_SpanFinish(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -665,6 +678,7 @@ func Test_mysqlMetrics_SpanFinish(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
