@@ -497,27 +497,27 @@ func (o *observer) backup(ctx context.Context) (err error) {
 				return nil
 			}
 
-			return func() error {
-				data, err := os.Open(file)
-				if err != nil {
-					return err
-				}
-
-				defer func() {
-					e := data.Close()
-					if e != nil {
-						log.Errorf("failed to close %s: %s", file, e)
-					}
-				}()
-
-				d, err := ctxio.NewReaderWithContext(ctx, data)
-				if err != nil {
-					return err
-				}
-
-				_, err = io.Copy(tw, d)
+			data, err := os.OpenFile(file, os.O_RDONLY, os.ModePerm)
+			if err != nil {
 				return err
+			}
+			defer func() {
+				e := data.Close()
+				if e != nil {
+					log.Errorf("failed to close %s: %s", file, e)
+				}
 			}()
+
+			d, err := ctxio.NewReaderWithContext(ctx, data)
+			if err != nil {
+				return err
+			}
+
+			_, err = io.Copy(tw, d)
+			if err != nil {
+				return err
+			}
+			return nil
 		})
 	}))
 
