@@ -478,8 +478,8 @@ func Test_mySQLClient_Ping(t *testing.T) {
 					ctx: ctx,
 				},
 				fields: fields{
-					initialPingTimeLimit: 15 * time.Microsecond,
-					initialPingDuration:  1 * time.Microsecond,
+					initialPingTimeLimit: 30 * time.Microsecond,
+					initialPingDuration:  2 * time.Microsecond,
 					session: &dbr.MockSession{
 						PingContextFunc: func(ctx context.Context) error {
 							return err
