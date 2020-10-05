@@ -31,7 +31,7 @@ var (
 		WithGRPCClientOption(
 			(&config.GRPCClient{
 				Addrs: []string{
-					"127.0.0.1:8200",
+					"127.0.0.1:8082",
 				},
 				CallOption: &config.CallOption{
 					MaxRecvMsgSize: 100000000000,
