@@ -296,6 +296,7 @@ update/goimports:
 format/yaml:
 	prettier --write \
 	    ".github/**/*.yaml" \
+	    ".github/**/*.yml" \
 	    "cmd/**/*.yaml" \
 	    "hack/**/*.yaml" \
 	    "k8s/**/*.yaml"
