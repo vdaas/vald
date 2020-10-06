@@ -55,7 +55,12 @@ func WithAddr(addr string) Option {
 // WithGRPCClientOption returns Option that sets options for gRPC.
 func WithGRPCClientOption(opts ...grpc.Option) Option {
 	return func(c *agentClient) {
-		if len(opts) != 0 {
+		if len(opts) == 0 {
+			return
+		}
+		if c.opts == nil {
+			c.opts = opts
+		} else {
 			c.opts = append(c.opts, opts...)
 		}
 	}

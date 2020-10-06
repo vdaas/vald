@@ -29,7 +29,9 @@ var (
 
 func WithAddr(addr string) Option {
 	return func(c *client) error {
-		c.addr = addr
+		if len(addr) != 0 {
+			c.addr = addr
+		}
 		return nil
 	}
 }
