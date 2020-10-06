@@ -110,6 +110,8 @@ type ngt struct {
 
 	idelay time.Duration // initial delay duration
 	dcd    bool          // disable commit daemon
+
+	opts []core.Option
 }
 
 type vcache struct {
@@ -132,7 +134,7 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 
 	n.kvs = kvs.New()
 
-	err = n.initNGT(
+	n.opts = []core.Option{
 		core.WithInMemoryMode(n.inMem),
 		core.WithIndexPath(n.path),
 		core.WithDefaultPoolSize(n.poolSize),
@@ -144,7 +146,9 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 		core.WithBulkInsertChunkSize(cfg.BulkInsertChunkSize),
 		core.WithCreationEdgeSize(cfg.CreationEdgeSize),
 		core.WithSearchEdgeSize(cfg.SearchEdgeSize),
-	)
+	}
+
+	err = n.initNGT(n.opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -667,6 +671,11 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 	n.saving.Store(true)
 	defer n.gc()
 	defer n.saving.Store(false)
+	defer safety.RecoverFunc(func() (err error) {
+		n.core.Close()
+		n.core, err = core.Load(n.opts...)
+		return err
+	})()
 
 	eg, ctx := errgroup.New(ctx)
 
