@@ -72,14 +72,14 @@ jobs:
       run: |
         image_name=`make docker/name/operator/helm`
         base_platforms=`make docker/platforms`
-        echo "::set-env name=IMAGE_NAME::${image_name}"
+        echo "IMAGE_NAME=${image_name}" >> $GITHUB_ENV
         echo "::set-output name=IMAGE_NAME::${image_name}"
         echo "::set-output name=BASE_PLATFORMS::${base_platforms}"
     - name: Determine tag name (master)
       if: github.ref == 'refs/heads/master'
       run: |
-        echo "::set-env name=PRIMARY_TAG::nightly"
-        echo "::set-env name=PLATFORMS::${PLATFORMS}"
+        echo "PRIMARY_TAG=nightly" >> $GITHUB_ENV
+        echo "PLATFORMS=${PLATFORMS}" >> $GITHUB_ENV
       env:
         PLATFORMS: linux/amd64,linux/arm64
     - name: Determine tag name (pull request)
@@ -87,8 +87,8 @@ jobs:
       run: |
         pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
         echo "PR-${pr_num}" > versions/VALD_VERSION
-        echo "::set-env name=PRIMARY_TAG::pr-${pr_num}"
-        echo "::set-env name=PLATFORMS::${PLATFORMS}"
+        echo "PRIMARY_TAG=pr-${pr_num}" >> $GITHUB_ENV
+        echo "PLATFORMS=${PLATFORMS}" >> $GITHUB_ENV
       env:
         PLATFORMS: linux/amd64,linux/arm64
     - name: Determine tag name (tags)
@@ -97,8 +97,8 @@ jobs:
       run: |
         tag_name=`echo $GITHUB_REF | sed -e 's:^refs/tags/::'`
         echo "::set-output name=TAG_NAME::${tag_name}"
-        echo "::set-env name=PRIMARY_TAG::${tag_name}"
-        echo "::set-env name=PLATFORMS::${PLATFORMS}"
+        echo "PRIMARY_TAG=${tag_name}" >> $GITHUB_ENV
+        echo "PLATFORMS=${PLATFORMS}" >> $GITHUB_ENV
       env:
         PLATFORMS: linux/amd64,linux/arm64
     - name: Build and Push
