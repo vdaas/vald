@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-ARG GO_VERSION
+ARG GO_VERSION=latest
 
-FROM golang:${GO_VERSION}-buster AS golang
+FROM golang:${GO_VERSION} AS golang
 
 FROM ubuntu:devel AS builder
 
