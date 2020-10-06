@@ -59,7 +59,23 @@ func New(opts ...Option) Server {
 }
 
 func (s *server) newLocations(uuids ...string) (locs *payload.Object_Locations) {
-	locs = new(payload.Object_Locations)
+	if len(uuids) == 0 {
+		return nil
+	}
+	if len(uuids) == 1 {
+		return &payload.Object_Locations{
+			Locations: []*payload.Object_Location{
+				&payload.Object_Location{
+					Name: s.name,
+					Uuid: uuids[0],
+					Ips:  []string{s.ip},
+				},
+			},
+		}
+	}
+	locs = &payload.Object_Locations{
+		Locations: make([]*payload.Object_Location, 0, len(uuids)),
+	}
 	for _, uuid := range uuids {
 		locs.Locations = append(locs.Locations, &payload.Object_Location{
 			Name: s.name,
