@@ -55,6 +55,8 @@ type meta struct {
 }
 
 const (
+	apiName = "vald/gateway-meta"
+
 	uuidCacheKeyPref = "uuid-"
 	metaCacheKeyPref = "meta-"
 )
@@ -89,7 +91,7 @@ func (m *meta) Start(ctx context.Context) (<-chan error, error) {
 }
 
 func (m *meta) Exists(ctx context.Context, meta string) (bool, error) {
-	ctx, span := trace.StartSpan(ctx, "vald/gateway-meta/service/Meta.Exists")
+	ctx, span := trace.StartSpan(ctx, apiName+"/service/Meta.Exists")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -132,7 +134,7 @@ func (m *meta) Exists(ctx context.Context, meta string) (bool, error) {
 }
 
 func (m *meta) GetMeta(ctx context.Context, uuid string) (v string, err error) {
-	ctx, span := trace.StartSpan(ctx, "vald/gateway-meta/service/Meta.GetMeta")
+	ctx, span := trace.StartSpan(ctx, apiName+"/service/Meta.GetMeta")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -168,7 +170,7 @@ func (m *meta) GetMeta(ctx context.Context, uuid string) (v string, err error) {
 }
 
 func (m *meta) GetMetas(ctx context.Context, uuids ...string) ([]string, error) {
-	ctx, span := trace.StartSpan(ctx, "vald/gateway-meta/service/Meta.GetMetas")
+	ctx, span := trace.StartSpan(ctx, apiName+"/service/Meta.GetMetas")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -217,7 +219,7 @@ func (m *meta) GetMetas(ctx context.Context, uuids ...string) ([]string, error) 
 }
 
 func (m *meta) GetUUID(ctx context.Context, meta string) (k string, err error) {
-	ctx, span := trace.StartSpan(ctx, "vald/gateway-meta/service/Meta.GetUUID")
+	ctx, span := trace.StartSpan(ctx, apiName+"/service/Meta.GetUUID")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -253,7 +255,7 @@ func (m *meta) GetUUID(ctx context.Context, meta string) (k string, err error) {
 }
 
 func (m *meta) GetUUIDs(ctx context.Context, metas ...string) ([]string, error) {
-	ctx, span := trace.StartSpan(ctx, "vald/gateway-meta/service/Meta.GetUUIDs")
+	ctx, span := trace.StartSpan(ctx, apiName+"/service/Meta.GetUUIDs")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -302,7 +304,7 @@ func (m *meta) GetUUIDs(ctx context.Context, metas ...string) ([]string, error) 
 }
 
 func (m *meta) SetUUIDandMeta(ctx context.Context, uuid, meta string) (err error) {
-	ctx, span := trace.StartSpan(ctx, "vald/gateway-meta/service/Meta.SetUUIDandMeta")
+	ctx, span := trace.StartSpan(ctx, apiName+"/service/Meta.SetUUIDandMeta")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -330,7 +332,7 @@ func (m *meta) SetUUIDandMeta(ctx context.Context, uuid, meta string) (err error
 }
 
 func (m *meta) SetUUIDandMetas(ctx context.Context, kvs map[string]string) (err error) {
-	ctx, span := trace.StartSpan(ctx, "vald/gateway-meta/service/Meta.SetUUIDandMetas")
+	ctx, span := trace.StartSpan(ctx, apiName+"/service/Meta.SetUUIDandMetas")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -366,7 +368,7 @@ func (m *meta) SetUUIDandMetas(ctx context.Context, kvs map[string]string) (err 
 }
 
 func (m *meta) DeleteMeta(ctx context.Context, uuid string) (v string, err error) {
-	ctx, span := trace.StartSpan(ctx, "vald/gateway-meta/service/Meta.DeleteMeta")
+	ctx, span := trace.StartSpan(ctx, apiName+"/service/Meta.DeleteMeta")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -396,7 +398,7 @@ func (m *meta) DeleteMeta(ctx context.Context, uuid string) (v string, err error
 }
 
 func (m *meta) DeleteMetas(ctx context.Context, uuids ...string) ([]string, error) {
-	ctx, span := trace.StartSpan(ctx, "vald/gateway-meta/service/Meta.DeleteMetas")
+	ctx, span := trace.StartSpan(ctx, apiName+"/service/Meta.DeleteMetas")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -428,7 +430,7 @@ func (m *meta) DeleteMetas(ctx context.Context, uuids ...string) ([]string, erro
 }
 
 func (m *meta) DeleteUUID(ctx context.Context, meta string) (string, error) {
-	ctx, span := trace.StartSpan(ctx, "vald/gateway-meta/service/Meta.DeleteUUID")
+	ctx, span := trace.StartSpan(ctx, apiName+"/service/Meta.DeleteUUID")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -458,7 +460,7 @@ func (m *meta) DeleteUUID(ctx context.Context, meta string) (string, error) {
 }
 
 func (m *meta) DeleteUUIDs(ctx context.Context, metas ...string) ([]string, error) {
-	ctx, span := trace.StartSpan(ctx, "vald/gateway-meta/service/Meta.DeleteUUIDs")
+	ctx, span := trace.StartSpan(ctx, apiName+"/service/Meta.DeleteUUIDs")
 	defer func() {
 		if span != nil {
 			span.End()
