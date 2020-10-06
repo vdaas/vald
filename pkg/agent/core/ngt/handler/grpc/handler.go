@@ -58,7 +58,7 @@ func New(opts ...Option) Server {
 	return s
 }
 
-func (s *server) newLocation(uuids ...string) (locs *payload.Object_Locations) {
+func (s *server) newLocations(uuids ...string) (locs *payload.Object_Locations) {
 	locs = new(payload.Object_Locations)
 	for _, uuid := range uuids {
 		locs.Locations = append(locs.Locations, &payload.Object_Location{
@@ -68,6 +68,14 @@ func (s *server) newLocation(uuids ...string) (locs *payload.Object_Locations) {
 		})
 	}
 	return locs
+}
+
+func (s *server) newLocation(uuid string) *payload.Object_Location {
+	locs := s.newLocations(uuid)
+	if locs != nil && locs.Locations != nil && len(locs.Locations) > 0 {
+		return locs.Locations[0]
+	}
+	return nil
 }
 
 func (s *server) Exists(ctx context.Context, uid *payload.Object_ID) (res *payload.Object_ID, err error) {
@@ -181,7 +189,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (res *p
 		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("Insert API failed to insert %#v", vec), err, info.Get())
 	}
-	return s.newLocation(vec.GetId()).Locations[0], nil
+	return s.newLocation(vec.GetId()), nil
 }
 
 func (s *server) StreamInsert(stream vald.Vald_StreamInsertServer) error {
@@ -219,7 +227,7 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("MultiInsert API failed insert %#v", vmap), err, info.Get())
 	}
-	return s.newLocation(uuids...), nil
+	return s.newLocations(uuids...), nil
 }
 
 func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *payload.Object_Location, err error) {
@@ -237,7 +245,7 @@ func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *p
 		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("Update API failed to update %#v", vec), err, info.Get())
 	}
-	return s.newLocation(vec.GetId()).Locations[0], nil
+	return s.newLocation(vec.GetId()), nil
 }
 
 func (s *server) StreamUpdate(stream vald.Vald_StreamUpdateServer) error {
@@ -277,7 +285,7 @@ func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) 
 		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("MultiUpdate API failed to update %#v", vmap), err, info.Get())
 	}
-	return s.newLocation(uuids...), nil
+	return s.newLocations(uuids...), nil
 }
 
 func (s *server) Upsert(ctx context.Context, vec *payload.Object_Vector) (*payload.Object_Location, error) {
@@ -377,7 +385,7 @@ func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (res *payloa
 		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("Remove API failed to delete uuid %s", uuid), err, info.Get())
 	}
-	return s.newLocation(uuid).Locations[0], nil
+	return s.newLocation(uuid), nil
 }
 
 func (s *server) StreamRemove(stream vald.Vald_StreamRemoveServer) error {
@@ -410,7 +418,7 @@ func (s *server) MultiRemove(ctx context.Context, ids *payload.Object_IDs) (res 
 		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("MultiUpdate API failed to delete %#v", uuids), err, info.Get())
 	}
-	return s.newLocation(uuids...), nil
+	return s.newLocations(uuids...), nil
 }
 
 func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (res *payload.Object_Vector, err error) {
