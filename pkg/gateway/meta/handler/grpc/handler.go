@@ -85,8 +85,9 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 			span.End()
 		}
 	}()
-	if len(req.Vector) < 2 {
-		err = errors.ErrInvalidDimensionSize(len(req.Vector), 0)
+	vl := len(req.GetVector())
+	if vl < 2 {
+		err = errors.ErrInvalidDimensionSize(vl, 0)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 		}
@@ -272,8 +273,9 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 	}()
 	vec := req.GetVector()
 	meta := vec.GetId()
-	if len(vec.GetVector()) < 2 {
-		err = errors.ErrInvalidDimensionSize(len(vec.GetVector()), 0)
+	vl := len(vec.GetVector())
+	if vl < 2 {
+		err = errors.ErrInvalidDimensionSize(vl, 0)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 		}
@@ -497,7 +499,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 	}()
 
 	vec := req.GetVector()
-	meta := req.GetVector().GetId()
+	meta := vec.GetId()
 	filters := req.GetConfig().GetFilters()
 	exists, err := s.metadata.Exists(ctx, meta)
 	if err != nil {

@@ -79,7 +79,7 @@ func New(opts ...Option) http.Handler {
 				[]string{
 					http.MethodGet,
 				},
-				"/search//multi/{id}",
+				"/search/multi/{id}",
 				h.MultiSearchByID,
 			},
 			{

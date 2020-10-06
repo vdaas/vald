@@ -32,7 +32,7 @@ var (
 	}
 )
 
-func WithClient(g vald.Client) Option {
+func WithValdClient(g vald.Client) Option {
 	return func(s *server) {
 		if g != nil {
 			s.gateway = g

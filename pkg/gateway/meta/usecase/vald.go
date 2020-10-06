@@ -90,7 +90,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 
 	v := handler.New(
-		handler.WithClient(client.New(
+		handler.WithValdClient(client.New(
 			client.WithAddr(cfg.Client.Addrs[0]),
 			client.WithClient(grpc.New(cfg.Client.Opts()...)),
 		)),
