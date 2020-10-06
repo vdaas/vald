@@ -80,9 +80,6 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 			span.End()
 		}
 	}()
-	if len(req.Vector) < 2 {
-		return nil, errors.ErrInvalidDimensionSize(len(req.Vector), 0)
-	}
 	return s.gateway.Search(ctx, req, s.copts...)
 
 }
@@ -95,7 +92,14 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 			span.End()
 		}
 	}()
-	return s.gateway.SearchByID(ctx, req, s.copts...)
+	vec, err := s.backup.GetObject(ctx, req.GetId())
+	if err != nil {
+		return s.gateway.SearchByID(ctx, req, s.copts...)
+	}
+	return s.gateway.Search(ctx, &payload.Search_Request{
+		Vector: vec.GetVector(),
+		Config: req.GetConfig(),
+	}, s.copts...)
 }
 
 func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) error {

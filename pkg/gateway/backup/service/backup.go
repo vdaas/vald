@@ -24,6 +24,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/observability/trace"
 )
 
 type Backup interface {
@@ -41,6 +42,8 @@ type backup struct {
 	client grpc.Client
 }
 
+const apiName = "vald/gateway-backup"
+
 func NewBackup(opts ...BackupOption) (bu Backup, err error) {
 	b := new(backup)
 	for _, opt := range append(defaultBackupOpts, opts...) {
@@ -57,6 +60,12 @@ func (b *backup) Start(ctx context.Context) (<-chan error, error) {
 }
 
 func (b *backup) GetObject(ctx context.Context, uuid string) (vec *payload.Backup_MetaVector, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/service/backup.GetObject/"+uuid)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	_, err = b.client.Do(ctx, b.addr, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
 		vec, err = compressor.NewBackupClient(conn).GetVector(ctx, &payload.Backup_GetVector_Request{
@@ -71,6 +80,12 @@ func (b *backup) GetObject(ctx context.Context, uuid string) (vec *payload.Backu
 }
 
 func (b *backup) GetLocation(ctx context.Context, uuid string) (ipList []string, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/service/backup.GetLocation/"+uuid)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	_, err = b.client.Do(ctx, b.addr, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
 		ips, err := compressor.NewBackupClient(conn).Locations(ctx, &payload.Backup_Locations_Request{
@@ -86,6 +101,12 @@ func (b *backup) GetLocation(ctx context.Context, uuid string) (ipList []string,
 }
 
 func (b *backup) Register(ctx context.Context, vec *payload.Backup_MetaVector) (err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/service/backup.Register/"+vec.GetUuid())
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	_, err = b.client.Do(ctx, b.addr, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
 		_, err = compressor.NewBackupClient(conn).Register(ctx, vec, copts...)
@@ -98,6 +119,12 @@ func (b *backup) Register(ctx context.Context, vec *payload.Backup_MetaVector) (
 }
 
 func (b *backup) RegisterMultiple(ctx context.Context, vecs *payload.Backup_MetaVectors) (err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/service/backup.RegisterMultiple")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	_, err = b.client.Do(ctx, b.addr, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
 		_, err = compressor.NewBackupClient(conn).RegisterMulti(ctx, vecs, copts...)
@@ -110,6 +137,12 @@ func (b *backup) RegisterMultiple(ctx context.Context, vecs *payload.Backup_Meta
 }
 
 func (b *backup) Remove(ctx context.Context, uuid string) (err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/service/backup.Remove/"+uuid)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	_, err = b.client.Do(ctx, b.addr, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
 		_, err = compressor.NewBackupClient(conn).Remove(ctx, &payload.Backup_Remove_Request{
@@ -124,6 +157,12 @@ func (b *backup) Remove(ctx context.Context, uuid string) (err error) {
 }
 
 func (b *backup) RemoveMultiple(ctx context.Context, uuids ...string) (err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/service/backup.RemoveMultiple")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	req := new(payload.Backup_Remove_RequestMulti)
 	req.Uuids = uuids
 	_, err = b.client.Do(ctx, b.addr, func(ctx context.Context,
