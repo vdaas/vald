@@ -50,13 +50,6 @@ jobs:
       uses: docker/setup-buildx-action@v1
       with:
         buildkitd-flags: "--debug"
-    - name: Cache Docker layers (base)
-      uses: actions/cache@v2
-      with:
-        path: /tmp/.buildx-cache-base
-        key: ${{ runner.os }}-buildx-vald-base-${{ github.sha }}
-        restore-keys: |
-          ${{ runner.os }}-buildx-vald-base-
     - name: Cache Docker layers
       uses: actions/cache@v2
       with:
@@ -89,7 +82,7 @@ jobs:
         echo "::set-env name=PRIMARY_TAG::nightly"
         echo "::set-env name=PLATFORMS::${PLATFORMS}"
       env:
-        PLATFORMS: linux/amd64,linux/arm64
+        PLATFORMS: ${{ steps.image_name.outputs.BASE_PLATFORMS }}
     - name: Determine tag name (pull request)
       if: github.event_name == 'pull_request'
       run: |
@@ -108,28 +101,24 @@ jobs:
         echo "::set-env name=PRIMARY_TAG::${tag_name}"
         echo "::set-env name=PLATFORMS::${PLATFORMS}"
       env:
-        PLATFORMS: linux/amd64,linux/arm64
+        PLATFORMS: ${{ steps.image_name.outputs.BASE_PLATFORMS }}
     - name: Build and Push
       run: |
         make \
           DOCKER="docker buildx" \
           DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS} ${LABEL_OPTS} --push" \
-          DOCKER_OPTS_BASE="--platform ${BASE_PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS_BASE} --push" \
           TAG="${PRIMARY_TAG}" \
           docker/build/manager-index
         make \
           REPO="ghcr.io/vdaas/vald" \
           DOCKER="docker buildx" \
           DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS} ${LABEL_OPTS} --push" \
-          DOCKER_OPTS_BASE="--platform ${BASE_PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS_BASE} --push" \
           TAG="${PRIMARY_TAG}" \
           docker/build/manager-index
       env:
         DOCKER_BUILDKIT: 1
-        BASE_PLATFORMS: ${{ steps.image_name.outputs.BASE_PLATFORMS }}
         BUILDER: ${{ steps.buildx.outputs.name }}
         CACHE_OPTS: "--cache-from=type=local,src=/tmp/.buildx-cache --cache-to=type=local,mode=max,dest=/tmp/.buildx-cache"
-        CACHE_OPTS_BASE: "--cache-from=type=local,src=/tmp/.buildx-cache-base"
         LABEL_OPTS: "--label org.opencontainers.image.url=${{ github.event.repository.html_url }} --label org.opencontainers.image.source=${{ github.event.repository.html_url }} --label org.opencontainers.image.revision=${{ github.sha }}"
     - name: Initialize CodeQL
       if: startsWith( github.ref, 'refs/tags/')
