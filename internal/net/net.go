@@ -182,6 +182,7 @@ func ScanPorts(ctx context.Context, start, end uint16, host string) (ports []uin
 func LoadLocalIP() string {
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {
+		log.Warn(err)
 		return ""
 	}
 	for _, address := range addrs {
