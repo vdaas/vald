@@ -250,7 +250,6 @@ func (s *server) RemoveIPs(ctx context.Context, req *payload.Backup_IP_Remove_Re
 func toBackupMetaVector(meta *model.MetaVector) (res *payload.Backup_Compressed_MetaVector, err error) {
 	return &payload.Backup_Compressed_MetaVector{
 		Uuid:   meta.UUID,
-		Meta:   meta.Meta,
 		Vector: meta.Vector,
 		Ips:    meta.IPs,
 	}, nil
@@ -260,7 +259,6 @@ func toModelMetaVector(obj *payload.Backup_Compressed_MetaVector) (res *model.Me
 	return &model.MetaVector{
 		UUID:   obj.Uuid,
 		Vector: obj.Vector,
-		Meta:   obj.Meta,
 		IPs:    obj.Ips,
 	}, nil
 }
