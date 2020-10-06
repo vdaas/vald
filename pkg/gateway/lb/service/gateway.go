@@ -28,6 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/observability/trace"
 )
 
 type Gateway interface {
@@ -64,6 +65,12 @@ func (g *gateway) BroadCast(ctx context.Context,
 	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error) (err error) {
 	return g.client.GetClient().RangeConcurrent(ctx, -1, func(ctx context.Context,
 		addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
+		ctx, span := trace.StartSpan(ctx, "vald/gateway-lb/service/Gateway.BroadCast")
+		defer func() {
+			if span != nil {
+				span.End()
+			}
+		}()
 		select {
 		case <-ctx.Done():
 			return nil
@@ -83,6 +90,12 @@ func (g *gateway) Do(ctx context.Context,
 	addr := g.client.GetAddrs(ctx)[0]
 	_, err = g.client.GetClient().Do(ctx, addr, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		ctx, span := trace.StartSpan(ctx, "vald/gateway-lb/service/Gateway.Do")
+		defer func() {
+			if span != nil {
+				span.End()
+			}
+		}()
 		return nil, f(ctx, addr, vald.NewValdClient(conn), copts...)
 	})
 	return err
@@ -98,6 +111,12 @@ func (g *gateway) DoMulti(ctx context.Context, num int,
 		addr string,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption) (err error) {
+		ictx, span := trace.StartSpan(ictx, "vald/gateway-lb/service/Gateway.DoMulti")
+		defer func() {
+			if span != nil {
+				span.End()
+			}
+		}()
 		if atomic.LoadUint32(&cur) < limit {
 			err = f(ictx, addr, vald.NewValdClient(conn), copts...)
 			if err != nil {

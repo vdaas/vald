@@ -1,1 +1,1 @@
-# server sample
+# vald LB gateway

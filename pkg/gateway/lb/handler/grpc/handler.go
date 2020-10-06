@@ -84,8 +84,9 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 		}
 		if oid != nil && oid.Id != "" {
 			once.Do(func() {
-				id = new(payload.Object_ID)
-				id.Id = oid.Id
+				id = &payload.Object_ID{
+					Id: oid.Id,
+				}
 				cancel()
 			})
 		}
@@ -107,8 +108,9 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 			span.End()
 		}
 	}()
-	if len(req.Vector) < 2 {
-		err = errors.ErrInvalidDimensionSize(len(req.Vector), 0)
+	vl := len(req.GetVector())
+	if vl < 2 {
+		err = errors.ErrInvalidDimensionSize(vl, 0)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 		}
@@ -389,8 +391,9 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 	}()
 	vec := req.GetVector().GetVector()
 	uuid := req.GetVector().GetId()
-	if len(vec) < 2 {
-		err = errors.ErrInvalidDimensionSize(len(vec), 0)
+	vl := len(vec)
+	if vl < 2 {
+		err = errors.ErrInvalidDimensionSize(vl, 0)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 		}
