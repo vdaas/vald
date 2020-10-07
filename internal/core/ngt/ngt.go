@@ -531,8 +531,11 @@ func (n *ngt) newGoError(ne C.NGTError) (err error) {
 // Close NGT index.
 func (n *ngt) Close() {
 	if n.index != nil {
+		C.ngt_destroy_property(n.prop)
 		C.ngt_close_index(n.index)
 		C.ngt_destroy_error_object(n.ebuf)
 		n.index = nil
+		n.prop = nil
+		n.ospace = nil
 	}
 }

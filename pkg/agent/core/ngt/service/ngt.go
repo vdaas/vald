@@ -652,12 +652,15 @@ func (n *ngt) SaveIndex(ctx context.Context) (err error) {
 }
 
 func (n *ngt) saveIndex(ctx context.Context) (err error) {
+	if n.Len() <= 0 {
+		return nil
+	}
 	noice := atomic.LoadUint64(&n.nocie)
 	if atomic.LoadUint64(&n.lastNoice) == noice {
-		return
+		return nil
 	}
 	atomic.SwapUint64(&n.lastNoice, noice)
-	ticker := time.NewTicker(time.Second)
+	ticker := time.NewTicker(time.Millisecond * 500)
 	defer ticker.Stop()
 	// wait for not indexing & not saving
 	for n.IsIndexing() || n.IsSaving() {
