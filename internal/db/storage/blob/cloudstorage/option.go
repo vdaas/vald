@@ -32,7 +32,7 @@ func WithURL(str string) Option {
 func WithURLOpener(uo *gcsblob.URLOpener) Option {
 	return func(c *client) error {
 		if uo != nil {
-			c.urlOpner = uo
+			c.urlOpener = uo
 		}
 		return nil
 	}
