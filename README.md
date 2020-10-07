@@ -123,13 +123,11 @@ make init
 ## Components
 <table>
   <tr>
-    <th>component</th>
-    <th>implementation</th>
+    <th>Component</th>
     <th>Docker image</th>
   </tr>
   <tr>
-    <td rowspan=2>agent</td>
-    <td>NGT</td>
+    <td>Agent NGT</td>
     <td>
       <a href="https://hub.docker.com/r/vdaas/vald-agent-ngt">
         <img src="https://img.shields.io/docker/pulls/vdaas/vald-agent-ngt?label=vdaas%2Fvald-agent-ngt&logo=docker&style=flat-square"/>
@@ -140,7 +138,7 @@ make init
     </td>
   </tr>
   <tr>
-    <td>sidecar</td>
+    <td>Agent Sidecar</td>
     <td>
       <a href="https://hub.docker.com/r/vdaas/vald-agent-sidecar">
         <img src="https://img.shields.io/docker/pulls/vdaas/vald-agent-sidecar?label=vdaas%2Fvald-agent-sidecar&logo=docker&style=flat-square"/>
@@ -151,8 +149,7 @@ make init
     </td>
   </tr>
   <tr>
-    <td>discoverer</td>
-    <td>K8s</td>
+    <td>Discoverer K8s</td>
     <td>
       <a href="https://hub.docker.com/r/vdaas/vald-discoverer-k8s">
         <img src="https://img.shields.io/docker/pulls/vdaas/vald-discoverer-k8s?label=vdaas%2Fvald-discoverer-k8s&logo=docker&style=flat-square"/>
@@ -163,8 +160,7 @@ make init
     </td>
   </tr>
   <tr>
-    <td>gateway</td>
-    <td></td>
+    <td>Gateway</td>
     <td>
       <a href="https://hub.docker.com/r/vdaas/vald-gateway">
         <img src="https://img.shields.io/docker/pulls/vdaas/vald-gateway?label=vdaas%2Fvald-gateway&logo=docker&style=flat-square"/>
@@ -175,8 +171,7 @@ make init
     </td>
   </tr>
   <tr>
-    <td rowspan=2>backup manager</td>
-    <td>MySQL</td>
+    <td>Backup Manager (MySQL)</td>
     <td>
       <a href="https://hub.docker.com/r/vdaas/vald-manager-backup-mysql">
         <img src="https://img.shields.io/docker/pulls/vdaas/vald-manager-backup-mysql?label=vdaas%2Fvald-manager-backup-mysql&logo=docker&style=flat-square"/>
@@ -187,7 +182,7 @@ make init
     </td>
   </tr>
   <tr>
-    <td>Cassandra</td>
+    <td>Backup Manager (Cassandra)</td>
     <td>
       <a href="https://hub.docker.com/r/vdaas/vald-manager-backup-cassandra">
         <img src="https://img.shields.io/docker/pulls/vdaas/vald-manager-backup-cassandra?label=vdaas%2Fvald-manager-backup-cassandra&logo=docker&style=flat-square"/>
@@ -198,8 +193,7 @@ make init
     </td>
   </tr>
   <tr>
-    <td>compressor</td>
-    <td></td>
+    <td>Compressor</td>
     <td>
       <a href="https://hub.docker.com/r/vdaas/vald-manager-compressor">
         <img src="https://img.shields.io/docker/pulls/vdaas/vald-manager-compressor?label=vdaas%2Fvald-manager-compressor&logo=docker&style=flat-square"/>
@@ -210,8 +204,7 @@ make init
     </td>
   </tr>
   <tr>
-    <td rowspan=2>meta</td>
-    <td>Redis</td>
+    <td>Meta (Redis)</td>
     <td>
       <a href="https://hub.docker.com/r/vdaas/vald-meta-redis">
         <img src="https://img.shields.io/docker/pulls/vdaas/vald-meta-redis?label=vdaas%2Fvald-meta-redis&logo=docker&style=flat-square"/>
@@ -222,7 +215,7 @@ make init
     </td>
   </tr>
   <tr>
-    <td>Cassandra</td>
+    <td>Meta (Cassandra)</td>
     <td>
       <a href="https://hub.docker.com/r/vdaas/vald-meta-cassandra">
         <img src="https://img.shields.io/docker/pulls/vdaas/vald-meta-cassandra?label=vdaas%2Fvald-meta-cassandra&logo=docker&style=flat-square"/>
@@ -233,8 +226,7 @@ make init
     </td>
   </tr>
   <tr>
-    <td>index manager</td>
-    <td></td>
+    <td>Index Manager</td>
     <td>
       <a href="https://hub.docker.com/r/vdaas/vald-manager-index">
         <img src="https://img.shields.io/docker/pulls/vdaas/vald-manager-index?label=vdaas%2Fvald-manager-index&logo=docker&style=flat-square"/>
@@ -245,8 +237,7 @@ make init
     </td>
   </tr>
   <tr>
-    <td>helm-operator</td>
-    <td></td>
+    <td>Helm Operator</td>
     <td>
       <a href="https://hub.docker.com/r/vdaas/vald-helm-operator">
         <img src="https://img.shields.io/docker/pulls/vdaas/vald-helm-operator?label=vdaas%2Fvald-helm-operator&logo=docker&style=flat-square"/>
@@ -257,8 +248,7 @@ make init
     </td>
   </tr>
   <tr>
-    <td>loadtester</td>
-    <td></td>
+    <td>Load Test</td>
     <td>
       <a href="https://hub.docker.com/r/vdaas/vald-loadtest">
         <img src="https://img.shields.io/docker/pulls/vdaas/vald-loadtest?label=vdaas%2Fvald-loadtest&logo=docker&style=flat-square"/>
