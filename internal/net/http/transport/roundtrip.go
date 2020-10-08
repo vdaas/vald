@@ -18,6 +18,7 @@
 package transport
 
 import (
+	"context"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -50,7 +51,7 @@ func (e *ert) RoundTrip(req *http.Request) (res *http.Response, err error) {
 	if e.bo == nil {
 		return e.roundTrip(req)
 	}
-	_, err = e.bo.Do(req.Context(), func() (interface{}, bool, error) {
+	_, err = e.bo.Do(req.Context(), func(ctx context.Context) (interface{}, bool, error) {
 		r, err := e.roundTrip(req)
 		if err != nil {
 			return nil, errors.Is(err, errors.ErrTransportRetryable), err
