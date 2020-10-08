@@ -21,7 +21,7 @@ package meta_manager;
 option go_package = "github.com/vdaas/vald/apis/grpc/meta";
 option java_multiple_files = true;
 option java_package = "org.vdaas.vald.meta";
-option java_outer_classname = "meta";
+option java_outer_classname = "ValdMeta";
 
 import "apis/proto/payload/payload.proto";
 import "google/api/annotations.proto";
