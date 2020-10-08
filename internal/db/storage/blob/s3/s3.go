@@ -85,7 +85,7 @@ func New(opts ...Option) (blob.Bucket, error) {
 	return c, nil
 }
 
-// Open method returns an error to align the interface, but it doesn't actually return an error.
+// Open do nothing
 func (c *client) Open(ctx context.Context) (err error) {
 	return nil
 }
