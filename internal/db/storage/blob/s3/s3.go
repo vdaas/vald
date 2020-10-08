@@ -90,7 +90,7 @@ func (c *client) Open(ctx context.Context) (err error) {
 	return nil
 }
 
-// Close method returns an error to align the interface, but it doesn't actually return an error.
+// Close do nothing
 func (c *client) Close() error {
 	return nil
 }
