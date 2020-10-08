@@ -178,3 +178,19 @@ func ScanPorts(ctx context.Context, start, end uint16, host string) (ports []uin
 
 	return ports, nil
 }
+
+func LoadLocalIP() string {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		log.Warn(err)
+		return ""
+	}
+	for _, address := range addrs {
+		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+				return ipnet.IP.String()
+			}
+		}
+	}
+	return ""
+}
