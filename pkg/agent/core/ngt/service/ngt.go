@@ -674,11 +674,6 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 	n.saving.Store(true)
 	defer n.gc()
 	defer n.saving.Store(false)
-	defer safety.RecoverFunc(func() (err error) {
-		n.core.Close()
-		n.core, err = core.Load(n.opts...)
-		return err
-	})()
 
 	eg, ctx := errgroup.New(ctx)
 
