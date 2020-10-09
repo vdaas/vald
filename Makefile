@@ -55,6 +55,7 @@ HELM_VERSION         ?= v3.2.4
 HELM_DOCS_VERSION    ?= 0.13.0
 VALDCLI_VERSION      ?= v0.0.50
 TELEPRESENCE_VERSION ?= 0.105
+MIMALLOC_VERSION     ?= 1.6.7
 
 SWAP_DEPLOYMENT_TYPE ?= deployment
 SWAP_IMAGE           ?= ""
@@ -379,6 +380,25 @@ ngt/install: /usr/local/include/NGT/Capi.h
 	make install -C /tmp/NGT-$(NGT_VERSION)
 	rm -rf v$(NGT_VERSION).tar.gz
 	rm -rf /tmp/NGT-$(NGT_VERSION)
+	ldconfig
+
+.PHONY: mimalloc/install
+## install mimalloc 
+mimalloc/install: /usr/local/include/mimalloc.h
+/usr/local/include/mimalloc.h:
+	rm -rf v$(MIMALLOC_VERSION).tar.gz
+	rm -rf /tmp/mimalloc-$(MIMALLOC_VERSION)
+	curl -fsSLO https://github.com/microsoft/mimalloc/archive/v$(MIMALLOC_VERSION).tar.gz
+	tar zxf v$(MIMALLOC_VERSION).tar.gz -C /tmp
+	mkdir -p /tmp/mimalloc-$(MIMALLOC_VERSION)/out/release
+	cd /tmp/mimalloc-$(MIMALLOC_VERSION)/out/release && \
+	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="$(CFLAGS)" -DCMAKE_CXX_FLAGS="$(CXXFLAGS)" ../..
+	make -j -C /tmp/mimalloc-$(MIMALLOC_VERSION)/out/release
+	make install -C /tmp/mimalloc-$(MIMALLOC_VERSION)/out/release
+	mv /usr/local/lib/mimalloc-*/libmimalloc* /usr/local/lib/
+	mv /usr/local/lib/mimalloc-*/include/* /usr/local/include/
+	rm -rf v$(MIMALLOC_VERSION).tar.gz
+	rm -rf /tmp/mimalloc-$(MIMALLOC_VERSION)
 	ldconfig
 
 .PHONY: tensorflow/install

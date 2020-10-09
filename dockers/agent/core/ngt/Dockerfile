@@ -52,6 +52,7 @@ COPY Makefile.d .
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 COPY Makefile .
 RUN make ngt/install
+RUN make mimalloc/install
 
 COPY .git .
 

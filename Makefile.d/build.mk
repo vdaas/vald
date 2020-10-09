@@ -30,6 +30,7 @@ binary/build: \
 
 cmd/agent/core/ngt/ngt: \
 	ngt/install \
+	mimalloc/install \
 	$(GO_SOURCES_INTERNAL) \
 	$(PBGOS) \
 	$(shell find ./cmd/agent/core/ngt -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
@@ -39,7 +40,7 @@ cmd/agent/core/ngt/ngt: \
 	    && export CGO_ENABLED=1 \
 	    && export CGO_CXXFLAGS="-g -Ofast -march=native" \
 	    && export CGO_FFLAGS="-g -Ofast -march=native" \
-	    && export CGO_LDFLAGS="-g -Ofast -march=native" \
+	    && export CGO_LDFLAGS="-g -Ofast -march=native -lmimalloc" \
 	    && export GO111MODULE=on \
 	    && go build \
 	    --ldflags "-s -w -linkmode 'external' \

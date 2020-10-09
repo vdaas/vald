@@ -18,8 +18,9 @@
 package ngt
 
 /*
-#cgo LDFLAGS: -lngt
+#cgo LDFLAGS: -lngt -lmimalloc
 #include <NGT/Capi.h>
+#include <mimalloc.h>
 #include <stdlib.h>
 */
 import "C"
