@@ -48,6 +48,8 @@ type Backoff interface {
 	Close()
 }
 
+const traceTag = "vald/internal/backoff/Backoff.Do/retry"
+
 func New(opts ...Option) Backoff {
 	b := new(backoff)
 	for _, opt := range append(defaultOpts, opts...) {
@@ -68,7 +70,7 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 		return
 	}
 
-	ctx, span := trace.StartSpan(ctx, "vald/internal/backoff/Backoff.Do/retry")
+	ctx, span := trace.StartSpan(ctx, traceTag)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -90,7 +92,7 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 			return nil, errors.Wrap(err, ctx.Err().Error())
 		default:
 			res, ret, err = func() (val interface{}, retryable bool, err error){
-				sctx, span := trace.StartSpan(ctx, "vald/internal/backoff/Backoff.Do/retry/"+strconv.Itoa(cnt+1))
+				sctx, span := trace.StartSpan(ctx, traceTag+"/"+strconv.Itoa(cnt+1))
 				defer func() {
 					if span != nil {
 						span.End()
