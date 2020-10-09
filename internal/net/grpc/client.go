@@ -217,7 +217,7 @@ func (g *gRPCClient) Range(ctx context.Context,
 		default:
 			var err error
 			if g.bo != nil {
-				_, err = g.bo.Do(ctx, func() (r interface{}, ret bool, err error) {
+				_, err = g.bo.Do(ctx, func(ctx context.Context) (r interface{}, ret bool, err error) {
 					err = p.Do(func(conn *ClientConn) (err error) {
 						if conn == nil {
 							return errors.ErrGRPCClientConnNotFound(addr)
@@ -270,7 +270,7 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 				return nil
 			default:
 				if g.bo != nil {
-					_, err = g.bo.Do(ctx, func() (r interface{}, ret bool, err error) {
+					_, err = g.bo.Do(ctx, func(ctx context.Context) (r interface{}, ret bool, err error) {
 						err = p.Do(func(conn *ClientConn) (err error) {
 							if conn == nil {
 								return errors.ErrGRPCClientConnNotFound(addr)
@@ -329,7 +329,7 @@ func (g *gRPCClient) OrderedRange(ctx context.Context,
 					}
 				}()
 				if g.bo != nil {
-					_, err = g.bo.Do(ctx, func() (r interface{}, ret bool, err error) {
+					_, err = g.bo.Do(ctx, func(ctx context.Context) (r interface{}, ret bool, err error) {
 						err = p.Do(func(conn *ClientConn) (err error) {
 							if conn == nil {
 								return errors.ErrGRPCClientConnNotFound(addr)
@@ -392,7 +392,7 @@ func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
 					return nil
 				default:
 					if g.bo != nil {
-						_, err = g.bo.Do(ctx, func() (r interface{}, ret bool, err error) {
+						_, err = g.bo.Do(ctx, func(ctx context.Context) (r interface{}, ret bool, err error) {
 							err = p.Do(func(conn *ClientConn) (err error) {
 								if conn == nil {
 									return errors.ErrGRPCClientConnNotFound(addr)
@@ -439,7 +439,7 @@ func (g *gRPCClient) Do(ctx context.Context, addr string,
 		return nil, errors.ErrGRPCClientConnNotFound(addr)
 	}
 	if g.bo != nil {
-		data, err = g.bo.Do(ctx, func() (r interface{}, ret bool, err error) {
+		data, err = g.bo.Do(ctx, func(ctx context.Context) (r interface{}, ret bool, err error) {
 			err = p.Do(func(conn *ClientConn) (err error) {
 				if conn == nil {
 					return errors.ErrGRPCClientConnNotFound(addr)

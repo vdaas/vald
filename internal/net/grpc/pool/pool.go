@@ -251,7 +251,7 @@ func (p *pool) dial(ctx context.Context, addr string) (conn *ClientConn, err err
 	if p.bo != nil {
 		var res interface{}
 		retry := 0
-		res, err = p.bo.Do(ctx, func() (r interface{}, ret bool, err error) {
+		res, err = p.bo.Do(ctx, func(ctx context.Context) (r interface{}, ret bool, err error) {
 			log.Debugf("dialing to %s with backoff, retry: %d", addr, retry)
 			ctx, cancel := context.WithTimeout(ctx, p.dialTimeout)
 			defer cancel()
