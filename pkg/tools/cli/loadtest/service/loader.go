@@ -54,7 +54,6 @@ type loader struct {
 	loaderFunc       loadFunc
 	dataProvider     func() interface{}
 	dataSize         int
-	service          config.Service
 	operation        config.Operation
 }
 
@@ -165,7 +164,7 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 	}))
 
 	l.eg.Go(safety.RecoverFunc(func() error {
-		log.Infof("start load test(%s, %s)", l.service.String(), l.operation.String())
+		log.Infof("start load test(%s)", l.operation.String())
 		defer close(ech)
 		defer ticker.Stop()
 		start = time.Now()
@@ -179,7 +178,7 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 			finalize(ctx, err)
 			return p.Signal(syscall.SIGKILL) // TODO: #403
 		}
-		log.Infof("result:%s\t%d\t%d\t%f", l.service.String(), l.concurrency, l.batchSize, vps(int(pgCnt)*l.batchSize, start, end))
+		log.Infof("result:%d\t%d\t%f", l.concurrency, l.batchSize, vps(int(pgCnt)*l.batchSize, start, end))
 
 		return p.Signal(syscall.SIGTERM) // TODO: #403
 	}))

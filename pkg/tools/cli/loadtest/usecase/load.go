@@ -56,7 +56,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithClient(run.client),
 		service.WithConcurrency(cfg.Concurrency),
 		service.WithProgressDuration(cfg.ProgressDuration),
-		service.WithService(cfg.Service),
 	)
 	if err != nil {
 		return nil, err
