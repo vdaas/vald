@@ -68,7 +68,7 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 		return
 	}
 
-	ctx, span := trace.StartSpan(ctx, "vald/internal/backoff/Backoff.Do")
+	ctx, span := trace.StartSpan(ctx, "vald/internal/backoff/Backoff.Do/retry")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -90,7 +90,7 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 			return nil, errors.Wrap(err, ctx.Err().Error())
 		default:
 			res, ret, err = func() (val interface{}, retryable bool, err error){
-				sctx, span := trace.StartSpan(ctx, "vald/internal/backoff/Backoff.Do/"+strconv.Itoa(cnt+1))
+				sctx, span := trace.StartSpan(ctx, "vald/internal/backoff/Backoff.Do/retry/"+strconv.Itoa(cnt+1))
 				defer func() {
 					if span != nil {
 						span.End()
