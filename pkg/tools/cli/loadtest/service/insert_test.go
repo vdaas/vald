@@ -20,15 +20,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/config"
 	"go.uber.org/goleak"
+	"golang.org/x/sync/errgroup"
 )
 
 func Test_insertRequestProvider(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		dataset   assets.Dataset
 		batchSize int
@@ -90,6 +91,7 @@ func Test_insertRequestProvider(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -111,6 +113,7 @@ func Test_insertRequestProvider(t *testing.T) {
 }
 
 func Test_objectVectorProvider(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		dataset assets.Dataset
 	}
@@ -165,6 +168,7 @@ func Test_objectVectorProvider(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -186,6 +190,7 @@ func Test_objectVectorProvider(t *testing.T) {
 }
 
 func Test_objectVectorsProvider(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		dataset assets.Dataset
 		n       int
@@ -243,6 +248,7 @@ func Test_objectVectorsProvider(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -264,6 +270,7 @@ func Test_objectVectorsProvider(t *testing.T) {
 }
 
 func Test_agent(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		conn *grpc.ClientConn
 	}
@@ -314,6 +321,7 @@ func Test_agent(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -335,6 +343,7 @@ func Test_agent(t *testing.T) {
 }
 
 func Test_gateway(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		conn *grpc.ClientConn
 	}
@@ -385,6 +394,7 @@ func Test_gateway(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -406,6 +416,7 @@ func Test_gateway(t *testing.T) {
 }
 
 func Test_insert(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		c func(*grpc.ClientConn) inserter
 	}
@@ -456,6 +467,7 @@ func Test_insert(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -477,6 +489,7 @@ func Test_insert(t *testing.T) {
 }
 
 func Test_bulkInsert(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		c func(*grpc.ClientConn) inserter
 	}
@@ -527,6 +540,7 @@ func Test_bulkInsert(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -548,6 +562,7 @@ func Test_bulkInsert(t *testing.T) {
 }
 
 func Test_loader_newInsert(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		eg               errgroup.Group
 		client           grpc.Client
@@ -635,6 +650,7 @@ func Test_loader_newInsert(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -670,6 +686,7 @@ func Test_loader_newInsert(t *testing.T) {
 }
 
 func Test_loader_newStreamInsert(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		eg               errgroup.Group
 		client           grpc.Client
@@ -757,6 +774,7 @@ func Test_loader_newStreamInsert(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()

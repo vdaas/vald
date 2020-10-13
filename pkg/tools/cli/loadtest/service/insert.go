@@ -20,7 +20,6 @@ import (
 	"sync/atomic"
 
 	"github.com/kpango/fuid"
-	"github.com/vdaas/vald/apis/grpc/agent/core"
 	"github.com/vdaas/vald/apis/grpc/gateway/vald"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/errors"
@@ -87,12 +86,12 @@ func objectVectorsProvider(dataset assets.Dataset, n int) (func() interface{}, i
 }
 
 type inserter interface {
-	Insert(context.Context, *payload.Object_Vector, ...grpc.CallOption) (*payload.Empty, error)
-	MultiInsert(context.Context, *payload.Object_Vectors, ...grpc.CallOption) (*payload.Empty, error)
+	Insert(context.Context, *payload.Object_Vector, ...grpc.CallOption) (*payload.Object_Location, error)
+	MultiInsert(context.Context, *payload.Object_Vectors, ...grpc.CallOption) (*payload.Object_Locations, error)
 }
 
 func agent(conn *grpc.ClientConn) inserter {
-	return core.NewAgentClient(conn)
+	return vald.NewValdClient(conn)
 }
 
 func gateway(conn *grpc.ClientConn) inserter {
@@ -145,7 +144,7 @@ func (l *loader) newStreamInsert() (f loadFunc, err error) {
 	switch l.service {
 	case config.Agent:
 		f = func(ctx context.Context, conn *grpc.ClientConn, i interface{}, copts ...grpc.CallOption) (interface{}, error) {
-			return core.NewAgentClient(conn).StreamInsert(ctx, copts...)
+			return vald.NewValdClient(conn).StreamInsert(ctx, copts...)
 		}
 	case config.Gateway:
 		f = func(ctx context.Context, conn *grpc.ClientConn, i interface{}, copts ...grpc.CallOption) (interface{}, error) {

@@ -19,7 +19,6 @@ import (
 	"context"
 	"sync/atomic"
 
-	"github.com/vdaas/vald/apis/grpc/agent/core"
 	"github.com/vdaas/vald/apis/grpc/gateway/vald"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/errors"
@@ -49,7 +48,7 @@ func (l *loader) newSearch() (loadFunc, error) {
 	switch l.service {
 	case config.Agent:
 		return func(ctx context.Context, conn *grpc.ClientConn, i interface{}, copts ...grpc.CallOption) (interface{}, error) {
-			return core.NewAgentClient(conn).Search(ctx, i.(*payload.Search_Request), copts...)
+			return vald.NewValdClient(conn).Search(ctx, i.(*payload.Search_Request), copts...)
 		}, nil
 	case config.Gateway:
 		return func(ctx context.Context, conn *grpc.ClientConn, i interface{}, copts ...grpc.CallOption) (interface{}, error) {
@@ -64,7 +63,7 @@ func (l *loader) newStreamSearch() (loadFunc, error) {
 	switch l.service {
 	case config.Agent:
 		return func(ctx context.Context, conn *grpc.ClientConn, i interface{}, copts ...grpc.CallOption) (interface{}, error) {
-			return core.NewAgentClient(conn).StreamSearch(ctx, copts...)
+			return vald.NewValdClient(conn).StreamSearch(ctx, copts...)
 		}, nil
 	case config.Gateway:
 		return func(ctx context.Context, conn *grpc.ClientConn, i interface{}, copts ...grpc.CallOption) (interface{}, error) {

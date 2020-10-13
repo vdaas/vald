@@ -49,6 +49,7 @@ type restorer struct {
 
 	backoffEnabled bool
 	backoffOpts    []backoff.Option
+	bo             backoff.Backoff
 }
 
 func New(opts ...Option) (Restorer, error) {
@@ -57,6 +58,9 @@ func New(opts ...Option) (Restorer, error) {
 		if err := opt(r); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
+	}
+	if r.backoffEnabled {
+		r.bo = backoff.New(r.backoffOpts...)
 	}
 
 	return r, nil
@@ -82,6 +86,9 @@ func (r *restorer) Start(ctx context.Context) (<-chan error, error) {
 
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
+		if r.backoffEnabled {
+			defer r.bo.Close()
+		}
 
 		for {
 			select {
@@ -112,7 +119,7 @@ func (r *restorer) startRestore(ctx context.Context) (<-chan error, error) {
 		return ech, err
 	}
 
-	restore := func() (interface{}, bool, error) {
+	restore := func(ctx context.Context) (interface{}, bool, error) {
 		err := r.restore(ctx)
 		if err != nil {
 			log.Errorf("restoring failed: %s", err)
@@ -126,12 +133,9 @@ func (r *restorer) startRestore(ctx context.Context) (<-chan error, error) {
 		defer close(ech)
 
 		if r.backoffEnabled {
-			b := backoff.New(r.backoffOpts...)
-			defer b.Close()
-
-			_, err = b.Do(ctx, restore)
+			_, err = r.bo.Do(ctx, restore)
 		} else {
-			_, _, err = restore()
+			_, _, err = restore(ctx)
 		}
 
 		if err != nil {

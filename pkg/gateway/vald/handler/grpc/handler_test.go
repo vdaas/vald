@@ -23,18 +23,17 @@ import (
 	"testing"
 	"time"
 
-	agent "github.com/vdaas/vald/apis/grpc/agent/core"
 	"github.com/vdaas/vald/apis/grpc/gateway/vald"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/pkg/gateway/vald/service"
-
 	"go.uber.org/goleak"
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []Option
 	}
@@ -85,7 +84,8 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -106,6 +106,7 @@ func TestNew(t *testing.T) {
 }
 
 func Test_server_Exists(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		meta *payload.Object_ID
@@ -194,7 +195,8 @@ func Test_server_Exists(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -225,6 +227,7 @@ func Test_server_Exists(t *testing.T) {
 }
 
 func Test_server_Search(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Search_Request
@@ -313,7 +316,8 @@ func Test_server_Search(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -344,6 +348,7 @@ func Test_server_Search(t *testing.T) {
 }
 
 func Test_server_SearchByID(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Search_IDRequest
@@ -432,7 +437,8 @@ func Test_server_SearchByID(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -463,10 +469,11 @@ func Test_server_SearchByID(t *testing.T) {
 }
 
 func Test_server_search(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		cfg *payload.Search_Config
-		f   func(ctx context.Context, ac agent.AgentClient, copts ...grpc.CallOption) (*payload.Search_Response, error)
+		f   func(ctx context.Context, vc vald.ValdClient, copts ...grpc.CallOption) (*payload.Search_Response, error)
 	}
 	type fields struct {
 		eg                errgroup.Group
@@ -554,7 +561,8 @@ func Test_server_search(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -585,6 +593,7 @@ func Test_server_search(t *testing.T) {
 }
 
 func Test_server_StreamSearch(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		stream vald.Vald_StreamSearchServer
 	}
@@ -666,7 +675,8 @@ func Test_server_StreamSearch(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -697,6 +707,7 @@ func Test_server_StreamSearch(t *testing.T) {
 }
 
 func Test_server_StreamSearchByID(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		stream vald.Vald_StreamSearchByIDServer
 	}
@@ -778,7 +789,8 @@ func Test_server_StreamSearchByID(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -809,6 +821,7 @@ func Test_server_StreamSearchByID(t *testing.T) {
 }
 
 func Test_server_Insert(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		vec *payload.Object_Vector
@@ -824,7 +837,7 @@ func Test_server_Insert(t *testing.T) {
 		streamConcurrency int
 	}
 	type want struct {
-		wantCe *payload.Empty
+		wantCe *payload.Object_Location
 		err    error
 	}
 	type test struct {
@@ -832,11 +845,11 @@ func Test_server_Insert(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Empty, error) error
+		checkFunc  func(want, *payload.Object_Location, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotCe *payload.Empty, err error) error {
+	defaultCheckFunc := func(w want, gotCe *payload.Object_Location, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -897,7 +910,8 @@ func Test_server_Insert(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -928,6 +942,7 @@ func Test_server_Insert(t *testing.T) {
 }
 
 func Test_server_StreamInsert(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		stream vald.Vald_StreamInsertServer
 	}
@@ -1009,7 +1024,8 @@ func Test_server_StreamInsert(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1040,6 +1056,7 @@ func Test_server_StreamInsert(t *testing.T) {
 }
 
 func Test_server_MultiInsert(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		vecs *payload.Object_Vectors
@@ -1055,7 +1072,7 @@ func Test_server_MultiInsert(t *testing.T) {
 		streamConcurrency int
 	}
 	type want struct {
-		wantRes *payload.Empty
+		wantRes *payload.Object_Locations
 		err     error
 	}
 	type test struct {
@@ -1063,11 +1080,11 @@ func Test_server_MultiInsert(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Empty, error) error
+		checkFunc  func(want, *payload.Object_Locations, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
+	defaultCheckFunc := func(w want, gotRes *payload.Object_Locations, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -1128,7 +1145,8 @@ func Test_server_MultiInsert(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1159,6 +1177,7 @@ func Test_server_MultiInsert(t *testing.T) {
 }
 
 func Test_server_Update(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		vec *payload.Object_Vector
@@ -1174,7 +1193,7 @@ func Test_server_Update(t *testing.T) {
 		streamConcurrency int
 	}
 	type want struct {
-		wantRes *payload.Empty
+		wantRes *payload.Object_Location
 		err     error
 	}
 	type test struct {
@@ -1182,11 +1201,11 @@ func Test_server_Update(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Empty, error) error
+		checkFunc  func(want, *payload.Object_Location, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
+	defaultCheckFunc := func(w want, gotRes *payload.Object_Location, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -1247,7 +1266,8 @@ func Test_server_Update(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1278,6 +1298,7 @@ func Test_server_Update(t *testing.T) {
 }
 
 func Test_server_StreamUpdate(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		stream vald.Vald_StreamUpdateServer
 	}
@@ -1359,7 +1380,8 @@ func Test_server_StreamUpdate(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1390,6 +1412,7 @@ func Test_server_StreamUpdate(t *testing.T) {
 }
 
 func Test_server_MultiUpdate(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		vecs *payload.Object_Vectors
@@ -1405,7 +1428,7 @@ func Test_server_MultiUpdate(t *testing.T) {
 		streamConcurrency int
 	}
 	type want struct {
-		wantRes *payload.Empty
+		wantRes *payload.Object_Locations
 		err     error
 	}
 	type test struct {
@@ -1413,11 +1436,11 @@ func Test_server_MultiUpdate(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Empty, error) error
+		checkFunc  func(want, *payload.Object_Locations, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
+	defaultCheckFunc := func(w want, gotRes *payload.Object_Locations, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -1478,7 +1501,8 @@ func Test_server_MultiUpdate(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1509,6 +1533,7 @@ func Test_server_MultiUpdate(t *testing.T) {
 }
 
 func Test_server_Upsert(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		vec *payload.Object_Vector
@@ -1524,7 +1549,7 @@ func Test_server_Upsert(t *testing.T) {
 		streamConcurrency int
 	}
 	type want struct {
-		want *payload.Empty
+		want *payload.Object_Location
 		err  error
 	}
 	type test struct {
@@ -1532,11 +1557,11 @@ func Test_server_Upsert(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Empty, error) error
+		checkFunc  func(want, *payload.Object_Location, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *payload.Empty, err error) error {
+	defaultCheckFunc := func(w want, got *payload.Object_Location, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -1597,7 +1622,8 @@ func Test_server_Upsert(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1628,6 +1654,7 @@ func Test_server_Upsert(t *testing.T) {
 }
 
 func Test_server_StreamUpsert(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		stream vald.Vald_StreamUpsertServer
 	}
@@ -1709,7 +1736,8 @@ func Test_server_StreamUpsert(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1740,6 +1768,7 @@ func Test_server_StreamUpsert(t *testing.T) {
 }
 
 func Test_server_MultiUpsert(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		vecs *payload.Object_Vectors
@@ -1755,7 +1784,7 @@ func Test_server_MultiUpsert(t *testing.T) {
 		streamConcurrency int
 	}
 	type want struct {
-		want *payload.Empty
+		want *payload.Object_Locations
 		err  error
 	}
 	type test struct {
@@ -1763,11 +1792,11 @@ func Test_server_MultiUpsert(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Empty, error) error
+		checkFunc  func(want, *payload.Object_Locations, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *payload.Empty, err error) error {
+	defaultCheckFunc := func(w want, got *payload.Object_Locations, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -1828,7 +1857,8 @@ func Test_server_MultiUpsert(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1859,6 +1889,7 @@ func Test_server_MultiUpsert(t *testing.T) {
 }
 
 func Test_server_Remove(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		id  *payload.Object_ID
@@ -1874,7 +1905,7 @@ func Test_server_Remove(t *testing.T) {
 		streamConcurrency int
 	}
 	type want struct {
-		want *payload.Empty
+		want *payload.Object_Location
 		err  error
 	}
 	type test struct {
@@ -1882,11 +1913,11 @@ func Test_server_Remove(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Empty, error) error
+		checkFunc  func(want, *payload.Object_Location, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *payload.Empty, err error) error {
+	defaultCheckFunc := func(w want, got *payload.Object_Location, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -1947,7 +1978,8 @@ func Test_server_Remove(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1978,6 +2010,7 @@ func Test_server_Remove(t *testing.T) {
 }
 
 func Test_server_StreamRemove(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		stream vald.Vald_StreamRemoveServer
 	}
@@ -2059,7 +2092,8 @@ func Test_server_StreamRemove(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -2090,6 +2124,7 @@ func Test_server_StreamRemove(t *testing.T) {
 }
 
 func Test_server_MultiRemove(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		ids *payload.Object_IDs
@@ -2105,7 +2140,7 @@ func Test_server_MultiRemove(t *testing.T) {
 		streamConcurrency int
 	}
 	type want struct {
-		wantRes *payload.Empty
+		wantRes *payload.Object_Locations
 		err     error
 	}
 	type test struct {
@@ -2113,11 +2148,11 @@ func Test_server_MultiRemove(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Empty, error) error
+		checkFunc  func(want, *payload.Object_Locations, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
+	defaultCheckFunc := func(w want, gotRes *payload.Object_Locations, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -2178,7 +2213,8 @@ func Test_server_MultiRemove(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -2209,6 +2245,7 @@ func Test_server_MultiRemove(t *testing.T) {
 }
 
 func Test_server_GetObject(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		id  *payload.Object_ID
@@ -2224,7 +2261,7 @@ func Test_server_GetObject(t *testing.T) {
 		streamConcurrency int
 	}
 	type want struct {
-		wantVec *payload.Backup_MetaVector
+		wantVec *payload.Object_Vector
 		err     error
 	}
 	type test struct {
@@ -2232,11 +2269,11 @@ func Test_server_GetObject(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Backup_MetaVector, error) error
+		checkFunc  func(want, *payload.Object_Vector, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotVec *payload.Backup_MetaVector, err error) error {
+	defaultCheckFunc := func(w want, gotVec *payload.Object_Vector, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -2297,7 +2334,8 @@ func Test_server_GetObject(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -2328,6 +2366,7 @@ func Test_server_GetObject(t *testing.T) {
 }
 
 func Test_server_StreamGetObject(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		stream vald.Vald_StreamGetObjectServer
 	}
@@ -2409,7 +2448,8 @@ func Test_server_StreamGetObject(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

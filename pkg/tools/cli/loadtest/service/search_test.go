@@ -20,15 +20,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/config"
 	"go.uber.org/goleak"
+	"golang.org/x/sync/errgroup"
 )
 
 func Test_searchRequestProvider(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		dataset assets.Dataset
 	}
@@ -87,6 +88,7 @@ func Test_searchRequestProvider(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -108,6 +110,7 @@ func Test_searchRequestProvider(t *testing.T) {
 }
 
 func Test_loader_newSearch(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		eg               errgroup.Group
 		client           grpc.Client
@@ -195,6 +198,7 @@ func Test_loader_newSearch(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -230,6 +234,7 @@ func Test_loader_newSearch(t *testing.T) {
 }
 
 func Test_loader_newStreamSearch(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		eg               errgroup.Group
 		client           grpc.Client
@@ -317,6 +322,7 @@ func Test_loader_newStreamSearch(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()

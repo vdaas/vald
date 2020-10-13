@@ -24,11 +24,11 @@ import (
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
-
 	"go.uber.org/goleak"
 )
 
 func TestNewBackup(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []BackupOption
 	}
@@ -83,7 +83,8 @@ func TestNewBackup(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -104,6 +105,7 @@ func TestNewBackup(t *testing.T) {
 }
 
 func Test_backup_Start(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -171,7 +173,8 @@ func Test_backup_Start(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -196,6 +199,7 @@ func Test_backup_Start(t *testing.T) {
 }
 
 func Test_backup_GetObject(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		uuid string
@@ -266,7 +270,8 @@ func Test_backup_GetObject(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -291,6 +296,7 @@ func Test_backup_GetObject(t *testing.T) {
 }
 
 func Test_backup_GetLocation(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		uuid string
@@ -361,7 +367,8 @@ func Test_backup_GetLocation(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -386,6 +393,7 @@ func Test_backup_GetLocation(t *testing.T) {
 }
 
 func Test_backup_Register(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		vec *payload.Backup_MetaVector
@@ -452,7 +460,8 @@ func Test_backup_Register(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -477,6 +486,7 @@ func Test_backup_Register(t *testing.T) {
 }
 
 func Test_backup_RegisterMultiple(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		vecs *payload.Backup_MetaVectors
@@ -543,7 +553,8 @@ func Test_backup_RegisterMultiple(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -568,6 +579,7 @@ func Test_backup_RegisterMultiple(t *testing.T) {
 }
 
 func Test_backup_Remove(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		uuid string
@@ -634,7 +646,8 @@ func Test_backup_Remove(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -659,6 +672,7 @@ func Test_backup_Remove(t *testing.T) {
 }
 
 func Test_backup_RemoveMultiple(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx   context.Context
 		uuids []string
@@ -725,7 +739,8 @@ func Test_backup_RemoveMultiple(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

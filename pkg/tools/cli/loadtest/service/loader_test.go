@@ -29,6 +29,7 @@ import (
 )
 
 func TestNewLoader(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []Option
 	}
@@ -83,6 +84,7 @@ func TestNewLoader(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -104,6 +106,7 @@ func TestNewLoader(t *testing.T) {
 }
 
 func Test_loader_Prepare(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		in0 context.Context
 	}
@@ -197,6 +200,7 @@ func Test_loader_Prepare(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -232,6 +236,7 @@ func Test_loader_Prepare(t *testing.T) {
 }
 
 func Test_loader_Do(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -325,6 +330,7 @@ func Test_loader_Do(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -360,6 +366,7 @@ func Test_loader_Do(t *testing.T) {
 }
 
 func Test_loader_do(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx    context.Context
 		f      func(interface{}, error)
@@ -459,6 +466,7 @@ func Test_loader_do(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)

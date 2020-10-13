@@ -49,6 +49,7 @@ type reader struct {
 
 	backoffEnabled bool
 	backoffOpts    []backoff.Option
+	bo             backoff.Backoff
 	maxChunkSize   int64
 }
 
@@ -82,6 +83,10 @@ func (r *reader) Open(ctx context.Context) (err error) {
 		defer pw.Close()
 
 		var offset int64
+
+		if r.backoffEnabled {
+			r.bo = backoff.New(r.backoffOpts...)
+		}
 
 		for {
 			select {
@@ -124,15 +129,12 @@ func (r *reader) Open(ctx context.Context) (err error) {
 }
 
 func (r *reader) getObjectWithBackoff(ctx context.Context, offset, length int64) (io.Reader, error) {
-	getFunc := func() (interface{}, bool, error) {
+	getFunc := func(ctx context.Context) (interface{}, bool, error) {
 		res, err := r.getObject(ctx, offset, length)
 		return res, err != nil, err
 	}
 
-	b := backoff.New(r.backoffOpts...)
-	defer b.Close()
-
-	res, err := b.Do(ctx, getFunc)
+	res, err := r.bo.Do(ctx, getFunc)
 	if err != nil {
 		return nil, err
 	}
@@ -196,6 +198,9 @@ func (r *reader) getObject(ctx context.Context, offset, length int64) (io.Reader
 
 // Close closes the reader.
 func (r *reader) Close() error {
+	if r.bo != nil {
+		defer r.bo.Close()
+	}
 	if r.pr != nil {
 		return r.pr.Close()
 	}
