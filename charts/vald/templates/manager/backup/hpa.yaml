@@ -13,11 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if and .Values.backupManager.enabled .Values.backupManager.hpa.enabled }}
+{{- $backup := .Values.manager.backup -}}
+{{- if and $backup.enabled $backup.hpa.enabled }}
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ .Values.backupManager.name }}
+  name: {{ $backup.name }}
   labels:
     app.kubernetes.io/name: {{ include "vald.name" . }}
     helm.sh/chart: {{ include "vald.chart" . }}
@@ -26,12 +27,12 @@ metadata:
     app.kubernetes.io/version: {{ .Chart.Version }}
     app.kubernetes.io/component: manager-backup
 spec:
-  maxReplicas: {{ .Values.backupManager.maxReplicas }}
-  minReplicas: {{ .Values.backupManager.minReplicas }}
+  maxReplicas: {{ $backup.maxReplicas }}
+  minReplicas: {{ $backup.minReplicas }}
   scaleTargetRef:
     apiVersion: apps/v1
-    kind: {{ .Values.backupManager.kind }}
-    name: {{ .Values.backupManager.name }}
-  targetCPUUtilizationPercentage: {{ .Values.backupManager.hpa.targetCPUUtilizationPercentage }}
+    kind: {{ $backup.kind }}
+    name: {{ $backup.name }}
+  targetCPUUtilizationPercentage: {{ $backup.hpa.targetCPUUtilizationPercentage }}
 status:
 {{- end }}
