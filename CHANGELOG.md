@@ -1,5 +1,44 @@
 # CHANGELOG
 
+## v0.0.58
+
+### Docker images
+
+component | docker pull
+--------- | -----------
+agent NGT | `docker pull vdaas/vald-agent-ngt:v0.0.58`
+agent sidecar | `docker pull vdaas/vald-agent-sidecar:v0.0.58`
+discoverer K8s | `docker pull vdaas/vald-discoverer-k8s:v0.0.58`
+gateway | `docker pull vdaas/vald-gateway:v0.0.58`
+backup manager MySQL | `docker pull vdaas/vald-manager-backup-mysql:v0.0.58`
+backup manager Cassandra | `docker pull vdaas/vald-manager-backup-cassandra:v0.0.58`
+compressor | `docker pull vdaas/vald-manager-compressor:v0.0.58`
+meta Redis | `docker pull vdaas/vald-meta-redis:v0.0.58`
+meta Cassandra | `docker pull vdaas/vald-meta-cassandra:v0.0.58`
+index manager | `docker pull vdaas/vald-manager-index:v0.0.58`
+Helm operator | `docker pull vdaas/vald-helm-operator:v0.0.58`
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v0.0.58)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v0.0.58/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v0.0.58/charts/vald-helm-operator/README.md)
+
+### Changes
+- change gateway vald's mutex lock ([#765](https://github.com/vdaas/vald/pull/765))
+- patch add more effective Close function for internal/core ([#764](https://github.com/vdaas/vald/pull/764))
+- :white_check_mark: Fix mysql test failure ([#750](https://github.com/vdaas/vald/pull/750))
+- :green_heart: remove deprecated set-env commands ([#752](https://github.com/vdaas/vald/pull/752))
+- bugfix discoverer nil map reference ([#745](https://github.com/vdaas/vald/pull/745))
+- add test of internal/db/rdb/mysql ([#659](https://github.com/vdaas/vald/pull/659))
+- :white_check_mark: :recycle: Add test for internal/db/storage/blob/s3/reader ([#718](https://github.com/vdaas/vald/pull/718))
+- :white_check_mark: Cassandra option test (part 2) ([#724](https://github.com/vdaas/vald/pull/724))
+- CI: Build multi-platform Docker images ([#727](https://github.com/vdaas/vald/pull/727))
+- :white_check_mark: Add test for s3 session option ([#736](https://github.com/vdaas/vald/pull/736))
+- :white_check_mark: Create s3/session test ([#702](https://github.com/vdaas/vald/pull/702))
+- :fire: remove dependencies to gql proto ([#731](https://github.com/vdaas/vald/pull/731))
+- :robot: Automatically update k8s manifests ([#730](https://github.com/vdaas/vald/pull/730))
+
+
 ## v0.0.57
 
 ### Docker images
