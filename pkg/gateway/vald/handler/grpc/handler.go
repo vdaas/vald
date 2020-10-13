@@ -209,7 +209,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 			}
 			return res, nil
 		case dist := <-dch:
-			rl := len(res.GetResults())
+			rl := len(res.GetResults()) // result length
 			if rl >= num && dist.GetDistance() >= math.Float32frombits(atomic.LoadUint32(&maxDist)) {
 				continue
 			}
