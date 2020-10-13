@@ -2,6 +2,7 @@
 {{- $f := . }}
 
 func {{ .TestName }}(t *testing.T) {
+    t.Parallel()
     // Change interface type to the type of object you are testing
     type T = interface{}
     {{- if .TestParameters }}
@@ -115,9 +116,11 @@ func {{ .TestName }}(t *testing.T) {
         */
     }
 
-    for {{- if (or .Subtests (not .IsNaked)) }} _, test := {{- end }} range tests {
+    for {{- if (or .Subtests (not .IsNaked)) }} _, tc := {{- end }} range tests {
         {{- if .Subtests }}
+            test := tc
             t.Run(test.name, func(tt *testing.T) {
+                tt.Parallel()
                 defer goleak.VerifyNone(tt)
                 if test.beforeFunc != nil {
                     test.beforeFunc({{- if .TestParameters }} test.args {{- end }})
