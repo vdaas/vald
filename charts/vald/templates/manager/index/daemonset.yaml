@@ -13,104 +13,105 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if and .Values.indexManager.enabled (eq .Values.indexManager.kind "DaemonSet") }}
+{{- $index := .Values.manager.index -}}
+{{- if and $index.enabled (eq $index.kind "DaemonSet") }}
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: {{ .Values.indexManager.name }}
+  name: {{ $index.name }}
   labels:
-    app: {{ .Values.indexManager.name }}
+    app: {{ $index.name }}
     app.kubernetes.io/name: {{ include "vald.name" . }}
     helm.sh/chart: {{ include "vald.chart" . }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/version: {{ .Chart.Version }}
     app.kubernetes.io/component: manager-index
-  {{- if .Values.indexManager.annotations }}
+  {{- if $index.annotations }}
   annotations:
-    {{- toYaml .Values.indexManager.annotations | nindent 4 }}
+    {{- toYaml $index.annotations | nindent 4 }}
   {{- end }}
 spec:
-  revisionHistoryLimit: {{ .Values.indexManager.revisionHistoryLimit }}
+  revisionHistoryLimit: {{ $index.revisionHistoryLimit }}
   selector:
     matchLabels:
-      app: {{ .Values.indexManager.name }}
+      app: {{ $index.name }}
   updateStrategy:
     rollingUpdate:
-      maxUnavailable: {{ .Values.indexManager.rollingUpdate.maxUnavailable }}
+      maxUnavailable: {{ $index.rollingUpdate.maxUnavailable }}
     type: RollingUpdate
   template:
     metadata:
       creationTimestamp: null
       labels:
-        app: {{ .Values.indexManager.name }}
+        app: {{ $index.name }}
         app.kubernetes.io/name: {{ include "vald.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: manager-index
       annotations:
         checksum/configmap: {{ include (print $.Template.BasePath "/manager/index/configmap.yaml") . | sha256sum }}
-        {{- if .Values.indexManager.podAnnotations }}
-        {{- toYaml .Values.indexManager.podAnnotations | nindent 8 }}
+        {{- if $index.podAnnotations }}
+        {{- toYaml $index.podAnnotations | nindent 8 }}
         {{- end }}
     spec:
-      {{- if .Values.indexManager.initContainers }}
+      {{- if $index.initContainers }}
       initContainers:
-        {{- $initContainers := dict "initContainers" .Values.indexManager.initContainers "Values" .Values "namespace" .Release.Namespace -}}
+        {{- $initContainers := dict "initContainers" $index.initContainers "Values" .Values "namespace" .Release.Namespace -}}
         {{- include "vald.initContainers" $initContainers | trim | nindent 8 }}
       {{- end }}
       affinity:
-        {{- include "vald.affinity" .Values.indexManager.affinity | nindent 8 }}
-      {{- if .Values.indexManager.topologySpreadConstraints }}
+        {{- include "vald.affinity" $index.affinity | nindent 8 }}
+      {{- if $index.topologySpreadConstraints }}
       topologySpreadConstraints:
-        {{- toYaml .Values.indexManager.topologySpreadConstraints | nindent 8 }}
+        {{- toYaml $index.topologySpreadConstraints | nindent 8 }}
       {{- end }}
       containers:
-        - name: {{ .Values.indexManager.name }}
-          image: "{{ .Values.indexManager.image.repository }}:{{ default .Values.defaults.image.tag .Values.indexManager.image.tag }}"
-          imagePullPolicy: {{ .Values.indexManager.image.pullPolicy }}
-          {{- $servers := dict "Values" .Values.indexManager.server_config "default" .Values.defaults.server_config -}}
+        - name: {{ $index.name }}
+          image: "{{ $index.image.repository }}:{{ default .Values.defaults.image.tag $index.image.tag }}"
+          imagePullPolicy: {{ $index.image.pullPolicy }}
+          {{- $servers := dict "Values" $index.server_config "default" .Values.defaults.server_config -}}
           {{- include "vald.containerPorts" $servers | trim | nindent 10 }}
           resources:
-            {{- toYaml .Values.indexManager.resources | nindent 12 }}
+            {{- toYaml $index.resources | nindent 12 }}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
-          {{- if .Values.indexManager.env }}
+          {{- if $index.env }}
           env:
-            {{- toYaml .Values.indexManager.env | nindent 12 }}
+            {{- toYaml $index.env | nindent 12 }}
           {{- end }}
           volumeMounts:
-            - name: {{ .Values.indexManager.name }}-config
+            - name: {{ $index.name }}-config
               mountPath: /etc/server/
-            {{- if .Values.indexManager.volumeMounts }}
-            {{- toYaml .Values.indexManager.volumeMounts | nindent 12 }}
+            {{- if $index.volumeMounts }}
+            {{- toYaml $index.volumeMounts | nindent 12 }}
             {{- end }}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
-      terminationGracePeriodSeconds: {{ .Values.indexManager.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ $index.terminationGracePeriodSeconds }}
       volumes:
         - configMap:
             defaultMode: 420
-            name: {{ .Values.indexManager.name }}-config
-          name: {{ .Values.indexManager.name }}-config
-        {{- if .Values.indexManager.volumes }}
-        {{- toYaml .Values.indexManager.volumes | nindent 8 }}
+            name: {{ $index.name }}-config
+          name: {{ $index.name }}-config
+        {{- if $index.volumes }}
+        {{- toYaml $index.volumes | nindent 8 }}
         {{- end }}
-      {{- if .Values.indexManager.nodeName }}
-      nodeName: {{ .Values.indexManager.nodeName }}
+      {{- if $index.nodeName }}
+      nodeName: {{ $index.nodeName }}
       {{- end }}
-      {{- if .Values.indexManager.nodeSelector }}
+      {{- if $index.nodeSelector }}
       nodeSelector:
-        {{- toYaml .Values.indexManager.nodeSelector | nindent 8 }}
+        {{- toYaml $index.nodeSelector | nindent 8 }}
       {{- end }}
-      {{- if .Values.indexManager.tolerations }}
+      {{- if $index.tolerations }}
       tolerations:
-        {{- toYaml .Values.indexManager.tolerations | nindent 8 }}
+        {{- toYaml $index.tolerations | nindent 8 }}
       {{- end }}
-      {{- if .Values.indexManager.podPriority }}
-      {{- if .Values.indexManager.podPriority.enabled }}
-      priorityClassName: {{ .Values.indexManager.name }}-priority
+      {{- if $index.podPriority }}
+      {{- if $index.podPriority.enabled }}
+      priorityClassName: {{ $index.name }}-priority
       {{- end }}
       {{- end }}
 status:

@@ -14,29 +14,30 @@
 # limitations under the License.
 #
 
-backupManager:
-  image:
-    repository: vdaas/vald-manager-backup-cassandra
-  initContainers:
-    - type: wait-for-cassandra
-      name: wait-for-scylla
-      image: cassandra:latest
-      cassandra:
+manager:
+  backup:
+    image:
+      repository: vdaas/vald-manager-backup-cassandra
+    initContainers:
+      - type: wait-for-cassandra
+        name: wait-for-scylla
+        image: cassandra:latest
+        cassandra:
+          hosts:
+            - scylla-0.scylla.default.svc.cluster.local
+            - scylla-1.scylla.default.svc.cluster.local
+            - scylla-2.scylla.default.svc.cluster.local
+        sleepDuration: 2
+    env: []
+    mysql:
+      enabled: false
+    cassandra:
+      enabled: true
+      config:
         hosts:
           - scylla-0.scylla.default.svc.cluster.local
           - scylla-1.scylla.default.svc.cluster.local
           - scylla-2.scylla.default.svc.cluster.local
-      sleepDuration: 2
-  env: []
-  mysql:
-    enabled: false
-  cassandra:
-    enabled: true
-    config:
-      hosts:
-        - scylla-0.scylla.default.svc.cluster.local
-        - scylla-1.scylla.default.svc.cluster.local
-        - scylla-2.scylla.default.svc.cluster.local
 
 meta:
   image:

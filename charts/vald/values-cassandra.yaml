@@ -14,43 +14,44 @@
 # limitations under the License.
 #
 
-backupManager:
-  image:
-    repository: vdaas/vald-manager-backup-cassandra
-  initContainers:
-    - type: wait-for-cassandra
-      name: wait-for-cassandra
-      image: cassandra:latest
-      cassandra:
-        hosts:
-          - cassandra-0.default.svc.cluster.local
-          - cassandra-1.default.svc.cluster.local
-          - cassandra-2.default.svc.cluster.local
-        options:
-          - "-uroot"
-          - "-p${CASSANDRA_PASSWORD}"
-      sleepDuration: 2
-      env:
+manager:
+  backup:
+    image:
+      repository: vdaas/vald-manager-backup-cassandra
+    initContainers:
+      - type: wait-for-cassandra
+        name: wait-for-cassandra
+        image: cassandra:latest
+        cassandra:
+          hosts:
+            - cassandra-0.default.svc.cluster.local
+            - cassandra-1.default.svc.cluster.local
+            - cassandra-2.default.svc.cluster.local
+          options:
+            - "-uroot"
+            - "-p${CASSANDRA_PASSWORD}"
+        sleepDuration: 2
+        env:
+        - name: CASSANDRA_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: cassandra-secret
+              key: password
+    env:
       - name: CASSANDRA_PASSWORD
         valueFrom:
           secretKeyRef:
             name: cassandra-secret
             key: password
-  env:
-    - name: CASSANDRA_PASSWORD
-      valueFrom:
-        secretKeyRef:
-          name: cassandra-secret
-          key: password
-  mysql:
-    enabled: false
-  cassandra:
-    enabled: true
-    config:
-      hosts:
-        - cassandra-0.cassandra.default.svc.cluster.local
-        - cassandra-1.cassandra.default.svc.cluster.local
-        - cassandra-2.cassandra.default.svc.cluster.local
+    mysql:
+      enabled: false
+    cassandra:
+      enabled: true
+      config:
+        hosts:
+          - cassandra-0.cassandra.default.svc.cluster.local
+          - cassandra-1.cassandra.default.svc.cluster.local
+          - cassandra-2.cassandra.default.svc.cluster.local
 
 meta:
   image:

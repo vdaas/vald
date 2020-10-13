@@ -15,15 +15,16 @@
 #
 
 gateway:
-  minReplicas: 1
-  hpa:
-    enabled: false
-  resources:
-    requests:
-      cpu: 100m
-      memory: 50Mi
-  gateway_config:
-    index_replica: 3
+  vald:
+    minReplicas: 1
+    hpa:
+      enabled: false
+    resources:
+      requests:
+        cpu: 100m
+        memory: 50Mi
+    gateway_config:
+      index_replica: 3
 
 agent:
   minReplicas: 3
@@ -50,32 +51,33 @@ discoverer:
       cpu: 100m
       memory: 50Mi
 
-compressor:
-  minReplicas: 1
-  hpa:
-    enabled: false
-  resources:
-    requests:
-      cpu: 100m
-      memory: 50Mi
-  compress:
-    compress_algorithm: gob
+manager:
+  compressor:
+    minReplicas: 1
+    hpa:
+      enabled: false
+    resources:
+      requests:
+        cpu: 100m
+        memory: 50Mi
+    compress:
+      compress_algorithm: gob
 
-backupManager:
-  minReplicas: 1
-  hpa:
-    enabled: false
-  resources:
-    requests:
-      cpu: 100m
-      memory: 30Mi
+  backup:
+    minReplicas: 1
+    hpa:
+      enabled: false
+    resources:
+      requests:
+        cpu: 100m
+        memory: 30Mi
 
-indexManager:
-  replicas: 1
-  resources:
-    requests:
-      cpu: 100m
-      memory: 30Mi
+  index:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 30Mi
 
 meta:
   minReplicas: 1
