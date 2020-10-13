@@ -246,7 +246,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 				res.Results = res.GetResults()[:num]
 				rl = len(res.GetResults())
 			}
-			if distEnd := res.GetResults()[rl].GetDistance(); rl >= num &&
+			if distEnd := res.GetResults()[rl-1].GetDistance(); rl >= num &&
 				distEnd < math.Float32frombits(atomic.LoadUint32(&maxDist)) {
 				atomic.StoreUint32(&maxDist, math.Float32bits(distEnd))
 			}
