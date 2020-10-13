@@ -21,7 +21,6 @@ logging:
   logger: glg
   level: info
   format: raw
-service: gateway
 operation: insert
 dataset: fashion-mnist
 concurrency: 100
