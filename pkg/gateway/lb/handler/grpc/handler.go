@@ -179,7 +179,6 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 		}
 	}()
 
-	maxDist := uint32(math.MaxUint32)
 	num := int(cfg.GetNum())
 	res = new(payload.Search_Response)
 	res.Results = make([]*payload.Object_Distance, 0, s.gateway.GetAgentCount(ctx)*num)
@@ -192,10 +191,13 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 	} else {
 		timeout = s.timeout
 	}
+
+	var maxDist uint32
+	atomic.StoreUint32(&maxDist, math.Float32bits(math.MaxFloat32))
 	ectx, cancel = context.WithTimeout(ectx, timeout)
 	eg.Go(safety.RecoverFunc(func() error {
 		defer cancel()
-		vl := new(visitlist)
+		visited := new(sync.Map)
 		return s.gateway.BroadCast(ectx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
 			ctx, span := trace.StartSpan(ctx, apiName+".search/"+target)
 			defer func() {
@@ -212,10 +214,13 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 				return nil
 			}
 			for _, dist := range r.GetResults() {
-				if dist.GetDistance() > math.Float32frombits(atomic.LoadUint32(&maxDist)) {
+				if dist.GetDistance() >= math.Float32frombits(atomic.LoadUint32(&maxDist)) {
 					return nil
 				}
-				if !vl.Visited(dist.GetId()) {
+				if dist == nil {
+					continue
+				}
+				if _, already := visited.LoadOrStore(dist.GetId(), struct{}{}); !already {
 					select {
 					case <-ectx.Done():
 						return nil
@@ -239,44 +244,46 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 			}
 			return res, nil
 		case dist := <-dch:
-			if len(res.GetResults()) >= num {
-				if dist.GetDistance() < math.Float32frombits(atomic.LoadUint32(&maxDist)) {
-					atomic.StoreUint32(&maxDist, math.Float32bits(dist.GetDistance()))
-				} else {
-					continue
-				}
+			rl := len(res.GetResults()) // result length
+			if rl >= num && dist.GetDistance() >= math.Float32frombits(atomic.LoadUint32(&maxDist)) {
+				continue
 			}
-			switch len(res.GetResults()) {
+			switch rl {
 			case 0:
 				res.Results = append(res.Results, dist)
-				continue
 			case 1:
 				if res.GetResults()[0].GetDistance() <= dist.GetDistance() {
 					res.Results = append(res.Results, dist)
 				} else {
 					res.Results = append([]*payload.Object_Distance{dist}, res.Results[0])
 				}
-				continue
-			}
+			default:
+				var pos int
+				for idx := rl; idx >= 1; idx-- {
+					if res.GetResults()[idx-1].GetDistance() <= dist.GetDistance() {
+						pos = idx - 1
+						break
+					}
+				}
 
-			pos := len(res.GetResults())
-			for idx := pos; idx >= 1; idx-- {
-				if res.GetResults()[idx-1].GetDistance() <= dist.GetDistance() {
-					pos = idx - 1
-					break
+				switch {
+				case pos == len(res.GetResults()):
+					res.Results = append([]*payload.Object_Distance{dist}, res.Results...)
+				case pos == len(res.GetResults())-1:
+					res.Results = append(res.GetResults(), dist)
+				case pos >= 0:
+					res.Results = append(res.GetResults()[:pos+1], res.GetResults()[pos:]...)
+					res.Results[pos+1] = dist
 				}
 			}
-			switch {
-			case pos == len(res.GetResults()):
-				res.Results = append([]*payload.Object_Distance{dist}, res.Results...)
-			case pos == len(res.GetResults())-1:
-				res.Results = append(res.GetResults(), dist)
-			case pos >= 0:
-				res.Results = append(res.GetResults()[:pos+1], res.GetResults()[pos:]...)
-				res.Results[pos+1] = dist
-			}
-			if len(res.GetResults()) > num && num != 0 {
+			rl = len(res.GetResults())
+			if rl > num && num != 0 {
 				res.Results = res.GetResults()[:num]
+				rl = len(res.GetResults())
+			}
+			if distEnd := res.GetResults()[rl-1].GetDistance(); rl >= num &&
+				distEnd < math.Float32frombits(atomic.LoadUint32(&maxDist)) {
+				atomic.StoreUint32(&maxDist, math.Float32bits(distEnd))
 			}
 		}
 	}
