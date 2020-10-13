@@ -60,7 +60,9 @@ type Reader interface {
 
 // New returns Reader implementation.
 func New(opts ...Option) Reader {
-	r := new(reader)
+	r := &reader{
+		ctxio: ctxio.New(),
+	}
 	for _, opt := range append(defaultOpts, opts...) {
 		opt(r)
 	}

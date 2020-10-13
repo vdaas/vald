@@ -74,6 +74,7 @@ func TestNew(t *testing.T) {
 			want: want{
 				want: &reader{
 					eg:             errgroup.Get(),
+					ctxio:          ctxio.New(),
 					maxChunkSize:   512 * 1024 * 1024,
 					backoffEnabled: false,
 				},
@@ -90,6 +91,7 @@ func TestNew(t *testing.T) {
 			want: want{
 				want: &reader{
 					eg:             errgroup.Get(),
+					ctxio:          ctxio.New(),
 					maxChunkSize:   512 * 1024 * 1024,
 					backoffEnabled: true,
 				},
