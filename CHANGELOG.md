@@ -1,5 +1,33 @@
 # CHANGELOG
 
+## v0.0.59
+
+### Docker images
+
+component | docker pull
+--------- | -----------
+agent NGT | `docker pull vdaas/vald-agent-ngt:v0.0.59`
+agent sidecar | `docker pull vdaas/vald-agent-sidecar:v0.0.59`
+discoverer K8s | `docker pull vdaas/vald-discoverer-k8s:v0.0.59`
+gateway | `docker pull vdaas/vald-gateway:v0.0.59`
+backup manager MySQL | `docker pull vdaas/vald-manager-backup-mysql:v0.0.59`
+backup manager Cassandra | `docker pull vdaas/vald-manager-backup-cassandra:v0.0.59`
+compressor | `docker pull vdaas/vald-manager-compressor:v0.0.59`
+meta Redis | `docker pull vdaas/vald-meta-redis:v0.0.59`
+meta Cassandra | `docker pull vdaas/vald-meta-cassandra:v0.0.59`
+index manager | `docker pull vdaas/vald-manager-index:v0.0.59`
+Helm operator | `docker pull vdaas/vald-helm-operator:v0.0.59`
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v0.0.59)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v0.0.59/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v0.0.59/charts/vald-helm-operator/README.md)
+
+### Changes
+- bugfix gateway index out of bounds ([#768](https://github.com/vdaas/vald/pull/768))
+- :robot: Automatically update k8s manifests ([#766](https://github.com/vdaas/vald/pull/766))
+
+
 ## v0.0.58
 
 ### Docker images
