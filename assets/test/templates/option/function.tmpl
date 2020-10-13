@@ -116,8 +116,9 @@ func {{ .TestName }}(t *testing.T) {
         */
     }
 
-    for {{- if (or .Subtests (not .IsNaked)) }} _, test := {{- end }} range tests {
+    for {{- if (or .Subtests (not .IsNaked)) }} _, tc := {{- end }} range tests {
         {{- if .Subtests }}
+            test := tc
             t.Run(test.name, func(tt *testing.T) {
                 tt.Parallel()
                 defer goleak.VerifyNone(tt)
