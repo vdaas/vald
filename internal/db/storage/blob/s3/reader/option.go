@@ -18,6 +18,7 @@ package reader
 
 import (
 	"github.com/vdaas/vald/internal/backoff"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/reader/io"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/sdk/s3/s3iface"
 	"github.com/vdaas/vald/internal/errgroup"
 )
@@ -30,6 +31,9 @@ var (
 		WithErrGroup(errgroup.Get()),
 		WithMaxChunkSize(512 * 1024 * 1024),
 		WithBackoff(false),
+		func(r *reader) {
+			r.ctxio = io.New()
+		},
 	}
 )
 
