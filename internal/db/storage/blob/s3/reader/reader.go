@@ -59,15 +59,17 @@ type Reader interface {
 }
 
 // New returns Reader implementation.
-func New(opts ...Option) Reader {
-	r := &reader{
-		ctxio: ctxio.New(),
-	}
+func New(opts ...Option) (Reader, error) {
+	r := new(reader)
 	for _, opt := range append(defaultOpts, opts...) {
 		opt(r)
 	}
 
-	return r
+	if r.ctxio == nil {
+		return nil, errors.NewErrInvalidOption("ctxio", r.ctxio)
+	}
+
+	return r, nil
 }
 
 // Open creates io.Pipe. After reading the data from s3, make it available with Read method.

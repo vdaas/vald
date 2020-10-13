@@ -66,7 +66,7 @@ func (c *client) Close() error {
 }
 
 func (c *client) Reader(ctx context.Context, key string) (io.ReadCloser, error) {
-	r := reader.New(
+	r, err := reader.New(
 		reader.WithErrGroup(c.eg),
 		reader.WithService(c.service),
 		reader.WithBucket(c.bucket),
@@ -75,6 +75,9 @@ func (c *client) Reader(ctx context.Context, key string) (io.ReadCloser, error) 
 		reader.WithBackoff(c.readerBackoffEnabled),
 		reader.WithBackoffOpts(c.readerBackoffOpts...),
 	)
+	if err != nil {
+		return nil, err
+	}
 
 	return r, r.Open(ctx)
 }
