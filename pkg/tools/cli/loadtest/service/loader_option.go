@@ -116,11 +116,3 @@ func WithOperation(op string) Option {
 		return nil
 	}
 }
-
-// WithService sets service of load test.
-func WithService(s string) Option {
-	return func(l *loader) error {
-		l.service = config.ServiceMethod(s)
-		return nil
-	}
-}
