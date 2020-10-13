@@ -14,11 +14,11 @@
 # limitations under the License.
 #
 
-name: 'reviewdog - Dockerfiles'
+name: "reviewdog - Dockerfiles"
 on:
   pull_request:
     paths:
-      - 'dockers/**'
+      - "dockers/**"
 
 jobs:
   hadolint:
