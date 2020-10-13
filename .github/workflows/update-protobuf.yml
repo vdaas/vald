@@ -2,10 +2,10 @@ name: update protobuf
 on:
   push:
     tags:
-       - '*.*.*'
-       - 'v*.*.*'
-       - '*.*.*-*'
-       - 'v*.*.*-*'
+      - "*.*.*"
+      - "v*.*.*"
+      - "*.*.*-*"
+      - "v*.*.*-*"
 
 jobs:
   dispatches:

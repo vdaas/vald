@@ -14,10 +14,13 @@
 # limitations under the License.
 #
 
+ARG GO_VERSION=latest
 ARG BASE_TAG=latest
 ARG DISTROLESS_IMAGE=gcr.io/distroless/static
 ARG DISTROLESS_IMAGE_TAG=nonroot
 ARG UPX_OPTIONS=-9
+
+FROM golang:${GO_VERSION} AS golang
 
 FROM vdaas/vald-base:${BASE_TAG} AS builder
 ARG UPX_OPTIONS
@@ -27,6 +30,8 @@ ENV REPO vald
 ENV PKG agent/sidecar
 ENV PKG_INTERNAL agent/internal
 ENV APP_NAME sidecar
+
+COPY --from=golang /usr/local/go $GOROOT
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal
 COPY internal .

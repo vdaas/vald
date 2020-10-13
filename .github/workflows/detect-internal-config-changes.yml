@@ -1,9 +1,9 @@
-name: 'Detect internal config changes'
+name: "Detect internal config changes"
 on:
   pull_request:
     paths:
-      - 'internal/config/**'
-      - '!internal/config/**/*_test.go'
+      - "internal/config/**"
+      - "!internal/config/**/*_test.go"
 
 jobs:
   warning:

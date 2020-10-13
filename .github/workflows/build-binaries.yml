@@ -1,4 +1,4 @@
-name: 'Upload artifacts to release'
+name: "Upload artifacts to release"
 on:
   release:
     types:

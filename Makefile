@@ -201,7 +201,6 @@ GO_OPTION_TEST_SOURCES = $(GO_OPTION_SOURCES:%.go=%_test.go)
 
 DOCKER           ?= docker
 DOCKER_OPTS      ?=
-DOCKER_OPTS_BASE ?=
 
 DISTROLESS_IMAGE      ?= gcr.io/distroless/static
 DISTROLESS_IMAGE_TAG  ?= nonroot
@@ -297,6 +296,7 @@ update/goimports:
 format/yaml:
 	prettier --write \
 	    ".github/**/*.yaml" \
+	    ".github/**/*.yml" \
 	    "cmd/**/*.yaml" \
 	    "hack/**/*.yaml" \
 	    "k8s/**/*.yaml"
