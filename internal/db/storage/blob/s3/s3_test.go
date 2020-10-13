@@ -106,10 +106,10 @@ func TestNew(t *testing.T) {
 				},
 				want: want{
 					want: &client{
-						eg:         errgroup.Get(),
-						session:    sess,
-						service:    s3.New(sess),
-						readWriter: newRW(),
+						eg:      errgroup.Get(),
+						session: sess,
+						service: s3.New(sess),
+						s3IO:    newS3IO(),
 					},
 					err: nil,
 				},
@@ -298,7 +298,7 @@ func Test_client_Reader(t *testing.T) {
 		service     *s3.S3
 		bucket      string
 		maxPartSize int64
-		readWriter  readWriter
+		s3IO        s3IO
 	}
 	type want struct {
 		want io.ReadCloser
@@ -336,7 +336,7 @@ func Test_client_Reader(t *testing.T) {
 					key: "key",
 				},
 				fields: fields{
-					readWriter: &MockRW{
+					s3IO: &MockS3IO{
 						NewReaderFunc: func(opts ...reader.Option) reader.Reader {
 							return r
 						},
@@ -362,7 +362,7 @@ func Test_client_Reader(t *testing.T) {
 					key: "key",
 				},
 				fields: fields{
-					readWriter: &MockRW{
+					s3IO: &MockS3IO{
 						NewReaderFunc: func(opts ...reader.Option) reader.Reader {
 							return r
 						},
@@ -394,7 +394,7 @@ func Test_client_Reader(t *testing.T) {
 				service:     test.fields.service,
 				bucket:      test.fields.bucket,
 				maxPartSize: test.fields.maxPartSize,
-				readWriter:  test.fields.readWriter,
+				s3IO:        test.fields.s3IO,
 			}
 
 			got, err := c.Reader(test.args.ctx, test.args.key)
@@ -416,7 +416,7 @@ func Test_client_Writer(t *testing.T) {
 		service     *s3.S3
 		bucket      string
 		maxPartSize int64
-		readWriter  readWriter
+		s3IO        s3IO
 	}
 	type want struct {
 		want io.WriteCloser
@@ -454,7 +454,7 @@ func Test_client_Writer(t *testing.T) {
 					key: "key",
 				},
 				fields: fields{
-					readWriter: &MockRW{
+					s3IO: &MockS3IO{
 						NewWriterFunc: func(opts ...writer.Option) writer.Writer {
 							return w
 						},
@@ -480,7 +480,7 @@ func Test_client_Writer(t *testing.T) {
 					key: "key",
 				},
 				fields: fields{
-					readWriter: &MockRW{
+					s3IO: &MockS3IO{
 						NewWriterFunc: func(opts ...writer.Option) writer.Writer {
 							return w
 						},
@@ -512,7 +512,7 @@ func Test_client_Writer(t *testing.T) {
 				service:     test.fields.service,
 				bucket:      test.fields.bucket,
 				maxPartSize: test.fields.maxPartSize,
-				readWriter:  test.fields.readWriter,
+				s3IO:        test.fields.s3IO,
 			}
 
 			got, err := c.Writer(test.args.ctx, test.args.key)
@@ -523,18 +523,18 @@ func Test_client_Writer(t *testing.T) {
 	}
 }
 
-func Test_newRW(t *testing.T) {
+func Test_newS3IO(t *testing.T) {
 	type want struct {
-		want readWriter
+		want s3IO
 	}
 	type test struct {
 		name       string
 		want       want
-		checkFunc  func(want, readWriter) error
+		checkFunc  func(want, s3IO) error
 		beforeFunc func()
 		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want, got readWriter) error {
+	defaultCheckFunc := func(w want, got s3IO) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -542,9 +542,9 @@ func Test_newRW(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns readWriter",
+			name: "returns s3io",
 			want: want{
-				want: new(rw),
+				want: new(s3io),
 			},
 		},
 	}
@@ -562,7 +562,7 @@ func Test_newRW(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got := newRW()
+			got := newS3IO()
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -571,7 +571,7 @@ func Test_newRW(t *testing.T) {
 	}
 }
 
-func Test_rw_NewReader(t *testing.T) {
+func Test_s3io_NewReader(t *testing.T) {
 	type args struct {
 		opts []reader.Option
 	}
@@ -581,7 +581,7 @@ func Test_rw_NewReader(t *testing.T) {
 	type test struct {
 		name       string
 		args       args
-		r          *rw
+		s          *s3io
 		want       want
 		checkFunc  func(want, reader.Reader) error
 		beforeFunc func(args)
@@ -617,9 +617,9 @@ func Test_rw_NewReader(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			r := &rw{}
+			s := &s3io{}
 
-			got := r.NewReader(test.args.opts...)
+			got := s.NewReader(test.args.opts...)
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -627,7 +627,7 @@ func Test_rw_NewReader(t *testing.T) {
 	}
 }
 
-func Test_rw_NewWriter(t *testing.T) {
+func Test_s3io_NewWriter(t *testing.T) {
 	type args struct {
 		opts []writer.Option
 	}
@@ -637,7 +637,7 @@ func Test_rw_NewWriter(t *testing.T) {
 	type test struct {
 		name       string
 		args       args
-		r          *rw
+		s          *s3io
 		want       want
 		checkFunc  func(want, writer.Writer) error
 		beforeFunc func(args)
@@ -673,9 +673,9 @@ func Test_rw_NewWriter(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			r := &rw{}
+			s := &s3io{}
 
-			got := r.NewWriter(test.args.opts...)
+			got := s.NewWriter(test.args.opts...)
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}

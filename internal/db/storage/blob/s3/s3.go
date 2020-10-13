@@ -31,22 +31,22 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
-type readWriter interface {
+type s3IO interface {
 	NewReader(opts ...reader.Option) reader.Reader
 	NewWriter(opts ...writer.Option) writer.Writer
 }
 
-type rw struct{}
+type s3io struct{}
 
-func newRW() readWriter {
-	return new(rw)
+func newS3IO() s3IO {
+	return new(s3io)
 }
 
-func (*rw) NewReader(opts ...reader.Option) reader.Reader {
+func (*s3io) NewReader(opts ...reader.Option) reader.Reader {
 	return reader.New(opts...)
 }
 
-func (*rw) NewWriter(opts ...writer.Option) writer.Writer {
+func (*s3io) NewWriter(opts ...writer.Option) writer.Writer {
 	return writer.New(opts...)
 }
 
@@ -62,13 +62,13 @@ type client struct {
 	readerBackoffEnabled bool
 	readerBackoffOpts    []backoff.Option
 
-	readWriter readWriter
+	s3IO s3IO
 }
 
 // New returns Bucket implementation.
 func New(opts ...Option) (blob.Bucket, error) {
 	c := &client{
-		readWriter: newRW(),
+		s3IO: newS3IO(),
 	}
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(c); err != nil {
@@ -97,7 +97,7 @@ func (c *client) Close() error {
 
 // Reader creates s3 reader and calls reader.Open.
 func (c *client) Reader(ctx context.Context, key string) (io.ReadCloser, error) {
-	r := c.readWriter.NewReader(
+	r := c.s3IO.NewReader(
 		reader.WithErrGroup(c.eg),
 		reader.WithService(c.service),
 		reader.WithBucket(c.bucket),
@@ -112,7 +112,7 @@ func (c *client) Reader(ctx context.Context, key string) (io.ReadCloser, error) 
 
 // Writer creates s3 writer and calls writer.Open.
 func (c *client) Writer(ctx context.Context, key string) (io.WriteCloser, error) {
-	w := c.readWriter.NewWriter(
+	w := c.s3IO.NewWriter(
 		writer.WithErrGroup(c.eg),
 		writer.WithService(c.service),
 		writer.WithBucket(c.bucket),

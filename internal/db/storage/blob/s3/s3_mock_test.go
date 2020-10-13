@@ -7,19 +7,19 @@ import (
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/writer"
 )
 
-// MMockRW represents mock of rw.
-type MockRW struct {
+// MockS3IO represents mock of S3IO.
+type MockS3IO struct {
 	NewReaderFunc func(opts ...reader.Option) reader.Reader
 	NewWriterFunc func(opts ...writer.Option) writer.Writer
 }
 
 // NewReader calls NewReaderFunc.
-func (m *MockRW) NewReader(opts ...reader.Option) reader.Reader {
+func (m *MockS3IO) NewReader(opts ...reader.Option) reader.Reader {
 	return m.NewReaderFunc(opts...)
 }
 
 // NewWriter calls NewWriterFunc.
-func (m *MockRW) NewWriter(opts ...writer.Option) writer.Writer {
+func (m *MockS3IO) NewWriter(opts ...writer.Option) writer.Writer {
 	return m.NewWriterFunc(opts...)
 }
 
