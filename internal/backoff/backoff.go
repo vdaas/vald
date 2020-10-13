@@ -91,7 +91,7 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 		case <-ctx.Done():
 			return nil, errors.Wrap(err, ctx.Err().Error())
 		default:
-			res, ret, err = func() (val interface{}, retryable bool, err error){
+			res, ret, err = func() (val interface{}, retryable bool, err error) {
 				sctx, span := trace.StartSpan(ctx, traceTag+"/"+strconv.Itoa(cnt+1))
 				defer func() {
 					if span != nil {
