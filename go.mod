@@ -70,11 +70,11 @@ require (
 	go.uber.org/goleak v1.1.10
 	golang.org/x/net v0.0.0-20201010224723-4f7140c49acb
 	golang.org/x/sync v0.0.0-20201008141435-b3e1573b7520
-	golang.org/x/sys v0.0.0-20201009025420-dfb3f7c4e634
+	golang.org/x/sys v0.0.0-20201013132646-2da7054afaeb
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/plot v0.8.0
-	google.golang.org/api v0.32.0
-	google.golang.org/genproto v0.0.0-20201012135029-0c95dc0d88e8
+	google.golang.org/api v0.33.0
+	google.golang.org/genproto v0.0.0-20201013134114-7f9ee70cb474
 	google.golang.org/grpc v1.32.0
 	gopkg.in/yaml.v2 v2.3.0
 	k8s.io/api v0.18.9

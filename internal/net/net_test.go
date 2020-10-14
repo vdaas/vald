@@ -889,3 +889,67 @@ func TestScanPorts(t *testing.T) {
 		})
 	}
 }
+
+func TestLoadLocalIP(t *testing.T) {
+	t.Parallel()
+	type want struct {
+		want string
+	}
+	type test struct {
+		name       string
+		want       want
+		checkFunc  func(want, string) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got string) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := LoadLocalIP()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}

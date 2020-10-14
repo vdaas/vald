@@ -261,12 +261,12 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 				res.Results = append(res.Results, dist)
 			case 1:
 				if res.GetResults()[0].GetDistance() <= dist.GetDistance() {
-					res.Results = append(res.Results, dist)
+					res.Results = append(res.GetResults(), dist)
 				} else {
-					res.Results = append([]*payload.Object_Distance{dist}, res.Results[0])
+					res.Results = []*payload.Object_Distance{dist, res.GetResults()[0]}
 				}
 			default:
-				var pos int
+				pos := rl
 				for idx := rl; idx >= 1; idx-- {
 					if res.GetResults()[idx-1].GetDistance() <= dist.GetDistance() {
 						pos = idx - 1
@@ -275,9 +275,9 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 				}
 
 				switch {
-				case pos == len(res.GetResults()):
+				case pos == rl:
 					res.Results = append([]*payload.Object_Distance{dist}, res.Results...)
-				case pos == len(res.GetResults())-1:
+				case pos == rl-1:
 					res.Results = append(res.GetResults(), dist)
 				case pos >= 0:
 					res.Results = append(res.GetResults()[:pos+1], res.GetResults()[pos:]...)
