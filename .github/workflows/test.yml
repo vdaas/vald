@@ -1,23 +1,23 @@
-name: 'Run tests'
+name: "Run tests"
 on:
   push:
     branches:
       - master
     paths:
-      - 'go.mod'
-      - 'go.sum'
-      - '.github/workflows/test.yml'
-      - 'internal/**'
-      - 'pkg/**'
-      - 'cmd/**'
+      - "go.mod"
+      - "go.sum"
+      - ".github/workflows/test.yml"
+      - "internal/**"
+      - "pkg/**"
+      - "cmd/**"
   pull_request:
     paths:
-      - 'go.mod'
-      - 'go.sum'
-      - '.github/workflows/test.yml'
-      - 'internal/**'
-      - 'pkg/**'
-      - 'cmd/**'
+      - "go.mod"
+      - "go.sum"
+      - ".github/workflows/test.yml"
+      - "internal/**"
+      - "pkg/**"
+      - "cmd/**"
 
 jobs:
   test-cmd:

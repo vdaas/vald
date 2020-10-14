@@ -102,7 +102,6 @@ area/tools/cli/loadtest:
   - cmd/tools/cli/loadtest/**/*
   - pkg/tools/cli/loadtest/**/*
 
-
 area/internal:
   - internal/**/*
 

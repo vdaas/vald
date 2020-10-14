@@ -14,12 +14,12 @@
 # limitations under the License.
 #
 
-name: 'reviewdog - Markdown'
+name: "reviewdog - Markdown"
 on:
   pull_request:
     paths:
-      - '**.md'
-      - '**.md.gotmpl'
+      - "**.md"
+      - "**.md.gotmpl"
 
 jobs:
   languagetool:
@@ -32,8 +32,8 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
-          patterns: '**/*.md **/*.md.gotmpl'
+          patterns: "**/*.md **/*.md.gotmpl"
           level: warning
           language: en-US
-          disabled_rules: 'DOUBLE_PUNCTUATION,WORD_CONTAINS_UNDERSCORE,ARROWS,CURRENCY,DASH_RULE,EN_QUOTES'
-          disabled_categories: 'TYPOS'
+          disabled_rules: "DOUBLE_PUNCTUATION,WORD_CONTAINS_UNDERSCORE,ARROWS,CURRENCY,DASH_RULE,EN_QUOTES"
+          disabled_categories: "TYPOS"

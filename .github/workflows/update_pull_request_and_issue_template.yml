@@ -1,11 +1,11 @@
-name: 'Update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE'
+name: "Update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE"
 on:
   push:
     branches:
       - master
     paths:
-      - 'versions/GO_VERSION'
-      - 'versions/NGT_VERSION'
+      - "versions/GO_VERSION"
+      - "versions/NGT_VERSION"
 
 jobs:
   update-pr-issue-template:

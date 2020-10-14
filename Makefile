@@ -56,11 +56,11 @@ TENSORFLOW_C_VERSION := $(eval TENSORFLOW_C_VERSION := $(shell cat versions/TENS
 
 OPERATOR_SDK_VERSION := $(eval OPERATOR_SDK_VERSION := $(shell cat versions/OPERATOR_SDK_VERSION))$(OPERATOR_SDK_VERSION)
 
-KIND_VERSION         ?= v0.8.1
-HELM_VERSION         ?= v3.2.4
-HELM_DOCS_VERSION    ?= 0.13.0
-VALDCLI_VERSION      ?= v0.0.50
-TELEPRESENCE_VERSION ?= 0.105
+KIND_VERSION         ?= v0.9.0
+HELM_VERSION         ?= v3.3.4
+HELM_DOCS_VERSION    ?= 1.3.0
+VALDCLI_VERSION      ?= v0.0.61
+TELEPRESENCE_VERSION ?= 0.108
 
 SWAP_DEPLOYMENT_TYPE ?= deployment
 SWAP_IMAGE           ?= ""
@@ -209,7 +209,6 @@ GO_OPTION_TEST_SOURCES = $(GO_OPTION_SOURCES:%.go=%_test.go)
 
 DOCKER           ?= docker
 DOCKER_OPTS      ?=
-DOCKER_OPTS_BASE ?=
 
 DISTROLESS_IMAGE      ?= gcr.io/distroless/static
 DISTROLESS_IMAGE_TAG  ?= nonroot
@@ -309,6 +308,7 @@ update/goimports:
 format/yaml:
 	prettier --write \
 	    ".github/**/*.yaml" \
+	    ".github/**/*.yml" \
 	    "cmd/**/*.yaml" \
 	    "hack/**/*.yaml" \
 	    "k8s/**/*.yaml"

@@ -14,13 +14,18 @@
 # limitations under the License.
 #
 
+ARG GO_VERSION=latest
 ARG BASE_TAG=latest
+
+FROM golang:${GO_VERSION} AS golang
 
 FROM vdaas/vald-base:${BASE_TAG} AS builder
 ARG PROTOBUF_VERSION=3.13.0
 ARG GOLANGCI_LINT_VERSION=v1.31.0
 ARG REVIEWDOG_VERSION=v0.10.2
 ARG YQ_VERSION=3.3.4
+
+COPY --from=golang /usr/local/go $GOROOT
 
 WORKDIR ${GOPATH}/src/github.com/vdaas/vald
 

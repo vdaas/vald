@@ -44,7 +44,7 @@ docker/name/base:
 ## build base image
 docker/build/base:
 	$(DOCKER) build \
-	    $(DOCKER_OPTS_BASE) \
+	    $(DOCKER_OPTS) \
 	    -f dockers/base/Dockerfile \
 	    -t $(REPO)/$(BASE_IMAGE):$(TAG) . \
 	    --build-arg GO_VERSION=$(GO_VERSION)
@@ -55,12 +55,12 @@ docker/name/agent-ngt:
 
 .PHONY: docker/build/agent-ngt
 ## build agent-ngt image
-docker/build/agent-ngt: docker/build/base
+docker/build/agent-ngt:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/agent/core/ngt/Dockerfile \
 	    -t $(REPO)/$(AGENT_IMAGE):$(TAG) . \
-	    --build-arg BASE_TAG=$(TAG) \
+	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
@@ -71,12 +71,12 @@ docker/name/agent-sidecar:
 
 .PHONY: docker/build/agent-sidecar
 ## build agent-sidecar image
-docker/build/agent-sidecar: docker/build/base
+docker/build/agent-sidecar:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/agent/sidecar/Dockerfile \
 	    -t $(REPO)/$(AGENT_SIDECAR_IMAGE):$(TAG) . \
-	    --build-arg BASE_TAG=$(TAG) \
+	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
@@ -87,12 +87,12 @@ docker/name/discoverer-k8s:
 
 .PHONY: docker/build/discoverer-k8s
 ## build discoverer-k8s image
-docker/build/discoverer-k8s: docker/build/base
+docker/build/discoverer-k8s:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/discoverer/k8s/Dockerfile \
 	    -t $(REPO)/$(DISCOVERER_IMAGE):$(TAG) . \
-	    --build-arg BASE_TAG=$(TAG) \
+	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
@@ -103,12 +103,12 @@ docker/name/gateway-vald:
 
 .PHONY: docker/build/gateway-vald
 ## build gateway-vald image
-docker/build/gateway-vald: docker/build/base
+docker/build/gateway-vald:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/gateway/vald/Dockerfile \
 	    -t $(REPO)/$(GATEWAY_IMAGE):$(TAG) . \
-	    --build-arg BASE_TAG=$(TAG) \
+	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
@@ -167,12 +167,12 @@ docker/name/meta-redis:
 
 .PHONY: docker/build/meta-redis
 ## build meta-redis image
-docker/build/meta-redis: docker/build/base
+docker/build/meta-redis:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/meta/redis/Dockerfile \
 	    -t $(REPO)/$(META_REDIS_IMAGE):$(TAG) . \
-	    --build-arg BASE_TAG=$(TAG) \
+	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
@@ -183,12 +183,12 @@ docker/name/meta-cassandra:
 
 .PHONY: docker/build/meta-cassandra
 ## build meta-cassandra image
-docker/build/meta-cassandra: docker/build/base
+docker/build/meta-cassandra:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/meta/cassandra/Dockerfile \
 	    -t $(REPO)/$(META_CASSANDRA_IMAGE):$(TAG) . \
-	    --build-arg BASE_TAG=$(TAG) \
+	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
@@ -199,12 +199,12 @@ docker/name/backup-manager-mysql:
 
 .PHONY: docker/build/backup-manager-mysql
 ## build backup-manager-mysql image
-docker/build/backup-manager-mysql: docker/build/base
+docker/build/backup-manager-mysql:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/manager/backup/mysql/Dockerfile \
 	    -t $(REPO)/$(MANAGER_BACKUP_MYSQL_IMAGE):$(TAG) . \
-	    --build-arg BASE_TAG=$(TAG) \
+	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
@@ -215,12 +215,12 @@ docker/name/backup-manager-cassandra:
 
 .PHONY: docker/build/backup-manager-cassandra
 ## build backup-manager-cassandra image
-docker/build/backup-manager-cassandra: docker/build/base
+docker/build/backup-manager-cassandra:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/manager/backup/cassandra/Dockerfile \
 	    -t $(REPO)/$(MANAGER_BACKUP_CASSANDRA_IMAGE):$(TAG) . \
-	    --build-arg BASE_TAG=$(TAG) \
+	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
@@ -231,12 +231,12 @@ docker/name/manager-compressor:
 
 .PHONY: docker/build/manager-compressor
 ## build manager-compressor image
-docker/build/manager-compressor: docker/build/base
+docker/build/manager-compressor:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/manager/compressor/Dockerfile \
 	    -t $(REPO)/$(MANAGER_COMPRESSOR_IMAGE):$(TAG) . \
-	    --build-arg BASE_TAG=$(TAG) \
+	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
@@ -247,12 +247,12 @@ docker/name/manager-index:
 
 .PHONY: docker/build/manager-index
 ## build manager-index image
-docker/build/manager-index: docker/build/base
+docker/build/manager-index:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/manager/index/Dockerfile \
 	    -t $(REPO)/$(MANAGER_INDEX_IMAGE):$(TAG) . \
-	    --build-arg BASE_TAG=$(TAG) \
+	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
@@ -263,12 +263,12 @@ docker/name/ci-container:
 
 .PHONY: docker/build/ci-container
 ## build ci-container image
-docker/build/ci-container: docker/build/base
+docker/build/ci-container:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/ci/base/Dockerfile \
 	    -t $(REPO)/$(CI_CONTAINER_IMAGE):$(TAG) . \
-	    --build-arg BASE_TAG=$(TAG)
+	    --build-arg GO_VERSION=$(GO_VERSION)
 
 .PHONY: docker/name/dev-container
 docker/name/dev-container:
@@ -302,8 +302,9 @@ docker/name/loadtest:
 
 .PHONY: docker/build/loadtest
 ## build loadtest image
-docker/build/loadtest: docker/build/base
+docker/build/loadtest:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/tools/cli/loadtest/Dockerfile \
-	    -t $(REPO)/$(LOADTEST_IMAGE):$(TAG) .
+	    -t $(REPO)/$(LOADTEST_IMAGE):$(TAG) . \
+	    --build-arg GO_VERSION=$(GO_VERSION)

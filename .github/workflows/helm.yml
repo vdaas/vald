@@ -1,11 +1,11 @@
-name: 'Update Helm charts'
+name: "Update Helm charts"
 on:
   push:
     tags:
-       - '*.*.*'
-       - 'v*.*.*'
-       - '*.*.*-*'
-       - 'v*.*.*-*'
+      - "*.*.*"
+      - "v*.*.*"
+      - "*.*.*-*"
+      - "v*.*.*-*"
 
 jobs:
   update-k8s-manifest:

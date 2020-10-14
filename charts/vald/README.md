@@ -3,7 +3,7 @@ Vald
 
 This is a Helm chart to install Vald components.
 
-Current chart version is `v0.0.57`
+Current chart version is `v0.0.61`
 
 Table of Contents
 ---
@@ -25,7 +25,6 @@ Add Vald Helm repository
 Run the following command to install the chart,
 
     $ helm install vald-cluster vald/vald
-
 
 Configuration
 ---
@@ -426,7 +425,7 @@ Configuration
 | defaults.grpc.client.tls.cert | string | `"/path/to/cert"` | gRPC client TLS cert path |
 | defaults.grpc.client.tls.enabled | bool | `false` | gRPC client TLS enabled |
 | defaults.grpc.client.tls.key | string | `"/path/to/key"` | gRPC client TLS key path |
-| defaults.image.tag | string | `"v0.0.57"` | docker image tag |
+| defaults.image.tag | string | `"v0.0.61"` | docker image tag |
 | defaults.logging.format | string | `"raw"` | logging format. logging format must be `raw` or `json` |
 | defaults.logging.level | string | `"debug"` | logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`. |
 | defaults.logging.logger | string | `"glg"` | logger name. currently logger must be `glg`. |
@@ -934,7 +933,6 @@ Configuration
 | meta.version | string | `"v0.0.0"` | version of meta config |
 | meta.volumeMounts | list | `[]` | volume mounts |
 | meta.volumes | list | `[]` | volumes |
-
 
 Miscellaneous
 ---

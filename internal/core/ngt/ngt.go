@@ -548,5 +548,7 @@ func (n *ngt) Close() {
 		C.ngt_close_index(n.index)
 		C.ngt_destroy_error_object(n.ebuf)
 		n.index = nil
+		n.prop = nil
+		n.ospace = nil
 	}
 }
