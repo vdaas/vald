@@ -26,7 +26,6 @@ Run the following command to install the chart,
 
     $ helm install vald-cluster vald/vald
 
-
 Configuration
 ---
 
@@ -934,7 +933,6 @@ Configuration
 | meta.version | string | `"v0.0.0"` | version of meta config |
 | meta.volumeMounts | list | `[]` | volume mounts |
 | meta.volumes | list | `[]` | volumes |
-
 
 Miscellaneous
 ---
