@@ -20,11 +20,13 @@ package backoff
 import (
 	"context"
 	"math"
+	"strconv"
 	"sync"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/rand"
 )
 
@@ -42,9 +44,11 @@ type backoff struct {
 }
 
 type Backoff interface {
-	Do(context.Context, func() (interface{}, error)) (interface{}, error)
+	Do(context.Context, func(ctx context.Context) (interface{}, bool, error)) (interface{}, error)
 	Close()
 }
+
+const traceTag = "vald/internal/backoff/Backoff.Do/retry"
 
 func New(opts ...Option) Backoff {
 	b := new(backoff)
@@ -60,39 +64,57 @@ func New(opts ...Option) Backoff {
 	return b
 }
 
-func (b *backoff) Do(ctx context.Context, f func() (interface{}, error)) (res interface{}, err error) {
-	res, err = f()
-	if err == nil {
+func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val interface{}, retryable bool, err error)) (res interface{}, err error) {
+	res, ret, err := f(ctx)
+	if err == nil || !ret {
 		return
 	}
 
+	ctx, span := trace.StartSpan(ctx, traceTag)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	b.wg.Add(1)
 	defer b.wg.Done()
-	limit := time.NewTimer(b.backoffTimeLimit)
-	defer limit.Stop()
-
 	timer := time.NewTimer(time.Minute)
 	defer timer.Stop()
 
 	dur := b.initialDuration
 	jdur := b.jittedInitialDuration
 
+	ctx, cancel := context.WithDeadline(ctx, time.Now().Add(b.backoffTimeLimit))
+	defer cancel()
 	for cnt := 0; cnt < b.maxRetryCount; cnt++ {
 		select {
 		case <-ctx.Done():
 			return nil, errors.Wrap(err, ctx.Err().Error())
 		default:
-			res, err = f()
-			if err != nil {
+			res, ret, err = func() (val interface{}, retryable bool, err error) {
+				sctx, span := trace.StartSpan(ctx, traceTag+"/"+strconv.Itoa(cnt+1))
+				defer func() {
+					if span != nil {
+						span.End()
+					}
+				}()
+				return f(sctx)
+			}()
+			if ret && err != nil {
 				if b.errLog {
 					log.Error(err)
 				}
 				timer.Reset(time.Duration(jdur))
 				select {
-				case <-limit.C:
-					return nil, errors.ErrBackoffTimeout(err)
 				case <-ctx.Done():
-					return nil, errors.Wrap(ctx.Err(), err.Error())
+					switch ctx.Err() {
+					case context.DeadlineExceeded:
+						return nil, errors.ErrBackoffTimeout(err)
+					case context.Canceled:
+						return nil, err
+					default:
+						return nil, errors.Wrap(ctx.Err(), err.Error())
+					}
 				case <-timer.C:
 					if dur >= b.durationLimit {
 						dur = b.maxDuration
@@ -105,7 +127,7 @@ func (b *backoff) Do(ctx context.Context, f func() (interface{}, error)) (res in
 				}
 			}
 		}
-		return res, nil
+		return res, err
 	}
 	return res, err
 }

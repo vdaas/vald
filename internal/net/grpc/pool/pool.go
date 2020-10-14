@@ -20,7 +20,6 @@ package pool
 import (
 	"context"
 	"fmt"
-	"math"
 	"sort"
 	"strings"
 	"sync/atomic"
@@ -252,7 +251,7 @@ func (p *pool) dial(ctx context.Context, addr string) (conn *ClientConn, err err
 	if p.bo != nil {
 		var res interface{}
 		retry := 0
-		res, err = p.bo.Do(ctx, func() (interface{}, error) {
+		res, err = p.bo.Do(ctx, func(ctx context.Context) (r interface{}, ret bool, err error) {
 			log.Debugf("dialing to %s with backoff, retry: %d", addr, retry)
 			ctx, cancel := context.WithTimeout(ctx, p.dialTimeout)
 			defer cancel()
@@ -263,7 +262,7 @@ func (p *pool) dial(ctx context.Context, addr string) (conn *ClientConn, err err
 					log.Debugf("failed to dial to %s: %s", addr, err)
 				}
 				retry++
-				return nil, err
+				return nil, err != nil, err
 			}
 			if !isHealthy(conn) {
 				if conn != nil {
@@ -271,9 +270,9 @@ func (p *pool) dial(ctx context.Context, addr string) (conn *ClientConn, err err
 					log.Debugf("connection for %s is unhealthy: %s", addr, err)
 				}
 				retry++
-				return nil, errors.ErrGRPCClientConnNotFound(addr)
+				return nil, true, errors.ErrGRPCClientConnNotFound(addr)
 			}
-			return conn, nil
+			return conn, false, nil
 		})
 		var ok bool
 		conn, ok = res.(*ClientConn)
@@ -345,9 +344,6 @@ func (p *pool) get(retry uint64) (*ClientConn, bool) {
 		}
 		return nil, false
 	}
-	if atomic.LoadUint64(&p.current) >= math.MaxUint64-2 {
-		atomic.StoreUint64(&p.current, 0)
-	}
 
 	if res := p.pool[atomic.AddUint64(&p.current, 1)%p.Len()].Load(); res != nil {
 		if pc, ok := res.(*poolConn); ok && pc != nil && isHealthy(pc.conn) {
@@ -377,6 +373,7 @@ func (p *pool) lookupIPAddr(ctx context.Context) (ips []string, err error) {
 	if len(addrs) == 0 {
 		return nil, errors.ErrGRPCLookupIPAddrNotFound(p.host)
 	}
+
 	ips = make([]string, 0, len(addrs))
 
 	const network = "tcp"
@@ -411,6 +408,7 @@ func (p *pool) lookupIPAddr(ctx context.Context) (ips []string, err error) {
 	if len(ips) == 0 {
 		return nil, errors.ErrGRPCLookupIPAddrNotFound(p.host)
 	}
+
 	sort.Strings(ips)
 
 	return ips, nil

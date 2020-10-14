@@ -13,76 +13,77 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if and .Values.discoverer.enabled (eq .Values.discoverer.kind "DaemonSet") }}
+{{- $discoverer := .Values.discoverer -}}
+{{- if and $discoverer.enabled (eq $discoverer.kind "DaemonSet") }}
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: {{ .Values.discoverer.name }}
+  name: {{ $discoverer.name }}
   labels:
-    app: {{ .Values.discoverer.name }}
+    app: {{ $discoverer.name }}
     app.kubernetes.io/name: {{ include "vald.name" . }}
     helm.sh/chart: {{ include "vald.chart" . }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/version: {{ .Chart.Version }}
     app.kubernetes.io/component: discoverer
-  {{- if .Values.discoverer.annotations }}
+  {{- if $discoverer.annotations }}
   annotations:
-    {{- toYaml .Values.discoverer.annotations | nindent 4 }}
+    {{- toYaml $discoverer.annotations | nindent 4 }}
   {{- end }}
 spec:
-  revisionHistoryLimit: {{ .Values.discoverer.revisionHistoryLimit }}
+  revisionHistoryLimit: {{ $discoverer.revisionHistoryLimit }}
   selector:
     matchLabels:
-      app: {{ .Values.discoverer.name }}
+      app: {{ $discoverer.name }}
   updateStrategy:
     rollingUpdate:
-      maxUnavailable: {{ .Values.discoverer.rollingUpdate.maxUnavailable }}
+      maxUnavailable: {{ $discoverer.rollingUpdate.maxUnavailable }}
     type: RollingUpdate
   template:
     metadata:
       creationTimestamp: null
       labels:
-        app: {{ .Values.discoverer.name }}
+        app: {{ $discoverer.name }}
         app.kubernetes.io/name: {{ include "vald.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: discoverer
       annotations:
         checksum/configmap: {{ include (print $.Template.BasePath "/discoverer/configmap.yaml") . | sha256sum }}
-        {{- if .Values.discoverer.podAnnotations }}
-        {{- toYaml .Values.discoverer.podAnnotations | nindent 8 }}
+        {{- if $discoverer.podAnnotations }}
+        {{- toYaml $discoverer.podAnnotations | nindent 8 }}
         {{- end }}
     spec:
-      {{- if .Values.discoverer.initContainers }}
+      {{- if $discoverer.initContainers }}
       initContainers:
-        {{- $initContainers := dict "initContainers" .Values.discoverer.initContainers "Values" .Values "namespace" .Release.Namespace -}}
+        {{- $initContainers := dict "initContainers" $discoverer.initContainers "Values" .Values "namespace" .Release.Namespace -}}
         {{- include "vald.initContainers" $initContainers | trim | nindent 8 }}
       {{- end }}
       affinity:
-        {{- include "vald.affinity" .Values.discoverer.affinity | nindent 8 }}
-      {{- if .Values.discoverer.topologySpreadConstraints }}
+        {{- include "vald.affinity" $discoverer.affinity | nindent 8 }}
+      {{- if $discoverer.topologySpreadConstraints }}
       topologySpreadConstraints:
-        {{- toYaml .Values.discoverer.topologySpreadConstraints | nindent 8 }}
+        {{- toYaml $discoverer.topologySpreadConstraints | nindent 8 }}
       {{- end }}
       containers:
-        - name: {{ .Values.discoverer.name }}
-          image: "{{ .Values.discoverer.image.repository }}:{{ default .Values.defaults.image.tag .Values.discoverer.image.tag }}"
-          imagePullPolicy: {{ .Values.discoverer.image.pullPolicy }}
-          {{- $servers := dict "Values" .Values.discoverer.server_config "default" .Values.defaults.server_config -}}
+        - name: {{ $discoverer.name }}
+          image: "{{ $discoverer.image.repository }}:{{ default .Values.defaults.image.tag $discoverer.image.tag }}"
+          imagePullPolicy: {{ $discoverer.image.pullPolicy }}
+          {{- $servers := dict "Values" $discoverer.server_config "default" .Values.defaults.server_config -}}
           {{- include "vald.containerPorts" $servers | trim | nindent 10 }}
           resources:
-            {{- toYaml .Values.discoverer.resources | nindent 12 }}
+            {{- toYaml $discoverer.resources | nindent 12 }}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
-          {{- if .Values.discoverer.env }}
+          {{- if $discoverer.env }}
           env:
-            {{- toYaml .Values.discoverer.env | nindent 12 }}
+            {{- toYaml $discoverer.env | nindent 12 }}
           {{- end }}
           volumeMounts:
-            - name: {{ .Values.discoverer.name }}-config
+            - name: {{ $discoverer.name }}-config
               mountPath: /etc/server/
-            {{- if .Values.discoverer.volumeMounts }}
-            {{- toYaml .Values.discoverer.volumeMounts | nindent 12 }}
+            {{- if $discoverer.volumeMounts }}
+            {{- toYaml $discoverer.volumeMounts | nindent 12 }}
             {{- end }}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
@@ -90,29 +91,29 @@ spec:
       serviceAccount: vald
       serviceAccountName: vald
       securityContext: {}
-      terminationGracePeriodSeconds: {{ .Values.discoverer.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ $discoverer.terminationGracePeriodSeconds }}
       volumes:
-        - name: {{ .Values.discoverer.name }}-config
+        - name: {{ $discoverer.name }}-config
           configMap:
             defaultMode: 420
-            name: {{ .Values.discoverer.name }}-config
-        {{- if .Values.discoverer.volumes }}
-        {{- toYaml .Values.discoverer.volumes | nindent 8 }}
+            name: {{ $discoverer.name }}-config
+        {{- if $discoverer.volumes }}
+        {{- toYaml $discoverer.volumes | nindent 8 }}
         {{- end }}
-      {{- if .Values.discoverer.nodeName }}
-      nodeName: {{ .Values.discoverer.nodeName }}
+      {{- if $discoverer.nodeName }}
+      nodeName: {{ $discoverer.nodeName }}
       {{- end }}
-      {{- if .Values.discoverer.nodeSelector }}
+      {{- if $discoverer.nodeSelector }}
       nodeSelector:
-        {{- toYaml .Values.discoverer.nodeSelector | nindent 8 }}
+        {{- toYaml $discoverer.nodeSelector | nindent 8 }}
       {{- end }}
-      {{- if .Values.discoverer.tolerations }}
+      {{- if $discoverer.tolerations }}
       tolerations:
-        {{- toYaml .Values.discoverer.tolerations | nindent 8 }}
+        {{- toYaml $discoverer.tolerations | nindent 8 }}
       {{- end }}
-      {{- if .Values.discoverer.podPriority }}
-      {{- if .Values.discoverer.podPriority.enabled }}
-      priorityClassName: {{ .Values.discoverer.name }}-priority
+      {{- if $discoverer.podPriority }}
+      {{- if $discoverer.podPriority.enabled }}
+      priorityClassName: {{ $discoverer.name }}-priority
       {{- end }}
       {{- end }}
 status:

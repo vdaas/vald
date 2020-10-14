@@ -30,6 +30,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type want struct {
 		wantO MetricsHook
 		err   error
@@ -74,6 +75,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -95,6 +97,7 @@ func TestNew(t *testing.T) {
 }
 
 func Test_redisMetrics_Measurement(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -180,6 +183,7 @@ func Test_redisMetrics_Measurement(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -211,6 +215,7 @@ func Test_redisMetrics_Measurement(t *testing.T) {
 }
 
 func Test_redisMetrics_MeasurementWithTags(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -296,6 +301,7 @@ func Test_redisMetrics_MeasurementWithTags(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -327,6 +333,7 @@ func Test_redisMetrics_MeasurementWithTags(t *testing.T) {
 }
 
 func Test_redisMetrics_View(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		queryTotal      metrics.Int64Measure
 		queryLatency    metrics.Float64Measure
@@ -398,6 +405,7 @@ func Test_redisMetrics_View(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -429,6 +437,7 @@ func Test_redisMetrics_View(t *testing.T) {
 }
 
 func Test_redisMetrics_BeforeProcess(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		cmd redis.Cmder
@@ -517,6 +526,7 @@ func Test_redisMetrics_BeforeProcess(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -548,6 +558,7 @@ func Test_redisMetrics_BeforeProcess(t *testing.T) {
 }
 
 func Test_redisMetrics_AfterProcess(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		cmd redis.Cmder
@@ -632,6 +643,7 @@ func Test_redisMetrics_AfterProcess(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -663,6 +675,7 @@ func Test_redisMetrics_AfterProcess(t *testing.T) {
 }
 
 func Test_redisMetrics_BeforeProcessPipeline(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		cmds []redis.Cmder
@@ -751,6 +764,7 @@ func Test_redisMetrics_BeforeProcessPipeline(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -782,6 +796,7 @@ func Test_redisMetrics_BeforeProcessPipeline(t *testing.T) {
 }
 
 func Test_redisMetrics_AfterProcessPipeline(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		cmds []redis.Cmder
@@ -866,6 +881,7 @@ func Test_redisMetrics_AfterProcessPipeline(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)

@@ -99,7 +99,7 @@ func main() {
 }
 
 func genJSONSchema(path string) error {
-	f, err := os.Open(path)
+	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_SYNC, os.ModePerm)
 	if err != nil {
 		return errors.Errorf("cannot open %s", path)
 	}

@@ -18,6 +18,7 @@ package kvs
 
 import (
 	"context"
+	"reflect"
 	"sync"
 	"sync/atomic"
 	"unsafe"
@@ -64,7 +65,7 @@ func New() BidiMap {
 }
 
 func (b *bidi) Get(key string) (uint32, bool) {
-	return b.uo[xxhash.Sum64(*(*[]byte)(unsafe.Pointer(&key)))&mask].Load(key)
+	return b.uo[xxhash.Sum64(stringToBytes(key))&mask].Load(key)
 }
 
 func (b *bidi) GetInverse(val uint32) (string, bool) {
@@ -72,13 +73,13 @@ func (b *bidi) GetInverse(val uint32) (string, bool) {
 }
 
 func (b *bidi) Set(key string, val uint32) {
-	b.uo[xxhash.Sum64(*(*[]byte)(unsafe.Pointer(&key)))&mask].Store(key, val)
+	b.uo[xxhash.Sum64(stringToBytes(key))&mask].Store(key, val)
 	b.ou[val&mask].Store(val, key)
 	atomic.AddUint64(&b.l, 1)
 }
 
 func (b *bidi) Delete(key string) (val uint32, ok bool) {
-	idx := xxhash.Sum64(*(*[]byte)(unsafe.Pointer(&key))) & mask
+	idx := xxhash.Sum64(stringToBytes(key)) & mask
 	val, ok = b.uo[idx].Load(key)
 	if !ok {
 		return 0, false
@@ -95,7 +96,7 @@ func (b *bidi) DeleteInverse(val uint32) (key string, ok bool) {
 	if !ok {
 		return "", false
 	}
-	b.uo[xxhash.Sum64(*(*[]byte)(unsafe.Pointer(&key)))&mask].Delete(key)
+	b.uo[xxhash.Sum64(stringToBytes(key))&mask].Delete(key)
 	b.ou[val&mask].Delete(val)
 	atomic.AddUint64(&b.l, ^uint64(0))
 	return key, true
@@ -123,4 +124,13 @@ func (b *bidi) Range(ctx context.Context, f func(string, uint32) bool) {
 
 func (b *bidi) Len() uint64 {
 	return atomic.LoadUint64(&b.l)
+}
+
+func stringToBytes(s string) (b []byte) {
+	sh := (*reflect.StringHeader)(unsafe.Pointer(&s))
+	return *(*[]byte)(unsafe.Pointer(&reflect.SliceHeader{
+		Data: sh.Data,
+		Len:  sh.Len,
+		Cap:  sh.Len,
+	}))
 }

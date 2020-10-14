@@ -22,10 +22,10 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	agent "github.com/vdaas/vald/apis/grpc/agent/core"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/net/http/dump"
 	"github.com/vdaas/vald/internal/net/http/json"
+	"github.com/vdaas/vald/pkg/agent/core/ngt/handler/grpc"
 )
 
 type Handler interface {
@@ -46,7 +46,7 @@ type Handler interface {
 }
 
 type handler struct {
-	agent agent.AgentServer
+	agent grpc.Server
 }
 
 func New(opts ...Option) Handler {

@@ -29,6 +29,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		i service.Indexer
 	}
@@ -79,6 +80,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -100,6 +102,7 @@ func TestNew(t *testing.T) {
 }
 
 func Test_indexerMetrics_Measurement(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -173,6 +176,7 @@ func Test_indexerMetrics_Measurement(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -200,6 +204,7 @@ func Test_indexerMetrics_Measurement(t *testing.T) {
 }
 
 func Test_indexerMetrics_MeasurementWithTags(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -273,6 +278,7 @@ func Test_indexerMetrics_MeasurementWithTags(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -300,6 +306,7 @@ func Test_indexerMetrics_MeasurementWithTags(t *testing.T) {
 }
 
 func Test_indexerMetrics_View(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		indexer              service.Indexer
 		uuidCount            metrics.Int64Measure
@@ -359,6 +366,7 @@ func Test_indexerMetrics_View(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
