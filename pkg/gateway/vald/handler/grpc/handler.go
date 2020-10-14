@@ -156,11 +156,11 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 				return nil
 			}
 			for _, dist := range r.GetResults() {
-				if dist.GetDistance() >= math.Float32frombits(atomic.LoadUint32(&maxDist)) {
-					return nil
-				}
 				if dist == nil {
 					continue
+				}
+				if dist.GetDistance() >= math.Float32frombits(atomic.LoadUint32(&maxDist)) {
+					return nil
 				}
 				if _, already := visited.LoadOrStore(dist.GetId(), struct{}{}); !already {
 					dch <- dist
