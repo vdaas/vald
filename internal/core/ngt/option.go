@@ -94,17 +94,17 @@ func WithDistanceTypeByString(dt string) Option {
 		d = L1
 	case "l2":
 		d = L2
-	case "angle":
+	case "angle", "ang":
 		d = Angle
-	case "hamming":
+	case "hamming", "ham":
 		d = Hamming
 	case "cosine", "cos":
 		d = Cosine
-	case "normalizedangle":
+	case "normalizedangle", "nang", "nangle":
 		d = NormalizedAngle
-	case "normalizedcosine":
+	case "normalizedcosine", "nham", "nhamming":
 		d = NormalizedCosine
-	case "jaccard":
+	case "jaccard", "jac":
 		d = Jaccard
 	}
 	return WithDistanceType(d)
@@ -134,15 +134,15 @@ func WithDistanceType(t distanceType) Option {
 				return errors.ErrFailedToSetDistanceType(n.newGoError(n.ebuf), "Cosine")
 			}
 		case NormalizedAngle:
-			if C.ngt_set_property_distance_type_normalized_angle(n.prop, n.ebuf) == ErrorCode{
+			if C.ngt_set_property_distance_type_normalized_angle(n.prop, n.ebuf) == ErrorCode {
 				return errors.ErrFailedToSetDistanceType(n.newGoError(n.ebuf), "NormalizedAngle")
 			}
 		case NormalizedCosine:
-			if C.ngt_set_property_distance_type_normalized_cosine(n.prop, n.ebuf) == ErrorCode{
+			if C.ngt_set_property_distance_type_normalized_cosine(n.prop, n.ebuf) == ErrorCode {
 				return errors.ErrFailedToSetDistanceType(n.newGoError(n.ebuf), "NormalizedCosine")
 			}
 		case Jaccard:
-			if C.ngt_set_property_distance_type_jaccard(n.prop, n.ebuf) == ErrorCode{
+			if C.ngt_set_property_distance_type_jaccard(n.prop, n.ebuf) == ErrorCode {
 				return errors.ErrFailedToSetDistanceType(n.newGoError(n.ebuf), "Jaccard")
 			}
 		default:
