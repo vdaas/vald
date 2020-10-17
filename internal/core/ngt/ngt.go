@@ -124,6 +124,8 @@ const (
 	NormalizedAngle
 	// NormalizedCosine is cosine distance with normalization
 	NormalizedCosine
+	// Jaccard is jaccard distance
+	Jaccard
 
 	// ErrorCode is false
 	ErrorCode = C._Bool(false)
