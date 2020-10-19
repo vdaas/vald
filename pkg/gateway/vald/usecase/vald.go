@@ -79,7 +79,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	)
 
 	var obs observability.Observability
-	if cfg.Observability.Enabled {
+	if cfg.Observability != nil && cfg.Observability.Enabled {
 		obs, err = observability.NewWithConfig(cfg.Observability)
 		if err != nil {
 			return nil, err
@@ -164,7 +164,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			ef.Client.Opts(),
 			grpc.WithErrGroup(eg),
 		)
-		if cfg.Observability.Enabled {
+		if cfg.Observability != nil && cfg.Observability.Enabled {
 			egressFilterClientOptions = append(
 				egressFilterClientOptions,
 				grpc.WithDialOptions(
@@ -203,7 +203,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		}),
 	}
 
-	if cfg.Observability.Enabled {
+	if cfg.Observability != nil && cfg.Observability.Enabled {
 		grpcServerOptions = append(
 			grpcServerOptions,
 			server.WithGRPCOption(
