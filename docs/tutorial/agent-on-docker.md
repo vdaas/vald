@@ -82,7 +82,7 @@ This chapter will use NGT for the core engine of Vald Agent.
       dimension: 784
       # bulk insert chunk size
       bulk_insert_chunk_size: 10
-      # distance_type, which should be "l1", "l2" "angle", "hamming", "cosine", "normalizedangle" or "nomralizedcosine"
+      # distance_type, which should be "l1", "l2" "angle", "hamming", "cosine", "normalizedangle", "nomralizedcosine" or "jaccard"
       distance_type: l2
       # object_type, which should be "float" or "uint8"
       object_type: float
