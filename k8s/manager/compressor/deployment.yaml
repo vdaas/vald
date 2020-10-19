@@ -21,10 +21,10 @@ metadata:
   labels:
     app: vald-manager-compressor
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v0.0.61
+    helm.sh/chart: vald-v0.0.62
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v0.0.61
+    app.kubernetes.io/version: v0.0.62
     app.kubernetes.io/component: manager-compressor
 spec:
   progressDeadlineSeconds: 600
@@ -46,7 +46,7 @@ spec:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/component: manager-compressor
       annotations:
-        checksum/configmap: 3822f8e800ff5025f4c427d4db7050434565d7cb0a9f4cbc11f17a1bcd885c70
+        checksum/configmap: 00dd4a61c763323cbdff142bcea0aa06320606b48b588ea6d1b7bc85d118b2a4
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-manager-compressor
