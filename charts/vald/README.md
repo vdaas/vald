@@ -3,7 +3,7 @@ Vald
 
 This is a Helm chart to install Vald components.
 
-Current chart version is `v0.0.61`
+Current chart version is `v0.0.62`
 
 Table of Contents
 ---
@@ -89,7 +89,7 @@ Configuration
 | agent.ngt.default_pool_size | int | `10000` | default create index batch pool size |
 | agent.ngt.default_radius | float | `-1` | default radius used for search |
 | agent.ngt.dimension | int | `4096` | vector dimension |
-| agent.ngt.distance_type | string | `"l2"` | distance type. it should be `l1`, `l2`, `angle`, `hamming`, `cosine`, `normalizedangle` or `normalizedcosine`. for further details: https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference |
+| agent.ngt.distance_type | string | `"l2"` | distance type. it should be `l1`, `l2`, `angle`, `hamming`, `cosine`, `normalizedangle`, `normalizedcosine` or `jaccard`. for further details about NGT libraries supported distance is https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference and vald agent's supported NGT distance type is https://pkg.go.dev/github.com/vdaas/vald/internal/core/ngt#pkg-constants |
 | agent.ngt.enable_in_memory_mode | bool | `true` | in-memory mode enabled |
 | agent.ngt.enable_proactive_gc | bool | `true` | enable proactive GC call for reducing heap memory allocation |
 | agent.ngt.index_path | string | `""` | path to index data |
@@ -425,7 +425,7 @@ Configuration
 | defaults.grpc.client.tls.cert | string | `"/path/to/cert"` | gRPC client TLS cert path |
 | defaults.grpc.client.tls.enabled | bool | `false` | gRPC client TLS enabled |
 | defaults.grpc.client.tls.key | string | `"/path/to/key"` | gRPC client TLS key path |
-| defaults.image.tag | string | `"v0.0.61"` | docker image tag |
+| defaults.image.tag | string | `"v0.0.62"` | docker image tag |
 | defaults.logging.format | string | `"raw"` | logging format. logging format must be `raw` or `json` |
 | defaults.logging.level | string | `"debug"` | logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`. |
 | defaults.logging.logger | string | `"glg"` | logger name. currently logger must be `glg`. |
