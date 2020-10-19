@@ -19,7 +19,7 @@ package usecase
 import (
 	"context"
 
-	"github.com/vdaas/vald/apis/grpc/manager/compressor"
+	"github.com/vdaas/vald/apis/grpc/v1/manager/compressor"
 	cclient "github.com/vdaas/vald/internal/client/compressor"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"

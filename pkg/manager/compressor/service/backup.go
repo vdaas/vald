@@ -20,8 +20,8 @@ import (
 	"context"
 	"reflect"
 
-	gback "github.com/vdaas/vald/apis/grpc/manager/backup"
-	"github.com/vdaas/vald/apis/grpc/payload"
+	gback "github.com/vdaas/vald/apis/grpc/v1/manager/backup"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 )

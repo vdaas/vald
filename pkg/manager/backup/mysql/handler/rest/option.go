@@ -17,7 +17,7 @@
 // Package rest provides rest api logic
 package rest
 
-import "github.com/vdaas/vald/apis/grpc/manager/backup"
+import "github.com/vdaas/vald/apis/grpc/v1/manager/backup"
 
 type Option func(*handler)
 
