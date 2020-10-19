@@ -20,7 +20,7 @@ package service
 import (
 	"testing"
 
-	client "github.com/vdaas/vald/internal/client/compressor"
+	client "github.com/vdaas/vald/internal/client/v1/compressor"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/worker"
 	"go.uber.org/goleak"
