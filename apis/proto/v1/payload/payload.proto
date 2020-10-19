@@ -16,7 +16,7 @@
 
 syntax = "proto3";
 
-package payload;
+package payload.v1;
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/payload";
 option java_multiple_files = true;

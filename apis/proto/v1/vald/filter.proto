@@ -16,7 +16,7 @@
 
 syntax = "proto3";
 
-package filter;
+package vald.v1;
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/vald";
 option java_multiple_files = true;
@@ -28,43 +28,43 @@ import "google/api/annotations.proto";
 
 
 service Filter {
-  rpc SearchObject(payload.Search.ObjectRequest) returns (payload.Search.Response) {
+  rpc SearchObject(payload.v1.Search.ObjectRequest) returns (payload.v1.Search.Response) {
     option (google.api.http) = {
       post : "/search/object"
       body : "*"
     };
   }
-  rpc StreamSearchObject(stream payload.Search.ObjectRequest)
-      returns (stream payload.Search.Response) {}
+  rpc StreamSearchObject(stream payload.v1.Search.ObjectRequest)
+      returns (stream payload.v1.Search.Response) {}
 
-  rpc InsertObject(payload.Object.Blob) returns (payload.Object.Location) {
+  rpc InsertObject(payload.v1.Object.Blob) returns (payload.v1.Object.Location) {
     option (google.api.http) = {
       post : "/insert/object"
       body : "*"
     };
 
   }
-  rpc StreamInsertObject(stream payload.Object.Blob)
-      returns (stream payload.Object.Location) {}
-  rpc MultiInsertObject(payload.Object.Blob) returns (payload.Object.Locations) {}
+  rpc StreamInsertObject(stream payload.v1.Object.Blob)
+      returns (stream payload.v1.Object.Location) {}
+  rpc MultiInsertObject(payload.v1.Object.Blob) returns (payload.v1.Object.Locations) {}
 
-  rpc UpdateObject(payload.Object.Blob) returns (payload.Object.Location) {
+  rpc UpdateObject(payload.v1.Object.Blob) returns (payload.v1.Object.Location) {
     option (google.api.http) = {
       post : "/update/object"
       body : "*"
     };
   }
-  rpc StreamUpdateObject(stream payload.Object.Blob)
-      returns (stream payload.Object.Location) {}
-  rpc MultiUpdateObject(payload.Object.Blob) returns (payload.Object.Locations) {}
+  rpc StreamUpdateObject(stream payload.v1.Object.Blob)
+      returns (stream payload.v1.Object.Location) {}
+  rpc MultiUpdateObject(payload.v1.Object.Blob) returns (payload.v1.Object.Locations) {}
 
-  rpc UpsertObject(payload.Object.Blob) returns (payload.Object.Location) {
+  rpc UpsertObject(payload.v1.Object.Blob) returns (payload.v1.Object.Location) {
     option (google.api.http) = {
       post : "/upsert/object"
       body : "*"
     };
   }
-  rpc StreamUpsertObject(stream payload.Object.Blob)
-      returns (stream payload.Object.Location) {}
-  rpc MultiUpsertObject(payload.Object.Blob) returns (payload.Object.Locations) {}
+  rpc StreamUpsertObject(stream payload.v1.Object.Blob)
+      returns (stream payload.v1.Object.Location) {}
+  rpc MultiUpsertObject(payload.v1.Object.Blob) returns (payload.v1.Object.Locations) {}
 }

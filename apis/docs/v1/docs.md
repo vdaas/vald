@@ -4,153 +4,146 @@
 ## Table of Contents
 
 - [apis/proto/v1/agent/core/agent.proto](#apis/proto/v1/agent/core/agent.proto)
-    - [Agent](#core.Agent)
+    - [Agent](#core.v1.Agent)
   
 - [apis/proto/v1/agent/sidecar/sidecar.proto](#apis/proto/v1/agent/sidecar/sidecar.proto)
-    - [Sidecar](#sidecar.Sidecar)
+    - [Sidecar](#sidecar.v1.Sidecar)
   
 - [apis/proto/v1/discoverer/discoverer.proto](#apis/proto/v1/discoverer/discoverer.proto)
-    - [Discoverer](#discoverer.Discoverer)
+    - [Discoverer](#discoverer.v1.Discoverer)
   
 - [apis/proto/v1/errors/errors.proto](#apis/proto/v1/errors/errors.proto)
-    - [Errors](#errors.Errors)
-    - [Errors.RPC](#errors.Errors.RPC)
+    - [Errors](#errors.v1.Errors)
+    - [Errors.RPC](#errors.v1.Errors.RPC)
   
 - [apis/proto/v1/filter/egress/egress_filter.proto](#apis/proto/v1/filter/egress/egress_filter.proto)
-    - [EgressFilter](#egress_filter.EgressFilter)
+    - [EgressFilter](#filter.egress.v1.EgressFilter)
   
 - [apis/proto/v1/filter/ingress/ingress_filter.proto](#apis/proto/v1/filter/ingress/ingress_filter.proto)
-    - [IngressFilter](#ingress_filter.IngressFilter)
+    - [IngressFilter](#filter.ingress.v1.IngressFilter)
   
 - [apis/proto/v1/gateway/vald/vald.proto](#apis/proto/v1/gateway/vald/vald.proto)
-    - [Vald](#vald.Vald)
+    - [Vald](#vald.v1.Vald)
   
 - [apis/proto/v1/manager/backup/backup_manager.proto](#apis/proto/v1/manager/backup/backup_manager.proto)
-    - [Backup](#backup_manager.Backup)
+    - [Backup](#manager.backup.v1.Backup)
   
 - [apis/proto/v1/manager/compressor/compressor.proto](#apis/proto/v1/manager/compressor/compressor.proto)
-    - [Backup](#compressor.Backup)
+    - [Backup](#manager.compressor.v1.Backup)
   
 - [apis/proto/v1/manager/index/index_manager.proto](#apis/proto/v1/manager/index/index_manager.proto)
-    - [Index](#index_manager.Index)
+    - [Index](#manager.index.v1.Index)
   
-- [apis/proto/v1/manager/replication/agent/replication_manager.proto](#apis/proto/v1/manager/replication/agent/replication_manager.proto)
-    - [Replication](#replication_manager.Replication)
-  
-- [apis/proto/v1/manager/replication/controller/replication_manager.proto](#apis/proto/v1/manager/replication/controller/replication_manager.proto)
-    - [ReplicationController](#replication_manager.ReplicationController)
-  
-- [apis/proto/v1/manager/traffic/traffic_manager.proto](#apis/proto/v1/manager/traffic/traffic_manager.proto)
 - [apis/proto/v1/meta/meta.proto](#apis/proto/v1/meta/meta.proto)
-    - [Meta](#meta_manager.Meta)
+    - [Meta](#meta.v1.Meta)
   
 - [apis/proto/v1/payload/payload.proto](#apis/proto/v1/payload/payload.proto)
-    - [Backup](#payload.Backup)
-    - [Backup.Compressed](#payload.Backup.Compressed)
-    - [Backup.Compressed.MetaVector](#payload.Backup.Compressed.MetaVector)
-    - [Backup.Compressed.MetaVectors](#payload.Backup.Compressed.MetaVectors)
-    - [Backup.GetVector](#payload.Backup.GetVector)
-    - [Backup.GetVector.Owner](#payload.Backup.GetVector.Owner)
-    - [Backup.GetVector.Request](#payload.Backup.GetVector.Request)
-    - [Backup.IP](#payload.Backup.IP)
-    - [Backup.IP.Register](#payload.Backup.IP.Register)
-    - [Backup.IP.Register.Request](#payload.Backup.IP.Register.Request)
-    - [Backup.IP.Remove](#payload.Backup.IP.Remove)
-    - [Backup.IP.Remove.Request](#payload.Backup.IP.Remove.Request)
-    - [Backup.Locations](#payload.Backup.Locations)
-    - [Backup.Locations.Request](#payload.Backup.Locations.Request)
-    - [Backup.MetaVector](#payload.Backup.MetaVector)
-    - [Backup.MetaVectors](#payload.Backup.MetaVectors)
-    - [Backup.Remove](#payload.Backup.Remove)
-    - [Backup.Remove.Request](#payload.Backup.Remove.Request)
-    - [Backup.Remove.RequestMulti](#payload.Backup.Remove.RequestMulti)
-    - [Control](#payload.Control)
-    - [Control.CreateIndexRequest](#payload.Control.CreateIndexRequest)
-    - [Discoverer](#payload.Discoverer)
-    - [Discoverer.Request](#payload.Discoverer.Request)
-    - [Empty](#payload.Empty)
-    - [Filter](#payload.Filter)
-    - [Filter.Config](#payload.Filter.Config)
-    - [Filter.Target](#payload.Filter.Target)
-    - [Info](#payload.Info)
-    - [Info.CPU](#payload.Info.CPU)
-    - [Info.IPs](#payload.Info.IPs)
-    - [Info.Index](#payload.Info.Index)
-    - [Info.Index.Count](#payload.Info.Index.Count)
-    - [Info.Index.UUID](#payload.Info.Index.UUID)
-    - [Info.Index.UUID.Committed](#payload.Info.Index.UUID.Committed)
-    - [Info.Index.UUID.Uncommitted](#payload.Info.Index.UUID.Uncommitted)
-    - [Info.Memory](#payload.Info.Memory)
-    - [Info.Node](#payload.Info.Node)
-    - [Info.Nodes](#payload.Info.Nodes)
-    - [Info.Pod](#payload.Info.Pod)
-    - [Info.Pods](#payload.Info.Pods)
-    - [Insert](#payload.Insert)
-    - [Insert.Config](#payload.Insert.Config)
-    - [Insert.MultiRequest](#payload.Insert.MultiRequest)
-    - [Insert.Request](#payload.Insert.Request)
-    - [Meta](#payload.Meta)
-    - [Meta.Key](#payload.Meta.Key)
-    - [Meta.KeyVal](#payload.Meta.KeyVal)
-    - [Meta.KeyVals](#payload.Meta.KeyVals)
-    - [Meta.Keys](#payload.Meta.Keys)
-    - [Meta.Val](#payload.Meta.Val)
-    - [Meta.Vals](#payload.Meta.Vals)
-    - [Object](#payload.Object)
-    - [Object.Blob](#payload.Object.Blob)
-    - [Object.Distance](#payload.Object.Distance)
-    - [Object.ID](#payload.Object.ID)
-    - [Object.IDs](#payload.Object.IDs)
-    - [Object.Location](#payload.Object.Location)
-    - [Object.Locations](#payload.Object.Locations)
-    - [Object.Vector](#payload.Object.Vector)
-    - [Object.Vectors](#payload.Object.Vectors)
-    - [Remove](#payload.Remove)
-    - [Remove.Config](#payload.Remove.Config)
-    - [Remove.MultiRequest](#payload.Remove.MultiRequest)
-    - [Remove.Request](#payload.Remove.Request)
-    - [Replication](#payload.Replication)
-    - [Replication.Agents](#payload.Replication.Agents)
-    - [Replication.Rebalance](#payload.Replication.Rebalance)
-    - [Replication.Recovery](#payload.Replication.Recovery)
-    - [Search](#payload.Search)
-    - [Search.Config](#payload.Search.Config)
-    - [Search.IDRequest](#payload.Search.IDRequest)
-    - [Search.MultiIDRequest](#payload.Search.MultiIDRequest)
-    - [Search.MultiRequest](#payload.Search.MultiRequest)
-    - [Search.ObjectRequest](#payload.Search.ObjectRequest)
-    - [Search.Request](#payload.Search.Request)
-    - [Search.Response](#payload.Search.Response)
-    - [Search.Responses](#payload.Search.Responses)
-    - [Update](#payload.Update)
-    - [Update.Config](#payload.Update.Config)
-    - [Update.MultiRequest](#payload.Update.MultiRequest)
-    - [Update.Request](#payload.Update.Request)
-    - [Upsert](#payload.Upsert)
-    - [Upsert.Config](#payload.Upsert.Config)
-    - [Upsert.MultiRequest](#payload.Upsert.MultiRequest)
-    - [Upsert.Request](#payload.Upsert.Request)
+    - [Backup](#payload.v1.Backup)
+    - [Backup.Compressed](#payload.v1.Backup.Compressed)
+    - [Backup.Compressed.MetaVector](#payload.v1.Backup.Compressed.MetaVector)
+    - [Backup.Compressed.MetaVectors](#payload.v1.Backup.Compressed.MetaVectors)
+    - [Backup.GetVector](#payload.v1.Backup.GetVector)
+    - [Backup.GetVector.Owner](#payload.v1.Backup.GetVector.Owner)
+    - [Backup.GetVector.Request](#payload.v1.Backup.GetVector.Request)
+    - [Backup.IP](#payload.v1.Backup.IP)
+    - [Backup.IP.Register](#payload.v1.Backup.IP.Register)
+    - [Backup.IP.Register.Request](#payload.v1.Backup.IP.Register.Request)
+    - [Backup.IP.Remove](#payload.v1.Backup.IP.Remove)
+    - [Backup.IP.Remove.Request](#payload.v1.Backup.IP.Remove.Request)
+    - [Backup.Locations](#payload.v1.Backup.Locations)
+    - [Backup.Locations.Request](#payload.v1.Backup.Locations.Request)
+    - [Backup.MetaVector](#payload.v1.Backup.MetaVector)
+    - [Backup.MetaVectors](#payload.v1.Backup.MetaVectors)
+    - [Backup.Remove](#payload.v1.Backup.Remove)
+    - [Backup.Remove.Request](#payload.v1.Backup.Remove.Request)
+    - [Backup.Remove.RequestMulti](#payload.v1.Backup.Remove.RequestMulti)
+    - [Control](#payload.v1.Control)
+    - [Control.CreateIndexRequest](#payload.v1.Control.CreateIndexRequest)
+    - [Discoverer](#payload.v1.Discoverer)
+    - [Discoverer.Request](#payload.v1.Discoverer.Request)
+    - [Empty](#payload.v1.Empty)
+    - [Filter](#payload.v1.Filter)
+    - [Filter.Config](#payload.v1.Filter.Config)
+    - [Filter.Target](#payload.v1.Filter.Target)
+    - [Info](#payload.v1.Info)
+    - [Info.CPU](#payload.v1.Info.CPU)
+    - [Info.IPs](#payload.v1.Info.IPs)
+    - [Info.Index](#payload.v1.Info.Index)
+    - [Info.Index.Count](#payload.v1.Info.Index.Count)
+    - [Info.Index.UUID](#payload.v1.Info.Index.UUID)
+    - [Info.Index.UUID.Committed](#payload.v1.Info.Index.UUID.Committed)
+    - [Info.Index.UUID.Uncommitted](#payload.v1.Info.Index.UUID.Uncommitted)
+    - [Info.Memory](#payload.v1.Info.Memory)
+    - [Info.Node](#payload.v1.Info.Node)
+    - [Info.Nodes](#payload.v1.Info.Nodes)
+    - [Info.Pod](#payload.v1.Info.Pod)
+    - [Info.Pods](#payload.v1.Info.Pods)
+    - [Insert](#payload.v1.Insert)
+    - [Insert.Config](#payload.v1.Insert.Config)
+    - [Insert.MultiRequest](#payload.v1.Insert.MultiRequest)
+    - [Insert.Request](#payload.v1.Insert.Request)
+    - [Meta](#payload.v1.Meta)
+    - [Meta.Key](#payload.v1.Meta.Key)
+    - [Meta.KeyVal](#payload.v1.Meta.KeyVal)
+    - [Meta.KeyVals](#payload.v1.Meta.KeyVals)
+    - [Meta.Keys](#payload.v1.Meta.Keys)
+    - [Meta.Val](#payload.v1.Meta.Val)
+    - [Meta.Vals](#payload.v1.Meta.Vals)
+    - [Object](#payload.v1.Object)
+    - [Object.Blob](#payload.v1.Object.Blob)
+    - [Object.Distance](#payload.v1.Object.Distance)
+    - [Object.ID](#payload.v1.Object.ID)
+    - [Object.IDs](#payload.v1.Object.IDs)
+    - [Object.Location](#payload.v1.Object.Location)
+    - [Object.Locations](#payload.v1.Object.Locations)
+    - [Object.Vector](#payload.v1.Object.Vector)
+    - [Object.Vectors](#payload.v1.Object.Vectors)
+    - [Remove](#payload.v1.Remove)
+    - [Remove.Config](#payload.v1.Remove.Config)
+    - [Remove.MultiRequest](#payload.v1.Remove.MultiRequest)
+    - [Remove.Request](#payload.v1.Remove.Request)
+    - [Replication](#payload.v1.Replication)
+    - [Replication.Agents](#payload.v1.Replication.Agents)
+    - [Replication.Rebalance](#payload.v1.Replication.Rebalance)
+    - [Replication.Recovery](#payload.v1.Replication.Recovery)
+    - [Search](#payload.v1.Search)
+    - [Search.Config](#payload.v1.Search.Config)
+    - [Search.IDRequest](#payload.v1.Search.IDRequest)
+    - [Search.MultiIDRequest](#payload.v1.Search.MultiIDRequest)
+    - [Search.MultiRequest](#payload.v1.Search.MultiRequest)
+    - [Search.ObjectRequest](#payload.v1.Search.ObjectRequest)
+    - [Search.Request](#payload.v1.Search.Request)
+    - [Search.Response](#payload.v1.Search.Response)
+    - [Search.Responses](#payload.v1.Search.Responses)
+    - [Update](#payload.v1.Update)
+    - [Update.Config](#payload.v1.Update.Config)
+    - [Update.MultiRequest](#payload.v1.Update.MultiRequest)
+    - [Update.Request](#payload.v1.Update.Request)
+    - [Upsert](#payload.v1.Upsert)
+    - [Upsert.Config](#payload.v1.Upsert.Config)
+    - [Upsert.MultiRequest](#payload.v1.Upsert.MultiRequest)
+    - [Upsert.Request](#payload.v1.Upsert.Request)
   
 - [apis/proto/v1/vald/filter.proto](#apis/proto/v1/vald/filter.proto)
-    - [Filter](#filter.Filter)
+    - [Filter](#vald.v1.Filter)
   
 - [apis/proto/v1/vald/insert.proto](#apis/proto/v1/vald/insert.proto)
-    - [Insert](#vald.Insert)
+    - [Insert](#vald.v1.Insert)
   
 - [apis/proto/v1/vald/object.proto](#apis/proto/v1/vald/object.proto)
-    - [Object](#vald.Object)
+    - [Object](#vald.v1.Object)
   
 - [apis/proto/v1/vald/remove.proto](#apis/proto/v1/vald/remove.proto)
-    - [Remove](#vald.Remove)
+    - [Remove](#vald.v1.Remove)
   
 - [apis/proto/v1/vald/search.proto](#apis/proto/v1/vald/search.proto)
-    - [Search](#vald.Search)
+    - [Search](#vald.v1.Search)
   
 - [apis/proto/v1/vald/update.proto](#apis/proto/v1/vald/update.proto)
-    - [Update](#vald.Update)
+    - [Update](#vald.v1.Update)
   
 - [apis/proto/v1/vald/upsert.proto](#apis/proto/v1/vald/upsert.proto)
-    - [Upsert](#vald.Upsert)
+    - [Upsert](#vald.v1.Upsert)
   
 - [Scalar Value Types](#scalar-value-types)
 
@@ -169,17 +162,17 @@
  
 
 
-<a name="core.Agent"></a>
+<a name="core.v1.Agent"></a>
 
 ### Agent
 
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| CreateIndex | [.payload.Control.CreateIndexRequest](#payload.Control.CreateIndexRequest) | [.payload.Empty](#payload.Empty) |  |
-| SaveIndex | [.payload.Empty](#payload.Empty) | [.payload.Empty](#payload.Empty) |  |
-| CreateAndSaveIndex | [.payload.Control.CreateIndexRequest](#payload.Control.CreateIndexRequest) | [.payload.Empty](#payload.Empty) |  |
-| IndexInfo | [.payload.Empty](#payload.Empty) | [.payload.Info.Index.Count](#payload.Info.Index.Count) |  |
+| CreateIndex | [.payload.v1.Control.CreateIndexRequest](#payload.v1.Control.CreateIndexRequest) | [.payload.v1.Empty](#payload.v1.Empty) |  |
+| SaveIndex | [.payload.v1.Empty](#payload.v1.Empty) | [.payload.v1.Empty](#payload.v1.Empty) |  |
+| CreateAndSaveIndex | [.payload.v1.Control.CreateIndexRequest](#payload.v1.Control.CreateIndexRequest) | [.payload.v1.Empty](#payload.v1.Empty) |  |
+| IndexInfo | [.payload.v1.Empty](#payload.v1.Empty) | [.payload.v1.Info.Index.Count](#payload.v1.Info.Index.Count) |  |
 
  
 
@@ -198,7 +191,7 @@
  
 
 
-<a name="sidecar.Sidecar"></a>
+<a name="sidecar.v1.Sidecar"></a>
 
 ### Sidecar
 
@@ -223,15 +216,15 @@
  
 
 
-<a name="discoverer.Discoverer"></a>
+<a name="discoverer.v1.Discoverer"></a>
 
 ### Discoverer
 
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| Pods | [.payload.Discoverer.Request](#payload.Discoverer.Request) | [.payload.Info.Pods](#payload.Info.Pods) |  |
-| Nodes | [.payload.Discoverer.Request](#payload.Discoverer.Request) | [.payload.Info.Nodes](#payload.Info.Nodes) |  |
+| Pods | [.payload.v1.Discoverer.Request](#payload.v1.Discoverer.Request) | [.payload.v1.Info.Pods](#payload.v1.Info.Pods) |  |
+| Nodes | [.payload.v1.Discoverer.Request](#payload.v1.Discoverer.Request) | [.payload.v1.Info.Nodes](#payload.v1.Info.Nodes) |  |
 
  
 
@@ -244,7 +237,7 @@
 
 
 
-<a name="errors.Errors"></a>
+<a name="errors.v1.Errors"></a>
 
 ### Errors
 
@@ -254,7 +247,7 @@
 
 
 
-<a name="errors.Errors.RPC"></a>
+<a name="errors.v1.Errors.RPC"></a>
 
 ### Errors.RPC
 
@@ -268,7 +261,7 @@
 | instance | [string](#string) |  |  |
 | status | [int64](#int64) |  |  |
 | error | [string](#string) |  |  |
-| roots | [Errors.RPC](#errors.Errors.RPC) | repeated |  |
+| roots | [Errors.RPC](#errors.v1.Errors.RPC) | repeated |  |
 
 
 
@@ -297,15 +290,15 @@
  
 
 
-<a name="egress_filter.EgressFilter"></a>
+<a name="filter.egress.v1.EgressFilter"></a>
 
 ### EgressFilter
 
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| Filter | [.payload.Object.Distance](#payload.Object.Distance) | [.payload.Object.Distance](#payload.Object.Distance) |  |
-| StreamFilter | [.payload.Object.Distance](#payload.Object.Distance) stream | [.payload.Object.Distance](#payload.Object.Distance) stream |  |
+| Filter | [.payload.v1.Object.Distance](#payload.v1.Object.Distance) | [.payload.v1.Object.Distance](#payload.v1.Object.Distance) |  |
+| StreamFilter | [.payload.v1.Object.Distance](#payload.v1.Object.Distance) stream | [.payload.v1.Object.Distance](#payload.v1.Object.Distance) stream |  |
 
  
 
@@ -324,17 +317,17 @@
  
 
 
-<a name="ingress_filter.IngressFilter"></a>
+<a name="filter.ingress.v1.IngressFilter"></a>
 
 ### IngressFilter
 
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| GenVector | [.payload.Object.Blob](#payload.Object.Blob) | [.payload.Object.Vector](#payload.Object.Vector) |  |
-| StreamGenVector | [.payload.Object.Blob](#payload.Object.Blob) stream | [.payload.Object.Vector](#payload.Object.Vector) stream |  |
-| FilterVector | [.payload.Object.Vector](#payload.Object.Vector) | [.payload.Object.Vector](#payload.Object.Vector) |  |
-| StreamFilterVector | [.payload.Object.Vector](#payload.Object.Vector) stream | [.payload.Object.Vector](#payload.Object.Vector) stream |  |
+| GenVector | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) |  |
+| StreamGenVector | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) stream | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) stream |  |
+| FilterVector | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) |  |
+| StreamFilterVector | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) stream | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) stream |  |
 
  
 
@@ -353,32 +346,32 @@
  
 
 
-<a name="vald.Vald"></a>
+<a name="vald.v1.Vald"></a>
 
 ### Vald
 
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| Exists | [.payload.Object.ID](#payload.Object.ID) | [.payload.Object.ID](#payload.Object.ID) |  |
-| Search | [.payload.Search.Request](#payload.Search.Request) | [.payload.Search.Response](#payload.Search.Response) |  |
-| SearchByID | [.payload.Search.IDRequest](#payload.Search.IDRequest) | [.payload.Search.Response](#payload.Search.Response) |  |
-| StreamSearch | [.payload.Search.Request](#payload.Search.Request) stream | [.payload.Search.Response](#payload.Search.Response) stream |  |
-| StreamSearchByID | [.payload.Search.IDRequest](#payload.Search.IDRequest) stream | [.payload.Search.Response](#payload.Search.Response) stream |  |
-| Insert | [.payload.Object.Vector](#payload.Object.Vector) | [.payload.Object.Location](#payload.Object.Location) |  |
-| StreamInsert | [.payload.Object.Vector](#payload.Object.Vector) stream | [.payload.Object.Location](#payload.Object.Location) stream |  |
-| MultiInsert | [.payload.Object.Vectors](#payload.Object.Vectors) | [.payload.Object.Locations](#payload.Object.Locations) |  |
-| Update | [.payload.Object.Vector](#payload.Object.Vector) | [.payload.Object.Location](#payload.Object.Location) |  |
-| StreamUpdate | [.payload.Object.Vector](#payload.Object.Vector) stream | [.payload.Object.Location](#payload.Object.Location) stream |  |
-| MultiUpdate | [.payload.Object.Vectors](#payload.Object.Vectors) | [.payload.Object.Locations](#payload.Object.Locations) |  |
-| Upsert | [.payload.Object.Vector](#payload.Object.Vector) | [.payload.Object.Location](#payload.Object.Location) |  |
-| StreamUpsert | [.payload.Object.Vector](#payload.Object.Vector) stream | [.payload.Object.Location](#payload.Object.Location) stream |  |
-| MultiUpsert | [.payload.Object.Vectors](#payload.Object.Vectors) | [.payload.Object.Locations](#payload.Object.Locations) |  |
-| Remove | [.payload.Object.ID](#payload.Object.ID) | [.payload.Object.Location](#payload.Object.Location) |  |
-| StreamRemove | [.payload.Object.ID](#payload.Object.ID) stream | [.payload.Object.Location](#payload.Object.Location) stream |  |
-| MultiRemove | [.payload.Object.IDs](#payload.Object.IDs) | [.payload.Object.Locations](#payload.Object.Locations) |  |
-| GetObject | [.payload.Object.ID](#payload.Object.ID) | [.payload.Object.Vector](#payload.Object.Vector) |  |
-| StreamGetObject | [.payload.Object.ID](#payload.Object.ID) stream | [.payload.Object.Vector](#payload.Object.Vector) stream |  |
+| Exists | [.payload.v1.Object.ID](#payload.v1.Object.ID) | [.payload.v1.Object.ID](#payload.v1.Object.ID) |  |
+| Search | [.payload.v1.Search.Request](#payload.v1.Search.Request) | [.payload.v1.Search.Response](#payload.v1.Search.Response) |  |
+| SearchByID | [.payload.v1.Search.IDRequest](#payload.v1.Search.IDRequest) | [.payload.v1.Search.Response](#payload.v1.Search.Response) |  |
+| StreamSearch | [.payload.v1.Search.Request](#payload.v1.Search.Request) stream | [.payload.v1.Search.Response](#payload.v1.Search.Response) stream |  |
+| StreamSearchByID | [.payload.v1.Search.IDRequest](#payload.v1.Search.IDRequest) stream | [.payload.v1.Search.Response](#payload.v1.Search.Response) stream |  |
+| Insert | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
+| StreamInsert | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
+| MultiInsert | [.payload.v1.Object.Vectors](#payload.v1.Object.Vectors) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
+| Update | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
+| StreamUpdate | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
+| MultiUpdate | [.payload.v1.Object.Vectors](#payload.v1.Object.Vectors) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
+| Upsert | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
+| StreamUpsert | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
+| MultiUpsert | [.payload.v1.Object.Vectors](#payload.v1.Object.Vectors) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
+| Remove | [.payload.v1.Object.ID](#payload.v1.Object.ID) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
+| StreamRemove | [.payload.v1.Object.ID](#payload.v1.Object.ID) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
+| MultiRemove | [.payload.v1.Object.IDs](#payload.v1.Object.IDs) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
+| GetObject | [.payload.v1.Object.ID](#payload.v1.Object.ID) | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) |  |
+| StreamGetObject | [.payload.v1.Object.ID](#payload.v1.Object.ID) stream | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) stream |  |
 
  
 
@@ -397,21 +390,21 @@
  
 
 
-<a name="backup_manager.Backup"></a>
+<a name="manager.backup.v1.Backup"></a>
 
 ### Backup
 
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| GetVector | [.payload.Backup.GetVector.Request](#payload.Backup.GetVector.Request) | [.payload.Backup.Compressed.MetaVector](#payload.Backup.Compressed.MetaVector) |  |
-| Locations | [.payload.Backup.Locations.Request](#payload.Backup.Locations.Request) | [.payload.Info.IPs](#payload.Info.IPs) |  |
-| Register | [.payload.Backup.Compressed.MetaVector](#payload.Backup.Compressed.MetaVector) | [.payload.Empty](#payload.Empty) |  |
-| RegisterMulti | [.payload.Backup.Compressed.MetaVectors](#payload.Backup.Compressed.MetaVectors) | [.payload.Empty](#payload.Empty) |  |
-| Remove | [.payload.Backup.Remove.Request](#payload.Backup.Remove.Request) | [.payload.Empty](#payload.Empty) |  |
-| RemoveMulti | [.payload.Backup.Remove.RequestMulti](#payload.Backup.Remove.RequestMulti) | [.payload.Empty](#payload.Empty) |  |
-| RegisterIPs | [.payload.Backup.IP.Register.Request](#payload.Backup.IP.Register.Request) | [.payload.Empty](#payload.Empty) |  |
-| RemoveIPs | [.payload.Backup.IP.Remove.Request](#payload.Backup.IP.Remove.Request) | [.payload.Empty](#payload.Empty) |  |
+| GetVector | [.payload.v1.Backup.GetVector.Request](#payload.v1.Backup.GetVector.Request) | [.payload.v1.Backup.Compressed.MetaVector](#payload.v1.Backup.Compressed.MetaVector) |  |
+| Locations | [.payload.v1.Backup.Locations.Request](#payload.v1.Backup.Locations.Request) | [.payload.v1.Info.IPs](#payload.v1.Info.IPs) |  |
+| Register | [.payload.v1.Backup.Compressed.MetaVector](#payload.v1.Backup.Compressed.MetaVector) | [.payload.v1.Empty](#payload.v1.Empty) |  |
+| RegisterMulti | [.payload.v1.Backup.Compressed.MetaVectors](#payload.v1.Backup.Compressed.MetaVectors) | [.payload.v1.Empty](#payload.v1.Empty) |  |
+| Remove | [.payload.v1.Backup.Remove.Request](#payload.v1.Backup.Remove.Request) | [.payload.v1.Empty](#payload.v1.Empty) |  |
+| RemoveMulti | [.payload.v1.Backup.Remove.RequestMulti](#payload.v1.Backup.Remove.RequestMulti) | [.payload.v1.Empty](#payload.v1.Empty) |  |
+| RegisterIPs | [.payload.v1.Backup.IP.Register.Request](#payload.v1.Backup.IP.Register.Request) | [.payload.v1.Empty](#payload.v1.Empty) |  |
+| RemoveIPs | [.payload.v1.Backup.IP.Remove.Request](#payload.v1.Backup.IP.Remove.Request) | [.payload.v1.Empty](#payload.v1.Empty) |  |
 
  
 
@@ -430,21 +423,21 @@
  
 
 
-<a name="compressor.Backup"></a>
+<a name="manager.compressor.v1.Backup"></a>
 
 ### Backup
 
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| GetVector | [.payload.Backup.GetVector.Request](#payload.Backup.GetVector.Request) | [.payload.Backup.MetaVector](#payload.Backup.MetaVector) |  |
-| Locations | [.payload.Backup.Locations.Request](#payload.Backup.Locations.Request) | [.payload.Info.IPs](#payload.Info.IPs) |  |
-| Register | [.payload.Backup.MetaVector](#payload.Backup.MetaVector) | [.payload.Empty](#payload.Empty) |  |
-| RegisterMulti | [.payload.Backup.MetaVectors](#payload.Backup.MetaVectors) | [.payload.Empty](#payload.Empty) |  |
-| Remove | [.payload.Backup.Remove.Request](#payload.Backup.Remove.Request) | [.payload.Empty](#payload.Empty) |  |
-| RemoveMulti | [.payload.Backup.Remove.RequestMulti](#payload.Backup.Remove.RequestMulti) | [.payload.Empty](#payload.Empty) |  |
-| RegisterIPs | [.payload.Backup.IP.Register.Request](#payload.Backup.IP.Register.Request) | [.payload.Empty](#payload.Empty) |  |
-| RemoveIPs | [.payload.Backup.IP.Remove.Request](#payload.Backup.IP.Remove.Request) | [.payload.Empty](#payload.Empty) |  |
+| GetVector | [.payload.v1.Backup.GetVector.Request](#payload.v1.Backup.GetVector.Request) | [.payload.v1.Backup.MetaVector](#payload.v1.Backup.MetaVector) |  |
+| Locations | [.payload.v1.Backup.Locations.Request](#payload.v1.Backup.Locations.Request) | [.payload.v1.Info.IPs](#payload.v1.Info.IPs) |  |
+| Register | [.payload.v1.Backup.MetaVector](#payload.v1.Backup.MetaVector) | [.payload.v1.Empty](#payload.v1.Empty) |  |
+| RegisterMulti | [.payload.v1.Backup.MetaVectors](#payload.v1.Backup.MetaVectors) | [.payload.v1.Empty](#payload.v1.Empty) |  |
+| Remove | [.payload.v1.Backup.Remove.Request](#payload.v1.Backup.Remove.Request) | [.payload.v1.Empty](#payload.v1.Empty) |  |
+| RemoveMulti | [.payload.v1.Backup.Remove.RequestMulti](#payload.v1.Backup.Remove.RequestMulti) | [.payload.v1.Empty](#payload.v1.Empty) |  |
+| RegisterIPs | [.payload.v1.Backup.IP.Register.Request](#payload.v1.Backup.IP.Register.Request) | [.payload.v1.Empty](#payload.v1.Empty) |  |
+| RemoveIPs | [.payload.v1.Backup.IP.Remove.Request](#payload.v1.Backup.IP.Remove.Request) | [.payload.v1.Empty](#payload.v1.Empty) |  |
 
  
 
@@ -463,84 +456,14 @@
  
 
 
-<a name="index_manager.Index"></a>
+<a name="manager.index.v1.Index"></a>
 
 ### Index
 
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| IndexInfo | [.payload.Empty](#payload.Empty) | [.payload.Info.Index.Count](#payload.Info.Index.Count) |  |
-
- 
-
-
-
-<a name="apis/proto/v1/manager/replication/agent/replication_manager.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## apis/proto/v1/manager/replication/agent/replication_manager.proto
-
-
- 
-
- 
-
- 
-
-
-<a name="replication_manager.Replication"></a>
-
-### Replication
-
-
-| Method Name | Request Type | Response Type | Description |
-| ----------- | ------------ | ------------- | ------------|
-| Recover | [.payload.Replication.Recovery](#payload.Replication.Recovery) | [.payload.Empty](#payload.Empty) |  |
-| Rebalance | [.payload.Replication.Rebalance](#payload.Replication.Rebalance) | [.payload.Empty](#payload.Empty) |  |
-| AgentInfo | [.payload.Empty](#payload.Empty) | [.payload.Replication.Agents](#payload.Replication.Agents) |  |
-
- 
-
-
-
-<a name="apis/proto/v1/manager/replication/controller/replication_manager.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## apis/proto/v1/manager/replication/controller/replication_manager.proto
-
-
- 
-
- 
-
- 
-
-
-<a name="replication_manager.ReplicationController"></a>
-
-### ReplicationController
-
-
-| Method Name | Request Type | Response Type | Description |
-| ----------- | ------------ | ------------- | ------------|
-| ReplicationInfo | [.payload.Empty](#payload.Empty) | [.payload.Replication.Agents](#payload.Replication.Agents) |  |
-
- 
-
-
-
-<a name="apis/proto/v1/manager/traffic/traffic_manager.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## apis/proto/v1/manager/traffic/traffic_manager.proto
-
-
- 
-
- 
-
- 
+| IndexInfo | [.payload.v1.Empty](#payload.v1.Empty) | [.payload.v1.Info.Index.Count](#payload.v1.Info.Index.Count) |  |
 
  
 
@@ -559,23 +482,23 @@
  
 
 
-<a name="meta_manager.Meta"></a>
+<a name="meta.v1.Meta"></a>
 
 ### Meta
 
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| GetMeta | [.payload.Meta.Key](#payload.Meta.Key) | [.payload.Meta.Val](#payload.Meta.Val) |  |
-| GetMetas | [.payload.Meta.Keys](#payload.Meta.Keys) | [.payload.Meta.Vals](#payload.Meta.Vals) |  |
-| GetMetaInverse | [.payload.Meta.Val](#payload.Meta.Val) | [.payload.Meta.Key](#payload.Meta.Key) |  |
-| GetMetasInverse | [.payload.Meta.Vals](#payload.Meta.Vals) | [.payload.Meta.Keys](#payload.Meta.Keys) |  |
-| SetMeta | [.payload.Meta.KeyVal](#payload.Meta.KeyVal) | [.payload.Empty](#payload.Empty) |  |
-| SetMetas | [.payload.Meta.KeyVals](#payload.Meta.KeyVals) | [.payload.Empty](#payload.Empty) |  |
-| DeleteMeta | [.payload.Meta.Key](#payload.Meta.Key) | [.payload.Meta.Val](#payload.Meta.Val) |  |
-| DeleteMetas | [.payload.Meta.Keys](#payload.Meta.Keys) | [.payload.Meta.Vals](#payload.Meta.Vals) |  |
-| DeleteMetaInverse | [.payload.Meta.Val](#payload.Meta.Val) | [.payload.Meta.Key](#payload.Meta.Key) |  |
-| DeleteMetasInverse | [.payload.Meta.Vals](#payload.Meta.Vals) | [.payload.Meta.Keys](#payload.Meta.Keys) |  |
+| GetMeta | [.payload.v1.Meta.Key](#payload.v1.Meta.Key) | [.payload.v1.Meta.Val](#payload.v1.Meta.Val) |  |
+| GetMetas | [.payload.v1.Meta.Keys](#payload.v1.Meta.Keys) | [.payload.v1.Meta.Vals](#payload.v1.Meta.Vals) |  |
+| GetMetaInverse | [.payload.v1.Meta.Val](#payload.v1.Meta.Val) | [.payload.v1.Meta.Key](#payload.v1.Meta.Key) |  |
+| GetMetasInverse | [.payload.v1.Meta.Vals](#payload.v1.Meta.Vals) | [.payload.v1.Meta.Keys](#payload.v1.Meta.Keys) |  |
+| SetMeta | [.payload.v1.Meta.KeyVal](#payload.v1.Meta.KeyVal) | [.payload.v1.Empty](#payload.v1.Empty) |  |
+| SetMetas | [.payload.v1.Meta.KeyVals](#payload.v1.Meta.KeyVals) | [.payload.v1.Empty](#payload.v1.Empty) |  |
+| DeleteMeta | [.payload.v1.Meta.Key](#payload.v1.Meta.Key) | [.payload.v1.Meta.Val](#payload.v1.Meta.Val) |  |
+| DeleteMetas | [.payload.v1.Meta.Keys](#payload.v1.Meta.Keys) | [.payload.v1.Meta.Vals](#payload.v1.Meta.Vals) |  |
+| DeleteMetaInverse | [.payload.v1.Meta.Val](#payload.v1.Meta.Val) | [.payload.v1.Meta.Key](#payload.v1.Meta.Key) |  |
+| DeleteMetasInverse | [.payload.v1.Meta.Vals](#payload.v1.Meta.Vals) | [.payload.v1.Meta.Keys](#payload.v1.Meta.Keys) |  |
 
  
 
@@ -588,7 +511,7 @@
 
 
 
-<a name="payload.Backup"></a>
+<a name="payload.v1.Backup"></a>
 
 ### Backup
 
@@ -598,7 +521,7 @@
 
 
 
-<a name="payload.Backup.Compressed"></a>
+<a name="payload.v1.Backup.Compressed"></a>
 
 ### Backup.Compressed
 
@@ -608,7 +531,7 @@
 
 
 
-<a name="payload.Backup.Compressed.MetaVector"></a>
+<a name="payload.v1.Backup.Compressed.MetaVector"></a>
 
 ### Backup.Compressed.MetaVector
 
@@ -625,7 +548,7 @@
 
 
 
-<a name="payload.Backup.Compressed.MetaVectors"></a>
+<a name="payload.v1.Backup.Compressed.MetaVectors"></a>
 
 ### Backup.Compressed.MetaVectors
 
@@ -633,14 +556,14 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| vectors | [Backup.Compressed.MetaVector](#payload.Backup.Compressed.MetaVector) | repeated |  |
+| vectors | [Backup.Compressed.MetaVector](#payload.v1.Backup.Compressed.MetaVector) | repeated |  |
 
 
 
 
 
 
-<a name="payload.Backup.GetVector"></a>
+<a name="payload.v1.Backup.GetVector"></a>
 
 ### Backup.GetVector
 
@@ -650,7 +573,7 @@
 
 
 
-<a name="payload.Backup.GetVector.Owner"></a>
+<a name="payload.v1.Backup.GetVector.Owner"></a>
 
 ### Backup.GetVector.Owner
 
@@ -665,7 +588,7 @@
 
 
 
-<a name="payload.Backup.GetVector.Request"></a>
+<a name="payload.v1.Backup.GetVector.Request"></a>
 
 ### Backup.GetVector.Request
 
@@ -680,7 +603,7 @@
 
 
 
-<a name="payload.Backup.IP"></a>
+<a name="payload.v1.Backup.IP"></a>
 
 ### Backup.IP
 
@@ -690,7 +613,7 @@
 
 
 
-<a name="payload.Backup.IP.Register"></a>
+<a name="payload.v1.Backup.IP.Register"></a>
 
 ### Backup.IP.Register
 
@@ -700,7 +623,7 @@
 
 
 
-<a name="payload.Backup.IP.Register.Request"></a>
+<a name="payload.v1.Backup.IP.Register.Request"></a>
 
 ### Backup.IP.Register.Request
 
@@ -716,7 +639,7 @@
 
 
 
-<a name="payload.Backup.IP.Remove"></a>
+<a name="payload.v1.Backup.IP.Remove"></a>
 
 ### Backup.IP.Remove
 
@@ -726,7 +649,7 @@
 
 
 
-<a name="payload.Backup.IP.Remove.Request"></a>
+<a name="payload.v1.Backup.IP.Remove.Request"></a>
 
 ### Backup.IP.Remove.Request
 
@@ -741,7 +664,7 @@
 
 
 
-<a name="payload.Backup.Locations"></a>
+<a name="payload.v1.Backup.Locations"></a>
 
 ### Backup.Locations
 
@@ -751,7 +674,7 @@
 
 
 
-<a name="payload.Backup.Locations.Request"></a>
+<a name="payload.v1.Backup.Locations.Request"></a>
 
 ### Backup.Locations.Request
 
@@ -766,7 +689,7 @@
 
 
 
-<a name="payload.Backup.MetaVector"></a>
+<a name="payload.v1.Backup.MetaVector"></a>
 
 ### Backup.MetaVector
 
@@ -783,7 +706,7 @@
 
 
 
-<a name="payload.Backup.MetaVectors"></a>
+<a name="payload.v1.Backup.MetaVectors"></a>
 
 ### Backup.MetaVectors
 
@@ -791,14 +714,14 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| vectors | [Backup.MetaVector](#payload.Backup.MetaVector) | repeated |  |
+| vectors | [Backup.MetaVector](#payload.v1.Backup.MetaVector) | repeated |  |
 
 
 
 
 
 
-<a name="payload.Backup.Remove"></a>
+<a name="payload.v1.Backup.Remove"></a>
 
 ### Backup.Remove
 
@@ -808,7 +731,7 @@
 
 
 
-<a name="payload.Backup.Remove.Request"></a>
+<a name="payload.v1.Backup.Remove.Request"></a>
 
 ### Backup.Remove.Request
 
@@ -823,7 +746,7 @@
 
 
 
-<a name="payload.Backup.Remove.RequestMulti"></a>
+<a name="payload.v1.Backup.Remove.RequestMulti"></a>
 
 ### Backup.Remove.RequestMulti
 
@@ -838,7 +761,7 @@
 
 
 
-<a name="payload.Control"></a>
+<a name="payload.v1.Control"></a>
 
 ### Control
 
@@ -848,7 +771,7 @@
 
 
 
-<a name="payload.Control.CreateIndexRequest"></a>
+<a name="payload.v1.Control.CreateIndexRequest"></a>
 
 ### Control.CreateIndexRequest
 
@@ -863,7 +786,7 @@
 
 
 
-<a name="payload.Discoverer"></a>
+<a name="payload.v1.Discoverer"></a>
 
 ### Discoverer
 
@@ -873,7 +796,7 @@
 
 
 
-<a name="payload.Discoverer.Request"></a>
+<a name="payload.v1.Discoverer.Request"></a>
 
 ### Discoverer.Request
 
@@ -890,7 +813,7 @@
 
 
 
-<a name="payload.Empty"></a>
+<a name="payload.v1.Empty"></a>
 
 ### Empty
 
@@ -900,7 +823,7 @@
 
 
 
-<a name="payload.Filter"></a>
+<a name="payload.v1.Filter"></a>
 
 ### Filter
 
@@ -910,7 +833,7 @@
 
 
 
-<a name="payload.Filter.Config"></a>
+<a name="payload.v1.Filter.Config"></a>
 
 ### Filter.Config
 
@@ -925,7 +848,7 @@
 
 
 
-<a name="payload.Filter.Target"></a>
+<a name="payload.v1.Filter.Target"></a>
 
 ### Filter.Target
 
@@ -941,7 +864,7 @@
 
 
 
-<a name="payload.Info"></a>
+<a name="payload.v1.Info"></a>
 
 ### Info
 
@@ -951,7 +874,7 @@
 
 
 
-<a name="payload.Info.CPU"></a>
+<a name="payload.v1.Info.CPU"></a>
 
 ### Info.CPU
 
@@ -968,7 +891,7 @@
 
 
 
-<a name="payload.Info.IPs"></a>
+<a name="payload.v1.Info.IPs"></a>
 
 ### Info.IPs
 
@@ -983,7 +906,7 @@
 
 
 
-<a name="payload.Info.Index"></a>
+<a name="payload.v1.Info.Index"></a>
 
 ### Info.Index
 
@@ -993,7 +916,7 @@
 
 
 
-<a name="payload.Info.Index.Count"></a>
+<a name="payload.v1.Info.Index.Count"></a>
 
 ### Info.Index.Count
 
@@ -1010,7 +933,7 @@
 
 
 
-<a name="payload.Info.Index.UUID"></a>
+<a name="payload.v1.Info.Index.UUID"></a>
 
 ### Info.Index.UUID
 
@@ -1020,7 +943,7 @@
 
 
 
-<a name="payload.Info.Index.UUID.Committed"></a>
+<a name="payload.v1.Info.Index.UUID.Committed"></a>
 
 ### Info.Index.UUID.Committed
 
@@ -1035,7 +958,7 @@
 
 
 
-<a name="payload.Info.Index.UUID.Uncommitted"></a>
+<a name="payload.v1.Info.Index.UUID.Uncommitted"></a>
 
 ### Info.Index.UUID.Uncommitted
 
@@ -1050,7 +973,7 @@
 
 
 
-<a name="payload.Info.Memory"></a>
+<a name="payload.v1.Info.Memory"></a>
 
 ### Info.Memory
 
@@ -1067,7 +990,7 @@
 
 
 
-<a name="payload.Info.Node"></a>
+<a name="payload.v1.Info.Node"></a>
 
 ### Info.Node
 
@@ -1078,16 +1001,16 @@
 | name | [string](#string) |  |  |
 | internal_addr | [string](#string) |  |  |
 | external_addr | [string](#string) |  |  |
-| cpu | [Info.CPU](#payload.Info.CPU) |  |  |
-| memory | [Info.Memory](#payload.Info.Memory) |  |  |
-| Pods | [Info.Pods](#payload.Info.Pods) |  |  |
+| cpu | [Info.CPU](#payload.v1.Info.CPU) |  |  |
+| memory | [Info.Memory](#payload.v1.Info.Memory) |  |  |
+| Pods | [Info.Pods](#payload.v1.Info.Pods) |  |  |
 
 
 
 
 
 
-<a name="payload.Info.Nodes"></a>
+<a name="payload.v1.Info.Nodes"></a>
 
 ### Info.Nodes
 
@@ -1095,14 +1018,14 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| nodes | [Info.Node](#payload.Info.Node) | repeated |  |
+| nodes | [Info.Node](#payload.v1.Info.Node) | repeated |  |
 
 
 
 
 
 
-<a name="payload.Info.Pod"></a>
+<a name="payload.v1.Info.Pod"></a>
 
 ### Info.Pod
 
@@ -1114,16 +1037,16 @@
 | name | [string](#string) |  |  |
 | namespace | [string](#string) |  |  |
 | ip | [string](#string) |  |  |
-| cpu | [Info.CPU](#payload.Info.CPU) |  |  |
-| memory | [Info.Memory](#payload.Info.Memory) |  |  |
-| node | [Info.Node](#payload.Info.Node) |  |  |
+| cpu | [Info.CPU](#payload.v1.Info.CPU) |  |  |
+| memory | [Info.Memory](#payload.v1.Info.Memory) |  |  |
+| node | [Info.Node](#payload.v1.Info.Node) |  |  |
 
 
 
 
 
 
-<a name="payload.Info.Pods"></a>
+<a name="payload.v1.Info.Pods"></a>
 
 ### Info.Pods
 
@@ -1131,14 +1054,14 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| pods | [Info.Pod](#payload.Info.Pod) | repeated |  |
+| pods | [Info.Pod](#payload.v1.Info.Pod) | repeated |  |
 
 
 
 
 
 
-<a name="payload.Insert"></a>
+<a name="payload.v1.Insert"></a>
 
 ### Insert
 
@@ -1148,7 +1071,7 @@
 
 
 
-<a name="payload.Insert.Config"></a>
+<a name="payload.v1.Insert.Config"></a>
 
 ### Insert.Config
 
@@ -1157,14 +1080,14 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | skip_strict_exist_check | [bool](#bool) |  |  |
-| filters | [Filter.Config](#payload.Filter.Config) |  |  |
+| filters | [Filter.Config](#payload.v1.Filter.Config) |  |  |
 
 
 
 
 
 
-<a name="payload.Insert.MultiRequest"></a>
+<a name="payload.v1.Insert.MultiRequest"></a>
 
 ### Insert.MultiRequest
 
@@ -1172,14 +1095,14 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| requests | [Insert.Request](#payload.Insert.Request) | repeated |  |
+| requests | [Insert.Request](#payload.v1.Insert.Request) | repeated |  |
 
 
 
 
 
 
-<a name="payload.Insert.Request"></a>
+<a name="payload.v1.Insert.Request"></a>
 
 ### Insert.Request
 
@@ -1187,15 +1110,15 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| vector | [Object.Vector](#payload.Object.Vector) |  |  |
-| config | [Insert.Config](#payload.Insert.Config) |  |  |
+| vector | [Object.Vector](#payload.v1.Object.Vector) |  |  |
+| config | [Insert.Config](#payload.v1.Insert.Config) |  |  |
 
 
 
 
 
 
-<a name="payload.Meta"></a>
+<a name="payload.v1.Meta"></a>
 
 ### Meta
 
@@ -1205,7 +1128,7 @@
 
 
 
-<a name="payload.Meta.Key"></a>
+<a name="payload.v1.Meta.Key"></a>
 
 ### Meta.Key
 
@@ -1220,7 +1143,7 @@
 
 
 
-<a name="payload.Meta.KeyVal"></a>
+<a name="payload.v1.Meta.KeyVal"></a>
 
 ### Meta.KeyVal
 
@@ -1236,7 +1159,7 @@
 
 
 
-<a name="payload.Meta.KeyVals"></a>
+<a name="payload.v1.Meta.KeyVals"></a>
 
 ### Meta.KeyVals
 
@@ -1244,14 +1167,14 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| kvs | [Meta.KeyVal](#payload.Meta.KeyVal) | repeated |  |
+| kvs | [Meta.KeyVal](#payload.v1.Meta.KeyVal) | repeated |  |
 
 
 
 
 
 
-<a name="payload.Meta.Keys"></a>
+<a name="payload.v1.Meta.Keys"></a>
 
 ### Meta.Keys
 
@@ -1266,7 +1189,7 @@
 
 
 
-<a name="payload.Meta.Val"></a>
+<a name="payload.v1.Meta.Val"></a>
 
 ### Meta.Val
 
@@ -1281,7 +1204,7 @@
 
 
 
-<a name="payload.Meta.Vals"></a>
+<a name="payload.v1.Meta.Vals"></a>
 
 ### Meta.Vals
 
@@ -1296,7 +1219,7 @@
 
 
 
-<a name="payload.Object"></a>
+<a name="payload.v1.Object"></a>
 
 ### Object
 
@@ -1306,7 +1229,7 @@
 
 
 
-<a name="payload.Object.Blob"></a>
+<a name="payload.v1.Object.Blob"></a>
 
 ### Object.Blob
 
@@ -1322,7 +1245,7 @@
 
 
 
-<a name="payload.Object.Distance"></a>
+<a name="payload.v1.Object.Distance"></a>
 
 ### Object.Distance
 
@@ -1338,7 +1261,7 @@
 
 
 
-<a name="payload.Object.ID"></a>
+<a name="payload.v1.Object.ID"></a>
 
 ### Object.ID
 
@@ -1353,7 +1276,7 @@
 
 
 
-<a name="payload.Object.IDs"></a>
+<a name="payload.v1.Object.IDs"></a>
 
 ### Object.IDs
 
@@ -1368,7 +1291,7 @@
 
 
 
-<a name="payload.Object.Location"></a>
+<a name="payload.v1.Object.Location"></a>
 
 ### Object.Location
 
@@ -1385,7 +1308,7 @@
 
 
 
-<a name="payload.Object.Locations"></a>
+<a name="payload.v1.Object.Locations"></a>
 
 ### Object.Locations
 
@@ -1393,14 +1316,14 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| locations | [Object.Location](#payload.Object.Location) | repeated |  |
+| locations | [Object.Location](#payload.v1.Object.Location) | repeated |  |
 
 
 
 
 
 
-<a name="payload.Object.Vector"></a>
+<a name="payload.v1.Object.Vector"></a>
 
 ### Object.Vector
 
@@ -1416,7 +1339,7 @@
 
 
 
-<a name="payload.Object.Vectors"></a>
+<a name="payload.v1.Object.Vectors"></a>
 
 ### Object.Vectors
 
@@ -1424,14 +1347,14 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| vectors | [Object.Vector](#payload.Object.Vector) | repeated |  |
+| vectors | [Object.Vector](#payload.v1.Object.Vector) | repeated |  |
 
 
 
 
 
 
-<a name="payload.Remove"></a>
+<a name="payload.v1.Remove"></a>
 
 ### Remove
 
@@ -1441,7 +1364,7 @@
 
 
 
-<a name="payload.Remove.Config"></a>
+<a name="payload.v1.Remove.Config"></a>
 
 ### Remove.Config
 
@@ -1456,7 +1379,7 @@
 
 
 
-<a name="payload.Remove.MultiRequest"></a>
+<a name="payload.v1.Remove.MultiRequest"></a>
 
 ### Remove.MultiRequest
 
@@ -1464,14 +1387,14 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| requests | [Remove.Request](#payload.Remove.Request) | repeated |  |
+| requests | [Remove.Request](#payload.v1.Remove.Request) | repeated |  |
 
 
 
 
 
 
-<a name="payload.Remove.Request"></a>
+<a name="payload.v1.Remove.Request"></a>
 
 ### Remove.Request
 
@@ -1479,15 +1402,15 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| id | [Object.ID](#payload.Object.ID) |  |  |
-| config | [Remove.Config](#payload.Remove.Config) |  |  |
+| id | [Object.ID](#payload.v1.Object.ID) |  |  |
+| config | [Remove.Config](#payload.v1.Remove.Config) |  |  |
 
 
 
 
 
 
-<a name="payload.Replication"></a>
+<a name="payload.v1.Replication"></a>
 
 ### Replication
 
@@ -1497,7 +1420,7 @@
 
 
 
-<a name="payload.Replication.Agents"></a>
+<a name="payload.v1.Replication.Agents"></a>
 
 ### Replication.Agents
 
@@ -1514,7 +1437,7 @@
 
 
 
-<a name="payload.Replication.Rebalance"></a>
+<a name="payload.v1.Replication.Rebalance"></a>
 
 ### Replication.Rebalance
 
@@ -1530,7 +1453,7 @@
 
 
 
-<a name="payload.Replication.Recovery"></a>
+<a name="payload.v1.Replication.Recovery"></a>
 
 ### Replication.Recovery
 
@@ -1545,7 +1468,7 @@
 
 
 
-<a name="payload.Search"></a>
+<a name="payload.v1.Search"></a>
 
 ### Search
 
@@ -1555,7 +1478,7 @@
 
 
 
-<a name="payload.Search.Config"></a>
+<a name="payload.v1.Search.Config"></a>
 
 ### Search.Config
 
@@ -1568,14 +1491,14 @@
 | radius | [float](#float) |  |  |
 | epsilon | [float](#float) |  |  |
 | timeout | [int64](#int64) |  |  |
-| filters | [Filter.Config](#payload.Filter.Config) |  |  |
+| filters | [Filter.Config](#payload.v1.Filter.Config) |  |  |
 
 
 
 
 
 
-<a name="payload.Search.IDRequest"></a>
+<a name="payload.v1.Search.IDRequest"></a>
 
 ### Search.IDRequest
 
@@ -1584,14 +1507,14 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | id | [string](#string) |  |  |
-| config | [Search.Config](#payload.Search.Config) |  |  |
+| config | [Search.Config](#payload.v1.Search.Config) |  |  |
 
 
 
 
 
 
-<a name="payload.Search.MultiIDRequest"></a>
+<a name="payload.v1.Search.MultiIDRequest"></a>
 
 ### Search.MultiIDRequest
 
@@ -1599,14 +1522,14 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| requests | [Search.IDRequest](#payload.Search.IDRequest) | repeated |  |
+| requests | [Search.IDRequest](#payload.v1.Search.IDRequest) | repeated |  |
 
 
 
 
 
 
-<a name="payload.Search.MultiRequest"></a>
+<a name="payload.v1.Search.MultiRequest"></a>
 
 ### Search.MultiRequest
 
@@ -1614,14 +1537,14 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| requests | [Search.Request](#payload.Search.Request) | repeated |  |
+| requests | [Search.Request](#payload.v1.Search.Request) | repeated |  |
 
 
 
 
 
 
-<a name="payload.Search.ObjectRequest"></a>
+<a name="payload.v1.Search.ObjectRequest"></a>
 
 ### Search.ObjectRequest
 
@@ -1630,14 +1553,14 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | object | [bytes](#bytes) |  |  |
-| config | [Search.Config](#payload.Search.Config) |  |  |
+| config | [Search.Config](#payload.v1.Search.Config) |  |  |
 
 
 
 
 
 
-<a name="payload.Search.Request"></a>
+<a name="payload.v1.Search.Request"></a>
 
 ### Search.Request
 
@@ -1646,14 +1569,14 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | vector | [float](#float) | repeated |  |
-| config | [Search.Config](#payload.Search.Config) |  |  |
+| config | [Search.Config](#payload.v1.Search.Config) |  |  |
 
 
 
 
 
 
-<a name="payload.Search.Response"></a>
+<a name="payload.v1.Search.Response"></a>
 
 ### Search.Response
 
@@ -1662,14 +1585,14 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | request_id | [string](#string) |  |  |
-| results | [Object.Distance](#payload.Object.Distance) | repeated |  |
+| results | [Object.Distance](#payload.v1.Object.Distance) | repeated |  |
 
 
 
 
 
 
-<a name="payload.Search.Responses"></a>
+<a name="payload.v1.Search.Responses"></a>
 
 ### Search.Responses
 
@@ -1677,14 +1600,14 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| responses | [Search.Response](#payload.Search.Response) | repeated |  |
+| responses | [Search.Response](#payload.v1.Search.Response) | repeated |  |
 
 
 
 
 
 
-<a name="payload.Update"></a>
+<a name="payload.v1.Update"></a>
 
 ### Update
 
@@ -1694,7 +1617,7 @@
 
 
 
-<a name="payload.Update.Config"></a>
+<a name="payload.v1.Update.Config"></a>
 
 ### Update.Config
 
@@ -1703,14 +1626,14 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | skip_strict_exist_check | [bool](#bool) |  |  |
-| filters | [Filter.Config](#payload.Filter.Config) |  |  |
+| filters | [Filter.Config](#payload.v1.Filter.Config) |  |  |
 
 
 
 
 
 
-<a name="payload.Update.MultiRequest"></a>
+<a name="payload.v1.Update.MultiRequest"></a>
 
 ### Update.MultiRequest
 
@@ -1718,14 +1641,14 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| requests | [Update.Request](#payload.Update.Request) | repeated |  |
+| requests | [Update.Request](#payload.v1.Update.Request) | repeated |  |
 
 
 
 
 
 
-<a name="payload.Update.Request"></a>
+<a name="payload.v1.Update.Request"></a>
 
 ### Update.Request
 
@@ -1733,15 +1656,15 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| vector | [Object.Vector](#payload.Object.Vector) |  |  |
-| config | [Update.Config](#payload.Update.Config) |  |  |
+| vector | [Object.Vector](#payload.v1.Object.Vector) |  |  |
+| config | [Update.Config](#payload.v1.Update.Config) |  |  |
 
 
 
 
 
 
-<a name="payload.Upsert"></a>
+<a name="payload.v1.Upsert"></a>
 
 ### Upsert
 
@@ -1751,7 +1674,7 @@
 
 
 
-<a name="payload.Upsert.Config"></a>
+<a name="payload.v1.Upsert.Config"></a>
 
 ### Upsert.Config
 
@@ -1760,14 +1683,14 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | skip_strict_exist_check | [bool](#bool) |  |  |
-| filters | [Filter.Config](#payload.Filter.Config) |  |  |
+| filters | [Filter.Config](#payload.v1.Filter.Config) |  |  |
 
 
 
 
 
 
-<a name="payload.Upsert.MultiRequest"></a>
+<a name="payload.v1.Upsert.MultiRequest"></a>
 
 ### Upsert.MultiRequest
 
@@ -1775,14 +1698,14 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| requests | [Upsert.Request](#payload.Upsert.Request) | repeated |  |
+| requests | [Upsert.Request](#payload.v1.Upsert.Request) | repeated |  |
 
 
 
 
 
 
-<a name="payload.Upsert.Request"></a>
+<a name="payload.v1.Upsert.Request"></a>
 
 ### Upsert.Request
 
@@ -1790,8 +1713,8 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| vector | [Object.Vector](#payload.Object.Vector) |  |  |
-| config | [Upsert.Config](#payload.Upsert.Config) |  |  |
+| vector | [Object.Vector](#payload.v1.Object.Vector) |  |  |
+| config | [Upsert.Config](#payload.v1.Upsert.Config) |  |  |
 
 
 
@@ -1820,24 +1743,24 @@
  
 
 
-<a name="filter.Filter"></a>
+<a name="vald.v1.Filter"></a>
 
 ### Filter
 
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| SearchObject | [.payload.Search.ObjectRequest](#payload.Search.ObjectRequest) | [.payload.Search.Response](#payload.Search.Response) |  |
-| StreamSearchObject | [.payload.Search.ObjectRequest](#payload.Search.ObjectRequest) stream | [.payload.Search.Response](#payload.Search.Response) stream |  |
-| InsertObject | [.payload.Object.Blob](#payload.Object.Blob) | [.payload.Object.Location](#payload.Object.Location) |  |
-| StreamInsertObject | [.payload.Object.Blob](#payload.Object.Blob) stream | [.payload.Object.Location](#payload.Object.Location) stream |  |
-| MultiInsertObject | [.payload.Object.Blob](#payload.Object.Blob) | [.payload.Object.Locations](#payload.Object.Locations) |  |
-| UpdateObject | [.payload.Object.Blob](#payload.Object.Blob) | [.payload.Object.Location](#payload.Object.Location) |  |
-| StreamUpdateObject | [.payload.Object.Blob](#payload.Object.Blob) stream | [.payload.Object.Location](#payload.Object.Location) stream |  |
-| MultiUpdateObject | [.payload.Object.Blob](#payload.Object.Blob) | [.payload.Object.Locations](#payload.Object.Locations) |  |
-| UpsertObject | [.payload.Object.Blob](#payload.Object.Blob) | [.payload.Object.Location](#payload.Object.Location) |  |
-| StreamUpsertObject | [.payload.Object.Blob](#payload.Object.Blob) stream | [.payload.Object.Location](#payload.Object.Location) stream |  |
-| MultiUpsertObject | [.payload.Object.Blob](#payload.Object.Blob) | [.payload.Object.Locations](#payload.Object.Locations) |  |
+| SearchObject | [.payload.v1.Search.ObjectRequest](#payload.v1.Search.ObjectRequest) | [.payload.v1.Search.Response](#payload.v1.Search.Response) |  |
+| StreamSearchObject | [.payload.v1.Search.ObjectRequest](#payload.v1.Search.ObjectRequest) stream | [.payload.v1.Search.Response](#payload.v1.Search.Response) stream |  |
+| InsertObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
+| StreamInsertObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
+| MultiInsertObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
+| UpdateObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
+| StreamUpdateObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
+| MultiUpdateObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
+| UpsertObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
+| StreamUpsertObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
+| MultiUpsertObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
 
  
 
@@ -1856,16 +1779,16 @@
  
 
 
-<a name="vald.Insert"></a>
+<a name="vald.v1.Insert"></a>
 
 ### Insert
 
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| Insert | [.payload.Insert.Request](#payload.Insert.Request) | [.payload.Object.Location](#payload.Object.Location) |  |
-| StreamInsert | [.payload.Insert.Request](#payload.Insert.Request) stream | [.payload.Object.Location](#payload.Object.Location) stream |  |
-| MultiInsert | [.payload.Insert.MultiRequest](#payload.Insert.MultiRequest) | [.payload.Object.Locations](#payload.Object.Locations) |  |
+| Insert | [.payload.v1.Insert.Request](#payload.v1.Insert.Request) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
+| StreamInsert | [.payload.v1.Insert.Request](#payload.v1.Insert.Request) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
+| MultiInsert | [.payload.v1.Insert.MultiRequest](#payload.v1.Insert.MultiRequest) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
 
  
 
@@ -1884,16 +1807,16 @@
  
 
 
-<a name="vald.Object"></a>
+<a name="vald.v1.Object"></a>
 
 ### Object
 
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| Exists | [.payload.Object.ID](#payload.Object.ID) | [.payload.Object.ID](#payload.Object.ID) |  |
-| GetObject | [.payload.Object.ID](#payload.Object.ID) | [.payload.Object.Vector](#payload.Object.Vector) |  |
-| StreamGetObject | [.payload.Object.ID](#payload.Object.ID) stream | [.payload.Object.Vector](#payload.Object.Vector) stream |  |
+| Exists | [.payload.v1.Object.ID](#payload.v1.Object.ID) | [.payload.v1.Object.ID](#payload.v1.Object.ID) |  |
+| GetObject | [.payload.v1.Object.ID](#payload.v1.Object.ID) | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) |  |
+| StreamGetObject | [.payload.v1.Object.ID](#payload.v1.Object.ID) stream | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) stream |  |
 
  
 
@@ -1912,16 +1835,16 @@
  
 
 
-<a name="vald.Remove"></a>
+<a name="vald.v1.Remove"></a>
 
 ### Remove
 
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| Remove | [.payload.Remove.Request](#payload.Remove.Request) | [.payload.Object.Location](#payload.Object.Location) |  |
-| StreamRemove | [.payload.Remove.Request](#payload.Remove.Request) stream | [.payload.Object.Location](#payload.Object.Location) stream |  |
-| MultiRemove | [.payload.Remove.MultiRequest](#payload.Remove.MultiRequest) | [.payload.Object.Locations](#payload.Object.Locations) |  |
+| Remove | [.payload.v1.Remove.Request](#payload.v1.Remove.Request) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
+| StreamRemove | [.payload.v1.Remove.Request](#payload.v1.Remove.Request) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
+| MultiRemove | [.payload.v1.Remove.MultiRequest](#payload.v1.Remove.MultiRequest) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
 
  
 
@@ -1940,19 +1863,19 @@
  
 
 
-<a name="vald.Search"></a>
+<a name="vald.v1.Search"></a>
 
 ### Search
 
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| Search | [.payload.Search.Request](#payload.Search.Request) | [.payload.Search.Response](#payload.Search.Response) |  |
-| SearchByID | [.payload.Search.IDRequest](#payload.Search.IDRequest) | [.payload.Search.Response](#payload.Search.Response) |  |
-| StreamSearch | [.payload.Search.Request](#payload.Search.Request) stream | [.payload.Search.Response](#payload.Search.Response) stream |  |
-| StreamSearchByID | [.payload.Search.IDRequest](#payload.Search.IDRequest) stream | [.payload.Search.Response](#payload.Search.Response) stream |  |
-| MultiSearch | [.payload.Search.MultiRequest](#payload.Search.MultiRequest) | [.payload.Search.Responses](#payload.Search.Responses) |  |
-| MultiSearchByID | [.payload.Search.MultiIDRequest](#payload.Search.MultiIDRequest) | [.payload.Search.Responses](#payload.Search.Responses) |  |
+| Search | [.payload.v1.Search.Request](#payload.v1.Search.Request) | [.payload.v1.Search.Response](#payload.v1.Search.Response) |  |
+| SearchByID | [.payload.v1.Search.IDRequest](#payload.v1.Search.IDRequest) | [.payload.v1.Search.Response](#payload.v1.Search.Response) |  |
+| StreamSearch | [.payload.v1.Search.Request](#payload.v1.Search.Request) stream | [.payload.v1.Search.Response](#payload.v1.Search.Response) stream |  |
+| StreamSearchByID | [.payload.v1.Search.IDRequest](#payload.v1.Search.IDRequest) stream | [.payload.v1.Search.Response](#payload.v1.Search.Response) stream |  |
+| MultiSearch | [.payload.v1.Search.MultiRequest](#payload.v1.Search.MultiRequest) | [.payload.v1.Search.Responses](#payload.v1.Search.Responses) |  |
+| MultiSearchByID | [.payload.v1.Search.MultiIDRequest](#payload.v1.Search.MultiIDRequest) | [.payload.v1.Search.Responses](#payload.v1.Search.Responses) |  |
 
  
 
@@ -1971,16 +1894,16 @@
  
 
 
-<a name="vald.Update"></a>
+<a name="vald.v1.Update"></a>
 
 ### Update
 
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| Update | [.payload.Update.Request](#payload.Update.Request) | [.payload.Object.Location](#payload.Object.Location) |  |
-| StreamUpdate | [.payload.Update.Request](#payload.Update.Request) stream | [.payload.Object.Location](#payload.Object.Location) stream |  |
-| MultiUpdate | [.payload.Update.MultiRequest](#payload.Update.MultiRequest) | [.payload.Object.Locations](#payload.Object.Locations) |  |
+| Update | [.payload.v1.Update.Request](#payload.v1.Update.Request) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
+| StreamUpdate | [.payload.v1.Update.Request](#payload.v1.Update.Request) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
+| MultiUpdate | [.payload.v1.Update.MultiRequest](#payload.v1.Update.MultiRequest) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
 
  
 
@@ -1999,16 +1922,16 @@
  
 
 
-<a name="vald.Upsert"></a>
+<a name="vald.v1.Upsert"></a>
 
 ### Upsert
 
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| Upsert | [.payload.Upsert.Request](#payload.Upsert.Request) | [.payload.Object.Location](#payload.Object.Location) |  |
-| StreamUpsert | [.payload.Upsert.Request](#payload.Upsert.Request) stream | [.payload.Object.Location](#payload.Object.Location) stream |  |
-| MultiUpsert | [.payload.Upsert.MultiRequest](#payload.Upsert.MultiRequest) | [.payload.Object.Locations](#payload.Object.Locations) |  |
+| Upsert | [.payload.v1.Upsert.Request](#payload.v1.Upsert.Request) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
+| StreamUpsert | [.payload.v1.Upsert.Request](#payload.v1.Upsert.Request) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
+| MultiUpsert | [.payload.v1.Upsert.MultiRequest](#payload.v1.Upsert.MultiRequest) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
 
  
 

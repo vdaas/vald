@@ -16,7 +16,7 @@
 
 syntax = "proto3";
 
-package discoverer;
+package discoverer.v1;
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/discoverer";
 option java_multiple_files = true;
@@ -29,13 +29,13 @@ import "google/api/annotations.proto";
 
 service Discoverer {
 
-  rpc Pods(payload.Discoverer.Request) returns (payload.Info.Pods) {
+  rpc Pods(payload.v1.Discoverer.Request) returns (payload.v1.Info.Pods) {
     option (google.api.http) = {
       post : "/discover/pods"
       body : "*"
     };
   }
-  rpc Nodes(payload.Discoverer.Request) returns (payload.Info.Nodes) {
+  rpc Nodes(payload.v1.Discoverer.Request) returns (payload.v1.Info.Nodes) {
     option (google.api.http) = {
       post : "/discover/nodes"
       body : "*"

@@ -18,7 +18,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/payloadObjectLocation"
+              "$ref": "#/definitions/v1ObjectLocation"
             }
           },
           "default": {
@@ -82,7 +82,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/payloadObjectLocation"
+              "$ref": "#/definitions/v1ObjectLocation"
             }
           },
           "default": {
@@ -114,7 +114,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/payloadObjectLocation"
+              "$ref": "#/definitions/v1ObjectLocation"
             }
           },
           "default": {
@@ -173,7 +173,7 @@
           "format": "byte"
         },
         "config": {
-          "$ref": "#/definitions/payloadSearchConfig"
+          "$ref": "#/definitions/v1SearchConfig"
         }
       }
     },
@@ -188,72 +188,6 @@
           "items": {
             "$ref": "#/definitions/ObjectDistance"
           }
-        }
-      }
-    },
-    "payloadFilterConfig": {
-      "type": "object",
-      "properties": {
-        "targets": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "payloadObjectLocation": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "uuid": {
-          "type": "string"
-        },
-        "ips": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "payloadObjectLocations": {
-      "type": "object",
-      "properties": {
-        "locations": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/payloadObjectLocation"
-          }
-        }
-      }
-    },
-    "payloadSearchConfig": {
-      "type": "object",
-      "properties": {
-        "requestId": {
-          "type": "string"
-        },
-        "num": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "radius": {
-          "type": "number",
-          "format": "float"
-        },
-        "epsilon": {
-          "type": "number",
-          "format": "float"
-        },
-        "timeout": {
-          "type": "string",
-          "format": "int64"
-        },
-        "filters": {
-          "$ref": "#/definitions/payloadFilterConfig"
         }
       }
     },
@@ -312,6 +246,72 @@
           "items": {
             "$ref": "#/definitions/protobufAny"
           }
+        }
+      }
+    },
+    "v1FilterConfig": {
+      "type": "object",
+      "properties": {
+        "targets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1ObjectLocation": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "uuid": {
+          "type": "string"
+        },
+        "ips": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1ObjectLocations": {
+      "type": "object",
+      "properties": {
+        "locations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1ObjectLocation"
+          }
+        }
+      }
+    },
+    "v1SearchConfig": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string"
+        },
+        "num": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "radius": {
+          "type": "number",
+          "format": "float"
+        },
+        "epsilon": {
+          "type": "number",
+          "format": "float"
+        },
+        "timeout": {
+          "type": "string",
+          "format": "int64"
+        },
+        "filters": {
+          "$ref": "#/definitions/v1FilterConfig"
         }
       }
     }

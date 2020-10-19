@@ -16,7 +16,7 @@
 
 syntax = "proto3";
 
-package ingress_filter;
+package filter.ingress.v1;
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/filter/ingress";
 option java_multiple_files = true;
@@ -28,22 +28,22 @@ import "google/api/annotations.proto";
 
 
 service IngressFilter {
-  rpc GenVector(payload.Object.Blob) returns (payload.Object.Vector) {
+  rpc GenVector(payload.v1.Object.Blob) returns (payload.v1.Object.Vector) {
     option (google.api.http) = {
       post : "/object"
       body : "*"
     };
   }
-  rpc StreamGenVector(stream payload.Object.Blob)
-      returns (stream payload.Object.Vector) {}
+  rpc StreamGenVector(stream payload.v1.Object.Blob)
+      returns (stream payload.v1.Object.Vector) {}
 
-  rpc FilterVector(payload.Object.Vector) returns (payload.Object.Vector) {
+  rpc FilterVector(payload.v1.Object.Vector) returns (payload.v1.Object.Vector) {
     option (google.api.http) = {
       post : "/vector"
       body : "*"
     };
 
   }
-  rpc StreamFilterVector(stream payload.Object.Vector)
-      returns (stream payload.Object.Vector) {}
+  rpc StreamFilterVector(stream payload.v1.Object.Vector)
+      returns (stream payload.v1.Object.Vector) {}
 }

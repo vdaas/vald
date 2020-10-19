@@ -20,50 +20,14 @@
         }
       }
     },
-    "payloadObjectLocation": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "uuid": {
-          "type": "string"
-        },
-        "ips": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "payloadObjectLocations": {
-      "type": "object",
-      "properties": {
-        "locations": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/payloadObjectLocation"
-          }
-        }
-      }
-    },
-    "payloadRemoveConfig": {
-      "type": "object",
-      "properties": {
-        "skipStrictExistCheck": {
-          "type": "boolean"
-        }
-      }
-    },
-    "payloadRemoveRequest": {
+    "payloadv1RemoveRequest": {
       "type": "object",
       "properties": {
         "id": {
           "$ref": "#/definitions/ObjectID"
         },
         "config": {
-          "$ref": "#/definitions/payloadRemoveConfig"
+          "$ref": "#/definitions/v1RemoveConfig"
         }
       }
     },
@@ -122,6 +86,42 @@
           "items": {
             "$ref": "#/definitions/protobufAny"
           }
+        }
+      }
+    },
+    "v1ObjectLocation": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "uuid": {
+          "type": "string"
+        },
+        "ips": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1ObjectLocations": {
+      "type": "object",
+      "properties": {
+        "locations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1ObjectLocation"
+          }
+        }
+      }
+    },
+    "v1RemoveConfig": {
+      "type": "object",
+      "properties": {
+        "skipStrictExistCheck": {
+          "type": "boolean"
         }
       }
     }

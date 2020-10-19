@@ -18,7 +18,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/payloadEmpty"
+              "$ref": "#/definitions/v1Empty"
             }
           },
           "default": {
@@ -50,7 +50,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/payloadEmpty"
+              "$ref": "#/definitions/v1Empty"
             }
           },
           "default": {
@@ -80,7 +80,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/payloadEmpty"
+              "$ref": "#/definitions/v1Empty"
             }
           },
           "default": {
@@ -112,7 +112,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/payloadEmpty"
+              "$ref": "#/definitions/v1Empty"
             }
           },
           "default": {
@@ -174,7 +174,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/payloadEmpty"
+              "$ref": "#/definitions/v1Empty"
             }
           },
           "default": {
@@ -206,7 +206,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/payloadEmpty"
+              "$ref": "#/definitions/v1Empty"
             }
           },
           "default": {
@@ -339,9 +339,6 @@
         }
       }
     },
-    "payloadEmpty": {
-      "type": "object"
-    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -374,6 +371,9 @@
           }
         }
       }
+    },
+    "v1Empty": {
+      "type": "object"
     }
   }
 }

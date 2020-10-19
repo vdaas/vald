@@ -18,7 +18,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/payloadEmpty"
+              "$ref": "#/definitions/v1Empty"
             }
           },
           "default": {
@@ -50,7 +50,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/payloadEmpty"
+              "$ref": "#/definitions/v1Empty"
             }
           },
           "default": {
@@ -80,7 +80,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/payloadEmpty"
+              "$ref": "#/definitions/v1Empty"
             }
           },
           "default": {
@@ -112,7 +112,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/payloadEmpty"
+              "$ref": "#/definitions/v1Empty"
             }
           },
           "default": {
@@ -174,7 +174,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/payloadEmpty"
+              "$ref": "#/definitions/v1Empty"
             }
           },
           "default": {
@@ -190,7 +190,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/payloadBackupMetaVector"
+              "$ref": "#/definitions/v1BackupMetaVector"
             }
           }
         ],
@@ -206,7 +206,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/payloadEmpty"
+              "$ref": "#/definitions/v1Empty"
             }
           },
           "default": {
@@ -222,7 +222,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/payloadBackupMetaVectors"
+              "$ref": "#/definitions/v1BackupMetaVectors"
             }
           }
         ],
@@ -238,7 +238,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/payloadBackupMetaVector"
+              "$ref": "#/definitions/v1BackupMetaVector"
             }
           },
           "default": {
@@ -310,41 +310,6 @@
         }
       }
     },
-    "payloadBackupMetaVector": {
-      "type": "object",
-      "properties": {
-        "uuid": {
-          "type": "string"
-        },
-        "vector": {
-          "type": "array",
-          "items": {
-            "type": "number",
-            "format": "float"
-          }
-        },
-        "ips": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "payloadBackupMetaVectors": {
-      "type": "object",
-      "properties": {
-        "vectors": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/payloadBackupMetaVector"
-          }
-        }
-      }
-    },
-    "payloadEmpty": {
-      "type": "object"
-    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -377,6 +342,41 @@
           }
         }
       }
+    },
+    "v1BackupMetaVector": {
+      "type": "object",
+      "properties": {
+        "uuid": {
+          "type": "string"
+        },
+        "vector": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "float"
+          }
+        },
+        "ips": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1BackupMetaVectors": {
+      "type": "object",
+      "properties": {
+        "vectors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1BackupMetaVector"
+          }
+        }
+      }
+    },
+    "v1Empty": {
+      "type": "object"
     }
   }
 }

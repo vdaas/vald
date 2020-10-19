@@ -16,7 +16,7 @@
 
 syntax = "proto3";
 
-package vald;
+package vald.v1;
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/vald";
 option java_multiple_files = true;
@@ -29,12 +29,12 @@ import "google/api/annotations.proto";
 
 service Object {
 
-  rpc Exists(payload.Object.ID) returns (payload.Object.ID) {
+  rpc Exists(payload.v1.Object.ID) returns (payload.v1.Object.ID) {
     option (google.api.http).get = "/exists/{id}";
   }
-  rpc GetObject(payload.Object.ID) returns (payload.Object.Vector) {
+  rpc GetObject(payload.v1.Object.ID) returns (payload.v1.Object.Vector) {
     option (google.api.http).get = "/object/{id}";
   }
-  rpc StreamGetObject(stream payload.Object.ID)
-      returns (stream payload.Object.Vector) {}
+  rpc StreamGetObject(stream payload.v1.Object.ID)
+      returns (stream payload.v1.Object.Vector) {}
 }

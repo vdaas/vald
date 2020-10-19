@@ -16,7 +16,7 @@
 
 syntax = "proto3";
 
-package vald;
+package vald.v1;
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/vald";
 option java_multiple_files = true;
@@ -29,14 +29,14 @@ import "google/api/annotations.proto";
 
 service Upsert {
 
-  rpc Upsert(payload.Upsert.Request) returns (payload.Object.Location) {
+  rpc Upsert(payload.v1.Upsert.Request) returns (payload.v1.Object.Location) {
     option (google.api.http) = {
       post : "/upsert"
       body : "*"
     };
 
   }
-  rpc StreamUpsert(stream payload.Upsert.Request)
-      returns (stream payload.Object.Location) {}
-  rpc MultiUpsert(payload.Upsert.MultiRequest) returns (payload.Object.Locations) {}
+  rpc StreamUpsert(stream payload.v1.Upsert.Request)
+      returns (stream payload.v1.Object.Location) {}
+  rpc MultiUpsert(payload.v1.Upsert.MultiRequest) returns (payload.v1.Object.Locations) {}
 }

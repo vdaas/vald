@@ -16,7 +16,7 @@
 
 syntax = "proto3";
 
-package vald;
+package vald.v1;
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/vald";
 option java_multiple_files = true;
@@ -29,14 +29,14 @@ import "google/api/annotations.proto";
 
 service Insert {
 
-  rpc Insert(payload.Insert.Request) returns (payload.Object.Location) {
+  rpc Insert(payload.v1.Insert.Request) returns (payload.v1.Object.Location) {
     option (google.api.http) = {
       post : "/insert"
       body : "*"
     };
 
   }
-  rpc StreamInsert(stream payload.Insert.Request)
-      returns (stream payload.Object.Location) {}
-  rpc MultiInsert(payload.Insert.MultiRequest) returns (payload.Object.Locations) {}
+  rpc StreamInsert(stream payload.v1.Insert.Request)
+      returns (stream payload.v1.Object.Location) {}
+  rpc MultiInsert(payload.v1.Insert.MultiRequest) returns (payload.v1.Object.Locations) {}
 }

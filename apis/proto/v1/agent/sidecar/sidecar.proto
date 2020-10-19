@@ -16,7 +16,7 @@
 
 syntax = "proto3";
 
-package sidecar;
+package sidecar.v1;
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/agent/sidecar";
 option java_multiple_files = true;
