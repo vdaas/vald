@@ -18,7 +18,7 @@
 package grpc
 
 import (
-	"github.com/vdaas/vald/apis/grpc/agent/sidecar"
+	"github.com/vdaas/vald/apis/grpc/v1/agent/sidecar"
 	"github.com/vdaas/vald/pkg/agent/sidecar/service/observer"
 )
 

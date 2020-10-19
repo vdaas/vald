@@ -19,7 +19,7 @@ package sidecar
 import (
 	"context"
 
-	"github.com/vdaas/vald/apis/grpc/agent/sidecar"
+	"github.com/vdaas/vald/apis/grpc/v1/agent/sidecar"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/session"
