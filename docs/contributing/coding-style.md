@@ -558,6 +558,73 @@ func New(opts ...Option) (Server, error) {
 }
 ```
 
+### Constructor
+
+In Vald, the functional option pattern is widely used when we create an object.
+
+When setting the value with the functional option, the value is validated inside the option method.
+
+However, if we forget to set the required fields when creating the object, it may not be detected.
+
+Therefore, we strongly suggest to validate the object at the end of initialization.
+
+If we forgot to set the option method, an error will be returned so we can handle it properly.
+
+```go
+func func New(opts ...Option) (Server, error) {
+    srv := new(server)
+    for _, opt := range append(defaultOpts, opts...) {
+        if err := opt(srv); err != nil {
+            werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+
+            e := new(errors.ErrCriticalOption)
+			if errors.As(err, &e) {
+                log.Error(werr)
+                return nil, werr
+            }
+            log.Warn(werr)
+        }
+    }
+
+    if srv.eg == nil {
+        return nil, errors.NewErrInvalidOption("eg", srv.eg)
+    }
+
+    return srv, nil
+}
+
+```
+
+We also recommend that you use the default options and the unexported feature option pattan to initialize objects that are not set externally and are only used internally.
+
+```go
+var defaultOpts = []Option {
+    func(s *server) error {
+        s.ctxio = io.New()
+        return nil
+    },
+}
+
+func func New(opts ...Option) (Server, error) {
+    srv := new(server)
+    for _, opt := range append(defaultOpts, opts...) {
+        if err := opt(srv); err != nil {
+            werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+
+            e := new(errors.ErrCriticalOption)
+			if errors.As(err, &e) {
+                log.Error(werr)
+                return nil, werr
+            }
+            log.Warn(werr)
+        }
+    }
+
+    return srv, nil
+}
+
+```
+
 ## Program comments
 
 Program comments make easier to understand the source code. We suggest not to write many comments inside the source code unless the source code is very complicated and confusing; otherwise we should divide the source code into methods to keep the readability and usability of the source code.
