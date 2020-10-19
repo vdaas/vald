@@ -101,13 +101,21 @@ type objectType int
 type distanceType int
 
 const (
+	// -------------------------------------------------------------
+	// Object Type Definition
+	// -------------------------------------------------------------
 	// ObjectNone is unknown object type
 	ObjectNone objectType = iota
 	// Uint8 is 8bit unsigned integer
 	Uint8
 	// Float is 32bit floating point number
 	Float
+	// -------------------------------------------------------------
 
+
+	// -------------------------------------------------------------
+	// Distance Type Definition
+	// -------------------------------------------------------------
 	// DistanceNone is unknown distance type
 	DistanceNone distanceType = iota - 1
 	// L1 is l1 norm
@@ -126,6 +134,8 @@ const (
 	NormalizedCosine
 	// Jaccard is jaccard distance
 	Jaccard
+	// -------------------------------------------------------------
+
 
 	// ErrorCode is false
 	ErrorCode = C._Bool(false)
