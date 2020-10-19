@@ -282,22 +282,23 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) error {
 		}
 	}()
 	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Object_Vector) },
+		func() interface{} { return new(payload.Insert_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			return s.Insert(ctx, data.(*payload.Insert_Request))
 		})
 }
 
-func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Object_Locations, err error) {
+func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequest) (res *payload.Object_Locations, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".MultiInsert")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	uuids := make([]string, 0, len(vecs.Vectors))
-	vmap := make(map[string][]float32, len(vecs.GetVectors()))
-	for _, vec := range vecs.GetVectors() {
+	uuids := make([]string, 0, len(reqs.GetRequests()))
+	vmap := make(map[string][]float32, len(reqs.GetRequests()))
+	for _, req := range reqs.GetRequests() {
+		vec := req.GetVector()
 		vmap[vec.GetId()] = vec.GetVector()
 		uuids = append(uuids, vec.GetId())
 	}
@@ -312,13 +313,14 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 	return s.newLocations(uuids...), nil
 }
 
-func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *payload.Object_Location, err error) {
+func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".Update")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
+	vec := req.GetVector()
 	err = s.ngt.Update(vec.GetId(), vec.GetVector())
 	if err != nil {
 		log.Errorf("[Update]\tUnknown error\t%+v", err)
@@ -330,7 +332,7 @@ func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *p
 	return s.newLocation(vec.GetId()), nil
 }
 
-func (s *server) StreamUpdate(stream vald.Vald_StreamUpdateServer) error {
+func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) error {
 	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamUpdate")
 	defer func() {
 		if span != nil {
@@ -338,13 +340,13 @@ func (s *server) StreamUpdate(stream vald.Vald_StreamUpdateServer) error {
 		}
 	}()
 	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Object_Vector) },
+		func() interface{} { return new(payload.Update_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			return s.Update(ctx, data.(*payload.Object_Vector))
+			return s.Update(ctx, data.(*payload.Update_Request))
 		})
 }
 
-func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Object_Locations, err error) {
+func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequest) (res *payload.Object_Locations, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".MultiUpdate")
 	defer func() {
 		if span != nil {
@@ -352,9 +354,10 @@ func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) 
 		}
 	}()
 
-	uuids := make([]string, 0, len(vecs.Vectors))
-	vmap := make(map[string][]float32, len(vecs.GetVectors()))
-	for _, vec := range vecs.GetVectors() {
+	uuids := make([]string, 0, len(reqs.GetRequests()))
+	vmap := make(map[string][]float32, len(reqs.GetRequests()))
+	for _, req := range reqs.GetRequests() {
+		vec := req.GetVector()
 		vmap[vec.GetId()] = vec.GetVector()
 		uuids = append(uuids, vec.GetId())
 	}
@@ -370,7 +373,7 @@ func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) 
 	return s.newLocations(uuids...), nil
 }
 
-func (s *server) Upsert(ctx context.Context, vec *payload.Object_Vector) (*payload.Object_Location, error) {
+func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (*payload.Object_Location, error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".Upsert")
 	defer func() {
 		if span != nil {
@@ -378,14 +381,18 @@ func (s *server) Upsert(ctx context.Context, vec *payload.Object_Vector) (*paylo
 		}
 	}()
 
-	_, exists := s.ngt.Exists(vec.GetId())
+	_, exists := s.ngt.Exists(req.GetVector().GetId())
 	if exists {
-		return s.Update(ctx, vec)
+		return s.Update(ctx, &payload.Update_Request{
+			Vector: req.GetVector(),
+		})
 	}
-	return s.Insert(ctx, vec)
+	return s.Insert(ctx, &payload.Insert_Request{
+		Vector: req.GetVector(),
+	})
 }
 
-func (s *server) StreamUpsert(stream vald.Vald_StreamUpsertServer) error {
+func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) error {
 	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamUpsert")
 	defer func() {
 		if span != nil {
@@ -393,13 +400,13 @@ func (s *server) StreamUpsert(stream vald.Vald_StreamUpsertServer) error {
 		}
 	}()
 	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Object_Vector) },
+		func() interface{} { return new(payload.Upsert_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			return s.Upsert(ctx, data.(*payload.Object_Vector))
+			return s.Upsert(ctx, data.(*payload.Upsert_Request))
 		})
 }
 
-func (s *server) MultiUpsert(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Object_Locations, err error) {
+func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequest) (res *payload.Object_Locations, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".MultiUpsert")
 	defer func() {
 		if span != nil {
@@ -407,15 +414,20 @@ func (s *server) MultiUpsert(ctx context.Context, vecs *payload.Object_Vectors) 
 		}
 	}()
 
-	insertVecs := make([]*payload.Object_Vector, 0, len(vecs.GetVectors()))
-	updateVecs := make([]*payload.Object_Vector, 0, len(vecs.GetVectors()))
+	insertReqs := make([]*payload.Insert_Request, 0, len(reqs.GetRequests()))
+	updateReqs := make([]*payload.Update_Request, 0, len(reqs.GetRequests()))
 
-	for _, vec := range vecs.GetVectors() {
+	for _, req := range reqs.GetRequests() {
+		vec := req.GetVector()
 		_, exists := s.ngt.Exists(vec.GetId())
 		if exists {
-			updateVecs = append(updateVecs, vec)
+			updateReqs = append(updateReqs, &payload.Update_Request{
+				Vector: vec,
+			})
 		} else {
-			insertVecs = append(insertVecs, vec)
+			insertReqs = append(insertReqs, &payload.Insert_Request{
+				Vector: vec,
+			})
 		}
 	}
 
@@ -424,9 +436,9 @@ func (s *server) MultiUpsert(ctx context.Context, vecs *payload.Object_Vectors) 
 	eg, ectx := errgroup.New(ctx)
 	eg.Go(safety.RecoverFunc(func() error {
 		var err error
-		if len(updateVecs) > 0 {
-			ures, err = s.MultiUpdate(ectx, &payload.Object_Vectors{
-				Vectors: updateVecs,
+		if len(updateReqs) > 0 {
+			ures, err = s.MultiUpdate(ectx, &payload.Update_MultiRequest{
+				Requests: updateReqs,
 			})
 		}
 		return err
@@ -434,9 +446,9 @@ func (s *server) MultiUpsert(ctx context.Context, vecs *payload.Object_Vectors) 
 
 	eg.Go(safety.RecoverFunc(func() error {
 		var err error
-		if len(insertVecs) > 0 {
-			ires, err = s.MultiInsert(ectx, &payload.Object_Vectors{
-				Vectors: insertVecs,
+		if len(insertReqs) > 0 {
+			ires, err = s.MultiInsert(ectx, &payload.Insert_MultiRequest{
+				Requests: insertReqs,
 			})
 		}
 		return err
@@ -451,13 +463,14 @@ func (s *server) MultiUpsert(ctx context.Context, vecs *payload.Object_Vectors) 
 	}, nil
 }
 
-func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (res *payload.Object_Location, err error) {
+func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (res *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".Remove")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
+	id := req.GetId()
 	uuid := id.GetId()
 	err = s.ngt.Delete(uuid)
 	if err != nil {
@@ -470,7 +483,7 @@ func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (res *payloa
 	return s.newLocation(uuid), nil
 }
 
-func (s *server) StreamRemove(stream vald.Vald_StreamRemoveServer) error {
+func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) error {
 	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamRemove")
 	defer func() {
 		if span != nil {
@@ -478,20 +491,23 @@ func (s *server) StreamRemove(stream vald.Vald_StreamRemoveServer) error {
 		}
 	}()
 	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Object_ID) },
+		func() interface{} { return new(payload.Remove_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			return s.Remove(ctx, data.(*payload.Object_ID))
+			return s.Remove(ctx, data.(*payload.Remove_Request))
 		})
 }
 
-func (s *server) MultiRemove(ctx context.Context, ids *payload.Object_IDs) (res *payload.Object_Locations, err error) {
+func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequest) (res *payload.Object_Locations, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".MultiRemove")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	uuids := ids.GetIds()
+	uuids := make([]string, 0, len(reqs.GetRequests()))
+	for _, req := range reqs.GetRequests() {
+		uuids = append(uuids, req.GetId().GetId())
+	}
 	err = s.ngt.DeleteMultiple(uuids...)
 	if err != nil {
 		log.Errorf("[MultiRemove]\tUnknown error\t%+v", err)
@@ -525,7 +541,7 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (res *pay
 	}, nil
 }
 
-func (s *server) StreamGetObject(stream vald.Vald_StreamGetObjectServer) error {
+func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) error {
 	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamGetObject")
 	defer func() {
 		if span != nil {

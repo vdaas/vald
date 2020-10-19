@@ -14,45 +14,46 @@
 // limitations under the License.
 //
 
-// Package service
-package service
+package usecase
 
 import (
 	"context"
 	"reflect"
 	"testing"
 
-	"github.com/vdaas/vald/apis/grpc/v1/vald"
-	"github.com/vdaas/vald/internal/client/discoverer"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/observability"
+	"github.com/vdaas/vald/internal/runner"
+	"github.com/vdaas/vald/internal/servers/starter"
+	"github.com/vdaas/vald/pkg/agent/core/ngt/config"
+	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
 	"go.uber.org/goleak"
 )
 
-func TestNewGateway(t *testing.T) {
+func TestNew(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		opts []GWOption
+		cfg *config.Data
 	}
 	type want struct {
-		wantGw Gateway
-		err    error
+		wantR runner.Runner
+		err   error
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, Gateway, error) error
+		checkFunc  func(want, runner.Runner, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotGw Gateway, err error) error {
+	defaultCheckFunc := func(w want, gotR runner.Runner, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(gotGw, w.wantGw) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotGw, w.wantGw)
+		if !reflect.DeepEqual(gotR, w.wantR) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotR, w.wantR)
 		}
 		return nil
 	}
@@ -62,7 +63,7 @@ func TestNewGateway(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           opts: nil,
+		           cfg: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -75,7 +76,7 @@ func TestNewGateway(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           opts: nil,
+		           cfg: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -99,8 +100,8 @@ func TestNewGateway(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			gotGw, err := NewGateway(test.args.opts...)
-			if err := test.checkFunc(test.want, gotGw, err); err != nil {
+			gotR, err := New(test.args.cfg)
+			if err := test.checkFunc(test.want, gotR, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -108,14 +109,120 @@ func TestNewGateway(t *testing.T) {
 	}
 }
 
-func Test_gateway_Start(t *testing.T) {
+func Test_run_PreStart(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
 	type fields struct {
-		client discoverer.Client
-		eg     errgroup.Group
+		eg            errgroup.Group
+		cfg           *config.Data
+		ngt           service.NGT
+		server        starter.Server
+		observability observability.Observability
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		       },
+		       fields: fields {
+		           eg: nil,
+		           cfg: nil,
+		           ngt: nil,
+		           server: nil,
+		           observability: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           },
+		           fields: fields {
+		           eg: nil,
+		           cfg: nil,
+		           ngt: nil,
+		           server: nil,
+		           observability: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			r := &run{
+				eg:            test.fields.eg,
+				cfg:           test.fields.cfg,
+				ngt:           test.fields.ngt,
+				server:        test.fields.server,
+				observability: test.fields.observability,
+			}
+
+			err := r.PreStart(test.args.ctx)
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_run_Start(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ctx context.Context
+	}
+	type fields struct {
+		eg            errgroup.Group
+		cfg           *config.Data
+		ngt           service.NGT
+		server        starter.Server
+		observability observability.Observability
 	}
 	type want struct {
 		want <-chan error
@@ -148,8 +255,11 @@ func Test_gateway_Start(t *testing.T) {
 		           ctx: nil,
 		       },
 		       fields: fields {
-		           client: nil,
 		           eg: nil,
+		           cfg: nil,
+		           ngt: nil,
+		           server: nil,
+		           observability: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -165,8 +275,11 @@ func Test_gateway_Start(t *testing.T) {
 		           ctx: nil,
 		           },
 		           fields: fields {
-		           client: nil,
 		           eg: nil,
+		           cfg: nil,
+		           ngt: nil,
+		           server: nil,
+		           observability: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -189,12 +302,15 @@ func Test_gateway_Start(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			g := &gateway{
-				client: test.fields.client,
-				eg:     test.fields.eg,
+			r := &run{
+				eg:            test.fields.eg,
+				cfg:           test.fields.cfg,
+				ngt:           test.fields.ngt,
+				server:        test.fields.server,
+				observability: test.fields.observability,
 			}
 
-			got, err := g.Start(test.args.ctx)
+			got, err := r.Start(test.args.ctx)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -203,15 +319,17 @@ func Test_gateway_Start(t *testing.T) {
 	}
 }
 
-func Test_gateway_BroadCast(t *testing.T) {
+func Test_run_PreStop(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx context.Context
-		f   func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error
 	}
 	type fields struct {
-		client discoverer.Client
-		eg     errgroup.Group
+		eg            errgroup.Group
+		cfg           *config.Data
+		ngt           service.NGT
+		server        starter.Server
+		observability observability.Observability
 	}
 	type want struct {
 		err error
@@ -238,11 +356,13 @@ func Test_gateway_BroadCast(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           f: nil,
 		       },
 		       fields: fields {
-		           client: nil,
 		           eg: nil,
+		           cfg: nil,
+		           ngt: nil,
+		           server: nil,
+		           observability: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -256,11 +376,13 @@ func Test_gateway_BroadCast(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           f: nil,
 		           },
 		           fields: fields {
-		           client: nil,
 		           eg: nil,
+		           cfg: nil,
+		           ngt: nil,
+		           server: nil,
+		           observability: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -283,12 +405,15 @@ func Test_gateway_BroadCast(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			g := &gateway{
-				client: test.fields.client,
-				eg:     test.fields.eg,
+			r := &run{
+				eg:            test.fields.eg,
+				cfg:           test.fields.cfg,
+				ngt:           test.fields.ngt,
+				server:        test.fields.server,
+				observability: test.fields.observability,
 			}
 
-			err := g.BroadCast(test.args.ctx, test.args.f)
+			err := r.PreStop(test.args.ctx)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -297,15 +422,17 @@ func Test_gateway_BroadCast(t *testing.T) {
 	}
 }
 
-func Test_gateway_Do(t *testing.T) {
+func Test_run_Stop(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx context.Context
-		f   func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error
 	}
 	type fields struct {
-		client discoverer.Client
-		eg     errgroup.Group
+		eg            errgroup.Group
+		cfg           *config.Data
+		ngt           service.NGT
+		server        starter.Server
+		observability observability.Observability
 	}
 	type want struct {
 		err error
@@ -332,11 +459,13 @@ func Test_gateway_Do(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           f: nil,
 		       },
 		       fields: fields {
-		           client: nil,
 		           eg: nil,
+		           cfg: nil,
+		           ngt: nil,
+		           server: nil,
+		           observability: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -350,11 +479,13 @@ func Test_gateway_Do(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           f: nil,
 		           },
 		           fields: fields {
-		           client: nil,
 		           eg: nil,
+		           cfg: nil,
+		           ngt: nil,
+		           server: nil,
+		           observability: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -377,12 +508,15 @@ func Test_gateway_Do(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			g := &gateway{
-				client: test.fields.client,
-				eg:     test.fields.eg,
+			r := &run{
+				eg:            test.fields.eg,
+				cfg:           test.fields.cfg,
+				ngt:           test.fields.ngt,
+				server:        test.fields.server,
+				observability: test.fields.observability,
 			}
 
-			err := g.Do(test.args.ctx, test.args.f)
+			err := r.Stop(test.args.ctx)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -391,16 +525,17 @@ func Test_gateway_Do(t *testing.T) {
 	}
 }
 
-func Test_gateway_DoMulti(t *testing.T) {
+func Test_run_PostStop(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx context.Context
-		num int
-		f   func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error
 	}
 	type fields struct {
-		client discoverer.Client
-		eg     errgroup.Group
+		eg            errgroup.Group
+		cfg           *config.Data
+		ngt           service.NGT
+		server        starter.Server
+		observability observability.Observability
 	}
 	type want struct {
 		err error
@@ -427,12 +562,13 @@ func Test_gateway_DoMulti(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           num: 0,
-		           f: nil,
 		       },
 		       fields: fields {
-		           client: nil,
 		           eg: nil,
+		           cfg: nil,
+		           ngt: nil,
+		           server: nil,
+		           observability: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -446,12 +582,13 @@ func Test_gateway_DoMulti(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           num: 0,
-		           f: nil,
 		           },
 		           fields: fields {
-		           client: nil,
 		           eg: nil,
+		           cfg: nil,
+		           ngt: nil,
+		           server: nil,
+		           observability: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -474,104 +611,16 @@ func Test_gateway_DoMulti(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			g := &gateway{
-				client: test.fields.client,
-				eg:     test.fields.eg,
+			r := &run{
+				eg:            test.fields.eg,
+				cfg:           test.fields.cfg,
+				ngt:           test.fields.ngt,
+				server:        test.fields.server,
+				observability: test.fields.observability,
 			}
 
-			err := g.DoMulti(test.args.ctx, test.args.num, test.args.f)
+			err := r.PostStop(test.args.ctx)
 			if err := test.checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_gateway_GetAgentCount(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx context.Context
-	}
-	type fields struct {
-		client discoverer.Client
-		eg     errgroup.Group
-	}
-	type want struct {
-		want int
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, int) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got int) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		       },
-		       fields: fields {
-		           client: nil,
-		           eg: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           },
-		           fields: fields {
-		           client: nil,
-		           eg: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			g := &gateway{
-				client: test.fields.client,
-				eg:     test.fields.eg,
-			}
-
-			got := g.GetAgentCount(test.args.ctx)
-			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 

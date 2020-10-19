@@ -21,15 +21,13 @@ import (
 	"context"
 	"reflect"
 	"testing"
-	"time"
 
-	"github.com/vdaas/vald/apis/grpc/gateway/vald"
-	"github.com/vdaas/vald/apis/grpc/payload"
-	valdv1 "github.com/vdaas/vald/apis/grpc/v1/vald"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	vald "github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/net/grpc"
-	"github.com/vdaas/vald/pkg/gateway/vald/service"
+	"github.com/vdaas/vald/pkg/agent/core/ngt/model"
+	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
 	"go.uber.org/goleak"
 )
 
@@ -39,17 +37,17 @@ func TestNew(t *testing.T) {
 		opts []Option
 	}
 	type want struct {
-		want vald.ValdServer
+		want Server
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, vald.ValdServer) error
+		checkFunc  func(want, Server) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got vald.ValdServer) error {
+	defaultCheckFunc := func(w want, got Server) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -107,25 +105,228 @@ func TestNew(t *testing.T) {
 	}
 }
 
-func Test_server_Exists(t *testing.T) {
+func Test_server_newLocations(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx  context.Context
-		meta *payload.Object_ID
+		uuids []string
 	}
 	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
 		eg                errgroup.Group
-		gateway           service.Gateway
-		metadata          service.Meta
-		backup            service.Backup
-		timeout           time.Duration
-		filter            service.Filter
-		replica           int
 		streamConcurrency int
 	}
 	type want struct {
-		want *payload.Object_ID
-		err  error
+		wantLocs *payload.Object_Locations
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *payload.Object_Locations) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotLocs *payload.Object_Locations) error {
+		if !reflect.DeepEqual(gotLocs, w.wantLocs) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLocs, w.wantLocs)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           uuids: nil,
+		       },
+		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           uuids: nil,
+		           },
+		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
+				streamConcurrency: test.fields.streamConcurrency,
+			}
+
+			gotLocs := s.newLocations(test.args.uuids...)
+			if err := test.checkFunc(test.want, gotLocs); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_server_newLocation(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		uuid string
+	}
+	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
+		eg                errgroup.Group
+		streamConcurrency int
+	}
+	type want struct {
+		want *payload.Object_Location
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *payload.Object_Location) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got *payload.Object_Location) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           uuid: "",
+		       },
+		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           uuid: "",
+		           },
+		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
+				streamConcurrency: test.fields.streamConcurrency,
+			}
+
+			got := s.newLocation(test.args.uuid)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_server_Exists(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ctx context.Context
+		uid *payload.Object_ID
+	}
+	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
+		eg                errgroup.Group
+		streamConcurrency int
+	}
+	type want struct {
+		wantRes *payload.Object_ID
+		err     error
 	}
 	type test struct {
 		name       string
@@ -136,7 +337,117 @@ func Test_server_Exists(t *testing.T) {
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *payload.Object_ID, err error) error {
+	defaultCheckFunc := func(w want, gotRes *payload.Object_ID, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           uid: nil,
+		       },
+		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           uid: nil,
+		           },
+		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
+				streamConcurrency: test.fields.streamConcurrency,
+			}
+
+			gotRes, err := s.Exists(test.args.ctx, test.args.uid)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_server_Search(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ctx context.Context
+		req *payload.Search_Request
+	}
+	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
+		eg                errgroup.Group
+		streamConcurrency int
+	}
+	type want struct {
+		want *payload.Search_Response
+		err  error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *payload.Search_Response, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got *payload.Search_Response, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -152,16 +463,13 @@ func Test_server_Exists(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           meta: nil,
+		           req: nil,
 		       },
 		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
 		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -176,16 +484,13 @@ func Test_server_Exists(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           meta: nil,
+		           req: nil,
 		           },
 		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
 		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -210,140 +515,15 @@ func Test_server_Exists(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
 				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
-				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
-				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
-				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
-			got, err := s.Exists(test.args.ctx, test.args.meta)
+			got, err := s.Search(test.args.ctx, test.args.req)
 			if err := test.checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_server_Search(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx context.Context
-		req *payload.Search_Request
-	}
-	type fields struct {
-		eg                errgroup.Group
-		gateway           service.Gateway
-		metadata          service.Meta
-		backup            service.Backup
-		timeout           time.Duration
-		filter            service.Filter
-		replica           int
-		streamConcurrency int
-	}
-	type want struct {
-		wantRes *payload.Search_Response
-		err     error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Search_Response, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, gotRes *payload.Search_Response, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           req: nil,
-		       },
-		       fields: fields {
-		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
-		           streamConcurrency: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           req: nil,
-		           },
-		           fields: fields {
-		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
-		           streamConcurrency: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
-				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
-				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
-				replica:           test.fields.replica,
-				streamConcurrency: test.fields.streamConcurrency,
-			}
-
-			gotRes, err := s.Search(test.args.ctx, test.args.req)
-			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -358,18 +538,15 @@ func Test_server_SearchByID(t *testing.T) {
 		req *payload.Search_IDRequest
 	}
 	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
 		eg                errgroup.Group
-		gateway           service.Gateway
-		metadata          service.Meta
-		backup            service.Backup
-		timeout           time.Duration
-		filter            service.Filter
-		replica           int
 		streamConcurrency int
 	}
 	type want struct {
-		wantRes *payload.Search_Response
-		err     error
+		want *payload.Search_Response
+		err  error
 	}
 	type test struct {
 		name       string
@@ -380,12 +557,12 @@ func Test_server_SearchByID(t *testing.T) {
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotRes *payload.Search_Response, err error) error {
+	defaultCheckFunc := func(w want, got *payload.Search_Response, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -399,13 +576,10 @@ func Test_server_SearchByID(t *testing.T) {
 		           req: nil,
 		       },
 		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
 		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -423,13 +597,10 @@ func Test_server_SearchByID(t *testing.T) {
 		           req: nil,
 		           },
 		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
 		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -454,18 +625,15 @@ func Test_server_SearchByID(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
 				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
-				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
-				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
-				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
-			gotRes, err := s.SearchByID(test.args.ctx, test.args.req)
-			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+			got, err := s.SearchByID(test.args.ctx, test.args.req)
+			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -473,22 +641,11 @@ func Test_server_SearchByID(t *testing.T) {
 	}
 }
 
-func Test_server_search(t *testing.T) {
+func Test_toSearchResponse(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx context.Context
-		cfg *payload.Search_Config
-		f   func(ctx context.Context, vc valdv1.Client, copts ...grpc.CallOption) (*payload.Search_Response, error)
-	}
-	type fields struct {
-		eg                errgroup.Group
-		gateway           service.Gateway
-		metadata          service.Meta
-		backup            service.Backup
-		timeout           time.Duration
-		filter            service.Filter
-		replica           int
-		streamConcurrency int
+		dists []model.Distance
+		err   error
 	}
 	type want struct {
 		wantRes *payload.Search_Response
@@ -497,7 +654,6 @@ func Test_server_search(t *testing.T) {
 	type test struct {
 		name       string
 		args       args
-		fields     fields
 		want       want
 		checkFunc  func(want, *payload.Search_Response, error) error
 		beforeFunc func(args)
@@ -518,19 +674,8 @@ func Test_server_search(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           ctx: nil,
-		           cfg: nil,
-		           f: nil,
-		       },
-		       fields: fields {
-		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
-		           streamConcurrency: 0,
+		           dists: nil,
+		           err: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -543,19 +688,8 @@ func Test_server_search(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           ctx: nil,
-		           cfg: nil,
-		           f: nil,
-		           },
-		           fields: fields {
-		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
-		           streamConcurrency: 0,
+		           dists: nil,
+		           err: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -578,18 +712,8 @@ func Test_server_search(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			s := &server{
-				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
-				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
-				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
-				replica:           test.fields.replica,
-				streamConcurrency: test.fields.streamConcurrency,
-			}
 
-			gotRes, err := s.search(test.args.ctx, test.args.cfg, test.args.f)
+			gotRes, err := toSearchResponse(test.args.dists, test.args.err)
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -601,16 +725,13 @@ func Test_server_search(t *testing.T) {
 func Test_server_StreamSearch(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		stream vald.Vald_StreamSearchServer
+		stream vald.Search_StreamSearchServer
 	}
 	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
 		eg                errgroup.Group
-		gateway           service.Gateway
-		metadata          service.Meta
-		backup            service.Backup
-		timeout           time.Duration
-		filter            service.Filter
-		replica           int
 		streamConcurrency int
 	}
 	type want struct {
@@ -640,13 +761,10 @@ func Test_server_StreamSearch(t *testing.T) {
 		           stream: nil,
 		       },
 		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
 		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -663,13 +781,10 @@ func Test_server_StreamSearch(t *testing.T) {
 		           stream: nil,
 		           },
 		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
 		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -694,13 +809,10 @@ func Test_server_StreamSearch(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
 				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
-				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
-				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
-				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
@@ -716,16 +828,13 @@ func Test_server_StreamSearch(t *testing.T) {
 func Test_server_StreamSearchByID(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		stream vald.Vald_StreamSearchByIDServer
+		stream vald.Search_StreamSearchByIDServer
 	}
 	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
 		eg                errgroup.Group
-		gateway           service.Gateway
-		metadata          service.Meta
-		backup            service.Backup
-		timeout           time.Duration
-		filter            service.Filter
-		replica           int
 		streamConcurrency int
 	}
 	type want struct {
@@ -755,13 +864,10 @@ func Test_server_StreamSearchByID(t *testing.T) {
 		           stream: nil,
 		       },
 		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
 		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -778,13 +884,10 @@ func Test_server_StreamSearchByID(t *testing.T) {
 		           stream: nil,
 		           },
 		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
 		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -809,13 +912,10 @@ func Test_server_StreamSearchByID(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
 				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
-				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
-				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
-				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
@@ -828,261 +928,21 @@ func Test_server_StreamSearchByID(t *testing.T) {
 	}
 }
 
-func Test_server_Insert(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx context.Context
-		vec *payload.Object_Vector
-	}
-	type fields struct {
-		eg                errgroup.Group
-		gateway           service.Gateway
-		metadata          service.Meta
-		backup            service.Backup
-		timeout           time.Duration
-		filter            service.Filter
-		replica           int
-		streamConcurrency int
-	}
-	type want struct {
-		wantCe *payload.Object_Location
-		err    error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Object_Location, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, gotCe *payload.Object_Location, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotCe, w.wantCe) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotCe, w.wantCe)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           vec: nil,
-		       },
-		       fields: fields {
-		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
-		           streamConcurrency: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           vec: nil,
-		           },
-		           fields: fields {
-		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
-		           streamConcurrency: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
-				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
-				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
-				replica:           test.fields.replica,
-				streamConcurrency: test.fields.streamConcurrency,
-			}
-
-			gotCe, err := s.Insert(test.args.ctx, test.args.vec)
-			if err := test.checkFunc(test.want, gotCe, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_server_StreamInsert(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		stream vald.Vald_StreamInsertServer
-	}
-	type fields struct {
-		eg                errgroup.Group
-		gateway           service.Gateway
-		metadata          service.Meta
-		backup            service.Backup
-		timeout           time.Duration
-		filter            service.Filter
-		replica           int
-		streamConcurrency int
-	}
-	type want struct {
-		err error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           stream: nil,
-		       },
-		       fields: fields {
-		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
-		           streamConcurrency: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           stream: nil,
-		           },
-		           fields: fields {
-		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
-		           streamConcurrency: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
-				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
-				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
-				replica:           test.fields.replica,
-				streamConcurrency: test.fields.streamConcurrency,
-			}
-
-			err := s.StreamInsert(test.args.stream)
-			if err := test.checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_server_MultiInsert(t *testing.T) {
+func Test_server_MultiSearch(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx  context.Context
-		vecs *payload.Object_Vectors
+		reqs *payload.Search_MultiRequest
 	}
 	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
 		eg                errgroup.Group
-		gateway           service.Gateway
-		metadata          service.Meta
-		backup            service.Backup
-		timeout           time.Duration
-		filter            service.Filter
-		replica           int
 		streamConcurrency int
 	}
 	type want struct {
-		wantRes *payload.Object_Locations
+		wantRes *payload.Search_Responses
 		err     error
 	}
 	type test struct {
@@ -1090,11 +950,11 @@ func Test_server_MultiInsert(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Object_Locations, error) error
+		checkFunc  func(want, *payload.Search_Responses, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotRes *payload.Object_Locations, err error) error {
+	defaultCheckFunc := func(w want, gotRes *payload.Search_Responses, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -1110,16 +970,13 @@ func Test_server_MultiInsert(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           vecs: nil,
+		           reqs: nil,
 		       },
 		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
 		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -1134,16 +991,13 @@ func Test_server_MultiInsert(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           vecs: nil,
+		           reqs: nil,
 		           },
 		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
 		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -1168,17 +1022,14 @@ func Test_server_MultiInsert(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
 				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
-				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
-				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
-				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
-			gotRes, err := s.MultiInsert(test.args.ctx, test.args.vecs)
+			gotRes, err := s.MultiSearch(test.args.ctx, test.args.reqs)
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1187,20 +1038,127 @@ func Test_server_MultiInsert(t *testing.T) {
 	}
 }
 
-func Test_server_Update(t *testing.T) {
+func Test_server_MultiSearchByID(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ctx  context.Context
+		reqs *payload.Search_MultiIDRequest
+	}
+	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
+		eg                errgroup.Group
+		streamConcurrency int
+	}
+	type want struct {
+		wantRes *payload.Search_Responses
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *payload.Search_Responses, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRes *payload.Search_Responses, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           reqs: nil,
+		       },
+		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           reqs: nil,
+		           },
+		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
+				streamConcurrency: test.fields.streamConcurrency,
+			}
+
+			gotRes, err := s.MultiSearchByID(test.args.ctx, test.args.reqs)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_server_Insert(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx context.Context
-		vec *payload.Object_Vector
+		req *payload.Insert_Request
 	}
 	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
 		eg                errgroup.Group
-		gateway           service.Gateway
-		metadata          service.Meta
-		backup            service.Backup
-		timeout           time.Duration
-		filter            service.Filter
-		replica           int
 		streamConcurrency int
 	}
 	type want struct {
@@ -1232,16 +1190,13 @@ func Test_server_Update(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           vec: nil,
+		           req: nil,
 		       },
 		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
 		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -1256,16 +1211,13 @@ func Test_server_Update(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           vec: nil,
+		           req: nil,
 		           },
 		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
 		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -1290,17 +1242,14 @@ func Test_server_Update(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
 				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
-				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
-				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
-				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
-			gotRes, err := s.Update(test.args.ctx, test.args.vec)
+			gotRes, err := s.Insert(test.args.ctx, test.args.req)
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1309,19 +1258,16 @@ func Test_server_Update(t *testing.T) {
 	}
 }
 
-func Test_server_StreamUpdate(t *testing.T) {
+func Test_server_StreamInsert(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		stream vald.Vald_StreamUpdateServer
+		stream vald.Insert_StreamInsertServer
 	}
 	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
 		eg                errgroup.Group
-		gateway           service.Gateway
-		metadata          service.Meta
-		backup            service.Backup
-		timeout           time.Duration
-		filter            service.Filter
-		replica           int
 		streamConcurrency int
 	}
 	type want struct {
@@ -1351,13 +1297,10 @@ func Test_server_StreamUpdate(t *testing.T) {
 		           stream: nil,
 		       },
 		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
 		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -1374,13 +1317,10 @@ func Test_server_StreamUpdate(t *testing.T) {
 		           stream: nil,
 		           },
 		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
 		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -1405,13 +1345,333 @@ func Test_server_StreamUpdate(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
 				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
-				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
-				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
-				replica:           test.fields.replica,
+				streamConcurrency: test.fields.streamConcurrency,
+			}
+
+			err := s.StreamInsert(test.args.stream)
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_server_MultiInsert(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ctx  context.Context
+		reqs *payload.Insert_MultiRequest
+	}
+	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
+		eg                errgroup.Group
+		streamConcurrency int
+	}
+	type want struct {
+		wantRes *payload.Object_Locations
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *payload.Object_Locations, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRes *payload.Object_Locations, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           reqs: nil,
+		       },
+		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           reqs: nil,
+		           },
+		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
+				streamConcurrency: test.fields.streamConcurrency,
+			}
+
+			gotRes, err := s.MultiInsert(test.args.ctx, test.args.reqs)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_server_Update(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ctx context.Context
+		req *payload.Update_Request
+	}
+	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
+		eg                errgroup.Group
+		streamConcurrency int
+	}
+	type want struct {
+		wantRes *payload.Object_Location
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *payload.Object_Location, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRes *payload.Object_Location, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           req: nil,
+		       },
+		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           req: nil,
+		           },
+		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
+				streamConcurrency: test.fields.streamConcurrency,
+			}
+
+			gotRes, err := s.Update(test.args.ctx, test.args.req)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_server_StreamUpdate(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		stream vald.Update_StreamUpdateServer
+	}
+	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
+		eg                errgroup.Group
+		streamConcurrency int
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           stream: nil,
+		       },
+		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           stream: nil,
+		           },
+		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
@@ -1428,16 +1688,13 @@ func Test_server_MultiUpdate(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx  context.Context
-		vecs *payload.Object_Vectors
+		reqs *payload.Update_MultiRequest
 	}
 	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
 		eg                errgroup.Group
-		gateway           service.Gateway
-		metadata          service.Meta
-		backup            service.Backup
-		timeout           time.Duration
-		filter            service.Filter
-		replica           int
 		streamConcurrency int
 	}
 	type want struct {
@@ -1469,16 +1726,13 @@ func Test_server_MultiUpdate(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           vecs: nil,
+		           reqs: nil,
 		       },
 		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
 		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -1493,16 +1747,13 @@ func Test_server_MultiUpdate(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           vecs: nil,
+		           reqs: nil,
 		           },
 		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
 		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -1527,17 +1778,14 @@ func Test_server_MultiUpdate(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
 				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
-				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
-				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
-				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
-			gotRes, err := s.MultiUpdate(test.args.ctx, test.args.vecs)
+			gotRes, err := s.MultiUpdate(test.args.ctx, test.args.reqs)
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1550,16 +1798,13 @@ func Test_server_Upsert(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx context.Context
-		vec *payload.Object_Vector
+		req *payload.Upsert_Request
 	}
 	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
 		eg                errgroup.Group
-		gateway           service.Gateway
-		metadata          service.Meta
-		backup            service.Backup
-		timeout           time.Duration
-		filter            service.Filter
-		replica           int
 		streamConcurrency int
 	}
 	type want struct {
@@ -1591,16 +1836,13 @@ func Test_server_Upsert(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           vec: nil,
+		           req: nil,
 		       },
 		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
 		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -1615,16 +1857,13 @@ func Test_server_Upsert(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           vec: nil,
+		           req: nil,
 		           },
 		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
 		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -1649,17 +1888,14 @@ func Test_server_Upsert(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
 				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
-				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
-				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
-				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
-			got, err := s.Upsert(test.args.ctx, test.args.vec)
+			got, err := s.Upsert(test.args.ctx, test.args.req)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1671,16 +1907,13 @@ func Test_server_Upsert(t *testing.T) {
 func Test_server_StreamUpsert(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		stream vald.Vald_StreamUpsertServer
+		stream vald.Upsert_StreamUpsertServer
 	}
 	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
 		eg                errgroup.Group
-		gateway           service.Gateway
-		metadata          service.Meta
-		backup            service.Backup
-		timeout           time.Duration
-		filter            service.Filter
-		replica           int
 		streamConcurrency int
 	}
 	type want struct {
@@ -1710,13 +1943,10 @@ func Test_server_StreamUpsert(t *testing.T) {
 		           stream: nil,
 		       },
 		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
 		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -1733,13 +1963,10 @@ func Test_server_StreamUpsert(t *testing.T) {
 		           stream: nil,
 		           },
 		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
 		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -1764,13 +1991,10 @@ func Test_server_StreamUpsert(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
 				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
-				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
-				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
-				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
@@ -1787,375 +2011,13 @@ func Test_server_MultiUpsert(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx  context.Context
-		vecs *payload.Object_Vectors
+		reqs *payload.Upsert_MultiRequest
 	}
 	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
 		eg                errgroup.Group
-		gateway           service.Gateway
-		metadata          service.Meta
-		backup            service.Backup
-		timeout           time.Duration
-		filter            service.Filter
-		replica           int
-		streamConcurrency int
-	}
-	type want struct {
-		want *payload.Object_Locations
-		err  error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Object_Locations, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got *payload.Object_Locations, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           vecs: nil,
-		       },
-		       fields: fields {
-		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
-		           streamConcurrency: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           vecs: nil,
-		           },
-		           fields: fields {
-		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
-		           streamConcurrency: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
-				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
-				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
-				replica:           test.fields.replica,
-				streamConcurrency: test.fields.streamConcurrency,
-			}
-
-			got, err := s.MultiUpsert(test.args.ctx, test.args.vecs)
-			if err := test.checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_server_Remove(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx context.Context
-		id  *payload.Object_ID
-	}
-	type fields struct {
-		eg                errgroup.Group
-		gateway           service.Gateway
-		metadata          service.Meta
-		backup            service.Backup
-		timeout           time.Duration
-		filter            service.Filter
-		replica           int
-		streamConcurrency int
-	}
-	type want struct {
-		want *payload.Object_Location
-		err  error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Object_Location, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got *payload.Object_Location, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           id: nil,
-		       },
-		       fields: fields {
-		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
-		           streamConcurrency: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           id: nil,
-		           },
-		           fields: fields {
-		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
-		           streamConcurrency: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
-				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
-				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
-				replica:           test.fields.replica,
-				streamConcurrency: test.fields.streamConcurrency,
-			}
-
-			got, err := s.Remove(test.args.ctx, test.args.id)
-			if err := test.checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_server_StreamRemove(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		stream vald.Vald_StreamRemoveServer
-	}
-	type fields struct {
-		eg                errgroup.Group
-		gateway           service.Gateway
-		metadata          service.Meta
-		backup            service.Backup
-		timeout           time.Duration
-		filter            service.Filter
-		replica           int
-		streamConcurrency int
-	}
-	type want struct {
-		err error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           stream: nil,
-		       },
-		       fields: fields {
-		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
-		           streamConcurrency: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           stream: nil,
-		           },
-		           fields: fields {
-		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
-		           streamConcurrency: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
-				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
-				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
-				replica:           test.fields.replica,
-				streamConcurrency: test.fields.streamConcurrency,
-			}
-
-			err := s.StreamRemove(test.args.stream)
-			if err := test.checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_server_MultiRemove(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx context.Context
-		ids *payload.Object_IDs
-	}
-	type fields struct {
-		eg                errgroup.Group
-		gateway           service.Gateway
-		metadata          service.Meta
-		backup            service.Backup
-		timeout           time.Duration
-		filter            service.Filter
-		replica           int
 		streamConcurrency int
 	}
 	type want struct {
@@ -2187,16 +2049,13 @@ func Test_server_MultiRemove(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           ids: nil,
+		           reqs: nil,
 		       },
 		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
 		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -2211,16 +2070,13 @@ func Test_server_MultiRemove(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           ids: nil,
+		           reqs: nil,
 		           },
 		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
 		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -2245,17 +2101,14 @@ func Test_server_MultiRemove(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
 				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
-				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
-				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
-				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
-			gotRes, err := s.MultiRemove(test.args.ctx, test.args.ids)
+			gotRes, err := s.MultiUpsert(test.args.ctx, test.args.reqs)
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -2264,24 +2117,21 @@ func Test_server_MultiRemove(t *testing.T) {
 	}
 }
 
-func Test_server_GetObject(t *testing.T) {
+func Test_server_Remove(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx context.Context
-		id  *payload.Object_ID
+		req *payload.Remove_Request
 	}
 	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
 		eg                errgroup.Group
-		gateway           service.Gateway
-		metadata          service.Meta
-		backup            service.Backup
-		timeout           time.Duration
-		filter            service.Filter
-		replica           int
 		streamConcurrency int
 	}
 	type want struct {
-		wantVec *payload.Object_Vector
+		wantRes *payload.Object_Location
 		err     error
 	}
 	type test struct {
@@ -2289,16 +2139,16 @@ func Test_server_GetObject(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Object_Vector, error) error
+		checkFunc  func(want, *payload.Object_Location, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotVec *payload.Object_Vector, err error) error {
+	defaultCheckFunc := func(w want, gotRes *payload.Object_Location, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(gotVec, w.wantVec) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotVec, w.wantVec)
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
 		return nil
 	}
@@ -2309,16 +2159,13 @@ func Test_server_GetObject(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           id: nil,
+		           req: nil,
 		       },
 		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
 		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -2333,16 +2180,13 @@ func Test_server_GetObject(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           id: nil,
+		           req: nil,
 		           },
 		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
 		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -2367,18 +2211,15 @@ func Test_server_GetObject(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
 				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
-				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
-				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
-				replica:           test.fields.replica,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
-			gotVec, err := s.GetObject(test.args.ctx, test.args.id)
-			if err := test.checkFunc(test.want, gotVec, err); err != nil {
+			gotRes, err := s.Remove(test.args.ctx, test.args.req)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -2386,19 +2227,16 @@ func Test_server_GetObject(t *testing.T) {
 	}
 }
 
-func Test_server_StreamGetObject(t *testing.T) {
+func Test_server_StreamRemove(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		stream vald.Vald_StreamGetObjectServer
+		stream vald.Remove_StreamRemoveServer
 	}
 	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
 		eg                errgroup.Group
-		gateway           service.Gateway
-		metadata          service.Meta
-		backup            service.Backup
-		timeout           time.Duration
-		filter            service.Filter
-		replica           int
 		streamConcurrency int
 	}
 	type want struct {
@@ -2428,13 +2266,10 @@ func Test_server_StreamGetObject(t *testing.T) {
 		           stream: nil,
 		       },
 		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
 		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -2451,13 +2286,10 @@ func Test_server_StreamGetObject(t *testing.T) {
 		           stream: nil,
 		           },
 		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
 		           eg: nil,
-		           gateway: nil,
-		           metadata: nil,
-		           backup: nil,
-		           timeout: nil,
-		           filter: nil,
-		           replica: 0,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -2482,18 +2314,778 @@ func Test_server_StreamGetObject(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
 				eg:                test.fields.eg,
-				gateway:           test.fields.gateway,
-				metadata:          test.fields.metadata,
-				backup:            test.fields.backup,
-				timeout:           test.fields.timeout,
-				filter:            test.fields.filter,
-				replica:           test.fields.replica,
+				streamConcurrency: test.fields.streamConcurrency,
+			}
+
+			err := s.StreamRemove(test.args.stream)
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_server_MultiRemove(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ctx  context.Context
+		reqs *payload.Remove_MultiRequest
+	}
+	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
+		eg                errgroup.Group
+		streamConcurrency int
+	}
+	type want struct {
+		wantRes *payload.Object_Locations
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *payload.Object_Locations, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRes *payload.Object_Locations, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           reqs: nil,
+		       },
+		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           reqs: nil,
+		           },
+		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
+				streamConcurrency: test.fields.streamConcurrency,
+			}
+
+			gotRes, err := s.MultiRemove(test.args.ctx, test.args.reqs)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_server_GetObject(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ctx context.Context
+		id  *payload.Object_ID
+	}
+	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
+		eg                errgroup.Group
+		streamConcurrency int
+	}
+	type want struct {
+		wantRes *payload.Object_Vector
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *payload.Object_Vector, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRes *payload.Object_Vector, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           id: nil,
+		       },
+		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           id: nil,
+		           },
+		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
+				streamConcurrency: test.fields.streamConcurrency,
+			}
+
+			gotRes, err := s.GetObject(test.args.ctx, test.args.id)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_server_StreamGetObject(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		stream vald.Object_StreamGetObjectServer
+	}
+	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
+		eg                errgroup.Group
+		streamConcurrency int
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           stream: nil,
+		       },
+		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           stream: nil,
+		           },
+		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
 			err := s.StreamGetObject(test.args.stream)
 			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_server_CreateIndex(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ctx context.Context
+		c   *payload.Control_CreateIndexRequest
+	}
+	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
+		eg                errgroup.Group
+		streamConcurrency int
+	}
+	type want struct {
+		wantRes *payload.Empty
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *payload.Empty, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           c: nil,
+		       },
+		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           c: nil,
+		           },
+		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
+				streamConcurrency: test.fields.streamConcurrency,
+			}
+
+			gotRes, err := s.CreateIndex(test.args.ctx, test.args.c)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_server_SaveIndex(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ctx context.Context
+		in1 *payload.Empty
+	}
+	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
+		eg                errgroup.Group
+		streamConcurrency int
+	}
+	type want struct {
+		wantRes *payload.Empty
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *payload.Empty, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           in1: nil,
+		       },
+		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           in1: nil,
+		           },
+		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
+				streamConcurrency: test.fields.streamConcurrency,
+			}
+
+			gotRes, err := s.SaveIndex(test.args.ctx, test.args.in1)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_server_CreateAndSaveIndex(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ctx context.Context
+		c   *payload.Control_CreateIndexRequest
+	}
+	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
+		eg                errgroup.Group
+		streamConcurrency int
+	}
+	type want struct {
+		wantRes *payload.Empty
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *payload.Empty, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           c: nil,
+		       },
+		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           c: nil,
+		           },
+		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
+				streamConcurrency: test.fields.streamConcurrency,
+			}
+
+			gotRes, err := s.CreateAndSaveIndex(test.args.ctx, test.args.c)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_server_IndexInfo(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ctx context.Context
+		in1 *payload.Empty
+	}
+	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
+		eg                errgroup.Group
+		streamConcurrency int
+	}
+	type want struct {
+		wantRes *payload.Info_Index_Count
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *payload.Info_Index_Count, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRes *payload.Info_Index_Count, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           in1: nil,
+		       },
+		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           in1: nil,
+		           },
+		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
+				streamConcurrency: test.fields.streamConcurrency,
+			}
+
+			gotRes, err := s.IndexInfo(test.args.ctx, test.args.in1)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
