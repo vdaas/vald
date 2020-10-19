@@ -19,7 +19,8 @@ package usecase
 import (
 	"context"
 
-	agent "github.com/vdaas/vald/apis/grpc/agent/core"
+	agent "github.com/vdaas/vald/apis/grpc/v1/agent/core"
+	vald "github.com/vdaas/vald/apis/grpc/v1/vald"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -76,6 +77,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	grpcServerOptions := []server.Option{
 		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
 			agent.RegisterAgentServer(srv, g)
+			vald.RegisterValdServer(srv, g)
 		}),
 		server.WithGRPCOption(
 			grpc.ChainUnaryInterceptor(grpc.RecoverInterceptor()),

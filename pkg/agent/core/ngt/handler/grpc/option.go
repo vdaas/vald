@@ -20,6 +20,7 @@ package grpc
 import (
 	"os"
 
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
@@ -38,6 +39,7 @@ var (
 		}()),
 		WithIP(net.LoadLocalIP()),
 		WithStreamConcurrency(20),
+		WithErrGroup(errgroup.Get()),
 	}
 )
 
@@ -67,6 +69,14 @@ func WithStreamConcurrency(c int) Option {
 	return func(s *server) {
 		if c != 0 {
 			s.streamConcurrency = c
+		}
+	}
+}
+
+func WithErrGroup(eg errgroup.Group) Option {
+	return func(s *server) {
+		if eg != nil {
+			s.eg = eg
 		}
 	}
 }
