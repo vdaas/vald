@@ -20,7 +20,7 @@ import (
 	"context"
 
 	"github.com/vdaas/vald/apis/grpc/v1/manager/compressor"
-	cclient "github.com/vdaas/vald/internal/client/v1/compressor"
+	cclient "github.com/vdaas/vald/internal/client/v1/client/compressor"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"

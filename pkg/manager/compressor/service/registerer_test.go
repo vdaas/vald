@@ -23,7 +23,7 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
-	client "github.com/vdaas/vald/internal/client/v1/compressor"
+	client "github.com/vdaas/vald/internal/client/v1/client/compressor"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/worker"
