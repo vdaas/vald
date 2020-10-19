@@ -90,7 +90,7 @@ func main() {
 				Vector: train[i],
 			},
 			Config: &payload.Insert_Config{
-
+				SkipStrictExistCheck: true,
 			},
 		})
 		if err != nil {
