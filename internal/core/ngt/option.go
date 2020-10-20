@@ -110,7 +110,7 @@ func WithDistanceTypeByString(dt string) Option {
 		d = Cosine
 	case "normalizedangle", "normalized angle", "normalized ang", "nang", "nangle":
 		d = NormalizedAngle
-	case "normalizedcosine","normalized cosine", "normalized cos", "ncos", "ncosine":
+	case "normalizedcosine", "normalized cosine", "normalized cos", "ncos", "ncosine":
 		d = NormalizedCosine
 	case "jaccard", "jac":
 		d = Jaccard

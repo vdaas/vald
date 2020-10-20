@@ -24,13 +24,13 @@ import (
 
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e"
-	"github.com/vdaas/vald/internal/client"
+	"github.com/vdaas/vald/internal/client/v1/client"
 	"github.com/vdaas/vald/internal/errors"
-
 	"go.uber.org/goleak"
 )
 
 func TestNewStreamRemove(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []StreamRemoveOption
 	}
@@ -79,9 +79,11 @@ func TestNewStreamRemove(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -102,6 +104,7 @@ func TestNewStreamRemove(t *testing.T) {
 }
 
 func Test_streamRemove_dataProvider(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		total   *uint32
 		b       *testing.B
@@ -157,9 +160,11 @@ func Test_streamRemove_dataProvider(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -181,6 +186,7 @@ func Test_streamRemove_dataProvider(t *testing.T) {
 }
 
 func Test_streamRemove_Run(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx     context.Context
 		b       *testing.B
@@ -235,9 +241,11 @@ func Test_streamRemove_Run(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

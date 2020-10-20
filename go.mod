@@ -68,7 +68,7 @@ require (
 	go.opencensus.io v0.22.5
 	go.uber.org/automaxprocs v1.3.0
 	go.uber.org/goleak v1.1.10
-	golang.org/x/net v0.0.0-20201016165138-7b1cca2348c0
+	golang.org/x/net v0.0.0-20201020065357-d65d470038a5
 	golang.org/x/sync v0.0.0-20201008141435-b3e1573b7520
 	golang.org/x/sys v0.0.0-20201018230417-eeed37f84f13
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614

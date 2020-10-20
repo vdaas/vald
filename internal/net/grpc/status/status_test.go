@@ -21,15 +21,14 @@ import (
 	"reflect"
 	"testing"
 
-	gerrors "github.com/vdaas/vald/apis/grpc/errors"
-	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/apis/grpc/v1/errors"
+	"go.uber.org/goleak"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-
-	"go.uber.org/goleak"
 )
 
 func Test_newStatus(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		code    codes.Code
 		msg     string
@@ -87,9 +86,11 @@ func Test_newStatus(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -110,6 +111,7 @@ func Test_newStatus(t *testing.T) {
 }
 
 func TestWrapWithCanceled(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		msg     string
 		err     error
@@ -164,9 +166,11 @@ func TestWrapWithCanceled(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -187,6 +191,7 @@ func TestWrapWithCanceled(t *testing.T) {
 }
 
 func TestWrapWithUnknown(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		msg     string
 		err     error
@@ -241,9 +246,11 @@ func TestWrapWithUnknown(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -264,6 +271,7 @@ func TestWrapWithUnknown(t *testing.T) {
 }
 
 func TestWrapWithInvalidArgument(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		msg     string
 		err     error
@@ -318,9 +326,11 @@ func TestWrapWithInvalidArgument(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -341,6 +351,7 @@ func TestWrapWithInvalidArgument(t *testing.T) {
 }
 
 func TestWrapWithDeadlineExceeded(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		msg     string
 		err     error
@@ -395,9 +406,11 @@ func TestWrapWithDeadlineExceeded(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -418,6 +431,7 @@ func TestWrapWithDeadlineExceeded(t *testing.T) {
 }
 
 func TestWrapWithNotFound(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		msg     string
 		err     error
@@ -472,9 +486,11 @@ func TestWrapWithNotFound(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -495,6 +511,7 @@ func TestWrapWithNotFound(t *testing.T) {
 }
 
 func TestWrapWithAlreadyExists(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		msg     string
 		err     error
@@ -549,9 +566,11 @@ func TestWrapWithAlreadyExists(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -572,6 +591,7 @@ func TestWrapWithAlreadyExists(t *testing.T) {
 }
 
 func TestWrapWithPermissionDenied(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		msg     string
 		err     error
@@ -626,9 +646,11 @@ func TestWrapWithPermissionDenied(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -649,6 +671,7 @@ func TestWrapWithPermissionDenied(t *testing.T) {
 }
 
 func TestWrapWithResourceExhausted(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		msg     string
 		err     error
@@ -703,9 +726,11 @@ func TestWrapWithResourceExhausted(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -726,6 +751,7 @@ func TestWrapWithResourceExhausted(t *testing.T) {
 }
 
 func TestWrapWithFailedPrecondition(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		msg     string
 		err     error
@@ -780,9 +806,11 @@ func TestWrapWithFailedPrecondition(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -803,6 +831,7 @@ func TestWrapWithFailedPrecondition(t *testing.T) {
 }
 
 func TestWrapWithAborted(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		msg     string
 		err     error
@@ -857,9 +886,11 @@ func TestWrapWithAborted(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -880,6 +911,7 @@ func TestWrapWithAborted(t *testing.T) {
 }
 
 func TestWrapWithOutOfRange(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		msg     string
 		err     error
@@ -934,9 +966,11 @@ func TestWrapWithOutOfRange(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -957,6 +991,7 @@ func TestWrapWithOutOfRange(t *testing.T) {
 }
 
 func TestWrapWithUnimplemented(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		msg     string
 		err     error
@@ -1011,9 +1046,11 @@ func TestWrapWithUnimplemented(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1034,6 +1071,7 @@ func TestWrapWithUnimplemented(t *testing.T) {
 }
 
 func TestWrapWithInternal(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		msg     string
 		err     error
@@ -1088,9 +1126,11 @@ func TestWrapWithInternal(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1111,6 +1151,7 @@ func TestWrapWithInternal(t *testing.T) {
 }
 
 func TestWrapWithUnavailable(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		msg     string
 		err     error
@@ -1165,9 +1206,11 @@ func TestWrapWithUnavailable(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1188,6 +1231,7 @@ func TestWrapWithUnavailable(t *testing.T) {
 }
 
 func TestWrapWithDataLoss(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		msg     string
 		err     error
@@ -1242,9 +1286,11 @@ func TestWrapWithDataLoss(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1265,6 +1311,7 @@ func TestWrapWithDataLoss(t *testing.T) {
 }
 
 func TestWrapWithUnauthenticated(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		msg     string
 		err     error
@@ -1319,9 +1366,11 @@ func TestWrapWithUnauthenticated(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1342,21 +1391,22 @@ func TestWrapWithUnauthenticated(t *testing.T) {
 }
 
 func TestFromError(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		err error
 	}
 	type want struct {
-		want *gerrors.Errors_RPC
+		want *errors.Errors_RPC
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, *gerrors.Errors_RPC) error
+		checkFunc  func(want, *errors.Errors_RPC) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *gerrors.Errors_RPC) error {
+	defaultCheckFunc := func(w want, got *errors.Errors_RPC) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -1390,9 +1440,11 @@ func TestFromError(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

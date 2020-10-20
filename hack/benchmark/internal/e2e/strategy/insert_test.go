@@ -24,11 +24,13 @@ import (
 
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e"
-	"github.com/vdaas/vald/internal/client"
+	"github.com/vdaas/vald/internal/client/v1/client"
 	"github.com/vdaas/vald/internal/errors"
+	"go.uber.org/goleak"
 )
 
 func TestNewInsert(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []InsertOption
 	}
@@ -77,8 +79,11 @@ func TestNewInsert(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -99,6 +104,7 @@ func TestNewInsert(t *testing.T) {
 }
 
 func Test_insert_Run(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx     context.Context
 		b       *testing.B
@@ -162,8 +168,11 @@ func Test_insert_Run(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -186,6 +195,7 @@ func Test_insert_Run(t *testing.T) {
 }
 
 func Test_insert_run(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx     context.Context
 		b       *testing.B
@@ -249,8 +259,11 @@ func Test_insert_run(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -273,6 +286,7 @@ func Test_insert_run(t *testing.T) {
 }
 
 func Test_insert_runParallel(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx     context.Context
 		b       *testing.B
@@ -336,8 +350,11 @@ func Test_insert_runParallel(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -360,6 +377,7 @@ func Test_insert_runParallel(t *testing.T) {
 }
 
 func Test_insert_do(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx    context.Context
 		b      *testing.B
@@ -426,8 +444,11 @@ func Test_insert_do(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

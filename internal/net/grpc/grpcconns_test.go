@@ -26,9 +26,11 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc/pool"
+	"go.uber.org/goleak"
 )
 
 func Test_newEntryGrpcConns(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		i pool.Conn
 	}
@@ -77,8 +79,11 @@ func Test_newEntryGrpcConns(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -99,6 +104,7 @@ func Test_newEntryGrpcConns(t *testing.T) {
 }
 
 func Test_grpcConns_Load(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key string
 	}
@@ -170,8 +176,11 @@ func Test_grpcConns_Load(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -198,6 +207,7 @@ func Test_grpcConns_Load(t *testing.T) {
 }
 
 func Test_entryGrpcConns_load(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		p unsafe.Pointer
 	}
@@ -250,8 +260,11 @@ func Test_entryGrpcConns_load(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -275,6 +288,7 @@ func Test_entryGrpcConns_load(t *testing.T) {
 }
 
 func Test_grpcConns_Store(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key   string
 		value pool.Conn
@@ -341,8 +355,11 @@ func Test_grpcConns_Store(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -368,6 +385,7 @@ func Test_grpcConns_Store(t *testing.T) {
 }
 
 func Test_entryGrpcConns_tryStore(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		i *pool.Conn
 	}
@@ -426,8 +444,11 @@ func Test_entryGrpcConns_tryStore(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -451,6 +472,7 @@ func Test_entryGrpcConns_tryStore(t *testing.T) {
 }
 
 func Test_entryGrpcConns_unexpungeLocked(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		p unsafe.Pointer
 	}
@@ -499,8 +521,11 @@ func Test_entryGrpcConns_unexpungeLocked(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -524,6 +549,7 @@ func Test_entryGrpcConns_unexpungeLocked(t *testing.T) {
 }
 
 func Test_entryGrpcConns_storeLocked(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		i *pool.Conn
 	}
@@ -578,8 +604,11 @@ func Test_entryGrpcConns_storeLocked(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -602,6 +631,7 @@ func Test_entryGrpcConns_storeLocked(t *testing.T) {
 }
 
 func Test_grpcConns_Delete(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key string
 	}
@@ -665,8 +695,11 @@ func Test_grpcConns_Delete(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -692,6 +725,7 @@ func Test_grpcConns_Delete(t *testing.T) {
 }
 
 func Test_entryGrpcConns_delete(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		p unsafe.Pointer
 	}
@@ -740,8 +774,11 @@ func Test_entryGrpcConns_delete(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -765,6 +802,7 @@ func Test_entryGrpcConns_delete(t *testing.T) {
 }
 
 func Test_grpcConns_Range(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		f func(key string, value pool.Conn) bool
 	}
@@ -828,8 +866,11 @@ func Test_grpcConns_Range(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -855,6 +896,7 @@ func Test_grpcConns_Range(t *testing.T) {
 }
 
 func Test_grpcConns_missLocked(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		mu     sync.Mutex
 		read   atomic.Value
@@ -908,8 +950,11 @@ func Test_grpcConns_missLocked(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -935,6 +980,7 @@ func Test_grpcConns_missLocked(t *testing.T) {
 }
 
 func Test_grpcConns_dirtyLocked(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		mu     sync.Mutex
 		read   atomic.Value
@@ -988,8 +1034,11 @@ func Test_grpcConns_dirtyLocked(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1015,6 +1064,7 @@ func Test_grpcConns_dirtyLocked(t *testing.T) {
 }
 
 func Test_entryGrpcConns_tryExpungeLocked(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		p unsafe.Pointer
 	}
@@ -1063,8 +1113,11 @@ func Test_entryGrpcConns_tryExpungeLocked(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}

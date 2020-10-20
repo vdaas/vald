@@ -26,11 +26,11 @@ import (
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-
 	"go.uber.org/goleak"
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []Option
 	}
@@ -79,9 +79,11 @@ func TestNew(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -102,6 +104,7 @@ func TestNew(t *testing.T) {
 }
 
 func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -113,6 +116,7 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 		hcDur               time.Duration
 		prDur               time.Duration
 		enablePoolRebalance bool
+		resolveDNS          bool
 		dopts               []DialOption
 		copts               []CallOption
 		roccd               string
@@ -157,6 +161,7 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 		           hcDur: nil,
 		           prDur: nil,
 		           enablePoolRebalance: false,
+		           resolveDNS: false,
 		           dopts: nil,
 		           copts: nil,
 		           roccd: "",
@@ -184,6 +189,7 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 		           hcDur: nil,
 		           prDur: nil,
 		           enablePoolRebalance: false,
+		           resolveDNS: false,
 		           dopts: nil,
 		           copts: nil,
 		           roccd: "",
@@ -197,9 +203,11 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -217,6 +225,7 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				enablePoolRebalance: test.fields.enablePoolRebalance,
+				resolveDNS:          test.fields.resolveDNS,
 				dopts:               test.fields.dopts,
 				copts:               test.fields.copts,
 				roccd:               test.fields.roccd,
@@ -234,6 +243,7 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 }
 
 func Test_gRPCClient_Range(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		f   func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error
@@ -246,6 +256,7 @@ func Test_gRPCClient_Range(t *testing.T) {
 		hcDur               time.Duration
 		prDur               time.Duration
 		enablePoolRebalance bool
+		resolveDNS          bool
 		dopts               []DialOption
 		copts               []CallOption
 		roccd               string
@@ -287,6 +298,7 @@ func Test_gRPCClient_Range(t *testing.T) {
 		           hcDur: nil,
 		           prDur: nil,
 		           enablePoolRebalance: false,
+		           resolveDNS: false,
 		           dopts: nil,
 		           copts: nil,
 		           roccd: "",
@@ -315,6 +327,7 @@ func Test_gRPCClient_Range(t *testing.T) {
 		           hcDur: nil,
 		           prDur: nil,
 		           enablePoolRebalance: false,
+		           resolveDNS: false,
 		           dopts: nil,
 		           copts: nil,
 		           roccd: "",
@@ -328,9 +341,11 @@ func Test_gRPCClient_Range(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -348,6 +363,7 @@ func Test_gRPCClient_Range(t *testing.T) {
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				enablePoolRebalance: test.fields.enablePoolRebalance,
+				resolveDNS:          test.fields.resolveDNS,
 				dopts:               test.fields.dopts,
 				copts:               test.fields.copts,
 				roccd:               test.fields.roccd,
@@ -365,6 +381,7 @@ func Test_gRPCClient_Range(t *testing.T) {
 }
 
 func Test_gRPCClient_RangeConcurrent(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx         context.Context
 		concurrency int
@@ -378,6 +395,7 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 		hcDur               time.Duration
 		prDur               time.Duration
 		enablePoolRebalance bool
+		resolveDNS          bool
 		dopts               []DialOption
 		copts               []CallOption
 		roccd               string
@@ -420,6 +438,7 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 		           hcDur: nil,
 		           prDur: nil,
 		           enablePoolRebalance: false,
+		           resolveDNS: false,
 		           dopts: nil,
 		           copts: nil,
 		           roccd: "",
@@ -449,6 +468,7 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 		           hcDur: nil,
 		           prDur: nil,
 		           enablePoolRebalance: false,
+		           resolveDNS: false,
 		           dopts: nil,
 		           copts: nil,
 		           roccd: "",
@@ -462,9 +482,11 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -482,6 +504,7 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				enablePoolRebalance: test.fields.enablePoolRebalance,
+				resolveDNS:          test.fields.resolveDNS,
 				dopts:               test.fields.dopts,
 				copts:               test.fields.copts,
 				roccd:               test.fields.roccd,
@@ -499,6 +522,7 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 }
 
 func Test_gRPCClient_OrderedRange(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx    context.Context
 		orders []string
@@ -512,6 +536,7 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 		hcDur               time.Duration
 		prDur               time.Duration
 		enablePoolRebalance bool
+		resolveDNS          bool
 		dopts               []DialOption
 		copts               []CallOption
 		roccd               string
@@ -554,6 +579,7 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 		           hcDur: nil,
 		           prDur: nil,
 		           enablePoolRebalance: false,
+		           resolveDNS: false,
 		           dopts: nil,
 		           copts: nil,
 		           roccd: "",
@@ -583,6 +609,7 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 		           hcDur: nil,
 		           prDur: nil,
 		           enablePoolRebalance: false,
+		           resolveDNS: false,
 		           dopts: nil,
 		           copts: nil,
 		           roccd: "",
@@ -596,9 +623,11 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -616,6 +645,7 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				enablePoolRebalance: test.fields.enablePoolRebalance,
+				resolveDNS:          test.fields.resolveDNS,
 				dopts:               test.fields.dopts,
 				copts:               test.fields.copts,
 				roccd:               test.fields.roccd,
@@ -633,6 +663,7 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 }
 
 func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx         context.Context
 		orders      []string
@@ -647,6 +678,7 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 		hcDur               time.Duration
 		prDur               time.Duration
 		enablePoolRebalance bool
+		resolveDNS          bool
 		dopts               []DialOption
 		copts               []CallOption
 		roccd               string
@@ -690,6 +722,7 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 		           hcDur: nil,
 		           prDur: nil,
 		           enablePoolRebalance: false,
+		           resolveDNS: false,
 		           dopts: nil,
 		           copts: nil,
 		           roccd: "",
@@ -720,6 +753,7 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 		           hcDur: nil,
 		           prDur: nil,
 		           enablePoolRebalance: false,
+		           resolveDNS: false,
 		           dopts: nil,
 		           copts: nil,
 		           roccd: "",
@@ -733,9 +767,11 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -753,6 +789,7 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				enablePoolRebalance: test.fields.enablePoolRebalance,
+				resolveDNS:          test.fields.resolveDNS,
 				dopts:               test.fields.dopts,
 				copts:               test.fields.copts,
 				roccd:               test.fields.roccd,
@@ -770,6 +807,7 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 }
 
 func Test_gRPCClient_Do(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		addr string
@@ -783,6 +821,7 @@ func Test_gRPCClient_Do(t *testing.T) {
 		hcDur               time.Duration
 		prDur               time.Duration
 		enablePoolRebalance bool
+		resolveDNS          bool
 		dopts               []DialOption
 		copts               []CallOption
 		roccd               string
@@ -829,6 +868,7 @@ func Test_gRPCClient_Do(t *testing.T) {
 		           hcDur: nil,
 		           prDur: nil,
 		           enablePoolRebalance: false,
+		           resolveDNS: false,
 		           dopts: nil,
 		           copts: nil,
 		           roccd: "",
@@ -858,6 +898,7 @@ func Test_gRPCClient_Do(t *testing.T) {
 		           hcDur: nil,
 		           prDur: nil,
 		           enablePoolRebalance: false,
+		           resolveDNS: false,
 		           dopts: nil,
 		           copts: nil,
 		           roccd: "",
@@ -871,9 +912,11 @@ func Test_gRPCClient_Do(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -891,6 +934,7 @@ func Test_gRPCClient_Do(t *testing.T) {
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				enablePoolRebalance: test.fields.enablePoolRebalance,
+				resolveDNS:          test.fields.resolveDNS,
 				dopts:               test.fields.dopts,
 				copts:               test.fields.copts,
 				roccd:               test.fields.roccd,
@@ -908,6 +952,7 @@ func Test_gRPCClient_Do(t *testing.T) {
 }
 
 func Test_gRPCClient_GetDialOption(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		addrs               []string
 		poolSize            uint64
@@ -916,6 +961,7 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 		hcDur               time.Duration
 		prDur               time.Duration
 		enablePoolRebalance bool
+		resolveDNS          bool
 		dopts               []DialOption
 		copts               []CallOption
 		roccd               string
@@ -952,6 +998,7 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 		           hcDur: nil,
 		           prDur: nil,
 		           enablePoolRebalance: false,
+		           resolveDNS: false,
 		           dopts: nil,
 		           copts: nil,
 		           roccd: "",
@@ -976,6 +1023,7 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 		           hcDur: nil,
 		           prDur: nil,
 		           enablePoolRebalance: false,
+		           resolveDNS: false,
 		           dopts: nil,
 		           copts: nil,
 		           roccd: "",
@@ -989,9 +1037,11 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1009,6 +1059,7 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				enablePoolRebalance: test.fields.enablePoolRebalance,
+				resolveDNS:          test.fields.resolveDNS,
 				dopts:               test.fields.dopts,
 				copts:               test.fields.copts,
 				roccd:               test.fields.roccd,
@@ -1026,6 +1077,7 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 }
 
 func Test_gRPCClient_GetCallOption(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		addrs               []string
 		poolSize            uint64
@@ -1034,6 +1086,7 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 		hcDur               time.Duration
 		prDur               time.Duration
 		enablePoolRebalance bool
+		resolveDNS          bool
 		dopts               []DialOption
 		copts               []CallOption
 		roccd               string
@@ -1070,6 +1123,7 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 		           hcDur: nil,
 		           prDur: nil,
 		           enablePoolRebalance: false,
+		           resolveDNS: false,
 		           dopts: nil,
 		           copts: nil,
 		           roccd: "",
@@ -1094,6 +1148,7 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 		           hcDur: nil,
 		           prDur: nil,
 		           enablePoolRebalance: false,
+		           resolveDNS: false,
 		           dopts: nil,
 		           copts: nil,
 		           roccd: "",
@@ -1107,9 +1162,11 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1127,6 +1184,7 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				enablePoolRebalance: test.fields.enablePoolRebalance,
+				resolveDNS:          test.fields.resolveDNS,
 				dopts:               test.fields.dopts,
 				copts:               test.fields.copts,
 				roccd:               test.fields.roccd,
@@ -1144,6 +1202,7 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 }
 
 func Test_gRPCClient_Connect(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx   context.Context
 		addr  string
@@ -1157,6 +1216,7 @@ func Test_gRPCClient_Connect(t *testing.T) {
 		hcDur               time.Duration
 		prDur               time.Duration
 		enablePoolRebalance bool
+		resolveDNS          bool
 		dopts               []DialOption
 		copts               []CallOption
 		roccd               string
@@ -1199,6 +1259,7 @@ func Test_gRPCClient_Connect(t *testing.T) {
 		           hcDur: nil,
 		           prDur: nil,
 		           enablePoolRebalance: false,
+		           resolveDNS: false,
 		           dopts: nil,
 		           copts: nil,
 		           roccd: "",
@@ -1228,6 +1289,7 @@ func Test_gRPCClient_Connect(t *testing.T) {
 		           hcDur: nil,
 		           prDur: nil,
 		           enablePoolRebalance: false,
+		           resolveDNS: false,
 		           dopts: nil,
 		           copts: nil,
 		           roccd: "",
@@ -1241,9 +1303,11 @@ func Test_gRPCClient_Connect(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1261,6 +1325,7 @@ func Test_gRPCClient_Connect(t *testing.T) {
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				enablePoolRebalance: test.fields.enablePoolRebalance,
+				resolveDNS:          test.fields.resolveDNS,
 				dopts:               test.fields.dopts,
 				copts:               test.fields.copts,
 				roccd:               test.fields.roccd,
@@ -1278,6 +1343,7 @@ func Test_gRPCClient_Connect(t *testing.T) {
 }
 
 func Test_gRPCClient_Disconnect(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		addr string
 	}
@@ -1289,6 +1355,7 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 		hcDur               time.Duration
 		prDur               time.Duration
 		enablePoolRebalance bool
+		resolveDNS          bool
 		dopts               []DialOption
 		copts               []CallOption
 		roccd               string
@@ -1329,6 +1396,7 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 		           hcDur: nil,
 		           prDur: nil,
 		           enablePoolRebalance: false,
+		           resolveDNS: false,
 		           dopts: nil,
 		           copts: nil,
 		           roccd: "",
@@ -1356,6 +1424,7 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 		           hcDur: nil,
 		           prDur: nil,
 		           enablePoolRebalance: false,
+		           resolveDNS: false,
 		           dopts: nil,
 		           copts: nil,
 		           roccd: "",
@@ -1369,9 +1438,11 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1389,6 +1460,7 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				enablePoolRebalance: test.fields.enablePoolRebalance,
+				resolveDNS:          test.fields.resolveDNS,
 				dopts:               test.fields.dopts,
 				copts:               test.fields.copts,
 				roccd:               test.fields.roccd,
@@ -1406,6 +1478,7 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 }
 
 func Test_gRPCClient_Close(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		addrs               []string
 		poolSize            uint64
@@ -1414,6 +1487,7 @@ func Test_gRPCClient_Close(t *testing.T) {
 		hcDur               time.Duration
 		prDur               time.Duration
 		enablePoolRebalance bool
+		resolveDNS          bool
 		dopts               []DialOption
 		copts               []CallOption
 		roccd               string
@@ -1450,6 +1524,7 @@ func Test_gRPCClient_Close(t *testing.T) {
 		           hcDur: nil,
 		           prDur: nil,
 		           enablePoolRebalance: false,
+		           resolveDNS: false,
 		           dopts: nil,
 		           copts: nil,
 		           roccd: "",
@@ -1474,6 +1549,7 @@ func Test_gRPCClient_Close(t *testing.T) {
 		           hcDur: nil,
 		           prDur: nil,
 		           enablePoolRebalance: false,
+		           resolveDNS: false,
 		           dopts: nil,
 		           copts: nil,
 		           roccd: "",
@@ -1487,9 +1563,11 @@ func Test_gRPCClient_Close(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1507,6 +1585,7 @@ func Test_gRPCClient_Close(t *testing.T) {
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				enablePoolRebalance: test.fields.enablePoolRebalance,
+				resolveDNS:          test.fields.resolveDNS,
 				dopts:               test.fields.dopts,
 				copts:               test.fields.copts,
 				roccd:               test.fields.roccd,
