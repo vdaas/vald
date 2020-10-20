@@ -250,6 +250,7 @@ clean:
 		./*.svg \
 		./apis/docs \
 		./apis/swagger \
+		./apis/grpc \
 		./bench \
 		./pprof \
 		./libs \
@@ -287,8 +288,8 @@ tools/install: \
 ## update deps, license, and run goimports
 update: \
 	clean \
-	deps \
 	proto/all \
+	deps \
 	format \
 	go/deps
 

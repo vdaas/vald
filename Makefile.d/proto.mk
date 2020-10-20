@@ -16,6 +16,7 @@
 .PHONY: proto/all
 ## build protobufs
 proto/all: \
+	proto/deps \
 	pbgo \
 	pbdoc \
 	swagger
