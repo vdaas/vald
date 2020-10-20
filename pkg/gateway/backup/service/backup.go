@@ -29,10 +29,10 @@ import (
 
 type Backup interface {
 	Start(ctx context.Context) (<-chan error, error)
-	GetObject(ctx context.Context, uuid string) (*payload.Backup_MetaVector, error)
+	GetObject(ctx context.Context, uuid string) (*payload.Backup_Vector, error)
 	GetLocation(ctx context.Context, uuid string) ([]string, error)
-	Register(ctx context.Context, vec *payload.Backup_MetaVector) error
-	RegisterMultiple(ctx context.Context, vecs *payload.Backup_MetaVectors) error
+	Register(ctx context.Context, vec *payload.Backup_Vector) error
+	RegisterMultiple(ctx context.Context, vecs *payload.Backup_Vectors) error
 	Remove(ctx context.Context, uuid string) error
 	RemoveMultiple(ctx context.Context, uuids ...string) error
 }
@@ -59,7 +59,7 @@ func (b *backup) Start(ctx context.Context) (<-chan error, error) {
 	return b.client.StartConnectionMonitor(ctx)
 }
 
-func (b *backup) GetObject(ctx context.Context, uuid string) (vec *payload.Backup_MetaVector, err error) {
+func (b *backup) GetObject(ctx context.Context, uuid string) (vec *payload.Backup_Vector, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/service/backup.GetObject/"+uuid)
 	defer func() {
 		if span != nil {
@@ -100,7 +100,7 @@ func (b *backup) GetLocation(ctx context.Context, uuid string) (ipList []string,
 	return
 }
 
-func (b *backup) Register(ctx context.Context, vec *payload.Backup_MetaVector) (err error) {
+func (b *backup) Register(ctx context.Context, vec *payload.Backup_Vector) (err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/service/backup.Register/"+vec.GetUuid())
 	defer func() {
 		if span != nil {
@@ -118,7 +118,7 @@ func (b *backup) Register(ctx context.Context, vec *payload.Backup_MetaVector) (
 	return
 }
 
-func (b *backup) RegisterMultiple(ctx context.Context, vecs *payload.Backup_MetaVectors) (err error) {
+func (b *backup) RegisterMultiple(ctx context.Context, vecs *payload.Backup_Vectors) (err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/service/backup.RegisterMultiple")
 	defer func() {
 		if span != nil {

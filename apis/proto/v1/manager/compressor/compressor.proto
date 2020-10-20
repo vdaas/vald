@@ -30,11 +30,11 @@ import "google/api/annotations.proto";
 service Backup {
 
 
-  rpc GetVector(payload.v1.Backup.GetVector.Request) returns (payload.v1.Backup.MetaVector) {
+  rpc GetVector(payload.v1.Backup.GetVector.Request) returns (payload.v1.Backup.Vector) {
     option (google.api.http).get = "/vector/{uuid}";
   }
 
-  // rpc GetVectorsByOwner(payload.v1.Backup.GetVector.Owner) returns (stream payload.v1.Backup.MetaVector) {
+  // rpc GetVectorsByOwner(payload.v1.Backup.GetVector.Owner) returns (stream payload.v1.Backup.Vector) {
   //   option (google.api.http).get = "/vector/{uuid}";
   // }
 
@@ -42,7 +42,7 @@ service Backup {
     option (google.api.http).get = "/locations/{uuid}";
   }
 
-  rpc Register(payload.v1.Backup.MetaVector) returns (payload.v1.Empty) {
+  rpc Register(payload.v1.Backup.Vector) returns (payload.v1.Empty) {
     option (google.api.http) = {
 post : "/register"
          body : "*"
@@ -50,7 +50,7 @@ post : "/register"
 
   }
 
-  rpc RegisterMulti(payload.v1.Backup.MetaVectors) returns (payload.v1.Empty) {
+  rpc RegisterMulti(payload.v1.Backup.Vectors) returns (payload.v1.Empty) {
     option (google.api.http) = {
 post : "/register/multi"
          body : "*"

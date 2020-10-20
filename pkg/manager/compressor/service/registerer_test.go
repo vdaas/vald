@@ -120,7 +120,7 @@ func Test_registerer_PreStart(t *testing.T) {
 		backup     Backup
 		compressor Compressor
 		client     client.Client
-		metas      map[string]*payload.Backup_MetaVector
+		metas      map[string]*payload.Backup_Vector
 		metasMux   sync.Mutex
 	}
 	type want struct {
@@ -235,7 +235,7 @@ func Test_registerer_Start(t *testing.T) {
 		backup     Backup
 		compressor Compressor
 		client     client.Client
-		metas      map[string]*payload.Backup_MetaVector
+		metas      map[string]*payload.Backup_Vector
 		metasMux   sync.Mutex
 	}
 	type want struct {
@@ -354,7 +354,7 @@ func Test_registerer_PostStop(t *testing.T) {
 		backup     Backup
 		compressor Compressor
 		client     client.Client
-		metas      map[string]*payload.Backup_MetaVector
+		metas      map[string]*payload.Backup_Vector
 		metasMux   sync.Mutex
 	}
 	type want struct {
@@ -461,7 +461,7 @@ func Test_registerer_Register(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx  context.Context
-		meta *payload.Backup_MetaVector
+		meta *payload.Backup_Vector
 	}
 	type fields struct {
 		worker     worker.Worker
@@ -470,7 +470,7 @@ func Test_registerer_Register(t *testing.T) {
 		backup     Backup
 		compressor Compressor
 		client     client.Client
-		metas      map[string]*payload.Backup_MetaVector
+		metas      map[string]*payload.Backup_Vector
 		metasMux   sync.Mutex
 	}
 	type want struct {
@@ -579,7 +579,7 @@ func Test_registerer_RegisterMulti(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx   context.Context
-		metas *payload.Backup_MetaVectors
+		metas *payload.Backup_Vectors
 	}
 	type fields struct {
 		worker     worker.Worker
@@ -588,7 +588,7 @@ func Test_registerer_RegisterMulti(t *testing.T) {
 		backup     Backup
 		compressor Compressor
 		client     client.Client
-		metas      map[string]*payload.Backup_MetaVector
+		metas      map[string]*payload.Backup_Vector
 		metasMux   sync.Mutex
 	}
 	type want struct {
@@ -702,7 +702,7 @@ func Test_registerer_Len(t *testing.T) {
 		backup     Backup
 		compressor Compressor
 		client     client.Client
-		metas      map[string]*payload.Backup_MetaVector
+		metas      map[string]*payload.Backup_Vector
 		metasMux   sync.Mutex
 	}
 	type want struct {
@@ -807,7 +807,7 @@ func Test_registerer_TotalRequested(t *testing.T) {
 		backup     Backup
 		compressor Compressor
 		client     client.Client
-		metas      map[string]*payload.Backup_MetaVector
+		metas      map[string]*payload.Backup_Vector
 		metasMux   sync.Mutex
 	}
 	type want struct {
@@ -912,7 +912,7 @@ func Test_registerer_TotalCompleted(t *testing.T) {
 		backup     Backup
 		compressor Compressor
 		client     client.Client
-		metas      map[string]*payload.Backup_MetaVector
+		metas      map[string]*payload.Backup_Vector
 		metasMux   sync.Mutex
 	}
 	type want struct {
@@ -1012,7 +1012,7 @@ func Test_registerer_dispatch(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx  context.Context
-		meta *payload.Backup_MetaVector
+		meta *payload.Backup_Vector
 	}
 	type fields struct {
 		worker     worker.Worker
@@ -1021,7 +1021,7 @@ func Test_registerer_dispatch(t *testing.T) {
 		backup     Backup
 		compressor Compressor
 		client     client.Client
-		metas      map[string]*payload.Backup_MetaVector
+		metas      map[string]*payload.Backup_Vector
 		metasMux   sync.Mutex
 	}
 	type want struct {
@@ -1129,7 +1129,7 @@ func Test_registerer_dispatch(t *testing.T) {
 func Test_registerer_registerProcessFunc(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		meta *payload.Backup_MetaVector
+		meta *payload.Backup_Vector
 	}
 	type fields struct {
 		worker     worker.Worker
@@ -1138,7 +1138,7 @@ func Test_registerer_registerProcessFunc(t *testing.T) {
 		backup     Backup
 		compressor Compressor
 		client     client.Client
-		metas      map[string]*payload.Backup_MetaVector
+		metas      map[string]*payload.Backup_Vector
 		metasMux   sync.Mutex
 	}
 	type want struct {
@@ -1253,7 +1253,7 @@ func Test_registerer_forwardMetas(t *testing.T) {
 		backup     Backup
 		compressor Compressor
 		client     client.Client
-		metas      map[string]*payload.Backup_MetaVector
+		metas      map[string]*payload.Backup_Vector
 		metasMux   sync.Mutex
 	}
 	type want struct {

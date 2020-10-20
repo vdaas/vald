@@ -45,21 +45,6 @@
     }
   },
   "definitions": {
-    "ObjectVector": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "vector": {
-          "type": "array",
-          "items": {
-            "type": "number",
-            "format": "float"
-          }
-        }
-      }
-    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -144,7 +129,7 @@
       "type": "object",
       "properties": {
         "vector": {
-          "$ref": "#/definitions/ObjectVector"
+          "$ref": "#/definitions/v1ObjectVector"
         },
         "config": {
           "$ref": "#/definitions/v1InsertConfig"
@@ -175,6 +160,21 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1ObjectLocation"
+          }
+        }
+      }
+    },
+    "v1ObjectVector": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "vector": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "float"
           }
         }
       }

@@ -190,7 +190,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/BackupCompressedMetaVector"
+              "$ref": "#/definitions/BackupCompressedVector"
             }
           }
         ],
@@ -222,7 +222,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/BackupCompressedMetaVectors"
+              "$ref": "#/definitions/BackupCompressedVectors"
             }
           }
         ],
@@ -238,7 +238,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/BackupCompressedMetaVector"
+              "$ref": "#/definitions/BackupCompressedVector"
             }
           },
           "default": {
@@ -263,7 +263,7 @@
     }
   },
   "definitions": {
-    "BackupCompressedMetaVector": {
+    "BackupCompressedVector": {
       "type": "object",
       "properties": {
         "uuid": {
@@ -281,13 +281,13 @@
         }
       }
     },
-    "BackupCompressedMetaVectors": {
+    "BackupCompressedVectors": {
       "type": "object",
       "properties": {
         "vectors": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/BackupCompressedMetaVector"
+            "$ref": "#/definitions/BackupCompressedVector"
           }
         }
       }

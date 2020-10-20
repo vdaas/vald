@@ -28,10 +28,10 @@ import (
 
 type Backup interface {
 	Start(ctx context.Context) (<-chan error, error)
-	GetObject(ctx context.Context, uuid string) (*payload.Backup_Compressed_MetaVector, error)
+	GetObject(ctx context.Context, uuid string) (*payload.Backup_Compressed_Vector, error)
 	GetLocation(ctx context.Context, uuid string) ([]string, error)
-	Register(ctx context.Context, vec *payload.Backup_Compressed_MetaVector) error
-	RegisterMultiple(ctx context.Context, vecs *payload.Backup_Compressed_MetaVectors) error
+	Register(ctx context.Context, vec *payload.Backup_Compressed_Vector) error
+	RegisterMultiple(ctx context.Context, vecs *payload.Backup_Compressed_Vectors) error
 	Remove(ctx context.Context, uuid string) error
 	RemoveMultiple(ctx context.Context, uuids ...string) error
 	RegisterIPs(ctx context.Context, uuid string, ips []string) error
@@ -58,7 +58,7 @@ func (b *backup) Start(ctx context.Context) (<-chan error, error) {
 	return b.client.StartConnectionMonitor(ctx)
 }
 
-func (b *backup) GetObject(ctx context.Context, uuid string) (vec *payload.Backup_Compressed_MetaVector, err error) {
+func (b *backup) GetObject(ctx context.Context, uuid string) (vec *payload.Backup_Compressed_Vector, err error) {
 	_, err = b.client.Do(ctx, b.addr, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
 		vec, err = gback.NewBackupClient(conn).GetVector(ctx, &payload.Backup_GetVector_Request{
@@ -87,7 +87,7 @@ func (b *backup) GetLocation(ctx context.Context, uuid string) (ipList []string,
 	return
 }
 
-func (b *backup) Register(ctx context.Context, vec *payload.Backup_Compressed_MetaVector) (err error) {
+func (b *backup) Register(ctx context.Context, vec *payload.Backup_Compressed_Vector) (err error) {
 	_, err = b.client.Do(ctx, b.addr, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
 		_, err = gback.NewBackupClient(conn).Register(ctx, vec, copts...)
@@ -99,7 +99,7 @@ func (b *backup) Register(ctx context.Context, vec *payload.Backup_Compressed_Me
 	return
 }
 
-func (b *backup) RegisterMultiple(ctx context.Context, vecs *payload.Backup_Compressed_MetaVectors) (err error) {
+func (b *backup) RegisterMultiple(ctx context.Context, vecs *payload.Backup_Compressed_Vectors) (err error) {
 	_, err = b.client.Do(ctx, b.addr, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
 		_, err = gback.NewBackupClient(conn).RegisterMulti(ctx, vecs, copts...)

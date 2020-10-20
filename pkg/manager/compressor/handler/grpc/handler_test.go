@@ -114,7 +114,7 @@ func Test_server_GetVector(t *testing.T) {
 		registerer service.Registerer
 	}
 	type want struct {
-		wantRes *payload.Backup_MetaVector
+		wantRes *payload.Backup_Vector
 		err     error
 	}
 	type test struct {
@@ -122,11 +122,11 @@ func Test_server_GetVector(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Backup_MetaVector, error) error
+		checkFunc  func(want, *payload.Backup_Vector, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotRes *payload.Backup_MetaVector, err error) error {
+	defaultCheckFunc := func(w want, gotRes *payload.Backup_Vector, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -310,7 +310,7 @@ func Test_server_Register(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx  context.Context
-		meta *payload.Backup_MetaVector
+		meta *payload.Backup_Vector
 	}
 	type fields struct {
 		backup     service.Backup
@@ -412,7 +412,7 @@ func Test_server_RegisterMulti(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx   context.Context
-		metas *payload.Backup_MetaVectors
+		metas *payload.Backup_Vectors
 	}
 	type fields struct {
 		backup     service.Backup

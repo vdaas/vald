@@ -47,7 +47,7 @@ func New(opts ...Option) Server {
 	return s
 }
 
-func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Request) (res *payload.Backup_Compressed_MetaVector, err error) {
+func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Request) (res *payload.Backup_Compressed_Vector, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-backup-mysql.GetVector")
 	defer func() {
 		if span != nil {
@@ -96,7 +96,7 @@ func (s *server) Locations(ctx context.Context, req *payload.Backup_Locations_Re
 	}, nil
 }
 
-func (s *server) Register(ctx context.Context, meta *payload.Backup_Compressed_MetaVector) (res *payload.Empty, err error) {
+func (s *server) Register(ctx context.Context, meta *payload.Backup_Compressed_Vector) (res *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-backup-mysql.Register")
 	defer func() {
 		if span != nil {
@@ -125,7 +125,7 @@ func (s *server) Register(ctx context.Context, meta *payload.Backup_Compressed_M
 	return new(payload.Empty), nil
 }
 
-func (s *server) RegisterMulti(ctx context.Context, metas *payload.Backup_Compressed_MetaVectors) (res *payload.Empty, err error) {
+func (s *server) RegisterMulti(ctx context.Context, metas *payload.Backup_Compressed_Vectors) (res *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-backup-mysql.RegisterMulti")
 	defer func() {
 		if span != nil {
@@ -238,15 +238,15 @@ func (s *server) RemoveIPs(ctx context.Context, req *payload.Backup_IP_Remove_Re
 	return new(payload.Empty), nil
 }
 
-func toBackupMetaVector(meta *model.MetaVector) (res *payload.Backup_Compressed_MetaVector, err error) {
-	return &payload.Backup_Compressed_MetaVector{
+func toBackupMetaVector(meta *model.MetaVector) (res *payload.Backup_Compressed_Vector, err error) {
+	return &payload.Backup_Compressed_Vector{
 		Uuid:   meta.GetUUID(),
 		Vector: meta.GetVector(),
 		Ips:    meta.GetIPs(),
 	}, nil
 }
 
-func toModelMetaVector(obj *payload.Backup_Compressed_MetaVector) (res *model.MetaVector, err error) {
+func toModelMetaVector(obj *payload.Backup_Compressed_Vector) (res *model.MetaVector, err error) {
 	return &model.MetaVector{
 		UUID:   obj.Uuid,
 		Vector: obj.Vector,

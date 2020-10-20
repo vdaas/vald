@@ -196,7 +196,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("Insert API failed to Execute DoMulti error = %s", err.Error()), err, info.Get())
 	}
-	vecs := &payload.Backup_MetaVector{
+	vecs := &payload.Backup_Vector{
 		Uuid: uuid,
 		Ips:  loc.GetIps(),
 	}
@@ -277,13 +277,13 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 		return nil, status.WrapWithInternal(fmt.Sprintf("MultiInsert API failed to Insert error = %s", err.Error()), err, info.Get())
 	}
 
-	mvecs := &payload.Backup_MetaVectors{
-		Vectors: make([]*payload.Backup_MetaVector, 0, len(reqs.GetRequests())),
+	mvecs := &payload.Backup_Vectors{
+		Vectors: make([]*payload.Backup_Vector, 0, len(reqs.GetRequests())),
 	}
 	for i, req := range reqs.GetRequests() {
 		vec := req.GetVector()
 		uuid := vec.GetId()
-		mvecs.Vectors = append(mvecs.Vectors, &payload.Backup_MetaVector{
+		mvecs.Vectors = append(mvecs.Vectors, &payload.Backup_Vector{
 			Uuid:   uuid,
 			Vector: vec.GetVector(),
 			Ips:    res.Locations[i].GetIps(),

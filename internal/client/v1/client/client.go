@@ -33,11 +33,11 @@ type (
 	SearchResponse            = payload.Search_Response
 	ControlCreateIndexRequest = payload.Control_CreateIndexRequest
 	InfoIndex                 = payload.Info_Index
-	MetaObject                = payload.Backup_MetaVector
+	MetaObject                = payload.Backup_Vector
 	Empty                     = payload.Empty
 	SearchConfig              = payload.Search_Config
 	ObjectDistance            = payload.Object_Distance
-	BackupMetaVector          = payload.Backup_MetaVector
+	BackupMetaVector          = payload.Backup_Vector
 )
 
 type Client interface {

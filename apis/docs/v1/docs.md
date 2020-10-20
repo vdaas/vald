@@ -40,8 +40,8 @@
 - [apis/proto/v1/payload/payload.proto](#apis/proto/v1/payload/payload.proto)
     - [Backup](#payload.v1.Backup)
     - [Backup.Compressed](#payload.v1.Backup.Compressed)
-    - [Backup.Compressed.MetaVector](#payload.v1.Backup.Compressed.MetaVector)
-    - [Backup.Compressed.MetaVectors](#payload.v1.Backup.Compressed.MetaVectors)
+    - [Backup.Compressed.Vector](#payload.v1.Backup.Compressed.Vector)
+    - [Backup.Compressed.Vectors](#payload.v1.Backup.Compressed.Vectors)
     - [Backup.GetVector](#payload.v1.Backup.GetVector)
     - [Backup.GetVector.Owner](#payload.v1.Backup.GetVector.Owner)
     - [Backup.GetVector.Request](#payload.v1.Backup.GetVector.Request)
@@ -52,11 +52,11 @@
     - [Backup.IP.Remove.Request](#payload.v1.Backup.IP.Remove.Request)
     - [Backup.Locations](#payload.v1.Backup.Locations)
     - [Backup.Locations.Request](#payload.v1.Backup.Locations.Request)
-    - [Backup.MetaVector](#payload.v1.Backup.MetaVector)
-    - [Backup.MetaVectors](#payload.v1.Backup.MetaVectors)
     - [Backup.Remove](#payload.v1.Backup.Remove)
     - [Backup.Remove.Request](#payload.v1.Backup.Remove.Request)
     - [Backup.Remove.RequestMulti](#payload.v1.Backup.Remove.RequestMulti)
+    - [Backup.Vector](#payload.v1.Backup.Vector)
+    - [Backup.Vectors](#payload.v1.Backup.Vectors)
     - [Control](#payload.v1.Control)
     - [Control.CreateIndexRequest](#payload.v1.Control.CreateIndexRequest)
     - [Discoverer](#payload.v1.Discoverer)
@@ -397,10 +397,10 @@
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| GetVector | [.payload.v1.Backup.GetVector.Request](#payload.v1.Backup.GetVector.Request) | [.payload.v1.Backup.Compressed.MetaVector](#payload.v1.Backup.Compressed.MetaVector) |  |
+| GetVector | [.payload.v1.Backup.GetVector.Request](#payload.v1.Backup.GetVector.Request) | [.payload.v1.Backup.Compressed.Vector](#payload.v1.Backup.Compressed.Vector) |  |
 | Locations | [.payload.v1.Backup.Locations.Request](#payload.v1.Backup.Locations.Request) | [.payload.v1.Info.IPs](#payload.v1.Info.IPs) |  |
-| Register | [.payload.v1.Backup.Compressed.MetaVector](#payload.v1.Backup.Compressed.MetaVector) | [.payload.v1.Empty](#payload.v1.Empty) |  |
-| RegisterMulti | [.payload.v1.Backup.Compressed.MetaVectors](#payload.v1.Backup.Compressed.MetaVectors) | [.payload.v1.Empty](#payload.v1.Empty) |  |
+| Register | [.payload.v1.Backup.Compressed.Vector](#payload.v1.Backup.Compressed.Vector) | [.payload.v1.Empty](#payload.v1.Empty) |  |
+| RegisterMulti | [.payload.v1.Backup.Compressed.Vectors](#payload.v1.Backup.Compressed.Vectors) | [.payload.v1.Empty](#payload.v1.Empty) |  |
 | Remove | [.payload.v1.Backup.Remove.Request](#payload.v1.Backup.Remove.Request) | [.payload.v1.Empty](#payload.v1.Empty) |  |
 | RemoveMulti | [.payload.v1.Backup.Remove.RequestMulti](#payload.v1.Backup.Remove.RequestMulti) | [.payload.v1.Empty](#payload.v1.Empty) |  |
 | RegisterIPs | [.payload.v1.Backup.IP.Register.Request](#payload.v1.Backup.IP.Register.Request) | [.payload.v1.Empty](#payload.v1.Empty) |  |
@@ -430,10 +430,10 @@
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| GetVector | [.payload.v1.Backup.GetVector.Request](#payload.v1.Backup.GetVector.Request) | [.payload.v1.Backup.MetaVector](#payload.v1.Backup.MetaVector) |  |
+| GetVector | [.payload.v1.Backup.GetVector.Request](#payload.v1.Backup.GetVector.Request) | [.payload.v1.Backup.Vector](#payload.v1.Backup.Vector) |  |
 | Locations | [.payload.v1.Backup.Locations.Request](#payload.v1.Backup.Locations.Request) | [.payload.v1.Info.IPs](#payload.v1.Info.IPs) |  |
-| Register | [.payload.v1.Backup.MetaVector](#payload.v1.Backup.MetaVector) | [.payload.v1.Empty](#payload.v1.Empty) |  |
-| RegisterMulti | [.payload.v1.Backup.MetaVectors](#payload.v1.Backup.MetaVectors) | [.payload.v1.Empty](#payload.v1.Empty) |  |
+| Register | [.payload.v1.Backup.Vector](#payload.v1.Backup.Vector) | [.payload.v1.Empty](#payload.v1.Empty) |  |
+| RegisterMulti | [.payload.v1.Backup.Vectors](#payload.v1.Backup.Vectors) | [.payload.v1.Empty](#payload.v1.Empty) |  |
 | Remove | [.payload.v1.Backup.Remove.Request](#payload.v1.Backup.Remove.Request) | [.payload.v1.Empty](#payload.v1.Empty) |  |
 | RemoveMulti | [.payload.v1.Backup.Remove.RequestMulti](#payload.v1.Backup.Remove.RequestMulti) | [.payload.v1.Empty](#payload.v1.Empty) |  |
 | RegisterIPs | [.payload.v1.Backup.IP.Register.Request](#payload.v1.Backup.IP.Register.Request) | [.payload.v1.Empty](#payload.v1.Empty) |  |
@@ -531,9 +531,9 @@
 
 
 
-<a name="payload.v1.Backup.Compressed.MetaVector"></a>
+<a name="payload.v1.Backup.Compressed.Vector"></a>
 
-### Backup.Compressed.MetaVector
+### Backup.Compressed.Vector
 
 
 
@@ -548,15 +548,15 @@
 
 
 
-<a name="payload.v1.Backup.Compressed.MetaVectors"></a>
+<a name="payload.v1.Backup.Compressed.Vectors"></a>
 
-### Backup.Compressed.MetaVectors
+### Backup.Compressed.Vectors
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| vectors | [Backup.Compressed.MetaVector](#payload.v1.Backup.Compressed.MetaVector) | repeated |  |
+| vectors | [Backup.Compressed.Vector](#payload.v1.Backup.Compressed.Vector) | repeated |  |
 
 
 
@@ -689,38 +689,6 @@
 
 
 
-<a name="payload.v1.Backup.MetaVector"></a>
-
-### Backup.MetaVector
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| uuid | [string](#string) |  |  |
-| vector | [float](#float) | repeated |  |
-| ips | [string](#string) | repeated |  |
-
-
-
-
-
-
-<a name="payload.v1.Backup.MetaVectors"></a>
-
-### Backup.MetaVectors
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| vectors | [Backup.MetaVector](#payload.v1.Backup.MetaVector) | repeated |  |
-
-
-
-
-
-
 <a name="payload.v1.Backup.Remove"></a>
 
 ### Backup.Remove
@@ -755,6 +723,38 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | uuids | [string](#string) | repeated |  |
+
+
+
+
+
+
+<a name="payload.v1.Backup.Vector"></a>
+
+### Backup.Vector
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| uuid | [string](#string) |  |  |
+| vector | [float](#float) | repeated |  |
+| ips | [string](#string) | repeated |  |
+
+
+
+
+
+
+<a name="payload.v1.Backup.Vectors"></a>
+
+### Backup.Vectors
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| vectors | [Backup.Vector](#payload.v1.Backup.Vector) | repeated |  |
 
 
 

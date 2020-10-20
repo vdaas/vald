@@ -64,7 +64,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/ObjectVector"
+              "$ref": "#/definitions/v1ObjectVector"
             }
           }
         ],
@@ -80,7 +80,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/ObjectVector"
+              "$ref": "#/definitions/v1ObjectVector"
             }
           },
           "default": {
@@ -220,7 +220,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/ObjectVector"
+              "$ref": "#/definitions/v1ObjectVector"
             }
           }
         ],
@@ -252,7 +252,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/ObjectVector"
+              "$ref": "#/definitions/v1ObjectVector"
             }
           }
         ],
@@ -280,21 +280,6 @@
       "properties": {
         "id": {
           "type": "string"
-        }
-      }
-    },
-    "ObjectVector": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "vector": {
-          "type": "array",
-          "items": {
-            "type": "number",
-            "format": "float"
-          }
         }
       }
     },
@@ -416,6 +401,21 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1ObjectLocation"
+          }
+        }
+      }
+    },
+    "v1ObjectVector": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "vector": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "float"
           }
         }
       }

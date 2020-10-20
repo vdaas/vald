@@ -371,7 +371,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 		return nil, status.WrapWithInternal(fmt.Sprintf("Insert API failed to Execute DoMulti error = %s", err.Error()), err, info.Get())
 	}
 	if s.backup != nil {
-		vecs := &payload.Backup_MetaVector{
+		vecs := &payloadv1.Backup_Vector{
 			Uuid: uuid,
 			Ips:  targets,
 		}
@@ -486,12 +486,12 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 	}
 
 	if s.backup != nil {
-		mvecs := new(payload.Backup_MetaVectors)
-		mvecs.Vectors = make([]*payload.Backup_MetaVector, 0, len(vecs.GetVectors()))
+		mvecs := new(payloadv1.Backup_Vectors)
+		mvecs.Vectors = make([]*payloadv1.Backup_Vector, 0, len(vecs.GetVectors()))
 		for _, req := range reqs {
 			vec := req.GetVector()
 			uuid := vec.GetId()
-			mvecs.Vectors = append(mvecs.Vectors, &payload.Backup_MetaVector{
+			mvecs.Vectors = append(mvecs.Vectors, &payloadv1.Backup_Vector{
 				Uuid:   uuid,
 				Vector: vec.GetVector(),
 				Ips:    targets,
@@ -564,7 +564,7 @@ func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *p
 		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("Update API failed request %#v", vec), err, info.Get())
 	}
-	err = s.backup.Register(ctx, &payload.Backup_MetaVector{
+	err = s.backup.Register(ctx, &payloadv1.Backup_Vector{
 		Uuid:   uuid,
 		Vector: vec.GetVector(),
 		Ips:    locs,

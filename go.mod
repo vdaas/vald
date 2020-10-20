@@ -3,9 +3,9 @@ module github.com/vdaas/vald
 go 1.15
 
 replace (
-	cloud.google.com/go => cloud.google.com/go v0.69.1
+	cloud.google.com/go => cloud.google.com/go v0.70.0
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0+incompatible
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.35.9
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.35.10
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
@@ -74,7 +74,7 @@ require (
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/plot v0.8.0
 	google.golang.org/api v0.33.0
-	google.golang.org/genproto v0.0.0-20201015140912-32ed001d685c
+	google.golang.org/genproto v0.0.0-20201019141844-1ed22bb0c154
 	google.golang.org/grpc v1.32.0
 	gopkg.in/yaml.v2 v2.3.0
 	k8s.io/api v0.18.9

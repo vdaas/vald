@@ -236,21 +236,21 @@ message Backup {
     }
   }
 
-  message MetaVector {
+  message Vector {
     string uuid = 1;
     repeated float vector = 3 [ (validate.rules).repeated .min_items = 2 ];
     repeated string ips = 4;
   }
-  message MetaVectors { repeated MetaVector vectors = 1; }
+  message Vectors { repeated Vector vectors = 1; }
 
   message Compressed {
-    message MetaVector {
+    message Vector {
       string uuid = 1;
       bytes vector = 3;
       repeated string ips = 4;
     }
 
-    message MetaVectors { repeated MetaVector vectors = 1; }
+    message Vectors { repeated Vector vectors = 1; }
   }
 }
 
