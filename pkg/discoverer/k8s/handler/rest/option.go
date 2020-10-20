@@ -17,7 +17,7 @@
 // Package rest provides rest api logic
 package rest
 
-import "github.com/vdaas/vald/apis/grpc/discoverer"
+import "github.com/vdaas/vald/apis/grpc/v1/discoverer"
 
 type Option func(*handler)
 

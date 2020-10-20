@@ -16,7 +16,7 @@
 
 syntax = "proto3";
 
-package index_manager;
+package manager.index.v1;
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/manager/index";
 option java_multiple_files = true;
@@ -29,7 +29,7 @@ import "google/api/annotations.proto";
 
 service Index {
 
-  rpc IndexInfo(payload.Empty) returns (payload.Info.Index.Count) {
+  rpc IndexInfo(payload.v1.Empty) returns (payload.v1.Info.Index.Count) {
     option (google.api.http).get = "/index/info";
   }
 }

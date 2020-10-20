@@ -16,7 +16,7 @@
 
 syntax = "proto3";
 
-package vald;
+package vald.v1;
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/vald";
 option java_multiple_files = true;
@@ -29,25 +29,25 @@ import "google/api/annotations.proto";
 
 service Search {
 
-  rpc Search(payload.Search.Request) returns (payload.Search.Response) {
+  rpc Search(payload.v1.Search.Request) returns (payload.v1.Search.Response) {
     option (google.api.http) = {
       post : "/search"
       body : "*"
     };
   }
-  rpc SearchByID(payload.Search.IDRequest) returns (payload.Search.Response) {
+  rpc SearchByID(payload.v1.Search.IDRequest) returns (payload.v1.Search.Response) {
     option (google.api.http) = {
       post : "/search/id"
       body : "*"
     };
   }
-  rpc StreamSearch(stream payload.Search.Request)
-      returns (stream payload.Search.Response) {}
-  rpc StreamSearchByID(stream payload.Search.IDRequest)
-      returns (stream payload.Search.Response) {}
-  rpc MultiSearch(payload.Search.MultiRequest)
-      returns (payload.Search.Responses) {}
-  rpc MultiSearchByID(payload.Search.MultiIDRequest)
-      returns (payload.Search.Responses) {}
+  rpc StreamSearch(stream payload.v1.Search.Request)
+      returns (stream payload.v1.Search.Response) {}
+  rpc StreamSearchByID(stream payload.v1.Search.IDRequest)
+      returns (stream payload.v1.Search.Response) {}
+  rpc MultiSearch(payload.v1.Search.MultiRequest)
+      returns (payload.v1.Search.Responses) {}
+  rpc MultiSearchByID(payload.v1.Search.MultiIDRequest)
+      returns (payload.v1.Search.Responses) {}
 
 }

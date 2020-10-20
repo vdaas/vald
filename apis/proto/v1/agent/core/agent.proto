@@ -16,7 +16,7 @@
 
 syntax = "proto3";
 
-package core;
+package core.v1;
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/agent/core";
 option java_multiple_files = true;
@@ -28,17 +28,17 @@ import "google/api/annotations.proto";
 
 
 service Agent {
-  rpc CreateIndex(payload.Control.CreateIndexRequest) returns (payload.Empty) {
+  rpc CreateIndex(payload.v1.Control.CreateIndexRequest) returns (payload.v1.Empty) {
     option (google.api.http).get = "/index/create";
   }
-  rpc SaveIndex(payload.Empty) returns (payload.Empty) {
+  rpc SaveIndex(payload.v1.Empty) returns (payload.v1.Empty) {
     option (google.api.http).get = "/index/save";
   }
-  rpc CreateAndSaveIndex(payload.Control.CreateIndexRequest)
-      returns (payload.Empty) {
+  rpc CreateAndSaveIndex(payload.v1.Control.CreateIndexRequest)
+      returns (payload.v1.Empty) {
     option (google.api.http).get = "/index/createandsave";
   }
-  rpc IndexInfo(payload.Empty) returns (payload.Info.Index.Count) {
+  rpc IndexInfo(payload.v1.Empty) returns (payload.v1.Info.Index.Count) {
     option (google.api.http).get = "/index/info";
   }
 }

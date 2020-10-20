@@ -196,7 +196,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("Insert API failed to Execute DoMulti error = %s", err.Error()), err, info.Get())
 	}
-	vecs := &payload.Backup_MetaVector{
+	vecs := &payload.Backup_Vector{
 		Uuid: uuid,
 		Ips:  loc.GetIps(),
 	}
@@ -231,7 +231,7 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) error {
 		}
 	}()
 	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Object_Vector) },
+		func() interface{} { return new(payload.Insert_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			return s.Insert(ctx, data.(*payload.Insert_Request))
 		})
@@ -277,13 +277,13 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 		return nil, status.WrapWithInternal(fmt.Sprintf("MultiInsert API failed to Insert error = %s", err.Error()), err, info.Get())
 	}
 
-	mvecs := &payload.Backup_MetaVectors{
-		Vectors: make([]*payload.Backup_MetaVector, 0, len(reqs.GetRequests())),
+	mvecs := &payload.Backup_Vectors{
+		Vectors: make([]*payload.Backup_Vector, 0, len(reqs.GetRequests())),
 	}
 	for i, req := range reqs.GetRequests() {
 		vec := req.GetVector()
 		uuid := vec.GetId()
-		mvecs.Vectors = append(mvecs.Vectors, &payload.Backup_MetaVector{
+		mvecs.Vectors = append(mvecs.Vectors, &payload.Backup_Vector{
 			Uuid:   uuid,
 			Vector: vec.GetVector(),
 			Ips:    res.Locations[i].GetIps(),
@@ -362,7 +362,7 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) error {
 		}
 	}()
 	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Object_Vector) },
+		func() interface{} { return new(payload.Update_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			return s.Update(ctx, data.(*payload.Update_Request))
 		})
@@ -465,7 +465,7 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) error {
 		}
 	}()
 	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Object_Vector) },
+		func() interface{} { return new(payload.Upsert_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			return s.Upsert(ctx, data.(*payload.Upsert_Request))
 		})
@@ -621,7 +621,7 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) error {
 		}
 	}()
 	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Object_ID) },
+		func() interface{} { return new(payload.Remove_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			return s.Remove(ctx, data.(*payload.Remove_Request))
 		})

@@ -212,7 +212,7 @@ func Test_client_GetVector(t *testing.T) {
 		client grpc.Client
 	}
 	type want struct {
-		wantVec *payload.Backup_MetaVector
+		wantVec *payload.Backup_Vector
 		err     error
 	}
 	type test struct {
@@ -220,11 +220,11 @@ func Test_client_GetVector(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Backup_MetaVector, error) error
+		checkFunc  func(want, *payload.Backup_Vector, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotVec *payload.Backup_MetaVector, err error) error {
+	defaultCheckFunc := func(w want, gotVec *payload.Backup_Vector, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -401,7 +401,7 @@ func Test_client_Register(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx context.Context
-		vec *payload.Backup_MetaVector
+		vec *payload.Backup_Vector
 	}
 	type fields struct {
 		addr   string
@@ -495,7 +495,7 @@ func Test_client_RegisterMultiple(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx  context.Context
-		vecs *payload.Backup_MetaVectors
+		vecs *payload.Backup_Vectors
 	}
 	type fields struct {
 		addr   string

@@ -18,7 +18,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/payloadObjectLocation"
+              "$ref": "#/definitions/v1ObjectLocation"
             }
           },
           "default": {
@@ -34,7 +34,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/payloadInsertRequest"
+              "$ref": "#/definitions/v1InsertRequest"
             }
           }
         ],
@@ -45,82 +45,6 @@
     }
   },
   "definitions": {
-    "ObjectVector": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "vector": {
-          "type": "array",
-          "items": {
-            "type": "number",
-            "format": "float"
-          }
-        }
-      }
-    },
-    "payloadFilterConfig": {
-      "type": "object",
-      "properties": {
-        "targets": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "payloadInsertConfig": {
-      "type": "object",
-      "properties": {
-        "skipStrictExistCheck": {
-          "type": "boolean"
-        },
-        "filters": {
-          "$ref": "#/definitions/payloadFilterConfig"
-        }
-      }
-    },
-    "payloadInsertRequest": {
-      "type": "object",
-      "properties": {
-        "vector": {
-          "$ref": "#/definitions/ObjectVector"
-        },
-        "config": {
-          "$ref": "#/definitions/payloadInsertConfig"
-        }
-      }
-    },
-    "payloadObjectLocation": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "uuid": {
-          "type": "string"
-        },
-        "ips": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "payloadObjectLocations": {
-      "type": "object",
-      "properties": {
-        "locations": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/payloadObjectLocation"
-          }
-        }
-      }
-    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -175,6 +99,82 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1FilterConfig": {
+      "type": "object",
+      "properties": {
+        "targets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1InsertConfig": {
+      "type": "object",
+      "properties": {
+        "skipStrictExistCheck": {
+          "type": "boolean"
+        },
+        "filters": {
+          "$ref": "#/definitions/v1FilterConfig"
+        }
+      }
+    },
+    "v1InsertRequest": {
+      "type": "object",
+      "properties": {
+        "vector": {
+          "$ref": "#/definitions/v1ObjectVector"
+        },
+        "config": {
+          "$ref": "#/definitions/v1InsertConfig"
+        }
+      }
+    },
+    "v1ObjectLocation": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "uuid": {
+          "type": "string"
+        },
+        "ips": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1ObjectLocations": {
+      "type": "object",
+      "properties": {
+        "locations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1ObjectLocation"
+          }
+        }
+      }
+    },
+    "v1ObjectVector": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "vector": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "float"
           }
         }
       }

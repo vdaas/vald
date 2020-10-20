@@ -19,8 +19,8 @@ package usecase
 import (
 	"context"
 
-	"github.com/vdaas/vald/apis/grpc/manager/index"
-	"github.com/vdaas/vald/internal/client/discoverer"
+	"github.com/vdaas/vald/apis/grpc/v1/manager/index"
+	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/grpc"

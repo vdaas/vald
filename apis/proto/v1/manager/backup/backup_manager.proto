@@ -16,7 +16,7 @@
 
 syntax = "proto3";
 
-package backup_manager;
+package manager.backup.v1;
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/manager/backup";
 option java_multiple_files = true;
@@ -30,15 +30,15 @@ import "google/api/annotations.proto";
 service Backup {
 
 
-  rpc GetVector(payload.Backup.GetVector.Request) returns (payload.Backup.Compressed.MetaVector) {
+  rpc GetVector(payload.v1.Backup.GetVector.Request) returns (payload.v1.Backup.Compressed.Vector) {
     option (google.api.http).get = "/vector/{uuid}";
   }
 
-  rpc Locations(payload.Backup.Locations.Request) returns (payload.Info.IPs) {
+  rpc Locations(payload.v1.Backup.Locations.Request) returns (payload.v1.Info.IPs) {
     option (google.api.http).get = "/locations/{uuid}";
   }
 
-  rpc Register(payload.Backup.Compressed.MetaVector) returns (payload.Empty) {
+  rpc Register(payload.v1.Backup.Compressed.Vector) returns (payload.v1.Empty) {
     option (google.api.http) = {
       post : "/register"
       body : "*"
@@ -46,7 +46,7 @@ service Backup {
 
   }
 
-  rpc RegisterMulti(payload.Backup.Compressed.MetaVectors) returns (payload.Empty) {
+  rpc RegisterMulti(payload.v1.Backup.Compressed.Vectors) returns (payload.v1.Empty) {
     option (google.api.http) = {
       post : "/register/multi"
       body : "*"
@@ -54,12 +54,12 @@ service Backup {
 
   }
 
-  rpc Remove(payload.Backup.Remove.Request) returns (payload.Empty) {
+  rpc Remove(payload.v1.Backup.Remove.Request) returns (payload.v1.Empty) {
     option (google.api.http).delete = "/delete/{uuid}";
 
   }
 
-  rpc RemoveMulti(payload.Backup.Remove.RequestMulti) returns (payload.Empty) {
+  rpc RemoveMulti(payload.v1.Backup.Remove.RequestMulti) returns (payload.v1.Empty) {
     option (google.api.http) = {
       post : "/delete/multi"
       body : "*"
@@ -67,7 +67,7 @@ service Backup {
 
   }
 
-  rpc RegisterIPs(payload.Backup.IP.Register.Request) returns (payload.Empty) {
+  rpc RegisterIPs(payload.v1.Backup.IP.Register.Request) returns (payload.v1.Empty) {
     option (google.api.http) = {
       post : "/ip"
       body : "*"
@@ -75,7 +75,7 @@ service Backup {
 
   }
 
-  rpc RemoveIPs(payload.Backup.IP.Remove.Request) returns (payload.Empty) {
+  rpc RemoveIPs(payload.v1.Backup.IP.Remove.Request) returns (payload.v1.Empty) {
     option (google.api.http) = {
       post : "/ip/delete"
       body : "*"

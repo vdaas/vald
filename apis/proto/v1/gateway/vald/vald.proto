@@ -16,7 +16,7 @@
 
 syntax = "proto3";
 
-package vald;
+package vald.v1;
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/gateway/vald";
 option java_multiple_files = true;
@@ -29,70 +29,70 @@ import "google/api/annotations.proto";
 
 service Vald {
 
-  rpc Exists(payload.Object.ID) returns (payload.Object.ID) {
+  rpc Exists(payload.v1.Object.ID) returns (payload.v1.Object.ID) {
     option (google.api.http).get = "/exists/{id}";
   }
 
-  rpc Search(payload.Search.Request) returns (payload.Search.Response) {
+  rpc Search(payload.v1.Search.Request) returns (payload.v1.Search.Response) {
     option (google.api.http) = {
       post : "/search"
       body : "*"
     };
   }
-  rpc SearchByID(payload.Search.IDRequest) returns (payload.Search.Response) {
+  rpc SearchByID(payload.v1.Search.IDRequest) returns (payload.v1.Search.Response) {
     option (google.api.http) = {
       post : "/search/id"
       body : "*"
     };
   }
-  rpc StreamSearch(stream payload.Search.Request)
-      returns (stream payload.Search.Response) {}
-  rpc StreamSearchByID(stream payload.Search.IDRequest)
-      returns (stream payload.Search.Response) {}
+  rpc StreamSearch(stream payload.v1.Search.Request)
+      returns (stream payload.v1.Search.Response) {}
+  rpc StreamSearchByID(stream payload.v1.Search.IDRequest)
+      returns (stream payload.v1.Search.Response) {}
 
-  rpc Insert(payload.Object.Vector) returns (payload.Object.Location) {
+  rpc Insert(payload.v1.Object.Vector) returns (payload.v1.Object.Location) {
     option (google.api.http) = {
       post : "/insert"
       body : "*"
     };
 
   }
-  rpc StreamInsert(stream payload.Object.Vector)
-      returns (stream payload.Object.Location) {}
-  rpc MultiInsert(payload.Object.Vectors) returns (payload.Object.Locations) {}
+  rpc StreamInsert(stream payload.v1.Object.Vector)
+      returns (stream payload.v1.Object.Location) {}
+  rpc MultiInsert(payload.v1.Object.Vectors) returns (payload.v1.Object.Locations) {}
 
-  rpc Update(payload.Object.Vector) returns (payload.Object.Location) {
+  rpc Update(payload.v1.Object.Vector) returns (payload.v1.Object.Location) {
     option (google.api.http) = {
       post : "/update"
       body : "*"
     };
 
   }
-  rpc StreamUpdate(stream payload.Object.Vector)
-      returns (stream payload.Object.Location) {}
-  rpc MultiUpdate(payload.Object.Vectors) returns (payload.Object.Locations) {}
+  rpc StreamUpdate(stream payload.v1.Object.Vector)
+      returns (stream payload.v1.Object.Location) {}
+  rpc MultiUpdate(payload.v1.Object.Vectors) returns (payload.v1.Object.Locations) {}
 
-  rpc Upsert(payload.Object.Vector) returns (payload.Object.Location) {
+  rpc Upsert(payload.v1.Object.Vector) returns (payload.v1.Object.Location) {
     option (google.api.http) = {
       post : "/upsert"
       body : "*"
     };
 
   }
-  rpc StreamUpsert(stream payload.Object.Vector)
-      returns (stream payload.Object.Location) {}
-  rpc MultiUpsert(payload.Object.Vectors) returns (payload.Object.Locations) {}
+  rpc StreamUpsert(stream payload.v1.Object.Vector)
+      returns (stream payload.v1.Object.Location) {}
+  rpc MultiUpsert(payload.v1.Object.Vectors) returns (payload.v1.Object.Locations) {}
 
-  rpc Remove(payload.Object.ID) returns (payload.Object.Location) {
+  rpc Remove(payload.v1.Object.ID) returns (payload.v1.Object.Location) {
     option (google.api.http).delete = "/remove/{id}";
 
   }
-  rpc StreamRemove(stream payload.Object.ID) returns (stream payload.Object.Location) {}
-  rpc MultiRemove(payload.Object.IDs) returns (payload.Object.Locations) {}
+  rpc StreamRemove(stream payload.v1.Object.ID) returns (stream payload.v1.Object.Location) {}
+  rpc MultiRemove(payload.v1.Object.IDs) returns (payload.v1.Object.Locations) {}
 
-  rpc GetObject(payload.Object.ID) returns (payload.Object.Vector) {
+  rpc GetObject(payload.v1.Object.ID) returns (payload.v1.Object.Vector) {
     option (google.api.http).get = "/object/{id}";
   }
-  rpc StreamGetObject(stream payload.Object.ID)
-      returns (stream payload.Object.Vector) {}
+  rpc StreamGetObject(stream payload.v1.Object.ID)
+      returns (stream payload.v1.Object.Vector) {}
 }

@@ -34,7 +34,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/payloadDiscovererRequest"
+              "$ref": "#/definitions/v1DiscovererRequest"
             }
           }
         ],
@@ -66,7 +66,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/payloadDiscovererRequest"
+              "$ref": "#/definitions/v1DiscovererRequest"
             }
           }
         ],
@@ -182,20 +182,6 @@
         }
       }
     },
-    "payloadDiscovererRequest": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "namespace": {
-          "type": "string"
-        },
-        "node": {
-          "type": "string"
-        }
-      }
-    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -226,6 +212,20 @@
           "items": {
             "$ref": "#/definitions/protobufAny"
           }
+        }
+      }
+    },
+    "v1DiscovererRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "node": {
+          "type": "string"
         }
       }
     }

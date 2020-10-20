@@ -22,8 +22,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/vdaas/vald/apis/grpc/gateway/vald"
-	"github.com/vdaas/vald/internal/client/discoverer"
+	"github.com/vdaas/vald/apis/grpc/v1/vald"
+	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -207,7 +207,7 @@ func Test_gateway_BroadCast(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx context.Context
-		f   func(ctx context.Context, target string, vc vald.ValdClient, copts ...grpc.CallOption) error
+		f   func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error
 	}
 	type fields struct {
 		client discoverer.Client
@@ -301,7 +301,7 @@ func Test_gateway_Do(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx context.Context
-		f   func(ctx context.Context, target string, vc vald.ValdClient, copts ...grpc.CallOption) error
+		f   func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error
 	}
 	type fields struct {
 		client discoverer.Client
@@ -396,7 +396,7 @@ func Test_gateway_DoMulti(t *testing.T) {
 	type args struct {
 		ctx context.Context
 		num int
-		f   func(ctx context.Context, target string, vc vald.ValdClient, copts ...grpc.CallOption) error
+		f   func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error
 	}
 	type fields struct {
 		client discoverer.Client

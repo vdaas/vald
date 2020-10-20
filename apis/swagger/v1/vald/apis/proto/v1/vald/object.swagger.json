@@ -48,7 +48,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/ObjectVector"
+              "$ref": "#/definitions/v1ObjectVector"
             }
           },
           "default": {
@@ -78,21 +78,6 @@
       "properties": {
         "id": {
           "type": "string"
-        }
-      }
-    },
-    "ObjectVector": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "vector": {
-          "type": "array",
-          "items": {
-            "type": "number",
-            "format": "float"
-          }
         }
       }
     },
@@ -150,6 +135,21 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1ObjectVector": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "vector": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "float"
           }
         }
       }

@@ -16,7 +16,7 @@
 
 syntax = "proto3";
 
-package egress_filter;
+package filter.egress.v1;
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/filter/egress";
 option java_multiple_files = true;
@@ -29,7 +29,7 @@ import "google/api/annotations.proto";
 
 service EgressFilter {
 
-  rpc Filter(payload.Object.Distance) returns (payload.Object.Distance) {}
-  rpc StreamFilter(stream payload.Object.Distance)
-      returns (stream payload.Object.Distance) {}
+  rpc Filter(payload.v1.Object.Distance) returns (payload.v1.Object.Distance) {}
+  rpc StreamFilter(stream payload.v1.Object.Distance)
+      returns (stream payload.v1.Object.Distance) {}
 }

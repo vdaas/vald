@@ -22,7 +22,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/vdaas/vald/apis/grpc/manager/compressor"
+	"github.com/vdaas/vald/apis/grpc/v1/manager/compressor"
 	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
 )

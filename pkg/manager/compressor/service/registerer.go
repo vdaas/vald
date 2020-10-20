@@ -21,8 +21,8 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/vdaas/vald/apis/grpc/payload"
-	client "github.com/vdaas/vald/internal/client/compressor"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	client "github.com/vdaas/vald/internal/client/v1/client/compressor"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -35,8 +35,8 @@ type Registerer interface {
 	PreStart(ctx context.Context) error
 	Start(ctx context.Context) (<-chan error, error)
 	PostStop(ctx context.Context) error
-	Register(ctx context.Context, meta *payload.Backup_MetaVector) error
-	RegisterMulti(ctx context.Context, metas *payload.Backup_MetaVectors) error
+	Register(ctx context.Context, meta *payload.Backup_Vector) error
+	RegisterMulti(ctx context.Context, metas *payload.Backup_Vectors) error
 	Len() uint64
 	TotalRequested() uint64
 	TotalCompleted() uint64
@@ -49,7 +49,7 @@ type registerer struct {
 	backup     Backup
 	compressor Compressor
 	client     client.Client
-	metas      map[string]*payload.Backup_MetaVector
+	metas      map[string]*payload.Backup_Vector
 	metasMux   sync.Mutex
 }
 
@@ -61,7 +61,7 @@ func NewRegisterer(opts ...RegistererOption) (Registerer, error) {
 		}
 	}
 
-	r.metas = make(map[string]*payload.Backup_MetaVector, 0)
+	r.metas = make(map[string]*payload.Backup_Vector, 0)
 
 	return r, nil
 }
@@ -113,7 +113,7 @@ func (r *registerer) PostStop(ctx context.Context) error {
 	return nil
 }
 
-func (r *registerer) Register(ctx context.Context, meta *payload.Backup_MetaVector) error {
+func (r *registerer) Register(ctx context.Context, meta *payload.Backup_Vector) error {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor/service/Registerer.Register")
 	defer func() {
 		if span != nil {
@@ -129,7 +129,7 @@ func (r *registerer) Register(ctx context.Context, meta *payload.Backup_MetaVect
 	return err
 }
 
-func (r *registerer) RegisterMulti(ctx context.Context, metas *payload.Backup_MetaVectors) error {
+func (r *registerer) RegisterMulti(ctx context.Context, metas *payload.Backup_Vectors) error {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor/service/Registerer.RegisterMulti")
 	defer func() {
 		if span != nil {
@@ -164,7 +164,7 @@ func (r *registerer) TotalCompleted() uint64 {
 	return r.worker.TotalCompleted()
 }
 
-func (r *registerer) dispatch(ctx context.Context, meta *payload.Backup_MetaVector) error {
+func (r *registerer) dispatch(ctx context.Context, meta *payload.Backup_Vector) error {
 	r.metasMux.Lock()
 	r.metas[meta.GetUuid()] = meta
 	r.metasMux.Unlock()
@@ -172,7 +172,7 @@ func (r *registerer) dispatch(ctx context.Context, meta *payload.Backup_MetaVect
 	return r.worker.Dispatch(ctx, r.registerProcessFunc(meta))
 }
 
-func (r *registerer) registerProcessFunc(meta *payload.Backup_MetaVector) worker.JobFunc {
+func (r *registerer) registerProcessFunc(meta *payload.Backup_Vector) worker.JobFunc {
 	return func(ctx context.Context) (err error) {
 		ctx, span := trace.StartSpan(ctx, "vald/manager-compressor/service/Registerer.Register.DispatchedJob")
 		defer func() {
@@ -198,7 +198,7 @@ func (r *registerer) registerProcessFunc(meta *payload.Backup_MetaVector) worker
 
 		err = r.backup.Register(
 			ctx,
-			&payload.Backup_Compressed_MetaVector{
+			&payload.Backup_Compressed_Vector{
 				Uuid:   meta.GetUuid(),
 				Vector: vector,
 				Ips:    meta.GetIps(),

@@ -34,7 +34,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/payloadSearchRequest"
+              "$ref": "#/definitions/v1SearchRequest"
             }
           }
         ],
@@ -96,7 +96,7 @@
           "type": "string"
         },
         "config": {
-          "$ref": "#/definitions/payloadSearchConfig"
+          "$ref": "#/definitions/v1SearchConfig"
         }
       }
     },
@@ -122,59 +122,6 @@
           "items": {
             "$ref": "#/definitions/SearchResponse"
           }
-        }
-      }
-    },
-    "payloadFilterConfig": {
-      "type": "object",
-      "properties": {
-        "targets": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "payloadSearchConfig": {
-      "type": "object",
-      "properties": {
-        "requestId": {
-          "type": "string"
-        },
-        "num": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "radius": {
-          "type": "number",
-          "format": "float"
-        },
-        "epsilon": {
-          "type": "number",
-          "format": "float"
-        },
-        "timeout": {
-          "type": "string",
-          "format": "int64"
-        },
-        "filters": {
-          "$ref": "#/definitions/payloadFilterConfig"
-        }
-      }
-    },
-    "payloadSearchRequest": {
-      "type": "object",
-      "properties": {
-        "vector": {
-          "type": "array",
-          "items": {
-            "type": "number",
-            "format": "float"
-          }
-        },
-        "config": {
-          "$ref": "#/definitions/payloadSearchConfig"
         }
       }
     },
@@ -233,6 +180,59 @@
           "items": {
             "$ref": "#/definitions/protobufAny"
           }
+        }
+      }
+    },
+    "v1FilterConfig": {
+      "type": "object",
+      "properties": {
+        "targets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1SearchConfig": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string"
+        },
+        "num": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "radius": {
+          "type": "number",
+          "format": "float"
+        },
+        "epsilon": {
+          "type": "number",
+          "format": "float"
+        },
+        "timeout": {
+          "type": "string",
+          "format": "int64"
+        },
+        "filters": {
+          "$ref": "#/definitions/v1FilterConfig"
+        }
+      }
+    },
+    "v1SearchRequest": {
+      "type": "object",
+      "properties": {
+        "vector": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "float"
+          }
+        },
+        "config": {
+          "$ref": "#/definitions/v1SearchConfig"
         }
       }
     }

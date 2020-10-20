@@ -29,6 +29,8 @@ import (
 	"github.com/kpango/fuid"
 	"github.com/vdaas/vald/apis/grpc/gateway/vald"
 	"github.com/vdaas/vald/apis/grpc/payload"
+	payloadv1 "github.com/vdaas/vald/apis/grpc/v1/payload"
+	valdv1 "github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
@@ -90,8 +92,24 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 		return nil, errors.ErrInvalidDimensionSize(len(req.Vector), 0)
 	}
 	return s.search(ctx, req.GetConfig(),
-		func(ctx context.Context, vc vald.ValdClient, copts ...grpc.CallOption) (*payload.Search_Response, error) {
-			return vc.Search(ctx, req, copts...)
+		func(ctx context.Context, vc valdv1.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+			res, err := vc.Search(ctx, &payloadv1.Search_Request{
+				Vector: req.GetVector(),
+			}, copts...)
+			if err != nil {
+				return nil, err
+			}
+			distances := make([]*payload.Object_Distance, 0, len(res.GetResults()))
+			for _, r := range res.GetResults() {
+				distances = append(distances, &payload.Object_Distance{
+					Id:       r.GetId(),
+					Distance: r.GetDistance(),
+				})
+			}
+			return &payload.Search_Response{
+				RequestId: res.GetRequestId(),
+				Results:   distances,
+			}, nil
 		})
 }
 
@@ -114,17 +132,14 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		}
 		return nil, status.WrapWithNotFound(fmt.Sprintf("SearchByID API meta %s's uuid not found", req.GetId()), err, req, info.Get())
 	}
-	return s.search(ctx, req.GetConfig(),
-		func(ctx context.Context, vc vald.ValdClient, copts ...grpc.CallOption) (*payload.Search_Response, error) {
-			return vc.Search(ctx, &payload.Search_Request{
-				Vector: vec.GetVector(),
-				Config: req.GetConfig(),
-			}, copts...)
-		})
+	return s.Search(ctx, &payload.Search_Request{
+		Vector: vec.GetVector(),
+		Config: req.GetConfig(),
+	})
 }
 
 func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
-	f func(ctx context.Context, vc vald.ValdClient, copts ...grpc.CallOption) (*payload.Search_Response, error)) (
+	f func(ctx context.Context, vc valdv1.Client, copts ...grpc.CallOption) (*payload.Search_Response, error)) (
 	res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/gateway-vald.search")
 	defer func() {
@@ -151,7 +166,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 	eg.Go(safety.RecoverFunc(func() error {
 		defer cancel()
 		visited := new(sync.Map)
-		return s.gateway.BroadCast(ectx, func(ctx context.Context, target string, vc vald.ValdClient, copts ...grpc.CallOption) error {
+		return s.gateway.BroadCast(ectx, func(ctx context.Context, target string, vc valdv1.Client, copts ...grpc.CallOption) error {
 			r, err := f(ctx, vc, copts...)
 			if err != nil {
 				log.Debug("ignoring error:", err)
@@ -328,8 +343,13 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 	vec.Id = uuid
 	mu := new(sync.Mutex)
 	targets := make([]string, 0, s.replica)
-	err = s.gateway.DoMulti(ctx, s.replica, func(ctx context.Context, target string, vc vald.ValdClient, copts ...grpc.CallOption) (err error) {
-		_, err = vc.Insert(ctx, vec, copts...)
+	err = s.gateway.DoMulti(ctx, s.replica, func(ctx context.Context, target string, vc valdv1.Client, copts ...grpc.CallOption) (err error) {
+		_, err = vc.Insert(ctx, &payloadv1.Insert_Request{
+			Vector: &payloadv1.Object_Vector{
+				Id:     vec.GetId(),
+				Vector: vec.GetVector(),
+			},
+		}, copts...)
 		if err != nil {
 			if err == errors.ErrRPCCallFailed(target, context.Canceled) {
 				return nil
@@ -351,7 +371,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 		return nil, status.WrapWithInternal(fmt.Sprintf("Insert API failed to Execute DoMulti error = %s", err.Error()), err, info.Get())
 	}
 	if s.backup != nil {
-		vecs := &payload.Backup_MetaVector{
+		vecs := &payloadv1.Backup_Vector{
 			Uuid: uuid,
 			Ips:  targets,
 		}
@@ -395,7 +415,8 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 	}()
 	metaMap := make(map[string]string)
 	metas := make([]string, 0, len(vecs.GetVectors()))
-	for i, vec := range vecs.GetVectors() {
+	reqs := make([]*payloadv1.Insert_Request, 0, len(vecs.GetVectors()))
+	for _, vec := range vecs.GetVectors() {
 		if len(vec.GetVector()) < 2 {
 			err = errors.ErrInvalidDimensionSize(len(vec.GetVector()), 0)
 			if span != nil {
@@ -407,7 +428,12 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 		meta := vec.GetId()
 		metaMap[uuid] = meta
 		metas = append(metas, meta)
-		vecs.Vectors[i].Id = uuid
+		reqs = append(reqs, &payloadv1.Insert_Request{
+			Vector: &payloadv1.Object_Vector{
+				Vector: vec.GetVector(),
+				Id:     uuid,
+			},
+		})
 	}
 
 	for _, meta := range metas {
@@ -439,8 +465,10 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 
 	mu := new(sync.Mutex)
 	targets := make([]string, 0, s.replica)
-	gerr := s.gateway.DoMulti(ctx, s.replica, func(ctx context.Context, target string, vc vald.ValdClient, copts ...grpc.CallOption) (err error) {
-		_, err = vc.MultiInsert(ctx, vecs, copts...)
+	gerr := s.gateway.DoMulti(ctx, s.replica, func(ctx context.Context, target string, vc valdv1.Client, copts ...grpc.CallOption) (err error) {
+		_, err = vc.MultiInsert(ctx, &payloadv1.Insert_MultiRequest{
+			Requests: reqs,
+		}, copts...)
 		if err != nil {
 			return err
 		}
@@ -458,11 +486,12 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 	}
 
 	if s.backup != nil {
-		mvecs := new(payload.Backup_MetaVectors)
-		mvecs.Vectors = make([]*payload.Backup_MetaVector, 0, len(vecs.GetVectors()))
-		for _, vec := range vecs.GetVectors() {
+		mvecs := new(payloadv1.Backup_Vectors)
+		mvecs.Vectors = make([]*payloadv1.Backup_Vector, 0, len(vecs.GetVectors()))
+		for _, req := range reqs {
+			vec := req.GetVector()
 			uuid := vec.GetId()
-			mvecs.Vectors = append(mvecs.Vectors, &payload.Backup_MetaVector{
+			mvecs.Vectors = append(mvecs.Vectors, &payloadv1.Backup_Vector{
 				Uuid:   uuid,
 				Vector: vec.GetVector(),
 				Ips:    targets,
@@ -513,11 +542,16 @@ func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *p
 	for _, loc := range locs {
 		lmap[loc] = struct{}{}
 	}
-	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.ValdClient, copts ...grpc.CallOption) error {
+	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc valdv1.Client, copts ...grpc.CallOption) error {
 		target = strings.SplitN(target, ":", 2)[0]
 		_, ok := lmap[target]
 		if ok {
-			_, err = vc.Update(ctx, vec, copts...)
+			_, err = vc.Update(ctx, &payloadv1.Update_Request{
+				Vector: &payloadv1.Object_Vector{
+					Vector: vec.GetVector(),
+					Id:     vec.GetId(),
+				},
+			}, copts...)
 			if err != nil {
 				return err
 			}
@@ -530,7 +564,7 @@ func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *p
 		}
 		return nil, status.WrapWithInternal(fmt.Sprintf("Update API failed request %#v", vec), err, info.Get())
 	}
-	err = s.backup.Register(ctx, &payload.Backup_MetaVector{
+	err = s.backup.Register(ctx, &payloadv1.Backup_Vector{
 		Uuid:   uuid,
 		Vector: vec.GetVector(),
 		Ips:    locs,
@@ -742,11 +776,13 @@ func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (*payload.Ob
 	for _, loc := range locs {
 		lmap[loc] = struct{}{}
 	}
-	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.ValdClient, copts ...grpc.CallOption) error {
+	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc valdv1.Client, copts ...grpc.CallOption) error {
 		_, ok := lmap[target]
 		if ok {
-			_, err = vc.Remove(ctx, &payload.Object_ID{
-				Id: uuid,
+			_, err = vc.Remove(ctx, &payloadv1.Remove_Request{
+				Id: &payloadv1.Object_ID{
+					Id: uuid,
+				},
 			}, copts...)
 			if err != nil {
 				return err
@@ -815,11 +851,19 @@ func (s *server) MultiRemove(ctx context.Context, ids *payload.Object_IDs) (res 
 			lmap[loc] = append(lmap[loc], uuid)
 		}
 	}
-	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.ValdClient, copts ...grpc.CallOption) error {
+	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc valdv1.Client, copts ...grpc.CallOption) error {
 		uuids, ok := lmap[target]
 		if ok {
-			_, err := vc.MultiRemove(ctx, &payload.Object_IDs{
-				Ids: uuids,
+			reqs := make([]*payloadv1.Remove_Request, 0, len(uuids))
+			for _, uuid := range uuids {
+				reqs = append(reqs, &payloadv1.Remove_Request{
+					Id: &payloadv1.Object_ID{
+						Id: uuid,
+					},
+				})
+			}
+			_, err := vc.MultiRemove(ctx, &payloadv1.Remove_MultiRequest{
+				Requests: reqs,
 			}, copts...)
 			if err != nil {
 				return err

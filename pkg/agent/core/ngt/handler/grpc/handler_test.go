@@ -22,8 +22,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/vdaas/vald/apis/grpc/gateway/vald"
-	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	vald "github.com/vdaas/vald/apis/grpc/v1/vald"
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/model"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
@@ -113,6 +114,7 @@ func Test_server_newLocations(t *testing.T) {
 		name              string
 		ip                string
 		ngt               service.NGT
+		eg                errgroup.Group
 		streamConcurrency int
 	}
 	type want struct {
@@ -145,6 +147,7 @@ func Test_server_newLocations(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -164,6 +167,7 @@ func Test_server_newLocations(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -191,6 +195,7 @@ func Test_server_newLocations(t *testing.T) {
 				name:              test.fields.name,
 				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
@@ -212,6 +217,7 @@ func Test_server_newLocation(t *testing.T) {
 		name              string
 		ip                string
 		ngt               service.NGT
+		eg                errgroup.Group
 		streamConcurrency int
 	}
 	type want struct {
@@ -244,6 +250,7 @@ func Test_server_newLocation(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -263,6 +270,7 @@ func Test_server_newLocation(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -290,6 +298,7 @@ func Test_server_newLocation(t *testing.T) {
 				name:              test.fields.name,
 				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
@@ -312,6 +321,7 @@ func Test_server_Exists(t *testing.T) {
 		name              string
 		ip                string
 		ngt               service.NGT
+		eg                errgroup.Group
 		streamConcurrency int
 	}
 	type want struct {
@@ -349,6 +359,7 @@ func Test_server_Exists(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -369,6 +380,7 @@ func Test_server_Exists(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -396,6 +408,7 @@ func Test_server_Exists(t *testing.T) {
 				name:              test.fields.name,
 				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
@@ -418,6 +431,7 @@ func Test_server_Search(t *testing.T) {
 		name              string
 		ip                string
 		ngt               service.NGT
+		eg                errgroup.Group
 		streamConcurrency int
 	}
 	type want struct {
@@ -455,6 +469,7 @@ func Test_server_Search(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -475,6 +490,7 @@ func Test_server_Search(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -502,6 +518,7 @@ func Test_server_Search(t *testing.T) {
 				name:              test.fields.name,
 				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
@@ -524,6 +541,7 @@ func Test_server_SearchByID(t *testing.T) {
 		name              string
 		ip                string
 		ngt               service.NGT
+		eg                errgroup.Group
 		streamConcurrency int
 	}
 	type want struct {
@@ -561,6 +579,7 @@ func Test_server_SearchByID(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -581,6 +600,7 @@ func Test_server_SearchByID(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -608,6 +628,7 @@ func Test_server_SearchByID(t *testing.T) {
 				name:              test.fields.name,
 				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
@@ -704,12 +725,13 @@ func Test_toSearchResponse(t *testing.T) {
 func Test_server_StreamSearch(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		stream vald.Vald_StreamSearchServer
+		stream vald.Search_StreamSearchServer
 	}
 	type fields struct {
 		name              string
 		ip                string
 		ngt               service.NGT
+		eg                errgroup.Group
 		streamConcurrency int
 	}
 	type want struct {
@@ -742,6 +764,7 @@ func Test_server_StreamSearch(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -761,6 +784,7 @@ func Test_server_StreamSearch(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -788,6 +812,7 @@ func Test_server_StreamSearch(t *testing.T) {
 				name:              test.fields.name,
 				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
@@ -803,12 +828,13 @@ func Test_server_StreamSearch(t *testing.T) {
 func Test_server_StreamSearchByID(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		stream vald.Vald_StreamSearchByIDServer
+		stream vald.Search_StreamSearchByIDServer
 	}
 	type fields struct {
 		name              string
 		ip                string
 		ngt               service.NGT
+		eg                errgroup.Group
 		streamConcurrency int
 	}
 	type want struct {
@@ -841,6 +867,7 @@ func Test_server_StreamSearchByID(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -860,6 +887,7 @@ func Test_server_StreamSearchByID(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -887,6 +915,7 @@ func Test_server_StreamSearchByID(t *testing.T) {
 				name:              test.fields.name,
 				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
@@ -899,16 +928,237 @@ func Test_server_StreamSearchByID(t *testing.T) {
 	}
 }
 
-func Test_server_Insert(t *testing.T) {
+func Test_server_MultiSearch(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx context.Context
-		vec *payload.Object_Vector
+		ctx  context.Context
+		reqs *payload.Search_MultiRequest
 	}
 	type fields struct {
 		name              string
 		ip                string
 		ngt               service.NGT
+		eg                errgroup.Group
+		streamConcurrency int
+	}
+	type want struct {
+		wantRes *payload.Search_Responses
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *payload.Search_Responses, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRes *payload.Search_Responses, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           reqs: nil,
+		       },
+		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           reqs: nil,
+		           },
+		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
+				streamConcurrency: test.fields.streamConcurrency,
+			}
+
+			gotRes, err := s.MultiSearch(test.args.ctx, test.args.reqs)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_server_MultiSearchByID(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ctx  context.Context
+		reqs *payload.Search_MultiIDRequest
+	}
+	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
+		eg                errgroup.Group
+		streamConcurrency int
+	}
+	type want struct {
+		wantRes *payload.Search_Responses
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *payload.Search_Responses, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRes *payload.Search_Responses, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           reqs: nil,
+		       },
+		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           reqs: nil,
+		           },
+		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
+				streamConcurrency: test.fields.streamConcurrency,
+			}
+
+			gotRes, err := s.MultiSearchByID(test.args.ctx, test.args.reqs)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_server_Insert(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ctx context.Context
+		req *payload.Insert_Request
+	}
+	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
+		eg                errgroup.Group
 		streamConcurrency int
 	}
 	type want struct {
@@ -940,12 +1190,13 @@ func Test_server_Insert(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           vec: nil,
+		           req: nil,
 		       },
 		       fields: fields {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -960,12 +1211,13 @@ func Test_server_Insert(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           vec: nil,
+		           req: nil,
 		           },
 		           fields: fields {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -993,10 +1245,11 @@ func Test_server_Insert(t *testing.T) {
 				name:              test.fields.name,
 				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
-			gotRes, err := s.Insert(test.args.ctx, test.args.vec)
+			gotRes, err := s.Insert(test.args.ctx, test.args.req)
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1008,12 +1261,13 @@ func Test_server_Insert(t *testing.T) {
 func Test_server_StreamInsert(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		stream vald.Vald_StreamInsertServer
+		stream vald.Insert_StreamInsertServer
 	}
 	type fields struct {
 		name              string
 		ip                string
 		ngt               service.NGT
+		eg                errgroup.Group
 		streamConcurrency int
 	}
 	type want struct {
@@ -1046,6 +1300,7 @@ func Test_server_StreamInsert(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -1065,6 +1320,7 @@ func Test_server_StreamInsert(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -1092,6 +1348,7 @@ func Test_server_StreamInsert(t *testing.T) {
 				name:              test.fields.name,
 				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
@@ -1108,12 +1365,13 @@ func Test_server_MultiInsert(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx  context.Context
-		vecs *payload.Object_Vectors
+		reqs *payload.Insert_MultiRequest
 	}
 	type fields struct {
 		name              string
 		ip                string
 		ngt               service.NGT
+		eg                errgroup.Group
 		streamConcurrency int
 	}
 	type want struct {
@@ -1145,12 +1403,13 @@ func Test_server_MultiInsert(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           vecs: nil,
+		           reqs: nil,
 		       },
 		       fields: fields {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -1165,12 +1424,13 @@ func Test_server_MultiInsert(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           vecs: nil,
+		           reqs: nil,
 		           },
 		           fields: fields {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -1198,10 +1458,11 @@ func Test_server_MultiInsert(t *testing.T) {
 				name:              test.fields.name,
 				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
-			gotRes, err := s.MultiInsert(test.args.ctx, test.args.vecs)
+			gotRes, err := s.MultiInsert(test.args.ctx, test.args.reqs)
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1214,12 +1475,13 @@ func Test_server_Update(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx context.Context
-		vec *payload.Object_Vector
+		req *payload.Update_Request
 	}
 	type fields struct {
 		name              string
 		ip                string
 		ngt               service.NGT
+		eg                errgroup.Group
 		streamConcurrency int
 	}
 	type want struct {
@@ -1251,12 +1513,13 @@ func Test_server_Update(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           vec: nil,
+		           req: nil,
 		       },
 		       fields: fields {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -1271,12 +1534,13 @@ func Test_server_Update(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           vec: nil,
+		           req: nil,
 		           },
 		           fields: fields {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -1304,10 +1568,11 @@ func Test_server_Update(t *testing.T) {
 				name:              test.fields.name,
 				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
-			gotRes, err := s.Update(test.args.ctx, test.args.vec)
+			gotRes, err := s.Update(test.args.ctx, test.args.req)
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1319,12 +1584,13 @@ func Test_server_Update(t *testing.T) {
 func Test_server_StreamUpdate(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		stream vald.Vald_StreamUpdateServer
+		stream vald.Update_StreamUpdateServer
 	}
 	type fields struct {
 		name              string
 		ip                string
 		ngt               service.NGT
+		eg                errgroup.Group
 		streamConcurrency int
 	}
 	type want struct {
@@ -1357,6 +1623,7 @@ func Test_server_StreamUpdate(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -1376,6 +1643,7 @@ func Test_server_StreamUpdate(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -1403,6 +1671,7 @@ func Test_server_StreamUpdate(t *testing.T) {
 				name:              test.fields.name,
 				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
@@ -1419,12 +1688,13 @@ func Test_server_MultiUpdate(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx  context.Context
-		vecs *payload.Object_Vectors
+		reqs *payload.Update_MultiRequest
 	}
 	type fields struct {
 		name              string
 		ip                string
 		ngt               service.NGT
+		eg                errgroup.Group
 		streamConcurrency int
 	}
 	type want struct {
@@ -1456,12 +1726,13 @@ func Test_server_MultiUpdate(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           vecs: nil,
+		           reqs: nil,
 		       },
 		       fields: fields {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -1476,12 +1747,13 @@ func Test_server_MultiUpdate(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           vecs: nil,
+		           reqs: nil,
 		           },
 		           fields: fields {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -1509,10 +1781,11 @@ func Test_server_MultiUpdate(t *testing.T) {
 				name:              test.fields.name,
 				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
-			gotRes, err := s.MultiUpdate(test.args.ctx, test.args.vecs)
+			gotRes, err := s.MultiUpdate(test.args.ctx, test.args.reqs)
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1525,12 +1798,13 @@ func Test_server_Upsert(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx context.Context
-		vec *payload.Object_Vector
+		req *payload.Upsert_Request
 	}
 	type fields struct {
 		name              string
 		ip                string
 		ngt               service.NGT
+		eg                errgroup.Group
 		streamConcurrency int
 	}
 	type want struct {
@@ -1562,12 +1836,13 @@ func Test_server_Upsert(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           vec: nil,
+		           req: nil,
 		       },
 		       fields: fields {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -1582,12 +1857,13 @@ func Test_server_Upsert(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           vec: nil,
+		           req: nil,
 		           },
 		           fields: fields {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -1615,10 +1891,11 @@ func Test_server_Upsert(t *testing.T) {
 				name:              test.fields.name,
 				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
-			got, err := s.Upsert(test.args.ctx, test.args.vec)
+			got, err := s.Upsert(test.args.ctx, test.args.req)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1630,12 +1907,13 @@ func Test_server_Upsert(t *testing.T) {
 func Test_server_StreamUpsert(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		stream vald.Vald_StreamUpsertServer
+		stream vald.Upsert_StreamUpsertServer
 	}
 	type fields struct {
 		name              string
 		ip                string
 		ngt               service.NGT
+		eg                errgroup.Group
 		streamConcurrency int
 	}
 	type want struct {
@@ -1668,6 +1946,7 @@ func Test_server_StreamUpsert(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -1687,6 +1966,7 @@ func Test_server_StreamUpsert(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -1714,6 +1994,7 @@ func Test_server_StreamUpsert(t *testing.T) {
 				name:              test.fields.name,
 				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
@@ -1730,12 +2011,13 @@ func Test_server_MultiUpsert(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx  context.Context
-		vecs *payload.Object_Vectors
+		reqs *payload.Upsert_MultiRequest
 	}
 	type fields struct {
 		name              string
 		ip                string
 		ngt               service.NGT
+		eg                errgroup.Group
 		streamConcurrency int
 	}
 	type want struct {
@@ -1767,12 +2049,13 @@ func Test_server_MultiUpsert(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           vecs: nil,
+		           reqs: nil,
 		       },
 		       fields: fields {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -1787,12 +2070,13 @@ func Test_server_MultiUpsert(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           vecs: nil,
+		           reqs: nil,
 		           },
 		           fields: fields {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -1820,10 +2104,11 @@ func Test_server_MultiUpsert(t *testing.T) {
 				name:              test.fields.name,
 				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
-			gotRes, err := s.MultiUpsert(test.args.ctx, test.args.vecs)
+			gotRes, err := s.MultiUpsert(test.args.ctx, test.args.reqs)
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1836,12 +2121,13 @@ func Test_server_Remove(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx context.Context
-		id  *payload.Object_ID
+		req *payload.Remove_Request
 	}
 	type fields struct {
 		name              string
 		ip                string
 		ngt               service.NGT
+		eg                errgroup.Group
 		streamConcurrency int
 	}
 	type want struct {
@@ -1873,12 +2159,13 @@ func Test_server_Remove(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           id: nil,
+		           req: nil,
 		       },
 		       fields: fields {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -1893,12 +2180,13 @@ func Test_server_Remove(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           id: nil,
+		           req: nil,
 		           },
 		           fields: fields {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -1926,10 +2214,11 @@ func Test_server_Remove(t *testing.T) {
 				name:              test.fields.name,
 				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
-			gotRes, err := s.Remove(test.args.ctx, test.args.id)
+			gotRes, err := s.Remove(test.args.ctx, test.args.req)
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1941,12 +2230,13 @@ func Test_server_Remove(t *testing.T) {
 func Test_server_StreamRemove(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		stream vald.Vald_StreamRemoveServer
+		stream vald.Remove_StreamRemoveServer
 	}
 	type fields struct {
 		name              string
 		ip                string
 		ngt               service.NGT
+		eg                errgroup.Group
 		streamConcurrency int
 	}
 	type want struct {
@@ -1979,6 +2269,7 @@ func Test_server_StreamRemove(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -1998,6 +2289,7 @@ func Test_server_StreamRemove(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -2025,6 +2317,7 @@ func Test_server_StreamRemove(t *testing.T) {
 				name:              test.fields.name,
 				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
@@ -2040,13 +2333,14 @@ func Test_server_StreamRemove(t *testing.T) {
 func Test_server_MultiRemove(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx context.Context
-		ids *payload.Object_IDs
+		ctx  context.Context
+		reqs *payload.Remove_MultiRequest
 	}
 	type fields struct {
 		name              string
 		ip                string
 		ngt               service.NGT
+		eg                errgroup.Group
 		streamConcurrency int
 	}
 	type want struct {
@@ -2078,12 +2372,13 @@ func Test_server_MultiRemove(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           ids: nil,
+		           reqs: nil,
 		       },
 		       fields: fields {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -2098,12 +2393,13 @@ func Test_server_MultiRemove(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           ids: nil,
+		           reqs: nil,
 		           },
 		           fields: fields {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -2131,10 +2427,11 @@ func Test_server_MultiRemove(t *testing.T) {
 				name:              test.fields.name,
 				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
-			gotRes, err := s.MultiRemove(test.args.ctx, test.args.ids)
+			gotRes, err := s.MultiRemove(test.args.ctx, test.args.reqs)
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -2153,6 +2450,7 @@ func Test_server_GetObject(t *testing.T) {
 		name              string
 		ip                string
 		ngt               service.NGT
+		eg                errgroup.Group
 		streamConcurrency int
 	}
 	type want struct {
@@ -2190,6 +2488,7 @@ func Test_server_GetObject(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -2210,6 +2509,7 @@ func Test_server_GetObject(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -2237,6 +2537,7 @@ func Test_server_GetObject(t *testing.T) {
 				name:              test.fields.name,
 				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
@@ -2252,12 +2553,13 @@ func Test_server_GetObject(t *testing.T) {
 func Test_server_StreamGetObject(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		stream vald.Vald_StreamGetObjectServer
+		stream vald.Object_StreamGetObjectServer
 	}
 	type fields struct {
 		name              string
 		ip                string
 		ngt               service.NGT
+		eg                errgroup.Group
 		streamConcurrency int
 	}
 	type want struct {
@@ -2290,6 +2592,7 @@ func Test_server_StreamGetObject(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -2309,6 +2612,7 @@ func Test_server_StreamGetObject(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -2336,6 +2640,7 @@ func Test_server_StreamGetObject(t *testing.T) {
 				name:              test.fields.name,
 				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
@@ -2358,6 +2663,7 @@ func Test_server_CreateIndex(t *testing.T) {
 		name              string
 		ip                string
 		ngt               service.NGT
+		eg                errgroup.Group
 		streamConcurrency int
 	}
 	type want struct {
@@ -2395,6 +2701,7 @@ func Test_server_CreateIndex(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -2415,6 +2722,7 @@ func Test_server_CreateIndex(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -2442,6 +2750,7 @@ func Test_server_CreateIndex(t *testing.T) {
 				name:              test.fields.name,
 				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
@@ -2464,6 +2773,7 @@ func Test_server_SaveIndex(t *testing.T) {
 		name              string
 		ip                string
 		ngt               service.NGT
+		eg                errgroup.Group
 		streamConcurrency int
 	}
 	type want struct {
@@ -2501,6 +2811,7 @@ func Test_server_SaveIndex(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -2521,6 +2832,7 @@ func Test_server_SaveIndex(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -2548,6 +2860,7 @@ func Test_server_SaveIndex(t *testing.T) {
 				name:              test.fields.name,
 				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
@@ -2570,6 +2883,7 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 		name              string
 		ip                string
 		ngt               service.NGT
+		eg                errgroup.Group
 		streamConcurrency int
 	}
 	type want struct {
@@ -2607,6 +2921,7 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -2627,6 +2942,7 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -2654,6 +2970,7 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 				name:              test.fields.name,
 				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
@@ -2676,6 +2993,7 @@ func Test_server_IndexInfo(t *testing.T) {
 		name              string
 		ip                string
 		ngt               service.NGT
+		eg                errgroup.Group
 		streamConcurrency int
 	}
 	type want struct {
@@ -2713,6 +3031,7 @@ func Test_server_IndexInfo(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		       },
 		       want: want{},
@@ -2733,6 +3052,7 @@ func Test_server_IndexInfo(t *testing.T) {
 		           name: "",
 		           ip: "",
 		           ngt: nil,
+		           eg: nil,
 		           streamConcurrency: 0,
 		           },
 		           want: want{},
@@ -2760,6 +3080,7 @@ func Test_server_IndexInfo(t *testing.T) {
 				name:              test.fields.name,
 				ip:                test.fields.ip,
 				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 

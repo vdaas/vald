@@ -16,7 +16,7 @@
 
 syntax = "proto3";
 
-package vald;
+package vald.v1;
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/vald";
 option java_multiple_files = true;
@@ -29,7 +29,7 @@ import "google/api/annotations.proto";
 
 service Remove {
 
-  rpc Remove(payload.Remove.Request) returns (payload.Object.Location) {}
-  rpc StreamRemove(stream payload.Remove.Request) returns (stream payload.Object.Location) {}
-  rpc MultiRemove(payload.Remove.MultiRequest) returns (payload.Object.Locations) {}
+  rpc Remove(payload.v1.Remove.Request) returns (payload.v1.Object.Location) {}
+  rpc StreamRemove(stream payload.v1.Remove.Request) returns (stream payload.v1.Object.Location) {}
+  rpc MultiRemove(payload.v1.Remove.MultiRequest) returns (payload.v1.Object.Locations) {}
 }

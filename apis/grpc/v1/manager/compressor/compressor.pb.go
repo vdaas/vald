@@ -45,36 +45,37 @@ func init() {
 }
 
 var fileDescriptor_65a3baf9652f4ae9 = []byte{
-	// 464 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0xd3, 0x41, 0x8b, 0xd3, 0x40,
-	0x14, 0x07, 0x70, 0xa2, 0x58, 0xb6, 0x23, 0x9b, 0x75, 0xc7, 0x55, 0x34, 0x4a, 0x61, 0xb3, 0x17,
-	0xe9, 0x61, 0x1e, 0x55, 0xbc, 0xec, 0xb1, 0x22, 0x52, 0xd8, 0x85, 0x50, 0x70, 0x11, 0xf1, 0x32,
-	0x4d, 0xc6, 0x38, 0x98, 0x64, 0xc6, 0x99, 0x49, 0x60, 0x11, 0x11, 0xfc, 0x0a, 0x7e, 0x29, 0x2f,
-	0x82, 0xe0, 0x17, 0x90, 0xe2, 0x07, 0x91, 0xcc, 0x34, 0x53, 0xb7, 0xd9, 0xf6, 0xd4, 0x66, 0xde,
-	0x7b, 0xbf, 0xfc, 0x33, 0xf0, 0xd0, 0x84, 0x4a, 0xae, 0x41, 0x2a, 0x61, 0x04, 0x34, 0x13, 0x28,
-	0x69, 0x45, 0x73, 0xa6, 0x20, 0x15, 0xa5, 0x54, 0x4c, 0x6b, 0xf1, 0xff, 0x5f, 0x62, 0xdb, 0x30,
-	0x5a, 0x9f, 0x44, 0x27, 0x57, 0xc7, 0x25, 0xbd, 0x2c, 0x04, 0xcd, 0xba, 0x5f, 0x37, 0x10, 0x3d,
-	0xce, 0x85, 0xc8, 0x0b, 0x06, 0x54, 0x72, 0xa0, 0x55, 0x25, 0x0c, 0x35, 0x5c, 0x54, 0xda, 0x55,
-	0x9f, 0xfe, 0xbc, 0x85, 0x06, 0x53, 0x9a, 0x7e, 0xac, 0x25, 0x5e, 0xa0, 0xe1, 0x2b, 0x66, 0x2e,
-	0x58, 0x6a, 0x84, 0xc2, 0xc7, 0xa4, 0x53, 0x5c, 0x95, 0xf8, 0x12, 0x99, 0xb3, 0x4f, 0x35, 0xd3,
-	0x26, 0x8a, 0x36, 0x5b, 0xce, 0x99, 0xa1, 0xae, 0x27, 0xbe, 0xff, 0xed, 0xf7, 0xdf, 0xef, 0x37,
-	0xee, 0xe0, 0x10, 0x1a, 0x7b, 0x00, 0x9f, 0xeb, 0x9a, 0x67, 0x5f, 0xf0, 0x3b, 0x34, 0x3c, 0x13,
-	0xa9, 0x4b, 0xd0, 0x7f, 0x87, 0x2f, 0xf9, 0x77, 0x1c, 0xfa, 0x96, 0x59, 0xf5, 0x5e, 0x90, 0x59,
-	0xa2, 0xe3, 0x87, 0x96, 0xbe, 0x8b, 0x0f, 0xa1, 0xe8, 0xda, 0x3b, 0xfd, 0x0c, 0xed, 0xcd, 0x59,
-	0xce, 0xb5, 0x61, 0x0a, 0xef, 0x48, 0x17, 0x85, 0xbe, 0xf6, 0xb2, 0x94, 0xe6, 0x32, 0x3e, 0xb2,
-	0x64, 0x18, 0x0f, 0x41, 0xad, 0xc6, 0x4f, 0x83, 0x31, 0x7e, 0x83, 0xf6, 0x3b, 0xed, 0xbc, 0x2e,
-	0x0c, 0xc7, 0x8f, 0xb6, 0x93, 0xba, 0x67, 0x46, 0xd6, 0x3c, 0x8a, 0x0f, 0xbc, 0x09, 0x65, 0xab,
-	0xb4, 0x72, 0x82, 0x06, 0x73, 0x56, 0x8a, 0x86, 0xe1, 0xd1, 0x26, 0xe9, 0xce, 0xfd, 0xf7, 0x6f,
-	0xaa, 0xab, 0x7b, 0x1d, 0x87, 0x90, 0xb1, 0x82, 0x19, 0xb6, 0xbe, 0xd7, 0xdb, 0x6e, 0xd2, 0x25,
-	0x3d, 0xd9, 0xcd, 0xda, 0xa6, 0x9e, 0xfd, 0xc0, 0xda, 0x38, 0xde, 0xef, 0x6c, 0x9f, 0x77, 0xde,
-	0xea, 0xee, 0x23, 0x66, 0x89, 0xee, 0xeb, 0xb3, 0x84, 0x74, 0xf5, 0xad, 0xc9, 0x43, 0xab, 0xef,
-	0xc5, 0x37, 0x81, 0xcb, 0xd6, 0x7c, 0x8d, 0x86, 0x2e, 0x54, 0x2b, 0x1e, 0x5f, 0x2b, 0xee, 0xbc,
-	0x89, 0x7b, 0xd6, 0x3b, 0x88, 0x11, 0x70, 0xb9, 0x0a, 0x7c, 0x1a, 0x8c, 0xa7, 0x5f, 0x7f, 0x2c,
-	0x47, 0xc1, 0xaf, 0xe5, 0x28, 0xf8, 0xb3, 0x1c, 0x05, 0xe8, 0x89, 0x50, 0x39, 0x69, 0x32, 0x4a,
-	0x35, 0x69, 0x68, 0x91, 0x11, 0x2a, 0x39, 0x69, 0x26, 0x64, 0xb5, 0x67, 0x64, 0xbd, 0x4a, 0xd3,
-	0xf0, 0x82, 0x16, 0xd9, 0x0b, 0xff, 0x9c, 0x04, 0x6f, 0x9f, 0xe7, 0xdc, 0x7c, 0xa8, 0x17, 0x6d,
-	0x13, 0x58, 0x02, 0x5a, 0x02, 0xec, 0xca, 0xe5, 0x4a, 0xa6, 0xd7, 0x2f, 0xec, 0x62, 0x60, 0xf7,
-	0xea, 0xd9, 0xbf, 0x00, 0x00, 0x00, 0xff, 0xff, 0x9b, 0xb8, 0xcf, 0x6a, 0xdb, 0x03, 0x00, 0x00,
+	// 466 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x93, 0xdf, 0x8a, 0xd3, 0x40,
+	0x18, 0xc5, 0x89, 0x62, 0xd9, 0x8e, 0x6c, 0xd6, 0x1d, 0xbb, 0xe2, 0x06, 0x29, 0x18, 0x17, 0x91,
+	0x5e, 0xcc, 0x47, 0x15, 0x6f, 0xf6, 0xb2, 0x22, 0x52, 0x50, 0x29, 0xbd, 0x28, 0xb2, 0x5e, 0x4d,
+	0x93, 0x31, 0x0e, 0x26, 0x99, 0x31, 0x33, 0x09, 0x2c, 0x22, 0x82, 0xaf, 0xe0, 0x4b, 0x79, 0x29,
+	0xf8, 0x02, 0x52, 0x7c, 0x01, 0xdf, 0x40, 0x66, 0xa6, 0x89, 0x11, 0xa7, 0xf6, 0x2a, 0x7f, 0xce,
+	0x99, 0xdf, 0x39, 0xf3, 0xc1, 0x87, 0xa6, 0x54, 0x72, 0x05, 0xb2, 0x12, 0x5a, 0x40, 0x33, 0x85,
+	0x82, 0x96, 0x34, 0x63, 0x15, 0x24, 0xa2, 0x90, 0x15, 0x53, 0x4a, 0xf4, 0x5f, 0x89, 0xb5, 0xe1,
+	0x93, 0xad, 0x89, 0xf4, 0x94, 0x66, 0x1a, 0xdd, 0xfb, 0x9b, 0x24, 0xe9, 0x65, 0x2e, 0x68, 0xda,
+	0x3e, 0xdd, 0xd9, 0xe8, 0x4e, 0x26, 0x44, 0x96, 0x33, 0xa0, 0x92, 0x03, 0x2d, 0x4b, 0xa1, 0xa9,
+	0xe6, 0xa2, 0x54, 0x4e, 0x7d, 0xf8, 0xeb, 0x1a, 0x1a, 0xcc, 0x68, 0xf2, 0xae, 0x96, 0x38, 0x45,
+	0xc3, 0x67, 0x4c, 0xaf, 0x58, 0xa2, 0x45, 0x85, 0xcf, 0x48, 0x4b, 0x69, 0xa6, 0xc4, 0x19, 0x48,
+	0xa7, 0x92, 0x25, 0x7b, 0x5f, 0x33, 0xa5, 0xa3, 0x53, 0x8f, 0xcb, 0x59, 0xe2, 0x5b, 0x9f, 0xbf,
+	0xff, 0xfc, 0x72, 0xe5, 0x06, 0x0e, 0xa1, 0xb1, 0x3f, 0xe0, 0x43, 0x5d, 0xf3, 0xf4, 0x23, 0x5e,
+	0xa3, 0xe1, 0x73, 0x91, 0xb8, 0x0e, 0xde, 0x94, 0x4e, 0xed, 0x52, 0x46, 0x7d, 0xd7, 0xbc, 0x7c,
+	0x23, 0xc8, 0x7c, 0xa1, 0xe2, 0x53, 0x1b, 0x70, 0x13, 0x1f, 0x43, 0xde, 0x9e, 0x68, 0x33, 0x5e,
+	0xa2, 0x83, 0x25, 0xcb, 0xb8, 0xd2, 0xac, 0xc2, 0xbb, 0x2b, 0x46, 0xc7, 0x7d, 0xe9, 0x69, 0x21,
+	0xf5, 0x65, 0x3c, 0xb2, 0xd0, 0x30, 0x1e, 0x42, 0xb5, 0x05, 0x9c, 0x07, 0x13, 0x7c, 0x81, 0x0e,
+	0x5b, 0xde, 0x8b, 0x3a, 0xd7, 0x1c, 0x47, 0x3b, 0xa1, 0xca, 0x47, 0x8d, 0x2c, 0x75, 0x14, 0x1f,
+	0x75, 0x54, 0x28, 0x0c, 0xc7, 0xb0, 0x57, 0x68, 0xb0, 0x64, 0x85, 0x68, 0x18, 0xbe, 0xeb, 0x81,
+	0x3a, 0xa9, 0x9b, 0x84, 0x87, 0xbd, 0x9d, 0xf3, 0x24, 0x84, 0x94, 0xe5, 0x4c, 0xb3, 0x3f, 0x73,
+	0xbe, 0xee, 0x0e, 0xbb, 0xc6, 0xf7, 0xf7, 0xc2, 0xad, 0xcf, 0x97, 0x70, 0xdb, 0x26, 0xe0, 0xf8,
+	0xb0, 0x4d, 0xe8, 0xba, 0xbf, 0x32, 0x19, 0xee, 0x42, 0xf3, 0x85, 0xf2, 0x66, 0xcc, 0x17, 0xa4,
+	0xb5, 0xfc, 0xef, 0x16, 0xa1, 0xcd, 0x38, 0x88, 0xaf, 0x02, 0x97, 0x86, 0xfc, 0x1a, 0x0d, 0x5d,
+	0x3b, 0xc3, 0x3d, 0xdb, 0xc5, 0xdd, 0x37, 0x9b, 0x13, 0x4b, 0x3d, 0x8a, 0x11, 0x70, 0xb9, 0x2d,
+	0x7f, 0x1e, 0x4c, 0x66, 0x9f, 0xbe, 0x6e, 0xc6, 0xc1, 0xb7, 0xcd, 0x38, 0xf8, 0xb1, 0x19, 0x07,
+	0xe8, 0x81, 0xa8, 0x32, 0xd2, 0xa4, 0x94, 0x2a, 0xd2, 0xd0, 0x3c, 0x25, 0x54, 0x72, 0x43, 0xf8,
+	0x77, 0xe3, 0x66, 0xe1, 0x8a, 0xe6, 0xe9, 0x93, 0xee, 0x7b, 0x11, 0x5c, 0x3c, 0xce, 0xb8, 0x7e,
+	0x5b, 0xaf, 0x8d, 0x09, 0x2c, 0x02, 0x0c, 0x02, 0xec, 0x5a, 0x66, 0x95, 0x4c, 0xfc, 0xfb, 0xbd,
+	0x1e, 0xd8, 0xdd, 0x7b, 0xf4, 0x3b, 0x00, 0x00, 0xff, 0xff, 0x65, 0xd7, 0x29, 0x74, 0x0a, 0x04,
+	0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -89,10 +90,10 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type BackupClient interface {
-	GetVector(ctx context.Context, in *payload.Backup_GetVector_Request, opts ...grpc.CallOption) (*payload.Backup_MetaVector, error)
+	GetVector(ctx context.Context, in *payload.Backup_GetVector_Request, opts ...grpc.CallOption) (*payload.Backup_Vector, error)
 	Locations(ctx context.Context, in *payload.Backup_Locations_Request, opts ...grpc.CallOption) (*payload.Info_IPs, error)
-	Register(ctx context.Context, in *payload.Backup_MetaVector, opts ...grpc.CallOption) (*payload.Empty, error)
-	RegisterMulti(ctx context.Context, in *payload.Backup_MetaVectors, opts ...grpc.CallOption) (*payload.Empty, error)
+	Register(ctx context.Context, in *payload.Backup_Vector, opts ...grpc.CallOption) (*payload.Empty, error)
+	RegisterMulti(ctx context.Context, in *payload.Backup_Vectors, opts ...grpc.CallOption) (*payload.Empty, error)
 	Remove(ctx context.Context, in *payload.Backup_Remove_Request, opts ...grpc.CallOption) (*payload.Empty, error)
 	RemoveMulti(ctx context.Context, in *payload.Backup_Remove_RequestMulti, opts ...grpc.CallOption) (*payload.Empty, error)
 	RegisterIPs(ctx context.Context, in *payload.Backup_IP_Register_Request, opts ...grpc.CallOption) (*payload.Empty, error)
@@ -107,9 +108,9 @@ func NewBackupClient(cc *grpc.ClientConn) BackupClient {
 	return &backupClient{cc}
 }
 
-func (c *backupClient) GetVector(ctx context.Context, in *payload.Backup_GetVector_Request, opts ...grpc.CallOption) (*payload.Backup_MetaVector, error) {
-	out := new(payload.Backup_MetaVector)
-	err := c.cc.Invoke(ctx, "/compressor.Backup/GetVector", in, out, opts...)
+func (c *backupClient) GetVector(ctx context.Context, in *payload.Backup_GetVector_Request, opts ...grpc.CallOption) (*payload.Backup_Vector, error) {
+	out := new(payload.Backup_Vector)
+	err := c.cc.Invoke(ctx, "/manager.compressor.v1.Backup/GetVector", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -118,25 +119,25 @@ func (c *backupClient) GetVector(ctx context.Context, in *payload.Backup_GetVect
 
 func (c *backupClient) Locations(ctx context.Context, in *payload.Backup_Locations_Request, opts ...grpc.CallOption) (*payload.Info_IPs, error) {
 	out := new(payload.Info_IPs)
-	err := c.cc.Invoke(ctx, "/compressor.Backup/Locations", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/manager.compressor.v1.Backup/Locations", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *backupClient) Register(ctx context.Context, in *payload.Backup_MetaVector, opts ...grpc.CallOption) (*payload.Empty, error) {
+func (c *backupClient) Register(ctx context.Context, in *payload.Backup_Vector, opts ...grpc.CallOption) (*payload.Empty, error) {
 	out := new(payload.Empty)
-	err := c.cc.Invoke(ctx, "/compressor.Backup/Register", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/manager.compressor.v1.Backup/Register", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *backupClient) RegisterMulti(ctx context.Context, in *payload.Backup_MetaVectors, opts ...grpc.CallOption) (*payload.Empty, error) {
+func (c *backupClient) RegisterMulti(ctx context.Context, in *payload.Backup_Vectors, opts ...grpc.CallOption) (*payload.Empty, error) {
 	out := new(payload.Empty)
-	err := c.cc.Invoke(ctx, "/compressor.Backup/RegisterMulti", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/manager.compressor.v1.Backup/RegisterMulti", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +146,7 @@ func (c *backupClient) RegisterMulti(ctx context.Context, in *payload.Backup_Met
 
 func (c *backupClient) Remove(ctx context.Context, in *payload.Backup_Remove_Request, opts ...grpc.CallOption) (*payload.Empty, error) {
 	out := new(payload.Empty)
-	err := c.cc.Invoke(ctx, "/compressor.Backup/Remove", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/manager.compressor.v1.Backup/Remove", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +155,7 @@ func (c *backupClient) Remove(ctx context.Context, in *payload.Backup_Remove_Req
 
 func (c *backupClient) RemoveMulti(ctx context.Context, in *payload.Backup_Remove_RequestMulti, opts ...grpc.CallOption) (*payload.Empty, error) {
 	out := new(payload.Empty)
-	err := c.cc.Invoke(ctx, "/compressor.Backup/RemoveMulti", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/manager.compressor.v1.Backup/RemoveMulti", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -163,7 +164,7 @@ func (c *backupClient) RemoveMulti(ctx context.Context, in *payload.Backup_Remov
 
 func (c *backupClient) RegisterIPs(ctx context.Context, in *payload.Backup_IP_Register_Request, opts ...grpc.CallOption) (*payload.Empty, error) {
 	out := new(payload.Empty)
-	err := c.cc.Invoke(ctx, "/compressor.Backup/RegisterIPs", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/manager.compressor.v1.Backup/RegisterIPs", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -172,7 +173,7 @@ func (c *backupClient) RegisterIPs(ctx context.Context, in *payload.Backup_IP_Re
 
 func (c *backupClient) RemoveIPs(ctx context.Context, in *payload.Backup_IP_Remove_Request, opts ...grpc.CallOption) (*payload.Empty, error) {
 	out := new(payload.Empty)
-	err := c.cc.Invoke(ctx, "/compressor.Backup/RemoveIPs", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/manager.compressor.v1.Backup/RemoveIPs", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -181,10 +182,10 @@ func (c *backupClient) RemoveIPs(ctx context.Context, in *payload.Backup_IP_Remo
 
 // BackupServer is the server API for Backup service.
 type BackupServer interface {
-	GetVector(context.Context, *payload.Backup_GetVector_Request) (*payload.Backup_MetaVector, error)
+	GetVector(context.Context, *payload.Backup_GetVector_Request) (*payload.Backup_Vector, error)
 	Locations(context.Context, *payload.Backup_Locations_Request) (*payload.Info_IPs, error)
-	Register(context.Context, *payload.Backup_MetaVector) (*payload.Empty, error)
-	RegisterMulti(context.Context, *payload.Backup_MetaVectors) (*payload.Empty, error)
+	Register(context.Context, *payload.Backup_Vector) (*payload.Empty, error)
+	RegisterMulti(context.Context, *payload.Backup_Vectors) (*payload.Empty, error)
 	Remove(context.Context, *payload.Backup_Remove_Request) (*payload.Empty, error)
 	RemoveMulti(context.Context, *payload.Backup_Remove_RequestMulti) (*payload.Empty, error)
 	RegisterIPs(context.Context, *payload.Backup_IP_Register_Request) (*payload.Empty, error)
@@ -195,16 +196,16 @@ type BackupServer interface {
 type UnimplementedBackupServer struct {
 }
 
-func (*UnimplementedBackupServer) GetVector(ctx context.Context, req *payload.Backup_GetVector_Request) (*payload.Backup_MetaVector, error) {
+func (*UnimplementedBackupServer) GetVector(ctx context.Context, req *payload.Backup_GetVector_Request) (*payload.Backup_Vector, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetVector not implemented")
 }
 func (*UnimplementedBackupServer) Locations(ctx context.Context, req *payload.Backup_Locations_Request) (*payload.Info_IPs, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Locations not implemented")
 }
-func (*UnimplementedBackupServer) Register(ctx context.Context, req *payload.Backup_MetaVector) (*payload.Empty, error) {
+func (*UnimplementedBackupServer) Register(ctx context.Context, req *payload.Backup_Vector) (*payload.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
 }
-func (*UnimplementedBackupServer) RegisterMulti(ctx context.Context, req *payload.Backup_MetaVectors) (*payload.Empty, error) {
+func (*UnimplementedBackupServer) RegisterMulti(ctx context.Context, req *payload.Backup_Vectors) (*payload.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterMulti not implemented")
 }
 func (*UnimplementedBackupServer) Remove(ctx context.Context, req *payload.Backup_Remove_Request) (*payload.Empty, error) {
@@ -234,7 +235,7 @@ func _Backup_GetVector_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/compressor.Backup/GetVector",
+		FullMethod: "/manager.compressor.v1.Backup/GetVector",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(BackupServer).GetVector(ctx, req.(*payload.Backup_GetVector_Request))
@@ -252,7 +253,7 @@ func _Backup_Locations_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/compressor.Backup/Locations",
+		FullMethod: "/manager.compressor.v1.Backup/Locations",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(BackupServer).Locations(ctx, req.(*payload.Backup_Locations_Request))
@@ -261,7 +262,7 @@ func _Backup_Locations_Handler(srv interface{}, ctx context.Context, dec func(in
 }
 
 func _Backup_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(payload.Backup_MetaVector)
+	in := new(payload.Backup_Vector)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -270,16 +271,16 @@ func _Backup_Register_Handler(srv interface{}, ctx context.Context, dec func(int
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/compressor.Backup/Register",
+		FullMethod: "/manager.compressor.v1.Backup/Register",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BackupServer).Register(ctx, req.(*payload.Backup_MetaVector))
+		return srv.(BackupServer).Register(ctx, req.(*payload.Backup_Vector))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Backup_RegisterMulti_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(payload.Backup_MetaVectors)
+	in := new(payload.Backup_Vectors)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -288,10 +289,10 @@ func _Backup_RegisterMulti_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/compressor.Backup/RegisterMulti",
+		FullMethod: "/manager.compressor.v1.Backup/RegisterMulti",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BackupServer).RegisterMulti(ctx, req.(*payload.Backup_MetaVectors))
+		return srv.(BackupServer).RegisterMulti(ctx, req.(*payload.Backup_Vectors))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -306,7 +307,7 @@ func _Backup_Remove_Handler(srv interface{}, ctx context.Context, dec func(inter
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/compressor.Backup/Remove",
+		FullMethod: "/manager.compressor.v1.Backup/Remove",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(BackupServer).Remove(ctx, req.(*payload.Backup_Remove_Request))
@@ -324,7 +325,7 @@ func _Backup_RemoveMulti_Handler(srv interface{}, ctx context.Context, dec func(
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/compressor.Backup/RemoveMulti",
+		FullMethod: "/manager.compressor.v1.Backup/RemoveMulti",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(BackupServer).RemoveMulti(ctx, req.(*payload.Backup_Remove_RequestMulti))
@@ -342,7 +343,7 @@ func _Backup_RegisterIPs_Handler(srv interface{}, ctx context.Context, dec func(
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/compressor.Backup/RegisterIPs",
+		FullMethod: "/manager.compressor.v1.Backup/RegisterIPs",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(BackupServer).RegisterIPs(ctx, req.(*payload.Backup_IP_Register_Request))
@@ -360,7 +361,7 @@ func _Backup_RemoveIPs_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/compressor.Backup/RemoveIPs",
+		FullMethod: "/manager.compressor.v1.Backup/RemoveIPs",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(BackupServer).RemoveIPs(ctx, req.(*payload.Backup_IP_Remove_Request))
@@ -369,7 +370,7 @@ func _Backup_RemoveIPs_Handler(srv interface{}, ctx context.Context, dec func(in
 }
 
 var _Backup_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "compressor.Backup",
+	ServiceName: "manager.compressor.v1.Backup",
 	HandlerType: (*BackupServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

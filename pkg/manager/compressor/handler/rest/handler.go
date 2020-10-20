@@ -20,8 +20,8 @@ package rest
 import (
 	"net/http"
 
-	"github.com/vdaas/vald/apis/grpc/manager/compressor"
-	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/manager/compressor"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/net/http/json"
 )
 
@@ -64,14 +64,14 @@ func (h *handler) Locations(w http.ResponseWriter, r *http.Request) (int, error)
 }
 
 func (h *handler) Register(w http.ResponseWriter, r *http.Request) (int, error) {
-	var req *payload.Backup_MetaVector
+	var req *payload.Backup_Vector
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.backup.Register(r.Context(), req)
 	})
 }
 
 func (h *handler) RegisterMulti(w http.ResponseWriter, r *http.Request) (int, error) {
-	var req *payload.Backup_MetaVectors
+	var req *payload.Backup_Vectors
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.backup.RegisterMulti(r.Context(), req)
 	})

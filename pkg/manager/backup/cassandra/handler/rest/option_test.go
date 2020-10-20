@@ -20,7 +20,7 @@ package rest
 import (
 	"testing"
 
-	"github.com/vdaas/vald/apis/grpc/manager/backup"
+	"github.com/vdaas/vald/apis/grpc/v1/manager/backup"
 	"go.uber.org/goleak"
 )
 

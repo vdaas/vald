@@ -339,7 +339,7 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) error {
 		}
 	}()
 	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Object_Vector) },
+		func() interface{} { return new(payload.Insert_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			return s.Insert(ctx, data.(*payload.Insert_Request))
 		})
@@ -451,7 +451,7 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) error {
 		}
 	}()
 	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Object_Vector) },
+		func() interface{} { return new(payload.Update_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			return s.Update(ctx, data.(*payload.Update_Request))
 		})
@@ -540,7 +540,7 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) error {
 		}
 	}()
 	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Object_Vector) },
+		func() interface{} { return new(payload.Upsert_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			return s.Upsert(ctx, data.(*payload.Upsert_Request))
 		})
@@ -686,7 +686,7 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) error {
 		}
 	}()
 	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Object_ID) },
+		func() interface{} { return new(payload.Remove_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			return s.Remove(ctx, data.(*payload.Remove_Request))
 		})

@@ -22,7 +22,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/pkg/manager/backup/cassandra/model"
 	"github.com/vdaas/vald/pkg/manager/backup/cassandra/service"
@@ -113,7 +113,7 @@ func Test_server_GetVector(t *testing.T) {
 		cassandra service.Cassandra
 	}
 	type want struct {
-		wantRes *payload.Backup_Compressed_MetaVector
+		wantRes *payload.Backup_Compressed_Vector
 		err     error
 	}
 	type test struct {
@@ -121,11 +121,11 @@ func Test_server_GetVector(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Backup_Compressed_MetaVector, error) error
+		checkFunc  func(want, *payload.Backup_Compressed_Vector, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotRes *payload.Backup_Compressed_MetaVector, err error) error {
+	defaultCheckFunc := func(w want, gotRes *payload.Backup_Compressed_Vector, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -295,7 +295,7 @@ func Test_server_Register(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx  context.Context
-		meta *payload.Backup_Compressed_MetaVector
+		meta *payload.Backup_Compressed_Vector
 	}
 	type fields struct {
 		cassandra service.Cassandra
@@ -389,7 +389,7 @@ func Test_server_RegisterMulti(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx   context.Context
-		metas *payload.Backup_Compressed_MetaVectors
+		metas *payload.Backup_Compressed_Vectors
 	}
 	type fields struct {
 		cassandra service.Cassandra
@@ -861,18 +861,18 @@ func Test_toBackupMetaVector(t *testing.T) {
 		meta *model.MetaVector
 	}
 	type want struct {
-		wantRes *payload.Backup_Compressed_MetaVector
+		wantRes *payload.Backup_Compressed_Vector
 		err     error
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, *payload.Backup_Compressed_MetaVector, error) error
+		checkFunc  func(want, *payload.Backup_Compressed_Vector, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotRes *payload.Backup_Compressed_MetaVector, err error) error {
+	defaultCheckFunc := func(w want, gotRes *payload.Backup_Compressed_Vector, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -936,7 +936,7 @@ func Test_toBackupMetaVector(t *testing.T) {
 func Test_toModelMetaVector(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		obj *payload.Backup_Compressed_MetaVector
+		obj *payload.Backup_Compressed_Vector
 	}
 	type want struct {
 		wantRes *model.MetaVector

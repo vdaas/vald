@@ -16,7 +16,7 @@
 
 syntax = "proto3";
 
-package errors;
+package errors.v1;
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/errors";
 option java_multiple_files = true;

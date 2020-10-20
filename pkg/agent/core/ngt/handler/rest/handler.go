@@ -22,7 +22,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/net/http/dump"
 	"github.com/vdaas/vald/internal/net/http/json"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/handler/grpc"
@@ -80,42 +80,42 @@ func (h *handler) SearchByID(w http.ResponseWriter, r *http.Request) (code int, 
 }
 
 func (h *handler) Insert(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Object_Vector
+	var req *payload.Insert_Request
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.agent.Insert(r.Context(), req)
 	})
 }
 
 func (h *handler) MultiInsert(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Object_Vectors
+	var req *payload.Insert_MultiRequest
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.agent.MultiInsert(r.Context(), req)
 	})
 }
 
 func (h *handler) Update(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Object_Vector
+	var req *payload.Update_Request
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.agent.Update(r.Context(), req)
 	})
 }
 
 func (h *handler) MultiUpdate(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Object_Vectors
+	var req *payload.Update_MultiRequest
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.agent.MultiUpdate(r.Context(), req)
 	})
 }
 
 func (h *handler) Remove(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Object_ID
+	var req *payload.Remove_Request
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.agent.Remove(r.Context(), req)
 	})
 }
 
 func (h *handler) MultiRemove(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Object_IDs
+	var req *payload.Remove_MultiRequest
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.agent.MultiRemove(r.Context(), req)
 	})

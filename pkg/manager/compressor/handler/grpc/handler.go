@@ -21,8 +21,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/vdaas/vald/apis/grpc/manager/compressor"
-	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/manager/compressor"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/status"
@@ -47,7 +47,7 @@ func New(opts ...Option) Server {
 	return s
 }
 
-func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Request) (res *payload.Backup_MetaVector, err error) {
+func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Request) (res *payload.Backup_Vector, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor.GetVector")
 	defer func() {
 		if span != nil {
@@ -73,7 +73,7 @@ func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Re
 		return nil, status.WrapWithInternal(fmt.Sprintf("GetVector API uuid %s's object failed to decompress %#v", uuid, r), err, info.Get())
 	}
 
-	return &payload.Backup_MetaVector{
+	return &payload.Backup_Vector{
 		Uuid:   r.GetUuid(),
 		Vector: vector,
 		Ips:    r.GetIps(),
@@ -102,7 +102,7 @@ func (s *server) Locations(ctx context.Context, req *payload.Backup_Locations_Re
 	}, nil
 }
 
-func (s *server) Register(ctx context.Context, meta *payload.Backup_MetaVector) (res *payload.Empty, err error) {
+func (s *server) Register(ctx context.Context, meta *payload.Backup_Vector) (res *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor.Register")
 	defer func() {
 		if span != nil {
@@ -123,7 +123,7 @@ func (s *server) Register(ctx context.Context, meta *payload.Backup_MetaVector) 
 	return new(payload.Empty), nil
 }
 
-func (s *server) RegisterMulti(ctx context.Context, metas *payload.Backup_MetaVectors) (res *payload.Empty, err error) {
+func (s *server) RegisterMulti(ctx context.Context, metas *payload.Backup_Vectors) (res *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor.RegisterMulti")
 	defer func() {
 		if span != nil {

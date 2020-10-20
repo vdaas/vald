@@ -21,10 +21,11 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"sync"
 
-	agent "github.com/vdaas/vald/apis/grpc/agent/core"
-	"github.com/vdaas/vald/apis/grpc/gateway/vald"
-	"github.com/vdaas/vald/apis/grpc/payload"
+	agent "github.com/vdaas/vald/apis/grpc/v1/agent/core"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
@@ -39,15 +40,18 @@ import (
 
 type Server interface {
 	agent.AgentServer
-	vald.ValdServer
+	vald.Server
 }
 
 type server struct {
 	name              string
 	ip                string
 	ngt               service.NGT
+	eg                errgroup.Group
 	streamConcurrency int
 }
+
+const apiName = "vald/agent-ngt"
 
 func New(opts ...Option) Server {
 	s := new(server)
@@ -84,7 +88,7 @@ func (s *server) newLocation(uuid string) *payload.Object_Location {
 }
 
 func (s *server) Exists(ctx context.Context, uid *payload.Object_ID) (res *payload.Object_ID, err error) {
-	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.Exists")
+	ctx, span := trace.StartSpan(ctx, apiName+".Exists")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -106,7 +110,7 @@ func (s *server) Exists(ctx context.Context, uid *payload.Object_ID) (res *paylo
 }
 
 func (s *server) Search(ctx context.Context, req *payload.Search_Request) (*payload.Search_Response, error) {
-	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.Search")
+	ctx, span := trace.StartSpan(ctx, apiName+".Search")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -121,7 +125,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (*payl
 }
 
 func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) (*payload.Search_Response, error) {
-	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.SearchByID")
+	ctx, span := trace.StartSpan(ctx, apiName+".SearchByID")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -151,8 +155,8 @@ func toSearchResponse(dists []model.Distance, err error) (res *payload.Search_Re
 	return res, err
 }
 
-func (s *server) StreamSearch(stream vald.Vald_StreamSearchServer) error {
-	ctx, span := trace.StartSpan(stream.Context(), "vald/agent-ngt.StreamSearch")
+func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) error {
+	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamSearch")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -165,8 +169,8 @@ func (s *server) StreamSearch(stream vald.Vald_StreamSearchServer) error {
 		})
 }
 
-func (s *server) StreamSearchByID(stream vald.Vald_StreamSearchByIDServer) error {
-	ctx, span := trace.StartSpan(stream.Context(), "vald/agent-ngt.StreamSearchByID")
+func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) error {
+	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamSearchByID")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -179,13 +183,86 @@ func (s *server) StreamSearchByID(stream vald.Vald_StreamSearchByIDServer) error
 		})
 }
 
-func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (res *payload.Object_Location, err error) {
-	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.Insert")
+func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequest) (res *payload.Search_Responses, errs error) {
+	ctx, span := trace.StartSpan(ctx, apiName+".MultiSearch")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
+
+	res = &payload.Search_Responses{
+		Responses: make([]*payload.Search_Response, len(reqs.Requests)),
+	}
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+	for i, req := range reqs.Requests {
+		idx, query := i, req
+		wg.Add(1)
+		s.eg.Go(func() error {
+			defer wg.Done()
+			r, err := s.Search(ctx, query)
+			if err != nil {
+				if span != nil {
+					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+				}
+				mu.Lock()
+				errs = errors.Wrap(errs, status.WrapWithNotFound(fmt.Sprintf("MultiSearch API vector %v's search request result not found", query.GetVector()), err, info.Get()).Error())
+				mu.Unlock()
+				return nil
+			}
+			res.Responses[idx] = r
+			return nil
+		})
+	}
+	wg.Wait()
+	return res, errs
+}
+
+func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_MultiIDRequest) (res *payload.Search_Responses, errs error) {
+	ctx, span := trace.StartSpan(ctx, apiName+".MultiSearchByID")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
+	res = &payload.Search_Responses{
+		Responses: make([]*payload.Search_Response, len(reqs.Requests)),
+	}
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+	for i, req := range reqs.Requests {
+		idx, query := i, req
+		wg.Add(1)
+		s.eg.Go(func() error {
+			defer wg.Done()
+			r, err := s.SearchByID(ctx, query)
+			if err != nil {
+				if span != nil {
+					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+				}
+				mu.Lock()
+				errs = errors.Wrap(errs, status.WrapWithNotFound(fmt.Sprintf("MultiSearchByID API uuid %v's search by id request result not found", query.GetId()), err, info.Get()).Error())
+				mu.Unlock()
+				return nil
+			}
+			res.Responses[idx] = r
+			return nil
+		})
+	}
+	wg.Wait()
+	return res, errs
+}
+
+func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (res *payload.Object_Location, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+".Insert")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	vec := req.GetVector()
 	err = s.ngt.Insert(vec.GetId(), vec.GetVector())
 	if err != nil {
 		log.Errorf("[Insert]\tUnknown error\t%+v", err)
@@ -197,30 +274,31 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (res *p
 	return s.newLocation(vec.GetId()), nil
 }
 
-func (s *server) StreamInsert(stream vald.Vald_StreamInsertServer) error {
-	ctx, span := trace.StartSpan(stream.Context(), "vald/agent-ngt.StreamInsert")
+func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) error {
+	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamInsert")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
 	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Object_Vector) },
+		func() interface{} { return new(payload.Insert_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			return s.Insert(ctx, data.(*payload.Object_Vector))
+			return s.Insert(ctx, data.(*payload.Insert_Request))
 		})
 }
 
-func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Object_Locations, err error) {
-	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.MultiInsert")
+func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequest) (res *payload.Object_Locations, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+".MultiInsert")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	uuids := make([]string, 0, len(vecs.Vectors))
-	vmap := make(map[string][]float32, len(vecs.GetVectors()))
-	for _, vec := range vecs.GetVectors() {
+	uuids := make([]string, 0, len(reqs.GetRequests()))
+	vmap := make(map[string][]float32, len(reqs.GetRequests()))
+	for _, req := range reqs.GetRequests() {
+		vec := req.GetVector()
 		vmap[vec.GetId()] = vec.GetVector()
 		uuids = append(uuids, vec.GetId())
 	}
@@ -235,13 +313,14 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 	return s.newLocations(uuids...), nil
 }
 
-func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *payload.Object_Location, err error) {
-	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.Update")
+func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *payload.Object_Location, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+".Update")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
+	vec := req.GetVector()
 	err = s.ngt.Update(vec.GetId(), vec.GetVector())
 	if err != nil {
 		log.Errorf("[Update]\tUnknown error\t%+v", err)
@@ -253,31 +332,32 @@ func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *p
 	return s.newLocation(vec.GetId()), nil
 }
 
-func (s *server) StreamUpdate(stream vald.Vald_StreamUpdateServer) error {
-	ctx, span := trace.StartSpan(stream.Context(), "vald/agent-ngt.StreamUpdate")
+func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) error {
+	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamUpdate")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
 	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Object_Vector) },
+		func() interface{} { return new(payload.Update_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			return s.Update(ctx, data.(*payload.Object_Vector))
+			return s.Update(ctx, data.(*payload.Update_Request))
 		})
 }
 
-func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Object_Locations, err error) {
-	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.MultiUpdate")
+func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequest) (res *payload.Object_Locations, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+".MultiUpdate")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
 
-	uuids := make([]string, 0, len(vecs.Vectors))
-	vmap := make(map[string][]float32, len(vecs.GetVectors()))
-	for _, vec := range vecs.GetVectors() {
+	uuids := make([]string, 0, len(reqs.GetRequests()))
+	vmap := make(map[string][]float32, len(reqs.GetRequests()))
+	for _, req := range reqs.GetRequests() {
+		vec := req.GetVector()
 		vmap[vec.GetId()] = vec.GetVector()
 		uuids = append(uuids, vec.GetId())
 	}
@@ -293,52 +373,61 @@ func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) 
 	return s.newLocations(uuids...), nil
 }
 
-func (s *server) Upsert(ctx context.Context, vec *payload.Object_Vector) (*payload.Object_Location, error) {
-	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.Upsert")
+func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (*payload.Object_Location, error) {
+	ctx, span := trace.StartSpan(ctx, apiName+".Upsert")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
 
-	_, exists := s.ngt.Exists(vec.GetId())
+	_, exists := s.ngt.Exists(req.GetVector().GetId())
 	if exists {
-		return s.Update(ctx, vec)
+		return s.Update(ctx, &payload.Update_Request{
+			Vector: req.GetVector(),
+		})
 	}
-	return s.Insert(ctx, vec)
+	return s.Insert(ctx, &payload.Insert_Request{
+		Vector: req.GetVector(),
+	})
 }
 
-func (s *server) StreamUpsert(stream vald.Vald_StreamUpsertServer) error {
-	ctx, span := trace.StartSpan(stream.Context(), "vald/agent-ngt.StreamUpsert")
+func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) error {
+	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamUpsert")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
 	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Object_Vector) },
+		func() interface{} { return new(payload.Upsert_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			return s.Upsert(ctx, data.(*payload.Object_Vector))
+			return s.Upsert(ctx, data.(*payload.Upsert_Request))
 		})
 }
 
-func (s *server) MultiUpsert(ctx context.Context, vecs *payload.Object_Vectors) (res *payload.Object_Locations, err error) {
-	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.MultiUpsert")
+func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequest) (res *payload.Object_Locations, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+".MultiUpsert")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
 
-	insertVecs := make([]*payload.Object_Vector, 0, len(vecs.GetVectors()))
-	updateVecs := make([]*payload.Object_Vector, 0, len(vecs.GetVectors()))
+	insertReqs := make([]*payload.Insert_Request, 0, len(reqs.GetRequests()))
+	updateReqs := make([]*payload.Update_Request, 0, len(reqs.GetRequests()))
 
-	for _, vec := range vecs.GetVectors() {
+	for _, req := range reqs.GetRequests() {
+		vec := req.GetVector()
 		_, exists := s.ngt.Exists(vec.GetId())
 		if exists {
-			updateVecs = append(updateVecs, vec)
+			updateReqs = append(updateReqs, &payload.Update_Request{
+				Vector: vec,
+			})
 		} else {
-			insertVecs = append(insertVecs, vec)
+			insertReqs = append(insertReqs, &payload.Insert_Request{
+				Vector: vec,
+			})
 		}
 	}
 
@@ -347,9 +436,9 @@ func (s *server) MultiUpsert(ctx context.Context, vecs *payload.Object_Vectors) 
 	eg, ectx := errgroup.New(ctx)
 	eg.Go(safety.RecoverFunc(func() error {
 		var err error
-		if len(updateVecs) > 0 {
-			ures, err = s.MultiUpdate(ectx, &payload.Object_Vectors{
-				Vectors: updateVecs,
+		if len(updateReqs) > 0 {
+			ures, err = s.MultiUpdate(ectx, &payload.Update_MultiRequest{
+				Requests: updateReqs,
 			})
 		}
 		return err
@@ -357,9 +446,9 @@ func (s *server) MultiUpsert(ctx context.Context, vecs *payload.Object_Vectors) 
 
 	eg.Go(safety.RecoverFunc(func() error {
 		var err error
-		if len(insertVecs) > 0 {
-			ires, err = s.MultiInsert(ectx, &payload.Object_Vectors{
-				Vectors: insertVecs,
+		if len(insertReqs) > 0 {
+			ires, err = s.MultiInsert(ectx, &payload.Insert_MultiRequest{
+				Requests: insertReqs,
 			})
 		}
 		return err
@@ -374,13 +463,14 @@ func (s *server) MultiUpsert(ctx context.Context, vecs *payload.Object_Vectors) 
 	}, nil
 }
 
-func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (res *payload.Object_Location, err error) {
-	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.Remove")
+func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (res *payload.Object_Location, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+".Remove")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
+	id := req.GetId()
 	uuid := id.GetId()
 	err = s.ngt.Delete(uuid)
 	if err != nil {
@@ -393,28 +483,31 @@ func (s *server) Remove(ctx context.Context, id *payload.Object_ID) (res *payloa
 	return s.newLocation(uuid), nil
 }
 
-func (s *server) StreamRemove(stream vald.Vald_StreamRemoveServer) error {
-	ctx, span := trace.StartSpan(stream.Context(), "vald/agent-ngt.StreamRemove")
+func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) error {
+	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamRemove")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
 	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Object_ID) },
+		func() interface{} { return new(payload.Remove_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			return s.Remove(ctx, data.(*payload.Object_ID))
+			return s.Remove(ctx, data.(*payload.Remove_Request))
 		})
 }
 
-func (s *server) MultiRemove(ctx context.Context, ids *payload.Object_IDs) (res *payload.Object_Locations, err error) {
-	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.MultiRemove")
+func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequest) (res *payload.Object_Locations, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+".MultiRemove")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	uuids := ids.GetIds()
+	uuids := make([]string, 0, len(reqs.GetRequests()))
+	for _, req := range reqs.GetRequests() {
+		uuids = append(uuids, req.GetId().GetId())
+	}
 	err = s.ngt.DeleteMultiple(uuids...)
 	if err != nil {
 		log.Errorf("[MultiRemove]\tUnknown error\t%+v", err)
@@ -427,7 +520,7 @@ func (s *server) MultiRemove(ctx context.Context, ids *payload.Object_IDs) (res 
 }
 
 func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (res *payload.Object_Vector, err error) {
-	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.GetObject")
+	ctx, span := trace.StartSpan(ctx, apiName+".GetObject")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -448,8 +541,8 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (res *pay
 	}, nil
 }
 
-func (s *server) StreamGetObject(stream vald.Vald_StreamGetObjectServer) error {
-	ctx, span := trace.StartSpan(stream.Context(), "vald/agent-ngt.StreamGetObject")
+func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) error {
+	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamGetObject")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -463,7 +556,7 @@ func (s *server) StreamGetObject(stream vald.Vald_StreamGetObjectServer) error {
 }
 
 func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndexRequest) (res *payload.Empty, err error) {
-	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.CreateIndex")
+	ctx, span := trace.StartSpan(ctx, apiName+".CreateIndex")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -490,7 +583,7 @@ func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndex
 }
 
 func (s *server) SaveIndex(ctx context.Context, _ *payload.Empty) (res *payload.Empty, err error) {
-	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.SaveIndex")
+	ctx, span := trace.StartSpan(ctx, apiName+".SaveIndex")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -509,7 +602,7 @@ func (s *server) SaveIndex(ctx context.Context, _ *payload.Empty) (res *payload.
 }
 
 func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_CreateIndexRequest) (res *payload.Empty, err error) {
-	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.CreateAndSaveIndex")
+	ctx, span := trace.StartSpan(ctx, apiName+".CreateAndSaveIndex")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -528,7 +621,7 @@ func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_Crea
 }
 
 func (s *server) IndexInfo(ctx context.Context, _ *payload.Empty) (res *payload.Info_Index_Count, err error) {
-	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt.IndexInfo")
+	ctx, span := trace.StartSpan(ctx, apiName+".IndexInfo")
 	defer func() {
 		if span != nil {
 			span.End()

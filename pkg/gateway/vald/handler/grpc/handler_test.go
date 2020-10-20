@@ -25,6 +25,7 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/gateway/vald"
 	"github.com/vdaas/vald/apis/grpc/payload"
+	valdv1 "github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -477,7 +478,7 @@ func Test_server_search(t *testing.T) {
 	type args struct {
 		ctx context.Context
 		cfg *payload.Search_Config
-		f   func(ctx context.Context, vc vald.ValdClient, copts ...grpc.CallOption) (*payload.Search_Response, error)
+		f   func(ctx context.Context, vc valdv1.Client, copts ...grpc.CallOption) (*payload.Search_Response, error)
 	}
 	type fields struct {
 		eg                errgroup.Group

@@ -16,7 +16,7 @@
 
 syntax = "proto3";
 
-package payload;
+package payload.v1;
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/payload";
 option java_multiple_files = true;
@@ -236,21 +236,21 @@ message Backup {
     }
   }
 
-  message MetaVector {
+  message Vector {
     string uuid = 1;
     repeated float vector = 3 [ (validate.rules).repeated .min_items = 2 ];
     repeated string ips = 4;
   }
-  message MetaVectors { repeated MetaVector vectors = 1; }
+  message Vectors { repeated Vector vectors = 1; }
 
   message Compressed {
-    message MetaVector {
+    message Vector {
       string uuid = 1;
       bytes vector = 3;
       repeated string ips = 4;
     }
 
-    message MetaVectors { repeated MetaVector vectors = 1; }
+    message Vectors { repeated Vector vectors = 1; }
   }
 }
 
