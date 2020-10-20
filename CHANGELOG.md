@@ -1,5 +1,104 @@
 # CHANGELOG
 
+## v0.0.62
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v0.0.62</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v0.0.62</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v0.0.62</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v0.0.62</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverer k8s</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v0.0.62</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v0.0.62</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateway</td>
+    <td>
+      <code>docker pull vdaas/vald-gateway:v0.0.62</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-gateway:v0.0.62</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Backup manager MySQL</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-backup-mysql:v0.0.62</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-backup-mysql:v0.0.62</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Backup manager Cassandra</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-backup-cassandra:v0.0.62</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-backup-cassandra:v0.0.62</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Compressor</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-compressor:v0.0.62</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-compressor:v0.0.62</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Meta Redis</td>
+    <td>
+      <code>docker pull vdaas/vald-meta-redis:v0.0.62</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-redis:v0.0.62</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Meta Cassandra</td>
+    <td>
+      <code>docker pull vdaas/vald-meta-cassandra:v0.0.62</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-cassandra:v0.0.62</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v0.0.62</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v0.0.62</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v0.0.62</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v0.0.62</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v0.0.62)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v0.0.62/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v0.0.62/charts/vald-helm-operator/README.md)
+
+### Changes
+- add 3 new distance type support for agent-ngt ([#780](https://github.com/vdaas/vald/pull/780))
+- upgrade KinD, Helm, valdcli, telepresence, tensorlfow, operator-sdk, helm-docs ([#776](https://github.com/vdaas/vald/pull/776))
+- :robot: Automatically update k8s manifests ([#774](https://github.com/vdaas/vald/pull/774))
+
+
 ## v0.0.61
 
 ### Docker images
