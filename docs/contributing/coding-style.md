@@ -595,7 +595,7 @@ func func New(opts ...Option) (Server, error) {
 
 ```
 
-We also recommend that you use the default options and the unexported feature option pattan to initialize objects that are not set externally and are only used internally.
+We also recommend that you use the default options and the unexported functional option pattan to initialize objects that are not set externally and are only used internally.
 
 ```go
 var defaultOpts = []Option {
