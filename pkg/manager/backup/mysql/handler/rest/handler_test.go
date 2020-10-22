@@ -96,6 +96,7 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -189,6 +190,7 @@ func Test_handler_GetVector(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -282,6 +284,7 @@ func Test_handler_Locations(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -375,6 +378,7 @@ func Test_handler_Register(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -468,6 +472,7 @@ func Test_handler_RegisterMulti(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -561,6 +566,7 @@ func Test_handler_Remove(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -654,6 +660,7 @@ func Test_handler_RemoveMulti(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -747,6 +754,7 @@ func Test_handler_RegisterIPs(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -840,6 +848,7 @@ func Test_handler_RemoveIPs(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }

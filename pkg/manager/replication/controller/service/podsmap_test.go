@@ -97,6 +97,7 @@ func Test_newEntryPodsMap(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -199,6 +200,7 @@ func Test_podsMap_Load(t *testing.T) {
 			if err := test.checkFunc(test.want, gotValue, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -279,6 +281,7 @@ func Test_entryPodsMap_load(t *testing.T) {
 			if err := test.checkFunc(test.want, gotValue, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -462,6 +465,7 @@ func Test_entryPodsMap_tryStore(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -538,6 +542,7 @@ func Test_entryPodsMap_unexpungeLocked(t *testing.T) {
 			if err := test.checkFunc(test.want, gotWasExpunged); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -725,6 +730,7 @@ func Test_podsMap_LoadOrStore(t *testing.T) {
 			if err := test.checkFunc(test.want, gotActual, gotLoaded); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -819,6 +825,7 @@ func Test_entryPodsMap_tryLoadOrStore(t *testing.T) {
 			if err := test.checkFunc(test.want, gotActual, gotLoaded, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -989,6 +996,7 @@ func Test_entryPodsMap_delete(t *testing.T) {
 			if err := test.checkFunc(test.want, gotHadValue); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -1327,6 +1335,7 @@ func Test_entryPodsMap_tryExpungeLocked(t *testing.T) {
 			if err := test.checkFunc(test.want, gotIsExpunged); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }

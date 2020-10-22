@@ -106,6 +106,7 @@ func Test_loadFloat32(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -192,6 +193,7 @@ func Test_loadInt(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -279,6 +281,7 @@ func Test_loadDataset(t *testing.T) {
 			if err := test.checkFunc(test.want, gotDim, gotVec, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -372,6 +375,7 @@ func TestLoad(t *testing.T) {
 			if err := test.checkFunc(test.want, gotTrain, gotTest, gotDistances, gotNeighbors, gotDim, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }

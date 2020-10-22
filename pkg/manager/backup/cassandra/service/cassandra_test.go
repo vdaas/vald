@@ -100,6 +100,7 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -111,7 +112,7 @@ func Test_client_Connect(t *testing.T) {
 	}
 	type fields struct {
 		db        cassandra.Cassandra
-		metaTable string
+		tableName string
 	}
 	type want struct {
 		err error
@@ -141,7 +142,7 @@ func Test_client_Connect(t *testing.T) {
 		       },
 		       fields: fields {
 		           db: nil,
-		           metaTable: "",
+		           tableName: "",
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -158,7 +159,7 @@ func Test_client_Connect(t *testing.T) {
 		           },
 		           fields: fields {
 		           db: nil,
-		           metaTable: "",
+		           tableName: "",
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -183,13 +184,14 @@ func Test_client_Connect(t *testing.T) {
 			}
 			c := &client{
 				db:        test.fields.db,
-				metaTable: test.fields.metaTable,
+				tableName: test.fields.tableName,
 			}
 
 			err := c.Connect(test.args.ctx)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -201,7 +203,7 @@ func Test_client_Close(t *testing.T) {
 	}
 	type fields struct {
 		db        cassandra.Cassandra
-		metaTable string
+		tableName string
 	}
 	type want struct {
 		err error
@@ -231,7 +233,7 @@ func Test_client_Close(t *testing.T) {
 		       },
 		       fields: fields {
 		           db: nil,
-		           metaTable: "",
+		           tableName: "",
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -248,7 +250,7 @@ func Test_client_Close(t *testing.T) {
 		           },
 		           fields: fields {
 		           db: nil,
-		           metaTable: "",
+		           tableName: "",
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -273,18 +275,19 @@ func Test_client_Close(t *testing.T) {
 			}
 			c := &client{
 				db:        test.fields.db,
-				metaTable: test.fields.metaTable,
+				tableName: test.fields.tableName,
 			}
 
 			err := c.Close(test.args.ctx)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
-func Test_client_getMetaVector(t *testing.T) {
+func Test_client_getVector(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx  context.Context
@@ -292,10 +295,10 @@ func Test_client_getMetaVector(t *testing.T) {
 	}
 	type fields struct {
 		db        cassandra.Cassandra
-		metaTable string
+		tableName string
 	}
 	type want struct {
-		want *model.MetaVector
+		want *model.Vector
 		err  error
 	}
 	type test struct {
@@ -303,11 +306,11 @@ func Test_client_getMetaVector(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *model.MetaVector, error) error
+		checkFunc  func(want, *model.Vector, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *model.MetaVector, err error) error {
+	defaultCheckFunc := func(w want, got *model.Vector, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -327,7 +330,7 @@ func Test_client_getMetaVector(t *testing.T) {
 		       },
 		       fields: fields {
 		           db: nil,
-		           metaTable: "",
+		           tableName: "",
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -345,7 +348,7 @@ func Test_client_getMetaVector(t *testing.T) {
 		           },
 		           fields: fields {
 		           db: nil,
-		           metaTable: "",
+		           tableName: "",
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -370,18 +373,19 @@ func Test_client_getMetaVector(t *testing.T) {
 			}
 			c := &client{
 				db:        test.fields.db,
-				metaTable: test.fields.metaTable,
+				tableName: test.fields.tableName,
 			}
 
-			got, err := c.getMetaVector(test.args.ctx, test.args.uuid)
+			got, err := c.getVector(test.args.ctx, test.args.uuid)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
-func Test_client_GetMeta(t *testing.T) {
+func Test_client_GetVector(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx  context.Context
@@ -389,10 +393,10 @@ func Test_client_GetMeta(t *testing.T) {
 	}
 	type fields struct {
 		db        cassandra.Cassandra
-		metaTable string
+		tableName string
 	}
 	type want struct {
-		want *model.MetaVector
+		want *model.Vector
 		err  error
 	}
 	type test struct {
@@ -400,11 +404,11 @@ func Test_client_GetMeta(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *model.MetaVector, error) error
+		checkFunc  func(want, *model.Vector, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *model.MetaVector, err error) error {
+	defaultCheckFunc := func(w want, got *model.Vector, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -424,7 +428,7 @@ func Test_client_GetMeta(t *testing.T) {
 		       },
 		       fields: fields {
 		           db: nil,
-		           metaTable: "",
+		           tableName: "",
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -442,7 +446,7 @@ func Test_client_GetMeta(t *testing.T) {
 		           },
 		           fields: fields {
 		           db: nil,
-		           metaTable: "",
+		           tableName: "",
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -467,13 +471,14 @@ func Test_client_GetMeta(t *testing.T) {
 			}
 			c := &client{
 				db:        test.fields.db,
-				metaTable: test.fields.metaTable,
+				tableName: test.fields.tableName,
 			}
 
-			got, err := c.GetMeta(test.args.ctx, test.args.uuid)
+			got, err := c.GetVector(test.args.ctx, test.args.uuid)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -486,7 +491,7 @@ func Test_client_GetIPs(t *testing.T) {
 	}
 	type fields struct {
 		db        cassandra.Cassandra
-		metaTable string
+		tableName string
 	}
 	type want struct {
 		want []string
@@ -521,7 +526,7 @@ func Test_client_GetIPs(t *testing.T) {
 		       },
 		       fields: fields {
 		           db: nil,
-		           metaTable: "",
+		           tableName: "",
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -539,7 +544,7 @@ func Test_client_GetIPs(t *testing.T) {
 		           },
 		           fields: fields {
 		           db: nil,
-		           metaTable: "",
+		           tableName: "",
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -564,26 +569,121 @@ func Test_client_GetIPs(t *testing.T) {
 			}
 			c := &client{
 				db:        test.fields.db,
-				metaTable: test.fields.metaTable,
+				tableName: test.fields.tableName,
 			}
 
 			got, err := c.GetIPs(test.args.ctx, test.args.uuid)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
-func Test_client_SetMeta(t *testing.T) {
+func Test_client_SetVector(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ctx context.Context
+		vec *model.Vector
+	}
+	type fields struct {
+		db        cassandra.Cassandra
+		tableName string
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           vec: nil,
+		       },
+		       fields: fields {
+		           db: nil,
+		           tableName: "",
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           vec: nil,
+		           },
+		           fields: fields {
+		           db: nil,
+		           tableName: "",
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			c := &client{
+				db:        test.fields.db,
+				tableName: test.fields.tableName,
+			}
+
+			err := c.SetVector(test.args.ctx, test.args.vec)
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_client_SetVectors(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx  context.Context
-		meta *model.MetaVector
+		vecs []*model.Vector
 	}
 	type fields struct {
 		db        cassandra.Cassandra
-		metaTable string
+		tableName string
 	}
 	type want struct {
 		err error
@@ -610,11 +710,11 @@ func Test_client_SetMeta(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           meta: nil,
+		           vecs: nil,
 		       },
 		       fields: fields {
 		           db: nil,
-		           metaTable: "",
+		           tableName: "",
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -628,11 +728,11 @@ func Test_client_SetMeta(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           meta: nil,
+		           vecs: nil,
 		           },
 		           fields: fields {
 		           db: nil,
-		           metaTable: "",
+		           tableName: "",
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -657,111 +757,19 @@ func Test_client_SetMeta(t *testing.T) {
 			}
 			c := &client{
 				db:        test.fields.db,
-				metaTable: test.fields.metaTable,
+				tableName: test.fields.tableName,
 			}
 
-			err := c.SetMeta(test.args.ctx, test.args.meta)
+			err := c.SetVectors(test.args.ctx, test.args.vecs...)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
-func Test_client_SetMetas(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx   context.Context
-		metas []*model.MetaVector
-	}
-	type fields struct {
-		db        cassandra.Cassandra
-		metaTable string
-	}
-	type want struct {
-		err error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           metas: nil,
-		       },
-		       fields: fields {
-		           db: nil,
-		           metaTable: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           metas: nil,
-		           },
-		           fields: fields {
-		           db: nil,
-		           metaTable: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			c := &client{
-				db:        test.fields.db,
-				metaTable: test.fields.metaTable,
-			}
-
-			err := c.SetMetas(test.args.ctx, test.args.metas...)
-			if err := test.checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_client_DeleteMeta(t *testing.T) {
+func Test_client_DeleteVector(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx  context.Context
@@ -769,7 +777,7 @@ func Test_client_DeleteMeta(t *testing.T) {
 	}
 	type fields struct {
 		db        cassandra.Cassandra
-		metaTable string
+		tableName string
 	}
 	type want struct {
 		err error
@@ -800,7 +808,7 @@ func Test_client_DeleteMeta(t *testing.T) {
 		       },
 		       fields: fields {
 		           db: nil,
-		           metaTable: "",
+		           tableName: "",
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -818,7 +826,7 @@ func Test_client_DeleteMeta(t *testing.T) {
 		           },
 		           fields: fields {
 		           db: nil,
-		           metaTable: "",
+		           tableName: "",
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -843,18 +851,19 @@ func Test_client_DeleteMeta(t *testing.T) {
 			}
 			c := &client{
 				db:        test.fields.db,
-				metaTable: test.fields.metaTable,
+				tableName: test.fields.tableName,
 			}
 
-			err := c.DeleteMeta(test.args.ctx, test.args.uuid)
+			err := c.DeleteVector(test.args.ctx, test.args.uuid)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
-func Test_client_DeleteMetas(t *testing.T) {
+func Test_client_DeleteVectors(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx   context.Context
@@ -862,7 +871,7 @@ func Test_client_DeleteMetas(t *testing.T) {
 	}
 	type fields struct {
 		db        cassandra.Cassandra
-		metaTable string
+		tableName string
 	}
 	type want struct {
 		err error
@@ -893,7 +902,7 @@ func Test_client_DeleteMetas(t *testing.T) {
 		       },
 		       fields: fields {
 		           db: nil,
-		           metaTable: "",
+		           tableName: "",
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -911,7 +920,7 @@ func Test_client_DeleteMetas(t *testing.T) {
 		           },
 		           fields: fields {
 		           db: nil,
-		           metaTable: "",
+		           tableName: "",
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -936,13 +945,14 @@ func Test_client_DeleteMetas(t *testing.T) {
 			}
 			c := &client{
 				db:        test.fields.db,
-				metaTable: test.fields.metaTable,
+				tableName: test.fields.tableName,
 			}
 
-			err := c.DeleteMetas(test.args.ctx, test.args.uuids...)
+			err := c.DeleteVectors(test.args.ctx, test.args.uuids...)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -956,7 +966,7 @@ func Test_client_SetIPs(t *testing.T) {
 	}
 	type fields struct {
 		db        cassandra.Cassandra
-		metaTable string
+		tableName string
 	}
 	type want struct {
 		err error
@@ -988,7 +998,7 @@ func Test_client_SetIPs(t *testing.T) {
 		       },
 		       fields: fields {
 		           db: nil,
-		           metaTable: "",
+		           tableName: "",
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1007,7 +1017,7 @@ func Test_client_SetIPs(t *testing.T) {
 		           },
 		           fields: fields {
 		           db: nil,
-		           metaTable: "",
+		           tableName: "",
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1032,13 +1042,14 @@ func Test_client_SetIPs(t *testing.T) {
 			}
 			c := &client{
 				db:        test.fields.db,
-				metaTable: test.fields.metaTable,
+				tableName: test.fields.tableName,
 			}
 
 			err := c.SetIPs(test.args.ctx, test.args.uuid, test.args.ips...)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -1051,7 +1062,7 @@ func Test_client_RemoveIPs(t *testing.T) {
 	}
 	type fields struct {
 		db        cassandra.Cassandra
-		metaTable string
+		tableName string
 	}
 	type want struct {
 		err error
@@ -1082,7 +1093,7 @@ func Test_client_RemoveIPs(t *testing.T) {
 		       },
 		       fields: fields {
 		           db: nil,
-		           metaTable: "",
+		           tableName: "",
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1100,7 +1111,7 @@ func Test_client_RemoveIPs(t *testing.T) {
 		           },
 		           fields: fields {
 		           db: nil,
-		           metaTable: "",
+		           tableName: "",
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1125,13 +1136,14 @@ func Test_client_RemoveIPs(t *testing.T) {
 			}
 			c := &client{
 				db:        test.fields.db,
-				metaTable: test.fields.metaTable,
+				tableName: test.fields.tableName,
 			}
 
 			err := c.RemoveIPs(test.args.ctx, test.args.ips...)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }

@@ -100,6 +100,7 @@ func TestNewBackup(t *testing.T) {
 			if err := test.checkFunc(test.want, gotBu, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -194,6 +195,7 @@ func Test_backup_Start(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -291,6 +293,7 @@ func Test_backup_GetObject(t *testing.T) {
 			if err := test.checkFunc(test.want, gotVec, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -388,6 +391,7 @@ func Test_backup_GetLocation(t *testing.T) {
 			if err := test.checkFunc(test.want, gotIpList, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -481,6 +485,7 @@ func Test_backup_Register(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -574,6 +579,7 @@ func Test_backup_RegisterMultiple(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -667,6 +673,7 @@ func Test_backup_Remove(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -760,6 +767,7 @@ func Test_backup_RemoveMultiple(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -856,6 +864,7 @@ func Test_backup_RegisterIPs(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -949,6 +958,7 @@ func Test_backup_RemoveIPs(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }

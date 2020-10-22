@@ -100,6 +100,7 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -192,6 +193,7 @@ func Test_client_Disconnect(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -294,6 +296,7 @@ func Test_client_Connect(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -403,6 +406,7 @@ func Test_client_Get(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -512,6 +516,7 @@ func Test_client_GetMultiple(t *testing.T) {
 			if err := test.checkFunc(test.want, gotVals, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -621,6 +626,7 @@ func Test_client_GetInverse(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -730,6 +736,7 @@ func Test_client_GetInverseMultiple(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -835,6 +842,7 @@ func Test_client_appendPrefix(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -947,6 +955,7 @@ func Test_client_get(t *testing.T) {
 			if err := test.checkFunc(test.want, gotVal, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -1059,6 +1068,7 @@ func Test_client_getMulti(t *testing.T) {
 			if err := test.checkFunc(test.want, gotVals, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -1167,6 +1177,7 @@ func Test_client_Set(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -1272,6 +1283,7 @@ func Test_client_SetMultiple(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -1381,6 +1393,7 @@ func Test_client_Delete(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -1490,6 +1503,7 @@ func Test_client_DeleteMultiple(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -1599,6 +1613,7 @@ func Test_client_DeleteInverse(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -1708,6 +1723,7 @@ func Test_client_DeleteInverseMultiple(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -1823,6 +1839,7 @@ func Test_client_delete(t *testing.T) {
 			if err := test.checkFunc(test.want, gotVal, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -1938,6 +1955,7 @@ func Test_client_deleteMulti(t *testing.T) {
 			if err := test.checkFunc(test.want, gotVals, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }

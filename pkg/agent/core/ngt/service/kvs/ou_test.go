@@ -96,6 +96,7 @@ func Test_newEntryOu(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -198,6 +199,7 @@ func Test_ou_Load(t *testing.T) {
 			if err := test.checkFunc(test.want, gotValue, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -278,6 +280,7 @@ func Test_entryOu_load(t *testing.T) {
 			if err := test.checkFunc(test.want, gotValue, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -461,6 +464,7 @@ func Test_entryOu_tryStore(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -537,6 +541,7 @@ func Test_entryOu_unexpungeLocked(t *testing.T) {
 			if err := test.checkFunc(test.want, gotWasExpunged); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -789,6 +794,7 @@ func Test_entryOu_delete(t *testing.T) {
 			if err := test.checkFunc(test.want, gotHadValue); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -1033,6 +1039,7 @@ func Test_entryOu_tryExpungeLocked(t *testing.T) {
 			if err := test.checkFunc(test.want, gotIsExpunged); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }

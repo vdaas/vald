@@ -72,7 +72,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	c, err := service.New(
 		service.WithCassandra(db),
-		service.WithMetaTable(cfg.Cassandra.MetaTable),
+		service.WithTableName(cfg.Cassandra.VectorBackupTable),
 	)
 	if err != nil {
 		return nil, err

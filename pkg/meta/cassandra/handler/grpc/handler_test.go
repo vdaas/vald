@@ -98,6 +98,7 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -191,6 +192,7 @@ func Test_server_GetMeta(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -284,6 +286,7 @@ func Test_server_GetMetas(t *testing.T) {
 			if err := test.checkFunc(test.want, gotMv, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -377,6 +380,7 @@ func Test_server_GetMetaInverse(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -470,6 +474,7 @@ func Test_server_GetMetasInverse(t *testing.T) {
 			if err := test.checkFunc(test.want, gotMk, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -563,6 +568,7 @@ func Test_server_SetMeta(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -656,6 +662,7 @@ func Test_server_SetMetas(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -749,6 +756,7 @@ func Test_server_DeleteMeta(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -842,6 +850,7 @@ func Test_server_DeleteMetas(t *testing.T) {
 			if err := test.checkFunc(test.want, gotMv, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -935,6 +944,7 @@ func Test_server_DeleteMetaInverse(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -1028,6 +1038,7 @@ func Test_server_DeleteMetasInverse(t *testing.T) {
 			if err := test.checkFunc(test.want, gotMk, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }

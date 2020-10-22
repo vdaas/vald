@@ -49,8 +49,8 @@ type registerer struct {
 	backup     Backup
 	compressor Compressor
 	client     client.Client
-	vecs      map[string]*payload.Backup_Vector
-	vecsMu   sync.Mutex
+	vecs       map[string]*payload.Backup_Vector
+	vecsMu     sync.Mutex
 }
 
 func NewRegisterer(opts ...RegistererOption) (Registerer, error) {

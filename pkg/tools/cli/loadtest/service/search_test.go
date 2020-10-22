@@ -105,6 +105,7 @@ func Test_searchRequestProvider(t *testing.T) {
 			if err := test.checkFunc(test.want, got, got1, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -225,6 +226,7 @@ func Test_loader_newSearch(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -345,6 +347,7 @@ func Test_loader_newStreamSearch(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }

@@ -96,6 +96,7 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -189,6 +190,7 @@ func Test_handler_Index(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -282,6 +284,7 @@ func Test_handler_Search(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -375,6 +378,7 @@ func Test_handler_SearchByID(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -468,6 +472,7 @@ func Test_handler_Insert(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -561,6 +566,7 @@ func Test_handler_MultiInsert(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -654,6 +660,7 @@ func Test_handler_Update(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -747,6 +754,7 @@ func Test_handler_MultiUpdate(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -840,6 +848,7 @@ func Test_handler_Remove(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -933,6 +942,7 @@ func Test_handler_MultiRemove(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -1026,6 +1036,7 @@ func Test_handler_CreateIndex(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -1119,6 +1130,7 @@ func Test_handler_SaveIndex(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -1212,6 +1224,7 @@ func Test_handler_CreateAndSaveIndex(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -1305,6 +1318,7 @@ func Test_handler_GetObject(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -1398,6 +1412,7 @@ func Test_handler_Exists(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }

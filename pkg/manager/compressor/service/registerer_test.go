@@ -103,6 +103,7 @@ func TestNewRegisterer(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -119,8 +120,8 @@ func Test_registerer_PreStart(t *testing.T) {
 		backup     Backup
 		compressor Compressor
 		client     client.Client
-		vecs      map[string]*payload.Backup_Vector
-		vecsMu   sync.Mutex
+		vecs       map[string]*payload.Backup_Vector
+		vecsMu     sync.Mutex
 	}
 	type want struct {
 		err error
@@ -209,14 +210,15 @@ func Test_registerer_PreStart(t *testing.T) {
 				backup:     test.fields.backup,
 				compressor: test.fields.compressor,
 				client:     test.fields.client,
-				vecs:      test.fields.vecs,
-				vecsMu:   test.fields.vecsMu,
+				vecs:       test.fields.vecs,
+				vecsMu:     test.fields.vecsMu,
 			}
 
 			err := r.PreStart(test.args.ctx)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -233,8 +235,8 @@ func Test_registerer_Start(t *testing.T) {
 		backup     Backup
 		compressor Compressor
 		client     client.Client
-		vecs      map[string]*payload.Backup_Vector
-		vecsMu   sync.Mutex
+		vecs       map[string]*payload.Backup_Vector
+		vecsMu     sync.Mutex
 	}
 	type want struct {
 		want <-chan error
@@ -327,14 +329,15 @@ func Test_registerer_Start(t *testing.T) {
 				backup:     test.fields.backup,
 				compressor: test.fields.compressor,
 				client:     test.fields.client,
-				vecs:      test.fields.vecs,
-				vecsMu:   test.fields.vecsMu,
+				vecs:       test.fields.vecs,
+				vecsMu:     test.fields.vecsMu,
 			}
 
 			got, err := r.Start(test.args.ctx)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -351,8 +354,8 @@ func Test_registerer_PostStop(t *testing.T) {
 		backup     Backup
 		compressor Compressor
 		client     client.Client
-		vecs      map[string]*payload.Backup_Vector
-		vecsMu   sync.Mutex
+		vecs       map[string]*payload.Backup_Vector
+		vecsMu     sync.Mutex
 	}
 	type want struct {
 		err error
@@ -441,14 +444,15 @@ func Test_registerer_PostStop(t *testing.T) {
 				backup:     test.fields.backup,
 				compressor: test.fields.compressor,
 				client:     test.fields.client,
-				vecs:      test.fields.vecs,
-				vecsMu:   test.fields.vecsMu,
+				vecs:       test.fields.vecs,
+				vecsMu:     test.fields.vecsMu,
 			}
 
 			err := r.PostStop(test.args.ctx)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -456,7 +460,7 @@ func Test_registerer_PostStop(t *testing.T) {
 func Test_registerer_Register(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx  context.Context
+		ctx context.Context
 		vec *payload.Backup_Vector
 	}
 	type fields struct {
@@ -466,8 +470,8 @@ func Test_registerer_Register(t *testing.T) {
 		backup     Backup
 		compressor Compressor
 		client     client.Client
-		vecs      map[string]*payload.Backup_Vector
-		vecsMu   sync.Mutex
+		vecs       map[string]*payload.Backup_Vector
+		vecsMu     sync.Mutex
 	}
 	type want struct {
 		err error
@@ -558,14 +562,15 @@ func Test_registerer_Register(t *testing.T) {
 				backup:     test.fields.backup,
 				compressor: test.fields.compressor,
 				client:     test.fields.client,
-				vecs:      test.fields.vecs,
-				vecsMu:   test.fields.vecsMu,
+				vecs:       test.fields.vecs,
+				vecsMu:     test.fields.vecsMu,
 			}
 
 			err := r.Register(test.args.ctx, test.args.vec)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -573,7 +578,7 @@ func Test_registerer_Register(t *testing.T) {
 func Test_registerer_RegisterMulti(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx   context.Context
+		ctx  context.Context
 		vecs *payload.Backup_Vectors
 	}
 	type fields struct {
@@ -583,8 +588,8 @@ func Test_registerer_RegisterMulti(t *testing.T) {
 		backup     Backup
 		compressor Compressor
 		client     client.Client
-		vecs      map[string]*payload.Backup_Vector
-		vecsMu   sync.Mutex
+		vecs       map[string]*payload.Backup_Vector
+		vecsMu     sync.Mutex
 	}
 	type want struct {
 		err error
@@ -675,14 +680,15 @@ func Test_registerer_RegisterMulti(t *testing.T) {
 				backup:     test.fields.backup,
 				compressor: test.fields.compressor,
 				client:     test.fields.client,
-				vecs:      test.fields.vecs,
-				vecsMu:   test.fields.vecsMu,
+				vecs:       test.fields.vecs,
+				vecsMu:     test.fields.vecsMu,
 			}
 
 			err := r.RegisterMulti(test.args.ctx, test.args.vecs)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -696,8 +702,8 @@ func Test_registerer_Len(t *testing.T) {
 		backup     Backup
 		compressor Compressor
 		client     client.Client
-		vecs      map[string]*payload.Backup_Vector
-		vecsMu   sync.Mutex
+		vecs       map[string]*payload.Backup_Vector
+		vecsMu     sync.Mutex
 	}
 	type want struct {
 		want uint64
@@ -779,14 +785,15 @@ func Test_registerer_Len(t *testing.T) {
 				backup:     test.fields.backup,
 				compressor: test.fields.compressor,
 				client:     test.fields.client,
-				vecs:      test.fields.vecs,
-				vecsMu:   test.fields.vecsMu,
+				vecs:       test.fields.vecs,
+				vecsMu:     test.fields.vecsMu,
 			}
 
 			got := r.Len()
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -800,8 +807,8 @@ func Test_registerer_TotalRequested(t *testing.T) {
 		backup     Backup
 		compressor Compressor
 		client     client.Client
-		vecs      map[string]*payload.Backup_Vector
-		vecsMu   sync.Mutex
+		vecs       map[string]*payload.Backup_Vector
+		vecsMu     sync.Mutex
 	}
 	type want struct {
 		want uint64
@@ -883,14 +890,15 @@ func Test_registerer_TotalRequested(t *testing.T) {
 				backup:     test.fields.backup,
 				compressor: test.fields.compressor,
 				client:     test.fields.client,
-				vecs:      test.fields.vecs,
-				vecsMu:   test.fields.vecsMu,
+				vecs:       test.fields.vecs,
+				vecsMu:     test.fields.vecsMu,
 			}
 
 			got := r.TotalRequested()
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -904,8 +912,8 @@ func Test_registerer_TotalCompleted(t *testing.T) {
 		backup     Backup
 		compressor Compressor
 		client     client.Client
-		vecs      map[string]*payload.Backup_Vector
-		vecsMu   sync.Mutex
+		vecs       map[string]*payload.Backup_Vector
+		vecsMu     sync.Mutex
 	}
 	type want struct {
 		want uint64
@@ -987,14 +995,15 @@ func Test_registerer_TotalCompleted(t *testing.T) {
 				backup:     test.fields.backup,
 				compressor: test.fields.compressor,
 				client:     test.fields.client,
-				vecs:      test.fields.vecs,
-				vecsMu:   test.fields.vecsMu,
+				vecs:       test.fields.vecs,
+				vecsMu:     test.fields.vecsMu,
 			}
 
 			got := r.TotalCompleted()
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -1002,7 +1011,7 @@ func Test_registerer_TotalCompleted(t *testing.T) {
 func Test_registerer_dispatch(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx  context.Context
+		ctx context.Context
 		vec *payload.Backup_Vector
 	}
 	type fields struct {
@@ -1012,8 +1021,8 @@ func Test_registerer_dispatch(t *testing.T) {
 		backup     Backup
 		compressor Compressor
 		client     client.Client
-		vecs      map[string]*payload.Backup_Vector
-		vecsMu   sync.Mutex
+		vecs       map[string]*payload.Backup_Vector
+		vecsMu     sync.Mutex
 	}
 	type want struct {
 		err error
@@ -1104,14 +1113,15 @@ func Test_registerer_dispatch(t *testing.T) {
 				backup:     test.fields.backup,
 				compressor: test.fields.compressor,
 				client:     test.fields.client,
-				vecs:      test.fields.vecs,
-				vecsMu:   test.fields.vecsMu,
+				vecs:       test.fields.vecs,
+				vecsMu:     test.fields.vecsMu,
 			}
 
 			err := r.dispatch(test.args.ctx, test.args.vec)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -1128,8 +1138,8 @@ func Test_registerer_registerProcessFunc(t *testing.T) {
 		backup     Backup
 		compressor Compressor
 		client     client.Client
-		vecs      map[string]*payload.Backup_Vector
-		vecsMu   sync.Mutex
+		vecs       map[string]*payload.Backup_Vector
+		vecsMu     sync.Mutex
 	}
 	type want struct {
 		want worker.JobFunc
@@ -1218,14 +1228,15 @@ func Test_registerer_registerProcessFunc(t *testing.T) {
 				backup:     test.fields.backup,
 				compressor: test.fields.compressor,
 				client:     test.fields.client,
-				vecs:      test.fields.vecs,
-				vecsMu:   test.fields.vecsMu,
+				vecs:       test.fields.vecs,
+				vecsMu:     test.fields.vecsMu,
 			}
 
 			got := r.registerProcessFunc(test.args.vec)
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -1242,8 +1253,8 @@ func Test_registerer_forwardMetas(t *testing.T) {
 		backup     Backup
 		compressor Compressor
 		client     client.Client
-		vecs      map[string]*payload.Backup_Vector
-		vecsMu   sync.Mutex
+		vecs       map[string]*payload.Backup_Vector
+		vecsMu     sync.Mutex
 	}
 	type want struct {
 		err error
@@ -1332,14 +1343,15 @@ func Test_registerer_forwardMetas(t *testing.T) {
 				backup:     test.fields.backup,
 				compressor: test.fields.compressor,
 				client:     test.fields.client,
-				vecs:      test.fields.vecs,
-				vecsMu:   test.fields.vecsMu,
+				vecs:       test.fields.vecs,
+				vecsMu:     test.fields.vecsMu,
 			}
 
 			err := r.forwardMetas(test.args.ctx)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
