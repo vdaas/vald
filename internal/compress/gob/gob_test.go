@@ -150,7 +150,7 @@ func Test_transcoder_NewEncoder(t *testing.T) {
 			w := &bytes.Buffer{}
 
 			got := t.NewEncoder(w)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := test.checkFunc(test.want, got, w.String()); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
