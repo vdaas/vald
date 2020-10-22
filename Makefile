@@ -388,8 +388,8 @@ version/telepresence:
 ngt/install: /usr/local/include/NGT/Capi.h
 /usr/local/include/NGT/Capi.h:
 	curl -LO https://github.com/yahoojapan/NGT/archive/v$(NGT_VERSION).tar.gz
-	tar zxf v$(NGT_VERSION).tar.gz -C $(TEMP_DIR)
-	cd $(TEMP_DIR)/NGT-$(NGT_VERSION) && \ 
+	tar zxf v$(NGT_VERSION).tar.gz -C $(TEMP_DIR)/
+	cd $(TEMP_DIR)/NGT-$(NGT_VERSION) && \
 		cmake -DCMAKE_C_FLAGS="$(CFLAGS)" -DCMAKE_CXX_FLAGS="$(CXXFLAGS)" .
 	make -j -C $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	make install -C $(TEMP_DIR)/NGT-$(NGT_VERSION)
