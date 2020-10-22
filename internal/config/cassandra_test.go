@@ -27,6 +27,7 @@ import (
 )
 
 func TestCassandra_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		Hosts                    []string
 		CQLVersion               string
@@ -37,11 +38,13 @@ func TestCassandra_Bind(t *testing.T) {
 		Keyspace                 string
 		NumConns                 int
 		Consistency              string
+		SerialConsistency        string
 		Username                 string
 		Password                 string
 		PoolConfig               *PoolConfig
 		RetryPolicy              *RetryPolicy
 		ReconnectionPolicy       *ReconnectionPolicy
+		HostFilter               *HostFilter
 		SocketKeepalive          string
 		MaxPreparedStmts         int
 		MaxRoutingKeyInfo        int
@@ -62,7 +65,7 @@ func TestCassandra_Bind(t *testing.T) {
 		WriteCoalesceWaitTime    string
 		KVTable                  string
 		VKTable                  string
-		MetaTable                string
+		VectorBackupTable        string
 	}
 	type want struct {
 		want *Cassandra
@@ -96,11 +99,13 @@ func TestCassandra_Bind(t *testing.T) {
 		           Keyspace: "",
 		           NumConns: 0,
 		           Consistency: "",
+		           SerialConsistency: "",
 		           Username: "",
 		           Password: "",
 		           PoolConfig: PoolConfig{},
 		           RetryPolicy: RetryPolicy{},
 		           ReconnectionPolicy: ReconnectionPolicy{},
+		           HostFilter: HostFilter{},
 		           SocketKeepalive: "",
 		           MaxPreparedStmts: 0,
 		           MaxRoutingKeyInfo: 0,
@@ -121,7 +126,7 @@ func TestCassandra_Bind(t *testing.T) {
 		           WriteCoalesceWaitTime: "",
 		           KVTable: "",
 		           VKTable: "",
-		           MetaTable: "",
+		           VectorBackupTable: "",
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -143,11 +148,13 @@ func TestCassandra_Bind(t *testing.T) {
 		           Keyspace: "",
 		           NumConns: 0,
 		           Consistency: "",
+		           SerialConsistency: "",
 		           Username: "",
 		           Password: "",
 		           PoolConfig: PoolConfig{},
 		           RetryPolicy: RetryPolicy{},
 		           ReconnectionPolicy: ReconnectionPolicy{},
+		           HostFilter: HostFilter{},
 		           SocketKeepalive: "",
 		           MaxPreparedStmts: 0,
 		           MaxRoutingKeyInfo: 0,
@@ -168,7 +175,7 @@ func TestCassandra_Bind(t *testing.T) {
 		           WriteCoalesceWaitTime: "",
 		           KVTable: "",
 		           VKTable: "",
-		           MetaTable: "",
+		           VectorBackupTable: "",
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -177,9 +184,11 @@ func TestCassandra_Bind(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -199,11 +208,13 @@ func TestCassandra_Bind(t *testing.T) {
 				Keyspace:                 test.fields.Keyspace,
 				NumConns:                 test.fields.NumConns,
 				Consistency:              test.fields.Consistency,
+				SerialConsistency:        test.fields.SerialConsistency,
 				Username:                 test.fields.Username,
 				Password:                 test.fields.Password,
 				PoolConfig:               test.fields.PoolConfig,
 				RetryPolicy:              test.fields.RetryPolicy,
 				ReconnectionPolicy:       test.fields.ReconnectionPolicy,
+				HostFilter:               test.fields.HostFilter,
 				SocketKeepalive:          test.fields.SocketKeepalive,
 				MaxPreparedStmts:         test.fields.MaxPreparedStmts,
 				MaxRoutingKeyInfo:        test.fields.MaxRoutingKeyInfo,
@@ -224,18 +235,20 @@ func TestCassandra_Bind(t *testing.T) {
 				WriteCoalesceWaitTime:    test.fields.WriteCoalesceWaitTime,
 				KVTable:                  test.fields.KVTable,
 				VKTable:                  test.fields.VKTable,
-				MetaTable:                test.fields.MetaTable,
+				VectorBackupTable:        test.fields.VectorBackupTable,
 			}
 
 			got := c.Bind()
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
 func TestCassandra_Opts(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		Hosts                    []string
 		CQLVersion               string
@@ -246,11 +259,13 @@ func TestCassandra_Opts(t *testing.T) {
 		Keyspace                 string
 		NumConns                 int
 		Consistency              string
+		SerialConsistency        string
 		Username                 string
 		Password                 string
 		PoolConfig               *PoolConfig
 		RetryPolicy              *RetryPolicy
 		ReconnectionPolicy       *ReconnectionPolicy
+		HostFilter               *HostFilter
 		SocketKeepalive          string
 		MaxPreparedStmts         int
 		MaxRoutingKeyInfo        int
@@ -271,7 +286,7 @@ func TestCassandra_Opts(t *testing.T) {
 		WriteCoalesceWaitTime    string
 		KVTable                  string
 		VKTable                  string
-		MetaTable                string
+		VectorBackupTable        string
 	}
 	type want struct {
 		wantOpts []cassandra.Option
@@ -309,11 +324,13 @@ func TestCassandra_Opts(t *testing.T) {
 		           Keyspace: "",
 		           NumConns: 0,
 		           Consistency: "",
+		           SerialConsistency: "",
 		           Username: "",
 		           Password: "",
 		           PoolConfig: PoolConfig{},
 		           RetryPolicy: RetryPolicy{},
 		           ReconnectionPolicy: ReconnectionPolicy{},
+		           HostFilter: HostFilter{},
 		           SocketKeepalive: "",
 		           MaxPreparedStmts: 0,
 		           MaxRoutingKeyInfo: 0,
@@ -334,7 +351,7 @@ func TestCassandra_Opts(t *testing.T) {
 		           WriteCoalesceWaitTime: "",
 		           KVTable: "",
 		           VKTable: "",
-		           MetaTable: "",
+		           VectorBackupTable: "",
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -356,11 +373,13 @@ func TestCassandra_Opts(t *testing.T) {
 		           Keyspace: "",
 		           NumConns: 0,
 		           Consistency: "",
+		           SerialConsistency: "",
 		           Username: "",
 		           Password: "",
 		           PoolConfig: PoolConfig{},
 		           RetryPolicy: RetryPolicy{},
 		           ReconnectionPolicy: ReconnectionPolicy{},
+		           HostFilter: HostFilter{},
 		           SocketKeepalive: "",
 		           MaxPreparedStmts: 0,
 		           MaxRoutingKeyInfo: 0,
@@ -381,7 +400,7 @@ func TestCassandra_Opts(t *testing.T) {
 		           WriteCoalesceWaitTime: "",
 		           KVTable: "",
 		           VKTable: "",
-		           MetaTable: "",
+		           VectorBackupTable: "",
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -390,9 +409,11 @@ func TestCassandra_Opts(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -412,11 +433,13 @@ func TestCassandra_Opts(t *testing.T) {
 				Keyspace:                 test.fields.Keyspace,
 				NumConns:                 test.fields.NumConns,
 				Consistency:              test.fields.Consistency,
+				SerialConsistency:        test.fields.SerialConsistency,
 				Username:                 test.fields.Username,
 				Password:                 test.fields.Password,
 				PoolConfig:               test.fields.PoolConfig,
 				RetryPolicy:              test.fields.RetryPolicy,
 				ReconnectionPolicy:       test.fields.ReconnectionPolicy,
+				HostFilter:               test.fields.HostFilter,
 				SocketKeepalive:          test.fields.SocketKeepalive,
 				MaxPreparedStmts:         test.fields.MaxPreparedStmts,
 				MaxRoutingKeyInfo:        test.fields.MaxRoutingKeyInfo,
@@ -437,13 +460,14 @@ func TestCassandra_Opts(t *testing.T) {
 				WriteCoalesceWaitTime:    test.fields.WriteCoalesceWaitTime,
 				KVTable:                  test.fields.KVTable,
 				VKTable:                  test.fields.VKTable,
-				MetaTable:                test.fields.MetaTable,
+				VectorBackupTable:        test.fields.VectorBackupTable,
 			}
 
 			gotOpts, err := cfg.Opts()
 			if err := test.checkFunc(test.want, gotOpts, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }

@@ -764,8 +764,8 @@ func Test_mySQLClient_GetVector(t *testing.T) {
 								return s
 							}
 							s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
-								var vec *vector
-								if reflect.TypeOf(value) == reflect.TypeOf(&vec) {
+								var d *data
+								if reflect.TypeOf(value) == reflect.TypeOf(&d) {
 									return 1, nil
 								}
 								return 0, errors.New("not found")
