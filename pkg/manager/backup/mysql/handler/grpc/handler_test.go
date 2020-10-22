@@ -294,7 +294,7 @@ func Test_server_Locations(t *testing.T) {
 func Test_server_Register(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx  context.Context
+		ctx    context.Context
 		vector *payload.Backup_Compressed_Vector
 	}
 	type fields struct {
@@ -388,7 +388,7 @@ func Test_server_Register(t *testing.T) {
 func Test_server_RegisterMulti(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx   context.Context
+		ctx     context.Context
 		vectors *payload.Backup_Compressed_Vectors
 	}
 	type fields struct {

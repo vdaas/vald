@@ -30,7 +30,6 @@ func TestVector_GetUUID(t *testing.T) {
 	type fields struct {
 		UUID   string
 		Vector []byte
-		Vector   string
 		IPs    []string
 	}
 	type want struct {
@@ -58,7 +57,6 @@ func TestVector_GetUUID(t *testing.T) {
 		       fields: fields {
 		           UUID: "",
 		           Vector: nil,
-		           Vector: "",
 		           IPs: nil,
 		       },
 		       want: want{},
@@ -74,7 +72,6 @@ func TestVector_GetUUID(t *testing.T) {
 		           fields: fields {
 		           UUID: "",
 		           Vector: nil,
-		           Vector: "",
 		           IPs: nil,
 		           },
 		           want: want{},
@@ -101,7 +98,6 @@ func TestVector_GetUUID(t *testing.T) {
 			m := &Vector{
 				UUID:   test.fields.UUID,
 				Vector: test.fields.Vector,
-				Vector:   test.fields.Vector,
 				IPs:    test.fields.IPs,
 			}
 
@@ -119,7 +115,6 @@ func TestVector_GetVector(t *testing.T) {
 	type fields struct {
 		UUID   string
 		Vector []byte
-		Vector   string
 		IPs    []string
 	}
 	type want struct {
@@ -147,7 +142,6 @@ func TestVector_GetVector(t *testing.T) {
 		       fields: fields {
 		           UUID: "",
 		           Vector: nil,
-		           Vector: "",
 		           IPs: nil,
 		       },
 		       want: want{},
@@ -163,7 +157,6 @@ func TestVector_GetVector(t *testing.T) {
 		           fields: fields {
 		           UUID: "",
 		           Vector: nil,
-		           Vector: "",
 		           IPs: nil,
 		           },
 		           want: want{},
@@ -190,96 +183,6 @@ func TestVector_GetVector(t *testing.T) {
 			m := &Vector{
 				UUID:   test.fields.UUID,
 				Vector: test.fields.Vector,
-				Vector:   test.fields.Vector,
-				IPs:    test.fields.IPs,
-			}
-
-			got := m.GetVector()
-			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func TestVector_GetVector(t *testing.T) {
-	t.Parallel()
-	type fields struct {
-		UUID   string
-		Vector []byte
-		Vector   string
-		IPs    []string
-	}
-	type want struct {
-		want string
-	}
-	type test struct {
-		name       string
-		fields     fields
-		want       want
-		checkFunc  func(want, string) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, got string) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           UUID: "",
-		           Vector: nil,
-		           Vector: "",
-		           IPs: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           UUID: "",
-		           Vector: nil,
-		           Vector: "",
-		           IPs: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			m := &Vector{
-				UUID:   test.fields.UUID,
-				Vector: test.fields.Vector,
-				Vector:   test.fields.Vector,
 				IPs:    test.fields.IPs,
 			}
 
@@ -297,7 +200,6 @@ func TestVector_GetIPs(t *testing.T) {
 	type fields struct {
 		UUID   string
 		Vector []byte
-		Vector   string
 		IPs    []string
 	}
 	type want struct {
@@ -325,7 +227,6 @@ func TestVector_GetIPs(t *testing.T) {
 		       fields: fields {
 		           UUID: "",
 		           Vector: nil,
-		           Vector: "",
 		           IPs: nil,
 		       },
 		       want: want{},
@@ -341,7 +242,6 @@ func TestVector_GetIPs(t *testing.T) {
 		           fields: fields {
 		           UUID: "",
 		           Vector: nil,
-		           Vector: "",
 		           IPs: nil,
 		           },
 		           want: want{},
@@ -368,7 +268,6 @@ func TestVector_GetIPs(t *testing.T) {
 			m := &Vector{
 				UUID:   test.fields.UUID,
 				Vector: test.fields.Vector,
-				Vector:   test.fields.Vector,
 				IPs:    test.fields.IPs,
 			}
 

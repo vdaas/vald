@@ -29,9 +29,9 @@ type vector struct {
 }
 
 type data struct {
-	ID     int64          `db:"id"`
-	UUID   string         `db:"uuid"`
-	Vector []byte         `db:"vector"`
+	ID     int64  `db:"id"`
+	UUID   string `db:"uuid"`
+	Vector []byte `db:"vector"`
 }
 
 type podIP struct {

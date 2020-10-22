@@ -470,7 +470,7 @@ func Test_client_GetIPs(t *testing.T) {
 func Test_client_SetVector(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx  context.Context
+		ctx    context.Context
 		vector *model.Vector
 	}
 	type fields struct {
@@ -560,7 +560,7 @@ func Test_client_SetVector(t *testing.T) {
 func Test_client_SetVectors(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx   context.Context
+		ctx     context.Context
 		vectors []*model.Vector
 	}
 	type fields struct {
