@@ -33,14 +33,13 @@ import (
 )
 
 const (
-	metaVectorTableName = "meta_vector"
-	podIPTableName      = "pod_ip"
-	idColumnName        = "id"
-	uuidColumnName      = "uuid"
-	vectorColumnName    = "vector"
-	metaColumnName      = "meta"
-	ipColumnName        = "ip"
-	asterisk            = "*"
+	vectorTableName  = "backup_vector"
+	podIPTableName   = "pod_ip"
+	idColumnName     = "id"
+	uuidColumnName   = "uuid"
+	vectorColumnName = "vector"
+	ipColumnName     = "ip"
+	asterisk         = "*"
 )
 
 // MySQL represents the interface to handle MySQL operation.
@@ -175,41 +174,41 @@ func (m *mySQLClient) Close(ctx context.Context) error {
 	return nil
 }
 
-// GetMeta gets the metadata and podIPs which have index of metadata's vector.
-func (m *mySQLClient) GetMeta(ctx context.Context, uuid string) (MetaVector, error) {
+// GetVector gets the vecor adata and podIPs which have index of vector data's vector.
+func (m *mySQLClient) GetVector(ctx context.Context, uuid string) (Vector, error) {
 	if !m.connected.Load().(bool) {
 		return nil, errors.ErrMySQLConnectionClosed
 	}
 
-	var meta *meta
-	_, err := m.session.Select(asterisk).From(metaVectorTableName).Where(m.dbr.Eq(uuidColumnName, uuid)).Limit(1).LoadContext(ctx, &meta)
+	var data *data
+	_, err := m.session.Select(asterisk).From(vectorTableName).Where(m.dbr.Eq(uuidColumnName, uuid)).Limit(1).LoadContext(ctx, &data)
 	if err != nil {
 		return nil, err
 	}
-	if meta == nil {
+	if data == nil {
 		return nil, errors.ErrRequiredElementNotFoundByUUID(uuid)
 	}
 
 	var podIPs []podIP
-	_, err = m.session.Select(asterisk).From(podIPTableName).Where(m.dbr.Eq(idColumnName, meta.ID)).LoadContext(ctx, &podIPs)
+	_, err = m.session.Select(asterisk).From(podIPTableName).Where(m.dbr.Eq(idColumnName, data.ID)).LoadContext(ctx, &podIPs)
 	if err != nil {
 		return nil, err
 	}
 
-	return &metaVector{
-		meta:   *meta,
+	return &vector{
+		data:   *data,
 		podIPs: podIPs,
 	}, nil
 }
 
-// GetIPs gets the pod ips which have index of requested uuids' metadata's vector.
+// GetIPs gets the pod ips which have index of requested uuids' vector data's vector.
 func (m *mySQLClient) GetIPs(ctx context.Context, uuid string) ([]string, error) {
 	if !m.connected.Load().(bool) {
 		return nil, errors.ErrMySQLConnectionClosed
 	}
 
 	var id int64
-	_, err := m.session.Select(idColumnName).From(metaVectorTableName).Where(m.dbr.Eq(uuidColumnName, uuid)).Limit(1).LoadContext(ctx, &id)
+	_, err := m.session.Select(idColumnName).From(vectorTableName).Where(m.dbr.Eq(uuidColumnName, uuid)).Limit(1).LoadContext(ctx, &id)
 	if err != nil {
 		return nil, err
 	}
@@ -231,16 +230,16 @@ func (m *mySQLClient) GetIPs(ctx context.Context, uuid string) ([]string, error)
 	return ips, nil
 }
 
-func validateMeta(meta MetaVector) error {
-	if len(meta.GetVector()) == 0 {
+func validateVector(vec Vector) error {
+	if len(vec.GetVector()) == 0 {
 		return errors.ErrRequiredMemberNotFilled("vector")
 	}
 	return nil
 }
 
-// SetMeta records metadata at meta_vector table and set of (podIP, uuid) at podIPtable through same transaction.
+// SetVector records vector data at backup_vector table and set of (podIP, uuid) at podIPtable through same transaction.
 // If error occurs it will rollback by defer function.
-func (m *mySQLClient) SetMeta(ctx context.Context, mv MetaVector) error {
+func (m *mySQLClient) SetVector(ctx context.Context, mv Vector) error {
 	if !m.connected.Load().(bool) {
 		return errors.ErrMySQLConnectionClosed
 	}
@@ -251,23 +250,23 @@ func (m *mySQLClient) SetMeta(ctx context.Context, mv MetaVector) error {
 	}
 	defer tx.RollbackUnlessCommitted()
 
-	err = validateMeta(mv)
+	err = validateVector(mv)
 	if err != nil {
 		return err
 	}
 
-	_, err = tx.InsertBySql("INSERT INTO meta_vector(uuid, vector, meta) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE vector = ?, meta = ?",
+	_, err = tx.InsertBySql("INSERT INTO "+vectorTableName+"(uuid, vector, meta) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE vector = ?, meta = ?",
 		mv.GetUUID(),
 		mv.GetVector(),
-		mv.GetMeta(),
 		mv.GetVector(),
-		mv.GetMeta()).ExecContext(ctx)
+		mv.GetVector(),
+		mv.GetVector()).ExecContext(ctx)
 	if err != nil {
 		return err
 	}
 
 	var id int64
-	_, err = tx.Select(idColumnName).From(metaVectorTableName).Where(m.dbr.Eq(uuidColumnName, mv.GetUUID())).Limit(1).LoadContext(ctx, &id)
+	_, err = tx.Select(idColumnName).From(vectorTableName).Where(m.dbr.Eq(uuidColumnName, mv.GetUUID())).Limit(1).LoadContext(ctx, &id)
 	if err != nil {
 		return err
 	}
@@ -292,8 +291,8 @@ func (m *mySQLClient) SetMeta(ctx context.Context, mv MetaVector) error {
 	return tx.Commit()
 }
 
-// SetMetas records multiple metadata like as SetMeta().
-func (m *mySQLClient) SetMetas(ctx context.Context, metas ...MetaVector) error {
+// SetVectors records multiple vector data like as SetVector().
+func (m *mySQLClient) SetVectors(ctx context.Context, metas ...Vector) error {
 	if !m.connected.Load().(bool) {
 		return errors.ErrMySQLConnectionClosed
 	}
@@ -305,17 +304,17 @@ func (m *mySQLClient) SetMetas(ctx context.Context, metas ...MetaVector) error {
 	defer tx.RollbackUnlessCommitted()
 
 	for _, meta := range metas {
-		err = validateMeta(meta)
+		err = validateVector(meta)
 		if err != nil {
 			return err
 		}
 
-		_, err = tx.InsertBySql("INSERT INTO meta_vector(uuid, vector, meta) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE vector = ?, meta = ?",
+		_, err = tx.InsertBySql("INSERT INTO "+vectorTableName+"(uuid, vector, meta) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE vector = ?, meta = ?",
 			meta.GetUUID(),
 			meta.GetVector(),
-			meta.GetMeta(),
 			meta.GetVector(),
-			meta.GetMeta()).ExecContext(ctx)
+			meta.GetVector(),
+			meta.GetVector()).ExecContext(ctx)
 		if err != nil {
 			return err
 		}
@@ -323,7 +322,7 @@ func (m *mySQLClient) SetMetas(ctx context.Context, metas ...MetaVector) error {
 
 	for _, meta := range metas {
 		var id int64
-		_, err = tx.Select(idColumnName).From(metaVectorTableName).Where(m.dbr.Eq(uuidColumnName, meta.GetUUID())).Limit(1).LoadContext(ctx, &id)
+		_, err = tx.Select(idColumnName).From(vectorTableName).Where(m.dbr.Eq(uuidColumnName, meta.GetUUID())).Limit(1).LoadContext(ctx, &id)
 		if err != nil {
 			return err
 		}
@@ -349,7 +348,7 @@ func (m *mySQLClient) SetMetas(ctx context.Context, metas ...MetaVector) error {
 	return tx.Commit()
 }
 
-func (m *mySQLClient) deleteMeta(ctx context.Context, val interface{}) error {
+func (m *mySQLClient) deleteVector(ctx context.Context, val interface{}) error {
 	if !m.connected.Load().(bool) {
 		return errors.ErrMySQLConnectionClosed
 	}
@@ -363,7 +362,7 @@ func (m *mySQLClient) deleteMeta(ctx context.Context, val interface{}) error {
 	}
 	defer tx.RollbackUnlessCommitted()
 
-	_, err = tx.DeleteFrom(metaVectorTableName).Where(m.dbr.Eq(uuidColumnName, val)).ExecContext(ctx)
+	_, err = tx.DeleteFrom(vectorTableName).Where(m.dbr.Eq(uuidColumnName, val)).ExecContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -375,14 +374,14 @@ func (m *mySQLClient) deleteMeta(ctx context.Context, val interface{}) error {
 	return tx.Commit()
 }
 
-// DeleteMeta deletes metadata from meta_vector table and podIPs from pod_ip table using meta's uuid.
-func (m *mySQLClient) DeleteMeta(ctx context.Context, uuid string) error {
-	return m.deleteMeta(ctx, uuid)
+// DeleteVector deletes vector data from backup_vector table and podIPs from pod_ip table using meta's uuid.
+func (m *mySQLClient) DeleteVector(ctx context.Context, uuid string) error {
+	return m.deleteVector(ctx, uuid)
 }
 
-// DeleteMetas is the same as DeleteMeta() but it deletes multiple records.
-func (m *mySQLClient) DeleteMetas(ctx context.Context, uuids ...string) error {
-	return m.deleteMeta(ctx, uuids)
+// DeleteVectors is the same as DeleteVector() but it deletes multiple records.
+func (m *mySQLClient) DeleteVectors(ctx context.Context, uuids ...string) error {
+	return m.deleteVector(ctx, uuids)
 }
 
 // SetIPs insert the vector's uuid and the podIPs into database.
@@ -398,7 +397,7 @@ func (m *mySQLClient) SetIPs(ctx context.Context, uuid string, ips ...string) er
 	defer tx.RollbackUnlessCommitted()
 
 	var id int64
-	_, err = tx.Select(idColumnName).From(metaVectorTableName).Where(m.dbr.Eq(uuidColumnName, uuid)).Limit(1).LoadContext(ctx, &id)
+	_, err = tx.Select(idColumnName).From(vectorTableName).Where(m.dbr.Eq(uuidColumnName, uuid)).Limit(1).LoadContext(ctx, &id)
 	if err != nil {
 		return err
 	}

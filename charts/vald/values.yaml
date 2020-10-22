@@ -3352,7 +3352,7 @@ manager:
         write_coalesce_wait_time: 200µs
         # @schema {"name": "manager.backup.cassandra.config.vector_backup_table", "type": "string"}
         # manager.backup.cassandra.config.vector_backup_table -- table name of backup
-        vector_backup_table: meta_vector
+        vector_backup_table: backup_vector
         # @schema {"name": "manager.backup.cassandra.config.pool_config", "type": "object"}
         pool_config:
           # @schema {"name": "manager.backup.cassandra.config.pool_config.data_center", "type": "string"}
@@ -4005,7 +4005,7 @@ meta:
       # meta.cassandra.config.write_coalesce_wait_time -- write coalesce wait time
       write_coalesce_wait_time: 200µs
       # meta.cassandra.config.vector_backup_table -- table name of backup
-      vector_backup_table: meta_vector
+      vector_backup_table: backup_vector
       pool_config:
         # meta.cassandra.config.pool_config.data_center -- name of data center
         data_center: ""
@@ -4149,7 +4149,7 @@ initializer:
         # initializer.cassandra.configmap.backup.enabled -- backup table enabled
         enabled: true
         # initializer.cassandra.configmap.backup.name -- name of backup table
-        name: meta_vector
+        name: backup_vector
     secret:
       # initializer.cassandra.secret.enabled -- cassandra secret will be created
       enabled: false

@@ -295,7 +295,7 @@ func Test_server_Register(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx  context.Context
-		meta *payload.Backup_Compressed_Vector
+		vector *payload.Backup_Compressed_Vector
 	}
 	type fields struct {
 		mysql service.MySQL
@@ -329,7 +329,7 @@ func Test_server_Register(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           meta: nil,
+		           vector: nil,
 		       },
 		       fields: fields {
 		           mysql: nil,
@@ -346,7 +346,7 @@ func Test_server_Register(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           meta: nil,
+		           vector: nil,
 		           },
 		           fields: fields {
 		           mysql: nil,
@@ -376,7 +376,7 @@ func Test_server_Register(t *testing.T) {
 				mysql: test.fields.mysql,
 			}
 
-			gotRes, err := s.Register(test.args.ctx, test.args.meta)
+			gotRes, err := s.Register(test.args.ctx, test.args.vector)
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -389,7 +389,7 @@ func Test_server_RegisterMulti(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx   context.Context
-		metas *payload.Backup_Compressed_Vectors
+		vectors *payload.Backup_Compressed_Vectors
 	}
 	type fields struct {
 		mysql service.MySQL
@@ -423,7 +423,7 @@ func Test_server_RegisterMulti(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           metas: nil,
+		           vectors: nil,
 		       },
 		       fields: fields {
 		           mysql: nil,
@@ -440,7 +440,7 @@ func Test_server_RegisterMulti(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           metas: nil,
+		           vectors: nil,
 		           },
 		           fields: fields {
 		           mysql: nil,
@@ -470,7 +470,7 @@ func Test_server_RegisterMulti(t *testing.T) {
 				mysql: test.fields.mysql,
 			}
 
-			gotRes, err := s.RegisterMulti(test.args.ctx, test.args.metas)
+			gotRes, err := s.RegisterMulti(test.args.ctx, test.args.vectors)
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -855,10 +855,10 @@ func Test_server_RemoveIPs(t *testing.T) {
 	}
 }
 
-func Test_toBackupMetaVector(t *testing.T) {
+func Test_toBackupVector(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		meta *model.MetaVector
+		vector *model.Vector
 	}
 	type want struct {
 		wantRes *payload.Backup_Compressed_Vector
@@ -887,7 +887,7 @@ func Test_toBackupMetaVector(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           meta: nil,
+		           vector: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -900,7 +900,7 @@ func Test_toBackupMetaVector(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           meta: nil,
+		           vector: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -924,7 +924,7 @@ func Test_toBackupMetaVector(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			gotRes, err := toBackupMetaVector(test.args.meta)
+			gotRes, err := toBackupVector(test.args.vector)
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -933,24 +933,24 @@ func Test_toBackupMetaVector(t *testing.T) {
 	}
 }
 
-func Test_toModelMetaVector(t *testing.T) {
+func Test_toModelVector(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		obj *payload.Backup_Compressed_Vector
 	}
 	type want struct {
-		wantRes *model.MetaVector
+		wantRes *model.Vector
 		err     error
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, *model.MetaVector, error) error
+		checkFunc  func(want, *model.Vector, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotRes *model.MetaVector, err error) error {
+	defaultCheckFunc := func(w want, gotRes *model.Vector, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -1002,7 +1002,7 @@ func Test_toModelMetaVector(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			gotRes, err := toModelMetaVector(test.args.obj)
+			gotRes, err := toModelVector(test.args.obj)
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}

@@ -25,12 +25,12 @@ import (
 	"go.uber.org/goleak"
 )
 
-func TestMetaVector_GetUUID(t *testing.T) {
+func TestVector_GetUUID(t *testing.T) {
 	t.Parallel()
 	type fields struct {
 		UUID   string
 		Vector []byte
-		Meta   string
+		Vector   string
 		IPs    []string
 	}
 	type want struct {
@@ -58,7 +58,7 @@ func TestMetaVector_GetUUID(t *testing.T) {
 		       fields: fields {
 		           UUID: "",
 		           Vector: nil,
-		           Meta: "",
+		           Vector: "",
 		           IPs: nil,
 		       },
 		       want: want{},
@@ -74,7 +74,7 @@ func TestMetaVector_GetUUID(t *testing.T) {
 		           fields: fields {
 		           UUID: "",
 		           Vector: nil,
-		           Meta: "",
+		           Vector: "",
 		           IPs: nil,
 		           },
 		           want: want{},
@@ -98,10 +98,10 @@ func TestMetaVector_GetUUID(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			m := &MetaVector{
+			m := &Vector{
 				UUID:   test.fields.UUID,
 				Vector: test.fields.Vector,
-				Meta:   test.fields.Meta,
+				Vector:   test.fields.Vector,
 				IPs:    test.fields.IPs,
 			}
 
@@ -114,12 +114,12 @@ func TestMetaVector_GetUUID(t *testing.T) {
 	}
 }
 
-func TestMetaVector_GetVector(t *testing.T) {
+func TestVector_GetVector(t *testing.T) {
 	t.Parallel()
 	type fields struct {
 		UUID   string
 		Vector []byte
-		Meta   string
+		Vector   string
 		IPs    []string
 	}
 	type want struct {
@@ -147,7 +147,7 @@ func TestMetaVector_GetVector(t *testing.T) {
 		       fields: fields {
 		           UUID: "",
 		           Vector: nil,
-		           Meta: "",
+		           Vector: "",
 		           IPs: nil,
 		       },
 		       want: want{},
@@ -163,7 +163,7 @@ func TestMetaVector_GetVector(t *testing.T) {
 		           fields: fields {
 		           UUID: "",
 		           Vector: nil,
-		           Meta: "",
+		           Vector: "",
 		           IPs: nil,
 		           },
 		           want: want{},
@@ -187,10 +187,10 @@ func TestMetaVector_GetVector(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			m := &MetaVector{
+			m := &Vector{
 				UUID:   test.fields.UUID,
 				Vector: test.fields.Vector,
-				Meta:   test.fields.Meta,
+				Vector:   test.fields.Vector,
 				IPs:    test.fields.IPs,
 			}
 
@@ -203,12 +203,12 @@ func TestMetaVector_GetVector(t *testing.T) {
 	}
 }
 
-func TestMetaVector_GetMeta(t *testing.T) {
+func TestVector_GetVector(t *testing.T) {
 	t.Parallel()
 	type fields struct {
 		UUID   string
 		Vector []byte
-		Meta   string
+		Vector   string
 		IPs    []string
 	}
 	type want struct {
@@ -236,7 +236,7 @@ func TestMetaVector_GetMeta(t *testing.T) {
 		       fields: fields {
 		           UUID: "",
 		           Vector: nil,
-		           Meta: "",
+		           Vector: "",
 		           IPs: nil,
 		       },
 		       want: want{},
@@ -252,7 +252,7 @@ func TestMetaVector_GetMeta(t *testing.T) {
 		           fields: fields {
 		           UUID: "",
 		           Vector: nil,
-		           Meta: "",
+		           Vector: "",
 		           IPs: nil,
 		           },
 		           want: want{},
@@ -276,14 +276,14 @@ func TestMetaVector_GetMeta(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			m := &MetaVector{
+			m := &Vector{
 				UUID:   test.fields.UUID,
 				Vector: test.fields.Vector,
-				Meta:   test.fields.Meta,
+				Vector:   test.fields.Vector,
 				IPs:    test.fields.IPs,
 			}
 
-			got := m.GetMeta()
+			got := m.GetVector()
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -292,12 +292,12 @@ func TestMetaVector_GetMeta(t *testing.T) {
 	}
 }
 
-func TestMetaVector_GetIPs(t *testing.T) {
+func TestVector_GetIPs(t *testing.T) {
 	t.Parallel()
 	type fields struct {
 		UUID   string
 		Vector []byte
-		Meta   string
+		Vector   string
 		IPs    []string
 	}
 	type want struct {
@@ -325,7 +325,7 @@ func TestMetaVector_GetIPs(t *testing.T) {
 		       fields: fields {
 		           UUID: "",
 		           Vector: nil,
-		           Meta: "",
+		           Vector: "",
 		           IPs: nil,
 		       },
 		       want: want{},
@@ -341,7 +341,7 @@ func TestMetaVector_GetIPs(t *testing.T) {
 		           fields: fields {
 		           UUID: "",
 		           Vector: nil,
-		           Meta: "",
+		           Vector: "",
 		           IPs: nil,
 		           },
 		           want: want{},
@@ -365,10 +365,10 @@ func TestMetaVector_GetIPs(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			m := &MetaVector{
+			m := &Vector{
 				UUID:   test.fields.UUID,
 				Vector: test.fields.Vector,
-				Meta:   test.fields.Meta,
+				Vector:   test.fields.Vector,
 				IPs:    test.fields.IPs,
 			}
 

@@ -19,10 +19,10 @@ package mysql
 import "context"
 
 type Setter interface {
-	SetMeta(ctx context.Context, meta MetaVector) error
-	SetMetas(ctx context.Context, metas ...MetaVector) error
-	DeleteMeta(ctx context.Context, uuid string) error
-	DeleteMetas(ctx context.Context, uuids ...string) error
+	SetVector(ctx context.Context, meta Vector) error
+	SetVectors(ctx context.Context, metas ...Vector) error
+	DeleteVector(ctx context.Context, uuid string) error
+	DeleteVectors(ctx context.Context, uuids ...string) error
 	SetIPs(ctx context.Context, uuid string, ips ...string) error
 	RemoveIPs(ctx context.Context, ips ...string) error
 }

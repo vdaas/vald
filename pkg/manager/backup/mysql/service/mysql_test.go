@@ -279,7 +279,7 @@ func Test_client_Close(t *testing.T) {
 	}
 }
 
-func Test_client_GetMeta(t *testing.T) {
+func Test_client_GetVector(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx  context.Context
@@ -289,7 +289,7 @@ func Test_client_GetMeta(t *testing.T) {
 		db mysql.MySQL
 	}
 	type want struct {
-		want *model.MetaVector
+		want *model.Vector
 		err  error
 	}
 	type test struct {
@@ -297,11 +297,11 @@ func Test_client_GetMeta(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *model.MetaVector, error) error
+		checkFunc  func(want, *model.Vector, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *model.MetaVector, err error) error {
+	defaultCheckFunc := func(w want, got *model.Vector, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -364,7 +364,7 @@ func Test_client_GetMeta(t *testing.T) {
 				db: test.fields.db,
 			}
 
-			got, err := c.GetMeta(test.args.ctx, test.args.uuid)
+			got, err := c.GetVector(test.args.ctx, test.args.uuid)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -467,11 +467,11 @@ func Test_client_GetIPs(t *testing.T) {
 	}
 }
 
-func Test_client_SetMeta(t *testing.T) {
+func Test_client_SetVector(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx  context.Context
-		meta *model.MetaVector
+		vector *model.Vector
 	}
 	type fields struct {
 		db mysql.MySQL
@@ -501,7 +501,7 @@ func Test_client_SetMeta(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           meta: nil,
+		           vector: nil,
 		       },
 		       fields: fields {
 		           db: nil,
@@ -518,7 +518,7 @@ func Test_client_SetMeta(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           meta: nil,
+		           vector: nil,
 		           },
 		           fields: fields {
 		           db: nil,
@@ -548,7 +548,7 @@ func Test_client_SetMeta(t *testing.T) {
 				db: test.fields.db,
 			}
 
-			err := c.SetMeta(test.args.ctx, test.args.meta)
+			err := c.SetVector(test.args.ctx, test.args.vector)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -557,11 +557,11 @@ func Test_client_SetMeta(t *testing.T) {
 	}
 }
 
-func Test_client_SetMetas(t *testing.T) {
+func Test_client_SetVectors(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx   context.Context
-		metas []*model.MetaVector
+		vectors []*model.Vector
 	}
 	type fields struct {
 		db mysql.MySQL
@@ -591,7 +591,7 @@ func Test_client_SetMetas(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           metas: nil,
+		           vectors: nil,
 		       },
 		       fields: fields {
 		           db: nil,
@@ -608,7 +608,7 @@ func Test_client_SetMetas(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           metas: nil,
+		           vectors: nil,
 		           },
 		           fields: fields {
 		           db: nil,
@@ -638,7 +638,7 @@ func Test_client_SetMetas(t *testing.T) {
 				db: test.fields.db,
 			}
 
-			err := c.SetMetas(test.args.ctx, test.args.metas...)
+			err := c.SetVectors(test.args.ctx, test.args.vectors...)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -647,7 +647,7 @@ func Test_client_SetMetas(t *testing.T) {
 	}
 }
 
-func Test_client_DeleteMeta(t *testing.T) {
+func Test_client_DeleteVector(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx  context.Context
@@ -728,7 +728,7 @@ func Test_client_DeleteMeta(t *testing.T) {
 				db: test.fields.db,
 			}
 
-			err := c.DeleteMeta(test.args.ctx, test.args.uuid)
+			err := c.DeleteVector(test.args.ctx, test.args.uuid)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -737,7 +737,7 @@ func Test_client_DeleteMeta(t *testing.T) {
 	}
 }
 
-func Test_client_DeleteMetas(t *testing.T) {
+func Test_client_DeleteVectors(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx   context.Context
@@ -818,7 +818,7 @@ func Test_client_DeleteMetas(t *testing.T) {
 				db: test.fields.db,
 			}
 
-			err := c.DeleteMetas(test.args.ctx, test.args.uuids...)
+			err := c.DeleteVectors(test.args.ctx, test.args.uuids...)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
