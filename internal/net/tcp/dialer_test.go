@@ -263,7 +263,7 @@ func TestNewDialer(t *testing.T) {
 		got := gotDer.(*dialer)
 		opts := []cmp.Option{
 			cmp.AllowUnexported(*want),
-			cmpopts.IgnoreFields(*want, "dialer", "der"),
+			cmpopts.IgnoreFields(*want, "dialer", "der", "addrs"),
 			cmp.Comparer(func(x, y cache.Cache) bool {
 				if x == nil && y == nil {
 					return true

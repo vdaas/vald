@@ -68,7 +68,7 @@ func TestRecoverFunc(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns error when system paniced caused by runtime error",
+			name: "returns error when system panicked caused by runtime error",
 			args: args{
 				fn: func() error {
 					_ = []string{}[10]
@@ -77,12 +77,12 @@ func TestRecoverFunc(t *testing.T) {
 			},
 			want: want{
 				wantPanic: func() error {
-					return errors.New("system paniced caused by runtime error: runtime error: index out of range [10] with length 0")
+					return errors.New("system panicked caused by runtime error: runtime error: index out of range [10] with length 0")
 				},
 			},
 		},
 		{
-			name: "returns error when system paniced caused by panic with string value",
+			name: "returns error when system panicked caused by panic with string value",
 			args: args{
 				fn: func() error {
 					panic("panic")
@@ -95,7 +95,7 @@ func TestRecoverFunc(t *testing.T) {
 			},
 		},
 		{
-			name: "returns error when system paniced caused by panic with error",
+			name: "returns error when system panicked caused by panic with error",
 			args: args{
 				fn: func() error {
 					panic(errors.Errorf("error"))
@@ -108,7 +108,7 @@ func TestRecoverFunc(t *testing.T) {
 			},
 		},
 		{
-			name: "returns error when system paniced caused by panic with int value",
+			name: "returns error when system panicked caused by panic with int value",
 			args: args{
 				fn: func() error {
 					panic(10)
