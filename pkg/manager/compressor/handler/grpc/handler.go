@@ -102,7 +102,7 @@ func (s *server) Locations(ctx context.Context, req *payload.Backup_Locations_Re
 	}, nil
 }
 
-func (s *server) Register(ctx context.Context, meta *payload.Backup_Vector) (res *payload.Empty, err error) {
+func (s *server) Register(ctx context.Context, vec *payload.Backup_Vector) (res *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor.Register")
 	defer func() {
 		if span != nil {
@@ -110,20 +110,20 @@ func (s *server) Register(ctx context.Context, meta *payload.Backup_Vector) (res
 		}
 	}()
 
-	err = s.registerer.Register(ctx, meta)
+	err = s.registerer.Register(ctx, vec)
 	if err != nil {
 		log.Errorf("[Register]\tregisterer returns error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
 		return nil, status.WrapWithInternal(
-			fmt.Sprintf("Register API uuid %s could not processed", meta.GetUuid()), err, info.Get())
+			fmt.Sprintf("Register API uuid %s could not processed", vec.GetUuid()), err, info.Get())
 	}
 
 	return new(payload.Empty), nil
 }
 
-func (s *server) RegisterMulti(ctx context.Context, metas *payload.Backup_Vectors) (res *payload.Empty, err error) {
+func (s *server) RegisterMulti(ctx context.Context, vecs *payload.Backup_Vectors) (res *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor.RegisterMulti")
 	defer func() {
 		if span != nil {
@@ -131,7 +131,7 @@ func (s *server) RegisterMulti(ctx context.Context, metas *payload.Backup_Vector
 		}
 	}()
 
-	err = s.registerer.RegisterMulti(ctx, metas)
+	err = s.registerer.RegisterMulti(ctx, vecs)
 	if err != nil {
 		log.Errorf("[RegisterMulti]\tregisterer returns error\t%+v", err)
 		if span != nil {
