@@ -243,7 +243,8 @@ all: clean deps
 ## clean
 clean:
 	go clean -cache -modcache -testcache -i -r
-	mv ./apis/grpc/v1/vald/vald.go /tmp/vald.go
+	tmp_dir=$(mktemp -d)
+	mv ./apis/grpc/v1/vald/vald.go $(tmp_dir)/vald.go
 	rm -rf \
 		/go/pkg \
 		./*.log \
@@ -258,7 +259,7 @@ clean:
 		./go.sum \
 		./go.mod
 	mkdir -p ./apis/grpc/v1/vald
-	mv /tmp/vald.go ./apis/grpc/v1/vald/vald.go
+	mv $(tmp_dir)/vald.go ./apis/grpc/v1/vald/vald.go
 	cp ./hack/go.mod.default ./go.mod
 
 .PHONY: license
@@ -386,13 +387,14 @@ version/telepresence:
 ngt/install: /usr/local/include/NGT/Capi.h
 /usr/local/include/NGT/Capi.h:
 	curl -LO https://github.com/yahoojapan/NGT/archive/v$(NGT_VERSION).tar.gz
-	tar zxf v$(NGT_VERSION).tar.gz -C /tmp
-	cd /tmp/NGT-$(NGT_VERSION) && \
+	tmp_dir=$(mktemp -d)
+	tar zxf v$(NGT_VERSION).tar.gz -C $(tmp_dir)
+	cd $(tmp_dir)/NGT-$(NGT_VERSION) && \
 	    cmake -DCMAKE_C_FLAGS="$(CFLAGS)" -DCMAKE_CXX_FLAGS="$(CXXFLAGS)" .
-	make -j -C /tmp/NGT-$(NGT_VERSION)
-	make install -C /tmp/NGT-$(NGT_VERSION)
+	make -j -C $(tmp_dir)/NGT-$(NGT_VERSION)
+	make install -C $(tmp_dir)/NGT-$(NGT_VERSION)
 	rm -rf v$(NGT_VERSION).tar.gz
-	rm -rf /tmp/NGT-$(NGT_VERSION)
+	rm -rf $(tmp_dir)/NGT-$(NGT_VERSION)
 	ldconfig
 
 .PHONY: tensorflow/install
@@ -417,12 +419,13 @@ lint:
 .PHONY: changelog/update
 ## update changelog
 changelog/update:
-	echo "# CHANGELOG" > /tmp/CHANGELOG.md
-	echo "" >> /tmp/CHANGELOG.md
-	$(MAKE) -s changelog/next/print >> /tmp/CHANGELOG.md
-	echo "" >> /tmp/CHANGELOG.md
-	tail -n +2 CHANGELOG.md >> /tmp/CHANGELOG.md
-	mv -f /tmp/CHANGELOG.md CHANGELOG.md
+	tmp_dir=$(mktemp -d)
+	echo "# CHANGELOG" > $(tmp_dir)/CHANGELOG.md
+	echo "" >> $(tmp_dir)/CHANGELOG.md
+	$(MAKE) -s changelog/next/print >> $(tmp_dir)/CHANGELOG.md
+	echo "" >> $(tmp_dir)/CHANGELOG.md
+	tail -n +2 CHANGELOG.md >> $(tmp_dir)/CHANGELOG.md
+	mv -f $(tmp_dir)/CHANGELOG.md CHANGELOG.md
 
 .PHONY: changelog/next/print
 ## print next changelog entry
