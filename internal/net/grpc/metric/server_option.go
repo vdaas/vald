@@ -19,6 +19,4 @@ package metric
 
 type ServerOption func(*ServerHandler)
 
-var (
-	serverDefaultOpts = []ServerOption{}
-)
+var serverDefaultOpts = []ServerOption{}

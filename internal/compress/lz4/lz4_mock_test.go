@@ -111,7 +111,6 @@ func TestMockReader_Read(t *testing.T) {
 			if err := test.checkFunc(test.want, gotN, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -214,7 +213,6 @@ func TestMockWriter_Write(t *testing.T) {
 			if err := test.checkFunc(test.want, gotN, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -303,7 +301,6 @@ func TestMockWriter_Close(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -392,7 +389,6 @@ func TestMockWriter_Header(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -481,7 +477,6 @@ func TestMockWriter_Flush(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -568,10 +563,9 @@ func TestMockLZ4_NewWriter(t *testing.T) {
 			w := &bytes.Buffer{}
 
 			got := m.NewWriter(w)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := test.checkFunc(test.want, got, w.String()); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -668,10 +662,9 @@ func TestMockLZ4_NewWriterLevel(t *testing.T) {
 			w := &bytes.Buffer{}
 
 			got := m.NewWriterLevel(w, test.args.level)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := test.checkFunc(test.want, got, w.String()); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -766,7 +759,6 @@ func TestMockLZ4_NewReader(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

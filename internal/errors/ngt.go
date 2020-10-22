@@ -18,7 +18,7 @@
 package errors
 
 var (
-	//NGT
+	//NGT.
 
 	ErrCreateProperty = func(err error) error {
 		return Wrap(err, "failed to create property")
@@ -73,7 +73,7 @@ var (
 
 	ErrUncommittedIndexNotFound = New("uncommitted indexes are not found")
 
-	// ErrCAPINotImplemented raises using not implemented function in C API
+	// ErrCAPINotImplemented raises using not implemented function in C API.
 	ErrCAPINotImplemented = New("not implemented in C API")
 
 	ErrUUIDAlreadyExists = func(uuid string, oid uint) error {

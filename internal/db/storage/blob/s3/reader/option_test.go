@@ -29,12 +29,10 @@ import (
 	"go.uber.org/goleak"
 )
 
-var (
-	// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
-	goleakIgnoreOptions = []goleak.Option{
-		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
-	}
-)
+// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
+var goleakIgnoreOptions = []goleak.Option{
+	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+}
 
 func TestWithErrGroup(t *testing.T) {
 	type T = reader
@@ -438,7 +436,6 @@ func TestWithBackoff(t *testing.T) {
 			if err := test.checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

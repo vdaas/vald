@@ -29,13 +29,11 @@ import (
 
 type Option func(c *client) error
 
-var (
-	defaultOpts = []Option{
-		WithErrGroup(errgroup.Get()),
-		WithAutoConnect(true),
-		WithNamespace("vald"),
-	}
-)
+var defaultOpts = []Option{
+	WithErrGroup(errgroup.Get()),
+	WithAutoConnect(true),
+	WithNamespace("vald"),
+}
 
 func WithOnDiscoverFunc(f func(ctx context.Context, c Client, addrs []string) error) Option {
 	return func(c *client) error {

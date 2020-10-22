@@ -108,7 +108,6 @@ func Test_insertRequestProvider(t *testing.T) {
 			if err := test.checkFunc(test.want, gotF, gotSize, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -186,7 +185,6 @@ func Test_objectVectorProvider(t *testing.T) {
 			if err := test.checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -267,7 +265,6 @@ func Test_objectVectorsProvider(t *testing.T) {
 			if err := test.checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -388,7 +385,6 @@ func Test_loader_newInsert(t *testing.T) {
 			if err := test.checkFunc(test.want, gotF, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -509,7 +505,6 @@ func Test_loader_newStreamInsert(t *testing.T) {
 			if err := test.checkFunc(test.want, gotF, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

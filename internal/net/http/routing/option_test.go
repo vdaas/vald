@@ -199,8 +199,8 @@ func TestWithRoutes(t *testing.T) {
 	tests := []test{
 		func() test {
 			rs := []Route{
-				Route{},
-				Route{},
+				{},
+				{},
 			}
 
 			return test{
@@ -229,8 +229,8 @@ func TestWithRoutes(t *testing.T) {
 			r := Route{}
 
 			rs := []Route{
-				Route{},
-				Route{},
+				{},
+				{},
 			}
 
 			return test{

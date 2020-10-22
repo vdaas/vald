@@ -24,9 +24,8 @@ import (
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
-
 	"go.uber.org/goleak"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 func TestNew(t *testing.T) {
@@ -99,7 +98,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCl, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -207,7 +205,6 @@ func Test_controller_Start(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

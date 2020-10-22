@@ -18,7 +18,7 @@
 package errors
 
 var (
-	// io
+	// io.
 	NewErrContextNotProvided = func() error {
 		return New("context not provided")
 	}

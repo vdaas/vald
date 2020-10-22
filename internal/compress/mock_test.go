@@ -122,7 +122,6 @@ func TestMockCompressor_CompressVector(t *testing.T) {
 			if err := test.checkFunc(test.want, gotBytes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -225,7 +224,6 @@ func TestMockCompressor_DecompressVector(t *testing.T) {
 			if err := test.checkFunc(test.want, gotVector, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -328,7 +326,6 @@ func TestMockCompressor_Reader(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -431,7 +428,6 @@ func TestMockCompressor_Writer(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -526,7 +522,6 @@ func TestMockReadCloser_Read(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -607,7 +602,6 @@ func TestMockReadCloser_Close(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -702,7 +696,6 @@ func TestMockWriteCloser_Write(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -783,7 +776,6 @@ func TestMockWriteCloser_Close(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

@@ -17,7 +17,5 @@
 // Package errors provides error types and function
 package errors
 
-var (
-	// ErrUnsupportedClientMethod is unsupported method error for gRPC/REST client
-	ErrUnsupportedClientMethod = New("unsupported method")
-)
+// ErrUnsupportedClientMethod is unsupported method error for gRPC/REST client
+var ErrUnsupportedClientMethod = New("unsupported method")

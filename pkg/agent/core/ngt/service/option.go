@@ -29,23 +29,21 @@ import (
 
 type Option func(n *ngt) error
 
-var (
-	defaultOpts = []Option{
-		WithErrGroup(errgroup.Get()),
-		WithAutoIndexCheckDuration("30m"),
-		WithAutoIndexDurationLimit("24h"),
-		WithAutoSaveIndexDuration("35m"),
-		WithAutoIndexLength(100),
-		WithInitialDelayMaxDuration("3m"),
-		WithMinLoadIndexTimeout("3m"),
-		WithMaxLoadIndexTimeout("10m"),
-		WithLoadIndexTimeoutFactor("1ms"),
-		WithDefaultPoolSize(core.DefaultPoolSize),
-		WithDefaultRadius(core.DefaultRadius),
-		WithDefaultEpsilon(core.DefaultEpsilon),
-		WithProactiveGC(true),
-	}
-)
+var defaultOpts = []Option{
+	WithErrGroup(errgroup.Get()),
+	WithAutoIndexCheckDuration("30m"),
+	WithAutoIndexDurationLimit("24h"),
+	WithAutoSaveIndexDuration("35m"),
+	WithAutoIndexLength(100),
+	WithInitialDelayMaxDuration("3m"),
+	WithMinLoadIndexTimeout("3m"),
+	WithMaxLoadIndexTimeout("10m"),
+	WithLoadIndexTimeoutFactor("1ms"),
+	WithDefaultPoolSize(core.DefaultPoolSize),
+	WithDefaultRadius(core.DefaultRadius),
+	WithDefaultEpsilon(core.DefaultEpsilon),
+	WithProactiveGC(true),
+}
 
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(n *ngt) error {

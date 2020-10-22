@@ -26,13 +26,11 @@ import (
 // Option represents the functional option for writer.
 type Option func(w *writer) error
 
-var (
-	defaultOpts = []Option{
-		WithErrGroup(errgroup.Get()),
-		WithContentType("application/octet-stream"),
-		WithMaxPartSize(64 * 1024 * 1024),
-	}
-)
+var defaultOpts = []Option{
+	WithErrGroup(errgroup.Get()),
+	WithContentType("application/octet-stream"),
+	WithMaxPartSize(64 * 1024 * 1024),
+}
 
 // WithErrGroup returns the option to set eg for writer.
 func WithErrGroup(eg errgroup.Group) Option {

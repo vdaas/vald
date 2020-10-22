@@ -21,8 +21,10 @@ import (
 	"github.com/vdaas/vald/internal/config"
 )
 
-type GlobalConfig = config.GlobalConfig
-type Server = config.Server
+type (
+	GlobalConfig = config.GlobalConfig
+	Server       = config.Server
+)
 
 // Config represent a application setting data content (config.yaml).
 // In K8s environment, this configuration is stored in K8s ConfigMap.

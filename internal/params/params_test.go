@@ -25,7 +25,6 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
-
 	"go.uber.org/goleak"
 )
 

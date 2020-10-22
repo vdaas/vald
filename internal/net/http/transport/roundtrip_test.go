@@ -105,7 +105,6 @@ func TestNewExpBackoff(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -175,8 +174,8 @@ func Test_ert_RoundTrip(t *testing.T) {
 					},
 				},
 				bo: &backoffMock{
-					DoFunc: func(ctx context.Context, fn func() (interface{}, bool, error)) (interface{}, error) {
-						val, _, err := fn()
+					DoFunc: func(ctx context.Context, fn func(context.Context) (interface{}, bool, error)) (interface{}, error) {
+						val, _, err := fn(ctx)
 						return val, err
 					},
 				},
@@ -201,8 +200,8 @@ func Test_ert_RoundTrip(t *testing.T) {
 					},
 				},
 				bo: &backoffMock{
-					DoFunc: func(ctx context.Context, fn func() (interface{}, bool, error)) (interface{}, error) {
-						val, _, err := fn()
+					DoFunc: func(ctx context.Context, fn func(context.Context) (interface{}, bool, error)) (interface{}, error) {
+						val, _, err := fn(ctx)
 						return val, err
 					},
 				},
@@ -227,8 +226,8 @@ func Test_ert_RoundTrip(t *testing.T) {
 					},
 				},
 				bo: &backoffMock{
-					DoFunc: func(ctx context.Context, fn func() (interface{}, bool, error)) (interface{}, error) {
-						val, _, err := fn()
+					DoFunc: func(ctx context.Context, fn func(context.Context) (interface{}, bool, error)) (interface{}, error) {
+						val, _, err := fn(ctx)
 						return val, err
 					},
 				},
@@ -246,7 +245,7 @@ func Test_ert_RoundTrip(t *testing.T) {
 			},
 			fields: fields{
 				bo: &backoffMock{
-					DoFunc: func(ctx context.Context, fn func() (interface{}, bool, error)) (interface{}, error) {
+					DoFunc: func(ctx context.Context, fn func(context.Context) (interface{}, bool, error)) (interface{}, error) {
 						return nil, errors.New("error")
 					},
 				},
@@ -267,8 +266,8 @@ func Test_ert_RoundTrip(t *testing.T) {
 					},
 				},
 				bo: &backoffMock{
-					DoFunc: func(ctx context.Context, fn func() (interface{}, bool, error)) (interface{}, error) {
-						val, _, err := fn()
+					DoFunc: func(ctx context.Context, fn func(context.Context) (interface{}, bool, error)) (interface{}, error) {
+						val, _, err := fn(ctx)
 						return val, err
 					},
 				},
@@ -289,8 +288,8 @@ func Test_ert_RoundTrip(t *testing.T) {
 					},
 				},
 				bo: &backoffMock{
-					DoFunc: func(ctx context.Context, fn func() (interface{}, bool, error)) (interface{}, error) {
-						val, _, err := fn()
+					DoFunc: func(ctx context.Context, fn func(context.Context) (interface{}, bool, error)) (interface{}, error) {
+						val, _, err := fn(ctx)
 						return val, err
 					},
 				},
@@ -322,7 +321,6 @@ func Test_ert_RoundTrip(t *testing.T) {
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -455,7 +453,6 @@ func Test_ert_roundTrip(t *testing.T) {
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -519,7 +516,6 @@ func Test_retryableStatusCode(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

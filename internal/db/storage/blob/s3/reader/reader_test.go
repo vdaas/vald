@@ -120,7 +120,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -569,7 +568,6 @@ func Test_reader_Close(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -682,7 +680,6 @@ func Test_reader_Read(t *testing.T) {
 			if err := test.checkFunc(test.want, gotN, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

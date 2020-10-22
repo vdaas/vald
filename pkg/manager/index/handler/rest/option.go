@@ -21,9 +21,7 @@ import "github.com/vdaas/vald/apis/grpc/v1/manager/index"
 
 type Option func(*handler)
 
-var (
-	defaultOpts = []Option{}
-)
+var defaultOpts = []Option{}
 
 func WithIndexer(i index.IndexServer) Option {
 	return func(h *handler) {

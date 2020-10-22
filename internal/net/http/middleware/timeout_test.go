@@ -26,7 +26,6 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/http/rest"
-
 	"go.uber.org/goleak"
 )
 
@@ -282,7 +281,6 @@ func Test_timeout_Wrap(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

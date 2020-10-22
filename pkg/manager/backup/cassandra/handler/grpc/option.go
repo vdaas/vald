@@ -21,9 +21,7 @@ import "github.com/vdaas/vald/pkg/manager/backup/cassandra/service"
 
 type Option func(*server)
 
-var (
-	defaultOpts = []Option{}
-)
+var defaultOpts = []Option{}
 
 func WithCassandra(c service.Cassandra) Option {
 	return func(s *server) {

@@ -35,7 +35,7 @@ var (
 		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
 	}
 
-	// default comparator option for client
+	// default comparator option for client.
 	clientComparatorOpts = []comparator.Option{
 		comparator.AllowUnexported(client{}),
 		comparator.Comparer(func(x, y retryPolicy) bool {
@@ -1065,6 +1065,7 @@ func TestWithSerialConsistency(t *testing.T) {
 		})
 	}
 }
+
 func TestWithCompressor(t *testing.T) {
 	type T = client
 	type args struct {

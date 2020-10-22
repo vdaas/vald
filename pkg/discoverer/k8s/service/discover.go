@@ -355,7 +355,6 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 					ech <- err
 				}
 			}
-
 		}
 	}))
 	return ech, nil

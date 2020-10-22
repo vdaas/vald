@@ -34,7 +34,7 @@ import (
 
 type (
 
-	// NGT is core interface
+	// NGT is core interface.
 	NGT interface {
 		// Search returns search result as []SearchResult
 		Search(vec []float32, size int, epsilon, radius float32) ([]SearchResult, error)
@@ -94,59 +94,59 @@ type (
 	}
 )
 
-// ObjectType is alias of object type in NGT
+// ObjectType is alias of object type in NGT.
 type objectType int
 
-// DistanceType is alias of distance type in NGT
+// DistanceType is alias of distance type in NGT.
 type distanceType int
 
 const (
 	// -------------------------------------------------------------
 	// Object Type Definition
 	// -------------------------------------------------------------
-	// ObjectNone is unknown object type
+	// ObjectNone is unknown object type.
 	ObjectNone objectType = iota
-	// Uint8 is 8bit unsigned integer
+	// Uint8 is 8bit unsigned integer.
 	Uint8
-	// Float is 32bit floating point number
+	// Float is 32bit floating point number.
 	Float
-	// -------------------------------------------------------------
+	// -------------------------------------------------------------.
 
 	// -------------------------------------------------------------
 	// Distance Type Definition
 	// -------------------------------------------------------------
-	// DistanceNone is unknown distance type
+	// DistanceNone is unknown distance type.
 	DistanceNone distanceType = iota - 1
-	// L1 is l1 norm
+	// L1 is l1 norm.
 	L1
-	// L2 is l2 norm
+	// L2 is l2 norm.
 	L2
-	// Angle is angle distance
+	// Angle is angle distance.
 	Angle
-	// Hamming is hamming distance
+	// Hamming is hamming distance.
 	Hamming
-	// Cosine is cosine distance
+	// Cosine is cosine distance.
 	Cosine
-	// NormalizedAngle is angle distance with normalization
+	// NormalizedAngle is angle distance with normalization.
 	NormalizedAngle
-	// NormalizedCosine is cosine distance with normalization
+	// NormalizedCosine is cosine distance with normalization.
 	NormalizedCosine
-	// Jaccard is jaccard distance
+	// Jaccard is jaccard distance.
 	Jaccard
-	// -------------------------------------------------------------
+	// -------------------------------------------------------------.
 
-	// ErrorCode is false
+	// ErrorCode is false.
 	ErrorCode = C._Bool(false)
 
 	dimensionLimit = 1 << 16
 )
 
-// New returns NGT instance with recreating empty index file
+// New returns NGT instance with recreating empty index file.
 func New(opts ...Option) (NGT, error) {
 	return gen(false, opts...)
 }
 
-// Load returns NGT instance from existing index file
+// Load returns NGT instance from existing index file.
 func Load(opts ...Option) (NGT, error) {
 	return gen(true, opts...)
 }
@@ -275,7 +275,7 @@ func (n *ngt) loadObjectSpace() error {
 	return nil
 }
 
-// Search returns search result as []SearchResult
+// Search returns search result as []SearchResult.
 func (n *ngt) Search(vec []float32, size int, epsilon, radius float32) ([]SearchResult, error) {
 	if len(vec) != int(n.dimension) {
 		return nil, errors.ErrIncompatibleDimensionSize(len(vec), int(n.dimension))

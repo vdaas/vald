@@ -29,17 +29,15 @@ import (
 // Option represents the functional option for mySQLClient.
 type Option func(*mySQLClient) error
 
-var (
-	defaultOpts = []Option{
-		WithCharset("utf8mb4"),
-		WithTimezone("Local"),
-		WithInitialPingDuration("30ms"),
-		WithInitialPingTimeLimit("5m"),
-		// WithConnectionLifeTimeLimit("2m"),
-		// WithMaxOpenConns(40),
-		// WithMaxIdleConns(50),
-	}
-)
+var defaultOpts = []Option{
+	WithCharset("utf8mb4"),
+	WithTimezone("Local"),
+	WithInitialPingDuration("30ms"),
+	WithInitialPingTimeLimit("5m"),
+	// WithConnectionLifeTimeLimit("2m"),
+	// WithMaxOpenConns(40),
+	// WithMaxIdleConns(50),
+}
 
 // WithTimezone returns the option to set the timezone.
 func WithTimezone(tz string) Option {

@@ -98,7 +98,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, gotC); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -237,7 +236,6 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -375,7 +373,6 @@ func Test_gRPCClient_Range(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -516,7 +513,6 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -657,7 +653,6 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -801,7 +796,6 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -946,7 +940,6 @@ func Test_gRPCClient_Do(t *testing.T) {
 			if err := test.checkFunc(test.want, gotData, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1071,7 +1064,6 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1196,7 +1188,6 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1337,7 +1328,6 @@ func Test_gRPCClient_Connect(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1472,7 +1462,6 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1597,7 +1586,6 @@ func Test_gRPCClient_Close(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

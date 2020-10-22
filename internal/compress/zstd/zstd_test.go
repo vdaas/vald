@@ -21,7 +21,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/klauspost/compress/zstd"
 	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
 )
@@ -66,7 +65,8 @@ func TestNew(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt)
@@ -84,7 +84,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -92,7 +91,7 @@ func TestNew(t *testing.T) {
 func Test_compress_NewWriter(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		opts []zstd.EOption
+		opts []EOption
 	}
 	type want struct {
 		want  Encoder
@@ -148,7 +147,8 @@ func Test_compress_NewWriter(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt)
@@ -165,10 +165,9 @@ func Test_compress_NewWriter(t *testing.T) {
 			w := &bytes.Buffer{}
 
 			got, err := c.NewWriter(w, test.args.opts...)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := test.checkFunc(test.want, got, w.String(), err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -177,7 +176,7 @@ func Test_compress_NewReader(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		r    io.Reader
-		opts []zstd.DOption
+		opts []DOption
 	}
 	type want struct {
 		want Decoder
@@ -231,7 +230,8 @@ func Test_compress_NewReader(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt)
@@ -250,7 +250,6 @@ func Test_compress_NewReader(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

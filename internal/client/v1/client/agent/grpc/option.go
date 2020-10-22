@@ -25,23 +25,21 @@ import (
 // Option is agentClient configure.
 type Option func(*agentClient)
 
-var (
-	defaultOptions = []Option{
-		WithAddr("127.0.0.1:8082"),
-		WithGRPCClientOption(
-			(&config.GRPCClient{
-				Addrs: []string{
-					"127.0.0.1:8082",
-				},
-				CallOption: &config.CallOption{
-					MaxRecvMsgSize: 100000000000,
-				},
-				DialOption: &config.DialOption{
-					Insecure: true,
-				},
-			}).Bind().Opts()...),
-	}
-)
+var defaultOptions = []Option{
+	WithAddr("127.0.0.1:8082"),
+	WithGRPCClientOption(
+		(&config.GRPCClient{
+			Addrs: []string{
+				"127.0.0.1:8082",
+			},
+			CallOption: &config.CallOption{
+				MaxRecvMsgSize: 100000000000,
+			},
+			DialOption: &config.DialOption{
+				Insecure: true,
+			},
+		}).Bind().Opts()...),
+}
 
 // WithAddr returns Option that sets addr.
 func WithAddr(addr string) Option {

@@ -120,7 +120,6 @@ func TestMockEncoder_Write(t *testing.T) {
 			if err := test.checkFunc(test.want, gotN, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -205,7 +204,6 @@ func TestMockEncoder_Close(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -304,7 +302,6 @@ func TestMockEncoder_ReadFrom(t *testing.T) {
 			if err := test.checkFunc(test.want, gotN, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -483,7 +480,6 @@ func TestMockDecoder_Read(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -574,10 +570,9 @@ func TestMockDecoder_WriteTo(t *testing.T) {
 			w := &bytes.Buffer{}
 
 			got, err := m.WriteTo(w)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := test.checkFunc(test.want, got, w.String(), err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -674,10 +669,9 @@ func TestMockZstd_NewWriter(t *testing.T) {
 			w := &bytes.Buffer{}
 
 			got, err := m.NewWriter(w, test.args.opts...)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := test.checkFunc(test.want, got, w.String(), err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -775,7 +769,6 @@ func TestMockZstd_NewReader(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

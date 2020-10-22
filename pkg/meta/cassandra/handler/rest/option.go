@@ -21,9 +21,7 @@ import "github.com/vdaas/vald/apis/grpc/v1/meta"
 
 type Option func(*handler)
 
-var (
-	defaultOpts = []Option{}
-)
+var defaultOpts = []Option{}
 
 func WithMeta(m meta.MetaServer) Option {
 	return func(h *handler) {

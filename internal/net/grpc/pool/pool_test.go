@@ -105,7 +105,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, gotC, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -256,7 +255,6 @@ func Test_pool_Connect(t *testing.T) {
 			if err := test.checkFunc(test.want, gotC, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -407,7 +405,6 @@ func Test_pool_load(t *testing.T) {
 			if err := test.checkFunc(test.want, gotPc, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -558,7 +555,6 @@ func Test_pool_connect(t *testing.T) {
 			if err := test.checkFunc(test.want, gotC, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -695,7 +691,6 @@ func Test_pool_Disconnect(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -849,7 +844,6 @@ func Test_pool_dial(t *testing.T) {
 			if err := test.checkFunc(test.want, gotConn, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -996,7 +990,6 @@ func Test_pool_IsHealthy(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1143,7 +1136,6 @@ func Test_pool_Do(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1284,7 +1276,6 @@ func Test_pool_Get(t *testing.T) {
 			if err := test.checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1435,7 +1426,6 @@ func Test_pool_get(t *testing.T) {
 			if err := test.checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1572,7 +1562,6 @@ func Test_pool_Len(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1709,7 +1698,6 @@ func Test_pool_Size(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1860,7 +1848,6 @@ func Test_pool_lookupIPAddr(t *testing.T) {
 			if err := test.checkFunc(test.want, gotIps, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -2014,7 +2001,6 @@ func Test_pool_Reconnect(t *testing.T) {
 			if err := test.checkFunc(test.want, gotC, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -2161,7 +2147,6 @@ func Test_pool_scanGRPCPort(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -2241,7 +2226,6 @@ func Test_isGRPCPort(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -2315,7 +2299,6 @@ func Test_isHealthy(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

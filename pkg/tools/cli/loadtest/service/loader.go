@@ -33,7 +33,7 @@ import (
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/config"
 )
 
-// Loader is representation of load test
+// Loader is representation of load test.
 type Loader interface {
 	Prepare(context.Context) error
 	Do(context.Context) <-chan error

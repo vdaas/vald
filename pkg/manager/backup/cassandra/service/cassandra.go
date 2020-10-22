@@ -33,9 +33,7 @@ const (
 	ipsColumn    = "ips"
 )
 
-var (
-	metaColumns = []string{uuidColumn, vectorColumn, metaColumn, ipsColumn}
-)
+var metaColumns = []string{uuidColumn, vectorColumn, metaColumn, ipsColumn}
 
 type Cassandra interface {
 	Connect(ctx context.Context) error

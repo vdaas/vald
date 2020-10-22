@@ -252,7 +252,6 @@ func (c *client) delete(ctx context.Context, pfx, pfxInv, key string) (val strin
 			return "", errors.Wrap(c.Set(ctx, key, val), err.Error())
 		}
 		return "", errors.Wrap(c.Set(ctx, val, key), err.Error())
-
 	}
 	return val, nil
 }

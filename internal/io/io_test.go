@@ -103,7 +103,6 @@ func TestNewReaderWithContext(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -183,7 +182,6 @@ func TestNewReadCloserWithContext(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -277,7 +275,6 @@ func Test_ctxReader_Read(t *testing.T) {
 			if err := test.checkFunc(test.want, gotN, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -357,7 +354,6 @@ func Test_ctxReader_Close(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -436,10 +432,9 @@ func TestNewWriterWithContext(t *testing.T) {
 			w := &bytes.Buffer{}
 
 			got, err := NewWriterWithContext(test.args.ctx, w)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := test.checkFunc(test.want, got, w.String(), err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -519,7 +514,6 @@ func TestNewWriteCloserWithContext(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -613,7 +607,6 @@ func Test_ctxWriter_Write(t *testing.T) {
 			if err := test.checkFunc(test.want, gotN, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -693,7 +686,6 @@ func Test_ctxWriter_Close(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

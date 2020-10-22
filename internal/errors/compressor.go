@@ -18,12 +18,12 @@
 package errors
 
 var (
-	// internal compressor
+	// internal compressor.
 	ErrInvalidCompressionLevel = func(level int) error {
 		return Errorf("invalid compression level: %d", level)
 	}
 
-	// Compressor
+	// Compressor.
 	ErrCompressorNameNotFound = func(name string) error {
 		return Errorf("compressor %s not found", name)
 	}

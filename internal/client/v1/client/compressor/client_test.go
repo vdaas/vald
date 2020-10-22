@@ -101,7 +101,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, gotC, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -196,7 +195,6 @@ func Test_client_Start(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -294,7 +292,6 @@ func Test_client_GetVector(t *testing.T) {
 			if err := test.checkFunc(test.want, gotVec, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -392,7 +389,6 @@ func Test_client_GetLocation(t *testing.T) {
 			if err := test.checkFunc(test.want, gotIpList, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -486,7 +482,6 @@ func Test_client_Register(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -580,7 +575,6 @@ func Test_client_RegisterMultiple(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -674,7 +668,6 @@ func Test_client_Remove(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -768,7 +761,6 @@ func Test_client_RemoveMultiple(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -862,7 +854,6 @@ func Test_client_RegisterIPs(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -956,7 +947,6 @@ func Test_client_RemoveIPs(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

@@ -28,20 +28,18 @@ import (
 
 type Option func(*server)
 
-var (
-	defaultOpts = []Option{
-		WithName(func() string {
-			name, err := os.Hostname()
-			if err != nil {
-				log.Warn(err)
-			}
-			return name
-		}()),
-		WithIP(net.LoadLocalIP()),
-		WithStreamConcurrency(20),
-		WithErrGroup(errgroup.Get()),
-	}
-)
+var defaultOpts = []Option{
+	WithName(func() string {
+		name, err := os.Hostname()
+		if err != nil {
+			log.Warn(err)
+		}
+		return name
+	}()),
+	WithIP(net.LoadLocalIP()),
+	WithStreamConcurrency(20),
+	WithErrGroup(errgroup.Get()),
+}
 
 func WithIP(ip string) Option {
 	return func(s *server) {

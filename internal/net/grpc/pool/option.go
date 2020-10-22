@@ -24,16 +24,14 @@ import (
 
 type Option func(*pool)
 
-var (
-	defaultOpts = []Option{
-		WithSize(3),
-		WithStartPort(80),
-		WithEndPort(65535),
-		WithDialTimeout("1s"),
-		WithOldConnCloseDuration("1s"),
-		WithResolveDNS(true),
-	}
-)
+var defaultOpts = []Option{
+	WithSize(3),
+	WithStartPort(80),
+	WithEndPort(65535),
+	WithDialTimeout("1s"),
+	WithOldConnCloseDuration("1s"),
+	WithResolveDNS(true),
+}
 
 func WithAddr(addr string) Option {
 	return func(p *pool) {

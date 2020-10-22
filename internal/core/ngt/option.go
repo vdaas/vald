@@ -80,7 +80,6 @@ func WithBulkInsertChunkSize(size int) Option {
 
 func WithDimension(size int) Option {
 	return func(n *ngt) error {
-
 		if size > dimensionLimit || size < minimumDimensionSize {
 			return errors.ErrInvalidDimensionSize(size, dimensionLimit)
 		}

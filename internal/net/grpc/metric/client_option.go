@@ -19,6 +19,4 @@ package metric
 
 type ClientOption func(*ClientHandler)
 
-var (
-	clientDefaultOpts = []ClientOption{}
-)
+var clientDefaultOpts = []ClientOption{}

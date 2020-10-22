@@ -27,13 +27,11 @@ import (
 
 type Option func(m *meta) error
 
-var (
-	defaultOpts = []Option{
-		WithMetaCacheEnabled(true),
-		WithMetaCacheExpireDuration("30m"),
-		WithMetaCacheExpiredCheckDuration("2m"),
-	}
-)
+var defaultOpts = []Option{
+	WithMetaCacheEnabled(true),
+	WithMetaCacheExpireDuration("30m"),
+	WithMetaCacheExpiredCheckDuration("2m"),
+}
 
 func WithMetaAddr(addr string) Option {
 	return func(m *meta) error {

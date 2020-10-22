@@ -24,11 +24,9 @@ import (
 
 type GWOption func(g *gateway) error
 
-var (
-	defaultGWOpts = []GWOption{
-		WithErrGroup(errgroup.Get()),
-	}
-)
+var defaultGWOpts = []GWOption{
+	WithErrGroup(errgroup.Get()),
+}
 
 func WithDiscoverer(c discoverer.Client) GWOption {
 	return func(g *gateway) error {

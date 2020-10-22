@@ -17,7 +17,7 @@
 // Package ngt provides implementation of Go API for https://github.com/yahoojapan/NGT
 package ngt
 
-// SearchResult is struct for comfortable use in Go
+// SearchResult is struct for comfortable use in Go.
 type SearchResult struct {
 	ID       uint32
 	Distance float32

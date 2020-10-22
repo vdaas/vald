@@ -21,9 +21,7 @@ import "github.com/vdaas/vald/internal/net/http/middleware"
 
 type Option func(*router)
 
-var (
-	defaultOpts = []Option{}
-)
+var defaultOpts = []Option{}
 
 func WithMiddleware(mw middleware.Wrapper) Option {
 	return func(r *router) {

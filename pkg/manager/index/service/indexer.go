@@ -232,6 +232,7 @@ func (idx *index) IsIndexing() bool {
 func (idx *index) NumberOfUUIDs() uint32 {
 	return atomic.LoadUint32(&idx.uuidsCount)
 }
+
 func (idx *index) NumberOfUncommittedUUIDs() uint32 {
 	return atomic.LoadUint32(&idx.uncommittedUUIDsCount)
 }

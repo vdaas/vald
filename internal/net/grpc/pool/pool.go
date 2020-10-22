@@ -33,8 +33,10 @@ import (
 	"google.golang.org/grpc/connectivity"
 )
 
-type ClientConn = grpc.ClientConn
-type DialOption = grpc.DialOption
+type (
+	ClientConn = grpc.ClientConn
+	DialOption = grpc.DialOption
+)
 
 type Conn interface {
 	Connect(context.Context) (Conn, error)
@@ -145,7 +147,7 @@ func (p *pool) Connect(ctx context.Context) (c Conn, err error) {
 				pc, ok = p.load(i)
 			)
 			if ok && pc != nil && pc.addr == addr && isHealthy(pc.conn) {
-				// TODO maybe we should check neigbour pool slice if new addrs come.
+				// TODO maybe we should check neighbour pool slice if new addrs come.
 				continue
 			}
 			log.Debugf("establishing balanced connection to %s", addr)

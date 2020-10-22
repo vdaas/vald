@@ -20,17 +20,17 @@ package errors
 import "time"
 
 var (
-	// tcp
+	// tcp.
 
-	// ErrFailedInitDialer defines the init dialer error
+	// ErrFailedInitDialer defines the init dialer error.
 	ErrFailedInitDialer = New("failed to init dialer")
-	// ErrInvalidDNSConfig defines the invalid DNS config error
+	// ErrInvalidDNSConfig defines the invalid DNS config error.
 	ErrInvalidDNSConfig = func(dnsRefreshDur, dnsCacheExp time.Duration) error {
 		return Errorf("dnsRefreshDuration  > dnsCacheExp, %s, %s", dnsRefreshDur, dnsCacheExp)
 	}
 
-	// net
+	// net.
 
-	// ErrNoPortAvailiable defines no port available error
+	// ErrNoPortAvailiable defines no port available error.
 	ErrNoPortAvailable = New("no port available")
 )

@@ -26,12 +26,10 @@ import (
 
 type Option func(d *discoverer) error
 
-var (
-	defaultOpts = []Option{
-		WithDiscoverDuration("2s"),
-		WithErrGroup(errgroup.Get()),
-	}
-)
+var defaultOpts = []Option{
+	WithDiscoverDuration("2s"),
+	WithErrGroup(errgroup.Get()),
+}
 
 func WithName(name string) Option {
 	return func(d *discoverer) error {

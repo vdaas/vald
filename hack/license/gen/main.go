@@ -72,6 +72,7 @@ func main() {
 		}
 	}
 }
+
 func dirwalk(dir string) []string {
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
@@ -146,6 +147,7 @@ func dirwalk(dir string) []string {
 	}
 	return paths
 }
+
 func readAndRewrite(path string) error {
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_SYNC, os.ModePerm)
 	if err != nil {
@@ -261,9 +263,8 @@ func readAndRewrite(path string) error {
 	return nil
 }
 
-var (
-	license = template.Must(template.New("LICENSE").Parse(
-		`                                 Apache License
+var license = template.Must(template.New("LICENSE").Parse(
+	`                                 Apache License
                            Version 2.0, January 2004
                         https://www.apache.org/licenses/
 
@@ -464,4 +465,3 @@ var (
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.`))
-)

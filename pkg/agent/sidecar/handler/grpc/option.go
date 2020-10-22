@@ -21,9 +21,7 @@ import "github.com/vdaas/vald/pkg/agent/sidecar/service/observer"
 
 type Option func(*server)
 
-var (
-	defaultOpts = []Option{}
-)
+var defaultOpts = []Option{}
 
 func WithStorageObserver(so observer.StorageObserver) Option {
 	return func(s *server) {

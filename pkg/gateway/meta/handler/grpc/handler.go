@@ -582,7 +582,6 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 					Filters:              filters,
 				},
 			})
-
 		}
 	}
 
@@ -610,7 +609,6 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 	}
 	if len(insertReqs) <= 0 {
 		eg.Go(safety.RecoverFunc(func() error {
-
 			ectx, span := trace.StartSpan(ectx, apiName+".MultiUpsert/Go-MultiInsert")
 			defer func() {
 				if span != nil {

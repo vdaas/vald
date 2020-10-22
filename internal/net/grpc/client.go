@@ -33,11 +33,13 @@ import (
 	"google.golang.org/grpc"
 )
 
-type Server = grpc.Server
-type ServerOption = grpc.ServerOption
-type CallOption = grpc.CallOption
-type DialOption = pool.DialOption
-type ClientConn = pool.ClientConn
+type (
+	Server       = grpc.Server
+	ServerOption = grpc.ServerOption
+	CallOption   = grpc.CallOption
+	DialOption   = pool.DialOption
+	ClientConn   = pool.ClientConn
+)
 
 type Client interface {
 	StartConnectionMonitor(ctx context.Context) (<-chan error, error)

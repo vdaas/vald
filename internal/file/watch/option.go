@@ -24,9 +24,7 @@ import (
 
 type Option func(w *watch) error
 
-var (
-	defaultOpts = []Option{}
-)
+var defaultOpts = []Option{}
 
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(w *watch) error {
@@ -98,6 +96,7 @@ func WithOnDelete(f func(ctx context.Context, name string) error) Option {
 		return nil
 	}
 }
+
 func WithOnWrite(f func(ctx context.Context, name string) error) Option {
 	return func(w *watch) error {
 		if f != nil {

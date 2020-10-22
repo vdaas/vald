@@ -160,7 +160,6 @@ func (r *reader) getObject(ctx context.Context, offset, length int64) (io.Reader
 			),
 		},
 	)
-
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {

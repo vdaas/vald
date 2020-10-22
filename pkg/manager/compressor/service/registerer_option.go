@@ -25,12 +25,10 @@ import (
 
 type RegistererOption func(r *registerer) error
 
-var (
-	defaultRegistererOpts = []RegistererOption{
-		WithRegistererWorker(),
-		WithRegistererErrGroup(errgroup.Get()),
-	}
-)
+var defaultRegistererOpts = []RegistererOption{
+	WithRegistererWorker(),
+	WithRegistererErrGroup(errgroup.Get()),
+}
 
 func WithRegistererWorker(opts ...worker.WorkerOption) RegistererOption {
 	return func(r *registerer) error {

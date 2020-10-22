@@ -39,26 +39,24 @@ const (
 )
 
 type (
-	// Conn is an alias of net.Conn
+	// Conn is an alias of net.Conn.
 	Conn = net.Conn
 
-	// Dialer is an alias of net.Dialer
+	// Dialer is an alias of net.Dialer.
 	Dialer = net.Dialer
 
-	// ListenConfig is an alias of net.ListenConfig
+	// ListenConfig is an alias of net.ListenConfig.
 	ListenConfig = net.ListenConfig
 
-	// Listener is an alias of net.Listener
+	// Listener is an alias of net.Listener.
 	Listener = net.Listener
 
-	// Resolver is an alias of net.Resolver
+	// Resolver is an alias of net.Resolver.
 	Resolver = net.Resolver
 )
 
-var (
-	// DefaultResolver is an alias of net.DefaultResolver
-	DefaultResolver = net.DefaultResolver
-)
+// DefaultResolver is an alias of net.DefaultResolver
+var DefaultResolver = net.DefaultResolver
 
 // Listen is a wrapper function of the net.Listen function.
 func Listen(network, address string) (Listener, error) {

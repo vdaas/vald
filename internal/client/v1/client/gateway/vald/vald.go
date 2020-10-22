@@ -155,7 +155,6 @@ func (c *client) StreamInsert(ctx context.Context, opts ...grpc.CallOption) (res
 		return nil, err
 	}
 	return res, nil
-
 }
 
 func (c *client) MultiInsert(ctx context.Context, in *payload.Insert_MultiRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
@@ -195,7 +194,6 @@ func (c *client) StreamUpdate(ctx context.Context, opts ...grpc.CallOption) (res
 		return nil, err
 	}
 	return res, nil
-
 }
 
 func (c *client) MultiUpdate(ctx context.Context, in *payload.Update_MultiRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
@@ -235,7 +233,6 @@ func (c *client) StreamUpsert(ctx context.Context, opts ...grpc.CallOption) (res
 		return nil, err
 	}
 	return res, nil
-
 }
 
 func (c *client) MultiUpsert(ctx context.Context, in *payload.Upsert_MultiRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
@@ -275,7 +272,6 @@ func (c *client) StreamRemove(ctx context.Context, opts ...grpc.CallOption) (res
 		return nil, err
 	}
 	return res, nil
-
 }
 
 func (c *client) MultiRemove(ctx context.Context, in *payload.Remove_MultiRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
@@ -315,5 +311,4 @@ func (c *client) StreamGetObject(ctx context.Context, opts ...grpc.CallOption) (
 		return nil, err
 	}
 	return res, nil
-
 }

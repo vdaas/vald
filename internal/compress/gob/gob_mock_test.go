@@ -107,7 +107,6 @@ func TestMockEncoder_Encode(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -194,7 +193,6 @@ func TestMockDecoder_Decode(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -280,7 +278,6 @@ func TestMockTranscoder_NewEncoder(t *testing.T) {
 			if err := test.checkFunc(test.want, got, w.String()); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -371,7 +368,6 @@ func TestMockTranscoder_NewDecoder(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

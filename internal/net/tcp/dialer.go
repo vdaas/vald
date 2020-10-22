@@ -77,12 +77,12 @@ func (d *dialerCache) IP() string {
 	return d.ips[atomic.AddUint32(&d.cnt, 1)%d.Len()]
 }
 
-// Len returns the length of cached IP addresses
+// Len returns the length of cached IP addresses.
 func (d *dialerCache) Len() uint32 {
 	return uint32(len(d.ips))
 }
 
-// NewDialer initialize and return the dialer instance
+// NewDialer initialize and return the dialer instance.
 func NewDialer(opts ...DialerOption) (der Dialer, err error) {
 	d := new(dialer)
 	for _, opt := range append(defaultDialerOptions, opts...) {
@@ -122,7 +122,7 @@ func NewDialer(opts ...DialerOption) (der Dialer, err error) {
 	return d, nil
 }
 
-// GetDialer returns a function to return the connection
+// GetDialer returns a function to return the connection.
 func (d *dialer) GetDialer() func(ctx context.Context, network, addr string) (net.Conn, error) {
 	return d.dialer
 }
@@ -149,7 +149,7 @@ func (d *dialer) lookup(ctx context.Context, host string) (*dialerCache, error) 
 	return dc, nil
 }
 
-// StartDialerCache starts the dialer cache to expire the cache automatically
+// StartDialerCache starts the dialer cache to expire the cache automatically.
 func (d *dialer) StartDialerCache(ctx context.Context) {
 	if d.dnsCache && d.cache != nil {
 		d.cache.Start(ctx)

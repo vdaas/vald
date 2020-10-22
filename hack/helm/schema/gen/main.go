@@ -33,9 +33,7 @@ const (
 	prefix = "# @schema"
 )
 
-var (
-	aliases map[string]Schema
-)
+var aliases map[string]Schema
 
 type SchemaBase struct {
 	// for object type

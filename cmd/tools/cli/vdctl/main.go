@@ -17,5 +17,4 @@
 package main
 
 func main() {
-
 }

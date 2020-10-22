@@ -27,11 +27,9 @@ import (
 // Option represents the functional option for client.
 type Option func(c *client) error
 
-var (
-	defaultOpts = []Option{
-		WithErrGroup(errgroup.Get()),
-	}
-)
+var defaultOpts = []Option{
+	WithErrGroup(errgroup.Get()),
+}
 
 // WithErrGroup returns the option to set the eg.
 func WithErrGroup(eg errgroup.Group) Option {

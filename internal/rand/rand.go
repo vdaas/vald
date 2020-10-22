@@ -28,13 +28,11 @@ type rand struct {
 	x *uint32
 }
 
-var (
-	pool = sync.Pool{
-		New: func() interface{} {
-			return new(rand).init()
-		},
-	}
-)
+var pool = sync.Pool{
+	New: func() interface{} {
+		return new(rand).init()
+	},
+}
 
 func Uint32() (x uint32) {
 	r := pool.Get().(*rand)

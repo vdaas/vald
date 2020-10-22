@@ -93,7 +93,6 @@ func TestErrBlobNoSuchBucket_Error(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -164,7 +163,6 @@ func TestIsErrBlobNoSuchBucket(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -238,7 +236,6 @@ func TestErrBlobNoSuchKey_Error(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -309,7 +306,6 @@ func TestIsErrBlobNoSuchKey(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -385,7 +381,6 @@ func TestErrBlobNoSuchBucket_Unwrap(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -461,7 +456,6 @@ func TestErrBlobNoSuchKey_Unwrap(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

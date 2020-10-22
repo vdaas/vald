@@ -70,6 +70,7 @@ func (s *server) Rebalance(ctx context.Context, req *payload.Replication_Rebalan
 	}()
 	return new(payload.Empty), nil
 }
+
 func (s *server) AgentInfo(ctx context.Context, req *payload.Empty) (*payload.Replication_Agents, error) {
 	// TODO implement this later
 	ctx, span := trace.StartSpan(ctx, "vald/manager-replication-agent.AgentInfo")

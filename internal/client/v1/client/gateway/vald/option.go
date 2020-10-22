@@ -21,9 +21,7 @@ import "github.com/vdaas/vald/internal/net/grpc"
 
 type Option func(*client)
 
-var (
-	defaultOpts = []Option{}
-)
+var defaultOpts = []Option{}
 
 func WithAddr(addr string) Option {
 	return func(c *client) {

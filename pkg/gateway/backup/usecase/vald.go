@@ -48,9 +48,7 @@ type run struct {
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
 
-	var (
-		backup service.Backup
-	)
+	var backup service.Backup
 
 	if addrs := cfg.Backup.Client.Addrs; len(addrs) == 0 {
 		return nil, errors.ErrInvalidBackupConfig

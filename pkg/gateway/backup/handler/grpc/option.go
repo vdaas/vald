@@ -25,12 +25,10 @@ import (
 
 type Option func(*server)
 
-var (
-	defaultOpts = []Option{
-		WithErrGroup(errgroup.Get()),
-		WithStreamConcurrency(20),
-	}
-)
+var defaultOpts = []Option{
+	WithErrGroup(errgroup.Get()),
+	WithStreamConcurrency(20),
+}
 
 func WithBackup(b service.Backup) Option {
 	return func(s *server) {

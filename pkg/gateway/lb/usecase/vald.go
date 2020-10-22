@@ -47,9 +47,7 @@ type run struct {
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
 
-	var (
-		gateway service.Gateway
-	)
+	var gateway service.Gateway
 
 	discovererClientOptions := append(
 		cfg.Gateway.Discoverer.Client.Opts(),

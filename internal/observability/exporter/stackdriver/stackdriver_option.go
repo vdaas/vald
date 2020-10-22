@@ -28,20 +28,18 @@ import (
 
 type Option func(e *exp) error
 
-var (
-	defaultOpts = []Option{
-		WithOnErrorFunc(func(err error) {
-			if err != nil {
-				log.Warnf("Error when uploading stats or spans to Stackdriver: %v", err)
-			}
-		}),
-		WithMonitoredResource(monitoredresource.Autodetect()),
-		WithMetricPrefix("vald.vdaas.org/"),
-		WithTimeout("5s"),
-		WithReportingInterval("0"),
-		WithNumberOfWorkers(1),
-	}
-)
+var defaultOpts = []Option{
+	WithOnErrorFunc(func(err error) {
+		if err != nil {
+			log.Warnf("Error when uploading stats or spans to Stackdriver: %v", err)
+		}
+	}),
+	WithMonitoredResource(monitoredresource.Autodetect()),
+	WithMetricPrefix("vald.vdaas.org/"),
+	WithTimeout("5s"),
+	WithReportingInterval("0"),
+	WithNumberOfWorkers(1),
+}
 
 func WithMonitoring(enabled bool) Option {
 	return func(e *exp) error {

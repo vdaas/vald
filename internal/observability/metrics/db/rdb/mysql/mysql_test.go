@@ -91,7 +91,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, gotE, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -197,7 +196,6 @@ func Test_mysqlMetrics_Measurement(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -303,7 +301,6 @@ func Test_mysqlMetrics_MeasurementWithTags(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -395,7 +392,6 @@ func Test_mysqlMetrics_View(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -503,7 +499,6 @@ func Test_mysqlMetrics_SpanStart(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

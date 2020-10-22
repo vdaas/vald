@@ -21,15 +21,13 @@ import (
 	"github.com/vdaas/vald/internal/compress/zstd"
 )
 
-// ZstdOption represents the functional option for zstdCompressor
+// ZstdOption represents the functional option for zstdCompressor.
 type ZstdOption func(c *zstdCompressor) error
 
-var (
-	defaultZstdOpts = []ZstdOption{
-		WithZstdGob(),
-		WithZstdCompressionLevel(3),
-	}
-)
+var defaultZstdOpts = []ZstdOption{
+	WithZstdGob(),
+	WithZstdCompressionLevel(3),
+}
 
 // WithZstdGob represents the option to set the GobOption to initialize Gob.
 func WithZstdGob(opts ...GobOption) ZstdOption {

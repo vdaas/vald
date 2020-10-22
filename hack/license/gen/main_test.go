@@ -21,7 +21,6 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
-
 	"go.uber.org/goleak"
 )
 
@@ -147,7 +146,6 @@ func Test_dirwalk(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -218,7 +216,6 @@ func Test_readAndRewrite(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

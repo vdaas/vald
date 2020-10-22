@@ -109,7 +109,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, gotNn, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -296,7 +295,6 @@ func Test_ngt_initNGT(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -473,7 +471,6 @@ func Test_ngt_loadKVS(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -660,7 +657,6 @@ func Test_ngt_Start(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -860,7 +856,6 @@ func Test_ngt_Search(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1060,7 +1055,6 @@ func Test_ngt_SearchByID(t *testing.T) {
 			if err := test.checkFunc(test.want, gotDst, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1250,7 +1244,6 @@ func Test_ngt_Insert(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1446,7 +1439,6 @@ func Test_ngt_insert(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1633,7 +1625,6 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1823,7 +1814,6 @@ func Test_ngt_Update(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -2010,7 +2000,6 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -2197,7 +2186,6 @@ func Test_ngt_Delete(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -2387,7 +2375,6 @@ func Test_ngt_delete(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -2574,7 +2561,6 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -2765,7 +2751,6 @@ func Test_ngt_GetObject(t *testing.T) {
 			if err := test.checkFunc(test.want, gotVec, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -2955,7 +2940,6 @@ func Test_ngt_CreateIndex(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -3142,7 +3126,6 @@ func Test_ngt_SaveIndex(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -3329,7 +3312,6 @@ func Test_ngt_saveIndex(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -3519,7 +3501,6 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -3710,7 +3691,6 @@ func Test_ngt_Exists(t *testing.T) {
 			if err := test.checkFunc(test.want, gotOid, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -3901,7 +3881,6 @@ func Test_ngt_insertCache(t *testing.T) {
 			if err := test.checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -4078,7 +4057,6 @@ func Test_ngt_IsSaving(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -4255,7 +4233,6 @@ func Test_ngt_IsIndexing(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -4442,7 +4419,6 @@ func Test_ngt_UUIDs(t *testing.T) {
 			if err := test.checkFunc(test.want, gotUuids); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -4619,7 +4595,6 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 			if err := test.checkFunc(test.want, gotUuids); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -4796,7 +4771,6 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -4973,7 +4947,6 @@ func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -5322,7 +5295,6 @@ func Test_ngt_Len(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -5499,7 +5471,6 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -5676,7 +5647,6 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -5863,7 +5833,6 @@ func Test_ngt_Close(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

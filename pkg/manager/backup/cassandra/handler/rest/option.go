@@ -21,9 +21,7 @@ import "github.com/vdaas/vald/apis/grpc/v1/manager/backup"
 
 type Option func(*handler)
 
-var (
-	defaultOpts = []Option{}
-)
+var defaultOpts = []Option{}
 
 func WithBackup(b backup.BackupServer) Option {
 	return func(h *handler) {

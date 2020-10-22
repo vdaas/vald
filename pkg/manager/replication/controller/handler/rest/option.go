@@ -23,9 +23,7 @@ import (
 
 type Option func(*handler)
 
-var (
-	defaultOpts = []Option{}
-)
+var defaultOpts = []Option{}
 
 func WithReplicator(rpl controller.ReplicationControllerServer) Option {
 	return func(h *handler) {

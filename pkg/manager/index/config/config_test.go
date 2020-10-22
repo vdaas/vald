@@ -98,7 +98,6 @@ func TestNewConfig(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCfg, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

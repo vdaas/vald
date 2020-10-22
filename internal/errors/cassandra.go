@@ -19,7 +19,7 @@ package errors
 
 var (
 
-	// Cassandra
+	// Cassandra.
 	ErrCassandraInvalidConsistencyType = func(consistency string) error {
 		return Errorf("consistetncy type %q is not defined", consistency)
 	}

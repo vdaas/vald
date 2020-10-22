@@ -27,13 +27,11 @@ import (
 // Option represents the functional option for cache.
 type Option func(*cache)
 
-var (
-	defaultOpts = []Option{
-		WithType(cacher.GACHE.String()),
-		WithExpireDuration("30m"),
-		WithExpireCheckDuration("5m"),
-	}
-)
+var defaultOpts = []Option{
+	WithType(cacher.GACHE.String()),
+	WithExpireDuration("30m"),
+	WithExpireCheckDuration("5m"),
+}
 
 // WithExpiredHook returns Option after set expiredHook when f is not nil.
 func WithExpiredHook(f func(context.Context, string)) Option {

@@ -25,21 +25,19 @@ import (
 
 type Option func(*option)
 
-var (
-	defaultOptions = []Option{
-		WithLevel(level.DEBUG.String()),
-		WithLogger(
-			glg.New(
-				glg.WithRetry(
-					retry.New(
-						retry.WithError(Error),
-						retry.WithWarn(Warn),
-					),
+var defaultOptions = []Option{
+	WithLevel(level.DEBUG.String()),
+	WithLogger(
+		glg.New(
+			glg.WithRetry(
+				retry.New(
+					retry.WithError(Error),
+					retry.WithWarn(Warn),
 				),
 			),
 		),
-	}
-)
+	),
+}
 
 type option struct {
 	logType logger.Type

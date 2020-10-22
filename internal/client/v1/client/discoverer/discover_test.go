@@ -103,7 +103,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, gotD, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -254,7 +253,6 @@ func Test_client_Start(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -401,7 +399,6 @@ func Test_client_GetAddrs(t *testing.T) {
 			if err := test.checkFunc(test.want, gotAddrs); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -538,7 +535,6 @@ func Test_client_GetClient(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -688,7 +684,6 @@ func Test_client_connect(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -838,7 +833,6 @@ func Test_client_disconnect(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -992,7 +986,6 @@ func Test_client_dnsDiscovery(t *testing.T) {
 			if err := test.checkFunc(test.want, gotAddrs, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1142,7 +1135,6 @@ func Test_client_discover(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

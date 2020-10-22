@@ -17,6 +17,4 @@
 // Package errors provides benchmark error
 package errors
 
-var (
-	ErrInvalidCoreMode = New("invalid core mode")
-)
+var ErrInvalidCoreMode = New("invalid core mode")

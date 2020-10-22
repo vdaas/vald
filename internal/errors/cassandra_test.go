@@ -92,7 +92,6 @@ func TestErrCassandraNotFoundIdentity_Error(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -162,7 +161,6 @@ func TestIsErrCassandraNotFound(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -235,7 +233,6 @@ func TestErrCassandraUnavailableIdentity_Error(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -305,7 +302,6 @@ func TestIsErrCassandraUnavailable(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -381,7 +377,6 @@ func TestErrCassandraNotFoundIdentity_Unwrap(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -457,7 +452,6 @@ func TestErrCassandraUnavailableIdentity_Unwrap(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

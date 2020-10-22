@@ -21,9 +21,7 @@ import "github.com/vdaas/vald/internal/net/grpc"
 
 type BackupOption func(b *backup) error
 
-var (
-	defaultBackupOpts = []BackupOption{}
-)
+var defaultBackupOpts = []BackupOption{}
 
 func WithBackupAddr(addr string) BackupOption {
 	return func(b *backup) error {

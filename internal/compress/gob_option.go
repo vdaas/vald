@@ -19,6 +19,4 @@ package compress
 
 type GobOption func(c *gobCompressor) error
 
-var (
-	defaultGobOpts = []GobOption{}
-)
+var defaultGobOpts = []GobOption{}

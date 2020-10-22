@@ -53,9 +53,7 @@ type run struct {
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
 
-	var (
-		b service.Backup
-	)
+	var b service.Backup
 
 	if addrs := cfg.BackupManager.Client.Addrs; len(addrs) == 0 {
 		return nil, errors.ErrInvalidBackupConfig
@@ -206,7 +204,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		}),
 		// TODO add GraphQL handler
 	)
-
 	if err != nil {
 		return nil, err
 	}

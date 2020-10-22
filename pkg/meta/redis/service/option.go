@@ -23,13 +23,11 @@ import (
 
 type Option func(*client) error
 
-var (
-	defaultOpts = []Option{
-		WithKVPrefix("kv"),
-		WithVKPrefix("vk"),
-		WithPrefixDelimiter("-"),
-	}
-)
+var defaultOpts = []Option{
+	WithKVPrefix("kv"),
+	WithVKPrefix("vk"),
+	WithPrefixDelimiter("-"),
+}
 
 func WithRedisClient(r redis.Redis) Option {
 	return func(c *client) error {

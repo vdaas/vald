@@ -25,13 +25,11 @@ import (
 // QueueOption represents the functional option for queue.
 type QueueOption func(q *queue) error
 
-var (
-	defaultQueueOpts = []QueueOption{
-		WithQueueBuffer(10),
-		WithQueueErrGroup(errgroup.Get()),
-		WithQueueCheckDuration("200ms"),
-	}
-)
+var defaultQueueOpts = []QueueOption{
+	WithQueueBuffer(10),
+	WithQueueErrGroup(errgroup.Get()),
+	WithQueueCheckDuration("200ms"),
+}
 
 // WithQueueBuffer returns the option to set the buffer for queue.
 func WithQueueBuffer(buffer int) QueueOption {

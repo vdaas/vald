@@ -27,16 +27,14 @@ import (
 
 type Option func(i *index) error
 
-var (
-	defaultOpts = []Option{
-		WithErrGroup(errgroup.Get()),
-		WithIndexingConcurrency(1),
-		WithIndexingDuration("1m"),
-		WithIndexingDurationLimit("30m"),
-		WithMinUncommitted(100),
-		WithCreationPoolSize(10000),
-	}
-)
+var defaultOpts = []Option{
+	WithErrGroup(errgroup.Get()),
+	WithIndexingConcurrency(1),
+	WithIndexingDuration("1m"),
+	WithIndexingDurationLimit("30m"),
+	WithMinUncommitted(100),
+	WithCreationPoolSize(10000),
+}
 
 func WithIndexingConcurrency(c int) Option {
 	return func(idx *index) error {

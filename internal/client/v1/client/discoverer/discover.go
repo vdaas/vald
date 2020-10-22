@@ -292,7 +292,6 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 			}
 		}
 		return nil, nil
-
 	}); err != nil {
 		log.Warn("failed to discover addrs from discoverer API, trying to discover from dns...\t" + err.Error())
 		connected, err = c.dnsDiscovery(ctx, ech)

@@ -81,13 +81,13 @@ func (mm *mysqlMetrics) MeasurementWithTags(ctx context.Context) ([]metrics.Meas
 
 func (mm *mysqlMetrics) View() []*metrics.View {
 	return []*metrics.View{
-		&metrics.View{
+		{
 			Name:        "db_rdb_mysql_completed_query_total",
 			Description: mm.queryTotal.Description(),
 			Measure:     &mm.queryTotal,
 			Aggregation: metrics.Count(),
 		},
-		&metrics.View{
+		{
 			Name:        "db_rdb_mysql_query_latency",
 			Description: mm.queryLatency.Description(),
 			Measure:     &mm.queryLatency,

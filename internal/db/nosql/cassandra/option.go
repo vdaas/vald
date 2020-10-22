@@ -34,38 +34,36 @@ import (
 // https://pkg.go.dev/github.com/gocql/gocql?tab=doc#ClusterConfig
 type Option func(*client) error
 
-var (
-	defaultOpts = []Option{
-		WithCQLVersion("3.0.0"),
-		WithConnectTimeout("600ms"),
-		WithConsistency(cQuorumKey),
-		WithDCAwareRouting(false),
-		WithDefaultIdempotence(false),
-		WithDefaultTimestamp(true),
-		WithDisableInitialHostLookup(false),
-		WithDisableNodeStatusEvents(false),
-		WithDisableSkipMetadata(false),
-		WithDisableTopologyEvents(false),
-		WithEnableHostVerification(false),
-		WithIgnorePeerAddr(false),
-		WithMaxPreparedStmts(1000),
-		WithMaxRoutingKeyInfo(1000),
-		WithMaxWaitSchemaAgreement("1m"),
-		WithNonLocalReplicasFallback(false),
-		WithNumConns(2),
-		WithPageSize(5000),
-		WithPort(9042),
-		WithProtoVersion(0),
-		WithReconnectInterval("1m"),
-		WithSerialConsistency(scLocalSerialKey),
-		WithShuffleReplicas(false),
-		WithTimeout("600ms"),
-		WithTokenAwareHostPolicy(true),
-		WithWriteCoalesceWaitTime("200µs"),
-	}
-)
+var defaultOpts = []Option{
+	WithCQLVersion("3.0.0"),
+	WithConnectTimeout("600ms"),
+	WithConsistency(cQuorumKey),
+	WithDCAwareRouting(false),
+	WithDefaultIdempotence(false),
+	WithDefaultTimestamp(true),
+	WithDisableInitialHostLookup(false),
+	WithDisableNodeStatusEvents(false),
+	WithDisableSkipMetadata(false),
+	WithDisableTopologyEvents(false),
+	WithEnableHostVerification(false),
+	WithIgnorePeerAddr(false),
+	WithMaxPreparedStmts(1000),
+	WithMaxRoutingKeyInfo(1000),
+	WithMaxWaitSchemaAgreement("1m"),
+	WithNonLocalReplicasFallback(false),
+	WithNumConns(2),
+	WithPageSize(5000),
+	WithPort(9042),
+	WithProtoVersion(0),
+	WithReconnectInterval("1m"),
+	WithSerialConsistency(scLocalSerialKey),
+	WithShuffleReplicas(false),
+	WithTimeout("600ms"),
+	WithTokenAwareHostPolicy(true),
+	WithWriteCoalesceWaitTime("200µs"),
+}
 
-// WithHosts returns the option to set the hosts
+// WithHosts returns the option to set the hosts.
 func WithHosts(hosts ...string) Option {
 	return func(c *client) error {
 		if len(hosts) == 0 {
@@ -80,7 +78,7 @@ func WithHosts(hosts ...string) Option {
 	}
 }
 
-// WithDialer returns the option to set the dialer
+// WithDialer returns the option to set the dialer.
 func WithDialer(der gocql.Dialer) Option {
 	return func(c *client) error {
 		if der == nil {
@@ -91,7 +89,7 @@ func WithDialer(der gocql.Dialer) Option {
 	}
 }
 
-// WithCQLVersion returns the option to set the CQL version
+// WithCQLVersion returns the option to set the CQL version.
 func WithCQLVersion(version string) Option {
 	return func(c *client) error {
 		if len(version) == 0 {
@@ -102,7 +100,7 @@ func WithCQLVersion(version string) Option {
 	}
 }
 
-// WithProtoVersion returns the option to set the proto version
+// WithProtoVersion returns the option to set the proto version.
 func WithProtoVersion(version int) Option {
 	return func(c *client) error {
 		if version < 0 {
@@ -113,7 +111,7 @@ func WithProtoVersion(version int) Option {
 	}
 }
 
-// WithTimeout returns the option to set the cassandra connect timeout time
+// WithTimeout returns the option to set the cassandra connect timeout time.
 func WithTimeout(dur string) Option {
 	return func(c *client) error {
 		if len(dur) == 0 {
@@ -128,7 +126,7 @@ func WithTimeout(dur string) Option {
 	}
 }
 
-// WithConnectTimeout returns the option to set the cassandra initial connection timeout
+// WithConnectTimeout returns the option to set the cassandra initial connection timeout.
 func WithConnectTimeout(dur string) Option {
 	return func(c *client) error {
 		if len(dur) == 0 {
@@ -144,7 +142,7 @@ func WithConnectTimeout(dur string) Option {
 	}
 }
 
-// WithPort returns the option to set the port number
+// WithPort returns the option to set the port number.
 func WithPort(port int) Option {
 	return func(c *client) error {
 		if port <= 0 || port > math.MaxUint16 {
@@ -155,7 +153,7 @@ func WithPort(port int) Option {
 	}
 }
 
-// WithKeyspace returns the option to set the keyspace
+// WithKeyspace returns the option to set the keyspace.
 func WithKeyspace(keyspace string) Option {
 	return func(c *client) error {
 		if len(keyspace) == 0 {
@@ -166,7 +164,7 @@ func WithKeyspace(keyspace string) Option {
 	}
 }
 
-// WithNumConns returns the option to set the number of connection per host
+// WithNumConns returns the option to set the number of connection per host.
 func WithNumConns(numConns int) Option {
 	return func(c *client) error {
 		if numConns < 0 {
@@ -201,7 +199,7 @@ var (
 	}
 )
 
-// WithConsistency returns the option to set the cassandra consistency level
+// WithConsistency returns the option to set the cassandra consistency level.
 func WithConsistency(consistency string) Option {
 	return func(c *client) error {
 		if len(consistency) == 0 {
@@ -225,7 +223,7 @@ var (
 	}
 )
 
-// WithSerialConsistency returns the option to set the cassandra serial consistency level
+// WithSerialConsistency returns the option to set the cassandra serial consistency level.
 func WithSerialConsistency(consistency string) Option {
 	return func(c *client) error {
 		if len(consistency) == 0 {
@@ -240,7 +238,7 @@ func WithSerialConsistency(consistency string) Option {
 	}
 }
 
-// WithCompressor returns the option to set the compressor
+// WithCompressor returns the option to set the compressor.
 func WithCompressor(compressor gocql.Compressor) Option {
 	return func(c *client) error {
 		if compressor == nil {
@@ -251,7 +249,7 @@ func WithCompressor(compressor gocql.Compressor) Option {
 	}
 }
 
-// WithUsername returns the option to set the username
+// WithUsername returns the option to set the username.
 func WithUsername(username string) Option {
 	return func(c *client) error {
 		if len(username) == 0 {
@@ -262,7 +260,7 @@ func WithUsername(username string) Option {
 	}
 }
 
-// WithPassword returns the option to set the password
+// WithPassword returns the option to set the password.
 func WithPassword(password string) Option {
 	return func(c *client) error {
 		if len(password) == 0 {
@@ -273,7 +271,7 @@ func WithPassword(password string) Option {
 	}
 }
 
-// WithAuthProvider returns the option to set the auth provider
+// WithAuthProvider returns the option to set the auth provider.
 func WithAuthProvider(authProvider func(h *gocql.HostInfo) (gocql.Authenticator, error)) Option {
 	return func(c *client) error {
 		if authProvider == nil {
@@ -284,7 +282,7 @@ func WithAuthProvider(authProvider func(h *gocql.HostInfo) (gocql.Authenticator,
 	}
 }
 
-// WithRetryPolicyNumRetries returns the option to set the number of retries
+// WithRetryPolicyNumRetries returns the option to set the number of retries.
 func WithRetryPolicyNumRetries(n int) Option {
 	return func(c *client) error {
 		if n < 0 {
@@ -295,7 +293,7 @@ func WithRetryPolicyNumRetries(n int) Option {
 	}
 }
 
-// WithRetryPolicyMinDuration returns the option to set the retry min duration
+// WithRetryPolicyMinDuration returns the option to set the retry min duration.
 func WithRetryPolicyMinDuration(minDuration string) Option {
 	return func(c *client) error {
 		if len(minDuration) == 0 {
@@ -310,7 +308,7 @@ func WithRetryPolicyMinDuration(minDuration string) Option {
 	}
 }
 
-// WithRetryPolicyMaxDuration returns the option to set the retry max duration
+// WithRetryPolicyMaxDuration returns the option to set the retry max duration.
 func WithRetryPolicyMaxDuration(maxDuration string) Option {
 	return func(c *client) error {
 		if len(maxDuration) == 0 {
@@ -325,7 +323,7 @@ func WithRetryPolicyMaxDuration(maxDuration string) Option {
 	}
 }
 
-// WithReconnectionPolicyInitialInterval returns the option to set the reconnect initial interval
+// WithReconnectionPolicyInitialInterval returns the option to set the reconnect initial interval.
 func WithReconnectionPolicyInitialInterval(initialInterval string) Option {
 	return func(c *client) error {
 		if len(initialInterval) == 0 {
@@ -340,7 +338,7 @@ func WithReconnectionPolicyInitialInterval(initialInterval string) Option {
 	}
 }
 
-// WithReconnectionPolicyMaxRetries returns the option to set the reconnect max retries
+// WithReconnectionPolicyMaxRetries returns the option to set the reconnect max retries.
 func WithReconnectionPolicyMaxRetries(maxRetries int) Option {
 	return func(c *client) error {
 		if maxRetries < 0 {
@@ -351,7 +349,7 @@ func WithReconnectionPolicyMaxRetries(maxRetries int) Option {
 	}
 }
 
-// WithSocketKeepalive returns the option to set the socket keepalive time
+// WithSocketKeepalive returns the option to set the socket keepalive time.
 func WithSocketKeepalive(socketKeepalive string) Option {
 	return func(c *client) error {
 		if len(socketKeepalive) == 0 {
@@ -366,7 +364,7 @@ func WithSocketKeepalive(socketKeepalive string) Option {
 	}
 }
 
-// WithMaxPreparedStmts returns the option to set the max prepared statement
+// WithMaxPreparedStmts returns the option to set the max prepared statement.
 func WithMaxPreparedStmts(maxPreparedStmts int) Option {
 	return func(c *client) error {
 		if maxPreparedStmts < 0 {
@@ -377,7 +375,7 @@ func WithMaxPreparedStmts(maxPreparedStmts int) Option {
 	}
 }
 
-// WithMaxRoutingKeyInfo returns the option to set the max routing key info
+// WithMaxRoutingKeyInfo returns the option to set the max routing key info.
 func WithMaxRoutingKeyInfo(maxRoutingKeyInfo int) Option {
 	return func(c *client) error {
 		if maxRoutingKeyInfo < 0 {
@@ -388,7 +386,7 @@ func WithMaxRoutingKeyInfo(maxRoutingKeyInfo int) Option {
 	}
 }
 
-// WithPageSize returns the option to set the page size
+// WithPageSize returns the option to set the page size.
 func WithPageSize(pageSize int) Option {
 	return func(c *client) error {
 		if pageSize < 0 {

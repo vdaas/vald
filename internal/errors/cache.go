@@ -17,6 +17,4 @@
 // Package errors provides error types and function
 package errors
 
-var (
-	ErrInvalidCacherType = New("invalid cacher type")
-)
+var ErrInvalidCacherType = New("invalid cacher type")

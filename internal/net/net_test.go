@@ -35,13 +35,11 @@ import (
 	"go.uber.org/goleak"
 )
 
-var (
-	// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
-	goleakIgnoreOptions = []goleak.Option{
-		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
-		goleak.IgnoreTopFunction("internal/poll.runtime_pollWait"),
-	}
-)
+// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
+var goleakIgnoreOptions = []goleak.Option{
+	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+	goleak.IgnoreTopFunction("internal/poll.runtime_pollWait"),
+}
 
 func TestMain(m *testing.M) {
 	log.Init()
@@ -108,7 +106,6 @@ func TestListen(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -199,7 +196,6 @@ func TestIsLocal(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -285,7 +281,6 @@ func TestDial(t *testing.T) {
 			if err := test.checkFunc(test.want, gotConn, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -423,7 +418,6 @@ func TestParse(t *testing.T) {
 			if err := test.checkFunc(test.want, gotHost, gotPort, gotIsIP, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -487,7 +481,6 @@ func TestIsIPv6(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -551,7 +544,6 @@ func TestIsIPv4(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -678,7 +670,6 @@ func TestSplitHostPort(t *testing.T) {
 			if err := test.checkFunc(test.want, gotHost, gotPort, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -949,7 +940,6 @@ func TestLoadLocalIP(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

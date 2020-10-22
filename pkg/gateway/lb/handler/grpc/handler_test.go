@@ -101,7 +101,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -211,7 +210,6 @@ func Test_server_Exists(t *testing.T) {
 			if err := test.checkFunc(test.want, gotId, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -321,7 +319,6 @@ func Test_server_Search(t *testing.T) {
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -431,7 +428,6 @@ func Test_server_SearchByID(t *testing.T) {
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -544,7 +540,6 @@ func Test_server_search(t *testing.T) {
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -647,7 +642,6 @@ func Test_server_StreamSearch(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -750,7 +744,6 @@ func Test_server_StreamSearchByID(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -860,7 +853,6 @@ func Test_server_MultiSearch(t *testing.T) {
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -970,7 +962,6 @@ func Test_server_MultiSearchByID(t *testing.T) {
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1080,7 +1071,6 @@ func Test_server_Insert(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCe, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1183,7 +1173,6 @@ func Test_server_StreamInsert(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1293,7 +1282,6 @@ func Test_server_MultiInsert(t *testing.T) {
 			if err := test.checkFunc(test.want, gotLocs, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1403,7 +1391,6 @@ func Test_server_Update(t *testing.T) {
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1506,7 +1493,6 @@ func Test_server_StreamUpdate(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1616,7 +1602,6 @@ func Test_server_MultiUpdate(t *testing.T) {
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1726,7 +1711,6 @@ func Test_server_Upsert(t *testing.T) {
 			if err := test.checkFunc(test.want, gotLoc, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1829,7 +1813,6 @@ func Test_server_StreamUpsert(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1939,7 +1922,6 @@ func Test_server_MultiUpsert(t *testing.T) {
 			if err := test.checkFunc(test.want, gotLocs, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -2049,7 +2031,6 @@ func Test_server_Remove(t *testing.T) {
 			if err := test.checkFunc(test.want, gotLocs, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -2152,7 +2133,6 @@ func Test_server_StreamRemove(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -2262,7 +2242,6 @@ func Test_server_MultiRemove(t *testing.T) {
 			if err := test.checkFunc(test.want, gotLocs, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -2372,7 +2351,6 @@ func Test_server_GetObject(t *testing.T) {
 			if err := test.checkFunc(test.want, gotVec, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -2475,7 +2453,6 @@ func Test_server_StreamGetObject(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

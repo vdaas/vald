@@ -19,7 +19,7 @@ package errors
 
 var (
 
-	// gRPC
+	// gRPC.
 
 	ErrgRPCClientConnectionClose = func(name string, err error) error {
 		return Wrapf(err, "%s's gRPC connection close error", name)

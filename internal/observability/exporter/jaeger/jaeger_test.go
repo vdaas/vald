@@ -97,7 +97,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, gotJ, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -185,7 +184,6 @@ func Test_exp_Start(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

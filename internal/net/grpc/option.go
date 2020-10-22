@@ -34,16 +34,14 @@ import (
 
 type Option func(*gRPCClient)
 
-var (
-	defaultOpts = []Option{
-		WithConnectionPoolSize(3),
-		WithEnableConnectionPoolRebalance(false),
-		WithConnectionPoolRebalanceDuration("1h"),
-		WithErrGroup(errgroup.Get()),
-		WithHealthCheckDuration("10s"),
-		WithResolveDNS(true),
-	}
-)
+var defaultOpts = []Option{
+	WithConnectionPoolSize(3),
+	WithEnableConnectionPoolRebalance(false),
+	WithConnectionPoolRebalanceDuration("1h"),
+	WithErrGroup(errgroup.Get()),
+	WithHealthCheckDuration("10s"),
+	WithResolveDNS(true),
+}
 
 func WithAddrs(addrs ...string) Option {
 	return func(g *gRPCClient) {
@@ -161,6 +159,7 @@ func WithWaitForReady(flg bool) Option {
 		)
 	}
 }
+
 func WithMaxRetryRPCBufferSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
@@ -170,6 +169,7 @@ func WithMaxRetryRPCBufferSize(size int) Option {
 		}
 	}
 }
+
 func WithMaxRecvMsgSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
@@ -179,6 +179,7 @@ func WithMaxRecvMsgSize(size int) Option {
 		}
 	}
 }
+
 func WithMaxSendMsgSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
@@ -188,6 +189,7 @@ func WithMaxSendMsgSize(size int) Option {
 		}
 	}
 }
+
 func WithWriteBufferSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
@@ -197,6 +199,7 @@ func WithWriteBufferSize(size int) Option {
 		}
 	}
 }
+
 func WithReadBufferSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
@@ -206,6 +209,7 @@ func WithReadBufferSize(size int) Option {
 		}
 	}
 }
+
 func WithInitialWindowSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
@@ -215,6 +219,7 @@ func WithInitialWindowSize(size int) Option {
 		}
 	}
 }
+
 func WithInitialConnectionWindowSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
@@ -224,6 +229,7 @@ func WithInitialConnectionWindowSize(size int) Option {
 		}
 	}
 }
+
 func WithMaxMsgSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {

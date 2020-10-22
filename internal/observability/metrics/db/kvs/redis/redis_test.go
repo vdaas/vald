@@ -91,7 +91,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, gotO, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -209,7 +208,6 @@ func Test_redisMetrics_Measurement(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -327,7 +325,6 @@ func Test_redisMetrics_MeasurementWithTags(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -431,7 +428,6 @@ func Test_redisMetrics_View(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -552,7 +548,6 @@ func Test_redisMetrics_BeforeProcess(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -669,7 +664,6 @@ func Test_redisMetrics_AfterProcess(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -790,7 +784,6 @@ func Test_redisMetrics_BeforeProcessPipeline(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -907,7 +900,6 @@ func Test_redisMetrics_AfterProcessPipeline(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

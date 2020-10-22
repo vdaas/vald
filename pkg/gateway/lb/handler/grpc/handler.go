@@ -740,7 +740,6 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 					Filters:              filters,
 				},
 			})
-
 		}
 	}
 

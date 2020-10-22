@@ -49,9 +49,7 @@ type run struct {
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
 
-	var (
-		indexer service.Indexer
-	)
+	var indexer service.Indexer
 
 	discovererClientOptions := append(
 		cfg.Indexer.Discoverer.Client.Opts(),
