@@ -29,14 +29,14 @@ helm-docs/install: $(BINDIR)/helm-docs
 ifeq ($(UNAME),Darwin)
 $(BINDIR)/helm-docs:
 	mkdir -p $(BINDIR)
-	cd $$(mktemp -d) \
+	cd $(TEMP_DIR) \
 	    && curl -LO https://github.com/norwoodj/helm-docs/releases/download/v$(HELM_DOCS_VERSION)/helm-docs_$(HELM_DOCS_VERSION)_Darwin_x86_64.tar.gz \
 	    && tar xzvf helm-docs_$(HELM_DOCS_VERSION)_Darwin_x86_64.tar.gz \
 	    && mv helm-docs $(BINDIR)/helm-docs
 else
 $(BINDIR)/helm-docs:
 	mkdir -p $(BINDIR)
-	cd $$(mktemp -d) \
+	cd $(TEMP_DIR) \
 	    && curl -LO https://github.com/norwoodj/helm-docs/releases/download/v$(HELM_DOCS_VERSION)/helm-docs_$(HELM_DOCS_VERSION)_Linux_x86_64.tar.gz \
 	    && tar xzvf helm-docs_$(HELM_DOCS_VERSION)_Linux_x86_64.tar.gz \
 	    && mv helm-docs $(BINDIR)/helm-docs
