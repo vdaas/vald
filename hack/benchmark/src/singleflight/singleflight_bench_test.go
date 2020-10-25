@@ -273,6 +273,9 @@ func toCSV(name string, r []Result) error {
 	}
 	defer f.Close()
 	_, err = fmt.Fprintln(f, "goroutine,duration,hit_rate")
+	if err != nil {
+		return err
+	}
 	for _, res := range r {
 		_, err = fmt.Fprintf(f, "%d,%v,%f\n", res.Goroutine, res.Duration, res.HitRate)
 		if err != nil {

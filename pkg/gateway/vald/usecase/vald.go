@@ -177,6 +177,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 				grpc.New(egressFilterClientOptions...),
 			),
 		)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	v := handler.New(
