@@ -35,8 +35,8 @@ type Registerer interface {
 	PreStart(ctx context.Context) error
 	Start(ctx context.Context) (<-chan error, error)
 	PostStop(ctx context.Context) error
-	Register(ctx context.Context, meta *payload.Backup_Vector) error
-	RegisterMulti(ctx context.Context, metas *payload.Backup_Vectors) error
+	Register(ctx context.Context, vec *payload.Backup_Vector) error
+	RegisterMulti(ctx context.Context, vecs *payload.Backup_Vectors) error
 	Len() uint64
 	TotalRequested() uint64
 	TotalCompleted() uint64
@@ -49,8 +49,8 @@ type registerer struct {
 	backup     Backup
 	compressor Compressor
 	client     client.Client
-	metas      map[string]*payload.Backup_Vector
-	metasMux   sync.Mutex
+	vecs       map[string]*payload.Backup_Vector
+	vecsMu     sync.Mutex
 }
 
 func NewRegisterer(opts ...RegistererOption) (Registerer, error) {
@@ -61,7 +61,7 @@ func NewRegisterer(opts ...RegistererOption) (Registerer, error) {
 		}
 	}
 
-	r.metas = make(map[string]*payload.Backup_Vector, 0)
+	r.vecs = make(map[string]*payload.Backup_Vector, 0)
 
 	return r, nil
 }
@@ -113,7 +113,7 @@ func (r *registerer) PostStop(ctx context.Context) error {
 	return nil
 }
 
-func (r *registerer) Register(ctx context.Context, meta *payload.Backup_Vector) error {
+func (r *registerer) Register(ctx context.Context, vec *payload.Backup_Vector) error {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor/service/Registerer.Register")
 	defer func() {
 		if span != nil {
@@ -121,7 +121,7 @@ func (r *registerer) Register(ctx context.Context, meta *payload.Backup_Vector) 
 		}
 	}()
 
-	err := r.dispatch(ctx, meta)
+	err := r.dispatch(ctx, vec)
 	if err != nil && span != nil {
 		span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
 	}
@@ -129,7 +129,7 @@ func (r *registerer) Register(ctx context.Context, meta *payload.Backup_Vector) 
 	return err
 }
 
-func (r *registerer) RegisterMulti(ctx context.Context, metas *payload.Backup_Vectors) error {
+func (r *registerer) RegisterMulti(ctx context.Context, vecs *payload.Backup_Vectors) error {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor/service/Registerer.RegisterMulti")
 	defer func() {
 		if span != nil {
@@ -138,8 +138,8 @@ func (r *registerer) RegisterMulti(ctx context.Context, metas *payload.Backup_Ve
 	}()
 
 	var err, errs error
-	for _, meta := range metas.GetVectors() {
-		err = r.Register(ctx, meta)
+	for _, vec := range vecs.GetVectors() {
+		err = r.Register(ctx, vec)
 		if err != nil {
 			errs = errors.Wrap(errs, err.Error())
 		}
@@ -164,21 +164,21 @@ func (r *registerer) TotalCompleted() uint64 {
 	return r.worker.TotalCompleted()
 }
 
-func (r *registerer) dispatch(ctx context.Context, meta *payload.Backup_Vector) error {
-	r.metasMux.Lock()
-	r.metas[meta.GetUuid()] = meta
-	r.metasMux.Unlock()
+func (r *registerer) dispatch(ctx context.Context, vec *payload.Backup_Vector) error {
+	r.vecsMu.Lock()
+	r.vecs[vec.GetUuid()] = vec
+	r.vecsMu.Unlock()
 
-	return r.worker.Dispatch(ctx, r.registerProcessFunc(meta))
+	return r.worker.Dispatch(ctx, r.registerProcessFunc(vec))
 }
 
-func (r *registerer) registerProcessFunc(meta *payload.Backup_Vector) worker.JobFunc {
+func (r *registerer) registerProcessFunc(vec *payload.Backup_Vector) worker.JobFunc {
 	return func(ctx context.Context) (err error) {
 		ctx, span := trace.StartSpan(ctx, "vald/manager-compressor/service/Registerer.Register.DispatchedJob")
 		defer func() {
-			r.metasMux.Lock()
-			delete(r.metas, meta.GetUuid())
-			r.metasMux.Unlock()
+			r.vecsMu.Lock()
+			delete(r.vecs, vec.GetUuid())
+			r.vecsMu.Unlock()
 
 			if span != nil {
 				span.End()
@@ -187,7 +187,7 @@ func (r *registerer) registerProcessFunc(meta *payload.Backup_Vector) worker.Job
 
 		var vector []byte
 
-		vector, err = r.compressor.Compress(ctx, meta.GetVector())
+		vector, err = r.compressor.Compress(ctx, vec.GetVector())
 		if err != nil {
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInternal(err.Error()))
@@ -199,9 +199,9 @@ func (r *registerer) registerProcessFunc(meta *payload.Backup_Vector) worker.Job
 		err = r.backup.Register(
 			ctx,
 			&payload.Backup_Compressed_Vector{
-				Uuid:   meta.GetUuid(),
+				Uuid:   vec.GetUuid(),
 				Vector: vector,
-				Ips:    meta.GetIps(),
+				Ips:    vec.GetIps(),
 			},
 		)
 		if err != nil && span != nil {
@@ -215,21 +215,21 @@ func (r *registerer) registerProcessFunc(meta *payload.Backup_Vector) worker.Job
 func (r *registerer) forwardMetas(ctx context.Context) (errs error) {
 	var err error
 
-	r.metasMux.Lock()
+	r.vecsMu.Lock()
 
-	log.Debugf("compressor registerer queued meta-vector count: %d", len(r.metas))
+	log.Debugf("compressor registerer queued vec-vector count: %d", len(r.vecs))
 
-	for uuid, meta := range r.metas {
+	for uuid, vec := range r.vecs {
 		log.Debugf("forwarding uuid %s", uuid)
 
-		err = r.client.Register(ctx, meta)
+		err = r.client.Register(ctx, vec)
 		if err != nil {
 			log.Errorf("compressor registerer failed to backup uuid %s: %v", uuid, err)
 			errs = errors.Wrap(errs, err.Error())
 		}
 	}
 
-	r.metasMux.Unlock()
+	r.vecsMu.Unlock()
 
 	return errs
 }

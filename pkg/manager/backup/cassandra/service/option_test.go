@@ -141,7 +141,7 @@ func TestWithCassandra(t *testing.T) {
 	}
 }
 
-func TestWithMetaTable(t *testing.T) {
+func TestWithTableName(t *testing.T) {
 	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
@@ -235,7 +235,7 @@ func TestWithMetaTable(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithMetaTable(test.args.name)
+			   got := WithTableName(test.args.name)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -247,7 +247,7 @@ func TestWithMetaTable(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithMetaTable(test.args.name)
+			   got := WithTableName(test.args.name)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(test.want, obj); err != nil {

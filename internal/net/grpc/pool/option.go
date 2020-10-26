@@ -104,7 +104,7 @@ func WithSize(size uint64) Option {
 
 func WithDialOptions(opts ...DialOption) Option {
 	return func(p *pool) {
-		if opts != nil && len(opts) > 0 {
+		if len(opts) > 0 {
 			if len(p.dopts) > 0 {
 				p.dopts = append(p.dopts, opts...)
 			} else {

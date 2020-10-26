@@ -18,7 +18,7 @@
 package errors
 
 var (
-	//NGT.
+	// NGT.
 
 	ErrCreateProperty = func(err error) error {
 		return Wrap(err, "failed to create property")

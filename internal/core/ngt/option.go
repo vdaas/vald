@@ -22,6 +22,7 @@ package ngt
 #include <NGT/Capi.h>
 */
 import "C"
+
 import (
 	"strings"
 

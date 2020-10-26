@@ -235,7 +235,7 @@ Configuration
 | backupManager.cassandra.config.max_prepared_stmts | int | `1000` | maximum number of prepared statements |
 | backupManager.cassandra.config.max_routing_key_info | int | `1000` | maximum number of routing key info |
 | backupManager.cassandra.config.max_wait_schema_agreement | string | `"1m"` | maximum duration to wait for schema agreement |
-| backupManager.cassandra.config.meta_table | string | `"meta_vector"` | table name of backup |
+| backupManager.cassandra.config.vector_backup_table | string | `"backup_vector"` | table name of backup |
 | backupManager.cassandra.config.num_conns | int | `2` | number of connections per hosts |
 | backupManager.cassandra.config.page_size | int | `5000` | page size |
 | backupManager.cassandra.config.password | string | `"_CASSANDRA_PASSWORD_"` | cassandra password |
@@ -755,7 +755,7 @@ Configuration
 | indexManager.volumeMounts | list | `[]` | volume mounts |
 | indexManager.volumes | list | `[]` | volumes |
 | initializer.cassandra.configmap.backup.enabled | bool | `true` | backup table enabled |
-| initializer.cassandra.configmap.backup.name | string | `"meta_vector"` | name of backup table |
+| initializer.cassandra.configmap.backup.name | string | `"backup_vector"` | name of backup table |
 | initializer.cassandra.configmap.enabled | bool | `false` | cassandra schema configmap will be created |
 | initializer.cassandra.configmap.filename | string | `"init.cql"` | cassandra schema filename |
 | initializer.cassandra.configmap.keyspace | string | `"vald"` | cassandra keyspace |
@@ -825,7 +825,7 @@ Configuration
 | meta.cassandra.config.max_prepared_stmts | int | `1000` | maximum number of prepared statements |
 | meta.cassandra.config.max_routing_key_info | int | `1000` | maximum number of routing key info |
 | meta.cassandra.config.max_wait_schema_agreement | string | `"1m"` | maximum duration to wait for schema agreement |
-| meta.cassandra.config.meta_table | string | `"meta_vector"` | table name of backup |
+| meta.cassandra.config.vector_backup_table | string | `"backup_vector"` | table name of backup |
 | meta.cassandra.config.num_conns | int | `2` | number of connections per hosts |
 | meta.cassandra.config.page_size | int | `5000` | page size |
 | meta.cassandra.config.password | string | `"_CASSANDRA_PASSWORD_"` | cassandra password |

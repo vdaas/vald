@@ -18,7 +18,7 @@
 package errors
 
 var (
-	//TLS.
+	// TLS.
 
 	// ErrTLSDisabled is error variable, it's replesents config error that tls is disabled by config.
 	ErrTLSDisabled = New("tls feature is disabled")

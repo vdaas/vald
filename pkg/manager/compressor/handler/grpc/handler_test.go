@@ -306,8 +306,8 @@ func Test_server_Locations(t *testing.T) {
 func Test_server_Register(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx  context.Context
-		meta *payload.Backup_Vector
+		ctx context.Context
+		vec *payload.Backup_Vector
 	}
 	type fields struct {
 		backup     service.Backup
@@ -343,7 +343,7 @@ func Test_server_Register(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           meta: nil,
+		           vec: nil,
 		       },
 		       fields: fields {
 		           backup: nil,
@@ -362,7 +362,7 @@ func Test_server_Register(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           meta: nil,
+		           vec: nil,
 		           },
 		           fields: fields {
 		           backup: nil,
@@ -396,7 +396,7 @@ func Test_server_Register(t *testing.T) {
 				registerer: test.fields.registerer,
 			}
 
-			gotRes, err := s.Register(test.args.ctx, test.args.meta)
+			gotRes, err := s.Register(test.args.ctx, test.args.vec)
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -407,8 +407,8 @@ func Test_server_Register(t *testing.T) {
 func Test_server_RegisterMulti(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx   context.Context
-		metas *payload.Backup_Vectors
+		ctx  context.Context
+		vecs *payload.Backup_Vectors
 	}
 	type fields struct {
 		backup     service.Backup
@@ -444,7 +444,7 @@ func Test_server_RegisterMulti(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           metas: nil,
+		           vecs: nil,
 		       },
 		       fields: fields {
 		           backup: nil,
@@ -463,7 +463,7 @@ func Test_server_RegisterMulti(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           metas: nil,
+		           vecs: nil,
 		           },
 		           fields: fields {
 		           backup: nil,
@@ -497,7 +497,7 @@ func Test_server_RegisterMulti(t *testing.T) {
 				registerer: test.fields.registerer,
 			}
 
-			gotRes, err := s.RegisterMulti(test.args.ctx, test.args.metas)
+			gotRes, err := s.RegisterMulti(test.args.ctx, test.args.vecs)
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
