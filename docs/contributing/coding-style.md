@@ -548,7 +548,7 @@ func New(opts ...Option) (Server, error) {
             werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 
             e := new(errors.ErrCriticalOption)
-			if errors.As(err, &e) {
+            if errors.As(err, &e) {
                 log.Error(werr)
                 return nil, werr
             }
@@ -577,7 +577,7 @@ func func New(opts ...Option) (Server, error) {
             werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 
             e := new(errors.ErrCriticalOption)
-			if errors.As(err, &e) {
+            if errors.As(err, &e) {
                 log.Error(werr)
                 return nil, werr
             }
@@ -611,7 +611,7 @@ func func New(opts ...Option) (Server, error) {
             werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 
             e := new(errors.ErrCriticalOption)
-			if errors.As(err, &e) {
+            if errors.As(err, &e) {
                 log.Error(werr)
                 return nil, werr
             }
