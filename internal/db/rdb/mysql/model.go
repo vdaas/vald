@@ -16,7 +16,7 @@
 
 package mysql
 
-// Vector is an interface to handle metadata keep in MySQL.
+// Vector is an interface to handle vector keep in MySQL.
 type Vector interface {
 	GetUUID() string
 	GetVector() []byte
@@ -39,13 +39,13 @@ type podIP struct {
 	IP string `db:"ip"`
 }
 
-// GetUUID returns UUID of metaVector.
+// GetUUID returns UUID of Vector.
 func (v *vector) GetUUID() string { return v.data.UUID }
 
-// GetVector returns Vector of metaVector.
+// GetVector returns Vector of Vector.
 func (v *vector) GetVector() []byte { return v.data.Vector }
 
-// GetIPs returns all podIPs which are Vald Agent Pods' IP indexed meta's vector.
+// GetIPs returns all podIPs which are Vald Agent Pods' IP indexed vector's vector.
 func (v *vector) GetIPs() []string {
 	ips := make([]string, 0, len(v.podIPs))
 

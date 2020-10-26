@@ -19,8 +19,8 @@ package mysql
 import "context"
 
 type Setter interface {
-	SetVector(ctx context.Context, meta Vector) error
-	SetVectors(ctx context.Context, metas ...Vector) error
+	SetVector(ctx context.Context, vec Vector) error
+	SetVectors(ctx context.Context, vecs ...Vector) error
 	DeleteVector(ctx context.Context, uuid string) error
 	DeleteVectors(ctx context.Context, uuids ...string) error
 	SetIPs(ctx context.Context, uuid string, ips ...string) error
