@@ -603,25 +603,6 @@ var defaultOpts = []Option {
         return nil
     },
 }
-
-func func New(opts ...Option) (Server, error) {
-    srv := new(server)
-    for _, opt := range append(defaultOpts, opts...) {
-        if err := opt(srv); err != nil {
-            werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
-
-            e := new(errors.ErrCriticalOption)
-            if errors.As(err, &e) {
-                log.Error(werr)
-                return nil, werr
-            }
-            log.Warn(werr)
-        }
-    }
-
-    return srv, nil
-}
-
 ```
 
 ## Program comments
