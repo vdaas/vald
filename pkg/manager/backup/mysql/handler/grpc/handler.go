@@ -110,7 +110,7 @@ func (s *server) Register(ctx context.Context, vector *payload.Backup_Compressed
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("Register API uuid %s's could not convert vector to vector", uuid), err, info.Get())
+		return nil, status.WrapWithInternal(fmt.Sprintf("Register API uuid %s's could not convert vector to backup format", uuid), err, info.Get())
 	}
 
 	err = s.mysql.SetVector(ctx, m)
@@ -141,7 +141,7 @@ func (s *server) RegisterMulti(ctx context.Context, vectors *payload.Backup_Comp
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInternal(err.Error()))
 			}
-			return nil, status.WrapWithInternal(fmt.Sprintf("RegisterMulti API uuids %s's could not convert vector to vector", vector.GetUuid()), err, info.Get())
+			return nil, status.WrapWithInternal(fmt.Sprintf("RegisterMulti API uuids %s's could not convert vector to backup format", vector.GetUuid()), err, info.Get())
 		}
 		ms = append(ms, m)
 	}
