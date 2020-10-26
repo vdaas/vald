@@ -142,7 +142,7 @@ func {{ .TestName }}(t *testing.T) {
                 {{ $len := len .Results }}
                 {{- if or (ge $len 1) (.OnlyReturnsOneValue) (.OnlyReturnsError) }}
                     {{ template "results" $f }} := {{ template "call" $f }}
-                    if err := test.checkFunc(test.want, {{ template "results" $f }} ); err != nil {
+                    if err := test.checkFunc(test.want, {{ template "results" $f }} {{- range .Parameters }}{{- if .IsWriter }}, {{ Param . }}.String(){{- end }}{{- end }}); err != nil {
                         tt.Errorf("error = %v", err)
                     }
                 {{ else }}
