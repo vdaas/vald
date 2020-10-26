@@ -566,7 +566,7 @@ When setting the value with the functional option, the value is validated inside
 
 However, we may forget to set the required fields when creating the object, hence the target object will remain nil.
 
-Therefore, we strongly suggest to validate the object at the end of initialization.
+Therefore, we strongly suggest to validate the object during initialization.
 
 If we forgot to set the option method, an error will be returned so we can handle it properly.
 
