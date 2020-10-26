@@ -94,7 +94,6 @@ func Test_wrapErrors(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -175,7 +174,6 @@ func Test_insertAndCreateIndex32(t *testing.T) {
 			if err := test.checkFunc(test.want, gotIds, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -256,7 +254,6 @@ func Test_insertAndCreateIndex64(t *testing.T) {
 			if err := test.checkFunc(test.want, gotIds, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -329,7 +326,6 @@ func Test_float32To64(t *testing.T) {
 			if err := test.checkFunc(test.want, gotY); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

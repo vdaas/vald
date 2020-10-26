@@ -94,7 +94,6 @@ func TestOperationMethod(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -159,7 +158,6 @@ func TestOperation_String(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -237,7 +235,6 @@ func TestNewConfig(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCfg, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

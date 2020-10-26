@@ -19,13 +19,11 @@ package gongt
 
 type Option func(c *core)
 
-var (
-	defaultOptions = []Option{
-		WithIndexPath("tmpdir"),
-		WithObjectType("float"),
-		WithDimension(128),
-	}
-)
+var defaultOptions = []Option{
+	WithIndexPath("tmpdir"),
+	WithObjectType("float"),
+	WithDimension(128),
+}
 
 func WithIndexPath(path string) Option {
 	return func(c *core) {

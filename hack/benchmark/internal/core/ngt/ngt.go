@@ -53,7 +53,7 @@ func New(opts ...Option) (icore.Core32, error) {
 	}
 	c.tmpdir = tmpdir
 
-	var typ = ngt.ObjectNone
+	typ := ngt.ObjectNone
 	switch c.objectType {
 	case Uint8:
 		typ = ngt.Uint8

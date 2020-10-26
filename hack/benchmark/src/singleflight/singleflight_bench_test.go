@@ -49,33 +49,29 @@ const (
 	tryCnt        = 5
 )
 
-var (
-	durs = []time.Duration{
-		time.Microsecond * 10,
-		time.Microsecond * 100,
-		time.Microsecond * 200,
-		time.Microsecond * 500,
-		time.Millisecond,
-		time.Millisecond * 5,
-		time.Millisecond * 10,
-		time.Millisecond * 25,
-		time.Millisecond * 50,
-		time.Millisecond * 100,
-		time.Millisecond * 250,
-		time.Millisecond * 500,
-	}
-)
+var durs = []time.Duration{
+	time.Microsecond * 10,
+	time.Microsecond * 100,
+	time.Microsecond * 200,
+	time.Microsecond * 500,
+	time.Millisecond,
+	time.Millisecond * 5,
+	time.Millisecond * 10,
+	time.Millisecond * 25,
+	time.Millisecond * 50,
+	time.Millisecond * 100,
+	time.Millisecond * 250,
+	time.Millisecond * 500,
+}
 
 func (h *helper) Do(parallel int, b *testing.B) {
 	b.Helper()
 
-	var (
-		fn = func() (interface{}, error) {
-			atomic.AddInt64(&h.calledCnt, 1)
-			time.Sleep(h.sleepDur)
-			return "", nil
-		}
-	)
+	fn := func() (interface{}, error) {
+		atomic.AddInt64(&h.calledCnt, 1)
+		time.Sleep(h.sleepDur)
+		return "", nil
+	}
 
 	doFn := h.initDoFn()
 

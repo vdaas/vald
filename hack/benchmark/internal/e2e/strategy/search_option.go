@@ -27,12 +27,10 @@ var searchCfg = &client.SearchConfig{
 	Epsilon: 0.01,
 }
 
-var (
-	defaultSearchOptions = []SearchOption{
-		WithSearchParallel(false),
-		WithSearchConfig(searchCfg),
-	}
-)
+var defaultSearchOptions = []SearchOption{
+	WithSearchParallel(false),
+	WithSearchConfig(searchCfg),
+}
 
 func WithSearchParallel(flag bool) SearchOption {
 	return func(s *search) {

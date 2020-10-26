@@ -27,15 +27,13 @@ import (
 
 type Option func(*e2e)
 
-var (
-	defaultOptions = []Option{
-		WithServerStarter(
-			func(context.Context, testing.TB, assets.Dataset) func() {
-				return func() {}
-			},
-		),
-	}
-)
+var defaultOptions = []Option{
+	WithServerStarter(
+		func(context.Context, testing.TB, assets.Dataset) func() {
+			return func() {}
+		},
+	),
+}
 
 func WithName(name string) Option {
 	return func(e *e2e) {

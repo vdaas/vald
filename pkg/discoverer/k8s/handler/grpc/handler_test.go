@@ -102,7 +102,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, gotDs, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -286,7 +285,6 @@ func Test_server_Pods(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -384,7 +382,6 @@ func Test_server_Nodes(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -461,7 +458,6 @@ func Test_singleflightKey(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

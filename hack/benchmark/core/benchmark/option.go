@@ -19,9 +19,7 @@ package benchmark
 
 type Option func(*benchmark)
 
-var (
-	defaultOptions = []Option{}
-)
+var defaultOptions = []Option{}
 
 func WithName(name string) Option {
 	return func(b *benchmark) {

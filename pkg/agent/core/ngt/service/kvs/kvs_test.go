@@ -84,7 +84,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -183,7 +182,6 @@ func Test_bidi_Get(t *testing.T) {
 			if err := test.checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -282,7 +280,6 @@ func Test_bidi_GetInverse(t *testing.T) {
 			if err := test.checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -474,7 +471,6 @@ func Test_bidi_Delete(t *testing.T) {
 			if err := test.checkFunc(test.want, gotVal, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -573,7 +569,6 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 			if err := test.checkFunc(test.want, gotKey, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -751,7 +746,6 @@ func Test_bidi_Len(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -825,7 +819,6 @@ func Test_stringToBytes(t *testing.T) {
 			if err := test.checkFunc(test.want, gotB); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

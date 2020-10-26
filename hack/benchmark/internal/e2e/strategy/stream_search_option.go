@@ -21,11 +21,9 @@ import "github.com/vdaas/vald/internal/client/v1/client"
 
 type StreamSearchOption func(*streamSearch)
 
-var (
-	defaultStreamSearchOptions = []StreamSearchOption{
-		WithStreamSearchConfig(searchCfg),
-	}
-)
+var defaultStreamSearchOptions = []StreamSearchOption{
+	WithStreamSearchConfig(searchCfg),
+}
 
 func WithStreamSearchConfig(cfg *client.SearchConfig) StreamSearchOption {
 	return func(ss *streamSearch) {
