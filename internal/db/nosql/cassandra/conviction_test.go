@@ -17,14 +17,22 @@
 package cassandra
 
 import (
+	"net"
+	"os"
 	"reflect"
 	"testing"
 
 	"github.com/gocql/gocql"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 
 	"go.uber.org/goleak"
 )
+
+func TestMain(m *testing.M) {
+	log.Init()
+	os.Exit(m.Run())
+}
 
 func TestNewConvictionPolicy(t *testing.T) {
 	type want struct {
@@ -44,30 +52,17 @@ func TestNewConvictionPolicy(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return conviction policy success",
+			want: want{
+				want: new(convictionPolicy),
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(t, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -111,38 +106,25 @@ func Test_convictionPolicy_AddFailure(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           err: nil,
-		           host: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           err: nil,
-		           host: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "AddFailure successfully log the error",
+			args: args{
+				err: errors.New("dummy"),
+				host: func() *gocql.HostInfo {
+					h := &gocql.HostInfo{}
+					h.SetConnectAddress(net.IPv4(127, 0, 0, 1))
+					return h
+				}(),
+			},
+			want: want{
+				want: true,
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(t, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -182,36 +164,21 @@ func Test_convictionPolicy_Reset(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           host: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           host: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "reset execute success",
+			args: args{
+				host: func() *gocql.HostInfo {
+					h := &gocql.HostInfo{}
+					h.SetConnectAddress(net.IPv4(127, 0, 0, 1))
+					return h
+				}(),
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(t, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
