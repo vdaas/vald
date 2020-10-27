@@ -5,10 +5,8 @@ on:
       - master
     paths:
       - ".github/workflows/e2e-bench-agent.yml"
-      - "internal/**"
-      - "!internal/**/*_test.go"
-      - "!internal/db/**"
-      - "!internal/k8s/**"
+      - "internal/core/**"
+      - "internal/client/**"
       - "apis/grpc/**"
       - "pkg/agent/core/ngt/**"
       - "cmd/agent/core/ngt/**"
@@ -18,10 +16,8 @@ on:
   pull_request:
     paths:
       - ".github/workflows/e2e-bench-agent.yml"
-      - "internal/**"
-      - "!internal/**/*_test.go"
-      - "!internal/db/**"
-      - "!internal/k8s/**"
+      - "internal/core/**"
+      - "internal/client/**"
       - "apis/grpc/**"
       - "pkg/agent/core/ngt/**"
       - "cmd/agent/core/ngt/**"
@@ -37,9 +33,7 @@ jobs:
       image: vdaas/vald-ci-container:nightly
     steps:
       - name: Check out code.
-        uses: actions/checkout@v1
-        with:
-          fetch-depth: 1
+        uses: actions/checkout@v2
       - name: Run grpc-sequential
         run: |
           make bench/agent/sequential/grpc
@@ -51,9 +45,7 @@ jobs:
       image: vdaas/vald-ci-container:nightly
     steps:
       - name: Check out code.
-        uses: actions/checkout@v1
-        with:
-          fetch-depth: 1
+        uses: actions/checkout@v2
       - name: Run grpc-stream
         run: |
           make bench/agent/stream
@@ -65,9 +57,7 @@ jobs:
       image: vdaas/vald-ci-container:nightly
     steps:
       - name: Check out code.
-        uses: actions/checkout@v1
-        with:
-          fetch-depth: 1
+        uses: actions/checkout@v2
       - name: Run rest
         run: |
           make bench/agent/sequential/rest

@@ -39,40 +39,15 @@ define protoc-gen
 		$1
 endef
 
-define bench-pprof
-	rm -rf $1
-	mkdir -p $1
-	@$(call green, "starting $4 $2 benchmark")
-	go test -count=1 \
-		-timeout=1h \
-		-bench=$3 \
-		-benchmem \
-		-o $1/$2.bin \
-		-cpuprofile $1/cpu-$4.out \
-		-memprofile $1/mem-$4.out \
-		-trace $1/trace-$4.out \
-		$5 \
-		| tee $1/result-$4.out
-	go tool pprof --svg \
-		$1/$2.bin \
-		$1/cpu-$4.out \
-		> $1/cpu-$4.svg
-	go tool pprof --svg \
-		$1/$2.bin \
-		$1/mem-$4.out \
-		> $1/mem-$4.svg
-endef
-
 define profile-web
-	@$(call green, "starting $3 $2 profiler")
-	go tool pprof -http=$4 \
-		$1/$2.bin \
-		$1/cpu-$3.out &
-	go tool pprof -http=$5 \
-		$1/$2.bin \
-		$1/mem-$3.out &
-	go tool trace -http=$6 \
-		$1/trace-$3.out
+	go tool pprof -http=":6061" \
+		$1.bin \
+		$1.cpu.out &
+	go tool pprof -http=":6062" \
+		$1.bin \
+		$1.mem.out &
+	go tool trace -http=":6063" \
+		$1.trace.out
 endef
 
 define go-lint
