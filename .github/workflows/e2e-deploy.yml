@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: wait for dockers
         run: |
           tag=$(cat versions/VALD_VERSION)
