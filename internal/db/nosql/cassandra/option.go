@@ -399,34 +399,51 @@ func WithPageSize(pageSize int) Option {
 	}
 }
 
+// WithTLS returns the option to set the TLS config
 func WithTLS(tls *tls.Config) Option {
 	return func(c *client) error {
+		if tls == nil {
+			return errors.NewErrInvalidOption("tls", tls)
+		}
 		c.tls = tls
 		return nil
 	}
 }
 
+// WithTLSCertPath returns the option to set the TLS cert path
 func WithTLSCertPath(certPath string) Option {
 	return func(c *client) error {
+		if len(certPath) == 0 {
+			return errors.NewErrInvalidOption("tlsCertPath", certPath)
+		}
 		c.tlsCertPath = certPath
 		return nil
 	}
 }
 
+// WithTLSKeyPath returns the option to set the TLS key path
 func WithTLSKeyPath(keyPath string) Option {
 	return func(c *client) error {
+		if len(keyPath) == 0 {
+			return errors.NewErrInvalidOption("tlsKeyPath", keyPath)
+		}
 		c.tlsKeyPath = keyPath
 		return nil
 	}
 }
 
+// WithTLSCAPath returns the option to set the TLS CA path
 func WithTLSCAPath(caPath string) Option {
 	return func(c *client) error {
+		if len(caPath) == 0 {
+			return errors.NewErrInvalidOption("tlsCAPath", caPath)
+		}
 		c.tlsCAPath = caPath
 		return nil
 	}
 }
 
+// WithEnableHostVerification returns the option to set the host verification enable flag
 func WithEnableHostVerification(enableHostVerification bool) Option {
 	return func(c *client) error {
 		c.enableHostVerification = enableHostVerification
@@ -434,6 +451,7 @@ func WithEnableHostVerification(enableHostVerification bool) Option {
 	}
 }
 
+// WithDefaultTimestamp returns the option to set the default timestamp enable flag
 func WithDefaultTimestamp(defaultTimestamp bool) Option {
 	return func(c *client) error {
 		c.defaultTimestamp = defaultTimestamp
@@ -441,13 +459,18 @@ func WithDefaultTimestamp(defaultTimestamp bool) Option {
 	}
 }
 
+// WithDC returns the option to set the data center name
 func WithDC(name string) Option {
 	return func(c *client) error {
+		if len(name) == 0 {
+			return errors.NewErrInvalidOption("DC", name)
+		}
 		c.poolConfig.dataCenterName = name
 		return nil
 	}
 }
 
+// WithDCAwareRouting returns the option to set the data center aware routing enable flag
 func WithDCAwareRouting(dcAwareRouting bool) Option {
 	return func(c *client) error {
 		c.poolConfig.enableDCAwareRouting = dcAwareRouting
@@ -455,6 +478,7 @@ func WithDCAwareRouting(dcAwareRouting bool) Option {
 	}
 }
 
+// WithNonLocalReplicasFallback returns the option to set the non local replicas fallback enable flag
 func WithNonLocalReplicasFallback(nonLocalReplicasFallBack bool) Option {
 	return func(c *client) error {
 		c.poolConfig.enableNonLocalReplicasFallback = nonLocalReplicasFallBack
@@ -462,6 +486,7 @@ func WithNonLocalReplicasFallback(nonLocalReplicasFallBack bool) Option {
 	}
 }
 
+// WithShuffleReplicas returns the option to set the shuffle replicas enable flag
 func WithShuffleReplicas(shuffleReplicas bool) Option {
 	return func(c *client) error {
 		c.poolConfig.enableShuffleReplicas = shuffleReplicas
@@ -469,6 +494,7 @@ func WithShuffleReplicas(shuffleReplicas bool) Option {
 	}
 }
 
+// WithTokenAwareHostPolicy returns the option to set the token aware host policy enable flag
 func WithTokenAwareHostPolicy(tokenAwareHostPolicy bool) Option {
 	return func(c *client) error {
 		c.poolConfig.enableTokenAwareHostPolicy = tokenAwareHostPolicy
@@ -476,28 +502,37 @@ func WithTokenAwareHostPolicy(tokenAwareHostPolicy bool) Option {
 	}
 }
 
+// WithMaxWaitSchemaAgreement returns the option to set the max wait schema agreement
 func WithMaxWaitSchemaAgreement(maxWaitSchemaAgreement string) Option {
 	return func(c *client) error {
+		if len(maxWaitSchemaAgreement) == 0 {
+			return errors.NewErrInvalidOption("maxWaitSchemaAgreement", maxWaitSchemaAgreement)
+		}
 		d, err := timeutil.Parse(maxWaitSchemaAgreement)
 		if err != nil {
-			return err
+			return errors.NewErrCriticalOption("maxWaitSchemaAgreement", maxWaitSchemaAgreement, err)
 		}
 		c.maxWaitSchemaAgreement = d
 		return nil
 	}
 }
 
+// WithReconnectInterval returns the option to set the reconnect interval
 func WithReconnectInterval(reconnectInterval string) Option {
 	return func(c *client) error {
+		if len(reconnectInterval) == 0 {
+			return errors.NewErrInvalidOption("reconnectInterval", reconnectInterval)
+		}
 		d, err := timeutil.Parse(reconnectInterval)
 		if err != nil {
-			return err
+			return errors.NewErrCriticalOption("reconnectInterval", reconnectInterval, err)
 		}
 		c.reconnectInterval = d
 		return nil
 	}
 }
 
+// WithIgnorePeerAddr returns the option to set ignore peer address flag
 func WithIgnorePeerAddr(ignorePeerAddr bool) Option {
 	return func(c *client) error {
 		c.ignorePeerAddr = ignorePeerAddr
@@ -505,6 +540,7 @@ func WithIgnorePeerAddr(ignorePeerAddr bool) Option {
 	}
 }
 
+// WithDisableInitialHostLookup returns the option to set disable initial host lookup flag
 func WithDisableInitialHostLookup(disableInitialHostLookup bool) Option {
 	return func(c *client) error {
 		c.disableInitialHostLookup = disableInitialHostLookup
@@ -512,6 +548,7 @@ func WithDisableInitialHostLookup(disableInitialHostLookup bool) Option {
 	}
 }
 
+// WithDisableNodeStatusEvents returns the option to set disable node status events flag
 func WithDisableNodeStatusEvents(disableNodeStatusEvents bool) Option {
 	return func(c *client) error {
 		c.disableNodeStatusEvents = disableNodeStatusEvents
@@ -519,6 +556,7 @@ func WithDisableNodeStatusEvents(disableNodeStatusEvents bool) Option {
 	}
 }
 
+// WithDisableTopologyEvents returns the option to set disable topology events flag
 func WithDisableTopologyEvents(disableTopologyEvents bool) Option {
 	return func(c *client) error {
 		c.disableTopologyEvents = disableTopologyEvents
@@ -526,6 +564,7 @@ func WithDisableTopologyEvents(disableTopologyEvents bool) Option {
 	}
 }
 
+// WithDisableSchemaEvents returns the option to set disable schema events flag
 func WithDisableSchemaEvents(disableSchemaEvents bool) Option {
 	return func(c *client) error {
 		c.disableSchemaEvents = disableSchemaEvents
@@ -533,6 +572,7 @@ func WithDisableSchemaEvents(disableSchemaEvents bool) Option {
 	}
 }
 
+// WithDisableSkipMetadata returns the option to set disable skip metadata flag
 func WithDisableSkipMetadata(disableSkipMetadata bool) Option {
 	return func(c *client) error {
 		c.disableSkipMetadata = disableSkipMetadata
@@ -540,46 +580,55 @@ func WithDisableSkipMetadata(disableSkipMetadata bool) Option {
 	}
 }
 
+// WithQueryObserver returns the option to set query observer
 func WithQueryObserver(obs QueryObserver) Option {
 	return func(c *client) error {
-		if obs != nil {
-			c.queryObserver = obs
+		if obs == nil {
+			return errors.NewErrInvalidOption("queryObserver", obs)
 		}
+		c.queryObserver = obs
 
 		return nil
 	}
 }
 
+// WithBatchObserver returns the option to set batch observer
 func WithBatchObserver(obs BatchObserver) Option {
 	return func(c *client) error {
-		if obs != nil {
-			c.batchObserver = obs
+		if obs == nil {
+			return errors.NewErrInvalidOption("batchObserver", obs)
 		}
+		c.batchObserver = obs
 
 		return nil
 	}
 }
 
+// WithConnectObserver returns the option to set connect observer
 func WithConnectObserver(obs ConnectObserver) Option {
 	return func(c *client) error {
-		if obs != nil {
-			c.connectObserver = obs
+		if obs == nil {
+			return errors.NewErrInvalidOption("connectObserver", obs)
 		}
+		c.connectObserver = obs
 
 		return nil
 	}
 }
 
+// WithFrameHeaderObserver returns the option to set FrameHeader observer
 func WithFrameHeaderObserver(obs FrameHeaderObserver) Option {
 	return func(c *client) error {
-		if obs != nil {
-			c.frameHeaderObserver = obs
+		if obs == nil {
+			return errors.NewErrInvalidOption("frameHeaderObserver", obs)
 		}
+		c.frameHeaderObserver = obs
 
 		return nil
 	}
 }
 
+// WithDefaultIdempotence returns the option to set default idempotence flag
 func WithDefaultIdempotence(defaultIdempotence bool) Option {
 	return func(c *client) error {
 		c.defaultIdempotence = defaultIdempotence
@@ -587,17 +636,22 @@ func WithDefaultIdempotence(defaultIdempotence bool) Option {
 	}
 }
 
+// WithWriteCoalesceWaitTime returns the option to set the write coalesce wait time
 func WithWriteCoalesceWaitTime(writeCoalesceWaitTime string) Option {
 	return func(c *client) error {
+		if len(writeCoalesceWaitTime) == 0 {
+			return errors.NewErrInvalidOption("writeCoalesceWaitTime", writeCoalesceWaitTime)
+		}
 		d, err := timeutil.Parse(writeCoalesceWaitTime)
 		if err != nil {
-			return err
+			return errors.NewErrCriticalOption("writeCoalesceWaitTime", writeCoalesceWaitTime, err)
 		}
 		c.writeCoalesceWaitTime = d
 		return nil
 	}
 }
 
+// WithHostFilter returns the option to set the host filter enable flag
 func WithHostFilter(flg bool) Option {
 	return func(c *client) error {
 		c.hostFilter.enable = flg
@@ -605,10 +659,11 @@ func WithHostFilter(flg bool) Option {
 	}
 }
 
+// WithDCHostFilter returns the option to set the DC host filter
 func WithDCHostFilter(dc string) Option {
 	return func(c *client) error {
 		if len(dc) == 0 {
-			return nil
+			return errors.NewErrInvalidOption("dcHostFilter", dc)
 		}
 		c.hostFilter.dcHost = dc
 		if !c.hostFilter.enable {
@@ -618,10 +673,11 @@ func WithDCHostFilter(dc string) Option {
 	}
 }
 
+// WithWhiteListHostFilter returns the option to set the white list host filter
 func WithWhiteListHostFilter(list []string) Option {
 	return func(c *client) error {
 		if len(list) <= 0 {
-			return nil
+			return errors.NewErrInvalidOption("whiteListHostFilter", list)
 		}
 		c.hostFilter.whiteList = list
 		if !c.hostFilter.enable {
