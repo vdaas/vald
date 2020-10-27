@@ -110,18 +110,18 @@ func Test_streamRemove_dataProvider(t *testing.T) {
 		dataset assets.Dataset
 	}
 	type want struct {
-		want func() *client.ObjectID
+		want func() *client.RemoveRequest
 	}
 	type test struct {
 		name       string
 		args       args
 		sr         *streamRemove
 		want       want
-		checkFunc  func(want, func() *client.ObjectID) error
+		checkFunc  func(want, func() *client.RemoveRequest) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got func() *client.ObjectID) error {
+	defaultCheckFunc := func(w want, got func() *client.RemoveRequest) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}

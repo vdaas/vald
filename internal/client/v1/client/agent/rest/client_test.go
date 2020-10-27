@@ -22,8 +22,10 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/client/v1/client"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"go.uber.org/goleak"
 )
 
@@ -106,8 +108,9 @@ func TestNew(t *testing.T) {
 func Test_agentClient_Exists(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx context.Context
-		req *client.ObjectID
+		ctx  context.Context
+		req  *client.ObjectID
+		opts []grpc.CallOption
 	}
 	type fields struct {
 		addr string
@@ -142,6 +145,7 @@ func Test_agentClient_Exists(t *testing.T) {
 		       args: args {
 		           ctx: nil,
 		           req: nil,
+		           opts: nil,
 		       },
 		       fields: fields {
 		           addr: "",
@@ -159,6 +163,7 @@ func Test_agentClient_Exists(t *testing.T) {
 		           args: args {
 		           ctx: nil,
 		           req: nil,
+		           opts: nil,
 		           },
 		           fields: fields {
 		           addr: "",
@@ -188,7 +193,7 @@ func Test_agentClient_Exists(t *testing.T) {
 				addr: test.fields.addr,
 			}
 
-			gotRes, err := c.Exists(test.args.ctx, test.args.req)
+			gotRes, err := c.Exists(test.args.ctx, test.args.req, test.args.opts...)
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -199,8 +204,9 @@ func Test_agentClient_Exists(t *testing.T) {
 func Test_agentClient_Search(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx context.Context
-		req *client.SearchRequest
+		ctx  context.Context
+		req  *client.SearchRequest
+		opts []grpc.CallOption
 	}
 	type fields struct {
 		addr string
@@ -235,6 +241,7 @@ func Test_agentClient_Search(t *testing.T) {
 		       args: args {
 		           ctx: nil,
 		           req: nil,
+		           opts: nil,
 		       },
 		       fields: fields {
 		           addr: "",
@@ -252,6 +259,7 @@ func Test_agentClient_Search(t *testing.T) {
 		           args: args {
 		           ctx: nil,
 		           req: nil,
+		           opts: nil,
 		           },
 		           fields: fields {
 		           addr: "",
@@ -281,7 +289,7 @@ func Test_agentClient_Search(t *testing.T) {
 				addr: test.fields.addr,
 			}
 
-			gotRes, err := c.Search(test.args.ctx, test.args.req)
+			gotRes, err := c.Search(test.args.ctx, test.args.req, test.args.opts...)
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -292,8 +300,9 @@ func Test_agentClient_Search(t *testing.T) {
 func Test_agentClient_SearchByID(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx context.Context
-		req *client.SearchIDRequest
+		ctx  context.Context
+		req  *client.SearchIDRequest
+		opts []grpc.CallOption
 	}
 	type fields struct {
 		addr string
@@ -328,6 +337,7 @@ func Test_agentClient_SearchByID(t *testing.T) {
 		       args: args {
 		           ctx: nil,
 		           req: nil,
+		           opts: nil,
 		       },
 		       fields: fields {
 		           addr: "",
@@ -345,6 +355,7 @@ func Test_agentClient_SearchByID(t *testing.T) {
 		           args: args {
 		           ctx: nil,
 		           req: nil,
+		           opts: nil,
 		           },
 		           fields: fields {
 		           addr: "",
@@ -374,7 +385,7 @@ func Test_agentClient_SearchByID(t *testing.T) {
 				addr: test.fields.addr,
 			}
 
-			gotRes, err := c.SearchByID(test.args.ctx, test.args.req)
+			gotRes, err := c.SearchByID(test.args.ctx, test.args.req, test.args.opts...)
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -385,28 +396,31 @@ func Test_agentClient_SearchByID(t *testing.T) {
 func Test_agentClient_StreamSearch(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx          context.Context
-		dataProvider func() *client.SearchRequest
-		f            func(*client.SearchResponse, error)
+		ctx  context.Context
+		opts []grpc.CallOption
 	}
 	type fields struct {
 		addr string
 	}
 	type want struct {
-		err error
+		want vald.Search_StreamSearchClient
+		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, error) error
+		checkFunc  func(want, vald.Search_StreamSearchClient, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
+	defaultCheckFunc := func(w want, got vald.Search_StreamSearchClient, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -417,8 +431,7 @@ func Test_agentClient_StreamSearch(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           dataProvider: nil,
-		           f: nil,
+		           opts: nil,
 		       },
 		       fields: fields {
 		           addr: "",
@@ -435,8 +448,7 @@ func Test_agentClient_StreamSearch(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           dataProvider: nil,
-		           f: nil,
+		           opts: nil,
 		           },
 		           fields: fields {
 		           addr: "",
@@ -466,8 +478,8 @@ func Test_agentClient_StreamSearch(t *testing.T) {
 				addr: test.fields.addr,
 			}
 
-			err := c.StreamSearch(test.args.ctx, test.args.dataProvider, test.args.f)
-			if err := test.checkFunc(test.want, err); err != nil {
+			got, err := c.StreamSearch(test.args.ctx, test.args.opts...)
+			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -477,28 +489,31 @@ func Test_agentClient_StreamSearch(t *testing.T) {
 func Test_agentClient_StreamSearchByID(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx          context.Context
-		dataProvider func() *client.SearchIDRequest
-		f            func(*client.SearchResponse, error)
+		ctx  context.Context
+		opts []grpc.CallOption
 	}
 	type fields struct {
 		addr string
 	}
 	type want struct {
-		err error
+		want vald.Search_StreamSearchByIDClient
+		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, error) error
+		checkFunc  func(want, vald.Search_StreamSearchByIDClient, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
+	defaultCheckFunc := func(w want, got vald.Search_StreamSearchByIDClient, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -509,8 +524,7 @@ func Test_agentClient_StreamSearchByID(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           dataProvider: nil,
-		           f: nil,
+		           opts: nil,
 		       },
 		       fields: fields {
 		           addr: "",
@@ -527,8 +541,7 @@ func Test_agentClient_StreamSearchByID(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           dataProvider: nil,
-		           f: nil,
+		           opts: nil,
 		           },
 		           fields: fields {
 		           addr: "",
@@ -558,8 +571,200 @@ func Test_agentClient_StreamSearchByID(t *testing.T) {
 				addr: test.fields.addr,
 			}
 
-			err := c.StreamSearchByID(test.args.ctx, test.args.dataProvider, test.args.f)
-			if err := test.checkFunc(test.want, err); err != nil {
+			got, err := c.StreamSearchByID(test.args.ctx, test.args.opts...)
+			if err := test.checkFunc(test.want, got, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_agentClient_MultiSearch(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ctx  context.Context
+		req  *client.SearchMultiRequest
+		opts []grpc.CallOption
+	}
+	type fields struct {
+		addr string
+	}
+	type want struct {
+		wantRes *client.SearchResponses
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *client.SearchResponses, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRes *client.SearchResponses, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           req: nil,
+		           opts: nil,
+		       },
+		       fields: fields {
+		           addr: "",
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           req: nil,
+		           opts: nil,
+		           },
+		           fields: fields {
+		           addr: "",
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			c := &agentClient{
+				addr: test.fields.addr,
+			}
+
+			gotRes, err := c.MultiSearch(test.args.ctx, test.args.req, test.args.opts...)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_agentClient_MultiSearchByID(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ctx  context.Context
+		req  *client.SearchIDMultiRequest
+		opts []grpc.CallOption
+	}
+	type fields struct {
+		addr string
+	}
+	type want struct {
+		wantRes *client.SearchResponses
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *client.SearchResponses, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRes *client.SearchResponses, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           req: nil,
+		           opts: nil,
+		       },
+		       fields: fields {
+		           addr: "",
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           req: nil,
+		           opts: nil,
+		           },
+		           fields: fields {
+		           addr: "",
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			c := &agentClient{
+				addr: test.fields.addr,
+			}
+
+			gotRes, err := c.MultiSearchByID(test.args.ctx, test.args.req, test.args.opts...)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -569,27 +774,32 @@ func Test_agentClient_StreamSearchByID(t *testing.T) {
 func Test_agentClient_Insert(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx context.Context
-		req *client.ObjectVector
+		ctx  context.Context
+		req  *client.InsertRequest
+		opts []grpc.CallOption
 	}
 	type fields struct {
 		addr string
 	}
 	type want struct {
-		err error
+		want *client.ObjectLocation
+		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, error) error
+		checkFunc  func(want, *client.ObjectLocation, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
+	defaultCheckFunc := func(w want, got *client.ObjectLocation, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -601,6 +811,7 @@ func Test_agentClient_Insert(t *testing.T) {
 		       args: args {
 		           ctx: nil,
 		           req: nil,
+		           opts: nil,
 		       },
 		       fields: fields {
 		           addr: "",
@@ -618,6 +829,7 @@ func Test_agentClient_Insert(t *testing.T) {
 		           args: args {
 		           ctx: nil,
 		           req: nil,
+		           opts: nil,
 		           },
 		           fields: fields {
 		           addr: "",
@@ -647,8 +859,8 @@ func Test_agentClient_Insert(t *testing.T) {
 				addr: test.fields.addr,
 			}
 
-			err := c.Insert(test.args.ctx, test.args.req)
-			if err := test.checkFunc(test.want, err); err != nil {
+			got, err := c.Insert(test.args.ctx, test.args.req, test.args.opts...)
+			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -658,28 +870,31 @@ func Test_agentClient_Insert(t *testing.T) {
 func Test_agentClient_StreamInsert(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx          context.Context
-		dataProvider func() *client.ObjectVector
-		f            func(error)
+		ctx  context.Context
+		opts []grpc.CallOption
 	}
 	type fields struct {
 		addr string
 	}
 	type want struct {
-		err error
+		want vald.Insert_StreamInsertClient
+		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, error) error
+		checkFunc  func(want, vald.Insert_StreamInsertClient, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
+	defaultCheckFunc := func(w want, got vald.Insert_StreamInsertClient, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -690,8 +905,7 @@ func Test_agentClient_StreamInsert(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           dataProvider: nil,
-		           f: nil,
+		           opts: nil,
 		       },
 		       fields: fields {
 		           addr: "",
@@ -708,8 +922,7 @@ func Test_agentClient_StreamInsert(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           dataProvider: nil,
-		           f: nil,
+		           opts: nil,
 		           },
 		           fields: fields {
 		           addr: "",
@@ -739,8 +952,8 @@ func Test_agentClient_StreamInsert(t *testing.T) {
 				addr: test.fields.addr,
 			}
 
-			err := c.StreamInsert(test.args.ctx, test.args.dataProvider, test.args.f)
-			if err := test.checkFunc(test.want, err); err != nil {
+			got, err := c.StreamInsert(test.args.ctx, test.args.opts...)
+			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -751,26 +964,31 @@ func Test_agentClient_MultiInsert(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx           context.Context
-		objectVectors *client.ObjectVectors
+		objectVectors *client.InsertMultiRequest
+		opts          []grpc.CallOption
 	}
 	type fields struct {
 		addr string
 	}
 	type want struct {
-		err error
+		want *client.ObjectLocations
+		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, error) error
+		checkFunc  func(want, *client.ObjectLocations, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
+	defaultCheckFunc := func(w want, got *client.ObjectLocations, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -782,6 +1000,7 @@ func Test_agentClient_MultiInsert(t *testing.T) {
 		       args: args {
 		           ctx: nil,
 		           objectVectors: nil,
+		           opts: nil,
 		       },
 		       fields: fields {
 		           addr: "",
@@ -799,6 +1018,7 @@ func Test_agentClient_MultiInsert(t *testing.T) {
 		           args: args {
 		           ctx: nil,
 		           objectVectors: nil,
+		           opts: nil,
 		           },
 		           fields: fields {
 		           addr: "",
@@ -828,8 +1048,8 @@ func Test_agentClient_MultiInsert(t *testing.T) {
 				addr: test.fields.addr,
 			}
 
-			err := c.MultiInsert(test.args.ctx, test.args.objectVectors)
-			if err := test.checkFunc(test.want, err); err != nil {
+			got, err := c.MultiInsert(test.args.ctx, test.args.objectVectors, test.args.opts...)
+			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -839,27 +1059,32 @@ func Test_agentClient_MultiInsert(t *testing.T) {
 func Test_agentClient_Update(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx context.Context
-		req *client.ObjectVector
+		ctx  context.Context
+		req  *client.UpdateRequest
+		opts []grpc.CallOption
 	}
 	type fields struct {
 		addr string
 	}
 	type want struct {
-		err error
+		want *client.ObjectLocation
+		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, error) error
+		checkFunc  func(want, *client.ObjectLocation, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
+	defaultCheckFunc := func(w want, got *client.ObjectLocation, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -871,6 +1096,7 @@ func Test_agentClient_Update(t *testing.T) {
 		       args: args {
 		           ctx: nil,
 		           req: nil,
+		           opts: nil,
 		       },
 		       fields: fields {
 		           addr: "",
@@ -888,6 +1114,7 @@ func Test_agentClient_Update(t *testing.T) {
 		           args: args {
 		           ctx: nil,
 		           req: nil,
+		           opts: nil,
 		           },
 		           fields: fields {
 		           addr: "",
@@ -917,8 +1144,8 @@ func Test_agentClient_Update(t *testing.T) {
 				addr: test.fields.addr,
 			}
 
-			err := c.Update(test.args.ctx, test.args.req)
-			if err := test.checkFunc(test.want, err); err != nil {
+			got, err := c.Update(test.args.ctx, test.args.req, test.args.opts...)
+			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -928,28 +1155,31 @@ func Test_agentClient_Update(t *testing.T) {
 func Test_agentClient_StreamUpdate(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx          context.Context
-		dataProvider func() *client.ObjectVector
-		f            func(error)
+		ctx  context.Context
+		opts []grpc.CallOption
 	}
 	type fields struct {
 		addr string
 	}
 	type want struct {
-		err error
+		want vald.Update_StreamUpdateClient
+		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, error) error
+		checkFunc  func(want, vald.Update_StreamUpdateClient, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
+	defaultCheckFunc := func(w want, got vald.Update_StreamUpdateClient, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -960,8 +1190,7 @@ func Test_agentClient_StreamUpdate(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           dataProvider: nil,
-		           f: nil,
+		           opts: nil,
 		       },
 		       fields: fields {
 		           addr: "",
@@ -978,8 +1207,7 @@ func Test_agentClient_StreamUpdate(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           dataProvider: nil,
-		           f: nil,
+		           opts: nil,
 		           },
 		           fields: fields {
 		           addr: "",
@@ -1009,8 +1237,8 @@ func Test_agentClient_StreamUpdate(t *testing.T) {
 				addr: test.fields.addr,
 			}
 
-			err := c.StreamUpdate(test.args.ctx, test.args.dataProvider, test.args.f)
-			if err := test.checkFunc(test.want, err); err != nil {
+			got, err := c.StreamUpdate(test.args.ctx, test.args.opts...)
+			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1021,26 +1249,31 @@ func Test_agentClient_MultiUpdate(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx           context.Context
-		objectVectors *client.ObjectVectors
+		objectVectors *client.UpdateMultiRequest
+		opts          []grpc.CallOption
 	}
 	type fields struct {
 		addr string
 	}
 	type want struct {
-		err error
+		want *client.ObjectLocations
+		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, error) error
+		checkFunc  func(want, *client.ObjectLocations, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
+	defaultCheckFunc := func(w want, got *client.ObjectLocations, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1052,6 +1285,7 @@ func Test_agentClient_MultiUpdate(t *testing.T) {
 		       args: args {
 		           ctx: nil,
 		           objectVectors: nil,
+		           opts: nil,
 		       },
 		       fields: fields {
 		           addr: "",
@@ -1069,6 +1303,7 @@ func Test_agentClient_MultiUpdate(t *testing.T) {
 		           args: args {
 		           ctx: nil,
 		           objectVectors: nil,
+		           opts: nil,
 		           },
 		           fields: fields {
 		           addr: "",
@@ -1098,8 +1333,293 @@ func Test_agentClient_MultiUpdate(t *testing.T) {
 				addr: test.fields.addr,
 			}
 
-			err := c.MultiUpdate(test.args.ctx, test.args.objectVectors)
-			if err := test.checkFunc(test.want, err); err != nil {
+			got, err := c.MultiUpdate(test.args.ctx, test.args.objectVectors, test.args.opts...)
+			if err := test.checkFunc(test.want, got, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_agentClient_Upsert(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ctx  context.Context
+		req  *client.UpsertRequest
+		opts []grpc.CallOption
+	}
+	type fields struct {
+		addr string
+	}
+	type want struct {
+		want *client.ObjectLocation
+		err  error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *client.ObjectLocation, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got *client.ObjectLocation, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           req: nil,
+		           opts: nil,
+		       },
+		       fields: fields {
+		           addr: "",
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           req: nil,
+		           opts: nil,
+		           },
+		           fields: fields {
+		           addr: "",
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			c := &agentClient{
+				addr: test.fields.addr,
+			}
+
+			got, err := c.Upsert(test.args.ctx, test.args.req, test.args.opts...)
+			if err := test.checkFunc(test.want, got, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_agentClient_StreamUpsert(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ctx  context.Context
+		opts []grpc.CallOption
+	}
+	type fields struct {
+		addr string
+	}
+	type want struct {
+		want vald.Upsert_StreamUpsertClient
+		err  error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, vald.Upsert_StreamUpsertClient, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got vald.Upsert_StreamUpsertClient, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           opts: nil,
+		       },
+		       fields: fields {
+		           addr: "",
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           opts: nil,
+		           },
+		           fields: fields {
+		           addr: "",
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			c := &agentClient{
+				addr: test.fields.addr,
+			}
+
+			got, err := c.StreamUpsert(test.args.ctx, test.args.opts...)
+			if err := test.checkFunc(test.want, got, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_agentClient_MultiUpsert(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ctx           context.Context
+		objectVectors *client.UpsertMultiRequest
+		opts          []grpc.CallOption
+	}
+	type fields struct {
+		addr string
+	}
+	type want struct {
+		want *client.ObjectLocations
+		err  error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *client.ObjectLocations, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got *client.ObjectLocations, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           objectVectors: nil,
+		           opts: nil,
+		       },
+		       fields: fields {
+		           addr: "",
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           objectVectors: nil,
+		           opts: nil,
+		           },
+		           fields: fields {
+		           addr: "",
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			c := &agentClient{
+				addr: test.fields.addr,
+			}
+
+			got, err := c.MultiUpsert(test.args.ctx, test.args.objectVectors, test.args.opts...)
+			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1109,27 +1629,32 @@ func Test_agentClient_MultiUpdate(t *testing.T) {
 func Test_agentClient_Remove(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx context.Context
-		req *client.ObjectID
+		ctx  context.Context
+		req  *client.RemoveRequest
+		opts []grpc.CallOption
 	}
 	type fields struct {
 		addr string
 	}
 	type want struct {
-		err error
+		want *client.ObjectLocation
+		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, error) error
+		checkFunc  func(want, *client.ObjectLocation, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
+	defaultCheckFunc := func(w want, got *client.ObjectLocation, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1141,6 +1666,7 @@ func Test_agentClient_Remove(t *testing.T) {
 		       args: args {
 		           ctx: nil,
 		           req: nil,
+		           opts: nil,
 		       },
 		       fields: fields {
 		           addr: "",
@@ -1158,6 +1684,7 @@ func Test_agentClient_Remove(t *testing.T) {
 		           args: args {
 		           ctx: nil,
 		           req: nil,
+		           opts: nil,
 		           },
 		           fields: fields {
 		           addr: "",
@@ -1187,8 +1714,8 @@ func Test_agentClient_Remove(t *testing.T) {
 				addr: test.fields.addr,
 			}
 
-			err := c.Remove(test.args.ctx, test.args.req)
-			if err := test.checkFunc(test.want, err); err != nil {
+			got, err := c.Remove(test.args.ctx, test.args.req, test.args.opts...)
+			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1198,28 +1725,31 @@ func Test_agentClient_Remove(t *testing.T) {
 func Test_agentClient_StreamRemove(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx          context.Context
-		dataProvider func() *client.ObjectID
-		f            func(error)
+		ctx  context.Context
+		opts []grpc.CallOption
 	}
 	type fields struct {
 		addr string
 	}
 	type want struct {
-		err error
+		want vald.Remove_StreamRemoveClient
+		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, error) error
+		checkFunc  func(want, vald.Remove_StreamRemoveClient, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
+	defaultCheckFunc := func(w want, got vald.Remove_StreamRemoveClient, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1230,8 +1760,7 @@ func Test_agentClient_StreamRemove(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           dataProvider: nil,
-		           f: nil,
+		           opts: nil,
 		       },
 		       fields: fields {
 		           addr: "",
@@ -1248,8 +1777,7 @@ func Test_agentClient_StreamRemove(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           dataProvider: nil,
-		           f: nil,
+		           opts: nil,
 		           },
 		           fields: fields {
 		           addr: "",
@@ -1279,8 +1807,8 @@ func Test_agentClient_StreamRemove(t *testing.T) {
 				addr: test.fields.addr,
 			}
 
-			err := c.StreamRemove(test.args.ctx, test.args.dataProvider, test.args.f)
-			if err := test.checkFunc(test.want, err); err != nil {
+			got, err := c.StreamRemove(test.args.ctx, test.args.opts...)
+			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1290,27 +1818,32 @@ func Test_agentClient_StreamRemove(t *testing.T) {
 func Test_agentClient_MultiRemove(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx context.Context
-		req *client.ObjectIDs
+		ctx  context.Context
+		req  *client.RemoveMultiRequest
+		opts []grpc.CallOption
 	}
 	type fields struct {
 		addr string
 	}
 	type want struct {
-		err error
+		want *client.ObjectLocations
+		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, error) error
+		checkFunc  func(want, *client.ObjectLocations, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
+	defaultCheckFunc := func(w want, got *client.ObjectLocations, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1322,6 +1855,7 @@ func Test_agentClient_MultiRemove(t *testing.T) {
 		       args: args {
 		           ctx: nil,
 		           req: nil,
+		           opts: nil,
 		       },
 		       fields: fields {
 		           addr: "",
@@ -1339,6 +1873,7 @@ func Test_agentClient_MultiRemove(t *testing.T) {
 		           args: args {
 		           ctx: nil,
 		           req: nil,
+		           opts: nil,
 		           },
 		           fields: fields {
 		           addr: "",
@@ -1368,8 +1903,8 @@ func Test_agentClient_MultiRemove(t *testing.T) {
 				addr: test.fields.addr,
 			}
 
-			err := c.MultiRemove(test.args.ctx, test.args.req)
-			if err := test.checkFunc(test.want, err); err != nil {
+			got, err := c.MultiRemove(test.args.ctx, test.args.req, test.args.opts...)
+			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1379,8 +1914,9 @@ func Test_agentClient_MultiRemove(t *testing.T) {
 func Test_agentClient_GetObject(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx context.Context
-		req *client.ObjectID
+		ctx  context.Context
+		req  *client.ObjectID
+		opts []grpc.CallOption
 	}
 	type fields struct {
 		addr string
@@ -1415,6 +1951,7 @@ func Test_agentClient_GetObject(t *testing.T) {
 		       args: args {
 		           ctx: nil,
 		           req: nil,
+		           opts: nil,
 		       },
 		       fields: fields {
 		           addr: "",
@@ -1432,6 +1969,7 @@ func Test_agentClient_GetObject(t *testing.T) {
 		           args: args {
 		           ctx: nil,
 		           req: nil,
+		           opts: nil,
 		           },
 		           fields: fields {
 		           addr: "",
@@ -1461,7 +1999,7 @@ func Test_agentClient_GetObject(t *testing.T) {
 				addr: test.fields.addr,
 			}
 
-			gotRes, err := c.GetObject(test.args.ctx, test.args.req)
+			gotRes, err := c.GetObject(test.args.ctx, test.args.req, test.args.opts...)
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1472,28 +2010,31 @@ func Test_agentClient_GetObject(t *testing.T) {
 func Test_agentClient_StreamGetObject(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx          context.Context
-		dataProvider func() *client.ObjectID
-		f            func(*client.ObjectVector, error)
+		ctx  context.Context
+		opts []grpc.CallOption
 	}
 	type fields struct {
 		addr string
 	}
 	type want struct {
-		err error
+		want vald.Object_StreamGetObjectClient
+		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, error) error
+		checkFunc  func(want, vald.Object_StreamGetObjectClient, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
+	defaultCheckFunc := func(w want, got vald.Object_StreamGetObjectClient, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1504,8 +2045,7 @@ func Test_agentClient_StreamGetObject(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           dataProvider: nil,
-		           f: nil,
+		           opts: nil,
 		       },
 		       fields: fields {
 		           addr: "",
@@ -1522,8 +2062,7 @@ func Test_agentClient_StreamGetObject(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           dataProvider: nil,
-		           f: nil,
+		           opts: nil,
 		           },
 		           fields: fields {
 		           addr: "",
@@ -1553,8 +2092,8 @@ func Test_agentClient_StreamGetObject(t *testing.T) {
 				addr: test.fields.addr,
 			}
 
-			err := c.StreamGetObject(test.args.ctx, test.args.dataProvider, test.args.f)
-			if err := test.checkFunc(test.want, err); err != nil {
+			got, err := c.StreamGetObject(test.args.ctx, test.args.opts...)
+			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1564,27 +2103,32 @@ func Test_agentClient_StreamGetObject(t *testing.T) {
 func Test_agentClient_CreateIndex(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx context.Context
-		req *client.ControlCreateIndexRequest
+		ctx  context.Context
+		req  *client.ControlCreateIndexRequest
+		opts []grpc.CallOption
 	}
 	type fields struct {
 		addr string
 	}
 	type want struct {
-		err error
+		want *client.Empty
+		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, error) error
+		checkFunc  func(want, *client.Empty, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
+	defaultCheckFunc := func(w want, got *client.Empty, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1596,6 +2140,7 @@ func Test_agentClient_CreateIndex(t *testing.T) {
 		       args: args {
 		           ctx: nil,
 		           req: nil,
+		           opts: nil,
 		       },
 		       fields: fields {
 		           addr: "",
@@ -1613,6 +2158,7 @@ func Test_agentClient_CreateIndex(t *testing.T) {
 		           args: args {
 		           ctx: nil,
 		           req: nil,
+		           opts: nil,
 		           },
 		           fields: fields {
 		           addr: "",
@@ -1642,8 +2188,8 @@ func Test_agentClient_CreateIndex(t *testing.T) {
 				addr: test.fields.addr,
 			}
 
-			err := c.CreateIndex(test.args.ctx, test.args.req)
-			if err := test.checkFunc(test.want, err); err != nil {
+			got, err := c.CreateIndex(test.args.ctx, test.args.req, test.args.opts...)
+			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1653,26 +2199,32 @@ func Test_agentClient_CreateIndex(t *testing.T) {
 func Test_agentClient_SaveIndex(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx context.Context
+		ctx  context.Context
+		req  *client.Empty
+		opts []grpc.CallOption
 	}
 	type fields struct {
 		addr string
 	}
 	type want struct {
-		err error
+		want *client.Empty
+		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, error) error
+		checkFunc  func(want, *client.Empty, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
+	defaultCheckFunc := func(w want, got *client.Empty, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1683,6 +2235,8 @@ func Test_agentClient_SaveIndex(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
+		           req: nil,
+		           opts: nil,
 		       },
 		       fields: fields {
 		           addr: "",
@@ -1699,6 +2253,8 @@ func Test_agentClient_SaveIndex(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
+		           req: nil,
+		           opts: nil,
 		           },
 		           fields: fields {
 		           addr: "",
@@ -1728,8 +2284,8 @@ func Test_agentClient_SaveIndex(t *testing.T) {
 				addr: test.fields.addr,
 			}
 
-			err := c.SaveIndex(test.args.ctx)
-			if err := test.checkFunc(test.want, err); err != nil {
+			got, err := c.SaveIndex(test.args.ctx, test.args.req, test.args.opts...)
+			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1739,27 +2295,32 @@ func Test_agentClient_SaveIndex(t *testing.T) {
 func Test_agentClient_CreateAndSaveIndex(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx context.Context
-		req *client.ControlCreateIndexRequest
+		ctx  context.Context
+		req  *client.ControlCreateIndexRequest
+		opts []grpc.CallOption
 	}
 	type fields struct {
 		addr string
 	}
 	type want struct {
-		err error
+		want *client.Empty
+		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, error) error
+		checkFunc  func(want, *client.Empty, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
+	defaultCheckFunc := func(w want, got *client.Empty, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1771,6 +2332,7 @@ func Test_agentClient_CreateAndSaveIndex(t *testing.T) {
 		       args: args {
 		           ctx: nil,
 		           req: nil,
+		           opts: nil,
 		       },
 		       fields: fields {
 		           addr: "",
@@ -1788,6 +2350,7 @@ func Test_agentClient_CreateAndSaveIndex(t *testing.T) {
 		           args: args {
 		           ctx: nil,
 		           req: nil,
+		           opts: nil,
 		           },
 		           fields: fields {
 		           addr: "",
@@ -1817,8 +2380,8 @@ func Test_agentClient_CreateAndSaveIndex(t *testing.T) {
 				addr: test.fields.addr,
 			}
 
-			err := c.CreateAndSaveIndex(test.args.ctx, test.args.req)
-			if err := test.checkFunc(test.want, err); err != nil {
+			got, err := c.CreateAndSaveIndex(test.args.ctx, test.args.req, test.args.opts...)
+			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1828,13 +2391,15 @@ func Test_agentClient_CreateAndSaveIndex(t *testing.T) {
 func Test_agentClient_IndexInfo(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx context.Context
+		ctx  context.Context
+		req  *client.Empty
+		opts []grpc.CallOption
 	}
 	type fields struct {
 		addr string
 	}
 	type want struct {
-		wantRes *client.InfoIndex
+		wantRes *client.InfoIndexCount
 		err     error
 	}
 	type test struct {
@@ -1842,11 +2407,11 @@ func Test_agentClient_IndexInfo(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *client.InfoIndex, error) error
+		checkFunc  func(want, *client.InfoIndexCount, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotRes *client.InfoIndex, err error) error {
+	defaultCheckFunc := func(w want, gotRes *client.InfoIndexCount, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -1862,6 +2427,8 @@ func Test_agentClient_IndexInfo(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
+		           req: nil,
+		           opts: nil,
 		       },
 		       fields: fields {
 		           addr: "",
@@ -1878,6 +2445,8 @@ func Test_agentClient_IndexInfo(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
+		           req: nil,
+		           opts: nil,
 		           },
 		           fields: fields {
 		           addr: "",
@@ -1907,7 +2476,7 @@ func Test_agentClient_IndexInfo(t *testing.T) {
 				addr: test.fields.addr,
 			}
 
-			gotRes, err := c.IndexInfo(test.args.ctx)
+			gotRes, err := c.IndexInfo(test.args.ctx, test.args.req, test.args.opts...)
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
