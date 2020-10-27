@@ -37,6 +37,17 @@ jobs:
       - name: Run grpc-sequential
         run: |
           make bench/agent/sequential/grpc
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: agent-sequential-grpc
+          path: |
+            ./pprof/agent/sequential/grpc.bin
+            ./pprof/agent/sequential/grpc.cpu.out
+            ./pprof/agent/sequential/grpc.mem.out
+            ./pprof/agent/sequential/grpc.trace.out
+            ./pprof/agent/sequential/grpc.cpu.svg
+            ./pprof/agent/sequential/grpc.mem.svg
 
   grpc-stream:
     name: grpc-stream
@@ -49,6 +60,17 @@ jobs:
       - name: Run grpc-stream
         run: |
           make bench/agent/stream
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: agent-stream
+          path: |
+            ./pprof/agent/stream.bin
+            ./pprof/agent/stream.cpu.out
+            ./pprof/agent/stream.mem.out
+            ./pprof/agent/stream.trace.out
+            ./pprof/agent/stream.cpu.svg
+            ./pprof/agent/stream.mem.svg
 
   rest:
     name: rest
@@ -61,3 +83,14 @@ jobs:
       - name: Run rest
         run: |
           make bench/agent/sequential/rest
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: agent-sequential-rest
+          path: |
+            ./pprof/agent/sequential/rest.bin
+            ./pprof/agent/sequential/rest.cpu.out
+            ./pprof/agent/sequential/rest.mem.out
+            ./pprof/agent/sequential/rest.trace.out
+            ./pprof/agent/sequential/rest.cpu.svg
+            ./pprof/agent/sequential/rest.mem.svg
