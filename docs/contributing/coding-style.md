@@ -989,7 +989,85 @@ When a dependent object has the following feature, we strongly suggest to use mo
 
 #### How to create mock
 
-```go
+1. Basic mock example.
 
+    When we test the `Encoder` function of `encoder` structure, we suggest to create mock object of `Encoding` and `Encoder` interface.
 
-```
+    ```go
+
+    package json
+
+    type Encoder struct {
+        Encode(interface{}) ([]byte, error) 
+    }
+
+    type Encoding interface {
+        NewEncoder() Encoder
+    }
+
+    ```
+
+    ```go
+
+    type encoder struct {
+        encoding json.Encoding
+    }
+
+    func Encode(obj interface{}) ([]byte, error) {
+        return e.encoding.NewEncoder().Encode(obj)
+    }
+
+    ```
+
+    And there are 4 rules of mock code.
+    
+    - File location is same pacakge as mock target.
+    - File name is `〇〇_mock.go`
+    - Structure name are `Mock{Interface name}`
+    - Method injected from test code is `{Method name}Func`
+
+    The following is an example of mock code:
+
+    ```go
+
+    package json
+
+    type MockEncoder struct {
+        EncoderFunc func(interface{}) ([]byte, error)
+    }
+
+    func (m *MockEncoder) Encode(obj interface{}) ([]byte, error) {
+        return m.EncodeFunc(obj)
+    }
+
+    type MockEncoding struct {
+        NewEncoderFunc func() Encoder
+    }
+
+    func (m *MockEncoding) NewEncoder() Encoder {
+        return m.NewEncoderFunc()
+    }
+
+    ```
+
+    The following is an example of mock injection:
+
+    ```go
+
+    tests := []test {
+        {
+            name: "returns (byte{}, nil) when encode success"
+            fields: fields {
+                encoding: &json.MockEncoder {
+                    EncoderFunc: func(interface{}) ([]byte, error) {
+                        return []byte{}, nil
+                    },
+                },
+            }
+            ......
+        }
+    }
+
+    ......
+
+    ```
