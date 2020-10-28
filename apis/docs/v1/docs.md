@@ -130,6 +130,12 @@
     - [Upsert.MultiRequest](#payload.v1.Upsert.MultiRequest)
     - [Upsert.Request](#payload.v1.Upsert.Request)
   
+- [apis/proto/v1/vald/filter.proto](#apis/proto/v1/vald/filter.proto)
+    - [Filter](#vald.v1.Filter)
+  
+- [apis/proto/v1/vald/insert.proto](#apis/proto/v1/vald/insert.proto)
+    - [Insert](#vald.v1.Insert)
+  
 - [apis/proto/v1/vald/object.proto](#apis/proto/v1/vald/object.proto)
     - [Object](#vald.v1.Object)
   
@@ -144,12 +150,6 @@
   
 - [apis/proto/v1/vald/upsert.proto](#apis/proto/v1/vald/upsert.proto)
     - [Upsert](#vald.v1.Upsert)
-  
-- [apis/proto/v1/vald/filter.proto](#apis/proto/v1/vald/filter.proto)
-    - [Filter](#vald.v1.Filter)
-  
-- [apis/proto/v1/vald/insert.proto](#apis/proto/v1/vald/insert.proto)
-    - [Insert](#vald.v1.Insert)
   
 - [Scalar Value Types](#scalar-value-types)
 
@@ -1790,6 +1790,70 @@
 
 
 
+<a name="apis/proto/v1/vald/filter.proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## apis/proto/v1/vald/filter.proto
+
+
+ 
+
+ 
+
+ 
+
+
+<a name="vald.v1.Filter"></a>
+
+### Filter
+
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ------------|
+| SearchObject | [.payload.v1.Search.ObjectRequest](#payload.v1.Search.ObjectRequest) | [.payload.v1.Search.Response](#payload.v1.Search.Response) |  |
+| StreamSearchObject | [.payload.v1.Search.ObjectRequest](#payload.v1.Search.ObjectRequest) stream | [.payload.v1.Search.Response](#payload.v1.Search.Response) stream |  |
+| InsertObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
+| StreamInsertObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
+| MultiInsertObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
+| UpdateObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
+| StreamUpdateObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
+| MultiUpdateObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
+| UpsertObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
+| StreamUpsertObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
+| MultiUpsertObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
+
+ 
+
+
+
+<a name="apis/proto/v1/vald/insert.proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## apis/proto/v1/vald/insert.proto
+
+
+ 
+
+ 
+
+ 
+
+
+<a name="vald.v1.Insert"></a>
+
+### Insert
+
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ------------|
+| Insert | [.payload.v1.Insert.Request](#payload.v1.Insert.Request) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
+| StreamInsert | [.payload.v1.Insert.Request](#payload.v1.Insert.Request) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
+| MultiInsert | [.payload.v1.Insert.MultiRequest](#payload.v1.Insert.MultiRequest) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
+
+ 
+
+
+
 <a name="apis/proto/v1/vald/object.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
@@ -1928,70 +1992,6 @@
 | Upsert | [.payload.v1.Upsert.Request](#payload.v1.Upsert.Request) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
 | StreamUpsert | [.payload.v1.Upsert.Request](#payload.v1.Upsert.Request) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
 | MultiUpsert | [.payload.v1.Upsert.MultiRequest](#payload.v1.Upsert.MultiRequest) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
-
- 
-
-
-
-<a name="apis/proto/v1/vald/filter.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## apis/proto/v1/vald/filter.proto
-
-
- 
-
- 
-
- 
-
-
-<a name="vald.v1.Filter"></a>
-
-### Filter
-
-
-| Method Name | Request Type | Response Type | Description |
-| ----------- | ------------ | ------------- | ------------|
-| SearchObject | [.payload.v1.Search.ObjectRequest](#payload.v1.Search.ObjectRequest) | [.payload.v1.Search.Response](#payload.v1.Search.Response) |  |
-| StreamSearchObject | [.payload.v1.Search.ObjectRequest](#payload.v1.Search.ObjectRequest) stream | [.payload.v1.Search.Response](#payload.v1.Search.Response) stream |  |
-| InsertObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
-| StreamInsertObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
-| MultiInsertObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
-| UpdateObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
-| StreamUpdateObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
-| MultiUpdateObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
-| UpsertObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
-| StreamUpsertObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
-| MultiUpsertObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
-
- 
-
-
-
-<a name="apis/proto/v1/vald/insert.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## apis/proto/v1/vald/insert.proto
-
-
- 
-
- 
-
- 
-
-
-<a name="vald.v1.Insert"></a>
-
-### Insert
-
-
-| Method Name | Request Type | Response Type | Description |
-| ----------- | ------------ | ------------- | ------------|
-| Insert | [.payload.v1.Insert.Request](#payload.v1.Insert.Request) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
-| StreamInsert | [.payload.v1.Insert.Request](#payload.v1.Insert.Request) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
-| MultiInsert | [.payload.v1.Insert.MultiRequest](#payload.v1.Insert.MultiRequest) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
 
  
 
