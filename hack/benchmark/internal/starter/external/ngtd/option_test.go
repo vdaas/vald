@@ -23,7 +23,7 @@ import (
 	"go.uber.org/goleak"
 )
 
-func TestWithDimentaion(t *testing.T) {
+func TestWithDimension(t *testing.T) {
 	type T = interface{}
 	type args struct {
 		dim int
@@ -113,7 +113,7 @@ func TestWithDimentaion(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithDimentaion(test.args.dim)
+			   got := WithDimension(test.args.dim)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -125,7 +125,7 @@ func TestWithDimentaion(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithDimentaion(test.args.dim)
+			   got := WithDimension(test.args.dim)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(tt.want, obj); err != nil {
