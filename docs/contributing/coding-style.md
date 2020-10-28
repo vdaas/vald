@@ -965,3 +965,31 @@ We do not suggest to modify the generated code other than the `tests` variable, 
         type want struct {
             // generated test code
     ```
+### Mock
+
+There is a lot of dependency between each package. 
+
+As a result, the complexity of the test has increased, and it has become more difficult to determine whether or not to mock dependent objects.
+
+#### Cases where you can use mock
+
+When a dependent object has the following feature, we strongly suggest to use mock.
+
+- Implementation incomplete
+- Communicate with outside words.
+  - network access ..etc
+- Depends on hardware
+  - CUP and memory usage, and io
+- Difficult to create error of dependent object (when we will write error test case)
+- Difficult to initialize
+  - Random number and time, file io initialization, and depends on execution environment
+- Test result may change
+  - Cases where the implementation and test code are not changed but the test result changes
+  - depends on the system call.
+
+#### How to create mock
+
+```go
+
+
+```
