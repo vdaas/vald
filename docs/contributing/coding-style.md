@@ -965,3 +965,98 @@ We do not suggest to modify the generated code other than the `tests` variable, 
         type want struct {
             // generated test code
     ```
+### Mock
+
+In Vald, we use a lot of external library, there are a lot of dependencies between libraries.
+
+As a result, the complexity of the test has increased, and it has become more difficult to determine whether or not to mock dependent objects.
+
+#### Cases where you can use mock
+
+When a dependent object has the following feature, you can decide to mock the dependent.
+
+- Incomplete implementation
+- IO
+  - Network access, disk operation, etc.
+- Hardware dependent
+  - CPU, memory usage, disk IO, etc.
+- Difficult to create error of dependent object (when we will write error test case)
+- Difficult to initialize
+  - Random number and time, file IO initialization, environment dependent, etc.
+- Test result may change
+  - Cases where the implementation and test code are not changed but the test result changes
+  - System call dependent
+
+#### How to create mock
+
+1. Basic mock example.
+
+    For example, we decided to mock the following implementation `Encoder`.
+
+    ```go
+    package json
+
+    type Encoder struct {
+        Encode(interface{}) ([]byte, error) 
+    }
+
+    ```
+
+    ```go
+    type encoder struct {
+        encoder json.Encoder
+    }
+
+    func (e *encoder) Encode(obj interface{}) ([]byte, error) {
+        return e.encoder.Encode(obj)
+    }
+    ```
+
+    And there are 4 rules of mock code.
+    
+    - File location is same pacakge as mock target.
+    - File name is `〇〇_mock.go`
+    - Structure name are `Mock{Interface name}`
+    - Method injected from test code is `{Method name}Func`
+
+    The following is an example of mock implementation:
+
+    ```go
+    package json
+
+    type MockEncoder struct {
+        EncoderFunc func(interface{}) ([]byte, error)
+    }
+
+    func (m *MockEncoder) Encode(obj interface{}) ([]byte, error) {
+        return m.EncodeFunc(obj)
+    }
+
+    ```
+
+    The following is an example implementation of test code to create the mock object and mock the implementation.
+
+    ```go
+
+    tests := []test {
+        {
+            name: "returns (byte{}, nil) when encode success"
+            fields: fields {
+                encoding: &json.MockEncoder {
+                    EncoderFunc: func(interface{}) ([]byte, error) {
+                        return []byte{}, nil
+                    },
+                },
+            }
+            ......
+        }
+    }
+
+    ......
+
+    ```
+
+#### Mock rick
+
+- We don't know if it's really correct.
+- We don't notice the change in dependency.
