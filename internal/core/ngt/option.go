@@ -39,7 +39,7 @@ var (
 
 	defaultOpts = []Option{
 		WithIndexPath("/tmp/ngt-" + string(fastime.FormattedNow())),
-		WithDimension(0),
+		WithDimension(minimumDimensionSize),
 		WithDefaultRadius(DefaultRadius),
 		WithDefaultEpsilon(DefaultEpsilon),
 		WithDefaultPoolSize(DefaultPoolSize),
