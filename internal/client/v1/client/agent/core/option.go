@@ -14,39 +14,19 @@
 // limitations under the License.
 //
 
-// Package grpc provides vald gRPC client functions
-package grpc
+// Package core provides agent ngt gRPC client functions
+package core
 
-import "github.com/vdaas/vald/internal/config"
+// Option is agentClient configure.
+type Option func(*agentClient)
 
-// Option is gatewayClient configure.
-type Option func(*gatewayClient)
-
-var (
-	defaultOptions = []Option{
-		WithAddr("0.0.0.0:8081"),
-		WithGRPCClientConfig(&config.GRPCClient{
-			Addrs: []string{
-				"0.0.0.0:8081",
-			},
-		}),
-	}
-)
+var defaultOptions = []Option{}
 
 // WithAddr returns Option that sets addr.
 func WithAddr(addr string) Option {
-	return func(c *gatewayClient) {
+	return func(c *agentClient) {
 		if len(addr) != 0 {
 			c.addr = addr
-		}
-	}
-}
-
-// WithGRPCClientConfig returns Option that sets config.
-func WithGRPCClientConfig(cfg *config.GRPCClient) Option {
-	return func(c *gatewayClient) {
-		if cfg != nil {
-			c.cfg = cfg.Bind()
 		}
 	}
 }

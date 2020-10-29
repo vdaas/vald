@@ -25,8 +25,7 @@ import (
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e/strategy"
 	"github.com/vdaas/vald/hack/benchmark/internal/starter/agent/core/ngt"
-	"github.com/vdaas/vald/internal/client/v1/client/agent/grpc"
-	"github.com/vdaas/vald/internal/client/v1/client/agent/rest"
+	"github.com/vdaas/vald/internal/client/v1/client/agent/core"
 	"github.com/vdaas/vald/internal/log"
 )
 
@@ -44,37 +43,9 @@ func init() {
 	targets = strings.Split(strings.TrimSpace(dataset), ",")
 }
 
-func BenchmarkAgentNGT_REST_Sequential(b *testing.B) {
-	ctx := context.Background()
-	client := rest.New(ctx)
-
-	for _, name := range targets {
-		bench := e2e.New(
-			b,
-			e2e.WithName(name),
-			e2e.WithServerStarter(func(ctx context.Context, tb testing.TB, d assets.Dataset) func() {
-				return ngt.New(
-					ngt.WithDimentaion(d.Dimension()),
-					ngt.WithDistanceType(d.DistanceType()),
-					ngt.WithObjectType(d.ObjectType()),
-				).Run(ctx, tb)
-			}),
-			e2e.WithClient(client),
-			e2e.WithStrategy(
-				strategy.NewInsert(),
-				strategy.NewCreateIndex(
-					strategy.WithCreateIndexClient(client),
-				),
-				strategy.NewSearch(),
-			),
-		)
-		bench.Run(ctx, b)
-	}
-}
-
 func BenchmarkAgentNGT_gRPC_Sequential(b *testing.B) {
 	ctx := context.Background()
-	client := grpc.New()
+	client := core.New()
 	for _, name := range targets {
 		bench := e2e.New(
 			b,
@@ -101,7 +72,7 @@ func BenchmarkAgentNGT_gRPC_Sequential(b *testing.B) {
 
 func BenchmarkAgentNGT_gRPC_Stream(b *testing.B) {
 	ctx := context.Background()
-	client := grpc.New()
+	client := core.New()
 
 	for _, name := range targets {
 		bench := e2e.New(

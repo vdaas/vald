@@ -52,6 +52,14 @@ type (
 	SearchConfig              = payload.Search_Config
 	ObjectDistance            = payload.Object_Distance
 	BackupMetaVector          = payload.Backup_Vector
+
+	Searcher     = vald.SearchClient
+	Inserter     = vald.InsertClient
+	Updater      = vald.UpdateClient
+	Upsertor     = vald.UpsertClient
+	Remover      = vald.RemoveClient
+	ObjectReader = vald.ObjectClient
+	Indexer      = core.AgentClient
 )
 
 type Client interface {
@@ -67,18 +75,6 @@ type Reader interface {
 type Writer interface {
 	Inserter
 	Updater
-	Upserter
+	Upsertor
 	Remover
 }
-
-type (
-	Searcher = vald.SearchClient
-	Inserter = vald.InsertClient
-	Updater  = vald.UpdateClient
-	Upserter = vald.UpsertClient
-	Remover  = vald.RemoveClient
-)
-
-type ObjectReader = vald.ObjectClient
-
-type Indexer = core.AgentClient
