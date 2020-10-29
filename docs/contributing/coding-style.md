@@ -967,7 +967,7 @@ We do not suggest to modify the generated code other than the `tests` variable, 
     ```
 ### Mock
 
-There is a lot of dependency between each package. 
+In Vald, we use a lot of external library, there are a lot of dependencies between libraries.
 
 As a result, the complexity of the test has increased, and it has become more difficult to determine whether or not to mock dependent objects.
 
