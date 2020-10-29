@@ -1026,7 +1026,7 @@ When a dependent object has the following feature, you can decide to mock the de
     - Structure name are `Mock{Interface name}`
     - Method injected from test code is `{Method name}Func`
 
-    The following is an example of mock code:
+    The following is an example of mock implementation:
 
     ```go
     package json
