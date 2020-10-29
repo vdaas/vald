@@ -973,7 +973,7 @@ As a result, the complexity of the test has increased, and it has become more di
 
 #### Cases where you can use mock
 
-When a dependent object has the following feature, we strongly suggest to use mock.
+When a dependent object has the following feature, you can decide to mock the dependent.
 
 - Implementation incomplete
 - Communicate with outside words.
