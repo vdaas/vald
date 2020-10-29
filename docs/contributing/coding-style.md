@@ -994,7 +994,6 @@ When a dependent object has the following feature, you can decide to mock the de
     For example, we decided to mock the following implementation `Encoder`
 
     ```go
-
     package json
 
     type Encoder struct {
