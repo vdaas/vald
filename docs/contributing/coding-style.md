@@ -1007,7 +1007,6 @@ When a dependent object has the following feature, you can decide to mock the de
     ```
 
     ```go
-
     type encoder struct {
         encoding json.Encoding
     }
