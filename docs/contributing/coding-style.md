@@ -991,7 +991,7 @@ When a dependent object has the following feature, you can decide to mock the de
 
 1. Basic mock example.
 
-    When we test the `Encoder` function of `encoder` structure, we suggest to create mock object of `Encoding` and `Encoder` interface.
+    For example, we decided to mock the following implementation `Encoder`
 
     ```go
 
