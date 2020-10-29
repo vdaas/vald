@@ -83,6 +83,11 @@ type (
 		dcHost    string
 		whiteList []string
 	}
+	events struct {
+		DisableNodeStatusEvents bool
+		DisableTopologyEvents   bool
+		DisableSchemaEvents     bool
+	}
 	client struct {
 		hosts                    []string
 		cqlVersion               string
@@ -216,19 +221,21 @@ func New(opts ...Option) (Cassandra, error) {
 		ReconnectInterval:      c.reconnectInterval,
 		MaxWaitSchemaAgreement: c.maxWaitSchemaAgreement,
 		HostFilter: func() (hf gocql.HostFilter) {
-			if c.hostFilter.enable {
-				if len(c.hostFilter.dcHost) != 0 {
-					hf = gocql.DataCentreHostFilter(c.poolConfig.dataCenterName)
-				}
-				if len(c.hostFilter.whiteList) != 0 {
-					if hf == nil {
-						hf = gocql.WhiteListHostFilter(c.hostFilter.whiteList...)
-					} else {
-						hf = gocql.HostFilterFunc(func(host *gocql.HostInfo) bool {
-							return hf.Accept(host) ||
-								gocql.WhiteListHostFilter(c.hostFilter.whiteList...).Accept(host)
-						})
-					}
+			if !c.hostFilter.enable {
+				return nil
+			}
+
+			if len(c.hostFilter.dcHost) != 0 {
+				hf = gocql.DataCentreHostFilter(c.hostFilter.dcHost)
+			}
+			if len(c.hostFilter.whiteList) != 0 {
+				wlhf := gocql.WhiteListHostFilter(c.hostFilter.whiteList...)
+				if hf == nil {
+					hf = wlhf
+				} else {
+					hf = gocql.HostFilterFunc(func(host *gocql.HostInfo) bool {
+						return hf.Accept(host) || wlhf.Accept(host)
+					})
 				}
 			}
 			return hf
@@ -236,11 +243,7 @@ func New(opts ...Option) (Cassandra, error) {
 		// AddressTranslator
 		IgnorePeerAddr:           c.ignorePeerAddr,
 		DisableInitialHostLookup: c.disableInitialHostLookup,
-		Events: struct {
-			DisableNodeStatusEvents bool
-			DisableTopologyEvents   bool
-			DisableSchemaEvents     bool
-		}{
+		Events: events{
 			DisableNodeStatusEvents: c.disableNodeStatusEvents,
 			DisableTopologyEvents:   c.disableTopologyEvents,
 			DisableSchemaEvents:     c.disableSchemaEvents,
@@ -269,14 +272,10 @@ func New(opts ...Option) (Cassandra, error) {
 	return c, nil
 }
 
-func (c *client) Open(ctx context.Context) error {
-	session, err := c.cluster.CreateSession()
-	if err != nil {
+func (c *client) Open(ctx context.Context) (err error) {
+	if c.session, err = c.cluster.CreateSession(); err != nil {
 		return err
 	}
-
-	c.session = session
-
 	return nil
 }
 
