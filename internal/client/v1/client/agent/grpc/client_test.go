@@ -23,7 +23,7 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/client/v1/client"
-	"github.com/vdaas/vald/internal/client/v1/client/gateway/vald"
+	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"go.uber.org/goleak"

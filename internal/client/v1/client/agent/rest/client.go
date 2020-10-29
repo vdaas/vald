@@ -98,7 +98,7 @@ func (c *agentClient) MultiSearch(
 	opts ...grpc.CallOption,
 ) (res *client.SearchResponses, err error) {
 	res = new(client.SearchResponses)
-	err = json.Request(ctx, http.MethodPost, c.addr+"/search", req, res)
+	err = json.Request(ctx, http.MethodPost, c.addr+"/search/multi", req, res)
 	return
 }
 
@@ -108,7 +108,7 @@ func (c *agentClient) MultiSearchByID(
 	opts ...grpc.CallOption,
 ) (res *client.SearchResponses, err error) {
 	res = new(client.SearchResponses)
-	err = json.Request(ctx, http.MethodPost, c.addr+"/search/id", req, res)
+	err = json.Request(ctx, http.MethodPost, c.addr+"/search/multi/id", req, res)
 	return
 }
 

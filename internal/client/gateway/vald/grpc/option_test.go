@@ -21,12 +21,11 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/config"
+
 	"go.uber.org/goleak"
 )
 
 func TestWithAddr(t *testing.T) {
-	t.Parallel()
-	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
 		addr string
@@ -64,7 +63,7 @@ func TestWithAddr(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
 	       }
 	       return nil
 	   }
@@ -100,11 +99,9 @@ func TestWithAddr(t *testing.T) {
 		*/
 	}
 
-	for _, tc := range tests {
-		test := tc
+	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -125,7 +122,7 @@ func TestWithAddr(t *testing.T) {
 			   }
 			*/
 
-			// Uncomment this block if the option do not return an error, otherwise delete it
+			// Uncomment this block if the option returns an error, otherwise delete it
 			/*
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
@@ -133,7 +130,7 @@ func TestWithAddr(t *testing.T) {
 			   got := WithAddr(test.args.addr)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := test.checkFunc(tt.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -142,8 +139,6 @@ func TestWithAddr(t *testing.T) {
 }
 
 func TestWithGRPCClientConfig(t *testing.T) {
-	t.Parallel()
-	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
 		cfg *config.GRPCClient
@@ -181,7 +176,7 @@ func TestWithGRPCClientConfig(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
 	       }
 	       return nil
 	   }
@@ -217,11 +212,9 @@ func TestWithGRPCClientConfig(t *testing.T) {
 		*/
 	}
 
-	for _, tc := range tests {
-		test := tc
+	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -242,7 +235,7 @@ func TestWithGRPCClientConfig(t *testing.T) {
 			   }
 			*/
 
-			// Uncomment this block if the option do not return an error, otherwise delete it
+			// Uncomment this block if the option returns an error, otherwise delete it
 			/*
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
@@ -250,7 +243,7 @@ func TestWithGRPCClientConfig(t *testing.T) {
 			   got := WithGRPCClientConfig(test.args.cfg)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := test.checkFunc(tt.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/

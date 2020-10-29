@@ -14,36 +14,44 @@
 // limitations under the License.
 //
 
-// Package rest provides vald REST client functions
-package rest
+// Package grpc provides vald gRPC client functions
+package grpc
 
 import (
 	"context"
 	"reflect"
 	"testing"
 
-	"github.com/vdaas/vald/internal/client/v1/client"
+	"github.com/vdaas/vald/internal/client"
+	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
+	igrpc "github.com/vdaas/vald/internal/net/grpc"
+	"google.golang.org/grpc"
+
 	"go.uber.org/goleak"
 )
 
 func TestNew(t *testing.T) {
-	t.Parallel()
 	type args struct {
+		ctx  context.Context
 		opts []Option
 	}
 	type want struct {
 		want Client
+		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, Client) error
+		checkFunc  func(want, Client, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got Client) error {
+	defaultCheckFunc := func(w want, got Client, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -55,6 +63,7 @@ func TestNew(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
+		           ctx: nil,
 		           opts: nil,
 		       },
 		       want: want{},
@@ -68,6 +77,7 @@ func TestNew(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
+		           ctx: nil,
 		           opts: nil,
 		           },
 		           want: want{},
@@ -77,11 +87,9 @@ func TestNew(t *testing.T) {
 		*/
 	}
 
-	for _, tc := range tests {
-		test := tc
+	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -92,26 +100,28 @@ func TestNew(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got := New(test.args.opts...)
-			if err := test.checkFunc(test.want, got); err != nil {
+			got, err := New(test.args.ctx, test.args.opts...)
+			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
 func Test_gatewayClient_Exists(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *client.ObjectID
 	}
 	type fields struct {
-		addr string
+		addr   string
+		cfg    *config.GRPCClient
+		Client igrpc.Client
 	}
 	type want struct {
-		wantResp *client.ObjectID
-		err      error
+		want *client.ObjectID
+		err  error
 	}
 	type test struct {
 		name       string
@@ -122,12 +132,12 @@ func Test_gatewayClient_Exists(t *testing.T) {
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotResp *client.ObjectID, err error) error {
+	defaultCheckFunc := func(w want, got *client.ObjectID, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(gotResp, w.wantResp) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotResp, w.wantResp)
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -142,6 +152,8 @@ func Test_gatewayClient_Exists(t *testing.T) {
 		       },
 		       fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -159,6 +171,8 @@ func Test_gatewayClient_Exists(t *testing.T) {
 		           },
 		           fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -167,11 +181,9 @@ func Test_gatewayClient_Exists(t *testing.T) {
 		*/
 	}
 
-	for _, tc := range tests {
-		test := tc
+	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -182,29 +194,33 @@ func Test_gatewayClient_Exists(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &gatewayClient{
-				addr: test.fields.addr,
+				addr:   test.fields.addr,
+				cfg:    test.fields.cfg,
+				Client: test.fields.Client,
 			}
 
-			gotResp, err := c.Exists(test.args.ctx, test.args.req)
-			if err := test.checkFunc(test.want, gotResp, err); err != nil {
+			got, err := c.Exists(test.args.ctx, test.args.req)
+			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
 func Test_gatewayClient_Search(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *client.SearchRequest
 	}
 	type fields struct {
-		addr string
+		addr   string
+		cfg    *config.GRPCClient
+		Client igrpc.Client
 	}
 	type want struct {
-		wantResp *client.SearchResponse
-		err      error
+		want *client.SearchResponse
+		err  error
 	}
 	type test struct {
 		name       string
@@ -215,12 +231,12 @@ func Test_gatewayClient_Search(t *testing.T) {
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotResp *client.SearchResponse, err error) error {
+	defaultCheckFunc := func(w want, got *client.SearchResponse, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(gotResp, w.wantResp) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotResp, w.wantResp)
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -235,6 +251,8 @@ func Test_gatewayClient_Search(t *testing.T) {
 		       },
 		       fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -252,6 +270,8 @@ func Test_gatewayClient_Search(t *testing.T) {
 		           },
 		           fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -260,11 +280,9 @@ func Test_gatewayClient_Search(t *testing.T) {
 		*/
 	}
 
-	for _, tc := range tests {
-		test := tc
+	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -275,29 +293,33 @@ func Test_gatewayClient_Search(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &gatewayClient{
-				addr: test.fields.addr,
+				addr:   test.fields.addr,
+				cfg:    test.fields.cfg,
+				Client: test.fields.Client,
 			}
 
-			gotResp, err := c.Search(test.args.ctx, test.args.req)
-			if err := test.checkFunc(test.want, gotResp, err); err != nil {
+			got, err := c.Search(test.args.ctx, test.args.req)
+			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
 func Test_gatewayClient_SearchByID(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *client.SearchIDRequest
 	}
 	type fields struct {
-		addr string
+		addr   string
+		cfg    *config.GRPCClient
+		Client igrpc.Client
 	}
 	type want struct {
-		wantResp *client.SearchResponse
-		err      error
+		want *client.SearchResponse
+		err  error
 	}
 	type test struct {
 		name       string
@@ -308,12 +330,12 @@ func Test_gatewayClient_SearchByID(t *testing.T) {
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotResp *client.SearchResponse, err error) error {
+	defaultCheckFunc := func(w want, got *client.SearchResponse, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(gotResp, w.wantResp) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotResp, w.wantResp)
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -328,6 +350,8 @@ func Test_gatewayClient_SearchByID(t *testing.T) {
 		       },
 		       fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -345,6 +369,8 @@ func Test_gatewayClient_SearchByID(t *testing.T) {
 		           },
 		           fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -353,11 +379,9 @@ func Test_gatewayClient_SearchByID(t *testing.T) {
 		*/
 	}
 
-	for _, tc := range tests {
-		test := tc
+	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -368,26 +392,30 @@ func Test_gatewayClient_SearchByID(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &gatewayClient{
-				addr: test.fields.addr,
+				addr:   test.fields.addr,
+				cfg:    test.fields.cfg,
+				Client: test.fields.Client,
 			}
 
-			gotResp, err := c.SearchByID(test.args.ctx, test.args.req)
-			if err := test.checkFunc(test.want, gotResp, err); err != nil {
+			got, err := c.SearchByID(test.args.ctx, test.args.req)
+			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
 func Test_gatewayClient_StreamSearch(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		ctx          context.Context
 		dataProvider func() *client.SearchRequest
 		f            func(*client.SearchResponse, error)
 	}
 	type fields struct {
-		addr string
+		addr   string
+		cfg    *config.GRPCClient
+		Client igrpc.Client
 	}
 	type want struct {
 		err error
@@ -419,6 +447,8 @@ func Test_gatewayClient_StreamSearch(t *testing.T) {
 		       },
 		       fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -437,6 +467,8 @@ func Test_gatewayClient_StreamSearch(t *testing.T) {
 		           },
 		           fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -445,11 +477,9 @@ func Test_gatewayClient_StreamSearch(t *testing.T) {
 		*/
 	}
 
-	for _, tc := range tests {
-		test := tc
+	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -460,26 +490,30 @@ func Test_gatewayClient_StreamSearch(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &gatewayClient{
-				addr: test.fields.addr,
+				addr:   test.fields.addr,
+				cfg:    test.fields.cfg,
+				Client: test.fields.Client,
 			}
 
 			err := c.StreamSearch(test.args.ctx, test.args.dataProvider, test.args.f)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
 func Test_gatewayClient_StreamSearchByID(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		ctx          context.Context
 		dataProvider func() *client.SearchIDRequest
 		f            func(*client.SearchResponse, error)
 	}
 	type fields struct {
-		addr string
+		addr   string
+		cfg    *config.GRPCClient
+		Client igrpc.Client
 	}
 	type want struct {
 		err error
@@ -511,6 +545,8 @@ func Test_gatewayClient_StreamSearchByID(t *testing.T) {
 		       },
 		       fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -529,6 +565,8 @@ func Test_gatewayClient_StreamSearchByID(t *testing.T) {
 		           },
 		           fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -537,11 +575,9 @@ func Test_gatewayClient_StreamSearchByID(t *testing.T) {
 		*/
 	}
 
-	for _, tc := range tests {
-		test := tc
+	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -552,25 +588,29 @@ func Test_gatewayClient_StreamSearchByID(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &gatewayClient{
-				addr: test.fields.addr,
+				addr:   test.fields.addr,
+				cfg:    test.fields.cfg,
+				Client: test.fields.Client,
 			}
 
 			err := c.StreamSearchByID(test.args.ctx, test.args.dataProvider, test.args.f)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
 func Test_gatewayClient_Insert(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *client.ObjectVector
 	}
 	type fields struct {
-		addr string
+		addr   string
+		cfg    *config.GRPCClient
+		Client igrpc.Client
 	}
 	type want struct {
 		err error
@@ -601,6 +641,8 @@ func Test_gatewayClient_Insert(t *testing.T) {
 		       },
 		       fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -618,6 +660,8 @@ func Test_gatewayClient_Insert(t *testing.T) {
 		           },
 		           fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -626,11 +670,9 @@ func Test_gatewayClient_Insert(t *testing.T) {
 		*/
 	}
 
-	for _, tc := range tests {
-		test := tc
+	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -641,26 +683,30 @@ func Test_gatewayClient_Insert(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &gatewayClient{
-				addr: test.fields.addr,
+				addr:   test.fields.addr,
+				cfg:    test.fields.cfg,
+				Client: test.fields.Client,
 			}
 
 			err := c.Insert(test.args.ctx, test.args.req)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
 func Test_gatewayClient_StreamInsert(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		ctx          context.Context
 		dataProvider func() *client.ObjectVector
 		f            func(error)
 	}
 	type fields struct {
-		addr string
+		addr   string
+		cfg    *config.GRPCClient
+		Client igrpc.Client
 	}
 	type want struct {
 		err error
@@ -692,6 +738,8 @@ func Test_gatewayClient_StreamInsert(t *testing.T) {
 		       },
 		       fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -710,6 +758,8 @@ func Test_gatewayClient_StreamInsert(t *testing.T) {
 		           },
 		           fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -718,11 +768,9 @@ func Test_gatewayClient_StreamInsert(t *testing.T) {
 		*/
 	}
 
-	for _, tc := range tests {
-		test := tc
+	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -733,25 +781,29 @@ func Test_gatewayClient_StreamInsert(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &gatewayClient{
-				addr: test.fields.addr,
+				addr:   test.fields.addr,
+				cfg:    test.fields.cfg,
+				Client: test.fields.Client,
 			}
 
 			err := c.StreamInsert(test.args.ctx, test.args.dataProvider, test.args.f)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
 func Test_gatewayClient_MultiInsert(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *client.ObjectVectors
 	}
 	type fields struct {
-		addr string
+		addr   string
+		cfg    *config.GRPCClient
+		Client igrpc.Client
 	}
 	type want struct {
 		err error
@@ -782,6 +834,8 @@ func Test_gatewayClient_MultiInsert(t *testing.T) {
 		       },
 		       fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -799,6 +853,8 @@ func Test_gatewayClient_MultiInsert(t *testing.T) {
 		           },
 		           fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -807,11 +863,9 @@ func Test_gatewayClient_MultiInsert(t *testing.T) {
 		*/
 	}
 
-	for _, tc := range tests {
-		test := tc
+	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -822,25 +876,29 @@ func Test_gatewayClient_MultiInsert(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &gatewayClient{
-				addr: test.fields.addr,
+				addr:   test.fields.addr,
+				cfg:    test.fields.cfg,
+				Client: test.fields.Client,
 			}
 
 			err := c.MultiInsert(test.args.ctx, test.args.req)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
 func Test_gatewayClient_Update(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *client.ObjectVector
 	}
 	type fields struct {
-		addr string
+		addr   string
+		cfg    *config.GRPCClient
+		Client igrpc.Client
 	}
 	type want struct {
 		err error
@@ -871,6 +929,8 @@ func Test_gatewayClient_Update(t *testing.T) {
 		       },
 		       fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -888,6 +948,8 @@ func Test_gatewayClient_Update(t *testing.T) {
 		           },
 		           fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -896,11 +958,9 @@ func Test_gatewayClient_Update(t *testing.T) {
 		*/
 	}
 
-	for _, tc := range tests {
-		test := tc
+	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -911,26 +971,30 @@ func Test_gatewayClient_Update(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &gatewayClient{
-				addr: test.fields.addr,
+				addr:   test.fields.addr,
+				cfg:    test.fields.cfg,
+				Client: test.fields.Client,
 			}
 
 			err := c.Update(test.args.ctx, test.args.req)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
 func Test_gatewayClient_StreamUpdate(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		ctx          context.Context
 		dataProvider func() *client.ObjectVector
 		f            func(error)
 	}
 	type fields struct {
-		addr string
+		addr   string
+		cfg    *config.GRPCClient
+		Client igrpc.Client
 	}
 	type want struct {
 		err error
@@ -962,6 +1026,8 @@ func Test_gatewayClient_StreamUpdate(t *testing.T) {
 		       },
 		       fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -980,6 +1046,8 @@ func Test_gatewayClient_StreamUpdate(t *testing.T) {
 		           },
 		           fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -988,11 +1056,9 @@ func Test_gatewayClient_StreamUpdate(t *testing.T) {
 		*/
 	}
 
-	for _, tc := range tests {
-		test := tc
+	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1003,25 +1069,29 @@ func Test_gatewayClient_StreamUpdate(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &gatewayClient{
-				addr: test.fields.addr,
+				addr:   test.fields.addr,
+				cfg:    test.fields.cfg,
+				Client: test.fields.Client,
 			}
 
 			err := c.StreamUpdate(test.args.ctx, test.args.dataProvider, test.args.f)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
 func Test_gatewayClient_MultiUpdate(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *client.ObjectVectors
 	}
 	type fields struct {
-		addr string
+		addr   string
+		cfg    *config.GRPCClient
+		Client igrpc.Client
 	}
 	type want struct {
 		err error
@@ -1052,6 +1122,8 @@ func Test_gatewayClient_MultiUpdate(t *testing.T) {
 		       },
 		       fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1069,6 +1141,8 @@ func Test_gatewayClient_MultiUpdate(t *testing.T) {
 		           },
 		           fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1077,11 +1151,9 @@ func Test_gatewayClient_MultiUpdate(t *testing.T) {
 		*/
 	}
 
-	for _, tc := range tests {
-		test := tc
+	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1092,25 +1164,29 @@ func Test_gatewayClient_MultiUpdate(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &gatewayClient{
-				addr: test.fields.addr,
+				addr:   test.fields.addr,
+				cfg:    test.fields.cfg,
+				Client: test.fields.Client,
 			}
 
 			err := c.MultiUpdate(test.args.ctx, test.args.req)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
 func Test_gatewayClient_Upsert(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *client.ObjectVector
 	}
 	type fields struct {
-		addr string
+		addr   string
+		cfg    *config.GRPCClient
+		Client igrpc.Client
 	}
 	type want struct {
 		err error
@@ -1141,6 +1217,8 @@ func Test_gatewayClient_Upsert(t *testing.T) {
 		       },
 		       fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1158,6 +1236,8 @@ func Test_gatewayClient_Upsert(t *testing.T) {
 		           },
 		           fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1166,11 +1246,9 @@ func Test_gatewayClient_Upsert(t *testing.T) {
 		*/
 	}
 
-	for _, tc := range tests {
-		test := tc
+	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1181,25 +1259,29 @@ func Test_gatewayClient_Upsert(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &gatewayClient{
-				addr: test.fields.addr,
+				addr:   test.fields.addr,
+				cfg:    test.fields.cfg,
+				Client: test.fields.Client,
 			}
 
 			err := c.Upsert(test.args.ctx, test.args.req)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
 func Test_gatewayClient_MultiUpsert(t *testing.T) {
-	t.Parallel()
 	type args struct {
-		in0 context.Context
-		in1 *client.ObjectVectors
+		ctx context.Context
+		req *client.ObjectVectors
 	}
 	type fields struct {
-		addr string
+		addr   string
+		cfg    *config.GRPCClient
+		Client igrpc.Client
 	}
 	type want struct {
 		err error
@@ -1225,11 +1307,13 @@ func Test_gatewayClient_MultiUpsert(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           in0: nil,
-		           in1: nil,
+		           ctx: nil,
+		           req: nil,
 		       },
 		       fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1242,11 +1326,13 @@ func Test_gatewayClient_MultiUpsert(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           in0: nil,
-		           in1: nil,
+		           ctx: nil,
+		           req: nil,
 		           },
 		           fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1255,11 +1341,9 @@ func Test_gatewayClient_MultiUpsert(t *testing.T) {
 		*/
 	}
 
-	for _, tc := range tests {
-		test := tc
+	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1270,26 +1354,30 @@ func Test_gatewayClient_MultiUpsert(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &gatewayClient{
-				addr: test.fields.addr,
+				addr:   test.fields.addr,
+				cfg:    test.fields.cfg,
+				Client: test.fields.Client,
 			}
 
-			err := c.MultiUpsert(test.args.in0, test.args.in1)
+			err := c.MultiUpsert(test.args.ctx, test.args.req)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
 func Test_gatewayClient_StreamUpsert(t *testing.T) {
-	t.Parallel()
 	type args struct {
-		in0 context.Context
-		in1 func() *client.ObjectVector
-		in2 func(error)
+		ctx          context.Context
+		dataProvider func() *client.ObjectVector
+		f            func(error)
 	}
 	type fields struct {
-		addr string
+		addr   string
+		cfg    *config.GRPCClient
+		Client igrpc.Client
 	}
 	type want struct {
 		err error
@@ -1315,12 +1403,14 @@ func Test_gatewayClient_StreamUpsert(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           in0: nil,
-		           in1: nil,
-		           in2: nil,
+		           ctx: nil,
+		           dataProvider: nil,
+		           f: nil,
 		       },
 		       fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1333,12 +1423,14 @@ func Test_gatewayClient_StreamUpsert(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           in0: nil,
-		           in1: nil,
-		           in2: nil,
+		           ctx: nil,
+		           dataProvider: nil,
+		           f: nil,
 		           },
 		           fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1347,11 +1439,9 @@ func Test_gatewayClient_StreamUpsert(t *testing.T) {
 		*/
 	}
 
-	for _, tc := range tests {
-		test := tc
+	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1362,25 +1452,29 @@ func Test_gatewayClient_StreamUpsert(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &gatewayClient{
-				addr: test.fields.addr,
+				addr:   test.fields.addr,
+				cfg:    test.fields.cfg,
+				Client: test.fields.Client,
 			}
 
-			err := c.StreamUpsert(test.args.in0, test.args.in1, test.args.in2)
+			err := c.StreamUpsert(test.args.ctx, test.args.dataProvider, test.args.f)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
 func Test_gatewayClient_Remove(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *client.ObjectID
 	}
 	type fields struct {
-		addr string
+		addr   string
+		cfg    *config.GRPCClient
+		Client igrpc.Client
 	}
 	type want struct {
 		err error
@@ -1411,6 +1505,8 @@ func Test_gatewayClient_Remove(t *testing.T) {
 		       },
 		       fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1428,6 +1524,8 @@ func Test_gatewayClient_Remove(t *testing.T) {
 		           },
 		           fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1436,11 +1534,9 @@ func Test_gatewayClient_Remove(t *testing.T) {
 		*/
 	}
 
-	for _, tc := range tests {
-		test := tc
+	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1451,26 +1547,30 @@ func Test_gatewayClient_Remove(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &gatewayClient{
-				addr: test.fields.addr,
+				addr:   test.fields.addr,
+				cfg:    test.fields.cfg,
+				Client: test.fields.Client,
 			}
 
 			err := c.Remove(test.args.ctx, test.args.req)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
 func Test_gatewayClient_StreamRemove(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		ctx          context.Context
 		dataProvider func() *client.ObjectID
 		f            func(error)
 	}
 	type fields struct {
-		addr string
+		addr   string
+		cfg    *config.GRPCClient
+		Client igrpc.Client
 	}
 	type want struct {
 		err error
@@ -1502,6 +1602,8 @@ func Test_gatewayClient_StreamRemove(t *testing.T) {
 		       },
 		       fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1520,6 +1622,8 @@ func Test_gatewayClient_StreamRemove(t *testing.T) {
 		           },
 		           fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1528,11 +1632,9 @@ func Test_gatewayClient_StreamRemove(t *testing.T) {
 		*/
 	}
 
-	for _, tc := range tests {
-		test := tc
+	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1543,25 +1645,29 @@ func Test_gatewayClient_StreamRemove(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &gatewayClient{
-				addr: test.fields.addr,
+				addr:   test.fields.addr,
+				cfg:    test.fields.cfg,
+				Client: test.fields.Client,
 			}
 
 			err := c.StreamRemove(test.args.ctx, test.args.dataProvider, test.args.f)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
 func Test_gatewayClient_MultiRemove(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *client.ObjectIDs
 	}
 	type fields struct {
-		addr string
+		addr   string
+		cfg    *config.GRPCClient
+		Client igrpc.Client
 	}
 	type want struct {
 		err error
@@ -1592,6 +1698,8 @@ func Test_gatewayClient_MultiRemove(t *testing.T) {
 		       },
 		       fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1609,6 +1717,8 @@ func Test_gatewayClient_MultiRemove(t *testing.T) {
 		           },
 		           fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1617,11 +1727,9 @@ func Test_gatewayClient_MultiRemove(t *testing.T) {
 		*/
 	}
 
-	for _, tc := range tests {
-		test := tc
+	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1632,29 +1740,33 @@ func Test_gatewayClient_MultiRemove(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &gatewayClient{
-				addr: test.fields.addr,
+				addr:   test.fields.addr,
+				cfg:    test.fields.cfg,
+				Client: test.fields.Client,
 			}
 
 			err := c.MultiRemove(test.args.ctx, test.args.req)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
 func Test_gatewayClient_GetObject(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *client.ObjectID
 	}
 	type fields struct {
-		addr string
+		addr   string
+		cfg    *config.GRPCClient
+		Client igrpc.Client
 	}
 	type want struct {
-		wantResp *client.MetaObject
-		err      error
+		want *client.MetaObject
+		err  error
 	}
 	type test struct {
 		name       string
@@ -1665,12 +1777,12 @@ func Test_gatewayClient_GetObject(t *testing.T) {
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotResp *client.MetaObject, err error) error {
+	defaultCheckFunc := func(w want, got *client.MetaObject, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(gotResp, w.wantResp) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotResp, w.wantResp)
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1685,6 +1797,8 @@ func Test_gatewayClient_GetObject(t *testing.T) {
 		       },
 		       fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1702,6 +1816,8 @@ func Test_gatewayClient_GetObject(t *testing.T) {
 		           },
 		           fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1710,11 +1826,9 @@ func Test_gatewayClient_GetObject(t *testing.T) {
 		*/
 	}
 
-	for _, tc := range tests {
-		test := tc
+	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1725,26 +1839,30 @@ func Test_gatewayClient_GetObject(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &gatewayClient{
-				addr: test.fields.addr,
+				addr:   test.fields.addr,
+				cfg:    test.fields.cfg,
+				Client: test.fields.Client,
 			}
 
-			gotResp, err := c.GetObject(test.args.ctx, test.args.req)
-			if err := test.checkFunc(test.want, gotResp, err); err != nil {
+			got, err := c.GetObject(test.args.ctx, test.args.req)
+			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
 func Test_gatewayClient_StreamGetObject(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		ctx          context.Context
 		dataProvider func() *client.ObjectID
 		f            func(*client.MetaObject, error)
 	}
 	type fields struct {
-		addr string
+		addr   string
+		cfg    *config.GRPCClient
+		Client igrpc.Client
 	}
 	type want struct {
 		err error
@@ -1776,6 +1894,8 @@ func Test_gatewayClient_StreamGetObject(t *testing.T) {
 		       },
 		       fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1794,6 +1914,8 @@ func Test_gatewayClient_StreamGetObject(t *testing.T) {
 		           },
 		           fields: fields {
 		           addr: "",
+		           cfg: nil,
+		           Client: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1802,11 +1924,9 @@ func Test_gatewayClient_StreamGetObject(t *testing.T) {
 		*/
 	}
 
-	for _, tc := range tests {
-		test := tc
+	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1817,13 +1937,170 @@ func Test_gatewayClient_StreamGetObject(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &gatewayClient{
-				addr: test.fields.addr,
+				addr:   test.fields.addr,
+				cfg:    test.fields.cfg,
+				Client: test.fields.Client,
 			}
 
 			err := c.StreamGetObject(test.args.ctx, test.args.dataProvider, test.args.f)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
+		})
+	}
+}
+
+func Test_streamSearch(t *testing.T) {
+	type args struct {
+		st           grpc.ClientStream
+		dataProvider func() interface{}
+		f            func(*client.SearchResponse, error)
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           st: nil,
+		           dataProvider: nil,
+		           f: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           st: nil,
+		           dataProvider: nil,
+		           f: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			err := streamSearch(test.args.st, test.args.dataProvider, test.args.f)
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_stream(t *testing.T) {
+	type args struct {
+		st           grpc.ClientStream
+		dataProvider func() interface{}
+		f            func(error)
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           st: nil,
+		           dataProvider: nil,
+		           f: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           st: nil,
+		           dataProvider: nil,
+		           f: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(t)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			err := stream(test.args.st, test.args.dataProvider, test.args.f)
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
 		})
 	}
 }
