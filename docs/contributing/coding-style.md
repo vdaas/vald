@@ -1016,7 +1016,6 @@ When a dependent object has the following feature, you can decide to mock the de
     func Encode(obj interface{}) ([]byte, error) {
         return e.encoding.NewEncoder().Encode(obj)
     }
-
     ```
 
     And there are 4 rules of mock code.
