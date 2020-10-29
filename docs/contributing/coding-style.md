@@ -985,7 +985,7 @@ When a dependent object has the following feature, you can decide to mock the de
   - Random number and time, file IO initialization, environment dependent, etc.
 - Test result may change
   - Cases where the implementation and test code are not changed but the test result changes
-  - depends on the system call.
+  - System call dependent
 
 #### How to create mock
 
