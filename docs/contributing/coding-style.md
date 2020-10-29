@@ -975,7 +975,7 @@ As a result, the complexity of the test has increased, and it has become more di
 
 When a dependent object has the following feature, you can decide to mock the dependent.
 
-- Implementation incomplete
+- Incomplete implementation
 - Communicate with outside words.
   - network access ..etc
 - Depends on hardware
