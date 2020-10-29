@@ -978,7 +978,7 @@ When a dependent object has the following feature, you can decide to mock the de
 - Incomplete implementation
 - IO
   - Network access, disk operation, etc.
-- Depends on hardware
+- Hardware dependent
   - CUP and memory usage, and io
 - Difficult to create error of dependent object (when we will write error test case)
 - Difficult to initialize
