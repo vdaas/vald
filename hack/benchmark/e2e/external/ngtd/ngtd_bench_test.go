@@ -58,7 +58,7 @@ func BenchmarkNGTD_REST_Sequential(b *testing.B) {
 			e2e.WithName(name),
 			e2e.WithServerStarter(func(ctx context.Context, tb testing.TB, d assets.Dataset) func() {
 				return ngtd.New(
-					ngtd.WithDimentaion(d.Dimension()),
+					ngtd.WithDimension(d.Dimension()),
 				).Run(ctx, tb)
 			}),
 			e2e.WithClient(client),
@@ -87,7 +87,7 @@ func BenchmarkNGTD_gRPC_Sequential(b *testing.B) {
 			e2e.WithName(name),
 			e2e.WithServerStarter(func(ctx context.Context, tb testing.TB, d assets.Dataset) func() {
 				return ngtd.New(
-					ngtd.WithDimentaion(d.Dimension()),
+					ngtd.WithDimension(d.Dimension()),
 					ngtd.WithServerType(ngtd.ServerType(ngtd.GRPC)),
 				).Run(ctx, tb)
 			}),
@@ -117,7 +117,7 @@ func BenchmarkNGTD_gRPC_Stream(b *testing.B) {
 			e2e.WithName(name),
 			e2e.WithServerStarter(func(ctx context.Context, tb testing.TB, d assets.Dataset) func() {
 				return ngtd.New(
-					ngtd.WithDimentaion(d.Dimension()),
+					ngtd.WithDimension(d.Dimension()),
 					ngtd.WithServerType(ngtd.ServerType(ngtd.GRPC)),
 				).Run(ctx, tb)
 			}),

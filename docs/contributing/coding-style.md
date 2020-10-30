@@ -548,13 +548,60 @@ func New(opts ...Option) (Server, error) {
             werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 
             e := new(errors.ErrCriticalOption)
-			if errors.As(err, &e) {
+            if errors.As(err, &e) {
                 log.Error(werr)
                 return nil, werr
             }
             log.Warn(werr)
         }
     }
+}
+```
+
+### Constructor
+
+In Vald, the functional option pattern is widely used when we create an object.
+
+When setting the value with the functional option, the value is validated inside the option method.
+
+However, we may forget to set the required fields when creating the object, hence the target object will remain nil.
+Therefore, we strongly suggest to validate the object during initialization.
+
+If we forgot to set the option method, an error will be returned so we can handle it properly.
+
+```go
+func func New(opts ...Option) (Server, error) {
+    srv := new(server)
+    for _, opt := range append(defaultOpts, opts...) {
+        if err := opt(srv); err != nil {
+            werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+
+            e := new(errors.ErrCriticalOption)
+            if errors.As(err, &e) {
+                log.Error(werr)
+                return nil, werr
+            }
+            log.Warn(werr)
+        }
+    }
+
+    if srv.eg == nil {
+        return nil, errors.NewErrInvalidOption("eg", srv.eg)
+    }
+
+    return srv, nil
+}
+
+```
+
+We also recommend that you use the default options and the unexported functional option to set the objects so that we cannot use it externally.
+
+```go
+var defaultOpts = []Option {
+    func(s *server) error {
+        s.ctxio = io.New()
+        return nil
+    },
 }
 ```
 

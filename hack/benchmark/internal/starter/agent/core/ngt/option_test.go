@@ -138,7 +138,7 @@ func TestWithConfig(t *testing.T) {
 	}
 }
 
-func TestWithDimentaion(t *testing.T) {
+func TestWithDimension(t *testing.T) {
 	type T = interface{}
 	type args struct {
 		d int
@@ -228,7 +228,7 @@ func TestWithDimentaion(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithDimentaion(test.args.d)
+			   got := WithDimension(test.args.d)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -240,7 +240,7 @@ func TestWithDimentaion(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithDimentaion(test.args.d)
+			   got := WithDimension(test.args.d)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(tt.want, obj); err != nil {
