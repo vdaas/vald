@@ -51,6 +51,10 @@ type Cassandra interface {
 	Query(stmt string, names []string) *Queryx
 }
 
+type ClusterConfig interface {
+	CreateSession() (*gocql.Session, error)
+}
+
 type (
 	Session       = gocql.Session
 	Cmp           = qb.Cmp
@@ -133,7 +137,7 @@ type (
 		dialer                   gocql.Dialer
 		writeCoalesceWaitTime    time.Duration
 
-		cluster *gocql.ClusterConfig
+		cluster ClusterConfig
 		session *gocql.Session
 	}
 )

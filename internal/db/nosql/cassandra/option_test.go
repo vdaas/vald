@@ -35,26 +35,6 @@ var (
 	goleakIgnoreOptions = []goleak.Option{
 		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
 	}
-
-	// default comparator option for client
-	clientComparatorOpts = []comparator.Option{
-		comparator.AllowUnexported(client{}),
-		comparator.Comparer(func(x, y retryPolicy) bool {
-			return reflect.DeepEqual(x, y)
-		}),
-		comparator.Comparer(func(x, y reconnectionPolicy) bool {
-			return reflect.DeepEqual(x, y)
-		}),
-		comparator.Comparer(func(x, y poolConfig) bool {
-			return reflect.DeepEqual(x, y)
-		}),
-		comparator.Comparer(func(x, y hostFilter) bool {
-			return reflect.DeepEqual(x, y)
-		}),
-		comparator.Comparer(func(x, y func(h *gocql.HostInfo) (gocql.Authenticator, error)) bool {
-			return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
-		}),
-	}
 )
 
 func TestWithHosts(t *testing.T) {
