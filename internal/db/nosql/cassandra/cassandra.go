@@ -30,39 +30,61 @@ import (
 )
 
 var (
-	ErrNotFound             = gocql.ErrNotFound
-	ErrUnavailable          = gocql.ErrUnavailable
-	ErrUnsupported          = gocql.ErrUnsupported
-	ErrTooManyStmts         = gocql.ErrTooManyStmts
-	ErrUseStmt              = gocql.ErrUseStmt
-	ErrSessionClosed        = gocql.ErrSessionClosed
-	ErrNoConnections        = gocql.ErrNoConnections
-	ErrNoKeyspace           = gocql.ErrNoKeyspace
+	// ErrNotFound is a alias of gocql.ErrNotFound
+	ErrNotFound = gocql.ErrNotFound
+	// ErrUnavailable is a alias of gocql.ErrUnavailable
+	ErrUnavailable = gocql.ErrUnavailable
+	// ErrUnsupported is a alias of gocql.ErrUnsupported
+	ErrUnsupported = gocql.ErrUnsupported
+	// ErrTooManyStmts is a alias of gocql.ErrTooManyStmts
+	ErrTooManyStmts = gocql.ErrTooManyStmts
+	// ErrUseStmt is a alias of gocql.ErrUseStmt
+	ErrUseStmt = gocql.ErrUseStmt
+	// ErrSessionClosed is a alias of gocql.ErrSessionClosed
+	ErrSessionClosed = gocql.ErrSessionClosed
+	// ErrNoConnections is a alias of gocql.ErrNoConnections
+	ErrNoConnections = gocql.ErrNoConnections
+	// ErrNoKeyspace is a alias of gocql.ErrNoKeyspace
+	ErrNoKeyspace = gocql.ErrNoKeyspace
+	// ErrKeyspaceDoesNotExist is a alias of gocql.ErrKeyspaceDoesNotExist
 	ErrKeyspaceDoesNotExist = gocql.ErrKeyspaceDoesNotExist
-	ErrNoMetadata           = gocql.ErrNoMetadata
-	ErrNoHosts              = gocql.ErrNoHosts
+	// ErrNoMetadata is a alias of gocql.ErrNoMetadata
+	ErrNoMetadata = gocql.ErrNoMetadata
+	// ErrNoHosts is a alias of gocql.ErrNoHosts
+	ErrNoHosts = gocql.ErrNoHosts
+	// ErrNoConnectionsStarted is a alias of gocql.ErrNoConnectionsStarted
 	ErrNoConnectionsStarted = gocql.ErrNoConnectionsStarted
-	ErrHostQueryFailed      = gocql.ErrHostQueryFailed
+	// ErrHostQueryFailed is a alias of gocql.ErrHostQueryFailed
+	ErrHostQueryFailed = gocql.ErrHostQueryFailed
 )
 
+// Cassandra represent an interface to query on cassandra
 type Cassandra interface {
 	Open(ctx context.Context) error
 	Close(ctx context.Context) error
 	Query(stmt string, names []string) *Queryx
 }
 
+// ClusterConfig represent an interface of cassandra cluster configuation
 type ClusterConfig interface {
 	CreateSession() (*gocql.Session, error)
 }
 
 type (
-	Session       = gocql.Session
-	Cmp           = qb.Cmp
-	BatchBuilder  = qb.BatchBuilder
+	// Session is a alias of gocql.Session
+	Session = gocql.Session
+	// Cmp is a alias of qb.Cmp
+	Cmp = qb.Cmp
+	// BatchBuilder is a alias of qb.BatchBuilder
+	BatchBuilder = qb.BatchBuilder
+	// InsertBuilder is a alias of qb.InsertBuilder
 	InsertBuilder = qb.InsertBuilder
+	// DeleteBuilder is a alias of qb.DeleteBuilder
 	DeleteBuilder = qb.DeleteBuilder
+	// UpdateBuilder is a alias of qb.UpdateBuilder
 	UpdateBuilder = qb.UpdateBuilder
-	Queryx        = gocqlx.Queryx
+	// Queryx is a alias of gocqlx.Queryx
+	Queryx = gocqlx.Queryx
 )
 
 type (
@@ -142,6 +164,7 @@ type (
 	}
 )
 
+// New initialize and return the cassandra client, or any error occurred.
 func New(opts ...Option) (Cassandra, error) {
 	c := new(client)
 	for _, opt := range append(defaultOpts, opts...) {
@@ -276,6 +299,7 @@ func New(opts ...Option) (Cassandra, error) {
 	return c, nil
 }
 
+// Open creates a session to cassandra and return any error occurred
 func (c *client) Open(ctx context.Context) (err error) {
 	if c.session, err = c.cluster.CreateSession(); err != nil {
 		return err
@@ -283,15 +307,18 @@ func (c *client) Open(ctx context.Context) (err error) {
 	return nil
 }
 
+// Close closes the session to cassandra
 func (c *client) Close(ctx context.Context) error {
 	c.session.Close()
 	return nil
 }
 
+// Query creates an query that can be executed on cassandra
 func (c *client) Query(stmt string, names []string) *Queryx {
 	return gocqlx.Query(c.session.Query(stmt), names)
 }
 
+// Select build and returns the cql string and the named args
 func Select(table string, columns []string, cmps ...Cmp) (stmt string, names []string) {
 	sb := qb.Select(table).Columns(columns...)
 	for _, cmp := range cmps {
@@ -300,6 +327,7 @@ func Select(table string, columns []string, cmps ...Cmp) (stmt string, names []s
 	return sb.ToCql()
 }
 
+// Delete returns the delete builder
 func Delete(table string, cmps ...Cmp) *DeleteBuilder {
 	db := qb.Delete(table)
 	for _, cmp := range cmps {
@@ -308,30 +336,37 @@ func Delete(table string, cmps ...Cmp) *DeleteBuilder {
 	return db
 }
 
+// Insert returns the insert builder
 func Insert(table string, columns ...string) *InsertBuilder {
 	return qb.Insert(table).Columns(columns...)
 }
 
+// Update returns the update builder
 func Update(table string) *UpdateBuilder {
 	return qb.Update(table)
 }
 
+// Batch returns the batch builder
 func Batch() *BatchBuilder {
 	return qb.Batch()
 }
 
+// Eq returns the equal comparator
 func Eq(column string) Cmp {
 	return qb.Eq(column)
 }
 
+// In returns the in comparator
 func In(column string) Cmp {
 	return qb.In(column)
 }
 
+// Contains return the contains comparator
 func Contains(column string) Cmp {
 	return qb.Contains(column)
 }
 
+// WrapErrorWithKeys wraps the cassandra error to Vald internal error
 func WrapErrorWithKeys(err error, keys ...string) error {
 	switch err {
 	case ErrNotFound:
