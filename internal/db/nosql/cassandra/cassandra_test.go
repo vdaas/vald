@@ -1252,7 +1252,7 @@ func Test_client_Open(t *testing.T) {
 			want: want{},
 		},
 		{
-			name: "open create session and return any error if occured",
+			name: "open create session and return any error if occurred",
 			args: args{
 				ctx: context.Background(),
 			},
