@@ -26,6 +26,7 @@ import (
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e/strategy"
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/grpc"
 )
 
 var (
@@ -53,16 +54,16 @@ func init() {
 }
 
 func BenchmarkValdGateway_gRPC_Sequential(b *testing.B) {
-	ctx := context.Background()
-	client, err := vald.New(ctx,
+	client := vald.New(
+		vald.WithClient(grpc.New(
+			grpc.WithAddrs(grpcAddr),
+		)),
 		vald.WithAddr(
 			grpcAddr,
 		),
 	)
-	if err != nil {
-		b.Fatal(err)
-	}
-
+	ctx, cancel := context.WithCancel(context.TODO())
+	defer cancel()
 	for _, name := range targets {
 		bench := e2e.New(
 			b,
@@ -78,16 +79,17 @@ func BenchmarkValdGateway_gRPC_Sequential(b *testing.B) {
 }
 
 func BenchmarkValdGateway_gRPC_Stream(b *testing.B) {
-	ctx := context.Background()
-	client, err := vald.New(ctx,
+	client := vald.New(
+		vald.WithClient(grpc.New(
+			grpc.WithAddrs(grpcAddr),
+		)),
 		vald.WithAddr(
 			grpcAddr,
 		),
 	)
-	if err != nil {
-		b.Fatal(err)
-	}
 
+	ctx, cancel := context.WithCancel(context.TODO())
+	defer cancel()
 	for _, name := range targets {
 		bench := e2e.New(
 			b,
