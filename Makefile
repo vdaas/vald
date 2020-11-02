@@ -177,6 +177,7 @@ GO_SOURCES = $(eval GO_SOURCES := $(shell find \
 		-not -path './hack/license/*' \
 		-not -path './hack/swagger/*' \
 		-not -path './hack/tools/*' \
+		-not -path './tests/*' \
 		-type f \
 		-name '*.go' \
 		-not -regex '.*options?\.go' \
@@ -198,6 +199,7 @@ GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell find \
 		-not -path './hack/license/*' \
 		-not -path './hack/swagger/*' \
 		-not -path './hack/tools/*' \
+		-not -path './tests/*' \
 		-type f \
 		-regex '.*options?\.go' \
 		-not -name '*_test.go' \
