@@ -23,13 +23,14 @@ import (
 	"net/url"
 
 	"github.com/vdaas/vald/internal/backoff"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
 type Option func(*transport) error
 
 var (
-	defaultOptions = []Option{
+	defaultOpts = []Option{
 		WithProxy(http.ProxyFromEnvironment),
 		WithEnableKeepAlives(true),
 		WithEnableCompression(true),
@@ -38,9 +39,10 @@ var (
 
 func WithProxy(px func(*http.Request) (*url.URL, error)) Option {
 	return func(tr *transport) error {
-		if px != nil {
-			tr.Proxy = px
+		if px == nil {
+			return errors.NewErrInvalidOption("proxy", px)
 		}
+		tr.Proxy = px
 
 		return nil
 	}
@@ -48,9 +50,10 @@ func WithProxy(px func(*http.Request) (*url.URL, error)) Option {
 
 func WithDialContext(dx func(ctx context.Context, network, addr string) (net.Conn, error)) Option {
 	return func(tr *transport) error {
-		if dx != nil {
-			tr.DialContext = dx
+		if dx == nil {
+			return errors.NewErrInvalidOption("dialContext", dx)
 		}
+		tr.DialContext = dx
 
 		return nil
 	}
@@ -59,9 +62,12 @@ func WithDialContext(dx func(ctx context.Context, network, addr string) (net.Con
 
 func WithTLSHandshakeTimeout(dur string) Option {
 	return func(tr *transport) error {
+		if len(dur) == 0 {
+			return errors.NewErrInvalidOption("TLSHandshakeTimeout", dur)
+		}
 		d, err := timeutil.Parse(dur)
 		if err != nil {
-			return err
+			return errors.NewErrCriticalOption("TLSHandshakeTimeout", dur)
 		}
 
 		tr.TLSHandshakeTimeout = d
@@ -112,9 +118,12 @@ func WithMaxConnsPerHost(cn int) Option {
 
 func WithIdleConnTimeout(dur string) Option {
 	return func(tr *transport) error {
+		if len(dur) == 0 {
+			return errors.NewErrInvalidOption("idleConnTimeout", dur)
+		}
 		d, err := timeutil.Parse(dur)
 		if err != nil {
-			return err
+			return errors.NewErrCriticalOption("idleConnTimeout", dur)
 		}
 
 		tr.IdleConnTimeout = d
@@ -125,9 +134,12 @@ func WithIdleConnTimeout(dur string) Option {
 
 func WithResponseHeaderTimeout(dur string) Option {
 	return func(tr *transport) error {
+		if len(dur) == 0 {
+			return errors.NewErrInvalidOption("responseHeaderTimeout", dur)
+		}
 		d, err := timeutil.Parse(dur)
 		if err != nil {
-			return err
+			return errors.NewErrCriticalOption("responseHeaderTimeout", dur)
 		}
 
 		tr.ResponseHeaderTimeout = d
@@ -138,9 +150,12 @@ func WithResponseHeaderTimeout(dur string) Option {
 
 func WithExpectContinueTimeout(dur string) Option {
 	return func(tr *transport) error {
+		if len(dur) == 0 {
+			return errors.NewErrInvalidOption("expectContinueTimeout", dur)
+		}
 		d, err := timeutil.Parse(dur)
 		if err != nil {
-			return err
+			return errors.NewErrCriticalOption("expectContinueTimeout", dur)
 		}
 
 		tr.ExpectContinueTimeout = d
@@ -151,9 +166,10 @@ func WithExpectContinueTimeout(dur string) Option {
 
 func WithProxyConnectHeader(header http.Header) Option {
 	return func(tr *transport) error {
-		if header != nil {
-			tr.ProxyConnectHeader = header
+		if header == nil {
+			return errors.NewErrInvalidOption("proxyConnectHeader", header)
 		}
+		tr.ProxyConnectHeader = header
 
 		return nil
 	}
