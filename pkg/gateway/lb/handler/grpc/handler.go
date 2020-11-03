@@ -153,6 +153,14 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		}
 		return nil, status.WrapWithNotFound(fmt.Sprintf("SearchByID API uuid %s's object not found", req.GetId()), err, info.Get())
 	}
+	vl := len(vec.GetVector())
+	if vl < 2 {
+		err = errors.ErrInvalidDimensionSize(vl, 0)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
+		return nil, status.WrapWithInvalidArgument("SearchByID API invalid vector length fetched", err, req, info.Get())
+	}
 	res, err = s.search(ctx, req.GetConfig(),
 		func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
 			return vc.Search(ctx, &payload.Search_Request{
@@ -273,7 +281,6 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 						break
 					}
 				}
-
 				switch {
 				case pos == rl:
 					res.Results = append([]*payload.Object_Distance{dist}, res.Results...)

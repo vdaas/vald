@@ -19,6 +19,7 @@ package rest
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -49,192 +50,131 @@ func New(ctx context.Context, opts ...Option) (Client, error) {
 	return c, nil
 }
 
-// err := json.Request(ctx, http.MethodPost, c.addr+"/search", searchRequestToNgtdSearchRequest(req), &res)
-// return nil, errors.ErrUnsupportedClientMethod
-
 func (c *ngtdClient) Exists(ctx context.Context, in *payload.Object_ID, opts ...grpc.CallOption) (oid *payload.Object_ID, err error) {
-	err := json.Request(ctx, http.MethodPost, c.addr+"/search", searchRequestToNgtdSearchRequest(req), &res)
-	_, err = c.c.Do(ctx, c.addr, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) (interface{}, error) {
-		id, err := proto.NewNGTDClient(conn).GetObject(ctx, &proto.GetObjectRequest{
-			Id: []byte(in.GetId()),
-		})
-		if err != nil {
-			return nil, err
-		}
-		oid = &payload.Object_ID{
-			Id: string(id.GetId()),
-		}
-		return oid, nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	return oid, nil
+	id, err := c.GetObject(ctx, in, opts...)
+	return &payload.Object_ID{
+		Id: id.GetId(),
+	}, nil
 }
 
 func (c *ngtdClient) Search(ctx context.Context, in *payload.Search_Request, opts ...grpc.CallOption) (*payload.Search_Response, error) {
-	res, err := c.c.Do(ctx, c.addr, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) (interface{}, error) {
-		return proto.NewNGTDClient(conn).Search(ctx, searchRequestToNgtdSearchRequest(in), copts...)
-	})
+	vec := make([]float64, 0, len(in.GetVector()))
+	for _, v := range in.GetVector() {
+		vec = append(vec, float64(v))
+	}
+	var res model.SearchResponse
+	err := json.Request(ctx, http.MethodPost, c.addr+"/search", model.SearchRequest{
+		Vector:  vec,
+		Size:    int(in.GetConfig().GetNum()),
+		Epsilon: in.GetConfig().GetEpsilon(),
+	}, &res)
 	if err != nil {
 		return nil, err
 	}
-	return ngtdSearchResponseToSearchResponse(res.(*proto.SearchResponse)), nil
+	sr := &payload.Search_Response{
+		Results: make([]*payload.Object_Distance, 0, len(res.Result)),
+	}
+	for _, r := range res.Result {
+		sr.Results = append(sr.Results, &payload.Object_Distance{
+			Id:       r.ID,
+			Distance: r.Distance,
+		})
+	}
+	return sr, nil
 }
 
 func (c *ngtdClient) SearchByID(ctx context.Context, in *payload.Search_IDRequest, opts ...grpc.CallOption) (*payload.Search_Response, error) {
-	res, err := c.c.Do(ctx, c.addr, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) (interface{}, error) {
-		return proto.NewNGTDClient(conn).SearchByID(ctx, searchIDRequestToNgtdSearchRequest(in), copts...)
-	})
+	var res model.SearchResponse
+	err := json.Request(ctx, http.MethodPost, c.addr+"/search", model.SearchRequest{
+		ID:      in.GetId(),
+		Size:    int(in.GetConfig().GetNum()),
+		Epsilon: in.GetConfig().GetEpsilon(),
+	}, &res)
 	if err != nil {
 		return nil, err
 	}
-	return ngtdSearchResponseToSearchResponse(res.(*proto.SearchResponse)), nil
+	sr := &payload.Search_Response{
+		Results: make([]*payload.Object_Distance, 0, len(res.Result)),
+	}
+	for _, r := range res.Result {
+		sr.Results = append(sr.Results, &payload.Object_Distance{
+			Id:       r.ID,
+			Distance: r.Distance,
+		})
+	}
+	return sr, nil
 }
 
 func (c *ngtdClient) StreamSearch(ctx context.Context, opts ...grpc.CallOption) (res vald.Search_StreamSearchClient, err error) {
-	_, err = c.c.Do(ctx, c.addr, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) (interface{}, error) {
-		st, err := proto.NewNGTDClient(conn).StreamSearch(ctx, copts...)
-		if err != nil {
-			return nil, err
-		}
-		res = NewStreamSearchClient(st)
-		return res, nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
+	return nil, errors.ErrUnsupportedClientMethod
 }
 
 func (c *ngtdClient) StreamSearchByID(ctx context.Context, opts ...grpc.CallOption) (res vald.Search_StreamSearchByIDClient, err error) {
-	_, err = c.c.Do(ctx, c.addr, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) (interface{}, error) {
-		st, err := proto.NewNGTDClient(conn).StreamSearch(ctx, copts...)
-		if err != nil {
-			return nil, err
-		}
-		res = NewStreamSearchByIDClient(st)
-		return res, nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
+	return nil, errors.ErrUnsupportedClientMethod
 }
 
 func (c *ngtdClient) MultiSearch(ctx context.Context, in *payload.Search_MultiRequest, opts ...grpc.CallOption) (res *payload.Search_Responses, err error) {
-	_, err = c.c.Do(ctx, c.addr, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) (interface{}, error) {
-		res = &payload.Search_Responses{
-			Responses: make([]*payload.Search_Response, 0, len(in.GetRequests())),
+	res = &payload.Search_Responses{
+		Responses: make([]*payload.Search_Response, 0, len(in.GetRequests())),
+	}
+	for _, req := range in.GetRequests() {
+		r, err := c.Search(ctx, req)
+		if err == nil {
+			res.Responses = append(res.Responses, r)
 		}
-		for _, req := range in.GetRequests() {
-			sres, err := c.Search(ctx, req, opts...)
-			if err != nil {
-				return nil, err
-			}
-			res.Responses = append(res.Responses, sres)
-		}
-		return nil, nil
-	})
-	if err != nil {
-		return nil, err
 	}
 	return res, nil
 }
 
 func (c *ngtdClient) MultiSearchByID(ctx context.Context, in *payload.Search_MultiIDRequest, opts ...grpc.CallOption) (res *payload.Search_Responses, err error) {
-	_, err = c.c.Do(ctx, c.addr, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) (interface{}, error) {
-		res = &payload.Search_Responses{
-			Responses: make([]*payload.Search_Response, 0, len(in.GetRequests())),
+	res = &payload.Search_Responses{
+		Responses: make([]*payload.Search_Response, 0, len(in.GetRequests())),
+	}
+	for _, req := range in.GetRequests() {
+		r, err := c.SearchByID(ctx, req)
+		if err == nil {
+			res.Responses = append(res.Responses, r)
 		}
-		for _, req := range in.GetRequests() {
-			sres, err := c.SearchByID(ctx, req, opts...)
-			if err != nil {
-				return nil, err
-			}
-			res.Responses = append(res.Responses, sres)
-		}
-		return nil, nil
-	})
-	if err != nil {
-		return nil, err
 	}
 	return res, nil
 }
 
-func (c *ngtdClient) Insert(ctx context.Context, in *payload.Insert_Request, opts ...grpc.CallOption) (res *payload.Object_Location, err error) {
-	_, err = c.c.Do(ctx, c.addr, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) (interface{}, error) {
-		data, err := proto.NewNGTDClient(conn).Insert(ctx, &proto.InsertRequest{
-			Id:     []byte(in.GetVector().GetId()),
-			Vector: tofloat64(in.GetVector().GetVector()),
-		}, copts...)
-		if err != nil {
-			return nil, err
-		}
-		if len(data.GetError()) != 0 {
-			return nil, errors.New(data.GetError())
-		}
-		return nil, nil
-	})
+func (c *ngtdClient) Insert(ctx context.Context, in *payload.Insert_Request, opts ...grpc.CallOption) (*payload.Object_Location, error) {
+	vec := make([]float64, 0, len(in.GetVector().GetVector()))
+	for _, v := range in.GetVector().GetVector() {
+		vec = append(vec, float64(v))
+	}
+	var res model.InsertResponse
+	err := json.Request(ctx, http.MethodPost, c.addr+"/insert", model.InsertRequest{
+		ID:     in.GetVector().GetId(),
+		Vector: vec,
+	}, &res)
 	if err != nil {
 		return nil, err
 	}
-	return res, nil
+	return nil, nil
 }
 
 func (c *ngtdClient) StreamInsert(ctx context.Context, opts ...grpc.CallOption) (res vald.Insert_StreamInsertClient, err error) {
-	_, err = c.c.Do(ctx, c.addr, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) (interface{}, error) {
-		st, err := proto.NewNGTDClient(conn).StreamInsert(ctx, copts...)
-		if err != nil {
-			return nil, err
-		}
-		res = NewStreamInsertClient(st)
-		return res, nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
+	return nil, errors.ErrUnsupportedClientMethod
 }
 
 func (c *ngtdClient) MultiInsert(ctx context.Context, in *payload.Insert_MultiRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
-	_, err = c.c.Do(ctx, c.addr, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) (interface{}, error) {
-		res = &payload.Object_Locations{
-			Locations: make([]*payload.Object_Location, 0, len(in.GetRequests())),
-		}
-		for _, req := range in.GetRequests() {
-			sres, err := c.Insert(ctx, req, opts...)
-			if err != nil {
-				return nil, err
-			}
-			res.Locations = append(res.Locations, sres)
-		}
-		return nil, nil
-	})
-	if err != nil {
-		return nil, err
+	req := &model.MultiInsertRequest{
+		InsertRequests: make([]model.InsertRequest, 0, len(in.GetRequests())),
 	}
-	return res, nil
+	for _, i := range in.GetRequests() {
+		vec := make([]float64, 0, len(i.GetVector().GetVector()))
+		for _, v := range i.GetVector().GetVector() {
+			vec = append(vec, float64(v))
+		}
+		req.InsertRequests = append(req.InsertRequests, model.InsertRequest{
+			ID:     i.GetVector().GetId(),
+			Vector: vec,
+		})
+	}
+	var r model.MultiInsertResponse
+	return nil, json.Request(ctx, http.MethodPost, c.addr+"/multiinsert", req, &r)
 }
 
 func (c *ngtdClient) Update(ctx context.Context, in *payload.Update_Request, opts ...grpc.CallOption) (res *payload.Object_Location, err error) {
@@ -256,46 +196,17 @@ func (c *ngtdClient) Update(ctx context.Context, in *payload.Update_Request, opt
 }
 
 func (c *ngtdClient) StreamUpdate(ctx context.Context, opts ...grpc.CallOption) (res vald.Update_StreamUpdateClient, err error) {
-	_, err = c.c.Do(ctx, c.addr, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) (interface{}, error) {
-		ist, err := proto.NewNGTDClient(conn).StreamInsert(ctx, copts...)
-		if err != nil {
-			return nil, err
-		}
-		rst, err := proto.NewNGTDClient(conn).StreamRemove(ctx, copts...)
-		if err != nil {
-			return nil, err
-		}
-		res = NewStreamUpdateClient(ist, rst)
-		return res, nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
+	return nil, errors.ErrUnsupportedClientMethod
 }
 
 func (c *ngtdClient) MultiUpdate(ctx context.Context, in *payload.Update_MultiRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
-	_, err = c.c.Do(ctx, c.addr, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) (interface{}, error) {
-		res = &payload.Object_Locations{
-			Locations: make([]*payload.Object_Location, 0, len(in.GetRequests())),
+	for _, req := range in.GetRequests() {
+		_, err := c.Update(ctx, req)
+		if err != nil {
+			return nil, err
 		}
-		for _, req := range in.GetRequests() {
-			sres, err := c.Update(ctx, req, opts...)
-			if err != nil {
-				return nil, err
-			}
-			res.Locations = append(res.Locations, sres)
-		}
-		return nil, nil
-	})
-	if err != nil {
-		return nil, err
 	}
-	return res, nil
+	return nil, nil
 }
 
 func (c *ngtdClient) Upsert(ctx context.Context, in *payload.Upsert_Request, opts ...grpc.CallOption) (res *payload.Object_Location, err error) {
@@ -313,142 +224,59 @@ func (c *ngtdClient) Upsert(ctx context.Context, in *payload.Upsert_Request, opt
 }
 
 func (c *ngtdClient) StreamUpsert(ctx context.Context, opts ...grpc.CallOption) (res vald.Upsert_StreamUpsertClient, err error) {
-	_, err = c.c.Do(ctx, c.addr, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) (interface{}, error) {
-		st, err := proto.NewNGTDClient(conn).StreamInsert(ctx, copts...)
-		if err != nil {
-			return nil, err
-		}
-		res = NewStreamUpsertClient(c, st)
-		return res, nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
+	return nil, errors.ErrUnsupportedClientMethod
 }
 
 func (c *ngtdClient) MultiUpsert(ctx context.Context, in *payload.Upsert_MultiRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
-	_, err = c.c.Do(ctx, c.addr, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) (interface{}, error) {
-		res = &payload.Object_Locations{
-			Locations: make([]*payload.Object_Location, 0, len(in.GetRequests())),
-		}
-		for _, req := range in.GetRequests() {
-			sres, err := c.Upsert(ctx, req, opts...)
-			if err != nil {
-				return nil, err
-			}
-			res.Locations = append(res.Locations, sres)
-		}
-		return nil, nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
-}
-
-func (c *ngtdClient) Remove(ctx context.Context, in *payload.Remove_Request, opts ...grpc.CallOption) (res *payload.Object_Location, err error) {
-	_, err = c.c.Do(ctx, c.addr, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) (interface{}, error) {
-		res, err := proto.NewNGTDClient(conn).Remove(ctx, &proto.RemoveRequest{
-			Id: []byte(in.GetId().GetId()),
-		}, copts...)
+	for _, req := range in.GetRequests() {
+		_, err := c.Upsert(ctx, req)
 		if err != nil {
 			return nil, err
 		}
+	}
+	return nil, nil
+}
 
-		if len(res.GetError()) != 0 {
-			return nil, errors.New(res.GetError())
-		}
-		return nil, nil
-	})
+func (c *ngtdClient) Remove(ctx context.Context, in *payload.Remove_Request, opts ...grpc.CallOption) (*payload.Object_Location, error) {
+	var res model.RemoveResponse
+	err := json.Request(ctx, http.MethodGet, c.addr+"/remove/"+in.GetId().GetId(), nil, &res)
 	if err != nil {
 		return nil, err
 	}
-	return res, nil
+	return nil, nil
 }
 
 func (c *ngtdClient) StreamRemove(ctx context.Context, opts ...grpc.CallOption) (res vald.Remove_StreamRemoveClient, err error) {
-	_, err = c.c.Do(ctx, c.addr, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) (interface{}, error) {
-		st, err := proto.NewNGTDClient(conn).StreamRemove(ctx, copts...)
-		if err != nil {
-			return nil, err
-		}
-		res = NewStreamRemoveClient(st)
-		return res, nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
+	return nil, errors.ErrUnsupportedClientMethod
 }
 
 func (c *ngtdClient) MultiRemove(ctx context.Context, in *payload.Remove_MultiRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
-	_, err = c.c.Do(ctx, c.addr, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) (interface{}, error) {
-		res, err = vald.NewValdClient(conn).MultiRemove(ctx, in, append(copts, opts...)...)
-		return nil, err
-	})
-	if err != nil {
-		return nil, err
+	req := &model.MultiRemoveRequest{
+		IDs: make([]string, 0, len(in.GetRequests())),
 	}
-	return res, nil
+	for _, i := range in.GetRequests() {
+		req.IDs = append(req.IDs, i.GetId().GetId())
+	}
+	var r model.MultiInsertResponse
+	return nil, json.Request(ctx, http.MethodPost, c.addr+"/multiremove", req, &r)
 }
 
 func (c *ngtdClient) GetObject(ctx context.Context, in *payload.Object_ID, opts ...grpc.CallOption) (*payload.Object_Vector, error) {
-	res, err := c.c.Do(ctx, c.addr, func(
-		ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) (interface{}, error) {
-		res, err := proto.NewNGTDClient(conn).GetObject(ctx, &proto.GetObjectRequest{
-			Id: []byte(in.GetId()),
-		}, copts...)
-		if err != nil {
-			return nil, err
-		}
-
-		if len(res.GetError()) != 0 {
-			return nil, errors.New(res.GetError())
-		}
-		return res, nil
-	})
+	var res model.GetObjectsResponse
+	err := json.Request(ctx, http.MethodPost, c.addr+"/getobjects", model.GetObjectsRequest{
+		IDs: []string{in.GetId()},
+	}, &res)
 	if err != nil {
 		return nil, err
 	}
-	r, ok := res.(*proto.GetObjectResponse)
-	if !ok {
-		return nil, nil
-	}
-	return &client.ObjectVector{
-		Id:     string(r.GetId()),
-		Vector: r.GetVector(),
+	return &payload.Object_Vector{
+		Id:     res.Result[0].ID,
+		Vector: res.Result[0].Vector,
 	}, nil
 }
 
 func (c *ngtdClient) StreamGetObject(ctx context.Context, opts ...grpc.CallOption) (res vald.Object_StreamGetObjectClient, err error) {
-	_, err = c.c.Do(ctx, c.addr, func(
-		ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) (interface{}, error) {
-		st, err := proto.NewNGTDClient(conn).StreamGetObject(ctx, copts...)
-		if err != nil {
-			return nil, err
-		}
-		res = NewStreamObjectClient(st)
-		return nil, nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
+	return nil, errors.ErrUnsupportedClientMethod
 }
 
 func (c *ngtdClient) CreateIndex(
@@ -456,14 +284,11 @@ func (c *ngtdClient) CreateIndex(
 	in *client.ControlCreateIndexRequest,
 	opts ...grpc.CallOption,
 ) (*client.Empty, error) {
-	_, err := c.c.Do(ctx, c.addr,
-		func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-			return proto.NewNGTDClient(conn).CreateIndex(ctx, &proto.CreateIndexRequest{
-				PoolSize: in.GetPoolSize(),
-			}, copts...)
-		},
-	)
-	return nil, err
+	err := json.Request(ctx, http.MethodGet, fmt.Sprintf("%s/index/create/%d", c.addr, in.GetPoolSize()), nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
 }
 
 func (c *ngtdClient) SaveIndex(
@@ -471,11 +296,7 @@ func (c *ngtdClient) SaveIndex(
 	req *client.Empty,
 	opts ...grpc.CallOption,
 ) (*client.Empty, error) {
-	_, err := c.c.Do(ctx, c.addr,
-		func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-			return proto.NewNGTDClient(conn).SaveIndex(ctx, new(proto.Empty), copts...)
-		},
-	)
+	err := json.Request(ctx, http.MethodGet, c.addr+"/index/save", nil, nil)
 	return nil, err
 }
 
