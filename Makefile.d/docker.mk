@@ -155,7 +155,7 @@ docker/build/gateway-backup:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/gateway/backup/Dockerfile \
-	    -t $(REPO)/$(BACKUP_GATEWAY_IMAGE)$(TAG) . \
+	    -t $(REPO)/$(BACKUP_GATEWAY_IMAGE):$(TAG) . \
 	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
