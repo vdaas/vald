@@ -1012,13 +1012,6 @@ When a dependent object has the following feature, you can decide to mock the de
     }
     ```
 
-    And there are 4 rules of mock code.
-    
-    - Same package as the mock target.
-    - File name is `〇〇_mock.go`
-    - Struct name is `Mock{Interface name}`
-    - Method injected from test code is `{Method name}Func`
-
     The following is an example of mock implementation:
 
     ```go
@@ -1055,7 +1048,16 @@ When a dependent object has the following feature, you can decide to mock the de
 
     ```
 
+#### Rules of mock code
+
+There are 4 rules of mock code.
+
+- Same package as the mock target.
+- File name is `〇〇_mock.go`
+- Struct name is `Mock{Interface name}`
+- Method injected from test code is `{Method name}Func`
+
 #### Risk
 
-- We don't know if it's really correct.
+- We don't know if the dependent object is correct.
 - We don't notice the change in dependency.
