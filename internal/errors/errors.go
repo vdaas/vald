@@ -80,7 +80,7 @@ var (
 
 	Wrapf = func(err error, format string, args ...interface{}) error {
 		if err != nil {
-			if format != "" && len(args) > 0 {
+			if format != "" && len(args) != 0 {
 				return Wrap(err, fmt.Sprintf(format, args...))
 			}
 			return err
@@ -98,15 +98,16 @@ var (
 	Unwrap = errors.Unwrap
 
 	Errorf = func(format string, args ...interface{}) error {
+		const delim = " "
 		if format == "" && args == nil && len(args) == 0 {
 			return nil
 		}
-		if args != nil && len(args) > 0 {
+		if len(args) != 0 {
 			if format == "" {
 				for range args {
-					format += "%v "
+					format += "%v" + delim
 				}
-				format = strings.TrimSuffix(format, " ")
+				format = strings.TrimSuffix(format, delim)
 			}
 			return fmt.Errorf(format, args...)
 		}
@@ -120,7 +121,8 @@ var (
 
 		isComparable := reflect.TypeOf(target).Comparable()
 		for {
-			if isComparable && (err == target || err.Error() == target.Error()) {
+			if isComparable && (err == target ||
+				err.Error() == target.Error()) {
 				return true
 			}
 			if x, ok := err.(interface {
