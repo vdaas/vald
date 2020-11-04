@@ -1219,6 +1219,7 @@ func Test_client_Open(t *testing.T) {
 		session                  *gocql.Session
 	}
 	type want struct {
+		c   *client
 		err error
 	}
 	type test struct {
@@ -1226,43 +1227,60 @@ func Test_client_Open(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, error) error
+		checkFunc  func(*client, want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
+	defaultCheckFunc := func(c *client, w want, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(c, w.c) {
+			return errors.New("client is not equal")
 		}
 		return nil
 	}
 	tests := []test{
-		{
-			name: "open create session success",
-			args: args{
-				ctx: context.Background(),
-			},
-			fields: fields{
-				cluster: &MockClusterConfig{
-					CreateSessionFunc: func() (*gocql.Session, error) {
-						return nil, nil
+		func() test {
+			cf := &MockClusterConfig{
+				CreateSessionFunc: func() (*gocql.Session, error) {
+					return &gocql.Session{}, nil
+				},
+			}
+
+			return test{
+				name: "open create session success",
+				args: args{
+					ctx: context.Background(),
+				},
+				fields: fields{
+					cluster: cf,
+				},
+				want: want{
+					c: &client{
+						cluster: cf,
+						session: &gocql.Session{},
 					},
 				},
-			},
-			want: want{},
-		},
-		{
-			name: "open create session and return any error if occurred",
-			args: args{
-				ctx: context.Background(),
-			},
-			fields: fields{
-				cluster: &gocql.ClusterConfig{},
-			},
-			want: want{
-				err: gocql.ErrNoHosts,
-			},
-		},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "open create session and return any error if occurred",
+				args: args{
+					ctx: context.Background(),
+				},
+				fields: fields{
+					cluster: &gocql.ClusterConfig{},
+				},
+				want: want{
+					err: gocql.ErrNoHosts,
+					c: &client{
+						cluster: &gocql.ClusterConfig{},
+					},
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
@@ -1322,7 +1340,7 @@ func Test_client_Open(t *testing.T) {
 			}
 
 			err := c.Open(test.args.ctx)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := test.checkFunc(c, test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -1587,6 +1605,19 @@ func Test_client_Query(t *testing.T) {
 				gocqlx.Query(new(gocql.Session).Query("stmt"), []string{"n"}),
 			},
 		},
+		{
+			name: "query return gocqlx.Query with names",
+			args: args{
+				stmt:  "stmt",
+				names: []string{"n", "n1"},
+			},
+			fields: fields{
+				session: &gocql.Session{},
+			},
+			want: want{
+				gocqlx.Query(new(gocql.Session).Query("stmt"), []string{"n", "n1"}),
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -1697,6 +1728,21 @@ func TestSelect(t *testing.T) {
 				},
 			}
 		}(),
+		func() test {
+			stmt, names := qb.Select("t").Columns("col", "col1").Where(Eq("cmp")).Where(Eq("cmp1")).ToCql()
+			return test{
+				name: "selete return qb.select with cols and cmps",
+				args: args{
+					table:   "t",
+					columns: []string{"col", "col1"},
+					cmps:    []Cmp{Eq("cmp"), Eq("cmp1")},
+				},
+				want: want{
+					wantStmt:  stmt,
+					wantNames: names,
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
@@ -1754,6 +1800,19 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				want: qb.Delete("t").Where(qb.Eq("col")),
+			},
+		},
+		{
+			name: "delete returns qb.delete with cmps",
+			args: args{
+				table: "t",
+				cmps: []Cmp{
+					Eq("col"),
+					Eq("col1"),
+				},
+			},
+			want: want{
+				want: qb.Delete("t").Where(qb.Eq("col")).Where(qb.Eq("col1")),
 			},
 		},
 	}
