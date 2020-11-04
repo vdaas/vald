@@ -987,7 +987,7 @@ When a dependent object has the following feature, you can decide to mock the de
   - Cases where the implementation and test code are not changed but the test result changes
   - System call dependent
 
-#### How to create mock
+#### Implementation
 
 1. Basic mock example.
 
