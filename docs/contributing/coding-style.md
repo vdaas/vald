@@ -983,7 +983,7 @@ When a dependent object has the following feature, you can decide to mock the de
 - Difficult to create error of dependent object (when we will write error test case)
 - Difficult to initialize
   - Random number and time, file IO initialization, environment dependent, etc.
-- Test result may change
+- Test result may change in runtime
   - Cases where the implementation and test code are not changed but the test result changes
   - System call dependent
 
