@@ -1016,7 +1016,7 @@ When a dependent object has the following feature, you can decide to mock the de
     
     - File location is same pacakge as mock target.
     - File name is `〇〇_mock.go`
-    - Structure name are `Mock{Interface name}`
+    - Struct name is `Mock{Interface name}`
     - Method injected from test code is `{Method name}Func`
 
     The following is an example of mock implementation:
