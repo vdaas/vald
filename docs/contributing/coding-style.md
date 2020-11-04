@@ -1056,7 +1056,7 @@ When a dependent object has the following feature, you can decide to mock the de
 
     ```
 
-#### Mock rick
+#### Risk
 
 - We don't know if it's really correct.
 - We don't notice the change in dependency.
