@@ -31,6 +31,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/payload"
 	payloadv1 "github.com/vdaas/vald/apis/grpc/v1/payload"
 	valdv1 "github.com/vdaas/vald/apis/grpc/v1/vald"
+	"github.com/vdaas/vald/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
@@ -88,7 +89,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 			span.End()
 		}
 	}()
-	if len(req.Vector) < 2 {
+	if len(req.Vector) < algorithm.MinimumVectorDimensionSize {
 		return nil, errors.ErrInvalidDimensionSize(len(req.Vector), 0)
 	}
 	return s.search(ctx, req.GetConfig(),
@@ -306,7 +307,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 			span.End()
 		}
 	}()
-	if len(vec.GetVector()) < 2 {
+	if len(vec.GetVector()) < algorithm.MinimumVectorDimensionSize {
 		err = errors.ErrInvalidDimensionSize(len(vec.GetVector()), 0)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
@@ -417,7 +418,7 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 	metas := make([]string, 0, len(vecs.GetVectors()))
 	reqs := make([]*payloadv1.Insert_Request, 0, len(vecs.GetVectors()))
 	for _, vec := range vecs.GetVectors() {
-		if len(vec.GetVector()) < 2 {
+		if len(vec.GetVector()) < algorithm.MinimumVectorDimensionSize {
 			err = errors.ErrInvalidDimensionSize(len(vec.GetVector()), 0)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
@@ -515,7 +516,7 @@ func (s *server) Update(ctx context.Context, vec *payload.Object_Vector) (res *p
 			span.End()
 		}
 	}()
-	if len(vec.GetVector()) < 2 {
+	if len(vec.GetVector()) < algorithm.MinimumVectorDimensionSize {
 		err = errors.ErrInvalidDimensionSize(len(vec.GetVector()), 0)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
@@ -602,7 +603,7 @@ func (s *server) MultiUpdate(ctx context.Context, vecs *payload.Object_Vectors) 
 	}()
 	ids := make([]string, 0, len(vecs.GetVectors()))
 	for _, vec := range vecs.GetVectors() {
-		if len(vec.GetVector()) < 2 {
+		if len(vec.GetVector()) < algorithm.MinimumVectorDimensionSize {
 			err = errors.ErrInvalidDimensionSize(len(vec.GetVector()), 0)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
@@ -638,7 +639,7 @@ func (s *server) Upsert(ctx context.Context, vec *payload.Object_Vector) (*paylo
 		}
 	}()
 
-	if len(vec.GetVector()) < 2 {
+	if len(vec.GetVector()) < algorithm.MinimumVectorDimensionSize {
 		err := errors.ErrInvalidDimensionSize(len(vec.GetVector()), 0)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
@@ -696,7 +697,7 @@ func (s *server) MultiUpsert(ctx context.Context, vecs *payload.Object_Vectors) 
 
 	var errs error
 	for _, vec := range vecs.GetVectors() {
-		if len(vec.GetVector()) < 2 {
+		if len(vec.GetVector()) < algorithm.MinimumVectorDimensionSize {
 			err := errors.ErrInvalidDimensionSize(len(vec.GetVector()), 0)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))

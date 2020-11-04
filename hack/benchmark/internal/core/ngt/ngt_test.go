@@ -22,7 +22,7 @@ import (
 	"testing"
 
 	icore "github.com/vdaas/vald/hack/benchmark/internal/core"
-	"github.com/vdaas/vald/internal/core/ngt"
+	"github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errors"
 
 	"go.uber.org/goleak"

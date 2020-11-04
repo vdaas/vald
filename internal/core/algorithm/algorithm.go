@@ -14,19 +14,14 @@
 // limitations under the License.
 //
 
-// Package rest provides agent ngt REST client functions
-package rest
+// Package algorithm defines vald's core ann algorithm interface & constraint.
+package algorithm
 
-type Option func(*agentClient)
+import "math"
 
-var defaultOptions = []Option{
-	WithAddr("http://127.0.0.1:8081"),
-}
-
-func WithAddr(addr string) Option {
-	return func(ac *agentClient) {
-		if len(addr) != 0 {
-			ac.addr = addr
-		}
-	}
-}
+const (
+	// MaximumVectorDimensionSize is maximum value of vector dimension
+	MaximumVectorDimensionSize = math.MaxInt64
+	// MinimumVectorDimensionSize is minimum value of vector dimension
+	MinimumVectorDimensionSize = 2
+)

@@ -110,18 +110,18 @@ func Test_streamInsert_dataProvider(t *testing.T) {
 		dataset assets.Dataset
 	}
 	type want struct {
-		want func() *client.ObjectVector
+		want func() *client.InsertRequest
 	}
 	type test struct {
 		name       string
 		args       args
 		sisrt      *streamInsert
 		want       want
-		checkFunc  func(want, func() *client.ObjectVector) error
+		checkFunc  func(want, func() *client.InsertRequest) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got func() *client.ObjectVector) error {
+	defaultCheckFunc := func(w want, got func() *client.InsertRequest) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}

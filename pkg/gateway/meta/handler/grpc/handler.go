@@ -25,7 +25,8 @@ import (
 	"github.com/kpango/fuid"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
-	client "github.com/vdaas/vald/internal/client/v1/client/gateway/vald"
+	client "github.com/vdaas/vald/internal/client/v1/client/vald"
+	"github.com/vdaas/vald/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
@@ -86,7 +87,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 		}
 	}()
 	vl := len(req.GetVector())
-	if vl < 2 {
+	if vl < algorithm.MinimumVectorDimensionSize {
 		err = errors.ErrInvalidDimensionSize(vl, 0)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
@@ -274,7 +275,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 	vec := req.GetVector()
 	meta := vec.GetId()
 	vl := len(vec.GetVector())
-	if vl < 2 {
+	if vl < algorithm.MinimumVectorDimensionSize {
 		err = errors.ErrInvalidDimensionSize(vl, 0)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))

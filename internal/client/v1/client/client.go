@@ -18,9 +18,9 @@
 package client
 
 import (
-	"context"
-
+	"github.com/vdaas/vald/apis/grpc/v1/agent/core"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/vald"
 )
 
 type (
@@ -28,16 +28,38 @@ type (
 	ObjectIDs                 = payload.Object_IDs
 	ObjectVector              = payload.Object_Vector
 	ObjectVectors             = payload.Object_Vectors
+	ObjectLocation            = payload.Object_Location
+	ObjectLocations           = payload.Object_Locations
 	SearchRequest             = payload.Search_Request
 	SearchIDRequest           = payload.Search_IDRequest
 	SearchResponse            = payload.Search_Response
+	SearchResponses           = payload.Search_Responses
+	InsertRequest             = payload.Insert_Request
+	UpdateRequest             = payload.Update_Request
+	UpsertRequest             = payload.Upsert_Request
+	RemoveRequest             = payload.Remove_Request
+	SearchMultiRequest        = payload.Search_MultiRequest
+	SearchIDMultiRequest      = payload.Search_MultiIDRequest
+	InsertMultiRequest        = payload.Insert_MultiRequest
+	UpdateMultiRequest        = payload.Update_MultiRequest
+	UpsertMultiRequest        = payload.Upsert_MultiRequest
+	RemoveMultiRequest        = payload.Remove_MultiRequest
 	ControlCreateIndexRequest = payload.Control_CreateIndexRequest
 	InfoIndex                 = payload.Info_Index
+	InfoIndexCount            = payload.Info_Index_Count
 	MetaObject                = payload.Backup_Vector
 	Empty                     = payload.Empty
 	SearchConfig              = payload.Search_Config
 	ObjectDistance            = payload.Object_Distance
 	BackupMetaVector          = payload.Backup_Vector
+
+	Searcher     = vald.SearchClient
+	Inserter     = vald.InsertClient
+	Updater      = vald.UpdateClient
+	Upsertor     = vald.UpsertClient
+	Remover      = vald.RemoveClient
+	ObjectReader = vald.ObjectClient
+	Indexer      = core.AgentClient
 )
 
 type Client interface {
@@ -46,44 +68,13 @@ type Client interface {
 }
 
 type Reader interface {
-	Exists(context.Context, *ObjectID) (*ObjectID, error)
-	Search(context.Context, *SearchRequest) (*SearchResponse, error)
-	SearchByID(context.Context, *SearchIDRequest) (*SearchResponse, error)
-	StreamSearch(context.Context, func() *SearchRequest, func(*SearchResponse, error)) error
-	StreamSearchByID(context.Context, func() *SearchIDRequest, func(*SearchResponse, error)) error
+	Searcher
+	ObjectReader
 }
 
 type Writer interface {
-	Insert(context.Context, *ObjectVector) error
-	StreamInsert(context.Context, func() *ObjectVector, func(error)) error
-	MultiInsert(context.Context, *ObjectVectors) error
-	Update(context.Context, *ObjectVector) error
-	StreamUpdate(context.Context, func() *ObjectVector, func(error)) error
-	MultiUpdate(context.Context, *ObjectVectors) error
-	Remove(context.Context, *ObjectID) error
-	StreamRemove(context.Context, func() *ObjectID, func(error)) error
-	MultiRemove(context.Context, *ObjectIDs) error
-}
-
-type Upserter interface {
-	Upsert(context.Context, *ObjectVector) error
-	MultiUpsert(context.Context, *ObjectVectors) error
-	StreamUpsert(context.Context, func() *ObjectVector, func(error)) error
-}
-
-type ObjectReader interface {
-	GetObject(context.Context, *ObjectID) (*ObjectVector, error)
-	StreamGetObject(context.Context, func() *ObjectID, func(*ObjectVector, error)) error
-}
-
-type MetaObjectReader interface {
-	GetObject(context.Context, *ObjectID) (*MetaObject, error)
-	StreamGetObject(context.Context, func() *ObjectID, func(*MetaObject, error)) error
-}
-
-type Indexer interface {
-	CreateIndex(context.Context, *ControlCreateIndexRequest) error
-	SaveIndex(context.Context) error
-	CreateAndSaveIndex(context.Context, *ControlCreateIndexRequest) error
-	IndexInfo(context.Context) (*InfoIndex, error)
+	Inserter
+	Updater
+	Upsertor
+	Remover
 }

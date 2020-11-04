@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-// Package rest provides vald REST client functions
-package rest
+// Package core provides agent ngt gRPC client functions
+package core
 
 import (
 	"testing"

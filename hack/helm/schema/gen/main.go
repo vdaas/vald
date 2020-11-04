@@ -86,8 +86,10 @@ type Schema struct {
 	SchemaBase
 }
 
+const minimumArgumentLength = 2
+
 func main() {
-	if len(os.Args) < 2 {
+	if len(os.Args) < minimumArgumentLength {
 		log.Fatal(errors.New("invalid argument: must be specify path to the values.yaml"))
 	}
 	err := genJSONSchema(os.Args[1])

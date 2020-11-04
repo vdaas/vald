@@ -20,7 +20,7 @@ package grpc
 import (
 	"testing"
 
-	"github.com/vdaas/vald/internal/client/v1/client/gateway/vald"
+	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/pkg/gateway/meta/service"
 	"go.uber.org/goleak"

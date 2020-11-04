@@ -48,7 +48,7 @@ func (ci *createIndex) Run(ctx context.Context, b *testing.B, c client.Client, d
 }
 
 func (ci *createIndex) do(ctx context.Context, b *testing.B) {
-	if err := ci.Indexer.CreateIndex(ctx, &client.ControlCreateIndexRequest{
+	if _, err := ci.Indexer.CreateIndex(ctx, &client.ControlCreateIndexRequest{
 		PoolSize: ci.poolSize,
 	}); err != nil {
 		b.Error(err)

@@ -39,7 +39,7 @@ var (
 
 	defaultOpts = []Option{
 		WithIndexPath("/tmp/ngt-" + string(fastime.FormattedNow())),
-		WithDimension(0),
+		WithDimension(minimumDimensionSize),
 		WithDefaultRadius(DefaultRadius),
 		WithDefaultEpsilon(DefaultEpsilon),
 		WithDefaultPoolSize(DefaultPoolSize),
@@ -49,10 +49,6 @@ var (
 		WithDistanceType(L2),
 		WithBulkInsertChunkSize(100),
 	}
-)
-
-const (
-	minimumDimensionSize = 2
 )
 
 func WithInMemoryMode(flg bool) Option {
@@ -81,8 +77,8 @@ func WithBulkInsertChunkSize(size int) Option {
 
 func WithDimension(size int) Option {
 	return func(n *ngt) error {
-		if size > dimensionLimit || size < minimumDimensionSize {
-			return errors.ErrInvalidDimensionSize(size, dimensionLimit)
+		if size > ngtVectorDimensionSizeLimit || size < minimumDimensionSize {
+			return errors.ErrInvalidDimensionSize(size, ngtVectorDimensionSizeLimit)
 		}
 
 		if C.ngt_set_property_dimension(n.prop, C.int32_t(size), n.ebuf) == ErrorCode {
