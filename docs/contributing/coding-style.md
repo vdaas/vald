@@ -1037,7 +1037,6 @@ When a dependent object has the following feature, you can decide to mock the de
     The following is an example implementation of test code to create the mock object and mock the implementation.
 
     ```go
-
     tests := []test {
         {
             name: "returns (byte{}, nil) when encode success"
