@@ -73,7 +73,7 @@ require (
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
 	golang.org/x/sys v0.0.0-20200916084744-dbad9cb7cb7a
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
-	gonum.org/v1/plot v0.8.0
+	gonum.org/v1/plot v0.8.1
 	google.golang.org/api v0.32.0
 	google.golang.org/genproto v0.0.0-20200916143405-f6a2fa72f0c4
 	google.golang.org/grpc v1.31.1
