@@ -67,6 +67,9 @@ func (c *ngtdClient) Exists(ctx context.Context, in *payload.Object_ID, opts ...
 		if err != nil {
 			return nil, err
 		}
+		if len(id.GetError()) != 0 {
+			return nil, errors.New(id.GetError())
+		}
 		oid = &payload.Object_ID{
 			Id: string(id.GetId()),
 		}
@@ -82,7 +85,14 @@ func (c *ngtdClient) Search(ctx context.Context, in *payload.Search_Request, opt
 	res, err := c.c.Do(ctx, c.addr, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption) (interface{}, error) {
-		return proto.NewNGTDClient(conn).Search(ctx, searchRequestToNgtdSearchRequest(in), copts...)
+		r, err := proto.NewNGTDClient(conn).Search(ctx, searchRequestToNgtdSearchRequest(in), copts...)
+		if err != nil {
+			return nil, err
+		}
+		if len(r.GetError()) != 0 {
+			return nil, errors.New(r.GetError())
+		}
+		return r, nil
 	})
 	if err != nil {
 		return nil, err
@@ -94,7 +104,14 @@ func (c *ngtdClient) SearchByID(ctx context.Context, in *payload.Search_IDReques
 	res, err := c.c.Do(ctx, c.addr, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption) (interface{}, error) {
-		return proto.NewNGTDClient(conn).SearchByID(ctx, searchIDRequestToNgtdSearchRequest(in), copts...)
+		r, err := proto.NewNGTDClient(conn).SearchByID(ctx, searchIDRequestToNgtdSearchRequest(in), copts...)
+		if err != nil {
+			return nil, err
+		}
+		if len(r.GetError()) != 0 {
+			return nil, errors.New(r.GetError())
+		}
+		return r, nil
 	})
 	if err != nil {
 		return nil, err
@@ -398,7 +415,18 @@ func (c *ngtdClient) MultiRemove(ctx context.Context, in *payload.Remove_MultiRe
 	_, err = c.c.Do(ctx, c.addr, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption) (interface{}, error) {
-		res, err = vald.NewValdClient(conn).MultiRemove(ctx, in, append(copts, opts...)...)
+		for _, req := range in.GetRequests() {
+			id, err := proto.NewNGTDClient(conn).Remove(ctx, &proto.RemoveRequest{
+				Id: []byte(req.GetId().GetId()),
+			}, append(copts, opts...)...)
+			if err != nil {
+				return nil, err
+			}
+			if len(id.GetError()) != 0 {
+				return nil, errors.New(id.GetError())
+			}
+
+		}
 		return nil, err
 	})
 	if err != nil {
