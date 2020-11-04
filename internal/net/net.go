@@ -55,7 +55,7 @@ type (
 	Resolver = net.Resolver
 )
 
-// DefaultResolver is an alias of net.DefaultResolver
+// DefaultResolver is an alias of net.DefaultResolver.
 var DefaultResolver = net.DefaultResolver
 
 // Listen is a wrapper function of the net.Listen function.

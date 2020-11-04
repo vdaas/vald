@@ -26,7 +26,7 @@ jobs:
     name: runner / LanguageTool
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: LanguageTool
         uses: reviewdog/action-languagetool@v1
         with:

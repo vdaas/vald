@@ -27,7 +27,7 @@ jobs:
     container:
       image: vdaas/vald-ci-container:nightly
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: go build
         run: |
           go build ./...

@@ -18,9 +18,7 @@ jobs:
     container:
       image: vdaas/vald-ci-container:nightly
     steps:
-      - uses: actions/checkout@v1
-        with:
-          fetch-depth: 10
+      - uses: actions/checkout@v2
       - name: build protobuf
         run: |
           make proto/all

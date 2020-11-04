@@ -20,13 +20,13 @@ package ngtd
 type Option func(*server)
 
 var defaultOptions = []Option{
-	WithDimentaion(128),
+	WithDimension(128),
 	WithIndexDir("/tmp/ngtd/"),
 	WithServerType(HTTP),
 	WithPort(8200),
 }
 
-func WithDimentaion(dim int) Option {
+func WithDimension(dim int) Option {
 	return func(n *server) {
 		if dim > 0 {
 			n.dim = dim

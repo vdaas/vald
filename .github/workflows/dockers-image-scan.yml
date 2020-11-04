@@ -7,9 +7,7 @@ jobs:
   agent-ngt:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-        with:
-          fetch-depth: 2
+      - uses: actions/checkout@v2
       - name: Build the Docker image
         id: build_image
         run: |
@@ -39,9 +37,7 @@ jobs:
   agent-sidecar:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-        with:
-          fetch-depth: 2
+      - uses: actions/checkout@v2
       - name: Build the Docker image
         id: build_image
         run: |
@@ -71,9 +67,7 @@ jobs:
   discoverer-k8s:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-        with:
-          fetch-depth: 2
+      - uses: actions/checkout@v2
       - name: Build the Docker image
         id: build_image
         run: |
@@ -103,9 +97,7 @@ jobs:
   gateway-vald:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-        with:
-          fetch-depth: 2
+      - uses: actions/checkout@v2
       - name: Build the Docker image
         id: build_image
         run: |
@@ -135,9 +127,7 @@ jobs:
   meta-redis:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-        with:
-          fetch-depth: 2
+      - uses: actions/checkout@v2
       - name: Build the Docker image
         id: build_image
         run: |
@@ -167,9 +157,7 @@ jobs:
   meta-cassandra:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-        with:
-          fetch-depth: 2
+      - uses: actions/checkout@v2
       - name: Build the Docker image
         id: build_image
         run: |
@@ -199,9 +187,7 @@ jobs:
   backup-manager-mysql:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-        with:
-          fetch-depth: 2
+      - uses: actions/checkout@v2
       - name: Build the Docker image
         id: build_image
         run: |
@@ -231,9 +217,7 @@ jobs:
   backup-manager-cassandra:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-        with:
-          fetch-depth: 2
+      - uses: actions/checkout@v2
       - name: Build the Docker image
         id: build_image
         run: |
@@ -263,9 +247,7 @@ jobs:
   compressor:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-        with:
-          fetch-depth: 2
+      - uses: actions/checkout@v2
       - name: Build the Docker image
         id: build_image
         run: |
@@ -295,9 +277,7 @@ jobs:
   manager-index:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-        with:
-          fetch-depth: 2
+      - uses: actions/checkout@v2
       - name: Build the Docker image
         id: build_image
         run: |
@@ -327,9 +307,7 @@ jobs:
   operator-helm:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-        with:
-          fetch-depth: 2
+      - uses: actions/checkout@v2
       - name: Build the Docker image
         id: build_image
         run: |
@@ -359,9 +337,7 @@ jobs:
   loadtest:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-        with:
-          fetch-depth: 2
+      - uses: actions/checkout@v2
       - name: Build the Docker image
         id: build_image
         run: |

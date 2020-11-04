@@ -52,7 +52,7 @@ func BenchmarkAgentNGT_gRPC_Sequential(b *testing.B) {
 			e2e.WithName(name),
 			e2e.WithServerStarter(func(ctx context.Context, tb testing.TB, d assets.Dataset) func() {
 				return ngt.New(
-					ngt.WithDimentaion(d.Dimension()),
+					ngt.WithDimension(d.Dimension()),
 					ngt.WithDistanceType(d.DistanceType()),
 					ngt.WithObjectType(d.ObjectType()),
 				).Run(ctx, tb)
@@ -80,7 +80,7 @@ func BenchmarkAgentNGT_gRPC_Stream(b *testing.B) {
 			e2e.WithName(name),
 			e2e.WithServerStarter(func(ctx context.Context, tb testing.TB, d assets.Dataset) func() {
 				return ngt.New(
-					ngt.WithDimentaion(d.Dimension()),
+					ngt.WithDimension(d.Dimension()),
 					ngt.WithDistanceType(d.DistanceType()),
 					ngt.WithObjectType(d.ObjectType()),
 				).Run(ctx, tb)

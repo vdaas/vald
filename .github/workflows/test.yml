@@ -27,9 +27,7 @@ jobs:
       image: vdaas/vald-ci-container:nightly
     steps:
       - name: Check out code.
-        uses: actions/checkout@v1
-        with:
-          fetch-depth: 10
+        uses: actions/checkout@v2
       - name: Run tests for cmd packages / tparse
         run: |
           make test/cmd/tparse | tee tparse.txt || cat tparse.txt
@@ -43,9 +41,7 @@ jobs:
       image: vdaas/vald-ci-container:nightly
     steps:
       - name: Check out code.
-        uses: actions/checkout@v1
-        with:
-          fetch-depth: 1
+        uses: actions/checkout@v2
       - name: Run tests for internal packages / tparse
         run: |
           make test/internal/tparse | tee tparse.txt || cat tparse.txt
@@ -59,9 +55,7 @@ jobs:
       image: vdaas/vald-ci-container:nightly
     steps:
       - name: Check out code.
-        uses: actions/checkout@v1
-        with:
-          fetch-depth: 1
+        uses: actions/checkout@v2
       - name: Run tests for pkg packages / tparse
         run: |
           make test/pkg/tparse | tee tparse.txt || cat tparse.txt

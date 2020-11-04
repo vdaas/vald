@@ -137,11 +137,18 @@ const (
 	Jaccard
 	// -------------------------------------------------------------.
 
-	// ErrorCode is false.
+	// -------------------------------------------------------------
+	// ErrorCode is false
+	// -------------------------------------------------------------.
 	ErrorCode = C._Bool(false)
+	// -------------------------------------------------------------.
 
+	// -------------------------------------------------------------
+	// dimension constraints
+	// -------------------------------------------------------------.
 	ngtVectorDimensionSizeLimit = 1 << 16
 	minimumDimensionSize        = algorithm.MinimumVectorDimensionSize
+	// -------------------------------------------------------------.
 )
 
 // New returns NGT instance with recreating empty index file.

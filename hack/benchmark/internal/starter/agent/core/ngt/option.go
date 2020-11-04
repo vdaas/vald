@@ -92,7 +92,7 @@ func WithConfig(cfg *config.Data) Option {
 	}
 }
 
-func WithDimentaion(d int) Option {
+func WithDimension(d int) Option {
 	return func(s *server) {
 		if s.cfg != nil && s.cfg.NGT != nil {
 			if d > 0 {

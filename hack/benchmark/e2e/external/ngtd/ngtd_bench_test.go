@@ -23,6 +23,7 @@ import (
 
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/hack/benchmark/internal/client/ngtd/grpc"
+	"github.com/vdaas/vald/hack/benchmark/internal/client/ngtd/rest"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e/strategy"
 	"github.com/vdaas/vald/hack/benchmark/internal/starter/external/ngtd"
@@ -42,6 +43,35 @@ func init() {
 	targets = strings.Split(strings.TrimSpace(dataset), ",")
 }
 
+func BenchmarkNGTD_REST_Sequential(b *testing.B) {
+	ctx := context.Background()
+	client, err := rest.New(ctx)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	for _, name := range targets {
+		bench := e2e.New(
+			b,
+			e2e.WithName(name),
+			e2e.WithServerStarter(func(ctx context.Context, tb testing.TB, d assets.Dataset) func() {
+				return ngtd.New(
+					ngtd.WithDimension(d.Dimension()),
+				).Run(ctx, tb)
+			}),
+			e2e.WithClient(client),
+			e2e.WithStrategy(
+				strategy.NewInsert(),
+				strategy.NewCreateIndex(
+					strategy.WithCreateIndexClient(client),
+				),
+				strategy.NewSearch(),
+			),
+		)
+		bench.Run(ctx, b)
+	}
+}
+
 func BenchmarkNGTD_gRPC_Sequential(b *testing.B) {
 	ctx := context.Background()
 	client, err := grpc.New(ctx)
@@ -55,7 +85,7 @@ func BenchmarkNGTD_gRPC_Sequential(b *testing.B) {
 			e2e.WithName(name),
 			e2e.WithServerStarter(func(ctx context.Context, tb testing.TB, d assets.Dataset) func() {
 				return ngtd.New(
-					ngtd.WithDimentaion(d.Dimension()),
+					ngtd.WithDimension(d.Dimension()),
 					ngtd.WithServerType(ngtd.ServerType(ngtd.GRPC)),
 				).Run(ctx, tb)
 			}),
@@ -85,7 +115,7 @@ func BenchmarkNGTD_gRPC_Stream(b *testing.B) {
 			e2e.WithName(name),
 			e2e.WithServerStarter(func(ctx context.Context, tb testing.TB, d assets.Dataset) func() {
 				return ngtd.New(
-					ngtd.WithDimentaion(d.Dimension()),
+					ngtd.WithDimension(d.Dimension()),
 					ngtd.WithServerType(ngtd.ServerType(ngtd.GRPC)),
 				).Run(ctx, tb)
 			}),
