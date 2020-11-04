@@ -1014,7 +1014,7 @@ When a dependent object has the following feature, you can decide to mock the de
 
     And there are 4 rules of mock code.
     
-    - File location is same pacakge as mock target.
+    - Same package as the mock target.
     - File name is `〇〇_mock.go`
     - Struct name is `Mock{Interface name}`
     - Method injected from test code is `{Method name}Func`
