@@ -74,7 +74,7 @@ func (c *GlobalConfig) UnmarshalJSON(data []byte) (err error) {
 
 // New returns config struct or error when decode the configuration file to actually *Config struct.
 func Read(path string, cfg interface{}) error {
-	f, err := os.OpenFile(path, os.O_RDONLY, 0o600)
+	f, err := os.OpenFile(path, os.O_RDONLY, 0600)
 	if err != nil {
 		return err
 	}
