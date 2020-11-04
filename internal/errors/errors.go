@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"reflect"
 	"runtime"
+	"strings"
 )
 
 var (
@@ -97,10 +98,19 @@ var (
 	Unwrap = errors.Unwrap
 
 	Errorf = func(format string, args ...interface{}) error {
-		if format != "" && args != nil && len(args) > 0 {
+		if format == "" && args == nil && len(args) == 0 {
+			return nil
+		}
+		if args != nil && len(args) > 0 {
+			if format == "" {
+				for range args {
+					format += "%v "
+				}
+				format = strings.TrimSuffix(format, " ")
+			}
 			return fmt.Errorf(format, args...)
 		}
-		return nil
+		return New(format)
 	}
 
 	Is = func(err, target error) bool {
