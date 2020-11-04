@@ -89,7 +89,7 @@ Configuration
 | agent.ngt.default_pool_size | int | `10000` | default create index batch pool size |
 | agent.ngt.default_radius | float | `-1` | default radius used for search |
 | agent.ngt.dimension | int | `4096` | vector dimension |
-| agent.ngt.distance_type | string | `"l2"` | distance type. it should be `l1`, `l2`, `angle`, `hamming`, `cosine`, `normalizedangle`, `normalizedcosine` or `jaccard`. for further details about NGT libraries supported distance is https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference and vald agent's supported NGT distance type is https://pkg.go.dev/github.com/vdaas/vald/internal/core/ngt#pkg-constants |
+| agent.ngt.distance_type | string | `"l2"` | distance type. it should be `l1`, `l2`, `angle`, `hamming`, `cosine`, `normalizedangle`, `normalizedcosine` or `jaccard`. for further details about NGT libraries supported distance is https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference and vald agent's supported NGT distance type is https://pkg.go.dev/github.com/vdaas/vald/internal/core/algorithm/ngt#pkg-constants |
 | agent.ngt.enable_in_memory_mode | bool | `true` | in-memory mode enabled |
 | agent.ngt.enable_proactive_gc | bool | `true` | enable proactive GC call for reducing heap memory allocation |
 | agent.ngt.index_path | string | `""` | path to index data |

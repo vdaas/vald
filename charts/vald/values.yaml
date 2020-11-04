@@ -2181,7 +2181,7 @@ agent:
     # agent.ngt.distance_type -- distance type.
     # it should be `l1`, `l2`, `angle`, `hamming`, `cosine`, `normalizedangle`, `normalizedcosine` or `jaccard`.
     # for further details about NGT libraries supported distance is https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference
-    # and vald agent's supported NGT distance type is https://pkg.go.dev/github.com/vdaas/vald/internal/core/ngt#pkg-constants
+    # and vald agent's supported NGT distance type is https://pkg.go.dev/github.com/vdaas/vald/internal/core/algorithm/ngt#pkg-constants
     distance_type: l2
     # @schema {"name": "agent.ngt.object_type", "type": "string", "enum": ["float", "uint8"]}
     # agent.ngt.object_type -- object type.

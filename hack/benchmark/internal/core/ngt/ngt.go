@@ -22,7 +22,7 @@ import (
 	"os"
 
 	icore "github.com/vdaas/vald/hack/benchmark/internal/core"
-	"github.com/vdaas/vald/internal/core/ngt"
+	"github.com/vdaas/vald/internal/core/algorithm/ngt"
 )
 
 type ObjectType int

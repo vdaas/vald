@@ -60,8 +60,10 @@ type Data struct {
 	Year     int
 }
 
+const minimumArgumentLength = 2
+
 func main() {
-	if len(os.Args) < 2 {
+	if len(os.Args) < minimumArgumentLength {
 		log.Fatal(errors.New("invalid argument"))
 	}
 	for _, path := range dirwalk(os.Args[1]) {

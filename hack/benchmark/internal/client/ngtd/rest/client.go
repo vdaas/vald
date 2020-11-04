@@ -320,4 +320,3 @@ func (c *ngtdClient) IndexInfo(
 ) (res *client.InfoIndexCount, err error) {
 	return nil, errors.ErrUnsupportedClientMethod
 }
-

@@ -27,6 +27,7 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
+	"github.com/vdaas/vald/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
@@ -109,7 +110,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 		}
 	}()
 	vl := len(req.GetVector())
-	if vl < 2 {
+	if vl < algorithm.MinimumVectorDimensionSize {
 		err = errors.ErrInvalidDimensionSize(vl, 0)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
@@ -154,7 +155,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		return nil, status.WrapWithNotFound(fmt.Sprintf("SearchByID API uuid %s's object not found", req.GetId()), err, info.Get())
 	}
 	vl := len(vec.GetVector())
-	if vl < 2 {
+	if vl < algorithm.MinimumVectorDimensionSize {
 		err = errors.ErrInvalidDimensionSize(vl, 0)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
@@ -414,7 +415,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 	vec := req.GetVector().GetVector()
 	uuid := req.GetVector().GetId()
 	vl := len(vec)
-	if vl < 2 {
+	if vl < algorithm.MinimumVectorDimensionSize {
 		err = errors.ErrInvalidDimensionSize(vl, 0)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))

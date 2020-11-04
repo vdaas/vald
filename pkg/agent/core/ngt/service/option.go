@@ -21,7 +21,7 @@ import (
 	"strings"
 	"time"
 
-	core "github.com/vdaas/vald/internal/core/ngt"
+	core "github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/rand"
 	"github.com/vdaas/vald/internal/timeutil"

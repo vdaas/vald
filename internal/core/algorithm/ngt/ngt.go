@@ -30,6 +30,7 @@ import (
 	"sync"
 	"unsafe"
 
+	"github.com/vdaas/vald/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/errors"
 )
 
@@ -139,7 +140,8 @@ const (
 	// ErrorCode is false.
 	ErrorCode = C._Bool(false)
 
-	dimensionLimit = 1 << 16
+	ngtVectorDimensionSizeLimit = 1 << 16
+	minimumDimensionSize        = algorithm.MinimumVectorDimensionSize
 )
 
 // New returns NGT instance with recreating empty index file.
@@ -523,8 +525,8 @@ func (n *ngt) GetVector(id uint) ([]float32, error) {
 		if results == nil {
 			return nil, n.newGoError(n.ebuf)
 		}
-		ret = (*[dimensionLimit]float32)(unsafe.Pointer(results))[:dimension:dimension]
-		// for _, elem := range (*[dimensionLimit]C.float)(unsafe.Pointer(results))[:dimension:dimension]{
+		ret = (*[ngtVectorDimensionSizeLimit]float32)(unsafe.Pointer(results))[:dimension:dimension]
+		// for _, elem := range (*[ngtVectorDimensionSizeLimit]C.float)(unsafe.Pointer(results))[:dimension:dimension]{
 		// 	ret = append(ret, float32(elem))
 		// }
 	case Uint8:
@@ -535,7 +537,7 @@ func (n *ngt) GetVector(id uint) ([]float32, error) {
 			return nil, n.newGoError(n.ebuf)
 		}
 		ret = make([]float32, 0, dimension)
-		for _, elem := range (*[dimensionLimit]C.uint8_t)(unsafe.Pointer(results))[:dimension:dimension] {
+		for _, elem := range (*[ngtVectorDimensionSizeLimit]C.uint8_t)(unsafe.Pointer(results))[:dimension:dimension] {
 			ret = append(ret, float32(elem))
 		}
 	default:
