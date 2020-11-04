@@ -20,6 +20,8 @@ package algorithm
 import "math"
 
 const (
+	// MaximumVectorDimensionSize is maximum value of vector dimension
 	MaximumVectorDimensionSize = math.MaxInt64
+	// MinimumVectorDimensionSize is minimum value of vector dimension
 	MinimumVectorDimensionSize = 2
 )
