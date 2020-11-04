@@ -22,9 +22,12 @@ package e2e
 import (
 	"context"
 	"flag"
+	"io"
 	"os"
 	"strconv"
+	"sync"
 	"testing"
+	"time"
 
 	agent "github.com/vdaas/vald/apis/grpc/agent/core"
 	"github.com/vdaas/vald/apis/grpc/payload"
@@ -52,12 +55,13 @@ func init() {
 	pf := flag.Bool("portforward", false, "enable port forwarding")
 	pfNamespace := flag.String("portforward-ns", "default", "namespace (only for port forward)")
 	pfPodName := flag.String("portforward-pod-name", "vald-agent-ngt-0", "pod name (only for port forward)")
+	pfPodPort := flag.Int("portforward-pod-port", port, "pod gRPC port (only for port forward)")
 
 	flag.Parse()
 
 	if *pf {
 		var err error
-		forwarder, err = portforward.NewPortforward(*pfNamespace, *pfPodName, port, port)
+		forwarder, err = portforward.NewPortforward(*pfNamespace, *pfPodName, port, *pfPodPort)
 		if err != nil {
 			panic(err)
 		}
@@ -196,6 +200,12 @@ func getClient(ctx context.Context) (agent.AgentClient, error) {
 	return agent.NewAgentClient(conn), nil
 }
 
+func sleep(t *testing.T, dur time.Duration) {
+	t.Logf("sleep for %s", dur)
+	time.Sleep(dur)
+	t.Log("sleep finished.")
+}
+
 func TestE2EInsert(t *testing.T) {
 	t.Log("loading")
 	ds, err := hdf5ToDataset(datasetName)
@@ -211,10 +221,30 @@ func TestE2EInsert(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	sc, err := client.StreamInsert(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		for {
+			_, err := sc.Recv()
+			if err == io.EOF {
+				return
+			} else if err != nil {
+				t.Fatal(err)
+			}
+		}
+	}()
+
 	t.Log("insert start")
 	count := 0
 	for k, v := range ds.train {
-		_, err := client.Insert(ctx, &payload.Object_Vector{
+		err := sc.Send(&payload.Object_Vector{
 			Id:     k,
 			Vector: v,
 		})
@@ -228,6 +258,16 @@ func TestE2EInsert(t *testing.T) {
 			t.Logf("inserted: %d", count)
 		}
 	}
+
+	sc.CloseSend()
+
+	wg.Wait()
+
+	t.Log("insert finished.")
+
+	// wait for creating index.
+	// TODO: too long?
+	sleep(t, 3*time.Minute)
 }
 
 func TestE2ESearch(t *testing.T) {
@@ -245,10 +285,42 @@ func TestE2ESearch(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	sc, err := client.StreamSearch(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		k := 0
+		for {
+			res, err := sc.Recv()
+			if err == io.EOF {
+				return
+			} else if err != nil {
+				t.Fatal(err)
+			}
+
+			topKIDs := make([]string, len(res.GetResults()))
+			for i, d := range res.GetResults() {
+				topKIDs[i] = d.Id
+			}
+
+			// TODO: validation
+			t.Logf("result: %#v", topKIDs)
+			t.Logf("expected: %#v", ds.neighbors[strconv.Itoa(k)][:len(topKIDs)])
+
+			k++
+		}
+	}()
+
 	t.Log("search start")
 	count := 0
-	for k, v := range ds.test {
-		res, err := client.Search(ctx, &payload.Search_Request{
+	for _, v := range ds.test {
+		err := sc.Send(&payload.Search_Request{
 			Vector: v,
 			Config: &payload.Search_Config{
 				Num:     100,
@@ -261,28 +333,135 @@ func TestE2ESearch(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		topKIDs := make([]string, len(res.GetResults()))
-		for i, d := range res.GetResults() {
-			topKIDs[i] = d.Id
-		}
-
-		t.Logf("result: %#v", topKIDs)
-		t.Logf("expected: %#v", ds.neighbors[k][:len(topKIDs)])
-
 		count++
-
-		if count > 100 {
-			break
-		}
 
 		if count%1000 == 0 {
 			t.Logf("searched: %d", count)
 		}
 	}
+
+	sc.CloseSend()
+
+	wg.Wait()
+
+	t.Log("search finished.")
 }
 
 func TestE2EUpdate(t *testing.T) {
+	t.Log("loading")
+	ds, err := hdf5ToDataset(datasetName)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log("loading finished")
+
+	ctx := context.Background()
+
+	client, err := getClient(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	sc, err := client.StreamUpdate(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		for {
+			_, err := sc.Recv()
+			if err == io.EOF {
+				return
+			} else if err != nil {
+				t.Fatal(err)
+			}
+		}
+	}()
+
+	t.Log("update start")
+	count := 0
+	for k, v := range ds.train {
+		err := sc.Send(&payload.Object_Vector{
+			Id:     k,
+			Vector: append(v[1:], v[0]), // shift
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		count++
+
+		if count%1000 == 0 {
+			t.Logf("updated: %d", count)
+		}
+	}
+
+	sc.CloseSend()
+
+	wg.Wait()
+
+	t.Log("update finished.")
 }
 
 func TestE2ERemove(t *testing.T) {
+	t.Log("loading")
+	ds, err := hdf5ToDataset(datasetName)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log("loading finished")
+
+	ctx := context.Background()
+
+	client, err := getClient(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	sc, err := client.StreamRemove(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		for {
+			_, err := sc.Recv()
+			if err == io.EOF {
+				return
+			} else if err != nil {
+				t.Fatal(err)
+			}
+		}
+	}()
+
+	t.Log("remove start")
+	count := 0
+	for k, _ := range ds.train {
+		err := sc.Send(&payload.Object_ID{
+			Id: k,
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		count++
+
+		if count%1000 == 0 {
+			t.Logf("removed: %d", count)
+		}
+	}
+
+	sc.CloseSend()
+
+	wg.Wait()
+
+	t.Log("remove finished.")
 }
