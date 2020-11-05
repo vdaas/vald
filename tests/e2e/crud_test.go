@@ -24,6 +24,7 @@ import (
 	"flag"
 	"io"
 	"os"
+	"path/filepath"
 	"reflect"
 	"strconv"
 	"sync"
@@ -57,12 +58,13 @@ func init() {
 	pfNamespace := flag.String("portforward-ns", "default", "namespace (only for port forward)")
 	pfPodName := flag.String("portforward-pod-name", "vald-gateway-0", "pod name (only for port forward)")
 	pfPodPort := flag.Int("portforward-pod-port", port, "pod gRPC port (only for port forward)")
+	kubeConfig := flag.String("kubeconfig", filepath.Join(os.Getenv("HOME"), ".kube", "config"), "kubeconfig path (only for port forward)")
 
 	flag.Parse()
 
 	if *pf {
 		var err error
-		forwarder, err = portforward.NewPortforward(*pfNamespace, *pfPodName, port, *pfPodPort)
+		forwarder, err = portforward.NewPortforward(*kubeConfig, *pfNamespace, *pfPodName, port, *pfPodPort)
 		if err != nil {
 			panic(err)
 		}

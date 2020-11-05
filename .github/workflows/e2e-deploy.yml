@@ -112,7 +112,8 @@ jobs:
             -portforward \
             -portforward-ns=default \
             -portforward-pod-name=${podname} \
-            -portforward-pod-port=8081
+            -portforward-pod-port=8081 \
+            -kubeconfig=${KUBECONFIG}
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
   slack:

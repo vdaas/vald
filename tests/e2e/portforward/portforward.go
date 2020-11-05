@@ -48,14 +48,13 @@ type Portforward struct {
 	stopCh     chan struct{}
 }
 
-func NewPortforward(namespace, podName string, localPort, podPort int) (*Portforward, error) {
-	var kubeConfig string
-
-	if home := os.Getenv("HOME"); home != "" {
-		kubeConfig = filepath.Join(home, ".kube", "config")
-	} else {
-		// TODO: FIXME
-		kubeConfig = os.Getenv("KUBECONFIG")
+func NewPortforward(kubeConfig, namespace, podName string, localPort, podPort int) (*Portforward, error) {
+	if kubeConfig == "" {
+		if home := os.Getenv("HOME"); home != "" {
+			kubeConfig = filepath.Join(home, ".kube", "config")
+		} else {
+			kubeConfig = os.Getenv("KUBECONFIG")
+		}
 	}
 
 	config, err := clientcmd.BuildConfigFromFlags("", kubeConfig)
