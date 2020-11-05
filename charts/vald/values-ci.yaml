@@ -37,10 +37,10 @@ agent:
       cpu: 100m
       memory: 50Mi
   ngt:
-    auto_index_duration_limit: 60s
-    auto_index_check_duration: 5s
-    auto_index_length: 10
-    dimension: 6
+    auto_index_duration_limit: 3m
+    auto_index_check_duration: 1m
+    auto_index_length: 10000
+    dimension: 784
 
 discoverer:
   minReplicas: 1
