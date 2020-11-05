@@ -21,7 +21,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	icore "github.com/vdaas/vald/hack/benchmark/internal/core"
+	"github.com/vdaas/vald/hack/benchmark/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/yahoojapan/gongt"
 )
@@ -44,7 +44,7 @@ type core struct {
 	*gongt.NGT
 }
 
-func New(opts ...Option) (ialgorithm.Bit64, error) {
+func New(opts ...Option) (algorithm.Bit64, error) {
 	c := new(core)
 	for _, opt := range append(defaultOptions, opts...) {
 		opt(c)

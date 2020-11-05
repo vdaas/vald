@@ -21,7 +21,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	c "github.com/vdaas/vald/hack/benchmark/internal/core"
+	c "github.com/vdaas/vald/hack/benchmark/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/core/algorithm/ngt"
 )
 

@@ -24,23 +24,23 @@ import (
 
 	"github.com/vdaas/vald/hack/benchmark/core/benchmark"
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
-	"github.com/vdaas/vald/hack/benchmark/internal/core"
+	"github.com/vdaas/vald/hack/benchmark/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/errors"
 )
 
 type strategy struct {
-	core32     algorithm.Bit32
-	core64     algorithm.Bit64
+	core32    algorithm.Bit32
+	core64    algorithm.Bit64
 	initBit32 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit32, algorithm.Closer, error)
 	initBit64 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit64, algorithm.Closer, error)
-	closer     algorithm.Closer
-	propName   string
-	preProp32  func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset) ([]uint, error)
-	preProp64  func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset) ([]uint, error)
-	mode       algorithm.Mode
-	prop32     func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset, []uint, *uint64) (interface{}, error)
-	prop64     func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset, []uint, *uint64) (interface{}, error)
-	parallel   bool
+	closer    algorithm.Closer
+	propName  string
+	preProp32 func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset) ([]uint, error)
+	preProp64 func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset) ([]uint, error)
+	mode      algorithm.Mode
+	prop32    func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset, []uint, *uint64) (interface{}, error)
+	prop64    func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset, []uint, *uint64) (interface{}, error)
+	parallel  bool
 }
 
 func newStrategy(opts ...StrategyOption) benchmark.Strategy {

@@ -24,7 +24,7 @@ import (
 
 	"github.com/vdaas/vald/hack/benchmark/core/benchmark"
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
-	"github.com/vdaas/vald/hack/benchmark/internal/core"
+	"github.com/vdaas/vald/hack/benchmark/internal/core/algorithm"
 )
 
 func NewSearch(size int, epsilon, radius float32, opts ...StrategyOption) benchmark.Strategy {

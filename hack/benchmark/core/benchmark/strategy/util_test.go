@@ -23,7 +23,7 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
-	"github.com/vdaas/vald/hack/benchmark/internal/core"
+	"github.com/vdaas/vald/hack/benchmark/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
 )

@@ -21,7 +21,7 @@ import (
 	"reflect"
 	"testing"
 
-	icore "github.com/vdaas/vald/hack/benchmark/internal/core"
+	"github.com/vdaas/vald/hack/benchmark/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errors"
 
@@ -33,18 +33,18 @@ func TestNew(t *testing.T) {
 		opts []Option
 	}
 	type want struct {
-		want ialgorithm.Bit32
+		want algorithm.Bit32
 		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, ialgorithm.Bit32, error) error
+		checkFunc  func(want, algorithm.Bit32, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got ialgorithm.Bit32, err error) error {
+	defaultCheckFunc := func(w want, got algorithm.Bit32, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
