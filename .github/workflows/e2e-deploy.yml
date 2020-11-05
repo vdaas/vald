@@ -21,6 +21,9 @@ on:
       - "v*.*.*"
       - "*.*.*-*"
       - "v*.*.*-*"
+  pull_request:
+    paths:
+      - ".github/workflows/e2e-deploy.yml"
 
 jobs:
   e2e-deploy:
@@ -30,6 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: wait for dockers
+        if: startsWith( github.ref, 'refs/tags/')
         run: |
           tag=$(cat versions/VALD_VERSION)
           for image in \
@@ -47,37 +51,24 @@ jobs:
               sleep 2
             done
           done
-      - name: Fetch golang version
+      - name: Fetch Helm version
         run: |
-          KIND_VERSION=`make version/kind`
           HELM_VERSION=`make version/helm`
-          VALDCLI_VERSION=`make version/valdcli`
-          echo "::set-output name=kind::${KIND_VERSION}"
           echo "::set-output name=helm::${HELM_VERSION}"
-          echo "::set-output name=valdcli::${VALDCLI_VERSION}"
         id: version
-      - uses: engineerd/setup-kind@v0.2.0
+      - uses: rinx/setup-k3d@v0.0.1
         with:
-          version: ${{ steps.version.outputs.kind }}
-          skipClusterCreation: true
+          version: latest
+          name: vald
+      - name: check k3d
+        run: |
+          kubectl cluster-info
       - uses: azure/setup-helm@v1
         with:
           version: ${{ steps.version.outputs.helm }}
       - name: Helm version
         run: |
           helm version
-      - name: start kind
-        run: |
-          kind create cluster --name vald
-          kubectl cluster-info
-      - name: install valdcli
-        run: |
-          curl -OL "https://github.com/vdaas/vald-client-clj/releases/download/${VALDCLI_VERSION}/valdcli-linux-static.zip"
-          unzip valdcli-linux-static.zip
-          chmod a+x valdcli
-          sudo mv valdcli /usr/local/bin/valdcli
-        env:
-          VALDCLI_VERSION: ${{ steps.version.outputs.valdcli }}
       - name: deploy vald
         run: |
           sudo apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld
@@ -103,36 +94,23 @@ jobs:
             sleep 2
           done
           kubectl get pods
-      - name: insert
+      - name: run E2E CRUD
         run: |
-          kubectl port-forward deployment/vald-gateway 8081:8081 &
-          pid=$!
-          sleep 10
-          valdcli rand-vec -d 6 | valdcli -p 8081 insert --elapsed-time abc
-          valdcli -p 8081 stream-insert --elapsed-time << EOF
-          [{:vector [0.4554944575653239 0.17698450824379797 0.14510892025549904 0.45742806648293266 0.8255640513082158 0.6104319034657276], :id "d923e43c-7bdc-40fd-9a95-26e54edc54a5"}
-          {:vector [0.9659463766247516 0.7129174248792229 0.3345289671984051 0.5325195679844225 0.5589141699199695 0.20497376669300038], :id "75666cc5-c5e8-4ba6-a653-7f4f216e2710"}]
-          EOF
-          sleep 1
-          for i in `seq 1 30`
-          do
-            valdcli rand-vec -d 6 | valdcli -p 8081 insert --elapsed-time "v${i}"
-            sleep 1
-          done
-          kill $pid
-      - name: search
-        run: |
-          kubectl port-forward deployment/vald-gateway 8081:8081 &
-          pid=$!
-          sleep 10
-          valdcli -p 8081 exists --elapsed-time abc
-          valdcli -p 8081 get-object --elapsed-time abc
-          valdcli -p 8081 stream-get-object --elapsed-time '["abc" "d923e43c-7bdc-40fd-9a95-26e54edc54a5" "75666cc5-c5e8-4ba6-a653-7f4f216e2710"]'
-          valdcli -p 8081 search --elapsed-time '[0.3 0.3 0.3 0.3 0.3 0.3]'
-          valdcli -p 8081 stream-search --elapsed-time '[[0.3 0.1 0.7 0.3 0.5 0.5] [0.3 0.3 0.4 0.3 0.4 0.4] [0.6 0.1 0.5 0.3 0.4 0.4]]'
-          valdcli -p 8081 search-by-id --elapsed-time abc
-          valdcli -p 8081 stream-search-by-id --elapsed-time '["abc" "d923e43c-7bdc-40fd-9a95-26e54edc54a5" "75666cc5-c5e8-4ba6-a653-7f4f216e2710"]'
-          kill $pid
+          make hack/benchmark/assets/dataset/${DATASET}
+          podname=`kubectl get pods --selector=vald-gateway | tail -1 | awk '{print $1}'`
+          go test \
+            -v tests/e2e/crud_test.go \
+            -tags "e2e" \
+            -timeout 30m \
+            -host=localhost \
+            -port=8081 \
+            -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
+            -portforward \
+            -portforward-ns=default \
+            -portforward-pod-name=${podname} \
+            -portforward-port=8081
+        env:
+          DATASET: fashion-mnist-784-euclidean.hdf5
   slack:
     name: Slack notification
     needs: e2e-deploy
