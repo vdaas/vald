@@ -91,7 +91,7 @@ jobs:
             --values charts/vald/values-ci.yaml \
             --set defaults.image.tag=${tag} \
             --generate-name vald/vald
-          until [ $(kubectl get pod -o json | jq -r "$jq_query" | wc -l) -ge 11 ]
+          until [ $(kubectl get pod -o json | jq -r "$jq_query" | wc -l) -ge 17 ]
           do
             echo "waiting for Vald to be ready..."
             kubectl get pods

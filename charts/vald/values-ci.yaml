@@ -53,7 +53,7 @@ discoverer:
 
 manager:
   compressor:
-    minReplicas: 1
+    minReplicas: 3
     hpa:
       enabled: false
     resources:
@@ -64,7 +64,7 @@ manager:
       compress_algorithm: gob
 
   backup:
-    minReplicas: 1
+    minReplicas: 3
     hpa:
       enabled: false
     resources:
@@ -80,7 +80,7 @@ manager:
         memory: 30Mi
 
 meta:
-  minReplicas: 1
+  minReplicas: 3
   hpa:
     enabled: false
   resources:
