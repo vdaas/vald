@@ -22,6 +22,7 @@ package e2e
 import (
 	"context"
 	"flag"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -40,9 +41,9 @@ import (
 )
 
 var (
-	host        string
-	port        int
-	datasetName string
+	host string
+	port int
+	ds   *dataset
 
 	forwarder *portforward.Portforward
 )
@@ -52,7 +53,7 @@ func init() {
 
 	flag.StringVar(&host, "host", "localhost", "hostname")
 	flag.IntVar(&port, "port", 8081, "gRPC port")
-	flag.StringVar(&datasetName, "dataset", "fashion-mnist-784-euclidean.hdf5", "dataset")
+	datasetName := flag.String("dataset", "fashion-mnist-784-euclidean.hdf5", "dataset")
 
 	pf := flag.Bool("portforward", false, "enable port forwarding")
 	pfNamespace := flag.String("portforward-ns", "default", "namespace (only for port forward)")
@@ -62,8 +63,8 @@ func init() {
 
 	flag.Parse()
 
+	var err error
 	if *pf {
-		var err error
 		forwarder, err = portforward.NewPortforward(*kubeConfig, *pfNamespace, *pfPodName, port, *pfPodPort)
 		if err != nil {
 			panic(err)
@@ -74,6 +75,13 @@ func init() {
 			panic(err)
 		}
 	}
+
+	fmt.Printf("loading dataset: %s", *datasetName)
+	ds, err = hdf5ToDataset(*datasetName)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("loading finished")
 }
 
 func teardown() {
@@ -210,13 +218,6 @@ func sleep(t *testing.T, dur time.Duration) {
 }
 
 func TestE2EInsert(t *testing.T) {
-	t.Log("loading")
-	ds, err := hdf5ToDataset(datasetName)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Log("loading finished")
-
 	ctx := context.Background()
 
 	client, err := getClient(ctx)
@@ -274,13 +275,6 @@ func TestE2EInsert(t *testing.T) {
 }
 
 func TestE2ESearch(t *testing.T) {
-	t.Log("loading")
-	ds, err := hdf5ToDataset(datasetName)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Log("loading finished")
-
 	ctx := context.Background()
 
 	client, err := getClient(ctx)
@@ -356,13 +350,6 @@ func TestE2ESearch(t *testing.T) {
 }
 
 func TestE2ESearchByID(t *testing.T) {
-	t.Log("loading")
-	ds, err := hdf5ToDataset(datasetName)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Log("loading finished")
-
 	ctx := context.Background()
 
 	client, err := getClient(ctx)
@@ -401,7 +388,7 @@ func TestE2ESearchByID(t *testing.T) {
 
 	t.Log("search-by-id start")
 	count := 0
-	for k, _ := range ds.test {
+	for k, _ := range ds.train {
 		err := sc.Send(&payload.Search_IDRequest{
 			Id: k,
 			Config: &payload.Search_Config{
@@ -430,13 +417,6 @@ func TestE2ESearchByID(t *testing.T) {
 }
 
 func TestE2EGetObject(t *testing.T) {
-	t.Log("loading")
-	ds, err := hdf5ToDataset(datasetName)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Log("loading finished")
-
 	ctx := context.Background()
 
 	client, err := getClient(ctx)
@@ -497,13 +477,6 @@ func TestE2EGetObject(t *testing.T) {
 }
 
 func TestE2EUpdate(t *testing.T) {
-	t.Log("loading")
-	ds, err := hdf5ToDataset(datasetName)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Log("loading finished")
-
 	ctx := context.Background()
 
 	client, err := getClient(ctx)
@@ -557,13 +530,6 @@ func TestE2EUpdate(t *testing.T) {
 }
 
 func TestE2ERemove(t *testing.T) {
-	t.Log("loading")
-	ds, err := hdf5ToDataset(datasetName)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Log("loading finished")
-
 	ctx := context.Background()
 
 	client, err := getClient(ctx)
