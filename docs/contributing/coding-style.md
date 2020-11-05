@@ -1055,7 +1055,6 @@ There are 4 rules of mock code.
 - Same package as the mock target.
 - File name is `〇〇_mock.go`
 - Struct name is `Mock{Interface name}`
-- Method injected from test code is `{Method name}Func`
 
 #### Risk
 
