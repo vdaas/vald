@@ -25,6 +25,7 @@ import (
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e/strategy"
 	"github.com/vdaas/vald/hack/benchmark/internal/starter/agent/core/ngt"
+	"github.com/vdaas/vald/internal/client/v1/client/agent/core"
 	"github.com/vdaas/vald/internal/log"
 )
 
@@ -44,7 +45,7 @@ func init() {
 
 func BenchmarkAgentNGT_gRPC_Sequential(b *testing.B) {
 	ctx := context.Background()
-	client := algorithm.New()
+	client := core.New()
 	for _, name := range targets {
 		bench := e2e.New(
 			b,
@@ -71,7 +72,7 @@ func BenchmarkAgentNGT_gRPC_Sequential(b *testing.B) {
 
 func BenchmarkAgentNGT_gRPC_Stream(b *testing.B) {
 	ctx := context.Background()
-	client := algorithm.New()
+	client := core.New()
 
 	for _, name := range targets {
 		bench := e2e.New(
