@@ -973,7 +973,7 @@ As a result, the complexity of the test has increased, and it has become more di
 
 #### Condition
 
-When a dependent object has the following feature, you can decide to mock the dependent.
+When a dependent object has the following factor, you can decide to mock the dependent object.
 
 - Incomplete implementation
 - IO
