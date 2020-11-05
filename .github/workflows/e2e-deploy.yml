@@ -51,6 +51,10 @@ jobs:
               sleep 2
             done
           done
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libhdf5-dev
       - name: Fetch Helm version
         run: |
           HELM_VERSION=`make version/helm`
