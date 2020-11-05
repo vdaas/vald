@@ -318,8 +318,8 @@ func TestE2ESearch(t *testing.T) {
 
 			// TODO: validation
 			// calculate recall?
-			t.Logf("result: %#v", topKIDs)
-			t.Logf("expected: %#v", ds.neighbors[strconv.Itoa(k)][:len(topKIDs)])
+			// t.Logf("result: %#v", topKIDs)
+			// t.Logf("expected: %#v", ds.neighbors[strconv.Itoa(k)][:len(topKIDs)])
 
 			k++
 		}
