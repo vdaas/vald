@@ -24,6 +24,7 @@ import (
 	"flag"
 	"io"
 	"os"
+	"reflect"
 	"strconv"
 	"sync"
 	"testing"
@@ -345,6 +346,146 @@ func TestE2ESearch(t *testing.T) {
 	wg.Wait()
 
 	t.Log("search finished.")
+}
+
+func TestE2ESearchByID(t *testing.T) {
+	t.Log("loading")
+	ds, err := hdf5ToDataset(datasetName)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log("loading finished")
+
+	ctx := context.Background()
+
+	client, err := getClient(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	sc, err := client.StreamSearchByID(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		for {
+			res, err := sc.Recv()
+			if err == io.EOF {
+				return
+			} else if err != nil {
+				t.Fatal(err)
+			}
+
+			topKIDs := make([]string, len(res.GetResults()))
+			for i, d := range res.GetResults() {
+				topKIDs[i] = d.Id
+			}
+
+			// TODO: validation
+			t.Logf("result: %#v", topKIDs)
+		}
+	}()
+
+	t.Log("search-by-id start")
+	count := 0
+	for k, _ := range ds.test {
+		err := sc.Send(&payload.Search_IDRequest{
+			Id: k,
+			Config: &payload.Search_Config{
+				Num:     100,
+				Radius:  -1.0,
+				Epsilon: 0.01,
+				Timeout: 3000000000,
+			},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		count++
+
+		if count%1000 == 0 {
+			t.Logf("searched: %d", count)
+		}
+	}
+
+	sc.CloseSend()
+
+	wg.Wait()
+
+	t.Log("search-by-id finished.")
+}
+
+func TestE2EGetObject(t *testing.T) {
+	t.Log("loading")
+	ds, err := hdf5ToDataset(datasetName)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log("loading finished")
+
+	ctx := context.Background()
+
+	client, err := getClient(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	sc, err := client.StreamGetObject(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		for {
+			res, err := sc.Recv()
+			if err == io.EOF {
+				return
+			} else if err != nil {
+				t.Fatal(err)
+			}
+
+			if !reflect.DeepEqual(res.GetVector(), ds.train[res.GetId()]) {
+				t.Errorf(
+					"result: %#v, expected: %#v",
+					res.GetVector(),
+					ds.train[res.GetId()],
+				)
+			}
+		}
+	}()
+
+	t.Log("get object start")
+	count := 0
+	for k, _ := range ds.train {
+		err := sc.Send(&payload.Object_ID{
+			Id: k,
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		count++
+
+		if count%1000 == 0 {
+			t.Logf("get object: %d", count)
+		}
+	}
+
+	sc.CloseSend()
+
+	wg.Wait()
+
+	t.Log("get object finished.")
 }
 
 func TestE2EUpdate(t *testing.T) {
