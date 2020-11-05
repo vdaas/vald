@@ -101,7 +101,7 @@ jobs:
       - name: run E2E CRUD
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
-          podname=`kubectl get pods --selector=vald-gateway | tail -1 | awk '{print $1}'`
+          podname=`kubectl get pods --selector=app=vald-gateway | tail -1 | awk '{print $1}'`
           go test \
             -v tests/e2e/crud_test.go \
             -tags "e2e" \
@@ -112,14 +112,14 @@ jobs:
             -portforward \
             -portforward-ns=default \
             -portforward-pod-name=${podname} \
-            -portforward-port=8081
+            -portforward-pod-port=8081
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
   slack:
     name: Slack notification
     needs: e2e-deploy
     runs-on: ubuntu-latest
-    if: always()
+    if: startsWith( github.ref, 'refs/tags/')
     steps:
       - uses: technote-space/workflow-conclusion-action@v1
         with:

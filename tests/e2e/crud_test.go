@@ -30,7 +30,7 @@ import (
 	"testing"
 	"time"
 
-	agent "github.com/vdaas/vald/apis/grpc/agent/core"
+	"github.com/vdaas/vald/apis/grpc/gateway/vald"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/tests/e2e/portforward"
 
@@ -55,7 +55,7 @@ func init() {
 
 	pf := flag.Bool("portforward", false, "enable port forwarding")
 	pfNamespace := flag.String("portforward-ns", "default", "namespace (only for port forward)")
-	pfPodName := flag.String("portforward-pod-name", "vald-agent-ngt-0", "pod name (only for port forward)")
+	pfPodName := flag.String("portforward-pod-name", "vald-gateway-0", "pod name (only for port forward)")
 	pfPodPort := flag.Int("portforward-pod-port", port, "pod gRPC port (only for port forward)")
 
 	flag.Parse()
@@ -188,7 +188,7 @@ func readDatasetI32(file *hdf5.File, name string) (map[string][]int32, error) {
 	return vecs, nil
 }
 
-func getClient(ctx context.Context) (agent.AgentClient, error) {
+func getClient(ctx context.Context) (vald.ValdClient, error) {
 	conn, err := grpc.DialContext(
 		ctx,
 		host+":"+strconv.Itoa(port),
@@ -198,7 +198,7 @@ func getClient(ctx context.Context) (agent.AgentClient, error) {
 		return nil, err
 	}
 
-	return agent.NewAgentClient(conn), nil
+	return vald.NewValdClient(conn), nil
 }
 
 func sleep(t *testing.T, dur time.Duration) {
@@ -460,11 +460,11 @@ func TestE2EGetObject(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			if !reflect.DeepEqual(res.GetVector(), ds.train[res.GetId()]) {
+			if !reflect.DeepEqual(res.GetVector(), ds.train[res.GetMeta()]) {
 				t.Errorf(
 					"result: %#v, expected: %#v",
 					res.GetVector(),
-					ds.train[res.GetId()],
+					ds.train[res.GetMeta()],
 				)
 			}
 		}
