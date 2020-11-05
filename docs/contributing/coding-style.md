@@ -1056,5 +1056,7 @@ The implementation of mock object should be:
 
 #### Risk
 
-- We don't know if the dependent object is correct.
-- We don't notice the change in dependency.
+Before applying mock to the object, you should be aware of the following risks.
+
+- We do not know if the dependent object is correctly implemented or not.
+- We cannot notice the change in dependency.
