@@ -310,7 +310,12 @@ func TestE2ESearch(t *testing.T) {
 				topKIDs[i] = d.Id
 			}
 
+			if len(topKIDs) == 0 {
+				t.Errorf("empty result is returned for ID %d: %#v", k, topKIDs)
+			}
+
 			// TODO: validation
+			// calculate recall?
 			t.Logf("result: %#v", topKIDs)
 			t.Logf("expected: %#v", ds.neighbors[strconv.Itoa(k)][:len(topKIDs)])
 
@@ -386,8 +391,9 @@ func TestE2ESearchByID(t *testing.T) {
 				topKIDs[i] = d.Id
 			}
 
-			// TODO: validation
-			t.Logf("result: %#v", topKIDs)
+			if len(topKIDs) == 0 {
+				t.Errorf("empty result is returned: %#v", topKIDs)
+			}
 		}
 	}()
 
