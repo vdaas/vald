@@ -989,6 +989,12 @@ When a dependent object has the following feature, you can decide to mock the de
 
 #### Implementation
 
+The implementation of mock object should be:
+
+- Same package as the mock target.
+- File name is `〇〇_mock.go`
+- Struct name is `Mock{Interface name}
+
 1. Basic mock example.
 
     For example, we decided to mock the following implementation `Encoder`.
@@ -996,7 +1002,7 @@ When a dependent object has the following feature, you can decide to mock the de
     ```go
     package json
 
-    type Encoder struct {
+    type Encoder interface {
         Encode(interface{}) ([]byte, error) 
     }
 
@@ -1047,14 +1053,6 @@ When a dependent object has the following feature, you can decide to mock the de
     ......
 
     ```
-
-#### Rules of mock code
-
-There are 4 rules of mock code.
-
-- Same package as the mock target.
-- File name is `〇〇_mock.go`
-- Struct name is `Mock{Interface name}`
 
 #### Risk
 
