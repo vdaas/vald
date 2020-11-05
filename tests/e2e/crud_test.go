@@ -45,7 +45,13 @@ var (
 	port int
 	ds   *dataset
 
-	num                     int
+	insertNum     int
+	searchNum     int
+	searchByIDNum int
+	getObjectNum  int
+	updateNum     int
+	removeNum     int
+
 	waitAfterInsertDuration time.Duration
 
 	forwarder *portforward.Portforward
@@ -56,7 +62,13 @@ func init() {
 
 	flag.StringVar(&host, "host", "localhost", "hostname")
 	flag.IntVar(&port, "port", 8081, "gRPC port")
-	flag.IntVar(&num, "num", 10000, "number of id-vector pairs used for tests")
+
+	flag.IntVar(&insertNum, "insert-num", 10000, "number of id-vector pairs used for insert")
+	flag.IntVar(&searchNum, "search-num", 10000, "number of id-vector pairs used for search")
+	flag.IntVar(&searchByIDNum, "search-by-id-num", 100, "number of id-vector pairs used for search-by-id")
+	flag.IntVar(&getObjectNum, "get-object-num", 100, "number of id-vector pairs used for get-object")
+	flag.IntVar(&updateNum, "update-num", 10000, "number of id-vector pairs used for update")
+	flag.IntVar(&removeNum, "remove-num", 10000, "number of id-vector pairs used for remove")
 
 	datasetName := flag.String("dataset", "fashion-mnist-784-euclidean.hdf5", "dataset")
 	waitAfterInsert := flag.String("wait-after-insert", "3m", "wait duration after inserting vectors")
@@ -273,7 +285,7 @@ func TestE2EInsert(t *testing.T) {
 			t.Logf("inserted: %d", count)
 		}
 
-		if count >= num {
+		if count >= insertNum {
 			break
 		}
 	}
@@ -354,7 +366,7 @@ func TestE2ESearch(t *testing.T) {
 			t.Logf("searched: %d", count)
 		}
 
-		if count >= num {
+		if count >= searchNum {
 			break
 		}
 	}
@@ -425,7 +437,7 @@ func TestE2ESearchByID(t *testing.T) {
 			t.Logf("searched: %d", count)
 		}
 
-		if count >= num {
+		if count >= searchByIDNum {
 			break
 		}
 	}
@@ -489,7 +501,7 @@ func TestE2EGetObject(t *testing.T) {
 			t.Logf("get object: %d", count)
 		}
 
-		if count >= num {
+		if count >= getObjectNum {
 			break
 		}
 	}
@@ -546,7 +558,7 @@ func TestE2EUpdate(t *testing.T) {
 			t.Logf("updated: %d", count)
 		}
 
-		if count >= num {
+		if count >= updateNum {
 			break
 		}
 	}
@@ -602,7 +614,7 @@ func TestE2ERemove(t *testing.T) {
 			t.Logf("removed: %d", count)
 		}
 
-		if count >= num {
+		if count >= removeNum {
 			break
 		}
 	}
