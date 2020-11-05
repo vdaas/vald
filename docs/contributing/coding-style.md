@@ -987,6 +987,13 @@ When a dependent object has the following factor, you can decide to mock the dep
   - Cases where the implementation and test code are not changed but the test result changes
   - System call inside implementation
 
+#### Risk
+
+Before applying mock to the object, you should be aware of the following risks.
+
+- We do not know if the dependent object is correctly implemented or not.
+- We cannot notice the change in dependency.
+
 #### Implementation
 
 The implementation of mock object should be:
@@ -1053,10 +1060,3 @@ The implementation of mock object should be:
     ......
 
     ```
-
-#### Risk
-
-Before applying mock to the object, you should be aware of the following risks.
-
-- We do not know if the dependent object is correctly implemented or not.
-- We cannot notice the change in dependency.
