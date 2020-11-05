@@ -99,7 +99,7 @@ var (
 
 	Errorf = func(format string, args ...interface{}) error {
 		const delim = " "
-		if format == "" && args == nil && len(args) == 0 {
+		if format == "" && len(args) == 0 {
 			return nil
 		}
 		if len(args) != 0 {

@@ -21,7 +21,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	icore "github.com/vdaas/vald/hack/benchmark/internal/core"
+	c "github.com/vdaas/vald/hack/benchmark/internal/core"
 	"github.com/vdaas/vald/internal/core/algorithm/ngt"
 )
 
@@ -41,7 +41,7 @@ type core struct {
 	ngt.NGT
 }
 
-func New(opts ...Option) (icore.Core32, error) {
+func New(opts ...Option) (c.Bit32, error) {
 	c := new(core)
 	for _, opt := range append(defaultOptions, opts...) {
 		opt(c)

@@ -44,7 +44,7 @@ type core struct {
 	*gongt.NGT
 }
 
-func New(opts ...Option) (icore.Core64, error) {
+func New(opts ...Option) (ialgorithm.Bit64, error) {
 	c := new(core)
 	for _, opt := range append(defaultOptions, opts...) {
 		opt(c)

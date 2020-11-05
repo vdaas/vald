@@ -28,16 +28,16 @@ import (
 type StrategyOption func(*strategy) error
 
 var defaultStrategyOptions = []StrategyOption{
-	WithPreProp32(func(context.Context, *testing.B, core.Core32, assets.Dataset) ([]uint, error) {
+	WithPreProp32(func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset) ([]uint, error) {
 		return nil, nil
 	}),
-	WithPreProp64(func(context.Context, *testing.B, core.Core64, assets.Dataset) ([]uint, error) {
+	WithPreProp64(func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset) ([]uint, error) {
 		return nil, nil
 	}),
 }
 
 func WithPreProp32(
-	fn func(context.Context, *testing.B, core.Core32, assets.Dataset) ([]uint, error),
+	fn func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset) ([]uint, error),
 ) StrategyOption {
 	return func(s *strategy) error {
 		if fn != nil {
@@ -48,7 +48,7 @@ func WithPreProp32(
 }
 
 func WithProp32(
-	fn func(context.Context, *testing.B, core.Core32, assets.Dataset, []uint, *uint64) (interface{}, error),
+	fn func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset, []uint, *uint64) (interface{}, error),
 ) StrategyOption {
 	return func(s *strategy) error {
 		if fn != nil {
@@ -59,7 +59,7 @@ func WithProp32(
 }
 
 func WithPreProp64(
-	fn func(context.Context, *testing.B, core.Core64, assets.Dataset) ([]uint, error),
+	fn func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset) ([]uint, error),
 ) StrategyOption {
 	return func(s *strategy) error {
 		if fn != nil {
@@ -70,7 +70,7 @@ func WithPreProp64(
 }
 
 func WithProp64(
-	fn func(context.Context, *testing.B, core.Core64, assets.Dataset, []uint, *uint64) (interface{}, error),
+	fn func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset, []uint, *uint64) (interface{}, error),
 ) StrategyOption {
 	return func(s *strategy) error {
 		if fn != nil {
@@ -89,25 +89,25 @@ func WithPropName(str string) StrategyOption {
 	}
 }
 
-func WithCore32(
-	fn func(context.Context, *testing.B, assets.Dataset) (core.Core32, core.Closer, error),
+func WithBit32(
+	fn func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit32, algorithm.Closer, error),
 ) StrategyOption {
 	return func(s *strategy) (err error) {
 		if fn != nil {
-			s.mode = core.Float32
-			s.initCore32 = fn
+			s.mode = algorithm.Float32
+			s.initBit32 = fn
 		}
 		return nil
 	}
 }
 
-func WithCore64(
-	fn func(context.Context, *testing.B, assets.Dataset) (core.Core64, core.Closer, error),
+func WithBit64(
+	fn func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit64, algorithm.Closer, error),
 ) StrategyOption {
 	return func(s *strategy) error {
 		if fn != nil {
-			s.mode = core.Float64
-			s.initCore64 = fn
+			s.mode = algorithm.Float64
+			s.initBit64 = fn
 		}
 		return nil
 	}

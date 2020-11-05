@@ -45,7 +45,7 @@ func init() {
 
 func BenchmarkAgentNGT_gRPC_Sequential(b *testing.B) {
 	ctx := context.Background()
-	client := core.New()
+	client := algorithm.New()
 	for _, name := range targets {
 		bench := e2e.New(
 			b,
@@ -72,7 +72,7 @@ func BenchmarkAgentNGT_gRPC_Sequential(b *testing.B) {
 
 func BenchmarkAgentNGT_gRPC_Stream(b *testing.B) {
 	ctx := context.Background()
-	client := core.New()
+	client := algorithm.New()
 
 	for _, name := range targets {
 		bench := e2e.New(

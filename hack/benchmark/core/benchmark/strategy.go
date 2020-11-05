@@ -30,5 +30,5 @@ type Strategy interface {
 	Run(context.Context, *testing.B, assets.Dataset, []uint)
 	Init(context.Context, *testing.B, assets.Dataset) error
 	PreProp(context.Context, *testing.B, assets.Dataset) ([]uint, error)
-	core.Closer
+	algorithm.Closer
 }

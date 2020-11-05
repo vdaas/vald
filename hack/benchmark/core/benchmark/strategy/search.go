@@ -31,12 +31,12 @@ func NewSearch(size int, epsilon, radius float32, opts ...StrategyOption) benchm
 	return newStrategy(append([]StrategyOption{
 		WithPropName("Search"),
 		WithPreProp32(
-			func(ctx context.Context, b *testing.B, c core.Core32, dataset assets.Dataset) (ids []uint, err error) {
+			func(ctx context.Context, b *testing.B, c algorithm.Bit32, dataset assets.Dataset) (ids []uint, err error) {
 				return insertAndCreateIndex32(ctx, c, dataset)
 			},
 		),
 		WithProp32(
-			func(ctx context.Context, b *testing.B, c core.Core32, dataset assets.Dataset, ids []uint, cnt *uint64) (interface{}, error) {
+			func(ctx context.Context, b *testing.B, c algorithm.Bit32, dataset assets.Dataset, ids []uint, cnt *uint64) (interface{}, error) {
 				v, err := dataset.Query(int(atomic.LoadUint64(cnt)) % dataset.TrainSize())
 				if err != nil {
 					return nil, err
@@ -47,12 +47,12 @@ func NewSearch(size int, epsilon, radius float32, opts ...StrategyOption) benchm
 			},
 		),
 		WithPreProp64(
-			func(ctx context.Context, b *testing.B, c core.Core64, dataset assets.Dataset) (ids []uint, err error) {
+			func(ctx context.Context, b *testing.B, c algorithm.Bit64, dataset assets.Dataset) (ids []uint, err error) {
 				return insertAndCreateIndex64(ctx, c, dataset)
 			},
 		),
 		WithProp64(
-			func(ctx context.Context, b *testing.B, c core.Core64, dataset assets.Dataset, ids []uint, cnt *uint64) (interface{}, error) {
+			func(ctx context.Context, b *testing.B, c algorithm.Bit64, dataset assets.Dataset, ids []uint, cnt *uint64) (interface{}, error) {
 				v, err := dataset.Train(int(atomic.LoadUint64(cnt)) % dataset.TrainSize())
 				if err != nil {
 					return nil, err

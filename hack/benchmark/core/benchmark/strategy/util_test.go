@@ -101,7 +101,7 @@ func Test_wrapErrors(t *testing.T) {
 func Test_insertAndCreateIndex32(t *testing.T) {
 	type args struct {
 		ctx     context.Context
-		c       core.Core32
+		c       algorithm.Bit32
 		dataset assets.Dataset
 	}
 	type want struct {
@@ -181,7 +181,7 @@ func Test_insertAndCreateIndex32(t *testing.T) {
 func Test_insertAndCreateIndex64(t *testing.T) {
 	type args struct {
 		ctx     context.Context
-		c       core.Core64
+		c       algorithm.Bit64
 		dataset assets.Dataset
 	}
 	type want struct {

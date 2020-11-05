@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-// Package core provides core interface
-package core
+// Package algorithm provides core interface
+package algorithm
 
 type Mode uint32
 
@@ -28,7 +28,7 @@ type Closer interface {
 	Close()
 }
 
-type Core32 interface {
+type Bit32 interface {
 	Search(vec []float32, size int, epsilon, radius float32) (interface{}, error)
 	Insert(vec []float32) (uint, error)
 	InsertCommit(vec []float32, poolSize uint32) (uint, error)
@@ -43,7 +43,7 @@ type Core32 interface {
 	Closer
 }
 
-type Core64 interface {
+type Bit64 interface {
 	Search(vec []float64, size int, epsilon, radius float32) (interface{}, error)
 	Insert(vec []float64) (uint, error)
 	InsertCommit(vec []float64, poolSize uint32) (uint, error)
