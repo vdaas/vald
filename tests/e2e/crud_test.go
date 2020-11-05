@@ -45,6 +45,9 @@ var (
 	port int
 	ds   *dataset
 
+	num                     int
+	waitAfterInsertDuration time.Duration
+
 	forwarder *portforward.Portforward
 )
 
@@ -53,7 +56,10 @@ func init() {
 
 	flag.StringVar(&host, "host", "localhost", "hostname")
 	flag.IntVar(&port, "port", 8081, "gRPC port")
+	flag.IntVar(&num, "num", 10000, "number of id-vector pairs used for tests")
+
 	datasetName := flag.String("dataset", "fashion-mnist-784-euclidean.hdf5", "dataset")
+	waitAfterInsert := flag.String("wait-after-insert", "3m", "wait duration after inserting vectors")
 
 	pf := flag.Bool("portforward", false, "enable port forwarding")
 	pfNamespace := flag.String("portforward-ns", "default", "namespace (only for port forward)")
@@ -82,6 +88,11 @@ func init() {
 		panic(err)
 	}
 	fmt.Println("loading finished")
+
+	waitAfterInsertDuration, err = time.ParseDuration(*waitAfterInsert)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func teardown() {
@@ -261,6 +272,10 @@ func TestE2EInsert(t *testing.T) {
 		if count%1000 == 0 {
 			t.Logf("inserted: %d", count)
 		}
+
+		if count >= num {
+			break
+		}
 	}
 
 	sc.CloseSend()
@@ -269,9 +284,7 @@ func TestE2EInsert(t *testing.T) {
 
 	t.Log("insert finished.")
 
-	// wait for creating index.
-	// TODO: too long?
-	sleep(t, 3*time.Minute)
+	sleep(t, waitAfterInsertDuration)
 }
 
 func TestE2ESearch(t *testing.T) {
@@ -340,6 +353,10 @@ func TestE2ESearch(t *testing.T) {
 		if count%1000 == 0 {
 			t.Logf("searched: %d", count)
 		}
+
+		if count >= num {
+			break
+		}
 	}
 
 	sc.CloseSend()
@@ -407,6 +424,10 @@ func TestE2ESearchByID(t *testing.T) {
 		if count%1000 == 0 {
 			t.Logf("searched: %d", count)
 		}
+
+		if count >= num {
+			break
+		}
 	}
 
 	sc.CloseSend()
@@ -467,6 +488,10 @@ func TestE2EGetObject(t *testing.T) {
 		if count%1000 == 0 {
 			t.Logf("get object: %d", count)
 		}
+
+		if count >= num {
+			break
+		}
 	}
 
 	sc.CloseSend()
@@ -520,6 +545,10 @@ func TestE2EUpdate(t *testing.T) {
 		if count%1000 == 0 {
 			t.Logf("updated: %d", count)
 		}
+
+		if count >= num {
+			break
+		}
 	}
 
 	sc.CloseSend()
@@ -571,6 +600,10 @@ func TestE2ERemove(t *testing.T) {
 
 		if count%1000 == 0 {
 			t.Logf("removed: %d", count)
+		}
+
+		if count >= num {
+			break
 		}
 	}
 

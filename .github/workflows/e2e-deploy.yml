@@ -105,10 +105,12 @@ jobs:
           go test \
             -v tests/e2e/crud_test.go \
             -tags "e2e" \
-            -timeout 30m \
+            -timeout 15m \
             -host=localhost \
             -port=8081 \
             -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
+            -num=10000 \
+            -wait-after-insert=2m \
             -portforward \
             -portforward-ns=default \
             -portforward-pod-name=${podname} \
