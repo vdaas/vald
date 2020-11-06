@@ -284,6 +284,7 @@ func TestE2EInsert(t *testing.T) {
 		}
 
 		if i+1 >= insertNum {
+			t.Logf("%d items inserted.", i+1)
 			break
 		}
 	}
@@ -363,6 +364,7 @@ func TestE2ESearch(t *testing.T) {
 		}
 
 		if i+1 >= searchNum {
+			t.Logf("%d items searched.", i+1)
 			break
 		}
 	}
@@ -432,6 +434,7 @@ func TestE2ESearchByID(t *testing.T) {
 		}
 
 		if i+1 >= searchByIDNum {
+			t.Logf("%d items searched.", i+1)
 			break
 		}
 	}
@@ -494,6 +497,7 @@ func TestE2EGetObject(t *testing.T) {
 		}
 
 		if i+1 >= getObjectNum {
+			t.Logf("%d objects gotten.", i+1)
 			break
 		}
 	}
@@ -550,6 +554,7 @@ func TestE2EUpdate(t *testing.T) {
 		}
 
 		if i+1 >= updateNum {
+			t.Logf("%d items updated.", i+1)
 			break
 		}
 	}
@@ -604,6 +609,7 @@ func TestE2ERemove(t *testing.T) {
 		}
 
 		if i+1 >= removeNum {
+			t.Logf("%d items removed.", i+1)
 			break
 		}
 	}
