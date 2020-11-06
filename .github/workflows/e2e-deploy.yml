@@ -109,12 +109,12 @@ jobs:
             -host=localhost \
             -port=8081 \
             -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
-            -insert-num=10000 \
-            -search-num=10000 \
-            -search-by-id-num=100 \
-            -get-object-num=100 \
-            -update-num=100 \
-            -remove-num=100 \
+            -insert-num=1000 \
+            -search-num=1000 \
+            -search-by-id-num=10 \
+            -get-object-num=10 \
+            -update-num=10 \
+            -remove-num=10 \
             -wait-after-insert=2m \
             -portforward \
             -portforward-ns=default \

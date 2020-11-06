@@ -269,23 +269,21 @@ func TestE2EInsert(t *testing.T) {
 	}()
 
 	t.Log("insert start")
-	count := 0
-	for k, v := range ds.train {
+	for i := 0; i < len(ds.train); i++ {
+		id := strconv.Itoa(i)
 		err := sc.Send(&payload.Object_Vector{
-			Id:     k,
-			Vector: v,
+			Id:     id,
+			Vector: ds.train[id],
 		})
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		count++
-
-		if count%1000 == 0 {
-			t.Logf("inserted: %d", count)
+		if (i+1)%1000 == 0 {
+			t.Logf("inserted: %d", i+1)
 		}
 
-		if count >= insertNum {
+		if i+1 >= insertNum {
 			break
 		}
 	}
@@ -345,10 +343,10 @@ func TestE2ESearch(t *testing.T) {
 	}()
 
 	t.Log("search start")
-	count := 0
-	for _, v := range ds.test {
+	for i := 0; i < len(ds.test); i++ {
+		id := strconv.Itoa(i)
 		err := sc.Send(&payload.Search_Request{
-			Vector: v,
+			Vector: ds.test[id],
 			Config: &payload.Search_Config{
 				Num:     100,
 				Radius:  -1.0,
@@ -360,13 +358,11 @@ func TestE2ESearch(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		count++
-
-		if count%1000 == 0 {
-			t.Logf("searched: %d", count)
+		if (i+1)%1000 == 0 {
+			t.Logf("searched: %d", i+1)
 		}
 
-		if count >= searchNum {
+		if i+1 >= searchNum {
 			break
 		}
 	}
@@ -416,10 +412,10 @@ func TestE2ESearchByID(t *testing.T) {
 	}()
 
 	t.Log("search-by-id start")
-	count := 0
-	for k, _ := range ds.train {
+	for i := 0; i < len(ds.train); i++ {
+		id := strconv.Itoa(i)
 		err := sc.Send(&payload.Search_IDRequest{
-			Id: k,
+			Id: id,
 			Config: &payload.Search_Config{
 				Num:     100,
 				Radius:  -1.0,
@@ -431,13 +427,11 @@ func TestE2ESearchByID(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		count++
-
-		if count%1000 == 0 {
-			t.Logf("searched: %d", count)
+		if (i+1)%1000 == 0 {
+			t.Logf("searched: %d", i+1)
 		}
 
-		if count >= searchByIDNum {
+		if i+1 >= searchByIDNum {
 			break
 		}
 	}
@@ -486,22 +480,20 @@ func TestE2EGetObject(t *testing.T) {
 	}()
 
 	t.Log("get object start")
-	count := 0
-	for k, _ := range ds.train {
+	for i := 0; i < len(ds.train); i++ {
+		id := strconv.Itoa(i)
 		err := sc.Send(&payload.Object_ID{
-			Id: k,
+			Id: id,
 		})
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		count++
-
-		if count%1000 == 0 {
-			t.Logf("get object: %d", count)
+		if (i+1)%1000 == 0 {
+			t.Logf("get object: %d", i+1)
 		}
 
-		if count >= getObjectNum {
+		if i+1 >= getObjectNum {
 			break
 		}
 	}
@@ -542,23 +534,22 @@ func TestE2EUpdate(t *testing.T) {
 	}()
 
 	t.Log("update start")
-	count := 0
-	for k, v := range ds.train {
+	for i := 0; i < len(ds.train); i++ {
+		id := strconv.Itoa(i)
+		v := ds.train[id]
 		err := sc.Send(&payload.Object_Vector{
-			Id:     k,
+			Id:     id,
 			Vector: append(v[1:], v[0]), // shift
 		})
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		count++
-
-		if count%1000 == 0 {
-			t.Logf("updated: %d", count)
+		if (i+1)%1000 == 0 {
+			t.Logf("updated: %d", i+1)
 		}
 
-		if count >= updateNum {
+		if i+1 >= updateNum {
 			break
 		}
 	}
@@ -599,22 +590,20 @@ func TestE2ERemove(t *testing.T) {
 	}()
 
 	t.Log("remove start")
-	count := 0
-	for k, _ := range ds.train {
+	for i := 0; i < len(ds.train); i++ {
+		id := strconv.Itoa(i)
 		err := sc.Send(&payload.Object_ID{
-			Id: k,
+			Id: id,
 		})
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		count++
-
-		if count%1000 == 0 {
-			t.Logf("removed: %d", count)
+		if (i+1)%1000 == 0 {
+			t.Logf("removed: %d", i+1)
 		}
 
-		if count >= removeNum {
+		if i+1 >= removeNum {
 			break
 		}
 	}
