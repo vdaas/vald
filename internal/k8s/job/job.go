@@ -31,16 +31,8 @@ type reconciler struct {
 	onReconcile func(jobList map[string][]Job)
 }
 
-// Job represents k8s job imformation
-// https://godoc.org/k8s.io/api/batch/v1#Job
-type Job struct {
-	Name      string
-	Namespace string
-	Active    int32
-	Succeeded int32
-	Failed    int32
-	StartTime *time.Time
-}
+// Job is type alias for batchv1.Job.
+type Job = batchv1.Job
 
 // New returns k8s.ResourceController(*reconciler) implementation.
 func New(opts ...Option) (JobWatcher, error) {
@@ -93,18 +85,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 			jobs[name] = make([]Job, 0, len(js.Items))
 		}
 
-		var t *time.Time
-		if job.Status.StartTime != nil {
-			t = &job.Status.StartTime.Time
-		}
-		jobs[name] = append(jobs[name], Job{
-			Name:      job.GetName(),
-			Namespace: job.GetNamespace(),
-			Active:    job.Status.Active,
-			Succeeded: job.Status.Succeeded,
-			Failed:    job.Status.Failed,
-			StartTime: t,
-		})
+		jobs[name] = append(jobs[name], job)
 	}
 
 	if r.onReconcile != nil {
