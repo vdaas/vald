@@ -23,7 +23,7 @@ type reconciler struct {
 	onReconcile func(rs []ReplicaSet)
 }
 
-type ReplicaSet appsv1.ReplicaSet
+type ReplicaSet = appsv1.ReplicaSet
 
 func New(opts ...Option) (ReplicaSetWatcher, error) {
 	r := new(reconciler)
