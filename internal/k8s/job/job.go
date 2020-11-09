@@ -18,7 +18,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 )
 
-// JobWatcher typealias for k8s.ResourceController.
+// JobWatcher is type alias for k8s.ResourceController.
 type JobWatcher k8s.ResourceController
 
 type reconciler struct {
