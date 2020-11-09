@@ -3,6 +3,7 @@ package job
 import (
 	"context"
 	"reflect"
+	"strings"
 	"time"
 
 	batchv1 "k8s.io/api/batch/v1"
@@ -81,7 +82,12 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 	)
 
 	for _, job := range js.Items {
-		name := job.GetName()
+		name, ok := job.GetObjectMeta().GetLabels()["app"]
+		if !ok {
+			jns := strings.Split(job.GetName(), "-")
+			name = strings.Join(jns[:len(jns)-1], "-")
+		}
+
 		// TODO: pre-alocate job slice.
 		if _, ok := jobs[name]; !ok {
 			jobs[name] = make([]Job, 0, len(js.Items))
