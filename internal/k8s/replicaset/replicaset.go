@@ -26,7 +26,7 @@ type reconciler struct {
 	name        string
 	namespace   string
 	onError     func(err error)
-	onReconcile func(rs []ReplicaSet)
+	onReconcile func(rs map[string][]ReplicaSet)
 }
 
 type ReplicaSet = appsv1.ReplicaSet
@@ -36,11 +36,11 @@ func New(opts ...Option) (ReplicaSetWatcher, error) {
 
 	for _, opt := range opts {
 		if err := opt(r); err != nil {
-			return errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
 
-	return r
+	return r, nil
 }
 
 func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err error) {
@@ -69,7 +69,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 	for _, replicaset := range rsl.Items {
 		name, ok := replicaset.GetObjectMeta().GetLabels()["app"]
 		if !ok {
-			pns := strings.Split(pod.GetName(), "-")
+			pns := strings.Split(replicaset.GetName(), "-")
 			name = strings.Join(pns[:len(pns)-1], "-")
 		}
 
