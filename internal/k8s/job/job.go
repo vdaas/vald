@@ -18,6 +18,9 @@ import (
 	"github.com/vdaas/vald/internal/log"
 )
 
+// JobWatcher typealias for k8s.ResourceController.
+type JobWatcher k8s.ResourceController
+
 type reconciler struct {
 	ctx         context.Context
 	mgr         manager.Manager
@@ -39,7 +42,7 @@ type Job struct {
 }
 
 // New returns k8s.ResourceController(*reconciler) implementation.
-func New(opts ...Option) (k8s.ResourceController, error) {
+func New(opts ...Option) (JobWatcher, error) {
 	r := new(reconciler)
 
 	for _, opt := range append(defaultOpts, opts...) {
