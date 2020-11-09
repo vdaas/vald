@@ -98,12 +98,12 @@ func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) rec
 	if r.mgr == nil && mgr != nil {
 		r.mgr = mgr
 	}
-	appv1.AddToScheme(r.mgr.GetScheme())
+	appsv1.AddToScheme(r.mgr.GetScheme())
 	return r
 }
 
 func (r *reconciler) For() runtime.Object {
-	return new(appv1.ReplicaSet)
+	return new(appsv1.ReplicaSet)
 }
 
 func (r *reconciler) Owns() runtime.Object {
