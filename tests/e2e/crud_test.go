@@ -38,6 +38,7 @@ import (
 
 	"gonum.org/v1/hdf5"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
 )
 
 var (
@@ -226,6 +227,13 @@ func getClient(ctx context.Context) (vald.ValdClient, error) {
 		ctx,
 		host+":"+strconv.Itoa(port),
 		grpc.WithInsecure(),
+		grpc.WithKeepaliveParams(
+			keepalive.ClientParameters{
+				Time:                time.Second,
+				Timeout:             5 * time.Second,
+				PermitWithoutStream: true,
+			},
+		),
 	)
 	if err != nil {
 		return nil, err
