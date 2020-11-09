@@ -7,9 +7,15 @@ import (
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
+
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/k8s"
 )
 
 type ReplicaSetWatcher k8s.ResourceController
@@ -30,7 +36,7 @@ func New(opts ...Option) (ReplicaSetWatcher, error) {
 
 	for _, opt := range opts {
 		if err := opt(r); err != nil {
-			return erros.ErrOptionFailed(err, reflect.ValueOf(opt))
+			return errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
 
@@ -49,7 +55,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 			Requeue:      true,
 			RequeueAfter: time.Millisecond * 100,
 		}
-		if errors.IsNotFound(err) {
+		if k8serrors.IsNotFound(err) {
 			res = reconcile.Result{
 				Requeue:      true,
 				RequeueAfter: time.Second,
