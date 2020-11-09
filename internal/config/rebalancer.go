@@ -17,20 +17,57 @@
 // Package config providers configuration type and load configuration logic
 package config
 
+// RebalanceController represent rebalance controller configuration.
 type RebalanceController struct {
-	// TODO add configuration params here
+	RebalanceJobName       string `yaml:"rebalance_job_name" json:"rebalance_job_name"`
+	RebalanceJobNamespace  string `yaml:"rebalance_job_namespance" json:"rebalance_job_namespance"`
+	AgentName              string `yaml:"agent_name" json:"agent_name"`
+	AgentNamespace         string `yaml:"agent_namespace" json:"agent_namespace"`
+	ReconcileCheckDuration string `yaml:"reconcile_check_duration" json:"reconcile_check_duration"`
+	JobTemplatePath        string `yaml:"job_template_path" json:"job_template_path"`
+	Tolerance              int    `yaml:"tolerance" json:"tolerance"`
 }
 
+// Bind binds rebalance controller configuration.
 func (r *RebalanceController) Bind() *RebalanceController {
-	// TODO add configuration bind here
+	r.RebalanceJobName = GetActualValue(r.RebalanceJobName)
+	r.RebalanceJobNamespace = GetActualValue(r.RebalanceJobNamespace)
+	r.AgentName = GetActualValue(r.AgentName)
+	r.AgentNamespace = GetActualValue(r.AgentNamespace)
+	r.ReconcileCheckDuration = GetActualValue(r.ReconcileCheckDuration)
+	r.JobTemplatePath = GetActualValue(r.JobTemplatePath)
+
 	return r
 }
 
+// RebalanceJob represent rebalance job configuration.
 type RebalanceJob struct {
-	// TODO add configuration params here
+	// BlobStorage represent blob storage configurations.
+	BlobStorage *Blob `yaml:"blob_storage" json:"blob_storage"`
+	// BackupFilePath represent kvsdb file path.
+	BackupFilePath string `yaml:"backup_file_path" json:"backup_file_path"`
+	// RebalanceRate represent rate to rebalance data.
+	RebalanceRate int `yaml:"rebalance_rate" json:"rebalance_rate"`
+	// GatewayHost represent gateway host name.
+	GatewayHost string `json:"gateway_host" yaml:"gateway_host"`
+	// GatewayPort represent gateway port.
+	GatewayPort int `json:"gateway_port" yaml:"gateway_port"`
+	// GatewayClient represent gRPC client configuration.
+	GatewayClient *GRPCClient `json:"gateway_client" yaml:"gateway_client"`
 }
 
+// Bind binds rebalance job configuration.
 func (r *RebalanceJob) Bind() *RebalanceJob {
-	// TODO add configuration bind here
+	r.BackupFilePath = GetActualValue(r.BackupFilePath)
+	r.GatewayHost = GetActualValue(r.GatewayHost)
+
+	if r.BlobStorage != nil {
+		r.BlobStorage = r.BlobStorage.Bind()
+	}
+
+	if r.GatewayClient != nil {
+		r.GatewayClient = r.GatewayClient.Bind()
+	}
+
 	return r
 }
