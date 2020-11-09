@@ -52,8 +52,8 @@ type RebalanceJob struct {
 	GatewayHost string `json:"gateway_host" yaml:"gateway_host"`
 	// GatewayPort represent gateway port.
 	GatewayPort int `json:"gateway_port" yaml:"gateway_port"`
-	// Client represent gRPC client configuration.
-	Client *GRPCClient `json:"client" yaml:"client"`
+	// GatewayClient represent gRPC client configuration.
+	GatewayClient *GRPCClient `json:"gateway_client" yaml:"gateway_client"`
 }
 
 // Bind binds rebalance job configuration.
@@ -65,8 +65,8 @@ func (r *RebalanceJob) Bind() *RebalanceJob {
 		r.BlobStorage = r.BlobStorage.Bind()
 	}
 
-	if r.Client != nil {
-		r.Client = r.Client.Bind()
+	if r.GatewayClient != nil {
+		r.GatewayClient = r.GatewayClient.Bind()
 	}
 
 	return r
