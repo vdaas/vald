@@ -258,12 +258,20 @@ func TestE2EInsert(t *testing.T) {
 	go func() {
 		defer wg.Done()
 
+		count := 0
 		for {
 			_, err := sc.Recv()
 			if err == io.EOF {
+				t.Logf("%d items inserted.", count)
 				return
 			} else if err != nil {
 				t.Fatal(err)
+			}
+
+			count++
+
+			if count%1000 == 0 {
+				t.Logf("inserted: %d", count)
 			}
 		}
 	}()
@@ -280,11 +288,11 @@ func TestE2EInsert(t *testing.T) {
 		}
 
 		if (i+1)%1000 == 0 {
-			t.Logf("inserted: %d", i+1)
+			t.Logf("sent: %d", i+1)
 		}
 
 		if i+1 >= insertNum {
-			t.Logf("%d items inserted.", i+1)
+			t.Logf("%d items sent.", i+1)
 			break
 		}
 	}
@@ -320,6 +328,7 @@ func TestE2ESearch(t *testing.T) {
 		for {
 			res, err := sc.Recv()
 			if err == io.EOF {
+				t.Logf("%d items searched.", k)
 				return
 			} else if err != nil {
 				t.Fatal(err)
@@ -340,6 +349,10 @@ func TestE2ESearch(t *testing.T) {
 			// t.Logf("expected: %#v", ds.neighbors[strconv.Itoa(k)][:len(topKIDs)])
 
 			k++
+
+			if k%1000 == 0 {
+				t.Logf("searched: %d", k)
+			}
 		}
 	}()
 
@@ -360,11 +373,11 @@ func TestE2ESearch(t *testing.T) {
 		}
 
 		if (i+1)%1000 == 0 {
-			t.Logf("searched: %d", i+1)
+			t.Logf("sent: %d", i+1)
 		}
 
 		if i+1 >= searchNum {
-			t.Logf("%d items searched.", i+1)
+			t.Logf("%d items sent.", i+1)
 			break
 		}
 	}
@@ -394,9 +407,11 @@ func TestE2ESearchByID(t *testing.T) {
 	go func() {
 		defer wg.Done()
 
+		count := 0
 		for {
 			res, err := sc.Recv()
 			if err == io.EOF {
+				t.Logf("%d items searched.", count)
 				return
 			} else if err != nil {
 				t.Fatal(err)
@@ -409,6 +424,12 @@ func TestE2ESearchByID(t *testing.T) {
 
 			if len(topKIDs) == 0 {
 				t.Errorf("empty result is returned: %#v", topKIDs)
+			}
+
+			count++
+
+			if count%1000 == 0 {
+				t.Logf("searched: %d", count)
 			}
 		}
 	}()
@@ -430,11 +451,11 @@ func TestE2ESearchByID(t *testing.T) {
 		}
 
 		if (i+1)%1000 == 0 {
-			t.Logf("searched: %d", i+1)
+			t.Logf("sent: %d", i+1)
 		}
 
 		if i+1 >= searchByIDNum {
-			t.Logf("%d items searched.", i+1)
+			t.Logf("%d items sent.", i+1)
 			break
 		}
 	}
@@ -464,9 +485,11 @@ func TestE2EGetObject(t *testing.T) {
 	go func() {
 		defer wg.Done()
 
+		count := 0
 		for {
 			res, err := sc.Recv()
 			if err == io.EOF {
+				t.Logf("%d items got.", count)
 				return
 			} else if err != nil {
 				t.Fatal(err)
@@ -478,6 +501,12 @@ func TestE2EGetObject(t *testing.T) {
 					res.GetVector(),
 					ds.train[res.GetMeta()],
 				)
+			}
+
+			count++
+
+			if count%1000 == 0 {
+				t.Logf("get object: %d", count)
 			}
 		}
 	}()
@@ -493,11 +522,11 @@ func TestE2EGetObject(t *testing.T) {
 		}
 
 		if (i+1)%1000 == 0 {
-			t.Logf("get object: %d", i+1)
+			t.Logf("sent: %d", i+1)
 		}
 
 		if i+1 >= getObjectNum {
-			t.Logf("%d objects gotten.", i+1)
+			t.Logf("%d items sent.", i+1)
 			break
 		}
 	}
@@ -527,12 +556,20 @@ func TestE2EUpdate(t *testing.T) {
 	go func() {
 		defer wg.Done()
 
+		count := 0
 		for {
 			_, err := sc.Recv()
 			if err == io.EOF {
+				t.Logf("%d items updated.", count)
 				return
 			} else if err != nil {
 				t.Fatal(err)
+			}
+
+			count++
+
+			if count%1000 == 0 {
+				t.Logf("updated: %d", count)
 			}
 		}
 	}()
@@ -550,11 +587,11 @@ func TestE2EUpdate(t *testing.T) {
 		}
 
 		if (i+1)%1000 == 0 {
-			t.Logf("updated: %d", i+1)
+			t.Logf("sent: %d", i+1)
 		}
 
 		if i+1 >= updateNum {
-			t.Logf("%d items updated.", i+1)
+			t.Logf("%d items sent.", i+1)
 			break
 		}
 	}
@@ -584,12 +621,20 @@ func TestE2ERemove(t *testing.T) {
 	go func() {
 		defer wg.Done()
 
+		count := 0
 		for {
 			_, err := sc.Recv()
 			if err == io.EOF {
+				t.Logf("%d items removed.", count)
 				return
 			} else if err != nil {
 				t.Fatal(err)
+			}
+
+			count++
+
+			if count%1000 == 0 {
+				t.Logf("removed: %d", count)
 			}
 		}
 	}()
@@ -605,11 +650,11 @@ func TestE2ERemove(t *testing.T) {
 		}
 
 		if (i+1)%1000 == 0 {
-			t.Logf("removed: %d", i+1)
+			t.Logf("sent: %d", i+1)
 		}
 
 		if i+1 >= removeNum {
-			t.Logf("%d items removed.", i+1)
+			t.Logf("%d items sent.", i+1)
 			break
 		}
 	}
