@@ -23,12 +23,7 @@ type reconciler struct {
 	onReconcile func(rs []ReplicaSet)
 }
 
-type ReplicaSet struct {
-	Name            string
-	Namespace       string
-	DesiredReplicas *int32
-	Replicas        int32
-}
+type ReplicaSet appsv1.ReplicaSet
 
 func New(opts ...Option) (ReplicaSetWatcher, error) {
 	r := new(reconciler)
@@ -76,12 +71,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 			rs[name] = make([]ReplicaSet, 0, len(rsl.Items))
 		}
 
-		rs[name] = append(rs[name], ReplicaSet{
-			Name:            name,
-			Namespace:       replicaset.GetNamespace(),
-			DesiredReplicas: replicaset.ReplicaSetSpec.Replicas,
-			Replicas:        replicaset.Status.Replicas,
-		})
+		rs[name] = append(rs[name], replicaset)
 	}
 
 	if r.onReconcile != nil {
