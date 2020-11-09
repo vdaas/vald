@@ -210,7 +210,7 @@ jobs:
             -get-object-num=10 \
             -update-num=10 \
             -remove-num=10 \
-            -wait-after-insert=2m \
+            -wait-after-insert=3m \
             -portforward \
             -portforward-ns=default \
             -portforward-pod-name=${podname} \
@@ -219,7 +219,7 @@ jobs:
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
   slack-redis-mysql:
-    name: Slack notification
+    name: 'Slack notification (Redis, MySQL)'
     needs: e2e-deploy-redis-mysql
     runs-on: ubuntu-latest
     if: startsWith( github.ref, 'refs/tags/')
@@ -236,7 +236,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_NOTIFY_WEBHOOK_URL }}
   slack-cassandra:
-    name: Slack notification
+    name: 'Slack notification (Cassandra)'
     needs: e2e-deploy-cassandra
     runs-on: ubuntu-latest
     if: startsWith( github.ref, 'refs/tags/')
