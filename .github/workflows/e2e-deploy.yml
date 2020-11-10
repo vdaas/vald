@@ -30,7 +30,7 @@ jobs:
     name: 'E2E deploy test (Redis, MySQL)'
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
+    if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.comment.user.login != 'vdaas-ci' && github.event.label.name == 'actions/e2e-deploy'
     steps:
       - uses: actions/checkout@v2
       - name: wait for dockers
@@ -47,11 +47,37 @@ jobs:
             vdaas/vald-manager-index
           do
             echo "searching ${image}:${tag}"
-            until curl -s "https://registry.hub.docker.com/v2/repositories/${image}/tags" | jq '.results[].name' | grep "${tag}"; do
+            until curl -s "https://registry.hub.docker.com/v2/repositories/${image}/tags/${tag}" | jq '.name' | grep -v "null"; do
               echo "waiting for ${image}:${tag} to be uploaded..."
               sleep 2
             done
           done
+      - name: Specify container versions
+        if: github.event.action == 'labeled' && github.event.comment.user.login != 'vdaas-ci' && github.event.label.name == 'actions/e2e-deploy'
+        run: |
+          pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
+          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-agent-ngt/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
+            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set agent.image.tag=pr-${pr_num}"
+          fi
+          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-discoverer-k8s/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
+            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set discoverer.image.tag=pr-${pr_num}"
+          fi
+          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-manager-compressor/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
+            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set compressor.image.tag=pr-${pr_num}"
+          fi
+          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-meta-redis/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
+            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set meta.image.tag=pr-${pr_num}"
+          fi
+          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-manager-backup-mysql/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
+            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set backupManager.image.tag=pr-${pr_num}"
+          fi
+          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-gateway/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
+            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set gateway.image.tag=pr-${pr_num}"
+          fi
+          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-manager-index/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
+            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set indexManager.image.tag=pr-${pr_num}"
+          fi
+          echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}" >> $GITHUB_ENV
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -91,6 +117,7 @@ jobs:
           helm install \
             --values charts/vald/values-ci.yaml \
             --set defaults.image.tag=${tag} \
+            ${HELM_EXTRA_OPTIONS} \
             --generate-name vald/vald
           until [ $(kubectl get pod -o json | jq -r "$jq_query" | wc -l) -ge 17 ]
           do
@@ -128,7 +155,7 @@ jobs:
     name: 'E2E deploy test (Cassandra)'
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
+    if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.comment.user.login != 'vdaas-ci' && github.event.label.name == 'actions/e2e-deploy'
     steps:
       - uses: actions/checkout@v2
       - name: wait for dockers
@@ -145,11 +172,37 @@ jobs:
             vdaas/vald-manager-index
           do
             echo "searching ${image}:${tag}"
-            until curl -s "https://registry.hub.docker.com/v2/repositories/${image}/tags" | jq '.results[].name' | grep "${tag}"; do
+            until curl -s "https://registry.hub.docker.com/v2/repositories/${image}/tags/${tag}" | jq '.name' | grep -v "null"; do
               echo "waiting for ${image}:${tag} to be uploaded..."
               sleep 2
             done
           done
+      - name: Specify container versions
+        if: github.event.action == 'labeled' && github.event.comment.user.login != 'vdaas-ci' && github.event.label.name == 'actions/e2e-deploy'
+        run: |
+          pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
+          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-agent-ngt/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
+            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set agent.image.tag=pr-${pr_num}"
+          fi
+          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-discoverer-k8s/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
+            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set discoverer.image.tag=pr-${pr_num}"
+          fi
+          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-manager-compressor/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
+            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set compressor.image.tag=pr-${pr_num}"
+          fi
+          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-meta-cassandra/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
+            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set meta.image.tag=pr-${pr_num}"
+          fi
+          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-manager-backup-cassandra/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
+            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set backupManager.image.tag=pr-${pr_num}"
+          fi
+          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-gateway/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
+            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set gateway.image.tag=pr-${pr_num}"
+          fi
+          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-manager-index/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
+            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set indexManager.image.tag=pr-${pr_num}"
+          fi
+          echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}" >> $GITHUB_ENV
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -187,6 +240,7 @@ jobs:
           helm install \
             --values charts/vald/values-ci-scylla.yaml \
             --set defaults.image.tag=${tag} \
+            ${HELM_EXTRA_OPTIONS} \
             --generate-name vald/vald
           until [ $(kubectl get pod -o json | jq -r "$jq_query" | wc -l) -ge 16 ]
           do
