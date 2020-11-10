@@ -38,6 +38,8 @@ issues:
         - godox
         - gomnd
     - path: option\.go
+      linters:
         - gochecknoglobals
     - path: main\.go
+      linters:
         - gochecknoglobals

@@ -30,11 +30,10 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/test/comparator"
-
 	"go.uber.org/goleak"
 )
 
-// default comparator option for client
+// default comparator option for client.
 var clientComparatorOpts = []comparator.Option{
 	comparator.AllowUnexported(client{}),
 	comparator.AllowUnexported(gocql.ClusterConfig{}),

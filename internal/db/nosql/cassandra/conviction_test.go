@@ -23,7 +23,6 @@ import (
 
 	"github.com/gocql/gocql"
 	"github.com/vdaas/vald/internal/errors"
-
 	"go.uber.org/goleak"
 )
 
