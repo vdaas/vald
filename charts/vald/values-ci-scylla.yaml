@@ -87,6 +87,7 @@ backupManager:
     config:
       hosts:
         - scylla-0.scylla.default.svc.cluster.local
+      consistency: one
 
 indexManager:
   replicas: 1
@@ -121,3 +122,4 @@ meta:
     config:
       hosts:
         - scylla-0.scylla.default.svc.cluster.local
+      consistency: one
