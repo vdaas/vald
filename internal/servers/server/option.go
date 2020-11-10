@@ -35,7 +35,7 @@ import (
 type Option func(*server)
 
 var (
-	defaultOpts = []Option{
+	defaultOptions = []Option{
 		WithDisableRestart(),
 		WithServerMode(REST),
 		WithErrorGroup(errgroup.Get()),

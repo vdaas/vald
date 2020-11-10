@@ -26,7 +26,7 @@ import (
 // Option represents the functional option for reader.
 type Option func(r *reader)
 
-var defaultOpts = []Option{
+var defaultOptions = []Option{
 	WithErrGroup(errgroup.Get()),
 	WithMaxChunkSize(512 * 1024 * 1024),
 	WithBackoff(false),

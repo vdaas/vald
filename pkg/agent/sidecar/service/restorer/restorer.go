@@ -54,7 +54,7 @@ type restorer struct {
 
 func New(opts ...Option) (Restorer, error) {
 	r := new(restorer)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(r); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}

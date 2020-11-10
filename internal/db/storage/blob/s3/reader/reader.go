@@ -62,7 +62,7 @@ type Reader interface {
 // New returns Reader implementation.
 func New(opts ...Option) (Reader, error) {
 	r := new(reader)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(r)
 	}
 

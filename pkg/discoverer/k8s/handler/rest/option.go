@@ -21,7 +21,7 @@ import "github.com/vdaas/vald/apis/grpc/v1/discoverer"
 
 type Option func(*handler)
 
-var defaultOpts = []Option{}
+var defaultOptions = []Option{}
 
 func WithDiscoverer(dsc discoverer.DiscovererServer) Option {
 	return func(h *handler) {

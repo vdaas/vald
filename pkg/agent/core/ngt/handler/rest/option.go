@@ -21,7 +21,7 @@ import "github.com/vdaas/vald/pkg/agent/core/ngt/handler/grpc"
 
 type Option func(*handler)
 
-var defaultOpts = []Option{}
+var defaultOptions = []Option{}
 
 func WithAgent(a grpc.Server) Option {
 	return func(h *handler) {

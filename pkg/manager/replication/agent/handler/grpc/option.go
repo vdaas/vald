@@ -21,7 +21,7 @@ import "github.com/vdaas/vald/pkg/manager/replication/agent/service"
 
 type Option func(*server)
 
-var defaultOpts = []Option{}
+var defaultOptions = []Option{}
 
 func WithReplicator(rep service.Replicator) Option {
 	return func(s *server) {

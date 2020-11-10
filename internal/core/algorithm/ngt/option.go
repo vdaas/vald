@@ -37,7 +37,7 @@ var (
 	DefaultRadius   = float32(-1.0)
 	DefaultEpsilon  = float32(0.01)
 
-	defaultOpts = []Option{
+	defaultOptions = []Option{
 		WithIndexPath("/tmp/ngt-" + string(fastime.FormattedNow())),
 		WithDimension(minimumDimensionSize),
 		WithDefaultRadius(DefaultRadius),

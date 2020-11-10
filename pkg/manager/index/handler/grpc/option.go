@@ -23,7 +23,7 @@ import (
 
 type Option func(*server)
 
-var defaultOpts = []Option{}
+var defaultOptions = []Option{}
 
 func WithIndexer(i service.Indexer) Option {
 	return func(s *server) {

@@ -24,7 +24,7 @@ import (
 
 type Option func(w *watch) error
 
-var defaultOpts = []Option{}
+var defaultOptions = []Option{}
 
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(w *watch) error {

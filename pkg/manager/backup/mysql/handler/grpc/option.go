@@ -21,7 +21,7 @@ import "github.com/vdaas/vald/pkg/manager/backup/mysql/service"
 
 type Option func(*server)
 
-var defaultOpts = []Option{}
+var defaultOptions = []Option{}
 
 func WithMySQL(m service.MySQL) Option {
 	return func(s *server) {

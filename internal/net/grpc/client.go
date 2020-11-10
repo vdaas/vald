@@ -97,7 +97,7 @@ type gRPCClient struct {
 func New(opts ...Option) (c Client) {
 	g := new(gRPCClient)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(g)
 	}
 

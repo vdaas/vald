@@ -52,7 +52,7 @@ type handler struct {
 func New(opts ...Option) Handler {
 	h := new(handler)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(h)
 	}
 	return h

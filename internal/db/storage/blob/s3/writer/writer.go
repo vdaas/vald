@@ -56,7 +56,7 @@ func New(opts ...Option) Writer {
 	w := &writer{
 		s3manager: s3manager.New(),
 	}
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(w); err != nil {
 			log.Warn(errors.ErrOptionFailed(err, reflect.ValueOf(opt)))
 		}

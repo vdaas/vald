@@ -24,7 +24,7 @@ import (
 
 type Option func(*pool)
 
-var defaultOpts = []Option{
+var defaultOptions = []Option{
 	WithSize(3),
 	WithStartPort(80),
 	WithEndPort(65535),

@@ -62,7 +62,7 @@ type discoverer struct {
 
 func New(opts ...Option) (dsc Discoverer, err error) {
 	d := new(discoverer)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(d); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}

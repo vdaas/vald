@@ -26,7 +26,7 @@ import (
 // Option represents the functional option for writer.
 type Option func(w *writer) error
 
-var defaultOpts = []Option{
+var defaultOptions = []Option{
 	WithErrGroup(errgroup.Get()),
 	WithContentType("application/octet-stream"),
 	WithMaxPartSize(64 * 1024 * 1024),

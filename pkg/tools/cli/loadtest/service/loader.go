@@ -60,7 +60,7 @@ type loader struct {
 // NewLoader returns Loader implementation.
 func NewLoader(opts ...Option) (Loader, error) {
 	l := new(loader)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(l); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}

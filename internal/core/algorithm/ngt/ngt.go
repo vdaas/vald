@@ -218,7 +218,7 @@ func (n *ngt) setup() error {
 }
 
 func (n *ngt) loadOptions(opts ...Option) (err error) {
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		err = opt(n)
 		if err != nil {
 			err = errors.ErrOptionFailed(err, reflect.ValueOf(opt))

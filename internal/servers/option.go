@@ -27,7 +27,7 @@ import (
 
 type Option func(*listener)
 
-var defaultOpts = []Option{
+var defaultOptions = []Option{
 	WithErrorGroup(errgroup.Get()),
 }
 

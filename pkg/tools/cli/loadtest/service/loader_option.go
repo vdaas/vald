@@ -26,7 +26,7 @@ import (
 // Option is load test configuration.
 type Option func(*loader) error
 
-var defaultOpts = []Option{
+var defaultOptions = []Option{
 	WithConcurrency(100),
 	WithBatchSize(1),
 	WithErrGroup(errgroup.Get()),

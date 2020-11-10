@@ -27,7 +27,7 @@ import (
 // Option represents the functional option for cache.
 type Option func(*cache)
 
-var defaultOpts = []Option{
+var defaultOptions = []Option{
 	WithType(cacher.GACHE.String()),
 	WithExpireDuration("30m"),
 	WithExpireCheckDuration("5m"),

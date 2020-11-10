@@ -34,7 +34,7 @@ type client struct {
 
 func New(opts ...Option) Client {
 	c := new(client)
-	for _, opt := range opts {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(c)
 	}
 	return c

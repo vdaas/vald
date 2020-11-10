@@ -28,7 +28,7 @@ import (
 
 type Option func(e *exp) error
 
-var defaultOpts = []Option{
+var defaultOptions = []Option{
 	WithOnErrorFunc(func(err error) {
 		if err != nil {
 			log.Warnf("Error when uploading stats or spans to Stackdriver: %v", err)

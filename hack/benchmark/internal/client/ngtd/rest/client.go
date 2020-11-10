@@ -52,6 +52,9 @@ func New(ctx context.Context, opts ...Option) (Client, error) {
 
 func (c *ngtdClient) Exists(ctx context.Context, in *payload.Object_ID, opts ...grpc.CallOption) (oid *payload.Object_ID, err error) {
 	id, err := c.GetObject(ctx, in, opts...)
+	if err != nil {
+		return nil, err
+	}
 	return &payload.Object_ID{
 		Id: id.GetId(),
 	}, nil

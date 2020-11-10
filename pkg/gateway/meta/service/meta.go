@@ -63,7 +63,7 @@ const (
 
 func New(opts ...Option) (mi Meta, err error) {
 	m := new(meta)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		if err = opt(m); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}

@@ -29,7 +29,7 @@ import (
 
 type Option func(c *client) error
 
-var defaultOpts = []Option{
+var defaultOptions = []Option{
 	WithErrGroup(errgroup.Get()),
 	WithAutoConnect(true),
 	WithNamespace("vald"),

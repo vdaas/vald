@@ -167,7 +167,7 @@ type (
 // New initialize and return the cassandra client, or any error occurred.
 func New(opts ...Option) (Cassandra, error) {
 	c := new(client)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(c); err != nil {
 			werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 

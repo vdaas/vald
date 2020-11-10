@@ -42,7 +42,7 @@ func New(opts ...Option) (s Stackdriver, err error) {
 	e := new(exp)
 	e.Options = new(stackdriver.Options)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		err = opt(e)
 		if err != nil {
 			return nil, err

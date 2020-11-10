@@ -25,7 +25,7 @@ import (
 // Option represents the functional option for session.
 type Option func(s *sess) error
 
-var defaultOpts = []Option{
+var defaultOptions = []Option{
 	WithMaxRetries(-1),
 	WithForcePathStyle(false),
 	WithUseAccelerate(false),

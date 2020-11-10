@@ -27,7 +27,7 @@ import (
 
 type Option func(m *meta) error
 
-var defaultOpts = []Option{
+var defaultOptions = []Option{
 	WithMetaCacheEnabled(true),
 	WithMetaCacheExpireDuration("30m"),
 	WithMetaCacheExpiredCheckDuration("2m"),

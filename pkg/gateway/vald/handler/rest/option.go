@@ -21,7 +21,7 @@ import "github.com/vdaas/vald/apis/grpc/gateway/vald"
 
 type Option func(*handler)
 
-var defaultOpts = []Option{}
+var defaultOptions = []Option{}
 
 func WithVald(v vald.ValdServer) Option {
 	return func(h *handler) {

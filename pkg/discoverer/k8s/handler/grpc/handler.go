@@ -52,7 +52,7 @@ const (
 func New(opts ...Option) (ds DiscovererServer, err error) {
 	s := new(server)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		err = opt(s)
 		if err != nil {
 			return nil, err

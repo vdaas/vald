@@ -50,7 +50,7 @@ const apiName = "vald/gateway-backup"
 func New(opts ...Option) vald.Server {
 	s := new(server)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(s)
 	}
 	return s

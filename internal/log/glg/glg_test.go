@@ -43,7 +43,7 @@ func TestNew(t *testing.T) {
 			retry := retry.New()
 
 			return test{
-				name: "returns logger object when option and defaultOpts is set",
+				name: "returns logger object when option and defaultOptions is set",
 				opts: []Option{
 					WithGlg(glg),
 					WithRetry(retry),

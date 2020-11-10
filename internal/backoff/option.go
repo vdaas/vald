@@ -25,7 +25,7 @@ import (
 
 type Option func(*backoff)
 
-var defaultOpts = []Option{
+var defaultOptions = []Option{
 	WithInitialDuration("10ms"),
 	WithBackOffTimeLimit("5m"),
 	WithMaximumDuration("1h"),

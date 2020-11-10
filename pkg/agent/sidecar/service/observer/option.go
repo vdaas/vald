@@ -28,7 +28,7 @@ import (
 
 type Option func(o *observer) error
 
-var defaultOpts = []Option{
+var defaultOptions = []Option{
 	WithErrGroup(errgroup.Get()),
 	WithBackupDuration("10m"),
 	WithPostStopTimeout("2m"),

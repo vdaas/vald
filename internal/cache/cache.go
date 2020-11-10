@@ -45,7 +45,7 @@ type cache struct {
 // New returns the Cache instance or error.
 func New(opts ...Option) (cc Cache, err error) {
 	c := new(cache)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(c)
 	}
 	switch c.cacher {

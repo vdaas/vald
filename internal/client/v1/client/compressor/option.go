@@ -23,7 +23,7 @@ import (
 
 type Option func(c *client) error
 
-var defaultOpts = []Option{}
+var defaultOptions = []Option{}
 
 func WithAddr(addr string) Option {
 	return func(c *client) error {

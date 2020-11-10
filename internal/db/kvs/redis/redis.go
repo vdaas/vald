@@ -95,7 +95,7 @@ type redisClient struct {
 // New returns Connector if no error occurs.
 func New(opts ...Option) (c Connector, err error) {
 	r := new(redisClient)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		if err = opt(r); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}

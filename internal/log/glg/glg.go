@@ -33,7 +33,7 @@ type logger struct {
 // New returns a new logger instance.
 func New(opts ...Option) *logger {
 	l := new(logger)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(l)
 	}
 

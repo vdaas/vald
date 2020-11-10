@@ -29,7 +29,7 @@ import (
 // Option represents the functional option for mySQLClient.
 type Option func(*mySQLClient) error
 
-var defaultOpts = []Option{
+var defaultOptions = []Option{
 	WithCharset("utf8mb4"),
 	WithTimezone("Local"),
 	WithInitialPingDuration("30ms"),

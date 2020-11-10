@@ -45,7 +45,7 @@ type listener struct {
 
 func New(opts ...Option) Listener {
 	l := new(listener)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(l)
 	}
 

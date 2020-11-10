@@ -24,7 +24,7 @@ import (
 // Option is tensorflow configure.
 type Option func(*tensorflow)
 
-var defaultOpts = []Option{
+var defaultOptions = []Option{
 	withLoadFunc(tf.LoadSavedModel), // set to default
 	WithOperations(),                // set to default
 	WithSessionOptions(nil),         // set to default

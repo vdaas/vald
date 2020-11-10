@@ -53,7 +53,7 @@ type replicator struct {
 
 func New(opts ...Option) (rp Replicator, err error) {
 	r := new(replicator)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(r); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}

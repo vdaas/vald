@@ -24,7 +24,7 @@ import (
 
 type Option func(*controller) error
 
-var defaultOpts = []Option{
+var defaultOptions = []Option{
 	WithErrGroup(errgroup.Get()),
 }
 

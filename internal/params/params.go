@@ -52,7 +52,7 @@ type parser struct {
 // New returns parser object.
 func New(opts ...Option) *parser {
 	p := new(parser)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(p)
 	}
 	return p

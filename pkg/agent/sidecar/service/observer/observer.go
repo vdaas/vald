@@ -66,7 +66,7 @@ type observer struct {
 
 func New(opts ...Option) (so StorageObserver, err error) {
 	o := new(observer)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(o); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}

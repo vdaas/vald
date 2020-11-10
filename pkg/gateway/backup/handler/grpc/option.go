@@ -25,7 +25,7 @@ import (
 
 type Option func(*server)
 
-var defaultOpts = []Option{
+var defaultOptions = []Option{
 	WithErrGroup(errgroup.Get()),
 	WithStreamConcurrency(20),
 }

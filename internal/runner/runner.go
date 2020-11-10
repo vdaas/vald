@@ -58,7 +58,7 @@ type runner struct {
 func Do(ctx context.Context, opts ...Option) error {
 	r := new(runner)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(r)
 	}
 

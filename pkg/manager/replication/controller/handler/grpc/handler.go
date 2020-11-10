@@ -32,7 +32,7 @@ type server struct {
 func New(opts ...Option) controller.ReplicationControllerServer {
 	s := new(server)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(s)
 	}
 	return s

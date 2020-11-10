@@ -124,7 +124,7 @@ func New(opts ...Option) (Server, error) {
 	srv.mu.Lock()
 	defer srv.mu.Unlock()
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(srv)
 	}
 	if srv.eg == nil {

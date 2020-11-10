@@ -21,7 +21,7 @@ import "github.com/vdaas/vald/pkg/manager/compressor/service"
 
 type Option func(*server)
 
-var defaultOpts = []Option{}
+var defaultOptions = []Option{}
 
 func WithCompressor(c service.Compressor) Option {
 	return func(s *server) {

@@ -31,7 +31,7 @@ import (
 // Option represents the functional option for redisClient.
 type Option func(*redisClient) error
 
-var defaultOpts = []Option{
+var defaultOptions = []Option{
 	WithInitialPingDuration("30ms"),
 	WithInitialPingTimeLimit("5m"),
 }

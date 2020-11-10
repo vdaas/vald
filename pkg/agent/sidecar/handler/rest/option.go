@@ -23,7 +23,7 @@ import (
 
 type Option func(*handler)
 
-var defaultOpts = []Option{}
+var defaultOptions = []Option{}
 
 func WithSidecar(sc sidecar.SidecarServer) Option {
 	return func(h *handler) {

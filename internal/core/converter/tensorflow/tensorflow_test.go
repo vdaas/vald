@@ -84,7 +84,7 @@ func TestNew(t *testing.T) {
 				},
 			},
 			beforeFunc: func(args args) {
-				defaultOpts = []Option{}
+				defaultOptions = []Option{}
 			},
 		},
 		{
@@ -126,7 +126,7 @@ func TestNew(t *testing.T) {
 				},
 			},
 			beforeFunc: func(args args) {
-				defaultOpts = []Option{}
+				defaultOptions = []Option{}
 			},
 		},
 		{
@@ -142,7 +142,7 @@ func TestNew(t *testing.T) {
 				err: errors.New("load error"),
 			},
 			beforeFunc: func(args args) {
-				defaultOpts = []Option{}
+				defaultOptions = []Option{}
 			},
 		},
 		{
@@ -157,7 +157,7 @@ func TestNew(t *testing.T) {
 				err: errors.ErrInputLength(1, 0),
 			},
 			beforeFunc: func(args args) {
-				defaultOpts = []Option{}
+				defaultOptions = []Option{}
 			},
 		},
 	}

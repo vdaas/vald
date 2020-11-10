@@ -34,7 +34,7 @@ import (
 // https://pkg.go.dev/github.com/gocql/gocql?tab=doc#ClusterConfig
 type Option func(*client) error
 
-var defaultOpts = []Option{
+var defaultOptions = []Option{
 	WithCQLVersion("3.0.0"),
 	WithConnectTimeout("600ms"),
 	WithConsistency(cQuorumKey),

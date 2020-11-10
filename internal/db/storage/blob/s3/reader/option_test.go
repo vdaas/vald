@@ -443,8 +443,8 @@ func TestWithBackoff(t *testing.T) {
 func TestWithBackoffOpts(t *testing.T) {
 	type T = reader
 	type args struct {
-		opts        []backoff.Option
-		defaultOpts []backoff.Option
+		opts           []backoff.Option
+		defaultOptions []backoff.Option
 	}
 	type want struct {
 		obj *T
@@ -491,23 +491,23 @@ func TestWithBackoffOpts(t *testing.T) {
 			}
 		}(),
 		func() test {
-			defaultOpts := []backoff.Option{}
+			defaultOptions := []backoff.Option{}
 			opts := []backoff.Option{
 				backoff.WithRetryCount(1),
 			}
 			return test{
 				name: "set success when opts is not nil and backoffOpts is not nil",
 				args: args{
-					opts:        opts,
-					defaultOpts: defaultOpts,
+					opts:           opts,
+					defaultOptions: defaultOptions,
 				},
 				want: want{
 					obj: &T{
-						backoffOpts: append(defaultOpts, opts...),
+						backoffOpts: append(defaultOptions, opts...),
 					},
 				},
 				beforeFunc: func(args args, r *T) {
-					r.backoffOpts = args.defaultOpts
+					r.backoffOpts = args.defaultOptions
 				},
 			}
 		}(),

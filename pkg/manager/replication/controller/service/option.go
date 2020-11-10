@@ -26,7 +26,7 @@ import (
 
 type Option func(r *replicator) error
 
-var defaultOpts = []Option{
+var defaultOptions = []Option{
 	WithRecoverCheckDuration("1m"),
 	WithErrGroup(errgroup.Get()),
 	WithNamespace("vald"),

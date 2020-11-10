@@ -28,7 +28,7 @@ import (
 
 type Option func(*server)
 
-var defaultOpts = []Option{
+var defaultOptions = []Option{
 	WithName(func() string {
 		name, err := os.Hostname()
 		if err != nil {

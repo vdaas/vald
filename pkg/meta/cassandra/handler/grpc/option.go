@@ -21,7 +21,7 @@ import "github.com/vdaas/vald/pkg/meta/cassandra/service"
 
 type Option func(*server)
 
-var defaultOpts = []Option{}
+var defaultOptions = []Option{}
 
 func WithCassandra(r service.Cassandra) Option {
 	return func(s *server) {

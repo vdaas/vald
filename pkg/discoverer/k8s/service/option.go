@@ -26,7 +26,7 @@ import (
 
 type Option func(d *discoverer) error
 
-var defaultOpts = []Option{
+var defaultOptions = []Option{
 	WithDiscoverDuration("2s"),
 	WithErrGroup(errgroup.Get()),
 }

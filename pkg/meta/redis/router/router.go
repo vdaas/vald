@@ -36,7 +36,7 @@ type router struct {
 func New(opts ...Option) http.Handler {
 	r := new(router)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(r)
 	}
 

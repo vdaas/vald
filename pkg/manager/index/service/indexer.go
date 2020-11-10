@@ -58,7 +58,7 @@ type index struct {
 
 func New(opts ...Option) (idx Indexer, err error) {
 	i := new(index)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(i); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}

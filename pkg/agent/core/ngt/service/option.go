@@ -29,7 +29,7 @@ import (
 
 type Option func(n *ngt) error
 
-var defaultOpts = []Option{
+var defaultOptions = []Option{
 	WithErrGroup(errgroup.Get()),
 	WithAutoIndexCheckDuration("30m"),
 	WithAutoIndexDurationLimit("24h"),

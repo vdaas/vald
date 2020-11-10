@@ -51,7 +51,7 @@ type Pod struct {
 func New(opts ...Option) PodWatcher {
 	r := new(reconciler)
 
-	for _, opt := range opts {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(r)
 	}
 

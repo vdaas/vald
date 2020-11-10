@@ -67,7 +67,7 @@ func TestNew(t *testing.T) {
 	tests := []test{
 		func() test {
 			m := new(mySQLClient)
-			for _, opt := range defaultOpts {
+			for _, opt := range defaultOptions {
 				_ = opt(m)
 			}
 			m.dbr = dbr.New()
@@ -80,7 +80,7 @@ func TestNew(t *testing.T) {
 		}(),
 		func() test {
 			m := new(mySQLClient)
-			for _, opt := range defaultOpts {
+			for _, opt := range defaultOptions {
 				_ = opt(m)
 			}
 			m.dbr = dbr.New()
@@ -93,7 +93,7 @@ func TestNew(t *testing.T) {
 		}(),
 		func() test {
 			m := new(mySQLClient)
-			for _, opt := range defaultOpts {
+			for _, opt := range defaultOptions {
 				_ = opt(m)
 			}
 			m.dbr = dbr.New()

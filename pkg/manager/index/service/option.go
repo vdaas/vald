@@ -27,7 +27,7 @@ import (
 
 type Option func(i *index) error
 
-var defaultOpts = []Option{
+var defaultOptions = []Option{
 	WithErrGroup(errgroup.Get()),
 	WithIndexingConcurrency(1),
 	WithIndexingDuration("1m"),

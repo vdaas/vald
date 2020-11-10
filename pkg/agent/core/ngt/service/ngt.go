@@ -124,7 +124,7 @@ const (
 func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 	n := new(ngt)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(n); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}

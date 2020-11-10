@@ -79,7 +79,7 @@ func New(opts ...Option) (MySQL, error) {
 	m := &mySQLClient{
 		dbr: dbr.New(),
 	}
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(m); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}

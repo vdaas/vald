@@ -34,7 +34,7 @@ import (
 
 type Option func(*gRPCClient)
 
-var defaultOpts = []Option{
+var defaultOptions = []Option{
 	WithConnectionPoolSize(3),
 	WithEnableConnectionPoolRebalance(false),
 	WithConnectionPoolRebalanceDuration("1h"),

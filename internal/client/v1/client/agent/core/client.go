@@ -42,7 +42,7 @@ type agentClient struct {
 // New returns Client implementation if no error occurs.
 func New(opts ...Option) Client {
 	c := new(agentClient)
-	for _, opt := range opts {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(c)
 	}
 	return &agentClient{

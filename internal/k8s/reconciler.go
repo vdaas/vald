@@ -57,7 +57,7 @@ type controller struct {
 func New(opts ...Option) (cl Controller, err error) {
 	c := new(controller)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(c); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}

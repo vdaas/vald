@@ -24,7 +24,7 @@ import (
 
 type Option func(*router)
 
-var defaultOpts = []Option{
+var defaultOptions = []Option{
 	WithTimeout("3s"),
 }
 

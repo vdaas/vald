@@ -19,7 +19,7 @@ package params
 
 type Option func(*parser)
 
-var defaultOpts = []Option{
+var defaultOptions = []Option{
 	WithConfigFilePathKeys("f", "file", "c", "config"),
 	WithConfigFilePathDefault("/etc/server/config.yaml"),
 	WithConfigFileDescription("config file path"),

@@ -52,7 +52,7 @@ const traceTag = "vald/internal/backoff/Backoff.Do/retry"
 
 func New(opts ...Option) Backoff {
 	b := new(backoff)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(b)
 	}
 	if b.backoffFactor < 1 {

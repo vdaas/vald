@@ -25,7 +25,7 @@ import (
 
 type Option func(r *restorer) error
 
-var defaultOpts = []Option{
+var defaultOptions = []Option{
 	WithErrGroup(errgroup.Get()),
 	WithBackoff(false),
 }

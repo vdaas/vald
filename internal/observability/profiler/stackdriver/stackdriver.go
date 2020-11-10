@@ -38,7 +38,7 @@ func New(opts ...Option) (s Stackdriver, err error) {
 	p := new(prof)
 	p.Config = new(profiler.Config)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		err = opt(p)
 		if err != nil {
 			return nil, err

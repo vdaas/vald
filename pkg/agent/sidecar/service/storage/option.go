@@ -25,7 +25,7 @@ import (
 
 type Option func(b *bs) error
 
-var defaultOpts = []Option{
+var defaultOptions = []Option{
 	WithErrGroup(errgroup.Get()),
 	WithCompressAlgorithm("gzip"),
 	WithCompressionLevel(-1),

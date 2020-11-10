@@ -76,7 +76,7 @@ type pool struct {
 func New(ctx context.Context, opts ...Option) (c Conn, err error) {
 	p := new(pool)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(p)
 	}
 
@@ -474,11 +474,7 @@ func isGRPCPort(ctx context.Context, host string, port uint16) bool {
 	if err != nil {
 		return false
 	}
-	err = conn.Close()
-	if err != nil {
-		return false
-	}
-	return true
+	return conn.Close() == nil
 }
 
 func isHealthy(conn *ClientConn) bool {

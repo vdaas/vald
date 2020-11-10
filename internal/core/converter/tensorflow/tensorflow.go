@@ -75,7 +75,7 @@ const (
 func New(opts ...Option) (TF, error) {
 	t := new(tensorflow)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(t)
 	}
 

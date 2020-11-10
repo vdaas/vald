@@ -23,7 +23,7 @@ import (
 
 type Option func(*client) error
 
-var defaultOpts = []Option{
+var defaultOptions = []Option{
 	WithTableName("backup_vector"),
 }
 

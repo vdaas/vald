@@ -24,7 +24,7 @@ import (
 
 type Option func(p *prof) error
 
-var defaultOpts = []Option{
+var defaultOptions = []Option{
 	WithCPUProfiling(true),
 	WithAllocProfiling(true),
 	WithHeapProfiling(true),
