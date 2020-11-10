@@ -977,12 +977,12 @@ When dependencies have the following factor, you can decide to mock the dependen
 
 - Incomplete implementation
 - I/O
-  - e.g. Network access, disk operation, or etc.
+  - e.g. Network access, disk operation, etc.
 - Hardware dependent
-  - e.g. CPU, Memory usage, disk I/O, or etc.
+  - e.g. CPU, Memory usage, disk I/O, etc.
 - Difficult to create error of dependencies
 - Difficult to initialize
-  - e.g. Random number and time, file I/O initialization, environment dependent, or etc.
+  - e.g. Random number and time, file I/O initialization, environment dependent, etc.
 - Test result may change in each runtime
   - e.g. Only test result may change in each runtime, System call inside implementation, etc.
 
