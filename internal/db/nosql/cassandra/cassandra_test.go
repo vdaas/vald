@@ -19,15 +19,78 @@ package cassandra
 import (
 	"context"
 	"crypto/tls"
+	"os"
 	"reflect"
 	"testing"
 	"time"
 
 	"github.com/gocql/gocql"
+	"github.com/scylladb/gocqlx"
+	"github.com/scylladb/gocqlx/qb"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/test/comparator"
 
 	"go.uber.org/goleak"
 )
+
+var (
+	// default comparator option for client
+	clientComparatorOpts = []comparator.Option{
+		comparator.AllowUnexported(client{}),
+		comparator.AllowUnexported(gocql.ClusterConfig{}),
+		comparator.Comparer(func(x, y retryPolicy) bool {
+			return reflect.DeepEqual(x, y)
+		}),
+		comparator.Comparer(func(x, y reconnectionPolicy) bool {
+			return reflect.DeepEqual(x, y)
+		}),
+		comparator.Comparer(func(x, y poolConfig) bool {
+			return reflect.DeepEqual(x, y)
+		}),
+		comparator.Comparer(func(x, y hostFilter) bool {
+			return reflect.DeepEqual(x, y)
+		}),
+		comparator.Comparer(func(x, y gocql.PoolConfig) bool {
+			return reflect.DeepEqual(x, y)
+		}),
+		comparator.Comparer(func(x, y gocql.HostSelectionPolicy) bool {
+			return reflect.DeepEqual(x, y)
+		}),
+		comparator.Comparer(func(x, y func(h *gocql.HostInfo) (gocql.Authenticator, error)) bool {
+			if (x == nil && y != nil) || (x != nil && y == nil) {
+				return false
+			}
+			if x == nil && y == nil {
+				return true
+			}
+			return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
+		}),
+		comparator.Comparer(func(x, y gocql.HostFilter) bool {
+			if (x == nil && y != nil) || (x != nil && y == nil) {
+				return false
+			}
+			if x == nil && y == nil {
+				return true
+			}
+
+			switch x.(type) {
+			case gocql.HostFilterFunc:
+				return true
+			}
+			return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
+		}),
+
+		comparator.Comparer(func(x, y tls.Config) bool {
+			return reflect.DeepEqual(x, y)
+		}),
+	}
+)
+
+func TestMain(m *testing.M) {
+	log.Init()
+	os.Exit(m.Run())
+}
 
 func TestNew(t *testing.T) {
 	type args struct {
@@ -49,42 +112,1029 @@ func TestNew(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		if diff := comparator.Diff(got, w.want, clientComparatorOpts...); diff != "" {
+			return errors.New(diff)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           opts: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "New returns default cassandra",
+			args: args{
+				opts: nil,
+			},
+			want: want{
+				want: &client{
+					cqlVersion:               "3.0.0",
+					connectTimeout:           600 * time.Millisecond,
+					consistency:              gocql.Quorum,
+					defaultIdempotence:       false,
+					defaultTimestamp:         true,
+					disableInitialHostLookup: false,
+					disableNodeStatusEvents:  false,
+					disableSkipMetadata:      false,
+					disableTopologyEvents:    false,
+					enableHostVerification:   false,
+					ignorePeerAddr:           false,
+					maxPreparedStmts:         1000,
+					maxRoutingKeyInfo:        1000,
+					maxWaitSchemaAgreement:   1 * time.Minute,
+					numConns:                 2,
+					pageSize:                 5000,
+					port:                     9042,
+					protoVersion:             0,
+					reconnectInterval:        time.Minute,
+					serialConsistency:        gocql.LocalSerial,
+					timeout:                  600 * time.Millisecond,
+					writeCoalesceWaitTime:    200 * time.Microsecond,
+					cluster: &gocql.ClusterConfig{
+						Authenticator: func() *gocql.PasswordAuthenticator {
+							return nil
+						}(),
+						RetryPolicy: func() *gocql.ExponentialBackoffRetryPolicy {
+							return nil
+						}(),
+						ConvictionPolicy:   NewConvictionPolicy(),
+						ReconnectionPolicy: &gocql.ExponentialReconnectionPolicy{},
+						PoolConfig: gocql.PoolConfig{
+							HostSelectionPolicy: func() gocql.HostSelectionPolicy {
+								return gocql.TokenAwareHostPolicy(gocql.RoundRobinHostPolicy())
+							}(),
+						},
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           opts: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+						CQLVersion:               "3.0.0",
+						ConnectTimeout:           600 * time.Millisecond,
+						Consistency:              gocql.Quorum,
+						DefaultIdempotence:       false,
+						DefaultTimestamp:         true,
+						DisableInitialHostLookup: false,
+						Events: events{
+							DisableNodeStatusEvents: false,
+							DisableTopologyEvents:   false,
+						},
+						DisableSkipMetadata:    false,
+						IgnorePeerAddr:         false,
+						MaxPreparedStmts:       1000,
+						MaxRoutingKeyInfo:      1000,
+						MaxWaitSchemaAgreement: 1 * time.Minute,
+						NumConns:               2,
+						PageSize:               5000,
+						Port:                   9042,
+						ProtoVersion:           0,
+						ReconnectInterval:      time.Minute,
+						SerialConsistency:      gocql.LocalSerial,
+						Timeout:                600 * time.Millisecond,
+						WriteCoalesceWaitTime:  200 * time.Microsecond,
+					},
+					poolConfig: poolConfig{
+						enableDCAwareRouting:           false,
+						enableNonLocalReplicasFallback: false,
+						enableShuffleReplicas:          false,
+						enableTokenAwareHostPolicy:     true,
+					},
+				},
+			},
+		},
+		{
+			name: "New returns cassandra with and username password",
+			args: args{
+				opts: []Option{
+					WithUsername("un"),
+					WithPassword("p"),
+				},
+			},
+			want: want{
+				want: &client{
+					username:                 "un",
+					password:                 "p",
+					cqlVersion:               "3.0.0",
+					connectTimeout:           600 * time.Millisecond,
+					consistency:              gocql.Quorum,
+					defaultIdempotence:       false,
+					defaultTimestamp:         true,
+					disableInitialHostLookup: false,
+					disableNodeStatusEvents:  false,
+					disableSkipMetadata:      false,
+					disableTopologyEvents:    false,
+					enableHostVerification:   false,
+					ignorePeerAddr:           false,
+					maxPreparedStmts:         1000,
+					maxRoutingKeyInfo:        1000,
+					maxWaitSchemaAgreement:   1 * time.Minute,
+					numConns:                 2,
+					pageSize:                 5000,
+					port:                     9042,
+					protoVersion:             0,
+					reconnectInterval:        time.Minute,
+					serialConsistency:        gocql.LocalSerial,
+					timeout:                  600 * time.Millisecond,
+					writeCoalesceWaitTime:    200 * time.Microsecond,
+					cluster: &gocql.ClusterConfig{
+						Authenticator: func() *gocql.PasswordAuthenticator {
+							return &gocql.PasswordAuthenticator{
+								Username: "un",
+								Password: "p",
+							}
+						}(),
+						RetryPolicy: func() *gocql.ExponentialBackoffRetryPolicy {
+							return nil
+						}(),
+						ConvictionPolicy:   NewConvictionPolicy(),
+						ReconnectionPolicy: &gocql.ExponentialReconnectionPolicy{},
+						PoolConfig: gocql.PoolConfig{
+							HostSelectionPolicy: func() gocql.HostSelectionPolicy {
+								return gocql.TokenAwareHostPolicy(gocql.RoundRobinHostPolicy())
+							}(),
+						},
+
+						CQLVersion:               "3.0.0",
+						ConnectTimeout:           600 * time.Millisecond,
+						Consistency:              gocql.Quorum,
+						DefaultIdempotence:       false,
+						DefaultTimestamp:         true,
+						DisableInitialHostLookup: false,
+						Events: events{
+							DisableNodeStatusEvents: false,
+							DisableTopologyEvents:   false,
+						},
+						DisableSkipMetadata:    false,
+						IgnorePeerAddr:         false,
+						MaxPreparedStmts:       1000,
+						MaxRoutingKeyInfo:      1000,
+						MaxWaitSchemaAgreement: 1 * time.Minute,
+						NumConns:               2,
+						PageSize:               5000,
+						Port:                   9042,
+						ProtoVersion:           0,
+						ReconnectInterval:      time.Minute,
+						SerialConsistency:      gocql.LocalSerial,
+						Timeout:                600 * time.Millisecond,
+						WriteCoalesceWaitTime:  200 * time.Microsecond,
+					},
+					poolConfig: poolConfig{
+						enableDCAwareRouting:           false,
+						enableNonLocalReplicasFallback: false,
+						enableShuffleReplicas:          false,
+						enableTokenAwareHostPolicy:     true,
+					},
+				},
+			},
+		},
+		{
+			name: "New returns cassandra with backoff",
+			args: args{
+				opts: []Option{
+					WithRetryPolicyNumRetries(5),
+					WithRetryPolicyMinDuration("1s"),
+					WithRetryPolicyMaxDuration("5s"),
+				},
+			},
+			want: want{
+				want: &client{
+					cqlVersion:               "3.0.0",
+					connectTimeout:           600 * time.Millisecond,
+					consistency:              gocql.Quorum,
+					defaultIdempotence:       false,
+					defaultTimestamp:         true,
+					disableInitialHostLookup: false,
+					disableNodeStatusEvents:  false,
+					disableSkipMetadata:      false,
+					disableTopologyEvents:    false,
+					enableHostVerification:   false,
+					ignorePeerAddr:           false,
+					maxPreparedStmts:         1000,
+					maxRoutingKeyInfo:        1000,
+					maxWaitSchemaAgreement:   1 * time.Minute,
+					numConns:                 2,
+					pageSize:                 5000,
+					port:                     9042,
+					protoVersion:             0,
+					reconnectInterval:        time.Minute,
+					serialConsistency:        gocql.LocalSerial,
+					timeout:                  600 * time.Millisecond,
+					writeCoalesceWaitTime:    200 * time.Microsecond,
+					retryPolicy: retryPolicy{
+						numRetries:  5,
+						minDuration: time.Second,
+						maxDuration: 5 * time.Second,
+					},
+					cluster: &gocql.ClusterConfig{
+						Authenticator: func() *gocql.PasswordAuthenticator {
+							return nil
+						}(),
+						RetryPolicy: func() *gocql.ExponentialBackoffRetryPolicy {
+							return &gocql.ExponentialBackoffRetryPolicy{
+								NumRetries: 5,
+								Min:        time.Second,
+								Max:        5 * time.Second,
+							}
+						}(),
+						ConvictionPolicy:   NewConvictionPolicy(),
+						ReconnectionPolicy: &gocql.ExponentialReconnectionPolicy{},
+						PoolConfig: gocql.PoolConfig{
+							HostSelectionPolicy: func() gocql.HostSelectionPolicy {
+								return gocql.TokenAwareHostPolicy(gocql.RoundRobinHostPolicy())
+							}(),
+						},
+
+						CQLVersion:               "3.0.0",
+						ConnectTimeout:           600 * time.Millisecond,
+						Consistency:              gocql.Quorum,
+						DefaultIdempotence:       false,
+						DefaultTimestamp:         true,
+						DisableInitialHostLookup: false,
+						Events: events{
+							DisableNodeStatusEvents: false,
+							DisableTopologyEvents:   false,
+						},
+						DisableSkipMetadata:    false,
+						IgnorePeerAddr:         false,
+						MaxPreparedStmts:       1000,
+						MaxRoutingKeyInfo:      1000,
+						MaxWaitSchemaAgreement: 1 * time.Minute,
+						NumConns:               2,
+						PageSize:               5000,
+						Port:                   9042,
+						ProtoVersion:           0,
+						ReconnectInterval:      time.Minute,
+						SerialConsistency:      gocql.LocalSerial,
+						Timeout:                600 * time.Millisecond,
+						WriteCoalesceWaitTime:  200 * time.Microsecond,
+					},
+					poolConfig: poolConfig{
+						enableDCAwareRouting:           false,
+						enableNonLocalReplicasFallback: false,
+						enableShuffleReplicas:          false,
+						enableTokenAwareHostPolicy:     true,
+					},
+				},
+			},
+		},
+		{
+			name: "New returns cassandra with DC aware poll config",
+			args: args{
+				opts: []Option{
+					WithDCAwareRouting(true),
+					WithDC("dc"),
+					WithTokenAwareHostPolicy(false),
+				},
+			},
+			want: want{
+				want: &client{
+					cqlVersion:               "3.0.0",
+					connectTimeout:           600 * time.Millisecond,
+					consistency:              gocql.Quorum,
+					defaultIdempotence:       false,
+					defaultTimestamp:         true,
+					disableInitialHostLookup: false,
+					disableNodeStatusEvents:  false,
+					disableSkipMetadata:      false,
+					disableTopologyEvents:    false,
+					enableHostVerification:   false,
+					ignorePeerAddr:           false,
+					maxPreparedStmts:         1000,
+					maxRoutingKeyInfo:        1000,
+					maxWaitSchemaAgreement:   1 * time.Minute,
+					numConns:                 2,
+					pageSize:                 5000,
+					port:                     9042,
+					protoVersion:             0,
+					reconnectInterval:        time.Minute,
+					serialConsistency:        gocql.LocalSerial,
+					timeout:                  600 * time.Millisecond,
+					writeCoalesceWaitTime:    200 * time.Microsecond,
+					cluster: &gocql.ClusterConfig{
+						Authenticator: func() *gocql.PasswordAuthenticator {
+							return nil
+						}(),
+						RetryPolicy: func() *gocql.ExponentialBackoffRetryPolicy {
+							return nil
+						}(),
+						ConvictionPolicy:   NewConvictionPolicy(),
+						ReconnectionPolicy: &gocql.ExponentialReconnectionPolicy{},
+						PoolConfig: gocql.PoolConfig{
+							HostSelectionPolicy: func() gocql.HostSelectionPolicy {
+								return gocql.DCAwareRoundRobinPolicy("dc")
+							}(),
+						},
+
+						CQLVersion:               "3.0.0",
+						ConnectTimeout:           600 * time.Millisecond,
+						Consistency:              gocql.Quorum,
+						DefaultIdempotence:       false,
+						DefaultTimestamp:         true,
+						DisableInitialHostLookup: false,
+						Events: events{
+							DisableNodeStatusEvents: false,
+							DisableTopologyEvents:   false,
+						},
+						DisableSkipMetadata:    false,
+						IgnorePeerAddr:         false,
+						MaxPreparedStmts:       1000,
+						MaxRoutingKeyInfo:      1000,
+						MaxWaitSchemaAgreement: 1 * time.Minute,
+						NumConns:               2,
+						PageSize:               5000,
+						Port:                   9042,
+						ProtoVersion:           0,
+						ReconnectInterval:      time.Minute,
+						SerialConsistency:      gocql.LocalSerial,
+						Timeout:                600 * time.Millisecond,
+						WriteCoalesceWaitTime:  200 * time.Microsecond,
+					},
+					poolConfig: poolConfig{
+						enableDCAwareRouting:           true,
+						dataCenterName:                 "dc",
+						enableNonLocalReplicasFallback: false,
+						enableShuffleReplicas:          false,
+						enableTokenAwareHostPolicy:     false,
+					},
+				},
+			},
+		},
+		{
+			name: "New returns cassandra with shuffle replica",
+			args: args{
+				opts: []Option{
+					WithShuffleReplicas(true),
+				},
+			},
+			want: want{
+				want: &client{
+					cqlVersion:               "3.0.0",
+					connectTimeout:           600 * time.Millisecond,
+					consistency:              gocql.Quorum,
+					defaultIdempotence:       false,
+					defaultTimestamp:         true,
+					disableInitialHostLookup: false,
+					disableNodeStatusEvents:  false,
+					disableSkipMetadata:      false,
+					disableTopologyEvents:    false,
+					enableHostVerification:   false,
+					ignorePeerAddr:           false,
+					maxPreparedStmts:         1000,
+					maxRoutingKeyInfo:        1000,
+					maxWaitSchemaAgreement:   1 * time.Minute,
+					numConns:                 2,
+					pageSize:                 5000,
+					port:                     9042,
+					protoVersion:             0,
+					reconnectInterval:        time.Minute,
+					serialConsistency:        gocql.LocalSerial,
+					timeout:                  600 * time.Millisecond,
+					writeCoalesceWaitTime:    200 * time.Microsecond,
+					cluster: &gocql.ClusterConfig{
+						Authenticator: func() *gocql.PasswordAuthenticator {
+							return nil
+						}(),
+						RetryPolicy: func() *gocql.ExponentialBackoffRetryPolicy {
+							return nil
+						}(),
+						ConvictionPolicy:   NewConvictionPolicy(),
+						ReconnectionPolicy: &gocql.ExponentialReconnectionPolicy{},
+						PoolConfig: gocql.PoolConfig{
+							HostSelectionPolicy: func() gocql.HostSelectionPolicy {
+								return gocql.TokenAwareHostPolicy(gocql.RoundRobinHostPolicy(), gocql.ShuffleReplicas())
+							}(),
+						},
+
+						CQLVersion:               "3.0.0",
+						ConnectTimeout:           600 * time.Millisecond,
+						Consistency:              gocql.Quorum,
+						DefaultIdempotence:       false,
+						DefaultTimestamp:         true,
+						DisableInitialHostLookup: false,
+						Events: events{
+							DisableNodeStatusEvents: false,
+							DisableTopologyEvents:   false,
+						},
+						DisableSkipMetadata:    false,
+						IgnorePeerAddr:         false,
+						MaxPreparedStmts:       1000,
+						MaxRoutingKeyInfo:      1000,
+						MaxWaitSchemaAgreement: 1 * time.Minute,
+						NumConns:               2,
+						PageSize:               5000,
+						Port:                   9042,
+						ProtoVersion:           0,
+						ReconnectInterval:      time.Minute,
+						SerialConsistency:      gocql.LocalSerial,
+						Timeout:                600 * time.Millisecond,
+						WriteCoalesceWaitTime:  200 * time.Microsecond,
+					},
+					poolConfig: poolConfig{
+						enableDCAwareRouting:           false,
+						enableNonLocalReplicasFallback: false,
+						enableShuffleReplicas:          true,
+						enableTokenAwareHostPolicy:     true,
+					},
+				},
+			},
+		},
+		{
+			name: "New returns cassandra with non local replicas fallback pool",
+			args: args{
+				opts: []Option{
+					WithNonLocalReplicasFallback(true),
+				},
+			},
+			want: want{
+				want: &client{
+					cqlVersion:               "3.0.0",
+					connectTimeout:           600 * time.Millisecond,
+					consistency:              gocql.Quorum,
+					defaultIdempotence:       false,
+					defaultTimestamp:         true,
+					disableInitialHostLookup: false,
+					disableNodeStatusEvents:  false,
+					disableSkipMetadata:      false,
+					disableTopologyEvents:    false,
+					enableHostVerification:   false,
+					ignorePeerAddr:           false,
+					maxPreparedStmts:         1000,
+					maxRoutingKeyInfo:        1000,
+					maxWaitSchemaAgreement:   1 * time.Minute,
+					numConns:                 2,
+					pageSize:                 5000,
+					port:                     9042,
+					protoVersion:             0,
+					reconnectInterval:        time.Minute,
+					serialConsistency:        gocql.LocalSerial,
+					timeout:                  600 * time.Millisecond,
+					writeCoalesceWaitTime:    200 * time.Microsecond,
+					cluster: &gocql.ClusterConfig{
+						Authenticator: func() *gocql.PasswordAuthenticator {
+							return nil
+						}(),
+						RetryPolicy: func() *gocql.ExponentialBackoffRetryPolicy {
+							return nil
+						}(),
+						ConvictionPolicy:   NewConvictionPolicy(),
+						ReconnectionPolicy: &gocql.ExponentialReconnectionPolicy{},
+						PoolConfig: gocql.PoolConfig{
+							HostSelectionPolicy: func() gocql.HostSelectionPolicy {
+								return gocql.TokenAwareHostPolicy(gocql.RoundRobinHostPolicy(), gocql.NonLocalReplicasFallback())
+							}(),
+						},
+
+						CQLVersion:               "3.0.0",
+						ConnectTimeout:           600 * time.Millisecond,
+						Consistency:              gocql.Quorum,
+						DefaultIdempotence:       false,
+						DefaultTimestamp:         true,
+						DisableInitialHostLookup: false,
+						Events: events{
+							DisableNodeStatusEvents: false,
+							DisableTopologyEvents:   false,
+						},
+						DisableSkipMetadata:    false,
+						IgnorePeerAddr:         false,
+						MaxPreparedStmts:       1000,
+						MaxRoutingKeyInfo:      1000,
+						MaxWaitSchemaAgreement: 1 * time.Minute,
+						NumConns:               2,
+						PageSize:               5000,
+						Port:                   9042,
+						ProtoVersion:           0,
+						ReconnectInterval:      time.Minute,
+						SerialConsistency:      gocql.LocalSerial,
+						Timeout:                600 * time.Millisecond,
+						WriteCoalesceWaitTime:  200 * time.Microsecond,
+					},
+					poolConfig: poolConfig{
+						enableDCAwareRouting:           false,
+						enableNonLocalReplicasFallback: true,
+						enableShuffleReplicas:          false,
+						enableTokenAwareHostPolicy:     true,
+					},
+				},
+			},
+		},
+		{
+			name: "New default cassandra with shuffle replicas and non local replicas fallback",
+			args: args{
+				opts: []Option{
+					WithShuffleReplicas(true),
+					WithNonLocalReplicasFallback(true),
+				},
+			},
+			want: want{
+				want: &client{
+					cqlVersion:               "3.0.0",
+					connectTimeout:           600 * time.Millisecond,
+					consistency:              gocql.Quorum,
+					defaultIdempotence:       false,
+					defaultTimestamp:         true,
+					disableInitialHostLookup: false,
+					disableNodeStatusEvents:  false,
+					disableSkipMetadata:      false,
+					disableTopologyEvents:    false,
+					enableHostVerification:   false,
+					ignorePeerAddr:           false,
+					maxPreparedStmts:         1000,
+					maxRoutingKeyInfo:        1000,
+					maxWaitSchemaAgreement:   1 * time.Minute,
+					numConns:                 2,
+					pageSize:                 5000,
+					port:                     9042,
+					protoVersion:             0,
+					reconnectInterval:        time.Minute,
+					serialConsistency:        gocql.LocalSerial,
+					timeout:                  600 * time.Millisecond,
+					writeCoalesceWaitTime:    200 * time.Microsecond,
+					cluster: &gocql.ClusterConfig{
+						Authenticator: func() *gocql.PasswordAuthenticator {
+							return nil
+						}(),
+						RetryPolicy: func() *gocql.ExponentialBackoffRetryPolicy {
+							return nil
+						}(),
+						ConvictionPolicy:   NewConvictionPolicy(),
+						ReconnectionPolicy: &gocql.ExponentialReconnectionPolicy{},
+						PoolConfig: gocql.PoolConfig{
+							HostSelectionPolicy: func() gocql.HostSelectionPolicy {
+								return gocql.TokenAwareHostPolicy(gocql.RoundRobinHostPolicy(), gocql.ShuffleReplicas(), gocql.NonLocalReplicasFallback())
+							}(),
+						},
+
+						CQLVersion:               "3.0.0",
+						ConnectTimeout:           600 * time.Millisecond,
+						Consistency:              gocql.Quorum,
+						DefaultIdempotence:       false,
+						DefaultTimestamp:         true,
+						DisableInitialHostLookup: false,
+						Events: events{
+							DisableNodeStatusEvents: false,
+							DisableTopologyEvents:   false,
+						},
+						DisableSkipMetadata:    false,
+						IgnorePeerAddr:         false,
+						MaxPreparedStmts:       1000,
+						MaxRoutingKeyInfo:      1000,
+						MaxWaitSchemaAgreement: 1 * time.Minute,
+						NumConns:               2,
+						PageSize:               5000,
+						Port:                   9042,
+						ProtoVersion:           0,
+						ReconnectInterval:      time.Minute,
+						SerialConsistency:      gocql.LocalSerial,
+						Timeout:                600 * time.Millisecond,
+						WriteCoalesceWaitTime:  200 * time.Microsecond,
+					},
+					poolConfig: poolConfig{
+						enableDCAwareRouting:           false,
+						enableNonLocalReplicasFallback: true,
+						enableShuffleReplicas:          true,
+						enableTokenAwareHostPolicy:     true,
+					},
+				},
+			},
+		},
+		{
+			name: "New returns cassandra with host filter enable",
+			args: args{
+				opts: []Option{
+					WithHostFilter(true),
+					WithDCHostFilter("dc"),
+				},
+			},
+			want: want{
+				want: &client{
+					cqlVersion:               "3.0.0",
+					connectTimeout:           600 * time.Millisecond,
+					consistency:              gocql.Quorum,
+					defaultIdempotence:       false,
+					defaultTimestamp:         true,
+					disableInitialHostLookup: false,
+					disableNodeStatusEvents:  false,
+					disableSkipMetadata:      false,
+					disableTopologyEvents:    false,
+					enableHostVerification:   false,
+					ignorePeerAddr:           false,
+					maxPreparedStmts:         1000,
+					maxRoutingKeyInfo:        1000,
+					maxWaitSchemaAgreement:   1 * time.Minute,
+					numConns:                 2,
+					pageSize:                 5000,
+					port:                     9042,
+					protoVersion:             0,
+					reconnectInterval:        time.Minute,
+					serialConsistency:        gocql.LocalSerial,
+					timeout:                  600 * time.Millisecond,
+					writeCoalesceWaitTime:    200 * time.Microsecond,
+					hostFilter: hostFilter{
+						enable: true,
+						dcHost: "dc",
+					},
+					cluster: &gocql.ClusterConfig{
+						Authenticator: func() *gocql.PasswordAuthenticator {
+							return nil
+						}(),
+						RetryPolicy: func() *gocql.ExponentialBackoffRetryPolicy {
+							return nil
+						}(),
+						ConvictionPolicy:   NewConvictionPolicy(),
+						ReconnectionPolicy: &gocql.ExponentialReconnectionPolicy{},
+						PoolConfig: gocql.PoolConfig{
+							HostSelectionPolicy: func() gocql.HostSelectionPolicy {
+								return gocql.TokenAwareHostPolicy(gocql.RoundRobinHostPolicy())
+							}(),
+						},
+						HostFilter: gocql.DataCentreHostFilter("dc"),
+
+						CQLVersion:               "3.0.0",
+						ConnectTimeout:           600 * time.Millisecond,
+						Consistency:              gocql.Quorum,
+						DefaultIdempotence:       false,
+						DefaultTimestamp:         true,
+						DisableInitialHostLookup: false,
+						Events: events{
+							DisableNodeStatusEvents: false,
+							DisableTopologyEvents:   false,
+						},
+						DisableSkipMetadata:    false,
+						IgnorePeerAddr:         false,
+						MaxPreparedStmts:       1000,
+						MaxRoutingKeyInfo:      1000,
+						MaxWaitSchemaAgreement: 1 * time.Minute,
+						NumConns:               2,
+						PageSize:               5000,
+						Port:                   9042,
+						ProtoVersion:           0,
+						ReconnectInterval:      time.Minute,
+						SerialConsistency:      gocql.LocalSerial,
+						Timeout:                600 * time.Millisecond,
+						WriteCoalesceWaitTime:  200 * time.Microsecond,
+					},
+					poolConfig: poolConfig{
+						enableDCAwareRouting:           false,
+						enableNonLocalReplicasFallback: false,
+						enableShuffleReplicas:          false,
+						enableTokenAwareHostPolicy:     true,
+					},
+				},
+			},
+		},
+		{
+			name: "New returns cassandra with whitelist enable",
+			args: args{
+				opts: []Option{
+					WithHostFilter(true),
+					WithWhiteListHostFilter([]string{"localhost"}),
+				},
+			},
+			want: want{
+				want: &client{
+					cqlVersion:               "3.0.0",
+					connectTimeout:           600 * time.Millisecond,
+					consistency:              gocql.Quorum,
+					defaultIdempotence:       false,
+					defaultTimestamp:         true,
+					disableInitialHostLookup: false,
+					disableNodeStatusEvents:  false,
+					disableSkipMetadata:      false,
+					disableTopologyEvents:    false,
+					enableHostVerification:   false,
+					ignorePeerAddr:           false,
+					maxPreparedStmts:         1000,
+					maxRoutingKeyInfo:        1000,
+					maxWaitSchemaAgreement:   1 * time.Minute,
+					numConns:                 2,
+					pageSize:                 5000,
+					port:                     9042,
+					protoVersion:             0,
+					reconnectInterval:        time.Minute,
+					serialConsistency:        gocql.LocalSerial,
+					timeout:                  600 * time.Millisecond,
+					writeCoalesceWaitTime:    200 * time.Microsecond,
+					hostFilter: hostFilter{
+						enable:    true,
+						whiteList: []string{"localhost"},
+					},
+					cluster: &gocql.ClusterConfig{
+						Authenticator: func() *gocql.PasswordAuthenticator {
+							return nil
+						}(),
+						RetryPolicy: func() *gocql.ExponentialBackoffRetryPolicy {
+							return nil
+						}(),
+						ConvictionPolicy:   NewConvictionPolicy(),
+						ReconnectionPolicy: &gocql.ExponentialReconnectionPolicy{},
+						PoolConfig: gocql.PoolConfig{
+							HostSelectionPolicy: func() gocql.HostSelectionPolicy {
+								return gocql.TokenAwareHostPolicy(gocql.RoundRobinHostPolicy())
+							}(),
+						},
+						HostFilter: gocql.WhiteListHostFilter("localhost"),
+
+						CQLVersion:               "3.0.0",
+						ConnectTimeout:           600 * time.Millisecond,
+						Consistency:              gocql.Quorum,
+						DefaultIdempotence:       false,
+						DefaultTimestamp:         true,
+						DisableInitialHostLookup: false,
+						Events: events{
+							DisableNodeStatusEvents: false,
+							DisableTopologyEvents:   false,
+						},
+						DisableSkipMetadata:    false,
+						IgnorePeerAddr:         false,
+						MaxPreparedStmts:       1000,
+						MaxRoutingKeyInfo:      1000,
+						MaxWaitSchemaAgreement: 1 * time.Minute,
+						NumConns:               2,
+						PageSize:               5000,
+						Port:                   9042,
+						ProtoVersion:           0,
+						ReconnectInterval:      time.Minute,
+						SerialConsistency:      gocql.LocalSerial,
+						Timeout:                600 * time.Millisecond,
+						WriteCoalesceWaitTime:  200 * time.Microsecond,
+					},
+					poolConfig: poolConfig{
+						enableDCAwareRouting:           false,
+						enableNonLocalReplicasFallback: false,
+						enableShuffleReplicas:          false,
+						enableTokenAwareHostPolicy:     true,
+					},
+				},
+			},
+		},
+		{
+			name: "New returns cassandra with host filter and whitelist enabled",
+			args: args{
+				opts: []Option{
+					WithHostFilter(true),
+					WithDCHostFilter("dc"),
+					WithWhiteListHostFilter([]string{"localhost"}),
+				},
+			},
+			want: want{
+				want: &client{
+					cqlVersion:               "3.0.0",
+					connectTimeout:           600 * time.Millisecond,
+					consistency:              gocql.Quorum,
+					defaultIdempotence:       false,
+					defaultTimestamp:         true,
+					disableInitialHostLookup: false,
+					disableNodeStatusEvents:  false,
+					disableSkipMetadata:      false,
+					disableTopologyEvents:    false,
+					enableHostVerification:   false,
+					ignorePeerAddr:           false,
+					maxPreparedStmts:         1000,
+					maxRoutingKeyInfo:        1000,
+					maxWaitSchemaAgreement:   1 * time.Minute,
+					numConns:                 2,
+					pageSize:                 5000,
+					port:                     9042,
+					protoVersion:             0,
+					reconnectInterval:        time.Minute,
+					serialConsistency:        gocql.LocalSerial,
+					timeout:                  600 * time.Millisecond,
+					writeCoalesceWaitTime:    200 * time.Microsecond,
+					hostFilter: hostFilter{
+						enable:    true,
+						dcHost:    "dc",
+						whiteList: []string{"localhost"},
+					},
+					cluster: &gocql.ClusterConfig{
+						Authenticator: func() *gocql.PasswordAuthenticator {
+							return nil
+						}(),
+						RetryPolicy: func() *gocql.ExponentialBackoffRetryPolicy {
+							return nil
+						}(),
+						ConvictionPolicy:   NewConvictionPolicy(),
+						ReconnectionPolicy: &gocql.ExponentialReconnectionPolicy{},
+						PoolConfig: gocql.PoolConfig{
+							HostSelectionPolicy: func() gocql.HostSelectionPolicy {
+								return gocql.TokenAwareHostPolicy(gocql.RoundRobinHostPolicy())
+							}(),
+						},
+						HostFilter: func() gocql.HostFilter {
+							dchf := gocql.DataCentreHostFilter("dc")
+							wlhf := gocql.WhiteListHostFilter("localhost")
+							return gocql.HostFilterFunc(func(host *gocql.HostInfo) bool {
+								return dchf.Accept(host) || wlhf.Accept(host)
+							})
+						}(),
+
+						CQLVersion:               "3.0.0",
+						ConnectTimeout:           600 * time.Millisecond,
+						Consistency:              gocql.Quorum,
+						DefaultIdempotence:       false,
+						DefaultTimestamp:         true,
+						DisableInitialHostLookup: false,
+						Events: events{
+							DisableNodeStatusEvents: false,
+							DisableTopologyEvents:   false,
+						},
+						DisableSkipMetadata:    false,
+						IgnorePeerAddr:         false,
+						MaxPreparedStmts:       1000,
+						MaxRoutingKeyInfo:      1000,
+						MaxWaitSchemaAgreement: 1 * time.Minute,
+						NumConns:               2,
+						PageSize:               5000,
+						Port:                   9042,
+						ProtoVersion:           0,
+						ReconnectInterval:      time.Minute,
+						SerialConsistency:      gocql.LocalSerial,
+						Timeout:                600 * time.Millisecond,
+						WriteCoalesceWaitTime:  200 * time.Microsecond,
+					},
+					poolConfig: poolConfig{
+						enableDCAwareRouting:           false,
+						enableNonLocalReplicasFallback: false,
+						enableShuffleReplicas:          false,
+						enableTokenAwareHostPolicy:     true,
+					},
+				},
+			},
+		},
+		{
+			name: "New returns cassandra with tls",
+			args: args{
+				opts: []Option{
+					WithTLS(&tls.Config{}),
+				},
+			},
+			want: want{
+				want: &client{
+					cqlVersion:               "3.0.0",
+					connectTimeout:           600 * time.Millisecond,
+					consistency:              gocql.Quorum,
+					defaultIdempotence:       false,
+					defaultTimestamp:         true,
+					disableInitialHostLookup: false,
+					disableNodeStatusEvents:  false,
+					disableSkipMetadata:      false,
+					disableTopologyEvents:    false,
+					enableHostVerification:   false,
+					ignorePeerAddr:           false,
+					maxPreparedStmts:         1000,
+					maxRoutingKeyInfo:        1000,
+					maxWaitSchemaAgreement:   1 * time.Minute,
+					numConns:                 2,
+					pageSize:                 5000,
+					port:                     9042,
+					protoVersion:             0,
+					reconnectInterval:        time.Minute,
+					serialConsistency:        gocql.LocalSerial,
+					timeout:                  600 * time.Millisecond,
+					writeCoalesceWaitTime:    200 * time.Microsecond,
+					cluster: &gocql.ClusterConfig{
+						Authenticator: func() *gocql.PasswordAuthenticator {
+							return nil
+						}(),
+						RetryPolicy: func() *gocql.ExponentialBackoffRetryPolicy {
+							return nil
+						}(),
+						ConvictionPolicy:   NewConvictionPolicy(),
+						ReconnectionPolicy: &gocql.ExponentialReconnectionPolicy{},
+						PoolConfig: gocql.PoolConfig{
+							HostSelectionPolicy: func() gocql.HostSelectionPolicy {
+								return gocql.TokenAwareHostPolicy(gocql.RoundRobinHostPolicy())
+							}(),
+						},
+
+						CQLVersion:               "3.0.0",
+						ConnectTimeout:           600 * time.Millisecond,
+						Consistency:              gocql.Quorum,
+						DefaultIdempotence:       false,
+						DefaultTimestamp:         true,
+						DisableInitialHostLookup: false,
+						Events: events{
+							DisableNodeStatusEvents: false,
+							DisableTopologyEvents:   false,
+						},
+						DisableSkipMetadata:    false,
+						IgnorePeerAddr:         false,
+						MaxPreparedStmts:       1000,
+						MaxRoutingKeyInfo:      1000,
+						MaxWaitSchemaAgreement: 1 * time.Minute,
+						NumConns:               2,
+						PageSize:               5000,
+						Port:                   9042,
+						ProtoVersion:           0,
+						ReconnectInterval:      time.Minute,
+						SerialConsistency:      gocql.LocalSerial,
+						Timeout:                600 * time.Millisecond,
+						WriteCoalesceWaitTime:  200 * time.Microsecond,
+						SslOpts: &gocql.SslOptions{
+							Config: &tls.Config{},
+						},
+					},
+					poolConfig: poolConfig{
+						enableDCAwareRouting:           false,
+						enableNonLocalReplicasFallback: false,
+						enableShuffleReplicas:          false,
+						enableTokenAwareHostPolicy:     true,
+					},
+					tls: &tls.Config{},
+				},
+			},
+		},
+		{
+			name: "New failed to init cassandra and return error",
+			args: args{
+				opts: []Option{
+					func(*client) error {
+						return errors.NewErrCriticalOption("n", 1)
+					},
+				},
+			},
+			want: want{
+				err: errors.NewErrCriticalOption("n", 1),
+			},
+		},
+		{
+			name: "New returns default cassandra with option fail",
+			args: args{
+				opts: []Option{
+					func(*client) error {
+						return errors.New("err")
+					},
+				},
+			},
+			want: want{
+				want: &client{
+					cqlVersion:               "3.0.0",
+					connectTimeout:           600 * time.Millisecond,
+					consistency:              gocql.Quorum,
+					defaultIdempotence:       false,
+					defaultTimestamp:         true,
+					disableInitialHostLookup: false,
+					disableNodeStatusEvents:  false,
+					disableSkipMetadata:      false,
+					disableTopologyEvents:    false,
+					enableHostVerification:   false,
+					ignorePeerAddr:           false,
+					maxPreparedStmts:         1000,
+					maxRoutingKeyInfo:        1000,
+					maxWaitSchemaAgreement:   1 * time.Minute,
+					numConns:                 2,
+					pageSize:                 5000,
+					port:                     9042,
+					protoVersion:             0,
+					reconnectInterval:        time.Minute,
+					serialConsistency:        gocql.LocalSerial,
+					timeout:                  600 * time.Millisecond,
+					writeCoalesceWaitTime:    200 * time.Microsecond,
+					cluster: &gocql.ClusterConfig{
+						Authenticator: func() *gocql.PasswordAuthenticator {
+							return nil
+						}(),
+						RetryPolicy: func() *gocql.ExponentialBackoffRetryPolicy {
+							return nil
+						}(),
+						ConvictionPolicy:   NewConvictionPolicy(),
+						ReconnectionPolicy: &gocql.ExponentialReconnectionPolicy{},
+						PoolConfig: gocql.PoolConfig{
+							HostSelectionPolicy: func() gocql.HostSelectionPolicy {
+								return gocql.TokenAwareHostPolicy(gocql.RoundRobinHostPolicy())
+							}(),
+						},
+
+						CQLVersion:               "3.0.0",
+						ConnectTimeout:           600 * time.Millisecond,
+						Consistency:              gocql.Quorum,
+						DefaultIdempotence:       false,
+						DefaultTimestamp:         true,
+						DisableInitialHostLookup: false,
+						Events: events{
+							DisableNodeStatusEvents: false,
+							DisableTopologyEvents:   false,
+						},
+						DisableSkipMetadata:    false,
+						IgnorePeerAddr:         false,
+						MaxPreparedStmts:       1000,
+						MaxRoutingKeyInfo:      1000,
+						MaxWaitSchemaAgreement: 1 * time.Minute,
+						NumConns:               2,
+						PageSize:               5000,
+						Port:                   9042,
+						ProtoVersion:           0,
+						ReconnectInterval:      time.Minute,
+						SerialConsistency:      gocql.LocalSerial,
+						Timeout:                600 * time.Millisecond,
+						WriteCoalesceWaitTime:  200 * time.Microsecond,
+					},
+					poolConfig: poolConfig{
+						enableDCAwareRouting:           false,
+						enableNonLocalReplicasFallback: false,
+						enableShuffleReplicas:          false,
+						enableTokenAwareHostPolicy:     true,
+					},
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -165,10 +1215,11 @@ func Test_client_Open(t *testing.T) {
 		defaultIdempotence       bool
 		dialer                   gocql.Dialer
 		writeCoalesceWaitTime    time.Duration
-		cluster                  *gocql.ClusterConfig
+		cluster                  ClusterConfig
 		session                  *gocql.Session
 	}
 	type want struct {
+		c   *client
 		err error
 	}
 	type test struct {
@@ -176,133 +1227,65 @@ func Test_client_Open(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, error) error
+		checkFunc  func(*client, want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
+	defaultCheckFunc := func(c *client, w want, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(c, w.c) {
+			return errors.New("client is not equal")
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		       },
-		       fields: fields {
-		           hosts: nil,
-		           cqlVersion: "",
-		           protoVersion: 0,
-		           timeout: nil,
-		           connectTimeout: nil,
-		           port: 0,
-		           keyspace: "",
-		           numConns: 0,
-		           consistency: nil,
-		           compressor: nil,
-		           username: "",
-		           password: "",
-		           authProvider: nil,
-		           retryPolicy: struct{numRetries int; minDuration time.Duration; maxDuration time.Duration}{},
-		           reconnectionPolicy: struct{initialInterval time.Duration; maxRetries int}{},
-		           poolConfig: struct{dataCenterName string; enableDCAwareRouting bool; enableShuffleReplicas bool; enableNonLocalReplicasFallback bool; enableTokenAwareHostPolicy bool}{},
-		           hostFilter: struct{enable bool; dcHost string; whiteList []string}{},
-		           socketKeepalive: nil,
-		           maxPreparedStmts: 0,
-		           maxRoutingKeyInfo: 0,
-		           pageSize: 0,
-		           serialConsistency: nil,
-		           tls: nil,
-		           tlsCertPath: "",
-		           tlsKeyPath: "",
-		           tlsCAPath: "",
-		           enableHostVerification: false,
-		           defaultTimestamp: false,
-		           reconnectInterval: nil,
-		           maxWaitSchemaAgreement: nil,
-		           ignorePeerAddr: false,
-		           disableInitialHostLookup: false,
-		           disableNodeStatusEvents: false,
-		           disableTopologyEvents: false,
-		           disableSchemaEvents: false,
-		           disableSkipMetadata: false,
-		           defaultIdempotence: false,
-		           dialer: nil,
-		           writeCoalesceWaitTime: nil,
-		           cluster: nil,
-		           session: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			cf := &MockClusterConfig{
+				CreateSessionFunc: func() (*gocql.Session, error) {
+					return &gocql.Session{}, nil
+				},
+			}
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           },
-		           fields: fields {
-		           hosts: nil,
-		           cqlVersion: "",
-		           protoVersion: 0,
-		           timeout: nil,
-		           connectTimeout: nil,
-		           port: 0,
-		           keyspace: "",
-		           numConns: 0,
-		           consistency: nil,
-		           compressor: nil,
-		           username: "",
-		           password: "",
-		           authProvider: nil,
-		           retryPolicy: struct{numRetries int; minDuration time.Duration; maxDuration time.Duration}{},
-		           reconnectionPolicy: struct{initialInterval time.Duration; maxRetries int}{},
-		           poolConfig: struct{dataCenterName string; enableDCAwareRouting bool; enableShuffleReplicas bool; enableNonLocalReplicasFallback bool; enableTokenAwareHostPolicy bool}{},
-		           hostFilter: struct{enable bool; dcHost string; whiteList []string}{},
-		           socketKeepalive: nil,
-		           maxPreparedStmts: 0,
-		           maxRoutingKeyInfo: 0,
-		           pageSize: 0,
-		           serialConsistency: nil,
-		           tls: nil,
-		           tlsCertPath: "",
-		           tlsKeyPath: "",
-		           tlsCAPath: "",
-		           enableHostVerification: false,
-		           defaultTimestamp: false,
-		           reconnectInterval: nil,
-		           maxWaitSchemaAgreement: nil,
-		           ignorePeerAddr: false,
-		           disableInitialHostLookup: false,
-		           disableNodeStatusEvents: false,
-		           disableTopologyEvents: false,
-		           disableSchemaEvents: false,
-		           disableSkipMetadata: false,
-		           defaultIdempotence: false,
-		           dialer: nil,
-		           writeCoalesceWaitTime: nil,
-		           cluster: nil,
-		           session: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			return test{
+				name: "open create session success",
+				args: args{
+					ctx: context.Background(),
+				},
+				fields: fields{
+					cluster: cf,
+				},
+				want: want{
+					c: &client{
+						cluster: cf,
+						session: &gocql.Session{},
+					},
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "open create session and return any error if occurred",
+				args: args{
+					ctx: context.Background(),
+				},
+				fields: fields{
+					cluster: &gocql.ClusterConfig{},
+				},
+				want: want{
+					err: gocql.ErrNoHosts,
+					c: &client{
+						cluster: &gocql.ClusterConfig{},
+					},
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, append(goleakIgnoreOptions, goleak.IgnoreTopFunction("github.com/gocql/gocql.(*eventDebouncer).flusher"))...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -357,7 +1340,7 @@ func Test_client_Open(t *testing.T) {
 			}
 
 			err := c.Open(test.args.ctx)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := test.checkFunc(c, test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -448,122 +1431,21 @@ func Test_client_Close(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		       },
-		       fields: fields {
-		           hosts: nil,
-		           cqlVersion: "",
-		           protoVersion: 0,
-		           timeout: nil,
-		           connectTimeout: nil,
-		           port: 0,
-		           keyspace: "",
-		           numConns: 0,
-		           consistency: nil,
-		           compressor: nil,
-		           username: "",
-		           password: "",
-		           authProvider: nil,
-		           retryPolicy: struct{numRetries int; minDuration time.Duration; maxDuration time.Duration}{},
-		           reconnectionPolicy: struct{initialInterval time.Duration; maxRetries int}{},
-		           poolConfig: struct{dataCenterName string; enableDCAwareRouting bool; enableShuffleReplicas bool; enableNonLocalReplicasFallback bool; enableTokenAwareHostPolicy bool}{},
-		           hostFilter: struct{enable bool; dcHost string; whiteList []string}{},
-		           socketKeepalive: nil,
-		           maxPreparedStmts: 0,
-		           maxRoutingKeyInfo: 0,
-		           pageSize: 0,
-		           serialConsistency: nil,
-		           tls: nil,
-		           tlsCertPath: "",
-		           tlsKeyPath: "",
-		           tlsCAPath: "",
-		           enableHostVerification: false,
-		           defaultTimestamp: false,
-		           reconnectInterval: nil,
-		           maxWaitSchemaAgreement: nil,
-		           ignorePeerAddr: false,
-		           disableInitialHostLookup: false,
-		           disableNodeStatusEvents: false,
-		           disableTopologyEvents: false,
-		           disableSchemaEvents: false,
-		           disableSkipMetadata: false,
-		           defaultIdempotence: false,
-		           dialer: nil,
-		           writeCoalesceWaitTime: nil,
-		           cluster: nil,
-		           session: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           },
-		           fields: fields {
-		           hosts: nil,
-		           cqlVersion: "",
-		           protoVersion: 0,
-		           timeout: nil,
-		           connectTimeout: nil,
-		           port: 0,
-		           keyspace: "",
-		           numConns: 0,
-		           consistency: nil,
-		           compressor: nil,
-		           username: "",
-		           password: "",
-		           authProvider: nil,
-		           retryPolicy: struct{numRetries int; minDuration time.Duration; maxDuration time.Duration}{},
-		           reconnectionPolicy: struct{initialInterval time.Duration; maxRetries int}{},
-		           poolConfig: struct{dataCenterName string; enableDCAwareRouting bool; enableShuffleReplicas bool; enableNonLocalReplicasFallback bool; enableTokenAwareHostPolicy bool}{},
-		           hostFilter: struct{enable bool; dcHost string; whiteList []string}{},
-		           socketKeepalive: nil,
-		           maxPreparedStmts: 0,
-		           maxRoutingKeyInfo: 0,
-		           pageSize: 0,
-		           serialConsistency: nil,
-		           tls: nil,
-		           tlsCertPath: "",
-		           tlsKeyPath: "",
-		           tlsCAPath: "",
-		           enableHostVerification: false,
-		           defaultTimestamp: false,
-		           reconnectInterval: nil,
-		           maxWaitSchemaAgreement: nil,
-		           ignorePeerAddr: false,
-		           disableInitialHostLookup: false,
-		           disableNodeStatusEvents: false,
-		           disableTopologyEvents: false,
-		           disableSchemaEvents: false,
-		           disableSkipMetadata: false,
-		           defaultIdempotence: false,
-		           dialer: nil,
-		           writeCoalesceWaitTime: nil,
-		           cluster: nil,
-		           session: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "close return nil",
+			args: args{
+				ctx: context.Background(),
+			},
+			fields: fields{
+				session: &gocql.Session{},
+			},
+			want: want{},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -710,124 +1592,37 @@ func Test_client_Query(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           stmt: "",
-		           names: nil,
-		       },
-		       fields: fields {
-		           hosts: nil,
-		           cqlVersion: "",
-		           protoVersion: 0,
-		           timeout: nil,
-		           connectTimeout: nil,
-		           port: 0,
-		           keyspace: "",
-		           numConns: 0,
-		           consistency: nil,
-		           compressor: nil,
-		           username: "",
-		           password: "",
-		           authProvider: nil,
-		           retryPolicy: struct{numRetries int; minDuration time.Duration; maxDuration time.Duration}{},
-		           reconnectionPolicy: struct{initialInterval time.Duration; maxRetries int}{},
-		           poolConfig: struct{dataCenterName string; enableDCAwareRouting bool; enableShuffleReplicas bool; enableNonLocalReplicasFallback bool; enableTokenAwareHostPolicy bool}{},
-		           hostFilter: struct{enable bool; dcHost string; whiteList []string}{},
-		           socketKeepalive: nil,
-		           maxPreparedStmts: 0,
-		           maxRoutingKeyInfo: 0,
-		           pageSize: 0,
-		           serialConsistency: nil,
-		           tls: nil,
-		           tlsCertPath: "",
-		           tlsKeyPath: "",
-		           tlsCAPath: "",
-		           enableHostVerification: false,
-		           defaultTimestamp: false,
-		           reconnectInterval: nil,
-		           maxWaitSchemaAgreement: nil,
-		           ignorePeerAddr: false,
-		           disableInitialHostLookup: false,
-		           disableNodeStatusEvents: false,
-		           disableTopologyEvents: false,
-		           disableSchemaEvents: false,
-		           disableSkipMetadata: false,
-		           defaultIdempotence: false,
-		           dialer: nil,
-		           writeCoalesceWaitTime: nil,
-		           cluster: nil,
-		           session: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           stmt: "",
-		           names: nil,
-		           },
-		           fields: fields {
-		           hosts: nil,
-		           cqlVersion: "",
-		           protoVersion: 0,
-		           timeout: nil,
-		           connectTimeout: nil,
-		           port: 0,
-		           keyspace: "",
-		           numConns: 0,
-		           consistency: nil,
-		           compressor: nil,
-		           username: "",
-		           password: "",
-		           authProvider: nil,
-		           retryPolicy: struct{numRetries int; minDuration time.Duration; maxDuration time.Duration}{},
-		           reconnectionPolicy: struct{initialInterval time.Duration; maxRetries int}{},
-		           poolConfig: struct{dataCenterName string; enableDCAwareRouting bool; enableShuffleReplicas bool; enableNonLocalReplicasFallback bool; enableTokenAwareHostPolicy bool}{},
-		           hostFilter: struct{enable bool; dcHost string; whiteList []string}{},
-		           socketKeepalive: nil,
-		           maxPreparedStmts: 0,
-		           maxRoutingKeyInfo: 0,
-		           pageSize: 0,
-		           serialConsistency: nil,
-		           tls: nil,
-		           tlsCertPath: "",
-		           tlsKeyPath: "",
-		           tlsCAPath: "",
-		           enableHostVerification: false,
-		           defaultTimestamp: false,
-		           reconnectInterval: nil,
-		           maxWaitSchemaAgreement: nil,
-		           ignorePeerAddr: false,
-		           disableInitialHostLookup: false,
-		           disableNodeStatusEvents: false,
-		           disableTopologyEvents: false,
-		           disableSchemaEvents: false,
-		           disableSkipMetadata: false,
-		           defaultIdempotence: false,
-		           dialer: nil,
-		           writeCoalesceWaitTime: nil,
-		           cluster: nil,
-		           session: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "query return gocqlx.Query",
+			args: args{
+				stmt:  "stmt",
+				names: []string{"n"},
+			},
+			fields: fields{
+				session: &gocql.Session{},
+			},
+			want: want{
+				gocqlx.Query(new(gocql.Session).Query("stmt"), []string{"n"}),
+			},
+		},
+		{
+			name: "query return gocqlx.Query with names",
+			args: args{
+				stmt:  "stmt",
+				names: []string{"n", "n1"},
+			},
+			fields: fields{
+				session: &gocql.Session{},
+			},
+			want: want{
+				gocqlx.Query(new(gocql.Session).Query("stmt"), []string{"n", "n1"}),
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -918,40 +1713,41 @@ func TestSelect(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           table: "",
-		           columns: nil,
-		           cmps: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           table: "",
-		           columns: nil,
-		           cmps: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			stmt, names := qb.Select("t").Columns("col").Where(Eq("col")).ToCql()
+			return test{
+				name: "selete return qb.select",
+				args: args{
+					table:   "t",
+					columns: []string{"col"},
+					cmps:    []Cmp{Eq("col")},
+				},
+				want: want{
+					wantStmt:  stmt,
+					wantNames: names,
+				},
+			}
+		}(),
+		func() test {
+			stmt, names := qb.Select("t").Columns("col", "col1").Where(Eq("cmp")).Where(Eq("cmp1")).ToCql()
+			return test{
+				name: "selete return qb.select with cols and cmps",
+				args: args{
+					table:   "t",
+					columns: []string{"col", "col1"},
+					cmps:    []Cmp{Eq("cmp"), Eq("cmp1")},
+				},
+				want: want{
+					wantStmt:  stmt,
+					wantNames: names,
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -994,38 +1790,36 @@ func TestDelete(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           table: "",
-		           cmps: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           table: "",
-		           cmps: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "delete returns qb.delete",
+			args: args{
+				table: "t",
+				cmps: []Cmp{
+					Eq("col"),
+				},
+			},
+			want: want{
+				want: qb.Delete("t").Where(qb.Eq("col")),
+			},
+		},
+		{
+			name: "delete returns qb.delete with cmps",
+			args: args{
+				table: "t",
+				cmps: []Cmp{
+					Eq("col"),
+					Eq("col1"),
+				},
+			},
+			want: want{
+				want: qb.Delete("t").Where(qb.Eq("col")).Where(qb.Eq("col1")),
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1068,38 +1862,21 @@ func TestInsert(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           table: "",
-		           columns: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           table: "",
-		           columns: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "insert return qb.insert",
+			args: args{
+				table:   "t",
+				columns: []string{"col"},
+			},
+			want: want{
+				want: qb.Insert("t").Columns("col"),
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1141,36 +1918,20 @@ func TestUpdate(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           table: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           table: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "update return qb.update",
+			args: args{
+				table: "t",
+			},
+			want: want{
+				want: qb.Update("t"),
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1208,30 +1969,17 @@ func TestBatch(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "bath return qb.batch",
+			want: want{
+				want: qb.Batch(),
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1273,36 +2021,20 @@ func TestEq(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           column: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           column: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "eq return qb.eq",
+			args: args{
+				column: "col",
+			},
+			want: want{
+				want: qb.Eq("col"),
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1344,36 +2076,20 @@ func TestIn(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           column: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           column: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "in return qb.in",
+			args: args{
+				column: "col",
+			},
+			want: want{
+				want: qb.In("col"),
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1415,36 +2131,20 @@ func TestContains(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           column: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           column: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "contains return qb.contains",
+			args: args{
+				column: "col",
+			},
+			want: want{
+				want: qb.Contains("col"),
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1487,38 +2187,138 @@ func TestWrapErrorWithKeys(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           err: nil,
-		           keys: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           err: nil,
-		           keys: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return error not found",
+			args: args{
+				err:  ErrNotFound,
+				keys: []string{"k1"},
+			},
+			want: want{
+				err: errors.ErrCassandraNotFound("k1"),
+			},
+		},
+		{
+			name: "return unavilable error",
+			args: args{
+				err: ErrUnavailable,
+			},
+			want: want{
+				err: errors.ErrCassandraUnavailable(),
+			},
+		},
+		{
+			name: "return unsupported error",
+			args: args{
+				err: ErrUnsupported,
+			},
+			want: want{
+				err: ErrUnsupported,
+			},
+		},
+		{
+			name: "return too many stmts error",
+			args: args{
+				err: ErrTooManyStmts,
+			},
+			want: want{
+				err: ErrTooManyStmts,
+			},
+		},
+		{
+			name: "return use stmt error",
+			args: args{
+				err: ErrUseStmt,
+			},
+			want: want{
+				err: ErrUseStmt,
+			},
+		},
+		{
+			name: "return session closed error",
+			args: args{
+				err: ErrSessionClosed,
+			},
+			want: want{
+				err: ErrSessionClosed,
+			},
+		},
+		{
+			name: "return no connection error",
+			args: args{
+				err: ErrNoConnections,
+			},
+			want: want{
+				err: ErrNoConnections,
+			},
+		},
+		{
+			name: "return no keyspace error",
+			args: args{
+				err: ErrNoKeyspace,
+			},
+			want: want{
+				err: ErrNoKeyspace,
+			},
+		},
+		{
+			name: "return keyspace does not exist error",
+			args: args{
+				err: ErrKeyspaceDoesNotExist,
+			},
+			want: want{
+				err: ErrKeyspaceDoesNotExist,
+			},
+		},
+		{
+			name: "return no metadata error",
+			args: args{
+				err: ErrNoMetadata,
+			},
+			want: want{
+				err: ErrNoMetadata,
+			},
+		},
+		{
+			name: "return no hosts error",
+			args: args{
+				err: ErrNoHosts,
+			},
+			want: want{
+				err: ErrNoHosts,
+			},
+		},
+		{
+			name: "return no connection started error",
+			args: args{
+				err: ErrNoConnectionsStarted,
+			},
+			want: want{
+				err: ErrNoConnectionsStarted,
+			},
+		},
+		{
+			name: "return host query failed error",
+			args: args{
+				err: ErrHostQueryFailed,
+			},
+			want: want{
+				err: ErrHostQueryFailed,
+			},
+		},
+		{
+			name: "return other error",
+			args: args{
+				err: errors.New("err"),
+			},
+			want: want{
+				err: errors.New("err"),
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
