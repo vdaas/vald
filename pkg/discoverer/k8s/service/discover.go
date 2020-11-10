@@ -144,9 +144,9 @@ func New(opts ...Option) (dsc Discoverer, err error) {
 				nm := make(map[string]struct{}, len(nodes))
 				for _, n := range nodes {
 					nm[n.Name] = struct{}{}
-					d.nodes.Store(n.Name, n)
+					d.nodes.Store(n.Name, &n)
 				}
-				d.nodes.Range(func(name string, _ node.Node) bool {
+				d.nodes.Range(func(name string, _ *node.Node) bool {
 					_, ok := nm[name]
 					if !ok {
 						d.nodes.Delete(name)
@@ -184,7 +184,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 					nodeByName      = make(map[string]*payload.Info_Node)                        // map[name]node
 				)
 
-				d.nodes.Range(func(nodeName string, n node.Node) bool {
+				d.nodes.Range(func(nodeName string, n *node.Node) bool {
 					select {
 					case <-ctx.Done():
 						return false
