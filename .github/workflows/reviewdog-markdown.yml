@@ -36,4 +36,4 @@ jobs:
           level: warning
           language: en-US
           disabled_rules: "DOUBLE_PUNCTUATION,WORD_CONTAINS_UNDERSCORE,ARROWS,CURRENCY,DASH_RULE,EN_QUOTES"
-          disabled_categories: "TYPOS"
+          disabled_categories: "TYPOS,TYPOGRAPHY"

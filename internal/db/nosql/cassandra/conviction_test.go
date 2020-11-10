@@ -18,20 +18,14 @@ package cassandra
 
 import (
 	"net"
-	"os"
 	"reflect"
 	"testing"
 
 	"github.com/gocql/gocql"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/log"
+ 
 	"go.uber.org/goleak"
 )
-
-func TestMain(m *testing.M) {
-	log.Init()
-	os.Exit(m.Run())
-}
 
 func TestNewConvictionPolicy(t *testing.T) {
 	type want struct {

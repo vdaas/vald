@@ -51,7 +51,6 @@ var (
 	goleakIgnoreOptions = []goleak.Option{
 		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
 	}
-
 	// default comparator option for client.
 	clientComparatorOpts = []comparator.Option{
 		comparator.AllowUnexported(client{}),
