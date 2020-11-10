@@ -980,7 +980,7 @@ When dependencies have the following factor, you can decide to mock the dependen
   - e. g. Network access, disk operation, or etc.
 - Hardware dependent
   - e. g. CPU, Memory usage, disk I/O, or etc.
-- Difficult to create error of dependent object (when we will write error test case)
+- Difficult to create error of dependencies
 - Difficult to initialize
   - e. g. Random number and time, file IO initialization, environment dependent, or etc.
 - Test result may change in each runtime
