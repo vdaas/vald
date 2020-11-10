@@ -973,7 +973,7 @@ As a result, due to the more complexity of the test, it has become more difficul
 
 #### Condition
 
-When a dependent object has the following factor, you can decide to mock the dependent object.
+When dependencies have the following factor, you can decide to mock the dependencies.
 
 - Incomplete implementation
 - I/O
