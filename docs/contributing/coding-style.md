@@ -969,7 +969,7 @@ We do not suggest to modify the generated code other than the `tests` variable, 
 
 In Vald, we use a lot of external library, there are a lot of dependencies between libraries.
 
-As a result, the complexity of the test has increased, and it has become more difficult to determine whether or not to mock dependent objects.
+As a result, due to the more complexity of the test, it has become more difficult to determine whether or not to mock dependencies.
 
 #### Condition
 
