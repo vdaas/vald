@@ -983,9 +983,8 @@ When a dependent object has the following factor, you can decide to mock the dep
 - Difficult to create error of dependent object (when we will write error test case)
 - Difficult to initialize
   - e. g. Random number and time, file IO initialization, environment dependent, or etc.
-- Test result may change in runtime
-  - Cases where the implementation and test code are not changed but the test result changes
-  - System call inside implementation
+- Test result may change in each runtime
+  - e. g. Only test result may change in each runtime, System call inside implementation, or etc.
 
 #### Risk
 
