@@ -36,3 +36,17 @@ jobs:
           CONFLINT_LOG: DEBUG
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPORTER: github-pr-review
+  kubelinter:
+    name: runner / kubelinter
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: setup-kubelinter
+        run: |
+          wget https://github.com/stackrox/kube-linter/releases/download/${KUBELINTER_VERSION}/kube-linter-linux.zip
+          unzip kube-linter-linux.zip
+        env:
+          KUBELINTER_VERSION: 0.1.2
+      - name: kubelinter
+        run: |
+          ./kube-linter lint --config .github/kubelinter.yaml k8s
