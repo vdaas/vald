@@ -967,7 +967,7 @@ We do not suggest to modify the generated code other than the `tests` variable, 
     ```
 ### Using Mock
 
-In Vald, we use a lot of external library, there are a lot of dependencies between libraries.
+In Vald, we use a lot of external libraries, there are a lot of dependencies between libraries.
 
 As a result, due to the more complexity of the test, it has become more difficult to determine whether or not to mock dependencies.
 
