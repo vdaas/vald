@@ -568,7 +568,7 @@ func Test_mySQLClient_Close(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if m.connected.Load().(bool){
+		if m.connected.Load().(bool) {
 			return errors.Errorf("Close failed")
 		}
 		return nil

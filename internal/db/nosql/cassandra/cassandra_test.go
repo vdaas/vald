@@ -34,58 +34,56 @@ import (
 	"go.uber.org/goleak"
 )
 
-var (
-	// default comparator option for client
-	clientComparatorOpts = []comparator.Option{
-		comparator.AllowUnexported(client{}),
-		comparator.AllowUnexported(gocql.ClusterConfig{}),
-		comparator.Comparer(func(x, y retryPolicy) bool {
-			return reflect.DeepEqual(x, y)
-		}),
-		comparator.Comparer(func(x, y reconnectionPolicy) bool {
-			return reflect.DeepEqual(x, y)
-		}),
-		comparator.Comparer(func(x, y poolConfig) bool {
-			return reflect.DeepEqual(x, y)
-		}),
-		comparator.Comparer(func(x, y hostFilter) bool {
-			return reflect.DeepEqual(x, y)
-		}),
-		comparator.Comparer(func(x, y gocql.PoolConfig) bool {
-			return reflect.DeepEqual(x, y)
-		}),
-		comparator.Comparer(func(x, y gocql.HostSelectionPolicy) bool {
-			return reflect.DeepEqual(x, y)
-		}),
-		comparator.Comparer(func(x, y func(h *gocql.HostInfo) (gocql.Authenticator, error)) bool {
-			if (x == nil && y != nil) || (x != nil && y == nil) {
-				return false
-			}
-			if x == nil && y == nil {
-				return true
-			}
-			return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
-		}),
-		comparator.Comparer(func(x, y gocql.HostFilter) bool {
-			if (x == nil && y != nil) || (x != nil && y == nil) {
-				return false
-			}
-			if x == nil && y == nil {
-				return true
-			}
+// default comparator option for client
+var clientComparatorOpts = []comparator.Option{
+	comparator.AllowUnexported(client{}),
+	comparator.AllowUnexported(gocql.ClusterConfig{}),
+	comparator.Comparer(func(x, y retryPolicy) bool {
+		return reflect.DeepEqual(x, y)
+	}),
+	comparator.Comparer(func(x, y reconnectionPolicy) bool {
+		return reflect.DeepEqual(x, y)
+	}),
+	comparator.Comparer(func(x, y poolConfig) bool {
+		return reflect.DeepEqual(x, y)
+	}),
+	comparator.Comparer(func(x, y hostFilter) bool {
+		return reflect.DeepEqual(x, y)
+	}),
+	comparator.Comparer(func(x, y gocql.PoolConfig) bool {
+		return reflect.DeepEqual(x, y)
+	}),
+	comparator.Comparer(func(x, y gocql.HostSelectionPolicy) bool {
+		return reflect.DeepEqual(x, y)
+	}),
+	comparator.Comparer(func(x, y func(h *gocql.HostInfo) (gocql.Authenticator, error)) bool {
+		if (x == nil && y != nil) || (x != nil && y == nil) {
+			return false
+		}
+		if x == nil && y == nil {
+			return true
+		}
+		return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
+	}),
+	comparator.Comparer(func(x, y gocql.HostFilter) bool {
+		if (x == nil && y != nil) || (x != nil && y == nil) {
+			return false
+		}
+		if x == nil && y == nil {
+			return true
+		}
 
-			switch x.(type) {
-			case gocql.HostFilterFunc:
-				return true
-			}
-			return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
-		}),
+		switch x.(type) {
+		case gocql.HostFilterFunc:
+			return true
+		}
+		return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
+	}),
 
-		comparator.Comparer(func(x, y tls.Config) bool {
-			return reflect.DeepEqual(x, y)
-		}),
-	}
-)
+	comparator.Comparer(func(x, y tls.Config) bool {
+		return reflect.DeepEqual(x, y)
+	}),
+}
 
 func TestMain(m *testing.M) {
 	log.Init()

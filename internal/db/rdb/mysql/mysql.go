@@ -169,7 +169,7 @@ func (m *mySQLClient) Ping(ctx context.Context) (err error) {
 func (m *mySQLClient) Close(ctx context.Context) (err error) {
 	if m.connected.Load().(bool) {
 		err = m.session.Close()
-		if err == nil{
+		if err == nil {
 			m.connected.Store(false)
 		}
 	}

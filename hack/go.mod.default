@@ -22,7 +22,7 @@ replace (
 	github.com/gorilla/websocket => github.com/gorilla/websocket latest
 	github.com/hailocab/go-hostpool => github.com/monzo/go-hostpool latest
 	github.com/klauspost/compress => github.com/klauspost/compress master
-	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.0
+	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.2
 	golang.org/x/crypto => golang.org/x/crypto latest
 	google.golang.org/grpc => google.golang.org/grpc latest
 	google.golang.org/protobuf => google.golang.org/protobuf latest
