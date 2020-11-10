@@ -991,7 +991,7 @@ When dependencies have the following factor, you can decide to mock the dependen
 Before applying mock to the object, you should be aware of the following risks.
 
 - We do not know if the dependent object is correctly implemented or not.
-- We cannot notice the change in dependency.
+- We cannot notice the change in dependencies.
 
 #### Implementation
 
