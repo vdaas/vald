@@ -998,7 +998,7 @@ Before applying mock to the object, you should be aware of the following risks.
 The implementation of mock object should be:
 
 - Same package as the mock target.
-- File name is `〇〇_mock.go`
+- File name is `xxx_mock.go`
 - Struct name is `Mock{Interface name}
 
 1. Basic mock example.
