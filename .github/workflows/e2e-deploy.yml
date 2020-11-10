@@ -77,6 +77,7 @@ jobs:
           if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-manager-index/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
             export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set indexManager.image.tag=pr-${pr_num}"
           fi
+          echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}"
           echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}" >> $GITHUB_ENV
       - name: Install dependencies
         run: |
@@ -202,6 +203,7 @@ jobs:
           if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-manager-index/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
             export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set indexManager.image.tag=pr-${pr_num}"
           fi
+          echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}"
           echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}" >> $GITHUB_ENV
       - name: Install dependencies
         run: |
