@@ -33,7 +33,7 @@ type reconciler struct {
 // ReplicaSet is a type alias for the k8s replica set definition.
 type ReplicaSet = appsv1.ReplicaSet
 
-// New returns the replica set watcher that implements reconciler loop, or any error occurred.
+// New returns the ReplicaSetWatcher that implements reconciler loop, or any error occurred.
 func New(opts ...Option) (ReplicaSetWatcher, error) {
 	r := new(reconciler)
 
@@ -46,7 +46,7 @@ func New(opts ...Option) (ReplicaSetWatcher, error) {
 	return r, nil
 }
 
-// Reconcile implements k8s reconciler loop to retrieve the replica set information from k8s.
+// Reconcile implements k8s reconciliation loop to retrieve the ReplicaSet information from k8s.
 func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err error) {
 	rsl := new(appsv1.ReplicaSetList)
 
@@ -96,7 +96,7 @@ func (r *reconciler) GetName() string {
 	return r.name
 }
 
-// NewReconciler returns the reconciler for the replica set watcher.
+// NewReconciler returns the reconciler for the ReplicaSet.
 func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler {
 	if r.ctx == nil && ctx != nil {
 		r.ctx = ctx
@@ -108,7 +108,7 @@ func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) rec
 	return r
 }
 
-// For returns the reconcile object type which is replica set.
+// For returns the runtime.Object which is replica set.
 func (r *reconciler) For() runtime.Object {
 	return new(appsv1.ReplicaSet)
 }
