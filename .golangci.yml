@@ -35,4 +35,9 @@ issues:
         - scopelint
         - funlen
         - gocognit
+        - godox
         - gomnd
+    - path: option\.go
+        - gochecknoglobals
+    - path: main\.go
+        - gochecknoglobals
