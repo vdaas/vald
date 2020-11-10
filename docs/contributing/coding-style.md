@@ -977,25 +977,25 @@ When dependencies have the following factor, you can decide to mock the dependen
 
 - Incomplete implementation
 - I/O
-  - e. g. Network access, disk operation, or etc.
+  - e.g. Network access, disk operation, or etc.
 - Hardware dependent
-  - e. g. CPU, Memory usage, disk I/O, or etc.
+  - e.g. CPU, Memory usage, disk I/O, or etc.
 - Difficult to create error of dependencies
 - Difficult to initialize
-  - e. g. Random number and time, file IO initialization, environment dependent, or etc.
+  - e.g. Random number and time, file I/O initialization, environment dependent, or etc.
 - Test result may change in each runtime
-  - e. g. Only test result may change in each runtime, System call inside implementation, or etc.
+  - e.g. Only test result may change in each runtime, System call inside implementation, etc.
 
 #### Risk
 
 Before applying mock to the object, you should be aware of the following risks.
 
-- We **do not** know whether the dependencies is correctly implemented or not.
-- We cannot notice the change in dependencies.
+- We **do not** know whether the dependencies are correctly implemented or not.
+- We cannot notice the changes in dependencies.
 
 #### Implementation
 
-The implementation of mock object should be:
+The implementation of the mock object should be:
 
 - Same package as the mock target.
 - File name is `xxx_mock.go`
