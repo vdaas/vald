@@ -965,7 +965,7 @@ We do not suggest to modify the generated code other than the `tests` variable, 
         type want struct {
             // generated test code
     ```
-### Mock
+### Using Mock
 
 In Vald, we use a lot of external library, there are a lot of dependencies between libraries.
 
