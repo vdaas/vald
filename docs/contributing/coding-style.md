@@ -982,7 +982,7 @@ When a dependent object has the following factor, you can decide to mock the dep
   - CPU, memory usage, disk IO, etc.
 - Difficult to create error of dependent object (when we will write error test case)
 - Difficult to initialize
-  - Random number and time, file IO initialization, environment dependent, etc.
+  - e. g. Random number and time, file IO initialization, environment dependent, or etc.
 - Test result may change in runtime
   - Cases where the implementation and test code are not changed but the test result changes
   - System call inside implementation
