@@ -457,7 +457,10 @@ func (c *ngtdClient) GetObject(ctx context.Context, in *payload.Object_ID, opts 
 	}
 	r, ok := res.(*proto.GetObjectResponse)
 	if !ok {
-		return nil, nil
+		return nil, errors.ErrInvalidAPIConfig
+	}
+	if len(r.GetError()) != 0 {
+		return nil, errors.New(r.GetError())
 	}
 	return &client.ObjectVector{
 		Id:     string(r.GetId()),
