@@ -999,63 +999,56 @@ The implementation of mock object should be:
 
 - Same package as the mock target.
 - File name is `xxx_mock.go`
-- Struct name is `Mock{Interface name}
+- Struct name is `Mock{Interface name}`
 
-1. Basic mock example.
+For example, we decided to mock the following implementation `Encoder`.
 
-    For example, we decided to mock the following implementation `Encoder`.
+```go
+package json
 
-    ```go
-    package json
+type Encoder interface {
+    Encode(interface{}) ([]byte, error) 
+}
+```
 
-    type Encoder interface {
-        Encode(interface{}) ([]byte, error) 
-    }
+```go
+type encoder struct {
+    encoder json.Encoder
+}
 
-    ```
+func (e *encoder) Encode(obj interface{}) ([]byte, error) {
+    return e.encoder.Encode(obj)
+}
+```
 
-    ```go
-    type encoder struct {
-        encoder json.Encoder
-    }
+The following is an example of mock implementation:
 
-    func (e *encoder) Encode(obj interface{}) ([]byte, error) {
-        return e.encoder.Encode(obj)
-    }
-    ```
+```go
+package json
 
-    The following is an example of mock implementation:
+type MockEncoder struct {
+    EncoderFunc func(interface{}) ([]byte, error)
+}
 
-    ```go
-    package json
+func (m *MockEncoder) Encode(obj interface{}) ([]byte, error) {
+    return m.EncodeFunc(obj)
+}
+```
 
-    type MockEncoder struct {
-        EncoderFunc func(interface{}) ([]byte, error)
-    }
+The following is an example implementation of test code to create the mock object and mock the implementation.
 
-    func (m *MockEncoder) Encode(obj interface{}) ([]byte, error) {
-        return m.EncodeFunc(obj)
-    }
-
-    ```
-
-    The following is an example implementation of test code to create the mock object and mock the implementation.
-
-    ```go
-    tests := []test {
-        {
-            name: "returns (byte{}, nil) when encode success"
-            fields: fields {
-                encoding: &json.MockEncoder {
-                    EncoderFunc: func(interface{}) ([]byte, error) {
-                        return []byte{}, nil
-                    },
+```go
+tests := []test {
+    {
+        name: "returns (byte{}, nil) when encode success"
+        fields: fields {
+            encoding: &json.MockEncoder {
+                EncoderFunc: func(interface{}) ([]byte, error) {
+                    return []byte{}, nil
                 },
-            }
-            ......
+            },
         }
+        ......
     }
-
-    ......
-
-    ```
+}
+```
