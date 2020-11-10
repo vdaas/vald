@@ -976,8 +976,8 @@ As a result, due to the more complexity of the test, it has become more difficul
 When a dependent object has the following factor, you can decide to mock the dependent object.
 
 - Incomplete implementation
-- IO
-  - Network access, disk operation, etc.
+- I/O
+  - e. g. Network access, disk operation, or etc.
 - Hardware dependent
   - e. g. CPU, Memory usage, disk I/O, or etc.
 - Difficult to create error of dependent object (when we will write error test case)
