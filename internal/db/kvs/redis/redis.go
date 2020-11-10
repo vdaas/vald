@@ -29,10 +29,8 @@ import (
 	"github.com/vdaas/vald/internal/net/tcp"
 )
 
-var (
-	// Nil is a type alias of redis.Nil.
-	Nil = redis.Nil
-)
+// Nil is a type alias of redis.Nil.
+var Nil = redis.Nil
 
 // Connector is an interface to connect to Redis servers.
 type Connector interface {

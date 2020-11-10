@@ -25,12 +25,10 @@ import (
 
 type Option func(r *restorer) error
 
-var (
-	defaultOpts = []Option{
-		WithErrGroup(errgroup.Get()),
-		WithBackoff(false),
-	}
-)
+var defaultOpts = []Option{
+	WithErrGroup(errgroup.Get()),
+	WithBackoff(false),
+}
 
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(r *restorer) error {

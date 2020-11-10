@@ -21,6 +21,9 @@ docker/build: \
 	docker/build/agent-sidecar \
 	docker/build/discoverer-k8s \
 	docker/build/gateway-vald \
+	docker/build/gateway-lb \
+	docker/build/gateway-meta \
+	docker/build/gateway-backup \
 	docker/build/meta-redis \
 	docker/build/meta-cassandra \
 	docker/build/backup-manager-mysql \
@@ -105,6 +108,54 @@ docker/build/gateway-vald:
 	    $(DOCKER_OPTS) \
 	    -f dockers/gateway/vald/Dockerfile \
 	    -t $(REPO)/$(GATEWAY_IMAGE):$(TAG) . \
+	    --build-arg GO_VERSION=$(GO_VERSION) \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
+
+.PHONY: docker/name/gateway-lb
+docker/name/gateway-lb:
+	@echo "$(REPO)/$(LB_GATEWAY_IMAGE)"
+
+.PHONY: docker/build/gateway-lb
+## build gateway-lb image
+docker/build/gateway-lb:
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
+	    -f dockers/gateway/lb/Dockerfile \
+	    -t $(REPO)/$(LB_GATEWAY_IMAGE):$(TAG) . \
+	    --build-arg GO_VERSION=$(GO_VERSION) \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
+
+.PHONY: docker/name/gateway-meta
+docker/name/gateway-meta:
+	@echo "$(REPO)/$(META_GATEWAY_IMAGE)"
+
+.PHONY: docker/build/gateway-meta
+## build gateway-meta image
+docker/build/gateway-meta:
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
+	    -f dockers/gateway/meta/Dockerfile \
+	    -t $(REPO)/$(META_GATEWAY_IMAGE):$(TAG) . \
+	    --build-arg GO_VERSION=$(GO_VERSION) \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
+
+.PHONY: docker/name/gateway-backup
+docker/name/gateway-backup:
+	@echo "$(REPO)/$(BACKUP_GATEWAY_IMAGE)"
+
+.PHONY: docker/build/gateway-backup
+## build gateway-backup image
+docker/build/gateway-backup:
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
+	    -f dockers/gateway/backup/Dockerfile \
+	    -t $(REPO)/$(BACKUP_GATEWAY_IMAGE):$(TAG) . \
 	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \

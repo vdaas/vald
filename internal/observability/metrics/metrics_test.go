@@ -23,11 +23,11 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
-
 	"go.uber.org/goleak"
 )
 
 func TestRegisterView(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		views []*View
 	}
@@ -78,7 +78,8 @@ func TestRegisterView(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -93,12 +94,12 @@ func TestRegisterView(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func TestRecord(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		ms  []Measurement
@@ -148,7 +149,8 @@ func TestRecord(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -168,6 +170,7 @@ func TestRecord(t *testing.T) {
 }
 
 func TestRecordWithTags(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		mwts []MeasurementWithTags
@@ -221,7 +224,8 @@ func TestRecordWithTags(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -236,12 +240,12 @@ func TestRecordWithTags(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func TestMeasurementsCount(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		m Metric
 	}
@@ -292,7 +296,8 @@ func TestMeasurementsCount(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -307,7 +312,6 @@ func TestMeasurementsCount(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

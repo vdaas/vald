@@ -1,3 +1,6 @@
 Release {{ .Release.Name }} is created.
 
-Ingress: {{ .Values.gateway.ingress.host }}
+{{- $gateway := .Values.gateway.vald -}}
+{{- if and $gateway.enabled $gateway.ingress.enabled }}
+Ingress: {{ $gateway.ingress.host }}
+{{- end }}

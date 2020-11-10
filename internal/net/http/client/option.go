@@ -28,13 +28,11 @@ import (
 
 type Option func(*transport) error
 
-var (
-	defaultOptions = []Option{
-		WithProxy(http.ProxyFromEnvironment),
-		WithEnableKeepAlives(true),
-		WithEnableCompression(true),
-	}
-)
+var defaultOptions = []Option{
+	WithProxy(http.ProxyFromEnvironment),
+	WithEnableKeepAlives(true),
+	WithEnableCompression(true),
+}
 
 func WithProxy(px func(*http.Request) (*url.URL, error)) Option {
 	return func(tr *transport) error {
@@ -54,7 +52,6 @@ func WithDialContext(dx func(ctx context.Context, network, addr string) (net.Con
 
 		return nil
 	}
-
 }
 
 func WithTLSHandshakeTimeout(dur string) Option {

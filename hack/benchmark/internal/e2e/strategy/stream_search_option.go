@@ -17,15 +17,13 @@
 // Package strategy provides strategy for e2e testing functions
 package strategy
 
-import "github.com/vdaas/vald/internal/client"
+import "github.com/vdaas/vald/internal/client/v1/client"
 
 type StreamSearchOption func(*streamSearch)
 
-var (
-	defaultStreamSearchOptions = []StreamSearchOption{
-		WithStreamSearchConfig(searchCfg),
-	}
-)
+var defaultStreamSearchOptions = []StreamSearchOption{
+	WithStreamSearchConfig(searchCfg),
+}
 
 func WithStreamSearchConfig(cfg *client.SearchConfig) StreamSearchOption {
 	return func(ss *streamSearch) {

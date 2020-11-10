@@ -20,7 +20,7 @@ package errors
 import "time"
 
 var (
-	// HTTP
+	// HTTP.
 
 	ErrInvalidAPIConfig = New("invalid api config")
 

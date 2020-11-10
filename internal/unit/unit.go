@@ -21,7 +21,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
-// ParseBytes parses string to uint64
+// ParseBytes parses string to uint64.
 func ParseBytes(bs string) (bytes uint64, err error) {
 	if bs == "" || bs == "0" {
 		return 0, nil

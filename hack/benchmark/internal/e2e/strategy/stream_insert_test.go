@@ -24,13 +24,13 @@ import (
 
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e"
-	"github.com/vdaas/vald/internal/client"
+	"github.com/vdaas/vald/internal/client/v1/client"
 	"github.com/vdaas/vald/internal/errors"
-
 	"go.uber.org/goleak"
 )
 
 func TestNewStreamInsert(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []StreamInsertOption
 	}
@@ -79,9 +79,11 @@ func TestNewStreamInsert(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -96,30 +98,30 @@ func TestNewStreamInsert(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_streamInsert_dataProvider(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		total   *uint32
 		b       *testing.B
 		dataset assets.Dataset
 	}
 	type want struct {
-		want func() *client.ObjectVector
+		want func() *client.InsertRequest
 	}
 	type test struct {
 		name       string
 		args       args
 		sisrt      *streamInsert
 		want       want
-		checkFunc  func(want, func() *client.ObjectVector) error
+		checkFunc  func(want, func() *client.InsertRequest) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got func() *client.ObjectVector) error {
+	defaultCheckFunc := func(w want, got func() *client.InsertRequest) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -157,9 +159,11 @@ func Test_streamInsert_dataProvider(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -175,12 +179,12 @@ func Test_streamInsert_dataProvider(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_streamInsert_Run(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx     context.Context
 		b       *testing.B
@@ -235,9 +239,11 @@ func Test_streamInsert_Run(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

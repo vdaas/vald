@@ -27,9 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/metrics"
 )
 
-var (
-	reps = strings.NewReplacer("_", " ", ",omitempty", "")
-)
+var reps = strings.NewReplacer("_", " ", ",omitempty", "")
 
 type version struct {
 	info metrics.Int64Measure
@@ -95,7 +93,7 @@ func (v *version) Measurement(ctx context.Context) ([]metrics.Measurement, error
 
 func (v *version) MeasurementWithTags(ctx context.Context) ([]metrics.MeasurementWithTags, error) {
 	return []metrics.MeasurementWithTags{
-		metrics.MeasurementWithTags{
+		{
 			Measurement: v.info.M(int64(1)),
 			Tags:        v.kvs,
 		},
@@ -109,7 +107,7 @@ func (v *version) View() []*metrics.View {
 	}
 
 	return []*metrics.View{
-		&metrics.View{
+		{
 			Name:        "app_version_info",
 			Description: v.info.Description(),
 			TagKeys:     keys,

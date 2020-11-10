@@ -21,14 +21,14 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
-
 	"go.uber.org/goleak"
 )
 
 func TestNewBackup(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []BackupOption
 	}
@@ -81,9 +81,11 @@ func TestNewBackup(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -98,12 +100,12 @@ func TestNewBackup(t *testing.T) {
 			if err := test.checkFunc(test.want, gotBu, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_backup_Start(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -169,9 +171,11 @@ func Test_backup_Start(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -190,12 +194,12 @@ func Test_backup_Start(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_backup_GetObject(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		uuid string
@@ -205,7 +209,7 @@ func Test_backup_GetObject(t *testing.T) {
 		client grpc.Client
 	}
 	type want struct {
-		wantVec *payload.Backup_Compressed_MetaVector
+		wantVec *payload.Backup_Compressed_Vector
 		err     error
 	}
 	type test struct {
@@ -213,11 +217,11 @@ func Test_backup_GetObject(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Backup_Compressed_MetaVector, error) error
+		checkFunc  func(want, *payload.Backup_Compressed_Vector, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotVec *payload.Backup_Compressed_MetaVector, err error) error {
+	defaultCheckFunc := func(w want, gotVec *payload.Backup_Compressed_Vector, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -264,9 +268,11 @@ func Test_backup_GetObject(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -285,12 +291,12 @@ func Test_backup_GetObject(t *testing.T) {
 			if err := test.checkFunc(test.want, gotVec, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_backup_GetLocation(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		uuid string
@@ -359,9 +365,11 @@ func Test_backup_GetLocation(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -380,15 +388,15 @@ func Test_backup_GetLocation(t *testing.T) {
 			if err := test.checkFunc(test.want, gotIpList, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_backup_Register(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
-		vec *payload.Backup_Compressed_MetaVector
+		vec *payload.Backup_Compressed_Vector
 	}
 	type fields struct {
 		addr   string
@@ -450,9 +458,11 @@ func Test_backup_Register(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -471,15 +481,15 @@ func Test_backup_Register(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_backup_RegisterMultiple(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
-		vecs *payload.Backup_Compressed_MetaVectors
+		vecs *payload.Backup_Compressed_Vectors
 	}
 	type fields struct {
 		addr   string
@@ -541,9 +551,11 @@ func Test_backup_RegisterMultiple(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -562,12 +574,12 @@ func Test_backup_RegisterMultiple(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_backup_Remove(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		uuid string
@@ -632,9 +644,11 @@ func Test_backup_Remove(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -653,12 +667,12 @@ func Test_backup_Remove(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_backup_RemoveMultiple(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx   context.Context
 		uuids []string
@@ -723,9 +737,11 @@ func Test_backup_RemoveMultiple(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -744,12 +760,12 @@ func Test_backup_RemoveMultiple(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_backup_RegisterIPs(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		uuid string
@@ -817,9 +833,11 @@ func Test_backup_RegisterIPs(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -838,12 +856,12 @@ func Test_backup_RegisterIPs(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_backup_RemoveIPs(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		ips []string
@@ -908,9 +926,11 @@ func Test_backup_RemoveIPs(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -929,7 +949,6 @@ func Test_backup_RemoveIPs(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

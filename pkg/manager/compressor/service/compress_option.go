@@ -24,13 +24,11 @@ import (
 
 type CompressorOption func(c *compressor) error
 
-var (
-	defaultCompressorOpts = []CompressorOption{
-		WithCompressorWorker(),
-		WithCompressAlgorithm("gob"),
-		WithCompressorErrGroup(errgroup.Get()),
-	}
-)
+var defaultCompressorOpts = []CompressorOption{
+	WithCompressorWorker(),
+	WithCompressAlgorithm("gob"),
+	WithCompressorErrGroup(errgroup.Get()),
+}
 
 func WithCompressAlgorithm(name string) CompressorOption {
 	return func(c *compressor) error {

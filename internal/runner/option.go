@@ -21,9 +21,7 @@ import "github.com/vdaas/vald/internal/config"
 
 type Option func(*runner)
 
-var (
-	defaultOpts = []Option{}
-)
+var defaultOpts = []Option{}
 
 func WithName(name string) Option {
 	return func(r *runner) {

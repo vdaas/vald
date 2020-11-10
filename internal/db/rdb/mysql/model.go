@@ -16,28 +16,22 @@
 
 package mysql
 
-import (
-	dbr "github.com/gocraft/dbr/v2"
-)
-
-// MetaVector is an interface to handle metadata keep in MySQL.
-type MetaVector interface {
+// Vector is an interface to handle vector keep in MySQL.
+type Vector interface {
 	GetUUID() string
 	GetVector() []byte
-	GetMeta() string
 	GetIPs() []string
 }
 
-type metaVector struct {
-	meta   meta
+type vector struct {
+	data   data
 	podIPs []podIP
 }
 
-type meta struct {
-	ID     int64          `db:"id"`
-	UUID   string         `db:"uuid"`
-	Vector []byte         `db:"vector"`
-	Meta   dbr.NullString `db:"meta"`
+type data struct {
+	ID     int64  `db:"id"`
+	UUID   string `db:"uuid"`
+	Vector []byte `db:"vector"`
 }
 
 type podIP struct {
@@ -45,20 +39,17 @@ type podIP struct {
 	IP string `db:"ip"`
 }
 
-// GetUUID returns UUID of metaVector.
-func (m *metaVector) GetUUID() string { return m.meta.UUID }
+// GetUUID returns UUID of Vector.
+func (v *vector) GetUUID() string { return v.data.UUID }
 
-// GetVector returns Vector of metaVector.
-func (m *metaVector) GetVector() []byte { return m.meta.Vector }
+// GetVector returns Vector of Vector.
+func (v *vector) GetVector() []byte { return v.data.Vector }
 
-// GetMeta returns meta.String of metaVector.
-func (m *metaVector) GetMeta() string { return m.meta.Meta.String }
+// GetIPs returns all podIPs which are Vald Agent Pods' IP indexed vector's vector.
+func (v *vector) GetIPs() []string {
+	ips := make([]string, 0, len(v.podIPs))
 
-// GetIPs returns all podIPs which are Vald Agent Pods' IP indexed meta's vector.
-func (m *metaVector) GetIPs() []string {
-	ips := make([]string, 0, len(m.podIPs))
-
-	for _, ip := range m.podIPs {
+	for _, ip := range v.podIPs {
 		ips = append(ips, ip.IP)
 	}
 

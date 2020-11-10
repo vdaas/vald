@@ -29,7 +29,7 @@ type router struct {
 	timeout string
 }
 
-// New returns REST route&method information from handler interface
+// New returns REST route&method information from handler interface.
 func New(opts ...Option) http.Handler {
 	r := new(router)
 
@@ -48,5 +48,6 @@ func New(opts ...Option) http.Handler {
 				},
 				"/",
 				h.Index,
-			}}...))
+			},
+		}...))
 }

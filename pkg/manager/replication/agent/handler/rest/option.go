@@ -17,13 +17,11 @@
 // Package rest provides rest api logic
 package rest
 
-import "github.com/vdaas/vald/apis/grpc/manager/replication/agent"
+import "github.com/vdaas/vald/apis/grpc/v1/manager/replication/agent"
 
 type Option func(*handler)
 
-var (
-	defaultOpts = []Option{}
-)
+var defaultOpts = []Option{}
 
 func WithReplicator(reps agent.ReplicationServer) Option {
 	return func(h *handler) {

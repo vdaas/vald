@@ -60,8 +60,10 @@ type Data struct {
 	Year     int
 }
 
+const minimumArgumentLength = 2
+
 func main() {
-	if len(os.Args) < 2 {
+	if len(os.Args) < minimumArgumentLength {
 		log.Fatal(errors.New("invalid argument"))
 	}
 	for _, path := range dirwalk(os.Args[1]) {
@@ -72,6 +74,7 @@ func main() {
 		}
 	}
 }
+
 func dirwalk(dir string) []string {
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
@@ -90,6 +93,7 @@ func dirwalk(dir string) []string {
 		switch filepath.Ext(file.Name()) {
 		case
 			".ai",
+			".all-contributorsrc",
 			".cfg",
 			".crt",
 			".default",
@@ -113,8 +117,8 @@ func dirwalk(dir string) []string {
 			".ssv",
 			".sum",
 			".svg",
-			".tpl",
 			".tmpl",
+			".tpl",
 			".txt",
 			".whitesource",
 			"LICENSE",
@@ -122,17 +126,17 @@ func dirwalk(dir string) []string {
 		default:
 			switch file.Name() {
 			case
-				"GO_VERSION",
-				"NGT_VERSION",
-				"VALD_VERSION",
-				"TENSORFLOW_C_VERSION",
 				"AUTHORS",
 				"CONTRIBUTORS",
+				"GO_VERSION",
+				"NGT_VERSION",
 				"Pipefile",
+				"TENSORFLOW_C_VERSION",
+				"VALD_VERSION",
 				"grp",
-				"src",
 				"obj",
 				"prf",
+				"src",
 				"tre":
 			default:
 				path, err := filepath.Abs(filepath.Join(dir, file.Name()))
@@ -145,8 +149,9 @@ func dirwalk(dir string) []string {
 	}
 	return paths
 }
+
 func readAndRewrite(path string) error {
-	f, err := os.Open(path)
+	f, err := os.OpenFile(path, os.O_RDWR|os.O_SYNC, os.ModePerm)
 	if err != nil {
 		return errors.Errorf("filepath %s, could not open", path)
 	}
@@ -260,9 +265,8 @@ func readAndRewrite(path string) error {
 	return nil
 }
 
-var (
-	license = template.Must(template.New("LICENSE").Parse(
-		`                                 Apache License
+var license = template.Must(template.New("LICENSE").Parse(
+	`                                 Apache License
                            Version 2.0, January 2004
                         https://www.apache.org/licenses/
 
@@ -463,4 +467,3 @@ var (
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.`))
-)

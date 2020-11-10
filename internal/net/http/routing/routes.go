@@ -19,7 +19,7 @@ package routing
 
 import "github.com/vdaas/vald/internal/net/http/rest"
 
-//Route struct
+// Route struct.
 type Route struct {
 	Name        string
 	Methods     []string

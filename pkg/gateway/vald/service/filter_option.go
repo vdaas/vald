@@ -21,9 +21,7 @@ import "github.com/vdaas/vald/internal/net/grpc"
 
 type FilterOption func(f *filter) error
 
-var (
-	defaultFilterOpts = []FilterOption{}
-)
+var defaultFilterOpts = []FilterOption{}
 
 func WithFilterClient(client grpc.Client) FilterOption {
 	return func(f *filter) error {

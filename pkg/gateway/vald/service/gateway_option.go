@@ -18,17 +18,15 @@
 package service
 
 import (
-	"github.com/vdaas/vald/internal/client/discoverer"
+	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	"github.com/vdaas/vald/internal/errgroup"
 )
 
 type GWOption func(g *gateway) error
 
-var (
-	defaultGWOpts = []GWOption{
-		WithErrGroup(errgroup.Get()),
-	}
-)
+var defaultGWOpts = []GWOption{
+	WithErrGroup(errgroup.Get()),
+}
 
 func WithDiscoverer(c discoverer.Client) GWOption {
 	return func(g *gateway) error {

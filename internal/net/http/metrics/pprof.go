@@ -25,7 +25,7 @@ import (
 	"github.com/vdaas/vald/internal/net/http/routing"
 )
 
-// NewPProfRoutes returns PProf server route&method information from debug flag
+// NewPProfRoutes returns PProf server route&method information from debug flag.
 func NewPProfHandler() http.Handler {
 	return routing.New(
 		routing.WithRoutes([]routing.Route{

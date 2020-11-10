@@ -21,11 +21,11 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/pkg/errors"
 	"go.uber.org/goleak"
 )
 
 func TestErrMySQLNotFoundIdentity_Error(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		err error
 	}
@@ -74,8 +74,10 @@ func TestErrMySQLNotFoundIdentity_Error(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -94,12 +96,12 @@ func TestErrMySQLNotFoundIdentity_Error(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func TestErrMySQLNotFoundIdentity_Unwrap(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		err error
 	}
@@ -115,8 +117,8 @@ func TestErrMySQLNotFoundIdentity_Unwrap(t *testing.T) {
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		if !Is(err, w.err) {
+			return Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -148,8 +150,10 @@ func TestErrMySQLNotFoundIdentity_Unwrap(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -168,12 +172,12 @@ func TestErrMySQLNotFoundIdentity_Unwrap(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func TestIsErrMySQLNotFound(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		err error
 	}
@@ -222,8 +226,10 @@ func TestIsErrMySQLNotFound(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -239,12 +245,12 @@ func TestIsErrMySQLNotFound(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func TestErrMySQLInvalidArgumentIdentity_Error(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		err error
 	}
@@ -293,8 +299,10 @@ func TestErrMySQLInvalidArgumentIdentity_Error(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -313,12 +321,12 @@ func TestErrMySQLInvalidArgumentIdentity_Error(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func TestErrMySQLInvalidArgumentIdentity_Unwrap(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		err error
 	}
@@ -334,8 +342,8 @@ func TestErrMySQLInvalidArgumentIdentity_Unwrap(t *testing.T) {
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		if !Is(err, w.err) {
+			return Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -367,8 +375,10 @@ func TestErrMySQLInvalidArgumentIdentity_Unwrap(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -387,12 +397,12 @@ func TestErrMySQLInvalidArgumentIdentity_Unwrap(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func TestIsErrMySQLInvalidArgument(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		err error
 	}
@@ -441,8 +451,10 @@ func TestIsErrMySQLInvalidArgument(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -458,7 +470,6 @@ func TestIsErrMySQLInvalidArgument(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

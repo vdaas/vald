@@ -21,9 +21,7 @@ import "github.com/vdaas/vald/pkg/meta/redis/service"
 
 type Option func(*server)
 
-var (
-	defaultOpts = []Option{}
-)
+var defaultOpts = []Option{}
 
 func WithRedis(r service.Redis) Option {
 	return func(s *server) {

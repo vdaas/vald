@@ -135,21 +135,21 @@ func (cm *cassandraMetrics) View() []*metrics.View {
 	}
 
 	return []*metrics.View{
-		&metrics.View{
+		{
 			Name:        "db_nosql_cassandra_completed_query_total",
 			Description: cm.queryTotal.Description(),
 			TagKeys:     keys,
 			Measure:     &cm.queryTotal,
 			Aggregation: metrics.Count(),
 		},
-		&metrics.View{
+		{
 			Name:        "db_nosql_cassandra_query_attempts_total",
 			Description: cm.queryAttemptsTotal.Description(),
 			TagKeys:     keys,
 			Measure:     &cm.queryAttemptsTotal,
 			Aggregation: metrics.Count(),
 		},
-		&metrics.View{
+		{
 			Name:        "db_nosql_cassandra_query_latency",
 			Description: cm.queryLatency.Description(),
 			TagKeys:     keys,

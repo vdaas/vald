@@ -18,14 +18,12 @@
 package rest
 
 import (
-	"github.com/vdaas/vald/apis/grpc/manager/replication/controller"
+	"github.com/vdaas/vald/apis/grpc/v1/manager/replication/controller"
 )
 
 type Option func(*handler)
 
-var (
-	defaultOpts = []Option{}
-)
+var defaultOpts = []Option{}
 
 func WithReplicator(rpl controller.ReplicationControllerServer) Option {
 	return func(h *handler) {

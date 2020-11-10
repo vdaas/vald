@@ -24,12 +24,10 @@ import (
 // LZ4Option represents the functional option for lz4Compressor.
 type LZ4Option func(c *lz4Compressor) error
 
-var (
-	defaultLZ4Opts = []LZ4Option{
-		WithLZ4Gob(),
-		WithLZ4CompressionLevel(0),
-	}
-)
+var defaultLZ4Opts = []LZ4Option{
+	WithLZ4Gob(),
+	WithLZ4CompressionLevel(0),
+}
 
 // WithLZ4Gob returns the option to set gobc for lz4Compressor.
 func WithLZ4Gob(opts ...GobOption) LZ4Option {

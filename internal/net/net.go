@@ -39,26 +39,24 @@ const (
 )
 
 type (
-	// Conn is an alias of net.Conn
+	// Conn is an alias of net.Conn.
 	Conn = net.Conn
 
-	// Dialer is an alias of net.Dialer
+	// Dialer is an alias of net.Dialer.
 	Dialer = net.Dialer
 
-	// ListenConfig is an alias of net.ListenConfig
+	// ListenConfig is an alias of net.ListenConfig.
 	ListenConfig = net.ListenConfig
 
-	// Listener is an alias of net.Listener
+	// Listener is an alias of net.Listener.
 	Listener = net.Listener
 
-	// Resolver is an alias of net.Resolver
+	// Resolver is an alias of net.Resolver.
 	Resolver = net.Resolver
 )
 
-var (
-	// DefaultResolver is an alias of net.DefaultResolver
-	DefaultResolver = net.DefaultResolver
-)
+// DefaultResolver is an alias of net.DefaultResolver.
+var DefaultResolver = net.DefaultResolver
 
 // Listen is a wrapper function of the net.Listen function.
 func Listen(network, address string) (Listener, error) {
@@ -177,4 +175,20 @@ func ScanPorts(ctx context.Context, start, end uint16, host string) (ports []uin
 	}
 
 	return ports, nil
+}
+
+func LoadLocalIP() string {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		log.Warn(err)
+		return ""
+	}
+	for _, address := range addrs {
+		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+				return ipnet.IP.String()
+			}
+		}
+	}
+	return ""
 }

@@ -25,14 +25,12 @@ import (
 
 type Option func(b *bs) error
 
-var (
-	defaultOpts = []Option{
-		WithErrGroup(errgroup.Get()),
-		WithCompressAlgorithm("gzip"),
-		WithCompressionLevel(-1),
-		WithFilenameSuffix(".tar.gz"),
-	}
-)
+var defaultOpts = []Option{
+	WithErrGroup(errgroup.Get()),
+	WithCompressAlgorithm("gzip"),
+	WithCompressionLevel(-1),
+	WithFilenameSuffix(".tar.gz"),
+}
 
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(b *bs) error {

@@ -18,6 +18,7 @@ package main
 import (
 	"context"
 
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/runner"
@@ -41,7 +42,7 @@ func main() {
 			runner.WithConfigLoader(func(path string) (interface{}, *config.GlobalConfig, error) {
 				cfg, err := config.NewConfig(path)
 				if err != nil {
-					return nil, nil, err
+					return nil, nil, errors.Wrap(err, "failed to load "+name+"'s configuration")
 				}
 				return cfg, &cfg.GlobalConfig, nil
 			}),

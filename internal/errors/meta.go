@@ -17,6 +17,4 @@
 // Package errors provides error types and function
 package errors
 
-var (
-	ErrInvalidMetaDataConfig = New("invalid metadata config")
-)
+var ErrInvalidMetaDataConfig = New("invalid metadata config")

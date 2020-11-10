@@ -23,9 +23,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	agent "github.com/vdaas/vald/apis/grpc/agent/core"
-	"github.com/vdaas/vald/apis/grpc/payload"
-	"github.com/vdaas/vald/internal/client/discoverer"
+	agent "github.com/vdaas/vald/apis/grpc/v1/agent/core"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -232,6 +232,7 @@ func (idx *index) IsIndexing() bool {
 func (idx *index) NumberOfUUIDs() uint32 {
 	return atomic.LoadUint32(&idx.uuidsCount)
 }
+
 func (idx *index) NumberOfUncommittedUUIDs() uint32 {
 	return atomic.LoadUint32(&idx.uncommittedUUIDsCount)
 }

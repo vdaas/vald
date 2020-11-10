@@ -17,13 +17,11 @@
 // Package rest provides rest api logic
 package rest
 
-import "github.com/vdaas/vald/apis/grpc/manager/index"
+import "github.com/vdaas/vald/apis/grpc/v1/manager/index"
 
 type Option func(*handler)
 
-var (
-	defaultOpts = []Option{}
-)
+var defaultOpts = []Option{}
 
 func WithIndexer(i index.IndexServer) Option {
 	return func(h *handler) {

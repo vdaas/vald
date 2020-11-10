@@ -18,7 +18,7 @@
 package errors
 
 var (
-	// BlobStorage
+	// BlobStorage.
 	NewErrBlobNoSuchBucket = func(err error, name string) error {
 		return &ErrBlobNoSuchBucket{
 			err: Wrap(err, Errorf("bucket %s not found", name).Error()),

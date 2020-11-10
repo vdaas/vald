@@ -21,9 +21,8 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errgroup"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
-
 	"go.uber.org/goleak"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 func TestWithErrGroup(t *testing.T) {

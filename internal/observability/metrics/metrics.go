@@ -130,11 +130,15 @@ var (
 	ValdOrg = "vald.vdaas.org"
 )
 
-type Measurement = stats.Measurement
-type View = view.View
+type (
+	Measurement = stats.Measurement
+	View        = view.View
+)
 
-type Int64Measure = stats.Int64Measure
-type Float64Measure = stats.Float64Measure
+type (
+	Int64Measure   = stats.Int64Measure
+	Float64Measure = stats.Float64Measure
+)
 
 type Key = tag.Key
 

@@ -21,8 +21,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/vdaas/vald/apis/grpc/manager/replication/agent"
-	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/manager/replication/agent"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -70,6 +70,7 @@ func (s *server) Rebalance(ctx context.Context, req *payload.Replication_Rebalan
 	}()
 	return new(payload.Empty), nil
 }
+
 func (s *server) AgentInfo(ctx context.Context, req *payload.Empty) (*payload.Replication_Agents, error) {
 	// TODO implement this later
 	ctx, span := trace.StartSpan(ctx, "vald/manager-replication-agent.AgentInfo")

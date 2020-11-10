@@ -19,13 +19,13 @@ package config
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"unsafe"
 
 	"github.com/vdaas/vald/internal/encoding/json"
+	"github.com/vdaas/vald/internal/io/ioutil"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -74,7 +74,7 @@ func (c *GlobalConfig) UnmarshalJSON(data []byte) (err error) {
 
 // New returns config struct or error when decode the configuration file to actually *Config struct.
 func Read(path string, cfg interface{}) error {
-	f, err := os.OpenFile(path, os.O_RDONLY, 0600)
+	f, err := os.OpenFile(path, os.O_RDONLY, 0o600)
 	if err != nil {
 		return err
 	}
@@ -100,13 +100,7 @@ func GetActualValue(val string) (res string) {
 	}
 	res = os.ExpandEnv(val)
 	if strings.HasPrefix(res, fileValuePrefix) {
-		path := strings.TrimPrefix(res, fileValuePrefix)
-		file, err := os.OpenFile(path, os.O_RDONLY, 0600)
-		defer file.Close()
-		if err != nil {
-			return
-		}
-		body, err := ioutil.ReadAll(file)
+		body, err := ioutil.ReadFile(strings.TrimPrefix(res, fileValuePrefix))
 		if err != nil {
 			return
 		}
@@ -122,7 +116,7 @@ func GetActualValues(vals []string) []string {
 	return vals
 }
 
-// checkPrefixAndSuffix checks if the str has prefix and suffix
+// checkPrefixAndSuffix checks if the str has prefix and suffix.
 func checkPrefixAndSuffix(str, pref, suf string) bool {
 	return strings.HasPrefix(str, pref) && strings.HasSuffix(str, suf)
 }

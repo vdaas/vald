@@ -22,8 +22,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/vdaas/vald/apis/grpc/discoverer"
-	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/discoverer"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/proto"

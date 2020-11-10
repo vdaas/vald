@@ -22,20 +22,18 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
-	"github.com/vdaas/vald/internal/client"
+	"github.com/vdaas/vald/internal/client/v1/client"
 )
 
 type Option func(*e2e)
 
-var (
-	defaultOptions = []Option{
-		WithServerStarter(
-			func(context.Context, testing.TB, assets.Dataset) func() {
-				return func() {}
-			},
-		),
-	}
-)
+var defaultOptions = []Option{
+	WithServerStarter(
+		func(context.Context, testing.TB, assets.Dataset) func() {
+			return func() {}
+		},
+	),
+}
 
 func WithName(name string) Option {
 	return func(e *e2e) {

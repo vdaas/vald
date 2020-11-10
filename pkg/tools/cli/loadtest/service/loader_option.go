@@ -26,14 +26,12 @@ import (
 // Option is load test configuration.
 type Option func(*loader) error
 
-var (
-	defaultOpts = []Option{
-		WithConcurrency(100),
-		WithBatchSize(1),
-		WithErrGroup(errgroup.Get()),
-		WithProgressDuration("5s"),
-	}
-)
+var defaultOpts = []Option{
+	WithConcurrency(100),
+	WithBatchSize(1),
+	WithErrGroup(errgroup.Get()),
+	WithProgressDuration("5s"),
+}
 
 // WithAddr sets load test server address.
 func WithAddr(a string) Option {
@@ -113,14 +111,6 @@ func WithProgressDuration(pd string) Option {
 func WithOperation(op string) Option {
 	return func(l *loader) error {
 		l.operation = config.OperationMethod(op)
-		return nil
-	}
-}
-
-// WithService sets service of load test.
-func WithService(s string) Option {
-	return func(l *loader) error {
-		l.service = config.ServiceMethod(s)
 		return nil
 	}
 }

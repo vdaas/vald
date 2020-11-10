@@ -21,6 +21,9 @@ binary/build: \
 	cmd/agent/sidecar/sidecar \
 	cmd/discoverer/k8s/discoverer \
 	cmd/gateway/vald/vald \
+	cmd/gateway/lb/lb \
+	cmd/gateway/meta/meta \
+	cmd/gateway/backup/backup \
 	cmd/meta/redis/meta \
 	cmd/meta/cassandra/meta \
 	cmd/manager/backup/mysql/backup \
@@ -115,6 +118,81 @@ cmd/gateway/vald/vald: \
 	$(PBGOS) \
 	$(shell find ./cmd/gateway/vald -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
 	$(shell find ./pkg/gateway/vald -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	export CGO_ENABLED=1 \
+	    && export GO111MODULE=on \
+	    && go build \
+	    --ldflags "-s -w -linkmode 'external' \
+	    -extldflags '-static' \
+	    -X '$(GOPKG)/internal/info.Version=$(VERSION)' \
+	    -X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+	    -X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
+	    -X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
+	    -X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
+	    -X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
+	    -X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
+	    -X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)'" \
+	    -a \
+	    -tags netgo \
+	    -installsuffix netgo \
+	    -trimpath \
+	    -o $@ \
+	    $(dir $@)main.go
+
+cmd/gateway/lb/lb: \
+	$(GO_SOURCES_INTERNAL) \
+	$(PBGOS) \
+	$(shell find ./cmd/gateway/lb -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find ./pkg/gateway/lb -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	export CGO_ENABLED=1 \
+	    && export GO111MODULE=on \
+	    && go build \
+	    --ldflags "-s -w -linkmode 'external' \
+	    -extldflags '-static' \
+	    -X '$(GOPKG)/internal/info.Version=$(VERSION)' \
+	    -X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+	    -X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
+	    -X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
+	    -X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
+	    -X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
+	    -X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
+	    -X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)'" \
+	    -a \
+	    -tags netgo \
+	    -installsuffix netgo \
+	    -trimpath \
+	    -o $@ \
+	    $(dir $@)main.go
+
+cmd/gateway/meta/meta: \
+	$(GO_SOURCES_INTERNAL) \
+	$(PBGOS) \
+	$(shell find ./cmd/gateway/meta -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find ./pkg/gateway/meta -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	export CGO_ENABLED=1 \
+	    && export GO111MODULE=on \
+	    && go build \
+	    --ldflags "-s -w -linkmode 'external' \
+	    -extldflags '-static' \
+	    -X '$(GOPKG)/internal/info.Version=$(VERSION)' \
+	    -X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+	    -X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
+	    -X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
+	    -X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
+	    -X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
+	    -X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
+	    -X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)'" \
+	    -a \
+	    -tags netgo \
+	    -installsuffix netgo \
+	    -trimpath \
+	    -o $@ \
+	    $(dir $@)main.go
+
+cmd/gateway/backup/backup: \
+	$(GO_SOURCES_INTERNAL) \
+	$(PBGOS) \
+	$(shell find ./cmd/gateway/backup -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find ./pkg/gateway/backup -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	export CGO_ENABLED=1 \
 	    && export GO111MODULE=on \
 	    && go build \
@@ -342,6 +420,9 @@ binary/build/zip: \
 	artifacts/vald-agent-sidecar-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-discoverer-k8s-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-gateway-$(GOOS)-$(GOARCH).zip \
+	artifacts/vald-gateway-lb-$(GOOS)-$(GOARCH).zip \
+	artifacts/vald-gateway-meta-$(GOOS)-$(GOARCH).zip \
+	artifacts/vald-gateway-backup-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-meta-redis-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-meta-cassandra-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-manager-backup-mysql-$(GOOS)-$(GOARCH).zip \
@@ -362,6 +443,18 @@ artifacts/vald-discoverer-k8s-$(GOOS)-$(GOARCH).zip: cmd/discoverer/k8s/discover
 	zip --junk-paths $@ $<
 
 artifacts/vald-gateway-$(GOOS)-$(GOARCH).zip: cmd/gateway/vald/vald
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+
+artifacts/vald-gateway-lb-$(GOOS)-$(GOARCH).zip: cmd/gateway/lb/lb
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+
+artifacts/vald-gateway-meta-$(GOOS)-$(GOARCH).zip: cmd/gateway/meta/meta
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+
+artifacts/vald-gateway-backup-$(GOOS)-$(GOARCH).zip: cmd/gateway/backup/backup
 	$(call mkdir, $(dir $@))
 	zip --junk-paths $@ $<
 

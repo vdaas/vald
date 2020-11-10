@@ -34,7 +34,7 @@ type router struct {
 	routes      []Route
 }
 
-//New returns Routed http.Handler
+// New returns Routed http.Handler.
 func New(opts ...Option) http.Handler {
 	r := new(router)
 	for _, opt := range append(defaultOpts, opts...) {

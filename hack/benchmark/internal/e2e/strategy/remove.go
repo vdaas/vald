@@ -25,7 +25,7 @@ import (
 
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e"
-	"github.com/vdaas/vald/internal/client"
+	"github.com/vdaas/vald/internal/client/v1/client"
 )
 
 type remove struct {
@@ -81,8 +81,10 @@ func (r *remove) runParallel(ctx context.Context, b *testing.B, c client.Client,
 }
 
 func (r *remove) do(ctx context.Context, b *testing.B, c client.Client, id string) {
-	if err := c.Remove(ctx, &client.ObjectID{
-		Id: id,
+	if _, err := c.Remove(ctx, &client.RemoveRequest{
+		Id: &client.ObjectID{
+			Id: id,
+		},
 	}); err != nil {
 		b.Error(err)
 	}

@@ -1,0 +1,233 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "apis/proto/v1/discoverer/discoverer.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/discover/nodes": {
+      "post": {
+        "operationId": "Discoverer_Nodes",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/InfoNodes"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1DiscovererRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Discoverer"
+        ]
+      }
+    },
+    "/discover/pods": {
+      "post": {
+        "operationId": "Discoverer_Pods",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/InfoPods"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1DiscovererRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Discoverer"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "InfoCPU": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number",
+          "format": "double"
+        },
+        "request": {
+          "type": "number",
+          "format": "double"
+        },
+        "usage": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "InfoMemory": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number",
+          "format": "double"
+        },
+        "request": {
+          "type": "number",
+          "format": "double"
+        },
+        "usage": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "InfoNode": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "internalAddr": {
+          "type": "string"
+        },
+        "externalAddr": {
+          "type": "string"
+        },
+        "cpu": {
+          "$ref": "#/definitions/InfoCPU"
+        },
+        "memory": {
+          "$ref": "#/definitions/InfoMemory"
+        },
+        "Pods": {
+          "$ref": "#/definitions/InfoPods"
+        }
+      }
+    },
+    "InfoNodes": {
+      "type": "object",
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InfoNode"
+          }
+        }
+      }
+    },
+    "InfoPod": {
+      "type": "object",
+      "properties": {
+        "appName": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "ip": {
+          "type": "string"
+        },
+        "cpu": {
+          "$ref": "#/definitions/InfoCPU"
+        },
+        "memory": {
+          "$ref": "#/definitions/InfoMemory"
+        },
+        "node": {
+          "$ref": "#/definitions/InfoNode"
+        }
+      }
+    },
+    "InfoPods": {
+      "type": "object",
+      "properties": {
+        "pods": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InfoPod"
+          }
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1DiscovererRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "node": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

@@ -18,11 +18,10 @@
 package worker
 
 import (
+	stderrors "errors"
 	"reflect"
 	"testing"
 	"time"
-
-	stderrors "errors"
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"

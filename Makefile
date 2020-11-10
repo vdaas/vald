@@ -22,38 +22,46 @@ TAG                            ?= latest
 BASE_IMAGE                      = $(NAME)-base
 AGENT_IMAGE                     = $(NAME)-agent-ngt
 AGENT_SIDECAR_IMAGE             = $(NAME)-agent-sidecar
-GATEWAY_IMAGE                   = $(NAME)-gateway
-DISCOVERER_IMAGE                = $(NAME)-discoverer-k8s
-META_REDIS_IMAGE                = $(NAME)-meta-redis
-META_CASSANDRA_IMAGE            = $(NAME)-meta-cassandra
-MANAGER_BACKUP_MYSQL_IMAGE      = $(NAME)-manager-backup-mysql
-MANAGER_BACKUP_CASSANDRA_IMAGE  = $(NAME)-manager-backup-cassandra
-MANAGER_COMPRESSOR_IMAGE        = $(NAME)-manager-compressor
-MANAGER_INDEX_IMAGE             = $(NAME)-manager-index
+BACKUP_GATEWAY_IMAGE            = $(NAME)-backup-gateway
+BASE_IMAGE                      = $(NAME)-base
 CI_CONTAINER_IMAGE              = $(NAME)-ci-container
 DEV_CONTAINER_IMAGE             = $(NAME)-dev-container
+DISCOVERER_IMAGE                = $(NAME)-discoverer-k8s
+FILTER_GATEWAY_IMAGE            = $(NAME)-filter-gateway
+GATEWAY_IMAGE                   = $(NAME)-gateway
 HELM_OPERATOR_IMAGE             = $(NAME)-helm-operator
+LB_GATEWAY_IMAGE                = $(NAME)-lb-gateway
 LOADTEST_IMAGE                  = $(NAME)-loadtest
+MANAGER_BACKUP_CASSANDRA_IMAGE  = $(NAME)-manager-backup-cassandra
+MANAGER_BACKUP_MYSQL_IMAGE      = $(NAME)-manager-backup-mysql
+MANAGER_COMPRESSOR_IMAGE        = $(NAME)-manager-compressor
+MANAGER_INDEX_IMAGE             = $(NAME)-manager-index
+META_CASSANDRA_IMAGE            = $(NAME)-meta-cassandra
+META_GATEWAY_IMAGE              = $(NAME)-meta-gateway
+META_REDIS_IMAGE                = $(NAME)-meta-redis
 
 VERSION := $(eval VALD_VERSION := $(shell cat versions/VALD_VERSION))$(VALD_VERSION)
 
 NGT_VERSION := $(eval NGT_VERSION := $(shell cat versions/NGT_VERSION))$(NGT_VERSION)
 NGT_REPO = github.com/yahoojapan/NGT
 
+GOPROXY=direct
 GO_VERSION := $(eval GO_VERSION := $(shell cat versions/GO_VERSION))$(GO_VERSION)
 GOOS := $(eval GOOS := $(shell go env GOOS))$(GOOS)
 GOARCH := $(eval GOARCH := $(shell go env GOARCH))$(GOARCH)
 GOPATH := $(eval GOPATH := $(shell go env GOPATH))$(GOPATH)
 GOCACHE := $(eval GOCACHE := $(shell go env GOCACHE))$(GOCACHE)
 
+TEMP_DIR := $(eval TEMP_DIR := $(shell mktemp -d))$(TEMP_DIR)
+
 TENSORFLOW_C_VERSION := $(eval TENSORFLOW_C_VERSION := $(shell cat versions/TENSORFLOW_C_VERSION))$(TENSORFLOW_C_VERSION)
 
 OPERATOR_SDK_VERSION := $(eval OPERATOR_SDK_VERSION := $(shell cat versions/OPERATOR_SDK_VERSION))$(OPERATOR_SDK_VERSION)
 
 KIND_VERSION         ?= v0.9.0
-HELM_VERSION         ?= v3.3.4
-HELM_DOCS_VERSION    ?= 1.3.0
-VALDCLI_VERSION      ?= v0.0.61
+HELM_VERSION         ?= v3.4.0
+HELM_DOCS_VERSION    ?= 1.4.0
+VALDCLI_VERSION      ?= v0.0.62
 TELEPRESENCE_VERSION ?= 0.108
 
 SWAP_DEPLOYMENT_TYPE ?= deployment
@@ -63,6 +71,7 @@ SWAP_TAG             ?= latest
 BINDIR ?= /usr/local/bin
 
 UNAME := $(eval UNAME := $(shell uname))$(UNAME)
+PWD := $(eval PWD := $(shell pwd))$(PWD)
 
 ifeq ($(UNAME),Linux)
 CPU_INFO_FLAGS := $(eval CPU_INFO_FLAGS := $(shell cat /proc/cpuinfo | grep flags | cut -d " " -f 2- | head -1))$(CPU_INFO_FLAGS)
@@ -83,9 +92,11 @@ BENCH_DATASET_MD5_DIR = $(BENCH_DATASET_BASE_DIR)/$(BENCH_DATASET_MD5_DIR_NAME)
 BENCH_DATASET_HDF5_DIR = $(BENCH_DATASET_BASE_DIR)/$(BENCH_DATASET_HDF5_DIR_NAME)
 
 PROTOS := $(eval PROTOS := $(shell find apis/proto -type f -regex ".*\.proto"))$(PROTOS)
+PROTOS_V0 := $(eval PROTOS_V0 := $(filter-out apis/proto/v%.proto,$(PROTOS)))$(PROTOS_V0)
+PROTOS_V1 := $(eval PROTOS_V1 := $(filter apis/proto/v1/%.proto,$(PROTOS)))$(PROTOS_V1)
 PBGOS = $(PROTOS:apis/proto/%.proto=apis/grpc/%.pb.go)
 SWAGGERS = $(PROTOS:apis/proto/%.proto=apis/swagger/%.swagger.json)
-PBDOCS = apis/docs/docs.md
+PBDOCS = apis/docs/v0/docs.md apis/docs/v1/docs.md
 
 ifeq ($(GOARCH),amd64)
 CFLAGS ?= -mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl
@@ -141,11 +152,10 @@ NUMPANES  ?= 4
 BODY = ""
 
 PROTO_PATHS = \
-	$(PROTODIRS:%=./apis/proto/%) \
-	$(GOPATH)/src/github.com/protocolbuffers/protobuf/src \
-	$(GOPATH)/src/github.com/gogo/protobuf/protobuf \
-	$(GOPATH)/src/github.com/googleapis/googleapis \
-	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
+	$(PWD) \
+	$(GOPATH)/src \
+	$(GOPATH)/src/$(GOPKG) \
+	$(GOPATH)/src/github.com/googleapis/googleapis
 
 GO_SOURCES = $(eval GO_SOURCES := $(shell find \
 		./cmd \
@@ -153,7 +163,7 @@ GO_SOURCES = $(eval GO_SOURCES := $(shell find \
 		./internal \
 		./pkg \
 		-not -path './cmd/cli/*' \
-		-not -path './internal/core/ngt/*' \
+		-not -path './internal/core/algorithm/ngt/*' \
 		-not -path './internal/test/comparator/*' \
 		-not -path './internal/test/mock/*' \
 		-not -path './hack/benchmark/internal/client/ngtd/*' \
@@ -174,7 +184,7 @@ GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell find \
 		./internal \
 		./pkg \
 		-not -path './cmd/cli/*' \
-		-not -path './internal/core/ngt/*' \
+		-not -path './internal/core/algorithm/ngt/*' \
 		-not -path './internal/test/comparator/*' \
 		-not -path './internal/test/mock/*' \
 		-not -path './hack/benchmark/internal/client/ngtd/*' \
@@ -235,24 +245,29 @@ all: clean deps
 ## clean
 clean:
 	go clean -cache -modcache -testcache -i -r
+	mv ./apis/grpc/v1/vald/vald.go $(TEMP_DIR)/vald.go
 	rm -rf \
 		/go/pkg \
 		./*.log \
 		./*.svg \
 		./apis/docs \
 		./apis/swagger \
+		./apis/grpc \
 		./bench \
 		./pprof \
 		./libs \
 		$(GOCACHE) \
 		./go.sum \
 		./go.mod
+	mkdir -p ./apis/grpc/v1/vald
+	mv $(TEMP_DIR)/vald.go ./apis/grpc/v1/vald/vald.go
 	cp ./hack/go.mod.default ./go.mod
 
 .PHONY: license
 ## add license to files
 license:
 	go run hack/license/gen/main.go ./
+
 
 .PHONY: init
 ## initialize development environment
@@ -275,8 +290,8 @@ tools/install: \
 ## update deps, license, and run goimports
 update: \
 	clean \
-	deps \
 	proto/all \
+	deps \
 	format \
 	go/deps
 
@@ -324,7 +339,8 @@ go/deps:
 		./go.sum \
 		./go.mod
 	cp ./hack/go.mod.default ./go.mod
-	go mod tidy
+	GOPRIVATE=$(GOPKG) go mod tidy
+	go get -u all 2>/dev/null || true
 
 
 .PHONY: goimports/install
@@ -372,13 +388,13 @@ version/telepresence:
 ngt/install: /usr/local/include/NGT/Capi.h
 /usr/local/include/NGT/Capi.h:
 	curl -LO https://github.com/yahoojapan/NGT/archive/v$(NGT_VERSION).tar.gz
-	tar zxf v$(NGT_VERSION).tar.gz -C /tmp
-	cd /tmp/NGT-$(NGT_VERSION) && \
-	    cmake -DCMAKE_C_FLAGS="$(CFLAGS)" -DCMAKE_CXX_FLAGS="$(CXXFLAGS)" .
-	make -j -C /tmp/NGT-$(NGT_VERSION)
-	make install -C /tmp/NGT-$(NGT_VERSION)
+	tar zxf v$(NGT_VERSION).tar.gz -C $(TEMP_DIR)/
+	cd $(TEMP_DIR)/NGT-$(NGT_VERSION) && \
+		cmake -DCMAKE_C_FLAGS="$(CFLAGS)" -DCMAKE_CXX_FLAGS="$(CXXFLAGS)" .
+	make -j -C $(TEMP_DIR)/NGT-$(NGT_VERSION)
+	make install -C $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	rm -rf v$(NGT_VERSION).tar.gz
-	rm -rf /tmp/NGT-$(NGT_VERSION)
+	rm -rf $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	ldconfig
 
 .PHONY: tensorflow/install
@@ -403,12 +419,12 @@ lint:
 .PHONY: changelog/update
 ## update changelog
 changelog/update:
-	echo "# CHANGELOG" > /tmp/CHANGELOG.md
-	echo "" >> /tmp/CHANGELOG.md
-	$(MAKE) -s changelog/next/print >> /tmp/CHANGELOG.md
-	echo "" >> /tmp/CHANGELOG.md
-	tail -n +2 CHANGELOG.md >> /tmp/CHANGELOG.md
-	mv -f /tmp/CHANGELOG.md CHANGELOG.md
+	echo "# CHANGELOG" > $(TEMP_DIR)/CHANGELOG.md
+	echo "" >> $(TEMP_DIR)/CHANGELOG.md
+	$(MAKE) -s changelog/next/print >> $(TEMP_DIR)/CHANGELOG.md
+	echo "" >> $(TEMP_DIR)/CHANGELOG.md
+	tail -n +2 CHANGELOG.md >> $(TEMP_DIR)/CHANGELOG.md
+	mv -f $(TEMP_DIR)/CHANGELOG.md CHANGELOG.md
 
 .PHONY: changelog/next/print
 ## print next changelog entry

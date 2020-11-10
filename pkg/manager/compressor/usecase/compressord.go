@@ -19,8 +19,8 @@ package usecase
 import (
 	"context"
 
-	"github.com/vdaas/vald/apis/grpc/manager/compressor"
-	cclient "github.com/vdaas/vald/internal/client/compressor"
+	"github.com/vdaas/vald/apis/grpc/v1/manager/compressor"
+	cclient "github.com/vdaas/vald/internal/client/v1/client/compressor"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -53,9 +53,7 @@ type run struct {
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
 
-	var (
-		b service.Backup
-	)
+	var b service.Backup
 
 	if addrs := cfg.BackupManager.Client.Addrs; len(addrs) == 0 {
 		return nil, errors.ErrInvalidBackupConfig
@@ -206,7 +204,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		}),
 		// TODO add GraphQL handler
 	)
-
 	if err != nil {
 		return nil, err
 	}

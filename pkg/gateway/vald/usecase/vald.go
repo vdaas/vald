@@ -20,7 +20,7 @@ import (
 	"context"
 
 	"github.com/vdaas/vald/apis/grpc/gateway/vald"
-	"github.com/vdaas/vald/internal/client/discoverer"
+	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -79,7 +79,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	)
 
 	var obs observability.Observability
-	if cfg.Observability.Enabled {
+	if cfg.Observability != nil && cfg.Observability.Enabled {
 		obs, err = observability.NewWithConfig(cfg.Observability)
 		if err != nil {
 			return nil, err
@@ -164,7 +164,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			ef.Client.Opts(),
 			grpc.WithErrGroup(eg),
 		)
-		if cfg.Observability.Enabled {
+		if cfg.Observability != nil && cfg.Observability.Enabled {
 			egressFilterClientOptions = append(
 				egressFilterClientOptions,
 				grpc.WithDialOptions(
@@ -177,6 +177,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 				grpc.New(egressFilterClientOptions...),
 			),
 		)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	v := handler.New(
@@ -203,7 +206,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		}),
 	}
 
-	if cfg.Observability.Enabled {
+	if cfg.Observability != nil && cfg.Observability.Enabled {
 		grpcServerOptions = append(
 			grpcServerOptions,
 			server.WithGRPCOption(

@@ -17,15 +17,13 @@
 // Package strategy provides strategy for e2e testing functions
 package strategy
 
-import "github.com/vdaas/vald/internal/client"
+import "github.com/vdaas/vald/internal/client/v1/client"
 
 type CreateIndexOption func(*createIndex)
 
-var (
-	defaultCreateIndexOptions = []CreateIndexOption{
-		WithCreateIndexPoolSize(10000),
-	}
-)
+var defaultCreateIndexOptions = []CreateIndexOption{
+	WithCreateIndexPoolSize(10000),
+}
 
 func WithCreateIndexPoolSize(size int) CreateIndexOption {
 	return func(ci *createIndex) {

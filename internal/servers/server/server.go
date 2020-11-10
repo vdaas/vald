@@ -307,13 +307,17 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 			s.wg.Done()
 			return err
 		}))
-		time.Sleep(s.pwt)
+		tctx, cancel := context.WithTimeout(ctx, s.pwt)
+		defer cancel()
+		<-tctx.Done()
 		err := <-ech
 		if err != nil {
 			rerr = err
 		}
 	} else {
-		time.Sleep(s.pwt)
+		tctx, cancel := context.WithTimeout(ctx, s.pwt)
+		defer cancel()
+		<-tctx.Done()
 	}
 
 	log.Warnf("%s server %s is now shutting down", s.mode.String(), s.name)

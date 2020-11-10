@@ -17,13 +17,11 @@
 // Package rest provides rest api logic
 package rest
 
-import "github.com/vdaas/vald/apis/grpc/manager/compressor"
+import "github.com/vdaas/vald/apis/grpc/v1/manager/compressor"
 
 type Option func(*handler)
 
-var (
-	defaultOpts = []Option{}
-)
+var defaultOpts = []Option{}
 
 func WithBackup(b compressor.BackupServer) Option {
 	return func(h *handler) {

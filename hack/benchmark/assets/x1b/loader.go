@@ -65,9 +65,11 @@ type file struct {
 type bvecs struct {
 	*file
 }
+
 type fvecs struct {
 	*file
 }
+
 type ivecs struct {
 	*file
 }

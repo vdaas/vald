@@ -25,7 +25,7 @@ import (
 
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e"
-	"github.com/vdaas/vald/internal/client"
+	"github.com/vdaas/vald/internal/client/v1/client"
 )
 
 type insert struct {
@@ -90,9 +90,11 @@ func (isrt *insert) runParallel(ctx context.Context, b *testing.B, c client.Clie
 }
 
 func (isrt *insert) do(ctx context.Context, b *testing.B, c client.Client, id string, vector []float32) {
-	if err := c.Insert(ctx, &client.ObjectVector{
-		Id:     id,
-		Vector: vector,
+	if _, err := c.Insert(ctx, &client.InsertRequest{
+		Vector: &client.ObjectVector{
+			Id:     id,
+			Vector: vector,
+		},
 	}); err != nil {
 		b.Error(err)
 	}

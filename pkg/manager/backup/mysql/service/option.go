@@ -23,9 +23,7 @@ import (
 
 type Option func(*client) error
 
-var (
-	defaultOpts = []Option{}
-)
+var defaultOpts = []Option{}
 
 func WithMySQLClient(m mysql.MySQL) Option {
 	return func(c *client) error {

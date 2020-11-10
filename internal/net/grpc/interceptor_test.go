@@ -26,6 +26,7 @@ import (
 )
 
 func TestRecoverInterceptor(t *testing.T) {
+	t.Parallel()
 	type want struct {
 		want UnaryServerInterceptor
 	}
@@ -64,9 +65,11 @@ func TestRecoverInterceptor(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -81,12 +84,12 @@ func TestRecoverInterceptor(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func TestRecoverStreamInterceptor(t *testing.T) {
+	t.Parallel()
 	type want struct {
 		want StreamServerInterceptor
 	}
@@ -125,9 +128,11 @@ func TestRecoverStreamInterceptor(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -142,7 +147,6 @@ func TestRecoverStreamInterceptor(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

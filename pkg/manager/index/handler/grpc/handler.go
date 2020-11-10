@@ -20,8 +20,8 @@ package grpc
 import (
 	"context"
 
-	"github.com/vdaas/vald/apis/grpc/manager/index"
-	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/manager/index"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/pkg/manager/index/service"
 )

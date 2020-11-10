@@ -27,7 +27,6 @@ import (
 	"github.com/vdaas/vald/internal/log/level"
 	"github.com/vdaas/vald/internal/log/mock"
 	"github.com/vdaas/vald/internal/log/retry"
-
 	"go.uber.org/goleak"
 )
 
@@ -1004,7 +1003,6 @@ func Test_logger_setLevelMode(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1100,7 +1098,6 @@ func Test_logger_setLogFormat(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

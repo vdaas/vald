@@ -17,6 +17,4 @@
 // Package errors provides error types and function
 package errors
 
-var (
-	ErrInvalidReconcilerConfig = New("invalid reconciler config")
-)
+var ErrInvalidReconcilerConfig = New("invalid reconciler config")

@@ -25,11 +25,11 @@ import (
 	"github.com/vdaas/vald/internal/cache"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
-
 	"go.uber.org/goleak"
 )
 
 func TestNewMeta(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []MetaOption
 	}
@@ -82,9 +82,11 @@ func TestNewMeta(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -99,12 +101,12 @@ func TestNewMeta(t *testing.T) {
 			if err := test.checkFunc(test.want, gotMi, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_meta_Start(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -182,9 +184,11 @@ func Test_meta_Start(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -207,12 +211,12 @@ func Test_meta_Start(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_meta_Exists(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		meta string
@@ -293,9 +297,11 @@ func Test_meta_Exists(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -318,12 +324,12 @@ func Test_meta_Exists(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_meta_GetMeta(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		uuid string
@@ -404,9 +410,11 @@ func Test_meta_GetMeta(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -429,12 +437,12 @@ func Test_meta_GetMeta(t *testing.T) {
 			if err := test.checkFunc(test.want, gotV, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_meta_GetMetas(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx   context.Context
 		uuids []string
@@ -515,9 +523,11 @@ func Test_meta_GetMetas(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -540,12 +550,12 @@ func Test_meta_GetMetas(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_meta_GetUUID(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		meta string
@@ -626,9 +636,11 @@ func Test_meta_GetUUID(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -651,12 +663,12 @@ func Test_meta_GetUUID(t *testing.T) {
 			if err := test.checkFunc(test.want, gotK, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_meta_GetUUIDs(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx   context.Context
 		metas []string
@@ -737,9 +749,11 @@ func Test_meta_GetUUIDs(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -762,12 +776,12 @@ func Test_meta_GetUUIDs(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_meta_SetUUIDandMeta(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		uuid string
@@ -847,9 +861,11 @@ func Test_meta_SetUUIDandMeta(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -872,12 +888,12 @@ func Test_meta_SetUUIDandMeta(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_meta_SetUUIDandMetas(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		kvs map[string]string
@@ -954,9 +970,11 @@ func Test_meta_SetUUIDandMetas(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -979,12 +997,12 @@ func Test_meta_SetUUIDandMetas(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_meta_DeleteMeta(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		uuid string
@@ -1065,9 +1083,11 @@ func Test_meta_DeleteMeta(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1090,12 +1110,12 @@ func Test_meta_DeleteMeta(t *testing.T) {
 			if err := test.checkFunc(test.want, gotV, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_meta_DeleteMetas(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx   context.Context
 		uuids []string
@@ -1176,9 +1196,11 @@ func Test_meta_DeleteMetas(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1201,12 +1223,12 @@ func Test_meta_DeleteMetas(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_meta_DeleteUUID(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		meta string
@@ -1287,9 +1309,11 @@ func Test_meta_DeleteUUID(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1312,12 +1336,12 @@ func Test_meta_DeleteUUID(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_meta_DeleteUUIDs(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx   context.Context
 		metas []string
@@ -1398,9 +1422,11 @@ func Test_meta_DeleteUUIDs(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1423,7 +1449,6 @@ func Test_meta_DeleteUUIDs(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

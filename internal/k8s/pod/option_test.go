@@ -20,9 +20,8 @@ package pod
 import (
 	"testing"
 
-	"sigs.k8s.io/controller-runtime/pkg/manager"
-
 	"go.uber.org/goleak"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 func TestWithControllerName(t *testing.T) {

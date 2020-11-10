@@ -19,14 +19,12 @@ package ngtd
 
 type Option func(*server)
 
-var (
-	defaultOptions = []Option{
-		WithDimension(128),
-		WithIndexDir("/tmp/ngtd/"),
-		WithServerType(HTTP),
-		WithPort(8200),
-	}
-)
+var defaultOptions = []Option{
+	WithDimension(128),
+	WithIndexDir("/tmp/ngtd/"),
+	WithServerType(HTTP),
+	WithPort(8200),
+}
 
 func WithDimension(dim int) Option {
 	return func(n *server) {

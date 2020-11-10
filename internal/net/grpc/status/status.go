@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/vdaas/vald/apis/grpc/errors"
+	"github.com/vdaas/vald/apis/grpc/v1/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"google.golang.org/grpc/codes"

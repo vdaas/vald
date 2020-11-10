@@ -31,12 +31,10 @@ import (
 // Option represents the functional option for redisClient.
 type Option func(*redisClient) error
 
-var (
-	defaultOpts = []Option{
-		WithInitialPingDuration("30ms"),
-		WithInitialPingTimeLimit("5m"),
-	}
-)
+var defaultOpts = []Option{
+	WithInitialPingDuration("30ms"),
+	WithInitialPingTimeLimit("5m"),
+}
 
 // WithDialer returns the option to set the dialer.
 func WithDialer(der tcp.Dialer) Option {
@@ -362,7 +360,7 @@ func WithInitialPingDuration(dur string) Option {
 	}
 }
 
-// WithHooks returns the option to add hooks
+// WithHooks returns the option to add hooks.
 func WithHooks(hooks ...Hook) Option {
 	return func(r *redisClient) error {
 		if hooks == nil {

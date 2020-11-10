@@ -46,12 +46,10 @@ type frameHeaderObserverImpl struct{}
 
 func (frameHeaderObserverImpl) ObserveFrameHeader(context.Context, gocql.ObservedFrameHeader) {}
 
-var (
-	// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
-	goleakIgnoreOptions = []goleak.Option{
-		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
-	}
-)
+// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
+var goleakIgnoreOptions = []goleak.Option{
+	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+}
 
 func TestWithHosts(t *testing.T) {
 	type T = client
@@ -1062,6 +1060,7 @@ func TestWithSerialConsistency(t *testing.T) {
 		})
 	}
 }
+
 func TestWithCompressor(t *testing.T) {
 	type T = client
 	type args struct {
@@ -3609,6 +3608,7 @@ func TestWithConnectObserver(t *testing.T) {
 		})
 	}
 }
+
 func TestWithFrameHeaderObserver(t *testing.T) {
 	type T = client
 	type args struct {
@@ -3681,6 +3681,7 @@ func TestWithFrameHeaderObserver(t *testing.T) {
 		})
 	}
 }
+
 func TestWithDefaultIdempotence(t *testing.T) {
 	type T = client
 	type args struct {

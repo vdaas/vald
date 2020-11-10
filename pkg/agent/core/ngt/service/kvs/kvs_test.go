@@ -26,6 +26,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type want struct {
 		want BidiMap
 	}
@@ -64,8 +65,10 @@ func TestNew(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -81,12 +84,12 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_bidi_Get(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key string
 	}
@@ -155,8 +158,10 @@ func Test_bidi_Get(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -177,12 +182,12 @@ func Test_bidi_Get(t *testing.T) {
 			if err := test.checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_bidi_GetInverse(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		val uint32
 	}
@@ -251,8 +256,10 @@ func Test_bidi_GetInverse(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -273,12 +280,12 @@ func Test_bidi_GetInverse(t *testing.T) {
 			if err := test.checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_bidi_Set(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key string
 		val uint32
@@ -342,8 +349,10 @@ func Test_bidi_Set(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -369,6 +378,7 @@ func Test_bidi_Set(t *testing.T) {
 }
 
 func Test_bidi_Delete(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key string
 	}
@@ -437,8 +447,10 @@ func Test_bidi_Delete(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -459,12 +471,12 @@ func Test_bidi_Delete(t *testing.T) {
 			if err := test.checkFunc(test.want, gotVal, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_bidi_DeleteInverse(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		val uint32
 	}
@@ -533,8 +545,10 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -555,12 +569,12 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 			if err := test.checkFunc(test.want, gotKey, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_bidi_Range(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		f   func(string, uint32) bool
@@ -624,8 +638,10 @@ func Test_bidi_Range(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -651,6 +667,7 @@ func Test_bidi_Range(t *testing.T) {
 }
 
 func Test_bidi_Len(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		ou [slen]*ou
 		uo [slen]*uo
@@ -705,8 +722,10 @@ func Test_bidi_Len(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -727,7 +746,79 @@ func Test_bidi_Len(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+		})
+	}
+}
 
+func Test_stringToBytes(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		s string
+	}
+	type want struct {
+		wantB []byte
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, []byte) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotB []byte) error {
+		if !reflect.DeepEqual(gotB, w.wantB) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotB, w.wantB)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           s: "",
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           s: "",
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			gotB := stringToBytes(test.args.s)
+			if err := test.checkFunc(test.want, gotB); err != nil {
+				tt.Errorf("error = %v", err)
+			}
 		})
 	}
 }
