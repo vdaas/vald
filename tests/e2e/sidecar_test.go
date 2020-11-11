@@ -52,8 +52,6 @@ var (
 	updateNum     int
 	removeNum     int
 
-	waitAfterInsertDuration time.Duration
-
 	forwarder *portforward.Portforward
 )
 
@@ -95,11 +93,6 @@ func init() {
 		panic(err)
 	}
 	fmt.Println("loading finished")
-
-	waitAfterInsertDuration, err = time.ParseDuration(*waitAfterInsert)
-	if err != nil {
-		panic(err)
-	}
 }
 
 func teardown() {
