@@ -278,26 +278,138 @@ jobs:
             -kubeconfig=${KUBECONFIG}
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
-  slack-redis-mysql:
-    name: 'Slack notification (Redis, MySQL)'
-    needs: e2e-deploy-redis-mysql
+  e2e-deploy-sidecar:
+    name: 'E2E deploy test (Agent & Sidecar)'
     runs-on: ubuntu-latest
-    if: startsWith( github.ref, 'refs/tags/')
+    timeout-minutes: 45
+    if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
     steps:
-      - uses: technote-space/workflow-conclusion-action@v1
+      - uses: actions/checkout@v2
+      - name: wait for dockers
+        if: startsWith( github.ref, 'refs/tags/')
+        run: |
+          tag=$(cat versions/VALD_VERSION)
+          for image in \
+            vdaas/vald-agent-ngt \
+            vdaas/vald-agent-sidecar
+          do
+            echo "searching ${image}:${tag}"
+            until curl -s "https://registry.hub.docker.com/v2/repositories/${image}/tags/${tag}" | jq '.name' | grep -v "null"; do
+              echo "waiting for ${image}:${tag} to be uploaded..."
+              sleep 2
+            done
+          done
+      - name: Specify container versions
+        if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
+        run: |
+          pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
+          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-agent-ngt/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
+            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set agent.image.tag=pr-${pr_num}"
+          fi
+          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-agent-sidecar/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
+            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set agent.sidecar.image.tag=pr-${pr_num}"
+          fi
+          echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}"
+          echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}" >> $GITHUB_ENV
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libhdf5-dev
+      - name: Fetch Helm version
+        run: |
+          HELM_VERSION=`make version/helm`
+          echo "::set-output name=helm::${HELM_VERSION}"
+        id: version
+      - uses: rinx/setup-k3d@v0.0.2
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: 8398a7/action-slack@v2
+          version: latest
+          name: vald
+          agents: 3
+      - name: check k3d
+        run: |
+          kubectl cluster-info
+      - uses: azure/setup-helm@v1
         with:
-          author_name: 'E2E deploy test (Redis, MySQL)'
-          status: ${{ env.WORKFLOW_CONCLUSION }}
-          only_mention_fail: channel
+          version: ${{ steps.version.outputs.helm }}
+      - name: Helm version
+        run: |
+          helm version
+      - name: deploy vald
+        run: |
+          kubectl apply -f k8s/external/minio
+          jq_query='.items[] | select( ([ .status.conditions[] | select( .type == "Ready" and .status == "True" ) ] | length ) == 1) | .metadata.namespace + "/" + .metadata.name'
+          until [ $(kubectl get pod -o json | jq -r "$jq_query" | wc -l) -ge 1 ]
+          do
+            echo "waiting for minio to be ready..."
+            kubectl get pods
+            sleep 2
+          done
+          helm repo add vald https://vald.vdaas.org/charts
+          tag=$(cat versions/VALD_VERSION)
+          helm install \
+            --values .github/helm/values/values-agent-sidecar.yaml \
+            --set defaults.image.tag=${tag} \
+            ${HELM_EXTRA_OPTIONS} \
+            --generate-name vald/vald
+          until [ $(kubectl get pod -o json | jq -r "$jq_query" | wc -l) -ge 2 ]
+          do
+            echo "waiting for Vald to be ready..."
+            kubectl get pods
+            sleep 2
+          done
+          kubectl get pods
+      - name: run E2E Agent & Sidecar
+        run: |
+          make hack/benchmark/assets/dataset/${DATASET}
+          podname=`kubectl get pods --selector=app=vald-agent-ngt | tail -1 | awk '{print $1}'`
+          go test \
+            -v tests/e2e/sidecar_test.go \
+            -run "TestE2EInsert|TestE2ESearch" \
+            -tags "e2e" \
+            -timeout 15m \
+            -host=localhost \
+            -port=8081 \
+            -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
+            -insert-num=60000 \
+            -search-num=10000 \
+            -wait-after-insert=2m \
+            -portforward \
+            -portforward-ns=default \
+            -portforward-pod-name=${podname} \
+            -portforward-pod-port=8081 \
+            -kubeconfig=${KUBECONFIG}
+          echo "killing agent pod"
+          kubectl delete pod vald-agent-ngt-0
+          until [ $(kubectl get pod -o json | jq -r "$jq_query" | wc -l) -ge 2 ]
+          do
+            echo "waiting for Vald to be ready..."
+            kubectl get pods
+            sleep 2
+          done
+          kubectl get pods
+          go test \
+            -v tests/e2e/sidecar_test.go \
+            -run "TestE2ESearch|TestE2EIndexInfo" \
+            -tags "e2e" \
+            -timeout 5m \
+            -host=localhost \
+            -port=8081 \
+            -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
+            -insert-num=60000 \
+            -search-num=10000 \
+            -portforward \
+            -portforward-ns=default \
+            -portforward-pod-name=${podname} \
+            -portforward-pod-port=8081 \
+            -kubeconfig=${KUBECONFIG}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_NOTIFY_WEBHOOK_URL }}
-  slack-cassandra:
-    name: 'Slack notification (Cassandra)'
-    needs: e2e-deploy-cassandra
+          DATASET: fashion-mnist-784-euclidean.hdf5
+  slack-notification:
+    name: 'Slack notification'
+    needs:
+      - e2e-deploy-redis-mysql
+      - e2e-deploy-cassandra
+      - e2e-deploy-sidecar
     runs-on: ubuntu-latest
     if: startsWith( github.ref, 'refs/tags/')
     steps:
@@ -306,7 +418,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: 8398a7/action-slack@v2
         with:
-          author_name: 'E2E deploy test (Cassandra)'
+          author_name: 'E2E deploy test'
           status: ${{ env.WORKFLOW_CONCLUSION }}
           only_mention_fail: channel
         env:
