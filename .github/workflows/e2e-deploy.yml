@@ -338,7 +338,7 @@ jobs:
         run: |
           kubectl apply -f k8s/external/minio
           jq_query='.items[] | select( ([ .status.conditions[] | select( .type == "Ready" and .status == "True" ) ] | length ) == 1) | .metadata.namespace + "/" + .metadata.name'
-          until [ $(kubectl get pod -o json | jq -r "$jq_query" | wc -l) -ge 1 ]
+          until [ $(kubectl get pod --selector=app=minio -o json | jq -r "$jq_query" | wc -l) -ge 1 ]
           do
             echo "waiting for minio to be ready..."
             kubectl get pods
@@ -380,6 +380,7 @@ jobs:
             -kubeconfig=${KUBECONFIG}
           echo "killing agent pod"
           kubectl delete pod vald-agent-ngt-0
+          jq_query='.items[] | select( ([ .status.conditions[] | select( .type == "Ready" and .status == "True" ) ] | length ) == 1) | .metadata.namespace + "/" + .metadata.name'
           until [ $(kubectl get pod -o json | jq -r "$jq_query" | wc -l) -ge 2 ]
           do
             echo "waiting for Vald to be ready..."
