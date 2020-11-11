@@ -370,7 +370,7 @@ jobs:
             -host=localhost \
             -port=8081 \
             -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
-            -insert-num=60000 \
+            -insert-num=10000 \
             -search-num=10000 \
             -wait-after-insert=2m \
             -portforward \
@@ -396,7 +396,7 @@ jobs:
             -host=localhost \
             -port=8081 \
             -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
-            -insert-num=60000 \
+            -insert-num=10000 \
             -search-num=10000 \
             -portforward \
             -portforward-ns=default \
