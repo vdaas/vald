@@ -364,7 +364,7 @@ jobs:
           podname=`kubectl get pods --selector=app=vald-agent-ngt | tail -1 | awk '{print $1}'`
           go test \
             -v tests/e2e/sidecar_test.go \
-            -run "TestE2EInsert|TestE2ESearch" \
+            -run "TestE2EInsert|TestE2ECreateIndex|TestE2ESearch" \
             -tags "e2e" \
             -timeout 15m \
             -host=localhost \

@@ -67,7 +67,6 @@ func init() {
 	flag.IntVar(&searchNum, "search-num", 10000, "number of id-vector pairs used for search")
 
 	datasetName := flag.String("dataset", "fashion-mnist-784-euclidean.hdf5", "dataset")
-	waitAfterInsert := flag.String("wait-after-insert", "3m", "wait duration after inserting vectors")
 
 	pf := flag.Bool("portforward", false, "enable port forwarding")
 	pfNamespace := flag.String("portforward-ns", "default", "namespace (only for port forward)")
@@ -237,12 +236,6 @@ func getClient(ctx context.Context) (core.AgentClient, error) {
 	return core.NewAgentClient(conn), nil
 }
 
-func sleep(t *testing.T, dur time.Duration) {
-	t.Logf("sleep for %s", dur)
-	time.Sleep(dur)
-	t.Log("sleep finished.")
-}
-
 func TestE2EInsert(t *testing.T) {
 	ctx := context.Background()
 
@@ -305,8 +298,22 @@ func TestE2EInsert(t *testing.T) {
 	wg.Wait()
 
 	t.Log("insert finished.")
+}
 
-	sleep(t, waitAfterInsertDuration)
+func TestE2ECreateIndex(t *testing.T) {
+	ctx := context.Background()
+
+	client, err := getClient(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = client.CreateAndSaveIndex(ctx, &payload.Control_CreateIndexRequest{
+		PoolSize: 10000,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestE2ESearch(t *testing.T) {
