@@ -49,12 +49,14 @@ agent:
         cpu: 100m
         memory: 100Mi
     config:
+      filename: vald-agent-ngt-index
       blob_storage:
         storage_type: "s3"
         bucket: "vald-minio"
         s3:
           endpoint: "http://minio.default.svc.cluster.local:9000"
           region: "us-east-1"
+          force_path_style: true
 
 gateway:
   enabled: false
