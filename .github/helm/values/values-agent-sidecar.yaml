@@ -23,11 +23,19 @@ agent:
     requests:
       cpu: 100m
       memory: 50Mi
+  volumes:
+    - name: ngt-index
+      emptyDir: {}
+  volumeMounts:
+    - name: ngt-index
+      mountPath: /var/ngt
   ngt:
     auto_index_duration_limit: 3m
     auto_index_check_duration: 1m
     auto_index_length: 1000
     dimension: 784
+    index_path: /var/ngt/index
+    enable_in_memory_mode: false
   sidecar:
     enabled: true
     initContainerEnabled: true
