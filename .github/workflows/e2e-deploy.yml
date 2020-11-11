@@ -88,10 +88,11 @@ jobs:
           HELM_VERSION=`make version/helm`
           echo "::set-output name=helm::${HELM_VERSION}"
         id: version
-      - uses: rinx/setup-k3d@v0.0.1
+      - uses: rinx/setup-k3d@v0.0.2
         with:
           version: latest
           name: vald
+          agents: 3
       - name: check k3d
         run: |
           kubectl cluster-info
@@ -214,10 +215,11 @@ jobs:
           HELM_VERSION=`make version/helm`
           echo "::set-output name=helm::${HELM_VERSION}"
         id: version
-      - uses: rinx/setup-k3d@v0.0.1
+      - uses: rinx/setup-k3d@v0.0.2
         with:
           version: latest
           name: vald
+          agents: 3
       - name: check k3d
         run: |
           kubectl cluster-info
