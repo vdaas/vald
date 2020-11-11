@@ -117,7 +117,7 @@ jobs:
           helm repo add vald https://vald.vdaas.org/charts
           tag=$(cat versions/VALD_VERSION)
           helm install \
-            --values charts/vald/values-ci.yaml \
+            --values .github/helm/values/values-redis-mysql.yaml \
             --set defaults.image.tag=${tag} \
             ${HELM_EXTRA_OPTIONS} \
             --generate-name vald/vald
@@ -242,7 +242,7 @@ jobs:
           helm repo add vald https://vald.vdaas.org/charts
           tag=$(cat versions/VALD_VERSION)
           helm install \
-            --values charts/vald/values-ci-scylla.yaml \
+            --values .github/helm/values/values-scylla.yaml \
             --set defaults.image.tag=${tag} \
             ${HELM_EXTRA_OPTIONS} \
             --generate-name vald/vald
