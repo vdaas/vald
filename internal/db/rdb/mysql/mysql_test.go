@@ -2656,7 +2656,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 func Test_mySQLClient_deleteVector(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		val interface{}
+		val string
 	}
 	type fields struct {
 		session   dbr.Session
@@ -2765,6 +2765,29 @@ func Test_mySQLClient_deleteVector(t *testing.T) {
 									return nil
 								},
 								RollbackUnlessCommittedFunc: func() {},
+								SelectFunc: func(column ...string) dbr.SelectStmt {
+									s := new(dbr.MockSelect)
+									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.LimitFunc = func(n uint64) dbr.SelectStmt {
+										return s
+									}
+									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+										var id int64
+										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
+											id := int64(1)
+											reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
+											return 1, nil
+										}
+										return 0, nil
+									}
+
+									return s
+								},
 								DeleteFromFunc: func(table string) dbr.DeleteStmt {
 									s := new(dbr.MockDelete)
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
@@ -2812,6 +2835,29 @@ func Test_mySQLClient_deleteVector(t *testing.T) {
 									return nil
 								},
 								RollbackUnlessCommittedFunc: func() {},
+								SelectFunc: func(column ...string) dbr.SelectStmt {
+									s := new(dbr.MockSelect)
+									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.LimitFunc = func(n uint64) dbr.SelectStmt {
+										return s
+									}
+									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+										var id int64
+										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
+											id := int64(1)
+											reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
+											return 1, nil
+										}
+										return 0, nil
+									}
+
+									return s
+								},
 								DeleteFromFunc: func(table string) dbr.DeleteStmt {
 									s := new(dbr.MockDelete)
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
@@ -2858,6 +2904,29 @@ func Test_mySQLClient_deleteVector(t *testing.T) {
 									return nil
 								},
 								RollbackUnlessCommittedFunc: func() {},
+								SelectFunc: func(column ...string) dbr.SelectStmt {
+									s := new(dbr.MockSelect)
+									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.LimitFunc = func(n uint64) dbr.SelectStmt {
+										return s
+									}
+									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+										var id int64
+										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
+											id := int64(1)
+											reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
+											return 1, nil
+										}
+										return 0, nil
+									}
+
+									return s
+								},
 								DeleteFromFunc: func(table string) dbr.DeleteStmt {
 									s := new(dbr.MockDelete)
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
@@ -2956,6 +3025,29 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 									return nil
 								},
 								RollbackUnlessCommittedFunc: func() {},
+								SelectFunc: func(column ...string) dbr.SelectStmt {
+									s := new(dbr.MockSelect)
+									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.LimitFunc = func(n uint64) dbr.SelectStmt {
+										return s
+									}
+									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+										var id int64
+										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
+											id := int64(1)
+											reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
+											return 1, nil
+										}
+										return 0, nil
+									}
+
+									return s
+								},
 								DeleteFromFunc: func(table string) dbr.DeleteStmt {
 									s := new(dbr.MockDelete)
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
@@ -2997,6 +3089,29 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 									return nil
 								},
 								RollbackUnlessCommittedFunc: func() {},
+								SelectFunc: func(column ...string) dbr.SelectStmt {
+									s := new(dbr.MockSelect)
+									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.LimitFunc = func(n uint64) dbr.SelectStmt {
+										return s
+									}
+									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+										var id int64
+										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
+											id := int64(1)
+											reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
+											return 1, nil
+										}
+										return 0, nil
+									}
+
+									return s
+								},
 								DeleteFromFunc: func(table string) dbr.DeleteStmt {
 									s := new(dbr.MockDelete)
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
@@ -3095,6 +3210,29 @@ func Test_mySQLClient_DeleteVectors(t *testing.T) {
 									return nil
 								},
 								RollbackUnlessCommittedFunc: func() {},
+								SelectFunc: func(column ...string) dbr.SelectStmt {
+									s := new(dbr.MockSelect)
+									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.LimitFunc = func(n uint64) dbr.SelectStmt {
+										return s
+									}
+									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+										var id int64
+										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
+											id := int64(1)
+											reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
+											return 1, nil
+										}
+										return 0, nil
+									}
+
+									return s
+								},
 								DeleteFromFunc: func(table string) dbr.DeleteStmt {
 									s := new(dbr.MockDelete)
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
@@ -3139,6 +3277,29 @@ func Test_mySQLClient_DeleteVectors(t *testing.T) {
 									return nil
 								},
 								RollbackUnlessCommittedFunc: func() {},
+								SelectFunc: func(column ...string) dbr.SelectStmt {
+									s := new(dbr.MockSelect)
+									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.LimitFunc = func(n uint64) dbr.SelectStmt {
+										return s
+									}
+									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+										var id int64
+										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
+											id := int64(1)
+											reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
+											return 1, nil
+										}
+										return 0, nil
+									}
+
+									return s
+								},
 								DeleteFromFunc: func(table string) dbr.DeleteStmt {
 									s := new(dbr.MockDelete)
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
