@@ -28,10 +28,8 @@ import (
 
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errors"
-	htr "github.com/vdaas/vald/internal/net/http/transport"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"go.uber.org/goleak"
-	"golang.org/x/net/http2"
 )
 
 var (
@@ -86,47 +84,36 @@ func TestNew(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-
-		opts := []comparator.Option{
-			comparator.AllowUnexported(http.Client{}),
-
-			comparator.Comparer(func(x, y http.RoundTripper) bool {
-				return true
-				//return comparator.Diff(x, y) == ""
-			}),
-		}
-		if diff := comparator.Diff(got, w.want, opts...); diff != "" {
-			return errors.New(diff)
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
 	tests := []test{
-		{
-			name: "return default http client success",
-			args: args{
-				opts: nil,
-			},
-			want: want{
-				want: &http.Client{
-					Transport: func() http.RoundTripper {
-						t := &http.Transport{
-							Proxy:              http.ProxyFromEnvironment,
-							DisableKeepAlives:  false,
-							DisableCompression: false,
-						}
-						_ = http2.ConfigureTransport(t)
-
-						return htr.NewExpBackoff(
-							htr.WithRoundTripper(t),
-
-							htr.WithBackoff(
-								backoff.New(),
-							),
-						)
-					}(),
-				},
-			},
-		},
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           opts: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           opts: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
 	}
 
 	for _, test := range tests {
