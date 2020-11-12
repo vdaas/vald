@@ -718,10 +718,6 @@ initContainers
       {{- $backupGatewayReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.gateway.backup.server_config.healths.readiness.port }}
       {{- $backupGatewayReadinessPath := default $.Values.defaults.server_config.healths.readiness.readinessProbe.httpGet.path .readinessPath }}
       until [ "$(wget --server-response --spider --quiet http://{{ $.Values.gateway.backup.name }}.{{ $.namespace }}.svc.cluster.local:{{ $backupGatewayReadinessPort }}{{ $backupGatewayReadinessPath }} 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
-      {{- else if eq .target "gateway-filter" }}
-      {{- $filterGatewayReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.gateway.filter.server_config.healths.readiness.port }}
-      {{- $filterGatewayReadinessPath := default $.Values.defaults.server_config.healths.readiness.readinessProbe.httpGet.path .readinessPath }}
-      until [ "$(wget --server-response --spider --quiet http://{{ $.Values.gateway.filter.name }}.{{ $.namespace }}.svc.cluster.local:{{ $filterGatewayReadinessPort }}{{ $filterGatewayReadinessPath }} 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
       {{- else if eq .target "gateway-lb" }}
       {{- $lbGatewayReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.gateway.lb.server_config.healths.readiness.port }}
       {{- $lbGatewayReadinessPath := default $.Values.defaults.server_config.healths.readiness.readinessProbe.httpGet.path .readinessPath }}
