@@ -136,7 +136,10 @@ spec:
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
-      securityContext: {}
+      {{- if .Values.agent.securityContext }}
+      securityContext:
+        {{- toYaml .Values.agent.securityContext | nindent 8 }}
+      {{- end }}
       terminationGracePeriodSeconds: {{ .Values.agent.terminationGracePeriodSeconds }}
       volumes:
         - name: {{ .Values.agent.name }}-config
