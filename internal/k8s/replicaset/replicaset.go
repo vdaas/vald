@@ -31,6 +31,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
+	"github.com/wdiu/k8s-athenz-identity/pkg/log"
 )
 
 // ReplicaSetWatcher is a type alias for k8s resource controller.
@@ -75,7 +76,9 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 			RequeueAfter: time.Millisecond * 100,
 		}
 		if k8serrors.IsNotFound(err) {
+			log.Error("not found", err)
 			res.RequeueAfter = time.Second
+			return res, nil
 		}
 		return
 	}
