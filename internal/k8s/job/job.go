@@ -19,7 +19,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 )
 
-// JobWatcher is is a type alias for k8s resource controller.
+// JobWatcher is a type alias for k8s resource controller.
 type JobWatcher k8s.ResourceController
 
 type reconciler struct {
@@ -70,9 +70,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 		return
 	}
 
-	var (
-		jobs = make(map[string][]Job, len(js.Items))
-	)
+	jobs := make(map[string][]Job, len(js.Items))
 
 	for _, job := range js.Items {
 		name, ok := job.GetObjectMeta().GetLabels()["app"]
