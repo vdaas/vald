@@ -18,6 +18,7 @@ name: "reviewdog - K8s manifests"
 on:
   pull_request:
     paths:
+      - "charts/**"
       - "k8s/**"
 
 jobs:
@@ -36,7 +37,7 @@ jobs:
           CONFLINT_LOG: DEBUG
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPORTER: github-pr-review
-  kubelinter:
+  kubelinter-k8s-manifests:
     name: runner / kubelinter
     runs-on: ubuntu-latest
     steps:
@@ -47,7 +48,7 @@ jobs:
           unzip kube-linter-linux.zip
         env:
           KUBELINTER_VERSION: 0.1.2
-      - name: kubelinter
+      - name: kubelinter for k8s directory
         run: |
           ./kube-linter lint \
             --config .github/kubelinter.yaml \
@@ -56,3 +57,20 @@ jobs:
             k8s/gateway \
             k8s/manager \
             k8s/meta
+  kubelinter-generated-manifests:
+    name: runner / kubelinter for generated manifests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: setup-kubelinter
+        run: |
+          wget https://github.com/stackrox/kube-linter/releases/download/${KUBELINTER_VERSION}/kube-linter-linux.zip
+          unzip kube-linter-linux.zip
+        env:
+          KUBELINTER_VERSION: 0.1.2
+      - name: kubelinter for generated manifests
+        run: |
+          helm template --output-dir tmp-k8s charts/vald
+          ./kube-linter lint \
+            --config .github/kubelinter.yaml \
+            tmp-k8s
