@@ -84,7 +84,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 		return
 	}
 
-	ssm := make(map[string][]StatefulSet, len(ssl.Items))
+	ssm := make(map[string][]StatefulSet)
 
 	for _, statefulset := range ssl.Items {
 		name, ok := statefulset.GetObjectMeta().GetLabels()["app"]
@@ -97,6 +97,11 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 		}
 
 		ssm[name] = append(ssm[name], statefulset)
+	}
+
+	for name := range ssm {
+		l := len(ssm[name])
+		ssm[name] = ssm[name][:l:l]
 	}
 
 	if r.onReconcile != nil {
