@@ -60,6 +60,8 @@ var (
 			runtime.FuncForPC(ref.Pointer()).Name())
 	}
 
+	ErrNilObject = errors.New("object is nil")
+
 	New = func(msg string) error {
 		if msg == "" {
 			return nil
