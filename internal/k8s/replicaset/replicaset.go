@@ -113,14 +113,14 @@ func (r *reconciler) For() runtime.Object {
 	return new(appsv1.ReplicaSet)
 }
 
-// Owns return the owner of the replica set watcher.
-// It will always returns nil.
+// Owns returns the owner of the replica set watcher.
+// It will always return nil.
 func (r *reconciler) Owns() runtime.Object {
 	return nil
 }
 
 // Watches returns the kind of the replica set and the event handler.
-// It will always returns nil.
+// It will always return nil.
 func (r *reconciler) Watches() (*source.Kind, handler.EventHandler) {
 	// return &source.Kind{Type: new(corev1.Pod)}, &handler.EnqueueRequestForObject{}
 	return nil, nil
