@@ -38,12 +38,15 @@ k8s/manifest/update: \
 	mkdir -p k8s/manager
 	mv tmp-k8s/vald/templates/agent k8s/agent
 	mv tmp-k8s/vald/templates/discoverer k8s/discoverer
+	mv tmp-k8s/vald/templates/gateway/backup k8s/gateway/backup
+	mv tmp-k8s/vald/templates/gateway/lb k8s/gateway/lb
+	mv tmp-k8s/vald/templates/gateway/meta k8s/gateway/meta
 	mv tmp-k8s/vald/templates/gateway/vald k8s/gateway/vald
+	mv tmp-k8s/vald/templates/jobs k8s/jobs
 	mv tmp-k8s/vald/templates/manager/backup k8s/manager/backup
 	mv tmp-k8s/vald/templates/manager/compressor k8s/manager/compressor
 	mv tmp-k8s/vald/templates/manager/index k8s/manager/index
 	mv tmp-k8s/vald/templates/meta k8s/meta
-	mv tmp-k8s/vald/templates/jobs k8s/jobs
 	rm -rf tmp-k8s
 
 .PHONY: k8s/manifest/helm-operator/clean
