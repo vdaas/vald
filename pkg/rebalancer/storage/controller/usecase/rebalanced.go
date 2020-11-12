@@ -38,7 +38,7 @@ import (
 type run struct {
 	eg            errgroup.Group
 	cfg           *config.Data
-	rb           service.Rebalancer
+	rb            service.Rebalancer
 	h             handler.Rebalancer
 	server        starter.Server
 	observability observability.Observability
@@ -47,7 +47,7 @@ type run struct {
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
 	rb, err := service.New(
-		// TODO set service option from config
+	// TODO set service option from config
 	)
 	if err != nil {
 		return nil, err
@@ -101,7 +101,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 						router.WithErrGroup(eg),
 						router.WithHandler(
 							rest.New(
-								// TODO pass grpc handler to REST option
+							// TODO pass grpc handler to REST option
 							),
 						),
 					)),
@@ -120,7 +120,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	return &run{
 		eg:            eg,
 		cfg:           cfg,
-		rb:           rb,
+		rb:            rb,
 		h:             h,
 		server:        srv,
 		observability: obs,
