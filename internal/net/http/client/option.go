@@ -168,7 +168,6 @@ func WithExpectContinueTimeout(dur string) Option {
 		d, err := timeutil.Parse(dur)
 		if err != nil {
 			return errors.NewErrCriticalOption("expectContinueTimeout", dur, err)
-			//return err
 		}
 
 		tr.ExpectContinueTimeout = d
