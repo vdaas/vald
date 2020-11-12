@@ -6,12 +6,14 @@ on:
     paths:
       - "go.mod"
       - "go.sum"
+      - "Makefile"
       - "dockers/base/Dockerfile"
       - "versions/GO_VERSION"
   pull_request:
     paths:
       - "go.mod"
       - "go.sum"
+      - "Makefile"
       - "dockers/base/Dockerfile"
       - "versions/GO_VERSION"
 
