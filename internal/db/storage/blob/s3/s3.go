@@ -42,6 +42,9 @@ type client struct {
 
 	readerBackoffEnabled bool
 	readerBackoffOpts    []backoff.Option
+
+	readerFunc func(key string) (reader.Reader, error)
+	writerFunc func(key string) writer.Writer
 }
 
 func New(opts ...Option) (blob.Bucket, error) {
@@ -50,6 +53,18 @@ func New(opts ...Option) (blob.Bucket, error) {
 		if err := opt(c); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
+	}
+
+	if c.session == nil {
+		return nil, errors.NewErrInvalidOption("session", c.session)
+	}
+
+	if c.readerFunc == nil {
+		return nil, errors.NewErrInvalidOption("readerFunc", c.readerFunc)
+	}
+
+	if c.writerFunc == nil {
+		return nil, errors.NewErrInvalidOption("writerFunc", c.writerFunc)
 	}
 
 	c.service = s3.New(c.session)
@@ -66,15 +81,10 @@ func (c *client) Close() error {
 }
 
 func (c *client) Reader(ctx context.Context, key string) (io.ReadCloser, error) {
-	r, err := reader.New(
-		reader.WithErrGroup(c.eg),
-		reader.WithService(c.service),
-		reader.WithBucket(c.bucket),
-		reader.WithKey(key),
-		reader.WithMaxChunkSize(c.maxChunkSize),
-		reader.WithBackoff(c.readerBackoffEnabled),
-		reader.WithBackoffOpts(c.readerBackoffOpts...),
-	)
+	if c.readerFunc == nil {
+		return nil, errors.ErrNilObject
+	}
+	r, err := c.readerFunc(key)
 	if err != nil {
 		return nil, err
 	}
@@ -83,13 +93,9 @@ func (c *client) Reader(ctx context.Context, key string) (io.ReadCloser, error) 
 }
 
 func (c *client) Writer(ctx context.Context, key string) (io.WriteCloser, error) {
-	w := writer.New(
-		writer.WithErrGroup(c.eg),
-		writer.WithService(c.service),
-		writer.WithBucket(c.bucket),
-		writer.WithKey(key),
-		writer.WithMaxPartSize(c.maxPartSize),
-	)
-
+	if c.writerFunc == nil {
+		return nil, errors.ErrNilObject
+	}
+	w := c.writerFunc(key)
 	return w, w.Open(ctx)
 }
