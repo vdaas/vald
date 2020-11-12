@@ -27,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
+// Option represent the functional option for transport.
 type Option func(*transport) error
 
 var (
@@ -37,6 +38,7 @@ var (
 	}
 )
 
+// WithProxy returns the option to set the transport proxy.
 func WithProxy(px func(*http.Request) (*url.URL, error)) Option {
 	return func(tr *transport) error {
 		if px == nil {
@@ -48,6 +50,7 @@ func WithProxy(px func(*http.Request) (*url.URL, error)) Option {
 	}
 }
 
+// WithDialContext returns the option to set the dial context.
 func WithDialContext(dx func(ctx context.Context, network, addr string) (net.Conn, error)) Option {
 	return func(tr *transport) error {
 		if dx == nil {
@@ -60,6 +63,7 @@ func WithDialContext(dx func(ctx context.Context, network, addr string) (net.Con
 
 }
 
+// WithTLSHandshakeTimeout returns the option to set the TLS handshake timeout.
 func WithTLSHandshakeTimeout(dur string) Option {
 	return func(tr *transport) error {
 		if len(dur) == 0 {
@@ -67,7 +71,7 @@ func WithTLSHandshakeTimeout(dur string) Option {
 		}
 		d, err := timeutil.Parse(dur)
 		if err != nil {
-			return errors.NewErrCriticalOption("TLSHandshakeTimeout", dur)
+			return errors.NewErrCriticalOption("TLSHandshakeTimeout", dur, err)
 		}
 
 		tr.TLSHandshakeTimeout = d
@@ -76,6 +80,7 @@ func WithTLSHandshakeTimeout(dur string) Option {
 	}
 }
 
+// WithEnableKeepAlives returns the option to enable keep alive.
 func WithEnableKeepAlives(enable bool) Option {
 	return func(tr *transport) error {
 		tr.DisableKeepAlives = !enable
@@ -84,6 +89,7 @@ func WithEnableKeepAlives(enable bool) Option {
 	}
 }
 
+// WithEnableCompression returns the option to enable compression.
 func WithEnableCompression(enable bool) Option {
 	return func(tr *transport) error {
 		tr.DisableCompression = !enable
@@ -92,6 +98,7 @@ func WithEnableCompression(enable bool) Option {
 	}
 }
 
+// WithMaxIdleConns returns the option to set the max idle connection.
 func WithMaxIdleConns(cn int) Option {
 	return func(tr *transport) error {
 		tr.MaxIdleConns = cn
@@ -100,6 +107,7 @@ func WithMaxIdleConns(cn int) Option {
 	}
 }
 
+// WithMaxIdleConnsPerHost returns the option to set the max idle connection per host.
 func WithMaxIdleConnsPerHost(cn int) Option {
 	return func(tr *transport) error {
 		tr.MaxIdleConnsPerHost = cn
@@ -108,6 +116,7 @@ func WithMaxIdleConnsPerHost(cn int) Option {
 	}
 }
 
+// WithMaxConnsPerHost returns the option to set the max connections per host.
 func WithMaxConnsPerHost(cn int) Option {
 	return func(tr *transport) error {
 		tr.MaxConnsPerHost = cn
@@ -116,6 +125,7 @@ func WithMaxConnsPerHost(cn int) Option {
 	}
 }
 
+// WithIdleConnTimeout returns the option to set the idle connection timeout.
 func WithIdleConnTimeout(dur string) Option {
 	return func(tr *transport) error {
 		if len(dur) == 0 {
@@ -123,7 +133,7 @@ func WithIdleConnTimeout(dur string) Option {
 		}
 		d, err := timeutil.Parse(dur)
 		if err != nil {
-			return errors.NewErrCriticalOption("idleConnTimeout", dur)
+			return errors.NewErrCriticalOption("idleConnTimeout", dur, err)
 		}
 
 		tr.IdleConnTimeout = d
@@ -132,6 +142,7 @@ func WithIdleConnTimeout(dur string) Option {
 	}
 }
 
+// WithResponseHeaderTimeout returns the option to set the response header timeout.
 func WithResponseHeaderTimeout(dur string) Option {
 	return func(tr *transport) error {
 		if len(dur) == 0 {
@@ -139,7 +150,7 @@ func WithResponseHeaderTimeout(dur string) Option {
 		}
 		d, err := timeutil.Parse(dur)
 		if err != nil {
-			return errors.NewErrCriticalOption("responseHeaderTimeout", dur)
+			return errors.NewErrCriticalOption("responseHeaderTimeout", dur, err)
 		}
 
 		tr.ResponseHeaderTimeout = d
@@ -148,6 +159,7 @@ func WithResponseHeaderTimeout(dur string) Option {
 	}
 }
 
+// WithExpectContinueTimeout returns the option to set the expect continue timeout.
 func WithExpectContinueTimeout(dur string) Option {
 	return func(tr *transport) error {
 		if len(dur) == 0 {
@@ -155,7 +167,8 @@ func WithExpectContinueTimeout(dur string) Option {
 		}
 		d, err := timeutil.Parse(dur)
 		if err != nil {
-			return errors.NewErrCriticalOption("expectContinueTimeout", dur)
+			return errors.NewErrCriticalOption("expectContinueTimeout", dur, err)
+			//return err
 		}
 
 		tr.ExpectContinueTimeout = d
@@ -164,6 +177,7 @@ func WithExpectContinueTimeout(dur string) Option {
 	}
 }
 
+//  WithProxyConnectHeader returns the option to set the proxy connect header.
 func WithProxyConnectHeader(header http.Header) Option {
 	return func(tr *transport) error {
 		if header == nil {
@@ -175,46 +189,50 @@ func WithProxyConnectHeader(header http.Header) Option {
 	}
 }
 
+//  WithMaxResponseHeaderBytes returns the option to set the max response header bytes.
 func WithMaxResponseHeaderBytes(bs int64) Option {
 	return func(tr *transport) error {
 		tr.MaxResponseHeaderBytes = bs
-
 		return nil
 	}
 }
 
+//  WithWriteBufferSize returns the option to set the write buffer size.
 func WithWriteBufferSize(bs int64) Option {
 	return func(tr *transport) error {
 		tr.WriteBufferSize = int(bs)
-
 		return nil
 	}
 }
 
+//  WithReadBufferSize returns the option to set the read buffer size.
 func WithReadBufferSize(bs int64) Option {
 	return func(tr *transport) error {
 		tr.ReadBufferSize = int(bs)
-
 		return nil
 	}
 }
 
+//  WithForceAttemptHTTP2 returns the option to force attempt HTTP2 for the HTTP transport.
 func WithForceAttemptHTTP2(force bool) Option {
 	return func(tr *transport) error {
 		tr.ForceAttemptHTTP2 = force
-
 		return nil
 	}
 }
 
+//  WithBackoffOpts returns the option to set the options to initialize backoff.
 func WithBackoffOpts(opts ...backoff.Option) Option {
 	return func(tr *transport) error {
+		if len(opts) == 0 {
+			return errors.NewErrInvalidOption("backoffOpts", opts)
+		}
 		if tr.backoffOpts == nil {
 			tr.backoffOpts = opts
+			return nil
 		}
 
 		tr.backoffOpts = append(tr.backoffOpts, opts...)
-
 		return nil
 	}
 }

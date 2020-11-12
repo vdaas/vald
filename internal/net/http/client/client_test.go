@@ -17,8 +17,13 @@
 package client
 
 import (
+	"context"
+	"net"
 	"net/http"
+	"net/url"
 	"reflect"
+	"sync"
+	"sync/atomic"
 	"testing"
 
 	"github.com/vdaas/vald/internal/backoff"
@@ -33,7 +38,31 @@ var (
 	// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
 	goleakIgnoreOptions = []goleak.Option{
 		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
-		goleak.IgnoreTopFunction("internal/poll.runtime_pollWait"),
+	}
+
+	transportComparator = []comparator.Option{
+		comparator.AllowUnexported(transport{}),
+		comparator.AllowUnexported(http.Transport{}),
+		comparator.IgnoreFields(http.Transport{}, "idleLRU"),
+
+		comparator.Comparer(func(x, y backoff.Option) bool {
+			return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
+		}),
+		comparator.Comparer(func(x, y func(*http.Request) (*url.URL, error)) bool {
+			return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
+		}),
+		comparator.Comparer(func(x, y func(ctx context.Context, network, addr string) (net.Conn, error)) bool {
+			return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
+		}),
+		comparator.Comparer(func(x, y sync.Mutex) bool {
+			return reflect.DeepEqual(x, y)
+		}),
+		comparator.Comparer(func(x, y atomic.Value) bool {
+			return reflect.DeepEqual(x.Load(), y.Load())
+		}),
+		comparator.Comparer(func(x, y sync.Once) bool {
+			return reflect.DeepEqual(x, y)
+		}),
 	}
 )
 
@@ -62,7 +91,7 @@ func TestNew(t *testing.T) {
 			comparator.AllowUnexported(http.Client{}),
 
 			comparator.Comparer(func(x, y http.RoundTripper) bool {
-				return reflect.DeepEqual(x, y)
+				return true
 				//return comparator.Diff(x, y) == ""
 			}),
 		}
