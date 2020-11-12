@@ -1,4 +1,4 @@
-package main
+package replicaset
 
 import "sigs.k8s.io/controller-runtime/pkg/manager"
 
@@ -7,7 +7,7 @@ type Option func(*reconciler) error
 
 var defaultOpts = []Option{}
 
-// WithControllerName returns Option that sets r.name.
+// WithControllerName returns Option to set the controller name.
 func WithControllerName(name string) Option {
 	return func(r *reconciler) error {
 		r.name = name
@@ -15,7 +15,15 @@ func WithControllerName(name string) Option {
 	}
 }
 
-// WithManager returns Option that sets r.mgr.
+// WithNamespace returns Option to set the namespace.
+func WithNamespace(ns string) Option {
+	return func(r *reconciler) error {
+		r.namespace = ns
+		return nil
+	}
+}
+
+// WithManager returns Option to set the resource manager.
 func WithManager(mgr manager.Manager) Option {
 	return func(r *reconciler) error {
 		r.mgr = mgr
@@ -23,7 +31,7 @@ func WithManager(mgr manager.Manager) Option {
 	}
 }
 
-// WithOnErrorFunc returns Option that sets r.onError.
+// WithOnErrorFunc returns Option to set the onError hook.
 func WithOnErrorFunc(f func(err error)) Option {
 	return func(r *reconciler) error {
 		r.onError = f
@@ -31,7 +39,7 @@ func WithOnErrorFunc(f func(err error)) Option {
 	}
 }
 
-// WithOnReconcileFunc returns Option that sets r.onReconcile.
+// WithOnReconcileFunc returns Option to set the onReconcile hook.
 func WithOnReconcileFunc(f func(replicasetList map[string][]ReplicaSet)) Option {
 	return func(r *reconciler) error {
 		r.onReconcile = f
