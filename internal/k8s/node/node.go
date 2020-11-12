@@ -65,7 +65,7 @@ func New(opts ...Option) NodeWatcher {
 }
 
 func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err error) {
-	ns := &corev1.NodeList{}
+	ns := new(corev1.NodeList)
 
 	err = r.mgr.GetClient().List(r.ctx, ns)
 
