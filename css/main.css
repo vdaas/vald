@@ -876,7 +876,6 @@ details > summary  {
 
   .about, .features__item, .mdl-card__content {
     background-color: #393939;
-    border: 1px solid #00BAB1;
   }
 
   .mdl-card__title, .mdl-card__caption {
@@ -895,6 +894,10 @@ details > summary  {
     background-color: #393939;
     border: 1px solid #00BAB1;
   }
+
+  .current ul li a.view {
+    border-left: 2px solid #00BAB1;
+}
 
   .page {
     background-color: #333333;
