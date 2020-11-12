@@ -19,7 +19,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 )
 
-// JobWatcher is type alias for k8s.ResourceController.
+// JobWatcher is is a type alias for k8s resource controller.
 type JobWatcher k8s.ResourceController
 
 type reconciler struct {
@@ -31,10 +31,10 @@ type reconciler struct {
 	onReconcile func(jobList map[string][]Job)
 }
 
-// Job is type alias for batchv1.Job.
+// Job is a type alias for the k8s job definition.
 type Job = batchv1.Job
 
-// New returns k8s.ResourceController(*reconciler) implementation.
+// New returns the JobWatcher that implements reconciliation loop, or any error occurred.
 func New(opts ...Option) (JobWatcher, error) {
 	r := new(reconciler)
 
@@ -47,6 +47,7 @@ func New(opts ...Option) (JobWatcher, error) {
 	return nil, nil
 }
 
+// Reconcile implements k8s reconciliation loop to retrieve the Job information from k8s.
 func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err error) {
 	js := new(batchv1.JobList)
 
@@ -94,10 +95,12 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 	return
 }
 
+// GetName returns the name of resource controller.
 func (r *reconciler) GetName() string {
 	return r.name
 }
 
+// NewReconciler returns the reconciler for the Job.
 func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler {
 	if r.ctx == nil && ctx != nil {
 		r.ctx = ctx
@@ -110,14 +113,19 @@ func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) rec
 	return r
 }
 
+// For returns the runtime.Object which is job.
 func (r *reconciler) For() runtime.Object {
 	return new(batchv1.Job)
 }
 
+// Owns returns the owner of the job watcher.
+// It will always return nil.
 func (r *reconciler) Owns() runtime.Object {
 	return nil
 }
 
+// Watches returns the kind of the job and the event handler.
+// It will always return nil.
 func (r *reconciler) Watches() (*source.Kind, handler.EventHandler) {
 	// return &source.Kind{Type: new(corev1.Pod)}, &handler.EnqueueRequestForObject{}
 	return nil, nil

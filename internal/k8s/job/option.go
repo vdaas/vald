@@ -23,6 +23,14 @@ func WithManager(mgr manager.Manager) Option {
 	}
 }
 
+// WithNamespace returns Option to set the namespace.
+func WithNamespace(ns string) Option {
+	return func(r *reconciler) error {
+		r.namespace = ns
+		return nil
+	}
+}
+
 // WithOnErrorFunc returns Option that sets r.onError.
 func WithOnErrorFunc(f func(err error)) Option {
 	return func(r *reconciler) error {
