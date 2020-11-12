@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Check out code.
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Push to master
         run: |
           TIMESTAMP=$(date +%Y%m%d_%H%M%S_%3N)
