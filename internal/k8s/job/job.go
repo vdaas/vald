@@ -70,7 +70,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 		return
 	}
 
-	jobs := make(map[string][]Job, len(js.Items))
+	jobs := make(map[string][]Job)
 
 	for _, job := range js.Items {
 		name, ok := job.GetObjectMeta().GetLabels()["app"]
@@ -79,12 +79,16 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 			name = strings.Join(jns[:len(jns)-1], "-")
 		}
 
-		// TODO: pre-alocate job slice.
 		if _, ok := jobs[name]; !ok {
 			jobs[name] = make([]Job, 0, len(js.Items))
 		}
 
 		jobs[name] = append(jobs[name], job)
+	}
+
+	for name := range jobs {
+		l := len(jobs[name])
+		jobs[name] = jobs[name][:l:l]
 	}
 
 	if r.onReconcile != nil {
