@@ -23,7 +23,7 @@ func WithNamespace(ns string) Option {
 	}
 }
 
-// WithManager returns Option to set the resource manager.
+// WithManager returns Option to set the controller manager.
 func WithManager(mgr manager.Manager) Option {
 	return func(r *reconciler) error {
 		r.mgr = mgr
