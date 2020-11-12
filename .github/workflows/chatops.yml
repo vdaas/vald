@@ -172,9 +172,11 @@ jobs:
           USERNAME: ${{ steps.check_comments_rebase.outputs.COMMENTER_USERNAME }}
       - uses: actions/checkout@v2
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        with:
+          fetch-depth: 0
       - name: Automatic Rebase
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
-        uses: cirrus-actions/rebase@1.2
+        uses: cirrus-actions/rebase@1.4
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
       - name: failure comment
@@ -246,6 +248,8 @@ jobs:
           API_URL: ${{ github.event.issue.comments_url }}
       - uses: actions/checkout@v2
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        with:
+          fetch-depth: 0
       - name: Generate tests and push
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
@@ -350,6 +354,8 @@ jobs:
           API_URL: ${{ github.event.issue.comments_url }}
       - uses: actions/checkout@v2
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        with:
+          fetch-depth: 0
       - name: Fetch golang version
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
