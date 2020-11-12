@@ -223,7 +223,7 @@ data:
               permit_without_stream: false
               time: ""
               timeout: ""
-            max_backoff_delay: ""
+            backoff_max_delay: ""
             max_msg_size: 0
             read_buffer_size: 0
             tcp:
@@ -275,7 +275,7 @@ data:
             initial_window_size: 0
             initial_connection_window_size: 0
             max_msg_size: 0
-            max_backoff_delay: ""
+            backoff_max_delay: ""
             enable_backoff: false
             insecure: true
             timeout: ""

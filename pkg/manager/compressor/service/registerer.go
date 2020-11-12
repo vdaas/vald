@@ -61,7 +61,7 @@ func NewRegisterer(opts ...RegistererOption) (Registerer, error) {
 		}
 	}
 
-	r.vecs = make(map[string]*payload.Backup_Vector)
+	r.vecs = make(map[string]*payload.Backup_Vector, 100)
 
 	return r, nil
 }

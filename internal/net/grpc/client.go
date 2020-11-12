@@ -31,6 +31,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"google.golang.org/grpc"
+	gbackoff "google.golang.org/grpc/backoff"
 )
 
 type (
@@ -92,6 +93,8 @@ type gRPCClient struct {
 	roccd               string // reconnection old connection closing duration
 	eg                  errgroup.Group
 	bo                  backoff.Backoff
+	gbo                 gbackoff.Config // grpc's original backoff configuration
+	mcd                 time.Duration   // minimum connection timeout duration
 }
 
 func New(opts ...Option) (c Client) {
@@ -100,6 +103,17 @@ func New(opts ...Option) (c Client) {
 	for _, opt := range append(defaultOptions, opts...) {
 		opt(g)
 	}
+	g.dopts = append(g.dopts, grpc.WithConnectParams(
+		grpc.ConnectParams{
+			Backoff: gbackoff.Config{
+				MaxDelay:   g.gbo.MaxDelay,
+				BaseDelay:  g.gbo.BaseDelay,
+				Multiplier: g.gbo.Multiplier,
+				Jitter:     g.gbo.Jitter,
+			},
+			MinConnectTimeout: g.mcd,
+		},
+	))
 
 	return g
 }
@@ -550,7 +564,7 @@ func (g *gRPCClient) Disconnect(addr string) error {
 	return nil
 }
 
-func (g *gRPCClient) Close() error {
+func (g *gRPCClient) Close() (err error) {
 	var closeList []string
 	if cc := int(atomic.LoadUint64(&g.clientCount)); cc > 0 {
 		closeList = make([]string, 0, cc)
@@ -562,7 +576,10 @@ func (g *gRPCClient) Close() error {
 		return true
 	})
 	for _, addr := range closeList {
-		g.Disconnect(addr)
+		derr := g.Disconnect(addr)
+		if derr != nil {
+			err = errors.Wrap(err, derr.Error())
+		}
 	}
-	return nil
+	return err
 }

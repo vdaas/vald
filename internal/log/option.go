@@ -43,15 +43,15 @@ type option struct {
 	logType logger.Type
 	level   level.Level
 	format  format.Format
-	logger  Logger
+	logger  logger.Logger
 }
 
-func WithLogger(logger Logger) Option {
+func WithLogger(l logger.Logger) Option {
 	return func(o *option) {
-		if logger == nil {
+		if l == nil {
 			return
 		}
-		o.logger = logger
+		o.logger = l
 	}
 }
 

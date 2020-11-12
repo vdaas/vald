@@ -58,7 +58,7 @@ func New(opts ...Option) (rp Replicator, err error) {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
-	r.pods.Store(make([]string, 0, 0))
+	r.pods.Store(make([]string, 0))
 
 	r.ctrl, err = k8s.New(
 		k8s.WithControllerName("vald k8s replication manager controller"),

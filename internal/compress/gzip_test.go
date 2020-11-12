@@ -149,9 +149,7 @@ func Test_gzipCompressor_CompressVector(t *testing.T) {
 				gzip: &gzip.MockGzip{
 					NewWriterLevelFunc: func(w io.Writer, level int) (gzip.Writer, error) {
 						return &gzip.MockWriter{
-							WriteFunc: func(p []byte) (n int, err error) {
-								return w.Write(p)
-							},
+							WriteFunc: w.Write,
 							CloseFunc: func() error {
 								return nil
 							},

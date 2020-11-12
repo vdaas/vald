@@ -103,12 +103,7 @@ func IsIPv4(addr string) bool {
 // IPv6 loopback address is not supported yet.
 // For more information, please read https://github.com/vdaas/vald/projects/3#card-43504189
 func SplitHostPort(hostport string) (host string, port uint16, err error) {
-	switch {
-	/* TODO: IPv6 loopback address support
-	case strings.HasPrefix(hostport, "::"):
-		hostport = localIPv6 + hostport
-	*/
-	case strings.HasPrefix(hostport, ":"):
+	if !strings.HasPrefix(hostport, "::") && strings.HasPrefix(hostport, ":") {
 		hostport = localIPv4 + hostport
 	}
 	host, portStr, err := net.SplitHostPort(hostport)

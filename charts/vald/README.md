@@ -405,7 +405,7 @@ Configuration
 | defaults.grpc.client.dial_option.keep_alive.permit_without_stream | bool | `false` | gRPC client keep alive permit without stream |
 | defaults.grpc.client.dial_option.keep_alive.time | string | `""` | gRPC client keep alive time |
 | defaults.grpc.client.dial_option.keep_alive.timeout | string | `""` | gRPC client keep alive timeout |
-| defaults.grpc.client.dial_option.max_backoff_delay | string | `""` | gRPC client dial option max backoff delay |
+| defaults.grpc.client.dial_option.backoff_max_delay | string | `""` | gRPC client dial option max backoff delay |
 | defaults.grpc.client.dial_option.max_msg_size | int | `0` | gRPC client dial option max message size |
 | defaults.grpc.client.dial_option.read_buffer_size | int | `0` | gRPC client dial option read buffer size |
 | defaults.grpc.client.dial_option.tcp.dialer.dual_stack_enabled | bool | `true` | gRPC client TCP dialer dual stack enabled |

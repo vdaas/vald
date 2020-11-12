@@ -28,6 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/timeutil"
 	"google.golang.org/grpc"
+	gbackoff "google.golang.org/grpc/backoff"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
 )
@@ -41,6 +42,11 @@ var defaultOptions = []Option{
 	WithErrGroup(errgroup.Get()),
 	WithHealthCheckDuration("10s"),
 	WithResolveDNS(true),
+	WithBackoffMaxDelay(gbackoff.DefaultConfig.MaxDelay.String()),
+	WithBackoffBaseDelay(gbackoff.DefaultConfig.BaseDelay.String()),
+	WithBackoffMultiplier(gbackoff.DefaultConfig.Multiplier),
+	WithBackoffJitter(gbackoff.DefaultConfig.Jitter),
+	WithMinConnectTimeout("20s"),
 }
 
 func WithAddrs(addrs ...string) Option {
@@ -109,20 +115,45 @@ func WithDialOptions(opts ...grpc.DialOption) Option {
 	}
 }
 
-func WithMaxBackoffDelay(dur string) Option {
+func WithBackoffMaxDelay(dur string) Option {
 	return func(g *gRPCClient) {
 		d, err := timeutil.Parse(dur)
 		if err != nil {
 			d = time.Second
 		}
-		g.dopts = append(g.dopts,
-			// grpc.WithConnectParams(grpc.ConnectParams{
-			// 	Backoff: backoff.Config{
-			// 		MaxDelay: d,
-			// 	},
-			// }),
-			grpc.WithBackoffMaxDelay(d),
-		)
+		g.gbo.MaxDelay = d
+	}
+}
+
+func WithBackoffBaseDelay(dur string) Option {
+	return func(g *gRPCClient) {
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			d = time.Second
+		}
+		g.gbo.BaseDelay = d
+	}
+}
+
+func WithBackoffMultiplier(m float64) Option {
+	return func(g *gRPCClient) {
+		g.gbo.Multiplier = m
+	}
+}
+
+func WithBackoffJitter(j float64) Option {
+	return func(g *gRPCClient) {
+		g.gbo.Jitter = j
+	}
+}
+
+func WithMinConnectTimeout(dur string) Option {
+	return func(g *gRPCClient) {
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			d = time.Second
+		}
+		g.mcd = d
 	}
 }
 

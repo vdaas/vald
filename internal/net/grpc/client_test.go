@@ -27,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
+	gbackoff "google.golang.org/grpc/backoff"
 )
 
 func TestNew(t *testing.T) {
@@ -121,6 +122,8 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 		roccd               string
 		eg                  errgroup.Group
 		bo                  backoff.Backoff
+		gbo                 gbackoff.Config
+		mcd                 time.Duration
 	}
 	type want struct {
 		want <-chan error
@@ -166,6 +169,8 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 		           roccd: "",
 		           eg: nil,
 		           bo: nil,
+		           gbo: nil,
+		           mcd: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -194,6 +199,8 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 		           roccd: "",
 		           eg: nil,
 		           bo: nil,
+		           gbo: nil,
+		           mcd: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -230,6 +237,8 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 				roccd:               test.fields.roccd,
 				eg:                  test.fields.eg,
 				bo:                  test.fields.bo,
+				gbo:                 test.fields.gbo,
+				mcd:                 test.fields.mcd,
 			}
 
 			got, err := g.StartConnectionMonitor(test.args.ctx)
@@ -260,6 +269,8 @@ func Test_gRPCClient_Range(t *testing.T) {
 		roccd               string
 		eg                  errgroup.Group
 		bo                  backoff.Backoff
+		gbo                 gbackoff.Config
+		mcd                 time.Duration
 	}
 	type want struct {
 		err error
@@ -302,6 +313,8 @@ func Test_gRPCClient_Range(t *testing.T) {
 		           roccd: "",
 		           eg: nil,
 		           bo: nil,
+		           gbo: nil,
+		           mcd: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -331,6 +344,8 @@ func Test_gRPCClient_Range(t *testing.T) {
 		           roccd: "",
 		           eg: nil,
 		           bo: nil,
+		           gbo: nil,
+		           mcd: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -367,6 +382,8 @@ func Test_gRPCClient_Range(t *testing.T) {
 				roccd:               test.fields.roccd,
 				eg:                  test.fields.eg,
 				bo:                  test.fields.bo,
+				gbo:                 test.fields.gbo,
+				mcd:                 test.fields.mcd,
 			}
 
 			err := g.Range(test.args.ctx, test.args.f)
@@ -398,6 +415,8 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 		roccd               string
 		eg                  errgroup.Group
 		bo                  backoff.Backoff
+		gbo                 gbackoff.Config
+		mcd                 time.Duration
 	}
 	type want struct {
 		err error
@@ -441,6 +460,8 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 		           roccd: "",
 		           eg: nil,
 		           bo: nil,
+		           gbo: nil,
+		           mcd: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -471,6 +492,8 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 		           roccd: "",
 		           eg: nil,
 		           bo: nil,
+		           gbo: nil,
+		           mcd: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -507,6 +530,8 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 				roccd:               test.fields.roccd,
 				eg:                  test.fields.eg,
 				bo:                  test.fields.bo,
+				gbo:                 test.fields.gbo,
+				mcd:                 test.fields.mcd,
 			}
 
 			err := g.RangeConcurrent(test.args.ctx, test.args.concurrency, test.args.f)
@@ -538,6 +563,8 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 		roccd               string
 		eg                  errgroup.Group
 		bo                  backoff.Backoff
+		gbo                 gbackoff.Config
+		mcd                 time.Duration
 	}
 	type want struct {
 		err error
@@ -581,6 +608,8 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 		           roccd: "",
 		           eg: nil,
 		           bo: nil,
+		           gbo: nil,
+		           mcd: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -611,6 +640,8 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 		           roccd: "",
 		           eg: nil,
 		           bo: nil,
+		           gbo: nil,
+		           mcd: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -647,6 +678,8 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 				roccd:               test.fields.roccd,
 				eg:                  test.fields.eg,
 				bo:                  test.fields.bo,
+				gbo:                 test.fields.gbo,
+				mcd:                 test.fields.mcd,
 			}
 
 			err := g.OrderedRange(test.args.ctx, test.args.orders, test.args.f)
@@ -679,6 +712,8 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 		roccd               string
 		eg                  errgroup.Group
 		bo                  backoff.Backoff
+		gbo                 gbackoff.Config
+		mcd                 time.Duration
 	}
 	type want struct {
 		err error
@@ -723,6 +758,8 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 		           roccd: "",
 		           eg: nil,
 		           bo: nil,
+		           gbo: nil,
+		           mcd: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -754,6 +791,8 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 		           roccd: "",
 		           eg: nil,
 		           bo: nil,
+		           gbo: nil,
+		           mcd: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -790,6 +829,8 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 				roccd:               test.fields.roccd,
 				eg:                  test.fields.eg,
 				bo:                  test.fields.bo,
+				gbo:                 test.fields.gbo,
+				mcd:                 test.fields.mcd,
 			}
 
 			err := g.OrderedRangeConcurrent(test.args.ctx, test.args.orders, test.args.concurrency, test.args.f)
@@ -821,6 +862,8 @@ func Test_gRPCClient_Do(t *testing.T) {
 		roccd               string
 		eg                  errgroup.Group
 		bo                  backoff.Backoff
+		gbo                 gbackoff.Config
+		mcd                 time.Duration
 	}
 	type want struct {
 		wantData interface{}
@@ -868,6 +911,8 @@ func Test_gRPCClient_Do(t *testing.T) {
 		           roccd: "",
 		           eg: nil,
 		           bo: nil,
+		           gbo: nil,
+		           mcd: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -898,6 +943,8 @@ func Test_gRPCClient_Do(t *testing.T) {
 		           roccd: "",
 		           eg: nil,
 		           bo: nil,
+		           gbo: nil,
+		           mcd: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -934,6 +981,8 @@ func Test_gRPCClient_Do(t *testing.T) {
 				roccd:               test.fields.roccd,
 				eg:                  test.fields.eg,
 				bo:                  test.fields.bo,
+				gbo:                 test.fields.gbo,
+				mcd:                 test.fields.mcd,
 			}
 
 			gotData, err := g.Do(test.args.ctx, test.args.addr, test.args.f)
@@ -960,6 +1009,8 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 		roccd               string
 		eg                  errgroup.Group
 		bo                  backoff.Backoff
+		gbo                 gbackoff.Config
+		mcd                 time.Duration
 	}
 	type want struct {
 		want []DialOption
@@ -997,6 +1048,8 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 		           roccd: "",
 		           eg: nil,
 		           bo: nil,
+		           gbo: nil,
+		           mcd: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1022,6 +1075,8 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 		           roccd: "",
 		           eg: nil,
 		           bo: nil,
+		           gbo: nil,
+		           mcd: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1058,6 +1113,8 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 				roccd:               test.fields.roccd,
 				eg:                  test.fields.eg,
 				bo:                  test.fields.bo,
+				gbo:                 test.fields.gbo,
+				mcd:                 test.fields.mcd,
 			}
 
 			got := g.GetDialOption()
@@ -1084,6 +1141,8 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 		roccd               string
 		eg                  errgroup.Group
 		bo                  backoff.Backoff
+		gbo                 gbackoff.Config
+		mcd                 time.Duration
 	}
 	type want struct {
 		want []CallOption
@@ -1121,6 +1180,8 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 		           roccd: "",
 		           eg: nil,
 		           bo: nil,
+		           gbo: nil,
+		           mcd: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1146,6 +1207,8 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 		           roccd: "",
 		           eg: nil,
 		           bo: nil,
+		           gbo: nil,
+		           mcd: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1182,6 +1245,8 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 				roccd:               test.fields.roccd,
 				eg:                  test.fields.eg,
 				bo:                  test.fields.bo,
+				gbo:                 test.fields.gbo,
+				mcd:                 test.fields.mcd,
 			}
 
 			got := g.GetCallOption()
@@ -1213,6 +1278,8 @@ func Test_gRPCClient_Connect(t *testing.T) {
 		roccd               string
 		eg                  errgroup.Group
 		bo                  backoff.Backoff
+		gbo                 gbackoff.Config
+		mcd                 time.Duration
 	}
 	type want struct {
 		err error
@@ -1256,6 +1323,8 @@ func Test_gRPCClient_Connect(t *testing.T) {
 		           roccd: "",
 		           eg: nil,
 		           bo: nil,
+		           gbo: nil,
+		           mcd: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1286,6 +1355,8 @@ func Test_gRPCClient_Connect(t *testing.T) {
 		           roccd: "",
 		           eg: nil,
 		           bo: nil,
+		           gbo: nil,
+		           mcd: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1322,6 +1393,8 @@ func Test_gRPCClient_Connect(t *testing.T) {
 				roccd:               test.fields.roccd,
 				eg:                  test.fields.eg,
 				bo:                  test.fields.bo,
+				gbo:                 test.fields.gbo,
+				mcd:                 test.fields.mcd,
 			}
 
 			err := g.Connect(test.args.ctx, test.args.addr, test.args.dopts...)
@@ -1351,6 +1424,8 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 		roccd               string
 		eg                  errgroup.Group
 		bo                  backoff.Backoff
+		gbo                 gbackoff.Config
+		mcd                 time.Duration
 	}
 	type want struct {
 		err error
@@ -1392,6 +1467,8 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 		           roccd: "",
 		           eg: nil,
 		           bo: nil,
+		           gbo: nil,
+		           mcd: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1420,6 +1497,8 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 		           roccd: "",
 		           eg: nil,
 		           bo: nil,
+		           gbo: nil,
+		           mcd: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1456,6 +1535,8 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 				roccd:               test.fields.roccd,
 				eg:                  test.fields.eg,
 				bo:                  test.fields.bo,
+				gbo:                 test.fields.gbo,
+				mcd:                 test.fields.mcd,
 			}
 
 			err := g.Disconnect(test.args.addr)
@@ -1482,6 +1563,8 @@ func Test_gRPCClient_Close(t *testing.T) {
 		roccd               string
 		eg                  errgroup.Group
 		bo                  backoff.Backoff
+		gbo                 gbackoff.Config
+		mcd                 time.Duration
 	}
 	type want struct {
 		err error
@@ -1519,6 +1602,8 @@ func Test_gRPCClient_Close(t *testing.T) {
 		           roccd: "",
 		           eg: nil,
 		           bo: nil,
+		           gbo: nil,
+		           mcd: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1544,6 +1629,8 @@ func Test_gRPCClient_Close(t *testing.T) {
 		           roccd: "",
 		           eg: nil,
 		           bo: nil,
+		           gbo: nil,
+		           mcd: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1580,6 +1667,8 @@ func Test_gRPCClient_Close(t *testing.T) {
 				roccd:               test.fields.roccd,
 				eg:                  test.fields.eg,
 				bo:                  test.fields.bo,
+				gbo:                 test.fields.gbo,
+				mcd:                 test.fields.mcd,
 			}
 
 			err := g.Close()

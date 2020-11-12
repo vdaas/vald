@@ -492,7 +492,11 @@ dial_option:
   initial_window_size: {{ default .default.dial_option.initial_window_size .Values.dial_option.initial_window_size }}
   initial_connection_window_size: {{ default .default.dial_option.initial_connection_window_size .Values.dial_option.initial_connection_window_size }}
   max_msg_size: {{ default .default.dial_option.max_msg_size .Values.dial_option.max_msg_size }}
-  max_backoff_delay: {{ default .default.dial_option.max_backoff_delay .Values.dial_option.max_backoff_delay | quote }}
+  backoff_max_delay: {{ default .default.dial_option.backoff_max_delay .Values.dial_option.backoff_max_delay | quote }}
+  backoff_base_delay: {{ default .default.dial_option.backoff_base_delay .Values.dial_option.backoff_base_delay | quote }}
+  backoff_multiplier: {{ default .default.dial_option.backoff_multiplier .Values.dial_option.backoff_multiplier }}
+  backoff_jitter: {{ default .default.dial_option.backoff_jitter .Values.dial_option.backoff_jitter }}
+  min_connection_timeout: {{ default .default.dial_option.min_connection_timeout .Values.dial_option.min_connection_timeout | quote }}
   enable_backoff: {{ default .default.dial_option.enable_backoff .Values.dial_option.enable_backoff }}
   insecure: {{ default .default.dial_option.insecure .Values.dial_option.insecure }}
   timeout: {{ default .default.dial_option.timeout .Values.dial_option.timeout | quote }}

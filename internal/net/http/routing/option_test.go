@@ -124,7 +124,7 @@ func TestWithMiddlewares(t *testing.T) {
 						return errors.New("invalid params count was set")
 					}
 
-					mws = append([]middleware.Wrapper{mw}, mws[:]...)
+					mws = append([]middleware.Wrapper{mw}, mws...)
 					for i := range got.middlewares {
 						if got, want := got.middlewares[i], mws[i]; !reflect.DeepEqual(got, want) {
 							return errors.New("invalid params was set")
@@ -248,7 +248,7 @@ func TestWithRoutes(t *testing.T) {
 						return errors.New("invalid params count was set")
 					}
 
-					rs = append([]Route{r}, rs[:]...)
+					rs = append([]Route{r}, rs...)
 					for i := range got.routes {
 						if got, want := got.routes[i], rs[i]; !reflect.DeepEqual(got, want) {
 							return errors.New("invalid params was set")

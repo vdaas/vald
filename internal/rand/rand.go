@@ -30,7 +30,9 @@ type rand struct {
 
 var pool = sync.Pool{
 	New: func() interface{} {
-		return new(rand).init()
+		return (&rand{
+			x: new(uint32),
+		}).init()
 	},
 }
 
@@ -58,8 +60,10 @@ func (r *rand) Uint32() (x uint32) {
 }
 
 func (r *rand) init() *rand {
+	if r.x == nil{
+		r.x = new(uint32)
+	}
 	x := fastime.UnixNanoNow()
-	r.x = new(uint32)
 	atomic.StoreUint32(r.x, uint32((x>>32)^x))
 	return r
 }

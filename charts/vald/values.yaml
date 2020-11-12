@@ -488,9 +488,21 @@ defaults:
         # @schema {"name": "defaults.grpc.client.dial_option.max_msg_size", "type": "integer"}
         # defaults.grpc.client.dial_option.max_msg_size -- gRPC client dial option max message size
         max_msg_size: 0
-        # @schema {"name": "defaults.grpc.client.dial_option.max_backoff_delay", "type": "string"}
-        # defaults.grpc.client.dial_option.max_backoff_delay -- gRPC client dial option max backoff delay
-        max_backoff_delay: ""
+        # @schema {"name": "defaults.grpc.client.dial_option.backoff_max_delay", "type": "string"}
+        # defaults.grpc.client.dial_option.backoff_max_delay -- gRPC client dial option max backoff delay
+        backoff_max_delay: "120s"
+        # @schema {"name": "defaults.grpc.client.dial_option.backoff_base_delay", "type": "string"}
+        # defaults.grpc.client.dial_option.backoff_base_delay -- gRPC client dial option base backoff delay
+        backoff_base_delay: "1s"
+        # @schema {"name": "defaults.grpc.client.dial_option.backoff_multiplier", "type": "float"}
+        # defaults.grpc.client.dial_option.backoff_multiplier -- gRPC client dial option base backoff delay
+        backoff_multiplier: 1.6
+        # @schema {"name": "defaults.grpc.client.dial_option.backoff_jitter", "type": "float"}
+        # defaults.grpc.client.dial_option.backoff_jitter -- gRPC client dial option base backoff delay
+        backoff_jitter: 0.2
+        # @schema {"name": "defaults.grpc.client.dial_option.min_connection_timeout", "type": "string"}
+        # defaults.grpc.client.dial_option.min_connection_timeout -- gRPC client dial option minimum connection timeout
+        min_connection_timeout: "20s"
         # @schema {"name": "defaults.grpc.client.dial_option.enable_backoff", "type": "boolean"}
         # defaults.grpc.client.dial_option.enable_backoff -- gRPC client dial option backoff enabled
         enable_backoff: false

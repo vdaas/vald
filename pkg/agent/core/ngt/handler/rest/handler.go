@@ -18,8 +18,6 @@
 package rest
 
 import (
-	"io"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -129,10 +127,10 @@ func (h *handler) CreateIndex(w http.ResponseWriter, r *http.Request) (code int,
 }
 
 func (h *handler) SaveIndex(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	io.Copy(ioutil.Discard, r.Body)
-	r.Body.Close()
-	_, err = h.agent.SaveIndex(r.Context(), nil)
-	return
+	var req *payload.Empty
+	return json.Handler(w, r, &req, func() (interface{}, error) {
+		return h.agent.SaveIndex(r.Context(), req)
+	})
 }
 
 func (h *handler) CreateAndSaveIndex(w http.ResponseWriter, r *http.Request) (code int, err error) {

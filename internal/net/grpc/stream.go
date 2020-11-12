@@ -102,8 +102,7 @@ func BidirectionalStream(ctx context.Context, stream grpc.ServerStream,
 
 // BidirectionalStreamClient is gRPC client stream.
 func BidirectionalStreamClient(stream grpc.ClientStream,
-	dataProvider func() interface{},
-	newData func() interface{},
+	dataProvider, newData func() interface{},
 	f func(interface{}, error)) (err error) {
 	ctx, cancel := context.WithCancel(stream.Context())
 	eg, ctx := errgroup.New(ctx)

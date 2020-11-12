@@ -665,7 +665,7 @@ func WithDCHostFilter(dc string) Option {
 		}
 		c.hostFilter.dcHost = dc
 		if !c.hostFilter.enable {
-			WithHostFilter(true)(c)
+			return WithHostFilter(true)(c)
 		}
 		return nil
 	}
@@ -679,7 +679,7 @@ func WithWhiteListHostFilter(list []string) Option {
 		}
 		c.hostFilter.whiteList = list
 		if !c.hostFilter.enable {
-			WithHostFilter(true)(c)
+			return WithHostFilter(true)(c)
 		}
 		return nil
 	}

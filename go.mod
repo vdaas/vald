@@ -3,9 +3,9 @@ module github.com/vdaas/vald
 go 1.15
 
 replace (
-	cloud.google.com/go => cloud.google.com/go v0.71.0
+	cloud.google.com/go => cloud.google.com/go v0.72.0
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0+incompatible
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.35.24
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.35.26
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
@@ -18,10 +18,10 @@ replace (
 	github.com/google/go-cmp => github.com/google/go-cmp v0.5.2
 	github.com/google/pprof => github.com/google/pprof v0.0.0-20201109224723-20978b51388d
 	github.com/googleapis/gnostic => github.com/googleapis/gnostic v0.4.0
-	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.13.0
+	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.14.0
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.2
 	github.com/hailocab/go-hostpool => github.com/monzo/go-hostpool v0.0.0-20200724120130-287edbb29340
-	github.com/klauspost/compress => github.com/klauspost/compress v1.11.3-0.20201110090307-d693bc87c5fb
+	github.com/klauspost/compress => github.com/klauspost/compress v1.11.3-0.20201111114143-d8af43d19b7a
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.2+incompatible
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897
 	google.golang.org/grpc => google.golang.org/grpc v1.33.2
@@ -40,7 +40,7 @@ require (
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
 	contrib.go.opencensus.io/exporter/prometheus v0.2.0
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.4
-	github.com/aws/aws-sdk-go v1.35.24
+	github.com/aws/aws-sdk-go v1.23.20
 	github.com/cespare/xxhash/v2 v2.1.1
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/fsnotify/fsnotify v1.4.9
@@ -70,12 +70,12 @@ require (
 	go.uber.org/goleak v1.1.10
 	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
 	golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9
-	golang.org/x/sys v0.0.0-20201109165425-215b40eba54c
+	golang.org/x/sys v0.0.0-20201110211018-35f3e6cf4a65
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/plot v0.8.1
 	google.golang.org/api v0.35.0
-	google.golang.org/genproto v0.0.0-20201109203340-2640f1f9cdfb
-	google.golang.org/grpc v1.33.1
+	google.golang.org/genproto v0.0.0-20201111145450-ac7456db90a6
+	google.golang.org/grpc v1.33.2
 	gopkg.in/yaml.v2 v2.3.0
 	k8s.io/api v0.18.9
 	k8s.io/apimachinery v0.18.9

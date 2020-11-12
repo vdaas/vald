@@ -90,7 +90,7 @@ func New(opts ...Option) (MySQL, error) {
 
 // Open opens the connection with MySQL.
 // It will return error when connecting to MySQL ends with fail.
-func (m *mySQLClient) Open(ctx context.Context) error {
+func (m *mySQLClient) Open(ctx context.Context) (err error) {
 	if m.dialer != nil {
 		m.dialer.StartDialerCache(ctx)
 		m.dialerFunc = m.dialer.GetDialer()
@@ -108,7 +108,10 @@ func (m *mySQLClient) Open(ctx context.Context) error {
 
 	if m.tlsConfig != nil {
 		tlsConfName := "tls"
-		mysql.RegisterTLSConfig(tlsConfName, m.tlsConfig)
+		err = mysql.RegisterTLSConfig(tlsConfName, m.tlsConfig)
+		if err != nil {
+			return err
+		}
 		addParam += "&tls=" + tlsConfName
 	}
 

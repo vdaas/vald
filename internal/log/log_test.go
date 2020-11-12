@@ -39,17 +39,17 @@ func TestInit(t *testing.T) {
 		opts []Option
 	}
 	type want struct {
-		l Logger
+		l logger.Logger
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, Logger) error
+		checkFunc  func(want, logger.Logger) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got Logger) error {
+	defaultCheckFunc := func(w want, got logger.Logger) error {
 		if !reflect.DeepEqual(got, l) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.l)
 		}
@@ -116,17 +116,17 @@ func Test_getLogger(t *testing.T) {
 		o *option
 	}
 	type want struct {
-		want Logger
+		want logger.Logger
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, Logger) error
+		checkFunc  func(want, logger.Logger) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got Logger) error {
+	defaultCheckFunc := func(w want, got logger.Logger) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}

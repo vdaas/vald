@@ -205,12 +205,16 @@ func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (conn 
 	return d.dial(dctx, network, addr)
 }
 
-func (d *dialer) dial(ctx context.Context, network, addr string) (net.Conn, error) {
-	conn, err := d.der.DialContext(ctx, network, addr)
+func (d *dialer) dial(ctx context.Context, network, addr string) (conn net.Conn, err error) {
+	conn, err = d.der.DialContext(ctx, network, addr)
 	if err != nil {
 		defer func(conn net.Conn) {
 			if conn != nil {
-				conn.Close()
+				if err != nil {
+					err = errors.Wrap(conn.Close(), err.Error())
+					return
+				}
+				err = conn.Close()
 			}
 		}(conn)
 		return nil, err
