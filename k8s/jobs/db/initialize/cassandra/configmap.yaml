@@ -43,6 +43,7 @@ data:
     CREATE TABLE vald.backup_vector (
       uuid   text,
       vector blob,
+      meta   text,
       ips    list<text>,
       PRIMARY KEY (uuid)
     );

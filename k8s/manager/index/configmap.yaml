@@ -215,6 +215,10 @@ data:
             max_send_msg_size: 0
             wait_for_ready: true
           dial_option:
+            backoff_base_delay: 1s
+            backoff_jitter: 0.2
+            backoff_max_delay: 120s
+            backoff_multiplier: 1.6
             enable_backoff: false
             initial_connection_window_size: 0
             initial_window_size: 0
@@ -223,8 +227,8 @@ data:
               permit_without_stream: false
               time: ""
               timeout: ""
-            backoff_max_delay: ""
             max_msg_size: 0
+            min_connection_timeout: 20s
             read_buffer_size: 0
             tcp:
               dialer:
@@ -275,7 +279,11 @@ data:
             initial_window_size: 0
             initial_connection_window_size: 0
             max_msg_size: 0
-            backoff_max_delay: ""
+            backoff_max_delay: "120s"
+            backoff_base_delay: "1s"
+            backoff_multiplier: 1.6
+            backoff_jitter: 0.2
+            min_connection_timeout: "20s"
             enable_backoff: false
             insecure: true
             timeout: ""

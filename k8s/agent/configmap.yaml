@@ -170,6 +170,7 @@ data:
           instance: ""
           zone: ""
     ngt:
+      auto_create_index_pool_size: 10000
       auto_index_check_duration: 30m
       auto_index_duration_limit: 24h
       auto_index_length: 100

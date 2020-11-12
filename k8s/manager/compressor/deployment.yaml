@@ -46,7 +46,7 @@ spec:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/component: manager-compressor
       annotations:
-        checksum/configmap: 00dd4a61c763323cbdff142bcea0aa06320606b48b588ea6d1b7bc85d118b2a4
+        checksum/configmap: 771684a08e9f4539cb753a4f60e4ec3b073ca26ea16555b6d0747c4e266b78a4
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-manager-compressor

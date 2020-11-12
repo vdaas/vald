@@ -60,7 +60,7 @@ func (r *rand) Uint32() (x uint32) {
 }
 
 func (r *rand) init() *rand {
-	if r.x == nil{
+	if r.x == nil {
 		r.x = new(uint32)
 	}
 	x := fastime.UnixNanoNow()
