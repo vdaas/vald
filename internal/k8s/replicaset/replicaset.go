@@ -31,7 +31,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
-	"github.com/wdiu/k8s-athenz-identity/pkg/log"
+	"github.com/vdaas/vald/internal/log"
 )
 
 // ReplicaSetWatcher is a type alias for k8s resource controller.
