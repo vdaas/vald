@@ -75,10 +75,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 			RequeueAfter: time.Millisecond * 100,
 		}
 		if k8serrors.IsNotFound(err) {
-			res = reconcile.Result{
-				Requeue:      true,
-				RequeueAfter: time.Second,
-			}
+			res.RequeueAfter = time.Second
 		}
 		return
 	}
