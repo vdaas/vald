@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 ARG OPERATOR_SDK_VERSION
-ARG VERSION="v1alpha1"
+ARG VERSION="v1"
 ARG GROUP="vald.vdaas.org"
 ARG VALD_KIND="ValdRelease"
 ARG VALD_HELM_OPERATOR_KIND="ValdHelmOperatorRelease"

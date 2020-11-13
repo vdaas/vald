@@ -35,7 +35,7 @@ This is a custom resource that represents values of the Vald Helm chart.
 Example:
 
 ```yaml
-apiVersion: vald.vdaas.org/v1alpha1
+apiVersion: vald.vdaas.org/v1
 kind: ValdRelease
 metadata:
   name: vald-cluster
@@ -50,7 +50,7 @@ This is a custom resource that represents values of the vald-helm-operator Helm 
 Example:
 
 ```yaml
-apiVersion: vald.vdaas.org/v1alpha1
+apiVersion: vald.vdaas.org/v1
 kind: ValdHelmOperatorRelease
 metadata:
   name: vald-helm-operator-release

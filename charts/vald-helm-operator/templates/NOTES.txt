@@ -5,7 +5,7 @@ Once the {{ .Values.name }} deployment in the {{ .Release.Name }} namespace is r
 If you'd like to manage your release {{ .Release.Name }} by the operator, please create ValdHelmOperatorRelease resource like the following:
 
 kubectl apply -f - <<EOF
-apiVersion: vald.vdaas.org/v1alpha1
+apiVersion: vald.vdaas.org/v1
 kind: ValdHelmOperatorRelease
 metadata:
   name: {{ .Release.Name }}
@@ -22,7 +22,7 @@ kubectl get valdhelmoperatorrelease
 If you'd like to create your Vald cluster, please create ValdRelease resource like:
 
 kubectl apply -f - <<EOF
-apiVersion: vald.vdaas.org/v1alpha1
+apiVersion: vald.vdaas.org/v1
 kind: ValdRelease
 metadata:
   name: vald-cluster

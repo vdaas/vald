@@ -771,7 +771,7 @@ gateway:
   vald:
     # @schema {"name": "gateway.vald.enabled", "type": "boolean"}
     # gateway.vald.enabled -- gateway enabled
-    enabled: true
+    enabled: false
     # @schema {"name": "gateway.vald.version", "type": "string", "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]$", "anchor": "version"}
     # gateway.vald.version -- version of gateway config
     version: v0.0.0
@@ -975,7 +975,7 @@ gateway:
     ingress:
       # @schema {"name": "gateway.vald.ingress.enabled", "type": "boolean"}
       # gateway.vald.ingress.enabled -- gateway ingress enabled
-      enabled: true
+      enabled: false
       # @schema {"name": "gateway.vald.ingress.annotations", "type": "object"}
       # gateway.vald.ingress.annotations -- annotations for ingress
       annotations:
@@ -1042,7 +1042,7 @@ gateway:
   backup:
     # @schema {"name": "gateway.backup.enabled", "type": "boolean"}
     # gateway.backup.enabled -- gateway enabled
-    enabled: false
+    enabled: true
     # @schema {"name": "gateway.backup.version", "type": "string", "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]$", "anchor": "version"}
     # gateway.backup.version -- version of gateway config
     version: v0.0.0
@@ -1266,7 +1266,7 @@ gateway:
   lb:
     # @schema {"name": "gateway.lb.enabled", "type": "boolean"}
     # gateway.lb.enabled -- gateway enabled
-    enabled: false
+    enabled: true
     # @schema {"name": "gateway.lb.version", "type": "string", "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]$", "anchor": "version"}
     # gateway.lb.version -- version of gateway config
     version: v0.0.0
@@ -1694,7 +1694,7 @@ gateway:
     ingress:
       # @schema {"name": "gateway.meta.ingress.enabled", "type": "boolean"}
       # gateway.meta.ingress.enabled -- gateway ingress enabled
-      enabled: false
+      enabled: true
       # @schema {"name": "gateway.meta.ingress.annotations", "type": "object"}
       # gateway.meta.ingress.annotations -- annotations for ingress
       annotations:
