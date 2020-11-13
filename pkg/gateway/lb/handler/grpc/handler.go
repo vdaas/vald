@@ -56,7 +56,7 @@ func New(opts ...Option) vald.Server {
 	for _, opt := range append(defaultOptions, opts...) {
 		opt(s)
 	}
-	return nil
+	return s
 }
 
 func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *payload.Object_ID, err error) {
