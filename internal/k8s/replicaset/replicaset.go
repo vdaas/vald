@@ -19,6 +19,7 @@ import (
 	"context"
 	"reflect"
 	"strings"
+	"sync"
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -45,6 +46,8 @@ type reconciler struct {
 	onError              func(err error)
 	onReconcile          func(rs map[string][]ReplicaSet)
 	lastReconciledResult map[string][]ReplicaSet
+
+	pool sync.Pool
 }
 
 // ReplicaSet is a type alias for the k8s replica set definition.
@@ -54,6 +57,11 @@ type ReplicaSet = appsv1.ReplicaSet
 func New(opts ...Option) (ReplicaSetWatcher, error) {
 	r := &reconciler{
 		lastReconciledResult: make(map[string][]ReplicaSet),
+		pool: sync.Pool{
+			New: func() interface{} {
+				return make(map[string][]ReplicaSet)
+			},
+		},
 	}
 
 	for _, opt := range opts {
@@ -87,10 +95,12 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 	}
 
 	// reset the last result cache
-	for name := range r.lastReconciledResult {
-		r.lastReconciledResult[name] = r.lastReconciledResult[name][:0]
+	lrr := r.pool.Get().(map[string][]ReplicaSet)
+	for name := range lrr {
+		lrr[name] = lrr[name][:0]
 	}
 
+	// append the new result to the cache
 	for _, replicaset := range rsl.Items {
 		name, ok := replicaset.GetObjectMeta().GetLabels()["app"]
 		if !ok {
@@ -98,22 +108,23 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 			name = strings.Join(pns[:len(pns)-1], "-")
 		}
 
-		if _, ok := r.lastReconciledResult[name]; !ok {
-			r.lastReconciledResult[name] = make([]ReplicaSet, 0)
+		if _, ok := lrr[name]; !ok {
+			lrr[name] = make([]ReplicaSet, 0)
 		}
 
-		r.lastReconciledResult[name] = append(r.lastReconciledResult[name], replicaset)
+		lrr[name] = append(lrr[name], replicaset)
 	}
 
-	for name := range r.lastReconciledResult {
-		l := len(r.lastReconciledResult[name])
-		r.lastReconciledResult[name] = r.lastReconciledResult[name][:l:l]
+	for name := range lrr {
+		l := len(lrr[name])
+		lrr[name] = lrr[name][:l:l]
 	}
 
 	if r.onReconcile != nil {
-		r.onReconcile(r.lastReconciledResult)
+		r.onReconcile(lrr)
 	}
 
+	r.pool.Put(lrr)
 	return
 }
 
