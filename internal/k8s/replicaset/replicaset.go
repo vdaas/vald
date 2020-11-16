@@ -38,13 +38,13 @@ import (
 type ReplicaSetWatcher k8s.ResourceController
 
 type reconciler struct {
-	ctx                 context.Context
-	mgr                 manager.Manager
-	name                string
-	namespace           string
-	onError             func(err error)
-	onReconcile         func(rs map[string][]ReplicaSet)
-	lastReconcileResult map[string][]ReplicaSet
+	ctx                  context.Context
+	mgr                  manager.Manager
+	name                 string
+	namespace            string
+	onError              func(err error)
+	onReconcile          func(rs map[string][]ReplicaSet)
+	lastReconciledResult map[string][]ReplicaSet
 }
 
 // ReplicaSet is a type alias for the k8s replica set definition.
@@ -53,7 +53,7 @@ type ReplicaSet = appsv1.ReplicaSet
 // New returns the ReplicaSetWatcher that implements reconciliation loop, or any error occurred.
 func New(opts ...Option) (ReplicaSetWatcher, error) {
 	r := &reconciler{
-		lastReconcileResult: make(map[string][]ReplicaSet),
+		lastReconciledResult: make(map[string][]ReplicaSet),
 	}
 
 	for _, opt := range opts {
@@ -96,7 +96,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 		}
 
 		if _, ok := rs[name]; !ok {
-			lrr, ok := r.lastReconcileResult[name]
+			lrr, ok := r.lastReconciledResult[name]
 			if !ok {
 				rs[name] = make([]ReplicaSet, 0, 0)
 			} else {
@@ -107,7 +107,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 		rs[name] = append(rs[name], replicaset)
 	}
 
-	r.lastReconcileResult = rs
+	r.lastReconciledResult = rs
 
 	if r.onReconcile != nil {
 		r.onReconcile(rs)
