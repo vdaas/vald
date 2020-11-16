@@ -343,7 +343,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 					maxIdleConns:         100,
 					session: &dbr.MockSession{
 						PingContextFunc: func(ctx context.Context) error {
-							return nil
+							return err
 						},
 					},
 					connected: func() (v atomic.Value) {
