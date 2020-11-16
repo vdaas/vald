@@ -39,15 +39,13 @@ import (
 type ReplicaSetWatcher k8s.ResourceController
 
 type reconciler struct {
-	ctx                  context.Context
-	mgr                  manager.Manager
-	name                 string
-	namespace            string
-	onError              func(err error)
-	onReconcile          func(rs map[string][]ReplicaSet)
-	lastReconciledResult map[string][]ReplicaSet
-
-	pool sync.Pool
+	ctx         context.Context
+	mgr         manager.Manager
+	name        string
+	namespace   string
+	onError     func(err error)
+	onReconcile func(rs map[string][]ReplicaSet)
+	pool        sync.Pool
 }
 
 // ReplicaSet is a type alias for the k8s replica set definition.
@@ -56,7 +54,6 @@ type ReplicaSet = appsv1.ReplicaSet
 // New returns the ReplicaSetWatcher that implements reconciliation loop, or any error occurred.
 func New(opts ...Option) (ReplicaSetWatcher, error) {
 	r := &reconciler{
-		lastReconciledResult: make(map[string][]ReplicaSet),
 		pool: sync.Pool{
 			New: func() interface{} {
 				return make(map[string][]ReplicaSet)
