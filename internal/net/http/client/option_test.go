@@ -494,6 +494,19 @@ func TestWithMaxIdleConns(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "set conn success with 0 value",
+			args: args{
+				cn: 0,
+			},
+			want: want{
+				obj: &T{
+					Transport: &http.Transport{
+						MaxIdleConns: 0,
+					},
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -562,6 +575,19 @@ func TestWithMaxIdleConnsPerHost(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "set conn per host success with 0 value",
+			args: args{
+				cn: 0,
+			},
+			want: want{
+				obj: &T{
+					Transport: &http.Transport{
+						MaxIdleConnsPerHost: 0,
+					},
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -625,6 +651,19 @@ func TestWithMaxConnsPerHost(t *testing.T) {
 				obj: &T{
 					Transport: &http.Transport{
 						MaxConnsPerHost: 5,
+					},
+				},
+			},
+		},
+		{
+			name: "set conn per host success with 0 value",
+			args: args{
+				cn: 0,
+			},
+			want: want{
+				obj: &T{
+					Transport: &http.Transport{
+						MaxConnsPerHost: 0,
 					},
 				},
 			},
@@ -1057,6 +1096,19 @@ func TestWithMaxResponseHeaderBytes(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "set max response header byte with 0 value",
+			args: args{
+				bs: 0,
+			},
+			want: want{
+				obj: &T{
+					Transport: &http.Transport{
+						MaxResponseHeaderBytes: 0,
+					},
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -1125,6 +1177,19 @@ func TestWithWriteBufferSize(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "set write buffer size with 0 value",
+			args: args{
+				bs: 0,
+			},
+			want: want{
+				obj: &T{
+					Transport: &http.Transport{
+						WriteBufferSize: 0,
+					},
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -1189,6 +1254,19 @@ func TestWithReadBufferSize(t *testing.T) {
 				obj: &T{
 					Transport: &http.Transport{
 						ReadBufferSize: 5,
+					},
+				},
+			},
+		},
+		{
+			name: "set buffer size success with 0 value",
+			args: args{
+				bs: 0,
+			},
+			want: want{
+				obj: &T{
+					Transport: &http.Transport{
+						ReadBufferSize: 0,
 					},
 				},
 			},
