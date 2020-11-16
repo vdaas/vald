@@ -32,22 +32,22 @@ k8s/manifest/update: \
 	k8s/manifest/clean
 	helm template \
 	    --values charts/vald/values-dev.yaml \
-	    --output-dir tmp-k8s \
+	    --output-dir $(TEMP_DIR) \
 	    charts/vald
 	mkdir -p k8s/gateway
 	mkdir -p k8s/manager
-	mv tmp-k8s/vald/templates/agent k8s/agent
-	mv tmp-k8s/vald/templates/discoverer k8s/discoverer
-	mv tmp-k8s/vald/templates/gateway/backup k8s/gateway/backup
-	mv tmp-k8s/vald/templates/gateway/lb k8s/gateway/lb
-	mv tmp-k8s/vald/templates/gateway/meta k8s/gateway/meta
-	mv tmp-k8s/vald/templates/gateway/vald k8s/gateway/vald
-	mv tmp-k8s/vald/templates/jobs k8s/jobs
-	mv tmp-k8s/vald/templates/manager/backup k8s/manager/backup
-	mv tmp-k8s/vald/templates/manager/compressor k8s/manager/compressor
-	mv tmp-k8s/vald/templates/manager/index k8s/manager/index
-	mv tmp-k8s/vald/templates/meta k8s/meta
-	rm -rf tmp-k8s
+	mv $(TEMP_DIR)/vald/templates/agent k8s/agent
+	mv $(TEMP_DIR)/vald/templates/discoverer k8s/discoverer
+	mv $(TEMP_DIR)/vald/templates/gateway/backup k8s/gateway/backup
+	mv $(TEMP_DIR)/vald/templates/gateway/lb k8s/gateway/lb
+	mv $(TEMP_DIR)/vald/templates/gateway/meta k8s/gateway/meta
+	mv $(TEMP_DIR)/vald/templates/gateway/vald k8s/gateway/vald
+	mv $(TEMP_DIR)/vald/templates/jobs k8s/jobs
+	mv $(TEMP_DIR)/vald/templates/manager/backup k8s/manager/backup
+	mv $(TEMP_DIR)/vald/templates/manager/compressor k8s/manager/compressor
+	mv $(TEMP_DIR)/vald/templates/manager/index k8s/manager/index
+	mv $(TEMP_DIR)/vald/templates/meta k8s/meta
+	rm -rf $(TEMP_DIR)
 
 .PHONY: k8s/manifest/helm-operator/clean
 ## clean k8s manifests for helm-operator
@@ -61,11 +61,11 @@ k8s/manifest/helm-operator/update: \
 	k8s/manifest/helm-operator/clean
 	helm template \
 	    --set vald.create=true \
-	    --output-dir tmp-k8s \
+	    --output-dir $(TEMP_DIR) \
 	    charts/vald-helm-operator
 	mkdir -p k8s/operator
-	mv tmp-k8s/vald-helm-operator/templates k8s/operator/helm
-	rm -rf tmp-k8s
+	mv $(TEMP_DIR)/vald-helm-operator/templates k8s/operator/helm
+	rm -rf $(TEMP_DIR)
 	cp -r charts/vald-helm-operator/crds k8s/operator/helm/crds
 
 
@@ -82,20 +82,26 @@ k8s/vald/deploy: \
 	kubectl apply -f k8s/discoverer
 	kubectl apply -f k8s/meta
 	kubectl apply -f k8s/gateway/vald
+	kubectl apply -f k8s/gateway/lb
+	kubectl apply -f k8s/gateway/backup
+	kubectl apply -f k8s/gateway/meta
 
 .PHONY: k8s/vald/remove
 ## remove vald sample cluster from k8s
 k8s/vald/remove: \
 	k8s/external/mysql/remove \
 	k8s/external/redis/remove
-	-kubectl delete -f k8s/gateway/vald
-	-kubectl delete -f k8s/manager/backup
-	-kubectl delete -f k8s/manager/compressor
-	-kubectl delete -f k8s/manager/index
-	-kubectl delete -f k8s/meta
-	-kubectl delete -f k8s/discoverer
-	-kubectl delete -f k8s/agent
-	-kubectl delete -f k8s/metrics/metrics-server
+	kubectl delete -f k8s/gateway/meta
+	kubectl delete -f k8s/gateway/backup
+	kubectl delete -f k8s/gateway/lb
+	kubectl delete -f k8s/gateway/vald
+	kubectl delete -f k8s/manager/backup
+	kubectl delete -f k8s/manager/compressor
+	kubectl delete -f k8s/manager/index
+	kubectl delete -f k8s/meta
+	kubectl delete -f k8s/discoverer
+	kubectl delete -f k8s/agent
+	kubectl delete -f k8s/metrics/metrics-server
 
 .PHONY: k8s/vald/deploy/cassandra
 ## deploy vald sample cluster with cassandra to k8s
@@ -103,17 +109,44 @@ k8s/vald/deploy/cassandra: \
 	k8s/external/cassandra/deploy
 	helm template \
 	    --values charts/vald/values-cassandra.yaml \
-	    --output-dir tmp-k8s \
+	    --set defaults.image.tag=$(VERSION) \
+	    --output-dir $(TEMP_DIR) \
 	    charts/vald
 	kubectl apply -f k8s/metrics/metrics-server
-	kubectl apply -f tmp-k8s/vald/templates/manager/backup
-	kubectl apply -f tmp-k8s/vald/templates/manager/compressor
-	kubectl apply -f tmp-k8s/vald/templates/manager/index
-	kubectl apply -f tmp-k8s/vald/templates/agent
-	kubectl apply -f tmp-k8s/vald/templates/discoverer
-	kubectl apply -f tmp-k8s/vald/templates/meta
-	kubectl apply -f tmp-k8s/vald/templates/gateway/vald
-	rm -rf tmp-k8s
+	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/backup
+	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/compressor
+	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/index
+	kubectl apply -f $(TEMP_DIR)/vald/templates/agent
+	kubectl apply -f $(TEMP_DIR)/vald/templates/discoverer
+	kubectl apply -f $(TEMP_DIR)/vald/templates/meta
+	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/vald
+	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/lb
+	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/backup
+	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/meta
+	rm -rf $(TEMP_DIR)
+
+
+.PHONY: k8s/vald/remove/cassandra
+## remove vald sample cluster with cassandra to k8s
+k8s/vald/remove/cassandra: \
+	k8s/external/cassandra/remove
+	helm template \
+	    --values charts/vald/values-cassandra.yaml \
+	    --set defaults.image.tag=$(VERSION) \
+	    --output-dir $(TEMP_DIR) \
+	    charts/vald
+	kubectl delete -f k8s/metrics/metrics-server
+	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/backup
+	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/compressor
+	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/index
+	kubectl delete -f $(TEMP_DIR)/vald/templates/agent
+	kubectl delete -f $(TEMP_DIR)/vald/templates/discoverer
+	kubectl delete -f $(TEMP_DIR)/vald/templates/meta
+	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/vald
+	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/lb
+	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/backup
+	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/meta
+	rm -rf $(TEMP_DIR)
 
 .PHONY: k8s/vald/deploy/scylla
 ## deploy vald sample cluster with scylla to k8s
@@ -121,17 +154,43 @@ k8s/vald/deploy/scylla: \
 	k8s/external/scylla/deploy
 	helm template \
 	    --values charts/vald/values-scylla.yaml \
-	    --output-dir tmp-k8s \
+	    --set defaults.image.tag=$(VERSION) \
+	    --output-dir $(TEMP_DIR) \
 	    charts/vald
 	kubectl apply -f k8s/metrics/metrics-server
-	kubectl apply -f tmp-k8s/vald/templates/manager/backup
-	kubectl apply -f tmp-k8s/vald/templates/manager/compressor
-	kubectl apply -f tmp-k8s/vald/templates/manager/index
-	kubectl apply -f tmp-k8s/vald/templates/agent
-	kubectl apply -f tmp-k8s/vald/templates/discoverer
-	kubectl apply -f tmp-k8s/vald/templates/meta
-	kubectl apply -f tmp-k8s/vald/templates/gateway/vald
-	rm -rf tmp-k8s
+	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/backup
+	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/compressor
+	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/index
+	kubectl apply -f $(TEMP_DIR)/vald/templates/agent
+	kubectl apply -f $(TEMP_DIR)/vald/templates/discoverer
+	kubectl apply -f $(TEMP_DIR)/vald/templates/meta
+	# kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/vald
+	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/lb
+	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/backup
+	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/meta
+	rm -rf $(TEMP_DIR)
+
+.PHONY: k8s/vald/remove/scylla
+## remove vald sample cluster with scylla to k8s
+k8s/vald/remove/scylla: \
+	k8s/external/scylla/remove
+	helm template \
+	    --values charts/vald/values-scylla.yaml \
+	    --set defaults.image.tag=$(VERSION) \
+	    --output-dir $(TEMP_DIR) \
+	    charts/vald
+	kubectl delete -f k8s/metrics/metrics-server
+	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/backup
+	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/compressor
+	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/index
+	kubectl delete -f $(TEMP_DIR)/vald/templates/agent
+	kubectl delete -f $(TEMP_DIR)/vald/templates/discoverer
+	kubectl delete -f $(TEMP_DIR)/vald/templates/meta
+	# kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/vald
+	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/lb
+	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/backup
+	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/meta
+	rm -rf $(TEMP_DIR)
 
 .PHONY: k8s/external/mysql/deploy
 ## deploy mysql to k8s

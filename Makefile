@@ -40,7 +40,7 @@ META_CASSANDRA_IMAGE            = $(NAME)-meta-cassandra
 META_GATEWAY_IMAGE              = $(NAME)-meta-gateway
 META_REDIS_IMAGE                = $(NAME)-meta-redis
 
-VERSION := $(eval VALD_VERSION := $(shell cat versions/VALD_VERSION))$(VALD_VERSION)
+VERSION ?= $(eval VALD_VERSION := $(shell cat versions/VALD_VERSION))$(VALD_VERSION)
 
 NGT_VERSION := $(eval NGT_VERSION := $(shell cat versions/NGT_VERSION))$(NGT_VERSION)
 NGT_REPO = github.com/yahoojapan/NGT
@@ -236,6 +236,11 @@ help:
 	} \
 	{ lastLine = $$0 }' $(MAKELISTS) | sort -u
 	@printf "\n"
+
+.PHONY: version
+## print vald version
+version:
+	@echo $(VERSION)
 
 .PHONY: all
 ## execute clean and deps

@@ -1054,7 +1054,7 @@ gateway:
     logging: {}
     # @schema {"name": "gateway.backup.name", "type": "string"}
     # gateway.backup.name -- name of backup gateway deployment
-    name: vald-gateway-backup
+    name: vald-backup-gateway
     # @schema {"name": "gateway.backup.kind", "type": "string", "enum": ["Deployment", "DaemonSet"]}
     # gateway.backup.kind -- deployment kind: Deployment or DaemonSet
     kind: Deployment
@@ -1118,7 +1118,7 @@ gateway:
     image:
       # @schema {"name": "gateway.backup.image.repository", "type": "string"}
       # gateway.backup.image.repository -- image repository
-      repository: vdaas/vald-gateway-backup
+      repository: vdaas/vald-backup-gateway
       # @schema {"name": "gateway.backup.image.tag", "type": "string"}
       # gateway.backup.image.tag -- image tag (overrides defaults.image.tag)
       tag: ""
@@ -1197,7 +1197,7 @@ gateway:
                   - key: app
                     operator: In
                     values:
-                      - vald-gateway-backup
+                      - vald-backup-gateway
         # @schema {"name": "gateway.backup.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution", "type": "array", "items": {"type": "object"}}
         # gateway.backup.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
         requiredDuringSchedulingIgnoredDuringExecution: []
@@ -1220,10 +1220,10 @@ gateway:
     # gateway.backup.observability -- observability config (overrides defaults.observability)
     observability:
       jaeger:
-        service_name: vald-gateway-backup
+        service_name: vald-backup-gateway
       stackdriver:
         profiler:
-          service: vald-gateway-backup
+          service: vald-backup-gateway
     # @schema {"name": "gateway.backup.ingress", "type": "object"}
     ingress:
       # @schema {"name": "gateway.backup.ingress.enabled", "type": "boolean"}
@@ -1256,7 +1256,7 @@ gateway:
       # gateway.backup.gateway_config.client -- gRPC client for next gateway (overrides defaults.grpc.client)
       client:
         addrs:
-          - "vald-gateway-lb.vald.svc.cluster.local"
+          - "vald-lb-gateway.vald.svc.cluster.local"
       # @schema {"name": "gateway.backup.gateway_config.backup", "type": "object"}
       backup:
         # @schema {"name": "gateway.backup.gateway_config.backup.client", "alias": "grpc.client"}
@@ -1278,7 +1278,7 @@ gateway:
     logging: {}
     # @schema {"name": "gateway.lb.name", "type": "string"}
     # gateway.lb.name -- name of gateway deployment
-    name: vald-gateway-lb
+    name: vald-lb-gateway
     # @schema {"name": "gateway.lb.kind", "type": "string", "enum": ["Deployment", "DaemonSet"]}
     # gateway.lb.kind -- deployment kind: Deployment or DaemonSet
     kind: Deployment
@@ -1342,7 +1342,7 @@ gateway:
     image:
       # @schema {"name": "gateway.lb.image.repository", "type": "string"}
       # gateway.lb.image.repository -- image repository
-      repository: vdaas/vald-gateway-lb
+      repository: vdaas/vald-lb-gateway
       # @schema {"name": "gateway.lb.image.tag", "type": "string"}
       # gateway.lb.image.tag -- image tag (overrides defaults.image.tag)
       tag: ""
@@ -1429,7 +1429,7 @@ gateway:
                   - key: app
                     operator: In
                     values:
-                      - vald-gateway-lb
+                      - vald-lb-gateway
         # @schema {"name": "gateway.lb.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution", "type": "array", "items": {"type": "object"}}
         # gateway.lb.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
         requiredDuringSchedulingIgnoredDuringExecution: []
@@ -1452,10 +1452,10 @@ gateway:
     # gateway.lb.observability -- observability config (overrides defaults.observability)
     observability:
       jaeger:
-        service_name: vald-gateway-lb
+        service_name: vald-lb-gateway
       stackdriver:
         profiler:
-          service: vald-gateway-lb
+          service: vald-lb-gateway
     # @schema {"name": "gateway.lb.ingress", "type": "object"}
     ingress:
       # @schema {"name": "gateway.lb.ingress.enabled", "type": "boolean"}
@@ -1520,7 +1520,7 @@ gateway:
     logging: {}
     # @schema {"name": "gateway.meta.name", "type": "string"}
     # gateway.meta.name -- name of gateway deployment
-    name: vald-gateway-meta
+    name: vald-meta-gateway
     # @schema {"name": "gateway.meta.kind", "type": "string", "enum": ["Deployment", "DaemonSet"]}
     # gateway.meta.kind -- deployment kind: Deployment or DaemonSet
     kind: Deployment
@@ -1584,7 +1584,7 @@ gateway:
     image:
       # @schema {"name": "gateway.meta.image.repository", "type": "string"}
       # gateway.meta.image.repository -- image repository
-      repository: vdaas/vald-gateway-meta
+      repository: vdaas/vald-meta-gateway
       # @schema {"name": "gateway.meta.image.tag", "type": "string"}
       # gateway.meta.image.tag -- image tag (overrides defaults.image.tag)
       tag: ""
@@ -1663,7 +1663,7 @@ gateway:
                   - key: app
                     operator: In
                     values:
-                      - vald-gateway-meta
+                      - vald-meta-gateway
         # @schema {"name": "gateway.meta.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution", "type": "array", "items": {"type": "object"}}
         # gateway.meta.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
         requiredDuringSchedulingIgnoredDuringExecution: []
@@ -1686,10 +1686,10 @@ gateway:
     # gateway.meta.observability -- observability config (overrides defaults.observability)
     observability:
       jaeger:
-        service_name: vald-gateway-meta
+        service_name: vald-meta-gateway
       stackdriver:
         profiler:
-          service: vald-gateway-meta
+          service: vald-meta-gateway
     # @schema {"name": "gateway.meta.ingress", "type": "object"}
     ingress:
       # @schema {"name": "gateway.meta.ingress.enabled", "type": "boolean"}
@@ -1722,7 +1722,7 @@ gateway:
       # gateway.meta.gateway_config.client -- gRPC client for next gateway (overrides defaults.grpc.client)
       client:
         addrs:
-          - "vald-gateway-backup.vald.svc.cluster.local"
+          - "vald-backup-gateway.vald.svc.cluster.local"
       # @schema {"name": "gateway.meta.gateway_config.meta", "type": "object"}
       meta:
         # @schema {"name": "gateway.meta.gateway_config.meta.client", "alias": "grpc.client"}

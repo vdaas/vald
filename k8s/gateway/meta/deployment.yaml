@@ -17,9 +17,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: vald-gateway-meta
+  name: vald-meta-gateway
   labels:
-    app: vald-gateway-meta
+    app: vald-meta-gateway
     app.kubernetes.io/name: vald
     helm.sh/chart: vald-v0.0.62
     app.kubernetes.io/managed-by: Helm
@@ -31,7 +31,7 @@ spec:
   revisionHistoryLimit: 2
   selector:
     matchLabels:
-      app: vald-gateway-meta
+      app: vald-meta-gateway
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -41,7 +41,7 @@ spec:
     metadata:
       creationTimestamp: null
       labels:
-        app: vald-gateway-meta
+        app: vald-meta-gateway
         app.kubernetes.io/name: vald
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/component: gateway
@@ -67,7 +67,7 @@ spec:
             - -e
             - -c
             - |
-              until [ "$(wget --server-response --spider --quiet http://vald-gateway-backup.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
+              until [ "$(wget --server-response --spider --quiet http://vald-backup-gateway.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
                 echo "waiting for gateway-backup to be ready..."
                 sleep 2;
               done
@@ -85,13 +85,13 @@ spec:
                     - key: app
                       operator: In
                       values:
-                        - vald-gateway-meta
+                        - vald-meta-gateway
                 topologyKey: kubernetes.io/hostname
               weight: 100
           requiredDuringSchedulingIgnoredDuringExecution: []
       containers:
-        - name: vald-gateway-meta
-          image: "vdaas/vald-gateway-meta:nightly"
+        - name: vald-meta-gateway
+          image: "vdaas/vald-meta-gateway:nightly"
           imagePullPolicy: Always
           livenessProbe:
             failureThreshold: 2
@@ -136,7 +136,7 @@ spec:
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           volumeMounts:
-            - name: vald-gateway-meta-config
+            - name: vald-meta-gateway-config
               mountPath: /etc/server/
       dnsPolicy: ClusterFirst
       restartPolicy: Always
@@ -144,9 +144,9 @@ spec:
       securityContext: {}
       terminationGracePeriodSeconds: 30
       volumes:
-        - name: vald-gateway-meta-config
+        - name: vald-meta-gateway-config
           configMap:
             defaultMode: 420
-            name: vald-gateway-meta-config
-      priorityClassName: vald-gateway-meta-priority
+            name: vald-meta-gateway-config
+      priorityClassName: vald-meta-gateway-priority
 status:

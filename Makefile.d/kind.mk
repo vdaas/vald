@@ -45,6 +45,12 @@ kind/login:
 kind/stop:
 	kind delete cluster --name $(NAME)
 
+.PHONY: kind/restart
+## restart kind (kubernetes in docker) cluster
+kind/restart: \
+	kind/stop \
+	kind/start
+
 
 .PHONY: kind/cluster/start
 ## start kind (kubernetes in docker) multi node cluster
@@ -65,3 +71,8 @@ kind/cluster/stop:
 kind/cluster/login:
 	kubectl cluster-info --context kind-$(NAME)-cluster
 
+.PHONY: kind/cluster/restart
+## restart kind (kubernetes in docker) multi node cluster
+kind/cluster/restart: \
+	kind/cluster/stop \
+	kind/cluster/start
