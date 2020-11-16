@@ -86,7 +86,10 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 		return
 	}
 
-	rs := make(map[string][]ReplicaSet)
+	// reset the last result cache
+	for name := range r.lastReconciledResult {
+		r.lastReconciledResult[name] = r.lastReconciledResult[name][:0]
+	}
 
 	for _, replicaset := range rsl.Items {
 		name, ok := replicaset.GetObjectMeta().GetLabels()["app"]
@@ -95,22 +98,20 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 			name = strings.Join(pns[:len(pns)-1], "-")
 		}
 
-		if _, ok := rs[name]; !ok {
-			lrr, ok := r.lastReconciledResult[name]
-			if !ok {
-				rs[name] = make([]ReplicaSet, 0, 0)
-			} else {
-				rs[name] = make([]ReplicaSet, 0, len(lrr))
-			}
+		if _, ok := r.lastReconciledResult[name]; !ok {
+			r.lastReconciledResult[name] = make([]ReplicaSet, 0)
 		}
 
-		rs[name] = append(rs[name], replicaset)
+		r.lastReconciledResult[name] = append(r.lastReconciledResult[name], replicaset)
 	}
 
-	r.lastReconciledResult = rs
+	for name := range r.lastReconciledResult {
+		l := len(r.lastReconciledResult[name])
+		r.lastReconciledResult[name] = r.lastReconciledResult[name][:l:l]
+	}
 
 	if r.onReconcile != nil {
-		r.onReconcile(rs)
+		r.onReconcile(r.lastReconciledResult)
 	}
 
 	return
