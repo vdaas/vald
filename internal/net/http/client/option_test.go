@@ -164,9 +164,7 @@ func TestWithDialContext(t *testing.T) {
 		}(),
 		{
 			name: "return error when dial context is nil",
-			args: args{
-				dx: nil,
-			},
+			args: args{},
 			want: want{
 				obj: &T{
 					Transport: &http.Transport{},
@@ -255,9 +253,7 @@ func TestWithTLSHandshakeTimeout(t *testing.T) {
 		},
 		{
 			name: "set timeout failed with empty value",
-			args: args{
-				dur: "",
-			},
+			args: args{},
 			want: want{
 				obj: &T{
 					Transport: &http.Transport{},
@@ -495,10 +491,8 @@ func TestWithMaxIdleConns(t *testing.T) {
 			},
 		},
 		{
-			name: "set conn success with 0 value",
-			args: args{
-				cn: 0,
-			},
+			name: "set conn success with default value",
+			args: args{},
 			want: want{
 				obj: &T{
 					Transport: &http.Transport{
@@ -576,10 +570,8 @@ func TestWithMaxIdleConnsPerHost(t *testing.T) {
 			},
 		},
 		{
-			name: "set conn per host success with 0 value",
-			args: args{
-				cn: 0,
-			},
+			name: "set conn per host success with default value",
+			args: args{},
 			want: want{
 				obj: &T{
 					Transport: &http.Transport{
@@ -656,10 +648,8 @@ func TestWithMaxConnsPerHost(t *testing.T) {
 			},
 		},
 		{
-			name: "set conn per host success with 0 value",
-			args: args{
-				cn: 0,
-			},
+			name: "set conn per host success with default value",
+			args: args{},
 			want: want{
 				obj: &T{
 					Transport: &http.Transport{
@@ -750,9 +740,7 @@ func TestWithIdleConnTimeout(t *testing.T) {
 		},
 		{
 			name: "set timeout failed with empty value",
-			args: args{
-				dur: "",
-			},
+			args: args{},
 			want: want{
 				obj: &T{
 					Transport: &http.Transport{},
@@ -842,9 +830,7 @@ func TestWithResponseHeaderTimeout(t *testing.T) {
 		},
 		{
 			name: "set timeout failed with empty value",
-			args: args{
-				dur: "",
-			},
+			args: args{},
 			want: want{
 				obj: &T{
 					Transport: &http.Transport{},
@@ -934,9 +920,7 @@ func TestWithExpectContinueTimeout(t *testing.T) {
 		},
 		{
 			name: "set timeout failed with empty value",
-			args: args{
-				dur: "",
-			},
+			args: args{},
 			want: want{
 				obj: &T{
 					Transport: &http.Transport{},
@@ -1018,9 +1002,7 @@ func TestWithProxyConnectHeader(t *testing.T) {
 		},
 		{
 			name: "return error when header is nil",
-			args: args{
-				header: nil,
-			},
+			args: args{},
 			want: want{
 				obj: &T{
 					Transport: &http.Transport{},
@@ -1097,10 +1079,8 @@ func TestWithMaxResponseHeaderBytes(t *testing.T) {
 			},
 		},
 		{
-			name: "set max response header byte with 0 value",
-			args: args{
-				bs: 0,
-			},
+			name: "set max response header byte with default value",
+			args: args{},
 			want: want{
 				obj: &T{
 					Transport: &http.Transport{
@@ -1178,10 +1158,8 @@ func TestWithWriteBufferSize(t *testing.T) {
 			},
 		},
 		{
-			name: "set write buffer size with 0 value",
-			args: args{
-				bs: 0,
-			},
+			name: "set write buffer size with default value",
+			args: args{},
 			want: want{
 				obj: &T{
 					Transport: &http.Transport{
@@ -1259,10 +1237,8 @@ func TestWithReadBufferSize(t *testing.T) {
 			},
 		},
 		{
-			name: "set buffer size success with 0 value",
-			args: args{
-				bs: 0,
-			},
+			name: "set buffer size success with default value",
+			args: args{},
 			want: want{
 				obj: &T{
 					Transport: &http.Transport{
@@ -1430,9 +1406,7 @@ func TestWithBackoffOpts(t *testing.T) {
 		},
 		{
 			name: "return error when opt is empty",
-			args: args{
-				opts: nil,
-			},
+			args: args{},
 			fields: fields{
 				backoffOpts: []backoff.Option{backoff.WithRetryCount(20)},
 			},
