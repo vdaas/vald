@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"reflect"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -71,26 +72,29 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 }
 
 func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
-	// TODO: d.ctrl (start k8s controller)
+	cech, err := d.ctrl.Start(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	// TODO: create error channel for d.eg.Go.
-
+	ech := make(chan error, 1)
 	d.eg.Go(safety.RecoverFunc(func() error {
+		defer close(ech)
 		dt := time.NewTicker(d.dcd)
 		defer dt.Stop()
-
 		for {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
-
 			case <-dt.C:
-
-				// TODO: create wait group
-
+				var wg sync.WaitGroup
+				wg.Add(1)
 				d.eg.Go(safety.RecoverFunc(func() error {
-					jobs, _ := d.jobs.Load(d.jobName)
-
+					defer wg.Done()
+					jobs, ok := d.jobs.Load(d.jobName)
+					if !ok {
+						return nil
+					}
 					models := make([]*model.Job, 0, len(jobs))
 					for _, job := range jobs {
 						var t time.Time
@@ -104,17 +108,21 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 							StartTime: t,
 						})
 					}
-
 					d.jobsCache.Store(models)
-
 					return nil
 				}))
-
+				wg.Wait()
+			case err := <-cech:
+				if err != nil {
+					select {
+					case <-ctx.Done():
+						return ctx.Err()
+					case ech <- err:
+					}
+				}
 			}
 		}
-
-		return nil
 	}))
 
-	return nil, nil
+	return ech, nil
 }
