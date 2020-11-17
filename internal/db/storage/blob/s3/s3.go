@@ -47,6 +47,7 @@ type client struct {
 	writerFunc func(key string) writer.Writer
 }
 
+// New returns blob.Bucket implementation if no error occurs.
 func New(opts ...Option) (blob.Bucket, error) {
 	c := new(client)
 	for _, opt := range append(defaultOpts, opts...) {
@@ -72,14 +73,18 @@ func New(opts ...Option) (blob.Bucket, error) {
 	return c, nil
 }
 
+// Open does nothing. Always returns nil.
 func (c *client) Open(ctx context.Context) (err error) {
 	return nil
 }
 
+// Close does nothing. Always returns nil.
 func (c *client) Close() error {
 	return nil
 }
 
+// Reader creates reader.Reader implementation and returns it.
+// An error will be returned if the reader initializes fails and if an error occurs in reader.Open.
 func (c *client) Reader(ctx context.Context, key string) (io.ReadCloser, error) {
 	if c.readerFunc == nil {
 		return nil, errors.ErrNilObject
@@ -92,6 +97,8 @@ func (c *client) Reader(ctx context.Context, key string) (io.ReadCloser, error) 
 	return r, r.Open(ctx)
 }
 
+// Writer creates writer.Writer implementation and returns it.
+// An error will be returned if the writer initializes fails and if an error occurs in writer.Open.
 func (c *client) Writer(ctx context.Context, key string) (io.WriteCloser, error) {
 	if c.writerFunc == nil {
 		return nil, errors.ErrNilObject
