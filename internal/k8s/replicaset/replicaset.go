@@ -93,9 +93,6 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 
 	// reset the last result cache
 	lrr := r.pool.Get().(map[string][]ReplicaSet)
-	for name := range lrr {
-		lrr[name] = lrr[name][:0]
-	}
 
 	// append the new result to the cache
 	for _, replicaset := range rsl.Items {
@@ -119,6 +116,10 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 
 	if r.onReconcile != nil {
 		r.onReconcile(lrr)
+	}
+
+	for name := range lrr {
+		lrr[name] = lrr[name][:0]
 	}
 
 	r.pool.Put(lrr)
