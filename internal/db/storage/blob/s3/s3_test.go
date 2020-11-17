@@ -105,7 +105,10 @@ func TestNew(t *testing.T) {
 				name: "returns error when the function field to initialize reader is nil",
 				args: args{
 					opts: []Option{
-						WithSession(session.New()),
+						WithSession(func() *session.Session {
+							sess, _ := session.NewSession()
+							return sess
+						}()),
 						opt,
 					},
 				},
@@ -120,7 +123,10 @@ func TestNew(t *testing.T) {
 			name: "returns error when the function field to initialize reader is nil",
 			args: args{
 				opts: []Option{
-					WithSession(session.New()),
+					WithSession(func() *session.Session {
+						sess, _ := session.NewSession()
+						return sess
+					}()),
 					func(c *client) error {
 						c.readerFunc = nil
 						return nil
@@ -137,7 +143,10 @@ func TestNew(t *testing.T) {
 			name: "returns error when the function field to initialize writer is nil",
 			args: args{
 				opts: []Option{
-					WithSession(session.New()),
+					WithSession(func() *session.Session {
+						sess, _ := session.NewSession()
+						return sess
+					}()),
 					func(c *client) error {
 						c.writerFunc = nil
 						return nil
@@ -152,7 +161,7 @@ func TestNew(t *testing.T) {
 
 		func() test {
 
-			sess := session.New()
+			sess, _ := session.NewSession()
 			return test{
 				name: "returns error when the function field to initialize writer is nil",
 				args: args{
