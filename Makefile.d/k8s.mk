@@ -74,17 +74,23 @@ k8s/manifest/helm-operator/update: \
 k8s/vald/deploy: \
 	k8s/external/mysql/deploy \
 	k8s/external/redis/deploy
+	helm template \
+	    --values charts/vald/values-dev.yaml \
+	    --set defaults.image.tag=$(VERSION) \
+	    --output-dir $(TEMP_DIR) \
+	    charts/vald
 	kubectl apply -f k8s/metrics/metrics-server
-	kubectl apply -f k8s/manager/backup
-	kubectl apply -f k8s/manager/compressor
-	kubectl apply -f k8s/manager/index
-	kubectl apply -f k8s/agent
-	kubectl apply -f k8s/discoverer
-	kubectl apply -f k8s/meta
-	kubectl apply -f k8s/gateway/vald
-	kubectl apply -f k8s/gateway/lb
-	kubectl apply -f k8s/gateway/backup
-	kubectl apply -f k8s/gateway/meta
+	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/backup
+	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/compressor
+	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/index
+	kubectl apply -f $(TEMP_DIR)/vald/templates/agent
+	kubectl apply -f $(TEMP_DIR)/vald/templates/discoverer
+	kubectl apply -f $(TEMP_DIR)/vald/templates/meta
+	# kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/vald
+	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/lb
+	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/backup
+	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/meta
+	rm -rf $(TEMP_DIR)
 
 .PHONY: k8s/vald/remove
 ## remove vald sample cluster from k8s
@@ -94,7 +100,7 @@ k8s/vald/remove: \
 	kubectl delete -f k8s/gateway/meta
 	kubectl delete -f k8s/gateway/backup
 	kubectl delete -f k8s/gateway/lb
-	kubectl delete -f k8s/gateway/vald
+	# kubectl delete -f k8s/gateway/vald
 	kubectl delete -f k8s/manager/backup
 	kubectl delete -f k8s/manager/compressor
 	kubectl delete -f k8s/manager/index
