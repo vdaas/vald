@@ -41,7 +41,7 @@ type reconciler struct {
 	ctx         context.Context
 	mgr         manager.Manager
 	name        string
-	namespance  string
+	namespace  string
 	onError     func(err error)
 	onReconcile func(jobList map[string][]Job)
 }
