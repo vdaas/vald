@@ -19,6 +19,7 @@ import (
 	"context"
 	"reflect"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -45,6 +46,7 @@ type reconciler struct {
 	namespace   string
 	onError     func(err error)
 	onReconcile func(rs map[string][]StatefulSet)
+	pool        sync.Pool
 }
 
 // Statefulset is a type alias for the k8s statefulset definition.
@@ -84,7 +86,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 		return
 	}
 
-	ssm := make(map[string][]StatefulSet)
+	ssm := r.pool.Get().(map[string][]StatefulSet)
 
 	for _, statefulset := range ssl.Items {
 		name, ok := statefulset.GetObjectMeta().GetLabels()["app"]
@@ -93,7 +95,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 			name = strings.Join(pns[:len(pns)-1], "-")
 		}
 		if _, ok := ssm[name]; !ok {
-			ssm[name] = make([]StatefulSet, 0, len(ssl.Items))
+			ssm[name] = make([]StatefulSet, 0)
 		}
 
 		ssm[name] = append(ssm[name], statefulset)
@@ -107,6 +109,11 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 	if r.onReconcile != nil {
 		r.onReconcile(ssm)
 	}
+
+	for name := range ssm {
+		ssm[name] = ssm[name][:0]
+	}
+	r.pool.Put(ssm)
 
 	return
 }
