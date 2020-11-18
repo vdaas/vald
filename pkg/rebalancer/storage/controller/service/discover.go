@@ -11,6 +11,8 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
 	"github.com/vdaas/vald/internal/k8s/job"
+	mpod "github.com/vdaas/vald/internal/k8s/metrics/pod"
+	"github.com/vdaas/vald/internal/k8s/pod"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/pkg/rebalancer/storage/controller/model"
@@ -27,6 +29,11 @@ type discoverer struct {
 	jobsCache    atomic.Value
 	jobName      string
 	jobNamespace string
+
+	agentName      string
+	agentNamespace string
+	pods           atomic.Value
+	podMetrics     atomic.Value
 
 	dcd  time.Duration // discover check duration
 	eg   errgroup.Group
@@ -63,6 +70,29 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 		k8s.WithControllerName("rebalance controller"),
 		k8s.WithEnableLeaderElection(),
 		k8s.WithResourceController(job),
+		k8s.WithResourceController(pod.New(
+			pod.WithControllerName("pod discover"),
+			pod.WithOnErrorFunc(func(err error) {
+				log.Error(err)
+			}),
+			pod.WithOnReconcileFunc(func(podList map[string][]pod.Pod) {
+				pods, ok := podList[d.agentName]
+				if ok {
+					d.pods.Store(pods)
+				} else {
+					log.Infof("pod not found: %s", d.agentName)
+				}
+			}),
+		)),
+		k8s.WithResourceController(mpod.New(
+			mpod.WithControllerName("pod metrics discover"),
+			mpod.WithOnErrorFunc(func(err error) {
+				log.Error(err)
+			}),
+			mpod.WithOnReconcileFunc(func(podList map[string]mpod.Pod) {
+				d.podMetrics.Store(podList)
+			}),
+		)),
 	)
 	if err != nil {
 		return nil, err
@@ -87,6 +117,12 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 			case <-ctx.Done():
 				return ctx.Err()
 			case <-dt.C:
+				// pvals := d.pods.Load()
+				// if pvals != nil {
+				// for _, pod := range pvals.([]pod.Pod) {
+				// }
+				// }
+
 				var wg sync.WaitGroup
 				wg.Add(1)
 				d.eg.Go(safety.RecoverFunc(func() error {
