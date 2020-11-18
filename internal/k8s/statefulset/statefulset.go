@@ -79,7 +79,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 			RequeueAfter: time.Millisecond * 100,
 		}
 		if k8serrors.IsNotFound(err) {
-			log.Errorf("not found: %s", err)
+			log.Warn(errors.ErrK8sResourceNotFound(err))
 			res.RequeueAfter = time.Second
 			return res, nil
 		}
