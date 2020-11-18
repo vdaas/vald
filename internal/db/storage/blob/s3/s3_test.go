@@ -22,6 +22,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/vdaas/vald/internal/db/storage/blob"
@@ -62,12 +64,13 @@ func TestNew(t *testing.T) {
 		}
 
 		opts := []comparator.Option{
-			comparator.AllowUnexported(client{}),
+			comparator.AllowUnexported(client{}, aws.Config{}),
+			comparator.IgnoreTypes(request.Handlers{}),
 			comparator.Comparer(func(want, got errgroup.Group) bool {
 				return reflect.DeepEqual(want, got)
 			}),
-			comparator.Comparer(func(want, got *s3.S3) bool {
-				return want != nil && got != nil
+			comparator.Comparer(func(want, got aws.Config) bool {
+				return reflect.DeepEqual(want, got)
 			}),
 			comparator.Comparer(func(want, got *session.Session) bool {
 				return reflect.DeepEqual(want, got)
@@ -163,7 +166,7 @@ func TestNew(t *testing.T) {
 
 			sess, _ := session.NewSession()
 			return test{
-				name: "returns error when the function field to initialize writer is nil",
+				name: "returns nil when no error occurs internally",
 				args: args{
 					opts: []Option{
 						WithSession(sess),
