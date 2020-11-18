@@ -117,11 +117,39 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 			case <-ctx.Done():
 				return ctx.Err()
 			case <-dt.C:
-				// pvals := d.pods.Load()
-				// if pvals != nil {
-				// for _, pod := range pvals.([]pod.Pod) {
-				// }
-				// }
+				var (
+					mpods map[string]mpod.Pod
+					pods  []pod.Pod
+					ok    bool
+
+					podModels []*model.Pod
+				)
+
+				mpvals := d.podMetrics.Load()
+				if mpvals != nil {
+					if mpods, ok = mpvals.(map[string]mpod.Pod); !ok {
+						continue
+					}
+				}
+
+				pvals := d.pods.Load()
+				if pvals != nil {
+					if pods, ok = pvals.([]pod.Pod); !ok {
+						continue
+					}
+					podModels = make([]*model.Pod, 0, len(pods))
+					for _, p := range pods {
+						// get the pod metrics information from the pod name
+						if mpod, ok := mpods[p.Name]; ok {
+							podModels = append(podModels, &model.Pod{
+								Name:        p.Name,
+								Namespace:   p.Namespace,
+								MemoryLimit: p.MemLimit,
+								MemoryUsage: mpod.Mem,
+							})
+						}
+					}
+				}
 
 				var wg sync.WaitGroup
 				wg.Add(1)
