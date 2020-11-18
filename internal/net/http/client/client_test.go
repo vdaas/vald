@@ -17,12 +17,58 @@
 package client
 
 import (
+	"context"
+	"net"
 	"net/http"
+	"net/url"
 	"reflect"
+	"sync"
+	"sync/atomic"
 	"testing"
 
+	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errors"
+	htr "github.com/vdaas/vald/internal/net/http/transport"
+	"github.com/vdaas/vald/internal/test/comparator"
 	"go.uber.org/goleak"
+	"golang.org/x/net/http2"
+)
+
+var (
+	// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
+	goleakIgnoreOptions = []goleak.Option{
+		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+	}
+
+	transportComparator = []comparator.Option{
+		comparator.AllowUnexported(transport{}),
+		comparator.AllowUnexported(http.Transport{}),
+		comparator.IgnoreFields(http.Transport{}, "idleLRU"),
+
+		comparator.Comparer(func(x, y backoff.Option) bool {
+			return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
+		}),
+		comparator.Comparer(func(x, y func(*http.Request) (*url.URL, error)) bool {
+			return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
+		}),
+		comparator.Comparer(func(x, y func(ctx context.Context, network, addr string) (net.Conn, error)) bool {
+			return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
+		}),
+		comparator.Comparer(func(x, y sync.Mutex) bool {
+			return reflect.DeepEqual(x, y)
+		}),
+		comparator.Comparer(func(x, y atomic.Value) bool {
+			return reflect.DeepEqual(x.Load(), y.Load())
+		}),
+		comparator.Comparer(func(x, y sync.Once) bool {
+			return reflect.DeepEqual(x, y)
+		}),
+	}
+
+	clientComparator = append(transportComparator,
+		comparator.AllowUnexported(http.Client{}),
+		comparator.IgnoreFields(http.Client{}, "Transport"),
+	)
 )
 
 func TestNew(t *testing.T) {
@@ -45,42 +91,39 @@ func TestNew(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		if diff := comparator.Diff(got, w.want, clientComparator...); diff != "" {
+			return errors.New(diff)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           opts: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "initialize with no option success",
+			args: args{
+				opts: nil,
+			},
+			want: want{
+				want: &http.Client{
+					Transport: htr.NewExpBackoff(
+						htr.WithRoundTripper(func() *http.Transport {
+							t := new(http.Transport)
+							t.Proxy = http.ProxyFromEnvironment
+							http2.ConfigureTransport(t)
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           opts: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+							return t
+						}()),
+						htr.WithBackoff(
+							backoff.New(),
+						),
+					),
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
