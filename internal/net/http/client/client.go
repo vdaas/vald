@@ -22,6 +22,7 @@ import (
 
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	htr "github.com/vdaas/vald/internal/net/http/transport"
 	"golang.org/x/net/http2"
 )
@@ -35,14 +36,19 @@ func New(opts ...Option) (*http.Client, error) {
 	tr := new(transport)
 	tr.Transport = new(http.Transport)
 
-	for _, opt := range append(defaultOptions, opts...) {
+	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(tr); err != nil {
-			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+			werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+			e := new(errors.ErrCriticalOption)
+			if errors.As(err, &e) {
+				log.Error(werr)
+				return nil, werr
+			}
+			log.Warn(werr)
 		}
 	}
 
-	err := http2.ConfigureTransport(tr.Transport)
-	if err != nil {
+	if err := http2.ConfigureTransport(tr.Transport); err != nil {
 		return nil, err
 	}
 
