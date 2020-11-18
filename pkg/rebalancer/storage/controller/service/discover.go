@@ -90,7 +90,11 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 				log.Error(err)
 			}),
 			mpod.WithOnReconcileFunc(func(podList map[string]mpod.Pod) {
-				d.podMetrics.Store(podList)
+				if len(podList) > 0 {
+					d.podMetrics.Store(podList)
+				} else {
+					log.Info("pod metrics not found")
+				}
 			}),
 		)),
 	)
@@ -118,36 +122,33 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 				return ctx.Err()
 			case <-dt.C:
 				var (
-					mpods map[string]mpod.Pod
-					pods  []pod.Pod
-					ok    bool
-
+					mpods     map[string]mpod.Pod
+					pods      []pod.Pod
+					ok        bool
 					podModels []*model.Pod
 				)
 
-				mpvals := d.podMetrics.Load()
-				if mpvals != nil {
-					if mpods, ok = mpvals.(map[string]mpod.Pod); !ok {
-						continue
-					}
+				mpods, ok = d.podMetrics.Load().(map[string]mpod.Pod)
+				if !ok {
+					log.Info("pod metrics is empty")
+					continue
 				}
 
-				pvals := d.pods.Load()
-				if pvals != nil {
-					if pods, ok = pvals.([]pod.Pod); !ok {
-						continue
-					}
-					podModels = make([]*model.Pod, 0, len(pods))
-					for _, p := range pods {
-						// get the pod metrics information from the pod name
-						if mpod, ok := mpods[p.Name]; ok {
-							podModels = append(podModels, &model.Pod{
-								Name:        p.Name,
-								Namespace:   p.Namespace,
-								MemoryLimit: p.MemLimit,
-								MemoryUsage: mpod.Mem,
-							})
-						}
+				pods, ok = d.pods.Load().([]pod.Pod)
+				if !ok {
+					log.Info("pod is empty")
+					continue
+				}
+
+				podModels = make([]*model.Pod, 0, len(pods))
+				for _, p := range pods {
+					if mpod, ok := mpods[p.Name]; ok {
+						podModels = append(podModels, &model.Pod{
+							Name:        p.Name,
+							Namespace:   p.Namespace,
+							MemoryLimit: p.MemLimit,
+							MemoryUsage: mpod.Mem,
+						})
 					}
 				}
 
