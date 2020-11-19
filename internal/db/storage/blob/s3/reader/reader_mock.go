@@ -73,14 +73,14 @@ func (m *MockReadCloser) Close() error {
 
 // MockReader represents mock for Reader
 type MockReader struct {
-	OpenFunc  func(ctx context.Context) error
+	OpenFunc  func(ctx context.Context, key string) error
 	ReadFunc  func(p []byte) (n int, err error)
 	CloseFunc func() error
 }
 
 // Open calls OpenFunc.
-func (m *MockReader) Open(ctx context.Context) error {
-	return m.OpenFunc(ctx)
+func (m *MockReader) Open(ctx context.Context, key string) error {
+	return m.OpenFunc(ctx, key)
 }
 
 // Read calls ReadFunc.

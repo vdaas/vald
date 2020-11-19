@@ -302,6 +302,8 @@ func Test_client_Reader(t *testing.T) {
 		service     *s3.S3
 		bucket      string
 		maxPartSize int64
+
+		reader reader.Reader
 	}
 	type want struct {
 		want io.ReadCloser
@@ -331,7 +333,7 @@ func Test_client_Reader(t *testing.T) {
 			opened := false
 
 			r := &reader.MockReader{
-				OpenFunc: func(ctx context.Context) error {
+				OpenFunc: func(ctx context.Context, key string) error {
 					opened = true
 					return nil
 				},
@@ -342,6 +344,9 @@ func Test_client_Reader(t *testing.T) {
 				args: args{
 					ctx: context.Background(),
 					key: "key",
+				},
+				fields: fields{
+					reader: r,
 				},
 				want: want{
 					want: r,
@@ -359,19 +364,17 @@ func Test_client_Reader(t *testing.T) {
 
 					return nil
 				},
-				beforeFunc: func(_ args) {
-					newReaderFunc = func(opts ...reader.Option) (reader.Reader, error) {
-						return r, nil
-					}
-				},
-				afterFunc: func(_ args) {
-					newReaderFunc = reader.New
-				},
 			}
 		}(),
 
 		func() test {
 			err := errors.New("err")
+
+			r := &reader.MockReader{
+				OpenFunc: func(ctx context.Context, key string) error {
+					return err
+				},
+			}
 
 			return test{
 				name: "returns error when the reader initialization fails",
@@ -379,17 +382,12 @@ func Test_client_Reader(t *testing.T) {
 					ctx: context.Background(),
 					key: "key",
 				},
+				fields: fields{
+					reader: r,
+				},
 				want: want{
 					want: nil,
 					err:  err,
-				},
-				beforeFunc: func(_ args) {
-					newReaderFunc = func(opts ...reader.Option) (reader.Reader, error) {
-						return nil, err
-					}
-				},
-				afterFunc: func(_ args) {
-					newReaderFunc = reader.New
 				},
 			}
 		}(),
@@ -400,7 +398,7 @@ func Test_client_Reader(t *testing.T) {
 			opened := false
 
 			r := &reader.MockReader{
-				OpenFunc: func(ctx context.Context) error {
+				OpenFunc: func(ctx context.Context, key string) error {
 					opened = true
 					return err
 				},
@@ -411,6 +409,9 @@ func Test_client_Reader(t *testing.T) {
 				args: args{
 					ctx: context.Background(),
 					key: "key",
+				},
+				fields: fields{
+					reader: r,
 				},
 				want: want{
 					want: r,
@@ -427,14 +428,6 @@ func Test_client_Reader(t *testing.T) {
 					}
 
 					return nil
-				},
-				beforeFunc: func(_ args) {
-					newReaderFunc = func(opts ...reader.Option) (reader.Reader, error) {
-						return r, nil
-					}
-				},
-				afterFunc: func(_ args) {
-					newReaderFunc = reader.New
 				},
 			}
 		}(),
@@ -480,6 +473,8 @@ func Test_client_Writer(t *testing.T) {
 		service     *s3.S3
 		bucket      string
 		maxPartSize int64
+
+		writer writer.Writer
 	}
 	type want struct {
 		want io.WriteCloser
@@ -508,7 +503,7 @@ func Test_client_Writer(t *testing.T) {
 			opened := false
 
 			w := &writer.MockWriter{
-				OpenFunc: func(ctx context.Context) error {
+				OpenFunc: func(ctx context.Context, key string) error {
 					opened = true
 					return nil
 				},
@@ -519,6 +514,9 @@ func Test_client_Writer(t *testing.T) {
 				args: args{
 					ctx: context.Background(),
 					key: "key",
+				},
+				fields: fields{
+					writer: w,
 				},
 				want: want{
 					want: w,
@@ -536,14 +534,6 @@ func Test_client_Writer(t *testing.T) {
 
 					return nil
 				},
-				beforeFunc: func(_ args) {
-					newWriterFunc = func(opts ...writer.Option) writer.Writer {
-						return w
-					}
-				},
-				afterFunc: func(args) {
-					newWriterFunc = writer.New
-				},
 			}
 		}(),
 
@@ -553,7 +543,7 @@ func Test_client_Writer(t *testing.T) {
 			opened := false
 
 			w := &writer.MockWriter{
-				OpenFunc: func(ctx context.Context) error {
+				OpenFunc: func(ctx context.Context, key string) error {
 					opened = true
 					return err
 				},
@@ -564,6 +554,9 @@ func Test_client_Writer(t *testing.T) {
 				args: args{
 					ctx: context.Background(),
 					key: "key",
+				},
+				fields: fields{
+					writer: w,
 				},
 				want: want{
 					want: w,
@@ -580,14 +573,6 @@ func Test_client_Writer(t *testing.T) {
 					}
 
 					return nil
-				},
-				beforeFunc: func(_ args) {
-					newWriterFunc = func(opts ...writer.Option) writer.Writer {
-						return w
-					}
-				},
-				afterFunc: func(args) {
-					newWriterFunc = writer.New
 				},
 			}
 		}(),

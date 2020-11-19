@@ -67,17 +67,6 @@ func WithBucket(bucket string) Option {
 	}
 }
 
-// WithKey returns the option to set key for writer.
-func WithKey(key string) Option {
-	return func(w *writer) error {
-		if len(key) == 0 {
-			return errors.NewErrInvalidOption("key", key)
-		}
-		w.key = key
-		return nil
-	}
-}
-
 // WithContentType returns the option to set ct for writer.
 func WithContentType(ct string) Option {
 	return func(w *writer) error {
