@@ -37,6 +37,7 @@ var (
 	Equal            = cmp.Equal
 	IgnoreTypes      = cmpopts.IgnoreTypes
 	IgnoreFields     = cmpopts.IgnoreFields
+	Exporter         = cmp.Exporter
 )
 
 /*
