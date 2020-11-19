@@ -54,7 +54,13 @@ type StatefulSet = appsv1.StatefulSet
 
 // New returns the StatefulSetWather that implements reconciliation loop, or any error occured.
 func New(opts ...Option) (StatefulSetWatcher, error) {
-	r := new(reconciler)
+	r := &reconciler{
+		pool: sync.Pool{
+			New: func() interface{} {
+				return make(map[string][]StatefulSet)
+			},
+		},
+	}
 
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(r); err != nil {
