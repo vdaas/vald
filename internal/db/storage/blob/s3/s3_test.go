@@ -327,7 +327,6 @@ func Test_client_Reader(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-
 			opened := false
 
 			r := &reader.MockReader{
