@@ -150,9 +150,9 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 					sss   []statefulset.StatefulSet
 					ok    bool
 
-					podModels         []*model.Pod
-					jobModels         []*model.Job
-					statefulSetModels []*model.StatefulSet
+					podModels []*model.Pod
+					jobModels []*model.Job
+					ssModels  []*model.StatefulSet
 				)
 
 				mpods, ok = d.podMetrics.Load().(map[string]mpod.Pod)
@@ -204,9 +204,9 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 					log.Info("statefulset is empty")
 					continue
 				}
-				statefulSetModels = make([]*model.StatefulSet, 0, len(sss))
+				ssModels = make([]*model.StatefulSet, 0, len(sss))
 				for _, ss := range sss {
-					statefulSetModels = append(statefulSetModels, &model.StatefulSet{
+					ssModels = append(ssModels, &model.StatefulSet{
 						Name:            ss.Name,
 						Namespace:       ss.Namespace,
 						DesiredReplicas: ss.Spec.Replicas,
