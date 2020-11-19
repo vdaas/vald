@@ -147,8 +147,8 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 					mpods map[string]mpod.Pod
 					pods  []pod.Pod
 					jobs  []job.Job
-					// statefulSets []statefulset.StatefulSet
-					ok bool
+					sss   []statefulset.StatefulSet
+					ok    bool
 
 					podModels         []*model.Pod
 					jobModels         []*model.Job
