@@ -58,13 +58,13 @@ func TestFormat_String(t *testing.T) {
 			},
 		},
 
-		{
-			name: "returns ltsv when f is LTSV",
-			f:    LTSV,
-			want: want{
-				want: "ltsv",
-			},
-		},
+		// {
+		// 	name: "returns ltsv when f is LTSV",
+		// 	f:    LTSV,
+		// 	want: want{
+		// 		want: "ltsv",
+		// 	},
+		// },
 
 		{
 			name: "returns unknown when f is 100",
@@ -148,21 +148,21 @@ func TestAtof(t *testing.T) {
 			},
 		},
 
-		{
-			name: "returns LTSV when str is `ltsv`",
-			str:  "ltsv",
-			want: want{
-				want: LTSV,
-			},
-		},
-
-		{
-			name: "returns LTSV when str is `LTSv`",
-			str:  "LTSv",
-			want: want{
-				want: LTSV,
-			},
-		},
+		// {
+		// 	name: "returns LTSV when str is `ltsv`",
+		// 	str:  "ltsv",
+		// 	want: want{
+		// 		want: LTSV,
+		// 	},
+		// },
+		//
+		// {
+		// 	name: "returns LTSV when str is `LTSv`",
+		// 	str:  "LTSv",
+		// 	want: want{
+		// 		want: LTSV,
+		// 	},
+		// },
 
 		{
 			name: "returns Unknown when str is `Vald`",
