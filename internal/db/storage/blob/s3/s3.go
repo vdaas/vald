@@ -32,8 +32,8 @@ import (
 )
 
 var (
-	reader_New = reader.New
-	writer_New = writer.New
+	newReaderFunc = reader.New
+	newWriterFunc = writer.New
 )
 
 type client struct {
@@ -80,7 +80,7 @@ func (c *client) Close() error {
 // Reader creates reader.Reader implementation and returns it.
 // An error will be returned if the reader initializes fails and if an error occurs in reader.Open.
 func (c *client) Reader(ctx context.Context, key string) (io.ReadCloser, error) {
-	r, err := reader_New(
+	r, err := newReaderFunc(
 		reader.WithErrGroup(c.eg),
 		reader.WithService(c.service),
 		reader.WithBucket(c.bucket),
@@ -99,7 +99,7 @@ func (c *client) Reader(ctx context.Context, key string) (io.ReadCloser, error) 
 // Writer creates writer.Writer implementation and returns it.
 // An error will be returned if the writer initializes fails and if an error occurs in writer.Open.
 func (c *client) Writer(ctx context.Context, key string) (io.WriteCloser, error) {
-	w := writer_New(
+	w := newWriterFunc(
 		writer.WithErrGroup(c.eg),
 		writer.WithService(c.service),
 		writer.WithBucket(c.bucket),
