@@ -67,7 +67,7 @@ func New(opts ...Option) PodWatcher {
 }
 
 func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err error) {
-	ps := &corev1.PodList{}
+	ps := new(corev1.PodList)
 
 	err = r.mgr.GetClient().List(r.ctx, ps)
 

@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-package statefulset
+package replicaset
 
 import (
 	"context"
@@ -22,22 +22,21 @@ import (
 	"sync"
 	"time"
 
-	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/k8s"
-	"github.com/vdaas/vald/internal/log"
 	appsv1 "k8s.io/api/apps/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
-
 	"k8s.io/apimachinery/pkg/runtime"
-
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/k8s"
+	"github.com/vdaas/vald/internal/log"
 )
 
-// StatefulSetWatcher is a type alias for k8s resource controller
-type StatefulSetWatcher k8s.ResourceController
+// ReplicaSetWatcher is a type alias for k8s resource controller.
+type ReplicaSetWatcher k8s.ResourceController
 
 type reconciler struct {
 	ctx         context.Context
@@ -45,24 +44,24 @@ type reconciler struct {
 	name        string
 	namespace   string
 	onError     func(err error)
-	onReconcile func(rs map[string][]StatefulSet)
+	onReconcile func(rs map[string][]ReplicaSet)
 	pool        sync.Pool
 }
 
-// Statefulset is a type alias for the k8s statefulset definition.
-type StatefulSet = appsv1.StatefulSet
+// ReplicaSet is a type alias for the k8s replica set definition.
+type ReplicaSet = appsv1.ReplicaSet
 
-// New returns the StatefulSetWather that implements reconciliation loop, or any error occured.
-func New(opts ...Option) (StatefulSetWatcher, error) {
+// New returns the ReplicaSetWatcher that implements reconciliation loop, or any error occurred.
+func New(opts ...Option) (ReplicaSetWatcher, error) {
 	r := &reconciler{
 		pool: sync.Pool{
 			New: func() interface{} {
-				return make(map[string][]StatefulSet)
+				return make(map[string][]ReplicaSet)
 			},
 		},
 	}
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range opts {
 		if err := opt(r); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
@@ -71,11 +70,11 @@ func New(opts ...Option) (StatefulSetWatcher, error) {
 	return r, nil
 }
 
-// Reconcile implements k8s reconciliation loop to retrive the StatefulSet information from k8s.
+// Reconcile implements k8s reconciliation loop to retrieve the ReplicaSet information from k8s.
 func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err error) {
-	ssl := new(appsv1.StatefulSetList)
+	rsl := new(appsv1.ReplicaSetList)
 
-	err = r.mgr.GetClient().List(r.ctx, ssl)
+	err = r.mgr.GetClient().List(r.ctx, rsl)
 	if err != nil {
 		if r.onError != nil {
 			r.onError(err)
@@ -85,49 +84,45 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 			RequeueAfter: time.Millisecond * 100,
 		}
 		if k8serrors.IsNotFound(err) {
-			log.Errorf("not found: %s", err)
+			log.Warn(errors.ErrK8sResourceNotFound(err))
 			res.RequeueAfter = time.Second
 			return res, nil
 		}
 		return
 	}
 
-	ssm := make(map[string][]StatefulSet)
-	appList := make(map[string]bool)
+	// reset the last result cache
+	lrr := r.pool.Get().(map[string][]ReplicaSet)
 
-	for _, statefulset := range ssl.Items {
-		name, ok := statefulset.GetObjectMeta().GetLabels()["app"]
+	// append the new result to the cache
+	for _, replicaset := range rsl.Items {
+		name, ok := replicaset.GetObjectMeta().GetLabels()["app"]
 		if !ok {
-			pns := strings.Split(statefulset.GetName(), "-")
+			pns := strings.Split(replicaset.GetName(), "-")
 			name = strings.Join(pns[:len(pns)-1], "-")
 		}
-		if _, ok := ssm[name]; !ok {
-			ssm[name] = make([]StatefulSet, 1)
+
+		if _, ok := lrr[name]; !ok {
+			lrr[name] = make([]ReplicaSet, 0)
 		}
-		if !appList[name] {
-			appList[name] = true
-		}
-		ssm[name] = append(ssm[name], statefulset)
+
+		lrr[name] = append(lrr[name], replicaset)
 	}
 
-	for name := range ssm {
-		l := len(ssm[name])
-		ssm[name] = ssm[name][:l:l]
+	for name := range lrr {
+		l := len(lrr[name])
+		lrr[name] = lrr[name][:l:l]
 	}
 
 	if r.onReconcile != nil {
-		r.onReconcile(ssm)
+		r.onReconcile(lrr)
 	}
 
-	for name := range ssm {
-		if !appList[name] {
-			delete(ssm, name)
-		} else {
-			ssm[name] = ssm[name][:0]
-		}
+	for name := range lrr {
+		lrr[name] = lrr[name][:0]
 	}
-	r.pool.Put(ssm)
 
+	r.pool.Put(lrr)
 	return
 }
 
@@ -136,34 +131,32 @@ func (r *reconciler) GetName() string {
 	return r.name
 }
 
-// NewReconciler returns the reconciler for the StatefulSet.
+// NewReconciler returns the reconciler for the ReplicaSet.
 func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler {
 	if r.ctx == nil && ctx != nil {
 		r.ctx = ctx
 	}
-
 	if r.mgr == nil && mgr != nil {
 		r.mgr = mgr
 	}
-
 	appsv1.AddToScheme(r.mgr.GetScheme())
 	return r
 }
 
-// For returns the runtime.Object which is StatefulSet.
+// For returns the runtime.Object which is replica set.
 func (r *reconciler) For() runtime.Object {
-	return new(appsv1.StatefulSet)
+	return new(appsv1.ReplicaSet)
 }
 
-// Owns returns the owner of the StatefulSet wathcer.
+// Owns returns the owner of the replica set watcher.
 // It will always return nil.
 func (r *reconciler) Owns() runtime.Object {
 	return nil
 }
 
-// Watches returns the kind of the StatefulSet and the event handler.
-// It will always retrun nil.
+// Watches returns the kind of the replica set and the event handler.
+// It will always return nil.
 func (r *reconciler) Watches() (*source.Kind, handler.EventHandler) {
-	// return &source.kind{Type: new(corev1.Pod)}, &handler.EnqueueRequestForObject{}
+	// return &source.Kind{Type: new(corev1.Pod)}, &handler.EnqueueRequestForObject{}
 	return nil, nil
 }

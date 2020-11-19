@@ -19,4 +19,8 @@ package errors
 
 var (
 	ErrInvalidReconcilerConfig = New("invalid reconciler config")
+
+	ErrK8sResourceNotFound = func(err error) error {
+		return Wrap(err, "k8s resource not found")
+	}
 )
