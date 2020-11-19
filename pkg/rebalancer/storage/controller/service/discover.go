@@ -29,10 +29,11 @@ type discoverer struct {
 	jobName      string
 	jobNamespace string
 
-	agentName      string
-	agentNamespace string
-	pods           atomic.Value
-	podMetrics     atomic.Value
+	agentName         string
+	agentNamespace    string
+	agentResourceType string // TODO: use custom type insteaf of string
+	pods              atomic.Value
+	podMetrics        atomic.Value
 
 	statefulSets atomic.Value
 
@@ -69,29 +70,41 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 		return nil, err
 	}
 
-	ss, err := statefulset.New(
-		statefulset.WithControllerName("statefulset discoverer"),
-		statefulset.WithOnErrorFunc(func(err error) {
-			log.Error(err)
-		}),
-		statefulset.WithOnReconcileFunc(func(statefulSetList map[string][]statefulset.StatefulSet) {
-			sss, ok := statefulSetList[d.agentName]
-			if ok {
-				d.statefulSets.Store(sss)
-			} else {
-				log.Infof("statefuleset not found: %s", d.agentName)
-			}
-		}),
-	)
-	if err != nil {
-		return nil, err
+	var rc k8s.ResourceController
+	switch d.agentResourceType {
+	case "statefulset":
+		rc, err = statefulset.New(
+			statefulset.WithControllerName("statefulset discoverer"),
+			statefulset.WithOnErrorFunc(func(err error) {
+				log.Error(err)
+			}),
+			statefulset.WithOnReconcileFunc(func(statefulSetList map[string][]statefulset.StatefulSet) {
+				sss, ok := statefulSetList[d.agentName]
+				if ok {
+					d.statefulSets.Store(sss)
+				} else {
+					log.Infof("statefuleset not found: %s", d.agentName)
+				}
+			}),
+		)
+		if err != nil {
+			return nil, err
+		}
+	case "replicaset":
+		// TODO: implment get replicaset reconciled result
+		return nil, nil
+	case "daemonset":
+		// TODO: implment get daemonset reconciled result
+		return nil, nil
+	default:
+		return nil, nil
 	}
 
 	d.ctrl, err = k8s.New(
 		k8s.WithControllerName("rebalance controller"),
 		k8s.WithEnableLeaderElection(),
 		k8s.WithResourceController(job),
-		k8s.WithResourceController(ss), // statefulset controller
+		k8s.WithResourceController(rc), // statefulset controller
 		k8s.WithResourceController(pod.New(
 			pod.WithControllerName("pod discover"),
 			pod.WithOnErrorFunc(func(err error) {
@@ -199,21 +212,27 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 					})
 				}
 
-				sss, ok = d.statefulSets.Load().([]statefulset.StatefulSet)
-				if !ok {
-					log.Info("statefulset is empty")
-					continue
+				// TODO: cache specified reconciled result based on agentResourceType.
+				switch d.agentResourceType {
+				case "statefulset":
+					sss, ok = d.statefulSets.Load().([]statefulset.StatefulSet)
+					if !ok {
+						log.Info("statefulset is empty")
+						continue
+					}
+					ssModels = make([]*model.StatefulSet, 0, len(sss))
+					for _, ss := range sss {
+						ssModels = append(ssModels, &model.StatefulSet{
+							Name:            ss.Name,
+							Namespace:       ss.Namespace,
+							DesiredReplicas: ss.Spec.Replicas,
+							Replicas:        ss.Status.Replicas,
+						})
+					}
+				default:
+					// TODO: define error for return
+					return nil
 				}
-				ssModels = make([]*model.StatefulSet, 0, len(sss))
-				for _, ss := range sss {
-					ssModels = append(ssModels, &model.StatefulSet{
-						Name:            ss.Name,
-						Namespace:       ss.Namespace,
-						DesiredReplicas: ss.Spec.Replicas,
-						Replicas:        ss.Status.Replicas,
-					})
-				}
-
 			case err := <-cech:
 				if err != nil {
 					select {

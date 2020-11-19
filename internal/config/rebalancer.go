@@ -23,6 +23,7 @@ type RebalanceController struct {
 	RebalanceJobNamespace  string `yaml:"rebalance_job_namespance" json:"rebalance_job_namespance"`
 	AgentName              string `yaml:"agent_name" json:"agent_name"`
 	AgentNamespace         string `yaml:"agent_namespace" json:"agent_namespace"`
+	AgentResourceType      string `yaml:"agent_resource_type" json:"agent_resource_type"`
 	ReconcileCheckDuration string `yaml:"reconcile_check_duration" json:"reconcile_check_duration"`
 	JobTemplatePath        string `yaml:"job_template_path" json:"job_template_path"`
 	Tolerance              int    `yaml:"tolerance" json:"tolerance"`
@@ -34,6 +35,7 @@ func (r *RebalanceController) Bind() *RebalanceController {
 	r.RebalanceJobNamespace = GetActualValue(r.RebalanceJobNamespace)
 	r.AgentName = GetActualValue(r.AgentName)
 	r.AgentNamespace = GetActualValue(r.AgentNamespace)
+	r.AgentResourceType = GetActualValue(r.AgentResourceType)
 	r.ReconcileCheckDuration = GetActualValue(r.ReconcileCheckDuration)
 	r.JobTemplatePath = GetActualValue(r.JobTemplatePath)
 
