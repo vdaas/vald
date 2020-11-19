@@ -32,6 +32,7 @@ type transport struct {
 	backoffOpts []backoff.Option
 }
 
+// New initialize the http2 transport with exponential backoff and return the HTTP client for it, or return any error occurred.
 func New(opts ...Option) (*http.Client, error) {
 	tr := new(transport)
 	tr.Transport = new(http.Transport)
