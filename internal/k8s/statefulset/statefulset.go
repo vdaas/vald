@@ -110,11 +110,6 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 		ssm[name] = append(ssm[name], statefulset)
 	}
 
-	for name := range ssm {
-		l := len(ssm[name])
-		ssm[name] = ssm[name][:l:l]
-	}
-
 	if r.onReconcile != nil {
 		r.onReconcile(ssm)
 	}
@@ -123,7 +118,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 		if !appList[name] {
 			delete(ssm, name)
 		} else {
-			ssm[name] = ssm[name][:0]
+			ssm[name] = ssm[name][:0:len(ssm[name])]
 		}
 	}
 	r.pool.Put(ssm)
