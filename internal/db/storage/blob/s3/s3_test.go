@@ -100,7 +100,24 @@ func TestNew(t *testing.T) {
 		}(),
 
 		func() test {
+			opt := func(c *client) error {
+				return errors.New("err")
+			}
+			return test{
+				name: "returns error when option apply fails",
+				args: args{
+					opts: []Option{
+						opt,
+					},
+				},
+				want: want{
+					want: nil,
+					err:  errors.ErrOptionFailed(errors.New("err"), reflect.ValueOf(opt)),
+				},
+			}
+		}(),
 
+		func() test {
 			sess, _ := session.NewSession()
 			return test{
 				name: "returns nil when no error occurs internally",
@@ -310,6 +327,50 @@ func Test_client_Reader(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
+
+			opened := false
+
+			r := &reader.MockReader{
+				OpenFunc: func(ctx context.Context) error {
+					opened = true
+					return nil
+				},
+			}
+
+			return test{
+				name: "returns opened reader and nil when open method of reader success",
+				args: args{
+					ctx: context.Background(),
+					key: "key",
+				},
+				want: want{
+					want: r,
+					err:  nil,
+				},
+				checkFunc: func(w want, g io.ReadCloser, gerr error) error {
+					err := defaultCheckFunc(w, g, gerr)
+					if err != nil {
+						return err
+					}
+
+					if !opened {
+						return errors.New("reader is not opened")
+					}
+
+					return nil
+				},
+				beforeFunc: func(_ args) {
+					newReaderFunc = func(opts ...reader.Option) (reader.Reader, error) {
+						return r, nil
+					}
+				},
+				afterFunc: func(_ args) {
+					newReaderFunc = reader.New
+				},
+			}
+		}(),
+
+		func() test {
 			err := errors.New("err")
 
 			return test{
@@ -323,9 +384,12 @@ func Test_client_Reader(t *testing.T) {
 					err:  err,
 				},
 				beforeFunc: func(_ args) {
-					reader_New = func(opts ...reader.Option) (reader.Reader, error) {
+					newReaderFunc = func(opts ...reader.Option) (reader.Reader, error) {
 						return nil, err
 					}
+				},
+				afterFunc: func(_ args) {
+					newReaderFunc = reader.New
 				},
 			}
 		}(),
@@ -365,9 +429,12 @@ func Test_client_Reader(t *testing.T) {
 					return nil
 				},
 				beforeFunc: func(_ args) {
-					reader_New = func(opts ...reader.Option) (reader.Reader, error) {
+					newReaderFunc = func(opts ...reader.Option) (reader.Reader, error) {
 						return r, nil
 					}
+				},
+				afterFunc: func(_ args) {
+					newReaderFunc = reader.New
 				},
 			}
 		}(),
@@ -438,6 +505,49 @@ func Test_client_Writer(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
+			opened := false
+
+			w := &writer.MockWriter{
+				OpenFunc: func(ctx context.Context) error {
+					opened = true
+					return nil
+				},
+			}
+
+			return test{
+				name: "returns opened writer and nil when onen method of writer succcess",
+				args: args{
+					ctx: context.Background(),
+					key: "key",
+				},
+				want: want{
+					want: w,
+					err:  nil,
+				},
+				checkFunc: func(w want, g io.WriteCloser, gerr error) error {
+					err := defaultCheckFunc(w, g, gerr)
+					if err != nil {
+						return err
+					}
+
+					if !opened {
+						return errors.New("writer is not opened")
+					}
+
+					return nil
+				},
+				beforeFunc: func(_ args) {
+					newWriterFunc = func(opts ...writer.Option) writer.Writer {
+						return w
+					}
+				},
+				afterFunc: func(args) {
+					newWriterFunc = writer.New
+				},
+			}
+		}(),
+
+		func() test {
 			err := errors.New("err")
 
 			opened := false
@@ -472,9 +582,12 @@ func Test_client_Writer(t *testing.T) {
 					return nil
 				},
 				beforeFunc: func(_ args) {
-					writer_New = func(opts ...writer.Option) writer.Writer {
+					newWriterFunc = func(opts ...writer.Option) writer.Writer {
 						return w
 					}
+				},
+				afterFunc: func(args) {
+					newWriterFunc = writer.New
 				},
 			}
 		}(),
