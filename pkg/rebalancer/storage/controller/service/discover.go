@@ -12,6 +12,7 @@ import (
 	"github.com/vdaas/vald/internal/k8s/job"
 	mpod "github.com/vdaas/vald/internal/k8s/metrics/pod"
 	"github.com/vdaas/vald/internal/k8s/pod"
+	"github.com/vdaas/vald/internal/k8s/statefulset"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/pkg/rebalancer/storage/controller/model"
@@ -32,6 +33,8 @@ type discoverer struct {
 	agentNamespace string
 	pods           atomic.Value
 	podMetrics     atomic.Value
+
+	statefulSets atomic.Value
 
 	dcd  time.Duration // discover check duration
 	eg   errgroup.Group
@@ -66,10 +69,29 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 		return nil, err
 	}
 
+	ss, err := statefulset.New(
+		statefulset.WithControllerName("statefulset discoverer"),
+		statefulset.WithOnErrorFunc(func(err error) {
+			log.Error(err)
+		}),
+		statefulset.WithOnReconcileFunc(func(statefulSetList map[string][]statefulset.StatefulSet) {
+			sss, ok := statefulSetList[d.agentName]
+			if ok {
+				d.statefulSets.Store(sss)
+			} else {
+				log.Infof("statefuleset not found: %s", d.agentName)
+			}
+		}),
+	)
+	if err != nil {
+		return nil, err
+	}
+
 	d.ctrl, err = k8s.New(
 		k8s.WithControllerName("rebalance controller"),
 		k8s.WithEnableLeaderElection(),
 		k8s.WithResourceController(job),
+		k8s.WithResourceController(ss), // statefulset controller
 		k8s.WithResourceController(pod.New(
 			pod.WithControllerName("pod discover"),
 			pod.WithOnErrorFunc(func(err error) {
@@ -125,10 +147,12 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 					mpods map[string]mpod.Pod
 					pods  []pod.Pod
 					jobs  []job.Job
-					ok    bool
+					// statefulSets []statefulset.StatefulSet
+					ok bool
 
-					podModels []*model.Pod
-					jobModels []*model.Job
+					podModels         []*model.Pod
+					jobModels         []*model.Job
+					statefulSetModels []*model.StatefulSet
 				)
 
 				mpods, ok = d.podMetrics.Load().(map[string]mpod.Pod)
@@ -172,6 +196,21 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 						Namespace: j.Namespace,
 						Active:    j.Status.Active,
 						StartTime: t,
+					})
+				}
+
+				sss, ok = d.statefulSets.Load().([]statefulset.StatefulSet)
+				if !ok {
+					log.Info("statefulset is empty")
+					continue
+				}
+				statefulSetModels = make([]*model.StatefulSet, 0, len(sss))
+				for _, ss := range sss {
+					statefulSetModels = append(statefulSetModels, &model.StatefulSet{
+						Name:            ss.Name,
+						Namespace:       ss.Namespace,
+						DesiredReplicas: ss.Spec.Replicas,
+						Replicas:        ss.Status.Replicas,
 					})
 				}
 
