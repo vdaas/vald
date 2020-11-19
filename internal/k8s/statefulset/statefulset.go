@@ -85,7 +85,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 	}
 
 	ssm := make(map[string][]StatefulSet)
-
+	appList := make(map[string]bool)
 	for _, statefulset := range ssl.Items {
 		name, ok := statefulset.GetObjectMeta().GetLabels()["app"]
 		if !ok {
@@ -93,7 +93,10 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 			name = strings.Join(pns[:len(pns)-1], "-")
 		}
 		if _, ok := ssm[name]; !ok {
-			ssm[name] = make([]StatefulSet, 0, len(ssl.Items))
+			ssm[name] = make([]StatefulSet, 1)
+		}
+		if !appList[name] {
+			appList[name] = true
 		}
 
 		ssm[name] = append(ssm[name], statefulset)
@@ -106,6 +109,14 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 
 	if r.onReconcile != nil {
 		r.onReconcile(ssm)
+	}
+
+	for name := range ssm {
+		if !appList[name] {
+			delete(ssm, name)
+		} else {
+			ssm[name] = ssm[name][:0]
+		}
 	}
 
 	return
