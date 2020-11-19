@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"reflect"
-	"sync"
 	"sync/atomic"
 	"time"
 
@@ -25,8 +24,7 @@ type Discoverer interface {
 }
 
 type discoverer struct {
-	jobs         jobsMap
-	jobsCache    atomic.Value
+	jobs         atomic.Value
 	jobName      string
 	jobNamespace string
 
@@ -40,6 +38,7 @@ type discoverer struct {
 	ctrl k8s.Controller
 }
 
+// NewDiscoverer --
 func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 	d := new(discoverer)
 
@@ -54,11 +53,12 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 		job.WithOnErrorFunc(func(err error) {
 			log.Error(err)
 		}),
-		job.WithOnReconcileFunc(func(jobsMap map[string][]job.Job) {
-			for name, jobs := range jobsMap {
-				if name == d.jobName {
-					d.jobs.Store(name, jobs)
-				}
+		job.WithOnReconcileFunc(func(jobList map[string][]job.Job) {
+			jobs, ok := jobList[d.jobName]
+			if ok {
+				d.jobs.Store(jobs)
+			} else {
+				log.Infof("job not found: %s", d.jobName)
 			}
 		}),
 	)
@@ -122,10 +122,13 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 				return ctx.Err()
 			case <-dt.C:
 				var (
-					mpods     map[string]mpod.Pod
-					pods      []pod.Pod
-					ok        bool
+					mpods map[string]mpod.Pod
+					pods  []pod.Pod
+					jobs  []job.Job
+					ok    bool
+
 					podModels []*model.Pod
+					jobModels []*model.Job
 				)
 
 				mpods, ok = d.podMetrics.Load().(map[string]mpod.Pod)
@@ -152,31 +155,26 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 					}
 				}
 
-				var wg sync.WaitGroup
-				wg.Add(1)
-				d.eg.Go(safety.RecoverFunc(func() error {
-					defer wg.Done()
-					jobs, ok := d.jobs.Load(d.jobName)
-					if !ok {
-						return nil
+				jobs, ok = d.jobs.Load().([]job.Job)
+				if !ok {
+					log.Info("job is empty")
+					continue
+				}
+
+				jobModels = make([]*model.Job, 0, len(jobs))
+				for _, j := range jobs {
+					var t time.Time
+					if j.Status.StartTime != nil {
+						t = j.Status.StartTime.Time
 					}
-					models := make([]*model.Job, 0, len(jobs))
-					for _, job := range jobs {
-						var t time.Time
-						if job.Status.StartTime != nil {
-							t = job.Status.StartTime.Time
-						}
-						models = append(models, &model.Job{
-							Name:      job.Name,
-							Namespace: job.Namespace,
-							Active:    job.Status.Active,
-							StartTime: t,
-						})
-					}
-					d.jobsCache.Store(models)
-					return nil
-				}))
-				wg.Wait()
+					jobModels = append(jobModels, &model.Job{
+						Name:      j.Name,
+						Namespace: j.Namespace,
+						Active:    j.Status.Active,
+						StartTime: t,
+					})
+				}
+
 			case err := <-cech:
 				if err != nil {
 					select {
