@@ -21,6 +21,7 @@ import (
 
 	"github.com/vdaas/vald/internal/log/glg"
 	logger "github.com/vdaas/vald/internal/log/logger"
+	"github.com/vdaas/vald/internal/log/zap"
 )
 
 var (
@@ -40,6 +41,17 @@ func Init(opts ...Option) {
 
 func getLogger(o *option) logger.Logger {
 	switch o.logType {
+	case logger.ZAP:
+		z, err := zap.New(
+			zap.WithLevel(o.level.String()),
+			zap.WithFormat(o.format.String()),
+		)
+		if err == nil {
+			return z
+		}
+
+		// fallback
+		fallthrough
 	case logger.GLG:
 		fallthrough
 	default:

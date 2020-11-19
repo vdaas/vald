@@ -133,6 +133,24 @@ func Test_getLogger(t *testing.T) {
 		return nil
 	}
 	tests := []test{
+		func() test {
+			return test{
+				name: "returns zap object when *option.logType is ZAP",
+				args: args{
+					o: &option{
+						logType: logger.ZAP,
+					},
+				},
+				checkFunc: func(w want, got logger.Logger) error {
+					if got == nil {
+						return errors.New("got object is empty")
+					}
+
+					return nil
+				},
+			}
+		}(),
+
 		{
 			name: "returns glg object when *option.logType is GLG",
 			args: args{
