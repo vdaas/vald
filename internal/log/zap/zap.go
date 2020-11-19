@@ -104,6 +104,8 @@ func toZapLevel(lv level.Level) zapcore.Level {
 		return zapcore.ErrorLevel
 	case level.FATAL:
 		return zapcore.FatalLevel
+	case level.Unknown:
+		fallthrough
 	default:
 		return defaultLevel
 	}
@@ -133,9 +135,12 @@ func (l *logger) log(
 		if msg, ok := vals[0].(string); ok {
 			if len(vals[1:]) == 1 {
 				loggerFunc(msg, zap.Any(detailsKey, vals[1]))
+
 				return
 			}
+
 			loggerFunc(msg, zap.Any(detailsKey, vals[1:]))
+
 			return
 		}
 	}

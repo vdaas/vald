@@ -19,7 +19,11 @@ package grpc
 
 import (
 	"context"
+	"path"
+	"time"
 
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"google.golang.org/grpc"
 )
@@ -62,4 +66,73 @@ func RecoverStreamInterceptor() StreamServerInterceptor {
 			return handler(srv, ss)
 		})()
 	}
+}
+
+type AccessLogEntity struct {
+	Grpc      *AccessLogGrpcEntity `json:"grpc,omitempty" yaml:"grpc"`
+	StartTime float64              `json:"startTime,omitempty" yaml:"startTime"`
+	Latency   float64              `json:"latency,omitempty" yaml:"latency"`
+	TraceID   string               `json:"traceID,omitempty" yaml:"traceID"`
+	Error     error                `json:"error,omitempty" yaml:"error"`
+}
+
+type AccessLogGrpcEntity struct {
+	Kind    string `json:"kind,omitempty" yaml:"kind"`
+	Service string `json:"service,omitempty" yaml:"service"`
+	Method  string `json:"method,omitempty" yaml:"method"`
+}
+
+func AccessLogInterceptor() UnaryServerInterceptor {
+	return func(
+		ctx context.Context,
+		req interface{},
+		info *grpc.UnaryServerInfo,
+		handler grpc.UnaryHandler,
+	) (resp interface{}, err error) {
+		var traceID string
+
+		span := trace.FromContext(ctx)
+		if span != nil {
+			traceID = span.SpanContext().TraceID.String()
+		}
+
+		start := time.Now()
+
+		resp, err = handler(ctx, req)
+
+		latency := float64(time.Since(start)) / float64(time.Second)
+		startTime := float64(start.UnixNano()) / float64(time.Second)
+
+		service, method := parseMethod(info.FullMethod)
+
+		entity := &AccessLogEntity{
+			Grpc: &AccessLogGrpcEntity{
+				Kind:    "unary",
+				Service: service,
+				Method:  method,
+			},
+			StartTime: startTime,
+			Latency:   latency,
+		}
+
+		if traceID != "" {
+			entity.TraceID = traceID
+		}
+
+		if err != nil {
+			entity.Error = err
+			log.Error("rpc completed", entity)
+		} else {
+			log.Info("rpc completed", entity)
+		}
+
+		return resp, err
+	}
+}
+
+func parseMethod(fullMethod string) (service, method string) {
+	service = path.Dir(fullMethod)[1:]
+	method = path.Base(fullMethod)
+
+	return service, method
 }

@@ -80,7 +80,10 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			vald.RegisterValdServer(srv, g)
 		}),
 		server.WithGRPCOption(
-			grpc.ChainUnaryInterceptor(grpc.RecoverInterceptor()),
+			grpc.ChainUnaryInterceptor(
+				grpc.RecoverInterceptor(),
+				grpc.AccessLogInterceptor(),
+			),
 			grpc.ChainStreamInterceptor(grpc.RecoverStreamInterceptor()),
 		),
 		server.WithPreStartFunc(func() error {
