@@ -100,69 +100,6 @@ func TestNew(t *testing.T) {
 		}(),
 
 		func() test {
-			err := errors.New("err")
-			opt := func(*client) error {
-				return err
-			}
-			return test{
-				name: "returns error when the function field to initialize reader is nil",
-				args: args{
-					opts: []Option{
-						WithSession(func() *session.Session {
-							sess, _ := session.NewSession()
-							return sess
-						}()),
-						opt,
-					},
-				},
-				want: want{
-					want: nil,
-					err:  errors.ErrOptionFailed(err, reflect.ValueOf(opt)),
-				},
-			}
-		}(),
-
-		{
-			name: "returns error when the function field to initialize reader is nil",
-			args: args{
-				opts: []Option{
-					WithSession(func() *session.Session {
-						sess, _ := session.NewSession()
-						return sess
-					}()),
-					func(c *client) error {
-						c.readerFunc = nil
-						return nil
-					},
-				},
-			},
-			want: want{
-				want: nil,
-				err:  errors.NewErrInvalidOption("readerFunc", nil),
-			},
-		},
-
-		{
-			name: "returns error when the function field to initialize writer is nil",
-			args: args{
-				opts: []Option{
-					WithSession(func() *session.Session {
-						sess, _ := session.NewSession()
-						return sess
-					}()),
-					func(c *client) error {
-						c.writerFunc = nil
-						return nil
-					},
-				},
-			},
-			want: want{
-				want: nil,
-				err:  errors.NewErrInvalidOption("writerFunc", nil),
-			},
-		},
-
-		func() test {
 
 			sess, _ := session.NewSession()
 			return test{
@@ -177,12 +114,6 @@ func TestNew(t *testing.T) {
 						eg:      errgroup.Get(),
 						session: sess,
 						service: s3.New(sess),
-						readerFunc: func(key string) (reader.Reader, error) {
-							return nil, nil
-						},
-						writerFunc: func(key string) writer.Writer {
-							return nil
-						},
 					},
 					err: nil,
 				},
@@ -222,8 +153,6 @@ func Test_client_Open(t *testing.T) {
 		service     *s3.S3
 		bucket      string
 		maxPartSize int64
-		readerFunc  func(key string) (reader.Reader, error)
-		writerFunc  func(key string) writer.Writer
 	}
 	type want struct {
 		err error
@@ -273,8 +202,6 @@ func Test_client_Open(t *testing.T) {
 				service:     test.fields.service,
 				bucket:      test.fields.bucket,
 				maxPartSize: test.fields.maxPartSize,
-				readerFunc:  test.fields.readerFunc,
-				writerFunc:  test.fields.writerFunc,
 			}
 
 			err := c.Open(test.args.ctx)
@@ -292,8 +219,6 @@ func Test_client_Close(t *testing.T) {
 		service     *s3.S3
 		bucket      string
 		maxPartSize int64
-		readerFunc  func(key string) (reader.Reader, error)
-		writerFunc  func(key string) writer.Writer
 	}
 	type want struct {
 		err error
@@ -339,8 +264,6 @@ func Test_client_Close(t *testing.T) {
 				service:     test.fields.service,
 				bucket:      test.fields.bucket,
 				maxPartSize: test.fields.maxPartSize,
-				readerFunc:  test.fields.readerFunc,
-				writerFunc:  test.fields.writerFunc,
 			}
 
 			err := c.Close()
@@ -362,8 +285,6 @@ func Test_client_Reader(t *testing.T) {
 		service     *s3.S3
 		bucket      string
 		maxPartSize int64
-		readerFunc  func(key string) (reader.Reader, error)
-		writerFunc  func(key string) writer.Writer
 	}
 	type want struct {
 		want io.ReadCloser
@@ -389,20 +310,6 @@ func Test_client_Reader(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			return test{
-				name: "returns error when there is no function field to initialize the reader",
-				args: args{
-					ctx: context.Background(),
-					key: "key",
-				},
-				want: want{
-					want: nil,
-					err:  errors.ErrNilObject,
-				},
-			}
-		}(),
-
-		func() test {
 			err := errors.New("err")
 
 			return test{
@@ -411,14 +318,14 @@ func Test_client_Reader(t *testing.T) {
 					ctx: context.Background(),
 					key: "key",
 				},
-				fields: fields{
-					readerFunc: func(key string) (reader.Reader, error) {
-						return nil, err
-					},
-				},
 				want: want{
 					want: nil,
 					err:  err,
+				},
+				beforeFunc: func(_ args) {
+					reader_New = func(opts ...reader.Option) (reader.Reader, error) {
+						return nil, err
+					}
 				},
 			}
 		}(),
@@ -426,49 +333,41 @@ func Test_client_Reader(t *testing.T) {
 		func() test {
 			err := errors.New("err")
 
+			opened := false
+
 			r := &reader.MockReader{
 				OpenFunc: func(ctx context.Context) error {
+					opened = true
 					return err
 				},
 			}
+
 			return test{
-				name: "returns error when the open method of reader fails",
+				name: "returns opened reader and error from the open method of reader",
 				args: args{
 					ctx: context.Background(),
 					key: "key",
-				},
-				fields: fields{
-					readerFunc: func(key string) (reader.Reader, error) {
-						return r, nil
-					},
 				},
 				want: want{
 					want: r,
 					err:  err,
 				},
-			}
-		}(),
+				checkFunc: func(w want, g io.ReadCloser, gerr error) error {
+					err := defaultCheckFunc(w, g, gerr)
+					if err != nil {
+						return err
+					}
 
-		func() test {
-			r := &reader.MockReader{
-				OpenFunc: func(ctx context.Context) error {
+					if !opened {
+						return errors.New("reader is not opened")
+					}
+
 					return nil
 				},
-			}
-			return test{
-				name: "returns nil when no error occurs internally",
-				args: args{
-					ctx: context.Background(),
-					key: "key",
-				},
-				fields: fields{
-					readerFunc: func(key string) (reader.Reader, error) {
+				beforeFunc: func(_ args) {
+					reader_New = func(opts ...reader.Option) (reader.Reader, error) {
 						return r, nil
-					},
-				},
-				want: want{
-					want: r,
-					err:  nil,
+					}
 				},
 			}
 		}(),
@@ -492,8 +391,6 @@ func Test_client_Reader(t *testing.T) {
 				service:     test.fields.service,
 				bucket:      test.fields.bucket,
 				maxPartSize: test.fields.maxPartSize,
-				readerFunc:  test.fields.readerFunc,
-				writerFunc:  test.fields.writerFunc,
 			}
 
 			got, err := c.Reader(test.args.ctx, test.args.key)
@@ -516,8 +413,6 @@ func Test_client_Writer(t *testing.T) {
 		service     *s3.S3
 		bucket      string
 		maxPartSize int64
-		readerFunc  func(key string) (reader.Reader, error)
-		writerFunc  func(key string) writer.Writer
 	}
 	type want struct {
 		want io.WriteCloser
@@ -543,65 +438,43 @@ func Test_client_Writer(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			return test{
-				name: "returns error when there is no function field to initialize the writer",
-				args: args{
-					ctx: context.Background(),
-					key: "key",
-				},
-				want: want{
-					want: nil,
-					err:  errors.ErrNilObject,
-				},
-			}
-		}(),
-
-		func() test {
 			err := errors.New("err")
+
+			opened := false
 
 			w := &writer.MockWriter{
 				OpenFunc: func(ctx context.Context) error {
+					opened = true
 					return err
 				},
 			}
+
 			return test{
-				name: "returns error when the open method of writer fails",
+				name: "returns opened writer and error from the open method of writer",
 				args: args{
 					ctx: context.Background(),
 					key: "key",
-				},
-				fields: fields{
-					writerFunc: func(key string) writer.Writer {
-						return w
-					},
 				},
 				want: want{
 					want: w,
 					err:  err,
 				},
-			}
-		}(),
+				checkFunc: func(w want, g io.WriteCloser, gerr error) error {
+					err := defaultCheckFunc(w, g, gerr)
+					if err != nil {
+						return err
+					}
 
-		func() test {
-			w := &writer.MockWriter{
-				OpenFunc: func(ctx context.Context) error {
+					if !opened {
+						return errors.New("writer is not opened")
+					}
+
 					return nil
 				},
-			}
-			return test{
-				name: "returns nil when no error occurs internally",
-				args: args{
-					ctx: context.Background(),
-					key: "key",
-				},
-				fields: fields{
-					writerFunc: func(key string) writer.Writer {
+				beforeFunc: func(_ args) {
+					writer_New = func(opts ...writer.Option) writer.Writer {
 						return w
-					},
-				},
-				want: want{
-					want: w,
-					err:  nil,
+					}
 				},
 			}
 		}(),
@@ -625,8 +498,6 @@ func Test_client_Writer(t *testing.T) {
 				service:     test.fields.service,
 				bucket:      test.fields.bucket,
 				maxPartSize: test.fields.maxPartSize,
-				readerFunc:  test.fields.readerFunc,
-				writerFunc:  test.fields.writerFunc,
 			}
 
 			got, err := c.Writer(test.args.ctx, test.args.key)

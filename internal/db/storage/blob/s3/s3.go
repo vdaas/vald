@@ -31,6 +31,11 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
+var (
+	reader_New = reader.New
+	writer_New = writer.New
+)
+
 type client struct {
 	eg      errgroup.Group
 	session *session.Session
@@ -42,9 +47,6 @@ type client struct {
 
 	readerBackoffEnabled bool
 	readerBackoffOpts    []backoff.Option
-
-	readerFunc func(key string) (reader.Reader, error)
-	writerFunc func(key string) writer.Writer
 }
 
 // New returns blob.Bucket implementation if no error occurs.
@@ -58,14 +60,6 @@ func New(opts ...Option) (blob.Bucket, error) {
 
 	if c.session == nil {
 		return nil, errors.NewErrInvalidOption("session", c.session)
-	}
-
-	if c.readerFunc == nil {
-		return nil, errors.NewErrInvalidOption("readerFunc", c.readerFunc)
-	}
-
-	if c.writerFunc == nil {
-		return nil, errors.NewErrInvalidOption("writerFunc", c.writerFunc)
 	}
 
 	c.service = s3.New(c.session)
@@ -86,10 +80,15 @@ func (c *client) Close() error {
 // Reader creates reader.Reader implementation and returns it.
 // An error will be returned if the reader initializes fails and if an error occurs in reader.Open.
 func (c *client) Reader(ctx context.Context, key string) (io.ReadCloser, error) {
-	if c.readerFunc == nil {
-		return nil, errors.ErrNilObject
-	}
-	r, err := c.readerFunc(key)
+	r, err := reader_New(
+		reader.WithErrGroup(c.eg),
+		reader.WithService(c.service),
+		reader.WithBucket(c.bucket),
+		reader.WithKey(key),
+		reader.WithMaxChunkSize(c.maxChunkSize),
+		reader.WithBackoff(c.readerBackoffEnabled),
+		reader.WithBackoffOpts(c.readerBackoffOpts...),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -100,9 +99,13 @@ func (c *client) Reader(ctx context.Context, key string) (io.ReadCloser, error) 
 // Writer creates writer.Writer implementation and returns it.
 // An error will be returned if the writer initializes fails and if an error occurs in writer.Open.
 func (c *client) Writer(ctx context.Context, key string) (io.WriteCloser, error) {
-	if c.writerFunc == nil {
-		return nil, errors.ErrNilObject
-	}
-	w := c.writerFunc(key)
+	w := writer_New(
+		writer.WithErrGroup(c.eg),
+		writer.WithService(c.service),
+		writer.WithBucket(c.bucket),
+		writer.WithKey(key),
+		writer.WithMaxPartSize(c.maxPartSize),
+	)
+
 	return w, w.Open(ctx)
 }
