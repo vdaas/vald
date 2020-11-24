@@ -96,6 +96,9 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 	appList := make(map[string]bool)
 
 	for _, statefulset := range ssl.Items {
+		if statefulset.Namespace != r.namespace {
+			continue
+		}
 		name, ok := statefulset.GetObjectMeta().GetLabels()["app"]
 		if !ok {
 			pns := strings.Split(statefulset.GetName(), "-")
