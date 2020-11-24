@@ -253,6 +253,10 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 				)
 				if prevSsModel != nil {
 					if prevSsModel.Replicas > ssModel.Replicas {
+					        // TODO: Check the difference prevPodModels and podModels
+						// TODO: create job
+					} else {
+					
 						for _, p := range podModels {
 							u := p.MemoryUsage / p.MemoryLimit
 							amu += u
