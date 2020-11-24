@@ -67,10 +67,10 @@ var (
 		comparator.Comparer(func(x, y sync.Once) bool {
 			return reflect.DeepEqual(x, y)
 		}),
-		comparator.Comparer(func(x, y tls.Config) bool {
+		comparator.Comparer(func(x, y *tls.Config) bool {
 			return reflect.DeepEqual(x, y)
 		}),
-		comparator.Comparer(func(x, y sync.WaitGroup) bool {
+		comparator.Comparer(func(x, y *sync.WaitGroup) bool {
 			return reflect.DeepEqual(x, y)
 		}),
 	}
@@ -128,7 +128,7 @@ func TestNew(t *testing.T) {
 						htr.WithRoundTripper(func() *http.Transport {
 							t := new(http.Transport)
 							t.Proxy = http.ProxyFromEnvironment
-							http2.ConfigureTransport(t)
+							_ = http2.ConfigureTransport(t)
 
 							return t
 						}()),
@@ -154,7 +154,7 @@ func TestNew(t *testing.T) {
 						htr.WithRoundTripper(func() *http.Transport {
 							t := new(http.Transport)
 							t.Proxy = http.ProxyFromEnvironment
-							http2.ConfigureTransport(t)
+							_ = http2.ConfigureTransport(t)
 
 							return t
 						}()),
