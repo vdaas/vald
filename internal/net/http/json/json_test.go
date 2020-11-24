@@ -18,6 +18,7 @@ package json
 import (
 	"bytes"
 	"context"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -28,6 +29,13 @@ import (
 	"github.com/vdaas/vald/internal/net/http/rest"
 
 	"go.uber.org/goleak"
+)
+
+var (
+	// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
+	goleakIgnoreOptions = []goleak.Option{
+		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+	}
 )
 
 func TestEncodeResponse(t *testing.T) {
@@ -101,6 +109,7 @@ func TestEncodeResponse(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			defer goleak.VerifyNone(t, goleakIgnoreOptions...)
 			err := EncodeResponse(tt.args.w, tt.args.data, tt.args.status, tt.args.contentTypes...)
 			if err := tt.checkFunc(err); err != nil {
 				t.Error(err)
@@ -171,6 +180,7 @@ func TestDecodeRequest(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			defer goleak.VerifyNone(t, goleakIgnoreOptions...)
 			err := DecodeRequest(tt.args.r, &tt.args.data)
 			if err := tt.checkFunc(err, tt.args.data); err != nil {
 				t.Error(err)
@@ -329,6 +339,7 @@ func TestHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			defer goleak.VerifyNone(t, goleakIgnoreOptions...)
 			code, err := Handler(tt.args.w, tt.args.r, &tt.args.data, tt.args.logic)
 			if err := tt.checkFunc(code, err, tt.args.data); err != nil {
 				t.Error(err)
@@ -394,6 +405,7 @@ func TestErrorHandler(t *testing.T) {
 	log.Init()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			defer goleak.VerifyNone(t, goleakIgnoreOptions...)
 			got := ErrorHandler(tt.args.w, tt.args.r, tt.args.msg, tt.args.code, tt.args.err)
 			if err := tt.checkFunc(got); err != nil {
 				t.Error(err)
@@ -425,38 +437,69 @@ func TestDecodeResponse(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           res: nil,
-		           data: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			return test{
+				name: "returns nil when response is nil",
+				args: args{
+					res:  nil,
+					data: new(interface{}),
+				},
+				want: want{
+					err: nil,
+				},
+			}
+		}(),
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           res: nil,
-		           data: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			return test{
+				name: "returns nil when response body is nil",
+				args: args{
+					res: &http.Response{
+						Body: nil,
+					},
+					data: new(interface{}),
+				},
+				want: want{
+					err: nil,
+				},
+			}
+		}(),
+
+		func() test {
+			return test{
+				name: "returns nil when the data to be decoded is nil",
+				args: args{
+					res: &http.Response{
+						Body: ioutil.NopCloser(new(bytes.Buffer)),
+					},
+					data: nil,
+				},
+				want: want{
+					err: nil,
+				},
+			}
+		}(),
+
+		func() test {
+			return test{
+				name: "returns nil when contents length is 0",
+				args: args{
+					res: &http.Response{
+						Body:          ioutil.NopCloser(new(bytes.Buffer)),
+						ContentLength: 0,
+					},
+					data: new(interface{}),
+				},
+				want: want{
+					err: nil,
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -533,7 +576,7 @@ func TestEncodeRequest(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -616,7 +659,7 @@ func TestRequest(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -631,7 +674,6 @@ func TestRequest(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
