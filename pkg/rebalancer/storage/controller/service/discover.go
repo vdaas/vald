@@ -243,6 +243,15 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 				}
 
 				// TODO: export below logic to other internal function.
+				if prevSsModel != nil {
+					if prevSsModel.Replicas > ssModel.Replicas {
+						// TODO: calc memory ussage(get average, max usage - average)
+						// pmu := make([]float64, 0, len(podModels))
+					}
+				}
+				// TODO: bias check
+
+				// TODO: job check
 
 				// Store reconciled result for next loop.
 				prevSsModel = ssModel
