@@ -47,7 +47,6 @@ var (
 		comparator.AllowUnexported(transport{}),
 		comparator.AllowUnexported(http.Transport{}),
 		comparator.IgnoreFields(http.Transport{}, "idleLRU", "altProto", "TLSNextProto"),
-		comparator.IgnoreFields(http.Client{}, "Transport"),
 
 		comparator.Comparer(func(x, y backoff.Option) bool {
 			return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
@@ -70,7 +69,7 @@ var (
 		comparator.Comparer(func(x, y *tls.Config) bool {
 			return reflect.DeepEqual(x, y)
 		}),
-		comparator.Comparer(func(x, y *sync.WaitGroup) bool {
+		comparator.Comparer(func(x, y sync.WaitGroup) bool {
 			return reflect.DeepEqual(x, y)
 		}),
 	}
@@ -83,6 +82,13 @@ var (
 			}
 			return false
 		}),
+		// ignore
+		comparator.FilterPath(func(p comparator.Path) bool {
+			if p.String() == "Transport.bo.jittedInitialDuration" {
+				return true
+			}
+			return false
+		}, comparator.Ignore()),
 	)
 )
 
