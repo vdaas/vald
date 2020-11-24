@@ -26,8 +26,10 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/db/storage/blob"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/reader"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/sdk/s3/s3manager"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/writer"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -75,11 +77,17 @@ func TestNew(t *testing.T) {
 			comparator.Comparer(func(want, got *session.Session) bool {
 				return reflect.DeepEqual(want, got)
 			}),
-			comparator.Comparer(func(want, got func(string) (reader.Reader, error)) bool {
+			comparator.Comparer(func(want, got reader.Reader) bool {
 				return want != nil && got != nil
 			}),
-			comparator.Comparer(func(want, got func(string) writer.Writer) bool {
+			comparator.Comparer(func(want, got writer.Writer) bool {
 				return want != nil && got != nil
+			}),
+			comparator.Comparer(func(want, got []backoff.Option) bool {
+				return reflect.DeepEqual(want, got)
+			}),
+			comparator.Comparer(func(want, got s3manager.S3Manager) bool {
+				return reflect.DeepEqual(want, got)
 			}),
 		}
 
@@ -119,11 +127,15 @@ func TestNew(t *testing.T) {
 
 		func() test {
 			sess, _ := session.NewSession()
+			r := new(reader.MockReader)
+			w := new(writer.MockWriter)
 			return test{
-				name: "returns nil when no error occurs internally",
+				name: "returns bucket and nil when the option apply success and no error occurs internally",
 				args: args{
 					opts: []Option{
 						WithSession(sess),
+						WithReader(r),
+						WithWriter(w),
 					},
 				},
 				want: want{
@@ -131,6 +143,44 @@ func TestNew(t *testing.T) {
 						eg:      errgroup.Get(),
 						session: sess,
 						service: s3.New(sess),
+						reader:  r,
+						writer:  w,
+					},
+					err: nil,
+				},
+			}
+		}(),
+
+		func() test {
+			sess, _ := session.NewSession()
+			service := s3.New(sess)
+
+			eg := errgroup.Get()
+
+			return test{
+				name: "returns bucket and nil when reader and writer are created and no error occurs internally",
+				args: args{
+					opts: []Option{
+						WithSession(sess),
+						WithErrGroup(eg),
+						WithBucket("bucket"),
+						WithMaxPartSize("100G"),
+					},
+				},
+				want: want{
+					want: &client{
+						eg:          eg,
+						session:     sess,
+						service:     service,
+						bucket:      "bucket",
+						maxPartSize: 107374182400,
+						reader:      new(reader.MockReader),
+						writer: writer.New(
+							writer.WithErrGroup(eg),
+							writer.WithService(service),
+							writer.WithBucket("bucket"),
+							writer.WithMaxPartSize(107374182400),
+						),
 					},
 					err: nil,
 				},
@@ -302,8 +352,8 @@ func Test_client_Reader(t *testing.T) {
 		service     *s3.S3
 		bucket      string
 		maxPartSize int64
-
-		reader reader.Reader
+		reader      reader.Reader
+		writer      writer.Writer
 	}
 	type want struct {
 		want io.ReadCloser
@@ -369,31 +419,6 @@ func Test_client_Reader(t *testing.T) {
 		func() test {
 			err := errors.New("err")
 
-			r := &reader.MockReader{
-				OpenFunc: func(ctx context.Context, key string) error {
-					return err
-				},
-			}
-
-			return test{
-				name: "returns error when the reader initialization fails",
-				args: args{
-					ctx: context.Background(),
-					key: "key",
-				},
-				fields: fields{
-					reader: r,
-				},
-				want: want{
-					want: nil,
-					err:  err,
-				},
-			}
-		}(),
-
-		func() test {
-			err := errors.New("err")
-
 			opened := false
 
 			r := &reader.MockReader{
@@ -413,7 +438,7 @@ func Test_client_Reader(t *testing.T) {
 					reader: r,
 				},
 				want: want{
-					want: r,
+					want: nil,
 					err:  err,
 				},
 				checkFunc: func(w want, g io.ReadCloser, gerr error) error {
@@ -450,13 +475,14 @@ func Test_client_Reader(t *testing.T) {
 				service:     test.fields.service,
 				bucket:      test.fields.bucket,
 				maxPartSize: test.fields.maxPartSize,
+				reader:      test.fields.reader,
+				writer:      test.fields.writer,
 			}
 
 			got, err := c.Reader(test.args.ctx, test.args.key)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -472,8 +498,8 @@ func Test_client_Writer(t *testing.T) {
 		service     *s3.S3
 		bucket      string
 		maxPartSize int64
-
-		writer writer.Writer
+		reader      reader.Reader
+		writer      writer.Writer
 	}
 	type want struct {
 		want io.WriteCloser
@@ -558,7 +584,7 @@ func Test_client_Writer(t *testing.T) {
 					writer: w,
 				},
 				want: want{
-					want: w,
+					want: nil,
 					err:  err,
 				},
 				checkFunc: func(w want, g io.WriteCloser, gerr error) error {
@@ -595,6 +621,8 @@ func Test_client_Writer(t *testing.T) {
 				service:     test.fields.service,
 				bucket:      test.fields.bucket,
 				maxPartSize: test.fields.maxPartSize,
+				reader:      test.fields.reader,
+				writer:      test.fields.writer,
 			}
 
 			got, err := c.Writer(test.args.ctx, test.args.key)
