@@ -151,6 +151,11 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 		defer close(ech)
 		dt := time.NewTicker(d.dcd)
 		defer dt.Stop()
+
+		// var (
+		// 	prevSsModels []*model.StatefulSet
+		// )
+
 		for {
 			select {
 			case <-ctx.Done():
@@ -220,6 +225,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 						log.Info("statefulset is empty")
 						continue
 					}
+
 					ssModels = make([]*model.StatefulSet, 0, len(sss))
 					for _, ss := range sss {
 						ssModels = append(ssModels, &model.StatefulSet{
@@ -233,6 +239,12 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 					// TODO: define error for return
 					return nil
 				}
+
+				// TODO: export below logic to other internal function.
+
+				// Store reconciled result for next loop.
+				// prevSsModels = ssModels
+
 			case err := <-cech:
 				if err != nil {
 					select {
