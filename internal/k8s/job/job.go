@@ -41,7 +41,7 @@ type reconciler struct {
 	ctx         context.Context
 	mgr         manager.Manager
 	name        string
-	namespace  string
+	namespace   string
 	onError     func(err error)
 	onReconcile func(jobList map[string][]Job)
 }
@@ -88,6 +88,10 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 	jobs := make(map[string][]Job)
 
 	for _, job := range js.Items {
+		// TODO: if namespace is not set, no result will return
+		if job.Namespace != d.namespace {
+			continue
+		}
 		name, ok := job.GetObjectMeta().GetLabels()["app"]
 		if !ok {
 			jns := strings.Split(job.GetName(), "-")
