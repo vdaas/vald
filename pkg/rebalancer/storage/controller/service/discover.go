@@ -37,9 +37,10 @@ type discoverer struct {
 
 	statefulSets atomic.Value
 
-	dcd  time.Duration // discover check duration
-	eg   errgroup.Group
-	ctrl k8s.Controller
+	dcd       time.Duration // discover check duration
+	eg        errgroup.Group
+	ctrl      k8s.Controller
+	tolerance float64
 }
 
 // NewDiscoverer --
@@ -54,6 +55,7 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 
 	job, err := job.New(
 		job.WithControllerName("job discoverer"),
+		job.WithNamespace(d.jobNamespace),
 		job.WithOnErrorFunc(func(err error) {
 			log.Error(err)
 		}),
@@ -243,20 +245,40 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 				}
 
 				// TODO: export below logic to other internal function.
+				var (
+					mmu        float64 = 0.0 // max memory usage
+					amu        float64 = 0.0 // average memory usage
+					rate       float64
+					maxPodName string
+				)
 				if prevSsModel != nil {
 					if prevSsModel.Replicas > ssModel.Replicas {
-						// TODO: calc memory ussage(get average, max usage - average)
-						// pmu := make([]float64, 0, len(podModels))
+						for _, p := range podModels {
+							u := p.MemoryUsage / p.MemoryLimit
+							amu += u
+							if u > mmu {
+								mmu = u
+								maxPodName = p.Name
+							}
+						}
+						amu = amu / float64(len(podModels))
 					}
 				}
-				// TODO: bias check
 
-				// TODO: job check
+				bias := mmu - amu
+				if bias > d.tolerance {
+					rate = 1 - (amu / mmu)
+					if len(jobModels) == 0 {
+						// TODO: create job
+					}
+				}
 
 				// Store reconciled result for next loop.
 				prevSsModel = ssModel
 				// To avoid build failing. We're going to create new code instead of beloww code.
 				_ = prevSsModel
+				_ = rate
+				_ = maxPodName
 
 			case err := <-cech:
 				if err != nil {
