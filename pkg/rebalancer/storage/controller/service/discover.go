@@ -75,13 +75,18 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 	case "statefulset":
 		rc, err = statefulset.New(
 			statefulset.WithControllerName("statefulset discoverer"),
+			statefulset.WithNamespace(d.agentNamespace),
 			statefulset.WithOnErrorFunc(func(err error) {
 				log.Error(err)
 			}),
 			statefulset.WithOnReconcileFunc(func(statefulSetList map[string][]statefulset.StatefulSet) {
 				sss, ok := statefulSetList[d.agentName]
 				if ok {
-					d.statefulSets.Store(sss)
+					if len(sss) == 1 {
+						d.statefulSets.Store(sss[0])
+					} else {
+						log.Infof("too many statefulset list: want 1, but %d", len(sss))
+					}
 				} else {
 					log.Infof("statefuleset not found: %s", d.agentName)
 				}
@@ -152,9 +157,9 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 		dt := time.NewTicker(d.dcd)
 		defer dt.Stop()
 
-		// var (
-		// 	prevSsModels []*model.StatefulSet
-		// )
+		var (
+			prevSsModel *model.StatefulSet
+		)
 
 		for {
 			select {
@@ -165,12 +170,12 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 					mpods map[string]mpod.Pod
 					pods  []pod.Pod
 					jobs  []job.Job
-					sss   []statefulset.StatefulSet
+					ss    statefulset.StatefulSet
 					ok    bool
 
 					podModels []*model.Pod
 					jobModels []*model.Job
-					ssModels  []*model.StatefulSet
+					ssModel   *model.StatefulSet
 				)
 
 				mpods, ok = d.podMetrics.Load().(map[string]mpod.Pod)
@@ -220,20 +225,17 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 				// TODO: cache specified reconciled result based on agentResourceType.
 				switch d.agentResourceType {
 				case "statefulset":
-					sss, ok = d.statefulSets.Load().([]statefulset.StatefulSet)
+					ss, ok = d.statefulSets.Load().(statefulset.StatefulSet)
 					if !ok {
 						log.Info("statefulset is empty")
 						continue
 					}
 
-					ssModels = make([]*model.StatefulSet, 0, len(sss))
-					for _, ss := range sss {
-						ssModels = append(ssModels, &model.StatefulSet{
-							Name:            ss.Name,
-							Namespace:       ss.Namespace,
-							DesiredReplicas: ss.Spec.Replicas,
-							Replicas:        ss.Status.Replicas,
-						})
+					ssModel = &model.StatefulSet{
+						Name:            ss.Name,
+						Namespace:       ss.Namespace,
+						DesiredReplicas: ss.Spec.Replicas,
+						Replicas:        ss.Status.Replicas,
 					}
 				default:
 					// TODO: define error for return
@@ -243,7 +245,9 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 				// TODO: export below logic to other internal function.
 
 				// Store reconciled result for next loop.
-				// prevSsModels = ssModels
+				prevSsModel = ssModel
+				// To avoid build failing. We're going to create new code instead of beloww code.
+				_ = prevSsModel
 
 			case err := <-cech:
 				if err != nil {
