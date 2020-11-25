@@ -99,7 +99,7 @@ func (c *client) Close() error {
 }
 
 // Reader creates reader.Reader implementation and returns it.
-// An error will be returned if the reader initializes fails and if an error occurs in reader.Open.
+// An error will be returned when the reader initialization fails or an error occurs in reader.Open.
 func (c *client) Reader(ctx context.Context, key string) (rc io.ReadCloser, err error) {
 	err = c.reader.Open(ctx, key)
 	if err != nil {
@@ -109,7 +109,7 @@ func (c *client) Reader(ctx context.Context, key string) (rc io.ReadCloser, err 
 }
 
 // Writer creates writer.Writer implementation and returns it.
-// An error will be returned if the writer initializes fails and if an error occurs in writer.Open.
+// An error will be returned when the writer initialization fails or an error occurs in writer.Open.
 func (c *client) Writer(ctx context.Context, key string) (wc io.WriteCloser, err error) {
 	err = c.writer.Open(ctx, key)
 	if err != nil {
