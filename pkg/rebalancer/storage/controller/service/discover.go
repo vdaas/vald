@@ -77,7 +77,7 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 	case "statefulset":
 		rc, err = statefulset.New(
 			statefulset.WithControllerName("statefulset discoverer"),
-			statefulset.WithNamespace(d.agentNamespace),
+			statefulset.WithNamespaces(d.agentNamespace),
 			statefulset.WithOnErrorFunc(func(err error) {
 				log.Error(err)
 			}),
@@ -253,10 +253,10 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 				)
 				if prevSsModel != nil {
 					if prevSsModel.Replicas > ssModel.Replicas {
-					        // TODO: Check the difference prevPodModels and podModels
+						// TODO: Check the difference prevPodModels and podModels
 						// TODO: create job
 					} else {
-					
+
 						for _, p := range podModels {
 							u := p.MemoryUsage / p.MemoryLimit
 							amu += u

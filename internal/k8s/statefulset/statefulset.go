@@ -30,6 +30,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime"
 
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -43,7 +44,7 @@ type reconciler struct {
 	ctx         context.Context
 	mgr         manager.Manager
 	name        string
-	namespace   string
+	namespaces  []string
 	onError     func(err error)
 	onReconcile func(rs map[string][]StatefulSet)
 	pool        sync.Pool
@@ -75,7 +76,13 @@ func New(opts ...Option) (StatefulSetWatcher, error) {
 func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err error) {
 	ssl := new(appsv1.StatefulSetList)
 
-	err = r.mgr.GetClient().List(r.ctx, ssl)
+	listOpts := make([]client.ListOption, 0, len(r.namespaces))
+
+	for _, ns := range r.namespaces {
+		listOpts = append(listOpts, client.InNamespace(ns))
+	}
+
+	err = r.mgr.GetClient().List(r.ctx, ssl, listOpts...)
 	if err != nil {
 		if r.onError != nil {
 			r.onError(err)
@@ -96,9 +103,6 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 	appList := make(map[string]bool)
 
 	for _, statefulset := range ssl.Items {
-		if statefulset.Namespace != r.namespace {
-			continue
-		}
 		name, ok := statefulset.GetObjectMeta().GetLabels()["app"]
 		if !ok {
 			pns := strings.Split(statefulset.GetName(), "-")
