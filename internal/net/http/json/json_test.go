@@ -22,6 +22,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -482,7 +484,7 @@ func TestDecodeResponse(t *testing.T) {
 
 		func() test {
 			return test{
-				name: "returns nil when contents length is 0",
+				name: "returns nil when the contents length is 0",
 				args: args{
 					res: &http.Response{
 						Body:          ioutil.NopCloser(new(bytes.Buffer)),
@@ -492,6 +494,26 @@ func TestDecodeResponse(t *testing.T) {
 				},
 				want: want{
 					err: nil,
+				},
+			}
+		}(),
+
+		func() test {
+			return test{
+				name: "returns nil when the reponse body is invalid",
+				args: args{
+					res: &http.Response{
+						Body:          ioutil.NopCloser(strings.NewReader("1+3i")),
+						ContentLength: 2,
+					},
+					data: new(interface{}),
+				},
+				want: want{
+					err: &strconv.NumError{
+						Func: "ParseFloat",
+						Num:  "1+3i",
+						Err:  strconv.ErrSyntax,
+					},
 				},
 			}
 		}(),
