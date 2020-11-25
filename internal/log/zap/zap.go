@@ -25,6 +25,13 @@ import (
 
 const (
 	detailsKey = "details"
+
+	defaultLevel = zapcore.DebugLevel
+)
+
+var (
+	zapcore_NewConsoleEncoder = zapcore.NewConsoleEncoder
+	zapcore_NewJSONEncoder    = zapcore.NewJSONEncoder
 )
 
 type logger struct {
@@ -44,7 +51,7 @@ func New(opts ...Option) (*logger, error) {
 		opt(l)
 	}
 
-	err := l.initialize()
+	err := l.initialize("stdout", "stderr")
 	if err != nil {
 		return nil, err
 	}
@@ -52,18 +59,33 @@ func New(opts ...Option) (*logger, error) {
 	return l, nil
 }
 
-func (l *logger) initialize() (err error) {
-	cfg := zap.NewProductionConfig()
-
-	cfg.Level.SetLevel(toZapLevel(l.level))
-	cfg.Encoding = toZapEncoder(l.format)
-
-	cfg.DisableCaller = !l.enableCaller
-
-	l.logger, err = cfg.Build()
+func (l *logger) initialize(sinkPath, errSinkPath string) (err error) {
+	sink, closeOut, err := zap.Open(sinkPath)
 	if err != nil {
 		return err
 	}
+
+	errSink, _, err := zap.Open(errSinkPath)
+	if err != nil {
+		closeOut()
+		return err
+	}
+
+	core := zapcore.NewCore(
+		toZapEncoder(l.format),
+		sink,
+		toZapLevel(l.level),
+	)
+
+	opts := []zap.Option{
+		zap.ErrorOutput(errSink),
+	}
+
+	if l.enableCaller {
+		opts = append(opts, zap.AddCaller())
+	}
+
+	l.logger = zap.New(core, opts...)
 
 	l.sugar = l.logger.Sugar()
 
@@ -83,18 +105,22 @@ func toZapLevel(lv level.Level) zapcore.Level {
 	case level.FATAL:
 		return zapcore.FatalLevel
 	default:
-		return zapcore.DebugLevel
+		return defaultLevel
 	}
 }
 
-func toZapEncoder(fmt format.Format) string {
+func toZapEncoder(fmt format.Format) zapcore.Encoder {
+	cfg := zap.NewProductionEncoderConfig()
+
 	switch fmt {
 	case format.RAW:
-		return "console"
+		return zapcore_NewConsoleEncoder(cfg)
 	case format.JSON:
-		return "json"
+		return zapcore_NewJSONEncoder(cfg)
+	case format.Unknown:
+		fallthrough
 	default:
-		return "json"
+		return zapcore_NewJSONEncoder(cfg)
 	}
 }
 
