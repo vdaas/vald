@@ -38,10 +38,10 @@ func WithManager(mgr manager.Manager) Option {
 	}
 }
 
-// WithNamaspace returns Option that sets r.namaspace.
-func WithNamespace(ns string) Option {
+// WithNamespaces returns Option that sets r.namaspaces.
+func WithNamespaces(nss ...string) Option {
 	return func(r *reconciler) error {
-		r.namespace = ns
+		r.namespaces = nss
 		return nil
 	}
 }
