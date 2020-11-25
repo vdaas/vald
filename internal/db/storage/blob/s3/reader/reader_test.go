@@ -170,6 +170,7 @@ func Test_reader_Open(t *testing.T) {
 				name: "returns nil when context is canceled",
 				args: args{
 					ctx: cctx,
+					key: "vald",
 				},
 				fields: fields{
 					eg: eg,
@@ -199,6 +200,7 @@ func Test_reader_Open(t *testing.T) {
 				name: "returns nil when backoff is enabled and s3 service returns an error",
 				args: args{
 					ctx: cctx,
+					key: "vald",
 				},
 				fields: fields{
 					eg: eg,
