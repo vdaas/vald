@@ -4,10 +4,15 @@ import "time"
 
 // Job -
 type Job struct {
-	Name      string
-	Namespace string
-	Active    int32
-	StartTime time.Time
+	Name                 string
+	Namespace            string
+	Active               int32
+	StartTime            time.Time
+	Type                 string
+	TargetAgentNamespace string
+	TargetAgentName      string
+	ControllerNamespace  string
+	ControllerName       string
 }
 
 // Pod & PodMetrics
