@@ -84,7 +84,10 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 				grpc.RecoverInterceptor(),
 				grpc.AccessLogInterceptor(),
 			),
-			grpc.ChainStreamInterceptor(grpc.RecoverStreamInterceptor()),
+			grpc.ChainStreamInterceptor(
+				grpc.RecoverStreamInterceptor(),
+				grpc.AccessLogStreamInterceptor(),
+			),
 		),
 		server.WithPreStartFunc(func() error {
 			return nil

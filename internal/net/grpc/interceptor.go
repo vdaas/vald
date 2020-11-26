@@ -130,6 +130,54 @@ func AccessLogInterceptor() UnaryServerInterceptor {
 	}
 }
 
+func AccessLogStreamInterceptor() StreamServerInterceptor {
+	return func(
+		srv interface{},
+		ss grpc.ServerStream,
+		info *grpc.StreamServerInfo,
+		handler grpc.StreamHandler,
+	) error {
+		var traceID string
+
+		span := trace.FromContext(ss.Context())
+		if span != nil {
+			traceID = span.SpanContext().TraceID.String()
+		}
+
+		start := time.Now()
+
+		err := handler(srv, ss)
+
+		latency := float64(time.Since(start)) / float64(time.Second)
+		startTime := float64(start.UnixNano()) / float64(time.Second)
+
+		service, method := parseMethod(info.FullMethod)
+
+		entity := &AccessLogEntity{
+			Grpc: &AccessLogGrpcEntity{
+				Kind:    "stream",
+				Service: service,
+				Method:  method,
+			},
+			StartTime: startTime,
+			Latency:   latency,
+		}
+
+		if traceID != "" {
+			entity.TraceID = traceID
+		}
+
+		if err != nil {
+			entity.Error = err
+			log.Error("rpc completed", entity)
+		} else {
+			log.Info("rpc completed", entity)
+		}
+
+		return err
+	}
+}
+
 func parseMethod(fullMethod string) (service, method string) {
 	service = path.Dir(fullMethod)[1:]
 	method = path.Base(fullMethod)
