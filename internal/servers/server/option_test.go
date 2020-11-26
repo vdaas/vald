@@ -2245,10 +2245,57 @@ func TestWithGRPCInterceptors(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "set success",
+			name:  "set nothing",
+			names: []string{},
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
+
+				if len(got.grpc.opts) != 0 {
+					return errors.Errorf("Expecting nothing in got.grpc.opts: got = %#v", got)
+				}
+
+				return nil
+			},
+		},
+		{
+			name:  "do nothing if invalid name",
+			names: []string{"invalid"},
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if len(got.grpc.opts) != 0 {
+					return errors.Errorf("Expecting nothing in got.grpc.opts: got = %#v", got)
+				}
+
+				return nil
+			},
+		},
+		{
+			name:  "Add AccessLogInterceptor using 'AccessLogInterceptor'",
+			names: []string{"AccessLogInterceptor"},
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if len(got.grpc.opts) != 2 {
+					return errors.Errorf("Expecting two elements in got.grpc.opts: got = %#v", got)
+				}
+
+				return nil
+			},
+		},
+		{
+			name:  "Add AccessLogInterceptor using 'AccessLog'",
+			names: []string{"AccessLog"},
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if len(got.grpc.opts) != 2 {
+					return errors.Errorf("Expecting two elements in got.grpc.opts: got = %#v", got)
+				}
 
 				return nil
 			},
