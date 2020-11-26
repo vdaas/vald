@@ -254,7 +254,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 					mmu        map[string]float64 = make(map[string]float64) // max memory usage
 					amu        map[string]float64 = make(map[string]float64) // average memory usage
 					rate       map[string]float64 = make(map[string]float64) // rabalance rate
-					maxPodName map[string]string
+					maxPodName map[string]string  = make(map[string]string)
 				)
 				if prevSsModel != nil {
 					for ns, psm := range prevSsModel {
