@@ -41,30 +41,19 @@ func TestString(t *testing.T) {
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, got string) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		if got != w.want {
+			return errors.Errorf("\tgot: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
 		/*
-		   {
-		       name: "test_case_1",
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
+			{
+				name: "string return success",
+				want: want{
+					want: detail.String(),
+				},
+			},
 		*/
 	}
 
@@ -180,53 +169,34 @@ func TestDetail_String(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           Version: "",
-		           ServerName: "",
-		           GitCommit: "",
-		           BuildTime: "",
-		           GoVersion: "",
-		           GoOS: "",
-		           GoArch: "",
-		           CGOEnabled: "",
-		           NGTVersion: "",
-		           BuildCPUInfoFlags: nil,
-		           StackTrace: nil,
-		           PrepOnce: sync.Once{},
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           Version: "",
-		           ServerName: "",
-		           GitCommit: "",
-		           BuildTime: "",
-		           GoVersion: "",
-		           GoOS: "",
-		           GoArch: "",
-		           CGOEnabled: "",
-		           NGTVersion: "",
-		           BuildCPUInfoFlags: nil,
-		           StackTrace: nil,
-		           PrepOnce: sync.Once{},
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "string return correct string",
+			fields: fields{
+				Version:           "1.0",
+				ServerName:        "srv",
+				GitCommit:         "commit",
+				BuildTime:         "bt",
+				GoVersion:         "1.1",
+				GoOS:              "goos",
+				GoArch:            "goarch",
+				CGOEnabled:        "true",
+				NGTVersion:        "1.2",
+				BuildCPUInfoFlags: nil,
+				StackTrace: []StackTrace{
+					StackTrace{
+						URL:      "url",
+						FuncName: "func",
+						File:     "file",
+						Line:     10,
+					},
+				},
+				PrepOnce: sync.Once{},
+			},
+			want: want{
+				want: "\nbuild cpu info flags -> []\nbuild time           -> bt\ncgo enabled          -> true\ngit commit           -> commit\ngo arch              -> goarch\ngo os                -> goos\ngo version           -> 1.1\nngt version          -> 1.2\nserver name          -> srv\nstack trace-0        -> url\tfunc\nvald version         -> \x1b[1m1.0\x1b[22m",
+			},
+			checkFunc: defaultCheckFunc,
+		},
 	}
 
 	for _, test := range tests {
@@ -291,67 +261,68 @@ func TestDetail_Get(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got Detail) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+			return errors.Errorf("\tgot: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           Version: "",
-		           ServerName: "",
-		           GitCommit: "",
-		           BuildTime: "",
-		           GoVersion: "",
-		           GoOS: "",
-		           GoArch: "",
-		           CGOEnabled: "",
-		           NGTVersion: "",
-		           BuildCPUInfoFlags: nil,
-		           StackTrace: nil,
-		           PrepOnce: sync.Once{},
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           Version: "",
-		           ServerName: "",
-		           GitCommit: "",
-		           BuildTime: "",
-		           GoVersion: "",
-		           GoOS: "",
-		           GoArch: "",
-		           CGOEnabled: "",
-		           NGTVersion: "",
-		           BuildCPUInfoFlags: nil,
-		           StackTrace: nil,
-		           PrepOnce: sync.Once{},
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "get return detail object",
+			beforeFunc: func() {
+				rtCaller = func(skip int) (pc uintptr, file string, line int, ok bool) {
+					return uintptr(0), "", 0, false
+				}
+			},
+			want: want{
+				want: Detail{
+					GitCommit:  "master",
+					GoVersion:  runtime.Version(),
+					GoOS:       runtime.GOOS,
+					GoArch:     runtime.GOARCH,
+					StackTrace: []StackTrace{},
+					PrepOnce: func() sync.Once {
+						o := sync.Once{}
+						o.Do(func() {})
+						return o
+					}(),
+				},
+			},
+		},
+		{
+			name: "get return detail object with stacktrace",
+			beforeFunc: func() {
+				dummyFunc := func() {}
+				rtCaller = func(skip int) (pc uintptr, file string, line int, ok bool) {
+					return uintptr(0), "info.go", 100, true
+				}
+				rtFuncForPC = func(uintptr) *runtime.Func {
+					return runtime.FuncForPC(reflect.ValueOf(dummyFunc).Pointer())
+				}
+			},
+			want: want{
+				want: Detail{
+					GitCommit:  "master",
+					GoVersion:  runtime.Version(),
+					GoOS:       runtime.GOOS,
+					GoArch:     runtime.GOARCH,
+					StackTrace: []StackTrace{},
+					PrepOnce: func() sync.Once {
+						o := sync.Once{}
+						o.Do(func() {})
+						return o
+					}(),
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
 			if test.afterFunc != nil {
 				defer test.afterFunc()
+			}
+			if test.beforeFunc != nil {
+				test.beforeFunc()
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc

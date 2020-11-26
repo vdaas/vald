@@ -74,6 +74,9 @@ var (
 	once sync.Once
 
 	detail Detail
+
+	rtCaller    = runtime.Caller
+	rtFuncForPC = runtime.FuncForPC
 )
 
 // String calls String method of global detail object.
@@ -157,11 +160,11 @@ func (d Detail) Get() Detail {
 
 	d.StackTrace = make([]StackTrace, 0, 10)
 	for i := 3; ; i++ {
-		pc, file, line, ok := runtime.Caller(i)
+		pc, file, line, ok := rtCaller(i)
 		if !ok {
 			break
 		}
-		funcName := runtime.FuncForPC(pc).Name()
+		funcName := rtFuncForPC(pc).Name()
 		if funcName == "runtime.main" {
 			break
 		}
