@@ -221,11 +221,17 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 					if _, ok := jobModels[j.Namespace]; !ok {
 						jobModels[j.Namespace] = make([]*model.Job, 0)
 					}
+
 					jobModels[j.Namespace] = append(jobModels[j.Namespace], &model.Job{
-						Name:      j.Name,
-						Namespace: j.Namespace,
-						Active:    j.Status.Active,
-						StartTime: t,
+						Name:                 j.Name,
+						Namespace:            j.Namespace,
+						Active:               j.Status.Active,
+						StartTime:            t,
+						Type:                 j.Labels["type"],
+						TargetAgentNamespace: j.Labels["target_agent_namespace"],
+						TargetAgentName:      j.Labels["target_agent_name"],
+						ControllerNamespace:  j.Labels["controller_namespace"],
+						ControllerName:       j.Labels["controller_name"],
 					})
 				}
 
@@ -278,9 +284,18 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 						bias := mmu[ns] - amu[ns]
 						if bias > d.tolerance {
 							rate[ns] = 1 - (amu[ns] / mmu[ns])
-							// TODO: change decision logic
-							if len(jobModels) == 0 {
-								// TODO: create job
+							for _, jobs := range jobModels {
+								var ok bool
+								for _, job := range jobs {
+									if job.Type == "rebalance" && job.Active != 0 && job.TargetAgentNamespace == ns {
+										ok = true
+										break
+									}
+								}
+
+								if !ok {
+									// TODO: create Job
+								}
 							}
 						}
 					}
