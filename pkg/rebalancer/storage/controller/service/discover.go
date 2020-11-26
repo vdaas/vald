@@ -160,7 +160,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 		defer dt.Stop()
 
 		var (
-			prevSsModel *model.StatefulSet
+			prevSsModel map[string]*model.StatefulSet
 		)
 
 		for {
@@ -251,34 +251,38 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 
 				// TODO: export below logic to other internal function.
 				var (
-					mmu        float64 = 0.0 // max memory usage
-					amu        float64 = 0.0 // average memory usage
-					rate       float64
-					maxPodName string
+					mmu        map[string]float64 = make(map[string]float64) // max memory usage
+					amu        map[string]float64 = make(map[string]float64) // average memory usage
+					rate       map[string]float64 = make(map[string]float64) // rabalance rate
+					maxPodName map[string]string
 				)
 				if prevSsModel != nil {
-					if prevSsModel.Replicas > ssModel.Replicas {
-						// TODO: Check the difference prevPodModels and podModels
-						// TODO: create job
-					} else {
-
-						for _, p := range podModels {
-							u := p.MemoryUsage / p.MemoryLimit
-							amu += u
-							if u > mmu {
-								mmu = u
-								maxPodName = p.Name
+					for ns, psm := range prevSsModel {
+						if _, ok := ssModel[ns]; !ok {
+							continue
+						}
+						if psm.Replicas > ssModel[ns].Replicas {
+							// TODO: Check the difference prevPodModels and podModels
+							// TODO: create job
+						} else {
+							for _, p := range podModels[ns] {
+								u := p.MemoryUsage / p.MemoryLimit
+								amu[ns] += u
+								if u > mmu[ns] {
+									mmu[ns] = u
+									maxPodName[ns] = p.Name
+								}
+							}
+							amu[ns] = amu[ns] / float64(len(podModels[ns]))
+						}
+						bias := mmu[ns] - amu[ns]
+						if bias > d.tolerance {
+							rate[ns] = 1 - (amu[ns] / mmu[ns])
+							// TODO: change decision logic
+							if len(jobModels) == 0 {
+								// TODO: create job
 							}
 						}
-						amu = amu / float64(len(podModels))
-					}
-				}
-
-				bias := mmu - amu
-				if bias > d.tolerance {
-					rate = 1 - (amu / mmu)
-					if len(jobModels) == 0 {
-						// TODO: create job
 					}
 				}
 
@@ -286,8 +290,6 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 				prevSsModel = ssModel
 				// To avoid build failing. We're going to create new code instead of beloww code.
 				_ = prevSsModel
-				_ = rate
-				_ = maxPodName
 
 			case err := <-cech:
 				if err != nil {
