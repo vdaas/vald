@@ -55,7 +55,7 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 
 	job, err := job.New(
 		job.WithControllerName("job discoverer"),
-		job.WithNamespace(d.jobNamespace),
+		job.WithNamespaces(d.jobNamespace),
 		job.WithOnErrorFunc(func(err error) {
 			log.Error(err)
 		}),
@@ -175,9 +175,9 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 					ss    statefulset.StatefulSet
 					ok    bool
 
-					podModels []*model.Pod
-					jobModels []*model.Job
-					ssModel   *model.StatefulSet
+					podModels map[string][]*model.Pod
+					jobModels map[string][]*model.Job
+					ssModel   map[string]*model.StatefulSet
 				)
 
 				mpods, ok = d.podMetrics.Load().(map[string]mpod.Pod)
@@ -192,10 +192,13 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 					continue
 				}
 
-				podModels = make([]*model.Pod, 0, len(pods))
+				podModels = make(map[string][]*model.Pod)
 				for _, p := range pods {
+					if _, ok := podModels[p.Namespace]; !ok {
+						podModels[p.Namespace] = make([]*model.Pod, 0)
+					}
 					if mpod, ok := mpods[p.Name]; ok {
-						podModels = append(podModels, &model.Pod{
+						podModels[p.Namespace] = append(podModels[p.Namespace], &model.Pod{
 							Name:        p.Name,
 							Namespace:   p.Namespace,
 							MemoryLimit: p.MemLimit,
@@ -209,14 +212,16 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 					log.Info("job is empty")
 					continue
 				}
-
-				jobModels = make([]*model.Job, 0, len(jobs))
+				jobModels = make(map[string][]*model.Job)
 				for _, j := range jobs {
 					var t time.Time
 					if j.Status.StartTime != nil {
 						t = j.Status.StartTime.Time
 					}
-					jobModels = append(jobModels, &model.Job{
+					if _, ok := jobModels[j.Namespace]; !ok {
+						jobModels[j.Namespace] = make([]*model.Job, 0)
+					}
+					jobModels[j.Namespace] = append(jobModels[j.Namespace], &model.Job{
 						Name:      j.Name,
 						Namespace: j.Namespace,
 						Active:    j.Status.Active,
@@ -233,7 +238,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 						continue
 					}
 
-					ssModel = &model.StatefulSet{
+					ssModel[ss.Namespace] = &model.StatefulSet{
 						Name:            ss.Name,
 						Namespace:       ss.Namespace,
 						DesiredReplicas: ss.Spec.Replicas,

@@ -24,6 +24,7 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -41,7 +42,7 @@ type reconciler struct {
 	ctx         context.Context
 	mgr         manager.Manager
 	name        string
-	namespace   string
+	namespaces  []string
 	onError     func(err error)
 	onReconcile func(jobList map[string][]Job)
 }
@@ -66,7 +67,12 @@ func New(opts ...Option) (JobWatcher, error) {
 func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err error) {
 	js := new(batchv1.JobList)
 
-	err = r.mgr.GetClient().List(r.ctx, js)
+	listOpts := make([]client.ListOption, 0, len(r.namespaces))
+	for _, ns := range r.namespaces {
+		listOpts = append(listOpts, client.InNamespace(ns))
+	}
+
+	err = r.mgr.GetClient().List(r.ctx, js, listOpts...)
 	if err != nil {
 		if r.onError != nil {
 			r.onError(err)
@@ -88,10 +94,6 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 	jobs := make(map[string][]Job)
 
 	for _, job := range js.Items {
-		// TODO: if namespace is not set, no result will return
-		if job.Namespace != d.namespace {
-			continue
-		}
 		name, ok := job.GetObjectMeta().GetLabels()["app"]
 		if !ok {
 			jns := strings.Split(job.GetName(), "-")
