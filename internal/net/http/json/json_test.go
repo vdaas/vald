@@ -21,6 +21,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
@@ -707,23 +708,57 @@ func TestRequest(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           method: "",
-		           url: "",
-		           payloyd: nil,
-		           data: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			return test{
+				name: "returns generation of request error when method is invalid",
+				args: args{
+					ctx:     context.Background(),
+					method:  "@",
+					url:     "/",
+					payloyd: nil,
+					data:    nil,
+				},
+				want: want{
+					err: errors.Errorf("net/http: invalid method %q", "@"),
+				},
+			}
+		}(),
+
+		func() test {
+			return test{
+				name: "returns json encode error when the request json encoding fails",
+				args: args{
+					ctx:     context.Background(),
+					method:  "POST",
+					url:     "/",
+					payloyd: 1 + 3i,
+					data:    new(interface{}),
+				},
+				want: want{
+					err: errors.New("complex128 is unsupported type"),
+				},
+			}
+		}(),
+
+		func() test {
+			return test{
+				name: "returns http request error when sending http request fails",
+				args: args{
+					ctx:     context.Background(),
+					method:  "POST",
+					url:     "/",
+					payloyd: "1",
+					data:    new(interface{}),
+				},
+				want: want{
+					err: &url.Error{
+						Op:  "Post",
+						URL: "/",
+						Err: errors.New("http: nil request.URL"),
+					},
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
