@@ -500,7 +500,7 @@ func TestDecodeResponse(t *testing.T) {
 
 		func() test {
 			return test{
-				name: "returns nil when the reponse body is invalid",
+				name: "returns json decode error when the response body is invalid",
 				args: args{
 					res: &http.Response{
 						Body:          ioutil.NopCloser(strings.NewReader("1+3i")),
@@ -511,9 +511,37 @@ func TestDecodeResponse(t *testing.T) {
 				want: want{
 					err: &strconv.NumError{
 						Func: "ParseFloat",
-						Num:  "1+3i",
+						Num:  "1+3",
 						Err:  strconv.ErrSyntax,
 					},
+				},
+			}
+		}(),
+
+		func() test {
+			var data int
+			return test{
+				name: "returns nil when the decode success",
+				args: args{
+					res: &http.Response{
+						Body:          ioutil.NopCloser(strings.NewReader("1")),
+						ContentLength: 1,
+					},
+					data: &data,
+				},
+				checkFunc: func(w want, got error) error {
+					if err := defaultCheckFunc(w, got); err != nil {
+						return err
+					}
+
+					if want, got := 1, data; want != got {
+						return errors.Errorf("data want: %d, but got: %d", want, got)
+					}
+
+					return nil
+				},
+				want: want{
+					err: nil,
 				},
 			}
 		}(),
@@ -565,35 +593,70 @@ func TestEncodeRequest(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           req: nil,
-		           data: nil,
-		           contentTypes: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			var val = 1 + 3i
+			return test{
+				name: "returns json encode error when the json encode fails",
+				args: args{
+					req:  new(http.Request),
+					data: val,
+				},
+				want: want{
+					err: errors.New("complex128 is unsupported type"),
+				},
+			}
+		}(),
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           req: nil,
-		           data: nil,
-		           contentTypes: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			req := &http.Request{
+				Header: http.Header{},
+			}
+			return test{
+				name: "returns nil when json encode success",
+				args: args{
+					req: req,
+					contentTypes: []string{
+						"application/json",
+					},
+					data: 1,
+				},
+				checkFunc: func(w want, got error) error {
+					if err := defaultCheckFunc(w, got); err != nil {
+						return err
+					}
+
+					if len(req.Header) != 1 {
+						return errors.Errorf("header length is wrong. want: %v, but got: %d", 1, len(req.Header))
+					}
+
+					gotHeaders, ok := req.Header[rest.ContentType]
+					if !ok {
+						return errors.Errorf("header not found. key: %s", rest.ContentType)
+					}
+
+					if len(gotHeaders) != 1 {
+						return errors.Errorf("header value length is wrong. key:%s want: %d, but got: %d", rest.ContentType, 1, len(gotHeaders))
+					}
+
+					if want, got := "application/json", gotHeaders[0]; want != got {
+						return errors.Errorf("header value is wrong. want: %s, but got: %s", want, got)
+					}
+
+					if want, got := int64(2), req.ContentLength; want != got {
+						return errors.Errorf("content length is wrong. want: %v, but got: %d", want, got)
+					}
+
+					if req.Body == nil {
+						return errors.New("Body is nil")
+					}
+
+					return nil
+				},
+				want: want{
+					err: nil,
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
@@ -644,22 +707,6 @@ func TestRequest(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           method: "",
-		           url: "",
-		           payloyd: nil,
-		           data: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
 		// TODO test cases
 		/*
 		   func() test {
