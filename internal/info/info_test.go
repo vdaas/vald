@@ -47,14 +47,20 @@ func TestString(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		/*
-			{
-				name: "string return success",
-				want: want{
-					want: detail.String(),
-				},
+		{
+			name: "string return valid string with no stacktrace initialized",
+			beforeFunc: func() {
+				rtCaller = func(skip int) (pc uintptr, file string, line int, ok bool) {
+					return uintptr(0), "", 0, false
+				}
 			},
-		*/
+			afterFunc: func() {
+				rtCaller = runtime.Caller
+			},
+			want: want{
+				want: "\nbuild cpu info flags -> []\nbuild time           -> \ncgo enabled          -> \ngit commit           -> master\ngo arch              -> " + runtime.GOARCH + "\ngo os                -> " + runtime.GOOS + "\ngo version           -> " + runtime.Version() + "\nngt version          -> \nserver name          -> \nvald version         -> \x1b[1m\x1b[22m",
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -95,25 +101,31 @@ func TestGet(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "get return detail object",
+			beforeFunc: func() {
+				rtCaller = func(skip int) (pc uintptr, file string, line int, ok bool) {
+					return uintptr(0), "", 0, false
+				}
+			},
+			afterFunc: func() {
+				rtCaller = runtime.Caller
+			},
+			want: want{
+				want: Detail{
+					GitCommit:  "master",
+					GoVersion:  runtime.Version(),
+					GoOS:       runtime.GOOS,
+					GoArch:     runtime.GOARCH,
+					StackTrace: []StackTrace{},
+					PrepOnce: func() sync.Once {
+						o := sync.Once{}
+						o.Do(func() {})
+						return o
+					}(),
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -195,7 +207,34 @@ func TestDetail_String(t *testing.T) {
 			want: want{
 				want: "\nbuild cpu info flags -> []\nbuild time           -> bt\ncgo enabled          -> true\ngit commit           -> commit\ngo arch              -> goarch\ngo os                -> goos\ngo version           -> 1.1\nngt version          -> 1.2\nserver name          -> srv\nstack trace-0        -> url\tfunc\nvald version         -> \x1b[1m1.0\x1b[22m",
 			},
-			checkFunc: defaultCheckFunc,
+		},
+		{
+			name: "string return valid string with no stacktrace initialized",
+			fields: fields{
+				Version:           "1.0",
+				ServerName:        "srv",
+				GitCommit:         "commit",
+				BuildTime:         "bt",
+				GoVersion:         "1.1",
+				GoOS:              "goos",
+				GoArch:            "goarch",
+				CGOEnabled:        "true",
+				NGTVersion:        "1.2",
+				BuildCPUInfoFlags: nil,
+				StackTrace:        []StackTrace{},
+				PrepOnce:          sync.Once{},
+			},
+			beforeFunc: func() {
+				rtCaller = func(skip int) (pc uintptr, file string, line int, ok bool) {
+					return uintptr(0), "", 0, false
+				}
+			},
+			afterFunc: func() {
+				rtCaller = runtime.Caller
+			},
+			want: want{
+				want: "\nbuild cpu info flags -> []\nbuild time           -> bt\ncgo enabled          -> true\ngit commit           -> commit\ngo arch              -> goarch\ngo os                -> goos\ngo version           -> 1.1\nngt version          -> 1.2\nserver name          -> srv\nvald version         -> \x1b[1m1.0\x1b[22m",
+			},
 		},
 	}
 
@@ -273,6 +312,9 @@ func TestDetail_Get(t *testing.T) {
 					return uintptr(0), "", 0, false
 				}
 			},
+			afterFunc: func() {
+				rtCaller = runtime.Caller
+			},
 			want: want{
 				want: Detail{
 					GitCommit:  "master",
@@ -291,21 +333,241 @@ func TestDetail_Get(t *testing.T) {
 		{
 			name: "get return detail object with stacktrace",
 			beforeFunc: func() {
-				dummyFunc := func() {}
+				i := 0
 				rtCaller = func(skip int) (pc uintptr, file string, line int, ok bool) {
-					return uintptr(0), "info.go", 100, true
+					if i == 0 {
+						i++
+						return uintptr(0), "info.go", 100, true
+					}
+					return uintptr(1), "info.go", 100, false
 				}
 				rtFuncForPC = func(uintptr) *runtime.Func {
-					return runtime.FuncForPC(reflect.ValueOf(dummyFunc).Pointer())
+					return runtime.FuncForPC(reflect.ValueOf(TestDetail_Get).Pointer())
 				}
+			},
+			afterFunc: func() {
+				rtCaller = runtime.Caller
+				rtFuncForPC = runtime.FuncForPC
 			},
 			want: want{
 				want: Detail{
-					GitCommit:  "master",
-					GoVersion:  runtime.Version(),
-					GoOS:       runtime.GOOS,
-					GoArch:     runtime.GOARCH,
-					StackTrace: []StackTrace{},
+					GitCommit: "master",
+					GoVersion: runtime.Version(),
+					GoOS:      runtime.GOOS,
+					GoArch:    runtime.GOARCH,
+					StackTrace: []StackTrace{
+						StackTrace{
+							URL:      "https://github.com/vdaas/vald/tree/master",
+							FuncName: "github.com/vdaas/vald/internal/info.TestDetail_Get",
+							File:     "info.go",
+							Line:     100,
+						},
+					},
+					PrepOnce: func() sync.Once {
+						o := sync.Once{}
+						o.Do(func() {})
+						return o
+					}(),
+				},
+			},
+		},
+		{
+			name: "get return detail object with fila name has goroot prefix",
+			beforeFunc: func() {
+				i := 0
+				rtCaller = func(skip int) (pc uintptr, file string, line int, ok bool) {
+					if i == 0 {
+						i++
+						return uintptr(0), runtime.GOROOT() + "/src/info.go", 100, true
+					}
+					return uintptr(1), "info.go", 100, false
+				}
+				rtFuncForPC = func(uintptr) *runtime.Func {
+					return runtime.FuncForPC(reflect.ValueOf(TestDetail_Get).Pointer())
+				}
+			},
+			afterFunc: func() {
+				rtCaller = runtime.Caller
+				rtFuncForPC = runtime.FuncForPC
+			},
+			want: want{
+				want: Detail{
+					GitCommit: "master",
+					GoVersion: runtime.Version(),
+					GoOS:      runtime.GOOS,
+					GoArch:    runtime.GOARCH,
+					StackTrace: []StackTrace{
+						StackTrace{
+							URL:      "https://github.com/golang/go/blob/go1.15.5/src/info.go#L100",
+							FuncName: "github.com/vdaas/vald/internal/info.TestDetail_Get",
+							File:     runtime.GOROOT() + "/src/info.go",
+							Line:     100,
+						},
+					},
+					PrepOnce: func() sync.Once {
+						o := sync.Once{}
+						o.Do(func() {})
+						return o
+					}(),
+				},
+			},
+		},
+		{
+			name: "get return detail object with go mod path",
+			beforeFunc: func() {
+				i := 0
+				rtCaller = func(skip int) (pc uintptr, file string, line int, ok bool) {
+					if i == 0 {
+						i++
+						return uintptr(0), "/tmp/go/pkg/mod/github.com/vdaas/vald/internal/info.go", 100, true
+					}
+					return uintptr(1), "info.go", 100, false
+				}
+				rtFuncForPC = func(uintptr) *runtime.Func {
+					return runtime.FuncForPC(reflect.ValueOf(TestDetail_Get).Pointer())
+				}
+			},
+			afterFunc: func() {
+				rtCaller = runtime.Caller
+				rtFuncForPC = runtime.FuncForPC
+			},
+			want: want{
+				want: Detail{
+					GitCommit: "master",
+					GoVersion: runtime.Version(),
+					GoOS:      runtime.GOOS,
+					GoArch:    runtime.GOARCH,
+					StackTrace: []StackTrace{
+						StackTrace{
+							URL:      "https://github.com/vdaas/vald/internal/info.go#L100",
+							FuncName: "github.com/vdaas/vald/internal/info.TestDetail_Get",
+							File:     "/tmp/go/pkg/mod/github.com/vdaas/vald/internal/info.go",
+							Line:     100,
+						},
+					},
+					PrepOnce: func() sync.Once {
+						o := sync.Once{}
+						o.Do(func() {})
+						return o
+					}(),
+				},
+			},
+		},
+		{
+			name: "get return detail object with go mod path with version",
+			beforeFunc: func() {
+				i := 0
+				rtCaller = func(skip int) (pc uintptr, file string, line int, ok bool) {
+					if i == 0 {
+						i++
+						return uintptr(0), "/tmp/go/pkg/mod/github.com/vdaas@v0.0.0-20171023180738-a3a6125de932/vald/internal/info.go", 100, true
+					}
+					return uintptr(1), "info.go", 100, false
+				}
+				rtFuncForPC = func(uintptr) *runtime.Func {
+					return runtime.FuncForPC(reflect.ValueOf(TestDetail_Get).Pointer())
+				}
+			},
+			afterFunc: func() {
+				rtCaller = runtime.Caller
+				rtFuncForPC = runtime.FuncForPC
+			},
+			want: want{
+				want: Detail{
+					GitCommit: "master",
+					GoVersion: runtime.Version(),
+					GoOS:      runtime.GOOS,
+					GoArch:    runtime.GOARCH,
+					StackTrace: []StackTrace{
+						StackTrace{
+							URL:      "https://github.com/vdaas/blob/v0.0.0-20171023180738-a3a6125de932/vald/internal/info.go#L100",
+							FuncName: "github.com/vdaas/vald/internal/info.TestDetail_Get",
+							File:     "/tmp/go/pkg/mod/github.com/vdaas@v0.0.0-20171023180738-a3a6125de932/vald/internal/info.go",
+							Line:     100,
+						},
+					},
+					PrepOnce: func() sync.Once {
+						o := sync.Once{}
+						o.Do(func() {})
+						return o
+					}(),
+				},
+			},
+		},
+		{
+			name: "get return detail object with go mod path with 2 version",
+			beforeFunc: func() {
+				i := 0
+				rtCaller = func(skip int) (pc uintptr, file string, line int, ok bool) {
+					if i == 0 {
+						i++
+						return uintptr(0), "/tmp/go/pkg/mod/github.com/vdaas@v0.0.0-20171023180738-a3a6125de932-a843423387/vald/internal/info.go", 100, true
+					}
+					return uintptr(1), "info.go", 100, false
+				}
+				rtFuncForPC = func(uintptr) *runtime.Func {
+					return runtime.FuncForPC(reflect.ValueOf(TestDetail_Get).Pointer())
+				}
+			},
+			afterFunc: func() {
+				rtCaller = runtime.Caller
+				rtFuncForPC = runtime.FuncForPC
+			},
+			want: want{
+				want: Detail{
+					GitCommit: "master",
+					GoVersion: runtime.Version(),
+					GoOS:      runtime.GOOS,
+					GoArch:    runtime.GOARCH,
+					StackTrace: []StackTrace{
+						StackTrace{
+							URL:      "https://github.com/vdaas/blob/master/vald/internal/info.go#L100",
+							FuncName: "github.com/vdaas/vald/internal/info.TestDetail_Get",
+							File:     "/tmp/go/pkg/mod/github.com/vdaas@v0.0.0-20171023180738-a3a6125de932-a843423387/vald/internal/info.go",
+							Line:     100,
+						},
+					},
+					PrepOnce: func() sync.Once {
+						o := sync.Once{}
+						o.Do(func() {})
+						return o
+					}(),
+				},
+			},
+		},
+		{
+			name: "get return detail object with go src path",
+			beforeFunc: func() {
+				i := 0
+				rtCaller = func(skip int) (pc uintptr, file string, line int, ok bool) {
+					if i == 0 {
+						i++
+						return uintptr(0), "/tmp/go/src/github.com/vdaas/vald/internal/info.go", 100, true
+					}
+					return uintptr(1), "info.go", 100, false
+				}
+				rtFuncForPC = func(uintptr) *runtime.Func {
+					return runtime.FuncForPC(reflect.ValueOf(TestDetail_Get).Pointer())
+				}
+			},
+			afterFunc: func() {
+				rtCaller = runtime.Caller
+				rtFuncForPC = runtime.FuncForPC
+			},
+			want: want{
+				want: Detail{
+					GitCommit: "master",
+					GoVersion: runtime.Version(),
+					GoOS:      runtime.GOOS,
+					GoArch:    runtime.GOARCH,
+					StackTrace: []StackTrace{
+						StackTrace{
+							URL:      "https://github.com/vdaas/vald/blob/master/internal/info.go#L100",
+							FuncName: "github.com/vdaas/vald/internal/info.TestDetail_Get",
+							File:     "/tmp/go/src/github.com/vdaas/vald/internal/info.go",
+							Line:     100,
+						},
+					},
 					PrepOnce: func() sync.Once {
 						o := sync.Once{}
 						o.Do(func() {})
