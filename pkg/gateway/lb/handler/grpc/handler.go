@@ -969,7 +969,7 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (vec *pay
 		}
 		return nil
 	})
-	if err != nil || vec == nil || vec.GetId() != "" || vec.GetVector() != nil {
+	if err != nil || vec == nil || vec.GetId() == "" || vec.GetVector() == nil {
 		err = errors.ErrObjectNotFound(err, id.GetId())
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
