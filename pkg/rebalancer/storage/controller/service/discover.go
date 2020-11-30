@@ -160,7 +160,8 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 		defer dt.Stop()
 
 		var (
-			prevSsModel map[string]*model.StatefulSet
+			prevSsModel   map[string]*model.StatefulSet
+			prevPodModels map[string][]*model.Pod
 		)
 
 		for {
@@ -268,8 +269,18 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 							continue
 						}
 						if psm.Replicas > ssModel[ns].Replicas {
-							// TODO: Check the difference prevPodModels and podModels
-							// TODO: create job
+							for _, prevPod := range prevPodModels[ns] {
+								var ok bool
+								for _, pod := range podModels[ns] {
+									if prevPod.Name != pod.Name {
+										ok = true
+										break
+									}
+								}
+								if !ok {
+									// TODO: create job
+								}
+							}
 						} else {
 							for _, p := range podModels[ns] {
 								u := p.MemoryUsage / p.MemoryLimit
@@ -284,8 +295,8 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 						bias := mmu[ns] - amu[ns]
 						if bias > d.tolerance {
 							rate[ns] = 1 - (amu[ns] / mmu[ns])
+							var ok bool
 							for _, jobs := range jobModels {
-								var ok bool
 								for _, job := range jobs {
 									if job.Type == "rebalance" && job.Active != 0 && job.TargetAgentNamespace == ns {
 										ok = true
@@ -293,9 +304,12 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 									}
 								}
 
-								if !ok {
-									// TODO: create Job
+								if ok {
+									break
 								}
+							}
+							if !ok {
+								// TODO: create Job
 							}
 						}
 					}
