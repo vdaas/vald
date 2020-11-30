@@ -36,7 +36,7 @@ func New(opts ...Option) (*http.Client, error) {
 	tr := new(transport)
 	tr.Transport = new(http.Transport)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(tr); err != nil {
 			werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 			e := new(errors.ErrCriticalOption)
