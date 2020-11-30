@@ -522,14 +522,12 @@ func Test_client_Writer(t *testing.T) {
 	tests := []test{
 		func() test {
 			opened := false
-
 			w := &writer.MockWriter{
 				OpenFunc: func(ctx context.Context, key string) error {
 					opened = true
 					return nil
 				},
 			}
-
 			return test{
 				name: "returns opened writer and nil when onen method of writer succcess",
 				args: args{
