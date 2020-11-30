@@ -411,12 +411,9 @@ func Test_client_Reader(t *testing.T) {
 				},
 			}
 		}(),
-
 		func() test {
 			err := errors.New("err")
-
 			opened := false
-
 			r := &reader.MockReader{
 				OpenFunc: func(ctx context.Context, key string) error {
 					opened = true
