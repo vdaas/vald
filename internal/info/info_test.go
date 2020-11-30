@@ -372,7 +372,7 @@ func TestDetail_Get(t *testing.T) {
 			},
 		},
 		{
-			name: "get return detail object with fila name has goroot prefix",
+			name: "get return detail object with file name has goroot prefix",
 			beforeFunc: func() {
 				i := 0
 				rtCaller = func(skip int) (pc uintptr, file string, line int, ok bool) {
@@ -398,7 +398,7 @@ func TestDetail_Get(t *testing.T) {
 					GoArch:    runtime.GOARCH,
 					StackTrace: []StackTrace{
 						StackTrace{
-							URL:      "https://github.com/golang/go/blob/go1.15.5/src/info.go#L100",
+							URL:      "https://github.com/golang/go/blob/" + runtime.Version() + "/src/info.go#L100",
 							FuncName: "github.com/vdaas/vald/internal/info.TestDetail_Get",
 							File:     runtime.GOROOT() + "/src/info.go",
 							Line:     100,
