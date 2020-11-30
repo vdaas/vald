@@ -149,7 +149,6 @@ func TestNew(t *testing.T) {
 				},
 			}
 		}(),
-
 		func() test {
 			sess, _ := session.NewSession()
 			service := s3.New(sess)
