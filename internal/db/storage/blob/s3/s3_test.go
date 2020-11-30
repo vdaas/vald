@@ -153,9 +153,7 @@ func TestNew(t *testing.T) {
 		func() test {
 			sess, _ := session.NewSession()
 			service := s3.New(sess)
-
 			eg := errgroup.Get()
-
 			return test{
 				name: "returns bucket and nil when reader and writer are created and no error occurs internally",
 				args: args{
