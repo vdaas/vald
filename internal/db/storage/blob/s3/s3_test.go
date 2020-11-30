@@ -551,7 +551,6 @@ func Test_client_Writer(t *testing.T) {
 				},
 			}
 		}(),
-
 		func() test {
 			err := errors.New("err")
 
