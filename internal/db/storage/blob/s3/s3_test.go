@@ -106,7 +106,6 @@ func TestNew(t *testing.T) {
 				},
 			}
 		}(),
-
 		func() test {
 			opt := func(c *client) error {
 				return errors.New("err")
