@@ -38,6 +38,7 @@ var (
 	// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
 	goleakIgnoreOptions = []goleak.Option{
 		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+		goleak.IgnoreTopFunction("internal/poll.runtime_pollWait"),
 	}
 )
 
@@ -452,7 +453,6 @@ func TestDecodeResponse(t *testing.T) {
 				},
 			}
 		}(),
-
 		func() test {
 			return test{
 				name: "returns nil when response body is nil",
@@ -467,7 +467,6 @@ func TestDecodeResponse(t *testing.T) {
 				},
 			}
 		}(),
-
 		func() test {
 			return test{
 				name: "returns nil when the data to be decoded is nil",
@@ -482,7 +481,6 @@ func TestDecodeResponse(t *testing.T) {
 				},
 			}
 		}(),
-
 		func() test {
 			return test{
 				name: "returns nil when the contents length is 0",
@@ -498,7 +496,6 @@ func TestDecodeResponse(t *testing.T) {
 				},
 			}
 		}(),
-
 		func() test {
 			return test{
 				name: "returns json decode error when the response body is invalid",
@@ -518,7 +515,6 @@ func TestDecodeResponse(t *testing.T) {
 				},
 			}
 		}(),
-
 		func() test {
 			var data int
 			return test{
@@ -565,7 +561,6 @@ func TestDecodeResponse(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -723,7 +718,6 @@ func TestRequest(t *testing.T) {
 				},
 			}
 		}(),
-
 		func() test {
 			return test{
 				name: "returns json encode error when the request json encoding fails",
@@ -739,7 +733,6 @@ func TestRequest(t *testing.T) {
 				},
 			}
 		}(),
-
 		func() test {
 			return test{
 				name: "returns http request error when sending http request fails",
@@ -754,8 +747,39 @@ func TestRequest(t *testing.T) {
 					err: &url.Error{
 						Op:  "Post",
 						URL: "/",
-						Err: errors.New("http: nil request.URL"),
+						Err: errors.New(`unsupported protocol scheme ""`),
 					},
+				},
+			}
+		}(),
+		func() test {
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+				w.Write([]byte("\"1\""))
+			}))
+			var got string
+			return test{
+				name: "returns nil when no error occurs internally",
+				args: args{
+					ctx:     context.Background(),
+					method:  "POST",
+					url:     srv.URL,
+					payloyd: "1",
+					data:    &got,
+				},
+				want: want{
+					err: nil,
+				},
+				checkFunc: func(w want, err error) error {
+					if err := defaultCheckFunc(w, err); err != nil {
+						return err
+					}
+					if want, got := "1", got; want != got {
+						return errors.Errorf("decoded data: want %s, but got: %v", want, got)
+					}
+					return nil
+				},
+				afterFunc: func(args) {
+					srv.Close()
 				},
 			}
 		}(),
