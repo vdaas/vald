@@ -552,9 +552,7 @@ func Test_client_Writer(t *testing.T) {
 		}(),
 		func() test {
 			err := errors.New("err")
-
 			opened := false
-
 			w := &writer.MockWriter{
 				OpenFunc: func(ctx context.Context, key string) error {
 					opened = true
