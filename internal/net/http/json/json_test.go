@@ -602,7 +602,6 @@ func TestEncodeRequest(t *testing.T) {
 				},
 			}
 		}(),
-
 		func() test {
 			req := &http.Request{
 				Header: http.Header{},
