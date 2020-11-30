@@ -420,7 +420,6 @@ func Test_client_Reader(t *testing.T) {
 					return err
 				},
 			}
-
 			return test{
 				name: "returns opened reader and error from the open method of reader",
 				args: args{
