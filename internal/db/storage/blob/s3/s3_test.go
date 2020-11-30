@@ -562,7 +562,6 @@ func Test_client_Writer(t *testing.T) {
 					return err
 				},
 			}
-
 			return test{
 				name: "returns opened writer and error from the open method of writer",
 				args: args{
