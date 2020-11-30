@@ -123,7 +123,6 @@ func TestNew(t *testing.T) {
 				},
 			}
 		}(),
-
 		func() test {
 			sess, _ := session.NewSession()
 			r := new(reader.MockReader)
