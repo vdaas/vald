@@ -729,6 +729,7 @@ func Test_reader_getObjectWithBackoff(t *testing.T) {
 			name: "returns (Reader, nil) when no error occurs",
 			args: args{
 				ctx:    context.Background(),
+				key:    "vald",
 				offset: 1,
 				length: 10,
 			},
@@ -766,6 +767,7 @@ func Test_reader_getObjectWithBackoff(t *testing.T) {
 			name: "returns error when s3 service returns error and backoff fails",
 			args: args{
 				ctx:    context.Background(),
+				key:    "vald",
 				offset: 1,
 				length: 10,
 			},
@@ -863,6 +865,7 @@ func Test_reader_getObject(t *testing.T) {
 			name: "returns (Reader, nil) when no error occurs",
 			args: args{
 				ctx:    context.Background(),
+				key:    "vald",
 				offset: 2,
 				length: 10,
 			},
@@ -900,6 +903,7 @@ func Test_reader_getObject(t *testing.T) {
 			name: "returns (Reader, nil) when the reader close error occurs and output warning",
 			args: args{
 				ctx:    context.Background(),
+				key:    "vald",
 				offset: 2,
 				length: 10,
 			},
@@ -937,6 +941,7 @@ func Test_reader_getObject(t *testing.T) {
 			name: "returns nil when s3 service returns error and error code is ErrBlobNoSuchBucket",
 			args: args{
 				ctx:    context.Background(),
+				key:    "vald",
 				offset: 2,
 				length: 10,
 			},
@@ -979,6 +984,7 @@ func Test_reader_getObject(t *testing.T) {
 			name: "returns nil when s3 service returns error and error code is ErrCodeNoSuchKey",
 			args: args{
 				ctx:    context.Background(),
+				key:    "vald",
 				offset: 2,
 				length: 10,
 			},
@@ -999,6 +1005,7 @@ func Test_reader_getObject(t *testing.T) {
 			name: "returns s3 error when s3 service returns error and error code is `Invalid`",
 			args: args{
 				ctx:    context.Background(),
+				key:    "vald",
 				offset: 2,
 				length: 10,
 			},
@@ -1019,6 +1026,7 @@ func Test_reader_getObject(t *testing.T) {
 			name: "returns error when reader creation fails",
 			args: args{
 				ctx:    context.Background(),
+				key:    "vald",
 				offset: 2,
 				length: 10,
 			},
@@ -1044,6 +1052,7 @@ func Test_reader_getObject(t *testing.T) {
 			name: "returns error when failed to copy to buffer",
 			args: args{
 				ctx:    context.Background(),
+				key:    "vald",
 				offset: 2,
 				length: 10,
 			},

@@ -152,14 +152,19 @@ func TestNew(t *testing.T) {
 			sess, _ := session.NewSession()
 			service := s3.New(sess)
 			eg := errgroup.Get()
+			writer := new(writer.MockWriter)
 			return test{
-				name: "returns bucket and nil when reader and writer are created and no error occurs internally",
+				name: "returns bucket and nil when reader are created and no error occurs internally",
 				args: args{
 					opts: []Option{
 						WithSession(sess),
 						WithErrGroup(eg),
 						WithBucket("bucket"),
 						WithMaxPartSize("100G"),
+						func(c *client) error {
+							c.writer = writer
+							return nil
+						},
 					},
 				},
 				want: want{
@@ -169,7 +174,48 @@ func TestNew(t *testing.T) {
 						service:     service,
 						bucket:      "bucket",
 						maxPartSize: 107374182400,
-						reader:      new(reader.MockReader),
+						reader: func() (r reader.Reader) {
+							r, _ = reader.New(
+								reader.WithErrGroup(eg),
+								reader.WithService(service),
+								reader.WithBucket("bucket"),
+								reader.WithMaxChunkSize(107374182400),
+							)
+							return
+						}(),
+						writer: writer,
+					},
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			sess, _ := session.NewSession()
+			service := s3.New(sess)
+			eg := errgroup.Get()
+			reader := new(reader.MockReader)
+			return test{
+				name: "returns bucket and nil when writer are created and no error occurs internally",
+				args: args{
+					opts: []Option{
+						WithSession(sess),
+						WithErrGroup(eg),
+						WithBucket("bucket"),
+						WithMaxPartSize("100G"),
+						func(c *client) error {
+							c.reader = reader
+							return nil
+						},
+					},
+				},
+				want: want{
+					want: &client{
+						eg:          eg,
+						session:     sess,
+						service:     service,
+						bucket:      "bucket",
+						maxPartSize: 107374182400,
+						reader:      reader,
 						writer: writer.New(
 							writer.WithErrGroup(eg),
 							writer.WithService(service),

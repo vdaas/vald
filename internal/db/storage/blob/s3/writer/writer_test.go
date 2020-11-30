@@ -171,6 +171,7 @@ func Test_writer_Open(t *testing.T) {
 			name: "returns nil when no error occurs",
 			args: args{
 				ctx: nil,
+				key: "vald",
 			},
 			fields: fields{
 				eg: errgroup.Get(),
@@ -472,6 +473,7 @@ func Test_writer_upload(t *testing.T) {
 			name: "returns nil when no error occurs",
 			args: args{
 				ctx:  context.Background(),
+				key:  "vald",
 				body: nil,
 			},
 			fieldsFunc: func(t *testing.T) fields {
@@ -509,6 +511,7 @@ func Test_writer_upload(t *testing.T) {
 			name: "returns error when upload fails",
 			args: args{
 				ctx:  context.Background(),
+				key:  "vald",
 				body: nil,
 			},
 			fieldsFunc: func(t *testing.T) fields {
