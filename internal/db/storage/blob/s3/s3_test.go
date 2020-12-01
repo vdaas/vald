@@ -154,7 +154,7 @@ func TestNew(t *testing.T) {
 			eg := errgroup.Get()
 			writer := new(writer.MockWriter)
 			return test{
-				name: "returns bucket and nil when reader are created and no error occurs internally",
+				name: "returns bucket and nil when reader is created and no error occurs internally",
 				args: args{
 					opts: []Option{
 						WithSession(sess),
