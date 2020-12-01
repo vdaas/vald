@@ -28,12 +28,17 @@ type discoverer struct {
 	jobs         atomic.Value
 	jobName      string
 	jobNamespace string
+	jobTemplate  atomic.Value
 
 	agentName         string
 	agentNamespace    string
 	agentResourceType string // TODO: use custom type insteaf of string
 	pods              atomic.Value
 	podMetrics        atomic.Value
+
+	// job template config map
+	configmapName      string
+	configmapNamespace string
 
 	statefulSets atomic.Value
 
@@ -65,6 +70,30 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 				d.jobs.Store(jobs)
 			} else {
 				log.Infof("job not found: %s", d.jobName)
+			}
+		}),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	configmap, err := configmap.New(
+		configmap.WithControllerName("configmap discoverer"),
+		configmap.WithNamespaces(d.configmapNamespace),
+		configmap.WithOnErrorFunc(func(err error) {
+			log.Error(err)
+		}),
+		configmap.WithOnReconcileFunc(func(configmapList map[string][]configmap.ConfigMap) {
+			configmaps, ok := configmapList[d.configmapNamespace]
+			if ok {
+				for _, cm := range configmaps {
+					if cm.Name == d.configmapName {
+						d.jobTemplate.Store(cm)
+						break
+					}
+				}
+			} else {
+				log.Infof("configmap not found: %s", d.configmapName)
 			}
 		}),
 	)
@@ -139,6 +168,7 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 				}
 			}),
 		)),
+		k8s.WithResourceController(configmap),
 	)
 	if err != nil {
 		return nil, err
