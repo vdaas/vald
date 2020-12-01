@@ -1,0 +1,13 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: rebalancer
+spec:
+  template:
+    spec:
+      containers:
+        - name: rebalancer
+          image: hello-world:latest
+          command:
+            - /bin/sh
+            - echo 'Hello world'
