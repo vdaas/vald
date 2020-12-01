@@ -45,7 +45,7 @@ type reconciler struct {
 	name        string
 	namespaces  []string
 	onError     func(err error)
-	onReconcile func(rs map[string][]ConfigMap)
+	onReconcile func(rs map[string][]ConfigMap) // map[namespace][]configmap
 	pool        sync.Pool
 }
 
@@ -104,9 +104,10 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 	appList := make(map[string]bool)
 
 	for _, configmap := range cml.Items {
-		// TODO: fix handling logic for labels
-		name, _ := configmap.GetObjectMeta().GetLabels()["app"]
-		cmm[name] = append(cmm[name], configmap)
+		if _, ok := cmm[configmap.Namespace]; !ok {
+			cmm[configmap.Namespace] = make([]ConfigMap, 0)
+		}
+		cmm[configmap.Namespace] = append(cmm[configmap.Namespace], configmap)
 	}
 
 	if r.onReconcile != nil {
