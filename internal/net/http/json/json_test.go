@@ -753,7 +753,7 @@ func TestRequest(t *testing.T) {
 		}(),
 		func() test {
 			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-				w.Write([]byte("\"1\""))
+				_, _ = w.Write([]byte("\"1\""))
 			}))
 			var got string
 			return test{
