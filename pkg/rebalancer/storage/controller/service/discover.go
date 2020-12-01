@@ -268,7 +268,10 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 						if _, ok := ssModel[ns]; !ok {
 							continue
 						}
-						if psm.Replicas > ssModel[ns].Replicas {
+						if *ssModel[ns].DesiredReplicas != ssModel[ns].Replicas {
+							continue
+						}
+						if *psm.DesiredReplicas > *ssModel[ns].DesiredReplicas {
 							for _, prevPod := range prevPodModels[ns] {
 								var ok bool
 								for _, pod := range podModels[ns] {
@@ -279,6 +282,8 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 								}
 								if !ok {
 									// TODO: create job
+									prevSsModel[ns] = ssModel[ns]
+									prevPodModels[ns] = podModels[ns]
 								}
 							}
 						} else {
@@ -291,34 +296,35 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 								}
 							}
 							amu[ns] = amu[ns] / float64(len(podModels[ns]))
-						}
-						bias := mmu[ns] - amu[ns]
-						if bias > d.tolerance {
-							rate[ns] = 1 - (amu[ns] / mmu[ns])
-							var ok bool
-							for _, jobs := range jobModels {
-								for _, job := range jobs {
-									if job.Type == "rebalance" && job.Active != 0 && job.TargetAgentNamespace == ns {
-										ok = true
+							bias := mmu[ns] - amu[ns]
+							if bias > d.tolerance {
+								rate[ns] = 1 - (amu[ns] / mmu[ns])
+								var ok bool
+								for _, jobs := range jobModels {
+									for _, job := range jobs {
+										if job.Type == "rebalance" && job.Active != 0 && job.TargetAgentNamespace == ns {
+											ok = true
+											break
+										}
+									}
+
+									if ok {
 										break
 									}
 								}
-
-								if ok {
-									break
+								if !ok {
+									// TODO: create Job
+									prevSsModel = ssModel
+									prevPodModels = podModels
 								}
-							}
-							if !ok {
-								// TODO: create Job
 							}
 						}
 					}
+				} else {
+					// Store reconciled result for next loop.
+					prevSsModel = ssModel
+					prevPodModels = podModels
 				}
-
-				// Store reconciled result for next loop.
-				prevSsModel = ssModel
-				// To avoid build failing. We're going to create new code instead of beloww code.
-				_ = prevSsModel
 
 			case err := <-cech:
 				if err != nil {
