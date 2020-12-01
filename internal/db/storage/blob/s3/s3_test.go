@@ -611,7 +611,7 @@ func Test_client_Writer(t *testing.T) {
 				},
 			}
 			return test{
-				name: "returns opened writer and nil when onen method of writer succcess",
+				name: "returns opened writer and nil when open method of writer success",
 				args: args{
 					ctx: context.Background(),
 					key: "key",
