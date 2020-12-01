@@ -63,19 +63,19 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 
 func (g *gateway) BroadCast(ctx context.Context,
 	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error) (err error) {
-	return g.client.GetClient().RangeConcurrent(ctx, -1, func(ctx context.Context,
+	return g.client.GetClient().RangeConcurrent(ctx, -1, func(fctx context.Context,
 		addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
-		ctx, span := trace.StartSpan(ctx, "vald/gateway-lb/service/Gateway.BroadCast")
+		fctx, span := trace.StartSpan(fctx, "vald/gateway-lb/service/Gateway.BroadCast")
 		defer func() {
 			if span != nil {
 				span.End()
 			}
 		}()
 		select {
-		case <-ctx.Done():
+		case <-fctx.Done():
 			return nil
 		default:
-			err = f(ctx, addr, vald.NewValdClient(conn), copts...)
+			err = f(fctx, addr, vald.NewValdClient(conn), copts...)
 			if err != nil {
 				log.Debug(addr, err)
 				return err

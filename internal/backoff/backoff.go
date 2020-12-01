@@ -70,7 +70,7 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 		return
 	}
 
-	ctx, span := trace.StartSpan(ctx, traceTag)
+	sctx, span := trace.StartSpan(ctx, traceTag)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -84,21 +84,21 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 	dur := b.initialDuration
 	jdur := b.jittedInitialDuration
 
-	ctx, cancel := context.WithDeadline(ctx, time.Now().Add(b.backoffTimeLimit))
+	dctx, cancel := context.WithDeadline(sctx, time.Now().Add(b.backoffTimeLimit))
 	defer cancel()
 	for cnt := 0; cnt < b.maxRetryCount; cnt++ {
 		select {
-		case <-ctx.Done():
-			return nil, errors.Wrap(err, ctx.Err().Error())
+		case <-dctx.Done():
+			return nil, errors.Wrap(err, dctx.Err().Error())
 		default:
 			res, ret, err = func() (val interface{}, retryable bool, err error) {
-				sctx, span := trace.StartSpan(ctx, traceTag+"/"+strconv.Itoa(cnt+1))
+				ssctx, span := trace.StartSpan(dctx, traceTag+"/"+strconv.Itoa(cnt+1))
 				defer func() {
 					if span != nil {
 						span.End()
 					}
 				}()
-				return f(sctx)
+				return f(ssctx)
 			}()
 			if ret && err != nil {
 				if b.errLog {
@@ -106,14 +106,14 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 				}
 				timer.Reset(time.Duration(jdur))
 				select {
-				case <-ctx.Done():
-					switch ctx.Err() {
+				case <-dctx.Done():
+					switch dctx.Err() {
 					case context.DeadlineExceeded:
 						return nil, errors.ErrBackoffTimeout(err)
 					case context.Canceled:
 						return nil, err
 					default:
-						return nil, errors.Wrap(ctx.Err(), err.Error())
+						return nil, errors.Wrap(dctx.Err(), err.Error())
 					}
 				case <-timer.C:
 					if dur >= b.durationLimit {

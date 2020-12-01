@@ -265,17 +265,17 @@ func (g *gRPCClient) Range(ctx context.Context,
 func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 	concurrency int,
 	f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) error {
-	ctx, span := trace.StartSpan(ctx, "vald/internal/grpc/Client.RangeConcurrent")
+	sctx, span := trace.StartSpan(ctx, "vald/internal/grpc/Client.RangeConcurrent")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	eg, egctx := errgroup.New(ctx)
+	eg, egctx := errgroup.New(sctx)
 	eg.Limitation(concurrency)
 	g.conns.Range(func(addr string, p pool.Conn) bool {
 		eg.Go(safety.RecoverFunc(func() (err error) {
-			ctx, span := trace.StartSpan(ctx, "vald/internal/grpc/Client.RangeConcurrent/"+addr)
+			ssctx, span := trace.StartSpan(sctx, "vald/internal/grpc/Client.RangeConcurrent/"+addr)
 			defer func() {
 				if span != nil {
 					span.End()
@@ -286,12 +286,12 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 				return nil
 			default:
 				if g.bo != nil {
-					_, err = g.bo.Do(ctx, func(ctx context.Context) (r interface{}, ret bool, err error) {
+					_, err = g.bo.Do(ssctx, func(sictx context.Context) (r interface{}, ret bool, err error) {
 						err = p.Do(func(conn *ClientConn) (err error) {
 							if conn == nil {
 								return errors.ErrGRPCClientConnNotFound(addr)
 							}
-							return f(ctx, addr, conn, g.copts...)
+							return f(sictx, addr, conn, g.copts...)
 						})
 						return nil, err != nil, err
 					})
@@ -300,7 +300,7 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 						if conn == nil {
 							return errors.ErrGRPCClientConnNotFound(addr)
 						}
-						return f(ctx, addr, conn, g.copts...)
+						return f(ssctx, addr, conn, g.copts...)
 					})
 				}
 				if err != nil {
