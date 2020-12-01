@@ -82,7 +82,6 @@ var (
 
 	clientComparator = append(transportComparator,
 		comparator.AllowUnexported(http.Client{}),
-		// ignore
 		comparator.FilterPath(func(p comparator.Path) bool {
 			return p.String() == "Transport.bo.jittedInitialDuration"
 		}, comparator.Ignore()),
