@@ -32,6 +32,7 @@ var (
 	}
 )
 
+// ErrBlobNoSuchBucket represents no such bucket error of S3.
 type ErrBlobNoSuchBucket struct {
 	err error
 }
