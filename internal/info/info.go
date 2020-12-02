@@ -26,6 +26,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 )
 
@@ -54,20 +55,19 @@ type StackTrace struct {
 }
 
 var (
-	Version      = "v0.0.1"
-	GitCommit    = "master"
+	// injected from build script
+	Version           = "v0.0.1"
+	GitCommit         = "master"
+	BuildTime         = ""
+	GoVersion         string
+	GoOS              string
+	GoArch            string
+	CGOEnabled        string
+	NGTVersion        string
+	BuildCPUInfoFlags string
+
 	Organization = "vdaas"
 	Repository   = "vald"
-	BuildTime    = ""
-
-	GoVersion  string
-	GoOS       string
-	GoArch     string
-	CGOEnabled string
-
-	NGTVersion string
-
-	BuildCPUInfoFlags string
 
 	reps = strings.NewReplacer("_", " ", ",omitempty", "")
 
@@ -75,18 +75,47 @@ var (
 
 	detail Detail
 
+	//	runtime     runtime
 	rtCaller    = runtime.Caller
 	rtFuncForPC = runtime.FuncForPC
 )
 
-// String calls String method of global detail object.
-func String() string {
-	return detail.String()
+// Init initializes Detail object only once.
+func Init(name string) {
+	once.Do(func() {
+		detail = Detail{
+			Version:           Version,
+			ServerName:        name,
+			GitCommit:         GitCommit,
+			BuildTime:         BuildTime,
+			GoVersion:         GoVersion,
+			GoOS:              GoOS,
+			GoArch:            GoArch,
+			CGOEnabled:        CGOEnabled,
+			NGTVersion:        NGTVersion,
+			BuildCPUInfoFlags: strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " "),
+		}
+		detail.prepare()
+	})
 }
 
-// Get calls Get method of global detail object.
-func Get() Detail {
-	return detail.Get()
+func New(opts ...Option) (*Detail, error) {
+	d := new(Detail)
+
+	for _, opt := range append(defaultOpts, opts...) {
+		if err := opt(d); err != nil {
+			werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+
+			e := new(errors.ErrCriticalOption)
+			if errors.As(err, &e) {
+				log.Error(werr)
+				return nil, werr
+			}
+			log.Warn(werr)
+		}
+	}
+
+	return d, nil
 }
 
 // String returns summary of Detail object.
@@ -231,23 +260,14 @@ func (d *Detail) prepare() {
 	})
 }
 
-// Init initializes Detail object only once.
-func Init(name string) {
-	once.Do(func() {
-		detail = Detail{
-			Version:           Version,
-			ServerName:        name,
-			GitCommit:         GitCommit,
-			BuildTime:         BuildTime,
-			GoVersion:         GoVersion,
-			GoOS:              GoOS,
-			GoArch:            GoArch,
-			CGOEnabled:        CGOEnabled,
-			NGTVersion:        NGTVersion,
-			BuildCPUInfoFlags: strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " "),
-		}
-		detail.prepare()
-	})
+// String calls String method of global detail object.
+func String() string {
+	return detail.String()
+}
+
+// Get calls Get method of global detail object.
+func Get() Detail {
+	return detail.Get()
 }
 
 func (s StackTrace) String() string {
