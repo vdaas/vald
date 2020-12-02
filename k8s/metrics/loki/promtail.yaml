@@ -1,0 +1,189 @@
+---
+#
+# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: promtail
+spec:
+  minReadySeconds: 10
+  selector:
+    matchLabels:
+      name: promtail
+  template:
+    metadata:
+      labels:
+        name: promtail
+    spec:
+      containers:
+        - args:
+            - -config.file=/etc/promtail/promtail.yml
+          env:
+            - name: HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          image: grafana/promtail:1.5.0
+          imagePullPolicy: IfNotPresent
+          name: promtail
+          ports:
+            - containerPort: 80
+              name: http-metrics
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 80
+            initialDelaySeconds: 10
+            timeoutSeconds: 1
+          securityContext:
+            privileged: true
+            runAsUser: 0
+          volumeMounts:
+            - mountPath: /etc/promtail
+              name: promtail
+            - mountPath: /var/log
+              name: varlog
+            - mountPath: /var/lib/docker/containers
+              name: varlibdockercontainers
+              readOnly: true
+      serviceAccount: promtail
+      tolerations:
+        - effect: NoSchedule
+          operator: Exists
+      volumes:
+        - configMap:
+            name: promtail
+          name: promtail
+        - hostPath:
+            path: /var/log
+          name: varlog
+        - hostPath:
+            path: /var/lib/docker/containers
+          name: varlibdockercontainers
+  updateStrategy:
+    type: RollingUpdate
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: promtail
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - nodes
+      - nodes/proxy
+      - services
+      - endpoints
+      - pods
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: promtail
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: promtail
+subjects:
+  - kind: ServiceAccount
+    name: promtail
+    namespace: default
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: promtail
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: promtail
+data:
+  promtail.yml: |
+    clients:
+      - external_labels:
+            cluster: vald
+        url: http://:@loki.default.svc.cluster.local:3100/loki/api/v1/push
+    scrape_configs:
+      - job_name: vald-service-pods
+        kubernetes_sd_configs:
+          - role: pod
+        pipeline_stages:
+          - cri: {}
+          - json:
+              expressions:
+                level: level
+                grpcKind: details.grpc.kind
+                grpcService: details.grpc.service
+                grpcMethod: details.grpc.method
+                latency: details.latency
+                traceID: details.traceID
+          - labels:
+              level: ""
+              grpcKind: ""
+              grpcMethod: ""
+              grpcService: ""
+              traceID: ""
+          - metrics:
+              grpc_latency:
+                type: Histogram
+                description: "gRPC latency"
+                source: latency
+                config:
+                  buckets: [0,0.01,0.02,0.03,0.05,0.08,0.1,0.5,1,10,100,1000,10000]
+        relabel_configs:
+          - source_labels:
+            - __meta_kubernetes_pod_label_name
+            target_label: __service__
+          - source_labels:
+            - __meta_kubernetes_pod_node_name
+            target_label: __host__
+          - action: keep
+            regex: vald
+            source_labels:
+              - __meta_kubernetes_pod_label_app_kubernetes_io_name
+          - action: labelmap
+            regex: __meta_kubernetes_pod_label_(.+)
+          - action: replace
+            replacement: $1
+            separator: /
+            source_labels:
+            - __meta_kubernetes_namespace
+            - __service__
+            target_label: job
+          - action: replace
+            source_labels:
+            - __meta_kubernetes_namespace
+            target_label: namespace
+          - action: replace
+            source_labels:
+            - __meta_kubernetes_pod_name
+            target_label: instance
+          - action: replace
+            source_labels:
+            - __meta_kubernetes_pod_container_name
+            target_label: container_name
+          - replacement: /var/log/pods/*$1/*.log
+            separator: /
+            source_labels:
+            - __meta_kubernetes_pod_uid
+            - __meta_kubernetes_pod_container_name
+            target_label: __path__

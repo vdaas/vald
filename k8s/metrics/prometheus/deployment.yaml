@@ -34,6 +34,9 @@ spec:
           image: prom/prometheus
           args:
             - --config.file=/mnt/etc/prometheus.yaml
+          env:
+            - name: JAEGER_AGENT_PORT
+              value: ""
           ports:
             - containerPort: 9090
           volumeMounts:
