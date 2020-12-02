@@ -17,11 +17,12 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/pkg/rebalancer/storage/controller/model"
+
 	// TODO: move to internal
-	// batchv1 "k8s.io/api/batch/v1"
-	// "k8s.io/apimachinery/pkg/api/equality"
-	// "k8s.io/apimachinery/pkg/runtime"
-	// "sigs.k8s.io/controller-runtime/pkg/webhook/conversion"
+
+	"k8s.io/apimachinery/pkg/api/equality"
+	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/conversion"
 )
 
 // Discoverer --
@@ -54,6 +55,7 @@ type discoverer struct {
 	eg        errgroup.Group
 	ctrl      k8s.Controller
 	tolerance float64
+	decoder   *conversion.Decoder
 }
 
 // NewDiscoverer --
@@ -186,6 +188,11 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 		return nil, err
 	}
 
+	d.decoder, err = conversion.NewDecoder(runtime.NewScheme())
+	if err != nil {
+		return nil, err
+	}
+
 	return d, nil
 }
 
@@ -204,6 +211,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 		var (
 			prevSsModel   map[string]*model.StatefulSet
 			prevPodModels map[string][]*model.Pod
+			prevJobTpl    *job.Job
 		)
 
 		for {
@@ -221,6 +229,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 					podModels map[string][]*model.Pod
 					jobModels map[string][]*model.Job
 					ssModel   map[string]*model.StatefulSet
+					jobTpl    job.Job
 				)
 
 				mpods, ok = d.podMetrics.Load().(map[string]mpod.Pod)
@@ -276,6 +285,24 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 						ControllerNamespace:  j.Labels["controller_namespace"],
 						ControllerName:       j.Labels["controller_name"],
 					})
+				}
+
+				tmpl, ok := d.jobTemplate.Load().(string)
+				if !ok {
+					log.Info("job template is empty")
+					continue
+				}
+				err = d.decoder.DecodeInto([]byte(tmpl), &jobTpl)
+				if err != nil {
+					log.Infof("fails decoding template: %s", err.Error())
+					continue
+				}
+				if prevJobTpl == nil {
+					prevJobTpl = &jobTpl
+				} else {
+					if !equality.Semantic.DeepEqual(*prevJobTpl, jobTpl) {
+						prevJobTpl = &jobTpl
+					}
 				}
 
 				// TODO: cache specified reconciled result based on agentResourceType.
