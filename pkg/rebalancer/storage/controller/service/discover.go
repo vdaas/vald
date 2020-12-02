@@ -9,6 +9,7 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
+	"github.com/vdaas/vald/internal/k8s/configmap"
 	"github.com/vdaas/vald/internal/k8s/job"
 	mpod "github.com/vdaas/vald/internal/k8s/metrics/pod"
 	"github.com/vdaas/vald/internal/k8s/pod"
@@ -16,6 +17,11 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/pkg/rebalancer/storage/controller/model"
+	// TODO: move to internal
+	// batchv1 "k8s.io/api/batch/v1"
+	// "k8s.io/apimachinery/pkg/api/equality"
+	// "k8s.io/apimachinery/pkg/runtime"
+	// "sigs.k8s.io/controller-runtime/pkg/webhook/conversion"
 )
 
 // Discoverer --
@@ -29,6 +35,8 @@ type discoverer struct {
 	jobName      string
 	jobNamespace string
 	jobTemplate  atomic.Value
+	// TODO: thiknig about this name.
+	jobTemplateKey string
 
 	agentName         string
 	agentNamespace    string
@@ -77,7 +85,7 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 		return nil, err
 	}
 
-	configmap, err := configmap.New(
+	cm, err := configmap.New(
 		configmap.WithControllerName("configmap discoverer"),
 		configmap.WithNamespaces(d.configmapNamespace),
 		configmap.WithOnErrorFunc(func(err error) {
@@ -88,7 +96,11 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 			if ok {
 				for _, cm := range configmaps {
 					if cm.Name == d.configmapName {
-						d.jobTemplate.Store(cm)
+						if tmpl, ok := cm.Data[d.jobTemplateKey]; ok {
+							d.jobTemplate.Store(tmpl)
+						} else {
+							log.Infof("job template not found: %s", d.jobTemplateKey)
+						}
 						break
 					}
 				}
@@ -168,7 +180,7 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 				}
 			}),
 		)),
-		k8s.WithResourceController(configmap),
+		k8s.WithResourceController(cm),
 	)
 	if err != nil {
 		return nil, err
