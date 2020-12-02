@@ -19,6 +19,7 @@ package usecase
 import (
 	"context"
 
+	"github.com/vdaas/vald/apis/grpc/rebalancer"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -52,6 +53,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
+
 	h, err := handler.New(
 		handler.WithDiscoverer(rb),
 	)
@@ -61,18 +63,16 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	grpcServerOptions := []server.Option{
 		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
-			// TODO register grpc server handler here
+			rebalancer.RegisterControllerServer(srv, h)
 		}),
 		server.WithGRPCOption(
 			grpc.ChainUnaryInterceptor(grpc.RecoverInterceptor()),
 			grpc.ChainStreamInterceptor(grpc.RecoverStreamInterceptor()),
 		),
 		server.WithPreStartFunc(func() error {
-			// TODO check unbackupped upstream
 			return nil
 		}),
 		server.WithPreStopFunction(func() error {
-			// TODO backup all index data here
 			return nil
 		}),
 	}
@@ -101,7 +101,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 						router.WithErrGroup(eg),
 						router.WithHandler(
 							rest.New(
-							// TODO pass grpc handler to REST option
+								rest.WithDiscoverer(h),
 							),
 						),
 					)),
