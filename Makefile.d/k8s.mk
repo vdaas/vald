@@ -317,17 +317,25 @@ k8s/metrics/metrics-server/delete:
 	kubectl delete -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 
 .PHONY: k8s/metrics/prometheus/deploy
-## deploy prometheus and grafana
+## deploy prometheus
 k8s/metrics/prometheus/deploy:
 	kubectl apply -f k8s/metrics/prometheus
-	kubectl create configmap grafana-dashboards --from-file=k8s/metrics/grafana/dashboards/
-	kubectl apply -f k8s/metrics/grafana
 
 .PHONY: k8s/metrics/prometheus/delete
-## delete prometheus and grafana
+## delete prometheus
 k8s/metrics/prometheus/delete:
 	kubectl delete -f k8s/metrics/prometheus
-	kubectl delete configmap grafana-dashboards
+
+.PHONY: k8s/metrics/grafana/deploy
+## deploy grafana
+k8s/metrics/grafana/deploy:
+	kubectl apply -f k8s/metrics/grafana/dashboards
+	kubectl apply -f k8s/metrics/grafana
+
+.PHONY: k8s/metrics/grafana/delete
+## delete grafana
+k8s/metrics/grafana/delete:
+	kubectl delete -f k8s/metrics/grafana/dashboards
 	kubectl delete -f k8s/metrics/grafana
 
 .PHONY: k8s/metrics/jaeger/deploy
@@ -339,6 +347,26 @@ k8s/metrics/jaeger/deploy:
 ## delete jaeger
 k8s/metrics/jaeger/delete:
 	kubectl delete -f k8s/metrics/jaeger
+
+.PHONY: k8s/metrics/loki/deploy
+## deploy loki and promtail
+k8s/metrics/loki/deploy:
+	kubectl apply -f k8s/metrics/loki
+
+.PHONY: k8s/metrics/loki/delete
+## delete loki and promtail
+k8s/metrics/loki/delete:
+	kubectl delete -f k8s/metrics/loki
+
+.PHONY: k8s/metrics/tempo/deploy
+## deploy tempo and jaeger-agent
+k8s/metrics/tempo/deploy:
+	kubectl apply -f k8s/metrics/tempo
+
+.PHONY: k8s/metrics/tempo/delete
+## delete tempo and jaeger-agent
+k8s/metrics/tempo/delete:
+	kubectl delete -f k8s/metrics/tempo
 
 .PHONY: k8s/metrics/profefe/deploy
 ## deploy profefe
