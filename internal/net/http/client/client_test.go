@@ -120,7 +120,7 @@ func TestNew(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "initialize with no option success",
+			name: "initialize success with no option",
 			args: args{
 				opts: nil,
 			},
@@ -142,7 +142,7 @@ func TestNew(t *testing.T) {
 			},
 		},
 		{
-			name: "log invalid option error",
+			name: "fails and log invalid option error",
 			args: args{
 				opts: []Option{
 					func(*transport) error {
@@ -168,7 +168,7 @@ func TestNew(t *testing.T) {
 			},
 		},
 		{
-			name: "return critical option error",
+			name: "fails with critical option error",
 			args: args{
 				opts: []Option{
 					func(*transport) error {
