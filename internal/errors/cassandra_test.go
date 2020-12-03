@@ -24,6 +24,227 @@ import (
 	"go.uber.org/goleak"
 )
 
+func TestErrCassandraInvalidConsistencyType(t *testing.T) {
+	type args struct {
+		consistency string
+	}
+	type want struct {
+		want error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got error) error {
+		if !Is(got, w.want) {
+			return Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "return error when consistency level is `QUORUM`",
+			args: args{
+				consistency: "QUORUM",
+			},
+			want: want{
+				want: Errorf("consistetncy type %q is not defined", "QUORUM"),
+			},
+		},
+		{
+			name: "return error when consistency level is empty",
+			args: args{
+				consistency: "",
+			},
+			want: want{
+				want: Errorf("consistetncy type %q is not defined", ""),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := ErrCassandraInvalidConsistencyType(test.args.consistency)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestNewErrCassandraNotFoundIdentity(t *testing.T) {
+	type want struct {
+		want error
+	}
+	type test struct {
+		name       string
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got error) error {
+		if !Is(got, w.want) {
+			return Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "return cassandra not found identity error",
+			want: want{
+				want: &ErrCassandraNotFoundIdentity{
+					err: New("cassandra entry not found"),
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := NewErrCassandraNotFoundIdentity()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestNewErrCassandraUnavailableIdentity(t *testing.T) {
+	type want struct {
+		want error
+	}
+	type test struct {
+		name       string
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got error) error {
+		if !Is(got, w.want) {
+			return Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "return cassandra unavailable identity error",
+			want: want{
+				want: &ErrCassandraUnavailableIdentity{
+					err: New("cassandra unavailable"),
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := NewErrCassandraUnavailableIdentity()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestErrCassandraUnavailable(t *testing.T) {
+	type want struct {
+		want error
+	}
+	type test struct {
+		name       string
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got error) error {
+		if !Is(got, w.want) {
+			return Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "return cassandra unavailable identity error",
+			want: want{
+				want: &ErrCassandraUnavailableIdentity{
+					err: New("cassandra unavailable"),
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := ErrCassandraUnavailable()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestErrCassandraNotFound(t *testing.T) {
+}
+
+func TestErrCassandraGetOperationFailed(t *testing.T) {
+}
+
+func TestErrCassandraSetOperationFailed(t *testing.T) {
+}
+
+func TestErrCassandraDeleteOperationFailed(t *testing.T) {
+}
+
+func TestErrCassandraHostDownDetected(t *testing.T) {
+}
+
 func TestErrCassandraNotFoundIdentity_Error(t *testing.T) {
 	type fields struct {
 		err error
