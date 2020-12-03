@@ -51,7 +51,7 @@ type discoverer struct {
 
 	statefulSets atomic.Value
 
-	dcd       time.Duration // discover check duration
+	rcd       time.Duration // reconcile check duration
 	eg        errgroup.Group
 	ctrl      k8s.Controller
 	tolerance float64
@@ -205,7 +205,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 1)
 	d.eg.Go(safety.RecoverFunc(func() error {
 		defer close(ech)
-		dt := time.NewTicker(d.dcd)
+		dt := time.NewTicker(d.rcd)
 		defer dt.Stop()
 
 		var (

@@ -27,7 +27,7 @@ var (
 	defaultOpts = []Option{}
 )
 
-func WithDiscoverer(rb service.Rebalancer) Option {
+func WithRebalancer(rb service.Rebalancer) Option {
 	return func(s *server) error {
 		if rb != nil {
 			s.rb = rb

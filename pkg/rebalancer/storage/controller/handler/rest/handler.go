@@ -25,7 +25,7 @@ type Handler interface {
 }
 
 type handler struct {
-	rb rebalancer.Controller
+	rcs rebalancer.ControllerServer
 }
 
 func New(opts ...Option) Handler {

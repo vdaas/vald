@@ -17,7 +17,7 @@
 // Package rest provides rest api logic
 package rest
 
-import "github.com/vdaas/vald/apis/grpc/discoverer"
+import "github.com/vdaas/vald/apis/grpc/rebalancer"
 
 type Option func(*handler)
 
@@ -25,8 +25,8 @@ var (
 	defaultOpts = []Option{}
 )
 
-func WithDiscoverer(dsc discoverer.DiscovererServer) Option {
+func WithRebalancer(rcs rebalancer.ControllerServer) Option {
 	return func(h *handler) {
-		h.dsc = dsc
+		h.rcs = rcs
 	}
 }
