@@ -312,19 +312,394 @@ func TestErrCassandraNotFound(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestErrCassandraGetOperationFailed(t *testing.T) {
+	type args struct {
+		key string
+		err error
+	}
+	type want struct {
+		want error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got error) error {
+		if !Is(got, w.want) {
+			return Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		func() test {
+			args := args{
+				key: "uuid",
+				err: New("database error"),
+			}
+			return test{
+				name: "return wrapped fetch key error when key is `uuid` and error is database error",
+				args: args,
+				want: want{
+					Wrapf(args.err, "error failed to fetch key (%s)", args.key),
+				},
+			}
+		}(),
+		func() test {
+			args := args{
+				key: "",
+				err: New("database error"),
+			}
+			return test{
+				name: "return wrapped fetch key error when key is empty and error is database error",
+				args: args,
+				want: want{
+					Wrapf(args.err, "error failed to fetch key (%s)", args.key),
+				},
+			}
+		}(),
+		func() test {
+			args := args{
+				key: "uuid",
+				err: nil,
+			}
+			return test{
+				name: "return fetch key error when key is `uuid` and error is nil",
+				args: args,
+				want: want{
+					want: Errorf("error failed to fetch key (%s)", args.key),
+				},
+			}
+		}(),
+		func() test {
+			args := args{
+				key: "",
+				err: nil,
+			}
+			return test{
+				name: "return fetch key error when key is empty and error is nil",
+				args: args,
+				want: want{
+					want: Errorf("error failed to fetch key (%s)", args.key),
+				},
+			}
+		}(),
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := ErrCassandraGetOperationFailed(test.args.key, test.args.err)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
 }
 
 func TestErrCassandraSetOperationFailed(t *testing.T) {
+	type args struct {
+		key string
+		err error
+	}
+	type want struct {
+		want error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got error) error {
+		if !Is(got, w.want) {
+			return Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		func() test {
+			args := args{
+				key: "uuid",
+				err: New("database error"),
+			}
+			return test{
+				name: "returns wrapped set key error when key is `uuid` and error is database error",
+				args: args,
+				want: want{
+					Wrapf(args.err, "error failed to set key (%s)", args.key),
+				},
+			}
+		}(),
+		func() test {
+			args := args{
+				key: "",
+				err: New("database error"),
+			}
+			return test{
+				name: "returns wrapped set key error when key is empty and error is database error",
+				args: args,
+				want: want{
+					Wrapf(args.err, "error failed to set key (%s)", args.key),
+				},
+			}
+		}(),
+		func() test {
+			args := args{
+				key: "uuid",
+				err: nil,
+			}
+			return test{
+				name: "returns set key error when key is `uuid` and error is nil",
+				args: args,
+				want: want{
+					want: Errorf("error failed to set key (%s)", args.key),
+				},
+			}
+		}(),
+		func() test {
+			args := args{
+				key: "",
+				err: nil,
+			}
+			return test{
+				name: "returns set key error when key is empty and error is nil",
+				args: args,
+				want: want{
+					want: Errorf("error failed to set key (%s)", args.key),
+				},
+			}
+		}(),
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := ErrCassandraSetOperationFailed(test.args.key, test.args.err)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
 }
 
 func TestErrCassandraDeleteOperationFailed(t *testing.T) {
+	type args struct {
+		key string
+		err error
+	}
+	type want struct {
+		want error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got error) error {
+		if !Is(got, w.want) {
+			return Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		func() test {
+			args := args{
+				key: "uuid",
+				err: New("database error"),
+			}
+			return test{
+				name: "returns wrapped delete key error when key is `uuid` and error is database error",
+				args: args,
+				want: want{
+					want: Wrapf(args.err, "error failed to delete key (%s)", args.key),
+				},
+			}
+		}(),
+		func() test {
+			args := args{
+				key: "",
+				err: New("database error"),
+			}
+			return test{
+				name: "returns wrapped delete key error when key is empty and error is database error",
+				args: args,
+				want: want{
+					want: Wrapf(args.err, "error failed to delete key (%s)", args.key),
+				},
+			}
+		}(),
+		func() test {
+			args := args{
+				key: "uuid",
+				err: nil,
+			}
+			return test{
+				name: "returns delete key error when key is `uuid` and error is nil",
+				args: args,
+				want: want{
+					want: Errorf("error failed to delete key (%s)", args.key),
+				},
+			}
+		}(),
+		func() test {
+			args := args{
+				key: "",
+				err: nil,
+			}
+			return test{
+				name: "returns delete key error when key is empty and error is nil",
+				args: args,
+				want: want{
+					want: Errorf("error failed to delete key (%s)", args.key),
+				},
+			}
+		}(),
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := ErrCassandraDeleteOperationFailed(test.args.key, test.args.err)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
 }
 
 func TestErrCassandraHostDownDetected(t *testing.T) {
+	type args struct {
+		nodeInfo string
+		err      error
+	}
+	type want struct {
+		want error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got error) error {
+		if !Is(got, w.want) {
+			return Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		func() test {
+			args := args{
+				nodeInfo: "127.0.0.1",
+				err:      New("database error"),
+			}
+			return test{
+				name: "returns wrapped cassandra host down detected error when nodeInfo is `127.0.0.1` and error is database error",
+				args: args,
+				want: want{
+					want: Wrapf(args.err, "error cassandra host down detected\t%s", args.nodeInfo),
+				},
+			}
+		}(),
+		func() test {
+			args := args{
+				nodeInfo: "",
+				err:      New("database error"),
+			}
+			return test{
+				name: "returns wrapped cassandra host down detected error when nodeInfo is empty and error is database error",
+				args: args,
+				want: want{
+					want: Wrapf(args.err, "error cassandra host down detected\t%s", args.nodeInfo),
+				},
+			}
+		}(),
+		func() test {
+			args := args{
+				nodeInfo: "127.0.0.1",
+				err:      nil,
+			}
+			return test{
+				name: "returns cassandra host down detected error when nodeInfo is `127.0.0.1` and error is nil",
+				args: args,
+				want: want{
+					want: Errorf("error cassandra host down detected\t%s", args.nodeInfo),
+				},
+			}
+		}(),
+		func() test {
+			args := args{
+				nodeInfo: "",
+				err:      nil,
+			}
+			return test{
+				name: "returns cassandra host down detected error when nodeInfo is empty and error is nil",
+				args: args,
+				want: want{
+					want: Errorf("error cassandra host down detected\t%s", args.nodeInfo),
+				},
+			}
+		}(),
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := ErrCassandraHostDownDetected(test.args.err, test.args.nodeInfo)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
 }
 
 func TestErrCassandraNotFoundIdentity_Error(t *testing.T) {
