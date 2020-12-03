@@ -44,6 +44,10 @@ type Detail struct {
 	BuildCPUInfoFlags []string     `json:"build_cpu_info_flags,omitempty" yaml:"build_cpu_info_flags,omitempty"`
 	StackTrace        []StackTrace `json:"stack_trace,omitempty" yaml:"stack_trace,omitempty"`
 	PrepOnce          sync.Once    `json:"-" yaml:"-"`
+
+	// runtime functions
+	rtCaller    func(skip int) (pc uintptr, file string, line int, ok bool)
+	rtFuncForPC func(pc uintptr) *runtime.Func
 }
 
 // StackTrace represents stacktrace information about url, function name, file, line ..etc.
@@ -71,36 +75,31 @@ var (
 
 	reps = strings.NewReplacer("_", " ", ",omitempty", "")
 
-	once sync.Once
-
-	detail Detail
-
-	//	runtime     runtime
-	rtCaller    = runtime.Caller
-	rtFuncForPC = runtime.FuncForPC
+	once   sync.Once
+	detail *Detail
 )
 
 // Init initializes Detail object only once.
 func Init(name string) {
 	once.Do(func() {
-		detail = Detail{
-			Version:           Version,
-			ServerName:        name,
-			GitCommit:         GitCommit,
-			BuildTime:         BuildTime,
-			GoVersion:         GoVersion,
-			GoOS:              GoOS,
-			GoArch:            GoArch,
-			CGOEnabled:        CGOEnabled,
-			NGTVersion:        NGTVersion,
-			BuildCPUInfoFlags: strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " "),
-		}
-		detail.prepare()
+		d, _ := New(WithServerName(name))
+		detail = d
 	})
 }
 
 func New(opts ...Option) (*Detail, error) {
-	d := new(Detail)
+	d := &Detail{
+		Version: Version,
+		//ServerName:        name,
+		GitCommit:         GitCommit,
+		BuildTime:         BuildTime,
+		GoVersion:         GoVersion,
+		GoOS:              GoOS,
+		GoArch:            GoArch,
+		CGOEnabled:        CGOEnabled,
+		NGTVersion:        NGTVersion,
+		BuildCPUInfoFlags: strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " "),
+	}
 
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(d); err != nil {
@@ -115,7 +114,26 @@ func New(opts ...Option) (*Detail, error) {
 		}
 	}
 
+	if d.rtCaller == nil {
+		d.rtCaller = runtime.Caller
+	}
+	if d.rtFuncForPC == nil {
+		d.rtFuncForPC = runtime.FuncForPC
+	}
+
+	d.prepare()
+
 	return d, nil
+}
+
+// String calls String method of global detail object.
+func String() string {
+	return detail.String()
+}
+
+// Get calls Get method of global detail object.
+func Get() Detail {
+	return detail.Get()
 }
 
 // String returns summary of Detail object.
@@ -189,11 +207,11 @@ func (d Detail) Get() Detail {
 
 	d.StackTrace = make([]StackTrace, 0, 10)
 	for i := 3; ; i++ {
-		pc, file, line, ok := rtCaller(i)
+		pc, file, line, ok := d.rtCaller(i)
 		if !ok {
 			break
 		}
-		funcName := rtFuncForPC(pc).Name()
+		funcName := d.rtFuncForPC(pc).Name()
 		if funcName == "runtime.main" {
 			break
 		}
