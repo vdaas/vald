@@ -1,4 +1,4 @@
-name: "Build docker image: rebalancer-controller"
+name: "Build docker image: rebalancer-storage-controller"
 
 on:
   push:
@@ -55,9 +55,9 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-rebalancer-controller-${{ github.sha }}
+          key: ${{ runner.os }}-buildx-rebalancer-storage-controller-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-buildx-rebalancer-controller-
+            ${{ runner.os }}-buildx-rebalancer-storage-controller-
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
@@ -72,7 +72,7 @@ jobs:
       - name: Image name
         id: image_name
         run: |
-          image_name=`make docker/name/rebalancer-controller`
+          image_name=`make docker/name/rebalancer-storage-controller`
           base_platforms=`make docker/platforms`
           echo "IMAGE_NAME=${image_name}" >> $GITHUB_ENV
           echo "::set-output name=IMAGE_NAME::${image_name}"
@@ -109,13 +109,13 @@ jobs:
             DOCKER="docker buildx" \
             DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS} ${LABEL_OPTS} --push" \
             TAG="${PRIMARY_TAG}" \
-            docker/build/rebalancer-controller
+            docker/build/rebalancer-storage-controller
           make \
             REPO="ghcr.io/vdaas/vald" \
             DOCKER="docker buildx" \
             DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS} ${LABEL_OPTS} --push" \
             TAG="${PRIMARY_TAG}" \
-            docker/build/rebalancer-controller
+            docker/build/rebalancer-storage-controller
         env:
           DOCKER_BUILDKIT: 1
           BUILDER: ${{ steps.buildx.outputs.name }}
@@ -154,7 +154,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: 8398a7/action-slack@v2
         with:
-          author_name: rebalancer-controller image build
+          author_name: rebalancer-storage-controller image build
           status: ${{ env.WORKFLOW_CONCLUSION }}
           only_mention_fail: channel
         env:
