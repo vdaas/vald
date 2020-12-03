@@ -47,15 +47,25 @@ type run struct {
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
-	rb, err := service.New(
-	// TODO set service option from config
+	rb, err := service.NewDiscoverer(
+		service.WithJobName(cfg.Rebalancer.RebalanceJobName),
+		service.WithJobNamespace(cfg.Rebalancer.RebalanceJobNamespace),
+		service.WithJobTemplateKey(cfg.Rebalancer.RebalanceJobTemplateKey),
+		service.WithConfigMapName(cfg.Rebalancer.ConfigMapName),
+		service.WithConfigMapNamespace(cfg.Rebalancer.ConfigMapNamespace),
+		service.WithAgentName(cfg.Rebalancer.AgentName),
+		service.WithAgentNamespace(cfg.Rebalancer.AgentNamespace),
+		service.WithAgentResourceType(cfg.Rebalancer.AgentResourceType),
+		service.WithReconcileCheckDuration(cfg.Rebalancer.ReconcileCheckDuration),
+		service.WithTolerance(cfg.Rebalancer.Tolerance),
+		service.WithErrorGroup(eg),
 	)
 	if err != nil {
 		return nil, err
 	}
 
 	h, err := handler.New(
-		handler.WithDiscoverer(rb),
+		handler.WithRebalancer(rb),
 	)
 	if err != nil {
 		return nil, err
@@ -101,7 +111,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 						router.WithErrGroup(eg),
 						router.WithHandler(
 							rest.New(
-								rest.WithDiscoverer(h),
+								rest.WithRebalancer(h),
 							),
 						),
 					)),
