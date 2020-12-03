@@ -62,7 +62,6 @@ require (
 	github.com/kpango/glg v1.5.1
 	github.com/lucasb-eyer/go-colorful v1.0.3
 	github.com/pierrec/lz4/v3 v3.3.2
-	github.com/pkg/errors v0.9.1
 	github.com/scylladb/gocqlx v1.5.0
 	github.com/tensorflow/tensorflow v0.0.0-00010101000000-000000000000
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
