@@ -6,10 +6,11 @@ import (
 	"net/url"
 	"reflect"
 
-	iblob "github.com/vdaas/vald/internal/db/storage/blob"
-	"github.com/vdaas/vald/internal/errors"
 	"gocloud.dev/blob"
 	"gocloud.dev/blob/gcsblob"
+
+	iblob "github.com/vdaas/vald/internal/db/storage/blob"
+	"github.com/vdaas/vald/internal/errors"
 )
 
 type client struct {
