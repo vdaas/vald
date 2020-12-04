@@ -43,7 +43,7 @@ func TestNew(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got Group) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -110,13 +110,13 @@ func Test_group_Do(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotV interface{}, gotShared bool, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotV, w.wantV) {
-			return errors.Errorf("got = %v, want %v", gotV, w.wantV)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotV, w.wantV)
 		}
 		if !reflect.DeepEqual(gotShared, w.wantShared) {
-			return errors.Errorf("got = %v, want %v", gotShared, w.wantShared)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotShared, w.wantShared)
 		}
 		return nil
 	}

@@ -15,7 +15,11 @@
 //
 package redis
 
-import redis "github.com/go-redis/redis/v7"
+import (
+	"context"
+
+	redis "github.com/go-redis/redis/v7"
+)
 
 type MockRedis struct {
 	TxPipelineFunc func() redis.Pipeliner
@@ -50,4 +54,30 @@ func (m *MockRedis) MGet(keys ...string) *redis.SliceCmd {
 
 func (m *MockRedis) Del(keys ...string) *redis.IntCmd {
 	return m.DelFunc(keys...)
+}
+
+type dummyHook struct {
+	name string
+}
+
+func (d *dummyHook) BeforeProcess(ctx context.Context, cmd Cmder) (context.Context, error) {
+	return ctx, nil
+}
+
+func (d *dummyHook) AfterProcess(ctx context.Context, cmd Cmder) error {
+	return nil
+}
+
+func (d *dummyHook) BeforeProcessPipeline(ctx context.Context, cmds []Cmder) (context.Context, error) {
+	return ctx, nil
+}
+
+func (d *dummyHook) AfterProcessPipeline(ctx context.Context, cmds []Cmder) error {
+	return nil
+}
+
+func dummyWithFunc(err error) Option {
+	return func(*redisClient) error {
+		return err
+	}
 }

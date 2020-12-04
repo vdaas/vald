@@ -51,10 +51,10 @@ func TestNew(t *testing.T) {
 		if got, want := got.(*group), w.want.(*group); !reflect.DeepEqual(got.emap, want.emap) &&
 			!reflect.DeepEqual(got.enableLimitation, want.enableLimitation) &&
 			got.cancel != nil {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		if !reflect.DeepEqual(got1, w.want1) {
-			return errors.Errorf("got = %v, want %v", got1, w.want1)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got1, w.want1)
 		}
 		return nil
 	}
@@ -122,7 +122,7 @@ func TestInit(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotEgctx context.Context) error {
 		if !reflect.DeepEqual(gotEgctx, w.wantEgctx) {
-			return errors.Errorf("got = %v, want %v", gotEgctx, w.wantEgctx)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotEgctx, w.wantEgctx)
 		}
 		if instance == nil {
 			return errors.New("instance is nil")
@@ -189,7 +189,7 @@ func TestGet(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got Group) error {
 		if got, want := got.(*group), w.want.(*group); !reflect.DeepEqual(got.egctx, want.egctx) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -349,10 +349,10 @@ func Test_group_Limitation(t *testing.T) {
 	defaultCheckFunc := func(w want, g Group) error {
 		got, want := g.(*group), w.want.(*group)
 		if !reflect.DeepEqual(got.enableLimitation, want.enableLimitation) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		if got.limitation != nil && want.limitation != nil {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -641,7 +641,7 @@ func TestWait(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -697,7 +697,7 @@ func Test_group_Wait(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}

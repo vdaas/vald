@@ -43,10 +43,10 @@ func TestParseBytes(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotBytes uint64, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotBytes, w.wantBytes) {
-			return errors.Errorf("got = %v, want %v", gotBytes, w.wantBytes)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotBytes, w.wantBytes)
 		}
 		return nil
 	}

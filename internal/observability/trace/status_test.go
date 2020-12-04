@@ -42,7 +42,7 @@ func TestStatusCodeOK(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got trace.Status) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -112,7 +112,7 @@ func TestStatusCodeCancelled(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got trace.Status) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -182,7 +182,7 @@ func TestStatusCodeUnknown(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got trace.Status) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -252,7 +252,7 @@ func TestStatusCodeInvalidArgument(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got trace.Status) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -322,7 +322,7 @@ func TestStatusCodeDeadlineExceeded(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got trace.Status) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -392,7 +392,7 @@ func TestStatusCodeNotFound(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got trace.Status) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -462,7 +462,7 @@ func TestStatusCodeAlreadyExists(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got trace.Status) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -532,7 +532,7 @@ func TestStatusCodePermissionDenied(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got trace.Status) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -602,7 +602,7 @@ func TestStatusCodeResourceExhausted(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got trace.Status) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -672,7 +672,7 @@ func TestStatusCodeFailedPrecondition(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got trace.Status) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -742,7 +742,7 @@ func TestStatusCodeAborted(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got trace.Status) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -812,7 +812,7 @@ func TestStatusCodeOutOfRange(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got trace.Status) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -882,7 +882,7 @@ func TestStatusCodeUnimplemented(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got trace.Status) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -952,7 +952,7 @@ func TestStatusCodeInternal(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got trace.Status) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1022,7 +1022,7 @@ func TestStatusCodeUnavailable(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got trace.Status) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1092,7 +1092,7 @@ func TestStatusCodeDataLoss(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got trace.Status) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1162,7 +1162,7 @@ func TestStatusCodeUnauthenticated(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got trace.Status) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}

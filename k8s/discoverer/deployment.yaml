@@ -21,10 +21,10 @@ metadata:
   labels:
     app: vald-discoverer
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v0.0.50
+    helm.sh/chart: vald-v0.0.62
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v0.0.50
+    app.kubernetes.io/version: v0.0.62
     app.kubernetes.io/component: discoverer
 spec:
   progressDeadlineSeconds: 600
@@ -47,7 +47,7 @@ spec:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/component: discoverer
       annotations:
-        checksum/configmap: 27946808614542bfe924d4d78e5c8abd41bb9b7e9c8a6381c2cdc9a976fd8689
+        checksum/configmap: 9a16d79f23f28221361e36c4caa258ca48e8f8b9aeef151d5197e128c0de3300
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-discoverer

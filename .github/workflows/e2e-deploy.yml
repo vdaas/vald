@@ -1,19 +1,19 @@
-name: 'Run e2e deploy test'
+name: "Run e2e deploy test"
 on:
   push:
     tags:
-       - '*.*.*'
-       - 'v*.*.*'
-       - '*.*.*-*'
-       - 'v*.*.*-*'
+      - "*.*.*"
+      - "v*.*.*"
+      - "*.*.*-*"
+      - "v*.*.*-*"
 
 jobs:
   e2e-deploy:
     name: e2e deploy test
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: wait for dockers
         run: |
           tag=$(cat versions/VALD_VERSION)

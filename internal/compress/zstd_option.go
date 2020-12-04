@@ -18,7 +18,7 @@
 package compress
 
 import (
-	"github.com/klauspost/compress/zstd"
+	"github.com/vdaas/vald/internal/compress/zstd"
 )
 
 // ZstdOption represents the functional option for zstdCompressor
@@ -46,7 +46,7 @@ func WithZstdGob(opts ...GobOption) ZstdOption {
 // WithZstdCompressionLevel represents the option to set the compress level for zstd.
 func WithZstdCompressionLevel(level int) ZstdOption {
 	return func(c *zstdCompressor) error {
-		c.eoptions = append(c.eoptions, zstd.WithEncoderLevel(zstd.EncoderLevelFromZstd(level)))
+		c.eoptions = append(c.eoptions, zstd.WithEncoderLevel(level))
 		return nil
 	}
 }

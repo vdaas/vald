@@ -67,10 +67,10 @@ func TestListen(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got Listener, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -83,7 +83,7 @@ func TestListen(t *testing.T) {
 			},
 			checkFunc: func(w want, got Listener, err error) error {
 				if !errors.Is(err, w.err) {
-					return errors.Errorf("got error = %v, want %v", err, w.err)
+					return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 				}
 
 				return got.Close()
@@ -130,7 +130,7 @@ func TestIsLocal(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -223,10 +223,10 @@ func TestDial(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotConn Conn, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotConn, w.wantConn) {
-			return errors.Errorf("got = %v, want %v", gotConn, w.wantConn)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotConn, w.wantConn)
 		}
 		return nil
 	}
@@ -247,7 +247,7 @@ func TestDial(t *testing.T) {
 				},
 				checkFunc: func(w want, gotConn Conn, err error) error {
 					if !errors.Is(err, w.err) {
-						return errors.Errorf("got error = %v, want %v", err, w.err)
+						return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 					}
 
 					// read the output from the server and check if it is equals to the count
@@ -310,16 +310,16 @@ func TestParse(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotHost string, gotPort uint16, gotIsIP bool, err error) error {
 		if (w.err == nil && err != nil) || (w.err != nil && err == nil) || (err != nil && err.Error() != w.err.Error()) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotHost, w.wantHost) {
-			return errors.Errorf("got = %v, want %v", gotHost, w.wantHost)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotHost, w.wantHost)
 		}
 		if !reflect.DeepEqual(gotPort, w.wantPort) {
-			return errors.Errorf("got = %v, want %v", gotPort, w.wantPort)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotPort, w.wantPort)
 		}
 		if !reflect.DeepEqual(gotIsIP, w.wantIsIP) {
-			return errors.Errorf("got = %v, want %v", gotIsIP, w.wantIsIP)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotIsIP, w.wantIsIP)
 		}
 		return nil
 	}
@@ -445,7 +445,7 @@ func TestIsIPv6(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -509,7 +509,7 @@ func TestIsIPv4(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -575,13 +575,13 @@ func TestSplitHostPort(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotHost string, gotPort uint16, err error) error {
 		if (w.err == nil && err != nil) || (w.err != nil && err == nil) || (err != nil && err.Error() != w.err.Error()) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotHost, w.wantHost) {
-			return errors.Errorf("got = %v, want %v", gotHost, w.wantHost)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotHost, w.wantHost)
 		}
 		if !reflect.DeepEqual(gotPort, w.wantPort) {
-			return errors.Errorf("got = %v, want %v", gotPort, w.wantPort)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotPort, w.wantPort)
 		}
 		return nil
 	}
@@ -704,7 +704,7 @@ func TestScanPorts(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotPorts []uint16, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 
 		// count how want want ports exists in got ports
@@ -719,7 +719,7 @@ func TestScanPorts(t *testing.T) {
 		}
 
 		if cnt != len(w.wantPorts) {
-			return errors.Errorf("got = %v, want %v", gotPorts, w.wantPorts)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotPorts, w.wantPorts)
 		}
 		return nil
 	}

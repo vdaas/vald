@@ -38,7 +38,7 @@ defaults:
   image:
     # @schema {"name": "defaults.image.tag", "type": "string"}
     # defaults.image.tag -- docker image tag
-    tag: v0.0.50
+    tag: v0.0.62
   # @schema {"name": "defaults.server_config", "type": "object", "anchor": "server_config"}
   server_config:
     # @schema {"name": "defaults.server_config.servers", "type": "object"}
@@ -1247,10 +1247,11 @@ agent:
     # @schema {"name": "agent.ngt.bulk_insert_chunk_size", "type": "integer"}
     # agent.ngt.bulk_insert_chunk_size -- bulk insert chunk size
     bulk_insert_chunk_size: 10
-    # @schema {"name": "agent.ngt.distance_type", "type": "string", "enum": ["l1", "l2", "angle", "hamming", "cos", "cosine", "normalizedangle", "normalizedcosine"]}
+    # @schema {"name": "agent.ngt.distance_type", "type": "string", "enum": ["l1", "l2", "angle", "hamming", "cos", "cosine", "normalizedangle", "normalizedcosine", "jaccard"]}
     # agent.ngt.distance_type -- distance type.
-    # it should be `l1`, `l2`, `angle`, `hamming`, `cosine`, `normalizedangle` or `normalizedcosine`.
-    # for further details: https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference
+    # it should be `l1`, `l2`, `angle`, `hamming`, `cosine`, `normalizedangle`, `normalizedcosine` or `jaccard`.
+    # for further details about NGT libraries supported distance is https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference
+    # and vald agent's supported NGT distance type is https://pkg.go.dev/github.com/vdaas/vald/internal/core/ngt#pkg-constants
     distance_type: l2
     # @schema {"name": "agent.ngt.object_type", "type": "string", "enum": ["float", "uint8"]}
     # agent.ngt.object_type -- object type.
@@ -1285,6 +1286,9 @@ agent:
     # agent.ngt.load_index_timeout_factor -- a factor of load index timeout.
     # timeout duration will be calculated by (index count to be loaded) * (factor).
     load_index_timeout_factor: 1ms
+    # @schema {"name": "agent.ngt.enable_proactive_gc", "type": "boolean"}
+    # agent.ngt.enable_proactive_gc -- enable proactive GC call for reducing heap memory allocation
+    enable_proactive_gc: true
   # @schema {"name": "agent.sidecar", "type": "object"}
   sidecar:
     # @schema {"name": "agent.sidecar.enabled", "type": "boolean"}

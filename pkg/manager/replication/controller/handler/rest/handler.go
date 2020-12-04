@@ -30,7 +30,7 @@ type Handler interface {
 }
 
 type handler struct {
-	rpl controller.ReplicationServer
+	rpl controller.ReplicationControllerServer
 }
 
 func New(opts ...Option) Handler {

@@ -29,7 +29,7 @@ type server struct {
 	controller service.Replicator
 }
 
-func New(opts ...Option) controller.ReplicationServer {
+func New(opts ...Option) controller.ReplicationControllerServer {
 	s := new(server)
 
 	for _, opt := range append(defaultOpts, opts...) {

@@ -54,8 +54,6 @@ type index struct {
 	minUncommitted        uint32
 	uuidsCount            uint32
 	uncommittedUUIDsCount uint32
-	uncommittedUUIDs      atomic.Value // []string uncommitted uuid
-	uuids                 atomic.Value // []string uuid
 }
 
 func New(opts ...Option) (idx Indexer, err error) {
@@ -65,8 +63,6 @@ func New(opts ...Option) (idx Indexer, err error) {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
-	i.uuids.Store(make([]string, 10))
-	i.uncommittedUUIDs.Store(make([]string, 10))
 	i.indexing.Store(false)
 	return i, nil
 }

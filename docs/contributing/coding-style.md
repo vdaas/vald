@@ -12,8 +12,11 @@ Code formatting and naming conventions affect coding readability and maintainabi
 
 But having tools to format source code doesn't mean you do not need to care the formatting of the code, for example:
 
+<table>
+<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<tbody><tr><td>
+
 ```go
-// bad
 badStr := "apiVersion: v1\n" +
    "kind: Service\n" +
    "metadata:\n" +
@@ -24,8 +27,11 @@ badStr := "apiVersion: v1\n" +
    "      port: 3000\n" +
    "      targetPort: 3000\n" +
    "      protocol: TCP\n"
+```
 
-// good
+</td><td>
+
+```go
 goodStr := `apiVersion: v1
 kind: Service
 metadata:
@@ -38,6 +44,8 @@ spec:
       protocol: TCP
 `
 ```
+
+</td></tr></tbody></table>
 
 ### Project Layout
 
@@ -90,9 +98,79 @@ All packages should contain `doc.go` file under the package to describe what is 
 package cache
 ````
 
+### General style
+
+This section describes the general guideline for the Vald programming style, every Vald contributor should keep these general guidelines in mind while working on the implementation of Vald.
+
+#### Order of declaration
+
+Put the higher priority or frequently used declaration on the top of other declaration.
+It makes Vald easier to read and search the target source code in Vald.
+
+For example, the interface declaration should have higher priority than struct or function declaration, hence it should be put above other declaration.
+
+<table>
+<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<tbody><tr><td>
+
+```go
+type S struct {}
+
+func (s *S) fn() {}
+
+type I interface {}
+```
+
+</td><td>
+
+```go
+type I interface {}
+
+type S struct {}
+
+func (s *S) fn() {}
+```
+
+</td></tr></tbody></table>
+
+#### Group similar definition
+
+Group similar definitions such as struct or interface declaration.
+We should not group interface and struct declaration in the same block, for example:
+
+<table>
+<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<tbody><tr><td>
+
+```go
+type (
+    I interface {}
+    I2 interface {}
+
+    s struct {}
+    s2 struct {}
+)
+```
+
+</td><td>
+
+```go
+type (
+    I interface {}
+    I2 interface {}
+)
+
+type (
+    s struct {}
+    s2 struct {}
+)
+```
+
+</td></tr></tbody></table>
+
 ### Interfaces
 
-Interface defines the program interface for usability and future extendability.
+The interface defines the program interface for usability and future extendability.
 Unlike other languages like Java, Go supports implicit interface implementation. The type implements do not need to specify the interface name; to "implements" the interface the structs only need to defined the methods the same as the interface, so please be careful to define the method name inside the interface.
 
 The interface should be named as:
@@ -303,45 +381,52 @@ Please use [internal/errgroup](https://github.com/vdaas/vald/blob/master/interna
 All functions return `error` if the function can fail. It is very important to ensure the error checking is performed.
 To reduce human mistake that missing the error checking, please check the error using the following style:
 
-```go
-// good
-if err := fn(); err != nil {
-    // handle error
-}
-```
-
-Instead of this style.
+<table>
+<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<tbody><tr><td>
 
 ```go
-// bad
 err := fn()
 if err != nil {
     // handle error
 }
 ```
 
-If you need the value outside the if statement, please use the following style:
+</td><td>
 
 ```go
-// good
-conn, err := net.Dial("tcp", "localhost:80")
-if err != nil {
+if err := fn(); err != nil {
     // handle error
 }
-
-// use the conn
 ```
 
-Instead of this style.
+</td></tr></tbody></table>
+
+If you need the value outside the if statement, please use the following style:
+
+<table>
+<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<tbody><tr><td>
 
 ```go
-// bad
 if conn, err := net.Dial("tcp", "localhost:80");  err != nil {
     // handle error
 } else {
     // use the conn
 }
 ```
+
+</td><td>
+
+```go
+conn, err := net.Dial("tcp", "localhost:80")
+if err != nil {
+    // handle error
+}
+// use the conn
+```
+
+</td></tr></tbody></table>
 
 ### Logging
 
@@ -355,6 +440,170 @@ We defined the following logging levels.
 | WARN      | The message that indicates the application may having the issue or occurring unusual situation,<br>but does not affect the application behavior.<br>Someone should investigate the warning later.                                              | Failed to insert entry into the the database, but success with the retry.<br>Failed to update the cache, and the cache is not important.           | User 1 is successfully inserted into the database with retry,<br>retry count: 1, error: ErrMsg1, retry count: 2, error: ErrMsg2                                                                                        |
 | ERROR     | The message that indicates the application is having a serious issue or,<br>represent the failure of some important going on in the application.<br>It does not cause the application to go down.<br>Someone must investigate the error later. | Failed to insert an entry into the database, with retry count exceeded.<br>Failed to update the cache, and the cache is not important.             | User 1 is failed to insert in the database, errors:<br>retry count: 1, error: ErrMsg1, retry count: 2, error: ErrMsg2, ....                                                                                            |
 | FATAL     | Message that indicate the application is corrupting or having serious issue.<br>The application will go down after logging the fatal error. <br>Someone must investigate and resolve the fatal as soon as possible.                            | Failed to init the required cache during the application start.                                                                                    |                                                                                                                                                                                                                        |
+
+## Implementation
+
+This section includes some examples of general implementation which is widely used in Vald.
+The implementation may differ based on your use case.
+
+### Functional Option
+
+In Vald, the functional option pattern is widely used in Vald.
+You can refer to [this section](#Struct-initialization) for more details of the use case of this pattern.
+
+We provide the following errors to describe the error to apply the option.
+
+| Error | Description |
+|----|----|
+| errors.ErrInvalidOption | Error to apply the option, and the error is ignorable |
+| errors.ErrCriticalOption | Critical error to apply the option, the error cannot be ignored and should be handled |
+
+We strongly recommend the following implementation to set the value using functional option.
+
+If an invalid value is set to the functional option, the `ErrInvalidOption` error defined in the [internal/errors/option.go](https://github.com/vdaas/vald/blob/master/internal/errors/option.go) should be returned.
+
+The name argument (the first argument) of the `ErrInvalidOption` error should be the same as the functional option name without the `With` prefix.
+
+
+For example, the functional option name `WithVersion` should return the error with the argument `name` as `version`.
+
+```go
+func WithVersion(version string) Option {
+    return func(c *client) error {
+        if len(version) == 0 {
+            return errors.NewErrInvalidOption("version", version)
+        }
+        c.version = version
+        return nil
+    }
+}
+```
+
+We recommend the following implementation to parse the time string and set the time to the target struct.
+
+```go
+func WithTimeout(dur string) Option {
+    func(c *client) error {
+        if dur == "" {
+            return errors.NewErrInvalidOption("timeout", dur)
+        }
+        d, err := timeutil.Parse(dur)
+        if err != nil {
+            return errors.NewErrInvalidOption("timeout", dur, err)
+        }
+        c.timeout = d
+        return nil
+    }
+}
+```
+
+We recommend the following implementation to append the value to the slice if the value is not nil.
+
+```go
+func WithHosts(hosts ...string) Option {
+    return func(c *client) error {
+        if len(hosts) == 0 {
+            return errors.NewErrInvalidOption("hosts", hosts)
+        }
+        if c.hosts == nil {
+            c.hosts = hosts
+        } else {
+            c.hosts = append(c.hosts, hosts...)
+        }
+        return nil
+    }
+}
+```
+
+If the functional option error is a critical error, we should return `ErrCriticalOption` error instead of `ErrInvalidOption`.
+
+```go
+func WithConnectTimeout(dur string) Option {
+    return func(c *client) error {
+        if dur == "" {
+            return errors.NewErrInvalidOption("connectTimeout", dur)
+        }
+        d, err := timeutil.Parse(dur)
+        if err != nil {
+            return errors.NewErrCriticalOption("connectTimeout", dur, err)
+        }
+
+        c.connectTimeout = d
+        return nil
+    }
+}
+```
+
+In the caller side, we need to handle the error returned from the functional option.
+
+If the option failed to apply, an error wrapped with `ErrOptionFailed` defined in the [internal/errors/errors.go](https://github.com/vdaas/vald/blob/master/internal/errors/errors.go) should be returned.
+
+We recommend the following implementation to apply the options.
+
+```go
+func New(opts ...Option) (Server, error) {
+    srv := new(server)
+    for _, opt := range opts {
+        if err := opt(srv); err != nil {
+            werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+
+            e := new(errors.ErrCriticalOption)
+            if errors.As(err, &e) {
+                log.Error(werr)
+                return nil, werr
+            }
+            log.Warn(werr)
+        }
+    }
+}
+```
+
+### Constructor
+
+In Vald, the functional option pattern is widely used when we create an object.
+
+When setting the value with the functional option, the value is validated inside the option method.
+
+However, we may forget to set the required fields when creating the object, hence the target object will remain nil.
+Therefore, we strongly suggest to validate the object during initialization.
+
+If we forgot to set the option method, an error will be returned so we can handle it properly.
+
+```go
+func func New(opts ...Option) (Server, error) {
+    srv := new(server)
+    for _, opt := range append(defaultOpts, opts...) {
+        if err := opt(srv); err != nil {
+            werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+
+            e := new(errors.ErrCriticalOption)
+            if errors.As(err, &e) {
+                log.Error(werr)
+                return nil, werr
+            }
+            log.Warn(werr)
+        }
+    }
+
+    if srv.eg == nil {
+        return nil, errors.NewErrInvalidOption("eg", srv.eg)
+    }
+
+    return srv, nil
+}
+
+```
+
+We also recommend that you use the default options and the unexported functional option to set the objects so that we cannot use it externally.
+
+```go
+var defaultOpts = []Option {
+    func(s *server) error {
+        s.ctxio = io.New()
+        return nil
+    },
+}
+```
 
 ## Program comments
 
@@ -716,3 +965,90 @@ We do not suggest to modify the generated code other than the `tests` variable, 
         type want struct {
             // generated test code
     ```
+### Using Mock
+
+In Vald, we use a lot of external libraries, there are a lot of dependencies between libraries.
+
+As a result, due to the more complexity of the test, it has become more difficult to determine whether or not to mock dependencies.
+
+#### Condition
+
+When dependencies have the following factor, you can decide to mock the dependencies.
+
+- Incomplete implementation
+- I/O
+  - e.g. Network access, disk operation, etc.
+- Hardware dependent
+  - e.g. CPU, Memory usage, disk I/O, etc.
+- Difficult to create error of dependencies
+- Difficult to initialize
+  - e.g. Random number and time, file I/O initialization, environment dependent, etc.
+- Test result may change in each runtime
+  - e.g. Only test result may change in each runtime, System call inside implementation, etc.
+
+#### Risk
+
+Before applying mock to the object, you should be aware of the following risks.
+
+- We **do not** know whether the dependencies are correctly implemented or not.
+- We cannot notice the changes in dependencies.
+
+#### Implementation
+
+The implementation of the mock object should be:
+
+- Same package as the mock target.
+- File name is `xxx_mock.go`
+- Struct name is `Mock{Interface name}`
+
+For example, we decided to mock the following implementation `Encoder`.
+
+```go
+package json
+
+type Encoder interface {
+    Encode(interface{}) ([]byte, error) 
+}
+```
+
+```go
+type encoder struct {
+    encoder json.Encoder
+}
+
+func (e *encoder) Encode(obj interface{}) ([]byte, error) {
+    return e.encoder.Encode(obj)
+}
+```
+
+The following is an example of mock implementation:
+
+```go
+package json
+
+type MockEncoder struct {
+    EncoderFunc func(interface{}) ([]byte, error)
+}
+
+func (m *MockEncoder) Encode(obj interface{}) ([]byte, error) {
+    return m.EncodeFunc(obj)
+}
+```
+
+The following is an example implementation of test code to create the mock object and mock the implementation.
+
+```go
+tests := []test {
+    {
+        name: "returns (byte{}, nil) when encode success"
+        fields: fields {
+            encoding: &json.MockEncoder {
+                EncoderFunc: func(interface{}) ([]byte, error) {
+                    return []byte{}, nil
+                },
+            },
+        }
+        ......
+    }
+}
+```

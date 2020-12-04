@@ -25,6 +25,5 @@ option java_outer_classname = "ValdIngressFilter";
 
 import "payload.proto";
 import "google/api/annotations.proto";
-import "pb/gql.proto";
 
 service IngressFilter {}

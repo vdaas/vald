@@ -57,7 +57,7 @@ func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Re
 	uuid := req.GetUuid()
 	meta, err := s.mysql.GetMeta(ctx, uuid)
 	if err != nil {
-		if errors.IsErrMySQLNotFound(errors.UnWrapAll(err)) {
+		if errors.IsErrMySQLNotFound(err) {
 			log.Warnf("[GetVector]\tnot found\t%v\t%s", req.Uuid, err.Error())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))

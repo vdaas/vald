@@ -49,15 +49,21 @@ func (s *search) Run(ctx context.Context, b *testing.B, c client.Client, dataset
 }
 
 func (s *search) run(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
+	cnt := 0
 	b.Run("Search", func(bb *testing.B) {
-		queries := dataset.Query()
-
 		bb.StopTimer()
 		bb.ReportAllocs()
 		bb.ResetTimer()
 		bb.StartTimer()
 		for i := 0; i < bb.N; i++ {
-			s.do(ctx, bb, c, queries[i%len(queries)])
+			v, err := dataset.Query(cnt % dataset.QuerySize())
+			if err != nil {
+				cnt = 0
+				break
+			}
+
+			s.do(ctx, bb, c, v.([]float32))
+			cnt++
 		}
 		bb.StopTimer()
 	})
@@ -66,8 +72,6 @@ func (s *search) run(ctx context.Context, b *testing.B, c client.Client, dataset
 func (s *search) runParallel(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
 	var cnt int64
 	b.Run("ParallelSearch", func(bb *testing.B) {
-		queries := dataset.Query()
-
 		bb.StopTimer()
 		bb.ReportAllocs()
 		bb.ResetTimer()
@@ -75,7 +79,13 @@ func (s *search) runParallel(ctx context.Context, b *testing.B, c client.Client,
 		bb.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
 				n := int(atomic.AddInt64(&cnt, 1)) - 1
-				s.do(ctx, b, c, queries[n%len(queries)])
+				v, err := dataset.Query(n % dataset.QuerySize())
+				if err != nil {
+					cnt = 0
+					break
+				}
+
+				s.do(ctx, b, c, v.([]float32))
 			}
 		})
 		bb.StopTimer()

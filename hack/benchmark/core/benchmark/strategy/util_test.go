@@ -46,7 +46,7 @@ func Test_wrapErrors(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -120,10 +120,10 @@ func Test_insertAndCreateIndex32(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotIds []uint, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotIds, w.wantIds) {
-			return errors.Errorf("got = %v, want %v", gotIds, w.wantIds)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotIds, w.wantIds)
 		}
 		return nil
 	}
@@ -201,10 +201,10 @@ func Test_insertAndCreateIndex64(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotIds []uint, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotIds, w.wantIds) {
-			return errors.Errorf("got = %v, want %v", gotIds, w.wantIds)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotIds, w.wantIds)
 		}
 		return nil
 	}

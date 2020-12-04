@@ -16,6 +16,7 @@
 package version
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -52,7 +53,7 @@ func TestCheck(t *testing.T) {
 				max: "1.0.10",
 				min: "1.0.0",
 			},
-			want: errors.New("Malformed version: vald"),
+			want: fmt.Errorf("Malformed version: vald"),
 		},
 
 		{
@@ -62,7 +63,7 @@ func TestCheck(t *testing.T) {
 				max: "vald",
 				min: "1.0.0",
 			},
-			want: errors.New("Malformed constraint:  <= vald"),
+			want: fmt.Errorf("Malformed constraint:  <= vald"),
 		},
 
 		{
@@ -79,8 +80,8 @@ func TestCheck(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := Check(tt.args.cur, tt.args.max, tt.args.min)
-			if !errors.Is(tt.want, err) {
-				t.Error(err)
+			if !errors.Is(err, tt.want) {
+				t.Errorf("got: %s, want: %s", err, tt.want)
 			}
 		})
 	}

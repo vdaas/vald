@@ -1,0 +1,5 @@
+kubeval:
+  - files:
+      - k8s/**/*.yaml
+    strict: true
+    ignoreMissingSchemas: true

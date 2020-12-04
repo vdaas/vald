@@ -14,12 +14,18 @@
 # limitations under the License.
 #
 
+ARG GO_VERSION=latest
+
+FROM golang:${GO_VERSION} AS golang
+
 FROM vdaas/vald-base:latest AS builder
 
 ENV ORG vdaas
 ENV REPO vald
 ENV APP_NAME loadtest
 ENV PKG tools/cli/${APP_NAME}
+
+COPY --from=golang /usr/local/go $GOROOT
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libhdf5-dev \
@@ -38,6 +44,9 @@ COPY pkg/${PKG} .
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/cmd/${PKG}
 COPY cmd/${PKG} .
+
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/hack/benchmark/assets/x1b
+COPY hack/benchmark/assets/x1b .
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 COPY versions/GO_VERSION .

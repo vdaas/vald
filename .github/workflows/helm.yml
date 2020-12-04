@@ -1,11 +1,11 @@
-name: 'Update Helm charts'
+name: "Update Helm charts"
 on:
   push:
     tags:
-       - '*.*.*'
-       - 'v*.*.*'
-       - '*.*.*-*'
-       - 'v*.*.*-*'
+      - "*.*.*"
+      - "v*.*.*"
+      - "*.*.*-*"
+      - "v*.*.*-*"
 
 jobs:
   update-k8s-manifest:
@@ -15,9 +15,9 @@ jobs:
       image: vdaas/vald-ci-container:nightly
     steps:
       - name: Check out code.
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
         with:
-          fetch-depth: 10
+          fetch-depth: 0
       - name: Helm version
         run: |
           helm version
@@ -68,9 +68,9 @@ jobs:
       image: vdaas/vald-ci-container:nightly
     steps:
       - name: Check out code.
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
         with:
-          fetch-depth: 10
+          fetch-depth: 0
       - name: Helm version
         run: |
           helm version

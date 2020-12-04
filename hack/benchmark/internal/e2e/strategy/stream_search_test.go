@@ -47,7 +47,7 @@ func TestNewStreamSearch(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got e2e.Strategy) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -124,7 +124,7 @@ func Test_streamSearch_dataProvider(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got func() *client.SearchRequest) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}

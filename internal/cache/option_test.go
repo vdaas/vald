@@ -45,7 +45,7 @@ func TestWithExpiredHook(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *cache) error {
 		if reflect.ValueOf(w.want.expiredHook).Pointer() != reflect.ValueOf(got.expiredHook).Pointer() {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -117,7 +117,7 @@ func TestWithType(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *cache) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -186,7 +186,7 @@ func TestWithExpireDuration(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *cache) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -268,7 +268,7 @@ func TestWithExpireCheckDuration(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *cache) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}

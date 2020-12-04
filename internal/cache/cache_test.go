@@ -51,10 +51,10 @@ func TestNew(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotCc Cache, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotCc, w.wantCc) {
-			return errors.Errorf("got = %v, want %v", gotCc, w.wantCc)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotCc, w.wantCc)
 		}
 		return nil
 	}

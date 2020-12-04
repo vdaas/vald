@@ -49,10 +49,10 @@ func TestNew(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *Config, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -83,7 +83,7 @@ func TestNew(t *testing.T) {
 			},
 			checkFunc: func(w want, c *tls.Config, err error) error {
 				if !errors.Is(err, w.err) {
-					return fmt.Errorf("got error = %v, wantErr %v", err, w.err)
+					return fmt.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 				}
 
 				if len(c.Certificates) != 1 && len(c.Certificates) != len(w.want.Certificates) {
@@ -211,10 +211,10 @@ func TestNewClientConfig(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *Config, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -223,7 +223,7 @@ func TestNewClientConfig(t *testing.T) {
 			name: "returns cfg and nil when option is empty",
 			checkFunc: func(w want, c *Config, err error) error {
 				if !errors.Is(err, w.err) {
-					return fmt.Errorf("got error = %v, wantErr %v", err, w.err)
+					return fmt.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 				}
 				if c == nil {
 					return errors.New("config is nil")
@@ -241,7 +241,7 @@ func TestNewClientConfig(t *testing.T) {
 			},
 			checkFunc: func(w want, c *Config, err error) error {
 				if !errors.Is(err, w.err) {
-					return fmt.Errorf("got error = %v, wantErr %v", err, w.err)
+					return fmt.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 				}
 				if c == nil {
 					return errors.New("config is nil")
@@ -274,7 +274,7 @@ func TestNewClientConfig(t *testing.T) {
 			checkFunc: func(w want, c *Config, err error) error {
 				wantErr := "tls: failed to find any PEM data in certificate input"
 				if err.Error() != wantErr {
-					return fmt.Errorf("got error = %v, wantErr = %v", err, w.err)
+					return fmt.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 				}
 				if c != nil {
 					return errors.Errorf("config is not nil: %v", c)
@@ -324,10 +324,10 @@ func TestNewX509CertPool(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *x509.CertPool, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}

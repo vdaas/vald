@@ -17,11 +17,13 @@
 package reader
 
 import (
-	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/vdaas/vald/internal/backoff"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/reader/io"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/sdk/s3/s3iface"
 	"github.com/vdaas/vald/internal/errgroup"
 )
 
+// Option represents the functional option for reader.
 type Option func(r *reader)
 
 var (
@@ -29,9 +31,13 @@ var (
 		WithErrGroup(errgroup.Get()),
 		WithMaxChunkSize(512 * 1024 * 1024),
 		WithBackoff(false),
+		func(r *reader) {
+			r.ctxio = io.New()
+		},
 	}
 )
 
+// WithErrGroup returns the option to set the eg.
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(r *reader) {
 		if eg != nil {
@@ -40,7 +46,8 @@ func WithErrGroup(eg errgroup.Group) Option {
 	}
 }
 
-func WithService(s *s3.S3) Option {
+// WithService returns the option to set the service.
+func WithService(s s3iface.S3API) Option {
 	return func(r *reader) {
 		if s != nil {
 			r.service = s
@@ -48,34 +55,43 @@ func WithService(s *s3.S3) Option {
 	}
 }
 
+// WithBucket returns the option to set the bucket.
 func WithBucket(bucket string) Option {
 	return func(r *reader) {
 		r.bucket = bucket
 	}
 }
 
+// WithKey returns the option to set the key.
 func WithKey(key string) Option {
 	return func(r *reader) {
 		r.key = key
 	}
 }
 
+// WithMaxChunkSize retunrs the option to set the maxChunkSize.
 func WithMaxChunkSize(size int64) Option {
 	return func(r *reader) {
 		r.maxChunkSize = size
 	}
 }
 
+// WithBackoff returns the option to set the backoffEnabled.
 func WithBackoff(enabled bool) Option {
 	return func(r *reader) {
 		r.backoffEnabled = enabled
 	}
 }
 
+// WithBackoffOpts returns the option to set the backoffOpts.
 func WithBackoffOpts(opts ...backoff.Option) Option {
 	return func(r *reader) {
+		if opts == nil {
+			return
+		}
 		if r.backoffOpts == nil {
 			r.backoffOpts = opts
+			return
 		}
 
 		r.backoffOpts = append(r.backoffOpts, opts...)

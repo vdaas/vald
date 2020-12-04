@@ -18,8 +18,7 @@
 package compress
 
 import (
-	"compress/gzip"
-
+	"github.com/vdaas/vald/internal/compress/gzip"
 	"github.com/vdaas/vald/internal/errors"
 )
 

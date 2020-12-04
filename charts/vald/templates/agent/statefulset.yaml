@@ -59,13 +59,13 @@ spec:
       # annotations:
       #   checksum/configmap: {{ include (print $.Template.BasePath "/agent/configmap.yaml") . | sha256sum }}
     spec:
-      {{- if or .Values.agent.initContainers (and .Values.agent.sidecar.enabled .Values.agent.sidecar.initContainerEnabled) }}
+      {{- if or .Values.agent.initContainers .Values.agent.sidecar.initContainerEnabled }}
       initContainers:
         {{- if .Values.agent.initContainers }}
         {{- $initContainers := dict "initContainers" .Values.agent.initContainers "Values" .Values "namespace" .Release.Namespace -}}
         {{- include "vald.initContainers" $initContainers | trim | nindent 8 }}
         {{- end }}
-        {{- if and .Values.agent.sidecar.enabled .Values.agent.sidecar.initContainerEnabled }}
+        {{- if .Values.agent.sidecar.initContainerEnabled }}
         - name: {{ .Values.agent.sidecar.name }}-init
           image: "{{ .Values.agent.sidecar.image.repository }}:{{ default .Values.defaults.image.tag .Values.agent.sidecar.image.tag }}"
           imagePullPolicy: {{ .Values.agent.sidecar.image.pullPolicy }}

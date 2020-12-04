@@ -1,19 +1,19 @@
-name: 'Coverage'
+name: "Coverage"
 on:
   push:
     branches:
       - master
     paths:
-      - '.github/workflows/coverage.yml'
-      - 'internal/**'
-      - 'pkg/**'
-      - 'cmd/**'
+      - ".github/workflows/coverage.yml"
+      - "internal/**"
+      - "pkg/**"
+      - "cmd/**"
   pull_request:
     paths:
-      - '.github/workflows/coverage.yml'
-      - 'internal/**'
-      - 'pkg/**'
-      - 'cmd/**'
+      - ".github/workflows/coverage.yml"
+      - "internal/**"
+      - "pkg/**"
+      - "cmd/**"
 
 jobs:
   coverage:
@@ -23,9 +23,7 @@ jobs:
       image: vdaas/vald-ci-container:nightly
     steps:
       - name: Check out code.
-        uses: actions/checkout@v1
-        with:
-          fetch-depth: 10
+        uses: actions/checkout@v2
       - name: Run coverage
         continue-on-error: true
         run: |

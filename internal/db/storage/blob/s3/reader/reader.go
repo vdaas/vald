@@ -26,43 +26,54 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/vdaas/vald/internal/backoff"
+	ctxio "github.com/vdaas/vald/internal/db/storage/blob/s3/reader/io"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/sdk/s3"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/sdk/s3/s3iface"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-	ctxio "github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 )
 
 type reader struct {
 	eg      errgroup.Group
-	service *s3.S3
+	service s3iface.S3API
 	bucket  string
 	key     string
 
 	pr io.ReadCloser
 	wg *sync.WaitGroup
 
+	ctxio ctxio.IO
+
 	backoffEnabled bool
 	backoffOpts    []backoff.Option
 	maxChunkSize   int64
 }
 
+// Reader is an interface that groups the basic Read and Close and Open methods.
 type Reader interface {
 	Open(ctx context.Context) error
 	io.ReadCloser
 }
 
-func New(opts ...Option) Reader {
+// New returns Reader implementation.
+func New(opts ...Option) (Reader, error) {
 	r := new(reader)
 	for _, opt := range append(defaultOpts, opts...) {
 		opt(r)
 	}
 
-	return r
+	if r.ctxio == nil {
+		return nil, errors.NewErrInvalidOption("ctxio", r.ctxio)
+	}
+
+	return r, nil
 }
 
+// Open creates io.Pipe. After reading the data from s3, make it available with Read method.
+// Open method returns an error to align the interface, but it doesn't actually return an error.
 func (r *reader) Open(ctx context.Context) (err error) {
 	var pw io.WriteCloser
 
@@ -94,7 +105,7 @@ func (r *reader) Open(ctx context.Context) (err error) {
 				return err
 			}
 
-			body, err = ctxio.NewReaderWithContext(ctx, body)
+			body, err = r.ctxio.NewReaderWithContext(ctx, body)
 			if err != nil {
 				return err
 			}
@@ -164,7 +175,7 @@ func (r *reader) getObject(ctx context.Context, offset, length int64) (io.Reader
 		return nil, err
 	}
 
-	res, err := ctxio.NewReadCloserWithContext(ctx, resp.Body)
+	res, err := r.ctxio.NewReadCloserWithContext(ctx, resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -186,6 +197,7 @@ func (r *reader) getObject(ctx context.Context, offset, length int64) (io.Reader
 	return buf, nil
 }
 
+// Close closes the reader.
 func (r *reader) Close() error {
 	if r.pr != nil {
 		return r.pr.Close()
@@ -198,6 +210,7 @@ func (r *reader) Close() error {
 	return nil
 }
 
+// Read reads up to len(p) bytes and returns the number of bytes read.
 func (r *reader) Read(p []byte) (n int, err error) {
 	if r.pr == nil {
 		return 0, errors.ErrStorageReaderNotOpened

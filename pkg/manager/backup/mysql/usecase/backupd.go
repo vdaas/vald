@@ -21,10 +21,12 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/manager/backup"
 	iconf "github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/db/rdb/mysql"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/observability"
+	dbmetrics "github.com/vdaas/vald/internal/observability/metrics/db/rdb/mysql"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -45,10 +47,31 @@ type run struct {
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
-	m, err := service.New(cfg.MySQL)
+	mysqlOpts, err := cfg.MySQL.Opts()
 	if err != nil {
 		return nil, err
 	}
+
+	var eventReceiver dbmetrics.EventReceiver
+	if cfg.Observability.Enabled {
+		eventReceiver, err = dbmetrics.New()
+		if err != nil {
+			return nil, err
+		}
+
+		mysqlOpts = append(mysqlOpts, mysql.WithEventReceiver(eventReceiver))
+	}
+
+	mysqlClient, err := mysql.New(mysqlOpts...)
+	if err != nil {
+		return nil, err
+	}
+
+	m, err := service.New(service.WithMySQLClient(mysqlClient))
+	if err != nil {
+		return nil, err
+	}
+
 	g := handler.New(handler.WithMySQL(m))
 	eg := errgroup.Get()
 
@@ -72,7 +95,10 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	var obs observability.Observability
 	if cfg.Observability.Enabled {
-		obs, err = observability.NewWithConfig(cfg.Observability)
+		obs, err = observability.NewWithConfig(
+			cfg.Observability,
+			eventReceiver,
+		)
 		if err != nil {
 			return nil, err
 		}

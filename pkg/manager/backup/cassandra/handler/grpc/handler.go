@@ -58,18 +58,18 @@ func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Re
 	meta, err := s.cassandra.GetMeta(ctx, uuid)
 	if err != nil {
 		switch {
-		case errors.IsErrCassandraNotFound(errors.UnWrapAll(err)):
+		case errors.IsErrCassandraNotFound(err):
 			log.Warnf("[GetVector]\tnot found\t%v\t%s", req.Uuid, err.Error())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
 			return nil, status.WrapWithNotFound(fmt.Sprintf("GetVector API cassandra uuid %s's object not found", uuid), err, info.Get())
-		case errors.IsErrCassandraUnavailable(errors.UnWrapAll(err)):
+		case errors.IsErrCassandraUnavailable(err):
 			log.Warnf("[GetVector]\tunavailable\t%+v", err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
 			}
-			return nil, status.WrapWithUnavailable(fmt.Sprintf("GetVector API Cassandra unavailable"), err, info.Get())
+			return nil, status.WrapWithUnavailable("GetVector API Cassandra unavailable", err, info.Get())
 
 		default:
 			log.Errorf("[GetVector]\tunknown error\t%+v", err)

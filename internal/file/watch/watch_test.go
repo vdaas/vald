@@ -67,10 +67,10 @@ func TestNew(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got Watcher, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -87,7 +87,7 @@ func TestNew(t *testing.T) {
 			},
 			checkFunc: func(w want, got Watcher, err error) error {
 				if !errors.Is(err, w.err) {
-					return errors.Errorf("got error = %v, want %v", err, w.err)
+					return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 				}
 				if got == nil {
 					return errors.Errorf("got is nil")
@@ -144,10 +144,10 @@ func Test_watch_init(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *watch, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -204,7 +204,7 @@ func Test_watch_init(t *testing.T) {
 			},
 			checkFunc: func(w want, got *watch, err error) error {
 				if !errors.Is(err, w.err) {
-					return errors.Errorf("got error = %v, want %v", err, w.err)
+					return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 				}
 				if got == nil {
 					return errors.New("got is nil")
@@ -230,7 +230,7 @@ func Test_watch_init(t *testing.T) {
 			},
 			checkFunc: func(w want, got *watch, err error) error {
 				if !errors.Is(err, w.err) {
-					return errors.Errorf("got error = %v, want %v", err, w.err)
+					return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 				}
 				if got == nil {
 					return errors.New("got is nil")
@@ -302,11 +302,11 @@ func Test_watch_Start(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got <-chan error, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 
 		if !errors.Is(<-got, <-w.want) {
-			return errors.Errorf("errCh got = %v, want %v", got, w.want)
+			return errors.Errorf("errCh got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 
 		return nil
@@ -379,13 +379,13 @@ func Test_watch_Start(t *testing.T) {
 						eg: errgroup.Get(),
 						onChange: func(ctx context.Context, name string) error {
 							if got, want := name, "watch.go"; got != want {
-								t.Errorf("onChange name got = %s, want %s", got, want)
+								t.Errorf("onChange name got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, want)
 							}
 							return errors.New("err1")
 						},
 						onWrite: func(ctx context.Context, name string) error {
 							if got, want := name, "watch.go"; got != want {
-								t.Errorf("onWrite name got = %s, want %s", got, want)
+								t.Errorf("onWrite name got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, want)
 							}
 							return errors.New("err2")
 						},
@@ -432,7 +432,7 @@ func Test_watch_Start(t *testing.T) {
 						eg: errgroup.Get(),
 						onWrite: func(ctx context.Context, name string) error {
 							if got, want := name, "watch.go"; got != want {
-								t.Errorf("onWrite name got = %s, want %s", got, want)
+								t.Errorf("onWrite name got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, want)
 							}
 							return errors.New("err")
 						},
@@ -478,7 +478,7 @@ func Test_watch_Start(t *testing.T) {
 						eg: errgroup.Get(),
 						onCreate: func(ctx context.Context, name string) error {
 							if got, want := name, "watch.go"; got != want {
-								t.Errorf("onWrite name got = %s, want %s", got, want)
+								t.Errorf("onWrite name got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, want)
 							}
 							return errors.New("err")
 						},
@@ -524,7 +524,7 @@ func Test_watch_Start(t *testing.T) {
 						eg: errgroup.Get(),
 						onDelete: func(ctx context.Context, name string) error {
 							if got, want := name, "watch.go"; got != want {
-								t.Errorf("onWrite name got = %s, want %s", got, want)
+								t.Errorf("onWrite name got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, want)
 							}
 							return errors.New("err")
 						},
@@ -570,7 +570,7 @@ func Test_watch_Start(t *testing.T) {
 						eg: errgroup.Get(),
 						onChmod: func(ctx context.Context, name string) error {
 							if got, want := name, "watch.go"; got != want {
-								t.Errorf("onWrite name got = %s, want %s", got, want)
+								t.Errorf("onWrite name got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, want)
 							}
 							return errors.New("err")
 						},
@@ -616,7 +616,7 @@ func Test_watch_Start(t *testing.T) {
 						eg: errgroup.Get(),
 						onRename: func(ctx context.Context, name string) error {
 							if got, want := name, "watch.go"; got != want {
-								t.Errorf("onWrite name got = %s, want %s", got, want)
+								t.Errorf("onWrite name got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, want)
 							}
 							return errors.New("err")
 						},
@@ -667,13 +667,13 @@ func Test_watch_Start(t *testing.T) {
 						eg: errgroup.Get(),
 						onWrite: func(ctx context.Context, name string) error {
 							if got, want := name, "watch.go"; got != want {
-								t.Errorf("onWrite name got = %s, want %s", got, want)
+								t.Errorf("onWrite name got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, want)
 							}
 							return errors.New("err1")
 						},
 						onRename: func(ctx context.Context, name string) error {
 							if got, want := name, "watch.go"; got != want {
-								t.Errorf("onRename name got = %s, want %s", got, want)
+								t.Errorf("onRename name got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, want)
 							}
 							return errors.New("err2")
 						},
@@ -755,7 +755,7 @@ func Test_watch_Add(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *watch, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 
 		if got, want := len(got.dirs), len(w.want.dirs); got != want {

@@ -18,9 +18,13 @@ package json
 import (
 	"bytes"
 	"context"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"reflect"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -28,6 +32,14 @@ import (
 	"github.com/vdaas/vald/internal/net/http/rest"
 
 	"go.uber.org/goleak"
+)
+
+var (
+	// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
+	goleakIgnoreOptions = []goleak.Option{
+		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+		goleak.IgnoreTopFunction("internal/poll.runtime_pollWait"),
+	}
 )
 
 func TestEncodeResponse(t *testing.T) {
@@ -101,6 +113,7 @@ func TestEncodeResponse(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			defer goleak.VerifyNone(t, goleakIgnoreOptions...)
 			err := EncodeResponse(tt.args.w, tt.args.data, tt.args.status, tt.args.contentTypes...)
 			if err := tt.checkFunc(err); err != nil {
 				t.Error(err)
@@ -171,6 +184,7 @@ func TestDecodeRequest(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			defer goleak.VerifyNone(t, goleakIgnoreOptions...)
 			err := DecodeRequest(tt.args.r, &tt.args.data)
 			if err := tt.checkFunc(err, tt.args.data); err != nil {
 				t.Error(err)
@@ -329,6 +343,7 @@ func TestHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			defer goleak.VerifyNone(t, goleakIgnoreOptions...)
 			code, err := Handler(tt.args.w, tt.args.r, &tt.args.data, tt.args.logic)
 			if err := tt.checkFunc(code, err, tt.args.data); err != nil {
 				t.Error(err)
@@ -394,6 +409,7 @@ func TestErrorHandler(t *testing.T) {
 	log.Init()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			defer goleak.VerifyNone(t, goleakIgnoreOptions...)
 			got := ErrorHandler(tt.args.w, tt.args.r, tt.args.msg, tt.args.code, tt.args.err)
 			if err := tt.checkFunc(got); err != nil {
 				t.Error(err)
@@ -420,43 +436,117 @@ func TestDecodeResponse(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           res: nil,
-		           data: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			return test{
+				name: "returns nil when response is nil",
+				args: args{
+					res:  nil,
+					data: new(interface{}),
+				},
+				want: want{
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "returns nil when response body is nil",
+				args: args{
+					res: &http.Response{
+						Body: nil,
+					},
+					data: new(interface{}),
+				},
+				want: want{
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "returns nil when the data to be decoded is nil",
+				args: args{
+					res: &http.Response{
+						Body: ioutil.NopCloser(new(bytes.Buffer)),
+					},
+					data: nil,
+				},
+				want: want{
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "returns nil when the contents length is 0",
+				args: args{
+					res: &http.Response{
+						Body:          ioutil.NopCloser(new(bytes.Buffer)),
+						ContentLength: 0,
+					},
+					data: new(interface{}),
+				},
+				want: want{
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "returns json decode error when the response body is invalid",
+				args: args{
+					res: &http.Response{
+						Body:          ioutil.NopCloser(strings.NewReader("1+3i")),
+						ContentLength: 2,
+					},
+					data: new(interface{}),
+				},
+				want: want{
+					err: &strconv.NumError{
+						Func: "ParseFloat",
+						Num:  "1+3",
+						Err:  strconv.ErrSyntax,
+					},
+				},
+			}
+		}(),
+		func() test {
+			var data int
+			return test{
+				name: "returns nil when the decode success",
+				args: args{
+					res: &http.Response{
+						Body:          ioutil.NopCloser(strings.NewReader("1")),
+						ContentLength: 1,
+					},
+					data: &data,
+				},
+				checkFunc: func(w want, got error) error {
+					if err := defaultCheckFunc(w, got); err != nil {
+						return err
+					}
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           res: nil,
-		           data: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+					if want, got := 1, data; want != got {
+						return errors.Errorf("data want: %d, but got: %d", want, got)
+					}
+
+					return nil
+				},
+				want: want{
+					err: nil,
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -471,7 +561,6 @@ func TestDecodeResponse(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -495,45 +584,79 @@ func TestEncodeRequest(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           req: nil,
-		           data: nil,
-		           contentTypes: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			var val = 1 + 3i
+			return test{
+				name: "returns json encode error when the json encode fails",
+				args: args{
+					req:  new(http.Request),
+					data: val,
+				},
+				want: want{
+					err: errors.New("complex128 is unsupported type"),
+				},
+			}
+		}(),
+		func() test {
+			req := &http.Request{
+				Header: http.Header{},
+			}
+			return test{
+				name: "returns nil when json encode success",
+				args: args{
+					req: req,
+					contentTypes: []string{
+						"application/json",
+					},
+					data: 1,
+				},
+				checkFunc: func(w want, got error) error {
+					if err := defaultCheckFunc(w, got); err != nil {
+						return err
+					}
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           req: nil,
-		           data: nil,
-		           contentTypes: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+					if len(req.Header) != 1 {
+						return errors.Errorf("header length is wrong. want: %v, but got: %d", 1, len(req.Header))
+					}
+
+					gotHeaders, ok := req.Header[rest.ContentType]
+					if !ok {
+						return errors.Errorf("header not found. key: %s", rest.ContentType)
+					}
+
+					if len(gotHeaders) != 1 {
+						return errors.Errorf("header value length is wrong. key:%s want: %d, but got: %d", rest.ContentType, 1, len(gotHeaders))
+					}
+
+					if want, got := "application/json", gotHeaders[0]; want != got {
+						return errors.Errorf("header value is wrong. want: %s, but got: %s", want, got)
+					}
+
+					if want, got := int64(2), req.ContentLength; want != got {
+						return errors.Errorf("content length is wrong. want: %v, but got: %d", want, got)
+					}
+
+					if req.Body == nil {
+						return errors.New("Body is nil")
+					}
+
+					return nil
+				},
+				want: want{
+					err: nil,
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -574,49 +697,96 @@ func TestRequest(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           method: "",
-		           url: "",
-		           payloyd: nil,
-		           data: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           method: "",
-		           url: "",
-		           payloyd: nil,
-		           data: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			return test{
+				name: "returns generation of request error when method is invalid",
+				args: args{
+					ctx:     context.Background(),
+					method:  "@",
+					url:     "/",
+					payloyd: nil,
+					data:    nil,
+				},
+				want: want{
+					err: errors.Errorf("net/http: invalid method %q", "@"),
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "returns json encode error when the request json encoding fails",
+				args: args{
+					ctx:     context.Background(),
+					method:  "POST",
+					url:     "/",
+					payloyd: 1 + 3i,
+					data:    new(interface{}),
+				},
+				want: want{
+					err: errors.New("complex128 is unsupported type"),
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "returns http request error when sending http request fails",
+				args: args{
+					ctx:     context.Background(),
+					method:  "POST",
+					url:     "/",
+					payloyd: "1",
+					data:    new(interface{}),
+				},
+				want: want{
+					err: &url.Error{
+						Op:  "Post",
+						URL: "/",
+						Err: errors.New(`unsupported protocol scheme ""`),
+					},
+				},
+			}
+		}(),
+		func() test {
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+				_, _ = w.Write([]byte("\"1\""))
+			}))
+			var got string
+			return test{
+				name: "returns nil when no error occurs internally",
+				args: args{
+					ctx:     context.Background(),
+					method:  "POST",
+					url:     srv.URL,
+					payloyd: "1",
+					data:    &got,
+				},
+				want: want{
+					err: nil,
+				},
+				checkFunc: func(w want, err error) error {
+					if err := defaultCheckFunc(w, err); err != nil {
+						return err
+					}
+					if want, got := "1", got; want != got {
+						return errors.Errorf("decoded data: want %s, but got: %v", want, got)
+					}
+					return nil
+				},
+				afterFunc: func(args) {
+					srv.Close()
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -631,7 +801,6 @@ func TestRequest(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

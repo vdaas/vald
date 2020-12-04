@@ -24,6 +24,7 @@ import (
 
 	redis "github.com/go-redis/redis/v7"
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
@@ -38,10 +39,20 @@ var (
 )
 
 // WithDialer returns the option to set the dialer.
-func WithDialer(der func(ctx context.Context, addr, port string) (net.Conn, error)) Option {
+func WithDialer(der tcp.Dialer) Option {
 	return func(r *redisClient) error {
 		if der != nil {
 			r.dialer = der
+		}
+		return nil
+	}
+}
+
+// WithDialerFunc returns the option to set the dialer func.
+func WithDialerFunc(der func(ctx context.Context, addr, port string) (net.Conn, error)) Option {
+	return func(r *redisClient) error {
+		if der != nil {
+			r.dialerFunc = der
 		}
 		return nil
 	}
@@ -347,6 +358,24 @@ func WithInitialPingDuration(dur string) Option {
 			pd = time.Millisecond * 50
 		}
 		r.initialPingDuration = pd
+		return nil
+	}
+}
+
+// WithHooks returns the option to add hooks
+func WithHooks(hooks ...Hook) Option {
+	return func(r *redisClient) error {
+		if hooks == nil {
+			return nil
+		}
+
+		if r.hooks != nil {
+			r.hooks = append(r.hooks, hooks...)
+			return nil
+		}
+
+		r.hooks = hooks
+
 		return nil
 	}
 }

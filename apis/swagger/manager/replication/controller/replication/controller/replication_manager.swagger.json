@@ -13,7 +13,7 @@
   "paths": {
     "/replication/info": {
       "get": {
-        "operationId": "Replication_ReplicationInfo",
+        "operationId": "ReplicationController_ReplicationInfo",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -22,14 +22,14 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "tags": [
-          "Replication"
+          "ReplicationController"
         ]
       }
     }

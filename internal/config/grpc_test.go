@@ -38,7 +38,7 @@ func Test_newGRPCClientConfig(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *GRPCClient) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -108,7 +108,7 @@ func TestGRPCClient_Bind(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *GRPCClient) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -201,7 +201,7 @@ func TestGRPCClientKeepalive_Bind(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *GRPCClientKeepalive) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -283,7 +283,7 @@ func TestCallOption_Bind(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *CallOption) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -375,7 +375,7 @@ func TestDialOption_Bind(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *DialOption) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -484,7 +484,7 @@ func TestGRPCClient_Opts(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got []grpc.Option) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}

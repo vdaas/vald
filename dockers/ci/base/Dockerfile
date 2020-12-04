@@ -14,11 +14,18 @@
 # limitations under the License.
 #
 
-FROM vdaas/vald-base:latest AS builder
-ARG PROTOBUF_VERSION=3.11.4
-ARG GOLANGCI_LINT_VERSION=v1.23.6
-ARG REVIEWDOG_VERSION=v0.9.17
-ARG YQ_VERSION=3.2.1
+ARG GO_VERSION=latest
+ARG BASE_TAG=latest
+
+FROM golang:${GO_VERSION} AS golang
+
+FROM vdaas/vald-base:${BASE_TAG} AS builder
+ARG PROTOBUF_VERSION=3.13.0
+ARG GOLANGCI_LINT_VERSION=v1.31.0
+ARG REVIEWDOG_VERSION=v0.10.2
+ARG YQ_VERSION=3.3.4
+
+COPY --from=golang /usr/local/go $GOROOT
 
 WORKDIR ${GOPATH}/src/github.com/vdaas/vald
 
@@ -26,6 +33,7 @@ COPY Makefile .
 COPY Makefile.d Makefile.d
 COPY apis/proto apis/proto
 COPY versions versions
+COPY hack/go.mod.default hack/go.mod.default
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libhdf5-dev \
@@ -70,3 +78,5 @@ RUN curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download
     && chmod a+x /usr/local/bin/yq
 
 ENV PATH=$PATH:$GOPATH/bin
+
+RUN rm -rf "${GOPATH}/src/github.com/vdaas/vald/*"

@@ -30,8 +30,8 @@ var (
 		return Wrap(err, "handler returned error")
 	}
 
-	ErrHandlerTimeout = func(err error, t time.Time) error {
-		return Wrapf(err, "handler timeout %v", t)
+	ErrHandlerTimeout = func(err error, dur time.Duration) error {
+		return Wrapf(err, "handler timeout %s", dur.String())
 	}
 
 	ErrRequestBodyCloseAndFlush = func(err error) error {

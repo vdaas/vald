@@ -63,7 +63,7 @@ func TestNew(t *testing.T) {
 			}),
 		}
 		if diff := cmp.Diff(w.wantC, gotC, opts...); diff != "" {
-			return errors.Errorf("got = %v, want %v", gotC, w.wantC)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotC, w.wantC)
 		}
 		return nil
 	}
@@ -219,10 +219,10 @@ func Test_cache_Get(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got interface{}, got1 bool) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		if !reflect.DeepEqual(got1, w.want1) {
-			return errors.Errorf("got = %v, want %v", got1, w.want1)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got1, w.want1)
 		}
 		return nil
 	}
@@ -499,10 +499,10 @@ func Test_cache_GetAndDelete(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got interface{}, got1 bool) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		if !reflect.DeepEqual(got1, w.want1) {
-			return errors.Errorf("got = %v, want %v", got1, w.want1)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got1, w.want1)
 		}
 		return nil
 	}

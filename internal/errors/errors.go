@@ -18,11 +18,10 @@
 package errors
 
 import (
+	"errors"
+	"fmt"
 	"reflect"
 	"runtime"
-
-	"github.com/cockroachdb/errors"
-	"github.com/cockroachdb/errors/errbase"
 )
 
 var (
@@ -71,7 +70,7 @@ var (
 	Wrap = func(err error, msg string) error {
 		if err != nil {
 			if msg != "" {
-				return errors.Wrap(err, msg)
+				return fmt.Errorf("%s: %w", msg, err)
 			}
 			return err
 		}
@@ -81,7 +80,7 @@ var (
 	Wrapf = func(err error, format string, args ...interface{}) error {
 		if err != nil {
 			if format != "" && len(args) > 0 {
-				return errors.Wrapf(err, format, args...)
+				return Wrap(err, fmt.Sprintf(format, args...))
 			}
 			return err
 		}
@@ -90,20 +89,42 @@ var (
 
 	Cause = func(err error) error {
 		if err != nil {
-			return errors.Cause(err)
+			return errors.Unwrap(err)
 		}
 		return nil
 	}
+
+	Unwrap = errors.Unwrap
 
 	Errorf = func(format string, args ...interface{}) error {
 		if format != "" && args != nil && len(args) > 0 {
-			return errors.Errorf(format, args...)
+			return fmt.Errorf(format, args...)
 		}
 		return nil
 	}
 
-	As         = errors.As
-	Is         = errors.Is
-	UnWrapOnce = errbase.UnwrapOnce
-	UnWrapAll  = errbase.UnwrapAll
+	Is = func(err, target error) bool {
+		if target == nil {
+			return err == target
+		}
+
+		isComparable := reflect.TypeOf(target).Comparable()
+		for {
+			if isComparable && (err == target || err.Error() == target.Error()) {
+				return true
+			}
+			if x, ok := err.(interface {
+				Is(error) bool
+			}); ok && x.Is(target) {
+				return true
+			}
+			if uerr := Unwrap(err); uerr == nil {
+				return err.Error() == target.Error()
+			} else {
+				err = uerr
+			}
+		}
+	}
+
+	As = errors.As
 )

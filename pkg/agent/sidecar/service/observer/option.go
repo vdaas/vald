@@ -112,3 +112,19 @@ func WithBlobStorage(storage storage.Storage) Option {
 		return nil
 	}
 }
+
+func WithHooks(hooks ...Hook) Option {
+	return func(o *observer) error {
+		if hooks == nil {
+			return nil
+		}
+
+		if o.hooks != nil {
+			o.hooks = append(o.hooks, hooks...)
+		}
+
+		o.hooks = hooks
+
+		return nil
+	}
+}

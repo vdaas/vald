@@ -101,13 +101,20 @@ type objectType int
 type distanceType int
 
 const (
+	// -------------------------------------------------------------
+	// Object Type Definition
+	// -------------------------------------------------------------
 	// ObjectNone is unknown object type
 	ObjectNone objectType = iota
 	// Uint8 is 8bit unsigned integer
 	Uint8
 	// Float is 32bit floating point number
 	Float
+	// -------------------------------------------------------------
 
+	// -------------------------------------------------------------
+	// Distance Type Definition
+	// -------------------------------------------------------------
 	// DistanceNone is unknown distance type
 	DistanceNone distanceType = iota - 1
 	// L1 is l1 norm
@@ -124,6 +131,9 @@ const (
 	NormalizedAngle
 	// NormalizedCosine is cosine distance with normalization
 	NormalizedCosine
+	// Jaccard is jaccard distance
+	Jaccard
+	// -------------------------------------------------------------
 
 	// ErrorCode is false
 	ErrorCode = C._Bool(false)
@@ -214,12 +224,14 @@ func (n *ngt) create() (err error) {
 			return err
 		}
 	}
+	path := C.CString(n.idxPath)
+	defer C.free(unsafe.Pointer(path))
 	if !n.inMemory {
-		n.index = C.ngt_create_graph_and_tree(C.CString(n.idxPath), n.prop, n.ebuf)
+		n.index = C.ngt_create_graph_and_tree(path, n.prop, n.ebuf)
 		if n.index == nil {
 			return n.newGoError(n.ebuf)
 		}
-		if C.ngt_save_index(n.index, C.CString(n.idxPath), n.ebuf) == ErrorCode {
+		if C.ngt_save_index(n.index, path, n.ebuf) == ErrorCode {
 			return n.newGoError(n.ebuf)
 		}
 	} else {
@@ -237,7 +249,9 @@ func (n *ngt) open() error {
 		return errors.ErrIndexNotFound
 	}
 
-	n.index = C.ngt_open_index(C.CString(n.idxPath), n.ebuf)
+	path := C.CString(n.idxPath)
+	defer C.free(unsafe.Pointer(path))
+	n.index = C.ngt_open_index(path, n.ebuf)
 	if n.index == nil {
 		return n.newGoError(n.ebuf)
 	}
@@ -439,8 +453,10 @@ func (n *ngt) CreateIndex(poolSize uint32) error {
 // SaveIndex stores NGT index to storage.
 func (n *ngt) SaveIndex() error {
 	if !n.inMemory {
+		path := C.CString(n.idxPath)
+		defer C.free(unsafe.Pointer(path))
 		n.mu.Lock()
-		ret := C.ngt_save_index(n.index, C.CString(n.idxPath), n.ebuf)
+		ret := C.ngt_save_index(n.index, path, n.ebuf)
 		if ret == ErrorCode {
 			ne := n.ebuf
 			n.mu.Unlock()
@@ -528,5 +544,7 @@ func (n *ngt) Close() {
 		C.ngt_close_index(n.index)
 		C.ngt_destroy_error_object(n.ebuf)
 		n.index = nil
+		n.prop = nil
+		n.ospace = nil
 	}
 }

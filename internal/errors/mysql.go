@@ -29,6 +29,8 @@ var (
 
 	ErrMySQLConnectionClosed = New("error MySQL connection closed")
 
+	ErrMySQLTransactionNotCreated = New("error MySQL transaction not created")
+
 	ErrRequiredElementNotFoundByUUID = func(uuid string) error {
 		return Wrapf(NewErrMySQLNotFoundIdentity(), "error required element not found, uuid: %s", uuid)
 	}
@@ -52,13 +54,13 @@ func (e *ErrMySQLNotFoundIdentity) Error() string {
 	return e.err.Error()
 }
 
+func (e *ErrMySQLNotFoundIdentity) Unwrap() error {
+	return e.err
+}
+
 func IsErrMySQLNotFound(err error) bool {
-	switch err.(type) {
-	case *ErrMySQLNotFoundIdentity:
-		return true
-	default:
-		return false
-	}
+	target := new(ErrMySQLNotFoundIdentity)
+	return As(err, &target)
 }
 
 type ErrMySQLInvalidArgumentIdentity struct {
@@ -69,11 +71,11 @@ func (e *ErrMySQLInvalidArgumentIdentity) Error() string {
 	return e.err.Error()
 }
 
+func (e *ErrMySQLInvalidArgumentIdentity) Unwrap() error {
+	return e.err
+}
+
 func IsErrMySQLInvalidArgument(err error) bool {
-	switch err.(type) {
-	case *ErrMySQLInvalidArgumentIdentity:
-		return true
-	default:
-		return false
-	}
+	target := new(ErrMySQLInvalidArgumentIdentity)
+	return As(err, &target)
 }

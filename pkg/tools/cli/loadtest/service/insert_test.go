@@ -22,12 +22,10 @@ import (
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-	igrpc "github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/config"
 	"go.uber.org/goleak"
-
-	"google.golang.org/grpc" // TODO: related to #557
 )
 
 func Test_insertRequestProvider(t *testing.T) {
@@ -50,13 +48,13 @@ func Test_insertRequestProvider(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotF func() interface{}, gotSize int, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotF, w.wantF) {
-			return errors.Errorf("got = %v, want %v", gotF, w.wantF)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotF, w.wantF)
 		}
 		if !reflect.DeepEqual(gotSize, w.wantSize) {
-			return errors.Errorf("got = %v, want %v", gotSize, w.wantSize)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotSize, w.wantSize)
 		}
 		return nil
 	}
@@ -130,10 +128,10 @@ func Test_objectVectorProvider(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got func() interface{}, got1 int) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		if !reflect.DeepEqual(got1, w.want1) {
-			return errors.Errorf("got = %v, want %v", got1, w.want1)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got1, w.want1)
 		}
 		return nil
 	}
@@ -206,10 +204,10 @@ func Test_objectVectorsProvider(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got func() interface{}, got1 int) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		if !reflect.DeepEqual(got1, w.want1) {
-			return errors.Errorf("got = %v, want %v", got1, w.want1)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got1, w.want1)
 		}
 		return nil
 	}
@@ -282,7 +280,7 @@ func Test_agent(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got inserter) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -353,7 +351,7 @@ func Test_gateway(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got inserter) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -424,7 +422,7 @@ func Test_insert(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got loadFunc) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -495,7 +493,7 @@ func Test_bulkInsert(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got loadFunc) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -552,7 +550,7 @@ func Test_bulkInsert(t *testing.T) {
 func Test_loader_newInsert(t *testing.T) {
 	type fields struct {
 		eg               errgroup.Group
-		client           igrpc.Client
+		client           grpc.Client
 		addr             string
 		concurrency      int
 		batchSize        int
@@ -578,10 +576,10 @@ func Test_loader_newInsert(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotF loadFunc, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotF, w.wantF) {
-			return errors.Errorf("got = %v, want %v", gotF, w.wantF)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotF, w.wantF)
 		}
 		return nil
 	}
@@ -674,7 +672,7 @@ func Test_loader_newInsert(t *testing.T) {
 func Test_loader_newStreamInsert(t *testing.T) {
 	type fields struct {
 		eg               errgroup.Group
-		client           igrpc.Client
+		client           grpc.Client
 		addr             string
 		concurrency      int
 		batchSize        int
@@ -700,10 +698,10 @@ func Test_loader_newStreamInsert(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotF loadFunc, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotF, w.wantF) {
-			return errors.Errorf("got = %v, want %v", gotF, w.wantF)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotF, w.wantF)
 		}
 		return nil
 	}

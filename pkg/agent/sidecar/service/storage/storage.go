@@ -38,6 +38,8 @@ type Storage interface {
 	Stop(ctx context.Context) error
 	Reader(ctx context.Context) (io.ReadCloser, error)
 	Writer(ctx context.Context) (io.WriteCloser, error)
+
+	StorageInfo() *StorageInfo
 }
 
 type bs struct {
@@ -203,4 +205,12 @@ func (b *bs) Writer(ctx context.Context) (w io.WriteCloser, err error) {
 	}
 
 	return w, nil
+}
+
+func (b *bs) StorageInfo() *StorageInfo {
+	return &StorageInfo{
+		Type:       config.AtoBST(b.storageType).String(),
+		BucketName: b.bucketName,
+		Filename:   b.filename + b.suffix,
+	}
 }

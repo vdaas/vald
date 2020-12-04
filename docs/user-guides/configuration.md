@@ -1,6 +1,7 @@
 # Configurations
 
-This page introduces best practices to set up values for Vald Helm Chart.
+This page introduces best practices for setting up values for Vald Helm Chart.
+
 
 ## Vald Helm Chart Overview
 
@@ -397,7 +398,7 @@ The definitions can be found in `_helpers.tpl` in Chart's templates directory.
 TBW
 
 
-### References
+## References
 
 For further details, there are references of Helm values in GitHub Vald repository.
 

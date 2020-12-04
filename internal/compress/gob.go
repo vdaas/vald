@@ -19,18 +19,22 @@ package compress
 
 import (
 	"bytes"
-	"encoding/gob"
 	"io"
 	"reflect"
 
+	"github.com/vdaas/vald/internal/compress/gob"
 	"github.com/vdaas/vald/internal/errors"
 )
 
 type gobCompressor struct {
+	transcoder gob.Transcoder
 }
 
+// NewGob returns a Compressor implemented using gob.
 func NewGob(opts ...GobOption) (Compressor, error) {
-	c := new(gobCompressor)
+	c := &gobCompressor{
+		transcoder: gob.New(),
+	}
 	for _, opt := range append(defaultGobOpts, opts...) {
 		if err := opt(c); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
@@ -40,9 +44,11 @@ func NewGob(opts ...GobOption) (Compressor, error) {
 	return c, nil
 }
 
+// CompressVector compresses the data given and returns the compressed data.
+// If CompressVector fails, it will return an error.
 func (g *gobCompressor) CompressVector(vector []float32) ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := gob.NewEncoder(buf).Encode(vector)
+	err := g.transcoder.NewEncoder(buf).Encode(vector)
 	if err != nil {
 		return nil, err
 	}
@@ -50,9 +56,11 @@ func (g *gobCompressor) CompressVector(vector []float32) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// DecompressVector decompresses the compressed data and returns the data.
+// If decompress fails, it will return an error.
 func (g *gobCompressor) DecompressVector(bs []byte) ([]float32, error) {
 	var vector []float32
-	err := gob.NewDecoder(bytes.NewBuffer(bs)).Decode(&vector)
+	err := g.transcoder.NewDecoder(bytes.NewBuffer(bs)).Decode(&vector)
 	if err != nil {
 		return nil, err
 	}
@@ -60,52 +68,58 @@ func (g *gobCompressor) DecompressVector(bs []byte) ([]float32, error) {
 	return vector, nil
 }
 
+// Reader returns io.ReadCloser implementation.
 func (g *gobCompressor) Reader(src io.ReadCloser) (io.ReadCloser, error) {
 	return &gobReader{
 		src:     src,
-		decoder: gob.NewDecoder(src),
+		decoder: g.transcoder.NewDecoder(src),
 	}, nil
 }
 
+// Writer returns io.WriteCloser implementation.
 func (g *gobCompressor) Writer(dst io.WriteCloser) (io.WriteCloser, error) {
 	return &gobWriter{
 		dst:     dst,
-		encoder: gob.NewEncoder(dst),
+		encoder: g.transcoder.NewEncoder(dst),
 	}, nil
 }
 
 type gobReader struct {
 	src     io.ReadCloser
-	decoder *gob.Decoder
+	decoder gob.Decoder
 }
 
+// Read returns the number of bytes for read p (0 <= n <= len(p)).
+// If any errors occurs, it will return an error.
 func (gr *gobReader) Read(p []byte) (n int, err error) {
-	err = gr.decoder.Decode(&p)
-	if err != nil {
+	if err = gr.decoder.Decode(&p); err != nil {
 		return 0, err
 	}
 
 	return len(p), nil
 }
 
+// Close closes the reader.
 func (gr *gobReader) Close() error {
 	return gr.src.Close()
 }
 
 type gobWriter struct {
 	dst     io.WriteCloser
-	encoder *gob.Encoder
+	encoder gob.Encoder
 }
 
+// write returns the number of bytes written from p (0 <= n <= len(p)).
+// if any errors occurs, it will return an error.
 func (gw *gobWriter) Write(p []byte) (n int, err error) {
-	err = gw.encoder.Encode(&p)
-	if err != nil {
+	if err = gw.encoder.Encode(&p); err != nil {
 		return 0, err
 	}
 
 	return len(p), nil
 }
 
+// Close closes the writer.
 func (gw *gobWriter) Close() error {
 	return gw.dst.Close()
 }

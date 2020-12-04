@@ -17,12 +17,51 @@
 package client
 
 import (
+	"context"
+	"net"
 	"net/http"
+	"net/url"
 	"reflect"
+	"sync"
+	"sync/atomic"
 	"testing"
 
+	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/test/comparator"
 	"go.uber.org/goleak"
+)
+
+var (
+	// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
+	goleakIgnoreOptions = []goleak.Option{
+		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+	}
+
+	transportComparator = []comparator.Option{
+		comparator.AllowUnexported(transport{}),
+		comparator.AllowUnexported(http.Transport{}),
+		comparator.IgnoreFields(http.Transport{}, "idleLRU"),
+
+		comparator.Comparer(func(x, y backoff.Option) bool {
+			return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
+		}),
+		comparator.Comparer(func(x, y func(*http.Request) (*url.URL, error)) bool {
+			return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
+		}),
+		comparator.Comparer(func(x, y func(ctx context.Context, network, addr string) (net.Conn, error)) bool {
+			return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
+		}),
+		comparator.Comparer(func(x, y sync.Mutex) bool {
+			return reflect.DeepEqual(x, y)
+		}),
+		comparator.Comparer(func(x, y atomic.Value) bool {
+			return reflect.DeepEqual(x.Load(), y.Load())
+		}),
+		comparator.Comparer(func(x, y sync.Once) bool {
+			return reflect.DeepEqual(x, y)
+		}),
+	}
 )
 
 func TestNew(t *testing.T) {
@@ -43,10 +82,10 @@ func TestNew(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *http.Client, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -62,7 +101,6 @@ func TestNew(t *testing.T) {
 		       checkFunc: defaultCheckFunc,
 		   },
 		*/
-
 		// TODO test cases
 		/*
 		   func() test {
@@ -80,7 +118,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

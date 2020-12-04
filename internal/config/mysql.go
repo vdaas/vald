@@ -17,6 +17,12 @@
 // Package config providers configuration type and load configuration logic
 package config
 
+import (
+	"github.com/vdaas/vald/internal/db/rdb/mysql"
+	"github.com/vdaas/vald/internal/net/tcp"
+	"github.com/vdaas/vald/internal/tls"
+)
+
 // MySQL represent the mysql configuration.
 type MySQL struct {
 	DB                   string `json:"db" yaml:"db"`
@@ -59,4 +65,40 @@ func (m *MySQL) Bind() *MySQL {
 	m.InitialPingTimeLimit = GetActualValue(m.InitialPingTimeLimit)
 	m.InitialPingDuration = GetActualValue(m.InitialPingDuration)
 	return m
+}
+
+func (m *MySQL) Opts() ([]mysql.Option, error) {
+	opts := []mysql.Option{
+		mysql.WithDB(m.DB),
+		mysql.WithHost(m.Host),
+		mysql.WithPort(m.Port),
+		mysql.WithUser(m.User),
+		mysql.WithPass(m.Pass),
+		mysql.WithName(m.Name),
+		mysql.WithCharset(m.Charset),
+		mysql.WithTimezone(m.Timezone),
+		mysql.WithInitialPingTimeLimit(m.InitialPingTimeLimit),
+		mysql.WithInitialPingDuration(m.InitialPingDuration),
+		mysql.WithConnectionLifeTimeLimit(m.ConnMaxLifeTime),
+		mysql.WithMaxIdleConns(m.MaxIdleConns),
+		mysql.WithMaxOpenConns(m.MaxOpenConns),
+	}
+
+	if m.TLS != nil && m.TLS.Enabled {
+		tls, err := tls.New(m.TLS.Opts()...)
+		if err != nil {
+			return nil, err
+		}
+		opts = append(opts, mysql.WithTLSConfig(tls))
+	}
+
+	if m.TCP != nil {
+		dialer, err := tcp.NewDialer(m.TCP.Opts()...)
+		if err != nil {
+			return nil, err
+		}
+		opts = append(opts, mysql.WithDialer(dialer))
+	}
+
+	return opts, nil
 }

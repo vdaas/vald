@@ -47,7 +47,7 @@ func TestWithSessionOptions(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T) error {
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -114,7 +114,7 @@ func TestWithSessionTarget(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T) error {
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -183,7 +183,7 @@ func TestWithSessionConfig(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T) error {
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -256,7 +256,7 @@ func TestWithOperations(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T) error {
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -339,7 +339,7 @@ func TestWithExportPath(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T) error {
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -410,7 +410,7 @@ func TestWithTags(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T) error {
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -588,7 +588,7 @@ func TestWithFeed(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T) error {
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -656,7 +656,7 @@ func TestWithFeeds(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T) error {
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -762,7 +762,7 @@ func TestWithFetch(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T) error {
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -830,7 +830,7 @@ func TestWithFetches(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T) error {
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -939,7 +939,7 @@ func TestWithWarmupInputs(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T) error {
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}
@@ -1033,7 +1033,7 @@ func TestWithNdim(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T) error {
 		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got = %v, want %v", obj, w.obj)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
 	}

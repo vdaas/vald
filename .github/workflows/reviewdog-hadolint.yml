@@ -14,18 +14,18 @@
 # limitations under the License.
 #
 
-name: 'reviewdog - Dockerfiles'
+name: "reviewdog - Dockerfiles"
 on:
   pull_request:
     paths:
-      - 'dockers/**'
+      - "dockers/**"
 
 jobs:
   hadolint:
     name: runner / hadolint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: hadolint
         uses: reviewdog/action-hadolint@v1
         with:

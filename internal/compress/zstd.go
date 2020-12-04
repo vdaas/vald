@@ -22,17 +22,21 @@ import (
 	"io"
 	"reflect"
 
-	"github.com/klauspost/compress/zstd"
+	"github.com/vdaas/vald/internal/compress/zstd"
 	"github.com/vdaas/vald/internal/errors"
 )
 
 type zstdCompressor struct {
 	gobc     Compressor
 	eoptions []zstd.EOption
+	zstd     zstd.Zstd
 }
 
+// NewZstd returns the zstd compressor object or any initialization error.
 func NewZstd(opts ...ZstdOption) (Compressor, error) {
-	c := new(zstdCompressor)
+	c := &zstdCompressor{
+		zstd: zstd.New(),
+	}
 	for _, opt := range append(defaultZstdOpts, opts...) {
 		if err := opt(c); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
@@ -42,6 +46,8 @@ func NewZstd(opts ...ZstdOption) (Compressor, error) {
 	return c, nil
 }
 
+// CompressVector compresses the data given and returns the compressed data.
+// If CompressVector fails, it will return an error.
 func (z *zstdCompressor) CompressVector(vector []float32) ([]byte, error) {
 	gob, err := z.gobc.CompressVector(vector)
 	if err != nil {
@@ -49,7 +55,7 @@ func (z *zstdCompressor) CompressVector(vector []float32) ([]byte, error) {
 	}
 
 	buf := new(bytes.Buffer)
-	zw, err := zstd.NewWriter(buf, z.eoptions...)
+	zw, err := z.zstd.NewWriter(buf, z.eoptions...)
 	if err != nil {
 		return nil, err
 	}
@@ -67,9 +73,11 @@ func (z *zstdCompressor) CompressVector(vector []float32) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// DecompressVector decompresses the compressed data and returns the data.
+// If decompress fails, it will return an error.
 func (z *zstdCompressor) DecompressVector(bs []byte) ([]float32, error) {
 	buf := new(bytes.Buffer)
-	zr, err := zstd.NewReader(bytes.NewReader(bs))
+	zr, err := z.zstd.NewReader(bytes.NewReader(bs))
 	if err != nil {
 		return nil, err
 	}
@@ -88,8 +96,9 @@ func (z *zstdCompressor) DecompressVector(bs []byte) ([]float32, error) {
 	return vec, nil
 }
 
+// Reader returns io.ReadCloser implementation.
 func (z *zstdCompressor) Reader(src io.ReadCloser) (io.ReadCloser, error) {
-	r, err := zstd.NewReader(src)
+	r, err := z.zstd.NewReader(src)
 	if err != nil {
 		return nil, err
 	}
@@ -100,8 +109,9 @@ func (z *zstdCompressor) Reader(src io.ReadCloser) (io.ReadCloser, error) {
 	}, nil
 }
 
+// Writer returns io.WriteCloser implementation.
 func (z *zstdCompressor) Writer(dst io.WriteCloser) (io.WriteCloser, error) {
-	w, err := zstd.NewWriter(dst, z.eoptions...)
+	w, err := z.zstd.NewWriter(dst, z.eoptions...)
 	if err != nil {
 		return nil, err
 	}
@@ -117,10 +127,13 @@ type zstdReader struct {
 	r   io.Reader
 }
 
+// Read returns the number of bytes for read p (0 <= n <= len(p)).
+// If any errors occurs, it will return an error.
 func (z *zstdReader) Read(p []byte) (n int, err error) {
 	return z.r.Read(p)
 }
 
+// Close closes the reader.
 func (z *zstdReader) Close() error {
 	return z.src.Close()
 }
@@ -130,10 +143,13 @@ type zstdWriter struct {
 	w   io.WriteCloser
 }
 
+// Write returns the number of bytes written from p (0 <= n <= len(p)).
+// If any errors occurs, it will return an error.
 func (z *zstdWriter) Write(p []byte) (n int, err error) {
 	return z.w.Write(p)
 }
 
+// Close closes the writer.
 func (z *zstdWriter) Close() (err error) {
 	err = z.w.Close()
 	if err != nil {

@@ -40,8 +40,6 @@ func NewStreamSearch(opts ...StreamSearchOption) e2e.Strategy {
 }
 
 func (s *streamSearch) dataProvider(total *uint32, b *testing.B, dataset assets.Dataset) func() *client.SearchRequest {
-	queries := dataset.Query()
-
 	var cnt uint32
 
 	b.StopTimer()
@@ -56,8 +54,12 @@ func (s *streamSearch) dataProvider(total *uint32, b *testing.B, dataset assets.
 		}
 
 		total := int(atomic.AddUint32(total, 1)) - 1
+		v, err := dataset.Query(total % dataset.QuerySize())
+		if err != nil {
+			return nil
+		}
 		return &client.SearchRequest{
-			Vector: queries[total%len(queries)],
+			Vector: v.([]float32),
 			Config: s.cfg,
 		}
 	}
