@@ -1415,7 +1415,7 @@ agent:
       filename_suffix: ".tar.gz"
       # @schema {"name": "agent.sidecar.config.blob_storage", "type": "object"}
       blob_storage:
-        # @schema {"name": "agent.sidecar.config.blob_storage.storage_type", "type": "string", "enum": ["s3"]}
+        # @schema {"name": "agent.sidecar.config.blob_storage.storage_type", "type": "string", "enum": ["s3", "cloud_storage"]}
         # agent.sidecar.config.blob_storage.storage_type -- storage type
         storage_type: "s3"
         # @schema {"name": "agent.sidecar.config.blob_storage.bucket", "type": "string"}
