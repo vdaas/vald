@@ -34,6 +34,7 @@ CI_CONTAINER_IMAGE              = $(NAME)-ci-container
 DEV_CONTAINER_IMAGE             = $(NAME)-dev-container
 HELM_OPERATOR_IMAGE             = $(NAME)-helm-operator
 LOADTEST_IMAGE                  = $(NAME)-loadtest
+REBALANCER_STORAGE_CONTROLLER_IMAGE = $(NAME)-rebalancer-storage-controller
 
 VERSION := $(eval VALD_VERSION := $(shell cat versions/VALD_VERSION))$(VALD_VERSION)
 
