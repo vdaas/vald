@@ -31,6 +31,7 @@ import (
 	"github.com/vdaas/vald/internal/net/http/rest"
 )
 
+// RFC7807Error represents RFC 7807 error.
 type RFC7807Error struct {
 	Type     string      `json:"type"`
 	Title    string      `json:"title"`
@@ -40,6 +41,7 @@ type RFC7807Error struct {
 	Error    string      `json:"error"`
 }
 
+// EncodeResponse encodes http response body.
 func EncodeResponse(w http.ResponseWriter,
 	data interface{}, status int, contentTypes ...string) error {
 	for _, ct := range contentTypes {
@@ -108,6 +110,7 @@ func DecodeRequest(r *http.Request, data interface{}) (err error) {
 	return nil
 }
 
+// Handler responds to an HTTP request to perform a logic function.
 func Handler(w http.ResponseWriter, r *http.Request,
 	data interface{}, logic func() (interface{},
 		error)) (code int, err error) {
@@ -127,6 +130,7 @@ func Handler(w http.ResponseWriter, r *http.Request,
 	return http.StatusOK, nil
 }
 
+// ErrorHandler responds to an HTTP request to send RFC 7807 error.
 func ErrorHandler(w http.ResponseWriter, r *http.Request,
 	msg string, code int, err error) error {
 	data := RFC7807Error{
