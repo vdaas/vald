@@ -1,6 +1,8 @@
 package errors
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestErrInvalidCompressionLevel(t *testing.T) {
 	type args struct {

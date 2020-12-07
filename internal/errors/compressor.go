@@ -42,11 +42,11 @@ var (
 
 	// ErrCompressorRegistererIsNotRunning represents a function to generate an error of compressor registerers not running.
 	ErrCompressorRegistererIsNotRunning = func() error {
-		return Errorf("compressor registerers is not running")
+		return New("compressor registerers is not running")
 	}
 
 	// ErrCompressorRegistererChannelIsFull represents a function to generate an error that compressor registerer channel is full.
 	ErrCompressorRegistererChannelIsFull = func() error {
-		return Errorf("compressor registerer channel is full")
+		return New("compressor registerer channel is full")
 	}
 )
