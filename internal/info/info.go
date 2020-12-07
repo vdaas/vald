@@ -30,6 +30,20 @@ import (
 	"github.com/vdaas/vald/internal/log"
 )
 
+type InformationProvider interface {
+	String() string
+	Get() Detail
+}
+
+type info struct {
+	detail   Detail
+	PrepOnce sync.Once
+
+	// runtime functions
+	rtCaller    func(skip int) (pc uintptr, file string, line int, ok bool)
+	rtFuncForPC func(pc uintptr) *runtime.Func
+}
+
 // Detail represents environment information of system and stacktrace information.
 type Detail struct {
 	Version           string       `json:"vald_version,omitempty" yaml:"vald_version,omitempty"`
@@ -43,11 +57,6 @@ type Detail struct {
 	NGTVersion        string       `json:"ngt_version,omitempty" yaml:"ngt_version,omitempty"`
 	BuildCPUInfoFlags []string     `json:"build_cpu_info_flags,omitempty" yaml:"build_cpu_info_flags,omitempty"`
 	StackTrace        []StackTrace `json:"stack_trace,omitempty" yaml:"stack_trace,omitempty"`
-	PrepOnce          sync.Once    `json:"-" yaml:"-"`
-
-	// runtime functions
-	rtCaller    func(skip int) (pc uintptr, file string, line int, ok bool)
-	rtFuncForPC func(pc uintptr) *runtime.Func
 }
 
 // StackTrace represents stacktrace information about url, function name, file, line ..etc.
@@ -75,34 +84,35 @@ var (
 
 	reps = strings.NewReplacer("_", " ", ",omitempty", "")
 
-	once   sync.Once
-	detail *Detail
+	once         sync.Once
+	infoProvider InformationProvider
 )
 
 // Init initializes Detail object only once.
 func Init(name string) {
 	once.Do(func() {
-		d, _ := New(WithServerName(name))
-		detail = d
+		infoProvider, _ := New(WithServerName(name))
 	})
 }
 
-func New(opts ...Option) (*Detail, error) {
-	d := &Detail{
-		Version: Version,
-		//ServerName:        name,
-		GitCommit:         GitCommit,
-		BuildTime:         BuildTime,
-		GoVersion:         GoVersion,
-		GoOS:              GoOS,
-		GoArch:            GoArch,
-		CGOEnabled:        CGOEnabled,
-		NGTVersion:        NGTVersion,
-		BuildCPUInfoFlags: strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " "),
+func New(opts ...Option) (InformationProvider, error) {
+	i := &info{
+		detail: Detail{
+			Version: Version,
+			//ServerName:        name,
+			GitCommit:         GitCommit,
+			BuildTime:         BuildTime,
+			GoVersion:         GoVersion,
+			GoOS:              GoOS,
+			GoArch:            GoArch,
+			CGOEnabled:        CGOEnabled,
+			NGTVersion:        NGTVersion,
+			BuildCPUInfoFlags: strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " "),
+		},
 	}
 
 	for _, opt := range append(defaultOpts, opts...) {
-		if err := opt(d); err != nil {
+		if err := opt(i); err != nil {
 			werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 
 			e := new(errors.ErrCriticalOption)
@@ -114,33 +124,28 @@ func New(opts ...Option) (*Detail, error) {
 		}
 	}
 
-	if d.rtCaller == nil {
-		d.rtCaller = runtime.Caller
-	}
-	if d.rtFuncForPC == nil {
-		d.rtFuncForPC = runtime.FuncForPC
-	}
+	i.prepare()
 
-	d.prepare()
-
-	return d, nil
+	return i, nil
 }
 
 // String calls String method of global detail object.
 func String() string {
-	return detail.String()
+	return infoProvider.String()
 }
 
 // Get calls Get method of global detail object.
 func Get() Detail {
-	return detail.Get()
+	return infoProvider.Get()
 }
 
 // String returns summary of Detail object.
-func (d Detail) String() string {
-	if len(d.StackTrace) == 0 {
-		d = d.Get()
+func (i info) String() string {
+	if len(i.detail.StackTrace) == 0 {
+		i.detail = i.Get()
 	}
+
+	d := i.detail
 	d.Version = log.Bold(d.Version)
 	maxlen, l := 0, 0
 	rt, rv := reflect.TypeOf(d), reflect.ValueOf(d)
@@ -200,18 +205,19 @@ func (d Detail) String() string {
 }
 
 // Get returns parased Detail object.
-func (d Detail) Get() Detail {
-	d.prepare()
+func (i info) Get() Detail {
+	d := i.detail
+	i.prepare()
 	valdRepo := fmt.Sprintf("github.com/%s/%s", Organization, Repository)
 	defaultURL := fmt.Sprintf("https://%s/tree/%s", valdRepo, d.GitCommit)
 
 	d.StackTrace = make([]StackTrace, 0, 10)
-	for i := 3; ; i++ {
-		pc, file, line, ok := d.rtCaller(i)
+	for j := 3; ; j++ {
+		pc, file, line, ok := i.rtCaller(j)
 		if !ok {
 			break
 		}
-		funcName := d.rtFuncForPC(pc).Name()
+		funcName := i.rtFuncForPC(pc).Name()
 		if funcName == "runtime.main" {
 			break
 		}
@@ -246,8 +252,9 @@ func (d Detail) Get() Detail {
 	return d
 }
 
-func (d *Detail) prepare() {
-	d.PrepOnce.Do(func() {
+func (i *info) prepare() {
+	d := i.detail
+	i.PrepOnce.Do(func() {
 		if len(d.GitCommit) == 0 {
 			d.GitCommit = "master"
 		}
