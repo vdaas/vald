@@ -355,7 +355,9 @@ goimports/install:
 
 .PHONY: prettier/install
 prettier/install:
-	npm install -g npm prettier
+	if !type prettier >/dev/null 2>&1; then \
+		npm install -g npm prettier; \
+	fi
 
 .PHONY: version/vald
 ## print vald version

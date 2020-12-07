@@ -1,5 +1,4 @@
 ---
-# Source: vald/templates/gateway/meta/deployment.yaml
 #
 # Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
 #
@@ -83,10 +82,10 @@ spec:
             - podAffinityTerm:
                 labelSelector:
                   matchExpressions:
-                  - key: app
-                    operator: In
-                    values:
-                    - vald-meta-gateway
+                    - key: app
+                      operator: In
+                      values:
+                        - vald-meta-gateway
                 topologyKey: kubernetes.io/hostname
               weight: 100
           requiredDuringSchedulingIgnoredDuringExecution: []

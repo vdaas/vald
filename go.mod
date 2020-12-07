@@ -3,39 +3,39 @@ module github.com/vdaas/vald
 go 1.15
 
 replace (
-	cloud.google.com/go => cloud.google.com/go v0.72.0
+	cloud.google.com/go => cloud.google.com/go v0.73.0
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0+incompatible
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.35.26
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.36.2
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
 	github.com/docker/docker => github.com/moby/moby v1.13.1
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.4.1
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.5.0
-	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20201024154641-5913df4d474e
+	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20201204142955-93eedddb6466
 	github.com/gogo/googleapis => github.com/gogo/googleapis v1.4.0
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.1
-	github.com/google/go-cmp => github.com/google/go-cmp v0.5.2
-	github.com/google/pprof => github.com/google/pprof v0.0.0-20201109224723-20978b51388d
+	github.com/google/go-cmp => github.com/google/go-cmp v0.5.4
+	github.com/google/pprof => github.com/google/pprof v0.0.0-20201203190320-1bf35d6f28c2
 	github.com/googleapis/gnostic => github.com/googleapis/gnostic v0.4.0
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.14.0
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.2
 	github.com/hailocab/go-hostpool => github.com/monzo/go-hostpool v0.0.0-20200724120130-287edbb29340
-	github.com/klauspost/compress => github.com/klauspost/compress v1.11.3-0.20201111114143-d8af43d19b7a
+	github.com/klauspost/compress => github.com/klauspost/compress v1.11.4-0.20201202162919-38619d37ca03
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.2+incompatible
-	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897
-	google.golang.org/grpc => google.golang.org/grpc v1.33.2
+	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20201203163018-be400aefbc4c
+	google.golang.org/grpc => google.golang.org/grpc v1.34.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.25.0
-	k8s.io/api => k8s.io/api v0.18.9
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.18.9
-	k8s.io/apimachinery => k8s.io/apimachinery v0.18.9
-	k8s.io/client-go => k8s.io/client-go v0.18.9
-	k8s.io/metrics => k8s.io/metrics v0.18.9
-	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.6.3
+	k8s.io/api => k8s.io/api v0.18.12
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.18.12
+	k8s.io/apimachinery => k8s.io/apimachinery v0.18.12
+	k8s.io/client-go => k8s.io/client-go v0.18.12
+	k8s.io/metrics => k8s.io/metrics v0.18.12
+	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.6.4
 )
 
 require (
-	cloud.google.com/go v0.65.0
+	cloud.google.com/go v0.72.0
 	code.cloudfoundry.org/bytefmt v0.0.0-20200131002437-cf55d5288a48
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
 	contrib.go.opencensus.io/exporter/prometheus v0.2.0
@@ -47,9 +47,9 @@ require (
 	github.com/go-redis/redis/v7 v7.4.0
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gocql/gocql v0.0.0-20200131111108-92af2e088537
-	github.com/gocraft/dbr/v2 v2.7.0
+	github.com/gocraft/dbr/v2 v2.7.1
 	github.com/gogo/protobuf v1.3.1
-	github.com/google/go-cmp v0.5.2
+	github.com/google/go-cmp v0.5.4
 	github.com/google/gofuzz v1.2.0
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/go-version v1.2.1
@@ -68,18 +68,18 @@ require (
 	go.opencensus.io v0.22.5
 	go.uber.org/automaxprocs v1.3.0
 	go.uber.org/goleak v1.1.10
-	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
+	golang.org/x/net v0.0.0-20201202161906-c7110b5ffcbb
 	golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9
-	golang.org/x/sys v0.0.0-20201110211018-35f3e6cf4a65
+	golang.org/x/sys v0.0.0-20201204225414-ed752295db88
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/plot v0.8.1
-	google.golang.org/api v0.35.0
-	google.golang.org/genproto v0.0.0-20201111145450-ac7456db90a6
+	google.golang.org/api v0.36.0
+	google.golang.org/genproto v0.0.0-20201204160425-06b3db808446
 	google.golang.org/grpc v1.33.2
-	gopkg.in/yaml.v2 v2.3.0
-	k8s.io/api v0.18.9
-	k8s.io/apimachinery v0.18.9
-	k8s.io/client-go v0.18.9
+	gopkg.in/yaml.v2 v2.4.0
+	k8s.io/api v0.18.12
+	k8s.io/apimachinery v0.18.12
+	k8s.io/client-go v0.18.12
 	k8s.io/metrics v0.0.0-00010101000000-000000000000
 	sigs.k8s.io/controller-runtime v0.0.0-00010101000000-000000000000
 )
