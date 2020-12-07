@@ -19,25 +19,29 @@ package errors
 
 var (
 
-	// Cassandra
+	// ErrCassandraInvalidConsistencyType represents function to generate error that is consistency is not defined.
 	ErrCassandraInvalidConsistencyType = func(consistency string) error {
 		return Errorf("consistetncy type %q is not defined", consistency)
 	}
 
+	// NewErrCassandraNotFoundIdentity represents function to generate error that is cassandra entry not found.
 	NewErrCassandraNotFoundIdentity = func() error {
 		return &ErrCassandraNotFoundIdentity{
 			err: New("cassandra entry not found"),
 		}
 	}
 
+	// NewErrCassandraUnavailableIdentity represents function to generate error that is cassandra unavailable.
 	NewErrCassandraUnavailableIdentity = func() error {
 		return &ErrCassandraUnavailableIdentity{
 			err: New("cassandra unavailable"),
 		}
 	}
 
+	// ErrCassandraUnavailable represents NewErrCassandraUnavailableIdentity.
 	ErrCassandraUnavailable = NewErrCassandraUnavailableIdentity
 
+	// ErrCassandraNotFound represents function to generate error that is cassandra key not found.
 	ErrCassandraNotFound = func(keys ...string) error {
 		switch {
 		case len(keys) == 1:
@@ -49,52 +53,64 @@ var (
 		}
 	}
 
+	// ErrCassandraGetOperationFailed represents function to generate error that is fetch key fails.
 	ErrCassandraGetOperationFailed = func(key string, err error) error {
 		return Wrapf(err, "error failed to fetch key (%s)", key)
 	}
 
+	// ErrCassandraSetOperationFailed represents function to generate error that is set key fails.
 	ErrCassandraSetOperationFailed = func(key string, err error) error {
 		return Wrapf(err, "error failed to set key (%s)", key)
 	}
 
+	// ErrCassandraDeleteOperationFailed represents function to generate error that is delete key fails.
 	ErrCassandraDeleteOperationFailed = func(key string, err error) error {
 		return Wrapf(err, "error failed to delete key (%s)", key)
 	}
 
+	// ErrCassandraHostDownDetected represents function to generate error that is cassandra host down detected.
 	ErrCassandraHostDownDetected = func(err error, nodeInfo string) error {
 		return Wrapf(err, "error cassandra host down detected\t%s", nodeInfo)
 	}
 )
 
+// ErrCassandraNotFoundIdentity represents custom error for cassandra not found.
 type ErrCassandraNotFoundIdentity struct {
 	err error
 }
 
+// Error returns string of internal error.
 func (e *ErrCassandraNotFoundIdentity) Error() string {
 	return e.err.Error()
 }
 
+// Unwrap returns internal error.
 func (e *ErrCassandraNotFoundIdentity) Unwrap() error {
 	return e.err
 }
 
+// IsErrCassandraNotFound reports whether any error in err's chain matches ErrCassandraNotFound.
 func IsErrCassandraNotFound(err error) bool {
 	target := new(ErrCassandraNotFoundIdentity)
 	return As(err, &target)
 }
 
+// ErrCassandraUnavailableIdentity represents custom error for cassandra unavailable.
 type ErrCassandraUnavailableIdentity struct {
 	err error
 }
 
+// Error returns string of internal error.
 func (e *ErrCassandraUnavailableIdentity) Error() string {
 	return e.err.Error()
 }
 
+// Unwrap returns internal error.
 func (e *ErrCassandraUnavailableIdentity) Unwrap() error {
 	return e.err
 }
 
+// IsErrCassandraUnavailable reports whether any error in err's chain matches ErrCassandraUnavailableIdentity.
 func IsErrCassandraUnavailable(err error) bool {
 	target := new(ErrCassandraUnavailableIdentity)
 	return As(err, &target)
