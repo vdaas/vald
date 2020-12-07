@@ -32,7 +32,7 @@ func TestErrInvalidCompressionLevel(t *testing.T) {
 				level: 100,
 			},
 			want: want{
-				want: Errorf("invalid compression level: %d", 100),
+				want: New("invalid compression level: 100"),
 			},
 		},
 		{
@@ -41,7 +41,7 @@ func TestErrInvalidCompressionLevel(t *testing.T) {
 				level: 0,
 			},
 			want: want{
-				want: Errorf("invalid compression level: %d", 0),
+				want: New("invalid compression level: 0"),
 			},
 		},
 	}
@@ -94,7 +94,7 @@ func TestErrCompressorNameNotFound(t *testing.T) {
 				name: "gob",
 			},
 			want: want{
-				want: Errorf("compressor %s not found", "gob"),
+				want: New("compressor gob not found"),
 			},
 		},
 		{
@@ -103,7 +103,7 @@ func TestErrCompressorNameNotFound(t *testing.T) {
 				name: "",
 			},
 			want: want{
-				want: Errorf("compressor %s not found", ""),
+				want: New("compressor  not found"),
 			},
 		},
 	}
