@@ -31,7 +31,7 @@ var (
 		}
 	}
 
-	// NewErrCassandraUnavailableIdentity represents function to generate error that is cassandra unavailable.
+	// NewErrCassandraUnavailableIdentity represents a function to generate an error of cassandra unavailable.
 	NewErrCassandraUnavailableIdentity = func() error {
 		return &ErrCassandraUnavailableIdentity{
 			err: New("cassandra unavailable"),
