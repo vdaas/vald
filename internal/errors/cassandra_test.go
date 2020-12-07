@@ -47,7 +47,7 @@ func TestErrCassandraInvalidConsistencyType(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return error when consistency level is `QUORUM`",
+			name: "returns error when consistency level is `QUORUM`",
 			args: args{
 				consistency: "QUORUM",
 			},
@@ -56,7 +56,7 @@ func TestErrCassandraInvalidConsistencyType(t *testing.T) {
 			},
 		},
 		{
-			name: "return error when consistency level is empty",
+			name: "returns error when consistency level is empty",
 			args: args{
 				consistency: "",
 			},
@@ -105,7 +105,7 @@ func TestNewErrCassandraNotFoundIdentity(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return cassandra not found identity error",
+			name: "returns cassandra not found identity error",
 			want: want{
 				want: &ErrCassandraNotFoundIdentity{
 					err: New("cassandra entry not found"),
@@ -153,7 +153,7 @@ func TestNewErrCassandraUnavailableIdentity(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return cassandra unavailable identity error",
+			name: "returns cassandra unavailable identity error",
 			want: want{
 				want: &ErrCassandraUnavailableIdentity{
 					err: New("cassandra unavailable"),
@@ -201,7 +201,7 @@ func TestErrCassandraUnavailable(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return cassandra unavailable identity error",
+			name: "returns cassandra unavailable identity error",
 			want: want{
 				want: &ErrCassandraUnavailableIdentity{
 					err: New("cassandra unavailable"),
@@ -257,7 +257,7 @@ func TestErrCassandraNotFound(t *testing.T) {
 				"uuid",
 			}
 			return test{
-				name: "return cassandra key not found error when key is not found",
+				name: "returns cassandra key not found error when key is not found",
 				args: args{
 					keys: keys,
 				},
@@ -272,7 +272,7 @@ func TestErrCassandraNotFound(t *testing.T) {
 				"uuid_2",
 			}
 			return test{
-				name: "return cassandra keys not found error when keys are not found",
+				name: "returns cassandra keys not found error when keys are not found",
 				args: args{
 					keys: keys,
 				},
@@ -283,7 +283,7 @@ func TestErrCassandraNotFound(t *testing.T) {
 		}(),
 		func() test {
 			return test{
-				name: "return nil when key is empty",
+				name: "returns nil when key is empty",
 				args: args{
 					keys: nil,
 				},
@@ -343,7 +343,7 @@ func TestErrCassandraGetOperationFailed(t *testing.T) {
 				err: New("database error"),
 			}
 			return test{
-				name: "return wrapped fetch key error when key is `uuid` and error is database error",
+				name: "returns wrapped fetch key error when key is `uuid` and error is database error",
 				args: args,
 				want: want{
 					Wrapf(args.err, "error failed to fetch key (%s)", args.key),
@@ -356,7 +356,7 @@ func TestErrCassandraGetOperationFailed(t *testing.T) {
 				err: New("database error"),
 			}
 			return test{
-				name: "return wrapped fetch key error when key is empty and error is database error",
+				name: "returns wrapped fetch key error when key is empty and error is database error",
 				args: args,
 				want: want{
 					Wrapf(args.err, "error failed to fetch key (%s)", args.key),
@@ -369,7 +369,7 @@ func TestErrCassandraGetOperationFailed(t *testing.T) {
 				err: nil,
 			}
 			return test{
-				name: "return fetch key error when key is `uuid` and error is nil",
+				name: "returns fetch key error when key is `uuid` and error is nil",
 				args: args,
 				want: want{
 					want: Errorf("error failed to fetch key (%s)", args.key),
@@ -382,7 +382,7 @@ func TestErrCassandraGetOperationFailed(t *testing.T) {
 				err: nil,
 			}
 			return test{
-				name: "return fetch key error when key is empty and error is nil",
+				name: "returns fetch key error when key is empty and error is nil",
 				args: args,
 				want: want{
 					want: Errorf("error failed to fetch key (%s)", args.key),
@@ -858,7 +858,7 @@ func TestIsErrCassandraNotFound(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return false when error is not cassandra not found identity",
+			name: "returns false when error is not cassandra not found identity",
 			args: args{
 				err: New("database not found"),
 			},
@@ -867,7 +867,7 @@ func TestIsErrCassandraNotFound(t *testing.T) {
 			},
 		},
 		{
-			name: "return true when error is cassandra not found identity",
+			name: "returns true when error is cassandra not found identity",
 			args: args{
 				err: new(ErrCassandraNotFoundIdentity),
 			},
@@ -1053,7 +1053,7 @@ func TestIsErrCassandraUnavailable(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return false when error is not cassandra unavailable identity",
+			name: "returns false when error is not cassandra unavailable identity",
 			args: args{
 				err: New("database not found"),
 			},
@@ -1062,7 +1062,7 @@ func TestIsErrCassandraUnavailable(t *testing.T) {
 			},
 		},
 		{
-			name: "return true when error is cassandra unavailable identity",
+			name: "returns true when error is cassandra unavailable identity",
 			args: args{
 				err: new(ErrCassandraUnavailableIdentity),
 			},
