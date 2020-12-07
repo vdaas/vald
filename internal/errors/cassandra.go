@@ -63,7 +63,7 @@ var (
 		return Wrapf(err, "error failed to set key (%s)", key)
 	}
 
-	// ErrCassandraDeleteOperationFailed represents function to generate error that is delete key fails.
+	// ErrCassandraDeleteOperationFailed represents a function to generate an error of delete key fails.
 	ErrCassandraDeleteOperationFailed = func(key string, err error) error {
 		return Wrapf(err, "error failed to delete key (%s)", key)
 	}
