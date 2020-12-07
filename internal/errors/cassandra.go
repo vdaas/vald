@@ -58,7 +58,7 @@ var (
 		return Wrapf(err, "error failed to fetch key (%s)", key)
 	}
 
-	// ErrCassandraSetOperationFailed represents function to generate error that is set key fails.
+	// ErrCassandraSetOperationFailed represents a function to generate an error of set key fails.
 	ErrCassandraSetOperationFailed = func(key string, err error) error {
 		return Wrapf(err, "error failed to set key (%s)", key)
 	}
