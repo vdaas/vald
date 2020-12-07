@@ -739,7 +739,9 @@ tests := map[string]func(t *testing.T) test {
 }
 ```
 
-### The steps to create a Table-Driven-Test
+### Create a Table-Driven-Test
+
+#### Structures
 
 1. `args` structure
 
@@ -776,6 +778,29 @@ tests := map[string]func(t *testing.T) test {
     }
     ```
 
+#### Input agreement
+
+1. test case name
+
+    Test case name should be readble and meaningful for understanding each test easily.
+    If you create new test, the test name should be named based on below naming templates.
+
+    - Success:
+        - Start with `success` or `{verb} success` or `success {verb}`
+        - End with the condition `when {condition}` or `with {condition}
+        - e.g.: `Set success when value is default value`
+    - Fail:
+        - Start with `fail` or `{verb} fail` or `fail {verb}`
+        - End with the condition `when {condition}` or `with {condition}
+        - e.g.: `fail option setting when value is invalid value(string)`
+
+1. input values
+
+    Input value for testing should be meaningful value.
+    It is because we should test with more realistic value as user use.
+
+    For example, when you use `host` for test value, you should set `your hostname (e.g. vald.vdaas.com)` as `host`.
+
 Example:
 
 ```go
@@ -795,17 +820,17 @@ type test struct {
 }
 
 tests := map[string]func(*testing.T) test {
-    "test name": func(tt *testing.T) test {
+    "send success when host and port are correct value": func(tt *testing.T) test {
         tt.Helper()
 
         return test {
             args: args {
-                host: "host",
-                port: "port",
+                host: "vdaas.vald.org",
+                port: "80",
             },
             field: field {
-                host: "host",
-                port: "port",
+                host: "vdaas.vald.org",
+                port: "80",
             },
             checkFunc func(tt *testing.T, err error) {
                 t.Helper()
