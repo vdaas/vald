@@ -24,7 +24,7 @@ var (
 		return Errorf("consistetncy type %q is not defined", consistency)
 	}
 
-	// NewErrCassandraNotFoundIdentity represents function to generate error that is cassandra entry not found.
+	// NewErrCassandraNotFoundIdentity represents a function to generate an error of cassandra entry not found.
 	NewErrCassandraNotFoundIdentity = func() error {
 		return &ErrCassandraNotFoundIdentity{
 			err: New("cassandra entry not found"),
