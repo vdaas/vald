@@ -22,7 +22,7 @@ import (
 	"crypto/tls"
 	"time"
 
-	redis "github.com/go-redis/redis/v7"
+	redis "github.com/go-redis/redis/v8"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/timeutil"

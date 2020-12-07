@@ -22,7 +22,7 @@ import (
 	"reflect"
 	"time"
 
-	redis "github.com/go-redis/redis/v7"
+	redis "github.com/go-redis/redis/v8"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"

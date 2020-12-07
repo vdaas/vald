@@ -24,7 +24,7 @@ import (
 	"testing"
 	"time"
 
-	redis "github.com/go-redis/redis/v7"
+	redis "github.com/go-redis/redis/v8"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/tcp"

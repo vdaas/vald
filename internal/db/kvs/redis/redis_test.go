@@ -25,7 +25,7 @@ import (
 	"testing"
 	"time"
 
-	redis "github.com/go-redis/redis/v7"
+	redis "github.com/go-redis/redis/v8"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/vdaas/vald/internal/errors"
@@ -38,8 +38,8 @@ import (
 // Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
 var goleakIgnoreOptions = []goleak.Option{
 	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
-	goleak.IgnoreTopFunction("github.com/go-redis/redis/v7/internal/pool.(*ConnPool).reaper"),
-	goleak.IgnoreTopFunction("github.com/go-redis/redis/v7.(*ClusterClient).reaper"),
+	goleak.IgnoreTopFunction("github.com/go-redis/redis/v8/internal/pool.(*ConnPool).reaper"),
+	goleak.IgnoreTopFunction("github.com/go-redis/redis/v8.(*ClusterClient).reaper"),
 }
 
 func TestMain(m *testing.M) {

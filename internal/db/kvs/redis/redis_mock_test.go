@@ -18,7 +18,7 @@ package redis
 import (
 	"context"
 
-	redis "github.com/go-redis/redis/v7"
+	redis "github.com/go-redis/redis/v8"
 )
 
 type MockRedis struct {
