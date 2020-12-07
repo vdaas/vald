@@ -68,7 +68,7 @@ var (
 		return Wrapf(err, "error failed to delete key (%s)", key)
 	}
 
-	// ErrCassandraHostDownDetected represents function to generate error that is cassandra host down detected.
+	// ErrCassandraHostDownDetected represents a function to generate an error of cassandra host down detected.
 	ErrCassandraHostDownDetected = func(err error, nodeInfo string) error {
 		return Wrapf(err, "error cassandra host down detected\t%s", nodeInfo)
 	}
