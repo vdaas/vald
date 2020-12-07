@@ -20,8 +20,11 @@ import (
 
 	// TODO: move to internal
 
+	batchv1 "k8s.io/api/batch/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/conversion"
 )
 
@@ -350,7 +353,10 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 									}
 								}
 								if !ok {
-									// TODO: create job
+									if err := d.createJob(ctx, jobTpl, prevPod.Name); err != nil {
+										log.Errorf("failed to create job: %s", err)
+										continue
+									}
 									prevSsModel[ns] = ssModel[ns]
 									prevPodModels[ns] = podModels[ns]
 								}
@@ -382,7 +388,10 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 									}
 								}
 								if !ok {
-									// TODO: create Job
+									if err := d.createJob(ctx, jobTpl, maxPodName[ns]); err != nil {
+										log.Errorf("failed to create job: %s", err)
+										continue
+									}
 									prevSsModel = ssModel
 									prevPodModels = podModels
 								}
@@ -408,4 +417,31 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 	}))
 
 	return ech, nil
+}
+
+func (d *discoverer) createJob(ctx context.Context, jobTpl job.Job, agentName string) error {
+	jobTpl.Labels["target_agent_name"] = agentName
+
+	cfg, err := config.GetConfig()
+	if err != nil {
+		return err
+	}
+
+	scheme := runtime.NewScheme()
+	if err = batchv1.AddToScheme(scheme); err != nil {
+		return err
+	}
+
+	c, err := client.New(cfg, client.Options{
+		Scheme: scheme,
+	})
+	if err != nil {
+		return err
+	}
+
+	if err := c.Create(ctx, &jobTpl); err != nil {
+		return err
+	}
+
+	return nil
 }
