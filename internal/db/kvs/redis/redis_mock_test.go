@@ -30,13 +30,13 @@ type MockRedis struct {
 	DelFunc        func(keys ...string) *redis.IntCmd
 }
 
-var _ = (*MockRedis)(nil)
+var _ Redis = (*MockRedis)(nil)
 
 func (m *MockRedis) TxPipeline() redis.Pipeliner {
 	return m.TxPipelineFunc()
 }
 
-func (m *MockRedis) Ping() *StatusCmd {
+func (m *MockRedis) Ping(ctx context.Context) *StatusCmd {
 	return m.PingFunc()
 }
 
@@ -44,15 +44,15 @@ func (m *MockRedis) Close() error {
 	return m.CloseFunc()
 }
 
-func (m *MockRedis) Get(key string) *redis.StringCmd {
+func (m *MockRedis) Get(ctx context.Context, key string) *redis.StringCmd {
 	return m.GetFunc(key)
 }
 
-func (m *MockRedis) MGet(keys ...string) *redis.SliceCmd {
+func (m *MockRedis) MGet(ctx context.Context, keys ...string) *redis.SliceCmd {
 	return m.MGetFunc(keys...)
 }
 
-func (m *MockRedis) Del(keys ...string) *redis.IntCmd {
+func (m *MockRedis) Del(ctx context.Context, keys ...string) *redis.IntCmd {
 	return m.DelFunc(keys...)
 }
 

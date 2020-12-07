@@ -33,13 +33,11 @@ import (
 	"go.uber.org/goleak"
 )
 
-var (
-	// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
-	goleakIgnoreOptions = []goleak.Option{
-		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
-		goleak.IgnoreTopFunction("internal/poll.runtime_pollWait"),
-	}
-)
+// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
+var goleakIgnoreOptions = []goleak.Option{
+	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+	goleak.IgnoreTopFunction("internal/poll.runtime_pollWait"),
+}
 
 func TestEncodeResponse(t *testing.T) {
 	type args struct {
@@ -589,7 +587,7 @@ func TestEncodeRequest(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			var val = 1 + 3i
+			val := 1 + 3i
 			return test{
 				name: "returns json encode error when the json encode fails",
 				args: args{

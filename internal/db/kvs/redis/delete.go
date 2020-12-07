@@ -17,9 +17,11 @@
 package redis
 
 import (
+	"context"
+
 	redis "github.com/go-redis/redis/v8"
 )
 
 type Deleter interface {
-	Del(keys ...string) *redis.IntCmd
+	Del(context.Context, ...string) *redis.IntCmd
 }

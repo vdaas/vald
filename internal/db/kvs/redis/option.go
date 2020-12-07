@@ -34,6 +34,17 @@ type Option func(*redisClient) error
 var defaultOptions = []Option{
 	WithInitialPingDuration("30ms"),
 	WithInitialPingTimeLimit("5m"),
+	WithNetwork("tcp"),
+}
+
+// WithNetwork returns the option to set the network like tcp or unix.
+func WithNetwork(network string) Option {
+	return func(r *redisClient) error {
+		if network != "" {
+			r.network = network
+		}
+		return nil
+	}
 }
 
 // WithDialer returns the option to set the dialer.
@@ -80,7 +91,7 @@ func WithDB(db int) Option {
 }
 
 // WithClusterSlots returns the option to set the clusterSlots.
-func WithClusterSlots(f func() ([]redis.ClusterSlot, error)) Option {
+func WithClusterSlots(f func(context.Context) ([]redis.ClusterSlot, error)) Option {
 	return func(r *redisClient) error {
 		if f != nil {
 			r.clusterSlots = f
@@ -214,7 +225,7 @@ func WithMinimumRetryBackoff(dur string) Option {
 }
 
 // WithOnConnectFunction returns the option to set the onConnect.
-func WithOnConnectFunction(f func(*redis.Conn) error) Option {
+func WithOnConnectFunction(f func(context.Context, *redis.Conn) error) Option {
 	return func(r *redisClient) error {
 		if f != nil {
 			r.onConnect = f
@@ -223,11 +234,11 @@ func WithOnConnectFunction(f func(*redis.Conn) error) Option {
 	}
 }
 
-// WithOnNewNodeFunction returns the option to set the onNewNode.
-func WithOnNewNodeFunction(f func(*redis.Client)) Option {
+// WithUsername returns the option to set the username.
+func WithUsername(name string) Option {
 	return func(r *redisClient) error {
-		if f != nil {
-			r.onNewNode = f
+		if name != "" {
+			r.username = name
 		}
 		return nil
 	}
@@ -373,6 +384,18 @@ func WithHooks(hooks ...Hook) Option {
 		}
 
 		r.hooks = hooks
+
+		return nil
+	}
+}
+
+// WithLimiter returns the option to limiter.
+func WithLimiter(limiter Limiter) Option {
+	return func(r *redisClient) error {
+		if limiter == nil {
+			return nil
+		}
+		r.limiter = limiter
 
 		return nil
 	}

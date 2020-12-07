@@ -250,7 +250,7 @@ func Test_redisClient_setClient(t *testing.T) {
 	}
 	type fields struct {
 		addrs                []string
-		clusterSlots         func() ([]redis.ClusterSlot, error)
+		clusterSlots         func(context.Context) ([]redis.ClusterSlot, error)
 		db                   int
 		dialTimeout          time.Duration
 		dialer               tcp.Dialer
@@ -266,8 +266,7 @@ func Test_redisClient_setClient(t *testing.T) {
 		maxRetryBackoff      time.Duration
 		minIdleConns         int
 		minRetryBackoff      time.Duration
-		onConnect            func(*redis.Conn) error
-		onNewNode            func(*redis.Client)
+		onConnect            func(ctx context.Context, conn *redis.Conn) error
 		password             string
 		poolSize             int
 		poolTimeout          time.Duration
@@ -395,7 +394,6 @@ func Test_redisClient_setClient(t *testing.T) {
 				minIdleConns:         test.fields.minIdleConns,
 				minRetryBackoff:      test.fields.minRetryBackoff,
 				onConnect:            test.fields.onConnect,
-				onNewNode:            test.fields.onNewNode,
 				password:             test.fields.password,
 				poolSize:             test.fields.poolSize,
 				poolTimeout:          test.fields.poolTimeout,
@@ -420,7 +418,7 @@ func Test_redisClient_setClient(t *testing.T) {
 func Test_redisClient_newSentinelClient(t *testing.T) {
 	type fields struct {
 		addrs                []string
-		clusterSlots         func() ([]redis.ClusterSlot, error)
+		clusterSlots         func(context.Context) ([]redis.ClusterSlot, error)
 		db                   int
 		dialTimeout          time.Duration
 		dialer               tcp.Dialer
@@ -436,8 +434,7 @@ func Test_redisClient_newSentinelClient(t *testing.T) {
 		maxRetryBackoff      time.Duration
 		minIdleConns         int
 		minRetryBackoff      time.Duration
-		onConnect            func(*redis.Conn) error
-		onNewNode            func(*redis.Client)
+		onConnect            func(ctx context.Context, conn *redis.Conn) error
 		password             string
 		poolSize             int
 		poolTimeout          time.Duration
@@ -487,7 +484,7 @@ func Test_redisClient_newSentinelClient(t *testing.T) {
 			dialer := func(ctx context.Context, _, _ string) (net.Conn, error) {
 				return nil, nil
 			}
-			connFn := func(c *redis.Conn) error {
+			connFn := func(ctx context.Context, c *redis.Conn) error {
 				return nil
 			}
 			cfg := new(tls.Config)
@@ -611,7 +608,6 @@ func Test_redisClient_newSentinelClient(t *testing.T) {
 				minIdleConns:         test.fields.minIdleConns,
 				minRetryBackoff:      test.fields.minRetryBackoff,
 				onConnect:            test.fields.onConnect,
-				onNewNode:            test.fields.onNewNode,
 				password:             test.fields.password,
 				poolSize:             test.fields.poolSize,
 				poolTimeout:          test.fields.poolTimeout,
@@ -639,7 +635,7 @@ func Test_redisClient_newClusterClient(t *testing.T) {
 	}
 	type fields struct {
 		addrs                []string
-		clusterSlots         func() ([]redis.ClusterSlot, error)
+		clusterSlots         func(context.Context) ([]redis.ClusterSlot, error)
 		db                   int
 		dialTimeout          time.Duration
 		dialer               tcp.Dialer
@@ -655,8 +651,7 @@ func Test_redisClient_newClusterClient(t *testing.T) {
 		maxRetryBackoff      time.Duration
 		minIdleConns         int
 		minRetryBackoff      time.Duration
-		onConnect            func(*redis.Conn) error
-		onNewNode            func(*redis.Client)
+		onConnect            func(ctx context.Context, conn *redis.Conn) error
 		password             string
 		poolSize             int
 		poolTimeout          time.Duration
@@ -710,11 +705,10 @@ func Test_redisClient_newClusterClient(t *testing.T) {
 			dialer := func(ctx context.Context, _, _ string) (net.Conn, error) {
 				return nil, nil
 			}
-			cslots := func() ([]redis.ClusterSlot, error) {
+			cslots := func(ctx context.Context) ([]redis.ClusterSlot, error) {
 				return nil, nil
 			}
-			onNewNode := func(*redis.Client) {}
-			onConnect := func(c *redis.Conn) error {
+			onConnect := func(ctx context.Context, c *redis.Conn) error {
 				return nil
 			}
 			cfg := new(tls.Config)
@@ -728,7 +722,6 @@ func Test_redisClient_newClusterClient(t *testing.T) {
 				RouteByLatency:     true,
 				RouteRandomly:      true,
 				ClusterSlots:       cslots,
-				OnNewNode:          onNewNode,
 				OnConnect:          onConnect,
 				Password:           "pass",
 				MaxRetries:         2,
@@ -758,7 +751,6 @@ func Test_redisClient_newClusterClient(t *testing.T) {
 					routeByLatency:     true,
 					routeRandomly:      true,
 					clusterSlots:       cslots,
-					onNewNode:          onNewNode,
 					onConnect:          onConnect,
 					password:           "pass",
 					maxRetries:         2,
@@ -857,7 +849,6 @@ func Test_redisClient_newClusterClient(t *testing.T) {
 				minIdleConns:         test.fields.minIdleConns,
 				minRetryBackoff:      test.fields.minRetryBackoff,
 				onConnect:            test.fields.onConnect,
-				onNewNode:            test.fields.onNewNode,
 				password:             test.fields.password,
 				poolSize:             test.fields.poolSize,
 				poolTimeout:          test.fields.poolTimeout,
@@ -885,7 +876,7 @@ func Test_redisClient_Connect(t *testing.T) {
 	}
 	type fields struct {
 		addrs                []string
-		clusterSlots         func() ([]redis.ClusterSlot, error)
+		clusterSlots         func(ctx context.Context) ([]redis.ClusterSlot, error)
 		db                   int
 		dialTimeout          time.Duration
 		dialer               tcp.Dialer
@@ -901,8 +892,7 @@ func Test_redisClient_Connect(t *testing.T) {
 		maxRetryBackoff      time.Duration
 		minIdleConns         int
 		minRetryBackoff      time.Duration
-		onConnect            func(*redis.Conn) error
-		onNewNode            func(*redis.Client)
+		onConnect            func(ctx context.Context, conn *redis.Conn) error
 		password             string
 		poolSize             int
 		poolTimeout          time.Duration
@@ -1015,7 +1005,6 @@ func Test_redisClient_Connect(t *testing.T) {
 				minIdleConns:         test.fields.minIdleConns,
 				minRetryBackoff:      test.fields.minRetryBackoff,
 				onConnect:            test.fields.onConnect,
-				onNewNode:            test.fields.onNewNode,
 				password:             test.fields.password,
 				poolSize:             test.fields.poolSize,
 				poolTimeout:          test.fields.poolTimeout,

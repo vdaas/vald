@@ -16,13 +16,6 @@
 
 package redis
 
-import (
-	"context"
+import redis "github.com/go-redis/redis/v8"
 
-	redis "github.com/go-redis/redis/v8"
-)
-
-type Getter interface {
-	Get(context.Context, string) *redis.StringCmd
-	MGet(context.Context, ...string) *redis.SliceCmd
-}
+type Limiter = redis.Limiter

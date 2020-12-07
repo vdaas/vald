@@ -40,7 +40,7 @@ type Connector interface {
 // Redis is an interface to communicate with Redis servers.
 type Redis interface {
 	TxPipeline() redis.Pipeliner
-	Ping() *StatusCmd
+	Ping(context.Context) *StatusCmd
 	Close() error
 	Lister
 	Getter
@@ -61,9 +61,10 @@ type (
 
 type redisClient struct {
 	addrs                []string
-	clusterSlots         func() ([]redis.ClusterSlot, error)
+	clusterSlots         func(context.Context) ([]redis.ClusterSlot, error)
 	db                   int
 	dialTimeout          time.Duration
+	network              string
 	dialer               tcp.Dialer
 	dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
 	idleCheckFrequency   time.Duration
@@ -77,8 +78,8 @@ type redisClient struct {
 	maxRetryBackoff      time.Duration
 	minIdleConns         int
 	minRetryBackoff      time.Duration
-	onConnect            func(*redis.Conn) error
-	onNewNode            func(*redis.Client)
+	onConnect            func(context.Context, *redis.Conn) error
+	onNewNode            func(context.Context, *redis.Client)
 	password             string
 	poolSize             int
 	poolTimeout          time.Duration
@@ -87,9 +88,11 @@ type redisClient struct {
 	routeByLatency       bool
 	routeRandomly        bool
 	tlsConfig            *tls.Config
+	username             string
 	writeTimeout         time.Duration
 	client               Redis
 	hooks                []Hook
+	limiter              Limiter
 }
 
 // New returns Connector if no error occurs.
@@ -130,6 +133,8 @@ func (rc *redisClient) newSentinelClient() (*redis.Client, error) {
 
 	c := redis.NewClient(&redis.Options{
 		Addr:               rc.addrs[0],
+		Network:            rc.network,
+		Username:           rc.username,
 		Password:           rc.password,
 		Dialer:             rc.dialerFunc,
 		OnConnect:          rc.onConnect,
@@ -147,6 +152,7 @@ func (rc *redisClient) newSentinelClient() (*redis.Client, error) {
 		IdleTimeout:        rc.idleTimeout,
 		IdleCheckFrequency: rc.idleCheckFrequency,
 		TLSConfig:          rc.tlsConfig,
+		Limiter:            rc.limiter,
 	})
 
 	for _, hk := range rc.hooks {
@@ -162,16 +168,23 @@ func (rc *redisClient) newClusterClient(ctx context.Context) (*redis.ClusterClie
 	}
 
 	c := redis.NewClusterClient(&redis.ClusterOptions{
-		Addrs:              rc.addrs,
+		Addrs: rc.addrs,
+		NewClient: func(opt *redis.Options) *redis.Client {
+			c, err := rc.newSentinelClient()
+			if err != nil {
+				return redis.NewClient(opt)
+			}
+			return c
+		},
 		Dialer:             rc.dialerFunc,
 		MaxRedirects:       rc.maxRedirects,
 		ReadOnly:           rc.readOnly,
 		RouteByLatency:     rc.routeByLatency,
 		RouteRandomly:      rc.routeRandomly,
 		ClusterSlots:       rc.clusterSlots,
-		OnNewNode:          rc.onNewNode,
 		OnConnect:          rc.onConnect,
 		Password:           rc.password,
+		Username:           rc.username,
 		MaxRetries:         rc.maxRetries,
 		MinRetryBackoff:    rc.minRetryBackoff,
 		MaxRetryBackoff:    rc.maxRetryBackoff,
@@ -219,7 +232,7 @@ func (rc *redisClient) ping(ctx context.Context) (r Redis, err error) {
 			log.Error(err)
 			return nil, err
 		case <-tick.C:
-			err = rc.client.Ping().Err()
+			err = rc.client.Ping(ctx).Err()
 			if err == nil {
 				return rc.client, nil
 			}
