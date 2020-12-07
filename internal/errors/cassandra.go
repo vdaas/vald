@@ -19,7 +19,7 @@ package errors
 
 var (
 
-	// ErrCassandraInvalidConsistencyType represents a function to generate an error of consistency type is not defined.
+	// ErrCassandraInvalidConsistencyType represents a function to generate an error of consistency type not defined.
 	ErrCassandraInvalidConsistencyType = func(consistency string) error {
 		return Errorf("consistetncy type %q is not defined", consistency)
 	}
