@@ -52,7 +52,7 @@ func TestErrCassandraInvalidConsistencyType(t *testing.T) {
 				consistency: "QUORUM",
 			},
 			want: want{
-				want: Errorf("consistetncy type %q is not defined", "QUORUM"),
+				want: New("consistetncy type \"QUORUM\" is not defined"),
 			},
 		},
 		{
@@ -61,7 +61,7 @@ func TestErrCassandraInvalidConsistencyType(t *testing.T) {
 				consistency: "",
 			},
 			want: want{
-				want: Errorf("consistetncy type %q is not defined", ""),
+				want: New("consistetncy type \"\" is not defined"),
 			},
 		},
 	}
@@ -262,7 +262,7 @@ func TestErrCassandraNotFound(t *testing.T) {
 					keys: keys,
 				},
 				want: want{
-					want: Wrapf(NewErrCassandraNotFoundIdentity(), "cassandra key '%s' not found", keys[0]),
+					want: New("cassandra key 'uuid' not found: cassandra entry not found"),
 				},
 			}
 		}(),
@@ -277,7 +277,7 @@ func TestErrCassandraNotFound(t *testing.T) {
 					keys: keys,
 				},
 				want: want{
-					want: Wrapf(NewErrCassandraNotFoundIdentity(), "cassandra keys '%s' not found", keys),
+					want: New("cassandra keys '[uuid_1 uuid_2]' not found: cassandra entry not found"),
 				},
 			}
 		}(),
@@ -346,7 +346,7 @@ func TestErrCassandraGetOperationFailed(t *testing.T) {
 				name: "returns wrapped fetch key error when key is `uuid` and error is database error",
 				args: args,
 				want: want{
-					Wrapf(args.err, "error failed to fetch key (%s)", args.key),
+					want: New("error failed to fetch key (uuid): database error"),
 				},
 			}
 		}(),
@@ -359,7 +359,7 @@ func TestErrCassandraGetOperationFailed(t *testing.T) {
 				name: "returns wrapped fetch key error when key is empty and error is database error",
 				args: args,
 				want: want{
-					Wrapf(args.err, "error failed to fetch key (%s)", args.key),
+					want: New("error failed to fetch key (): database error"),
 				},
 			}
 		}(),
@@ -372,7 +372,7 @@ func TestErrCassandraGetOperationFailed(t *testing.T) {
 				name: "returns fetch key error when key is `uuid` and error is nil",
 				args: args,
 				want: want{
-					want: Errorf("error failed to fetch key (%s)", args.key),
+					want: New("error failed to fetch key (uuid)"),
 				},
 			}
 		}(),
@@ -385,7 +385,7 @@ func TestErrCassandraGetOperationFailed(t *testing.T) {
 				name: "returns fetch key error when key is empty and error is nil",
 				args: args,
 				want: want{
-					want: Errorf("error failed to fetch key (%s)", args.key),
+					want: New("error failed to fetch key ()"),
 				},
 			}
 		}(),
@@ -443,7 +443,7 @@ func TestErrCassandraSetOperationFailed(t *testing.T) {
 				name: "returns wrapped set key error when key is `uuid` and error is database error",
 				args: args,
 				want: want{
-					Wrapf(args.err, "error failed to set key (%s)", args.key),
+					want: New("error failed to set key (uuid): database error"),
 				},
 			}
 		}(),
@@ -456,7 +456,7 @@ func TestErrCassandraSetOperationFailed(t *testing.T) {
 				name: "returns wrapped set key error when key is empty and error is database error",
 				args: args,
 				want: want{
-					Wrapf(args.err, "error failed to set key (%s)", args.key),
+					want: New("error failed to set key (): database error"),
 				},
 			}
 		}(),
@@ -469,7 +469,7 @@ func TestErrCassandraSetOperationFailed(t *testing.T) {
 				name: "returns set key error when key is `uuid` and error is nil",
 				args: args,
 				want: want{
-					want: Errorf("error failed to set key (%s)", args.key),
+					want: New("error failed to set key (uuid)"),
 				},
 			}
 		}(),
@@ -482,7 +482,7 @@ func TestErrCassandraSetOperationFailed(t *testing.T) {
 				name: "returns set key error when key is empty and error is nil",
 				args: args,
 				want: want{
-					want: Errorf("error failed to set key (%s)", args.key),
+					want: New("error failed to set key ()"),
 				},
 			}
 		}(),
@@ -540,7 +540,7 @@ func TestErrCassandraDeleteOperationFailed(t *testing.T) {
 				name: "returns wrapped delete key error when key is `uuid` and error is database error",
 				args: args,
 				want: want{
-					want: Wrapf(args.err, "error failed to delete key (%s)", args.key),
+					want: New("error failed to delete key (uuid): database error"),
 				},
 			}
 		}(),
@@ -553,7 +553,7 @@ func TestErrCassandraDeleteOperationFailed(t *testing.T) {
 				name: "returns wrapped delete key error when key is empty and error is database error",
 				args: args,
 				want: want{
-					want: Wrapf(args.err, "error failed to delete key (%s)", args.key),
+					want: New("error failed to delete key (): database error"),
 				},
 			}
 		}(),
@@ -566,7 +566,7 @@ func TestErrCassandraDeleteOperationFailed(t *testing.T) {
 				name: "returns delete key error when key is `uuid` and error is nil",
 				args: args,
 				want: want{
-					want: Errorf("error failed to delete key (%s)", args.key),
+					want: New("error failed to delete key (uuid)"),
 				},
 			}
 		}(),
@@ -579,7 +579,7 @@ func TestErrCassandraDeleteOperationFailed(t *testing.T) {
 				name: "returns delete key error when key is empty and error is nil",
 				args: args,
 				want: want{
-					want: Errorf("error failed to delete key (%s)", args.key),
+					want: New("error failed to delete key ()"),
 				},
 			}
 		}(),
@@ -637,7 +637,7 @@ func TestErrCassandraHostDownDetected(t *testing.T) {
 				name: "returns wrapped cassandra host down detected error when nodeInfo is `127.0.0.1` and error is database error",
 				args: args,
 				want: want{
-					want: Wrapf(args.err, "error cassandra host down detected\t%s", args.nodeInfo),
+					want: New("error cassandra host down detected\t127.0.0.1: database error"),
 				},
 			}
 		}(),
@@ -650,7 +650,7 @@ func TestErrCassandraHostDownDetected(t *testing.T) {
 				name: "returns wrapped cassandra host down detected error when nodeInfo is empty and error is database error",
 				args: args,
 				want: want{
-					want: Wrapf(args.err, "error cassandra host down detected\t%s", args.nodeInfo),
+					want: New("error cassandra host down detected\t: database error"),
 				},
 			}
 		}(),
@@ -663,7 +663,7 @@ func TestErrCassandraHostDownDetected(t *testing.T) {
 				name: "returns cassandra host down detected error when nodeInfo is `127.0.0.1` and error is nil",
 				args: args,
 				want: want{
-					want: Errorf("error cassandra host down detected\t%s", args.nodeInfo),
+					want: New("error cassandra host down detected\t127.0.0.1"),
 				},
 			}
 		}(),
@@ -676,7 +676,7 @@ func TestErrCassandraHostDownDetected(t *testing.T) {
 				name: "returns cassandra host down detected error when nodeInfo is empty and error is nil",
 				args: args,
 				want: want{
-					want: Errorf("error cassandra host down detected\t%s", args.nodeInfo),
+					want: New("error cassandra host down detected\t"),
 				},
 			}
 		}(),
