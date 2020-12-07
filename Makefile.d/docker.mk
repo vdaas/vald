@@ -257,3 +257,19 @@ docker/build/loadtest:
 	    -f dockers/tools/cli/loadtest/Dockerfile \
 	    -t $(REPO)/$(LOADTEST_IMAGE):$(TAG) . \
 	    --build-arg GO_VERSION=$(GO_VERSION)
+
+.PHONY: docker/name/rebalancer-storage-controller
+docker/name/rebalancer-storage-controller:
+	@echo "$(REPO)/$(REBALANCER_STORAGE_CONTROLLER_IMAGE)"
+
+.PHONY: docker/build/loadtest
+## build rebalancer-storage-controller image
+docker/build/rebalancer-storage-controller:
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
+	    -f dockers/rebalancer/storage/controller/Dockerfile \
+	    -t $(REPO)/$(REBALANCER_STORAGE_CONTROLLER_IMAGE):$(TAG) . \
+	    --build-arg GO_VERSION=$(GO_VERSION) \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
