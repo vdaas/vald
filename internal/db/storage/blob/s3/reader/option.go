@@ -62,13 +62,6 @@ func WithBucket(bucket string) Option {
 	}
 }
 
-// WithKey returns the option to set the key.
-func WithKey(key string) Option {
-	return func(r *reader) {
-		r.key = key
-	}
-}
-
 // WithMaxChunkSize retunrs the option to set the maxChunkSize.
 func WithMaxChunkSize(size int64) Option {
 	return func(r *reader) {

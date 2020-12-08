@@ -40,11 +40,15 @@ type client struct {
 	maxPartSize  int64
 	maxChunkSize int64
 
+	reader reader.Reader
+	writer writer.Writer
+
 	readerBackoffEnabled bool
 	readerBackoffOpts    []backoff.Option
 }
 
-func New(opts ...Option) (blob.Bucket, error) {
+// New returns blob.Bucket implementation if no error occurs.
+func New(opts ...Option) (b blob.Bucket, err error) {
 	c := new(client)
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(c); err != nil {
@@ -52,44 +56,64 @@ func New(opts ...Option) (blob.Bucket, error) {
 		}
 	}
 
+	if c.session == nil {
+		return nil, errors.NewErrInvalidOption("session", c.session)
+	}
+
 	c.service = s3.New(c.session)
+
+	if c.writer == nil {
+		c.writer = writer.New(
+			writer.WithErrGroup(c.eg),
+			writer.WithService(c.service),
+			writer.WithBucket(c.bucket),
+			writer.WithMaxPartSize(c.maxPartSize),
+		)
+	}
+
+	if c.reader == nil {
+		c.reader, err = reader.New(
+			reader.WithErrGroup(c.eg),
+			reader.WithService(c.service),
+			reader.WithBucket(c.bucket),
+			reader.WithMaxChunkSize(c.maxChunkSize),
+			reader.WithBackoff(c.readerBackoffEnabled),
+			reader.WithBackoffOpts(c.readerBackoffOpts...),
+		)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	return c, nil
 }
 
+// Open does nothing. Always returns nil.
 func (c *client) Open(ctx context.Context) (err error) {
 	return nil
 }
 
+// Close does nothing. Always returns nil.
 func (c *client) Close() error {
 	return nil
 }
 
-func (c *client) Reader(ctx context.Context, key string) (io.ReadCloser, error) {
-	r, err := reader.New(
-		reader.WithErrGroup(c.eg),
-		reader.WithService(c.service),
-		reader.WithBucket(c.bucket),
-		reader.WithKey(key),
-		reader.WithMaxChunkSize(c.maxChunkSize),
-		reader.WithBackoff(c.readerBackoffEnabled),
-		reader.WithBackoffOpts(c.readerBackoffOpts...),
-	)
+// Reader creates reader.Reader implementation and returns it.
+// An error will be returned when the reader initialization fails or an error occurs in reader.Open.
+func (c *client) Reader(ctx context.Context, key string) (rc io.ReadCloser, err error) {
+	err = c.reader.Open(ctx, key)
 	if err != nil {
 		return nil, err
 	}
-
-	return r, r.Open(ctx)
+	return c.reader, nil
 }
 
-func (c *client) Writer(ctx context.Context, key string) (io.WriteCloser, error) {
-	w := writer.New(
-		writer.WithErrGroup(c.eg),
-		writer.WithService(c.service),
-		writer.WithBucket(c.bucket),
-		writer.WithKey(key),
-		writer.WithMaxPartSize(c.maxPartSize),
-	)
-
-	return w, w.Open(ctx)
+// Writer creates writer.Writer implementation and returns it.
+// An error will be returned when the writer initialization fails or an error occurs in writer.Open.
+func (c *client) Writer(ctx context.Context, key string) (wc io.WriteCloser, err error) {
+	err = c.writer.Open(ctx, key)
+	if err != nil {
+		return nil, err
+	}
+	return c.writer, nil
 }
