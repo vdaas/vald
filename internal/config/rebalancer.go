@@ -23,8 +23,8 @@ type RebalanceController struct {
 	RebalanceJobNamespace   string `yaml:"rebalance_job_namespance" json:"rebalance_job_namespance"`
 	RebalanceJobTemplateKey string `yaml:"rebalance_job_template_key" json:"rebalance_job_template_key"`
 
-	ConfigMapName      string `yaml:"config_map_name" json:"config_map_name"`
-	ConfigMapNamespace string `yaml:"config_map_namespace" json:"config_map_namespace"`
+	ConfigMapName      string `yaml:"configmap_name" json:"configmap_name"`
+	ConfigMapNamespace string `yaml:"configmap_namespace" json:"configmap_namespace"`
 
 	AgentName         string `yaml:"agent_name" json:"agent_name"`
 	AgentNamespace    string `yaml:"agent_namespace" json:"agent_namespace"`
