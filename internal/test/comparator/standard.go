@@ -27,6 +27,7 @@ type (
 	*/
 
 	Option = cmp.Option
+	Path   = cmp.Path
 )
 
 var (
@@ -37,6 +38,9 @@ var (
 	Equal            = cmp.Equal
 	IgnoreTypes      = cmpopts.IgnoreTypes
 	IgnoreFields     = cmpopts.IgnoreFields
+	Exporter         = cmp.Exporter
+	FilterPath       = cmp.FilterPath
+	Ignore           = cmp.Ignore
 )
 
 /*
