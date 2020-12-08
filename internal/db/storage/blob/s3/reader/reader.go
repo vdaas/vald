@@ -40,7 +40,6 @@ type reader struct {
 	eg      errgroup.Group
 	service s3iface.S3API
 	bucket  string
-	key     string
 
 	pr io.ReadCloser
 	wg *sync.WaitGroup
@@ -55,7 +54,7 @@ type reader struct {
 
 // Reader is an interface that groups the basic Read and Close and Open methods.
 type Reader interface {
-	Open(ctx context.Context) error
+	Open(ctx context.Context, key string) error
 	io.ReadCloser
 }
 
@@ -75,7 +74,7 @@ func New(opts ...Option) (Reader, error) {
 
 // Open creates io.Pipe. After reading the data from s3, make it available with Read method.
 // Open method returns an error to align the interface, but it doesn't actually return an error.
-func (r *reader) Open(ctx context.Context) (err error) {
+func (r *reader) Open(ctx context.Context, key string) (err error) {
 	var pw io.WriteCloser
 
 	r.pr, pw = io.Pipe()
@@ -101,9 +100,9 @@ func (r *reader) Open(ctx context.Context) (err error) {
 
 			body, err := func() (io.Reader, error) {
 				if r.backoffEnabled {
-					return r.getObjectWithBackoff(ctx, offset, r.maxChunkSize)
+					return r.getObjectWithBackoff(ctx, key, offset, r.maxChunkSize)
 				} else {
-					return r.getObject(ctx, offset, r.maxChunkSize)
+					return r.getObject(ctx, key, offset, r.maxChunkSize)
 				}
 			}()
 			if err != nil {
@@ -132,9 +131,9 @@ func (r *reader) Open(ctx context.Context) (err error) {
 	return nil
 }
 
-func (r *reader) getObjectWithBackoff(ctx context.Context, offset, length int64) (io.Reader, error) {
-	if !r.backoffEnabled || r.bo == nil {
-		return r.getObject(ctx, offset, length)
+func (r *reader) getObjectWithBackoff(ctx context.Context, key string, offset, length int64) (io.Reader, error) {
+	getFunc := func() (interface{}, error) {
+		return r.getObject(ctx, key, offset, length)
 	}
 	res, err := r.bo.Do(ctx, func(ctx context.Context) (interface{}, bool, error) {
 		res, err := r.getObject(ctx, offset, length)
@@ -147,15 +146,14 @@ func (r *reader) getObjectWithBackoff(ctx context.Context, offset, length int64)
 	return res.(io.Reader), nil
 }
 
-func (r *reader) getObject(ctx context.Context, offset, length int64) (io.Reader, error) {
+func (r *reader) getObject(ctx context.Context, key string, offset, length int64) (io.Reader, error) {
 	log.Debugf("reading %d-%d bytes...", offset, offset+length-1)
 	resp, err := r.service.GetObjectWithContext(
 		ctx,
 		&s3.GetObjectInput{
 			Bucket: aws.String(r.bucket),
-			Key:    aws.String(r.key),
-			Range: aws.String("bytes=" +
-				strconv.FormatInt(offset, 10) +
+			Key:    aws.String(key),
+			Range: aws.String("bytes=" + strconv.FormatInt(offset, 10) +
 				"-" +
 				strconv.FormatInt(offset+length-1, 10),
 			),
@@ -168,7 +166,7 @@ func (r *reader) getObject(ctx context.Context, offset, length int64) (io.Reader
 				log.Error(errors.NewErrBlobNoSuchBucket(err, r.bucket))
 				return ioutil.NopCloser(bytes.NewReader(nil)), nil
 			case s3.ErrCodeNoSuchKey:
-				log.Error(errors.NewErrBlobNoSuchKey(err, r.key))
+				log.Error(errors.NewErrBlobNoSuchKey(err, key))
 				return ioutil.NopCloser(bytes.NewReader(nil)), nil
 			case "InvalidRange":
 				return ioutil.NopCloser(bytes.NewReader(nil)), nil

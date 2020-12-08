@@ -24,15 +24,12 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/google/go-cmp/cmp"
 	"github.com/vdaas/vald/internal/backoff"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/reader"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/writer"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
 )
-
-// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
-var goleakIgnoreOptions = []goleak.Option{
-	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
-}
 
 func TestWithErrGroup(t *testing.T) {
 	type T = client
@@ -643,6 +640,166 @@ func TestWithReaderBackoffOpts(t *testing.T) {
 			obj := &T{
 				readerBackoffOpts: test.fields.readerBackoffOpts,
 			}
+			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestWithReader(t *testing.T) {
+	type T = client
+	type args struct {
+		r reader.Reader
+	}
+	type want struct {
+		obj *T
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+
+	defaultCheckFunc := func(w want, obj *T, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+		}
+		return nil
+	}
+
+	tests := []test{
+		func() test {
+			r := new(reader.MockReader)
+			return test{
+				name: "set reader success",
+				args: args{
+					r: r,
+				},
+				want: want{
+					obj: &T{
+						reader: r,
+					},
+				},
+			}
+		}(),
+
+		func() test {
+			return test{
+				name: "set nothing when reader is the default value",
+				args: args{
+					r: nil,
+				},
+				want: want{
+					obj: new(T),
+				},
+			}
+		}(),
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := WithReader(test.args.r)
+			obj := new(T)
+			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestWithWriter(t *testing.T) {
+	type T = client
+	type args struct {
+		w writer.Writer
+	}
+	type want struct {
+		obj *T
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+
+	defaultCheckFunc := func(w want, obj *T, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+		}
+		return nil
+	}
+
+	tests := []test{
+		func() test {
+			w := new(writer.MockWriter)
+			return test{
+				name: "set writer success",
+				args: args{
+					w: w,
+				},
+				want: want{
+					obj: &T{
+						writer: w,
+					},
+				},
+			}
+		}(),
+
+		func() test {
+			return test{
+				name: "set nothing when writer is the default value",
+				args: args{
+					w: nil,
+				},
+				want: want{
+					obj: new(T),
+				},
+			}
+		}(),
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := WithWriter(test.args.w)
+			obj := new(T)
 			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}

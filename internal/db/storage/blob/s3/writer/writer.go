@@ -36,7 +36,6 @@ type writer struct {
 	s3manager s3manager.S3Manager
 	service   s3iface.S3API
 	bucket    string
-	key       string
 
 	contentType string
 	maxPartSize int64
@@ -47,7 +46,7 @@ type writer struct {
 
 // Writer represents an interface to write to s3.
 type Writer interface {
-	Open(ctx context.Context) error
+	Open(ctx context.Context, key string) error
 	io.WriteCloser
 }
 
@@ -67,7 +66,7 @@ func New(opts ...Option) Writer {
 
 // Open creates io.Pipe. When the write method is called, the written data will be uploaded to s3.
 // Open method returns an error to align the interface, but it doesn't actually return an error.
-func (w *writer) Open(ctx context.Context) (err error) {
+func (w *writer) Open(ctx context.Context, key string) (err error) {
 	w.wg = new(sync.WaitGroup)
 
 	var pr io.ReadCloser
@@ -80,7 +79,7 @@ func (w *writer) Open(ctx context.Context) (err error) {
 		defer w.wg.Done()
 		defer pr.Close()
 
-		return w.upload(ctx, pr)
+		return w.upload(ctx, key, pr)
 	}))
 
 	return err
@@ -108,7 +107,7 @@ func (w *writer) Write(p []byte) (n int, err error) {
 	return w.pw.Write(p)
 }
 
-func (w *writer) upload(ctx context.Context, body io.Reader) (err error) {
+func (w *writer) upload(ctx context.Context, key string, body io.Reader) (err error) {
 	client := w.s3manager.NewUploaderWithClient(
 		w.service,
 		func(u *s3manager.Uploader) {
@@ -117,7 +116,7 @@ func (w *writer) upload(ctx context.Context, body io.Reader) (err error) {
 	)
 	input := &s3manager.UploadInput{
 		Bucket:      aws.String(w.bucket),
-		Key:         aws.String(w.key),
+		Key:         aws.String(key),
 		Body:        body,
 		ContentType: aws.String(w.contentType),
 	}

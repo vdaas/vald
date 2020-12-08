@@ -137,13 +137,13 @@ func TestNew(t *testing.T) {
 func Test_writer_Open(t *testing.T) {
 	type args struct {
 		ctx context.Context
+		key string
 	}
 	type fields struct {
 		eg          errgroup.Group
 		s3manager   s3manager.S3Manager
 		service     *s3.S3
 		bucket      string
-		key         string
 		maxPartSize int64
 		pw          io.WriteCloser
 		wg          *sync.WaitGroup
@@ -171,6 +171,7 @@ func Test_writer_Open(t *testing.T) {
 			name: "returns nil when no error occurs",
 			args: args{
 				ctx: nil,
+				key: "vald",
 			},
 			fields: fields{
 				eg: errgroup.Get(),
@@ -209,13 +210,12 @@ func Test_writer_Open(t *testing.T) {
 				s3manager:   test.fields.s3manager,
 				service:     test.fields.service,
 				bucket:      test.fields.bucket,
-				key:         test.fields.key,
 				maxPartSize: test.fields.maxPartSize,
 				pw:          test.fields.pw,
 				wg:          test.fields.wg,
 			}
 
-			err := w.Open(test.args.ctx)
+			err := w.Open(test.args.ctx, test.args.key)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -228,7 +228,6 @@ func Test_writer_Close(t *testing.T) {
 		eg          errgroup.Group
 		service     *s3.S3
 		bucket      string
-		key         string
 		maxPartSize int64
 		pw          io.WriteCloser
 		wg          *sync.WaitGroup
@@ -307,7 +306,6 @@ func Test_writer_Close(t *testing.T) {
 				eg:          test.fields.eg,
 				service:     test.fields.service,
 				bucket:      test.fields.bucket,
-				key:         test.fields.key,
 				maxPartSize: test.fields.maxPartSize,
 				pw:          test.fields.pw,
 				wg:          test.fields.wg,
@@ -329,7 +327,6 @@ func Test_writer_Write(t *testing.T) {
 		eg          errgroup.Group
 		service     *s3.S3
 		bucket      string
-		key         string
 		maxPartSize int64
 		pw          io.WriteCloser
 		wg          *sync.WaitGroup
@@ -422,7 +419,6 @@ func Test_writer_Write(t *testing.T) {
 				eg:          test.fields.eg,
 				service:     test.fields.service,
 				bucket:      test.fields.bucket,
-				key:         test.fields.key,
 				maxPartSize: test.fields.maxPartSize,
 				pw:          test.fields.pw,
 				wg:          test.fields.wg,
@@ -439,6 +435,7 @@ func Test_writer_Write(t *testing.T) {
 func Test_writer_upload(t *testing.T) {
 	type args struct {
 		ctx  context.Context
+		key  string
 		body io.Reader
 	}
 	type fields struct {
@@ -446,7 +443,6 @@ func Test_writer_upload(t *testing.T) {
 		s3manager   s3manager.S3Manager
 		service     *s3.S3
 		bucket      string
-		key         string
 		maxPartSize int64
 		pw          io.WriteCloser
 		wg          *sync.WaitGroup
@@ -474,6 +470,7 @@ func Test_writer_upload(t *testing.T) {
 			name: "returns nil when no error occurs",
 			args: args{
 				ctx:  context.Background(),
+				key:  "vald",
 				body: nil,
 			},
 			fieldsFunc: func(t *testing.T) fields {
@@ -511,6 +508,7 @@ func Test_writer_upload(t *testing.T) {
 			name: "returns error when upload fails",
 			args: args{
 				ctx:  context.Background(),
+				key:  "vald",
 				body: nil,
 			},
 			fieldsFunc: func(t *testing.T) fields {
@@ -563,13 +561,12 @@ func Test_writer_upload(t *testing.T) {
 				s3manager:   fields.s3manager,
 				service:     fields.service,
 				bucket:      fields.bucket,
-				key:         fields.key,
 				maxPartSize: fields.maxPartSize,
 				pw:          fields.pw,
 				wg:          fields.wg,
 			}
 
-			err := w.upload(test.args.ctx, test.args.body)
+			err := w.upload(test.args.ctx, test.args.key, test.args.body)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
