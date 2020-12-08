@@ -37,7 +37,7 @@ type InformationProvider interface {
 
 type info struct {
 	detail   Detail
-	PrepOnce sync.Once
+	prepOnce sync.Once
 
 	// runtime functions
 	rtCaller    func(skip int) (pc uintptr, file string, line int, ok bool)
@@ -91,7 +91,7 @@ var (
 // Init initializes Detail object only once.
 func Init(name string) {
 	once.Do(func() {
-		infoProvider, _ := New(WithServerName(name))
+		infoProvider, _ = New(WithServerName(name))
 	})
 }
 
@@ -206,8 +206,8 @@ func (i info) String() string {
 
 // Get returns parased Detail object.
 func (i info) Get() Detail {
-	d := i.detail
 	i.prepare()
+	d := i.detail
 	valdRepo := fmt.Sprintf("github.com/%s/%s", Organization, Repository)
 	defaultURL := fmt.Sprintf("https://%s/tree/%s", valdRepo, d.GitCommit)
 
@@ -249,38 +249,37 @@ func (i info) Get() Detail {
 			URL:      url,
 		})
 	}
-	return d
+	return i.detail
 }
 
 func (i *info) prepare() {
-	d := i.detail
-	i.PrepOnce.Do(func() {
-		if len(d.GitCommit) == 0 {
-			d.GitCommit = "master"
+	i.prepOnce.Do(func() {
+		if len(i.detail.GitCommit) == 0 {
+			i.detail.GitCommit = "master"
 		}
-		if len(Version) == 0 && len(d.Version) == 0 {
-			d.Version = GitCommit
+		if len(Version) == 0 && len(i.detail.Version) == 0 {
+			i.detail.Version = GitCommit
 		}
-		if len(d.BuildTime) == 0 {
-			d.BuildTime = BuildTime
+		if len(i.detail.BuildTime) == 0 {
+			i.detail.BuildTime = BuildTime
 		}
-		if len(d.GoVersion) == 0 {
-			d.GoVersion = runtime.Version()
+		if len(i.detail.GoVersion) == 0 {
+			i.detail.GoVersion = runtime.Version()
 		}
-		if len(d.GoOS) == 0 {
-			d.GoOS = runtime.GOOS
+		if len(i.detail.GoOS) == 0 {
+			i.detail.GoOS = runtime.GOOS
 		}
-		if len(d.GoArch) == 0 {
-			d.GoArch = runtime.GOARCH
+		if len(i.detail.GoArch) == 0 {
+			i.detail.GoArch = runtime.GOARCH
 		}
-		if len(d.CGOEnabled) == 0 && len(CGOEnabled) != 0 {
-			d.CGOEnabled = CGOEnabled
+		if len(i.detail.CGOEnabled) == 0 && len(CGOEnabled) != 0 {
+			i.detail.CGOEnabled = CGOEnabled
 		}
-		if len(d.NGTVersion) == 0 && len(NGTVersion) != 0 {
-			d.NGTVersion = NGTVersion
+		if len(i.detail.NGTVersion) == 0 && len(NGTVersion) != 0 {
+			i.detail.NGTVersion = NGTVersion
 		}
-		if len(d.BuildCPUInfoFlags) == 0 && len(BuildCPUInfoFlags) != 0 {
-			d.BuildCPUInfoFlags = strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " ")
+		if len(i.detail.BuildCPUInfoFlags) == 0 && len(BuildCPUInfoFlags) != 0 {
+			i.detail.BuildCPUInfoFlags = strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " ")
 		}
 	})
 }
