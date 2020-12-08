@@ -82,7 +82,7 @@ $(GOPATH)/src/google.golang.org/genproto:
 	$(call go-get, google.golang.org/genproto/...)
 
 $(GOPATH)/bin/protoc-gen-go:
-	$(call go-get-no-mod, github.com/golang/protobuf/protoc-gen-go)
+	$(call go-get, github.com/golang/protobuf/protoc-gen-go)
 
 $(GOPATH)/bin/protoc-gen-gogo:
 	$(call go-get-no-mod, github.com/gogo/protobuf/protoc-gen-gogo)
