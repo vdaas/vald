@@ -14,8 +14,9 @@
 # limitations under the License.
 #
 
-K3D_REGISTRY_VOLUME = k3d-vald-registry
-K3D_CLUSTER_NAME = k3d-vald-cluster
+K3D_CLUSTER_NAME = "vald-cluster"
+K3D_COMMAND      = k3d
+K3D_NODES        = 5
 
 .PHONY: k3d/install
 ## install K3D
@@ -29,16 +30,13 @@ $(BINDIR)/k3d:
 .PHONY: k3d/start
 ## start k3d (kubernetes in docker) cluster
 k3d/start:
-	k3d cluster create $(K3D_CLUSTER_NAME) \
-		--enable-registry \
-		--enable-registry-cache \
-		--registry-volume $(K3D_REGISTRY_VOLUME) \
-	-p "8081:80@loadbalancer" --agents 2
+	$(K3D_COMMAND) cluster create $(K3D_CLUSTER_NAME) -p "8081:80@loadbalancer" --agents $(K3D_NODES)
+	export KUBECONFIG="$(sudo $(K3D_COMMAND) kubeconfig merge -o $(TEMP_DIR)/k3d_$(K3D_CLUSTER_NAME)_kubeconfig.yaml $(K3D_CLUSTER_NAME))"
 
 .PHONY: k3d/stop
 ## stop k3d (kubernetes in docker) cluster
 k3d/stop:
-	k3d cluster delete $(K3D_CLUSTER_NAME) --keep-registry-volume
+	$(K3D_COMMAND) cluster delete $(K3D_CLUSTER_NAME) --keep-registry-volume
 
 .PHONY: k3d/restart
 ## restart k3d (kubernetes in docker) cluster
@@ -50,4 +48,4 @@ k3d/restart: \
 .PHONY: k3d/delete
 ## stop k3d (kubernetes in docker) cluster
 k3d/delete:
-	k3d cluster delete $(K3D_CLUSTER_NAME)
+	$(K3D_COMMAND) cluster delete $(K3D_CLUSTER_NAME)

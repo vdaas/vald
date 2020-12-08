@@ -509,14 +509,13 @@ func (n *ngt) Remove(id uint) error {
 // BulkRemove removes multiple index from NGT index.
 func (n *ngt) BulkRemove(ids ...uint) error {
 	n.mu.Lock()
+	defer n.mu.Unlock()
 	for _, id := range ids {
 		if C.ngt_remove_index(n.index, C.ObjectID(id), n.ebuf) == ErrorCode {
 			ne := n.ebuf
-			n.mu.Unlock()
 			return n.newGoError(ne)
 		}
 	}
-	n.mu.Unlock()
 	return nil
 }
 

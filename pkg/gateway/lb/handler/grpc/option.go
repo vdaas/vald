@@ -62,7 +62,7 @@ func WithTimeout(dur string) Option {
 
 func WithReplicationCount(rep int) Option {
 	return func(s *server) {
-		if rep > 1 {
+		if rep > 0 {
 			s.replica = rep
 		}
 	}
