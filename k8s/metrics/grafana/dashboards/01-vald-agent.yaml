@@ -624,7 +624,7 @@ data:
           "pluginVersion": "7.3.4",
           "targets": [
             {
-              "expr": "sum(vald_ngt_index_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
+              "expr": "sum(vald_agent_core_ngt_index_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
               "instant": true,
               "interval": "",
               "legendFormat": "",
@@ -700,7 +700,7 @@ data:
           "pluginVersion": "7.3.4",
           "targets": [
             {
-              "expr": "sum(vald_ngt_is_indexing{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
+              "expr": "sum(vald_agent_core_ngt_is_indexing{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
               "format": "time_series",
               "instant": true,
               "interval": "",
@@ -779,7 +779,7 @@ data:
           "repeatDirection": "h",
           "targets": [
             {
-              "expr": "sum(vald_ngt_uncommitted_index_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
+              "expr": "sum(vald_agent_core_ngt_uncommitted_index_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
               "instant": true,
               "interval": "",
               "legendFormat": "",
@@ -855,7 +855,7 @@ data:
           "pluginVersion": "7.3.4",
           "targets": [
             {
-              "expr": "sum(vald_ngt_insert_vcache_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
+              "expr": "sum(vald_agent_core_ngt_insert_vcache_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
               "instant": true,
               "interval": "",
               "legendFormat": "",
@@ -931,7 +931,7 @@ data:
           "pluginVersion": "7.3.4",
           "targets": [
             {
-              "expr": "sum(vald_ngt_delete_vcache_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
+              "expr": "sum(vald_agent_core_ngt_delete_vcache_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
               "instant": true,
               "interval": "",
               "legendFormat": "",
@@ -1184,7 +1184,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(vald_ngt_index_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
+              "expr": "sum(vald_agent_core_ngt_index_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
               "interval": "",
               "legendFormat": "indices",
               "refId": "A"
@@ -1280,19 +1280,19 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(vald_ngt_uncommitted_index_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
+              "expr": "sum(vald_agent_core_ngt_uncommitted_index_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
               "interval": "",
               "legendFormat": "uncommitted-indices",
               "refId": "A"
             },
             {
-              "expr": " sum(vald_ngt_insert_vcache_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
+              "expr": " sum(vald_agent_core_ngt_insert_vcache_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
               "interval": "",
               "legendFormat": "insert-vcache",
               "refId": "B"
             },
             {
-              "expr": "sum(vald_ngt_delete_vcache_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
+              "expr": "sum(vald_agent_core_ngt_delete_vcache_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
               "interval": "",
               "legendFormat": "delete-vcache",
               "refId": "C"
@@ -1390,7 +1390,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(vald_ngt_is_indexing{namespace=\"$Namespace\", app=~\"$ReplicaSet\"})",
+              "expr": "sum(vald_agent_core_ngt_is_indexing{namespace=\"$Namespace\", app=~\"$ReplicaSet\"})",
               "instant": false,
               "interval": "",
               "intervalFactor": 2,
@@ -1398,7 +1398,7 @@ data:
               "refId": "A"
             },
             {
-              "expr": "count(up{namespace=\"$Namespace\", app=~\"$ReplicaSet\", app!=\"\"}) - sum(vald_ngt_is_indexing{namespace=\"$Namespace\", app=~\"$ReplicaSet\"})",
+              "expr": "count(up{namespace=\"$Namespace\", app=~\"$ReplicaSet\", app!=\"\"}) - sum(vald_agent_core_ngt_is_indexing{namespace=\"$Namespace\", app=~\"$ReplicaSet\"})",
               "interval": "",
               "intervalFactor": 2,
               "legendFormat": "Not indexing pods",
@@ -1800,7 +1800,7 @@ data:
               "value": "vald-agent-ngt"
             },
             "datasource": "Prometheus",
-            "definition": "label_values(vald_ngt_is_indexing{namespace=~\"$Namespace\"}, app)",
+            "definition": "label_values(vald_agent_core_ngt_is_indexing{namespace=~\"$Namespace\"}, app)",
             "error": null,
             "hide": 0,
             "includeAll": false,
@@ -1808,7 +1808,7 @@ data:
             "multi": false,
             "name": "ReplicaSet",
             "options": [],
-            "query": "label_values(vald_ngt_is_indexing{namespace=~\"$Namespace\"}, app)",
+            "query": "label_values(vald_agent_core_ngt_is_indexing{namespace=~\"$Namespace\"}, app)",
             "refresh": 1,
             "regex": "",
             "skipUrlSync": false,
@@ -1827,7 +1827,7 @@ data:
               "value": "$__all"
             },
             "datasource": "Prometheus",
-            "definition": "label_values(vald_ngt_is_indexing{namespace=~\"$Namespace\", app=~\"$ReplicaSet\"}, instance)",
+            "definition": "label_values(vald_agent_core_ngt_is_indexing{namespace=~\"$Namespace\", app=~\"$ReplicaSet\"}, instance)",
             "error": null,
             "hide": 0,
             "includeAll": true,
@@ -1835,7 +1835,7 @@ data:
             "multi": false,
             "name": "PodName",
             "options": [],
-            "query": "label_values(vald_ngt_is_indexing{namespace=~\"$Namespace\", app=~\"$ReplicaSet\"}, instance)",
+            "query": "label_values(vald_agent_core_ngt_is_indexing{namespace=~\"$Namespace\", app=~\"$ReplicaSet\"}, instance)",
             "refresh": 1,
             "regex": "",
             "skipUrlSync": false,
