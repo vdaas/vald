@@ -3233,7 +3233,7 @@ rebalancer:
   enabled: true
   # @schema {"name": "rebalancer.name", "type": "string"}
   # rebalancer.name -- name of rebalancer controller deployment
-  name: "vald-rebalancer-storage-contoller"
+  name: "vald-rebalancer-storage-controller"
   # @schema {"name": "rebalancer.image", "alias": "image"}
   image:
     # rebalancer.image.repository -- image repository
