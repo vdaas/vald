@@ -3399,7 +3399,7 @@ rebalancer:
     # @schema {"name": "rebalancer.rebalancer.reconcile_check_duration", "type": "string"}
     # rebalancer.rebalancer.reconcile_check_duration -- check duration of rebalancer
     reconcile_check_duration: 5m
-    # @schema {"name": "rebalancer.rebalancer.tolerance", "type": "float"}
+    # @schema {"name": "rebalancer.rebalancer.tolerance", "type": "number"}
     # rebalancer.rebalancer.tolerance -- memory bias tolerance to trigger rebalance job
     tolerance: 0.1
     # @schema {"name": "rebalancer.rebalancer.leader_election_id", "type": "string"}
