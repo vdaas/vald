@@ -80,6 +80,7 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 			log.Error(err)
 		}),
 		job.WithOnReconcileFunc(func(jobList map[string][]job.Job) {
+			log.Debugf("reconcile of jobList: %v", jobList)
 			jobs, ok := jobList[d.jobName]
 			if ok {
 				d.jobs.Store(jobs)
@@ -265,32 +266,32 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 					}
 				}
 
+				jobModels = make(map[string][]*model.Job)
 				jobs, ok = d.jobs.Load().([]job.Job)
 				if !ok {
 					log.Info("job is empty")
-					continue
-				}
-				jobModels = make(map[string][]*model.Job)
-				for _, j := range jobs {
-					var t time.Time
-					if j.Status.StartTime != nil {
-						t = j.Status.StartTime.Time
-					}
-					if _, ok := jobModels[j.Namespace]; !ok {
-						jobModels[j.Namespace] = make([]*model.Job, 0)
-					}
+				} else {
+					for _, j := range jobs {
+						var t time.Time
+						if j.Status.StartTime != nil {
+							t = j.Status.StartTime.Time
+						}
+						if _, ok := jobModels[j.Namespace]; !ok {
+							jobModels[j.Namespace] = make([]*model.Job, 0)
+						}
 
-					jobModels[j.Namespace] = append(jobModels[j.Namespace], &model.Job{
-						Name:                 j.Name,
-						Namespace:            j.Namespace,
-						Active:               j.Status.Active,
-						StartTime:            t,
-						Type:                 j.Labels["type"],
-						TargetAgentNamespace: j.Labels["target_agent_namespace"],
-						TargetAgentName:      j.Labels["target_agent_name"],
-						ControllerNamespace:  j.Labels["controller_namespace"],
-						ControllerName:       j.Labels["controller_name"],
-					})
+						jobModels[j.Namespace] = append(jobModels[j.Namespace], &model.Job{
+							Name:                 j.Name,
+							Namespace:            j.Namespace,
+							Active:               j.Status.Active,
+							StartTime:            t,
+							Type:                 j.Labels["type"],
+							TargetAgentNamespace: j.Labels["target_agent_namespace"],
+							TargetAgentName:      j.Labels["target_agent_name"],
+							ControllerNamespace:  j.Labels["controller_namespace"],
+							ControllerName:       j.Labels["controller_name"],
+						})
+					}
 				}
 
 				tmpl, ok := d.jobTemplate.Load().(string)
@@ -390,7 +391,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 										break
 									}
 								}
-								if !ok {
+								if !ok || len(jobModels[ns]) == 0 {
 									if err := d.createJob(ctx, jobTpl, maxPodName[ns]); err != nil {
 										log.Errorf("failed to create job: %s", err)
 										continue
