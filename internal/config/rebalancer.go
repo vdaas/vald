@@ -32,6 +32,8 @@ type RebalanceController struct {
 
 	ReconcileCheckDuration string  `yaml:"reconcile_check_duration" json:"reconcile_check_duration"`
 	Tolerance              float64 `yaml:"tolerance" json:"tolerance"`
+
+	LeaderElectionID string `yaml:"leader_election_id" json:"leader_election_id"`
 }
 
 // Bind binds rebalance controller configuration.
@@ -48,6 +50,8 @@ func (r *RebalanceController) Bind() *RebalanceController {
 	r.AgentResourceType = GetActualValue(r.AgentResourceType)
 
 	r.ReconcileCheckDuration = GetActualValue(r.ReconcileCheckDuration)
+
+	r.LeaderElectionID = GetActualValue(r.LeaderElectionID)
 
 	return r
 }

@@ -54,6 +54,8 @@ type discoverer struct {
 
 	statefulSets atomic.Value
 
+	leaderElectionID string
+
 	rcd       time.Duration // reconcile check duration
 	eg        errgroup.Group
 	ctrl      k8s.Controller
@@ -156,6 +158,7 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 	d.ctrl, err = k8s.New(
 		k8s.WithControllerName("rebalance controller"),
 		k8s.WithEnableLeaderElection(),
+		k8s.WithLeaderElectionID(d.leaderElectionID),
 		k8s.WithResourceController(job),
 		k8s.WithResourceController(rc), // statefulset controller
 		k8s.WithResourceController(pod.New(
