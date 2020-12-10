@@ -59,6 +59,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithReconcileCheckDuration(cfg.Rebalancer.ReconcileCheckDuration),
 		service.WithTolerance(cfg.Rebalancer.Tolerance),
 		service.WithErrorGroup(eg),
+		service.WithLeaderElectionID(cfg.Rebalancer.LeaderElectionID),
 	)
 	if err != nil {
 		return nil, err

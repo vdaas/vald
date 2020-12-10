@@ -83,3 +83,10 @@ func WithDisableLeaderElection() Option {
 		return nil
 	}
 }
+
+func WithLeaderElectionID(id string) Option {
+	return func(c *controller) error {
+		c.leaderElectionID = id
+		return nil
+	}
+}

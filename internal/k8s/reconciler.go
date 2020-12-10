@@ -46,12 +46,13 @@ type ResourceController interface {
 }
 
 type controller struct {
-	eg             errgroup.Group
-	name           string
-	merticsAddr    string
-	leaderElection bool
-	mgr            manager.Manager
-	rcs            []ResourceController
+	eg               errgroup.Group
+	name             string
+	merticsAddr      string
+	leaderElection   bool
+	leaderElectionID string
+	mgr              manager.Manager
+	rcs              []ResourceController
 }
 
 func New(opts ...Option) (cl Controller, err error) {
@@ -76,6 +77,7 @@ func New(opts ...Option) (cl Controller, err error) {
 			manager.Options{
 				Scheme:             runtime.NewScheme(),
 				LeaderElection:     c.leaderElection,
+				LeaderElectionID:   c.leaderElectionID,
 				MetricsBindAddress: c.merticsAddr,
 			},
 		)

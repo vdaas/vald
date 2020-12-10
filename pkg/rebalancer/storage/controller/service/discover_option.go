@@ -92,3 +92,10 @@ func WithErrorGroup(eg errgroup.Group) DiscovererOption {
 		return nil
 	}
 }
+
+func WithLeaderElectionID(id string) DiscovererOption {
+	return func(d *discoverer) error {
+		d.leaderElectionID = id
+		return nil
+	}
+}
