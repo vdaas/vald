@@ -131,19 +131,18 @@ func (r *reader) Open(ctx context.Context, key string) (err error) {
 	return nil
 }
 
-func (r *reader) getObjectWithBackoff(ctx context.Context, key string, offset, length int64) (io.Reader, error) {
-	getFunc := func() (interface{}, error) {
+func (r *reader) getObjectWithBackoff(ctx context.Context, key string, offset, length int64) (res io.Reader, err error) {
+	if !r.backoffEnabled || r.bo == nil {
 		return r.getObject(ctx, key, offset, length)
 	}
-	res, err := r.bo.Do(ctx, func(ctx context.Context) (interface{}, bool, error) {
-		res, err := r.getObject(ctx, offset, length)
+	_, err = r.bo.Do(ctx, func(ctx context.Context) (interface{}, bool, error) {
+		res, err = r.getObject(ctx, key, offset, length)
 		return res, err != nil, err
 	})
 	if err != nil {
 		return nil, err
 	}
-
-	return res.(io.Reader), nil
+	return res, nil
 }
 
 func (r *reader) getObject(ctx context.Context, key string, offset, length int64) (io.Reader, error) {
