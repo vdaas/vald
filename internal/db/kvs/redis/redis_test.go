@@ -83,6 +83,7 @@ func TestNew(t *testing.T) {
 				wantRc: &redisClient{
 					initialPingDuration:  30 * time.Millisecond,
 					initialPingTimeLimit: 5 * time.Minute,
+					network:              "tcp",
 				},
 				err: nil,
 			},
