@@ -92,11 +92,11 @@ k8s/vald/deploy: \
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/meta
 	rm -rf $(TEMP_DIR)
 
-.PHONY: k8s/vald/remove
-## remove vald sample cluster from k8s
-k8s/vald/remove: \
-	k8s/external/mysql/remove \
-	k8s/external/redis/remove
+.PHONY: k8s/vald/delete
+## delete vald sample cluster from k8s
+k8s/vald/delete: \
+	k8s/external/mysql/delete \
+	k8s/external/redis/delete
 	kubectl delete -f k8s/gateway/meta
 	kubectl delete -f k8s/gateway/backup
 	kubectl delete -f k8s/gateway/lb
@@ -132,10 +132,10 @@ k8s/vald/deploy/cassandra: \
 	rm -rf $(TEMP_DIR)
 
 
-.PHONY: k8s/vald/remove/cassandra
-## remove vald sample cluster with cassandra to k8s
-k8s/vald/remove/cassandra: \
-	k8s/external/cassandra/remove
+.PHONY: k8s/vald/delete/cassandra
+## delete vald sample cluster with cassandra to k8s
+k8s/vald/delete/cassandra: \
+	k8s/external/cassandra/delete
 	helm template \
 	    --values charts/vald/values-cassandra.yaml \
 	    --set defaults.image.tag=$(VERSION) \
@@ -176,10 +176,10 @@ k8s/vald/deploy/scylla: \
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/meta
 	rm -rf $(TEMP_DIR)
 
-.PHONY: k8s/vald/remove/scylla
-## remove vald sample cluster with scylla to k8s
-k8s/vald/remove/scylla: \
-	k8s/external/scylla/remove
+.PHONY: k8s/vald/delete/scylla
+## delete vald sample cluster with scylla to k8s
+k8s/vald/delete/scylla: \
+	k8s/external/scylla/delete
 	helm template \
 	    --values charts/vald/values-scylla.yaml \
 	    --set defaults.image.tag=$(VERSION) \
@@ -204,9 +204,9 @@ k8s/external/mysql/deploy:
 	kubectl apply -f k8s/jobs/db/initialize/mysql/configmap.yaml
 	kubectl apply -f k8s/external/mysql
 
-.PHONY: k8s/external/mysql/remove
-## remove mysql from k8s
-k8s/external/mysql/remove:
+.PHONY: k8s/external/mysql/delete
+## delete mysql from k8s
+k8s/external/mysql/delete:
 	-kubectl delete -f k8s/external/mysql
 	-kubectl delete configmap mysql-config
 
@@ -222,9 +222,9 @@ k8s/external/mysql/initialize:
 k8s/external/redis/deploy:
 	kubectl apply -f k8s/external/redis
 
-.PHONY: k8s/external/redis/remove
-## remove redis from k8s
-k8s/external/redis/remove:
+.PHONY: k8s/external/redis/delete
+## delete redis from k8s
+k8s/external/redis/delete:
 	-kubectl delete -f k8s/external/redis
 
 .PHONY: k8s/external/redis/initialize
@@ -240,9 +240,9 @@ k8s/external/cassandra/deploy:
 	kubectl apply -f k8s/jobs/db/initialize/cassandra/configmap.yaml
 	kubectl apply -f k8s/external/cassandra
 
-.PHONY: k8s/external/cassandra/remove
-## remove cassandra from k8s
-k8s/external/cassandra/remove:
+.PHONY: k8s/external/cassandra/delete
+## delete cassandra from k8s
+k8s/external/cassandra/delete:
 	-kubectl delete -f k8s/external/cassandra
 	-kubectl delete configmap cassandra-initdb
 
@@ -259,9 +259,9 @@ k8s/external/scylla/deploy:
 	kubectl apply -f k8s/jobs/db/initialize/cassandra/configmap.yaml
 	kubectl apply -f k8s/external/scylla
 
-.PHONY: k8s/external/scylla/remove
-## remove scylla from k8s
-k8s/external/scylla/remove:
+.PHONY: k8s/external/scylla/delete
+## delete scylla from k8s
+k8s/external/scylla/delete:
 	-kubectl delete -f k8s/external/scylla
 	-kubectl delete configmap cassandra-initdb
 
@@ -270,9 +270,9 @@ k8s/external/scylla/remove:
 k8s/metrics/metrics-server/deploy:
 	kubectl apply -f k8s/metrics/metrics-server
 
-.PHONY: k8s/metrics/metrics-server/remove
-## remove metrics-serrver
-k8s/metrics/metrics-server/remove:
+.PHONY: k8s/metrics/metrics-server/delete
+## delete metrics-serrver
+k8s/metrics/metrics-server/delete:
 	-kubectl delete -f k8s/metrics/metrics-server
 
 .PHONY: k8s/metrics/prometheus/deploy
@@ -282,9 +282,9 @@ k8s/metrics/prometheus/deploy:
 	kubectl create configmap grafana-dashboards --from-file=k8s/metrics/grafana/dashboards/
 	kubectl apply -f k8s/metrics/grafana
 
-.PHONY: k8s/metrics/prometheus/remove
-## remove prometheus and grafana
-k8s/metrics/prometheus/remove:
+.PHONY: k8s/metrics/prometheus/delete
+## delete prometheus and grafana
+k8s/metrics/prometheus/delete:
 	-kubectl delete -f k8s/metrics/prometheus
 	-kubectl delete configmap grafana-dashboards
 	-kubectl delete -f k8s/metrics/grafana
@@ -294,9 +294,9 @@ k8s/metrics/prometheus/remove:
 k8s/metrics/jaeger/deploy:
 	kubectl apply -f k8s/metrics/jaeger
 
-.PHONY: k8s/metrics/jaeger/remove
-## remove jaeger
-k8s/metrics/jaeger/remove:
+.PHONY: k8s/metrics/jaeger/delete
+## delete jaeger
+k8s/metrics/jaeger/delete:
 	-kubectl delete -f k8s/metrics/jaeger
 
 .PHONY: k8s/metrics/profefe/deploy
@@ -304,9 +304,9 @@ k8s/metrics/jaeger/remove:
 k8s/metrics/profefe/deploy:
 	kubectl apply -f k8s/metrics/profefe
 
-.PHONY: k8s/metrics/profefe/remove
-## remove profefe
-k8s/metrics/profefe/remove:
+.PHONY: k8s/metrics/profefe/delete
+## delete profefe
+k8s/metrics/profefe/delete:
 	-kubectl delete -f k8s/metrics/profefe
 
 .PHONY: k8s/linkerd/deploy
@@ -319,9 +319,9 @@ k8s/linkerd/deploy:
 		default \
 		linkerd.io/inject=enabled
 
-.PHONY: k8s/linkerd/remove
-## remove linkerd from k8s
-k8s/linkerd/remove:
+.PHONY: k8s/linkerd/delete
+## delete linkerd from k8s
+k8s/linkerd/delete:
 	linkerd install --ignore-cluster | kubectl delete -f -
 
 .PHONY: telepresence/install
