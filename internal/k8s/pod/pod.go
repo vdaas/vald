@@ -97,6 +97,9 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 	)
 
 	for _, pod := range ps.Items {
+		if pod.GetObjectMeta().GetDeletionTimestamp() != nil {
+			continue
+		}
 		if pod.Status.Phase == corev1.PodRunning {
 			cpuLimit = 0.0
 			memLimit = 0.0

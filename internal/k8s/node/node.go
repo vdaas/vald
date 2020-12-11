@@ -88,6 +88,9 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 	nodes := make([]Node, 0, len(ns.Items))
 
 	for _, node := range ns.Items {
+		if node.GetObjectMeta().GetDeletionTimestamp() != nil {
+			continue
+		}
 		remain := node.Status.Allocatable
 		limit := node.Status.Capacity
 		var eip, iip string
