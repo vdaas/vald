@@ -301,7 +301,7 @@ func Test_redisClient_setClient(t *testing.T) {
 	tests := []test{
 		{
 			name: "returns error when addrs not specified",
-			args: args{},
+			args: args{context.Background()},
 			want: want{
 				err: errors.ErrRedisAddrsNotFound,
 			},
@@ -309,6 +309,7 @@ func Test_redisClient_setClient(t *testing.T) {
 		},
 		{
 			name: "returns error when addrs is empty",
+			args: args{context.Background()},
 			fields: fields{
 				addrs: []string{},
 			},
@@ -319,6 +320,7 @@ func Test_redisClient_setClient(t *testing.T) {
 		},
 		{
 			name: "returns nil when addrs is single addr",
+			args: args{context.Background()},
 			fields: fields{
 				addrs: []string{"127.0.0.1:6379"},
 			},
@@ -327,6 +329,7 @@ func Test_redisClient_setClient(t *testing.T) {
 		},
 		{
 			name: "returns nil when addrs is single addr and it is empty string",
+			args: args{context.Background()},
 			fields: fields{
 				addrs: []string{""},
 			},
@@ -416,10 +419,11 @@ func Test_redisClient_setClient(t *testing.T) {
 	}
 }
 
-func Test_redisClient_newSentinelClient(t *testing.T) {
+func Test_redisClient_newClient(t *testing.T) {
 	type fields struct {
 		addrs                []string
 		clusterSlots         func(context.Context) ([]redis.ClusterSlot, error)
+		network              string
 		db                   int
 		dialTimeout          time.Duration
 		dialer               tcp.Dialer
@@ -495,6 +499,7 @@ func Test_redisClient_newSentinelClient(t *testing.T) {
 				Addr:               "127.0.0.1:6379",
 				Password:           "pass",
 				Dialer:             dialer,
+				Network:            "tcp",
 				OnConnect:          connFn,
 				DB:                 1,
 				MaxRetries:         2,
@@ -517,6 +522,7 @@ func Test_redisClient_newSentinelClient(t *testing.T) {
 				name: "returns redis.Client successfully",
 				fields: fields{
 					addrs:              []string{"127.0.0.1:6379"},
+					network:            "tcp",
 					password:           "pass",
 					dialerFunc:         dialer,
 					onConnect:          connFn,
@@ -622,7 +628,7 @@ func Test_redisClient_newSentinelClient(t *testing.T) {
 				hooks:                test.fields.hooks,
 			}
 
-			got, err := rc.newSentinelClient()
+			got, err := rc.newClient(context.Background())
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}

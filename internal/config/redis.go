@@ -51,6 +51,8 @@ type Redis struct {
 	ReadTimeout          string   `json:"read_timeout,omitempty" yaml:"read_timeout"`
 	RouteByLatency       bool     `json:"route_by_latency,omitempty" yaml:"route_by_latency"`
 	RouteRandomly        bool     `json:"route_randomly,omitempty" yaml:"route_randomly"`
+	SentinelPassword     string   `json:"sentinel_password,omitempty"`
+	SentinelMasterName   string   `json:"sentinel_master_name,omitempty"`
 	TCP                  *TCP     `json:"tcp,omitempty" yaml:"tcp"`
 	TLS                  *TLS     `json:"tls,omitempty" yaml:"tls"`
 	Username             string   `json:"username,omitempty" yaml:"username"`
@@ -84,7 +86,9 @@ func (r *Redis) Bind() *Redis {
 	r.MinRetryBackoff = GetActualValue(r.MinRetryBackoff)
 	r.Network = GetActualValue(r.Network)
 	r.Password = GetActualValue(r.Password)
+	r.SentinelMasterName = GetActualValue(r.SentinelMasterName)
 	r.PoolTimeout = GetActualValue(r.PoolTimeout)
+	r.SentinelPassword = GetActualValue(r.SentinelPassword)
 	r.PrefixDelimiter = GetActualValue(r.PrefixDelimiter)
 	r.ReadTimeout = GetActualValue(r.ReadTimeout)
 	r.Username = GetActualValue(r.Username)
@@ -121,6 +125,8 @@ func (r *Redis) Opts() (opts []redis.Option, err error) {
 		redis.WithWriteTimeout(r.WriteTimeout),
 		redis.WithInitialPingDuration(r.InitialPingDuration),
 		redis.WithInitialPingTimeLimit(r.InitialPingTimeLimit),
+		redis.WithSentinelPassword(r.SentinelPassword),
+		redis.WithSentinelMasterName(r.SentinelMasterName),
 	}
 
 	if r.TLS != nil && r.TLS.Enabled {

@@ -244,6 +244,26 @@ func WithUsername(name string) Option {
 	}
 }
 
+// WithSentinelMasterName returns the option to set the password.
+func WithSentinelMasterName(name string) Option {
+	return func(r *redisClient) error {
+		if name != "" {
+			r.sentinelMasterName = name
+		}
+		return nil
+	}
+}
+
+// WithSentinelPassword returns the option to set the password.
+func WithSentinelPassword(password string) Option {
+	return func(r *redisClient) error {
+		if password != "" {
+			r.sentinelPassword = password
+		}
+		return nil
+	}
+}
+
 // WithPassword returns the option to set the password.
 func WithPassword(password string) Option {
 	return func(r *redisClient) error {

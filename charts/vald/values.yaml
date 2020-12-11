@@ -3581,6 +3581,9 @@ meta:
       # @schema {"name": "meta.redis.config.db", "type": "integer"}
       # meta.redis.config.db -- database to be selected
       db: 0
+      # @schema {"name": "meta.redis.config.network", "type": "string"}
+      # meta.redis.config.network -- connection network type
+      network: tcp
       # @schema {"name": "meta.redis.config.dial_timeout", "type": "string"}
       # meta.redis.config.dial_timeout -- dial timeout
       dial_timeout: 5s
@@ -3611,6 +3614,12 @@ meta:
       # @schema {"name": "meta.redis.config.min_retry_backoff", "type": "string"}
       # meta.redis.config.min_retry_backoff -- min retry backoff
       min_retry_backoff: 8ms
+      # @schema {"name": "meta.redis.config.sentinel_master_name", "type": "string"}
+      # meta.redis.config.sentinel_master_name -- redis sentinel master name
+      sentinel_master_name: ""
+      # @schema {"name": "meta.redis.config.sentinel_password", "type": "string"}
+      # meta.redis.config.sentinel_password -- redis sentinel password
+      sentinel_password: ""
       # @schema {"name": "meta.redis.config.password", "type": "string"}
       # meta.redis.config.password -- redis password
       password: _REDIS_PASSWORD_
