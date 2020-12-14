@@ -34,7 +34,7 @@ var (
 		return Wrapf(NewErrRedisNotFoundIdentity(), "error redis key '%s' not found", key)
 	}
 
-	ErrRedisInvalidOption =New("error redis invalid option")
+	ErrRedisInvalidOption = New("error redis invalid option")
 
 	ErrRedisGetOperationFailed = func(key string, err error) error {
 		return Wrapf(err, "Failed to fetch key (%s)", key)
