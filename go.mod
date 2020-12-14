@@ -26,11 +26,11 @@ replace (
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20201208171446-5f87f3452ae9
 	google.golang.org/grpc => google.golang.org/grpc v1.34.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.25.0
-	k8s.io/api => k8s.io/api v0.19.5
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.19.5
-	k8s.io/apimachinery => k8s.io/apimachinery v0.19.5
-	k8s.io/client-go => k8s.io/client-go v0.19.5
-	k8s.io/metrics => k8s.io/metrics v0.19.5
+	k8s.io/api => k8s.io/api v0.20.0
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.20.0
+	k8s.io/apimachinery => k8s.io/apimachinery v0.20.0
+	k8s.io/client-go => k8s.io/client-go v0.20.0
+	k8s.io/metrics => k8s.io/metrics v0.20.0
 	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.7.0
 )
 
@@ -98,7 +98,7 @@ require (
 	golang.org/x/exp v0.0.0-20201210212021-a20c86df00b4 // indirect
 	golang.org/x/net v0.0.0-20201209123823-ac852fbbde11
 	golang.org/x/sync v0.0.0-20201207232520-09787c993a3a
-	golang.org/x/sys v0.0.0-20201211090839-8ad439b19e0f
+	golang.org/x/sys v0.0.0-20201214095126-aec9a390925b
 	golang.org/x/term v0.0.0-20201210144234-2321bbc49cbf // indirect
 	golang.org/x/time v0.0.0-20201208040808-7e3f01d25324 // indirect
 	golang.org/x/tools v0.0.0-20201211185031-d93e913c1a58 // indirect
@@ -116,8 +116,6 @@ require (
 	k8s.io/apiextensions-apiserver v0.20.0 // indirect
 	k8s.io/apimachinery v0.20.0
 	k8s.io/client-go v1.5.1
-	k8s.io/component-base v0.20.0 // indirect
-	k8s.io/kube-openapi v0.0.0-20201113171705-d219536bb9fd // indirect
 	k8s.io/metrics v0.20.0
 	sigs.k8s.io/controller-runtime v0.7.0
 )
