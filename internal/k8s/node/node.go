@@ -24,8 +24,9 @@ import (
 	"github.com/vdaas/vald/internal/k8s"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -35,7 +36,6 @@ import (
 type NodeWatcher k8s.ResourceController
 
 type reconciler struct {
-	ctx         context.Context
 	mgr         manager.Manager
 	name        string
 	namespace   string
@@ -63,10 +63,10 @@ func New(opts ...Option) NodeWatcher {
 	return r
 }
 
-func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err error) {
+func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
 	ns := &corev1.NodeList{}
 
-	err = r.mgr.GetClient().List(r.ctx, ns)
+	err = r.mgr.GetClient().List(ctx, ns)
 
 	if err != nil {
 		if r.onError != nil {
@@ -131,10 +131,7 @@ func (r *reconciler) GetName() string {
 	return r.name
 }
 
-func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler {
-	if r.ctx == nil && ctx != nil {
-		r.ctx = ctx
-	}
+func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
 	if r.mgr == nil && mgr != nil {
 		r.mgr = mgr
 	}
@@ -142,15 +139,15 @@ func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) rec
 	return r
 }
 
-func (r *reconciler) For() runtime.Object {
-	return new(corev1.Node)
+func (r *reconciler) For() (client.Object, []builder.ForOption) {
+	return new(corev1.Node), nil
 }
 
-func (r *reconciler) Owns() runtime.Object {
-	return nil
-}
-
-func (r *reconciler) Watches() (*source.Kind, handler.EventHandler) {
-	// return &source.Kind{Type: new(corev1.Node)}, &handler.EnqueueRequestForObject{}
+func (r *reconciler) Owns() (client.Object, []builder.OwnsOption) {
 	return nil, nil
+}
+
+func (r *reconciler) Watches() (*source.Kind, handler.EventHandler, []builder.WatchesOption) {
+	// return &source.Kind{Type: new(corev1.Node)}, &handler.EnqueueRequestForObject{}
+	return nil, nil, nil
 }
