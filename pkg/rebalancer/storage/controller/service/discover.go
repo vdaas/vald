@@ -170,7 +170,7 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 				log.Error(err)
 			}),
 			pod.WithOnReconcileFunc(func(podList map[string][]pod.Pod) {
-				log.Infof("[reconcile] pod list: %#v", podList)
+				// log.Infof("[reconcile] pod list: %#v", len(podList))
 				pods, ok := podList[d.agentName]
 				if ok {
 					d.pods.Store(pods)
@@ -185,7 +185,7 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 				log.Error(err)
 			}),
 			mpod.WithOnReconcileFunc(func(podList map[string]mpod.Pod) {
-				log.Infof("[reconcile] pod metrics: %#v", podList)
+				// log.Infof("[reconcile] pod metrics: %#v", podList)
 				if len(podList) > 0 {
 					d.podMetrics.Store(podList)
 				} else {
