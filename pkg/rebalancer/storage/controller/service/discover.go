@@ -324,7 +324,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 						log.Info("statefulset is empty")
 						continue
 					}
-
+					ssModel = make(map[string]*model.StatefulSet)
 					ssModel[ss.Namespace] = &model.StatefulSet{
 						Name:            ss.Name,
 						Namespace:       ss.Namespace,
