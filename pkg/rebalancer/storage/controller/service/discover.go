@@ -80,7 +80,7 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 			log.Error(err)
 		}),
 		job.WithOnReconcileFunc(func(jobList map[string][]job.Job) {
-			log.Debugf("reconcile of jobList: %v", jobList)
+			log.Infof("[reconcile] reconcile of jobList: %v", jobList)
 			jobs, ok := jobList[d.jobName]
 			if ok {
 				d.jobs.Store(jobs)
@@ -101,6 +101,7 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 		}),
 		configmap.WithOnReconcileFunc(func(configmapList map[string][]configmap.ConfigMap) {
 			configmaps, ok := configmapList[d.configmapNamespace]
+			log.Infof("[reconcile] configmap: %#v", configmaps)
 			if ok {
 				for _, cm := range configmaps {
 					if cm.Name == d.configmapName {
@@ -132,6 +133,7 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 			}),
 			statefulset.WithOnReconcileFunc(func(statefulSetList map[string][]statefulset.StatefulSet) {
 				sss, ok := statefulSetList[d.agentName]
+				log.Infof("[reconcile] statefulset for agent: %v, list: %#v", d.agentName, sss)
 				if ok {
 					if len(sss) == 1 {
 						d.statefulSets.Store(sss[0])
@@ -168,6 +170,7 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 				log.Error(err)
 			}),
 			pod.WithOnReconcileFunc(func(podList map[string][]pod.Pod) {
+				log.Infof("[reconcile] pod list: %#v", podList)
 				pods, ok := podList[d.agentName]
 				if ok {
 					d.pods.Store(pods)
@@ -182,6 +185,7 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 				log.Error(err)
 			}),
 			mpod.WithOnReconcileFunc(func(podList map[string]mpod.Pod) {
+				log.Infof("[reconcile] pod metrics: %#v", podList)
 				if len(podList) > 0 {
 					d.podMetrics.Store(podList)
 				} else {
@@ -357,6 +361,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 									}
 								}
 								if !ok {
+									log.Infof("[decrease] creating job for pod %s", prevPod.Name)
 									if err := d.createJob(ctx, jobTpl, prevPod.Name); err != nil {
 										log.Errorf("failed to create job: %s", err)
 										continue
@@ -376,6 +381,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 							}
 							amu[ns] = amu[ns] / float64(len(podModels[ns]))
 							bias := mmu[ns] - amu[ns]
+							log.Infof("bias: %v, tolerance: %v, maxPodName: %v, average memory usage: %v", bias, d.tolerance, maxPodName[ns], amu[ns])
 							if bias > d.tolerance {
 								rate[ns] = 1 - (amu[ns] / mmu[ns])
 								var ok bool
@@ -392,6 +398,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 									}
 								}
 								if !ok || len(jobModels[ns]) == 0 {
+									log.Infof("[bias] creating job for pod %s", maxPodName[ns])
 									if err := d.createJob(ctx, jobTpl, maxPodName[ns]); err != nil {
 										log.Errorf("failed to create job: %s", err)
 										continue
