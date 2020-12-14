@@ -80,7 +80,6 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 			log.Error(err)
 		}),
 		job.WithOnReconcileFunc(func(jobList map[string][]job.Job) {
-			log.Infof("[reconcile] reconcile of jobList: %v", jobList)
 			jobs, ok := jobList[d.jobName]
 			if ok {
 				d.jobs.Store(jobs)
@@ -101,7 +100,6 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 		}),
 		configmap.WithOnReconcileFunc(func(configmapList map[string][]configmap.ConfigMap) {
 			configmaps, ok := configmapList[d.configmapNamespace]
-			log.Infof("[reconcile] configmap: %#v", configmaps)
 			if ok {
 				for _, cm := range configmaps {
 					if cm.Name == d.configmapName {
@@ -135,7 +133,9 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 			}),
 			statefulset.WithOnReconcileFunc(func(statefulSetList map[string][]statefulset.StatefulSet) {
 				sss, ok := statefulSetList[d.agentName]
-				log.Infof("[reconcile] statefulset for agent: %v, list: %#v", d.agentName, sss)
+				for i, ss := range sss {
+					log.Infof("[reconcile] [%s:%d] - statefulset for agent: %#v", d.agentName, i, ss)
+				}
 				if ok {
 					if len(sss) == 1 {
 						d.statefulSets.Store(sss[0])
@@ -172,7 +172,6 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 				log.Error(err)
 			}),
 			pod.WithOnReconcileFunc(func(podList map[string][]pod.Pod) {
-				// log.Infof("[reconcile] pod list: %#v", len(podList))
 				pods, ok := podList[d.agentName]
 				if ok {
 					d.pods.Store(pods)
@@ -187,7 +186,6 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 				log.Error(err)
 			}),
 			mpod.WithOnReconcileFunc(func(podList map[string]mpod.Pod) {
-				// log.Infof("[reconcile] pod metrics: %#v", podList)
 				if len(podList) > 0 {
 					d.podMetrics.Store(podList)
 				} else {
