@@ -184,7 +184,6 @@ func (rc *redisClient) newClient(ctx context.Context) (c *redis.Client, err erro
 			Limiter:            rc.limiter,
 		}).WithContext(ctx)
 	}
-
 	for _, hk := range rc.hooks {
 		c.AddHook(hk)
 	}
