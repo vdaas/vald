@@ -109,7 +109,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 			name = strings.Join(pns[:len(pns)-1], "-")
 		}
 		if _, ok := ssm[name]; !ok {
-			ssm[name] = make([]StatefulSet, 1)
+			ssm[name] = make([]StatefulSet, 0, 1)
 		}
 		if !appList[name] {
 			appList[name] = true
