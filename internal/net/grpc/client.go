@@ -509,10 +509,12 @@ func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOpti
 		log.Warnf("failed to reconnect unhealthy pool addr= %s\terror= %s", addr, err.Error())
 		g.conns.Delete(addr)
 		atomic.AddUint64(&g.clientCount, ^uint64(0))
-		err = conn.Disconnect()
-		if err != nil {
-			log.Warnf("failed to disconnect unhealthy pool addr= %s\terror= %s", addr, err.Error())
-			g.conns.Delete(addr)
+		if conn != nil {
+			err = conn.Disconnect()
+			if err != nil {
+				log.Warnf("failed to disconnect unhealthy pool addr= %s\terror= %s", addr, err.Error())
+				g.conns.Delete(addr)
+			}
 		}
 	} else if conn == nil {
 		g.conns.Delete(addr)
