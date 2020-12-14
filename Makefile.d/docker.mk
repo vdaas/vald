@@ -262,7 +262,7 @@ docker/build/loadtest:
 docker/name/rebalancer-storage-controller:
 	@echo "$(REPO)/$(REBALANCER_STORAGE_CONTROLLER_IMAGE)"
 
-.PHONY: docker/build/loadtest
+.PHONY: docker/build/rebalancer-storage-controller
 ## build rebalancer-storage-controller image
 docker/build/rebalancer-storage-controller:
 	$(DOCKER) build \
