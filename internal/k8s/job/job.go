@@ -60,7 +60,7 @@ func New(opts ...Option) (JobWatcher, error) {
 		}
 	}
 
-	return nil, nil
+	return r, nil
 }
 
 // Reconcile implements k8s reconciliation loop to retrieve the Job information from k8s.

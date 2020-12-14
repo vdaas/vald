@@ -123,8 +123,10 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 	}
 
 	var rc k8s.ResourceController
+	log.Infof("using agent type: %s", d.agentResourceType)
 	switch d.agentResourceType {
 	case "statefulset":
+		log.Info("using statefulset agent type")
 		rc, err = statefulset.New(
 			statefulset.WithControllerName("statefulset discoverer"),
 			statefulset.WithNamespaces(d.agentNamespace),
