@@ -157,7 +157,7 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 		// TODO: implment get daemonset reconciled result
 		return nil, nil
 	default:
-		return nil, nil
+		return nil, errors.New("invalid agent resource type: " + d.agentResourceType)
 	}
 
 	d.ctrl, err = k8s.New(
