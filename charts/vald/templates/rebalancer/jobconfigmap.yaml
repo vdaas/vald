@@ -32,6 +32,7 @@ data:
     kind: Job
     metadata:
       name: rebalancer
+      namespace: vald
     spec:
       template:
         spec:

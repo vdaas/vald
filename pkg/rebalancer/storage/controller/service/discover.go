@@ -434,6 +434,9 @@ func (d *discoverer) createJob(ctx context.Context, jobTpl job.Job, agentName st
 	if jobTpl.Labels == nil {
 		jobTpl.Labels = make(map[string]string)
 	}
+	if len(d.jobNamespace) != 0 {
+		jobTpl.Namespace = d.jobNamespace
+	}
 	jobTpl.Labels["target_agent_name"] = agentName
 
 	cfg, err := config.GetConfig()
