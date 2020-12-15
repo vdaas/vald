@@ -355,7 +355,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 							for _, prevPod := range prevPodModels[ns] {
 								var ok bool
 								for _, pod := range podModels[ns] {
-									if prevPod.Name != pod.Name {
+									if prevPod.Name == pod.Name {
 										ok = true
 										break
 									}
