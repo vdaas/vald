@@ -34,12 +34,16 @@ data:
       name: rebalancer
       namespace: vald
     spec:
+      failedJobsHistoryLimit: 2
+      successfulJobsHistoryLimit: 2
       template:
         spec:
           containers:
             - name: rebalancer
-              image: hello-world:latest
+              image: {{ .Values.rebalancer.rebalancer.rebalance_job_image }}
+              imagePullPolicy: Always
               command:
                 - /bin/sh
                 - echo 'Hello world'
+          restartPolicy: Never
 {{- end }}

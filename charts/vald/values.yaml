@@ -3372,15 +3372,18 @@ rebalancer:
     name: vald
   # @schema {"name": "rebalancer.rebalancer", "type": "object"}
   rebalancer:
-    # @schema {"name": "rebalancer.rebalancer.rebalancer_job_name", "type": "string"}
-    # rebalancer.rebalancer.rebalancer_job_name -- name of rebalancer job
+    # @schema {"name": "rebalancer.rebalancer.rebalance_job_name", "type": "string"}
+    # rebalancer.rebalancer.rebalance_job_name -- name of rebalancer job
     rebalance_job_name: rebalancer-storage-job
-    # @schema {"name": "rebalancer.rebalancer.rebalancer_job_namespace", "type": "string"}
-    # rebalancer.rebalancer.rebalancer_job_namespace -- namespace of rebalancer job
+    # @schema {"name": "rebalancer.rebalancer.rebalance_job_namespace", "type": "string"}
+    # rebalancer.rebalancer.rebalance_job_namespace -- namespace of rebalancer job
     rebalance_job_namespance: _MY_POD_NAMESPACE_
     # @schema {"name": "rebalancer.rebalancer.rebalance_job_template_key", "type": "string"}
     # rebalancer.rebalancer.rebalance_job_template_key -- template key of rebalancer job
     rebalance_job_template_key: job.tpl
+    # @schema {"name": "rebalancer.rebalancer.rebalance_job_image", "type": "string"}
+    # rebalancer.rebalancer.rebalance_job_image -- container image of rebalancer job
+    rebalance_job_image: hello-world
     # @schema {"name": "rebalancer.rebalancer.configmap_name", "type": "string"}
     # rebalancer.rebalancer.configmap_name -- configmap name of rebalancer job
     configmap_name: rebalancer-storage-job
