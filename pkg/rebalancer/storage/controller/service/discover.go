@@ -431,6 +431,9 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 }
 
 func (d *discoverer) createJob(ctx context.Context, jobTpl job.Job, agentName string) error {
+	if jobTpl.Labels == nil {
+		jobTpl.Labels = make(map[string]string)
+	}
 	jobTpl.Labels["target_agent_name"] = agentName
 
 	cfg, err := config.GetConfig()
