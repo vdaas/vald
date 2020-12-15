@@ -18,12 +18,15 @@
 package info
 
 import (
+	"os"
 	"reflect"
 	"runtime"
+	"strings"
 	"sync"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"go.uber.org/goleak"
 )
@@ -34,6 +37,11 @@ var (
 		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
 	}
 )
+
+func TestMain(m *testing.M) {
+	log.Init()
+	os.Exit(m.Run())
+}
 
 func TestString(t *testing.T) {
 	type want struct {
@@ -119,7 +127,7 @@ func TestGet(t *testing.T) {
 					GoOS:              runtime.GOOS,
 					GoArch:            runtime.GOARCH,
 					BuildCPUInfoFlags: []string{""},
-					StackTrace:        []StackTrace{},
+					StackTrace:        make([]StackTrace, 0, 10),
 				},
 			},
 		},
@@ -144,88 +152,6 @@ func TestGet(t *testing.T) {
 		})
 	}
 }
-
-/*
-func TestDetail_prepare(t *testing.T) {
-	type fields struct {
-		Version           string
-		ServerName        string
-		GitCommit         string
-		BuildTime         string
-		GoVersion         string
-		GoOS              string
-		GoArch            string
-		CGOEnabled        string
-		NGTVersion        string
-		BuildCPUInfoFlags []string
-		StackTrace        []StackTrace
-	}
-	type want struct {
-		want *Detail
-	}
-	type test struct {
-		name       string
-		fields     fields
-		want       want
-		checkFunc  func(want, *Detail) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, got *Detail) error {
-		opts := []cmp.Option{
-			cmpopts.IgnoreFields(*w.want, "PrepOnce"),
-		}
-		if diff := cmp.Diff(*w.want, *got, opts...); len(diff) != 0 {
-			return errors.Errorf("err: %s", diff)
-		}
-		return nil
-	}
-	defaultBeforeFunc := func() {
-		Version = ""
-		GitCommit = "gitcommit"
-		BuildTime = "1s"
-		CGOEnabled = "true"
-		NGTVersion = "v1.11.6"
-		BuildCPUInfoFlags = "\t\tavx512f avx512dq\t"
-
-	}
-	tests := []test{}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			if test.beforeFunc == nil {
-				test.beforeFunc = defaultBeforeFunc
-			}
-			test.beforeFunc()
-
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			d := &Detail{
-				Version:           test.fields.Version,
-				ServerName:        test.fields.ServerName,
-				GitCommit:         test.fields.GitCommit,
-				BuildTime:         test.fields.BuildTime,
-				GoVersion:         test.fields.GoVersion,
-				GoOS:              test.fields.GoOS,
-				GoArch:            test.fields.GoArch,
-				CGOEnabled:        test.fields.CGOEnabled,
-				NGTVersion:        test.fields.NGTVersion,
-				BuildCPUInfoFlags: test.fields.BuildCPUInfoFlags,
-				StackTrace:        test.fields.StackTrace,
-			}
-
-			d.prepare()
-			if err := test.checkFunc(test.want, d); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-*/
 
 func TestInit(t *testing.T) {
 	type args struct {
@@ -341,42 +267,167 @@ func TestNew(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		opts := []comparator.Option{
+			comparator.AllowUnexported(info{}),
+			comparator.Comparer(func(x, y sync.Once) bool {
+				return reflect.DeepEqual(x, y)
+			}),
+			comparator.Comparer(func(x, y func(skip int) (pc uintptr, file string, line int, ok bool)) bool {
+				return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
+			}),
+			comparator.Comparer(func(x, y func(pc uintptr) *runtime.Func) bool {
+				return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
+			}),
+		}
+		if diff := comparator.Diff(got, w.want, opts...); diff != "" {
+			return errors.New(diff)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           opts: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           opts: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "new returns default info without option",
+			args: args{
+				opts: nil,
+			},
+			want: want{
+				want: &info{
+					detail: Detail{
+						Version:           GitCommit,
+						GitCommit:         GitCommit,
+						BuildTime:         BuildTime,
+						GoVersion:         runtime.Version(),
+						GoOS:              runtime.GOOS,
+						GoArch:            runtime.GOARCH,
+						CGOEnabled:        CGOEnabled,
+						NGTVersion:        NGTVersion,
+						BuildCPUInfoFlags: strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " "),
+					},
+					prepOnce: func() (o sync.Once) {
+						o.Do(func() {})
+						return
+					}(),
+					rtCaller:    runtime.Caller,
+					rtFuncForPC: runtime.FuncForPC,
+				},
+			},
+		},
+		{
+			name: "new returns info with 1 option",
+			args: args{
+				opts: []Option{
+					WithServerName("sn"),
+				},
+			},
+			want: want{
+				want: &info{
+					detail: Detail{
+						ServerName: "sn",
+						Version:    GitCommit,
+						GitCommit:  GitCommit,
+						BuildTime:  BuildTime,
+						GoVersion:  runtime.Version(),
+						GoOS:       runtime.GOOS,
+						GoArch:     runtime.GOARCH,
+						CGOEnabled: CGOEnabled,
+						//StackTrace:        nil,
+						NGTVersion:        NGTVersion,
+						BuildCPUInfoFlags: strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " "),
+					},
+					prepOnce: func() (o sync.Once) {
+						o.Do(func() {})
+						return
+					}(),
+					rtCaller:    runtime.Caller,
+					rtFuncForPC: runtime.FuncForPC,
+				},
+			},
+		},
+		{
+			name: "new returns info with multiple option",
+			args: args{
+				opts: []Option{
+					WithServerName("sn"),
+					func(i *info) error {
+						i.detail.Version = "ver"
+						return nil
+					},
+				},
+			},
+			want: want{
+				want: &info{
+					detail: Detail{
+						ServerName: "sn",
+						Version:    "ver",
+						GitCommit:  GitCommit,
+						BuildTime:  BuildTime,
+						GoVersion:  runtime.Version(),
+						GoOS:       runtime.GOOS,
+						GoArch:     runtime.GOARCH,
+						CGOEnabled: CGOEnabled,
+						//StackTrace:        nil,
+						NGTVersion:        NGTVersion,
+						BuildCPUInfoFlags: strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " "),
+					},
+					prepOnce: func() (o sync.Once) {
+						o.Do(func() {})
+						return
+					}(),
+					rtCaller:    runtime.Caller,
+					rtFuncForPC: runtime.FuncForPC,
+				},
+			},
+		},
+		{
+			name: "new log the error when invalid option occurred",
+			args: args{
+				opts: []Option{
+					func(i *info) error {
+						return errors.NewErrInvalidOption("field", "err")
+					},
+				},
+			},
+			want: want{
+				want: &info{
+					detail: Detail{
+						Version:    GitCommit,
+						GitCommit:  GitCommit,
+						BuildTime:  BuildTime,
+						GoVersion:  runtime.Version(),
+						GoOS:       runtime.GOOS,
+						GoArch:     runtime.GOARCH,
+						CGOEnabled: CGOEnabled,
+						//StackTrace:        nil,
+						NGTVersion:        NGTVersion,
+						BuildCPUInfoFlags: strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " "),
+					},
+					prepOnce: func() (o sync.Once) {
+						o.Do(func() {})
+						return
+					}(),
+					rtCaller:    runtime.Caller,
+					rtFuncForPC: runtime.FuncForPC,
+				},
+			},
+		},
+		{
+			name: "new return error when criical error occurred",
+			args: args{
+				opts: []Option{
+					func(i *info) error {
+						return errors.NewErrCriticalOption("field", "err")
+					},
+				},
+			},
+			want: want{
+				err: errors.NewErrCriticalOption("field", "err"),
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -444,7 +495,6 @@ func Test_info_String(t *testing.T) {
 						},
 					},
 				},
-				//prepOnce: sync.Once{},
 			},
 			want: want{
 				want: "\nbuild cpu info flags -> []\nbuild time           -> bt\ncgo enabled          -> true\ngit commit           -> commit\ngo arch              -> goarch\ngo os                -> goos\ngo version           -> 1.1\nngt version          -> 1.2\nserver name          -> srv\nstack trace-0        -> url\tfunc\nvald version         -> \x1b[1m1.0\x1b[22m",
@@ -466,13 +516,12 @@ func Test_info_String(t *testing.T) {
 					BuildCPUInfoFlags: nil,
 					StackTrace:        []StackTrace{},
 				},
-				//	prepOnce: sync.Once{},
 				rtCaller: func(skip int) (pc uintptr, file string, line int, ok bool) {
 					return uintptr(0), "", 0, false
 				},
 			},
 			want: want{
-				want: "\nbuild cpu info flags -> []\nbuild time           -> bt\ncgo enabled          -> true\ngit commit           -> commit\ngo arch              -> goarch\ngo os                -> goos\ngo version           -> 1.1\nngt version          -> 1.2\nserver name          -> srv\nvald version         -> \x1b[1m1.0\x1b[22m",
+				want: "\nbuild cpu info flags -> [avx512f avx512dq]\nbuild time           -> bt\ncgo enabled          -> true\ngit commit           -> commit\ngo arch              -> goarch\ngo os                -> goos\ngo version           -> 1.1\nngt version          -> 1.2\nserver name          -> srv\nvald version         -> \x1b[1m1.0\x1b[22m",
 			},
 		},
 	}
@@ -538,11 +587,16 @@ func Test_info_Get(t *testing.T) {
 			},
 			want: want{
 				want: Detail{
-					GitCommit:  "master",
-					GoVersion:  runtime.Version(),
-					GoOS:       runtime.GOOS,
-					GoArch:     runtime.GOARCH,
-					StackTrace: []StackTrace{},
+					Version:           GitCommit,
+					GitCommit:         "master",
+					GoVersion:         runtime.Version(),
+					GoOS:              runtime.GOOS,
+					GoArch:            runtime.GOARCH,
+					CGOEnabled:        CGOEnabled,
+					StackTrace:        []StackTrace{},
+					NGTVersion:        NGTVersion,
+					BuildTime:         BuildTime,
+					BuildCPUInfoFlags: []string{"avx512f", "avx512dq"},
 				},
 			},
 		},
@@ -559,24 +613,29 @@ func Test_info_Get(t *testing.T) {
 						return uintptr(1), "info.go", 100, false
 					},
 					rtFuncForPC: func(ptr uintptr) *runtime.Func {
-						return runtime.FuncForPC(reflect.ValueOf(ptr).Pointer())
+						return runtime.FuncForPC(reflect.ValueOf(Test_info_Get).Pointer())
 					},
 				}
 			}(),
 			want: want{
 				want: Detail{
-					GitCommit: "master",
-					GoVersion: runtime.Version(),
-					GoOS:      runtime.GOOS,
-					GoArch:    runtime.GOARCH,
+					Version:    GitCommit,
+					GitCommit:  "master",
+					GoVersion:  runtime.Version(),
+					GoOS:       runtime.GOOS,
+					GoArch:     runtime.GOARCH,
+					CGOEnabled: CGOEnabled,
 					StackTrace: []StackTrace{
 						StackTrace{
 							URL:      "https://github.com/vdaas/vald/tree/master",
-							FuncName: "github.com/vdaas/vald/internal/info.TestDetail_Get",
+							FuncName: "github.com/vdaas/vald/internal/info.Test_info_Get",
 							File:     "info.go",
 							Line:     100,
 						},
 					},
+					NGTVersion:        NGTVersion,
+					BuildTime:         BuildTime,
+					BuildCPUInfoFlags: []string{"avx512f", "avx512dq"},
 				},
 			},
 		},
@@ -593,24 +652,29 @@ func Test_info_Get(t *testing.T) {
 						return uintptr(1), "info.go", 100, false
 					},
 					rtFuncForPC: func(ptr uintptr) *runtime.Func {
-						return runtime.FuncForPC(reflect.ValueOf(ptr).Pointer())
+						return runtime.FuncForPC(reflect.ValueOf(Test_info_Get).Pointer())
 					},
 				}
 			}(),
 			want: want{
 				want: Detail{
-					GitCommit: "master",
-					GoVersion: runtime.Version(),
-					GoOS:      runtime.GOOS,
-					GoArch:    runtime.GOARCH,
+					Version:    GitCommit,
+					GitCommit:  "master",
+					GoVersion:  runtime.Version(),
+					GoOS:       runtime.GOOS,
+					GoArch:     runtime.GOARCH,
+					CGOEnabled: CGOEnabled,
 					StackTrace: []StackTrace{
 						StackTrace{
 							URL:      "https://github.com/golang/go/blob/" + runtime.Version() + "/src/info.go#L100",
-							FuncName: "github.com/vdaas/vald/internal/info.TestDetail_Get",
+							FuncName: "github.com/vdaas/vald/internal/info.Test_info_Get",
 							File:     runtime.GOROOT() + "/src/info.go",
 							Line:     100,
 						},
 					},
+					NGTVersion:        NGTVersion,
+					BuildTime:         BuildTime,
+					BuildCPUInfoFlags: []string{"avx512f", "avx512dq"},
 				},
 			},
 		},
@@ -627,24 +691,29 @@ func Test_info_Get(t *testing.T) {
 						return uintptr(1), "info.go", 100, false
 					},
 					rtFuncForPC: func(ptr uintptr) *runtime.Func {
-						return runtime.FuncForPC(reflect.ValueOf(ptr).Pointer())
+						return runtime.FuncForPC(reflect.ValueOf(Test_info_Get).Pointer())
 					},
 				}
 			}(),
 			want: want{
 				want: Detail{
-					GitCommit: "master",
-					GoVersion: runtime.Version(),
-					GoOS:      runtime.GOOS,
-					GoArch:    runtime.GOARCH,
+					Version:    GitCommit,
+					GitCommit:  "master",
+					GoVersion:  runtime.Version(),
+					GoOS:       runtime.GOOS,
+					GoArch:     runtime.GOARCH,
+					CGOEnabled: CGOEnabled,
 					StackTrace: []StackTrace{
 						StackTrace{
 							URL:      "https://github.com/vdaas/vald/internal/info.go#L100",
-							FuncName: "github.com/vdaas/vald/internal/info.TestDetail_Get",
+							FuncName: "github.com/vdaas/vald/internal/info.Test_info_Get",
 							File:     "/tmp/go/pkg/mod/github.com/vdaas/vald/internal/info.go",
 							Line:     100,
 						},
 					},
+					NGTVersion:        NGTVersion,
+					BuildTime:         BuildTime,
+					BuildCPUInfoFlags: []string{"avx512f", "avx512dq"},
 				},
 			},
 		},
@@ -661,24 +730,29 @@ func Test_info_Get(t *testing.T) {
 						return uintptr(1), "info.go", 100, false
 					},
 					rtFuncForPC: func(ptr uintptr) *runtime.Func {
-						return runtime.FuncForPC(reflect.ValueOf(ptr).Pointer())
+						return runtime.FuncForPC(reflect.ValueOf(Test_info_Get).Pointer())
 					},
 				}
 			}(),
 			want: want{
 				want: Detail{
-					GitCommit: "master",
-					GoVersion: runtime.Version(),
-					GoOS:      runtime.GOOS,
-					GoArch:    runtime.GOARCH,
+					Version:    GitCommit,
+					GitCommit:  "master",
+					GoVersion:  runtime.Version(),
+					GoOS:       runtime.GOOS,
+					GoArch:     runtime.GOARCH,
+					CGOEnabled: CGOEnabled,
 					StackTrace: []StackTrace{
 						StackTrace{
 							URL:      "https://github.com/vdaas/blob/v0.0.0-20171023180738-a3a6125de932/vald/internal/info.go#L100",
-							FuncName: "github.com/vdaas/vald/internal/info.TestDetail_Get",
+							FuncName: "github.com/vdaas/vald/internal/info.Test_info_Get",
 							File:     "/tmp/go/pkg/mod/github.com/vdaas@v0.0.0-20171023180738-a3a6125de932/vald/internal/info.go",
 							Line:     100,
 						},
 					},
+					NGTVersion:        NGTVersion,
+					BuildTime:         BuildTime,
+					BuildCPUInfoFlags: []string{"avx512f", "avx512dq"},
 				},
 			},
 		},
@@ -695,24 +769,29 @@ func Test_info_Get(t *testing.T) {
 						return uintptr(1), "info.go", 100, false
 					},
 					rtFuncForPC: func(ptr uintptr) *runtime.Func {
-						return runtime.FuncForPC(reflect.ValueOf(ptr).Pointer())
+						return runtime.FuncForPC(reflect.ValueOf(Test_info_Get).Pointer())
 					},
 				}
 			}(),
 			want: want{
 				want: Detail{
-					GitCommit: "master",
-					GoVersion: runtime.Version(),
-					GoOS:      runtime.GOOS,
-					GoArch:    runtime.GOARCH,
+					Version:    GitCommit,
+					GitCommit:  "master",
+					GoVersion:  runtime.Version(),
+					GoOS:       runtime.GOOS,
+					GoArch:     runtime.GOARCH,
+					CGOEnabled: CGOEnabled,
 					StackTrace: []StackTrace{
 						StackTrace{
 							URL:      "https://github.com/vdaas/blob/master/vald/internal/info.go#L100",
-							FuncName: "github.com/vdaas/vald/internal/info.TestDetail_Get",
+							FuncName: "github.com/vdaas/vald/internal/info.Test_info_Get",
 							File:     "/tmp/go/pkg/mod/github.com/vdaas@v0.0.0-20171023180738-a3a6125de932-a843423387/vald/internal/info.go",
 							Line:     100,
 						},
 					},
+					NGTVersion:        NGTVersion,
+					BuildTime:         BuildTime,
+					BuildCPUInfoFlags: []string{"avx512f", "avx512dq"},
 				},
 			},
 		},
@@ -729,24 +808,29 @@ func Test_info_Get(t *testing.T) {
 						return uintptr(1), "info.go", 100, false
 					},
 					rtFuncForPC: func(ptr uintptr) *runtime.Func {
-						return runtime.FuncForPC(reflect.ValueOf(ptr).Pointer())
+						return runtime.FuncForPC(reflect.ValueOf(Test_info_Get).Pointer())
 					},
 				}
 			}(),
 			want: want{
 				want: Detail{
-					GitCommit: "master",
-					GoVersion: runtime.Version(),
-					GoOS:      runtime.GOOS,
-					GoArch:    runtime.GOARCH,
+					Version:    GitCommit,
+					GitCommit:  "master",
+					GoVersion:  runtime.Version(),
+					GoOS:       runtime.GOOS,
+					GoArch:     runtime.GOARCH,
+					CGOEnabled: CGOEnabled,
 					StackTrace: []StackTrace{
 						StackTrace{
 							URL:      "https://github.com/vdaas/vald/blob/master/internal/info.go#L100",
-							FuncName: "github.com/vdaas/vald/internal/info.TestDetail_Get",
+							FuncName: "github.com/vdaas/vald/internal/info.Test_info_Get",
 							File:     "/tmp/go/src/github.com/vdaas/vald/internal/info.go",
 							Line:     100,
 						},
 					},
+					NGTVersion:        NGTVersion,
+					BuildTime:         BuildTime,
+					BuildCPUInfoFlags: []string{"avx512f", "avx512dq"},
 				},
 			},
 		},
@@ -798,6 +882,13 @@ func Test_info_prepare(t *testing.T) {
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(got info, w want) error {
+		opts := []comparator.Option{
+			comparator.AllowUnexported(info{}),
+			comparator.IgnoreFields(info{}, "prepOnce"),
+		}
+		if diff := comparator.Diff(w.want, got, opts...); len(diff) != 0 {
+			return errors.Errorf("err: %s", diff)
+		}
 		return nil
 	}
 	defaultBeforeFunc := func() {
@@ -1040,7 +1131,7 @@ func Test_info_prepare(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
