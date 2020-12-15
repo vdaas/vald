@@ -426,6 +426,9 @@ func (n *ngt) InsertMultiple(vecs map[string][]float32) (err error) {
 
 func (n *ngt) Update(uuid string, vec []float32) (err error) {
 	now := time.Now().UnixNano()
+	if !n.readyForUpdate(uuid, vec) {
+		return nil
+	}
 	err = n.delete(uuid, now)
 	if err != nil {
 		return err
@@ -436,8 +439,12 @@ func (n *ngt) Update(uuid string, vec []float32) (err error) {
 
 func (n *ngt) UpdateMultiple(vecs map[string][]float32) (err error) {
 	uuids := make([]string, 0, len(vecs))
-	for uuid := range vecs {
-		uuids = append(uuids, uuid)
+	for uuid, vec := range vecs {
+		if n.readyForUpdate(uuid, vec) {
+			uuids = append(uuids, uuid)
+		} else {
+			delete(vecs, uuid)
+		}
 	}
 	err = n.DeleteMultiple(uuids...)
 	if err != nil {
@@ -736,6 +743,25 @@ func (n *ngt) Exists(uuid string) (oid uint32, ok bool) {
 		_, ok = n.insertCache(uuid)
 	}
 	return oid, ok
+}
+
+func (n *ngt) readyForUpdate(uuid string, vec []float32) (ready bool) {
+	if len(uuid) == 0 || len(vec) == 0 {
+		return false
+	}
+	ovec, err := n.GetObject(uuid)
+	if err != nil || len(vec) != len(ovec) {
+		// if error (GetObject cannot find vector) or vector length is not equal let's try update
+		return true
+	}
+	for i, v := range vec {
+		if v != ovec[i] {
+			// if difference exists return true for update
+			return true
+		}
+	}
+	// if no difference exists (same vector already exists) return false for skip update
+	return false
 }
 
 func (n *ngt) insertCache(uuid string) (*vcache, bool) {
