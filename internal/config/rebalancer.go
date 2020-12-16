@@ -19,21 +19,17 @@ package config
 
 // RebalanceController represent rebalance controller configuration.
 type RebalanceController struct {
-	RebalanceJobName        string `yaml:"rebalance_job_name" json:"rebalance_job_name"`
-	RebalanceJobNamespace   string `yaml:"rebalance_job_namespance" json:"rebalance_job_namespance"`
-	RebalanceJobTemplateKey string `yaml:"rebalance_job_template_key" json:"rebalance_job_template_key"`
-
-	ConfigMapName      string `yaml:"configmap_name" json:"configmap_name"`
-	ConfigMapNamespace string `yaml:"configmap_namespace" json:"configmap_namespace"`
-
-	AgentName         string `yaml:"agent_name" json:"agent_name"`
-	AgentNamespace    string `yaml:"agent_namespace" json:"agent_namespace"`
-	AgentResourceType string `yaml:"agent_resource_type" json:"agent_resource_type"`
-
-	ReconcileCheckDuration string  `yaml:"reconcile_check_duration" json:"reconcile_check_duration"`
-	Tolerance              float64 `yaml:"tolerance" json:"tolerance"`
-
-	LeaderElectionID string `yaml:"leader_election_id" json:"leader_election_id"`
+	RebalanceJobName        string  `yaml:"rebalance_job_name" json:"rebalance_job_name"`
+	RebalanceJobNamespace   string  `yaml:"rebalance_job_namespance" json:"rebalance_job_namespance"`
+	RebalanceJobTemplateKey string  `yaml:"rebalance_job_template_key" json:"rebalance_job_template_key"`
+	ConfigMapName           string  `yaml:"configmap_name" json:"configmap_name"`
+	ConfigMapNamespace      string  `yaml:"configmap_namespace" json:"configmap_namespace"`
+	AgentName               string  `yaml:"agent_name" json:"agent_name"`
+	AgentNamespace          string  `yaml:"agent_namespace" json:"agent_namespace"`
+	AgentResourceType       string  `yaml:"agent_resource_type" json:"agent_resource_type"`
+	ReconcileCheckDuration  string  `yaml:"reconcile_check_duration" json:"reconcile_check_duration"`
+	Tolerance               float64 `yaml:"tolerance" json:"tolerance"`
+	LeaderElectionID        string  `yaml:"leader_election_id" json:"leader_election_id"`
 }
 
 // Bind binds rebalance controller configuration.
@@ -41,16 +37,12 @@ func (r *RebalanceController) Bind() *RebalanceController {
 	r.RebalanceJobName = GetActualValue(r.RebalanceJobName)
 	r.RebalanceJobNamespace = GetActualValue(r.RebalanceJobNamespace)
 	r.RebalanceJobTemplateKey = GetActualValue(r.RebalanceJobTemplateKey)
-
 	r.ConfigMapName = GetActualValue(r.ConfigMapName)
 	r.ConfigMapNamespace = GetActualValue(r.ConfigMapNamespace)
-
 	r.AgentName = GetActualValue(r.AgentName)
 	r.AgentNamespace = GetActualValue(r.AgentNamespace)
 	r.AgentResourceType = GetActualValue(r.AgentResourceType)
-
 	r.ReconcileCheckDuration = GetActualValue(r.ReconcileCheckDuration)
-
 	r.LeaderElectionID = GetActualValue(r.LeaderElectionID)
 
 	return r

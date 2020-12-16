@@ -17,7 +17,7 @@ package configmap
 
 import "sigs.k8s.io/controller-runtime/pkg/manager"
 
-// Option represents functional option for reconsile StatefulSet.
+// Option represents functional option for reconcile ConfigMap.
 type Option func(*reconciler) error
 
 var defaultOpts = []Option{}

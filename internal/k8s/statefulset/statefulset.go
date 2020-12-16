@@ -99,7 +99,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 		return
 	}
 
-	ssm := make(map[string][]StatefulSet)
+	ssm := r.pool.Get().(map[string][]StatefulSet)
 	appList := make(map[string]bool)
 
 	for _, statefulset := range ssl.Items {

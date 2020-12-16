@@ -24,6 +24,7 @@ rebalancer:
   rebalance_job_name: agent-rebalance-job
   rebalance_job_namespance: vald
   rebalance_job_template_key: job.tpl
+  rebalance_job_image: agent-rebalance-job-image
   config_map_name: agent-rebalance-job-template
   config_map_namespace: vald
   agent_name: vald-agent-ngt
@@ -31,6 +32,7 @@ rebalancer:
   agent_resource_type: statefulset
   reconcile_check_duration: 5m
   tolerance: 0.1
+  leader_election_id: agent-rebalance-controller
 server_config:
   servers:
     - name: rebalancer-controller-rest

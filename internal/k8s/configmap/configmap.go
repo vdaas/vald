@@ -101,7 +101,6 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 	}
 
 	cmm := make(map[string][]ConfigMap)
-	appList := make(map[string]bool)
 
 	for _, configmap := range cml.Items {
 		if _, ok := cmm[configmap.Namespace]; !ok {
@@ -115,11 +114,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 	}
 
 	for name := range cmm {
-		if !appList[name] {
-			delete(cmm, name)
-		} else {
-			cmm[name] = cmm[name][:0:len(cmm[name])]
-		}
+		cmm[name] = cmm[name][:0:len(cmm[name])]
 	}
 	r.pool.Put(cmm)
 

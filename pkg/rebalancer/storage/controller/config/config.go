@@ -18,6 +18,8 @@
 package config
 
 import (
+	"fmt"
+
 	"github.com/vdaas/vald/internal/config"
 )
 
@@ -139,15 +141,19 @@ func NewConfig(path string) (cfg *Data, err error) {
 // 				CA:      "/path/to/ca",
 // 			},
 // 		},
-// 		NGT: &config.NGT{
-// 			IndexPath:           "/path/to/index",
-// 			Dimension:           4096,
-// 			BulkInsertChunkSize: 10,
-// 			DistanceType:        "l2",
-// 			ObjectType:          "float",
-// 			CreationEdgeSize:    20,
-// 			SearchEdgeSize:      10,
+// 		Rebalancer: &config.RebalanceController{
+// 			RebalanceJobName:        "agent-rebalance-job",
+// 			RebalanceJobNamespace:   "vald",
+// 			RebalanceJobTemplateKey: "job.tpl",
+// 			ConfigMapName:           "agent-rebalance-job-template",
+// 			ConfigMapNamespace:      "vald",
+// 			AgentName:               "vald-agent-ngt",
+// 			AgentNamespace:          "vald",
+// 			AgentResourceType:       "statefulset",
+// 			ReconcileCheckDuration:  "5m",
+// 			Tolerance:               0.1,
+// 			LeaderElectionID:        "agent-rebalance-controller",
 // 		},
 // 	}
 // 	fmt.Println(config.ToRawYaml(d))
-// }
+}
