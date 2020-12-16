@@ -1,6 +1,7 @@
 package errors
 
 import (
+	"math"
 	"testing"
 )
 
@@ -42,6 +43,24 @@ func TestErrInvalidCompressionLevel(t *testing.T) {
 			},
 			want: want{
 				want: New("invalid compression level: 0"),
+			},
+		},
+		{
+			name: "returns error when compression leve is the maximum value of int",
+			args: args{
+				level: int(math.MaxInt64),
+			},
+			want: want{
+				want: Errorf("invalid compression level: %d", int(math.MaxInt64)),
+			},
+		},
+		{
+			name: "returns error when compression leve is the minimum value of int",
+			args: args{
+				level: int(math.MinInt64),
+			},
+			want: want{
+				want: Errorf("invalid compression level: %d", int(math.MinInt64)),
 			},
 		},
 	}
