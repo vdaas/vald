@@ -31,7 +31,7 @@ var (
 	// ErrCompressedDataNotFound returns an error of compressed data is not found.
 	ErrCompressedDataNotFound = New("compressed data not found")
 
-	// ErrDecompressedDataNotFound returns an error of decompressed data not found.
+	// ErrDecompressedDataNotFound returns an error of decompressed data is not found.
 	ErrDecompressedDataNotFound = New("decompressed data not found")
 
 	// ErrCompressFailed returns an error of compress failed.
