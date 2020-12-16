@@ -104,9 +104,13 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 			cpuRequest = 0.0
 			memRequest = 0.0
 			for _, container := range pod.Spec.Containers {
-				log.Debugf("[internal] pod reconcile: %#v", container)
 				request := container.Resources.Requests
 				limit := container.Resources.Limits
+				if container.Name == "vald-agent-ngt" {
+					log.Debugf("[internal] pod reconcile: %#v", container)
+					log.Debugf("[internal agent limit] limit memory: %#v", limit.Memory())
+					log.Debugf("[internal agent memory] limit memory value: %#v", limit.Memory().Value())
+				}
 				cpuLimit += float64(limit.Cpu().Value())
 				memLimit += float64(limit.Memory().Value())
 				cpuRequest += float64(request.Cpu().Value())
