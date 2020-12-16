@@ -28,7 +28,7 @@ var (
 		return Errorf("compressor %s not found", name)
 	}
 
-	// ErrCompressedDataNotFound returns an error of compressed data not found.
+	// ErrCompressedDataNotFound returns an error of compressed data is not found.
 	ErrCompressedDataNotFound = New("compressed data not found")
 
 	// ErrDecompressedDataNotFound returns an error of decompressed data not found.
