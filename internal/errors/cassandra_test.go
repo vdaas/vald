@@ -252,46 +252,47 @@ func TestErrCassandraNotFound(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		func() test {
-			keys := []string{
-				"uuid",
-			}
-			return test{
-				name: "returns cassandra key not found error when key is not found",
-				args: args{
-					keys: keys,
+		{
+			name: "returns cassandra key not found error when keys is not found",
+			args: args{
+				keys: []string{
+					"uuid",
 				},
-				want: want{
-					want: New("cassandra key 'uuid' not found: cassandra entry not found"),
+			},
+			want: want{
+				want: New("cassandra key 'uuid' not found: cassandra entry not found"),
+			},
+		},
+		{
+			name: "returns cassandra keys not found error when keys are not found",
+			args: args{
+				keys: []string{
+					"uuid_1",
+					"uuid_2",
 				},
-			}
-		}(),
-		func() test {
-			keys := []string{
-				"uuid_1",
-				"uuid_2",
-			}
-			return test{
-				name: "returns cassandra keys not found error when keys are not found",
-				args: args{
-					keys: keys,
-				},
-				want: want{
-					want: New("cassandra keys '[uuid_1 uuid_2]' not found: cassandra entry not found"),
-				},
-			}
-		}(),
-		func() test {
-			return test{
-				name: "returns nil when key is empty",
-				args: args{
-					keys: nil,
-				},
-				want: want{
-					want: nil,
-				},
-			}
-		}(),
+			},
+			want: want{
+				want: New("cassandra keys '[uuid_1 uuid_2]' not found: cassandra entry not found"),
+			},
+		},
+		{
+			name: "returns nil when keys is nil",
+			args: args{
+				keys: nil,
+			},
+			want: want{
+				want: nil,
+			},
+		},
+		{
+			name: "returns nil when keys is empty",
+			args: args{
+				keys: []string{},
+			},
+			want: want{
+				want: nil,
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -337,58 +338,46 @@ func TestErrCassandraGetOperationFailed(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		func() test {
-			args := args{
+		{
+			name: "returns wrapped fetch key error when key is `uuid` and error is database error",
+			args: args{
 				key: "uuid",
 				err: New("database error"),
-			}
-			return test{
-				name: "returns wrapped fetch key error when key is `uuid` and error is database error",
-				args: args,
-				want: want{
-					want: New("error failed to fetch key (uuid): database error"),
-				},
-			}
-		}(),
-		func() test {
-			args := args{
+			},
+			want: want{
+				want: New("error failed to fetch key (uuid): database error"),
+			},
+		},
+		{
+			name: "returns wrapped fetch key error when key is empty and error is database error",
+			args: args{
 				key: "",
 				err: New("database error"),
-			}
-			return test{
-				name: "returns wrapped fetch key error when key is empty and error is database error",
-				args: args,
-				want: want{
-					want: New("error failed to fetch key (): database error"),
-				},
-			}
-		}(),
-		func() test {
-			args := args{
+			},
+			want: want{
+				want: New("error failed to fetch key (): database error"),
+			},
+		},
+		{
+			name: "returns fetch key error when key is `uuid` and error is nil",
+			args: args{
 				key: "uuid",
 				err: nil,
-			}
-			return test{
-				name: "returns fetch key error when key is `uuid` and error is nil",
-				args: args,
-				want: want{
-					want: New("error failed to fetch key (uuid)"),
-				},
-			}
-		}(),
-		func() test {
-			args := args{
+			},
+			want: want{
+				want: New("error failed to fetch key (uuid)"),
+			},
+		},
+		{
+			name: "returns fetch key error when key is empty and error is nil",
+			args: args{
 				key: "",
 				err: nil,
-			}
-			return test{
-				name: "returns fetch key error when key is empty and error is nil",
-				args: args,
-				want: want{
-					want: New("error failed to fetch key ()"),
-				},
-			}
-		}(),
+			},
+			want: want{
+				want: New("error failed to fetch key ()"),
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -434,58 +423,46 @@ func TestErrCassandraSetOperationFailed(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		func() test {
-			args := args{
+		{
+			name: "returns wrapped set key error when key is `uuid` and error is database error",
+			args: args{
 				key: "uuid",
 				err: New("database error"),
-			}
-			return test{
-				name: "returns wrapped set key error when key is `uuid` and error is database error",
-				args: args,
-				want: want{
-					want: New("error failed to set key (uuid): database error"),
-				},
-			}
-		}(),
-		func() test {
-			args := args{
+			},
+			want: want{
+				want: New("error failed to set key (uuid): database error"),
+			},
+		},
+		{
+			name: "returns wrapped set key error when key is empty and error is database error",
+			args: args{
 				key: "",
 				err: New("database error"),
-			}
-			return test{
-				name: "returns wrapped set key error when key is empty and error is database error",
-				args: args,
-				want: want{
-					want: New("error failed to set key (): database error"),
-				},
-			}
-		}(),
-		func() test {
-			args := args{
+			},
+			want: want{
+				want: New("error failed to set key (): database error"),
+			},
+		},
+		{
+			name: "returns set key error when key is `uuid` and error is nil",
+			args: args{
 				key: "uuid",
 				err: nil,
-			}
-			return test{
-				name: "returns set key error when key is `uuid` and error is nil",
-				args: args,
-				want: want{
-					want: New("error failed to set key (uuid)"),
-				},
-			}
-		}(),
-		func() test {
-			args := args{
+			},
+			want: want{
+				want: New("error failed to set key (uuid)"),
+			},
+		},
+		{
+			name: "returns set key error when key is empty and error is nil",
+			args: args{
 				key: "",
 				err: nil,
-			}
-			return test{
-				name: "returns set key error when key is empty and error is nil",
-				args: args,
-				want: want{
-					want: New("error failed to set key ()"),
-				},
-			}
-		}(),
+			},
+			want: want{
+				want: New("error failed to set key ()"),
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -531,58 +508,46 @@ func TestErrCassandraDeleteOperationFailed(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		func() test {
-			args := args{
+		{
+			name: "returns wrapped delete key error when key is `uuid` and error is database error",
+			args: args{
 				key: "uuid",
 				err: New("database error"),
-			}
-			return test{
-				name: "returns wrapped delete key error when key is `uuid` and error is database error",
-				args: args,
-				want: want{
-					want: New("error failed to delete key (uuid): database error"),
-				},
-			}
-		}(),
-		func() test {
-			args := args{
+			},
+			want: want{
+				want: New("error failed to delete key (uuid): database error"),
+			},
+		},
+		{
+			name: "returns wrapped delete key error when key is empty and error is database error",
+			args: args{
 				key: "",
 				err: New("database error"),
-			}
-			return test{
-				name: "returns wrapped delete key error when key is empty and error is database error",
-				args: args,
-				want: want{
-					want: New("error failed to delete key (): database error"),
-				},
-			}
-		}(),
-		func() test {
-			args := args{
+			},
+			want: want{
+				want: New("error failed to delete key (): database error"),
+			},
+		},
+		{
+			name: "returns delete key error when key is `uuid` and error is nil",
+			args: args{
 				key: "uuid",
 				err: nil,
-			}
-			return test{
-				name: "returns delete key error when key is `uuid` and error is nil",
-				args: args,
-				want: want{
-					want: New("error failed to delete key (uuid)"),
-				},
-			}
-		}(),
-		func() test {
-			args := args{
+			},
+			want: want{
+				want: New("error failed to delete key (uuid)"),
+			},
+		},
+		{
+			name: "returns delete key error when key is empty and error is nil",
+			args: args{
 				key: "",
 				err: nil,
-			}
-			return test{
-				name: "returns delete key error when key is empty and error is nil",
-				args: args,
-				want: want{
-					want: New("error failed to delete key ()"),
-				},
-			}
-		}(),
+			},
+			want: want{
+				want: New("error failed to delete key ()"),
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -628,58 +593,46 @@ func TestErrCassandraHostDownDetected(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		func() test {
-			args := args{
+		{
+			name: "returns wrapped cassandra host down detected error when nodeInfo is `127.0.0.1` and error is database error",
+			args: args{
 				nodeInfo: "127.0.0.1",
 				err:      New("database error"),
-			}
-			return test{
-				name: "returns wrapped cassandra host down detected error when nodeInfo is `127.0.0.1` and error is database error",
-				args: args,
-				want: want{
-					want: New("error cassandra host down detected\t127.0.0.1: database error"),
-				},
-			}
-		}(),
-		func() test {
-			args := args{
+			},
+			want: want{
+				want: New("error cassandra host down detected\t127.0.0.1: database error"),
+			},
+		},
+		{
+			name: "returns wrapped cassandra host down detected error when nodeInfo is empty and error is database error",
+			args: args{
 				nodeInfo: "",
 				err:      New("database error"),
-			}
-			return test{
-				name: "returns wrapped cassandra host down detected error when nodeInfo is empty and error is database error",
-				args: args,
-				want: want{
-					want: New("error cassandra host down detected\t: database error"),
-				},
-			}
-		}(),
-		func() test {
-			args := args{
+			},
+			want: want{
+				want: New("error cassandra host down detected\t: database error"),
+			},
+		},
+		{
+			name: "returns cassandra host down detected error when nodeInfo is `127.0.0.1` and error is nil",
+			args: args{
 				nodeInfo: "127.0.0.1",
 				err:      nil,
-			}
-			return test{
-				name: "returns cassandra host down detected error when nodeInfo is `127.0.0.1` and error is nil",
-				args: args,
-				want: want{
-					want: New("error cassandra host down detected\t127.0.0.1"),
-				},
-			}
-		}(),
-		func() test {
-			args := args{
+			},
+			want: want{
+				want: New("error cassandra host down detected\t127.0.0.1"),
+			},
+		},
+		{
+			name: "returns cassandra host down detected error when nodeInfo is empty and error is nil",
+			args: args{
 				nodeInfo: "",
 				err:      nil,
-			}
-			return test{
-				name: "returns cassandra host down detected error when nodeInfo is empty and error is nil",
-				args: args,
-				want: want{
-					want: New("error cassandra host down detected\t"),
-				},
-			}
-		}(),
+			},
+			want: want{
+				want: New("error cassandra host down detected\t"),
+			},
+		},
 	}
 
 	for _, test := range tests {
