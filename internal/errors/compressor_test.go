@@ -46,7 +46,7 @@ func TestErrInvalidCompressionLevel(t *testing.T) {
 			},
 		},
 		{
-			name: "returns error when compression leve is the maximum value of int",
+			name: "returns error when compression leve is the maximum number of int",
 			args: args{
 				level: int(math.MaxInt64),
 			},
@@ -55,7 +55,7 @@ func TestErrInvalidCompressionLevel(t *testing.T) {
 			},
 		},
 		{
-			name: "returns error when compression leve is the minimum value of int",
+			name: "returns error when compression leve is the minimum number of int",
 			args: args{
 				level: int(math.MinInt64),
 			},
