@@ -40,7 +40,7 @@ var (
 	// ErrDecompressFailed returns an error of decompress failed.
 	ErrDecompressFailed = New("decompress failed")
 
-	// ErrCompressorRegistererIsNotRunning represents a function to generate an error of compressor registerers not running.
+	// ErrCompressorRegistererIsNotRunning represents a function to generate an error of compressor registerers is not running.
 	ErrCompressorRegistererIsNotRunning = func() error {
 		return New("compressor registerers is not running")
 	}
