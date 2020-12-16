@@ -21,10 +21,10 @@ metadata:
   labels:
     app: vald-agent-ngt
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v0.0.62
+    helm.sh/chart: vald-v0.0.63
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v0.0.62
+    app.kubernetes.io/version: v0.0.63
     app.kubernetes.io/component: agent
 spec:
   serviceName: vald-agent-ngt
@@ -51,7 +51,7 @@ spec:
         profefe.com/port: "6060"
         profefe.com/service: vald-agent-ngt
       # annotations:
-      #   checksum/configmap: 950596bc19eed4224bd18b1c3fae6a3006a7ae6e2c619d10d97c4030bcb4fa76
+      #   checksum/configmap: 3bc16f0d6cda9aa5db5404c0378ad73b623d24f30a3773a190ecd8d32bb3898d
     spec:
       affinity:
         nodeAffinity:

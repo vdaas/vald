@@ -746,7 +746,7 @@ func (n *ngt) Exists(uuid string) (oid uint32, ok bool) {
 }
 
 func (n *ngt) readyForUpdate(uuid string, vec []float32) (ready bool) {
-	if len(vec) == 0 {
+	if len(uuid) == 0 || len(vec) == 0 {
 		return false
 	}
 	ovec, err := n.GetObject(uuid)
