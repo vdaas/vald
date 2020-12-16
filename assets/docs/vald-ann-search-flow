@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2020-12-16T02:27:11.210Z" agent="5.0 (Macintosh; Intel Mac OS X 11_0_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36" etag="bSGAQ1aQcdVm4EKbEJgk" version="14.0.1" type="github">
+<mxfile host="app.diagrams.net" modified="2020-12-16T02:29:19.507Z" agent="5.0 (Macintosh; Intel Mac OS X 11_0_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36" etag="awyx7hfBBa3Xw6lNDC_P" version="14.0.1" type="github">
   <diagram id="vcnON44GQHq9juuZEesx" name="Page-1">
-    <mxGraphModel dx="3631" dy="2442" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="4026" dy="2697" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -557,13 +557,13 @@
         <mxCell id="3TSW6_lrmh_YMU6LiRJO-227" value="&lt;table border=&quot;1&quot; width=&quot;100%&quot; cellpadding=&quot;4&quot; style=&quot;width: 171px ; height: 51px ; border-collapse: collapse&quot;&gt;&lt;tbody&gt;&lt;tr style=&quot;background-color: rgb(167 , 201 , 66) ; color: rgb(255 , 255 , 255) ; border: 1px solid rgb(152 , 191 , 33)&quot;&gt;&lt;th align=&quot;left&quot;&gt;Max Distance&lt;/th&gt;&lt;/tr&gt;&lt;tr style=&quot;background-color: rgb(234 , 242 , 211) ; border: 1px solid rgb(152 , 191 , 33)&quot;&gt;&lt;td&gt;0.12345&lt;br&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;" style="text;html=1;strokeColor=#c0c0c0;fillColor=#ffffff;overflow=fill;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="-513.5" y="520" width="110" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="3TSW6_lrmh_YMU6LiRJO-228" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#FF8000;strokeWidth=4;fontSize=19;" parent="1" source="3TSW6_lrmh_YMU6LiRJO-80" target="3TSW6_lrmh_YMU6LiRJO-214" edge="1">
+        <mxCell id="3TSW6_lrmh_YMU6LiRJO-228" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;strokeColor=#FF8000;strokeWidth=4;fontSize=19;" parent="1" source="3TSW6_lrmh_YMU6LiRJO-80" edge="1">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="-982" y="563" />
-              <mxPoint x="-760" y="563" />
-              <mxPoint x="-760" y="538" />
+              <mxPoint x="-983" y="563" />
+              <mxPoint x="-538" y="563" />
             </Array>
+            <mxPoint x="-538" y="563" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="1WfOh-om2frCVBPVpEE0-1" value="User&#39;s Search by Vector Request&lt;br&gt;&lt;br&gt;to Vald LB Gateway&lt;br&gt;&lt;br&gt;Top K = 5 means Vald will return 5 ordered ANN result" style="whiteSpace=wrap;html=1;shape=mxgraph.basic.roundRectCallout;dx=30;dy=15;size=5;boundedLbl=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
@@ -621,10 +621,10 @@
           <mxGeometry x="-860" y="460" width="40" height="40" as="geometry" />
         </mxCell>
         <mxCell id="1WfOh-om2frCVBPVpEE0-36" value="&lt;span style=&quot;font-size: 17px&quot;&gt;&lt;b&gt;9&lt;/b&gt;&lt;/span&gt;" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeWidth=2;fontFamily=Tahoma;spacingBottom=4;spacingRight=2;strokeColor=#b85450;align=center;fillColor=#f8cecc;gradientColor=#ea6b66;" vertex="1" parent="1">
-          <mxGeometry x="-750" y="545" width="40" height="40" as="geometry" />
+          <mxGeometry x="-1045" y="562" width="40" height="40" as="geometry" />
         </mxCell>
         <mxCell id="1WfOh-om2frCVBPVpEE0-37" value="&lt;span style=&quot;font-size: 17px&quot;&gt;&lt;b&gt;10&lt;/b&gt;&lt;/span&gt;" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeWidth=2;fontFamily=Tahoma;spacingBottom=4;spacingRight=2;strokeColor=#b85450;align=center;fillColor=#f8cecc;gradientColor=#ea6b66;" vertex="1" parent="1">
-          <mxGeometry x="-860" width="40" height="40" as="geometry" />
+          <mxGeometry x="-852" y="14" width="40" height="40" as="geometry" />
         </mxCell>
         <mxCell id="1WfOh-om2frCVBPVpEE0-40" value="Each Client thread send result datas to concurrent queue buffer from result head,&amp;nbsp;&lt;br&gt;&amp;nbsp;" style="whiteSpace=wrap;html=1;shape=mxgraph.basic.roundRectCallout;dx=21.88;dy=30;size=5;boundedLbl=1;fillColor=#e1d5e7;strokeColor=#9673a6;flipV=0;flipH=1;" vertex="1" parent="1">
           <mxGeometry x="-347" y="170" width="283.5" height="140" as="geometry" />
@@ -675,7 +675,16 @@
           <mxGeometry x="-772" y="770" width="340" height="130" as="geometry" />
         </mxCell>
         <mxCell id="1WfOh-om2frCVBPVpEE0-58" value="Agent returns ANN result to &lt;br&gt;gateway&#39;s parallel client asynchronously&lt;br&gt;&lt;br&gt;client stores each result to their buffer." style="whiteSpace=wrap;html=1;shape=mxgraph.basic.roundRectCallout;dx=52.33;dy=38;size=5;boundedLbl=1;fillColor=#e1d5e7;strokeColor=#9673a6;direction=west;" vertex="1" parent="1">
-          <mxGeometry x="-1232" y="565" width="298" height="128" as="geometry" />
+          <mxGeometry x="-1202" y="565" width="298" height="128" as="geometry" />
+        </mxCell>
+        <mxCell id="1WfOh-om2frCVBPVpEE0-59" value="Vald Gateway&#39;s Search Client has &lt;br&gt;gRPC parallel broadcast functionality&amp;nbsp;" style="whiteSpace=wrap;html=1;shape=mxgraph.basic.roundRectCallout;dx=220;dy=18;size=5;boundedLbl=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="20" y="-150" width="340" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="1WfOh-om2frCVBPVpEE0-60" value="Agent returns ANN result to &lt;br&gt;gateway&#39;s parallel client asynchronously&lt;br&gt;&lt;br&gt;client stores each result to their buffer." style="whiteSpace=wrap;html=1;shape=mxgraph.basic.roundRectCallout;dx=49.6;dy=24;size=5;boundedLbl=1;fillColor=#e1d5e7;strokeColor=#9673a6;direction=north;" vertex="1" parent="1">
+          <mxGeometry x="-786" y="478" width="258" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="1WfOh-om2frCVBPVpEE0-61" value="Vald Gateway&#39;s Search Client has &lt;br&gt;gRPC parallel broadcast functionality&amp;nbsp;" style="whiteSpace=wrap;html=1;shape=mxgraph.basic.roundRectCallout;dx=28.2;dy=49;size=5;boundedLbl=1;fillColor=#e1d5e7;strokeColor=#9673a6;flipV=0;flipH=1;" vertex="1" parent="1">
+          <mxGeometry x="-1491" y="162" width="283.5" height="300" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
