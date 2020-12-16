@@ -37,7 +37,7 @@ var (
 	// ErrCompressFailed returns an error of compress failed.
 	ErrCompressFailed = New("compress failed")
 
-	// ErrDecompressFailed returns an error of decompress failed.
+	// ErrDecompressFailed returns an error of decompressing failed.
 	ErrDecompressFailed = New("decompress failed")
 
 	// ErrCompressorRegistererIsNotRunning represents a function to generate an error of compressor registerers is not running.
