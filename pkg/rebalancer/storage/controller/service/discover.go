@@ -28,19 +28,19 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook/conversion"
 )
 
-// Discoverer --
+// TODO: rename discoverer to rebalancer
+// Discoverer represents the discoverer interface.
 type Discoverer interface {
 	// Start --
 	Start(ctx context.Context) (<-chan error, error)
 }
 
 type discoverer struct {
-	jobs         atomic.Value
-	jobName      string
-	jobNamespace string
-	jobTemplate  atomic.Value
-	// TODO: thiknig about this name.
-	jobTemplateKey string
+	jobs           atomic.Value
+	jobName        string
+	jobNamespace   string
+	jobTemplate    atomic.Value
+	jobTemplateKey string // config map key of job template
 
 	agentName         string
 	agentNamespace    string
@@ -132,7 +132,7 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 			statefulset.WithOnReconcileFunc(func(statefulSetList map[string][]statefulset.StatefulSet) {
 				sss, ok := statefulSetList[d.agentName]
 				// for i, ss := range sss {
-					// log.Debugf("[reconcile] [%s:%d] - statefulset for agent: %#v", d.agentName, i, ss)
+				// log.Debugf("[reconcile] [%s:%d] - statefulset for agent: %#v", d.agentName, i, ss)
 				// }
 				if ok {
 					if len(sss) == 1 {

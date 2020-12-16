@@ -19,6 +19,7 @@ import (
 	"context"
 	"reflect"
 	"strings"
+	"sync"
 	"time"
 
 	batchv1 "k8s.io/api/batch/v1"
@@ -45,14 +46,21 @@ type reconciler struct {
 	namespaces  []string
 	onError     func(err error)
 	onReconcile func(jobList map[string][]Job)
+	pool        sync.Pool
 }
 
 // Job is a type alias for the k8s job definition.
 type Job = batchv1.Job
 
-// New returns the JobWatcher that implements reconciliation loop, or any error occurred.
+// New returns the JobWatcher that implements reconciliation loop, or any errors occurred.
 func New(opts ...Option) (JobWatcher, error) {
-	r := new(reconciler)
+	r := &reconciler{
+		pool: sync.Pool{
+			New: func() interface{} {
+				return make(map[string][]Job)
+			},
+		},
+	}
 
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(r); err != nil {
@@ -91,7 +99,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 		return
 	}
 
-	jobs := make(map[string][]Job)
+	jobs := r.pool.Get().(map[string][]Job)
 
 	for _, job := range js.Items {
 		name, ok := job.GetObjectMeta().GetLabels()["app"]
@@ -108,13 +116,14 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 	}
 
 	for name := range jobs {
-		l := len(jobs[name])
-		jobs[name] = jobs[name][:l:l]
+		jobs[name] = jobs[name][:0:len(jobs[name])]
 	}
 
 	if r.onReconcile != nil {
 		r.onReconcile(jobs)
 	}
+	r.pool.Put(jobs)
+
 	return
 }
 

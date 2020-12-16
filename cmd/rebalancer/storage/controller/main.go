@@ -14,7 +14,7 @@ import (
 const (
 	maxVersion = "v0.0.10"
 	minVersion = "v0.0.0"
-	name       = "vald agent rebalancer controller"
+	name       = "vald rebalancer storage controller"
 )
 
 func main() {
