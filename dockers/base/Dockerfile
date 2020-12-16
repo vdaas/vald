@@ -48,5 +48,4 @@ WORKDIR ${GOPATH}/src/github.com/vdaas/vald
 COPY go.mod .
 COPY go.sum .
 
-RUN go mod tidy \
-    && go mod download
+RUN go mod download

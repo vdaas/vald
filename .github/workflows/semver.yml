@@ -15,6 +15,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+          token: ${{ secrets.DISPATCH_TOKEN }}
       - name: Get latest gitwerk
         run: |
           curl -LO "https://github.com/rinx/gitwerk/releases/download/v0.2.2/gitwerk-linux-amd64.zip"
