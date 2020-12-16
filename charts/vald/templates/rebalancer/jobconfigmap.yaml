@@ -31,7 +31,7 @@ data:
     apiVersion: batch/v1
     kind: Job
     metadata:
-      name: rebalancer
+      name: {{ .Values.rebalancer.rebalancer.rebalance_job_name }}
       namespace: vald
     spec:
       failedJobsHistoryLimit: 2
@@ -39,7 +39,7 @@ data:
       template:
         spec:
           containers:
-            - name: rebalancer
+            - name: vald-rebalancer-job
               image: {{ .Values.rebalancer.rebalancer.rebalance_job_image }}
               imagePullPolicy: Always
               command:
