@@ -104,6 +104,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 			cpuRequest = 0.0
 			memRequest = 0.0
 			for _, container := range pod.Spec.Containers {
+				log.Debugf("[internal] pod reconcile: %#v", container)
 				request := container.Resources.Requests
 				limit := container.Resources.Limits
 				cpuLimit += float64(limit.Cpu().Value())
