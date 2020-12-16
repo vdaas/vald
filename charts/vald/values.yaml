@@ -3374,7 +3374,7 @@ rebalancer:
   rebalancer:
     # @schema {"name": "rebalancer.rebalancer.rebalance_job_name", "type": "string"}
     # rebalancer.rebalancer.rebalance_job_name -- name of rebalancer job
-    rebalance_job_name: rebalancer-storage-job
+    rebalance_job_name: vald-rebalancer-storage-job
     # @schema {"name": "rebalancer.rebalancer.rebalance_job_namespace", "type": "string"}
     # rebalancer.rebalancer.rebalance_job_namespace -- namespace of rebalancer job
     rebalance_job_namespance: _MY_POD_NAMESPACE_
@@ -3386,7 +3386,7 @@ rebalancer:
     rebalance_job_image: hello-world
     # @schema {"name": "rebalancer.rebalancer.configmap_name", "type": "string"}
     # rebalancer.rebalancer.configmap_name -- configmap name of rebalancer job
-    configmap_name: rebalancer-storage-job
+    configmap_name: vald-rebalancer-storage-job-config
     # @schema {"name": "rebalancer.rebalancer.configmap_namespace", "type": "string"}
     # rebalancer.rebalancer.configmap_namespace -- configmap namespace of rebalancer job
     configmap_namespace: _MY_POD_NAMESPACE_
@@ -3407,7 +3407,7 @@ rebalancer:
     tolerance: 0.1
     # @schema {"name": "rebalancer.rebalancer.leader_election_id", "type": "string"}
     # rebalancer.rebalancer.leader_election_id -- leader_election_id for rebalancer controller
-    leader_election_id: "vald-rebalancer-controller"
+    leader_election_id: "vald-rebalancer-storage-controller"
   # @schema {"name": "rebalancer.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
   # rebalancer.env -- environment variables
   env:
