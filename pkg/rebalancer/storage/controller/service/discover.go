@@ -121,10 +121,8 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 	}
 
 	var rc k8s.ResourceController
-	log.Infof("using agent type: %s", d.agentResourceType)
 	switch d.agentResourceType {
 	case "statefulset":
-		log.Info("using statefulset agent type")
 		rc, err = statefulset.New(
 			statefulset.WithControllerName("statefulset discoverer"),
 			statefulset.WithNamespaces(d.agentNamespace),
@@ -134,7 +132,7 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 			statefulset.WithOnReconcileFunc(func(statefulSetList map[string][]statefulset.StatefulSet) {
 				sss, ok := statefulSetList[d.agentName]
 				for i, ss := range sss {
-					log.Infof("[reconcile] [%s:%d] - statefulset for agent: %#v", d.agentName, i, ss)
+					log.Debugf("[reconcile] [%s:%d] - statefulset for agent: %#v", d.agentName, i, ss)
 				}
 				if ok {
 					if len(sss) == 1 {
@@ -186,6 +184,7 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 				log.Error(err)
 			}),
 			mpod.WithOnReconcileFunc(func(podList map[string]mpod.Pod) {
+				log.Debugf("[reconcile] podMetrics: { len: %d, raw: %#v }", len(podList), podList)
 				if len(podList) > 0 {
 					d.podMetrics.Store(podList)
 				} else {
@@ -361,7 +360,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 									}
 								}
 								if !ok {
-									log.Infof("[decrease] creating job for pod %s", prevPod.Name)
+									log.Debugf("[decrease] creating job for pod %s", prevPod.Name)
 									if err := d.createJob(ctx, jobTpl, prevPod.Name); err != nil {
 										log.Errorf("failed to create job: %s", err)
 										continue
@@ -381,7 +380,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 							}
 							amu[ns] = amu[ns] / float64(len(podModels[ns]))
 							bias := mmu[ns] - amu[ns]
-							log.Infof("bias: %v, tolerance: %v, maxPodName: %v, average memory usage: %v", bias, d.tolerance, maxPodName[ns], amu[ns])
+							log.Debugf("bias: %v, tolerance: %v, maxPodName: %v, average memory usage: %v", bias, d.tolerance, maxPodName[ns], amu[ns])
 							if bias > d.tolerance {
 								rate[ns] = 1 - (amu[ns] / mmu[ns])
 								var ok bool
@@ -398,7 +397,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 									}
 								}
 								if !ok || len(jobModels[ns]) == 0 {
-									log.Infof("[bias] creating job for pod %s", maxPodName[ns])
+									log.Debugf("[bias] creating job for pod %s", maxPodName[ns])
 									if err := d.createJob(ctx, jobTpl, maxPodName[ns]); err != nil {
 										log.Errorf("failed to create job: %s", err)
 										continue
