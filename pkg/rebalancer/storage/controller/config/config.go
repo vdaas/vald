@@ -18,8 +18,6 @@
 package config
 
 import (
-	"fmt"
-
 	"github.com/vdaas/vald/internal/config"
 )
 
@@ -156,4 +154,4 @@ func NewConfig(path string) (cfg *Data, err error) {
 // 		},
 // 	}
 // 	fmt.Println(config.ToRawYaml(d))
-}
+// }
