@@ -259,7 +259,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 					if _, ok := podModels[p.Namespace]; !ok {
 						podModels[p.Namespace] = make([]*model.Pod, 0)
 					}
-					log.Debugf("%s metrics: %#v", p.Name, mpods[p.Name])
+					log.Debugf("%s limit: %#v, metrics: %#v", p.Name, p.MemLimit, mpods[p.Name])
 					if mpod, ok := mpods[p.Name]; ok {
 						podModels[p.Namespace] = append(podModels[p.Namespace], &model.Pod{
 							Name:        p.Name,
