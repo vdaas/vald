@@ -21,10 +21,10 @@ metadata:
   labels:
     app: vald-gateway
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v0.0.62
+    helm.sh/chart: vald-v0.0.63
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v0.0.62
+    app.kubernetes.io/version: v0.0.63
     app.kubernetes.io/component: gateway
 spec:
   progressDeadlineSeconds: 600
@@ -46,7 +46,7 @@ spec:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/component: gateway
       annotations:
-        checksum/configmap: fb21a99a570fe6271358c49080424e4d527be6b2c2759d82f1d3708a38c2e5cc
+        checksum/configmap: 6726b3616c5cf7bdf7f3550dfb56cabcd6e4deba9e82e88ed081754a7f5e7efb
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-gateway
