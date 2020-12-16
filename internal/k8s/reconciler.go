@@ -115,7 +115,6 @@ func New(opts ...Option) (cl Controller, err error) {
 
 func (c *controller) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 1)
-
 	c.eg.Go(safety.RecoverFunc(func() error {
 		defer close(ech)
 		err := c.mgr.Start(ctx)
