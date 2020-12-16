@@ -131,9 +131,9 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 			}),
 			statefulset.WithOnReconcileFunc(func(statefulSetList map[string][]statefulset.StatefulSet) {
 				sss, ok := statefulSetList[d.agentName]
-				for i, ss := range sss {
-					log.Debugf("[reconcile] [%s:%d] - statefulset for agent: %#v", d.agentName, i, ss)
-				}
+				// for i, ss := range sss {
+					// log.Debugf("[reconcile] [%s:%d] - statefulset for agent: %#v", d.agentName, i, ss)
+				// }
 				if ok {
 					if len(sss) == 1 {
 						d.statefulSets.Store(sss[0])
@@ -184,7 +184,7 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 				log.Error(err)
 			}),
 			mpod.WithOnReconcileFunc(func(podList map[string]mpod.Pod) {
-				log.Debugf("[reconcile] podMetrics: { len: %d, raw: %#v }", len(podList), podList)
+				// log.Debugf("[reconcile] podMetrics: { len: %d, raw: %#v }", len(podList), podList)
 				if len(podList) > 0 {
 					d.podMetrics.Store(podList)
 				} else {
@@ -259,6 +259,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 					if _, ok := podModels[p.Namespace]; !ok {
 						podModels[p.Namespace] = make([]*model.Pod, 0)
 					}
+					log.Debugf("%s metrics: %#v", p.Name, mpods[p.Name])
 					if mpod, ok := mpods[p.Name]; ok {
 						podModels[p.Namespace] = append(podModels[p.Namespace], &model.Pod{
 							Name:        p.Name,
@@ -372,6 +373,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 						} else {
 							for _, p := range podModels[ns] {
 								u := p.MemoryUsage / p.MemoryLimit
+								log.Debugf("name: %#v, memory usage: %#v, %#v", p.Name, p.MemoryLimit, p.MemoryUsage)
 								amu[ns] += u
 								if u > mmu[ns] {
 									mmu[ns] = u
