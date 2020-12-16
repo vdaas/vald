@@ -291,31 +291,18 @@ func TestErrBlobNoSuchBucket_Unwrap(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           err: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           err: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			err := errors.New("internal error")
+			return test{
+				name: "unwrap returns the unwrapped error",
+				fields: fields{
+					err: err,
+				},
+				want: want{
+					err: err,
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
@@ -365,31 +352,18 @@ func TestErrBlobNoSuchKey_Unwrap(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           err: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           err: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			err := errors.New("internal error")
+			return test{
+				name: "unwrap returns the unwrapped error",
+				fields: fields{
+					err: err,
+				},
+				want: want{
+					err: err,
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
