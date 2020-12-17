@@ -258,7 +258,7 @@ k8s/external/cassandra/initialize:
 k8s/external/scylla/deploy:
 	kubectl apply -f https://raw.githubusercontent.com/scylladb/scylla-operator/master/examples/common/cert-manager.yaml
 	kubectl wait -n cert-manager --for=condition=ready pod -l app=cert-manager --timeout=60s
-	sleep 30
+	sleep 20
 	kubectl apply -f https://raw.githubusercontent.com/scylladb/scylla-operator/master/examples/common/operator.yaml
 	kubectl wait -n scylla-operator-system --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=scylla-operator-controller-manager-0 --timeout=600s
 	kubectl -n scylla-operator-system get pod
