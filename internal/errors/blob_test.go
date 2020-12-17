@@ -21,7 +21,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/pkg/errors"
 	"go.uber.org/goleak"
 )
 
@@ -285,14 +284,14 @@ func TestErrBlobNoSuchBucket_Unwrap(t *testing.T) {
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		if !Is(err, w.err) {
+			return Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
 	tests := []test{
 		func() test {
-			err := errors.New("internal error")
+			err := New("internal error")
 			return test{
 				name: "unwrap returns the unwrapped error",
 				fields: fields{
@@ -346,14 +345,14 @@ func TestErrBlobNoSuchKey_Unwrap(t *testing.T) {
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		if !Is(err, w.err) {
+			return Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
 	tests := []test{
 		func() test {
-			err := errors.New("internal error")
+			err := New("internal error")
 			return test{
 				name: "unwrap returns the unwrapped error",
 				fields: fields{
