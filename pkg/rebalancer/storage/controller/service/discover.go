@@ -419,6 +419,7 @@ func (d *discoverer) genJobTpl() (jobTpl *job.Job, err error) {
 	if !ok {
 		return nil, errors.New("job template is empty")
 	}
+	jobTpl = &job.Job{}
 	err = d.decoder.DecodeInto([]byte(tmpl), jobTpl)
 	if err != nil {
 		return nil, errors.Wrap(err, "fails decoding template")
