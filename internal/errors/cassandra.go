@@ -41,7 +41,7 @@ var (
 	// ErrCassandraUnavailable represents NewErrCassandraUnavailableIdentity.
 	ErrCassandraUnavailable = NewErrCassandraUnavailableIdentity
 
-	// ErrCassandraNotFound represents a function to generate an error of cassandra key not found.
+	// ErrCassandraNotFound represents a function to generate an error of cassandra keys not found.
 	ErrCassandraNotFound = func(keys ...string) error {
 		switch {
 		case len(keys) == 1:
