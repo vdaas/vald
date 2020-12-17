@@ -303,7 +303,7 @@ func New(opts ...Option) (Cassandra, error) {
 func (c *client) Open(ctx context.Context) (err error) {
 	if c.session, err = c.cluster.CreateSession(); err != nil {
 		log.Debugf("failed to create session %#v", c)
-		return err
+		return errors.ErrCassandraFailedToCreateSession(err, c.hosts, c.port, c.cqlVersion)
 	}
 	return nil
 }
