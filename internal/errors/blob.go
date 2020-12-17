@@ -59,7 +59,7 @@ type ErrBlobNoSuchKey struct {
 	err error
 }
 
-// Error return the string representation of the internal error.
+// Error returns the string representation of the internal error.
 func (e *ErrBlobNoSuchKey) Error() string {
 	return e.err.Error()
 }

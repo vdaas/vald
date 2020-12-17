@@ -47,7 +47,7 @@ func TestErrBlobNoSuchBucket_Error(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "error return error string",
+			name: "returns error string",
 			fields: fields{
 				err: New("err"),
 			},
@@ -105,7 +105,7 @@ func TestIsErrBlobNoSuchBucket(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return true when the error is ErrBlobNoSuchBucket",
+			name: "returns true when the error is ErrBlobNoSuchBucket",
 			args: args{
 				err: &ErrBlobNoSuchBucket{New("nosuchbucketerr")},
 			},
@@ -114,7 +114,7 @@ func TestIsErrBlobNoSuchBucket(t *testing.T) {
 			},
 		},
 		{
-			name: "return false when the error is not ErrBlobNoSuchBucket",
+			name: "returns false when the error is not ErrBlobNoSuchBucket",
 			args: args{
 				err: New("anothererr"),
 			},
@@ -169,7 +169,7 @@ func TestErrBlobNoSuchKey_Error(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "error return error string",
+			name: "returns error string",
 			fields: fields{
 				err: New("err"),
 			},
@@ -227,7 +227,7 @@ func TestIsErrBlobNoSuchKey(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return true when the error is ErrBlobNoSuchKey",
+			name: "returns true when the error is ErrBlobNoSuchKey",
 			args: args{
 				err: &ErrBlobNoSuchKey{New("nosuchkeyerr")},
 			},
@@ -236,7 +236,7 @@ func TestIsErrBlobNoSuchKey(t *testing.T) {
 			},
 		},
 		{
-			name: "return false when the error is not ErrBlobNoSuchKey",
+			name: "returns false when the error is not ErrBlobNoSuchKey",
 			args: args{
 				err: New("anothererr"),
 			},
@@ -293,7 +293,7 @@ func TestErrBlobNoSuchBucket_Unwrap(t *testing.T) {
 		func() test {
 			err := New("internal error")
 			return test{
-				name: "unwrap returns the unwrapped error",
+				name: "returns the unwrapped error",
 				fields: fields{
 					err: err,
 				},
@@ -354,7 +354,7 @@ func TestErrBlobNoSuchKey_Unwrap(t *testing.T) {
 		func() test {
 			err := New("internal error")
 			return test{
-				name: "unwrap returns the unwrapped error",
+				name: "returns the unwrapped error",
 				fields: fields{
 					err: err,
 				},
