@@ -84,7 +84,7 @@ func (e *ErrCassandraNotFoundIdentity) Error() string {
 	return e.err.Error()
 }
 
-// Unwrap returns internal error.
+// Unwrap returns an internal error.
 func (e *ErrCassandraNotFoundIdentity) Unwrap() error {
 	return e.err
 }
