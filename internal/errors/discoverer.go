@@ -38,6 +38,6 @@ var (
 		return Errorf("discover pod %s not found", name)
 	}
 
-	// ErrInvalidDiscoveryCache represents an error that cast of discovery cache type failed.
+	// ErrInvalidDiscoveryCache represents an error that type conversion of discovery cache failed.
 	ErrInvalidDiscoveryCache = New("cache type cast failed")
 )
