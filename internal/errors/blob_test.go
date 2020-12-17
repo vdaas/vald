@@ -122,6 +122,15 @@ func TestIsErrBlobNoSuchBucket(t *testing.T) {
 				want: false,
 			},
 		},
+		{
+			name: "returns false when the error is nil",
+			args: args{
+				err: nil,
+			},
+			want: want{
+				want: false,
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -244,6 +253,15 @@ func TestIsErrBlobNoSuchKey(t *testing.T) {
 				want: false,
 			},
 		},
+		{
+			name: "returns false when the error is nil",
+			args: args{
+				err: nil,
+			},
+			want: want{
+				want: false,
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -302,6 +320,15 @@ func TestErrBlobNoSuchBucket_Unwrap(t *testing.T) {
 				},
 			}
 		}(),
+		{
+			name: "returns the unwrapped nil error",
+			fields: fields{
+				err: nil,
+			},
+			want: want{
+				err: nil,
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -363,6 +390,15 @@ func TestErrBlobNoSuchKey_Unwrap(t *testing.T) {
 				},
 			}
 		}(),
+		{
+			name: "returns the unwrapped nil error",
+			fields: fields{
+				err: nil,
+			},
+			want: want{
+				err: nil,
+			},
+		},
 	}
 
 	for _, test := range tests {
