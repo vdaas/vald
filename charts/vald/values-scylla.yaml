@@ -29,21 +29,39 @@ manager:
         name: wait-for-scylla
         image: cassandra:latest
         cassandra:
+          port: 9180
           hosts:
-            - scylla-0.scylla.default.svc.cluster.local
-            - scylla-1.scylla.default.svc.cluster.local
-            - scylla-2.scylla.default.svc.cluster.local
+            - vald-scylla-cluster-client.scylla.svc.cluster.local
+            # - scylla-0.scylla.default.svc.cluster.local
+            # - scylla-1.scylla.default.svc.cluster.local
+            # - scylla-2.scylla.default.svc.cluster.local
+          # options:
+          #   - "-uroot"
+          #   - "-p${CASSANDRA_PASSWORD}"
         sleepDuration: 2
+        env: []
+    #     - name: CASSANDRA_PASSWORD
+    #       valueFrom:
+    #         secretKeyRef:
+    #           name: cassandra-secret
+    #           key: password
     env: []
+    #   - name: CASSANDRA_PASSWORD
+    #     valueFrom:
+    #       secretKeyRef:
+    #         name: cassandra-secret
+    #         key: password
     mysql:
       enabled: false
     cassandra:
       enabled: true
       config:
+        port: 9180
         hosts:
-          - scylla-0.scylla.default.svc.cluster.local
-          - scylla-1.scylla.default.svc.cluster.local
-          - scylla-2.scylla.default.svc.cluster.local
+          - vald-scylla-cluster-client.scylla.svc.cluster.local
+          # - scylla-0.scylla.default.svc.cluster.local
+          # - scylla-1.scylla.default.svc.cluster.local
+          # - scylla-2.scylla.default.svc.cluster.local
 
 meta:
   image:
@@ -53,18 +71,36 @@ meta:
       name: wait-for-scylla
       image: cassandra:latest
       cassandra:
+        port: 9180
         hosts:
-          - scylla-0.scylla.default.svc.cluster.local
-          - scylla-1.scylla.default.svc.cluster.local
-          - scylla-2.scylla.default.svc.cluster.local
+          - vald-scylla-cluster-client.scylla.svc.cluster.local
+          # - scylla-0.scylla.default.svc.cluster.local
+          # - scylla-1.scylla.default.svc.cluster.local
+          # - scylla-2.scylla.default.svc.cluster.local
+        # options:
+        #   - "-uroot"
+        #   - "-p${CASSANDRA_PASSWORD}"
       sleepDuration: 2
+      env: []
+  #     - name: CASSANDRA_PASSWORD
+  #       valueFrom:
+  #         secretKeyRef:
+  #           name: cassandra-secret
+  #           key: password
   env: []
+  #   - name: CASSANDRA_PASSWORD
+  #     valueFrom:
+  #       secretKeyRef:
+  #         name: cassandra-secret
+  #         key: password
   redis:
     enabled: false
   cassandra:
     enabled: true
     config:
+      port: 9180
       hosts:
-        - scylla-0.scylla.default.svc.cluster.local
-        - scylla-1.scylla.default.svc.cluster.local
-        - scylla-2.scylla.default.svc.cluster.local
+        - vald-scylla-cluster-client.scylla.svc.cluster.local
+        # - scylla-0.scylla.default.svc.cluster.local
+        # - scylla-1.scylla.default.svc.cluster.local
+        # - scylla-2.scylla.default.svc.cluster.local

@@ -1,0 +1,109 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: scylla
+
+---
+
+# Role for scylla members.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: vald-scylla-cluster-member
+  namespace: scylla
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - services
+    verbs:
+      - get
+      - list
+      - patch
+      - watch
+  - apiGroups:
+      - "apps"
+    resources:
+      - statefulsets
+    verbs:
+      - get
+      - list
+      - patch
+      - watch
+  - apiGroups:
+      - scylla.scylladb.com
+    resources:
+      - scyllaclusters
+    verbs:
+      - get
+
+---
+
+# ServiceAccount for scylla members.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vald-scylla-cluster-member
+  namespace: scylla
+
+---
+
+# RoleBinding for scylla members.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: vald-scylla-cluster-member
+  namespace: scylla
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: vald-scylla-cluster-member
+subjects:
+  - kind: ServiceAccount
+    name: vald-scylla-cluster-member
+    namespace: scylla
+
+---
+
+apiVersion: scylla.scylladb.com/v1alpha1
+kind: ScyllaCluster
+metadata:
+  labels:
+    controller-tools.k8s.io: "1.0"
+  name: vald-scylla-cluster
+  namespace: scylla
+spec:
+  agentVersion: 2.2.0
+  datacenter:
+    name: dc0
+    racks:
+    - agentResources: {}
+      members: 3
+      name: rack0
+      resources:
+        limits:
+          cpu: "1"
+          memory: 1Gi
+        requests:
+          cpu: "1"
+          memory: 1Gi
+      scyllaAgentConfig: scylla-agent-config
+      scyllaConfig: scylla-config
+      storage:
+        capacity: 5Gi
+      volumeMounts:
+      - mountPath: /tmp/coredumps
+        name: coredumpfs
+      volumes:
+      - hostPath:
+          path: /tmp/coredumps
+        name: coredumpfs
+  developerMode: true
+  network: {}
+  version: 4.2.0

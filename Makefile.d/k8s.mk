@@ -125,7 +125,7 @@ k8s/vald/deploy/cassandra: \
 	kubectl apply -f $(TEMP_DIR)/vald/templates/agent
 	kubectl apply -f $(TEMP_DIR)/vald/templates/discoverer
 	kubectl apply -f $(TEMP_DIR)/vald/templates/meta
-	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/vald
+	# kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/vald
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/lb
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/backup
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/meta
@@ -148,7 +148,7 @@ k8s/vald/delete/cassandra: \
 	kubectl delete -f $(TEMP_DIR)/vald/templates/agent
 	kubectl delete -f $(TEMP_DIR)/vald/templates/discoverer
 	kubectl delete -f $(TEMP_DIR)/vald/templates/meta
-	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/vald
+	# kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/vald
 	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/lb
 	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/backup
 	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/meta
@@ -256,14 +256,29 @@ k8s/external/cassandra/initialize:
 .PHONY: k8s/external/scylla/deploy
 ## deploy scylla to k8s
 k8s/external/scylla/deploy:
-	kubectl apply -f k8s/jobs/db/initialize/cassandra/configmap.yaml
-	kubectl apply -f k8s/external/scylla
+	kubectl apply -f https://raw.githubusercontent.com/scylladb/scylla-operator/master/examples/common/cert-manager.yaml
+	kubectl wait -n cert-manager --for=condition=ready pod -l app=cert-manager --timeout=60s
+	sleep 30
+	kubectl apply -f https://raw.githubusercontent.com/scylladb/scylla-operator/master/examples/common/operator.yaml
+	kubectl wait -n scylla-operator-system --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=scylla-operator-controller-manager-0 --timeout=600s
+	kubectl -n scylla-operator-system get pod
+	kubectl apply -f k8s/external/scylla/scyllacluster.yaml
+	kubectl -n scylla get ScyllaCluster
+	kubectl -n scylla get pods
+	kubectl wait -n scylla --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=vald-scylla-cluster-dc0-rack0-0 --timeout=600s
+	kubectl wait -n scylla --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=vald-scylla-cluster-dc0-rack0-1 --timeout=600s
+	kubectl wait -n scylla --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=vald-scylla-cluster-dc0-rack0-2 --timeout=600s
+	kubectl -n scylla get ScyllaCluster
+	kubectl -n scylla get pods
+	kubectl apply -f k8s/jobs/db/initialize/scylla
 
 .PHONY: k8s/external/scylla/delete
 ## delete scylla from k8s
 k8s/external/scylla/delete:
-	-kubectl delete -f k8s/external/scylla
-	-kubectl delete configmap cassandra-initdb
+	kubectl delete -f k8s/jobs/db/initialize/scylla
+	kubectl delete -f k8s/external/scylla/scyllacluster.yaml
+	kubectl delete -f https://raw.githubusercontent.com/scylladb/scylla-operator/master/examples/common/operator.yaml
+	kubectl delete -f https://raw.githubusercontent.com/scylladb/scylla-operator/master/examples/common/cert-manager.yaml
 
 .PHONY: k8s/metrics/metrics-server/deploy
 ## deploy metrics-serrver

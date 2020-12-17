@@ -64,6 +64,9 @@ var (
 	ErrCassandraHostDownDetected = func(err error, nodeInfo string) error {
 		return Wrapf(err, "error cassandra host down detected\t%s", nodeInfo)
 	}
+	ErrCassandraFailedToCreateSession = func(err error, hosts []string, port int, cqlVersion string ) error {
+	  return Wrapf(err, "error cassandra client failed to create session to hosts: %v\tport: %d\tcql_version: %s ", hosts, port, cqlVersion)
+	}
 )
 
 type ErrCassandraNotFoundIdentity struct {
