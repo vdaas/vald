@@ -21,15 +21,14 @@ import (
 	// TODO: move to internal
 
 	batchv1 "k8s.io/api/batch/v1"
-	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/conversion"
 )
 
-// TODO: rename discoverer to rebalancer
 // Discoverer represents the discoverer interface.
+// TODO: rename discoverer to rebalancer
 type Discoverer interface {
 	// Start --
 	Start(ctx context.Context) (<-chan error, error)
@@ -131,9 +130,6 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 			}),
 			statefulset.WithOnReconcileFunc(func(statefulSetList map[string][]statefulset.StatefulSet) {
 				sss, ok := statefulSetList[d.agentName]
-				// for i, ss := range sss {
-				// log.Debugf("[reconcile] [%s:%d] - statefulset for agent: %#v", d.agentName, i, ss)
-				// }
 				if ok {
 					if len(sss) == 1 {
 						d.statefulSets.Store(sss[0])
@@ -159,7 +155,7 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 	}
 
 	d.ctrl, err = k8s.New(
-		k8s.WithControllerName("rebalance controller"),
+		k8s.WithControllerName("rebalance storage controller"),
 		k8s.WithEnableLeaderElection(),
 		k8s.WithLeaderElectionID(d.leaderElectionID),
 		k8s.WithResourceController(job),
@@ -184,7 +180,6 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 				log.Error(err)
 			}),
 			mpod.WithOnReconcileFunc(func(podList map[string]mpod.Pod) {
-				// log.Debugf("[reconcile] podMetrics: { len: %d, raw: %#v }", len(podList), podList)
 				if len(podList) > 0 {
 					d.podMetrics.Store(podList)
 				} else {
@@ -221,7 +216,6 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 		var (
 			prevSsModel   map[string]*model.StatefulSet
 			prevPodModels map[string][]*model.Pod
-			prevJobTpl    *job.Job
 		)
 
 		for {
@@ -230,90 +224,30 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 				return ctx.Err()
 			case <-dt.C:
 				var (
-					mpods map[string]mpod.Pod
-					pods  []pod.Pod
-					jobs  []job.Job
-					ss    statefulset.StatefulSet
-					ok    bool
+					ss statefulset.StatefulSet
+					ok bool
 
 					podModels map[string][]*model.Pod
 					jobModels map[string][]*model.Job
 					ssModel   map[string]*model.StatefulSet
-					jobTpl    job.Job
+					jobTpl    *job.Job
 				)
 
-				mpods, ok = d.podMetrics.Load().(map[string]mpod.Pod)
-				if !ok {
-					log.Info("pod metrics is empty")
-					continue
-				}
-
-				pods, ok = d.pods.Load().([]pod.Pod)
-				if !ok {
-					log.Info("pod is empty")
-					continue
-				}
-
-				podModels = make(map[string][]*model.Pod)
-				for _, p := range pods {
-					if _, ok := podModels[p.Namespace]; !ok {
-						podModels[p.Namespace] = make([]*model.Pod, 0)
-					}
-					log.Debugf("%s limit: %#v, metrics: %#v", p.Name, p.MemLimit, mpods[p.Name])
-					if mpod, ok := mpods[p.Name]; ok {
-						podModels[p.Namespace] = append(podModels[p.Namespace], &model.Pod{
-							Name:        p.Name,
-							Namespace:   p.Namespace,
-							MemoryLimit: p.MemLimit,
-							MemoryUsage: mpod.Mem,
-						})
-					}
-				}
-
-				jobModels = make(map[string][]*model.Job)
-				jobs, ok = d.jobs.Load().([]job.Job)
-				if !ok {
-					log.Info("job is empty")
-				} else {
-					for _, j := range jobs {
-						var t time.Time
-						if j.Status.StartTime != nil {
-							t = j.Status.StartTime.Time
-						}
-						if _, ok := jobModels[j.Namespace]; !ok {
-							jobModels[j.Namespace] = make([]*model.Job, 0)
-						}
-
-						jobModels[j.Namespace] = append(jobModels[j.Namespace], &model.Job{
-							Name:                 j.Name,
-							Namespace:            j.Namespace,
-							Active:               j.Status.Active,
-							StartTime:            t,
-							Type:                 j.Labels["type"],
-							TargetAgentNamespace: j.Labels["target_agent_namespace"],
-							TargetAgentName:      j.Labels["target_agent_name"],
-							ControllerNamespace:  j.Labels["controller_namespace"],
-							ControllerName:       j.Labels["controller_name"],
-						})
-					}
-				}
-
-				tmpl, ok := d.jobTemplate.Load().(string)
-				if !ok {
-					log.Info("job template is empty")
-					continue
-				}
-				err = d.decoder.DecodeInto([]byte(tmpl), &jobTpl)
+				podModels, err := d.genPodModels()
 				if err != nil {
-					log.Infof("fails decoding template: %s", err.Error())
+					log.Infof("error generating pod models: %s", err.Error())
 					continue
 				}
-				if prevJobTpl == nil {
-					prevJobTpl = &jobTpl
-				} else {
-					if !equality.Semantic.DeepEqual(*prevJobTpl, jobTpl) {
-						prevJobTpl = &jobTpl
-					}
+
+				jobModels, err = d.genJobModels()
+				if err != nil {
+					log.Infof("error generating job models: %s", err.Error())
+				}
+
+				jobTpl, err = d.genJobTpl()
+				if err != nil {
+					log.Infof("error generating job template: %s", err.Error())
+					continue
 				}
 
 				// TODO: cache specified reconciled result based on agentResourceType.
@@ -336,13 +270,6 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 					return nil
 				}
 
-				// TODO: export below logic to other internal function.
-				var (
-					mmu        map[string]float64 = make(map[string]float64) // max memory usage
-					amu        map[string]float64 = make(map[string]float64) // average memory usage
-					rate       map[string]float64 = make(map[string]float64) // rabalance rate
-					maxPodName map[string]string  = make(map[string]string)
-				)
 				if prevSsModel != nil {
 					for ns, psm := range prevSsModel {
 						if _, ok := ssModel[ns]; !ok {
@@ -351,70 +278,31 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 						if *ssModel[ns].DesiredReplicas != ssModel[ns].Replicas {
 							continue
 						}
-						if *psm.DesiredReplicas > *ssModel[ns].DesiredReplicas {
-							for _, prevPod := range prevPodModels[ns] {
-								var ok bool
-								for _, pod := range podModels[ns] {
-									if prevPod.Name == pod.Name {
-										ok = true
-										break
-									}
-								}
-								if !ok {
-									log.Debugf("[decrease] creating job for pod %s", prevPod.Name)
-									if err := d.createJob(ctx, jobTpl, prevPod.Name); err != nil {
-										log.Errorf("failed to create job: %s", err)
-										continue
-									}
-									prevSsModel[ns] = ssModel[ns]
-									prevPodModels[ns] = podModels[ns]
+
+						decreasedPodNames := d.isSsReplicaDecreased(psm, ssModel[ns], prevPodModels[ns], podModels[ns])
+						if len(decreasedPodNames) > 0 {
+							for _, name := range decreasedPodNames {
+								log.Debugf("[decrease] creating job for pod %s", name)
+								if err := d.createJob(ctx, *jobTpl, name); err != nil {
+									log.Errorf("failed to create job: %s", err)
+									continue
 								}
 							}
 						} else {
-							for _, p := range podModels[ns] {
-								u := p.MemoryUsage / p.MemoryLimit
-								log.Debugf("name: %#v, memory usage: %#v, %#v", p.Name, p.MemoryLimit, p.MemoryUsage)
-								amu[ns] += u
-								if u > mmu[ns] {
-									mmu[ns] = u
-									maxPodName[ns] = p.Name
-								}
-							}
-							amu[ns] = amu[ns] / float64(len(podModels[ns]))
-							bias := mmu[ns] - amu[ns]
-							log.Debugf("bias: %v, tolerance: %v, maxPodName: %v, average memory usage: %v", bias, d.tolerance, maxPodName[ns], amu[ns])
-							if bias > d.tolerance {
-								rate[ns] = 1 - (amu[ns] / mmu[ns])
-								var ok bool
-								for _, jobs := range jobModels {
-									for _, job := range jobs {
-										if job.Type == "rebalance" && job.Active != 0 && job.TargetAgentNamespace == ns {
-											ok = true
-											break
-										}
-									}
-
-									if ok {
-										break
-									}
-								}
-								if !ok || len(jobModels[ns]) == 0 {
-									log.Debugf("[bias] creating job for pod %s", maxPodName[ns])
-									if err := d.createJob(ctx, jobTpl, maxPodName[ns]); err != nil {
-										log.Errorf("failed to create job: %s", err)
-										continue
-									}
-									prevSsModel = ssModel
-									prevPodModels = podModels
+							maxPodName, rate := d.getBiasOverDetail(podModels[ns])
+							if maxPodName != "" && !d.isJobRunning(jobModels, ns) {
+								log.Debugf("[bias] creating job for pod %s, rate: %v", maxPodName, rate)
+								if err := d.createJob(ctx, *jobTpl, maxPodName); err != nil {
+									log.Errorf("failed to create job: %s", err)
+									continue
 								}
 							}
 						}
 					}
-				} else {
-					// Store reconciled result for next loop.
-					prevSsModel = ssModel
-					prevPodModels = podModels
 				}
+				// Store reconciled result for next loop.
+				prevSsModel = ssModel
+				prevPodModels = podModels
 
 			case err := <-cech:
 				if err != nil {
@@ -462,4 +350,131 @@ func (d *discoverer) createJob(ctx context.Context, jobTpl job.Job, agentName st
 	}
 
 	return nil
+}
+
+func (d *discoverer) genPodModels() (podModels map[string][]*model.Pod, err error) {
+	mpods, ok := d.podMetrics.Load().(map[string]mpod.Pod)
+	if !ok {
+		return nil, errors.New("pod metrics is empty")
+	}
+
+	pods, ok := d.pods.Load().([]pod.Pod)
+	if !ok {
+		return nil, errors.New("pod is empty")
+	}
+
+	podModels = make(map[string][]*model.Pod)
+	for _, p := range pods {
+		if _, ok := podModels[p.Namespace]; !ok {
+			podModels[p.Namespace] = make([]*model.Pod, 0)
+		}
+		log.Debugf("%s limit: %#v, metrics: %#v", p.Name, p.MemLimit, mpods[p.Name])
+		if mpod, ok := mpods[p.Name]; ok {
+			podModels[p.Namespace] = append(podModels[p.Namespace], &model.Pod{
+				Name:        p.Name,
+				Namespace:   p.Namespace,
+				MemoryLimit: p.MemLimit,
+				MemoryUsage: mpod.Mem,
+			})
+		}
+	}
+
+	return
+}
+
+func (d *discoverer) genJobModels() (jobModels map[string][]*model.Job, err error) {
+	jobs, ok := d.jobs.Load().([]job.Job)
+	if !ok {
+		return nil, errors.New("job is empty")
+	}
+
+	jobModels = make(map[string][]*model.Job)
+	for _, j := range jobs {
+		var t time.Time
+		if j.Status.StartTime != nil {
+			t = j.Status.StartTime.Time
+		}
+		if _, ok := jobModels[j.Namespace]; !ok {
+			jobModels[j.Namespace] = make([]*model.Job, 0)
+		}
+
+		jobModels[j.Namespace] = append(jobModels[j.Namespace], &model.Job{
+			Name:                 j.Name,
+			Namespace:            j.Namespace,
+			Active:               j.Status.Active,
+			StartTime:            t,
+			Type:                 j.Labels["type"],
+			TargetAgentNamespace: j.Labels["target_agent_namespace"],
+			TargetAgentName:      j.Labels["target_agent_name"],
+			ControllerNamespace:  j.Labels["controller_namespace"],
+			ControllerName:       j.Labels["controller_name"],
+		})
+	}
+
+	return
+}
+
+func (d *discoverer) genJobTpl() (jobTpl *job.Job, err error) {
+	tmpl, ok := d.jobTemplate.Load().(string)
+	if !ok {
+		return nil, errors.New("job template is empty")
+	}
+	err = d.decoder.DecodeInto([]byte(tmpl), jobTpl)
+	if err != nil {
+		return nil, errors.Wrap(err, "fails decoding template")
+	}
+	return
+}
+
+func (d *discoverer) isSsReplicaDecreased(psm, sm *model.StatefulSet, ppm, pm []*model.Pod) (podNames []string) {
+	if *psm.DesiredReplicas > *sm.DesiredReplicas {
+		podNames = make([]string, 0)
+		for _, prevPod := range ppm {
+			var ok bool
+			for _, pod := range pm {
+				if prevPod.Name == pod.Name {
+					ok = true
+					break
+				}
+			}
+			if !ok {
+				podNames = append(podNames, prevPod.Name)
+			}
+		}
+	}
+	return
+}
+
+func (d *discoverer) getBiasOverDetail(pm []*model.Pod) (podName string, rate float64) {
+	var avgMemUsg, maxMemUsg float64
+	for _, p := range pm {
+		u := p.MemoryUsage / p.MemoryLimit
+		log.Debugf("name: %#v, memory usage: %#v, %#v", p.Name, p.MemoryLimit, p.MemoryUsage)
+		avgMemUsg += u
+		if u > maxMemUsg {
+			maxMemUsg = u
+			podName = p.Name
+		}
+	}
+	avgMemUsg = avgMemUsg / float64(len(pm))
+	bias := maxMemUsg - avgMemUsg
+	log.Debugf("bias: %v, tolerance: %v, maxPodName: %v, average memory usage: %v", bias, d.tolerance, podName, avgMemUsg)
+	// check wheter rebalance job should be created.
+	if bias < d.tolerance {
+		podName = ""
+	} else {
+		rate = 1 - (avgMemUsg / maxMemUsg)
+	}
+	return
+}
+
+func (d *discoverer) isJobRunning(jobModels map[string][]*model.Job, ns string) bool {
+	for _, jobs := range jobModels {
+		for _, job := range jobs {
+			if job.Type == "rebalance" && job.Active != 0 && job.TargetAgentNamespace == ns {
+				return true
+			}
+		}
+	}
+	return false
 }
