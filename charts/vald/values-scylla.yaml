@@ -20,6 +20,8 @@ defaults:
     level: debug
   image:
     tag: pr-826
+agent:
+  minReplicas: 5
 manager:
   backup:
     image:
