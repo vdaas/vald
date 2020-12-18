@@ -18,29 +18,35 @@
 package errors
 
 var (
-	// internal compressor
+	// ErrInvalidCompressionLevel represents a function to generate an error of invalid compression level.
 	ErrInvalidCompressionLevel = func(level int) error {
 		return Errorf("invalid compression level: %d", level)
 	}
 
-	// Compressor
+	// ErrCompressorNameNotFound represents a function to generate an error of compressor not found.
 	ErrCompressorNameNotFound = func(name string) error {
 		return Errorf("compressor %s not found", name)
 	}
 
+	// ErrCompressedDataNotFound returns an error of compressed data is not found.
 	ErrCompressedDataNotFound = New("compressed data not found")
 
+	// ErrDecompressedDataNotFound returns an error of decompressed data is not found.
 	ErrDecompressedDataNotFound = New("decompressed data not found")
 
+	// ErrCompressFailed returns an error of compress failed.
 	ErrCompressFailed = New("compress failed")
 
+	// ErrDecompressFailed returns an error of decompressing failed.
 	ErrDecompressFailed = New("decompress failed")
 
+	// ErrCompressorRegistererIsNotRunning represents a function to generate an error of compressor registerers is not running.
 	ErrCompressorRegistererIsNotRunning = func() error {
-		return Errorf("compressor registerers is not running")
+		return New("compressor registerers is not running")
 	}
 
+	// ErrCompressorRegistererChannelIsFull represents a function to generate an error that compressor registerer channel is full.
 	ErrCompressorRegistererChannelIsFull = func() error {
-		return Errorf("compressor registerer channel is full")
+		return New("compressor registerer channel is full")
 	}
 )
