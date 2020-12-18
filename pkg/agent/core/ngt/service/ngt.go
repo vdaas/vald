@@ -212,7 +212,6 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 	// it should exit this function and leave this goroutine running.
 	go func() {
 		defer close(ech)
-
 		err = safety.RecoverFunc(func() (err error) {
 			err = eg.Wait()
 			if err != nil {
