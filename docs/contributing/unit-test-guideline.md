@@ -19,7 +19,7 @@ Unit testing validates the basic units of the program in isolation.
 Before creating the unit tests, we must know the essentials of strategy.
 
 1. Know what you are testing
-	- purpose / consumers of target function or classess or etc / designed by contract  defensive program
+	- purpose/consumers of target function or classes or etc / designed by contract  defensive program
 1. Test behaviors and results, not implementation
 	- ensures that tests only fail when there is an actual effect and not due to internal changes
 1. Test one thing at a time
@@ -29,18 +29,18 @@ Before creating the unit tests, we must know the essentials of strategy.
 1. Make tests deterministic
 	- A test should pass all the time or fail all the time until fixed.
 1. Make tests independent and self-sufficient
-	- Setup, execution, and verification steps in a given test should not depend on running othre tests before it. To keep unit tests simple, fast running, and easy to debug, it may be necessary to isolate the class under test
+	- Setup, execution, and verification steps in a given test should not depend on running other tests before it. To keep unit tests simple, fast running, and easy to debug, it may be necessary to isolate the class under test
 1. Repeat yourself when necessary
 	- it is okay to violate the 'do not repeat yourself' principle if it makes tests simpler and easier to read
-1. Measure code covearage but focus on test coverage
+1. Measure code coverage but focus on test coverage
 	- Do not simply to archive code coverage
 
 ### Test case
 
 #### Basic
 
-It is not perfect, but we should try cover all codes at first.
-To cover all code, the basic way is the creating test cases to complete all branch in target unit.
+It is not perfect, but we should try to cover all codes at first.
+To cover all code, the basic way is the creating test cases to complete all branches in the target unit.
 
 Let's see the below function.
 ```go
@@ -59,23 +59,23 @@ func calcSum(val ...int32) (sum int32) {
 When the above function is given, we should create 2 test for archiving 100% code coverage at least.
 
 - When val is not given
-  - In other word, the default value is given
+  - In other words, the default value is given
 - When val(int32) is given
   - `var val int32 = 1`
   
-It seems enough for the given function, but we have to take care some test cases are remaining for imporoving test coverage.
+It seems enough for the given function, but we have to take care of some test cases that are remaining for improving test coverage.
 In this case, there is one test case is remaining.
 
 - When val([]int32) is given
   - `var val []int32 = {1, 2}`
   
-That is the focusing on test coverage.
+That is the focus on test coverage.
 
-Therefore, we should concern all cases for impoving test coverage of target unit.
-To improve test coverage, the basic but critical thinking way is think about input patterns.
-It is not only single input, but also multi inputs.
+Therefore, we should concern all cases for improving test coverage of the target unit.
+To improve test coverage, the basic but critical thinking way is thinking about input patterns.
+It is not only a single input, but also multi inputs.
 
-If a function or method requires multi input, we should try to create test case many patterns.
+If a function or method requires multi-input, we should try to create many test cases.
 
 (Note: The below `calcSum()` is diffrent function from `calsSum(val ...int32)` which we mention before.)
 
@@ -110,7 +110,7 @@ When `calcAverageDiff()` is given, the test patterns are below:
 At a glance, one of the last 2 patterns is enough, but these will help us to notice the bug in dependency.
 It will avoid the unexpected error due to update dependencies.
 
-You should create unit tests for error pattern as same as succesable pattern.
+You should create unit tests for error patterns as same as successive patterns.
 
 #### Advanced
 
@@ -162,28 +162,28 @@ When the above function is given as target, you have to create 3 groups and pick
 In the Vald, we create unit tests based on the basic test case.
 And, you also create unit tests based on robust boundary tests or equivalence class tests as needed.
 
-But, we have to take care about that the Vald is developped using by Go.
-As you know as, Go has many coding features as other languages.
-One of the features is the Go will convert a single value to a slice value when the Function or Method recieves varadic argument (e.g. `...[]int`, `...[]string`, `...interface{}`, or etc) as the input.
+But, we have to take care about that the Vald is developed using Go.
+As you know as Go has many coding features as other languages.
+One of the features is the Go will convert a single value to a slice value when the Function or Method receives variadic argument (e.g. `...[]int`, `...[]string`, `...interface{}`, or etc) as the input.
 It is clear for Go coders. 
 
-And we apply table-driven test for running unit test.
-For example, when we create the unit test of `func getMeta(...[]int)`, the test code will be more complex than other functions' test which don't use varadic argument as the input if we create the test for all input patterns.
-Considering those, finally, we define basic unit case a little bit from [basic test case](#Basic).
+And we apply the table-driven test for running unit tests.
+For example, when we create the unit test of `func getMeta(...[]int)`, the test code will be more complex than other functions' test which don't use variadic argument as the input if we create the test for all input patterns.
+Considering those, finally, we define the basic unit case which is a little bit diffrent from [the basic test case](#Basic).
 
-This change is very clear and you can apply easily.
-Our basic test case depends on the type of 2 varadic argument.
+This change is very clear and you can apply it easily.
+Our basic test case depends on the type of 2 variadic argument.
 
     1. When input is `...interface{}`
         - we have to all test cases with value which satisfies `...interface{}` as same as [basic test case](#Basic). For example, `val = 1`, `val = "input"`, `val = []float64{2020.12}` and so on.
 
     1. When input is not `...interface{}` but `...[]int`, `...[]string` or etc
-        - we have to create only slice pattern test cases, which is same as do not creating test case with single vale.
-        - we should test with boundary cases, for example we should test with `val = []int{math.MaxInt64()}` when the input value is `...[]int`.
+        - we have to create only slice pattern test cases, which is the same as do not create test cases with a single vale.
+        - we should test with boundary cases, for example, we should test with `val = []int{math.MaxInt64()}` when the input value is `...[]int`.
 
 
-Summraize Vlad unit test guideline:
-- apply basic test case, but take care of input variable pattern in particular the varadic argument (`...interface{}` or not)
+Summarize Vlad unit test guideline:
+- apply basic test case, but take care of input variable pattern, in particular, the variadic argument (`...interface{}` or not)
 - apply robust boundary tests including edge cases (e.g. `math.MaxInt64()`)
 - apply equivalence class testing when needed.
 
