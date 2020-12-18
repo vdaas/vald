@@ -7,7 +7,7 @@ This guideline will help you to create good unit tests.
 
 ## Unit Test
 
-Before considering the Unit test, we should define what is the unit.
+Before considering the unit test, we should define what is the unit.
 Unit is a set of procedures or functions, in a procedural or functional language.
 Also, it is a class and its needed classes, in an object or object-oriented language.
 Unit testing validates the basic units of the program in isolation.
@@ -56,7 +56,7 @@ func calcSum(val ...int32) (sum int32) {
 }
 ```
 
-When the above function is given, we should create 2 test for archiving 100% code coverage at least.
+When the above function is given, we should create 2 test for achieving 100% code coverage at least.
 
 - When val is not given
   - In other words, the default value is given
@@ -71,7 +71,7 @@ In this case, there is one test case is remaining.
   
 That is the focus on test coverage.
 
-Therefore, we should concern all cases for improving test coverage of the target unit.
+Therefore, we should consider all cases for improving test coverage of the target unit.
 To improve test coverage, the basic but critical thinking way is thinking about input patterns.
 It is not only a single input, but also multi inputs.
 
@@ -169,14 +169,13 @@ It is clear for Go coders.
 
 And we apply the table-driven test for running unit tests.
 For example, when we create the unit test of `func getMeta(...[]int)`, the test code will be more complex than other functions' test which don't use variadic argument as the input if we create the test for all input patterns.
-Considering those, finally, we define the basic unit case which is a little diffrent from [the basic test case](#Basic).
+Considering those, we define the basic unit case which is a little diffrent from [the basic test case](#Basic).
 
 This change is very clear and you can apply it easily.
 Our basic test case depends on the type of 2 variadic argument.
 
     1. When input is `...interface{}`
         - we have to all test cases with value which satisfies `...interface{}` as same as [basic test case](#Basic). For example, `val = 1`, `val = "input"`, `val = []float64{2020.12}` and so on.
-
     1. When input is not `...interface{}` but `...[]int`, `...[]string` or etc
         - we have to create only slice pattern test cases, which is the same as not create test cases with a single vale.
         - we should test with boundary cases, for example, we should test with `val = []int{math.MaxInt64()}` when the input value is `...[]int`.
