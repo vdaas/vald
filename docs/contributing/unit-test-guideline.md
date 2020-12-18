@@ -162,6 +162,33 @@ When the above function is given as target, you have to create 3 groups and pick
 In the Vald, we create unit tests based on the basic test case.
 And, you also create unit tests based on robust boundary tests or equivalence class tests as needed.
 
+But, we have to take care about that the Vald is developped using by Go.
+As you know as, Go has many coding features as other languages.
+One of the features is the Go will convert a single value to a slice value when the Function or Method recieves varadic argument (e.g. `...[]int`, `...[]string`, `...interface{}`, or etc) as the input.
+It is clear for Go coders. 
+
+And we apply table-driven test for running unit test.
+For example, when we create the unit test of `func getMeta(...[]int)`, the test code will be more complex than other functions' test which don't use varadic argument as the input if we create the test for all input patterns.
+Considering those, finally, we define basic unit case a little bit from [basic test case](#Basic).
+
+This change is very clear and you can apply easily.
+Our basic test case depends on the type of 2 varadic argument.
+
+    1. When input is `...interface{}`
+        - we have to all test cases with value which satisfies `...interface{}` as same as [basic test case](#Basic). For example, `val = 1`, `val = "input"`, `val = []float64{2020.12}` and so on.
+
+    1. When input is not `...interface{}` but `...[]int`, `...[]string` or etc
+        - we have to create only slice pattern test cases, which is same as do not creating test case with single vale.
+        - we should test with boundary cases, for example we should test with `val = []int{math.MaxInt64()}` when the input value is `...[]int`.
+
+
+Summraize Vlad unit test guideline:
+- apply basic test case, but take care of input variable pattern in particular the varadic argument (`...interface{}` or not)
+- apply robust boundary tests including edge cases (e.g. `math.MaxInt64()`)
+- apply equivalence class testing when needed.
+
+
+
 ## Coding Style
 
 Please refer [here](../coding-style.md#Test)
