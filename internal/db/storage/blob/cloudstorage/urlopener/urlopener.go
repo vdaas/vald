@@ -52,24 +52,24 @@ func (uo *urlOpener) URLOpener(ctx context.Context) (guo *gcsblob.URLOpener, err
 		if err != nil {
 			return nil, err
 		}
-		creds, err = google.CredentialsFromJSON(ctx, data)
+		creds, err = google.CredentialsFromJSON(ctx, data, storage.ScopeReadWrite)
 		if err != nil {
 			return nil, err
 		}
 	case len(uo.credentialsJSON) != 0:
 		data := *(*[]byte)(unsafe.Pointer(&uo.credentialsJSON))
-		creds, err = google.CredentialsFromJSON(ctx, data)
+		creds, err = google.CredentialsFromJSON(ctx, data, storage.ScopeReadWrite)
 		if err != nil {
 			return nil, err
 		}
 	default:
-		creds, err = google.FindDefaultCredentials(ctx)
+		creds, err = google.FindDefaultCredentials(ctx, storage.ScopeReadWrite)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	cfg, err := google.JWTConfigFromJSON(creds.JSON, storage.ScopeFullControl)
+	cfg, err := google.JWTConfigFromJSON(creds.JSON, storage.ScopeReadWrite)
 	if err != nil {
 		return nil, err
 	}
