@@ -19,21 +19,21 @@ Unit testing validates the basic units of the program in isolation.
 Before creating the unit tests, we must know the essentials of strategy.
 
 1. Know what you are testing
-	- purpose/consumers of target function or classes or etc / designed by contract  defensive program
+	- Purpose/Consumers of target function or classes or etc / designed by contract  defensive program.
 1. Test behaviors and results, not implementation
-	- ensures that tests only fail when there is an actual effect and not due to internal changes
+	- ensures that tests only fail when there is an actual effect and not due to internal changes.
 1. Test one thing at a time
-	- each test should have a clear, concise, singular objective
+	- Each test should have a clear, concise, singular objective.
 1. Make tests readable and understandable
-	- hold test code to a similar standard as production code
+	- Hold test code to a similar standard as production code.
 1. Make tests deterministic
 	- A test should pass all the time or fail all the time until fixed.
 1. Make tests independent and self-sufficient
-	- Setup, execution, and verification steps in a given test should not depend on running other tests before it. To keep unit tests simple, fast running, and easy to debug, it may be necessary to isolate the class under test
+	- Setup, execution, and verification steps in a given test should not depend on running other tests before it. To keep unit tests simple, fast running, and easy to debug, it may be necessary to isolate the class under test.
 1. Repeat yourself when necessary
-	- it is okay to violate the 'do not repeat yourself' principle if it makes tests simpler and easier to read
+	- It is okay to violate the 'do not repeat yourself' principle if it makes tests simpler and easier to read.
 1. Measure code coverage but focus on test coverage
-	- Do not simply to archive code coverage
+	- Do not simply to archive code coverage.
 
 ### Test case
 
@@ -99,7 +99,7 @@ func calcAverageDiff(val1 []int32, val2 []int32) (diff float64) {
 
 When `calcAverageDiff()` is given, the test patterns are below:
 
-|len(val1)|len(val2| option |
+| len(val1) | len(val2) | option |
 |:-----:|:-----:|:-----:|
 | 0  | 0  | - |
 | 0  | >0 | - |
@@ -169,7 +169,7 @@ It is clear for Go coders.
 
 And we apply the table-driven test for running unit tests.
 For example, when we create the unit test of `func getMeta(...[]int)`, the test code will be more complex than other functions' test which don't use variadic argument as the input if we create the test for all input patterns.
-Considering those, finally, we define the basic unit case which is a little bit diffrent from [the basic test case](#Basic).
+Considering those, finally, we define the basic unit case which is a little diffrent from [the basic test case](#Basic).
 
 This change is very clear and you can apply it easily.
 Our basic test case depends on the type of 2 variadic argument.
@@ -178,7 +178,7 @@ Our basic test case depends on the type of 2 variadic argument.
         - we have to all test cases with value which satisfies `...interface{}` as same as [basic test case](#Basic). For example, `val = 1`, `val = "input"`, `val = []float64{2020.12}` and so on.
 
     1. When input is not `...interface{}` but `...[]int`, `...[]string` or etc
-        - we have to create only slice pattern test cases, which is the same as do not create test cases with a single vale.
+        - we have to create only slice pattern test cases, which is the same as not create test cases with a single vale.
         - we should test with boundary cases, for example, we should test with `val = []int{math.MaxInt64()}` when the input value is `...[]int`.
 
 
