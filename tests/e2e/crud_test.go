@@ -53,6 +53,13 @@ var (
 	updateNum     int
 	removeNum     int
 
+	insertFrom     int
+	searchFrom     int
+	searchByIDFrom int
+	getObjectFrom  int
+	updateFrom     int
+	removeFrom     int
+
 	waitAfterInsertDuration time.Duration
 
 	forwarder *portforward.Portforward
@@ -70,6 +77,13 @@ func init() {
 	flag.IntVar(&getObjectNum, "get-object-num", 100, "number of id-vector pairs used for get-object")
 	flag.IntVar(&updateNum, "update-num", 10000, "number of id-vector pairs used for update")
 	flag.IntVar(&removeNum, "remove-num", 10000, "number of id-vector pairs used for remove")
+
+	flag.IntVar(&insertFrom, "insert-from", 0, "first index of id-vector pairs used for insert")
+	flag.IntVar(&searchFrom, "search-from", 0, "first index of id-vector pairs used for search")
+	flag.IntVar(&searchByIDFrom, "search-by-id-from", 0, "first index of id-vector pairs used for search-by-id")
+	flag.IntVar(&getObjectFrom, "get-object-from", 0, "first index of id-vector pairs used for get-object")
+	flag.IntVar(&updateFrom, "update-from", 0, "first index of id-vector pairs used for update")
+	flag.IntVar(&removeFrom, "remove-from", 0, "first index of id-vector pairs used for remove")
 
 	datasetName := flag.String("dataset", "fashion-mnist-784-euclidean.hdf5", "dataset")
 	waitAfterInsert := flag.String("wait-after-insert", "3m", "wait duration after inserting vectors")
@@ -285,7 +299,7 @@ func TestE2EInsert(t *testing.T) {
 	}()
 
 	t.Log("insert start")
-	for i := 0; i < len(ds.train); i++ {
+	for i := insertFrom; i < len(ds.train); i++ {
 		id := strconv.Itoa(i)
 		err := sc.Send(&payload.Object_Vector{
 			Id:     id,
@@ -299,7 +313,7 @@ func TestE2EInsert(t *testing.T) {
 			t.Logf("sent: %d", i+1)
 		}
 
-		if i+1 >= insertNum {
+		if i+1 >= insertFrom+insertNum {
 			t.Logf("%d items sent.", i+1)
 			break
 		}
@@ -365,7 +379,7 @@ func TestE2ESearch(t *testing.T) {
 	}()
 
 	t.Log("search start")
-	for i := 0; i < len(ds.test); i++ {
+	for i := searchFrom; i < len(ds.test); i++ {
 		id := strconv.Itoa(i)
 		err := sc.Send(&payload.Search_Request{
 			Vector: ds.test[id],
@@ -384,7 +398,7 @@ func TestE2ESearch(t *testing.T) {
 			t.Logf("sent: %d", i+1)
 		}
 
-		if i+1 >= searchNum {
+		if i+1 >= searchFrom+searchNum {
 			t.Logf("%d items sent.", i+1)
 			break
 		}
@@ -443,7 +457,7 @@ func TestE2ESearchByID(t *testing.T) {
 	}()
 
 	t.Log("search-by-id start")
-	for i := 0; i < len(ds.train); i++ {
+	for i := searchByIDFrom; i < len(ds.train); i++ {
 		id := strconv.Itoa(i)
 		err := sc.Send(&payload.Search_IDRequest{
 			Id: id,
@@ -462,7 +476,7 @@ func TestE2ESearchByID(t *testing.T) {
 			t.Logf("sent: %d", i+1)
 		}
 
-		if i+1 >= searchByIDNum {
+		if i+1 >= searchByIDFrom+searchByIDNum {
 			t.Logf("%d items sent.", i+1)
 			break
 		}
@@ -520,7 +534,7 @@ func TestE2EGetObject(t *testing.T) {
 	}()
 
 	t.Log("get object start")
-	for i := 0; i < len(ds.train); i++ {
+	for i := getObjectFrom; i < len(ds.train); i++ {
 		id := strconv.Itoa(i)
 		err := sc.Send(&payload.Object_ID{
 			Id: id,
@@ -533,7 +547,7 @@ func TestE2EGetObject(t *testing.T) {
 			t.Logf("sent: %d", i+1)
 		}
 
-		if i+1 >= getObjectNum {
+		if i+1 >= getObjectFrom+getObjectNum {
 			t.Logf("%d items sent.", i+1)
 			break
 		}
@@ -583,7 +597,7 @@ func TestE2EUpdate(t *testing.T) {
 	}()
 
 	t.Log("update start")
-	for i := 0; i < len(ds.train); i++ {
+	for i := updateFrom; i < len(ds.train); i++ {
 		id := strconv.Itoa(i)
 		v := ds.train[id]
 		err := sc.Send(&payload.Object_Vector{
@@ -598,7 +612,7 @@ func TestE2EUpdate(t *testing.T) {
 			t.Logf("sent: %d", i+1)
 		}
 
-		if i+1 >= updateNum {
+		if i+1 >= updateFrom+updateNum {
 			t.Logf("%d items sent.", i+1)
 			break
 		}
@@ -648,7 +662,7 @@ func TestE2ERemove(t *testing.T) {
 	}()
 
 	t.Log("remove start")
-	for i := 0; i < len(ds.train); i++ {
+	for i := removeFrom; i < len(ds.train); i++ {
 		id := strconv.Itoa(i)
 		err := sc.Send(&payload.Object_ID{
 			Id: id,
@@ -661,7 +675,7 @@ func TestE2ERemove(t *testing.T) {
 			t.Logf("sent: %d", i+1)
 		}
 
-		if i+1 >= removeNum {
+		if i+1 >= removeFrom+removeNum {
 			t.Logf("%d items sent.", i+1)
 			break
 		}
