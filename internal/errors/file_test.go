@@ -73,7 +73,7 @@ func TestErrFileAlreadyExists(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns error when compression path is 'metadata.json'",
+			name: "returns error when the file path is 'metadata.json'",
 			args: args{
 				path: "metadata.json",
 			},
@@ -82,7 +82,7 @@ func TestErrFileAlreadyExists(t *testing.T) {
 			},
 		},
 		{
-			name: "returns error when compression path is empty",
+			name: "returns error when the file path is empty",
 			args: args{
 				path: "",
 			},
