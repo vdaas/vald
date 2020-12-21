@@ -172,7 +172,7 @@ func TestErrNamespaceNotFound(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns discover namespace not found error when ns is `vald`",
+			name: "returns discover namespace not found error when ns is 'vald'",
 			args: args{
 				ns: "vald",
 			},
