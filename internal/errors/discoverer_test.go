@@ -46,7 +46,7 @@ func TestErrAddrCouldNotDiscover(t *testing.T) {
 			},
 		},
 		{
-			name: "returns discover error when err is nil error and record is `127.0.0.1`",
+			name: "returns discover error when err is nil error and record is '127.0.0.1'",
 			args: args{
 				err:    nil,
 				record: "127.0.0.1",
