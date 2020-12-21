@@ -444,7 +444,7 @@ func TestErrCassandraSetOperationFailed(t *testing.T) {
 			},
 		},
 		{
-			name: "returns set key error when key is `uuid` and error is nil",
+			name: "returns set key error when key is 'uuid' and error is nil",
 			args: args{
 				key: "uuid",
 				err: nil,
