@@ -81,6 +81,7 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 			log.Error(err)
 		}),
 		job.WithOnReconcileFunc(func(jobList map[string][]job.Job) {
+			log.Debugf("[reconcile Job] JobList: %#v", jobList)
 			jobs, ok := jobList[d.jobName]
 			if ok {
 				d.jobs.Store(jobs)
