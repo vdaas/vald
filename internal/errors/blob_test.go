@@ -116,7 +116,7 @@ func TestIsErrBlobNoSuchBucket(t *testing.T) {
 		{
 			name: "returns false when the error is not ErrBlobNoSuchBucket",
 			args: args{
-				err: New("anothererr"),
+				err: &ErrBlobNoSuchKey{New("no such key err")}
 			},
 			want: want{
 				want: false,
@@ -247,7 +247,7 @@ func TestIsErrBlobNoSuchKey(t *testing.T) {
 		{
 			name: "returns false when the error is not ErrBlobNoSuchKey",
 			args: args{
-				err: New("anothererr"),
+				err: &ErrBlobNoSuchBucket{New("no such bucket err")},
 			},
 			want: want{
 				want: false,
@@ -321,7 +321,7 @@ func TestErrBlobNoSuchBucket_Unwrap(t *testing.T) {
 			}
 		}(),
 		{
-			name: "returns the unwrapped nil error",
+			name: "returns nil when getting the unwrapped nil error",
 			fields: fields{
 				err: nil,
 			},
@@ -391,7 +391,7 @@ func TestErrBlobNoSuchKey_Unwrap(t *testing.T) {
 			}
 		}(),
 		{
-			name: "returns the unwrapped nil error",
+			name: "returns nil when getting the unwrapped nil error",
 			fields: fields{
 				err: nil,
 			},
