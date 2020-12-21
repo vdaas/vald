@@ -614,7 +614,7 @@ func TestErrCassandraHostDownDetected(t *testing.T) {
 			},
 		},
 		{
-			name: "returns cassandra host down detected error when nodeInfo is `127.0.0.1` and error is nil",
+			name: "returns cassandra host down detected error when nodeInfo is '127.0.0.1' and error is nil",
 			args: args{
 				nodeInfo: "127.0.0.1",
 				err:      nil,
