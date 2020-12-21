@@ -234,7 +234,7 @@ func TestErrPodNameNotFound(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns discover pod not found error when ns is `vald-discoverer`",
+			name: "returns discover pod not found error when ns is 'vald-discoverer'",
 			args: args{
 				name: "vald-discoverer",
 			},
