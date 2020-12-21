@@ -116,7 +116,7 @@ func TestIsErrBlobNoSuchBucket(t *testing.T) {
 		{
 			name: "returns false when the error is not ErrBlobNoSuchBucket",
 			args: args{
-				err: &ErrBlobNoSuchKey{New("no such key err")}
+				err: &ErrBlobNoSuchKey{New("no such key err")},
 			},
 			want: want{
 				want: false,
