@@ -26,7 +26,7 @@ func TestErrAddrCouldNotDiscover(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns wrapped discover error when err is server error and record is `127.0.0.1`",
+			name: "returns wrapped discover error when err is server error and record is '127.0.0.1'",
 			args: args{
 				err:    New("server error"),
 				record: "127.0.0.1",
