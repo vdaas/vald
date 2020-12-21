@@ -3405,6 +3405,9 @@ rebalancer:
     # @schema {"name": "rebalancer.rebalancer.tolerance", "type": "number"}
     # rebalancer.rebalancer.tolerance -- memory bias tolerance to trigger rebalance job
     tolerance: 0.1
+    # @schema {"name": "rebalancer.rebalancer.rate_threshold", "type": "number"}
+    # rebalancer.rebalancer.rate_threshold -- rate threshold to trigger rebalance job
+    rate_threshold: 0.05
     # @schema {"name": "rebalancer.rebalancer.leader_election_id", "type": "string"}
     # rebalancer.rebalancer.leader_election_id -- leader_election_id for rebalancer controller
     leader_election_id: "vald-rebalancer-storage-controller"

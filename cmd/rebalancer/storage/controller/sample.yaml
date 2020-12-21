@@ -32,6 +32,7 @@ rebalancer:
   agent_resource_type: statefulset
   reconcile_check_duration: 5m
   tolerance: 0.1
+  rate_threshold: 0.05
   leader_election_id: agent-rebalance-controller
 server_config:
   servers:

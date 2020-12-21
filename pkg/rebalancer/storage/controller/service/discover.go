@@ -56,11 +56,12 @@ type discoverer struct {
 
 	leaderElectionID string
 
-	rcd       time.Duration // reconcile check duration
-	eg        errgroup.Group
-	ctrl      k8s.Controller
-	tolerance float64
-	decoder   *conversion.Decoder
+	rcd           time.Duration // reconcile check duration
+	eg            errgroup.Group
+	ctrl          k8s.Controller
+	tolerance     float64
+	rateThreshold float64
+	decoder       *conversion.Decoder
 }
 
 // NewDiscoverer --
@@ -291,7 +292,11 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 							}
 						} else {
 							maxPodName, rate := d.getBiasOverDetail(podModels[ns])
-							if maxPodName != "" && !d.isJobRunning(jobModels, ns) {
+							if maxPodName == "" || rate < d.rateThreshold {
+								log.Debugf("[rate/podname checking] pod name, rate, rateThreshold: %s, %.3f, %f", maxPodName, rate, d.rateThreshold)
+								continue
+							}
+							if !d.isJobRunning(jobModels, ns) {
 								log.Debugf("[bias] creating job for pod %s, rate: %v", maxPodName, rate)
 								if err := d.createJob(ctx, *jobTpl, maxPodName); err != nil {
 									log.Errorf("failed to create job: %s", err)
@@ -460,14 +465,16 @@ func (d *discoverer) getBiasOverDetail(pm []*model.Pod) (string, float64) {
 		podName, avgMemUsg, maxMemUsg := calAvgMemUsg(pm)
 		sig := calSigMemUsg(pm, avgMemUsg)
 
-		log.Debugf("podName, avgMemUsg, maxMemUsg, sig: %s, %.3f, %f, %.3f ", podName, avgMemUsg, maxMemUsg, sig)
+		log.Debugf("[unlimited pod memory set] podName, avgMemUsg, maxMemUsg, sig: %s, %.3f, %.3f, %.3f ", podName, avgMemUsg, maxMemUsg, sig)
 
 		if maxMemUsg >= (1+d.tolerance)*sig {
 			return podName, 1 - (avgMemUsg / maxMemUsg)
 		}
 		return "", 0
 	}
+
 	podName, avgMemUsg, maxMemUsg := calAvgMemUsgWithMemLimit(pm)
+	log.Debugf("[limited pod memory set] podName, avgMemUsg, maxMemUsg: %s, %.3f, %.3f ", podName, avgMemUsg, maxMemUsg)
 
 	if maxMemUsg >= avgMemUsg+d.tolerance {
 		return podName, 1 - (avgMemUsg / maxMemUsg)
