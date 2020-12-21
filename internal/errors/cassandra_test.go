@@ -47,7 +47,7 @@ func TestErrCassandraInvalidConsistencyType(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns error when consistency level is `QUORUM`",
+			name: "returns error when consistency level is 'QUORUM'",
 			args: args{
 				consistency: "QUORUM",
 			},
