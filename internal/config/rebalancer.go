@@ -29,6 +29,7 @@ type RebalanceController struct {
 	AgentResourceType       string  `yaml:"agent_resource_type" json:"agent_resource_type"`
 	ReconcileCheckDuration  string  `yaml:"reconcile_check_duration" json:"reconcile_check_duration"`
 	Tolerance               float64 `yaml:"tolerance" json:"tolerance"`
+	RateThreshold           float64 `yaml:"rate_threshold" json:"rate_threshold"`
 	LeaderElectionID        string  `yaml:"leader_election_id" json:"leader_election_id"`
 }
 

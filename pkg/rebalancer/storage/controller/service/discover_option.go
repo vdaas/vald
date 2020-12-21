@@ -86,6 +86,13 @@ func WithTolerance(t float64) DiscovererOption {
 	}
 }
 
+func WithRateThreshold(t float64) DiscovererOption {
+	return func(d *discoverer) error {
+		d.rateThreshold = t
+		return nil
+	}
+}
+
 func WithErrorGroup(eg errgroup.Group) DiscovererOption {
 	return func(d *discoverer) error {
 		d.eg = eg

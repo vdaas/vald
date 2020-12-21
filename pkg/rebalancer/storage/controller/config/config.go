@@ -150,6 +150,7 @@ func NewConfig(path string) (cfg *Data, err error) {
 // 			AgentResourceType:       "statefulset",
 // 			ReconcileCheckDuration:  "5m",
 // 			Tolerance:               0.1,
+// 			RateThreshold:           0.1,
 // 			LeaderElectionID:        "agent-rebalance-controller",
 // 		},
 // 	}
