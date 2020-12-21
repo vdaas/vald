@@ -110,7 +110,7 @@ func TestErrNodeNotFound(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns discover node not found error when node is `127.0.0.1`",
+			name: "returns discover node not found error when node is '127.0.0.1'",
 			args: args{
 				node: "127.0.0.1",
 			},
