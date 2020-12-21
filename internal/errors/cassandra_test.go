@@ -359,7 +359,7 @@ func TestErrCassandraGetOperationFailed(t *testing.T) {
 			},
 		},
 		{
-			name: "returns fetch key error when key is `uuid` and error is nil",
+			name: "returns fetch key error when key is 'uuid' and error is nil",
 			args: args{
 				key: "uuid",
 				err: nil,
