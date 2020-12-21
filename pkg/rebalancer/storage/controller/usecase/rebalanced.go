@@ -58,6 +58,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithAgentResourceType(cfg.Rebalancer.AgentResourceType),
 		service.WithReconcileCheckDuration(cfg.Rebalancer.ReconcileCheckDuration),
 		service.WithTolerance(cfg.Rebalancer.Tolerance),
+		service.WithRateThreshold(cfg.Rebalancer.RateThreshold),
 		service.WithErrorGroup(eg),
 		service.WithLeaderElectionID(cfg.Rebalancer.LeaderElectionID),
 	)
