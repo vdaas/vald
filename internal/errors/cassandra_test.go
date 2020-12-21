@@ -594,7 +594,7 @@ func TestErrCassandraHostDownDetected(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns wrapped cassandra host down detected error when nodeInfo is `127.0.0.1` and error is database error",
+			name: "returns wrapped cassandra host down detected error when nodeInfo is '127.0.0.1' and error is database error",
 			args: args{
 				nodeInfo: "127.0.0.1",
 				err:      New("database error"),
