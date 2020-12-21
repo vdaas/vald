@@ -18,11 +18,14 @@
 package errors
 
 var (
+	// ErrWatchDirNotFound represents an error that the watch directory is not found.
 	ErrWatchDirNotFound = New("fs watcher watch dir not found")
 
+	// ErrFileAlreadyExists represents a function to generate an error that the file already exists.
 	ErrFileAlreadyExists = func(path string) error {
 		return Errorf("file already exists: %s", path)
 	}
 
+	// ErrPathNotSpecified represents an error that the path is not specified.
 	ErrPathNotSpecified = New("the path is not specified")
 )
