@@ -339,7 +339,7 @@ func TestErrCassandraGetOperationFailed(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns wrapped fetch key error when key is `uuid` and error is database error",
+			name: "returns wrapped fetch key error when key is 'uuid' and error is database error",
 			args: args{
 				key: "uuid",
 				err: New("database error"),
