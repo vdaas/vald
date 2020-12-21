@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"math"
 	"reflect"
 	"sync/atomic"
 	"time"
@@ -446,11 +447,37 @@ func (d *discoverer) isSsReplicaDecreased(psm, sm *model.StatefulSet, ppm, pm []
 	return
 }
 
-func (d *discoverer) getBiasOverDetail(pm []*model.Pod) (podName string, rate float64) {
-	var avgMemUsg, maxMemUsg float64
+func (d *discoverer) getBiasOverDetail(pm []*model.Pod) (string, float64) {
+	var unlimited bool
+	for _, p := range pm {
+		if p.MemoryLimit <= 0 {
+			unlimited = true
+			break
+		}
+	}
+
+	if unlimited {
+		podName, avgMemUsg, maxMemUsg := calAvgMemUsg(pm)
+		sig := calSigMemUsg(pm, avgMemUsg)
+
+		log.Debugf("podName, avgMemUsg, maxMemUsg, sig: %s, %.3f, %f, %.3f ", podName, avgMemUsg, maxMemUsg, sig)
+
+		if maxMemUsg >= (1+d.tolerance)*sig {
+			return podName, 1 - (avgMemUsg / maxMemUsg)
+		}
+		return "", 0
+	}
+	podName, avgMemUsg, maxMemUsg := calAvgMemUsgWithMemLimit(pm)
+
+	if maxMemUsg >= avgMemUsg+d.tolerance {
+		return podName, 1 - (avgMemUsg / maxMemUsg)
+	}
+	return "", 0
+}
+
+func calAvgMemUsgWithMemLimit(pm []*model.Pod) (podName string, avgMemUsg, maxMemUsg float64) {
 	for _, p := range pm {
 		u := p.MemoryUsage / p.MemoryLimit
-		log.Debugf("name: %#v, memory usage: %#v, %#v", p.Name, p.MemoryLimit, p.MemoryUsage)
 		avgMemUsg += u
 		if u > maxMemUsg {
 			maxMemUsg = u
@@ -458,14 +485,28 @@ func (d *discoverer) getBiasOverDetail(pm []*model.Pod) (podName string, rate fl
 		}
 	}
 	avgMemUsg = avgMemUsg / float64(len(pm))
-	bias := maxMemUsg - avgMemUsg
-	log.Debugf("bias: %v, tolerance: %v, maxPodName: %v, average memory usage: %v", bias, d.tolerance, podName, avgMemUsg)
-	// check wheter rebalance job should be created.
-	if bias < d.tolerance {
-		podName = ""
-	} else {
-		rate = 1 - (avgMemUsg / maxMemUsg)
+	return
+}
+
+func calAvgMemUsg(pm []*model.Pod) (podName string, avgMemUsg, maxMemUsg float64) {
+	for _, p := range pm {
+		u := p.MemoryUsage
+		avgMemUsg += u
+		if u > maxMemUsg {
+			maxMemUsg = u
+			podName = p.Name
+		}
 	}
+	avgMemUsg = avgMemUsg / float64(len(pm))
+	return
+}
+
+func calSigMemUsg(pm []*model.Pod, avgMemUsg float64) (sig float64) {
+	for _, p := range pm {
+		sig += math.Pow((p.MemoryUsage - avgMemUsg), 2.0)
+	}
+	sig /= float64(len(pm))
+	sig = math.Sqrt(sig)
 	return
 }
 
