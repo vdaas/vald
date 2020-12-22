@@ -49,10 +49,10 @@ func TestErrBlobNoSuchBucket_Error(t *testing.T) {
 		{
 			name: "returns error string",
 			fields: fields{
-				err: New("err"),
+				err: New("err: no such bucket"),
 			},
 			want: want{
-				want: "err",
+				want: "err: no such bucket",
 			},
 		},
 	}
@@ -107,7 +107,7 @@ func TestIsErrBlobNoSuchBucket(t *testing.T) {
 		{
 			name: "returns true when the error is ErrBlobNoSuchBucket",
 			args: args{
-				err: &ErrBlobNoSuchBucket{New("nosuchbucketerr")},
+				err: &ErrBlobNoSuchBucket{New("no such bucket err")},
 			},
 			want: want{
 				want: true,
@@ -238,7 +238,7 @@ func TestIsErrBlobNoSuchKey(t *testing.T) {
 		{
 			name: "returns true when the error is ErrBlobNoSuchKey",
 			args: args{
-				err: &ErrBlobNoSuchKey{New("nosuchkeyerr")},
+				err: &ErrBlobNoSuchKey{New("no such key err")},
 			},
 			want: want{
 				want: true,
