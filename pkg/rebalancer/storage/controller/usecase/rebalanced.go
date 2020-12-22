@@ -47,7 +47,7 @@ type run struct {
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
-	rb, err := service.NewDiscoverer(
+	rb, err := service.NewRebalancer(
 		service.WithJobName(cfg.Rebalancer.RebalanceJobName),
 		service.WithJobNamespace(cfg.Rebalancer.RebalanceJobNamespace),
 		service.WithJobTemplateKey(cfg.Rebalancer.RebalanceJobTemplateKey),
