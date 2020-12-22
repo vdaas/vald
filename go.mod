@@ -26,11 +26,11 @@ replace (
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
 	google.golang.org/grpc => google.golang.org/grpc v1.34.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.25.0
-	k8s.io/api => k8s.io/api v0.20.0
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.20.0
-	k8s.io/apimachinery => k8s.io/apimachinery v0.20.0
-	k8s.io/client-go => k8s.io/client-go v0.20.0
-	k8s.io/metrics => k8s.io/metrics v0.20.0
+	k8s.io/api => k8s.io/api v0.20.1
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.20.1
+	k8s.io/apimachinery => k8s.io/apimachinery v0.20.1
+	k8s.io/client-go => k8s.io/client-go v0.20.1
+	k8s.io/metrics => k8s.io/metrics v0.20.1
 	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.7.0
 )
 
@@ -77,9 +77,9 @@ require (
 	google.golang.org/genproto v0.0.0-20201214200347-8c77b98c765d
 	google.golang.org/grpc v1.34.0
 	gopkg.in/yaml.v2 v2.4.0
-	k8s.io/api v0.20.0
-	k8s.io/apimachinery v0.20.0
-	k8s.io/client-go v0.20.0
+	k8s.io/api v0.20.1
+	k8s.io/apimachinery v0.20.1
+	k8s.io/client-go v0.20.1
 	k8s.io/metrics v0.0.0-00010101000000-000000000000
 	sigs.k8s.io/controller-runtime v0.0.0-00010101000000-000000000000
 )
