@@ -22,20 +22,20 @@ spec:
   template:
     spec:
       containers:
-      - name: mc
-        image: minio/mc
-        imagePullPolicy: Always
-        command:
-          - /bin/sh
-          - -c
-          - |
-            mc alias set minio ${ENDPOINT} ${MINIO_ACCESS_KEY} ${MINIO_SECRET_KEY} --api S3v4
-            mc mb minio/vald-minio
-        env:
-          - name: ENDPOINT
-            value: http://minio.default.svc.cluster.local:9000
-          - name: MINIO_ACCESS_KEY
-            value: ACCESSKEY
-          - name: MINIO_SECRET_KEY
-            value: SECRETKEY
+        - name: mc
+          image: minio/mc
+          imagePullPolicy: Always
+          command:
+            - /bin/sh
+            - -c
+            - |
+              mc alias set minio ${ENDPOINT} ${MINIO_ACCESS_KEY} ${MINIO_SECRET_KEY} --api S3v4
+              mc mb minio/vald-minio
+          env:
+            - name: ENDPOINT
+              value: http://minio.default.svc.cluster.local:9000
+            - name: MINIO_ACCESS_KEY
+              value: ACCESSKEY
+            - name: MINIO_SECRET_KEY
+              value: SECRETKEY
       restartPolicy: Never
