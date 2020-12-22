@@ -34,36 +34,19 @@ var defaultOptions = []Option{
 				{
 					Name:          "agent-grpc",
 					Host:          "127.0.0.1",
-					Port:          8082,
+					Port:          8081,
 					Mode:          "GRPC",
 					ProbeWaitTime: "0s",
 					HTTP: &iconfig.HTTP{
 						ShutdownDuration: "0s",
 					},
 				},
-				{
-					Name:          "agent-rest",
-					Host:          "127.0.0.1",
-					Port:          8081,
-					Mode:          "REST",
-					ProbeWaitTime: "0s",
-					HTTP: &iconfig.HTTP{
-						ShutdownDuration:  "0s",
-						HandlerTimeout:    "60s",
-						IdleTimeout:       "60s",
-						ReadHeaderTimeout: "60s",
-						ReadTimeout:       "60s",
-						WriteTimeout:      "60s",
-					},
-				},
 			},
 			StartUpStrategy: []string{
 				"agent-grpc",
-				"agent-rest",
 			},
 			ShutdownStrategy: []string{
 				"agent-grpc",
-				"agent-rest",
 			},
 			FullShutdownDuration: "600s",
 			TLS: &iconfig.TLS{

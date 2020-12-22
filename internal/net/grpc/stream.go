@@ -104,6 +104,10 @@ func BidirectionalStream(ctx context.Context, stream grpc.ServerStream,
 func BidirectionalStreamClient(stream grpc.ClientStream,
 	dataProvider, newData func() interface{},
 	f func(interface{}, error)) (err error) {
+	if stream == nil {
+		return errors.ErrGRPCClientStreamNotFound
+	}
+
 	ctx, cancel := context.WithCancel(stream.Context())
 	eg, ctx := errgroup.New(ctx)
 

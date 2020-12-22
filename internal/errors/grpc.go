@@ -43,6 +43,8 @@ var (
 		return Errorf("gRPC client connection not found in %s", addr)
 	}
 
+	ErrGRPCClientStreamNotFound = New("vald internal gRPC client grpc client stream not found")
+
 	ErrRPCCallFailed = func(addr string, err error) error {
 		return Wrapf(err, "addr: %s", addr)
 	}
