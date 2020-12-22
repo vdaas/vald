@@ -23,31 +23,46 @@ import (
 )
 
 // Option is agentClient configure.
-type Option func(*agentClient)
+type Option func(*agentClient) error
 
 var defaultOptions = []Option{}
 
 // WithAddr returns Option that sets addr.
-func WithAddr(addr string) Option {
-	return func(c *agentClient) {
-		if len(addr) != 0 {
-			c.addr = addr
+func WithAddrs(addrs ...string) Option {
+	return func(c *agentClient) error {
+		if addrs == nil {
+			return nil
 		}
+		if c.addrs != nil {
+			c.addrs = append(c.addrs, addrs...)
+		} else {
+			c.addrs = addrs
+		}
+		return nil
 	}
 }
 
 func WithValdClient(vc vald.Client) Option {
-	return func(c *agentClient) {
+	return func(c *agentClient) error {
 		if vc != nil {
 			c.Client = vc
+			if c.c != nil {
+				err := c.c.Close()
+				if err != nil {
+					return err
+				}
+			}
+			c.c = c.Client.GRPCClient()
 		}
+		return nil
 	}
 }
 
 func WithGRPCClient(g grpc.Client) Option {
-	return func(c *agentClient) {
+	return func(c *agentClient) error {
 		if g != nil {
 			c.c = g
 		}
+		return nil
 	}
 }

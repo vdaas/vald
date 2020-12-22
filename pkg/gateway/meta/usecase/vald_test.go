@@ -21,6 +21,7 @@ import (
 	"reflect"
 	"testing"
 
+	client "github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/observability"
@@ -119,6 +120,7 @@ func Test_run_PreStart(t *testing.T) {
 		server        starter.Server
 		observability observability.Observability
 		metadata      service.Meta
+		client        client.Client
 	}
 	type want struct {
 		err error
@@ -152,6 +154,7 @@ func Test_run_PreStart(t *testing.T) {
 		           server: nil,
 		           observability: nil,
 		           metadata: nil,
+		           client: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -172,6 +175,7 @@ func Test_run_PreStart(t *testing.T) {
 		           server: nil,
 		           observability: nil,
 		           metadata: nil,
+		           client: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -200,6 +204,7 @@ func Test_run_PreStart(t *testing.T) {
 				server:        test.fields.server,
 				observability: test.fields.observability,
 				metadata:      test.fields.metadata,
+				client:        test.fields.client,
 			}
 
 			err := r.PreStart(test.args.ctx)
@@ -221,6 +226,7 @@ func Test_run_Start(t *testing.T) {
 		server        starter.Server
 		observability observability.Observability
 		metadata      service.Meta
+		client        client.Client
 	}
 	type want struct {
 		want <-chan error
@@ -258,6 +264,7 @@ func Test_run_Start(t *testing.T) {
 		           server: nil,
 		           observability: nil,
 		           metadata: nil,
+		           client: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -278,6 +285,7 @@ func Test_run_Start(t *testing.T) {
 		           server: nil,
 		           observability: nil,
 		           metadata: nil,
+		           client: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -306,6 +314,7 @@ func Test_run_Start(t *testing.T) {
 				server:        test.fields.server,
 				observability: test.fields.observability,
 				metadata:      test.fields.metadata,
+				client:        test.fields.client,
 			}
 
 			got, err := r.Start(test.args.ctx)
@@ -327,6 +336,7 @@ func Test_run_PreStop(t *testing.T) {
 		server        starter.Server
 		observability observability.Observability
 		metadata      service.Meta
+		client        client.Client
 	}
 	type want struct {
 		err error
@@ -360,6 +370,7 @@ func Test_run_PreStop(t *testing.T) {
 		           server: nil,
 		           observability: nil,
 		           metadata: nil,
+		           client: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -380,6 +391,7 @@ func Test_run_PreStop(t *testing.T) {
 		           server: nil,
 		           observability: nil,
 		           metadata: nil,
+		           client: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -408,6 +420,7 @@ func Test_run_PreStop(t *testing.T) {
 				server:        test.fields.server,
 				observability: test.fields.observability,
 				metadata:      test.fields.metadata,
+				client:        test.fields.client,
 			}
 
 			err := r.PreStop(test.args.ctx)
@@ -429,6 +442,7 @@ func Test_run_Stop(t *testing.T) {
 		server        starter.Server
 		observability observability.Observability
 		metadata      service.Meta
+		client        client.Client
 	}
 	type want struct {
 		err error
@@ -462,6 +476,7 @@ func Test_run_Stop(t *testing.T) {
 		           server: nil,
 		           observability: nil,
 		           metadata: nil,
+		           client: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -482,6 +497,7 @@ func Test_run_Stop(t *testing.T) {
 		           server: nil,
 		           observability: nil,
 		           metadata: nil,
+		           client: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -510,6 +526,7 @@ func Test_run_Stop(t *testing.T) {
 				server:        test.fields.server,
 				observability: test.fields.observability,
 				metadata:      test.fields.metadata,
+				client:        test.fields.client,
 			}
 
 			err := r.Stop(test.args.ctx)
@@ -531,6 +548,7 @@ func Test_run_PostStop(t *testing.T) {
 		server        starter.Server
 		observability observability.Observability
 		metadata      service.Meta
+		client        client.Client
 	}
 	type want struct {
 		err error
@@ -564,6 +582,7 @@ func Test_run_PostStop(t *testing.T) {
 		           server: nil,
 		           observability: nil,
 		           metadata: nil,
+		           client: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -584,6 +603,7 @@ func Test_run_PostStop(t *testing.T) {
 		           server: nil,
 		           observability: nil,
 		           metadata: nil,
+		           client: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -612,6 +632,7 @@ func Test_run_PostStop(t *testing.T) {
 				server:        test.fields.server,
 				observability: test.fields.observability,
 				metadata:      test.fields.metadata,
+				client:        test.fields.client,
 			}
 
 			err := r.PostStop(test.args.ctx)

@@ -24,12 +24,12 @@ import (
 	"go.uber.org/goleak"
 )
 
-func TestWithAddr(t *testing.T) {
+func TestWithAddrs(t *testing.T) {
 	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		addr string
+		addrs []string
 	}
 	type want struct {
 		obj *T
@@ -76,7 +76,7 @@ func TestWithAddr(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           addr: "",
+		           addrs: nil,
 		       },
 		       want: want {
 		           obj: new(T),
@@ -90,7 +90,7 @@ func TestWithAddr(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           addr: "",
+		           addrs: nil,
 		           },
 		           want: want {
 		               obj: new(T),
@@ -118,7 +118,7 @@ func TestWithAddr(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithAddr(test.args.addr)
+			   got := WithAddrs(test.args.addrs...)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -130,7 +130,7 @@ func TestWithAddr(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithAddr(test.args.addr)
+			   got := WithAddrs(test.args.addrs...)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(test.want, obj); err != nil {

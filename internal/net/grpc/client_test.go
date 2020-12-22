@@ -26,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net/grpc/pool"
 	"go.uber.org/goleak"
 	gbackoff "google.golang.org/grpc/backoff"
 )
@@ -110,6 +111,7 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 	}
 	type fields struct {
 		addrs               []string
+		atomicAddrs         AtomicAddrs
 		poolSize            uint64
 		clientCount         uint64
 		conns               grpcConns
@@ -157,6 +159,7 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 		       },
 		       fields: fields {
 		           addrs: nil,
+		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
 		           conns: grpcConns{},
@@ -187,6 +190,7 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 		           },
 		           fields: fields {
 		           addrs: nil,
+		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
 		           conns: grpcConns{},
@@ -225,6 +229,7 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 			}
 			g := &gRPCClient{
 				addrs:               test.fields.addrs,
+				atomicAddrs:         test.fields.atomicAddrs,
 				poolSize:            test.fields.poolSize,
 				clientCount:         test.fields.clientCount,
 				conns:               test.fields.conns,
@@ -257,6 +262,7 @@ func Test_gRPCClient_Range(t *testing.T) {
 	}
 	type fields struct {
 		addrs               []string
+		atomicAddrs         AtomicAddrs
 		poolSize            uint64
 		clientCount         uint64
 		conns               grpcConns
@@ -301,6 +307,7 @@ func Test_gRPCClient_Range(t *testing.T) {
 		       },
 		       fields: fields {
 		           addrs: nil,
+		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
 		           conns: grpcConns{},
@@ -332,6 +339,7 @@ func Test_gRPCClient_Range(t *testing.T) {
 		           },
 		           fields: fields {
 		           addrs: nil,
+		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
 		           conns: grpcConns{},
@@ -370,6 +378,7 @@ func Test_gRPCClient_Range(t *testing.T) {
 			}
 			g := &gRPCClient{
 				addrs:               test.fields.addrs,
+				atomicAddrs:         test.fields.atomicAddrs,
 				poolSize:            test.fields.poolSize,
 				clientCount:         test.fields.clientCount,
 				conns:               test.fields.conns,
@@ -403,6 +412,7 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 	}
 	type fields struct {
 		addrs               []string
+		atomicAddrs         AtomicAddrs
 		poolSize            uint64
 		clientCount         uint64
 		conns               grpcConns
@@ -448,6 +458,7 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 		       },
 		       fields: fields {
 		           addrs: nil,
+		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
 		           conns: grpcConns{},
@@ -480,6 +491,7 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 		           },
 		           fields: fields {
 		           addrs: nil,
+		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
 		           conns: grpcConns{},
@@ -518,6 +530,7 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 			}
 			g := &gRPCClient{
 				addrs:               test.fields.addrs,
+				atomicAddrs:         test.fields.atomicAddrs,
 				poolSize:            test.fields.poolSize,
 				clientCount:         test.fields.clientCount,
 				conns:               test.fields.conns,
@@ -551,6 +564,7 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 	}
 	type fields struct {
 		addrs               []string
+		atomicAddrs         AtomicAddrs
 		poolSize            uint64
 		clientCount         uint64
 		conns               grpcConns
@@ -596,6 +610,7 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 		       },
 		       fields: fields {
 		           addrs: nil,
+		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
 		           conns: grpcConns{},
@@ -628,6 +643,7 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 		           },
 		           fields: fields {
 		           addrs: nil,
+		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
 		           conns: grpcConns{},
@@ -666,6 +682,7 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 			}
 			g := &gRPCClient{
 				addrs:               test.fields.addrs,
+				atomicAddrs:         test.fields.atomicAddrs,
 				poolSize:            test.fields.poolSize,
 				clientCount:         test.fields.clientCount,
 				conns:               test.fields.conns,
@@ -700,6 +717,7 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 	}
 	type fields struct {
 		addrs               []string
+		atomicAddrs         AtomicAddrs
 		poolSize            uint64
 		clientCount         uint64
 		conns               grpcConns
@@ -746,6 +764,7 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 		       },
 		       fields: fields {
 		           addrs: nil,
+		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
 		           conns: grpcConns{},
@@ -779,6 +798,7 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 		           },
 		           fields: fields {
 		           addrs: nil,
+		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
 		           conns: grpcConns{},
@@ -817,6 +837,7 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 			}
 			g := &gRPCClient{
 				addrs:               test.fields.addrs,
+				atomicAddrs:         test.fields.atomicAddrs,
 				poolSize:            test.fields.poolSize,
 				clientCount:         test.fields.clientCount,
 				conns:               test.fields.conns,
@@ -841,6 +862,159 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 	}
 }
 
+func Test_gRPCClient_RoundRobin(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ctx context.Context
+		f   func(ctx context.Context, conn *ClientConn, copts ...CallOption) (interface{}, error)
+	}
+	type fields struct {
+		addrs               []string
+		atomicAddrs         AtomicAddrs
+		poolSize            uint64
+		clientCount         uint64
+		conns               grpcConns
+		hcDur               time.Duration
+		prDur               time.Duration
+		enablePoolRebalance bool
+		resolveDNS          bool
+		dopts               []DialOption
+		copts               []CallOption
+		roccd               string
+		eg                  errgroup.Group
+		bo                  backoff.Backoff
+		gbo                 gbackoff.Config
+		mcd                 time.Duration
+	}
+	type want struct {
+		wantData interface{}
+		err      error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, interface{}, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotData interface{}, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotData, w.wantData) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotData, w.wantData)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           f: nil,
+		       },
+		       fields: fields {
+		           addrs: nil,
+		           atomicAddrs: nil,
+		           poolSize: 0,
+		           clientCount: 0,
+		           conns: grpcConns{},
+		           hcDur: nil,
+		           prDur: nil,
+		           enablePoolRebalance: false,
+		           resolveDNS: false,
+		           dopts: nil,
+		           copts: nil,
+		           roccd: "",
+		           eg: nil,
+		           bo: nil,
+		           gbo: nil,
+		           mcd: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           f: nil,
+		           },
+		           fields: fields {
+		           addrs: nil,
+		           atomicAddrs: nil,
+		           poolSize: 0,
+		           clientCount: 0,
+		           conns: grpcConns{},
+		           hcDur: nil,
+		           prDur: nil,
+		           enablePoolRebalance: false,
+		           resolveDNS: false,
+		           dopts: nil,
+		           copts: nil,
+		           roccd: "",
+		           eg: nil,
+		           bo: nil,
+		           gbo: nil,
+		           mcd: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			g := &gRPCClient{
+				addrs:               test.fields.addrs,
+				atomicAddrs:         test.fields.atomicAddrs,
+				poolSize:            test.fields.poolSize,
+				clientCount:         test.fields.clientCount,
+				conns:               test.fields.conns,
+				hcDur:               test.fields.hcDur,
+				prDur:               test.fields.prDur,
+				enablePoolRebalance: test.fields.enablePoolRebalance,
+				resolveDNS:          test.fields.resolveDNS,
+				dopts:               test.fields.dopts,
+				copts:               test.fields.copts,
+				roccd:               test.fields.roccd,
+				eg:                  test.fields.eg,
+				bo:                  test.fields.bo,
+				gbo:                 test.fields.gbo,
+				mcd:                 test.fields.mcd,
+			}
+
+			gotData, err := g.RoundRobin(test.args.ctx, test.args.f)
+			if err := test.checkFunc(test.want, gotData, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
 func Test_gRPCClient_Do(t *testing.T) {
 	t.Parallel()
 	type args struct {
@@ -850,6 +1024,7 @@ func Test_gRPCClient_Do(t *testing.T) {
 	}
 	type fields struct {
 		addrs               []string
+		atomicAddrs         AtomicAddrs
 		poolSize            uint64
 		clientCount         uint64
 		conns               grpcConns
@@ -899,6 +1074,7 @@ func Test_gRPCClient_Do(t *testing.T) {
 		       },
 		       fields: fields {
 		           addrs: nil,
+		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
 		           conns: grpcConns{},
@@ -931,6 +1107,7 @@ func Test_gRPCClient_Do(t *testing.T) {
 		           },
 		           fields: fields {
 		           addrs: nil,
+		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
 		           conns: grpcConns{},
@@ -969,6 +1146,7 @@ func Test_gRPCClient_Do(t *testing.T) {
 			}
 			g := &gRPCClient{
 				addrs:               test.fields.addrs,
+				atomicAddrs:         test.fields.atomicAddrs,
 				poolSize:            test.fields.poolSize,
 				clientCount:         test.fields.clientCount,
 				conns:               test.fields.conns,
@@ -993,10 +1171,173 @@ func Test_gRPCClient_Do(t *testing.T) {
 	}
 }
 
+func Test_gRPCClient_do(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ctx           context.Context
+		p             pool.Conn
+		addr          string
+		enableBackoff bool
+		f             func(ctx context.Context, conn *ClientConn, copts ...CallOption) (interface{}, error)
+	}
+	type fields struct {
+		addrs               []string
+		atomicAddrs         AtomicAddrs
+		poolSize            uint64
+		clientCount         uint64
+		conns               grpcConns
+		hcDur               time.Duration
+		prDur               time.Duration
+		enablePoolRebalance bool
+		resolveDNS          bool
+		dopts               []DialOption
+		copts               []CallOption
+		roccd               string
+		eg                  errgroup.Group
+		bo                  backoff.Backoff
+		gbo                 gbackoff.Config
+		mcd                 time.Duration
+	}
+	type want struct {
+		wantData interface{}
+		err      error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, interface{}, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotData interface{}, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotData, w.wantData) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotData, w.wantData)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           p: nil,
+		           addr: "",
+		           enableBackoff: false,
+		           f: nil,
+		       },
+		       fields: fields {
+		           addrs: nil,
+		           atomicAddrs: nil,
+		           poolSize: 0,
+		           clientCount: 0,
+		           conns: grpcConns{},
+		           hcDur: nil,
+		           prDur: nil,
+		           enablePoolRebalance: false,
+		           resolveDNS: false,
+		           dopts: nil,
+		           copts: nil,
+		           roccd: "",
+		           eg: nil,
+		           bo: nil,
+		           gbo: nil,
+		           mcd: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           p: nil,
+		           addr: "",
+		           enableBackoff: false,
+		           f: nil,
+		           },
+		           fields: fields {
+		           addrs: nil,
+		           atomicAddrs: nil,
+		           poolSize: 0,
+		           clientCount: 0,
+		           conns: grpcConns{},
+		           hcDur: nil,
+		           prDur: nil,
+		           enablePoolRebalance: false,
+		           resolveDNS: false,
+		           dopts: nil,
+		           copts: nil,
+		           roccd: "",
+		           eg: nil,
+		           bo: nil,
+		           gbo: nil,
+		           mcd: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			g := &gRPCClient{
+				addrs:               test.fields.addrs,
+				atomicAddrs:         test.fields.atomicAddrs,
+				poolSize:            test.fields.poolSize,
+				clientCount:         test.fields.clientCount,
+				conns:               test.fields.conns,
+				hcDur:               test.fields.hcDur,
+				prDur:               test.fields.prDur,
+				enablePoolRebalance: test.fields.enablePoolRebalance,
+				resolveDNS:          test.fields.resolveDNS,
+				dopts:               test.fields.dopts,
+				copts:               test.fields.copts,
+				roccd:               test.fields.roccd,
+				eg:                  test.fields.eg,
+				bo:                  test.fields.bo,
+				gbo:                 test.fields.gbo,
+				mcd:                 test.fields.mcd,
+			}
+
+			gotData, err := g.do(test.args.ctx, test.args.p, test.args.addr, test.args.enableBackoff, test.args.f)
+			if err := test.checkFunc(test.want, gotData, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
 func Test_gRPCClient_GetDialOption(t *testing.T) {
 	t.Parallel()
 	type fields struct {
 		addrs               []string
+		atomicAddrs         AtomicAddrs
 		poolSize            uint64
 		clientCount         uint64
 		conns               grpcConns
@@ -1036,6 +1377,7 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 		       name: "test_case_1",
 		       fields: fields {
 		           addrs: nil,
+		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
 		           conns: grpcConns{},
@@ -1063,6 +1405,7 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 		           name: "test_case_2",
 		           fields: fields {
 		           addrs: nil,
+		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
 		           conns: grpcConns{},
@@ -1101,6 +1444,7 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 			}
 			g := &gRPCClient{
 				addrs:               test.fields.addrs,
+				atomicAddrs:         test.fields.atomicAddrs,
 				poolSize:            test.fields.poolSize,
 				clientCount:         test.fields.clientCount,
 				conns:               test.fields.conns,
@@ -1129,6 +1473,7 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 	t.Parallel()
 	type fields struct {
 		addrs               []string
+		atomicAddrs         AtomicAddrs
 		poolSize            uint64
 		clientCount         uint64
 		conns               grpcConns
@@ -1168,6 +1513,7 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 		       name: "test_case_1",
 		       fields: fields {
 		           addrs: nil,
+		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
 		           conns: grpcConns{},
@@ -1195,6 +1541,7 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 		           name: "test_case_2",
 		           fields: fields {
 		           addrs: nil,
+		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
 		           conns: grpcConns{},
@@ -1233,6 +1580,7 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 			}
 			g := &gRPCClient{
 				addrs:               test.fields.addrs,
+				atomicAddrs:         test.fields.atomicAddrs,
 				poolSize:            test.fields.poolSize,
 				clientCount:         test.fields.clientCount,
 				conns:               test.fields.conns,
@@ -1266,6 +1614,7 @@ func Test_gRPCClient_Connect(t *testing.T) {
 	}
 	type fields struct {
 		addrs               []string
+		atomicAddrs         AtomicAddrs
 		poolSize            uint64
 		clientCount         uint64
 		conns               grpcConns
@@ -1282,20 +1631,24 @@ func Test_gRPCClient_Connect(t *testing.T) {
 		mcd                 time.Duration
 	}
 	type want struct {
-		err error
+		wantConn pool.Conn
+		err      error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, error) error
+		checkFunc  func(want, pool.Conn, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
+	defaultCheckFunc := func(w want, gotConn pool.Conn, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotConn, w.wantConn) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotConn, w.wantConn)
 		}
 		return nil
 	}
@@ -1311,6 +1664,7 @@ func Test_gRPCClient_Connect(t *testing.T) {
 		       },
 		       fields: fields {
 		           addrs: nil,
+		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
 		           conns: grpcConns{},
@@ -1343,6 +1697,7 @@ func Test_gRPCClient_Connect(t *testing.T) {
 		           },
 		           fields: fields {
 		           addrs: nil,
+		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
 		           conns: grpcConns{},
@@ -1381,6 +1736,7 @@ func Test_gRPCClient_Connect(t *testing.T) {
 			}
 			g := &gRPCClient{
 				addrs:               test.fields.addrs,
+				atomicAddrs:         test.fields.atomicAddrs,
 				poolSize:            test.fields.poolSize,
 				clientCount:         test.fields.clientCount,
 				conns:               test.fields.conns,
@@ -1397,8 +1753,8 @@ func Test_gRPCClient_Connect(t *testing.T) {
 				mcd:                 test.fields.mcd,
 			}
 
-			err := g.Connect(test.args.ctx, test.args.addr, test.args.dopts...)
-			if err := test.checkFunc(test.want, err); err != nil {
+			gotConn, err := g.Connect(test.args.ctx, test.args.addr, test.args.dopts...)
+			if err := test.checkFunc(test.want, gotConn, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1412,6 +1768,7 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 	}
 	type fields struct {
 		addrs               []string
+		atomicAddrs         AtomicAddrs
 		poolSize            uint64
 		clientCount         uint64
 		conns               grpcConns
@@ -1455,6 +1812,7 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 		       },
 		       fields: fields {
 		           addrs: nil,
+		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
 		           conns: grpcConns{},
@@ -1485,6 +1843,7 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 		           },
 		           fields: fields {
 		           addrs: nil,
+		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
 		           conns: grpcConns{},
@@ -1523,6 +1882,7 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 			}
 			g := &gRPCClient{
 				addrs:               test.fields.addrs,
+				atomicAddrs:         test.fields.atomicAddrs,
 				poolSize:            test.fields.poolSize,
 				clientCount:         test.fields.clientCount,
 				conns:               test.fields.conns,
@@ -1551,6 +1911,7 @@ func Test_gRPCClient_Close(t *testing.T) {
 	t.Parallel()
 	type fields struct {
 		addrs               []string
+		atomicAddrs         AtomicAddrs
 		poolSize            uint64
 		clientCount         uint64
 		conns               grpcConns
@@ -1590,6 +1951,7 @@ func Test_gRPCClient_Close(t *testing.T) {
 		       name: "test_case_1",
 		       fields: fields {
 		           addrs: nil,
+		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
 		           conns: grpcConns{},
@@ -1617,6 +1979,7 @@ func Test_gRPCClient_Close(t *testing.T) {
 		           name: "test_case_2",
 		           fields: fields {
 		           addrs: nil,
+		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
 		           conns: grpcConns{},
@@ -1655,6 +2018,7 @@ func Test_gRPCClient_Close(t *testing.T) {
 			}
 			g := &gRPCClient{
 				addrs:               test.fields.addrs,
+				atomicAddrs:         test.fields.atomicAddrs,
 				poolSize:            test.fields.poolSize,
 				clientCount:         test.fields.clientCount,
 				conns:               test.fields.conns,

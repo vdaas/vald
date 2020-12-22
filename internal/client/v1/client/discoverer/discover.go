@@ -179,7 +179,7 @@ func (c *client) GetClient() grpc.Client {
 
 func (c *client) connect(ctx context.Context, addr string) (err error) {
 	if c.autoconn && c.client != nil {
-		err = c.client.Connect(ctx, addr)
+		_, err = c.client.Connect(ctx, addr)
 		if err != nil {
 			return err
 		}

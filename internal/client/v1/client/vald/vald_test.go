@@ -36,16 +36,20 @@ func TestNew(t *testing.T) {
 	}
 	type want struct {
 		want Client
+		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, Client) error
+		checkFunc  func(want, Client, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got Client) error {
+	defaultCheckFunc := func(w want, got Client, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -94,7 +98,271 @@ func TestNew(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got := New(test.args.opts...)
+			got, err := New(test.args.opts...)
+			if err := test.checkFunc(test.want, got, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_client_Start(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ctx context.Context
+	}
+	type fields struct {
+		addrs []string
+		c     grpc.Client
+	}
+	type want struct {
+		want <-chan error
+		err  error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, <-chan error, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got <-chan error, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		       },
+		       fields: fields {
+		           addrs: nil,
+		           c: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           },
+		           fields: fields {
+		           addrs: nil,
+		           c: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			c := &client{
+				addrs: test.fields.addrs,
+				c:     test.fields.c,
+			}
+
+			got, err := c.Start(test.args.ctx)
+			if err := test.checkFunc(test.want, got, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_client_Stop(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ctx context.Context
+	}
+	type fields struct {
+		addrs []string
+		c     grpc.Client
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		       },
+		       fields: fields {
+		           addrs: nil,
+		           c: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           },
+		           fields: fields {
+		           addrs: nil,
+		           c: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			c := &client{
+				addrs: test.fields.addrs,
+				c:     test.fields.c,
+			}
+
+			err := c.Stop(test.args.ctx)
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_client_GRPCClient(t *testing.T) {
+	t.Parallel()
+	type fields struct {
+		addrs []string
+		c     grpc.Client
+	}
+	type want struct {
+		want grpc.Client
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, grpc.Client) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got grpc.Client) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           addrs: nil,
+		           c: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           addrs: nil,
+		           c: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			c := &client{
+				addrs: test.fields.addrs,
+				c:     test.fields.c,
+			}
+
+			got := c.GRPCClient()
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -110,8 +378,8 @@ func Test_client_Exists(t *testing.T) {
 		opts []grpc.CallOption
 	}
 	type fields struct {
-		addr string
-		c    grpc.Client
+		addrs []string
+		c     grpc.Client
 	}
 	type want struct {
 		wantOid *payload.Object_ID
@@ -146,7 +414,7 @@ func Test_client_Exists(t *testing.T) {
 		           opts: nil,
 		       },
 		       fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		       },
 		       want: want{},
@@ -165,7 +433,7 @@ func Test_client_Exists(t *testing.T) {
 		           opts: nil,
 		           },
 		           fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		           },
 		           want: want{},
@@ -190,8 +458,8 @@ func Test_client_Exists(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				addr: test.fields.addr,
-				c:    test.fields.c,
+				addrs: test.fields.addrs,
+				c:     test.fields.c,
 			}
 
 			gotOid, err := c.Exists(test.args.ctx, test.args.in, test.args.opts...)
@@ -210,8 +478,8 @@ func Test_client_Search(t *testing.T) {
 		opts []grpc.CallOption
 	}
 	type fields struct {
-		addr string
-		c    grpc.Client
+		addrs []string
+		c     grpc.Client
 	}
 	type want struct {
 		wantRes *payload.Search_Response
@@ -246,7 +514,7 @@ func Test_client_Search(t *testing.T) {
 		           opts: nil,
 		       },
 		       fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		       },
 		       want: want{},
@@ -265,7 +533,7 @@ func Test_client_Search(t *testing.T) {
 		           opts: nil,
 		           },
 		           fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		           },
 		           want: want{},
@@ -290,8 +558,8 @@ func Test_client_Search(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				addr: test.fields.addr,
-				c:    test.fields.c,
+				addrs: test.fields.addrs,
+				c:     test.fields.c,
 			}
 
 			gotRes, err := c.Search(test.args.ctx, test.args.in, test.args.opts...)
@@ -310,8 +578,8 @@ func Test_client_SearchByID(t *testing.T) {
 		opts []grpc.CallOption
 	}
 	type fields struct {
-		addr string
-		c    grpc.Client
+		addrs []string
+		c     grpc.Client
 	}
 	type want struct {
 		wantRes *payload.Search_Response
@@ -346,7 +614,7 @@ func Test_client_SearchByID(t *testing.T) {
 		           opts: nil,
 		       },
 		       fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		       },
 		       want: want{},
@@ -365,7 +633,7 @@ func Test_client_SearchByID(t *testing.T) {
 		           opts: nil,
 		           },
 		           fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		           },
 		           want: want{},
@@ -390,8 +658,8 @@ func Test_client_SearchByID(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				addr: test.fields.addr,
-				c:    test.fields.c,
+				addrs: test.fields.addrs,
+				c:     test.fields.c,
 			}
 
 			gotRes, err := c.SearchByID(test.args.ctx, test.args.in, test.args.opts...)
@@ -409,8 +677,8 @@ func Test_client_StreamSearch(t *testing.T) {
 		opts []grpc.CallOption
 	}
 	type fields struct {
-		addr string
-		c    grpc.Client
+		addrs []string
+		c     grpc.Client
 	}
 	type want struct {
 		wantRes vald.Search_StreamSearchClient
@@ -444,7 +712,7 @@ func Test_client_StreamSearch(t *testing.T) {
 		           opts: nil,
 		       },
 		       fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		       },
 		       want: want{},
@@ -462,7 +730,7 @@ func Test_client_StreamSearch(t *testing.T) {
 		           opts: nil,
 		           },
 		           fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		           },
 		           want: want{},
@@ -487,8 +755,8 @@ func Test_client_StreamSearch(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				addr: test.fields.addr,
-				c:    test.fields.c,
+				addrs: test.fields.addrs,
+				c:     test.fields.c,
 			}
 
 			gotRes, err := c.StreamSearch(test.args.ctx, test.args.opts...)
@@ -506,8 +774,8 @@ func Test_client_StreamSearchByID(t *testing.T) {
 		opts []grpc.CallOption
 	}
 	type fields struct {
-		addr string
-		c    grpc.Client
+		addrs []string
+		c     grpc.Client
 	}
 	type want struct {
 		wantRes vald.Search_StreamSearchByIDClient
@@ -541,7 +809,7 @@ func Test_client_StreamSearchByID(t *testing.T) {
 		           opts: nil,
 		       },
 		       fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		       },
 		       want: want{},
@@ -559,7 +827,7 @@ func Test_client_StreamSearchByID(t *testing.T) {
 		           opts: nil,
 		           },
 		           fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		           },
 		           want: want{},
@@ -584,8 +852,8 @@ func Test_client_StreamSearchByID(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				addr: test.fields.addr,
-				c:    test.fields.c,
+				addrs: test.fields.addrs,
+				c:     test.fields.c,
 			}
 
 			gotRes, err := c.StreamSearchByID(test.args.ctx, test.args.opts...)
@@ -604,8 +872,8 @@ func Test_client_MultiSearch(t *testing.T) {
 		opts []grpc.CallOption
 	}
 	type fields struct {
-		addr string
-		c    grpc.Client
+		addrs []string
+		c     grpc.Client
 	}
 	type want struct {
 		wantRes *payload.Search_Responses
@@ -640,7 +908,7 @@ func Test_client_MultiSearch(t *testing.T) {
 		           opts: nil,
 		       },
 		       fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		       },
 		       want: want{},
@@ -659,7 +927,7 @@ func Test_client_MultiSearch(t *testing.T) {
 		           opts: nil,
 		           },
 		           fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		           },
 		           want: want{},
@@ -684,8 +952,8 @@ func Test_client_MultiSearch(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				addr: test.fields.addr,
-				c:    test.fields.c,
+				addrs: test.fields.addrs,
+				c:     test.fields.c,
 			}
 
 			gotRes, err := c.MultiSearch(test.args.ctx, test.args.in, test.args.opts...)
@@ -704,8 +972,8 @@ func Test_client_MultiSearchByID(t *testing.T) {
 		opts []grpc.CallOption
 	}
 	type fields struct {
-		addr string
-		c    grpc.Client
+		addrs []string
+		c     grpc.Client
 	}
 	type want struct {
 		wantRes *payload.Search_Responses
@@ -740,7 +1008,7 @@ func Test_client_MultiSearchByID(t *testing.T) {
 		           opts: nil,
 		       },
 		       fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		       },
 		       want: want{},
@@ -759,7 +1027,7 @@ func Test_client_MultiSearchByID(t *testing.T) {
 		           opts: nil,
 		           },
 		           fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		           },
 		           want: want{},
@@ -784,8 +1052,8 @@ func Test_client_MultiSearchByID(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				addr: test.fields.addr,
-				c:    test.fields.c,
+				addrs: test.fields.addrs,
+				c:     test.fields.c,
 			}
 
 			gotRes, err := c.MultiSearchByID(test.args.ctx, test.args.in, test.args.opts...)
@@ -804,8 +1072,8 @@ func Test_client_Insert(t *testing.T) {
 		opts []grpc.CallOption
 	}
 	type fields struct {
-		addr string
-		c    grpc.Client
+		addrs []string
+		c     grpc.Client
 	}
 	type want struct {
 		wantRes *payload.Object_Location
@@ -840,7 +1108,7 @@ func Test_client_Insert(t *testing.T) {
 		           opts: nil,
 		       },
 		       fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		       },
 		       want: want{},
@@ -859,7 +1127,7 @@ func Test_client_Insert(t *testing.T) {
 		           opts: nil,
 		           },
 		           fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		           },
 		           want: want{},
@@ -884,8 +1152,8 @@ func Test_client_Insert(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				addr: test.fields.addr,
-				c:    test.fields.c,
+				addrs: test.fields.addrs,
+				c:     test.fields.c,
 			}
 
 			gotRes, err := c.Insert(test.args.ctx, test.args.in, test.args.opts...)
@@ -903,8 +1171,8 @@ func Test_client_StreamInsert(t *testing.T) {
 		opts []grpc.CallOption
 	}
 	type fields struct {
-		addr string
-		c    grpc.Client
+		addrs []string
+		c     grpc.Client
 	}
 	type want struct {
 		wantRes vald.Insert_StreamInsertClient
@@ -938,7 +1206,7 @@ func Test_client_StreamInsert(t *testing.T) {
 		           opts: nil,
 		       },
 		       fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		       },
 		       want: want{},
@@ -956,7 +1224,7 @@ func Test_client_StreamInsert(t *testing.T) {
 		           opts: nil,
 		           },
 		           fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		           },
 		           want: want{},
@@ -981,8 +1249,8 @@ func Test_client_StreamInsert(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				addr: test.fields.addr,
-				c:    test.fields.c,
+				addrs: test.fields.addrs,
+				c:     test.fields.c,
 			}
 
 			gotRes, err := c.StreamInsert(test.args.ctx, test.args.opts...)
@@ -1001,8 +1269,8 @@ func Test_client_MultiInsert(t *testing.T) {
 		opts []grpc.CallOption
 	}
 	type fields struct {
-		addr string
-		c    grpc.Client
+		addrs []string
+		c     grpc.Client
 	}
 	type want struct {
 		wantRes *payload.Object_Locations
@@ -1037,7 +1305,7 @@ func Test_client_MultiInsert(t *testing.T) {
 		           opts: nil,
 		       },
 		       fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		       },
 		       want: want{},
@@ -1056,7 +1324,7 @@ func Test_client_MultiInsert(t *testing.T) {
 		           opts: nil,
 		           },
 		           fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		           },
 		           want: want{},
@@ -1081,8 +1349,8 @@ func Test_client_MultiInsert(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				addr: test.fields.addr,
-				c:    test.fields.c,
+				addrs: test.fields.addrs,
+				c:     test.fields.c,
 			}
 
 			gotRes, err := c.MultiInsert(test.args.ctx, test.args.in, test.args.opts...)
@@ -1101,8 +1369,8 @@ func Test_client_Update(t *testing.T) {
 		opts []grpc.CallOption
 	}
 	type fields struct {
-		addr string
-		c    grpc.Client
+		addrs []string
+		c     grpc.Client
 	}
 	type want struct {
 		wantRes *payload.Object_Location
@@ -1137,7 +1405,7 @@ func Test_client_Update(t *testing.T) {
 		           opts: nil,
 		       },
 		       fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		       },
 		       want: want{},
@@ -1156,7 +1424,7 @@ func Test_client_Update(t *testing.T) {
 		           opts: nil,
 		           },
 		           fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		           },
 		           want: want{},
@@ -1181,8 +1449,8 @@ func Test_client_Update(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				addr: test.fields.addr,
-				c:    test.fields.c,
+				addrs: test.fields.addrs,
+				c:     test.fields.c,
 			}
 
 			gotRes, err := c.Update(test.args.ctx, test.args.in, test.args.opts...)
@@ -1200,8 +1468,8 @@ func Test_client_StreamUpdate(t *testing.T) {
 		opts []grpc.CallOption
 	}
 	type fields struct {
-		addr string
-		c    grpc.Client
+		addrs []string
+		c     grpc.Client
 	}
 	type want struct {
 		wantRes vald.Update_StreamUpdateClient
@@ -1235,7 +1503,7 @@ func Test_client_StreamUpdate(t *testing.T) {
 		           opts: nil,
 		       },
 		       fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		       },
 		       want: want{},
@@ -1253,7 +1521,7 @@ func Test_client_StreamUpdate(t *testing.T) {
 		           opts: nil,
 		           },
 		           fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		           },
 		           want: want{},
@@ -1278,8 +1546,8 @@ func Test_client_StreamUpdate(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				addr: test.fields.addr,
-				c:    test.fields.c,
+				addrs: test.fields.addrs,
+				c:     test.fields.c,
 			}
 
 			gotRes, err := c.StreamUpdate(test.args.ctx, test.args.opts...)
@@ -1298,8 +1566,8 @@ func Test_client_MultiUpdate(t *testing.T) {
 		opts []grpc.CallOption
 	}
 	type fields struct {
-		addr string
-		c    grpc.Client
+		addrs []string
+		c     grpc.Client
 	}
 	type want struct {
 		wantRes *payload.Object_Locations
@@ -1334,7 +1602,7 @@ func Test_client_MultiUpdate(t *testing.T) {
 		           opts: nil,
 		       },
 		       fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		       },
 		       want: want{},
@@ -1353,7 +1621,7 @@ func Test_client_MultiUpdate(t *testing.T) {
 		           opts: nil,
 		           },
 		           fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		           },
 		           want: want{},
@@ -1378,8 +1646,8 @@ func Test_client_MultiUpdate(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				addr: test.fields.addr,
-				c:    test.fields.c,
+				addrs: test.fields.addrs,
+				c:     test.fields.c,
 			}
 
 			gotRes, err := c.MultiUpdate(test.args.ctx, test.args.in, test.args.opts...)
@@ -1398,8 +1666,8 @@ func Test_client_Upsert(t *testing.T) {
 		opts []grpc.CallOption
 	}
 	type fields struct {
-		addr string
-		c    grpc.Client
+		addrs []string
+		c     grpc.Client
 	}
 	type want struct {
 		wantRes *payload.Object_Location
@@ -1434,7 +1702,7 @@ func Test_client_Upsert(t *testing.T) {
 		           opts: nil,
 		       },
 		       fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		       },
 		       want: want{},
@@ -1453,7 +1721,7 @@ func Test_client_Upsert(t *testing.T) {
 		           opts: nil,
 		           },
 		           fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		           },
 		           want: want{},
@@ -1478,8 +1746,8 @@ func Test_client_Upsert(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				addr: test.fields.addr,
-				c:    test.fields.c,
+				addrs: test.fields.addrs,
+				c:     test.fields.c,
 			}
 
 			gotRes, err := c.Upsert(test.args.ctx, test.args.in, test.args.opts...)
@@ -1497,8 +1765,8 @@ func Test_client_StreamUpsert(t *testing.T) {
 		opts []grpc.CallOption
 	}
 	type fields struct {
-		addr string
-		c    grpc.Client
+		addrs []string
+		c     grpc.Client
 	}
 	type want struct {
 		wantRes vald.Upsert_StreamUpsertClient
@@ -1532,7 +1800,7 @@ func Test_client_StreamUpsert(t *testing.T) {
 		           opts: nil,
 		       },
 		       fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		       },
 		       want: want{},
@@ -1550,7 +1818,7 @@ func Test_client_StreamUpsert(t *testing.T) {
 		           opts: nil,
 		           },
 		           fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		           },
 		           want: want{},
@@ -1575,8 +1843,8 @@ func Test_client_StreamUpsert(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				addr: test.fields.addr,
-				c:    test.fields.c,
+				addrs: test.fields.addrs,
+				c:     test.fields.c,
 			}
 
 			gotRes, err := c.StreamUpsert(test.args.ctx, test.args.opts...)
@@ -1595,8 +1863,8 @@ func Test_client_MultiUpsert(t *testing.T) {
 		opts []grpc.CallOption
 	}
 	type fields struct {
-		addr string
-		c    grpc.Client
+		addrs []string
+		c     grpc.Client
 	}
 	type want struct {
 		wantRes *payload.Object_Locations
@@ -1631,7 +1899,7 @@ func Test_client_MultiUpsert(t *testing.T) {
 		           opts: nil,
 		       },
 		       fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		       },
 		       want: want{},
@@ -1650,7 +1918,7 @@ func Test_client_MultiUpsert(t *testing.T) {
 		           opts: nil,
 		           },
 		           fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		           },
 		           want: want{},
@@ -1675,8 +1943,8 @@ func Test_client_MultiUpsert(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				addr: test.fields.addr,
-				c:    test.fields.c,
+				addrs: test.fields.addrs,
+				c:     test.fields.c,
 			}
 
 			gotRes, err := c.MultiUpsert(test.args.ctx, test.args.in, test.args.opts...)
@@ -1695,8 +1963,8 @@ func Test_client_Remove(t *testing.T) {
 		opts []grpc.CallOption
 	}
 	type fields struct {
-		addr string
-		c    grpc.Client
+		addrs []string
+		c     grpc.Client
 	}
 	type want struct {
 		wantRes *payload.Object_Location
@@ -1731,7 +1999,7 @@ func Test_client_Remove(t *testing.T) {
 		           opts: nil,
 		       },
 		       fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		       },
 		       want: want{},
@@ -1750,7 +2018,7 @@ func Test_client_Remove(t *testing.T) {
 		           opts: nil,
 		           },
 		           fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		           },
 		           want: want{},
@@ -1775,8 +2043,8 @@ func Test_client_Remove(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				addr: test.fields.addr,
-				c:    test.fields.c,
+				addrs: test.fields.addrs,
+				c:     test.fields.c,
 			}
 
 			gotRes, err := c.Remove(test.args.ctx, test.args.in, test.args.opts...)
@@ -1794,8 +2062,8 @@ func Test_client_StreamRemove(t *testing.T) {
 		opts []grpc.CallOption
 	}
 	type fields struct {
-		addr string
-		c    grpc.Client
+		addrs []string
+		c     grpc.Client
 	}
 	type want struct {
 		wantRes vald.Remove_StreamRemoveClient
@@ -1829,7 +2097,7 @@ func Test_client_StreamRemove(t *testing.T) {
 		           opts: nil,
 		       },
 		       fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		       },
 		       want: want{},
@@ -1847,7 +2115,7 @@ func Test_client_StreamRemove(t *testing.T) {
 		           opts: nil,
 		           },
 		           fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		           },
 		           want: want{},
@@ -1872,8 +2140,8 @@ func Test_client_StreamRemove(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				addr: test.fields.addr,
-				c:    test.fields.c,
+				addrs: test.fields.addrs,
+				c:     test.fields.c,
 			}
 
 			gotRes, err := c.StreamRemove(test.args.ctx, test.args.opts...)
@@ -1892,8 +2160,8 @@ func Test_client_MultiRemove(t *testing.T) {
 		opts []grpc.CallOption
 	}
 	type fields struct {
-		addr string
-		c    grpc.Client
+		addrs []string
+		c     grpc.Client
 	}
 	type want struct {
 		wantRes *payload.Object_Locations
@@ -1928,7 +2196,7 @@ func Test_client_MultiRemove(t *testing.T) {
 		           opts: nil,
 		       },
 		       fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		       },
 		       want: want{},
@@ -1947,7 +2215,7 @@ func Test_client_MultiRemove(t *testing.T) {
 		           opts: nil,
 		           },
 		           fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		           },
 		           want: want{},
@@ -1972,8 +2240,8 @@ func Test_client_MultiRemove(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				addr: test.fields.addr,
-				c:    test.fields.c,
+				addrs: test.fields.addrs,
+				c:     test.fields.c,
 			}
 
 			gotRes, err := c.MultiRemove(test.args.ctx, test.args.in, test.args.opts...)
@@ -1992,8 +2260,8 @@ func Test_client_GetObject(t *testing.T) {
 		opts []grpc.CallOption
 	}
 	type fields struct {
-		addr string
-		c    grpc.Client
+		addrs []string
+		c     grpc.Client
 	}
 	type want struct {
 		wantRes *payload.Object_Vector
@@ -2028,7 +2296,7 @@ func Test_client_GetObject(t *testing.T) {
 		           opts: nil,
 		       },
 		       fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		       },
 		       want: want{},
@@ -2047,7 +2315,7 @@ func Test_client_GetObject(t *testing.T) {
 		           opts: nil,
 		           },
 		           fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		           },
 		           want: want{},
@@ -2072,8 +2340,8 @@ func Test_client_GetObject(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				addr: test.fields.addr,
-				c:    test.fields.c,
+				addrs: test.fields.addrs,
+				c:     test.fields.c,
 			}
 
 			gotRes, err := c.GetObject(test.args.ctx, test.args.in, test.args.opts...)
@@ -2091,8 +2359,8 @@ func Test_client_StreamGetObject(t *testing.T) {
 		opts []grpc.CallOption
 	}
 	type fields struct {
-		addr string
-		c    grpc.Client
+		addrs []string
+		c     grpc.Client
 	}
 	type want struct {
 		wantRes vald.Object_StreamGetObjectClient
@@ -2126,7 +2394,7 @@ func Test_client_StreamGetObject(t *testing.T) {
 		           opts: nil,
 		       },
 		       fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		       },
 		       want: want{},
@@ -2144,7 +2412,7 @@ func Test_client_StreamGetObject(t *testing.T) {
 		           opts: nil,
 		           },
 		           fields: fields {
-		           addr: "",
+		           addrs: nil,
 		           c: nil,
 		           },
 		           want: want{},
@@ -2169,8 +2437,8 @@ func Test_client_StreamGetObject(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				addr: test.fields.addr,
-				c:    test.fields.c,
+				addrs: test.fields.addrs,
+				c:     test.fields.c,
 			}
 
 			gotRes, err := c.StreamGetObject(test.args.ctx, test.args.opts...)

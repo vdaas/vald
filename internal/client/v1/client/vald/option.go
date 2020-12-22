@@ -19,22 +19,29 @@ package vald
 
 import "github.com/vdaas/vald/internal/net/grpc"
 
-type Option func(*client)
+type Option func(*client) error
 
 var defaultOptions = []Option{}
 
-func WithAddr(addr string) Option {
-	return func(c *client) {
-		if addr != "" {
-			c.addr = addr
+func WithAddrs(addrs ...string) Option {
+	return func(c *client) error {
+		if addrs == nil {
+			return nil
 		}
+		if c.addrs != nil {
+			c.addrs = append(c.addrs, addrs...)
+		} else {
+			c.addrs = addrs
+		}
+		return nil
 	}
 }
 
 func WithClient(cl grpc.Client) Option {
-	return func(c *client) {
+	return func(c *client) error {
 		if cl != nil {
 			c.c = cl
 		}
+		return nil
 	}
 }

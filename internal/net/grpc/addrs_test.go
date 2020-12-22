@@ -14,42 +14,36 @@
 // limitations under the License.
 //
 
-// Package core provides agent ngt gRPC client functions
-package core
+// Package grpc provides generic functionality for grpc
+package grpc
 
 import (
-	"context"
 	"reflect"
+	"sync"
+	"sync/atomic"
 	"testing"
 
-	"github.com/vdaas/vald/internal/client/v1/client"
-	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/net/grpc"
 	"go.uber.org/goleak"
 )
 
-func TestNew(t *testing.T) {
+func Test_newAddr(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		opts []Option
+		addrs []string
 	}
 	type want struct {
-		want Client
-		err  error
+		want AtomicAddrs
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, Client, error) error
+		checkFunc  func(want, AtomicAddrs) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got Client, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
+	defaultCheckFunc := func(w want, got AtomicAddrs) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -61,7 +55,7 @@ func TestNew(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           opts: nil,
+		           addrs: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -74,7 +68,7 @@ func TestNew(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           opts: nil,
+		           addrs: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -98,46 +92,134 @@ func TestNew(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got, err := New(test.args.opts...)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			got := newAddr(test.args.addrs)
+			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
 	}
 }
 
-func Test_agentClient_CreateIndex(t *testing.T) {
+func Test_atomicAddrs_GetAll(t *testing.T) {
 	t.Parallel()
-	type args struct {
-		ctx  context.Context
-		req  *client.ControlCreateIndexRequest
-		opts []grpc.CallOption
-	}
 	type fields struct {
-		Client vald.Client
-		addrs  []string
-		c      grpc.Client
+		addrs      atomic.Value
+		dupCheck   map[string]bool
+		mu         sync.RWMutex
+		addrSeeker uint64
+		l          uint64
 	}
 	type want struct {
-		want *client.Empty
-		err  error
+		want  []string
+		want1 bool
 	}
 	type test struct {
 		name       string
-		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *client.Empty, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		checkFunc  func(want, []string, bool) error
+		beforeFunc func()
+		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want, got *client.Empty, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
+	defaultCheckFunc := func(w want, got []string, got1 bool) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
+		if !reflect.DeepEqual(got1, w.want1) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got1, w.want1)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           addrs: nil,
+		           dupCheck: nil,
+		           mu: sync.RWMutex{},
+		           addrSeeker: 0,
+		           l: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           addrs: nil,
+		           dupCheck: nil,
+		           mu: sync.RWMutex{},
+		           addrSeeker: 0,
+		           l: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			a := &atomicAddrs{
+				addrs:      test.fields.addrs,
+				dupCheck:   test.fields.dupCheck,
+				mu:         test.fields.mu,
+				addrSeeker: test.fields.addrSeeker,
+				l:          test.fields.l,
+			}
+
+			got, got1 := a.GetAll()
+			if err := test.checkFunc(test.want, got, got1); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_atomicAddrs_Range(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		f func(addr string) bool
+	}
+	type fields struct {
+		addrs      atomic.Value
+		dupCheck   map[string]bool
+		mu         sync.RWMutex
+		addrSeeker uint64
+		l          uint64
+	}
+	type want struct {
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want) error {
 		return nil
 	}
 	tests := []test{
@@ -146,14 +228,14 @@ func Test_agentClient_CreateIndex(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           ctx: nil,
-		           req: nil,
-		           opts: nil,
+		           f: nil,
 		       },
 		       fields: fields {
-		           Client: nil,
 		           addrs: nil,
-		           c: nil,
+		           dupCheck: nil,
+		           mu: sync.RWMutex{},
+		           addrSeeker: 0,
+		           l: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -166,14 +248,14 @@ func Test_agentClient_CreateIndex(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           ctx: nil,
-		           req: nil,
-		           opts: nil,
+		           f: nil,
 		           },
 		           fields: fields {
-		           Client: nil,
 		           addrs: nil,
-		           c: nil,
+		           dupCheck: nil,
+		           mu: sync.RWMutex{},
+		           addrSeeker: 0,
+		           l: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -196,52 +278,246 @@ func Test_agentClient_CreateIndex(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			c := &agentClient{
-				Client: test.fields.Client,
-				addrs:  test.fields.addrs,
-				c:      test.fields.c,
+			a := &atomicAddrs{
+				addrs:      test.fields.addrs,
+				dupCheck:   test.fields.dupCheck,
+				mu:         test.fields.mu,
+				addrSeeker: test.fields.addrSeeker,
+				l:          test.fields.l,
 			}
 
-			got, err := c.CreateIndex(test.args.ctx, test.args.req, test.args.opts...)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			a.Range(test.args.f)
+			if err := test.checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
 	}
 }
 
-func Test_agentClient_SaveIndex(t *testing.T) {
+func Test_atomicAddrs_Add(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx  context.Context
-		req  *client.Empty
-		opts []grpc.CallOption
+		addr string
 	}
 	type fields struct {
-		Client vald.Client
-		addrs  []string
-		c      grpc.Client
+		addrs      atomic.Value
+		dupCheck   map[string]bool
+		mu         sync.RWMutex
+		addrSeeker uint64
+		l          uint64
 	}
 	type want struct {
-		want *client.Empty
-		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *client.Empty, error) error
+		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *client.Empty, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
+	defaultCheckFunc := func(w want) error {
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           addr: "",
+		       },
+		       fields: fields {
+		           addrs: nil,
+		           dupCheck: nil,
+		           mu: sync.RWMutex{},
+		           addrSeeker: 0,
+		           l: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           addr: "",
+		           },
+		           fields: fields {
+		           addrs: nil,
+		           dupCheck: nil,
+		           mu: sync.RWMutex{},
+		           addrSeeker: 0,
+		           l: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			a := &atomicAddrs{
+				addrs:      test.fields.addrs,
+				dupCheck:   test.fields.dupCheck,
+				mu:         test.fields.mu,
+				addrSeeker: test.fields.addrSeeker,
+				l:          test.fields.l,
+			}
+
+			a.Add(test.args.addr)
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_atomicAddrs_Delete(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		addr string
+	}
+	type fields struct {
+		addrs      atomic.Value
+		dupCheck   map[string]bool
+		mu         sync.RWMutex
+		addrSeeker uint64
+		l          uint64
+	}
+	type want struct {
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want) error {
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           addr: "",
+		       },
+		       fields: fields {
+		           addrs: nil,
+		           dupCheck: nil,
+		           mu: sync.RWMutex{},
+		           addrSeeker: 0,
+		           l: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           addr: "",
+		           },
+		           fields: fields {
+		           addrs: nil,
+		           dupCheck: nil,
+		           mu: sync.RWMutex{},
+		           addrSeeker: 0,
+		           l: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			a := &atomicAddrs{
+				addrs:      test.fields.addrs,
+				dupCheck:   test.fields.dupCheck,
+				mu:         test.fields.mu,
+				addrSeeker: test.fields.addrSeeker,
+				l:          test.fields.l,
+			}
+
+			a.Delete(test.args.addr)
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_atomicAddrs_Next(t *testing.T) {
+	t.Parallel()
+	type fields struct {
+		addrs      atomic.Value
+		dupCheck   map[string]bool
+		mu         sync.RWMutex
+		addrSeeker uint64
+		l          uint64
+	}
+	type want struct {
+		want  string
+		want1 bool
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, string, bool) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got string, got1 bool) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
+		if !reflect.DeepEqual(got1, w.want1) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got1, w.want1)
+		}
 		return nil
 	}
 	tests := []test{
@@ -249,15 +525,12 @@ func Test_agentClient_SaveIndex(t *testing.T) {
 		/*
 		   {
 		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           req: nil,
-		           opts: nil,
-		       },
 		       fields: fields {
-		           Client: nil,
 		           addrs: nil,
-		           c: nil,
+		           dupCheck: nil,
+		           mu: sync.RWMutex{},
+		           addrSeeker: 0,
+		           l: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -269,15 +542,12 @@ func Test_agentClient_SaveIndex(t *testing.T) {
 		   func() test {
 		       return test {
 		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           req: nil,
-		           opts: nil,
-		           },
 		           fields: fields {
-		           Client: nil,
 		           addrs: nil,
-		           c: nil,
+		           dupCheck: nil,
+		           mu: sync.RWMutex{},
+		           addrSeeker: 0,
+		           l: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -292,230 +562,24 @@ func Test_agentClient_SaveIndex(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc()
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			c := &agentClient{
-				Client: test.fields.Client,
-				addrs:  test.fields.addrs,
-				c:      test.fields.c,
+			a := &atomicAddrs{
+				addrs:      test.fields.addrs,
+				dupCheck:   test.fields.dupCheck,
+				mu:         test.fields.mu,
+				addrSeeker: test.fields.addrSeeker,
+				l:          test.fields.l,
 			}
 
-			got, err := c.SaveIndex(test.args.ctx, test.args.req, test.args.opts...)
-			if err := test.checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_agentClient_CreateAndSaveIndex(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx  context.Context
-		req  *client.ControlCreateIndexRequest
-		opts []grpc.CallOption
-	}
-	type fields struct {
-		Client vald.Client
-		addrs  []string
-		c      grpc.Client
-	}
-	type want struct {
-		want *client.Empty
-		err  error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *client.Empty, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got *client.Empty, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           req: nil,
-		           opts: nil,
-		       },
-		       fields: fields {
-		           Client: nil,
-		           addrs: nil,
-		           c: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           req: nil,
-		           opts: nil,
-		           },
-		           fields: fields {
-		           Client: nil,
-		           addrs: nil,
-		           c: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			c := &agentClient{
-				Client: test.fields.Client,
-				addrs:  test.fields.addrs,
-				c:      test.fields.c,
-			}
-
-			got, err := c.CreateAndSaveIndex(test.args.ctx, test.args.req, test.args.opts...)
-			if err := test.checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_agentClient_IndexInfo(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx  context.Context
-		req  *client.Empty
-		opts []grpc.CallOption
-	}
-	type fields struct {
-		Client vald.Client
-		addrs  []string
-		c      grpc.Client
-	}
-	type want struct {
-		wantRes *client.InfoIndexCount
-		err     error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *client.InfoIndexCount, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, gotRes *client.InfoIndexCount, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           req: nil,
-		           opts: nil,
-		       },
-		       fields: fields {
-		           Client: nil,
-		           addrs: nil,
-		           c: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           req: nil,
-		           opts: nil,
-		           },
-		           fields: fields {
-		           Client: nil,
-		           addrs: nil,
-		           c: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			c := &agentClient{
-				Client: test.fields.Client,
-				addrs:  test.fields.addrs,
-				c:      test.fields.c,
-			}
-
-			gotRes, err := c.IndexInfo(test.args.ctx, test.args.req, test.args.opts...)
-			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+			got, got1 := a.Next()
+			if err := test.checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

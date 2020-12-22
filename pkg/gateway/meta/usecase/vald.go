@@ -43,6 +43,7 @@ type run struct {
 	server        starter.Server
 	observability observability.Observability
 	metadata      service.Meta
+	client        client.Client
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
@@ -89,11 +90,16 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, errors.ErrGRPCTargetAddrNotFound
 	}
 
+	c, err := client.New(
+		client.WithAddrs(cfg.Client.Addrs...),
+		client.WithClient(grpc.New(cfg.Client.Opts()...)),
+	)
+	if err != nil {
+		return nil, err
+	}
+
 	v := handler.New(
-		handler.WithValdClient(client.New(
-			client.WithAddr(cfg.Client.Addrs[0]),
-			client.WithClient(grpc.New(cfg.Client.Opts()...)),
-		)),
+		handler.WithValdClient(c),
 		handler.WithMeta(metadata),
 		handler.WithErrGroup(eg),
 		handler.WithStreamConcurrency(cfg.Server.GetGRPCStreamConcurrency()),
@@ -148,6 +154,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		server:        srv,
 		observability: obs,
 		metadata:      metadata,
+		client:        c,
 	}, nil
 }
 
@@ -160,13 +167,20 @@ func (r *run) PreStart(ctx context.Context) error {
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 6)
-	var mech, sech, oech <-chan error
+	var mech, sech, oech, cech <-chan error
 	var err error
 	if r.observability != nil {
 		oech = r.observability.Start(ctx)
 	}
 	if r.metadata != nil {
 		mech, err = r.metadata.Start(ctx)
+		if err != nil {
+			close(ech)
+			return nil, err
+		}
+	}
+	if r.client != nil {
+		cech, err = r.client.Start(ctx)
 		if err != nil {
 			close(ech)
 			return nil, err
@@ -181,6 +195,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 				return ctx.Err()
 			case err = <-oech:
 			case err = <-mech:
+			case err = <-cech:
 			case err = <-sech:
 			}
 			if err != nil {
@@ -207,5 +222,5 @@ func (r *run) Stop(ctx context.Context) error {
 }
 
 func (r *run) PostStop(ctx context.Context) error {
-	return nil
+	return r.client.Stop(ctx)
 }

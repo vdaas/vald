@@ -19,42 +19,61 @@ package core
 
 import (
 	"context"
+	"reflect"
 
 	agent "github.com/vdaas/vald/apis/grpc/v1/agent/core"
 	"github.com/vdaas/vald/internal/client/v1/client"
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 )
 
 // Client represents agent NGT client interface.
 type Client interface {
-	client.Client
+	vald.Client
 	client.ObjectReader
 	client.Indexer
 }
 
 type agentClient struct {
 	vald.Client
-	addr string
-	c    grpc.Client
+	addrs []string
+	c     grpc.Client
 }
 
 // New returns Client implementation if no error occurs.
-func New(opts ...Option) Client {
+func New(opts ...Option) (Client, error) {
 	c := new(agentClient)
 	for _, opt := range append(defaultOptions, opts...) {
-		opt(c)
+		err := opt(c)
+		if err != nil {
+			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+		}
 	}
-	if c.c == nil && len(c.addr) != 0 {
-		c.c = grpc.New(grpc.WithAddrs(c.addr))
+	if c.c == nil {
+		if c.Client != nil {
+			c.c = c.Client.GRPCClient()
+		} else {
+			if c.addrs == nil {
+				return nil, errors.ErrGRPCTargetAddrNotFound
+			}
+			c.c = grpc.New(grpc.WithAddrs(c.addrs...))
+		}
 	}
 	if c.Client == nil {
-		c.Client = vald.New(
-			vald.WithAddr(c.addr),
+		if c.addrs == nil {
+			return nil, errors.ErrGRPCTargetAddrNotFound
+		}
+		var err error
+		c.Client, err = vald.New(
+			vald.WithAddrs(c.addrs...),
 			vald.WithClient(c.c),
 		)
+		if err != nil {
+			return nil, err
+		}
 	}
-	return c
+	return c, nil
 }
 
 func (c *agentClient) CreateIndex(
@@ -62,11 +81,9 @@ func (c *agentClient) CreateIndex(
 	req *client.ControlCreateIndexRequest,
 	opts ...grpc.CallOption,
 ) (*client.Empty, error) {
-	_, err := c.c.Do(ctx, c.addr,
-		func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-			return agent.NewAgentClient(conn).CreateIndex(ctx, req, copts...)
-		},
-	)
+	_, err := c.c.RoundRobin(ctx, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		return agent.NewAgentClient(conn).CreateIndex(ctx, req, copts...)
+	})
 	return nil, err
 }
 
@@ -75,11 +92,9 @@ func (c *agentClient) SaveIndex(
 	req *client.Empty,
 	opts ...grpc.CallOption,
 ) (*client.Empty, error) {
-	_, err := c.c.Do(ctx, c.addr,
-		func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-			return agent.NewAgentClient(conn).SaveIndex(ctx, new(client.Empty), copts...)
-		},
-	)
+	_, err := c.c.RoundRobin(ctx, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		return agent.NewAgentClient(conn).SaveIndex(ctx, new(client.Empty), copts...)
+	})
 	return nil, err
 }
 
@@ -88,11 +103,9 @@ func (c *agentClient) CreateAndSaveIndex(
 	req *client.ControlCreateIndexRequest,
 	opts ...grpc.CallOption,
 ) (*client.Empty, error) {
-	_, err := c.c.Do(ctx, c.addr,
-		func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-			return agent.NewAgentClient(conn).CreateAndSaveIndex(ctx, req, copts...)
-		},
-	)
+	_, err := c.c.RoundRobin(ctx, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		return agent.NewAgentClient(conn).CreateAndSaveIndex(ctx, req, copts...)
+	})
 	return nil, err
 }
 
@@ -101,15 +114,13 @@ func (c *agentClient) IndexInfo(
 	req *client.Empty,
 	opts ...grpc.CallOption,
 ) (res *client.InfoIndexCount, err error) {
-	_, err = c.c.Do(ctx, c.addr,
-		func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-			res, err := agent.NewAgentClient(conn).IndexInfo(ctx, new(client.Empty), copts...)
-			if err != nil {
-				return nil, err
-			}
-			return res, err
-		},
-	)
+	_, err = c.c.RoundRobin(ctx, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		res, err := agent.NewAgentClient(conn).IndexInfo(ctx, new(client.Empty), copts...)
+		if err != nil {
+			return nil, err
+		}
+		return res, err
+	})
 	if err != nil {
 		return nil, err
 	}

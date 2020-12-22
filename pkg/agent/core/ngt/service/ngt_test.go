@@ -3695,6 +3695,195 @@ func Test_ngt_Exists(t *testing.T) {
 	}
 }
 
+func Test_ngt_readyForUpdate(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		uuid string
+		vec  []float32
+	}
+	type fields struct {
+		core              core.NGT
+		eg                errgroup.Group
+		kvs               kvs.BidiMap
+		ivc               *vcaches
+		dvc               *vcaches
+		indexing          atomic.Value
+		saving            atomic.Value
+		lastNoice         uint64
+		ic                uint64
+		nocie             uint64
+		nogce             uint64
+		inMem             bool
+		alen              int
+		lim               time.Duration
+		dur               time.Duration
+		sdur              time.Duration
+		minLit            time.Duration
+		maxLit            time.Duration
+		litFactor         time.Duration
+		enableProactiveGC bool
+		path              string
+		poolSize          uint32
+		radius            float32
+		epsilon           float32
+		idelay            time.Duration
+		dcd               bool
+	}
+	type want struct {
+		wantReady bool
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, bool) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotReady bool) error {
+		if !reflect.DeepEqual(gotReady, w.wantReady) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotReady, w.wantReady)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           uuid: "",
+		           vec: nil,
+		       },
+		       fields: fields {
+		           core: nil,
+		           eg: nil,
+		           kvs: nil,
+		           ivc: vcaches{},
+		           dvc: vcaches{},
+		           indexing: nil,
+		           saving: nil,
+		           lastNoice: 0,
+		           ic: 0,
+		           nocie: 0,
+		           nogce: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
+		           enableProactiveGC: false,
+		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
+		           dcd: false,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           uuid: "",
+		           vec: nil,
+		           },
+		           fields: fields {
+		           core: nil,
+		           eg: nil,
+		           kvs: nil,
+		           ivc: vcaches{},
+		           dvc: vcaches{},
+		           indexing: nil,
+		           saving: nil,
+		           lastNoice: 0,
+		           ic: 0,
+		           nocie: 0,
+		           nogce: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
+		           enableProactiveGC: false,
+		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
+		           dcd: false,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			n := &ngt{
+				core:              test.fields.core,
+				eg:                test.fields.eg,
+				kvs:               test.fields.kvs,
+				ivc:               test.fields.ivc,
+				dvc:               test.fields.dvc,
+				indexing:          test.fields.indexing,
+				saving:            test.fields.saving,
+				lastNoice:         test.fields.lastNoice,
+				ic:                test.fields.ic,
+				nocie:             test.fields.nocie,
+				nogce:             test.fields.nogce,
+				inMem:             test.fields.inMem,
+				alen:              test.fields.alen,
+				lim:               test.fields.lim,
+				dur:               test.fields.dur,
+				sdur:              test.fields.sdur,
+				minLit:            test.fields.minLit,
+				maxLit:            test.fields.maxLit,
+				litFactor:         test.fields.litFactor,
+				enableProactiveGC: test.fields.enableProactiveGC,
+				path:              test.fields.path,
+				poolSize:          test.fields.poolSize,
+				radius:            test.fields.radius,
+				epsilon:           test.fields.epsilon,
+				idelay:            test.fields.idelay,
+				dcd:               test.fields.dcd,
+			}
+
+			gotReady := n.readyForUpdate(test.args.uuid, test.args.vec)
+			if err := test.checkFunc(test.want, gotReady); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
 func Test_ngt_insertCache(t *testing.T) {
 	t.Parallel()
 	type args struct {
@@ -5831,195 +6020,6 @@ func Test_ngt_Close(t *testing.T) {
 
 			err := n.Close(test.args.ctx)
 			if err := test.checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_ngt_readyForUpdate(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		uuid string
-		vec  []float32
-	}
-	type fields struct {
-		core              core.NGT
-		eg                errgroup.Group
-		kvs               kvs.BidiMap
-		ivc               *vcaches
-		dvc               *vcaches
-		indexing          atomic.Value
-		saving            atomic.Value
-		lastNoice         uint64
-		ic                uint64
-		nocie             uint64
-		nogce             uint64
-		inMem             bool
-		alen              int
-		lim               time.Duration
-		dur               time.Duration
-		sdur              time.Duration
-		minLit            time.Duration
-		maxLit            time.Duration
-		litFactor         time.Duration
-		enableProactiveGC bool
-		path              string
-		poolSize          uint32
-		radius            float32
-		epsilon           float32
-		idelay            time.Duration
-		dcd               bool
-	}
-	type want struct {
-		wantReady bool
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, bool) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, gotReady bool) error {
-		if !reflect.DeepEqual(gotReady, w.wantReady) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotReady, w.wantReady)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           uuid: "",
-		           vec: nil,
-		       },
-		       fields: fields {
-		           core: nil,
-		           eg: nil,
-		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
-		           indexing: nil,
-		           saving: nil,
-		           lastNoice: 0,
-		           ic: 0,
-		           nocie: 0,
-		           nogce: 0,
-		           inMem: false,
-		           alen: 0,
-		           lim: nil,
-		           dur: nil,
-		           sdur: nil,
-		           minLit: nil,
-		           maxLit: nil,
-		           litFactor: nil,
-		           enableProactiveGC: false,
-		           path: "",
-		           poolSize: 0,
-		           radius: 0,
-		           epsilon: 0,
-		           idelay: nil,
-		           dcd: false,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           uuid: "",
-		           vec: nil,
-		           },
-		           fields: fields {
-		           core: nil,
-		           eg: nil,
-		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
-		           indexing: nil,
-		           saving: nil,
-		           lastNoice: 0,
-		           ic: 0,
-		           nocie: 0,
-		           nogce: 0,
-		           inMem: false,
-		           alen: 0,
-		           lim: nil,
-		           dur: nil,
-		           sdur: nil,
-		           minLit: nil,
-		           maxLit: nil,
-		           litFactor: nil,
-		           enableProactiveGC: false,
-		           path: "",
-		           poolSize: 0,
-		           radius: 0,
-		           epsilon: 0,
-		           idelay: nil,
-		           dcd: false,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			n := &ngt{
-				core:              test.fields.core,
-				eg:                test.fields.eg,
-				kvs:               test.fields.kvs,
-				ivc:               test.fields.ivc,
-				dvc:               test.fields.dvc,
-				indexing:          test.fields.indexing,
-				saving:            test.fields.saving,
-				lastNoice:         test.fields.lastNoice,
-				ic:                test.fields.ic,
-				nocie:             test.fields.nocie,
-				nogce:             test.fields.nogce,
-				inMem:             test.fields.inMem,
-				alen:              test.fields.alen,
-				lim:               test.fields.lim,
-				dur:               test.fields.dur,
-				sdur:              test.fields.sdur,
-				minLit:            test.fields.minLit,
-				maxLit:            test.fields.maxLit,
-				litFactor:         test.fields.litFactor,
-				enableProactiveGC: test.fields.enableProactiveGC,
-				path:              test.fields.path,
-				poolSize:          test.fields.poolSize,
-				radius:            test.fields.radius,
-				epsilon:           test.fields.epsilon,
-				idelay:            test.fields.idelay,
-				dcd:               test.fields.dcd,
-			}
-
-			gotReady := n.readyForUpdate(test.args.uuid, test.args.vec)
-			if err := test.checkFunc(test.want, gotReady); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
