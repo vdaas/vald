@@ -112,7 +112,7 @@ func Test_reconciler_Reconcile(t *testing.T) {
 		ctx         context.Context
 		mgr         manager.Manager
 		name        string
-		namespace   string
+		namespaces  []string
 		onError     func(err error)
 		onReconcile func(rs map[string][]StatefulSet)
 	}
@@ -150,7 +150,7 @@ func Test_reconciler_Reconcile(t *testing.T) {
 		           ctx: nil,
 		           mgr: nil,
 		           name: "",
-		           namespace: "",
+		           namespaces: "",
 		           onError: nil,
 		           onReconcile: nil,
 		       },
@@ -171,7 +171,7 @@ func Test_reconciler_Reconcile(t *testing.T) {
 		           ctx: nil,
 		           mgr: nil,
 		           name: "",
-		           namespace: "",
+		           namespaces: "",
 		           onError: nil,
 		           onReconcile: nil,
 		           },
@@ -198,7 +198,7 @@ func Test_reconciler_Reconcile(t *testing.T) {
 				ctx:         test.fields.ctx,
 				mgr:         test.fields.mgr,
 				name:        test.fields.name,
-				namespace:   test.fields.namespace,
+				namespaces:  test.fields.namespaces,
 				onError:     test.fields.onError,
 				onReconcile: test.fields.onReconcile,
 			}
@@ -217,7 +217,7 @@ func Test_reconciler_GetName(t *testing.T) {
 		ctx         context.Context
 		mgr         manager.Manager
 		name        string
-		namespace   string
+		namespaces  []string
 		onError     func(err error)
 		onReconcile func(rs map[string][]StatefulSet)
 	}
@@ -247,7 +247,7 @@ func Test_reconciler_GetName(t *testing.T) {
 		           ctx: nil,
 		           mgr: nil,
 		           name: "",
-		           namespace: "",
+		           namespaces: "",
 		           onError: nil,
 		           onReconcile: nil,
 		       },
@@ -265,7 +265,7 @@ func Test_reconciler_GetName(t *testing.T) {
 		           ctx: nil,
 		           mgr: nil,
 		           name: "",
-		           namespace: "",
+		           namespaces: "",
 		           onError: nil,
 		           onReconcile: nil,
 		           },
@@ -292,7 +292,7 @@ func Test_reconciler_GetName(t *testing.T) {
 				ctx:         test.fields.ctx,
 				mgr:         test.fields.mgr,
 				name:        test.fields.name,
-				namespace:   test.fields.namespace,
+				namespaces:  test.fields.namespaces,
 				onError:     test.fields.onError,
 				onReconcile: test.fields.onReconcile,
 			}
@@ -315,7 +315,7 @@ func Test_reconciler_NewReconciler(t *testing.T) {
 		ctx         context.Context
 		mgr         manager.Manager
 		name        string
-		namespace   string
+		namespaces  []string
 		onError     func(err error)
 		onReconcile func(rs map[string][]StatefulSet)
 	}
@@ -350,7 +350,7 @@ func Test_reconciler_NewReconciler(t *testing.T) {
 		           ctx: nil,
 		           mgr: nil,
 		           name: "",
-		           namespace: "",
+		           namespaces: "",
 		           onError: nil,
 		           onReconcile: nil,
 		       },
@@ -372,7 +372,7 @@ func Test_reconciler_NewReconciler(t *testing.T) {
 		           ctx: nil,
 		           mgr: nil,
 		           name: "",
-		           namespace: "",
+		           namespaces: "",
 		           onError: nil,
 		           onReconcile: nil,
 		           },
@@ -399,7 +399,7 @@ func Test_reconciler_NewReconciler(t *testing.T) {
 				ctx:         test.fields.ctx,
 				mgr:         test.fields.mgr,
 				name:        test.fields.name,
-				namespace:   test.fields.namespace,
+				namespaces:  test.fields.namespaces,
 				onError:     test.fields.onError,
 				onReconcile: test.fields.onReconcile,
 			}
@@ -418,7 +418,7 @@ func Test_reconciler_For(t *testing.T) {
 		ctx         context.Context
 		mgr         manager.Manager
 		name        string
-		namespace   string
+		namespaces  []string
 		onError     func(err error)
 		onReconcile func(rs map[string][]StatefulSet)
 	}
@@ -448,7 +448,7 @@ func Test_reconciler_For(t *testing.T) {
 		           ctx: nil,
 		           mgr: nil,
 		           name: "",
-		           namespace: "",
+		           namespaces: "",
 		           onError: nil,
 		           onReconcile: nil,
 		       },
@@ -466,7 +466,7 @@ func Test_reconciler_For(t *testing.T) {
 		           ctx: nil,
 		           mgr: nil,
 		           name: "",
-		           namespace: "",
+		           namespaces: "",
 		           onError: nil,
 		           onReconcile: nil,
 		           },
@@ -493,7 +493,7 @@ func Test_reconciler_For(t *testing.T) {
 				ctx:         test.fields.ctx,
 				mgr:         test.fields.mgr,
 				name:        test.fields.name,
-				namespace:   test.fields.namespace,
+				namespaces:  test.fields.namespaces,
 				onError:     test.fields.onError,
 				onReconcile: test.fields.onReconcile,
 			}
@@ -512,7 +512,7 @@ func Test_reconciler_Owns(t *testing.T) {
 		ctx         context.Context
 		mgr         manager.Manager
 		name        string
-		namespace   string
+		namespaces  []string
 		onError     func(err error)
 		onReconcile func(rs map[string][]StatefulSet)
 	}
@@ -542,7 +542,7 @@ func Test_reconciler_Owns(t *testing.T) {
 		           ctx: nil,
 		           mgr: nil,
 		           name: "",
-		           namespace: "",
+		           namespaces: "",
 		           onError: nil,
 		           onReconcile: nil,
 		       },
@@ -560,7 +560,7 @@ func Test_reconciler_Owns(t *testing.T) {
 		           ctx: nil,
 		           mgr: nil,
 		           name: "",
-		           namespace: "",
+		           namespaces: "",
 		           onError: nil,
 		           onReconcile: nil,
 		           },
@@ -587,7 +587,7 @@ func Test_reconciler_Owns(t *testing.T) {
 				ctx:         test.fields.ctx,
 				mgr:         test.fields.mgr,
 				name:        test.fields.name,
-				namespace:   test.fields.namespace,
+				namespaces:  test.fields.namespaces,
 				onError:     test.fields.onError,
 				onReconcile: test.fields.onReconcile,
 			}
@@ -606,7 +606,7 @@ func Test_reconciler_Watches(t *testing.T) {
 		ctx         context.Context
 		mgr         manager.Manager
 		name        string
-		namespace   string
+		namespaces  []string
 		onError     func(err error)
 		onReconcile func(rs map[string][]StatefulSet)
 	}
@@ -640,7 +640,7 @@ func Test_reconciler_Watches(t *testing.T) {
 		           ctx: nil,
 		           mgr: nil,
 		           name: "",
-		           namespace: "",
+		           namespaces: "",
 		           onError: nil,
 		           onReconcile: nil,
 		       },
@@ -658,7 +658,7 @@ func Test_reconciler_Watches(t *testing.T) {
 		           ctx: nil,
 		           mgr: nil,
 		           name: "",
-		           namespace: "",
+		           namespaces: "",
 		           onError: nil,
 		           onReconcile: nil,
 		           },
@@ -685,7 +685,7 @@ func Test_reconciler_Watches(t *testing.T) {
 				ctx:         test.fields.ctx,
 				mgr:         test.fields.mgr,
 				name:        test.fields.name,
-				namespace:   test.fields.namespace,
+				namespaces:  test.fields.namespaces,
 				onError:     test.fields.onError,
 				onReconcile: test.fields.onReconcile,
 			}
