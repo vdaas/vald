@@ -37,6 +37,9 @@ func New(opts ...Option) Client {
 	for _, opt := range append(defaultOptions, opts...) {
 		opt(c)
 	}
+	if c.c == nil {
+		c.c = grpc.New(grpc.WithAddrs(c.addr))
+	}
 	return c
 }
 

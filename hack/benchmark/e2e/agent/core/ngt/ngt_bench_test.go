@@ -29,7 +29,10 @@ import (
 	"github.com/vdaas/vald/internal/log"
 )
 
-var targets []string
+var (
+	targets  []string
+	grpcAddr string
+)
 
 func init() {
 	testing.Init()
@@ -38,6 +41,7 @@ func init() {
 	var dataset string
 
 	flag.StringVar(&dataset, "dataset", "", "set available dataset list (choice with comma)")
+	flag.StringVar(&grpcAddr, "grpc_address", "127.0.0.1:8081", "set vald agent address for gRPC")
 	flag.Parse()
 
 	targets = strings.Split(strings.TrimSpace(dataset), ",")
@@ -45,7 +49,9 @@ func init() {
 
 func BenchmarkAgentNGT_gRPC_Sequential(b *testing.B) {
 	ctx := context.Background()
-	client := core.New()
+	client := core.New(
+		core.WithAddr(grpcAddr),
+	)
 	for _, name := range targets {
 		bench := e2e.New(
 			b,
@@ -72,8 +78,9 @@ func BenchmarkAgentNGT_gRPC_Sequential(b *testing.B) {
 
 func BenchmarkAgentNGT_gRPC_Stream(b *testing.B) {
 	ctx := context.Background()
-	client := core.New()
-
+	client := core.New(
+		core.WithAddr(grpcAddr),
+	)
 	for _, name := range targets {
 		bench := e2e.New(
 			b,

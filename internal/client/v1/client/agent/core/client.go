@@ -45,14 +45,16 @@ func New(opts ...Option) Client {
 	for _, opt := range append(defaultOptions, opts...) {
 		opt(c)
 	}
-	return &agentClient{
-		Client: vald.New(
+	if c.c == nil && len(c.addr) != 0 {
+		c.c = grpc.New(grpc.WithAddrs(c.addr))
+	}
+	if c.Client == nil {
+		c.Client = vald.New(
 			vald.WithAddr(c.addr),
 			vald.WithClient(c.c),
-		),
-		addr: c.addr,
-		c:    c.c,
+		)
 	}
+	return c
 }
 
 func (c *agentClient) CreateIndex(

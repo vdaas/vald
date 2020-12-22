@@ -17,6 +17,11 @@
 // Package core provides agent ngt gRPC client functions
 package core
 
+import (
+	"github.com/vdaas/vald/internal/client/v1/client/vald"
+	"github.com/vdaas/vald/internal/net/grpc"
+)
+
 // Option is agentClient configure.
 type Option func(*agentClient)
 
@@ -27,6 +32,22 @@ func WithAddr(addr string) Option {
 	return func(c *agentClient) {
 		if len(addr) != 0 {
 			c.addr = addr
+		}
+	}
+}
+
+func WithValdClient(vc vald.Client) Option {
+	return func(c *agentClient) {
+		if vc != nil {
+			c.Client = vc
+		}
+	}
+}
+
+func WithGRPCClient(g grpc.Client) Option {
+	return func(c *agentClient) {
+		if g != nil {
+			c.c = g
 		}
 	}
 }

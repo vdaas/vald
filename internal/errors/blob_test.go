@@ -497,7 +497,6 @@ func TestErrBlobNoSuchBucket_Unwrap(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -567,7 +566,6 @@ func TestErrBlobNoSuchKey_Unwrap(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
