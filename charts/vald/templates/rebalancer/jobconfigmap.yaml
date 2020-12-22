@@ -43,8 +43,9 @@ data:
               image: {{ .Values.rebalancer.rebalancer.rebalance_job_image }}
               imagePullPolicy: Always
               command:
-                - /bin/sh -c
+                - /bin/sh
+                - -c
                 - |
-                - echo 'Hello world'
+                  echo 'Hello world'
           restartPolicy: Never
 {{- end }}
