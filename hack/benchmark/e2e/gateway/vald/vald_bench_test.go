@@ -54,11 +54,11 @@ func init() {
 }
 
 func BenchmarkValdGateway_gRPC_Sequential(b *testing.B) {
-	client := vald.New(
+	client, _ := vald.New(
 		vald.WithClient(grpc.New(
 			grpc.WithAddrs(grpcAddr),
 		)),
-		vald.WithAddr(
+		vald.WithAddrs(
 			grpcAddr,
 		),
 	)
@@ -79,11 +79,11 @@ func BenchmarkValdGateway_gRPC_Sequential(b *testing.B) {
 }
 
 func BenchmarkValdGateway_gRPC_Stream(b *testing.B) {
-	client := vald.New(
+	client, _ := vald.New(
 		vald.WithClient(grpc.New(
 			grpc.WithAddrs(grpcAddr),
 		)),
-		vald.WithAddr(
+		vald.WithAddrs(
 			grpcAddr,
 		),
 	)
