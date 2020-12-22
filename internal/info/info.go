@@ -30,8 +30,8 @@ import (
 	"github.com/vdaas/vald/internal/log"
 )
 
-// InformationProvider represents the runtime information provider.
-type InformationProvider interface {
+// Info represents the runtime information provider.
+type Info interface {
 	String() string
 	Get() Detail
 }
@@ -86,7 +86,7 @@ var (
 	reps = strings.NewReplacer("_", " ", ",omitempty", "")
 
 	once         sync.Once
-	infoProvider InformationProvider
+	infoProvider Info
 )
 
 // Init initializes Detail object only once.
@@ -97,7 +97,7 @@ func Init(name string) {
 }
 
 // New initialize and return the information provider or any error occurred.
-func New(opts ...Option) (InformationProvider, error) {
+func New(opts ...Option) (Info, error) {
 	i := &info{
 		detail: Detail{
 			Version:           Version,

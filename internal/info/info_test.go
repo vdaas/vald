@@ -158,17 +158,17 @@ func TestInit(t *testing.T) {
 		name string
 	}
 	type want struct {
-		want InformationProvider
+		want Info
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, InformationProvider) error
+		checkFunc  func(want, Info) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got InformationProvider) error {
+	defaultCheckFunc := func(w want, got Info) error {
 		opts := []comparator.Option{
 			comparator.AllowUnexported(info{}),
 			comparator.Comparer(func(x, y sync.Once) bool {
@@ -252,18 +252,18 @@ func TestNew(t *testing.T) {
 		opts []Option
 	}
 	type want struct {
-		want InformationProvider
+		want Info
 		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, InformationProvider, error) error
+		checkFunc  func(want, Info, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got InformationProvider, err error) error {
+	defaultCheckFunc := func(w want, got Info, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
