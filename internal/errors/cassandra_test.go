@@ -20,7 +20,640 @@ package errors
 import (
 	"reflect"
 	"testing"
+
+	"go.uber.org/goleak"
 )
+
+func TestErrCassandraInvalidConsistencyType(t *testing.T) {
+	type args struct {
+		consistency string
+	}
+	type want struct {
+		want error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got error) error {
+		if !Is(got, w.want) {
+			return Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "returns error when consistency level is 'QUORUM'",
+			args: args{
+				consistency: "QUORUM",
+			},
+			want: want{
+				want: New("consistetncy type \"QUORUM\" is not defined"),
+			},
+		},
+		{
+			name: "returns error when consistency level is empty",
+			args: args{
+				consistency: "",
+			},
+			want: want{
+				want: New("consistetncy type \"\" is not defined"),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := ErrCassandraInvalidConsistencyType(test.args.consistency)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestNewErrCassandraNotFoundIdentity(t *testing.T) {
+	type want struct {
+		want error
+	}
+	type test struct {
+		name       string
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got error) error {
+		if !Is(got, w.want) {
+			return Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "returns cassandra not found identity error",
+			want: want{
+				want: &ErrCassandraNotFoundIdentity{
+					err: New("cassandra entry not found"),
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := NewErrCassandraNotFoundIdentity()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestNewErrCassandraUnavailableIdentity(t *testing.T) {
+	type want struct {
+		want error
+	}
+	type test struct {
+		name       string
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got error) error {
+		if !Is(got, w.want) {
+			return Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "returns cassandra unavailable identity error",
+			want: want{
+				want: &ErrCassandraUnavailableIdentity{
+					err: New("cassandra unavailable"),
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := NewErrCassandraUnavailableIdentity()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestErrCassandraUnavailable(t *testing.T) {
+	type want struct {
+		want error
+	}
+	type test struct {
+		name       string
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got error) error {
+		if !Is(got, w.want) {
+			return Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "returns cassandra unavailable identity error",
+			want: want{
+				want: &ErrCassandraUnavailableIdentity{
+					err: New("cassandra unavailable"),
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := ErrCassandraUnavailable()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestErrCassandraNotFound(t *testing.T) {
+	type args struct {
+		keys []string
+	}
+	type want struct {
+		want error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got error) error {
+		if !Is(got, w.want) {
+			return Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "returns cassandra key not found error when keys is not found",
+			args: args{
+				keys: []string{
+					"uuid",
+				},
+			},
+			want: want{
+				want: New("cassandra key 'uuid' not found: cassandra entry not found"),
+			},
+		},
+		{
+			name: "returns cassandra keys not found error when keys are not found",
+			args: args{
+				keys: []string{
+					"uuid_1",
+					"uuid_2",
+				},
+			},
+			want: want{
+				want: New("cassandra keys '[uuid_1 uuid_2]' not found: cassandra entry not found"),
+			},
+		},
+		{
+			name: "returns nil when keys is nil",
+			args: args{
+				keys: nil,
+			},
+			want: want{
+				want: nil,
+			},
+		},
+		{
+			name: "returns nil when keys is empty",
+			args: args{
+				keys: []string{},
+			},
+			want: want{
+				want: nil,
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := ErrCassandraNotFound(test.args.keys...)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestErrCassandraGetOperationFailed(t *testing.T) {
+	type args struct {
+		key string
+		err error
+	}
+	type want struct {
+		want error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got error) error {
+		if !Is(got, w.want) {
+			return Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "returns wrapped fetch key error when key is 'uuid' and error is database error",
+			args: args{
+				key: "uuid",
+				err: New("database error"),
+			},
+			want: want{
+				want: New("error failed to fetch key (uuid): database error"),
+			},
+		},
+		{
+			name: "returns wrapped fetch key error when key is empty and error is database error",
+			args: args{
+				key: "",
+				err: New("database error"),
+			},
+			want: want{
+				want: New("error failed to fetch key (): database error"),
+			},
+		},
+		{
+			name: "returns fetch key error when key is 'uuid' and error is nil",
+			args: args{
+				key: "uuid",
+				err: nil,
+			},
+			want: want{
+				want: New("error failed to fetch key (uuid)"),
+			},
+		},
+		{
+			name: "returns fetch key error when key is empty and error is nil",
+			args: args{
+				key: "",
+				err: nil,
+			},
+			want: want{
+				want: New("error failed to fetch key ()"),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := ErrCassandraGetOperationFailed(test.args.key, test.args.err)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestErrCassandraSetOperationFailed(t *testing.T) {
+	type args struct {
+		key string
+		err error
+	}
+	type want struct {
+		want error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got error) error {
+		if !Is(got, w.want) {
+			return Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "returns wrapped set key error when key is 'uuid' and error is database error",
+			args: args{
+				key: "uuid",
+				err: New("database error"),
+			},
+			want: want{
+				want: New("error failed to set key (uuid): database error"),
+			},
+		},
+		{
+			name: "returns wrapped set key error when key is empty and error is database error",
+			args: args{
+				key: "",
+				err: New("database error"),
+			},
+			want: want{
+				want: New("error failed to set key (): database error"),
+			},
+		},
+		{
+			name: "returns set key error when key is 'uuid' and error is nil",
+			args: args{
+				key: "uuid",
+				err: nil,
+			},
+			want: want{
+				want: New("error failed to set key (uuid)"),
+			},
+		},
+		{
+			name: "returns set key error when key is empty and error is nil",
+			args: args{
+				key: "",
+				err: nil,
+			},
+			want: want{
+				want: New("error failed to set key ()"),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := ErrCassandraSetOperationFailed(test.args.key, test.args.err)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestErrCassandraDeleteOperationFailed(t *testing.T) {
+	type args struct {
+		key string
+		err error
+	}
+	type want struct {
+		want error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got error) error {
+		if !Is(got, w.want) {
+			return Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "returns wrapped delete key error when key is 'uuid' and error is database error",
+			args: args{
+				key: "uuid",
+				err: New("database error"),
+			},
+			want: want{
+				want: New("error failed to delete key (uuid): database error"),
+			},
+		},
+		{
+			name: "returns wrapped delete key error when key is empty and error is database error",
+			args: args{
+				key: "",
+				err: New("database error"),
+			},
+			want: want{
+				want: New("error failed to delete key (): database error"),
+			},
+		},
+		{
+			name: "returns delete key error when key is 'uuid' and error is nil",
+			args: args{
+				key: "uuid",
+				err: nil,
+			},
+			want: want{
+				want: New("error failed to delete key (uuid)"),
+			},
+		},
+		{
+			name: "returns delete key error when key is empty and error is nil",
+			args: args{
+				key: "",
+				err: nil,
+			},
+			want: want{
+				want: New("error failed to delete key ()"),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := ErrCassandraDeleteOperationFailed(test.args.key, test.args.err)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestErrCassandraHostDownDetected(t *testing.T) {
+	type args struct {
+		nodeInfo string
+		err      error
+	}
+	type want struct {
+		want error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got error) error {
+		if !Is(got, w.want) {
+			return Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "returns wrapped cassandra host down detected error when nodeInfo is '127.0.0.1' and error is database error",
+			args: args{
+				nodeInfo: "127.0.0.1",
+				err:      New("database error"),
+			},
+			want: want{
+				want: New("error cassandra host down detected\t127.0.0.1: database error"),
+			},
+		},
+		{
+			name: "returns wrapped cassandra host down detected error when nodeInfo is empty and error is database error",
+			args: args{
+				nodeInfo: "",
+				err:      New("database error"),
+			},
+			want: want{
+				want: New("error cassandra host down detected\t: database error"),
+			},
+		},
+		{
+			name: "returns cassandra host down detected error when nodeInfo is '127.0.0.1' and error is nil",
+			args: args{
+				nodeInfo: "127.0.0.1",
+				err:      nil,
+			},
+			want: want{
+				want: New("error cassandra host down detected\t127.0.0.1"),
+			},
+		},
+		{
+			name: "returns cassandra host down detected error when nodeInfo is empty and error is nil",
+			args: args{
+				nodeInfo: "",
+				err:      nil,
+			},
+			want: want{
+				want: New("error cassandra host down detected\t"),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := ErrCassandraHostDownDetected(test.args.err, test.args.nodeInfo)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
 
 func TestErrCassandraNotFoundIdentity_Error(t *testing.T) {
 	type fields struct {
@@ -44,31 +677,15 @@ func TestErrCassandraNotFoundIdentity_Error(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           err: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           err: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns string when internal error is cassandra not found identity error",
+			fields: fields{
+				err: New("cassandra not found identity"),
+			},
+			want: want{
+				want: "cassandra not found identity",
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -90,7 +707,83 @@ func TestErrCassandraNotFoundIdentity_Error(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+		})
+	}
+}
 
+func TestErrCassandraNotFoundIdentity_Unwrap(t *testing.T) {
+	type fields struct {
+		err error
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !Is(err, w.err) {
+			return Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		func() test {
+			return test{
+				name: "returns nil when internal error is nil",
+				fields: fields{
+					err: nil,
+				},
+				want: want{
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			err := New("cassandra not found identity")
+			return test{
+				name: "returns internal error when internal error is cassandra not found identity error",
+				fields: fields{
+					err: err,
+				},
+				want: want{
+					err: err,
+				},
+				checkFunc: func(w want, err error) error {
+					if !reflect.DeepEqual(w.err, err) {
+						return Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			e := &ErrCassandraNotFoundIdentity{
+				err: test.fields.err,
+			}
+
+			err := e.Unwrap()
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
 		})
 	}
 }
@@ -117,31 +810,24 @@ func TestIsErrCassandraNotFound(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           err: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           err: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns false when error is not cassandra not found identity",
+			args: args{
+				err: New("database not found"),
+			},
+			want: want{
+				want: false,
+			},
+		},
+		{
+			name: "returns true when error is cassandra not found identity",
+			args: args{
+				err: new(ErrCassandraNotFoundIdentity),
+			},
+			want: want{
+				want: true,
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -160,7 +846,6 @@ func TestIsErrCassandraNotFound(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -187,31 +872,15 @@ func TestErrCassandraUnavailableIdentity_Error(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           err: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           err: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns string when internal error is cassandra unavailable identity error",
+			fields: fields{
+				err: New("cassandra unavailable identity"),
+			},
+			want: want{
+				want: "cassandra unavailable identity",
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -233,7 +902,83 @@ func TestErrCassandraUnavailableIdentity_Error(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+		})
+	}
+}
 
+func TestErrCassandraUnavailableIdentity_Unwrap(t *testing.T) {
+	type fields struct {
+		err error
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !Is(err, w.err) {
+			return Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		func() test {
+			return test{
+				name: "returns nil when internal error is nil",
+				fields: fields{
+					err: nil,
+				},
+				want: want{
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			err := New("cassandra unavailable identity")
+			return test{
+				name: "returns internal error when internal error is cassandra unavailable identity error",
+				fields: fields{
+					err: err,
+				},
+				want: want{
+					err: err,
+				},
+				checkFunc: func(w want, err error) error {
+					if !reflect.DeepEqual(w.err, err) {
+						return Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			e := &ErrCassandraUnavailableIdentity{
+				err: test.fields.err,
+			}
+
+			err := e.Unwrap()
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
 		})
 	}
 }
@@ -260,31 +1005,24 @@ func TestIsErrCassandraUnavailable(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           err: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           err: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns false when error is not cassandra unavailable identity",
+			args: args{
+				err: New("database not found"),
+			},
+			want: want{
+				want: false,
+			},
+		},
+		{
+			name: "returns true when error is cassandra unavailable identity",
+			args: args{
+				err: new(ErrCassandraUnavailableIdentity),
+			},
+			want: want{
+				want: true,
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -303,7 +1041,6 @@ func TestIsErrCassandraUnavailable(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
