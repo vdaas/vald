@@ -131,7 +131,7 @@ func TestErrPathNotSpecified(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns error",
+			name: "returns ErrPathNotSpecified error",
 			want: want{
 				want: New("the path is not specified"),
 			},
