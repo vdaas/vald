@@ -33,6 +33,8 @@ data:
     metadata:
       name: {{ .Values.rebalancer.rebalancer.rebalance_job_name }}
       namespace: vald
+      labels:
+        app: {{ .Values.rebalancer.rebalancer.rebalance_job_name }}
     spec:
       failedJobsHistoryLimit: 2
       successfulJobsHistoryLimit: 2
