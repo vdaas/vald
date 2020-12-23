@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"math"
-	"os"
 	"reflect"
 	"strconv"
 	"sync/atomic"
@@ -35,6 +34,9 @@ type Rebalancer interface {
 }
 
 type rebalancer struct {
+	podName      string
+	podNamespace string
+
 	jobs           atomic.Value
 	jobName        string
 	jobNamespace   string
@@ -341,8 +343,8 @@ func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, trigger, age
 	jobTpl.Labels["type"] = trigger
 	jobTpl.Labels["target_agent_name"] = agentName
 	jobTpl.Labels["target_agent_namespace"] = agentNs
-	jobTpl.Labels["controller_name"] = os.Getenv("MY_POD_NAME")
-	jobTpl.Labels["controller_namespace"] = os.Getenv("MY_POD_NAMESPACE")
+	jobTpl.Labels["controller_name"] = r.podName
+	jobTpl.Labels["controller_namespace"] = r.podNamespace
 
 	cfg, err := config.GetConfig()
 	if err != nil {
