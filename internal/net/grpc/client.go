@@ -107,11 +107,15 @@ type gRPCClient struct {
 }
 
 func New(opts ...Option) (c Client) {
-	g := new(gRPCClient)
+	g := &gRPCClient{
+		group: singleflight.New(),
+		addrs: make(map[string]struct{}),
+	}
 
 	for _, opt := range append(defaultOptions, opts...) {
 		opt(g)
 	}
+	g.atomicAddrs = newAddr(g.addrs)
 	g.dopts = append(g.dopts, grpc.WithConnectParams(
 		grpc.ConnectParams{
 			Backoff: gbackoff.Config{
@@ -123,8 +127,6 @@ func New(opts ...Option) (c Client) {
 			MinConnectTimeout: g.mcd,
 		},
 	))
-	g.group = singleflight.New()
-	g.atomicAddrs = newAddr(g.addrs)
 	return g
 }
 

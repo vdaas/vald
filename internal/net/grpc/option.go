@@ -54,6 +54,9 @@ func WithAddrs(addrs ...string) Option {
 		if len(addrs) == 0 {
 			return
 		}
+		if g.addrs == nil {
+			g.addrs = make(map[string]struct{})
+		}
 		for _, addr := range addrs {
 			g.addrs[addr] = struct{}{}
 		}
