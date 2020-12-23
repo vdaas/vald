@@ -111,7 +111,6 @@ func Test_client_Start(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		addr   string
 		client grpc.Client
 	}
 	type want struct {
@@ -145,7 +144,6 @@ func Test_client_Start(t *testing.T) {
 		           ctx: nil,
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		       },
 		       want: want{},
@@ -162,7 +160,6 @@ func Test_client_Start(t *testing.T) {
 		           ctx: nil,
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           },
 		           want: want{},
@@ -187,12 +184,97 @@ func Test_client_Start(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				addr:   test.fields.addr,
 				client: test.fields.client,
 			}
 
 			got, err := c.Start(test.args.ctx)
 			if err := test.checkFunc(test.want, got, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_client_Stop(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ctx context.Context
+	}
+	type fields struct {
+		client grpc.Client
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		       },
+		       fields: fields {
+		           client: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           },
+		           fields: fields {
+		           client: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			c := &client{
+				client: test.fields.client,
+			}
+
+			err := c.Stop(test.args.ctx)
+			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -206,7 +288,6 @@ func Test_client_GetVector(t *testing.T) {
 		uuid string
 	}
 	type fields struct {
-		addr   string
 		client grpc.Client
 	}
 	type want struct {
@@ -241,7 +322,6 @@ func Test_client_GetVector(t *testing.T) {
 		           uuid: "",
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		       },
 		       want: want{},
@@ -259,7 +339,6 @@ func Test_client_GetVector(t *testing.T) {
 		           uuid: "",
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           },
 		           want: want{},
@@ -284,7 +363,6 @@ func Test_client_GetVector(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				addr:   test.fields.addr,
 				client: test.fields.client,
 			}
 
@@ -303,7 +381,6 @@ func Test_client_GetLocation(t *testing.T) {
 		uuid string
 	}
 	type fields struct {
-		addr   string
 		client grpc.Client
 	}
 	type want struct {
@@ -338,7 +415,6 @@ func Test_client_GetLocation(t *testing.T) {
 		           uuid: "",
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		       },
 		       want: want{},
@@ -356,7 +432,6 @@ func Test_client_GetLocation(t *testing.T) {
 		           uuid: "",
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           },
 		           want: want{},
@@ -381,7 +456,6 @@ func Test_client_GetLocation(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				addr:   test.fields.addr,
 				client: test.fields.client,
 			}
 
@@ -400,7 +474,6 @@ func Test_client_Register(t *testing.T) {
 		vec *payload.Backup_Vector
 	}
 	type fields struct {
-		addr   string
 		client grpc.Client
 	}
 	type want struct {
@@ -431,7 +504,6 @@ func Test_client_Register(t *testing.T) {
 		           vec: nil,
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		       },
 		       want: want{},
@@ -449,7 +521,6 @@ func Test_client_Register(t *testing.T) {
 		           vec: nil,
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           },
 		           want: want{},
@@ -474,7 +545,6 @@ func Test_client_Register(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				addr:   test.fields.addr,
 				client: test.fields.client,
 			}
 
@@ -493,7 +563,6 @@ func Test_client_RegisterMultiple(t *testing.T) {
 		vecs *payload.Backup_Vectors
 	}
 	type fields struct {
-		addr   string
 		client grpc.Client
 	}
 	type want struct {
@@ -524,7 +593,6 @@ func Test_client_RegisterMultiple(t *testing.T) {
 		           vecs: nil,
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		       },
 		       want: want{},
@@ -542,7 +610,6 @@ func Test_client_RegisterMultiple(t *testing.T) {
 		           vecs: nil,
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           },
 		           want: want{},
@@ -567,7 +634,6 @@ func Test_client_RegisterMultiple(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				addr:   test.fields.addr,
 				client: test.fields.client,
 			}
 
@@ -586,7 +652,6 @@ func Test_client_Remove(t *testing.T) {
 		uuid string
 	}
 	type fields struct {
-		addr   string
 		client grpc.Client
 	}
 	type want struct {
@@ -617,7 +682,6 @@ func Test_client_Remove(t *testing.T) {
 		           uuid: "",
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		       },
 		       want: want{},
@@ -635,7 +699,6 @@ func Test_client_Remove(t *testing.T) {
 		           uuid: "",
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           },
 		           want: want{},
@@ -660,7 +723,6 @@ func Test_client_Remove(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				addr:   test.fields.addr,
 				client: test.fields.client,
 			}
 
@@ -679,7 +741,6 @@ func Test_client_RemoveMultiple(t *testing.T) {
 		uuids []string
 	}
 	type fields struct {
-		addr   string
 		client grpc.Client
 	}
 	type want struct {
@@ -710,7 +771,6 @@ func Test_client_RemoveMultiple(t *testing.T) {
 		           uuids: nil,
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		       },
 		       want: want{},
@@ -728,7 +788,6 @@ func Test_client_RemoveMultiple(t *testing.T) {
 		           uuids: nil,
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           },
 		           want: want{},
@@ -753,7 +812,6 @@ func Test_client_RemoveMultiple(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				addr:   test.fields.addr,
 				client: test.fields.client,
 			}
 
@@ -772,7 +830,6 @@ func Test_client_RegisterIPs(t *testing.T) {
 		ips []string
 	}
 	type fields struct {
-		addr   string
 		client grpc.Client
 	}
 	type want struct {
@@ -803,7 +860,6 @@ func Test_client_RegisterIPs(t *testing.T) {
 		           ips: nil,
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		       },
 		       want: want{},
@@ -821,7 +877,6 @@ func Test_client_RegisterIPs(t *testing.T) {
 		           ips: nil,
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           },
 		           want: want{},
@@ -846,7 +901,6 @@ func Test_client_RegisterIPs(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				addr:   test.fields.addr,
 				client: test.fields.client,
 			}
 
@@ -865,7 +919,6 @@ func Test_client_RemoveIPs(t *testing.T) {
 		ips []string
 	}
 	type fields struct {
-		addr   string
 		client grpc.Client
 	}
 	type want struct {
@@ -896,7 +949,6 @@ func Test_client_RemoveIPs(t *testing.T) {
 		           ips: nil,
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		       },
 		       want: want{},
@@ -914,7 +966,6 @@ func Test_client_RemoveIPs(t *testing.T) {
 		           ips: nil,
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           },
 		           want: want{},
@@ -939,7 +990,6 @@ func Test_client_RemoveIPs(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &client{
-				addr:   test.fields.addr,
 				client: test.fields.client,
 			}
 

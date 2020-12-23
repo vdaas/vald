@@ -21,6 +21,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/vdaas/vald/internal/client/v1/client/compressor"
 	client "github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -28,7 +29,6 @@ import (
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/servers/starter"
 	"github.com/vdaas/vald/pkg/gateway/backup/config"
-	"github.com/vdaas/vald/pkg/gateway/backup/service"
 	"go.uber.org/goleak"
 )
 
@@ -119,7 +119,7 @@ func Test_run_PreStart(t *testing.T) {
 		cfg           *config.Data
 		server        starter.Server
 		observability observability.Observability
-		backup        service.Backup
+		backup        compressor.Client
 		client        client.Client
 	}
 	type want struct {
@@ -225,7 +225,7 @@ func Test_run_Start(t *testing.T) {
 		cfg           *config.Data
 		server        starter.Server
 		observability observability.Observability
-		backup        service.Backup
+		backup        compressor.Client
 		client        client.Client
 	}
 	type want struct {
@@ -335,7 +335,7 @@ func Test_run_PreStop(t *testing.T) {
 		cfg           *config.Data
 		server        starter.Server
 		observability observability.Observability
-		backup        service.Backup
+		backup        compressor.Client
 		client        client.Client
 	}
 	type want struct {
@@ -441,7 +441,7 @@ func Test_run_Stop(t *testing.T) {
 		cfg           *config.Data
 		server        starter.Server
 		observability observability.Observability
-		backup        service.Backup
+		backup        compressor.Client
 		client        client.Client
 	}
 	type want struct {
@@ -547,7 +547,7 @@ func Test_run_PostStop(t *testing.T) {
 		cfg           *config.Data
 		server        starter.Server
 		observability observability.Observability
-		backup        service.Backup
+		backup        compressor.Client
 		client        client.Client
 	}
 	type want struct {

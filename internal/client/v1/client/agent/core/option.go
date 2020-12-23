@@ -18,6 +18,8 @@
 package core
 
 import (
+	"context"
+
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/net/grpc"
 )
@@ -47,7 +49,7 @@ func WithValdClient(vc vald.Client) Option {
 		if vc != nil {
 			c.Client = vc
 			if c.c != nil {
-				err := c.c.Close()
+				err := c.c.Close(context.Background())
 				if err != nil {
 					return err
 				}

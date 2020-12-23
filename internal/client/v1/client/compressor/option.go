@@ -25,15 +25,6 @@ type Option func(c *client) error
 
 var defaultOptions = []Option{}
 
-func WithAddr(addr string) Option {
-	return func(c *client) error {
-		if len(addr) != 0 {
-			c.addr = addr
-		}
-		return nil
-	}
-}
-
 func WithClient(gc grpc.Client) Option {
 	return func(c *client) error {
 		if gc != nil {

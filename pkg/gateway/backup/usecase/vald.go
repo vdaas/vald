@@ -20,6 +20,7 @@ import (
 	"context"
 
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
+	"github.com/vdaas/vald/internal/client/v1/client/compressor"
 	client "github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -34,7 +35,6 @@ import (
 	handler "github.com/vdaas/vald/pkg/gateway/backup/handler/grpc"
 	"github.com/vdaas/vald/pkg/gateway/backup/handler/rest"
 	"github.com/vdaas/vald/pkg/gateway/backup/router"
-	"github.com/vdaas/vald/pkg/gateway/backup/service"
 )
 
 type run struct {
@@ -42,14 +42,12 @@ type run struct {
 	cfg           *config.Data
 	server        starter.Server
 	observability observability.Observability
-	backup        service.Backup
+	backup        compressor.Client
 	client        client.Client
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
-
-	var backup service.Backup
 
 	if addrs := cfg.Backup.Client.Addrs; len(addrs) == 0 {
 		return nil, errors.ErrInvalidBackupConfig
@@ -58,6 +56,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	backupClientOptions := append(
 		cfg.Backup.Client.Opts(),
 		grpc.WithErrGroup(eg),
+		grpc.WithAddrs(cfg.Backup.Client.Addrs...),
 	)
 
 	var obs observability.Observability
@@ -74,12 +73,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		)
 	}
 
-	backup, err = service.NewBackup(
-		service.WithBackupAddr(cfg.Backup.Client.Addrs[0]),
-		service.WithBackupClient(
-			grpc.New(backupClientOptions...),
-		),
-	)
+	backup, err := compressor.New(compressor.WithClient(grpc.New(backupClientOptions...)))
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +92,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	v := handler.New(
 		handler.WithValdClient(c),
-		handler.WithBackup(backup),
+		handler.WithCompressorClient(backup),
 		handler.WithErrGroup(eg),
 		handler.WithStreamConcurrency(cfg.Server.GetGRPCStreamConcurrency()),
 	)
@@ -219,6 +213,13 @@ func (r *run) Stop(ctx context.Context) error {
 	return r.server.Shutdown(ctx)
 }
 
-func (r *run) PostStop(ctx context.Context) error {
+func (r *run) PostStop(ctx context.Context) (err error) {
+	defer func() {
+		if err != nil {
+			err = errors.Wrap(r.backup.Stop(ctx), err.Error())
+			return
+		}
+		err = r.backup.Stop(ctx)
+	}()
 	return r.client.Stop(ctx)
 }

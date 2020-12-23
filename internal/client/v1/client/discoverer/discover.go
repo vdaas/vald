@@ -109,7 +109,7 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 	err = c.discover(ctx, ech)
 	if err != nil {
 		close(ech)
-		return nil, errors.Wrap(c.dscClient.Close(), err.Error())
+		return nil, errors.Wrap(c.dscClient.Close(ctx), err.Error())
 	}
 
 	c.eg.Go(safety.RecoverFunc(func() (err error) {
@@ -118,12 +118,12 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 		defer dt.Stop()
 		finalize := func() (err error) {
 			var errs error
-			err = c.dscClient.Close()
+			err = c.dscClient.Close(ctx)
 			if err != nil {
 				errs = errors.Wrap(errs, err.Error())
 			}
 			if c.autoconn && c.client != nil {
-				err = c.client.Close()
+				err = c.client.Close(ctx)
 				if err != nil {
 					errs = errors.Wrap(errs, err.Error())
 				}
@@ -192,7 +192,7 @@ func (c *client) connect(ctx context.Context, addr string) (err error) {
 
 func (c *client) disconnect(ctx context.Context, addr string) (err error) {
 	if c.autoconn && c.client != nil {
-		err = c.client.Disconnect(addr)
+		err = c.client.Disconnect(ctx, addr)
 		if err == nil && c.onDisconnect != nil {
 			err = c.onDisconnect(ctx, c, addr)
 		}
@@ -230,7 +230,7 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 	log.Debug("starting discoverer discovery")
 	connected := make([]string, 0, len(c.GetAddrs(ctx)))
 	var cur sync.Map
-	if _, err = c.dscClient.Do(ctx, c.dscAddr, func(ictx context.Context,
+	if _, err = c.dscClient.RoundRobin(ctx, func(ictx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		nodes, err := discoverer.NewDiscovererClient(conn).
 			Nodes(ictx, &payload.Discoverer_Request{
@@ -239,7 +239,7 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 				Node:      c.nodeName,
 			}, copts...)
 		if err != nil {
-			return nil, errors.ErrRPCCallFailed(c.dscAddr, err)
+			return nil, err
 		}
 		maxPodLen := 0
 		podLength := 0

@@ -104,6 +104,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	compressorClientOptions := append(
 		cfg.Registerer.Compressor.Client.Opts(),
 		grpc.WithErrGroup(eg),
+		grpc.WithAddrs(cfg.Registerer.Compressor.Client.Addrs...),
 	)
 
 	if cfg.Observability.Enabled {
@@ -116,7 +117,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 
 	cc, err := cclient.New(
-		cclient.WithAddr(cfg.Registerer.Compressor.Client.Addrs[0]),
 		cclient.WithClient(grpc.New(compressorClientOptions...)),
 	)
 	if err != nil {

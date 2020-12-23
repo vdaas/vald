@@ -34,8 +34,6 @@ import (
 type Gateway interface {
 	Start(ctx context.Context) (<-chan error, error)
 	GetAgentCount(ctx context.Context) int
-	Do(ctx context.Context,
-		f func(ctx context.Context, tgt string, ac vald.Client, copts ...grpc.CallOption) error) error
 	DoMulti(ctx context.Context, num int,
 		f func(ctx context.Context, tgt string, ac vald.Client, copts ...grpc.CallOption) error) error
 	BroadCast(ctx context.Context,
@@ -63,19 +61,19 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 
 func (g *gateway) BroadCast(ctx context.Context,
 	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error) (err error) {
-	return g.client.GetClient().RangeConcurrent(ctx, -1, func(fctx context.Context,
+	fctx, span := trace.StartSpan(ctx, "vald/gateway-lb/service/Gateway.BroadCast")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return g.client.GetClient().RangeConcurrent(fctx, -1, func(ictx context.Context,
 		addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
-		fctx, span := trace.StartSpan(fctx, "vald/gateway-lb/service/Gateway.BroadCast")
-		defer func() {
-			if span != nil {
-				span.End()
-			}
-		}()
 		select {
-		case <-fctx.Done():
+		case <-ictx.Done():
 			return nil
 		default:
-			err = f(fctx, addr, vald.NewValdClient(conn), copts...)
+			err = f(ictx, addr, vald.NewValdClient(conn), copts...)
 			if err != nil {
 				log.Debug(addr, err)
 				return err
@@ -85,38 +83,22 @@ func (g *gateway) BroadCast(ctx context.Context,
 	})
 }
 
-func (g *gateway) Do(ctx context.Context,
-	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error) (err error) {
-	addr := g.client.GetAddrs(ctx)[0]
-	_, err = g.client.GetClient().Do(ctx, addr, func(ctx context.Context,
-		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-		ctx, span := trace.StartSpan(ctx, "vald/gateway-lb/service/Gateway.Do")
-		defer func() {
-			if span != nil {
-				span.End()
-			}
-		}()
-		return nil, f(ctx, addr, vald.NewValdClient(conn), copts...)
-	})
-	return err
-}
-
 func (g *gateway) DoMulti(ctx context.Context, num int,
 	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error) (err error) {
+	sctx, span := trace.StartSpan(ctx, "vald/gateway-lb/service/Gateway.DoMulti")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	var cur uint32 = 0
 	limit := uint32(num)
-	addrs := g.client.GetAddrs(ctx)
+	addrs := g.client.GetAddrs(sctx)
 	log.Debug("DoMulti", addrs)
-	err = g.client.GetClient().OrderedRange(ctx, addrs, func(ictx context.Context,
+	err = g.client.GetClient().OrderedRange(sctx, addrs, func(ictx context.Context,
 		addr string,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption) (err error) {
-		ictx, span := trace.StartSpan(ictx, "vald/gateway-lb/service/Gateway.DoMulti")
-		defer func() {
-			if span != nil {
-				span.End()
-			}
-		}()
 		if atomic.LoadUint32(&cur) < limit {
 			err = f(ictx, addr, vald.NewValdClient(conn), copts...)
 			if err != nil {

@@ -30,7 +30,7 @@ import (
 func Test_newAddr(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		addrs []string
+		addrList map[string]struct{}
 	}
 	type want struct {
 		want AtomicAddrs
@@ -55,7 +55,7 @@ func Test_newAddr(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           addrs: nil,
+		           addrList: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -68,7 +68,7 @@ func Test_newAddr(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           addrs: nil,
+		           addrList: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -92,7 +92,7 @@ func Test_newAddr(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got := newAddr(test.args.addrs)
+			got := newAddr(test.args.addrList)
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}

@@ -20,18 +20,18 @@ package grpc
 import (
 	"testing"
 
+	"github.com/vdaas/vald/internal/client/v1/client/compressor"
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errgroup"
-	"github.com/vdaas/vald/pkg/gateway/backup/service"
 	"go.uber.org/goleak"
 )
 
-func TestWithBackup(t *testing.T) {
+func TestWithCompressorClient(t *testing.T) {
 	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		b service.Backup
+		c compressor.Client
 	}
 	type want struct {
 		obj *T
@@ -78,7 +78,7 @@ func TestWithBackup(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           b: nil,
+		           c: nil,
 		       },
 		       want: want {
 		           obj: new(T),
@@ -92,7 +92,7 @@ func TestWithBackup(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           b: nil,
+		           c: nil,
 		           },
 		           want: want {
 		               obj: new(T),
@@ -120,7 +120,7 @@ func TestWithBackup(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithBackup(test.args.b)
+			   got := WithCompressorClient(test.args.c)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -132,7 +132,7 @@ func TestWithBackup(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithBackup(test.args.b)
+			   got := WithCompressorClient(test.args.c)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(test.want, obj); err != nil {

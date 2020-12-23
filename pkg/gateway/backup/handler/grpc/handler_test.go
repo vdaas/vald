@@ -24,11 +24,11 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
+	"github.com/vdaas/vald/internal/client/v1/client/compressor"
 	client "github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
-	"github.com/vdaas/vald/pkg/gateway/backup/service"
 	"go.uber.org/goleak"
 )
 
@@ -113,7 +113,7 @@ func Test_server_Exists(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		backup            service.Backup
+		backup            compressor.Client
 		gateway           client.Client
 		copts             []grpc.CallOption
 		streamConcurrency int
@@ -222,7 +222,7 @@ func Test_server_Search(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		backup            service.Backup
+		backup            compressor.Client
 		gateway           client.Client
 		copts             []grpc.CallOption
 		streamConcurrency int
@@ -331,7 +331,7 @@ func Test_server_SearchByID(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		backup            service.Backup
+		backup            compressor.Client
 		gateway           client.Client
 		copts             []grpc.CallOption
 		streamConcurrency int
@@ -439,7 +439,7 @@ func Test_server_StreamSearch(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		backup            service.Backup
+		backup            compressor.Client
 		gateway           client.Client
 		copts             []grpc.CallOption
 		streamConcurrency int
@@ -541,7 +541,7 @@ func Test_server_StreamSearchByID(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		backup            service.Backup
+		backup            compressor.Client
 		gateway           client.Client
 		copts             []grpc.CallOption
 		streamConcurrency int
@@ -644,7 +644,7 @@ func Test_server_MultiSearch(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		backup            service.Backup
+		backup            compressor.Client
 		gateway           client.Client
 		copts             []grpc.CallOption
 		streamConcurrency int
@@ -753,7 +753,7 @@ func Test_server_MultiSearchByID(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		backup            service.Backup
+		backup            compressor.Client
 		gateway           client.Client
 		copts             []grpc.CallOption
 		streamConcurrency int
@@ -862,7 +862,7 @@ func Test_server_Insert(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		backup            service.Backup
+		backup            compressor.Client
 		gateway           client.Client
 		copts             []grpc.CallOption
 		streamConcurrency int
@@ -970,7 +970,7 @@ func Test_server_StreamInsert(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		backup            service.Backup
+		backup            compressor.Client
 		gateway           client.Client
 		copts             []grpc.CallOption
 		streamConcurrency int
@@ -1073,7 +1073,7 @@ func Test_server_MultiInsert(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		backup            service.Backup
+		backup            compressor.Client
 		gateway           client.Client
 		copts             []grpc.CallOption
 		streamConcurrency int
@@ -1182,7 +1182,7 @@ func Test_server_Update(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		backup            service.Backup
+		backup            compressor.Client
 		gateway           client.Client
 		copts             []grpc.CallOption
 		streamConcurrency int
@@ -1290,7 +1290,7 @@ func Test_server_StreamUpdate(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		backup            service.Backup
+		backup            compressor.Client
 		gateway           client.Client
 		copts             []grpc.CallOption
 		streamConcurrency int
@@ -1393,7 +1393,7 @@ func Test_server_MultiUpdate(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		backup            service.Backup
+		backup            compressor.Client
 		gateway           client.Client
 		copts             []grpc.CallOption
 		streamConcurrency int
@@ -1502,7 +1502,7 @@ func Test_server_Upsert(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		backup            service.Backup
+		backup            compressor.Client
 		gateway           client.Client
 		copts             []grpc.CallOption
 		streamConcurrency int
@@ -1610,7 +1610,7 @@ func Test_server_StreamUpsert(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		backup            service.Backup
+		backup            compressor.Client
 		gateway           client.Client
 		copts             []grpc.CallOption
 		streamConcurrency int
@@ -1713,7 +1713,7 @@ func Test_server_MultiUpsert(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		backup            service.Backup
+		backup            compressor.Client
 		gateway           client.Client
 		copts             []grpc.CallOption
 		streamConcurrency int
@@ -1822,7 +1822,7 @@ func Test_server_Remove(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		backup            service.Backup
+		backup            compressor.Client
 		gateway           client.Client
 		copts             []grpc.CallOption
 		streamConcurrency int
@@ -1930,7 +1930,7 @@ func Test_server_StreamRemove(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		backup            service.Backup
+		backup            compressor.Client
 		gateway           client.Client
 		copts             []grpc.CallOption
 		streamConcurrency int
@@ -2033,7 +2033,7 @@ func Test_server_MultiRemove(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		backup            service.Backup
+		backup            compressor.Client
 		gateway           client.Client
 		copts             []grpc.CallOption
 		streamConcurrency int
@@ -2142,7 +2142,7 @@ func Test_server_GetObject(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		backup            service.Backup
+		backup            compressor.Client
 		gateway           client.Client
 		copts             []grpc.CallOption
 		streamConcurrency int
@@ -2250,7 +2250,7 @@ func Test_server_StreamGetObject(t *testing.T) {
 	}
 	type fields struct {
 		eg                errgroup.Group
-		backup            service.Backup
+		backup            compressor.Client
 		gateway           client.Client
 		copts             []grpc.CallOption
 		streamConcurrency int

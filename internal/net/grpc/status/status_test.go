@@ -21,8 +21,7 @@ import (
 	"reflect"
 	"testing"
 
-	gerrors "github.com/vdaas/vald/apis/grpc/v1/errors"
-	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/apis/grpc/v1/errors"
 	"go.uber.org/goleak"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -1380,17 +1379,17 @@ func TestFromError(t *testing.T) {
 		err error
 	}
 	type want struct {
-		want *gerrors.Errors_RPC
+		want *errors.Errors_RPC
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, *gerrors.Errors_RPC) error
+		checkFunc  func(want, *errors.Errors_RPC) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *gerrors.Errors_RPC) error {
+	defaultCheckFunc := func(w want, got *errors.Errors_RPC) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}

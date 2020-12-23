@@ -23,6 +23,7 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
+	"github.com/vdaas/vald/internal/client/v1/client/compressor"
 	client "github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/errgroup"
@@ -33,13 +34,12 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
-	"github.com/vdaas/vald/pkg/gateway/backup/service"
 	"github.com/vdaas/vald/pkg/gateway/internal/location"
 )
 
 type server struct {
 	eg                errgroup.Group
-	backup            service.Backup
+	backup            compressor.Client
 	gateway           client.Client
 	copts             []grpc.CallOption
 	streamConcurrency int
@@ -92,7 +92,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 			span.End()
 		}
 	}()
-	vec, err := s.backup.GetObject(ctx, req.GetId())
+	vec, err := s.backup.GetVector(ctx, req.GetId())
 	if err != nil {
 		return s.gateway.SearchByID(ctx, req, s.copts...)
 	}
@@ -679,7 +679,7 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (vec *pay
 			span.End()
 		}
 	}()
-	mvec, err := s.backup.GetObject(ctx, id.GetId())
+	mvec, err := s.backup.GetVector(ctx, id.GetId())
 	if err != nil {
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))

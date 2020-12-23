@@ -5,7 +5,7 @@ go 1.15
 replace (
 	cloud.google.com/go => cloud.google.com/go v0.74.0
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0+incompatible
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.36.13
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.36.14
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible

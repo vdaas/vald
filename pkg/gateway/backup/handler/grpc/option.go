@@ -18,9 +18,9 @@
 package grpc
 
 import (
+	"github.com/vdaas/vald/internal/client/v1/client/compressor"
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errgroup"
-	"github.com/vdaas/vald/pkg/gateway/backup/service"
 )
 
 type Option func(*server)
@@ -30,10 +30,10 @@ var defaultOptions = []Option{
 	WithStreamConcurrency(20),
 }
 
-func WithBackup(b service.Backup) Option {
+func WithCompressorClient(c compressor.Client) Option {
 	return func(s *server) {
-		if b != nil {
-			s.backup = b
+		if c != nil {
+			s.backup = c
 		}
 	}
 }

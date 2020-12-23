@@ -38,14 +38,16 @@ type atomicAddrs struct {
 	l          uint64
 }
 
-func newAddr(addrs []string) AtomicAddrs {
+func newAddr(addrList map[string]struct{}) AtomicAddrs {
 	a := new(atomicAddrs)
 	a.dupCheck = make(map[string]bool)
-	if addrs == nil {
+	if addrList == nil {
 		a.addrs.Store(make([]string, 0, 10))
 	} else {
-		for _, addr := range addrs {
+		addrs := make([]string, 0, len(addrList))
+		for addr := range addrList {
 			a.dupCheck[addr] = true
+			addrs = append(addrs, addr)
 		}
 		a.addrs.Store(addrs)
 		atomic.StoreUint64(&a.l, uint64(len(addrs)))
@@ -109,7 +111,7 @@ func (a *atomicAddrs) Delete(addr string) {
 		for addr := range a.dupCheck {
 			addrs = append(addrs, addr)
 		}
-		a.addrs.Store(append(addrs, addr))
+		a.addrs.Store(addrs)
 		atomic.StoreUint64(&a.l, uint64(len(addrs)))
 	}
 }

@@ -18,6 +18,7 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
@@ -52,7 +53,11 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	discovererClientOptions := append(
 		cfg.Gateway.Discoverer.Client.Opts(),
 		grpc.WithErrGroup(eg),
-	)
+		grpc.WithAddrs(fmt.Sprintf("%s:%d",
+			cfg.Gateway.Discoverer.Host,
+			cfg.Gateway.Discoverer.Port,
+		)))
+
 	var obs observability.Observability
 	if cfg.Observability.Enabled {
 		obs, err = observability.NewWithConfig(cfg.Observability)

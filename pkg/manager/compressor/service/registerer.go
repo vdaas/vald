@@ -75,7 +75,7 @@ func (r *registerer) Start(ctx context.Context) (<-chan error, error) {
 	return r.worker.Start(ctx)
 }
 
-func (r *registerer) PostStop(ctx context.Context) error {
+func (r *registerer) PostStop(ctx context.Context) (err error) {
 	log.Info("compressor registerer service poststop processing...")
 
 	r.worker.Pause()
@@ -84,6 +84,13 @@ func (r *registerer) PostStop(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	defer func() {
+		if err != nil {
+			err = errors.Wrap(r.client.Stop(ctx), err.Error())
+			return
+		}
+		err = r.client.Stop(ctx)
+	}()
 
 	cctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -216,6 +223,7 @@ func (r *registerer) forwardMetas(ctx context.Context) (errs error) {
 	var err error
 
 	r.vecsMu.Lock()
+	defer r.vecsMu.Unlock()
 
 	log.Debugf("compressor registerer queued vec-vector count: %d", len(r.vecs))
 
@@ -228,8 +236,6 @@ func (r *registerer) forwardMetas(ctx context.Context) (errs error) {
 			errs = errors.Wrap(errs, err.Error())
 		}
 	}
-
-	r.vecsMu.Unlock()
 
 	return errs
 }

@@ -54,10 +54,8 @@ func WithAddrs(addrs ...string) Option {
 		if len(addrs) == 0 {
 			return
 		}
-		if g.addrs == nil || len(g.addrs) == 0 {
-			g.addrs = addrs
-		} else {
-			g.addrs = append(g.addrs, addrs...)
+		for _, addr := range addrs {
+			g.addrs[addr] = struct{}{}
 		}
 	}
 }

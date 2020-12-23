@@ -25,10 +25,12 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/observability/trace"
 )
 
 type Client interface {
 	Start(ctx context.Context) (<-chan error, error)
+	Stop(context.Context) error
 	GetVector(ctx context.Context, uuid string) (*payload.Backup_Vector, error)
 	GetLocation(ctx context.Context, uuid string) ([]string, error)
 	Register(ctx context.Context, vec *payload.Backup_Vector) error
@@ -40,7 +42,6 @@ type Client interface {
 }
 
 type client struct {
-	addr   string
 	client grpc.Client
 }
 
@@ -59,8 +60,18 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 	return c.client.StartConnectionMonitor(ctx)
 }
 
+func (c *client) Stop(ctx context.Context) error {
+	return c.client.Close(ctx)
+}
+
 func (c *client) GetVector(ctx context.Context, uuid string) (vec *payload.Backup_Vector, err error) {
-	_, err = c.client.Do(ctx, c.addr, func(ctx context.Context,
+	ctx, span := trace.StartSpan(ctx, "vald/internal/client/v1/client/compressor/Client.GetVector")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	_, err = c.client.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
 		vec, err = compressor.NewBackupClient(conn).GetVector(ctx, &payload.Backup_GetVector_Request{
 			Uuid: uuid,
@@ -74,7 +85,13 @@ func (c *client) GetVector(ctx context.Context, uuid string) (vec *payload.Backu
 }
 
 func (c *client) GetLocation(ctx context.Context, uuid string) (ipList []string, err error) {
-	_, err = c.client.Do(ctx, c.addr, func(ctx context.Context,
+	ctx, span := trace.StartSpan(ctx, "vald/internal/client/v1/client/compressor/Client.GetLocation")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	_, err = c.client.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
 		ips, err := compressor.NewBackupClient(conn).Locations(ctx, &payload.Backup_Locations_Request{
 			Uuid: uuid,
@@ -89,7 +106,13 @@ func (c *client) GetLocation(ctx context.Context, uuid string) (ipList []string,
 }
 
 func (c *client) Register(ctx context.Context, vec *payload.Backup_Vector) (err error) {
-	_, err = c.client.Do(ctx, c.addr, func(ctx context.Context,
+	ctx, span := trace.StartSpan(ctx, "vald/internal/client/v1/client/compressor/Client.Register")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	_, err = c.client.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
 		_, err = compressor.NewBackupClient(conn).Register(ctx, vec, copts...)
 		if err != nil {
@@ -101,7 +124,13 @@ func (c *client) Register(ctx context.Context, vec *payload.Backup_Vector) (err 
 }
 
 func (c *client) RegisterMultiple(ctx context.Context, vecs *payload.Backup_Vectors) (err error) {
-	_, err = c.client.Do(ctx, c.addr, func(ctx context.Context,
+	ctx, span := trace.StartSpan(ctx, "vald/internal/client/v1/client/compressor/Client.RegisterMultiple")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	_, err = c.client.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
 		_, err = compressor.NewBackupClient(conn).RegisterMulti(ctx, vecs, copts...)
 		if err != nil {
@@ -113,7 +142,13 @@ func (c *client) RegisterMultiple(ctx context.Context, vecs *payload.Backup_Vect
 }
 
 func (c *client) Remove(ctx context.Context, uuid string) (err error) {
-	_, err = c.client.Do(ctx, c.addr, func(ctx context.Context,
+	ctx, span := trace.StartSpan(ctx, "vald/internal/client/v1/client/compressor/Client.Remove")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	_, err = c.client.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
 		_, err = compressor.NewBackupClient(conn).Remove(ctx, &payload.Backup_Remove_Request{
 			Uuid: uuid,
@@ -127,9 +162,15 @@ func (c *client) Remove(ctx context.Context, uuid string) (err error) {
 }
 
 func (c *client) RemoveMultiple(ctx context.Context, uuids ...string) (err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/internal/client/v1/client/compressor/Client.RemoveMultiple")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	req := new(payload.Backup_Remove_RequestMulti)
 	req.Uuids = uuids
-	_, err = c.client.Do(ctx, c.addr, func(ctx context.Context,
+	_, err = c.client.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
 		_, err = compressor.NewBackupClient(conn).RemoveMulti(ctx, req, copts...)
 		if err != nil {
@@ -141,9 +182,15 @@ func (c *client) RemoveMultiple(ctx context.Context, uuids ...string) (err error
 }
 
 func (c *client) RegisterIPs(ctx context.Context, ips []string) (err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/internal/client/v1/client/compressor/Client.RegisterIPs")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	req := new(payload.Backup_IP_Register_Request)
 	req.Ips = ips
-	_, err = c.client.Do(ctx, c.addr, func(ctx context.Context,
+	_, err = c.client.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
 		_, err = compressor.NewBackupClient(conn).RegisterIPs(ctx, req, copts...)
 		if err != nil {
@@ -155,9 +202,15 @@ func (c *client) RegisterIPs(ctx context.Context, ips []string) (err error) {
 }
 
 func (c *client) RemoveIPs(ctx context.Context, ips []string) (err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/internal/client/v1/client/compressor/Client.RemoveIPs")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	req := new(payload.Backup_IP_Remove_Request)
 	req.Ips = ips
-	_, err = c.client.Do(ctx, c.addr, func(ctx context.Context,
+	_, err = c.client.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
 		_, err = compressor.NewBackupClient(conn).RemoveIPs(ctx, req, copts...)
 		if err != nil {
