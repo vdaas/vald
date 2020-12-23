@@ -82,7 +82,7 @@ func TestErrFileAlreadyExists(t *testing.T) {
 			},
 		},
 		{
-			name: "returns error when the file path is empty",
+			name: "returns ErrFileAlreadyExists error with the file path is empty",
 			args: args{
 				path: "",
 			},
