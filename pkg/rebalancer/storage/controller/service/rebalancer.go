@@ -3,7 +3,9 @@ package service
 import (
 	"context"
 	"math"
+	"os"
 	"reflect"
+	"strconv"
 	"sync/atomic"
 	"time"
 
@@ -287,7 +289,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 						if len(decreasedPodNames) > 0 {
 							for _, name := range decreasedPodNames {
 								log.Debugf("[decrease] creating job for pod %s", name)
-								if err := r.createJob(ctx, *jobTpl, name); err != nil {
+								if err := r.createJob(ctx, *jobTpl, "decrease", name, ns); err != nil {
 									log.Errorf("failed to create job: %s", err)
 									continue
 								}
@@ -300,7 +302,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 							}
 							if !r.isJobRunning(jobModels, ns) {
 								log.Debugf("[bias] creating job for pod %s, rate: %v", maxPodName, rate)
-								if err := r.createJob(ctx, *jobTpl, maxPodName); err != nil {
+								if err := r.createJob(ctx, *jobTpl, "bias", maxPodName, ns); err != nil {
 									log.Errorf("failed to create job: %s", err)
 									continue
 								}
@@ -326,14 +328,21 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, agentName string) error {
-	if jobTpl.Labels == nil {
-		jobTpl.Labels = make(map[string]string)
-	}
+func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, trigger, agentName, agentNs string) error {
+	jobTpl.Name += "-" + strconv.FormatInt(time.Now().Unix(), 10)
+
 	if len(r.jobNamespace) != 0 {
 		jobTpl.Namespace = r.jobNamespace
 	}
+
+	if jobTpl.Labels == nil {
+		jobTpl.Labels = make(map[string]string)
+	}
+	jobTpl.Labels["type"] = trigger
 	jobTpl.Labels["target_agent_name"] = agentName
+	jobTpl.Labels["target_agent_namespace"] = agentNs
+	jobTpl.Labels["controller_name"] = os.Getenv("MY_POD_NAME")
+	jobTpl.Labels["controller_namespace"] = os.Getenv("MY_POD_NAMESPACE")
 
 	cfg, err := config.GetConfig()
 	if err != nil {
