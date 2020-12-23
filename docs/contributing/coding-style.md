@@ -794,7 +794,7 @@ tests := map[string]func(t *testing.T) test {
         - End with the condition `when {condition}` or `with {condition}
         - e.g.: `fail option setting when value is invalid value(string)`
     - Return:
-        - When the test will not much `Success` or `Fails`, please use `Return` pattern.
+        - If the test case do not match with `Success` or `Fails`, please use `Return` pattern.
         - Start with `Returns {Object}`
         - End with the condition `when {condition}` or `with {condition}
         - e.g.: `Returns invalid error when the input is invalid`
