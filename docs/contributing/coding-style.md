@@ -799,7 +799,7 @@ tests := map[string]func(t *testing.T) test {
         - End with the condition `when {condition}` or `with {condition}
         - e.g.: `Returns invalid error when the input is invalid`
 
-1. input values
+1. testing arguments
 
     Input arguments for testing should be a meaningful value.
     We should test with more realistic value as user use, to produce more realistic testing result.
