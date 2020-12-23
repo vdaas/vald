@@ -100,9 +100,11 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 	}
 
 	jobs := r.pool.Get().(map[string][]Job)
-
+	log.Debugf("[internal/k8s/job] Job: %#v", js)
+	log.Debugf("[internal/k8s/job] JobItems: %#v", js.Items)
 	for _, job := range js.Items {
 		name, ok := job.GetObjectMeta().GetLabels()["app"]
+		log.Debugf("[internal/k8s/job] name: %s, ok: %v", name, ok)
 		if !ok {
 			jns := strings.Split(job.GetName(), "-")
 			name = strings.Join(jns[:len(jns)-1], "-")
