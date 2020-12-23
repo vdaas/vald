@@ -785,7 +785,7 @@ tests := map[string]func(t *testing.T) test {
     Test case name should be readable, meaningful and understandable easily. 
     If you create a new test, the test name should be named based on the below-naming templates.
 
-    - Success:
+    - Success cases:
         - Start with `success` or `{verb} success` or `success {verb}`
         - End with the condition `when {condition}` or `with {condition}
         - e.g.: `set success when the value is default value`
