@@ -19,6 +19,8 @@ package config
 
 // RebalanceController represent rebalance controller configuration.
 type RebalanceController struct {
+	PodName                 string  `yaml:"pod_name" json:"pod_name"`
+	PodNamespace            string  `yaml:"pod_namespace" json:"pod_namespace"`
 	RebalanceJobName        string  `yaml:"rebalance_job_name" json:"rebalance_job_name"`
 	RebalanceJobNamespace   string  `yaml:"rebalance_job_namespance" json:"rebalance_job_namespance"`
 	RebalanceJobTemplateKey string  `yaml:"rebalance_job_template_key" json:"rebalance_job_template_key"`
@@ -35,6 +37,8 @@ type RebalanceController struct {
 
 // Bind binds rebalance controller configuration.
 func (r *RebalanceController) Bind() *RebalanceController {
+	r.PodName = GetActualValue(r.PodName)
+	r.PodNamespace = GetActualValue(r.PodNamespace)
 	r.RebalanceJobName = GetActualValue(r.RebalanceJobName)
 	r.RebalanceJobNamespace = GetActualValue(r.RebalanceJobNamespace)
 	r.RebalanceJobTemplateKey = GetActualValue(r.RebalanceJobTemplateKey)

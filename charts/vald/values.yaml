@@ -3372,6 +3372,12 @@ rebalancer:
     name: vald
   # @schema {"name": "rebalancer.rebalancer", "type": "object"}
   rebalancer:
+    # @schema {"name": "rebalancer.rebalancer.pod_name", "type": "string"}
+    # rebalancer.rebalancer.pod_name -- pod name of rebalancer stroage controller
+    pod_name: _MY_POD_NAME_
+    # @schema {"name": "rebalancer.rebalancer.pod_namespace", "type": "string"}
+    # rebalancer.rebalancer.pod_namespace -- pod namespace of rebalancer stroage controller
+    pod_namespace: _MY_POD_NAMESPACE_
     # @schema {"name": "rebalancer.rebalancer.rebalance_job_name", "type": "string"}
     # rebalancer.rebalancer.rebalance_job_name -- name of rebalancer job
     rebalance_job_name: vald-rebalancer-storage-job

@@ -12,6 +12,20 @@ var (
 	defaultRebalancerOpts = []RebalancerOption{}
 )
 
+func WithPodName(name string) RebalancerOption {
+	return func(r *rebalancer) error {
+		r.podName = name
+		return nil
+	}
+}
+
+func WithPodNamespace(ns string) RebalancerOption {
+	return func(r *rebalancer) error {
+		r.podNamespace = ns
+		return nil
+	}
+}
+
 func WithJobName(name string) RebalancerOption {
 	return func(r *rebalancer) error {
 		r.jobName = name
