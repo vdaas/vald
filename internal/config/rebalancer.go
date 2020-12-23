@@ -24,8 +24,8 @@ type RebalanceController struct {
 	RebalanceJobName        string  `yaml:"rebalance_job_name" json:"rebalance_job_name"`
 	RebalanceJobNamespace   string  `yaml:"rebalance_job_namespance" json:"rebalance_job_namespance"`
 	RebalanceJobTemplateKey string  `yaml:"rebalance_job_template_key" json:"rebalance_job_template_key"`
-	ConfigMapName           string  `yaml:"configmap_name" json:"configmap_name"`
-	ConfigMapNamespace      string  `yaml:"configmap_namespace" json:"configmap_namespace"`
+	JobConfigMapName        string  `yaml:"rebalance_job_configmap_name" json:"rebalance_job_configmap_name"`
+	JobConfigMapNamespace   string  `yaml:"rebalance_job_configmap_namespace" json:"rebalance_job_configmap_namespace"`
 	AgentName               string  `yaml:"agent_name" json:"agent_name"`
 	AgentNamespace          string  `yaml:"agent_namespace" json:"agent_namespace"`
 	AgentResourceType       string  `yaml:"agent_resource_type" json:"agent_resource_type"`
@@ -42,8 +42,8 @@ func (r *RebalanceController) Bind() *RebalanceController {
 	r.RebalanceJobName = GetActualValue(r.RebalanceJobName)
 	r.RebalanceJobNamespace = GetActualValue(r.RebalanceJobNamespace)
 	r.RebalanceJobTemplateKey = GetActualValue(r.RebalanceJobTemplateKey)
-	r.ConfigMapName = GetActualValue(r.ConfigMapName)
-	r.ConfigMapNamespace = GetActualValue(r.ConfigMapNamespace)
+	r.JobConfigMapName = GetActualValue(r.JobConfigMapName)
+	r.JobConfigMapNamespace = GetActualValue(r.JobConfigMapNamespace)
 	r.AgentName = GetActualValue(r.AgentName)
 	r.AgentNamespace = GetActualValue(r.AgentNamespace)
 	r.AgentResourceType = GetActualValue(r.AgentResourceType)

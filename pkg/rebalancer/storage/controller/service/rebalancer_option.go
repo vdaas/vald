@@ -68,16 +68,16 @@ func WithAgentResourceType(art string) RebalancerOption {
 	}
 }
 
-func WithConfigMapName(n string) RebalancerOption {
+func WithJobConfigMapName(n string) RebalancerOption {
 	return func(r *rebalancer) error {
-		r.configmapName = n
+		r.jobConfigmapName = n
 		return nil
 	}
 }
 
-func WithConfigMapNamespace(ns string) RebalancerOption {
+func WithJobConfigMapNamespace(ns string) RebalancerOption {
 	return func(r *rebalancer) error {
-		r.configmapNamespace = ns
+		r.jobConfigmapNamespace = ns
 		return nil
 	}
 }

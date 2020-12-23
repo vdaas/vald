@@ -9,6 +9,7 @@ type Job struct {
 	Active               int32
 	StartTime            time.Time
 	Type                 string
+	Reason               string
 	TargetAgentNamespace string
 	TargetAgentName      string
 	ControllerNamespace  string

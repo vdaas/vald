@@ -3390,12 +3390,12 @@ rebalancer:
     # @schema {"name": "rebalancer.rebalancer.rebalance_job_image", "type": "string"}
     # rebalancer.rebalancer.rebalance_job_image -- container image of rebalancer job
     rebalance_job_image: hello-world
-    # @schema {"name": "rebalancer.rebalancer.configmap_name", "type": "string"}
-    # rebalancer.rebalancer.configmap_name -- configmap name of rebalancer job
-    configmap_name: vald-rebalancer-storage-job-config
-    # @schema {"name": "rebalancer.rebalancer.configmap_namespace", "type": "string"}
-    # rebalancer.rebalancer.configmap_namespace -- configmap namespace of rebalancer job
-    configmap_namespace: _MY_POD_NAMESPACE_
+    # @schema {"name": "rebalancer.rebalancer.rebalance_job_configmap_name", "type": "string"}
+    # rebalancer.rebalancer.rebalance_job_configmap_name -- configmap name of rebalancer job
+    rebalance_job_configmap_name: vald-rebalancer-storage-job-config
+    # @schema {"name": "rebalancer.rebalancer.rebalance_job_configmap_namespace", "type": "string"}
+    # rebalancer.rebalancer.rebalance_job_configmap_namespace -- configmap namespace of rebalancer job
+    rebalance_job_configmap_namespace: _MY_POD_NAMESPACE_
     # @schema {"name": "rebalancer.rebalancer.agent_name", "type": "string"}
     # rebalancer.rebalancer.agent_name -- name of target agent
     agent_name: "vald-agent-ngt"

@@ -33,6 +33,29 @@ type Rebalancer interface {
 	Start(ctx context.Context) (<-chan error, error)
 }
 
+type reason uint8
+
+const (
+	BIAS reason = iota
+	DECREASE
+	MANUAL
+
+	jobType = "rebalancer"
+)
+
+func (r reason) String() string {
+	switch r {
+	case BIAS:
+		return "bias"
+	case DECREASE:
+		return "decrease"
+	case MANUAL:
+		return "manual"
+	default:
+		return "unknown"
+	}
+}
+
 type rebalancer struct {
 	podName      string
 	podNamespace string
@@ -49,9 +72,8 @@ type rebalancer struct {
 	pods              atomic.Value
 	podMetrics        atomic.Value
 
-	// job template config map
-	configmapName      string
-	configmapNamespace string
+	jobConfigmapName      string
+	jobConfigmapNamespace string
 
 	statefulSets atomic.Value
 
@@ -98,15 +120,15 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 
 	cm, err := configmap.New(
 		configmap.WithControllerName("configmap rebalancer"),
-		configmap.WithNamespaces(r.configmapNamespace),
+		configmap.WithNamespaces(r.jobConfigmapNamespace),
 		configmap.WithOnErrorFunc(func(err error) {
 			log.Error(err)
 		}),
 		configmap.WithOnReconcileFunc(func(configmapList map[string][]configmap.ConfigMap) {
-			configmaps, ok := configmapList[r.configmapNamespace]
+			configmaps, ok := configmapList[r.jobConfigmapNamespace]
 			if ok {
 				for _, cm := range configmaps {
-					if cm.Name == r.configmapName {
+					if cm.Name == r.jobConfigmapName {
 						if tmpl, ok := cm.Data[r.jobTemplateKey]; ok {
 							r.jobTemplate.Store(tmpl)
 						} else {
@@ -116,7 +138,7 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 					}
 				}
 			} else {
-				log.Infof("configmap not found: %s", r.configmapName)
+				log.Infof("configmap not found: %s", r.jobConfigmapName)
 			}
 		}),
 	)
@@ -291,7 +313,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 						if len(decreasedPodNames) > 0 {
 							for _, name := range decreasedPodNames {
 								log.Debugf("[decrease] creating job for pod %s", name)
-								if err := r.createJob(ctx, *jobTpl, "decrease", name, ns); err != nil {
+								if err := r.createJob(ctx, *jobTpl, DECREASE, name, ns); err != nil {
 									log.Errorf("failed to create job: %s", err)
 									continue
 								}
@@ -304,7 +326,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 							}
 							if !r.isJobRunning(jobModels, ns) {
 								log.Debugf("[bias] creating job for pod %s, rate: %v", maxPodName, rate)
-								if err := r.createJob(ctx, *jobTpl, "bias", maxPodName, ns); err != nil {
+								if err := r.createJob(ctx, *jobTpl, BIAS, maxPodName, ns); err != nil {
 									log.Errorf("failed to create job: %s", err)
 									continue
 								}
@@ -330,7 +352,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, trigger, agentName, agentNs string) error {
+func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, reason reason, agentName, agentNs string) error {
 	jobTpl.Name += "-" + strconv.FormatInt(time.Now().Unix(), 10)
 
 	if len(r.jobNamespace) != 0 {
@@ -340,7 +362,8 @@ func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, trigger, age
 	if jobTpl.Labels == nil {
 		jobTpl.Labels = make(map[string]string)
 	}
-	jobTpl.Labels["type"] = trigger
+	jobTpl.Labels["type"] = jobType
+	jobTpl.Labels["reason"] = reason.String()
 	jobTpl.Labels["target_agent_name"] = agentName
 	jobTpl.Labels["target_agent_namespace"] = agentNs
 	jobTpl.Labels["controller_name"] = r.podName
@@ -422,6 +445,7 @@ func (r *rebalancer) genJobModels() (jobModels map[string][]*model.Job, err erro
 			Active:               j.Status.Active,
 			StartTime:            t,
 			Type:                 j.Labels["type"],
+			Reason:               j.Labels["reason"],
 			TargetAgentNamespace: j.Labels["target_agent_namespace"],
 			TargetAgentName:      j.Labels["target_agent_name"],
 			ControllerNamespace:  j.Labels["controller_namespace"],
@@ -532,7 +556,7 @@ func calSigMemUsg(pm []*model.Pod, avgMemUsg float64) (sig float64) {
 func (r *rebalancer) isJobRunning(jobModels map[string][]*model.Job, ns string) bool {
 	for _, jobs := range jobModels {
 		for _, job := range jobs {
-			if job.Type == "rebalance" && job.Active != 0 && job.TargetAgentNamespace == ns {
+			if job.Type == jobType && job.Active != 0 && job.TargetAgentNamespace == ns {
 				return true
 			}
 		}
