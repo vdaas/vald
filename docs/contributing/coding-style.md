@@ -793,7 +793,7 @@ tests := map[string]func(t *testing.T) test {
         - Start with `fail` or `{verb} fail` or `fail {verb}`
         - End with the condition `when {condition}` or `with {condition}
         - e.g.: `fail option setting when value is invalid value(string)`
-    - Return:
+    - Return cases:
         - If the test case do not match with `Success` or `Fails`, please use `Return` pattern.
         - Start with `Returns {Object}`
         - End with the condition `when {condition}` or `with {condition}
