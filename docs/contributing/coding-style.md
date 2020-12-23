@@ -801,7 +801,7 @@ tests := map[string]func(t *testing.T) test {
 
 1. input values
 
-    Input value for testing should be a meaningful value.
+    Input arguments for testing should be a meaningful value.
     It is because we should test with more realistic value as user use.
 
     For example, when you use `host` for test value, you should set `your hostname (e.g. vald.vdaas.com)` as `host`.
