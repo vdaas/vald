@@ -19,7 +19,7 @@ Unit testing validates the basic units of the program in isolation.
 Before creating the unit tests, we must know the essentials of strategy.
 
 1. Know what you are testing
-	- Purpose/Consumers of target function or classes or etc / designed by contract  defensive program.
+	- Purpose/Consumers of target function or classes or etc / designed by contract defensive program.
 1. Test behaviors and results, not implementation
 	- ensures that tests only fail when there is an actual effect and not due to internal changes.
 1. Test one thing at a time
