@@ -23,7 +23,7 @@ func TestErrWatchDirNotFound(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns error",
+			name: "return ErrWatchDirNotFound error",
 			want: want{
 				want: New("fs watcher watch dir not found"),
 			},
@@ -82,7 +82,7 @@ func TestErrFileAlreadyExists(t *testing.T) {
 			},
 		},
 		{
-			name: "returns ErrFileAlreadyExists error with the file path is empty",
+			name: "return ErrFileAlreadyExists error with the file path is empty",
 			args: args{
 				path: "",
 			},
@@ -131,7 +131,7 @@ func TestErrPathNotSpecified(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns ErrPathNotSpecified error",
+			name: "return ErrPathNotSpecified error",
 			want: want{
 				want: New("the path is not specified"),
 			},
