@@ -138,10 +138,12 @@ func (d Detail) String() string {
 		info[tag] = value
 	}
 
-	infoFormat := fmt.Sprintf("%%-%ds -> %%s", maxlen)
+	infoFormat := fmt.Sprintf("%%-%ds ->\t%%s", maxlen)
 	strs := make([]string, 0, rt.NumField())
 	for tag, value := range info {
-		strs = append(strs, fmt.Sprintf(infoFormat, tag, value))
+		if len(tag) != 0 && len(value) != 0 {
+			strs = append(strs, fmt.Sprintf(infoFormat, tag, value))
+		}
 	}
 	sort.Strings(strs)
 	return "\n" + strings.Join(strs, "\n")

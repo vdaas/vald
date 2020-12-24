@@ -84,8 +84,8 @@ helm/schema/vald: charts/vald/values.schema.json
 charts/vald/values.schema.json: \
 	charts/vald/values.yaml \
 	hack/helm/schema/gen/main.go
-	export GOPRIVATE=$(GOPRIVATE) \
-	&& go run hack/helm/schema/gen/main.go charts/vald/values.yaml > charts/vald/values.schema.json
+	GOPRIVATE=$(GOPRIVATE) \
+	go run hack/helm/schema/gen/main.go charts/vald/values.yaml > charts/vald/values.schema.json
 
 .PHONY: helm/schema/vald-helm-operator
 ## generate json schema for Vald Helm Operator Chart
@@ -94,5 +94,5 @@ helm/schema/vald-helm-operator: charts/vald-helm-operator/values.schema.json
 charts/vald-helm-operator/values.schema.json: \
 	charts/vald-helm-operator/values.yaml \
 	hack/helm/schema/gen/main.go
-	export GOPRIVATE=$(GOPRIVATE) \
-	&& go run hack/helm/schema/gen/main.go charts/vald-helm-operator/values.yaml > charts/vald-helm-operator/values.schema.json
+	GOPRIVATE=$(GOPRIVATE) \
+	go run hack/helm/schema/gen/main.go charts/vald-helm-operator/values.yaml > charts/vald-helm-operator/values.schema.json
