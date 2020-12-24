@@ -160,7 +160,7 @@ When the above function is given as target, you have to create 3 groups and pick
 ### Vald Style
 
 In the Vald, we create unit tests based on the basic test case.
-And, you also create unit tests based on robust boundary tests or equivalence class tests as needed.
+And, you may also create unit tests based on robust boundary tests or equivalence class tests if needed.
 
 But, we have to take care about that the Vald is developed using Go.
 As you know as Go has many coding features as other languages.
