@@ -1,5 +1,109 @@
 # CHANGELOG
 
+## v0.0.64
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v0.0.64</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v0.0.64</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v0.0.64</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v0.0.64</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverer k8s</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v0.0.64</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v0.0.64</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateway</td>
+    <td>
+      <code>docker pull vdaas/vald-gateway:v0.0.64</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-gateway:v0.0.64</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Backup manager MySQL</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-backup-mysql:v0.0.64</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-backup-mysql:v0.0.64</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Backup manager Cassandra</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-backup-cassandra:v0.0.64</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-backup-cassandra:v0.0.64</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Compressor</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-compressor:v0.0.64</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-compressor:v0.0.64</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Meta Redis</td>
+    <td>
+      <code>docker pull vdaas/vald-meta-redis:v0.0.64</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-redis:v0.0.64</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Meta Cassandra</td>
+    <td>
+      <code>docker pull vdaas/vald-meta-cassandra:v0.0.64</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-cassandra:v0.0.64</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v0.0.64</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v0.0.64</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v0.0.64</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v0.0.64</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v0.0.64)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v0.0.64/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v0.0.64/charts/vald-helm-operator/README.md)
+
+### Changes
+- :wrench: Rename PriorityClass names to contain namespace ([#901](https://github.com/vdaas/vald/pull/901))
+- :bug: Fix bug on updating status of VR & VHOR resources ([#892](https://github.com/vdaas/vald/pull/892))
+- :white_check_mark: Implement internal/errors/blob test ([#888](https://github.com/vdaas/vald/pull/888))
+- :white_check_mark: Add test for cassandra error ([#865](https://github.com/vdaas/vald/pull/865))
+- :white_check_mark: Add test case for internal/errors/discoverer.go ([#874](https://github.com/vdaas/vald/pull/874))
+- :bug: :white_check_mark: remove invalid import package from internal/errors/mysql_test.go ([#894](https://github.com/vdaas/vald/pull/894))
+- :white_check_mark: Add test for internal/errors/compressor.go ([#870](https://github.com/vdaas/vald/pull/870))
+- :robot: Automatically update k8s manifests ([#887](https://github.com/vdaas/vald/pull/887))
+
+
 ## v0.0.63
 
 ### Docker images
