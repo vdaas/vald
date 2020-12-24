@@ -175,7 +175,7 @@ This change is very clear and you can apply it easily.
 Our basic test case depends on the type of 2 variadic argument.
 
   1. When input is `...interface{}`
-      - we have to all test cases with value which satisfies `...interface{}` as same as [basic test case](#Basic). For example, `val = 1`, `val = "input"`, `val = []float64{2020.12}` and so on.
+      - we have to write all test cases which satisfies `...interface{}` as same as [basic test case](#Basic). For example, `val = 1`, `val = "input"`, `val = []float64{2020.12}` and so on.
   1. When input is not `...interface{}` but `...[]int`, `...[]string` or etc
       - we have to create only slice pattern test cases, which is the same as not create test cases with a single vale.
       - we should test with boundary cases, for example, we should test with `val = []int{math.MaxInt64()}` when the input value is `...[]int`.
