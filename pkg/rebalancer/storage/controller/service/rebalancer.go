@@ -105,7 +105,7 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 			log.Error(err)
 		}),
 		job.WithOnReconcileFunc(func(jobList map[string][]job.Job) {
-			log.Debugf("[reconcile Job] JobList: %#v", jobList)
+			// log.Debugf("[reconcile Job] JobList: %#v", jobList)
 			jobs, ok := jobList[r.jobName]
 			if ok {
 				r.jobs.Store(jobs)
@@ -335,6 +335,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 							}
 							log.Debugf("[bias] job is already running")
 						}
+						log.Debug("[cache] update cache")
 						prevSsModel[ns] = ssModel[ns]
 						prevPodModels[ns] = podModels[ns]
 					}
@@ -475,6 +476,9 @@ func (r *rebalancer) genJobTpl() (jobTpl *job.Job, err error) {
 }
 
 func (r *rebalancer) isSsReplicaDecreased(psm, sm *model.StatefulSet, ppm, pm []*model.Pod) (podNames []string) {
+	log.Debugf("[Ss checking] prevDesired: %d, currentDesired: %d", *psm.DesiredReplicas, *sm.DesiredReplicas)
+	log.Debugf("[Ss checking] prevPods: %#v", ppm)
+	log.Debugf("[Ss checking] currentPods: %#v", pm)
 	if *psm.DesiredReplicas > *sm.DesiredReplicas {
 		podNames = make([]string, 0)
 		for _, prevPod := range ppm {
