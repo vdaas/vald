@@ -165,7 +165,6 @@ And, you also create unit tests based on robust boundary tests or equivalence cl
 But, we have to take care about that the Vald is developed using Go.
 As you know as Go has many coding features as other languages.
 One of the features is the Go will convert a single value to a slice value when the Function or Method receives variadic argument (e.g. `...[]int`, `...[]string`, `...interface{}`, or etc) as the input.
-It is clear for Go coders. 
 
 And we apply the table-driven test for running unit tests.
 For example, when we create the unit test of `func getMeta(...[]int)`, the test code will be more complex than other functions' test which don't use variadic argument as the input if we create the test for all input patterns.
