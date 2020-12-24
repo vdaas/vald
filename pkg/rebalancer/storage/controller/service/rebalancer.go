@@ -306,13 +306,14 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 							continue
 						}
 						if *ssModel[ns].DesiredReplicas != ssModel[ns].Replicas {
+							log.Debugf("[decrease/not desired] desired replica: %d, current replica: %d", *ssModel[ns].DesiredReplicas, ssModel[ns].Replicas)
 							continue
 						}
 
 						decreasedPodNames := r.isSsReplicaDecreased(psm, ssModel[ns], prevPodModels[ns], podModels[ns])
 						if len(decreasedPodNames) > 0 {
 							for _, name := range decreasedPodNames {
-								log.Debugf("[decrease] creating job for pod %s", name)
+								log.Debugf("[decrease] creating job for pod %s, len(jobModels): %d", name, len(jobModels[r.jobName]))
 								if err := r.createJob(ctx, *jobTpl, DECREASE, name, ns); err != nil {
 									log.Errorf("failed to create job: %s", err)
 									continue
@@ -324,6 +325,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 								log.Debugf("[rate/podname checking] pod name, rate, rateThreshold: %s, %.3f, %f", maxPodName, rate, r.rateThreshold)
 								continue
 							}
+							log.Debugf("[bias/jobcheck] job: %#v", jobModels[r.jobName])
 							if !r.isJobRunning(jobModels, ns) {
 								log.Debugf("[bias] creating job for pod %s, rate: %v", maxPodName, rate)
 								if err := r.createJob(ctx, *jobTpl, BIAS, maxPodName, ns); err != nil {
