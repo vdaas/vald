@@ -33,19 +33,24 @@ var (
 		return Errorf("invalid gRPC client connection to %s", addr)
 	}
 
+	// ErrGRPCLookupIPAddrNotFound represents a function to generate an error that the vald internal gRPC couldn't find ip address.
 	ErrGRPCLookupIPAddrNotFound = func(host string) error {
 		return Errorf("vald internal gRPC client could not find ip addrs for %s", host)
 	}
 
+	// ErrGRPCClientNotFound represents an error that the vald internal gRPC client couldn't find.
 	ErrGRPCClientNotFound = New("vald internal gRPC client not found")
 
+	// ErrGRPCClientConnNotFound represents a function to generate an error that the gRPC client connection couldn't find.
 	ErrGRPCClientConnNotFound = func(addr string) error {
 		return Errorf("gRPC client connection not found in %s", addr)
 	}
 
+	// ErrRPCCallFailed represents a function to generate an error that the RPC call failed.
 	ErrRPCCallFailed = func(addr string, err error) error {
 		return Wrapf(err, "addr: %s", addr)
 	}
 
+	// ErrGRPCTargetAddrNotFound represents an error that the gRPC connection target couldn't find.
 	ErrGRPCTargetAddrNotFound = New("grpc connection target not found")
 )

@@ -26,7 +26,7 @@ func TestErrgRPCClientConnectionClose(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return wrapped error when err is server error and name is 'gateway'",
+			name: "return wrapped ErrgRPCClientConnectionClose error when err is server error and name is 'gateway'",
 			args: args{
 				err:  New("server error"),
 				name: "gateway",
@@ -36,7 +36,7 @@ func TestErrgRPCClientConnectionClose(t *testing.T) {
 			},
 		},
 		{
-			name: "return wrapped error when err is server error and name is empty",
+			name: "return wrapped ErrgRPCClientConnectionClose error when err is server error and name is empty",
 			args: args{
 				err:  New("server error"),
 				name: "",
@@ -46,7 +46,7 @@ func TestErrgRPCClientConnectionClose(t *testing.T) {
 			},
 		},
 		{
-			name: "return error when err is nil error and name is 'gateway'",
+			name: "return ErrgRPCClientConnectionClose error when err is nil error and name is 'gateway'",
 			args: args{
 				err:  nil,
 				name: "gateway",
@@ -56,7 +56,7 @@ func TestErrgRPCClientConnectionClose(t *testing.T) {
 			},
 		},
 		{
-			name: "return error when err is nil error and addr is empty",
+			name: "return ErrgRPCClientConnectionClose error when err is nil error and addr is empty",
 			args: args{
 				err:  nil,
 				name: "",
@@ -110,7 +110,7 @@ func TestErrInvalidGRPCClientConn(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return error when addr is '127.0.0.1'",
+			name: "return ErrInvalidGRPCClientConn error when addr is '127.0.0.1'",
 			args: args{
 				addr: "127.0.0.1",
 			},
@@ -119,7 +119,7 @@ func TestErrInvalidGRPCClientConn(t *testing.T) {
 			},
 		},
 		{
-			name: "return error when addr is empty",
+			name: "return ErrInvalidGRPCClientConn error when addr is empty",
 			args: args{
 				addr: "",
 			},
@@ -172,7 +172,7 @@ func TestErrGRPCLookupIPAddrNotFound(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return error when host is 'gateway.vald.svc.cluster.local'",
+			name: "return ErrGRPCLookupIPAddrNotFound error when host is 'gateway.vald.svc.cluster.local'",
 			args: args{
 				host: "gateway.vald.svc.cluster.local",
 			},
@@ -181,7 +181,7 @@ func TestErrGRPCLookupIPAddrNotFound(t *testing.T) {
 			},
 		},
 		{
-			name: "return error when host is empty",
+			name: "return ErrGRPCLookupIPAddrNotFound error when host is empty",
 			args: args{
 				host: "",
 			},
@@ -230,7 +230,7 @@ func TestErrGRPCClientNotFound(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return error",
+			name: "return ErrGRPCLookupIPAddrNotFound error",
 			want: want{
 				want: New("vald internal gRPC client not found"),
 			},
@@ -280,7 +280,7 @@ func TestErrGRPCClientConnNotFound(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return error when addr is '127.0.0.1'",
+			name: "return ErrGRPCClientConnNotFound error when addr is '127.0.0.1'",
 			args: args{
 				addr: "127.0.0.1",
 			},
@@ -289,7 +289,7 @@ func TestErrGRPCClientConnNotFound(t *testing.T) {
 			},
 		},
 		{
-			name: "return error when addr is empty",
+			name: "return ErrGRPCClientConnNotFound error when addr is empty",
 			args: args{
 				addr: "",
 			},
@@ -343,7 +343,7 @@ func TestErrRPCCallFailed(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return wrapped error when err is server error and addr is '127.0.0.1'",
+			name: "return wrapped ErrRPCCallFailed error when err is server error and addr is '127.0.0.1'",
 			args: args{
 				err:  New("server error"),
 				addr: "127.0.0.1",
@@ -353,7 +353,7 @@ func TestErrRPCCallFailed(t *testing.T) {
 			},
 		},
 		{
-			name: "return wrapped error when err is server error and addr is empty",
+			name: "return wrapped ErrRPCCallFailed error when err is server error and addr is empty",
 			args: args{
 				err:  New("server error"),
 				addr: "",
@@ -363,7 +363,7 @@ func TestErrRPCCallFailed(t *testing.T) {
 			},
 		},
 		{
-			name: "return error when err is nil error and addr is '127.0.0.1'",
+			name: "return ErrRPCCallFailed error when err is nil error and addr is '127.0.0.1'",
 			args: args{
 				err:  nil,
 				addr: "127.0.0.1",
@@ -373,7 +373,7 @@ func TestErrRPCCallFailed(t *testing.T) {
 			},
 		},
 		{
-			name: "return error when err is nil error and addr is empty",
+			name: "return ErrRPCCallFailed error when err is nil error and addr is empty",
 			args: args{
 				err:  nil,
 				addr: "",
@@ -423,7 +423,7 @@ func TestErrGRPCTargetAddrNotFound(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return error",
+			name: "return ErrGRPCTargetAddrNotFound error",
 			want: want{
 				want: New("grpc connection target not found"),
 			},
