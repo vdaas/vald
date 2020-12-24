@@ -181,7 +181,7 @@ Our basic test case depends on the type of 2 variadic argument.
       - we should test with boundary cases, for example, we should test with `val = []int{math.MaxInt64()}` when the input value is `...[]int`.
 
 
-Summarize Vlad unit test guideline:
+Summarize Vald unit test guideline:
 - apply basic test case, but take care of input variable pattern, in particular, the variadic argument (`...interface{}` or not)
 - apply robust boundary tests including edge cases (e.g. `math.MaxInt64()`)
 - apply equivalence class testing when needed.
