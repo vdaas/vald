@@ -71,7 +71,7 @@ In this case, there is one test case is remaining.
   
 That is the focus on test coverage.
 
-Therefore, we should consider all cases for improving test coverage of the target unit.
+Therefore, we should consider all cases to improve test coverage for the target unit.
 To improve test coverage, the basic but critical thinking way is thinking about input patterns.
 It is not only a single input, but also multi inputs.
 
