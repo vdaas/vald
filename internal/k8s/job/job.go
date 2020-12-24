@@ -111,7 +111,6 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 			jobs[name] = make([]Job, 0, len(js.Items))
 		}
 		jobs[name] = append(jobs[name], job)
-		// log.Debugf("[internal/k8s/job] appended job: %#v, JobItems: %#v", jobs[name], job)
 	}
 
 	if r.onReconcile != nil {
@@ -119,9 +118,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 	}
 
 	for name := range jobs {
-		log.Debugf("[internal/k8s/job] jobs[%s]: %#v", name, jobs[name])
 		jobs[name] = jobs[name][:0:len(jobs[name])]
-		log.Debugf("[internal/k8s/job] jobs[%s]: %#v", name, jobs[name])
 	}
 
 	r.pool.Put(jobs)
