@@ -100,8 +100,6 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 	}
 
 	jobs := r.pool.Get().(map[string][]Job)
-	log.Debugf("[internal/k8s/job] Job: %#v", js)
-	log.Debugf("[internal/k8s/job] JobItems: %#v", js.Items)
 	for _, job := range js.Items {
 		name, ok := job.GetObjectMeta().GetLabels()["app"]
 		log.Debugf("[internal/k8s/job] name: %s, ok: %v", name, ok)
@@ -113,12 +111,13 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 		if _, ok := jobs[name]; !ok {
 			jobs[name] = make([]Job, 0, len(js.Items))
 		}
-
+		log.Debugf("[internal/k8s/job] JobItems: %#v", job)
 		jobs[name] = append(jobs[name], job)
 	}
 
 	for name := range jobs {
 		jobs[name] = jobs[name][:0:len(jobs[name])]
+		log.Debugf("[internal/k8s/job] jobs[%s]: %#v", name, jobs[name])
 	}
 
 	if r.onReconcile != nil {
