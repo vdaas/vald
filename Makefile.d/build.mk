@@ -44,6 +44,7 @@ cmd/agent/core/ngt/ngt: \
 	    && export CGO_FFLAGS="-g -Ofast -march=native" \
 	    && export CGO_LDFLAGS="-g -Ofast -march=native" \
 	    && export GO111MODULE=on \
+	    && export GOPRIVATE=$(GOPRIVATE) \
 	    && go build \
 	    --ldflags "-s -w -linkmode 'external' \
 	    -extldflags '-static -fPIC -pthread -fopenmp -std=c++17 -lstdc++ -lm $(EXTLDFLAGS)' \
@@ -70,6 +71,7 @@ cmd/agent/sidecar/sidecar: \
 	$(shell find ./pkg/agent/sidecar ./pkg/agent/internal -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	export CGO_ENABLED=1 \
 	    && export GO111MODULE=on \
+	    && export GOPRIVATE=$(GOPRIVATE) \
 	    && go build \
 	    --ldflags "-s -w -linkmode 'external' \
 	    -extldflags '-static' \
@@ -95,6 +97,7 @@ cmd/discoverer/k8s/discoverer: \
 	$(shell find ./pkg/discoverer/k8s -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	export CGO_ENABLED=1 \
 	    && export GO111MODULE=on \
+	    && export GOPRIVATE=$(GOPRIVATE) \
 	    && go build \
 	    --ldflags "-s -w -linkmode 'external' \
 	    -extldflags '-static' \
@@ -120,6 +123,7 @@ cmd/gateway/vald/vald: \
 	$(shell find ./pkg/gateway/vald -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	export CGO_ENABLED=1 \
 	    && export GO111MODULE=on \
+	    && export GOPRIVATE=$(GOPRIVATE) \
 	    && go build \
 	    --ldflags "-s -w -linkmode 'external' \
 	    -extldflags '-static' \
@@ -145,6 +149,7 @@ cmd/gateway/lb/lb: \
 	$(shell find ./pkg/gateway/lb -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	export CGO_ENABLED=1 \
 	    && export GO111MODULE=on \
+	    && export GOPRIVATE=$(GOPRIVATE) \
 	    && go build \
 	    --ldflags "-s -w -linkmode 'external' \
 	    -extldflags '-static' \
@@ -170,6 +175,7 @@ cmd/gateway/meta/meta: \
 	$(shell find ./pkg/gateway/meta -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	export CGO_ENABLED=1 \
 	    && export GO111MODULE=on \
+	    && export GOPRIVATE=$(GOPRIVATE) \
 	    && go build \
 	    --ldflags "-s -w -linkmode 'external' \
 	    -extldflags '-static' \
@@ -195,6 +201,7 @@ cmd/gateway/backup/backup: \
 	$(shell find ./pkg/gateway/backup -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	export CGO_ENABLED=1 \
 	    && export GO111MODULE=on \
+	    && export GOPRIVATE=$(GOPRIVATE) \
 	    && go build \
 	    --ldflags "-s -w -linkmode 'external' \
 	    -extldflags '-static' \
@@ -220,6 +227,7 @@ cmd/meta/redis/meta: \
 	$(shell find ./pkg/meta/redis -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	export CGO_ENABLED=1 \
 	    && export GO111MODULE=on \
+	    && export GOPRIVATE=$(GOPRIVATE) \
 	    && go build \
 	    --ldflags "-s -w -linkmode 'external' \
 	    -extldflags '-static' \
@@ -245,6 +253,7 @@ cmd/meta/cassandra/meta: \
 	$(shell find ./pkg/meta/cassandra -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	export CGO_ENABLED=1 \
 	    && export GO111MODULE=on \
+	    && export GOPRIVATE=$(GOPRIVATE) \
 	    && go build \
 	    --ldflags "-s -w -linkmode 'external' \
 	    -extldflags '-static' \
@@ -270,6 +279,7 @@ cmd/manager/backup/mysql/backup: \
 	$(shell find ./pkg/manager/backup/mysql -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	export CGO_ENABLED=1 \
 	    && export GO111MODULE=on \
+	    && export GOPRIVATE=$(GOPRIVATE) \
 	    && go build \
 	    --ldflags "-s -w -linkmode 'external' \
 	    -extldflags '-static' \
@@ -295,6 +305,7 @@ cmd/manager/backup/cassandra/backup: \
 	$(shell find ./pkg/manager/backup/cassandra -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	export CGO_ENABLED=1 \
 	    && export GO111MODULE=on \
+	    && export GOPRIVATE=$(GOPRIVATE) \
 	    && go build \
 	    --ldflags "-s -w -linkmode 'external' \
 	    -extldflags '-static' \
@@ -320,6 +331,7 @@ cmd/manager/compressor/compressor: \
 	$(shell find ./pkg/manager/compressor -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	export CGO_ENABLED=1 \
 	    && export GO111MODULE=on \
+	    && export GOPRIVATE=$(GOPRIVATE) \
 	    && go build \
 	    --ldflags "-s -w -linkmode 'external' \
 	    -extldflags '-static' \
@@ -345,6 +357,7 @@ cmd/manager/index/index: \
 	$(shell find ./pkg/manager/index -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	export CGO_ENABLED=1 \
 	    && export GO111MODULE=on \
+	    && export GOPRIVATE=$(GOPRIVATE) \
 	    && go build \
 	    --ldflags "-s -w -linkmode 'external' \
 	    -extldflags '-static' \
@@ -370,6 +383,7 @@ cmd/manager/replication/agent/agent: \
 	$(shell find ./pkg/manager/replication/agent -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	export CGO_ENABLED=1 \
 	    && export GO111MODULE=on \
+	    && export GOPRIVATE=$(GOPRIVATE) \
 	    && go build \
 	    --ldflags "-s -w -linkmode 'external' \
 	    -extldflags '-static' \
@@ -395,6 +409,7 @@ cmd/manager/replication/controller/controller: \
 	$(shell find ./pkg/manager/replication/controller -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	export CGO_ENABLED=1 \
 	    && export GO111MODULE=on \
+	    && export GOPRIVATE=$(GOPRIVATE) \
 	    && go build \
 	    --ldflags "-s -w -linkmode 'external' \
 	    -extldflags '-static' \

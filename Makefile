@@ -17,6 +17,7 @@
 REPO                           ?= vdaas
 NAME                            = vald
 GOPKG                           = github.com/$(REPO)/$(NAME)
+GOPRIVATE                       = $(GOPKG)
 DATETIME                        = $(eval DATETIME := $(shell date -u +%Y/%m/%d_%H:%M:%S%z))$(DATETIME)
 TAG                            ?= latest
 BASE_IMAGE                      = $(NAME)-base
@@ -59,7 +60,7 @@ TENSORFLOW_C_VERSION := $(eval TENSORFLOW_C_VERSION := $(shell cat versions/TENS
 OPERATOR_SDK_VERSION := $(eval OPERATOR_SDK_VERSION := $(shell cat versions/OPERATOR_SDK_VERSION))$(OPERATOR_SDK_VERSION)
 
 KIND_VERSION         ?= v0.9.0
-HELM_VERSION         ?= v3.4.1
+HELM_VERSION         ?= v3.4.2
 HELM_DOCS_VERSION    ?= 1.4.0
 VALDCLI_VERSION      ?= v0.0.62
 TELEPRESENCE_VERSION ?= 0.108
@@ -344,7 +345,7 @@ go/deps:
 		./go.sum \
 		./go.mod
 	cp ./hack/go.mod.default ./go.mod
-	GOPRIVATE=$(GOPKG) go mod tidy
+	GOPRIVATE=$(GOPRIVATE) go mod tidy
 	go get -u all 2>/dev/null || true
 
 
