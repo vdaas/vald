@@ -56,7 +56,7 @@ func calcSum(val ...int32) (sum int32) {
 }
 ```
 
-When the above function is given, we should create 2 test for achieving 100% code coverage at least.
+When the above function is given, we should create 2 tests to achieving 100% code coverage at least.
 
 - When val is not given
   - In other words, the default value is given
