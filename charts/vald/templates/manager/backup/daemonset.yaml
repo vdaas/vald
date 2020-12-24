@@ -111,7 +111,7 @@ spec:
       {{- end }}
       {{- if $backup.podPriority }}
       {{- if $backup.podPriority.enabled }}
-      priorityClassName: {{ $backup.name }}-priority
+      priorityClassName: {{ .Release.Namespace }}-{{ $backup.name }}-priority
       {{- end }}
       {{- end }}
 status:

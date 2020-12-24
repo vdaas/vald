@@ -111,7 +111,7 @@ spec:
       {{- end }}
       {{- if $meta.podPriority }}
       {{- if $meta.podPriority.enabled }}
-      priorityClassName: {{ $meta.name }}-priority
+      priorityClassName: {{ .Release.Namespace }}-{{ $meta.name }}-priority
       {{- end }}
       {{- end }}
 status:

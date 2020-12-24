@@ -113,7 +113,7 @@ spec:
       {{- end }}
       {{- if $discoverer.podPriority }}
       {{- if $discoverer.podPriority.enabled }}
-      priorityClassName: {{ $discoverer.name }}-priority
+      priorityClassName: {{ .Release.Namespace }}-{{ $discoverer.name }}-priority
       {{- end }}
       {{- end }}
 status:
