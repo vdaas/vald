@@ -110,7 +110,7 @@ spec:
       {{- end }}
       {{- if .Values.indexManager.podPriority }}
       {{- if .Values.indexManager.podPriority.enabled }}
-      priorityClassName: {{ .Values.indexManager.name }}-priority
+      priorityClassName: {{ .Release.Namespace }}-{{ .Values.indexManager.name }}-priority
       {{- end }}
       {{- end }}
 status:

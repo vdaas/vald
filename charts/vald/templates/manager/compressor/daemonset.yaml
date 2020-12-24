@@ -110,7 +110,7 @@ spec:
       {{- end }}
       {{- if .Values.compressor.podPriority }}
       {{- if .Values.compressor.podPriority.enabled }}
-      priorityClassName: {{ .Values.compressor.name }}-priority
+      priorityClassName: {{ .Release.Namespace }}-{{ .Values.compressor.name }}-priority
       {{- end }}
       {{- end }}
 status:
