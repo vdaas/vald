@@ -17,7 +17,7 @@
 REPO                           ?= vdaas
 NAME                            = vald
 GOPKG                           = github.com/$(REPO)/$(NAME)
-GOPRIVATE                       = $(GOPKG)
+GOPRIVATE                       = $(GOPKG),$(GOPKG)/apis
 DATETIME                        = $(eval DATETIME := $(shell date -u +%Y/%m/%d_%H:%M:%S%z))$(DATETIME)
 TAG                            ?= latest
 BASE_IMAGE                      = $(NAME)-base
