@@ -102,7 +102,6 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 	jobs := r.pool.Get().(map[string][]Job)
 	for _, job := range js.Items {
 		name, ok := job.GetObjectMeta().GetLabels()["app"]
-		log.Debugf("[internal/k8s/job] name: %s, ok: %v", name, ok)
 		if !ok {
 			jns := strings.Split(job.GetName(), "-")
 			name = strings.Join(jns[:len(jns)-1], "-")
@@ -112,10 +111,11 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 			jobs[name] = make([]Job, 0, len(js.Items))
 		}
 		jobs[name] = append(jobs[name], job)
-		log.Debugf("[internal/k8s/job] appended job: %#v, JobItems: %#v", jobs[name], job)
+		// log.Debugf("[internal/k8s/job] appended job: %#v, JobItems: %#v", jobs[name], job)
 	}
 
 	for name := range jobs {
+		log.Debugf("[internal/k8s/job] jobs[%s]: %#v", name, jobs[name])
 		jobs[name] = jobs[name][:0:len(jobs[name])]
 		log.Debugf("[internal/k8s/job] jobs[%s]: %#v", name, jobs[name])
 	}
