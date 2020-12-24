@@ -335,6 +335,8 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 							}
 							log.Debugf("[bias] job is already running")
 						}
+						prevSsModel[ns] = ssModel[ns]
+						prevPodModels[ns] = podModels[ns]
 					}
 				default:
 					// TODO: define error for return
