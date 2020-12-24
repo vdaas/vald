@@ -313,7 +313,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 						decreasedPodNames := r.isSsReplicaDecreased(psm, ssModel[ns], prevPodModels[ns], podModels[ns])
 						if len(decreasedPodNames) > 0 {
 							for _, name := range decreasedPodNames {
-								log.Debugf("[decrease] creating job for pod %s, len(jobModels): %d", name, len(jobModels[r.jobName]))
+								log.Debugf("[decrease] creating job for pod %s, len(jobModels): %d", name, len(jobModels[r.jobNamespace]))
 								if err := r.createJob(ctx, *jobTpl, DECREASE, name, ns); err != nil {
 									log.Errorf("failed to create job: %s", err)
 									continue
