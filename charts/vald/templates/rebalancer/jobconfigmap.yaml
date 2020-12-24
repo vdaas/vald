@@ -48,6 +48,6 @@ data:
                 - /bin/sh
                 - -c
                 - |
-                  sleep 90s;echo 'Hello world'
+                  sleep 300s;echo 'Hello world'
           restartPolicy: Never
 {{- end }}
