@@ -115,7 +115,7 @@ spec:
       {{- end }}
       {{- if .Values.backupManager.podPriority }}
       {{- if .Values.backupManager.podPriority.enabled }}
-      priorityClassName: {{ .Values.backupManager.name }}-priority
+      priorityClassName: {{ .Release.Namespace }}-{{ .Values.backupManager.name }}-priority
       {{- end }}
       {{- end }}
 status:

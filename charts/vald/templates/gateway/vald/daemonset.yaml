@@ -110,7 +110,7 @@ spec:
       {{- end }}
       {{- if .Values.gateway.podPriority }}
       {{- if .Values.gateway.podPriority.enabled }}
-      priorityClassName: {{ .Values.gateway.name }}-priority
+      priorityClassName: {{ .Release.Namespace }}-{{ .Values.gateway.name }}-priority
       {{- end }}
       {{- end }}
 status:
