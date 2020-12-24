@@ -272,7 +272,8 @@ clean:
 .PHONY: license
 ## add license to files
 license:
-	go run hack/license/gen/main.go ./
+	export GOPRIVATE=$(GOPRIVATE) \
+	&& go run hack/license/gen/main.go ./
 
 
 .PHONY: init
