@@ -27,6 +27,7 @@ import (
 	"github.com/vdaas/vald/hack/benchmark/internal/starter/agent/core/ngt"
 	"github.com/vdaas/vald/internal/client/v1/client/agent/core"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/grpc"
 )
 
 var (
@@ -49,9 +50,15 @@ func init() {
 
 func BenchmarkAgentNGT_gRPC_Sequential(b *testing.B) {
 	ctx := context.Background()
-	client, _ := core.New(
-		core.WithAddrs(grpcAddr),
-	)
+	client, err := core.New(
+		core.WithGRPCClient(
+			grpc.New(grpc.WithAddrs(grpcAddr),
+				grpc.WithInsecure(true))))
+	if err != nil {
+		b.Fatal(err)
+	}
+	client.Start(ctx)
+	defer client.Stop(ctx)
 	for _, name := range targets {
 		bench := e2e.New(
 			b,
@@ -78,9 +85,15 @@ func BenchmarkAgentNGT_gRPC_Sequential(b *testing.B) {
 
 func BenchmarkAgentNGT_gRPC_Stream(b *testing.B) {
 	ctx := context.Background()
-	client, _ := core.New(
-		core.WithAddrs(grpcAddr),
-	)
+	client, err := core.New(
+		core.WithGRPCClient(
+			grpc.New(grpc.WithAddrs(grpcAddr),
+				grpc.WithInsecure(true))))
+	if err != nil {
+		b.Fatal(err)
+	}
+	client.Start(ctx)
+	defer client.Stop(ctx)
 	for _, name := range targets {
 		bench := e2e.New(
 			b,

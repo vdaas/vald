@@ -50,7 +50,7 @@ func New(ctx context.Context, opts ...Option) (Client, error) {
 
 	c.c = grpc.New(c.opts...)
 
-	if err := c.c.Connect(ctx, c.addr); err != nil {
+	if _, err := c.c.Connect(ctx, c.addr); err != nil {
 		return nil, err
 	}
 

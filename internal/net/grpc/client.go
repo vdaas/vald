@@ -524,7 +524,7 @@ func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOpti
 			g.conns.Delete(addr)
 		}
 
-		log.Warnf("creating new connection pool for addr= %s", addr)
+		log.Warnf("creating new connection pool for addr = %s", addr)
 		opts := []pool.Option{
 			pool.WithAddr(addr),
 			pool.WithSize(g.poolSize),

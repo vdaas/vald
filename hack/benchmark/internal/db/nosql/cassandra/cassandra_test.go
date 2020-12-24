@@ -24,6 +24,7 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/db/nosql/cassandra"
+	"github.com/vdaas/vald/internal/log"
 )
 
 var (
@@ -65,6 +66,7 @@ type MetaVector struct {
 }
 
 func init() {
+	log.Init()
 	var err error
 	c, err = cassandra.New(
 		cassandra.WithHosts(

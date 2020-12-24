@@ -17,6 +17,12 @@
 // Package errors provides error types and function
 package errors
 
+import (
+	"github.com/vdaas/vald/apis/grpc/v1/errors"
+)
+
+type Errors_RPC = errors.Errors_RPC
+
 var (
 
 	// gRPC.

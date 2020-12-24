@@ -102,6 +102,7 @@ func New(ctx context.Context, opts ...Option) (c Conn, err error) {
 
 	conn, err := grpc.DialContext(ctx, p.addr, p.dopts...)
 	if err != nil {
+		log.Warn(err)
 		err = p.scanGRPCPort(ctx)
 		if err != nil {
 			return nil, err
