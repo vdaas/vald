@@ -73,7 +73,7 @@ func TestErrFileAlreadyExists(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns error when the file path is 'metadata.json'",
+			name: "return ErrFileAlreadyExists error with the file path is 'metadata.json'",
 			args: args{
 				path: "metadata.json",
 			},
