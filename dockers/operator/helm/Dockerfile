@@ -42,6 +42,9 @@ RUN { \
         echo "  chart: helm-charts/vald-helm-operator"; \
     } > /tmp/watches.yaml
 
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/apis/grpc/v1/errors
+COPY apis/grpc/v1/errors .
+
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal
 COPY internal .
 
