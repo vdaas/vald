@@ -41,7 +41,7 @@ type Data struct {
 	Client *config.GRPCClient `json:"client" yaml:"client"`
 
 	// BackupManager represent backup manager configuration
-	Backup *config.BackupManager `json:"backup" yaml:"backup"`
+	Backup *config.GRPCClient `json:"backup" yaml:"backup"`
 }
 
 func NewConfig(path string) (cfg *Data, err error) {

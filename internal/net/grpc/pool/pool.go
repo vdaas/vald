@@ -154,6 +154,7 @@ func (p *pool) Connect(ctx context.Context) (c Conn, err error) {
 			log.Debugf("establishing balanced connection to %s", addr)
 			conn, err := p.dial(ctx, addr)
 			if err != nil {
+				log.Debug(err)
 				continue
 			}
 			p.pool[i].Store(&poolConn{
@@ -262,16 +263,16 @@ func (p *pool) dial(ctx context.Context, addr string) (conn *ClientConn, err err
 			if err != nil {
 				if conn != nil {
 					err = errors.Wrap(conn.Close(), err.Error())
-					log.Debugf("failed to dial to %s: %s", addr, err)
 				}
+				log.Debugf("failed to dial grpc connection to %s: %s", addr, err)
 				retry++
 				return nil, err != nil, err
 			}
 			if !isHealthy(conn) {
 				if conn != nil {
 					err = errors.Wrap(conn.Close(), err.Error())
-					log.Debugf("connection for %s is unhealthy: %s", addr, err)
 				}
+				log.Debugf("connection for %s is unhealthy: %s", addr, err)
 				retry++
 				return nil, true, errors.ErrGRPCClientConnNotFound(addr)
 			}

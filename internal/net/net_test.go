@@ -854,7 +854,7 @@ func TestScanPorts(t *testing.T) {
 				end:   65535,
 			},
 			want: want{
-				err: errors.ErrNoPortAvailable,
+				err: errors.ErrNoPortAvailable("localhost", 65534, 65535),
 			},
 		},
 	}

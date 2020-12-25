@@ -32,5 +32,7 @@ var (
 	// net.
 
 	// ErrNoPortAvailiable defines no port available error.
-	ErrNoPortAvailable = New("no port available")
+	ErrNoPortAvailable = func(host string, start, end uint16) error {
+		return Errorf("no port available for Host: %s\tbetween %d ~ %d", host, start, end)
+	}
 )

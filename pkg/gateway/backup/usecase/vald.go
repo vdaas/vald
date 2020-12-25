@@ -49,14 +49,14 @@ type run struct {
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
 
-	if addrs := cfg.Backup.Client.Addrs; len(addrs) == 0 {
+	if addrs := cfg.Backup.Addrs; len(addrs) == 0 {
 		return nil, errors.ErrInvalidBackupConfig
 	}
 
 	backupClientOptions := append(
-		cfg.Backup.Client.Opts(),
+		cfg.Backup.Opts(),
 		grpc.WithErrGroup(eg),
-		grpc.WithAddrs(cfg.Backup.Client.Addrs...),
+		grpc.WithAddrs(cfg.Backup.Addrs...),
 	)
 
 	var obs observability.Observability
