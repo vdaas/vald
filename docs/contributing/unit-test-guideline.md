@@ -64,7 +64,7 @@ When the above function is given, we should create 2 tests to achieving 100% cod
   - `var val int32 = 1`
   
 It seems enough for the given function, but we have to take care of some test cases that are remaining for improving test coverage.
-In this case, there is one test case is remaining.
+In this case, there is at least one more test case to complete test coverage.
 
 - When val([]int32) is given
   - `var val []int32 = {1, 2}`
