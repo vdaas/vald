@@ -39,7 +39,7 @@ Before creating the unit tests, we must know the essentials of strategy.
 
 #### Basic
 
-It is not perfect, but we should try to cover all codes at first.
+It is not perfect to improve test coverage, but we should try to cover all codes at first.
 To cover all code, the basic way is to create test cases to complete all branches in the target unit.
 
 Let's see the below function.
