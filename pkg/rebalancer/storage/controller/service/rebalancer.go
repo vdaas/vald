@@ -105,7 +105,7 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 			log.Error(err)
 		}),
 		job.WithOnReconcileFunc(func(jobList map[string][]job.Job) {
-			// log.Debugf("[reconcile Job] JobList: %#v", jobList)
+			log.Debugf("[reconcile Job] length Joblist: %d", len(jobList))
 			jobs, ok := jobList[r.jobName]
 			if ok {
 				r.jobs.Store(jobs)
@@ -156,6 +156,7 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 				log.Error(err)
 			}),
 			statefulset.WithOnReconcileFunc(func(statefulSetList map[string][]statefulset.StatefulSet) {
+				log.Debugf("[reconcile StatefulSet] length StatefulSet[%s]: %d", r.agentName, len(statefulSetList))
 				sss, ok := statefulSetList[r.agentName]
 				if ok {
 					if len(sss) == 1 {
@@ -193,6 +194,7 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 				log.Error(err)
 			}),
 			pod.WithOnReconcileFunc(func(podList map[string][]pod.Pod) {
+				log.Debugf("[reconcile pod] length podList[%s]: %d", r.agentName, len(podList[r.agentName]))
 				pods, ok := podList[r.agentName]
 				if ok {
 					r.pods.Store(pods)
@@ -415,7 +417,6 @@ func (r *rebalancer) genPodModels() (podModels map[string][]*model.Pod, err erro
 		if _, ok := podModels[p.Namespace]; !ok {
 			podModels[p.Namespace] = make([]*model.Pod, 0)
 		}
-		log.Debugf("%s limit: %#v, metrics: %#v", p.Name, p.MemLimit, mpods[p.Name])
 		if mpod, ok := mpods[p.Name]; ok {
 			podModels[p.Namespace] = append(podModels[p.Namespace], &model.Pod{
 				Name:        p.Name,
@@ -476,9 +477,6 @@ func (r *rebalancer) genJobTpl() (jobTpl *job.Job, err error) {
 }
 
 func (r *rebalancer) isSsReplicaDecreased(psm, sm *model.StatefulSet, ppm, pm []*model.Pod) (podNames []string) {
-	log.Debugf("[Ss checking] prevDesired: %d, currentDesired: %d", *psm.DesiredReplicas, *sm.DesiredReplicas)
-	log.Debugf("[Ss checking] prevPods: %#v", ppm)
-	log.Debugf("[Ss checking] currentPods: %#v", pm)
 	if *psm.DesiredReplicas > *sm.DesiredReplicas {
 		podNames = make([]string, 0)
 		for _, prevPod := range ppm {
