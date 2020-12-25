@@ -75,7 +75,7 @@ Therefore, we should consider all cases to improve test coverage for the target 
 To improve test coverage, the basic but critical thinking way is thinking about input patterns.
 It is not only a single input, but also multi inputs.
 
-If a function or method requires multi-input, we should try to create many test cases.
+If a function or method accept multiple inputs, we should try to create test cases to cover all the inputs.
 
 (Note: The below `calcSum()` is diffrent function from `calsSum(val ...int32)` which we mention before.)
 
