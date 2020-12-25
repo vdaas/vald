@@ -133,7 +133,7 @@ When the above function is given as target, the minimum number of tests based on
   - the input `val` cases: 19, 20, 21, 30, 64, 65, 66
   
 The robust boundary test requires 6N+1 test cases (N is the number of inputs for target function).
-More increasing the required input, more increasing the minimum number of cases.
+Increasing the input arguments will also increase the number of required test cases.
 Sometimes, it requires a lot of resources to create/maintain test.
 So, you may test the critical cases using boundary value and have a sense of purpose.
 
