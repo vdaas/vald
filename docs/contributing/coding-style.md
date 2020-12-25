@@ -789,7 +789,7 @@ tests := map[string]func(t *testing.T) test {
         - Start with `success` or `{verb} success` or `success {verb}`
         - End with the condition `when {condition}` or `with {condition}
         - e.g.: `set success when the value is default value`
-    - Fail:
+    - Fail/Error cases:
         - Start with `fail` or `{verb} fail` or `fail {verb}`
         - End with the condition `when {condition}` or `with {condition}
         - e.g.: `fail option setting when value is invalid value(string)`
