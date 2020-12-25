@@ -110,7 +110,7 @@ When `calcAverageDiff()` is given, the test patterns are below:
 At a glance, one of the last 2 patterns is enough, but these will help us to notice the bug in dependency.
 It will avoid the unexpected error due to update dependencies.
 
-You should create unit tests for error patterns as same as successive patterns.
+You have to create unit tests for error patterns as the same as success patterns.
 
 #### Advanced
 
