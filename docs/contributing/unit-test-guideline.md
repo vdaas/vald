@@ -116,7 +116,7 @@ You should create unit tests for error patterns as same as successive patterns.
 
 ##### Robust boudary test
 
-The previous section is about a basic test case.
+The previous section is about the basic test cases.
 To cover more test coverage, the (robust) boundary test should be applied.
 A boundary test is testing values on or near the boundaries of allowed inputs.
 
