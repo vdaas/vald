@@ -170,12 +170,26 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 		n.core, err = core.New(opts...)
 		return err
 	}
+	if os.IsPermission(err) {
+		log.Debugf("no permission for index path,\tpath: %s,\terr: %v", n.path, err)
+		return err
+	}
 
 	log.Debugf("load index from %s", n.path)
 
 	agentMetadata, err := metadata.Load(filepath.Join(n.path, metadata.AgentMetadataFileName))
 	if err != nil {
 		log.Warnf("cannot read metadata from %s: %s", metadata.AgentMetadataFileName, err)
+
+		if _, err = os.Stat(filepath.Join(n.path, kvsFileName)); os.IsNotExist(err) {
+			log.Warn("kvsdb file is not exist")
+			n.core, err = core.New(opts...)
+			return err
+		}
+		if os.IsPermission(err) {
+			log.Debugf("no permission for kvsdb file,\tpath: %s,\terr: %v", filepath.Join(n.path, kvsFileName), err)
+			return err
+		}
 	}
 
 	var timeout time.Duration
@@ -191,7 +205,7 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 			),
 		)
 	} else {
-		log.Debugf("cannot inspect the backup index size. starting to load.")
+		log.Debugf("cannot inspect the backup index size. starting to load default value.")
 		timeout = time.Duration(math.Min(float64(n.minLit), float64(n.maxLit)))
 	}
 
@@ -270,6 +284,7 @@ func (n *ngt) loadKVS() error {
 	m := make(map[string]uint32)
 	err = gob.NewDecoder(f).Decode(&m)
 	if err != nil {
+		log.Errorf("error decoding kvsdb file,\terr: %v", err)
 		return err
 	}
 
