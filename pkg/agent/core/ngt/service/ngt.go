@@ -181,17 +181,13 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 	if err != nil || agentMetadata == nil || agentMetadata.NGT == nil || agentMetadata.NGT.IndexCount == 0 {
 		log.Warnf("cannot read metadata from %s: %v", metadata.AgentMetadataFileName, err)
 
-		log.Debugf("[1]agent metadata= %#v", agentMetadata)
 		if os.IsNotExist(err) || agentMetadata == nil || agentMetadata.NGT == nil || agentMetadata.NGT.IndexCount == 0 {
-			log.Debugf("[2]agent metadata= %#v", agentMetadata)
-
 			var fi os.FileInfo
 			if fi, err = os.Stat(filepath.Join(n.path, kvsFileName)); os.IsNotExist(err) || fi.Size() == 0 {
 				log.Warn("kvsdb file is not exist")
 				n.core, err = core.New(opts...)
 				return err
 			}
-			log.Debugf("file info= %#v", fi)
 
 			if os.IsPermission(err) {
 				log.Debugf("no permission for kvsdb file,\tpath: %s,\terr: %v", filepath.Join(n.path, kvsFileName), err)

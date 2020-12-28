@@ -30,6 +30,7 @@ import (
 	"unsafe"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 )
 
 type (
@@ -220,6 +221,7 @@ func (n *ngt) loadOptions(opts ...Option) (err error) {
 
 func (n *ngt) create() (err error) {
 	if fileExists(n.idxPath) {
+		log.Infof("index path exists, will remove the directory. path: %s", n.idxPath)
 		if err = os.RemoveAll(n.idxPath); err != nil {
 			return err
 		}
