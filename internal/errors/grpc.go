@@ -52,6 +52,6 @@ var (
 		return Wrapf(err, "addr: %s", addr)
 	}
 
-	// ErrGRPCTargetAddrNotFound represents an error that the gRPC connection target couldn't find.
+	// ErrGRPCTargetAddrNotFound represents an error that the gRPC target address couldn't find.
 	ErrGRPCTargetAddrNotFound = New("grpc connection target not found")
 )
