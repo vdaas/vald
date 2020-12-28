@@ -778,7 +778,7 @@ tests := map[string]func(t *testing.T) test {
     }
     ```
 
-#### Input agreement
+#### Inputs
 
 1. test case name
 
