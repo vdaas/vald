@@ -39,6 +39,9 @@ type NGT struct {
 }
 
 func Load(path string) (*Metadata, error) {
+	if _, err := os.Stat(path); err != nil {
+		return nil, err
+	}
 	f, err := file.Open(path, os.O_RDONLY|os.O_SYNC, os.ModePerm)
 	if err != nil {
 		return nil, err
