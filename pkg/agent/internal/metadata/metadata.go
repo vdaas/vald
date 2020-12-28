@@ -59,7 +59,7 @@ func Load(path string) (meta *Metadata, err error) {
 		return nil, err
 	}
 
-	return &meta, nil
+	return meta, nil
 }
 
 func Store(path string, meta *Metadata) error {
