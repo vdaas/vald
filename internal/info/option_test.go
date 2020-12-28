@@ -53,7 +53,7 @@ func TestWithServerName(t *testing.T) {
 			},
 		},
 		{
-			name: "return error when server name is empty",
+			name: "return ErrInvalidOption error when server name is empty",
 			args: args{
 				s: "",
 			},
@@ -147,7 +147,7 @@ func TestWithRuntimeCaller(t *testing.T) {
 			}
 		}(),
 		{
-			name: "return error when func is nil",
+			name: "return ErrInvalidOption error when func is nil",
 			args: args{
 				f: nil,
 			},
@@ -241,7 +241,7 @@ func TestWithRuntimeFuncForPC(t *testing.T) {
 			}
 		}(),
 		{
-			name: "return error when func is nil",
+			name: "return ErrInvalidOption error when func is nil",
 			args: args{
 				f: nil,
 			},

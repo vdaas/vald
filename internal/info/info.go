@@ -30,7 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 )
 
-// Info represents the runtime information provider.
+// Info represents an interface to get the runtime information.
 type Info interface {
 	String() string
 	Get() Detail
@@ -101,7 +101,7 @@ func Init(name string) error {
 	return nil
 }
 
-// New initialize and return the information provider or any error occurred.
+// New initializes and returns the info object or any error occurred.
 func New(opts ...Option) (Info, error) {
 	i := &info{
 		detail: Detail{
