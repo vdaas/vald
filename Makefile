@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +14,9 @@
 # limitations under the License.
 #
 
-REPO                           ?= vdaas
+ORG                             ?= vdaas
 NAME                            = vald
-GOPKG                           = github.com/$(REPO)/$(NAME)
+GOPKG                           = github.com/$(ORG)/$(NAME)
 DATETIME                        = $(eval DATETIME := $(shell date -u +%Y/%m/%d_%H:%M:%S%z))$(DATETIME)
 TAG                            ?= latest
 BASE_IMAGE                      = $(NAME)-base
@@ -34,6 +34,7 @@ CI_CONTAINER_IMAGE              = $(NAME)-ci-container
 DEV_CONTAINER_IMAGE             = $(NAME)-dev-container
 HELM_OPERATOR_IMAGE             = $(NAME)-helm-operator
 LOADTEST_IMAGE                  = $(NAME)-loadtest
+MAINTAINER                      = "$(ORG).org $(NAME) team <$(NAME)@$(ORG).org>"
 
 VERSION := $(eval VALD_VERSION := $(shell cat versions/VALD_VERSION))$(VALD_VERSION)
 
@@ -211,6 +212,11 @@ SHELL = bash
 
 include Makefile.d/functions.mk
 
+.PHONY: maintainer
+## print maintainer
+maintainer:
+	@echo $(MAINTAINER)
+
 .PHONY: help
 ## print all available commands
 help:
@@ -252,6 +258,7 @@ clean:
 .PHONY: license
 ## add license to files
 license:
+	MAINTAINER=$(MAINTAINER) \
 	go run hack/license/gen/main.go ./
 
 .PHONY: init
