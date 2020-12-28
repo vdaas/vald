@@ -1,6 +1,9 @@
 package errors
 
-import "testing"
+import (
+	"math"
+	"testing"
+)
 
 func TestErrgRPCClientConnectionClose(t *testing.T) {
 	type args struct {
@@ -80,6 +83,107 @@ func TestErrgRPCClientConnectionClose(t *testing.T) {
 			}
 
 			got := ErrgRPCClientConnectionClose(test.args.name, test.args.err)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestErrInvalidGRPCPort(t *testing.T) {
+	type args struct {
+		addr string
+		host string
+		port uint16
+	}
+	type want struct {
+		want error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got error) error {
+		if !Is(got, w.want) {
+			return Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "return ErrInvalidGRPCPort error when addr is '127.0.0.1' and host is 'gateway.default.svc.cluster.local' and port is '8080'",
+			args: args{
+				addr: "127.0.0.1",
+				host: "gateway.default.svc.cluster.local",
+				port: 8080,
+			},
+			want: want{
+				want: New("invalid gRPC client connection port to addr: 127.0.0.1,\thost: gateway.default.svc.cluster.local\t port: 8080"),
+			},
+		},
+		{
+			name: "return ErrInvalidGRPCPort error when addr is empty and host is 'gateway.default.svc.cluster.local' and port is '8080'",
+			args: args{
+				addr: "",
+				host: "gateway.default.svc.cluster.local",
+				port: 8080,
+			},
+			want: want{
+				want: New("invalid gRPC client connection port to addr: ,\thost: gateway.default.svc.cluster.local\t port: 8080"),
+			},
+		},
+		{
+			name: "return ErrInvalidGRPCPort error when addr is '127.0.0.1' and host is empty and port is '8080'",
+			args: args{
+				addr: "127.0.0.1",
+				host: "",
+				port: 8080,
+			},
+			want: want{
+				want: New("invalid gRPC client connection port to addr: 127.0.0.1,\thost: \t port: 8080"),
+			},
+		},
+		{
+			name: "return ErrInvalidGRPCPort error when addr is '127.0.0.1' and host is 'gateway.default.svc.cluster.local' and port is '0'",
+			args: args{
+				addr: "127.0.0.1",
+				host: "gateway.default.svc.cluster.local",
+				port: 0,
+			},
+			want: want{
+				want: New("invalid gRPC client connection port to addr: 127.0.0.1,\thost: gateway.default.svc.cluster.local\t port: 0"),
+			},
+		},
+		{
+			name: "return ErrInvalidGRPCPort error when addr is '127.0.0.1' and host is 'gateway.default.svc.cluster.local' and port is maximum value of uint16",
+			args: args{
+				addr: "127.0.0.1",
+				host: "gateway.default.svc.cluster.local",
+				port: math.MaxUint16,
+			},
+			want: want{
+				want: Errorf("invalid gRPC client connection port to addr: 127.0.0.1,\thost: gateway.default.svc.cluster.local\t port: %d", math.MaxUint16),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := ErrInvalidGRPCPort(test.args.addr, test.args.host, test.args.port)
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
