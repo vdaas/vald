@@ -68,6 +68,12 @@ In this case, there is at least one more test case to complete test coverage.
 
 - When val([]int32) is given
   - `var val []int32 = {1, 2}`
+  - `var val []int32 = {math.MaxInt32, -1}`
+  - `var val []int32 = {math.MaxInt32, 0}`
+  - `var val []int32 = {math.MaxInt32, 1}`
+  - `var val []int32 = {math.MinInt32, -1}`
+  - `var val []int32 = {math.MinInt32, 0}`
+  - `var val []int32 = {math.MinInt32, -1}`
   
 That is the focus on test coverage.
 
