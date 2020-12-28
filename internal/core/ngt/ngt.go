@@ -220,7 +220,7 @@ func (n *ngt) loadOptions(opts ...Option) (err error) {
 
 func (n *ngt) create() (err error) {
 	if fileExists(n.idxPath) {
-		if err = os.Remove(n.idxPath); err != nil {
+		if err = os.RemoveAll(n.idxPath); err != nil {
 			return err
 		}
 	}
