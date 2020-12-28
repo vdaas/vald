@@ -186,7 +186,7 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 			log.Debugf("[2]agent metadata= %#v", agentMetadata)
 
 			var fi os.FileInfo
-			if fi, err = os.Stat(filepath.Join(n.path, kvsFileName)); os.IsNotExist(err) {
+			if fi, err = os.Stat(filepath.Join(n.path, kvsFileName)); os.IsNotExist(err) || fi.Size() == 0 {
 				log.Warn("kvsdb file is not exist")
 				n.core, err = core.New(opts...)
 				return err
