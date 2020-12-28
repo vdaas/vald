@@ -34,7 +34,7 @@ var (
 		return Errorf("invalid gRPC client connection to %s", addr)
 	}
 
-	// ErrGRPCLookupIPAddrNotFound represents a function to generate an error that the vald internal gRPC client couldn't find ip address.
+	// ErrGRPCLookupIPAddrNotFound represents a function to generate an error that the vald internal gRPC client couldn't find IP address.
 	ErrGRPCLookupIPAddrNotFound = func(host string) error {
 		return Errorf("vald internal gRPC client could not find ip addrs for %s", host)
 	}
