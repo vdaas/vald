@@ -45,8 +45,15 @@ data:
       host: {{ $backup.name }}.{{ .Release.Namespace }}.svc.cluster.local
       port: {{ default .Values.defaults.server_config.servers.grpc.port $backup.server_config.servers.grpc.port }}
       client:
-        {{- $backupClient := dict "Values" $compressor.backup.client "default" .Values.defaults.grpc.client }}
-        {{- include "vald.grpc.client" $backupClient | nindent 8 }}
+        {{- $backupClient := $compressor.backup.client }}
+        {{- $backupServerPort := $backup.server_config.servers.grpc.port }}
+        {{- $defaultBackupHost := printf "%s.%s.svc.cluster.local" $backup.name .Release.Namespace }}
+        {{- $defaultBackupPort := default .Values.defaults.server_config.servers.grpc.port $backupServerPort }}
+        {{- $defaultBackupAddr := printf "%s:%d" $defaultBackupHost (int64 $defaultBackupPort) }}
+        {{- $backupAddrs := dict "Values" $backupClient.addrs "default" $defaultBackupAddr }}
+        {{- include "vald.grpc.client.addrs" $backupAddrs | nindent 8 }}
+        {{- $backupGRPCclient := dict "Values" $backupClient "default" .Values.defaults.grpc.client }}
+        {{- include "vald.grpc.client" $backupGRPCclient | nindent 8 }}
     compressor:
       compress_algorithm: {{ $compressor.compress.compress_algorithm | quote }}
       compression_level: {{ $compressor.compress.compression_level }}
@@ -56,9 +63,14 @@ data:
       concurrent_limit: {{ $compressor.registerer.concurrent_limit }}
       queue_check_duration: {{ $compressor.registerer.queue_check_duration }}
       compressor:
-        host: {{ $compressor.name }}.{{ .Release.Namespace }}.svc.cluster.local
-        port: {{ default .Values.defaults.server_config.servers.grpc.port $compressor.server_config.servers.grpc.port }}
         client:
-          {{- $compressorClient := dict "Values" $compressor.registerer.compressor.client "default" .Values.defaults.grpc.client }}
-          {{- include "vald.grpc.client" $compressorClient | nindent 12 }}
+          {{- $compressorClient := $compressor.registerer.compressor.client }}
+          {{- $compressorServerPort := $compressor.server_config.servers.grpc.port }}
+          {{- $defaultCompressorHost := printf "%s.%s.svc.cluster.local" $compressor.name .Release.Namespace }}
+          {{- $defaultCompressorPort := default .Values.defaults.server_config.servers.grpc.port $compressorServerPort }}
+          {{- $defaultCompressorAddr := printf "%s:%d" $defaultCompressorHost (int64 $defaultCompressorPort) }}
+          {{- $compressorAddrs := dict "Values" $compressorClient.addrs "default" $defaultCompressorAddr }}
+          {{- include "vald.grpc.client.addrs" $compressorAddrs | nindent 8 }}
+          {{- $compressorGRPCclient := dict "Values" $compressorClient "default" .Values.defaults.grpc.client }}
+          {{- include "vald.grpc.client" $compressorGRPCclient | nindent 8 }}
 {{- end }}

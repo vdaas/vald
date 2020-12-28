@@ -52,7 +52,6 @@ type client struct {
 	opts         []grpc.Option
 	port         int
 	addrs        atomic.Value
-	dscAddr      string
 	dscClient    grpc.Client
 	dscDur       time.Duration
 	eg           errgroup.Group
@@ -202,7 +201,7 @@ func (c *client) disconnect(ctx context.Context, addr string) (err error) {
 
 func (c *client) dnsDiscovery(ctx context.Context, ech chan<- error) (addrs []string, err error) {
 	ips, err := net.DefaultResolver.LookupIPAddr(ctx, c.dns)
-	if err != nil {
+	if err != nil || len(ips) == 0 {
 		return nil, errors.ErrAddrCouldNotDiscover(err, c.dns)
 	}
 	addrs = make([]string, 0, len(ips))

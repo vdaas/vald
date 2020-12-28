@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 {{- $gateway := .Values.gateway.backup -}}
+{{- $lb := .Values.gateway.lb -}}
+{{- $backup := .Values.manager.compressor -}}
 {{- if $gateway.enabled }}
 apiVersion: v1
 kind: ConfigMap
@@ -41,12 +43,23 @@ data:
       {{- $observability := dict "Values" $gateway.observability "default" .Values.defaults.observability }}
       {{- include "vald.observability" $observability | nindent 6 }}
     client:
-      {{- $client := dict "Values" $gateway.gateway_config.client "default" .Values.defaults.grpc.client }}
-      {{- include "vald.grpc.client" $client | nindent 6 }}
+      {{- $nextGatewayClient := $gateway.gateway_config.gateway_client }}
+      {{- $lbServerPort := $lb.server_config.servers.grpc.port }}
+      {{- $defaultLBHost := printf "%s.%s.svc.cluster.local" $lb.name .Release.Namespace }}
+      {{- $defaultLBPort := default .Values.defaults.server_config.servers.grpc.port $lbServerPort }}
+      {{- $defaultLBAddr := printf "%s:%d" $defaultLBHost (int64 $defaultLBPort) }}
+      {{- $lbAddrs := dict "Values" $nextGatewayClient.addrs "default" $defaultLBAddr }}
+      {{- include "vald.grpc.client.addrs" $lbAddrs | nindent 6 }}
+      {{- $lbGRPCclient := dict "Values" $nextGatewayClient "default" .Values.defaults.grpc.client }}
+      {{- include "vald.grpc.client" $lbGRPCclient | nindent 6 }}
     backup:
-      host: {{ .Values.manager.compressor.name }}.{{ .Release.Namespace }}.svc.cluster.local
-      port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.manager.compressor.server_config.servers.grpc.port }}
-      client:
-        {{- $backupClient := dict "Values" $gateway.gateway_config.backup.client "default" .Values.defaults.grpc.client }}
-        {{- include "vald.grpc.client" $backupClient | nindent 8 }}
+      {{- $compressorClient := $gateway.gateway_config.backup_client }}
+      {{- $compressorServerPort := $backup.server_config.servers.grpc.port }}
+      {{- $defaultCompressorHost := printf "%s.%s.svc.cluster.local" $backup.name .Release.Namespace }}
+      {{- $defaultCompressorPort := default .Values.defaults.server_config.servers.grpc.port $compressorServerPort }}
+      {{- $defaultCompressorAddr := printf "%s:%d" $defaultCompressorHost (int64 $defaultCompressorPort) }}
+      {{- $compressorAddrs := dict "Values" $compressorClient.addrs "default" $defaultCompressorAddr }}
+      {{- include "vald.grpc.client.addrs" $compressorAddrs | nindent 6 }}
+      {{- $compressorGRPCclient := dict "Values" $compressorClient "default" .Values.defaults.grpc.client }}
+      {{- include "vald.grpc.client" $compressorGRPCclient | nindent 6 }}
 {{- end }}

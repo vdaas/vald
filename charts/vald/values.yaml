@@ -1252,16 +1252,12 @@ gateway:
         memory: 700Mi
     # @schema {"name": "gateway.backup.gateway_config", "type": "object"}
     gateway_config:
-      # @schema {"name": "gateway.backup.gateway_config.client", "alias": "grpc.client"}
-      # gateway.backup.gateway_config.client -- gRPC client for next gateway (overrides defaults.grpc.client)
-      client:
-        addrs:
-          - "vald-lb-gateway.vald.svc.cluster.local"
-      # @schema {"name": "gateway.backup.gateway_config.backup", "type": "object"}
-      backup:
-        # @schema {"name": "gateway.backup.gateway_config.backup.client", "alias": "grpc.client"}
-        # gateway.backup.gateway_config.backup.client -- gRPC client for backup (overrides defaults.grpc.client)
-        client: {}
+      # @schema {"name": "gateway.backup.gateway_config.gateway_client", "alias": "grpc.client"}
+      # gateway.backup.gateway_config.gateway_client -- gRPC client for next gateway (overrides defaults.grpc.client)
+      gateway_client: {}
+      # @schema {"name": "gateway.backup.gateway_config.backup_client", "alias": "grpc.client"}
+      # gateway.backup.gateway_config.backup_client -- gRPC client for backup manager (overrides defaults.grpc.client)
+      backup_client: {}
   # @schema {"name": "gateway.lb", "type": "object"}
   lb:
     # @schema {"name": "gateway.lb.enabled", "type": "boolean"}
@@ -1718,11 +1714,9 @@ gateway:
         memory: 700Mi
     # @schema {"name": "gateway.meta.gateway_config", "type": "object"}
     gateway_config:
-      # @schema {"name": "gateway.meta.gateway_config.client", "alias": "grpc.client"}
-      # gateway.meta.gateway_config.client -- gRPC client for next gateway (overrides defaults.grpc.client)
-      client:
-        addrs:
-          - "vald-backup-gateway.vald.svc.cluster.local"
+      # @schema {"name": "gateway.meta.gateway_config.gateway_client", "alias": "grpc.client"}
+      # gateway.meta.gateway_config.gateway_client -- gRPC client for next gateway (overrides defaults.grpc.client)
+      gateway_client: {}
       # @schema {"name": "gateway.meta.gateway_config.meta", "type": "object"}
       meta:
         # @schema {"name": "gateway.meta.gateway_config.meta.client", "alias": "grpc.client"}
@@ -2502,7 +2496,6 @@ discoverer:
 
 # @schema {"name": "manager", "type": "object"}
 manager:
-
   # @schema {"name": "manager.compressor", "type": "object"}
   compressor:
     # @schema {"name": "manager.compressor.enabled", "type": "boolean"}

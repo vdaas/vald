@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 {{- $index := .Values.manager.index -}}
+{{- $discoverer := .Values.discoverer -}}
+{{- $agent := .Values.agent -}}
 {{- if $index.enabled }}
 apiVersion: v1
 kind: ConfigMap
@@ -41,21 +43,33 @@ data:
       {{- $observability := dict "Values" $index.observability "default" .Values.defaults.observability }}
       {{- include "vald.observability" $observability | nindent 6 }}
     indexer:
-      agent_port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.agent.server_config.servers.grpc.port }}
-      agent_name: {{ .Values.agent.name | quote }}
-      agent_dns: {{ .Values.agent.name }}.{{ .Release.Namespace }}.svc.cluster.local
+      agent_port: {{ default .Values.defaults.server_config.servers.grpc.port $agent.server_config.servers.grpc.port }}
+      agent_name: {{ $agent.name | quote }}
+      agent_dns: {{ $agent.name }}.{{ .Release.Namespace }}.svc.cluster.local
       agent_namespace: {{ $index.indexer.agent_namespace | quote }}
       node_name: {{ $index.indexer.node_name | quote }}
       discoverer:
-        host: {{ .Values.discoverer.name }}.{{ .Release.Namespace }}.svc.cluster.local
-        port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.discoverer.server_config.servers.grpc.port }}
         duration: {{ $index.indexer.discoverer.duration }}
         discover_client:
-          {{- $discoverClient := dict "Values" $index.indexer.discoverer.discover_client "default" .Values.defaults.grpc.client }}
-          {{- include "vald.grpc.client" $discoverClient | nindent 10 }}
+          {{- $discovererClient := $index.indexer.discoverer.discover_client }}
+          {{- $discovererServerPort := $discoverer.server_config.servers.grpc.port }}
+          {{- $defaultDiscovererHost := printf "%s.%s.svc.cluster.local" $discoverer.name .Release.Namespace }}
+          {{- $defaultDiscovererPort := default .Values.defaults.server_config.servers.grpc.port $discovererServerPort }}
+          {{- $defaultDiscovererAddr := printf "%s:%d" $defaultDiscovererHost (int64 $defaultDiscovererPort) }}
+          {{- $discovererAddrs := dict "Values" $discovererClient.addrs "default" $defaultDiscovererAddr }}
+          {{- include "vald.grpc.client.addrs" $discovererAddrs | nindent 10 }}
+          {{- $discovererGRPCclient := dict "Values" $discovererClient "default" .Values.defaults.grpc.client }}
+          {{- include "vald.grpc.client" $discovererGRPCclient | nindent 10 }}
         agent_client:
-          {{- $agentClient := dict "Values" $index.indexer.discoverer.agent_client "default" .Values.defaults.grpc.client }}
-          {{- include "vald.grpc.client" $agentClient | nindent 10 }}
+          {{- $agentClient := $index.indexer.discoverer.agent_client }}
+          {{- $agentServerPort := $agent.server_config.servers.grpc.port }}
+          {{- $defaultAgentHost :=  printf "%s.%s.svc.cluster.local" $agent.name .Release.Namespace }}
+          {{- $defaultAgentPort := default .Values.defaults.server_config.servers.grpc.port $agentServerPort }}
+          {{- $defaultAgentAddr := printf "%s:%d" $defaultAgentHost (int64 $defaultAgentPort) }}
+          {{- $agentAddrs := dict "Values" $agentClient.addrs "default" $defaultAgentAddr }}
+          {{- include "vald.grpc.client.addrs" $agentAddrs | nindent 10 }}
+          {{- $agentGRPCclient := dict "Values" $agentClient "default" .Values.defaults.grpc.client }}
+          {{- include "vald.grpc.client" $agentGRPCclient | nindent 10 }}
       concurrency: {{ $index.indexer.concurrency }}
       auto_index_duration_limit: {{ $index.indexer.auto_index_duration_limit }}
       auto_index_check_duration: {{ $index.indexer.auto_index_check_duration }}

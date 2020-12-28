@@ -72,10 +72,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		discoverer.WithPort(cfg.Indexer.AgentPort),
 		discoverer.WithServiceDNSARecord(cfg.Indexer.AgentDNS),
 		discoverer.WithDiscovererClient(grpc.New(discovererClientOptions...)),
-		discoverer.WithDiscovererHostPort(
-			cfg.Indexer.Discoverer.Host,
-			cfg.Indexer.Discoverer.Port,
-		),
 		discoverer.WithDiscoverDuration(cfg.Indexer.Discoverer.Duration),
 		discoverer.WithOptions(cfg.Indexer.Discoverer.AgentClient.Opts()...),
 		discoverer.WithNodeName(cfg.Indexer.NodeName),

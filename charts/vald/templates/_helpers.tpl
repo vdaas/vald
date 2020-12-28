@@ -441,18 +441,24 @@ tls:
 {{- end -}}
 
 {{/*
+gRPC client addr configuration
+*/}}
+{{- define "vald.grpc.client.addrs" -}}
+{{- if .Values -}}
+addrs:
+  {{- toYaml .Values | nindent 2 }}
+{{- else if .default -}}
+addrs:
+  {{- toYaml .default | nindent 2 }}
+{{- else -}}
+addrs: []
+{{- end -}}
+{{- end -}}
+
+{{/*
 gRPC client configuration
 */}}
 {{- define "vald.grpc.client" -}}
-{{- if .Values.addrs }}
-addrs:
-  {{- toYaml .Values.addrs | nindent 2 }}
-{{- else if .default.addrs }}
-addrs:
-  {{- toYaml .default.addrs | nindent 2 }}
-{{- else -}}
-addrs: []
-{{- end }}
 health_check_duration: {{ default .default.health_check_duration .Values.health_check_duration | quote }}
 connection_pool:
   {{- if .Values.connection_pool }}
