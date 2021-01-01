@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import (
 
 var (
 	apache = template.Must(template.New("Apache License").Parse(`{{.Escape}}
-{{.Escape}} Copyright (C) 2019-{{.Year}} {{.NickName}} ({{.FullName}})
+{{.Escape}} Copyright (C) 2019-{{.Year}} {{.Maintainer}}
 {{.Escape}}
 {{.Escape}} Licensed under the Apache License, Version 2.0 (the "License");
 {{.Escape}} you may not use this file except in compliance with the License.
@@ -55,11 +55,14 @@ var (
 
 type Data struct {
 	Escape   string
-	NickName string
-	FullName string
+	Maintainer string
 	Year     int
 }
 
+const (
+	defaultMaintainer     = "vdaas.org vald team <vald@vdaas.org>"
+	maintainerKey         = "MAINTAINER"
+)
 func main() {
 	if len(os.Args) < 2 {
 		log.Fatal(errors.New("invalid argument"))
@@ -72,6 +75,7 @@ func main() {
 		}
 	}
 }
+
 func dirwalk(dir string) []string {
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
@@ -90,6 +94,7 @@ func dirwalk(dir string) []string {
 		switch filepath.Ext(file.Name()) {
 		case
 			".ai",
+			".all-contributorsrc",
 			".cfg",
 			".crt",
 			".default",
@@ -145,6 +150,7 @@ func dirwalk(dir string) []string {
 	}
 	return paths
 }
+
 func readAndRewrite(path string) error {
 	f, err := os.Open(path)
 	if err != nil {
@@ -159,9 +165,12 @@ func readAndRewrite(path string) error {
 		return errors.Errorf("filepath %s, could not open", path)
 	}
 	buf := bytes.NewBuffer(make([]byte, 0, fi.Size()))
+	maintainer := os.Getenv(maintainerKey)
+	if len(maintainer) == 0 {
+		maintainer = defaultMaintainer
+	}
 	d := Data{
-		NickName: "Vdaas.org Vald team",
-		FullName: " kpango, rinx, kmrmt ",
+		Maintainer: maintainer,
 		Year:     time.Now().Year(),
 		Escape:   sharpEscape,
 	}
@@ -450,7 +459,7 @@ var (
       same "printed page" as the copyright notice for easier
       identification within third-party archives.
 
-   Copyright (C) 2019-{{.Year}} {{.NickName}} ({{.FullName}})
+   Copyright (C) 2019-{{.Year}} {{.Maintainer}}
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

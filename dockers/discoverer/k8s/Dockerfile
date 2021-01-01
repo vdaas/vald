@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ ARG BASE_TAG=latest
 ARG DISTROLESS_IMAGE=gcr.io/distroless/static
 ARG DISTROLESS_IMAGE_TAG=nonroot
 ARG UPX_OPTIONS=-9
+ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>
 
 FROM golang:${GO_VERSION} AS golang
 
@@ -58,7 +59,7 @@ RUN make REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
     && upx ${UPX_OPTIONS} -o "/usr/bin/${APP_NAME}" "cmd/${PKG}/${APP_NAME}"
 
 FROM ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
-LABEL maintainer "Vald team <vald@vdaas.org>"
+LABEL maintainer "${MAINTAINER}"
 
 ENV APP_NAME discoverer
 

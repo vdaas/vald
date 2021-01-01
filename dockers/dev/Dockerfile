@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,10 +15,12 @@
 #
 
 ARG BASE_TAG=latest
+ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>
 
 FROM vdaas/vald-ci-container:${BASE_TAG} AS vald
 
 FROM mcr.microsoft.com/vscode/devcontainers/go:1 AS base
+LABEL maintainer "${MAINTAINER}"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
