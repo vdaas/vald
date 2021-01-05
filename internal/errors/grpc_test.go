@@ -49,7 +49,7 @@ func TestErrGRPCClientConnectionClose(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrGRPCClientConnectionClose error when err is nil error and name is 'gateway'",
+			name: "return ErrGRPCClientConnectionClose error when err is nil and name is 'gateway'",
 			args: args{
 				err:  nil,
 				name: "gateway",
@@ -59,7 +59,7 @@ func TestErrGRPCClientConnectionClose(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrGRPCClientConnectionClose error when err is nil error and addr is empty",
+			name: "return ErrGRPCClientConnectionClose error when err is nil and addr is empty",
 			args: args{
 				err:  nil,
 				name: "",
