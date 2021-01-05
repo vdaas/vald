@@ -19,8 +19,8 @@ package errors
 
 var (
 
-	// ErrgRPCClientConnectionClose represents a function to generate an error that the gRPC connection couldn't close.
-	ErrgRPCClientConnectionClose = func(name string, err error) error {
+	// ErrGRPCClientConnectionClose represents a function to generate an error that the gRPC connection couldn't close.
+	ErrGRPCClientConnectionClose = func(name string, err error) error {
 		return Wrapf(err, "%s's gRPC connection close error", name)
 	}
 

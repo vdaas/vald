@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestErrgRPCClientConnectionClose(t *testing.T) {
+func TestErrGRPCClientConnectionClose(t *testing.T) {
 	type args struct {
 		name string
 		err  error
@@ -29,7 +29,7 @@ func TestErrgRPCClientConnectionClose(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return wrapped ErrgRPCClientConnectionClose error when err is server error and name is 'gateway'",
+			name: "return wrapped ErrGRPCClientConnectionClose error when err is server error and name is 'gateway'",
 			args: args{
 				err:  New("server error"),
 				name: "gateway",
@@ -39,7 +39,7 @@ func TestErrgRPCClientConnectionClose(t *testing.T) {
 			},
 		},
 		{
-			name: "return wrapped ErrgRPCClientConnectionClose error when err is server error and name is empty",
+			name: "return wrapped ErrGRPCClientConnectionClose error when err is server error and name is empty",
 			args: args{
 				err:  New("server error"),
 				name: "",
@@ -49,7 +49,7 @@ func TestErrgRPCClientConnectionClose(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrgRPCClientConnectionClose error when err is nil error and name is 'gateway'",
+			name: "return ErrGRPCClientConnectionClose error when err is nil error and name is 'gateway'",
 			args: args{
 				err:  nil,
 				name: "gateway",
@@ -59,7 +59,7 @@ func TestErrgRPCClientConnectionClose(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrgRPCClientConnectionClose error when err is nil error and addr is empty",
+			name: "return ErrGRPCClientConnectionClose error when err is nil error and addr is empty",
 			args: args{
 				err:  nil,
 				name: "",
@@ -82,7 +82,7 @@ func TestErrgRPCClientConnectionClose(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got := ErrgRPCClientConnectionClose(test.args.name, test.args.err)
+			got := ErrGRPCClientConnectionClose(test.args.name, test.args.err)
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
