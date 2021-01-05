@@ -160,6 +160,10 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 				sss, ok := statefulSetList[r.agentName]
 				if ok {
 					if len(sss) == 1 {
+						// compare r.statefulSets.Load().(statefulset.StatefulSet) replicaset sss[0]
+						// store decreased replica flag
+						// flag desiredAgentReplica /slice
+
 						r.statefulSets.Store(sss[0])
 					} else {
 						log.Infof("too many statefulset list: want 1, but %r", len(sss))
@@ -197,6 +201,10 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 				log.Debugf("[reconcile pod] length podList[%s]: %d", r.agentName, len(podList[r.agentName]))
 				pods, ok := podList[r.agentName]
 				if ok {
+					// load statefulset decrease flag. if true
+					// find the difference between r.pods.Load() and pods
+					// create jobs
+					// reset flag
 					r.pods.Store(pods)
 				} else {
 					log.Infof("pod not found: %s", r.agentName)
@@ -303,6 +311,9 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 						continue
 					}
 
+					// compare num of desired replica & num of replica. (ssModel only)
+					// calc bias check threshold of rate, create job (podModel only)
+					// can delete prevSsModel & prevPodModels , use ssModel instead.
 					for ns, psm := range prevSsModel {
 						if _, ok := ssModel[ns]; !ok {
 							continue
@@ -312,6 +323,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 							continue
 						}
 
+						// delete 324-332?
 						decreasedPodNames := r.isSsReplicaDecreased(psm, ssModel[ns], prevPodModels[ns], podModels[ns])
 						if len(decreasedPodNames) > 0 {
 							for _, name := range decreasedPodNames {
@@ -476,6 +488,7 @@ func (r *rebalancer) genJobTpl() (jobTpl *job.Job, err error) {
 	return
 }
 
+// refactor to accept ppm, pm(type changed) only
 func (r *rebalancer) isSsReplicaDecreased(psm, sm *model.StatefulSet, ppm, pm []*model.Pod) (podNames []string) {
 	if *psm.DesiredReplicas > *sm.DesiredReplicas {
 		podNames = make([]string, 0)
