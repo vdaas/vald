@@ -166,7 +166,15 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 }
 
 func (n *ngt) initNGT(opts ...core.Option) (err error) {
-	if _, err = os.Stat(n.path); os.IsNotExist(err) || n.inMem {
+	if n.inMem {
+		log.Debug("vald agent starts with in-memory mode")
+		n.core, err = core.New(opts...)
+		return err
+	}
+
+	_, err = os.Stat(n.path)
+	if os.IsNotExist(err) {
+		log.Debugf("index file not exists,\tpath: %s,\terr: %v", n.path, err)
 		n.core, err = core.New(opts...)
 		return err
 	}
@@ -178,21 +186,18 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 	log.Debugf("load index from %s", n.path)
 
 	agentMetadata, err := metadata.Load(filepath.Join(n.path, metadata.AgentMetadataFileName))
-	if err != nil || agentMetadata == nil || agentMetadata.NGT == nil || agentMetadata.NGT.IndexCount == 0 {
+	if os.IsNotExist(err) || agentMetadata == nil || agentMetadata.NGT == nil || agentMetadata.NGT.IndexCount == 0 {
 		log.Warnf("cannot read metadata from %s: %v", metadata.AgentMetadataFileName, err)
 
-		if os.IsNotExist(err) || agentMetadata == nil || agentMetadata.NGT == nil || agentMetadata.NGT.IndexCount == 0 {
-			var fi os.FileInfo
-			if fi, err = os.Stat(filepath.Join(n.path, kvsFileName)); os.IsNotExist(err) || fi.Size() == 0 {
-				log.Warn("kvsdb file is not exist")
-				n.core, err = core.New(opts...)
-				return err
-			}
+		if fi, err := os.Stat(filepath.Join(n.path, kvsFileName)); os.IsNotExist(err) || fi.Size() == 0 {
+			log.Warn("kvsdb file is not exist")
+			n.core, err = core.New(opts...)
+			return err
+		}
 
-			if os.IsPermission(err) {
-				log.Debugf("no permission for kvsdb file,\tpath: %s,\terr: %v", filepath.Join(n.path, kvsFileName), err)
-				return err
-			}
+		if os.IsPermission(err) {
+			log.Debugf("no permission for kvsdb file,\tpath: %s,\terr: %v", filepath.Join(n.path, kvsFileName), err)
+			return err
 		}
 	}
 
