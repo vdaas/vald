@@ -77,6 +77,8 @@ In this case, there is at least one more test case to complete test coverage.
   - `var val []int32 = {math.MinInt32, -1}`
   - `var val []int32 = {math.MinInt32, 0}`
   - `var val []int32 = {math.MinInt32, -1}`
+  - `var val []int32 = {math.MaxInt32, math.MaxInt32}`
+  - `var val []int32 = {math.MinInt32, math.MinInt32}`
   
 That is the focus on test coverage.
 
@@ -116,7 +118,8 @@ When `calcAverageDiff()` is given, the test patterns are below:
 | >0 | >0 | ave1 > ave2 |
 | >0 | >0 | ave1 < ave2 |
 | >0 | >0 | ave1 = ave2 |
-| >0 | >0 | ave1 = math.MinInt32, ave2 = math.MaxInt32 |
+| >0 | >0 | ave1 = {math.MinInt32}, ave2 = {math.MaxInt32} |
+| >0 | >0 | ave1 = {math.MaxInt32, math.MaxInt32}, ave2 = {0} |
 
 At a glance, one of the last 2 patterns is enough, but these will help us to notice the bug in dependency.
 It will avoid the unexpected error due to update dependencies.
