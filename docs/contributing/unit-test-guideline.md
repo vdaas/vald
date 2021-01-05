@@ -2,7 +2,9 @@
 
 ## About
 
-When we create the unit test for each function or package, we should consider test coverage not only code coverage.
+The goal of the unit test is to check whether the unit is implemented correctly in various cases.
+A good unit test is to check various cases even which we do not expect as supposed usage.
+When we create the unit test for each function or package, we have to consider test coverage not only code coverage.
 This guideline will help you to create good unit tests.
 
 ## Unit Test
@@ -11,6 +13,7 @@ Before considering the unit test, we should define what is the unit.
 Unit is a set of procedures or functions, in a procedural or functional language.
 Also, it is a class and its needed classes, in an object or object-oriented language.
 Unit testing validates the basic units of the program in isolation.
+
 
 ## Guideline
 
@@ -112,6 +115,8 @@ When `calcAverageDiff()` is given, the test patterns are below:
 | >0 | 0  | - |
 | >0 | >0 | ave1 > ave2 |
 | >0 | >0 | ave1 < ave2 |
+| >0 | >0 | ave1 = ave2 |
+| >0 | >0 | ave1 = math.MinInt32, ave2 = math.MaxInt32 |
 
 At a glance, one of the last 2 patterns is enough, but these will help us to notice the bug in dependency.
 It will avoid the unexpected error due to update dependencies.
