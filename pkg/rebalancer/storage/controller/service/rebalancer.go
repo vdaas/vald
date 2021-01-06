@@ -224,7 +224,9 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 									continue
 								}
 							}
-							// TODO: reset flag
+							mu.Lock()
+							desiredAgentReplicas = desiredAgentReplicas[1:]
+							mu.Unlock()
 						}
 					}
 					r.pods.Store(pods)
