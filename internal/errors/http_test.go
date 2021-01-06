@@ -1,6 +1,7 @@
 package errors
 
 import (
+	"fmt"
 	"math"
 	"testing"
 	"time"
@@ -184,17 +185,27 @@ func TestErrHandlerTimeout(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns wrapped ErrHandlerTimeout error when the err is database error and the dur is 100",
+			name: "returns wrapped ErrHandlerTimeout error when the err is database error and the dur is the minimum number of int64",
 			args: args{
 				err: New("database error"),
-				dur: 100,
+				dur: math.MinInt64,
 			},
 			want: want{
-				want: New("handler timeout 100ns: database error"),
+				want: New(fmt.Sprintf("handler timeout %s: database error", time.Duration(math.MinInt64).String())),
 			},
 		},
 		{
-			name: "returns wrapped ErrHandlerTimeout error when the err is database error and the dur is 0",
+			name: "returns wrapped ErrHandlerTimeout error when the err is database error and the dur is the 'MinInt64+1'",
+			args: args{
+				err: New("database error"),
+				dur: math.MinInt64 + 1,
+			},
+			want: want{
+				want: New(fmt.Sprintf("handler timeout %s: database error", time.Duration(math.MinInt64+1).String())),
+			},
+		},
+		{
+			name: "returns wrapped ErrHandlerTimeout error when the err is database error and the dur is '0'",
 			args: args{
 				err: New("database error"),
 				dur: 0,
@@ -204,33 +215,33 @@ func TestErrHandlerTimeout(t *testing.T) {
 			},
 		},
 		{
+			name: "returns wrapped ErrHandlerTimeout error when the err is database error and the dur is '100'",
+			args: args{
+				err: New("database error"),
+				dur: 100,
+			},
+			want: want{
+				want: New("handler timeout 100ns: database error"),
+			},
+		},
+		{
 			name: "returns wrapped ErrHandlerTimeout error when the err is database error and the dur is the maximum number of int64",
 			args: args{
 				err: New("database error"),
 				dur: math.MaxInt64,
 			},
 			want: want{
-				want: New("handler timeout 2562047h47m16.854775807s: database error"),
+				want: Errorf("handler timeout %s: database error", time.Duration(math.MaxInt64)),
 			},
 		},
 		{
-			name: "returns wrapped ErrHandlerTimeout error when the err is database error and the dur is -1",
-			args: args{
-				err: New("database error"),
-				dur: -1,
-			},
-			want: want{
-				want: New("handler timeout -1ns: database error"),
-			},
-		},
-		{
-			name: "returns ErrHandlerTimeout error when the err is nil and the dur is 100",
+			name: "returns ErrHandlerTimeout error when the err is nil and the dur is '100'",
 			args: args{
 				err: nil,
-				dur: 1,
+				dur: 100,
 			},
 			want: want{
-				want: New("handler timeout 1ns"),
+				want: New("handler timeout 100ns"),
 			},
 		},
 	}
