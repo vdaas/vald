@@ -121,7 +121,7 @@ func TestErrHandler(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return wrapped ErrHandler error with the err is database error",
+			name: "return wrapped ErrHandler error when the err is database error",
 			args: args{
 				err: New("database error"),
 			},
@@ -130,7 +130,7 @@ func TestErrHandler(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrHandler error with the err is nil",
+			name: "return ErrHandler error when the err is nil",
 			args: args{
 				err: nil,
 			},
