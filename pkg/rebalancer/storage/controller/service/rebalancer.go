@@ -38,7 +38,7 @@ type reason uint8
 
 const (
 	BIAS reason = iota
-	DECREASE
+	RECOVERY
 	MANUAL
 
 	jobType = "rebalancer"
@@ -48,8 +48,8 @@ func (r reason) String() string {
 	switch r {
 	case BIAS:
 		return "bias"
-	case DECREASE:
-		return "decrease"
+	case RECOVERY:
+		return "recovery"
 	case MANUAL:
 		return "manual"
 	default:
@@ -206,21 +206,26 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 				log.Debugf("[reconcile pod] length podList[%s]: %d", r.agentName, len(podList[r.agentName]))
 				pods, ok := podList[r.agentName]
 				if ok {
-					if len(desiredAgentReplicas) > 0 {
+					mu.Lock()
+					dar := make([]int32, len(desiredAgentReplicas))
+					_ = copy(dar, desiredAgentReplicas)
+					mu.Unlock()
+
+					if len(dar) > 0 {
 						ppod := r.pods.Load().([]pod.Pod)
-						if len(pods) < len(ppod) && len(pods) == int(desiredAgentReplicas[0]) {
+						if len(pods) < len(ppod) && len(pods) == int(dar[0]) {
 							decreasedPodNames := getDecreasedPodNames(ppod, pods, r.agentNamespace)
+							jobTpl, err := r.genJobTpl()
+							if err != nil {
+								log.Infof("[recovery] error generating job template: %s", err.Error())
+								return
+							}
 							// create jobs
 							for _, name := range decreasedPodNames {
-								log.Debugf("[decrease] creating job for pod %s", name)
-								jobTpl, err := r.genJobTpl()
-								if err != nil {
-									log.Debugf("[decrease] failed to create jobTpl: %#v", err)
-									return
-								}
+								log.Debugf("[recovery] creating job for pod %s", name)
 								ctx := context.TODO()
-								if err := r.createJob(ctx, *jobTpl, DECREASE, name, r.agentNamespace); err != nil {
-									log.Errorf("failed to create job: %s", err)
+								if err := r.createJob(ctx, *jobTpl, RECOVERY, name, r.agentNamespace); err != nil {
+									log.Errorf("[recovery] failed to create job: %s", err)
 									continue
 								}
 							}
@@ -275,11 +280,6 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 		dt := time.NewTicker(r.rcd)
 		defer dt.Stop()
 
-		var (
-			prevSsModel   map[string]*model.StatefulSet
-			prevPodModels map[string][]*model.Pod
-		)
-
 		for {
 			select {
 			case <-ctx.Done():
@@ -328,55 +328,29 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 						Replicas:        ss.Status.Replicas,
 					}
 
-					// Store reconciled result for next loop.
-					if prevSsModel == nil {
-						prevSsModel = ssModel
-						prevPodModels = podModels
-						continue
-					}
-
-					// compare num of desired replica & num of replica. (ssModel only)
-					// calc bias check threshold of rate, create job (podModel only)
-					// can delete prevSsModel & prevPodModels , use ssModel instead.
-					for ns, psm := range prevSsModel {
-						if _, ok := ssModel[ns]; !ok {
-							continue
-						}
-						if *ssModel[ns].DesiredReplicas != ssModel[ns].Replicas {
-							log.Debugf("[decrease/not desired] desired replica: %d, current replica: %d", *ssModel[ns].DesiredReplicas, ssModel[ns].Replicas)
+					for ns, sm := range ssModel {
+						if *sm.DesiredReplicas != sm.Replicas {
+							log.Debugf("[not desired] desired replica: %d, current replica: %d", *sm.DesiredReplicas, sm.Replicas)
 							continue
 						}
 
-						// delete 324-332?
-						decreasedPodNames := r.isSsReplicaDecreased(psm, ssModel[ns], prevPodModels[ns], podModels[ns])
-						if len(decreasedPodNames) > 0 {
-							for _, name := range decreasedPodNames {
-								log.Debugf("[decrease] creating job for pod %s, len(jobModels): %d", name, len(jobModels[r.jobNamespace]))
-								if err := r.createJob(ctx, *jobTpl, DECREASE, name, ns); err != nil {
-									log.Errorf("failed to create job: %s", err)
-									continue
-								}
-							}
-						} else {
-							maxPodName, rate := r.getBiasOverDetail(podModels[ns])
-							if maxPodName == "" || rate < r.rateThreshold {
-								log.Debugf("[rate/podname checking] pod name, rate, rateThreshold: %s, %.3f, %f", maxPodName, rate, r.rateThreshold)
+						maxPodName, rate := r.getBiasOverDetail(podModels[ns])
+						if maxPodName == "" || rate < r.rateThreshold {
+							log.Debugf("[rate/podname checking] pod name, rate, rateThreshold: %s, %.3f, %f", maxPodName, rate, r.rateThreshold)
+							continue
+						}
+						log.Debugf("[bias/jobcheck] job: %#v", jobModels[r.jobNamespace])
+
+						if !r.isJobRunning(jobModels, ns) {
+							log.Debugf("[bias] creating job for pod %s, rate: %v", maxPodName, rate)
+							if err := r.createJob(ctx, *jobTpl, BIAS, maxPodName, ns); err != nil {
+								log.Errorf("[bias] failed to create job: %s", err)
 								continue
 							}
-							log.Debugf("[bias/jobcheck] job: %#v", jobModels[r.jobNamespace])
-							if !r.isJobRunning(jobModels, ns) {
-								log.Debugf("[bias] creating job for pod %s, rate: %v", maxPodName, rate)
-								if err := r.createJob(ctx, *jobTpl, BIAS, maxPodName, ns); err != nil {
-									log.Errorf("failed to create job: %s", err)
-									continue
-								}
-							}
-							log.Debugf("[bias] job is already running")
 						}
-						log.Debug("[cache] update cache")
-						prevSsModel[ns] = ssModel[ns]
-						prevPodModels[ns] = podModels[ns]
+						log.Debugf("[bias] job is already running")
 					}
+
 				default:
 					// TODO: define error for return
 					return nil
@@ -512,26 +486,6 @@ func (r *rebalancer) genJobTpl() (jobTpl *job.Job, err error) {
 	return
 }
 
-// refactor to accept ppm, pm(type changed) only
-func (r *rebalancer) isSsReplicaDecreased(psm, sm *model.StatefulSet, ppm, pm []*model.Pod) (podNames []string) {
-	if *psm.DesiredReplicas > *sm.DesiredReplicas {
-		podNames = make([]string, 0)
-		for _, prevPod := range ppm {
-			var ok bool
-			for _, pod := range pm {
-				if prevPod.Name == pod.Name {
-					ok = true
-					break
-				}
-			}
-			if !ok {
-				podNames = append(podNames, prevPod.Name)
-			}
-		}
-	}
-	return
-}
-
 func getDecreasedPodNames(prev, cur []pod.Pod, ns string) (podNames []string) {
 	podNames = make([]string, 0)
 	for _, prevPod := range prev {
@@ -568,8 +522,6 @@ func (r *rebalancer) getBiasOverDetail(pm []*model.Pod) (string, float64) {
 		podName, avgMemUsg, maxMemUsg := calAvgMemUsg(pm)
 		sig := calSigMemUsg(pm, avgMemUsg)
 
-		log.Debugf("[unlimited pod memory set] podName, avgMemUsg, maxMemUsg, sig: %s, %.3f, %.3f, %.3f ", podName, avgMemUsg, maxMemUsg, sig)
-
 		if maxMemUsg >= (1+r.tolerance)*sig {
 			return podName, 1 - (avgMemUsg / maxMemUsg)
 		}
@@ -577,7 +529,6 @@ func (r *rebalancer) getBiasOverDetail(pm []*model.Pod) (string, float64) {
 	}
 
 	podName, avgMemUsg, maxMemUsg := calAvgMemUsgWithMemLimit(pm)
-	log.Debugf("[limited pod memory set] podName, avgMemUsg, maxMemUsg: %s, %.3f, %.3f ", podName, avgMemUsg, maxMemUsg)
 
 	if maxMemUsg >= avgMemUsg+r.tolerance {
 		return podName, 1 - (avgMemUsg / maxMemUsg)
