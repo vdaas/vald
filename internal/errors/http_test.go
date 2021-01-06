@@ -185,7 +185,7 @@ func TestErrHandlerTimeout(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns wrapped ErrHandlerTimeout error when the err is database error and the dur is the minimum number of int64",
+			name: "return wrapped ErrHandlerTimeout error when the err is database error and the dur is the minimum number of int64",
 			args: args{
 				err: New("database error"),
 				dur: math.MinInt64,
@@ -195,7 +195,7 @@ func TestErrHandlerTimeout(t *testing.T) {
 			},
 		},
 		{
-			name: "returns wrapped ErrHandlerTimeout error when the err is database error and the dur is the 'MinInt64+1'",
+			name: "return wrapped ErrHandlerTimeout error when the err is database error and the dur is the 'MinInt64+1'",
 			args: args{
 				err: New("database error"),
 				dur: math.MinInt64 + 1,
@@ -205,7 +205,7 @@ func TestErrHandlerTimeout(t *testing.T) {
 			},
 		},
 		{
-			name: "returns wrapped ErrHandlerTimeout error when the err is database error and the dur is '0'",
+			name: "return wrapped ErrHandlerTimeout error when the err is database error and the dur is '0'",
 			args: args{
 				err: New("database error"),
 				dur: 0,
@@ -215,7 +215,7 @@ func TestErrHandlerTimeout(t *testing.T) {
 			},
 		},
 		{
-			name: "returns wrapped ErrHandlerTimeout error when the err is database error and the dur is '100'",
+			name: "return wrapped ErrHandlerTimeout error when the err is database error and the dur is '100'",
 			args: args{
 				err: New("database error"),
 				dur: 100,
@@ -225,7 +225,7 @@ func TestErrHandlerTimeout(t *testing.T) {
 			},
 		},
 		{
-			name: "returns wrapped ErrHandlerTimeout error when the err is database error and the dur is the maximum number of int64",
+			name: "return wrapped ErrHandlerTimeout error when the err is database error and the dur is the maximum number of int64",
 			args: args{
 				err: New("database error"),
 				dur: math.MaxInt64,
@@ -235,7 +235,7 @@ func TestErrHandlerTimeout(t *testing.T) {
 			},
 		},
 		{
-			name: "returns ErrHandlerTimeout error when the err is nil and the dur is '100'",
+			name: "return ErrHandlerTimeout error when the err is nil and the dur is '100'",
 			args: args{
 				err: nil,
 				dur: 100,
@@ -289,7 +289,7 @@ func TestErrRequestBodyCloseAndFlush(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns wrapped ErrRequestBodyCloseAndFlush error when the err is close error",
+			name: "return wrapped ErrRequestBodyCloseAndFlush error when the err is close error",
 			args: args{
 				err: New("close error"),
 			},
@@ -298,7 +298,7 @@ func TestErrRequestBodyCloseAndFlush(t *testing.T) {
 			},
 		},
 		{
-			name: "returns ErrRequestBodyCloseAndFlush error when the err is nil",
+			name: "return ErrRequestBodyCloseAndFlush error when the err is nil",
 			args: args{
 				err: nil,
 			},
@@ -351,7 +351,7 @@ func TestErrRequestBodyClose(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns wrapped ErrRequestBodyClose error when the err is close error",
+			name: "return wrapped ErrRequestBodyClose error when the err is close error",
 			args: args{
 				err: New("close error"),
 			},
@@ -360,7 +360,7 @@ func TestErrRequestBodyClose(t *testing.T) {
 			},
 		},
 		{
-			name: "returns ErrRequestBodyClose error when the err is nil",
+			name: "return ErrRequestBodyClose error when the err is nil",
 			args: args{
 				err: nil,
 			},
@@ -413,7 +413,7 @@ func TestErrRequestBodyFlush(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns wrapped ErrRequestBodyFlush error when the err is close error",
+			name: "return wrapped ErrRequestBodyFlush error when the err is close error",
 			args: args{
 				err: New("close error"),
 			},
@@ -422,7 +422,7 @@ func TestErrRequestBodyFlush(t *testing.T) {
 			},
 		},
 		{
-			name: "returns ErrRequestBodyFlush error when the err is nil",
+			name: "return ErrRequestBodyFlush error when the err is nil",
 			args: args{
 				err: nil,
 			},
