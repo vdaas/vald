@@ -5,6 +5,7 @@ import (
 	"math"
 	"reflect"
 	"strconv"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -146,6 +147,8 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 		return nil, err
 	}
 
+	var mu sync.Mutex
+	desiredAgentReplicas := make([]int32, 0)
 	var rc k8s.ResourceController
 	switch r.agentResourceType {
 	case "statefulset":
@@ -160,10 +163,12 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 				sss, ok := statefulSetList[r.agentName]
 				if ok {
 					if len(sss) == 1 {
-						// compare r.statefulSets.Load().(statefulset.StatefulSet) replicaset sss[0]
-						// store decreased replica flag
-						// flag desiredAgentReplica /slice
-
+						pss := r.statefulSets.Load().(statefulset.StatefulSet)
+						if *sss[0].Spec.Replicas < *pss.Spec.Replicas {
+							mu.Lock()
+							desiredAgentReplicas = append(desiredAgentReplicas, *pss.Spec.Replicas)
+							mu.Unlock()
+						}
 						r.statefulSets.Store(sss[0])
 					} else {
 						log.Infof("too many statefulset list: want 1, but %r", len(sss))
@@ -201,10 +206,27 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 				log.Debugf("[reconcile pod] length podList[%s]: %d", r.agentName, len(podList[r.agentName]))
 				pods, ok := podList[r.agentName]
 				if ok {
-					// load statefulset decrease flag. if true
-					// find the difference between r.pods.Load() and pods
-					// create jobs
-					// reset flag
+					if len(desiredAgentReplicas) > 0 {
+						ppod := r.pods.Load().([]pod.Pod)
+						if len(pods) < len(ppod) && len(pods) == int(desiredAgentReplicas[0]) {
+							decreasedPodNames := getDecreasedPodNames(ppod, pods, r.agentNamespace)
+							// create jobs
+							for _, name := range decreasedPodNames {
+								log.Debugf("[decrease] creating job for pod %s", name)
+								jobTpl, err := r.genJobTpl()
+								if err != nil {
+									log.Debugf("[decrease] failed to create jobTpl: %#v", err)
+									return
+								}
+								ctx := context.TODO()
+								if err := r.createJob(ctx, *jobTpl, DECREASE, name, r.agentNamespace); err != nil {
+									log.Errorf("failed to create job: %s", err)
+									continue
+								}
+							}
+							// TODO: reset flag
+						}
+					}
 					r.pods.Store(pods)
 				} else {
 					log.Infof("pod not found: %s", r.agentName)
@@ -503,6 +525,29 @@ func (r *rebalancer) isSsReplicaDecreased(psm, sm *model.StatefulSet, ppm, pm []
 			if !ok {
 				podNames = append(podNames, prevPod.Name)
 			}
+		}
+	}
+	return
+}
+
+func getDecreasedPodNames(prev, cur []pod.Pod, ns string) (podNames []string) {
+	podNames = make([]string, 0)
+	for _, prevPod := range prev {
+		if prevPod.Namespace != ns {
+			continue
+		}
+		var ok bool
+		for _, pod := range cur {
+			if pod.Namespace != ns {
+				continue
+			}
+			if prevPod.Name == pod.Name {
+				ok = true
+				break
+			}
+		}
+		if !ok {
+			podNames = append(podNames, prevPod.Name)
 		}
 	}
 	return
