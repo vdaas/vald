@@ -186,6 +186,9 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 	log.Debugf("load index from %s", n.path)
 
 	agentMetadata, err := metadata.Load(filepath.Join(n.path, metadata.AgentMetadataFileName))
+	if err != nil {
+		log.Warnf("cannot read metadata from %s: %s", metadata.AgentMetadataFileName, err)
+	}
 	if os.IsNotExist(err) || agentMetadata == nil || agentMetadata.NGT == nil || agentMetadata.NGT.IndexCount == 0 {
 		log.Warnf("cannot read metadata from %s: %v", metadata.AgentMetadataFileName, err)
 
