@@ -159,6 +159,17 @@ func TestErrInvalidGRPCPort(t *testing.T) {
 			},
 		},
 		{
+			name: "return ErrInvalidGRPCPort error when addr is '127.0.0.1' and host is 'gateway.default.svc.cluster.local' and port is '1'",
+			args: args{
+				addr: "127.0.0.1",
+				host: "gateway.default.svc.cluster.local",
+				port: 1,
+			},
+			want: want{
+				want: New("invalid gRPC client connection port to addr: 127.0.0.1,\thost: gateway.default.svc.cluster.local\t port: 1"),
+			},
+		},
+		{
 			name: "return ErrInvalidGRPCPort error when addr is '127.0.0.1' and host is 'gateway.default.svc.cluster.local' and port is maximum value of uint16",
 			args: args{
 				addr: "127.0.0.1",
@@ -167,6 +178,17 @@ func TestErrInvalidGRPCPort(t *testing.T) {
 			},
 			want: want{
 				want: Errorf("invalid gRPC client connection port to addr: 127.0.0.1,\thost: gateway.default.svc.cluster.local\t port: %d", math.MaxUint16),
+			},
+		},
+		{
+			name: "return ErrInvalidGRPCPort error when addr is '127.0.0.1' and host is 'gateway.default.svc.cluster.local' and port is 'MaxUint16-1'",
+			args: args{
+				addr: "127.0.0.1",
+				host: "gateway.default.svc.cluster.local",
+				port: math.MaxUint16 - 1,
+			},
+			want: want{
+				want: Errorf("invalid gRPC client connection port to addr: 127.0.0.1,\thost: gateway.default.svc.cluster.local\t port: %d", math.MaxUint16-1),
 			},
 		},
 	}
