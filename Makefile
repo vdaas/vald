@@ -260,6 +260,7 @@ clean:
 license:
 	MAINTAINER=$(MAINTAINER) \
 	go run hack/license/gen/main.go ./
+	go run hack/license/gen/main.go .github
 
 .PHONY: init
 ## initialize development environment
