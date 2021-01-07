@@ -166,7 +166,7 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 						pss, ok := r.statefulSets.Load().(statefulset.StatefulSet)
 						if ok && *sss[0].Spec.Replicas < *pss.Spec.Replicas {
 							mu.Lock()
-							desiredAgentReplicas = append(desiredAgentReplicas, *pss.Spec.Replicas)
+							desiredAgentReplicas = append(desiredAgentReplicas, *sss[0].Spec.Replicas)
 							mu.Unlock()
 						}
 						r.statefulSets.Store(sss[0])
