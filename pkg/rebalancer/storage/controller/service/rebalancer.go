@@ -233,9 +233,12 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 							mu.Lock()
 							desiredAgentReplicas = desiredAgentReplicas[1:]
 							mu.Unlock()
+
+							r.pods.Store(pods)
 						}
+					} else {
+						r.pods.Store(pods)
 					}
-					r.pods.Store(pods)
 				} else {
 					log.Infof("pod not found: %s", r.agentName)
 				}
@@ -348,8 +351,9 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 								log.Errorf("[bias] failed to create job: %s", err)
 								continue
 							}
+						} else {
+							log.Debugf("[bias] job is already running")
 						}
-						log.Debugf("[bias] job is already running")
 					}
 
 				default:
