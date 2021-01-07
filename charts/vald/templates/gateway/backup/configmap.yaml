@@ -16,6 +16,7 @@
 {{- $gateway := .Values.gateway.backup -}}
 {{- $lb := .Values.gateway.lb -}}
 {{- $backup := .Values.manager.compressor -}}
+{{- $agent := .Values.agent -}}
 {{- if $gateway.enabled }}
 apiVersion: v1
 kind: ConfigMap
@@ -44,14 +45,23 @@ data:
       {{- include "vald.observability" $observability | nindent 6 }}
     client:
       {{- $nextGatewayClient := $gateway.gateway_config.gateway_client }}
+      {{- if $lb.enabled -}}
       {{- $lbServerPort := $lb.server_config.servers.grpc.port }}
       {{- $defaultLBHost := printf "%s.%s.svc.cluster.local" $lb.name .Release.Namespace }}
       {{- $defaultLBPort := default .Values.defaults.server_config.servers.grpc.port $lbServerPort }}
       {{- $defaultLBAddr := (list (printf "%s:%d" $defaultLBHost (int64 $defaultLBPort))) }}
       {{- $lbAddrs := dict "Values" $nextGatewayClient.addrs "default" $defaultLBAddr }}
       {{- include "vald.grpc.client.addrs" $lbAddrs | nindent 6 }}
-      {{- $lbGRPCclient := dict "Values" $nextGatewayClient "default" .Values.defaults.grpc.client }}
-      {{- include "vald.grpc.client" $lbGRPCclient | nindent 6 }}
+      {{- else -}}
+      {{- $agentServerPort := $agent.server_config.servers.grpc.port }}
+      {{- $defaultAgentHost := printf "%s.%s.svc.cluster.local" $agent.name .Release.Namespace }}
+      {{- $defaultAgentPort := default .Values.defaults.server_config.servers.grpc.port $agentServerPort }}
+      {{- $defaultAgentAddr := (list (printf "%s:%d" $defaultAgentHost (int64 $defaultAgentPort))) }}
+      {{- $agentAddrs := dict "Values" $nextGatewayClient.addrs "default" $defaultAgentAddr }}
+      {{- include "vald.grpc.client.addrs" $agentAddrs | nindent 6 }}
+      {{- end -}}
+      {{- $nextGRPCClient := dict "Values" $nextGatewayClient "default" .Values.defaults.grpc.client }}
+      {{- include "vald.grpc.client" $nextGRPCClient | nindent 6 }}
     backup:
       {{- $compressorClient := $gateway.gateway_config.backup_client }}
       {{- $compressorServerPort := $backup.server_config.servers.grpc.port }}
