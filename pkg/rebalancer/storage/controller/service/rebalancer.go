@@ -163,8 +163,8 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 				sss, ok := statefulSetList[r.agentName]
 				if ok {
 					if len(sss) == 1 {
-						pss := r.statefulSets.Load().(statefulset.StatefulSet)
-						if *sss[0].Spec.Replicas < *pss.Spec.Replicas {
+						pss, ok := r.statefulSets.Load().(statefulset.StatefulSet)
+						if ok && *sss[0].Spec.Replicas < *pss.Spec.Replicas {
 							mu.Lock()
 							desiredAgentReplicas = append(desiredAgentReplicas, *pss.Spec.Replicas)
 							mu.Unlock()
@@ -212,8 +212,8 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 					mu.Unlock()
 
 					if len(dar) > 0 {
-						ppod := r.pods.Load().([]pod.Pod)
-						if len(pods) < len(ppod) && len(pods) == int(dar[0]) {
+						ppod, ok := r.pods.Load().([]pod.Pod)
+						if ok && len(pods) < len(ppod) && len(pods) == int(dar[0]) {
 							decreasedPodNames := getDecreasedPodNames(ppod, pods, r.agentNamespace)
 							jobTpl, err := r.genJobTpl()
 							if err != nil {
