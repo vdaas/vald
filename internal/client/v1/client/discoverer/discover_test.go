@@ -122,7 +122,6 @@ func Test_client_Start(t *testing.T) {
 		opts         []grpc.Option
 		port         int
 		addrs        atomic.Value
-		dscAddr      string
 		dscClient    grpc.Client
 		dscDur       time.Duration
 		eg           errgroup.Group
@@ -170,7 +169,6 @@ func Test_client_Start(t *testing.T) {
 		           opts: nil,
 		           port: 0,
 		           addrs: nil,
-		           dscAddr: "",
 		           dscClient: nil,
 		           dscDur: nil,
 		           eg: nil,
@@ -201,7 +199,6 @@ func Test_client_Start(t *testing.T) {
 		           opts: nil,
 		           port: 0,
 		           addrs: nil,
-		           dscAddr: "",
 		           dscClient: nil,
 		           dscDur: nil,
 		           eg: nil,
@@ -240,7 +237,6 @@ func Test_client_Start(t *testing.T) {
 				opts:         test.fields.opts,
 				port:         test.fields.port,
 				addrs:        test.fields.addrs,
-				dscAddr:      test.fields.dscAddr,
 				dscClient:    test.fields.dscClient,
 				dscDur:       test.fields.dscDur,
 				eg:           test.fields.eg,
@@ -272,7 +268,6 @@ func Test_client_GetAddrs(t *testing.T) {
 		opts         []grpc.Option
 		port         int
 		addrs        atomic.Value
-		dscAddr      string
 		dscClient    grpc.Client
 		dscDur       time.Duration
 		eg           errgroup.Group
@@ -316,7 +311,6 @@ func Test_client_GetAddrs(t *testing.T) {
 		           opts: nil,
 		           port: 0,
 		           addrs: nil,
-		           dscAddr: "",
 		           dscClient: nil,
 		           dscDur: nil,
 		           eg: nil,
@@ -347,7 +341,6 @@ func Test_client_GetAddrs(t *testing.T) {
 		           opts: nil,
 		           port: 0,
 		           addrs: nil,
-		           dscAddr: "",
 		           dscClient: nil,
 		           dscDur: nil,
 		           eg: nil,
@@ -386,7 +379,6 @@ func Test_client_GetAddrs(t *testing.T) {
 				opts:         test.fields.opts,
 				port:         test.fields.port,
 				addrs:        test.fields.addrs,
-				dscAddr:      test.fields.dscAddr,
 				dscClient:    test.fields.dscClient,
 				dscDur:       test.fields.dscDur,
 				eg:           test.fields.eg,
@@ -415,7 +407,6 @@ func Test_client_GetClient(t *testing.T) {
 		opts         []grpc.Option
 		port         int
 		addrs        atomic.Value
-		dscAddr      string
 		dscClient    grpc.Client
 		dscDur       time.Duration
 		eg           errgroup.Group
@@ -455,7 +446,6 @@ func Test_client_GetClient(t *testing.T) {
 		           opts: nil,
 		           port: 0,
 		           addrs: nil,
-		           dscAddr: "",
 		           dscClient: nil,
 		           dscDur: nil,
 		           eg: nil,
@@ -483,7 +473,6 @@ func Test_client_GetClient(t *testing.T) {
 		           opts: nil,
 		           port: 0,
 		           addrs: nil,
-		           dscAddr: "",
 		           dscClient: nil,
 		           dscDur: nil,
 		           eg: nil,
@@ -522,7 +511,6 @@ func Test_client_GetClient(t *testing.T) {
 				opts:         test.fields.opts,
 				port:         test.fields.port,
 				addrs:        test.fields.addrs,
-				dscAddr:      test.fields.dscAddr,
 				dscClient:    test.fields.dscClient,
 				dscDur:       test.fields.dscDur,
 				eg:           test.fields.eg,
@@ -555,7 +543,6 @@ func Test_client_connect(t *testing.T) {
 		opts         []grpc.Option
 		port         int
 		addrs        atomic.Value
-		dscAddr      string
 		dscClient    grpc.Client
 		dscDur       time.Duration
 		eg           errgroup.Group
@@ -600,7 +587,6 @@ func Test_client_connect(t *testing.T) {
 		           opts: nil,
 		           port: 0,
 		           addrs: nil,
-		           dscAddr: "",
 		           dscClient: nil,
 		           dscDur: nil,
 		           eg: nil,
@@ -632,7 +618,6 @@ func Test_client_connect(t *testing.T) {
 		           opts: nil,
 		           port: 0,
 		           addrs: nil,
-		           dscAddr: "",
 		           dscClient: nil,
 		           dscDur: nil,
 		           eg: nil,
@@ -671,7 +656,6 @@ func Test_client_connect(t *testing.T) {
 				opts:         test.fields.opts,
 				port:         test.fields.port,
 				addrs:        test.fields.addrs,
-				dscAddr:      test.fields.dscAddr,
 				dscClient:    test.fields.dscClient,
 				dscDur:       test.fields.dscDur,
 				eg:           test.fields.eg,
@@ -704,7 +688,6 @@ func Test_client_disconnect(t *testing.T) {
 		opts         []grpc.Option
 		port         int
 		addrs        atomic.Value
-		dscAddr      string
 		dscClient    grpc.Client
 		dscDur       time.Duration
 		eg           errgroup.Group
@@ -749,7 +732,6 @@ func Test_client_disconnect(t *testing.T) {
 		           opts: nil,
 		           port: 0,
 		           addrs: nil,
-		           dscAddr: "",
 		           dscClient: nil,
 		           dscDur: nil,
 		           eg: nil,
@@ -781,7 +763,6 @@ func Test_client_disconnect(t *testing.T) {
 		           opts: nil,
 		           port: 0,
 		           addrs: nil,
-		           dscAddr: "",
 		           dscClient: nil,
 		           dscDur: nil,
 		           eg: nil,
@@ -820,7 +801,6 @@ func Test_client_disconnect(t *testing.T) {
 				opts:         test.fields.opts,
 				port:         test.fields.port,
 				addrs:        test.fields.addrs,
-				dscAddr:      test.fields.dscAddr,
 				dscClient:    test.fields.dscClient,
 				dscDur:       test.fields.dscDur,
 				eg:           test.fields.eg,
@@ -853,7 +833,6 @@ func Test_client_dnsDiscovery(t *testing.T) {
 		opts         []grpc.Option
 		port         int
 		addrs        atomic.Value
-		dscAddr      string
 		dscClient    grpc.Client
 		dscDur       time.Duration
 		eg           errgroup.Group
@@ -902,7 +881,6 @@ func Test_client_dnsDiscovery(t *testing.T) {
 		           opts: nil,
 		           port: 0,
 		           addrs: nil,
-		           dscAddr: "",
 		           dscClient: nil,
 		           dscDur: nil,
 		           eg: nil,
@@ -934,7 +912,6 @@ func Test_client_dnsDiscovery(t *testing.T) {
 		           opts: nil,
 		           port: 0,
 		           addrs: nil,
-		           dscAddr: "",
 		           dscClient: nil,
 		           dscDur: nil,
 		           eg: nil,
@@ -973,7 +950,6 @@ func Test_client_dnsDiscovery(t *testing.T) {
 				opts:         test.fields.opts,
 				port:         test.fields.port,
 				addrs:        test.fields.addrs,
-				dscAddr:      test.fields.dscAddr,
 				dscClient:    test.fields.dscClient,
 				dscDur:       test.fields.dscDur,
 				eg:           test.fields.eg,
@@ -1006,7 +982,6 @@ func Test_client_discover(t *testing.T) {
 		opts         []grpc.Option
 		port         int
 		addrs        atomic.Value
-		dscAddr      string
 		dscClient    grpc.Client
 		dscDur       time.Duration
 		eg           errgroup.Group
@@ -1051,7 +1026,6 @@ func Test_client_discover(t *testing.T) {
 		           opts: nil,
 		           port: 0,
 		           addrs: nil,
-		           dscAddr: "",
 		           dscClient: nil,
 		           dscDur: nil,
 		           eg: nil,
@@ -1083,7 +1057,6 @@ func Test_client_discover(t *testing.T) {
 		           opts: nil,
 		           port: 0,
 		           addrs: nil,
-		           dscAddr: "",
 		           dscClient: nil,
 		           dscDur: nil,
 		           eg: nil,
@@ -1122,7 +1095,6 @@ func Test_client_discover(t *testing.T) {
 				opts:         test.fields.opts,
 				port:         test.fields.port,
 				addrs:        test.fields.addrs,
-				dscAddr:      test.fields.dscAddr,
 				dscClient:    test.fields.dscClient,
 				dscDur:       test.fields.dscDur,
 				eg:           test.fields.eg,
