@@ -111,6 +111,7 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 			if ok {
 				r.jobs.Store(jobs)
 			} else {
+				r.jobs.Store(make([]job.Job, 0))
 				log.Infof("job not found: %s", r.jobName)
 			}
 		}),
