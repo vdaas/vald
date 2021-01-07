@@ -50,8 +50,8 @@ data:
       node_name: {{ $index.indexer.node_name | quote }}
       discoverer:
         duration: {{ $index.indexer.discoverer.duration }}
-        discover_client:
-          {{- $discovererClient := $index.indexer.discoverer.discover_client }}
+        client:
+          {{- $discovererClient := $index.indexer.discoverer.client }}
           {{- $discovererServerPort := $discoverer.server_config.servers.grpc.port }}
           {{- $defaultDiscovererHost := printf "%s.%s.svc.cluster.local" $discoverer.name .Release.Namespace }}
           {{- $defaultDiscovererPort := default .Values.defaults.server_config.servers.grpc.port $discovererServerPort }}
@@ -60,16 +60,9 @@ data:
           {{- include "vald.grpc.client.addrs" $discovererAddrs | nindent 10 }}
           {{- $discovererGRPCclient := dict "Values" $discovererClient "default" .Values.defaults.grpc.client }}
           {{- include "vald.grpc.client" $discovererGRPCclient | nindent 10 }}
-        agent_client:
-          {{- $agentClient := $index.indexer.discoverer.agent_client }}
-          {{- $agentServerPort := $agent.server_config.servers.grpc.port }}
-          {{- $defaultAgentHost :=  printf "%s.%s.svc.cluster.local" $agent.name .Release.Namespace }}
-          {{- $defaultAgentPort := default .Values.defaults.server_config.servers.grpc.port $agentServerPort }}
-          {{- $defaultAgentAddr := printf "%s:%d" $defaultAgentHost (int64 $defaultAgentPort) }}
-          {{- $agentAddrs := dict "Values" $agentClient.addrs "default" $defaultAgentAddr }}
-          {{- include "vald.grpc.client.addrs" $agentAddrs | nindent 10 }}
-          {{- $agentGRPCclient := dict "Values" $agentClient "default" .Values.defaults.grpc.client }}
-          {{- include "vald.grpc.client" $agentGRPCclient | nindent 10 }}
+        agent_client_options:
+          {{- include "vald.grpc.client.addrs" (dict "Values" $index.indexer.discoverer.agent_client_options.addrs) | nindent 10 }}
+          {{- include "vald.grpc.client" (dict "Values" $index.indexer.discoverer.agent_client_options "default" .Values.defaults.grpc.client) | nindent 10 }}
       concurrency: {{ $index.indexer.concurrency }}
       auto_index_duration_limit: {{ $index.indexer.auto_index_duration_limit }}
       auto_index_check_duration: {{ $index.indexer.auto_index_check_duration }}

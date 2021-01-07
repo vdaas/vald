@@ -192,7 +192,7 @@ data:
         host: vald-discoverer.default.svc.cluster.local
         port: 8081
         duration: 500ms
-        discover_client:
+        client:
           addrs: []
           health_check_duration: "1s"
           connection_pool:
@@ -251,7 +251,7 @@ data:
             cert: /path/to/cert
             enabled: false
             key: /path/to/key
-        agent_client:
+        agent_client_options:
           addrs: []
           health_check_duration: "1s"
           connection_pool:

@@ -656,8 +656,8 @@ Configuration
 | gateway.filter.ingress | list | `[""]` | ingress filters |
 | gateway.gateway_config.agent_namespace | string | `"_MY_POD_NAMESPACE_"` | agent namespace |
 | gateway.gateway_config.backup.client | object | `{}` | gRPC client for backup (overrides defaults.grpc.client) |
-| gateway.gateway_config.discoverer.agent_client | object | `{}` | gRPC client for agents (overrides defaults.grpc.client) |
-| gateway.gateway_config.discoverer.discover_client | object | `{}` | gRPC client for discoverer (overrides defaults.grpc.client) |
+| gateway.gateway_config.discoverer.agent_client_options | object | `{}` | gRPC client for agents (overrides defaults.grpc.client) |
+| gateway.gateway_config.discoverer.client | object | `{}` | gRPC client for discoverer (overrides defaults.grpc.client) |
 | gateway.gateway_config.discoverer.duration | string | `"200ms"` | discoverer duration |
 | gateway.gateway_config.index_replica | int | `5` | number of index replica |
 | gateway.gateway_config.meta.cache_expiration | string | `"30m"` | meta cache expire duration |
@@ -722,8 +722,8 @@ Configuration
 | indexManager.indexer.auto_index_length | int | `100` | number of cache to trigger automatic indexing |
 | indexManager.indexer.concurrency | int | `1` | concurrency |
 | indexManager.indexer.creation_pool_size | int | `10000` | number of pool size of create index processing |
-| indexManager.indexer.discoverer.agent_client | object | `{"dial_option":{"tcp":{"dialer":{"keep_alive":"15m"}}}}` | gRPC client for agents (overrides defaults.grpc.client) |
-| indexManager.indexer.discoverer.discover_client | object | `{}` | gRPC client for discoverer (overrides defaults.grpc.client) |
+| indexManager.indexer.discoverer.agent_client_options | object | `{"dial_option":{"tcp":{"dialer":{"keep_alive":"15m"}}}}` | gRPC client for agents (overrides defaults.grpc.client) |
+| indexManager.indexer.discoverer.client | object | `{}` | gRPC client for discoverer (overrides defaults.grpc.client) |
 | indexManager.indexer.discoverer.duration | string | `"500ms"` | refresh duration to discover |
 | indexManager.indexer.node_name | string | `""` | node name |
 | indexManager.initContainers | list | `[{"image":"busybox","name":"wait-for-agent","sleepDuration":2,"target":"agent","type":"wait-for"},{"image":"busybox","name":"wait-for-discoverer","sleepDuration":2,"target":"discoverer","type":"wait-for"}]` | init containers |

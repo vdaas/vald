@@ -32,8 +32,8 @@ func (d *Discoverer) Bind() *Discoverer {
 
 type DiscovererClient struct {
 	Duration    string      `json:"duration" yaml:"duration"`
-	Client      *GRPCClient `json:"discover_client" yaml:"discover_client"`
-	AgentClient *GRPCClient `json:"agent_client" yaml:"agent_client"`
+	Client      *GRPCClient `json:"client" yaml:"client"`
+	AgentClientOptions *GRPCClient `json:"agent_client_options" yaml:"agent_client_options"`
 }
 
 func (d *DiscovererClient) Bind() *DiscovererClient {
@@ -43,10 +43,10 @@ func (d *DiscovererClient) Bind() *DiscovererClient {
 	} else {
 		d.Client = newGRPCClientConfig()
 	}
-	if d.AgentClient != nil {
-		d.AgentClient.Bind()
+	if d.AgentClientOptions != nil {
+		d.AgentClientOptions.Bind()
 	} else {
-		d.AgentClient = newGRPCClientConfig()
+		d.AgentClientOptions = newGRPCClientConfig()
 	}
 	return d
 }

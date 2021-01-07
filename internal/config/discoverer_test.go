@@ -22,9 +22,11 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
+	"go.uber.org/goleak"
 )
 
 func TestDiscoverer_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		Name              string
 		Namespace         string
@@ -79,8 +81,11 @@ func TestDiscoverer_Bind(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -100,17 +105,17 @@ func TestDiscoverer_Bind(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
 func TestDiscovererClient_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
-		Host        string
-		Port        int
-		Duration    string
-		Client      *GRPCClient
-		AgentClient *GRPCClient
+		Duration           string
+		Client             *GRPCClient
+		AgentClientOptions *GRPCClient
 	}
 	type want struct {
 		want *DiscovererClient
@@ -135,11 +140,9 @@ func TestDiscovererClient_Bind(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
-		           Host: "",
-		           Port: 0,
 		           Duration: "",
 		           Client: GRPCClient{},
-		           AgentClient: GRPCClient{},
+		           AgentClientOptions: GRPCClient{},
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -152,11 +155,9 @@ func TestDiscovererClient_Bind(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
-		           Host: "",
-		           Port: 0,
 		           Duration: "",
 		           Client: GRPCClient{},
-		           AgentClient: GRPCClient{},
+		           AgentClientOptions: GRPCClient{},
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -165,8 +166,11 @@ func TestDiscovererClient_Bind(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -177,17 +181,16 @@ func TestDiscovererClient_Bind(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			d := &DiscovererClient{
-				Host:        test.fields.Host,
-				Port:        test.fields.Port,
-				Duration:    test.fields.Duration,
-				Client:      test.fields.Client,
-				AgentClient: test.fields.AgentClient,
+				Duration:           test.fields.Duration,
+				Client:             test.fields.Client,
+				AgentClientOptions: test.fields.AgentClientOptions,
 			}
 
 			got := d.Bind()
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
