@@ -55,14 +55,13 @@ If you want to learn about Scylla, please refer to [the official website](https:
     Deploy Scylla as a backup database.
 
     ```bash
-    kubectl apply -f k8s/jobs/db/initialize/cassandra/configmap.yaml
-    kubectl apply -f k8s/external/scylla
+    make k8s/external/scylla/deploy
     ```
 
     Apply kubernetes metrics-server
 
     ```bash
-    kubectl apply -f k8s/metrics/metrics-server
+    make k8s/metrics/metrics-server/deploy
     ```
 
 3. Deploy Vald using helm

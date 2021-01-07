@@ -73,13 +73,13 @@ k8s/manifest/helm-operator/update: \
 ## deploy vald sample cluster to k8s
 k8s/vald/deploy: \
 	k8s/external/mysql/deploy \
-	k8s/external/redis/deploy
+	k8s/external/redis/deploy \
+	k8s/metrics/metrics-server/deploy
 	helm template \
 	    --values charts/vald/values-dev.yaml \
 	    --set defaults.image.tag=$(VERSION) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
-	kubectl apply -f k8s/metrics/metrics-server
 	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/backup
 	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/compressor
 	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/index
@@ -96,7 +96,8 @@ k8s/vald/deploy: \
 ## delete vald sample cluster from k8s
 k8s/vald/delete: \
 	k8s/external/mysql/delete \
-	k8s/external/redis/delete
+	k8s/external/redis/delete \
+	k8s/metrics/metrics-server/delete
 	kubectl delete -f k8s/gateway/meta
 	kubectl delete -f k8s/gateway/backup
 	kubectl delete -f k8s/gateway/lb
@@ -107,18 +108,17 @@ k8s/vald/delete: \
 	kubectl delete -f k8s/meta
 	kubectl delete -f k8s/discoverer
 	kubectl delete -f k8s/agent
-	kubectl delete -f k8s/metrics/metrics-server
 
 .PHONY: k8s/vald/deploy/cassandra
 ## deploy vald sample cluster with cassandra to k8s
 k8s/vald/deploy/cassandra: \
-	k8s/external/cassandra/deploy
+	k8s/external/cassandra/deploy \
+	k8s/metrics/metrics-server/deploy
 	helm template \
 	    --values charts/vald/values-cassandra.yaml \
 	    --set defaults.image.tag=$(VERSION) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
-	kubectl apply -f k8s/metrics/metrics-server
 	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/backup
 	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/compressor
 	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/index
@@ -135,13 +135,13 @@ k8s/vald/deploy/cassandra: \
 .PHONY: k8s/vald/delete/cassandra
 ## delete vald sample cluster with cassandra to k8s
 k8s/vald/delete/cassandra: \
-	k8s/external/cassandra/delete
+	k8s/external/cassandra/delete \
+	k8s/metrics/metrics-server/delete
 	helm template \
 	    --values charts/vald/values-cassandra.yaml \
 	    --set defaults.image.tag=$(VERSION) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
-	kubectl delete -f k8s/metrics/metrics-server
 	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/backup
 	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/compressor
 	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/index
@@ -157,13 +157,13 @@ k8s/vald/delete/cassandra: \
 .PHONY: k8s/vald/deploy/scylla
 ## deploy vald sample cluster with scylla to k8s
 k8s/vald/deploy/scylla: \
-	k8s/external/scylla/deploy
+	k8s/external/scylla/deploy \
+	k8s/metrics/metrics-server/deploy
 	helm template \
 	    --values charts/vald/values-scylla.yaml \
 	    --set defaults.image.tag=$(VERSION) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
-	kubectl apply -f k8s/metrics/metrics-server
 	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/backup
 	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/compressor
 	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/index
@@ -179,13 +179,13 @@ k8s/vald/deploy/scylla: \
 .PHONY: k8s/vald/delete/scylla
 ## delete vald sample cluster with scylla to k8s
 k8s/vald/delete/scylla: \
-	k8s/external/scylla/delete
+	k8s/external/scylla/delete \
+	k8s/metrics/metrics-server/delete
 	helm template \
 	    --values charts/vald/values-scylla.yaml \
 	    --set defaults.image.tag=$(VERSION) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
-	kubectl delete -f k8s/metrics/metrics-server
 	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/backup
 	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/compressor
 	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/index
@@ -207,13 +207,13 @@ k8s/external/mysql/deploy:
 .PHONY: k8s/external/mysql/delete
 ## delete mysql from k8s
 k8s/external/mysql/delete:
-	-kubectl delete -f k8s/external/mysql
-	-kubectl delete configmap mysql-config
+	kubectl delete -f k8s/external/mysql
+	kubectl delete configmap mysql-config
 
 .PHONY: k8s/external/mysql/initialize
 ## initialize mysql on k8s
 k8s/external/mysql/initialize:
-	-kubectl delete -f k8s/jobs/db/initialize/mysql
+	kubectl delete -f k8s/jobs/db/initialize/mysql
 	kubectl apply -f k8s/external/mysql/secret.yaml
 	kubectl apply -f k8s/jobs/db/initialize/mysql
 
@@ -225,12 +225,12 @@ k8s/external/redis/deploy:
 .PHONY: k8s/external/redis/delete
 ## delete redis from k8s
 k8s/external/redis/delete:
-	-kubectl delete -f k8s/external/redis
+	kubectl delete -f k8s/external/redis
 
 .PHONY: k8s/external/redis/initialize
 ## initialize redis on k8s
 k8s/external/redis/initialize:
-	-kubectl delete -f k8s/jobs/db/initialize/redis
+	kubectl delete -f k8s/jobs/db/initialize/redis
 	kubectl apply -f k8s/external/redis/secret.yaml
 	kubectl apply -f k8s/jobs/db/initialize/redis
 
@@ -243,22 +243,20 @@ k8s/external/cassandra/deploy:
 .PHONY: k8s/external/cassandra/delete
 ## delete cassandra from k8s
 k8s/external/cassandra/delete:
-	-kubectl delete -f k8s/external/cassandra
-	-kubectl delete configmap cassandra-initdb
+	kubectl delete -f k8s/external/cassandra
+	kubectl delete configmap cassandra-initdb
 
 .PHONY: k8s/external/cassandra/initialize
 ## initialize cassandra on k8s
 k8s/external/cassandra/initialize:
-	-kubectl delete -f k8s/jobs/db/initialize/cassandra
-	-kubectl delete configmap cassandra-initdb
+	kubectl delete -f k8s/jobs/db/initialize/cassandra
+	kubectl delete configmap cassandra-initdb
 	kubectl apply -f k8s/jobs/db/initialize/cassandra
 
 .PHONY: k8s/external/scylla/deploy
 ## deploy scylla to k8s
-k8s/external/scylla/deploy:
-	kubectl apply -f https://raw.githubusercontent.com/scylladb/scylla-operator/master/examples/common/cert-manager.yaml
-	kubectl wait -n cert-manager --for=condition=ready pod -l app=cert-manager --timeout=60s
-	sleep 20
+k8s/external/scylla/deploy: \
+	k8s/external/cert-manager/deploy
 	kubectl apply -f https://raw.githubusercontent.com/scylladb/scylla-operator/master/examples/common/operator.yaml
 	kubectl wait -n scylla-operator-system --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=scylla-operator-controller-manager-0 --timeout=600s
 	kubectl -n scylla-operator-system get pod
@@ -274,21 +272,36 @@ k8s/external/scylla/deploy:
 
 .PHONY: k8s/external/scylla/delete
 ## delete scylla from k8s
-k8s/external/scylla/delete:
+k8s/external/scylla/delete: \
+	k8s/external/cert-manager/delete
 	kubectl delete -f k8s/jobs/db/initialize/scylla
 	kubectl delete -f k8s/external/scylla/scyllacluster.yaml
 	kubectl delete -f https://raw.githubusercontent.com/scylladb/scylla-operator/master/examples/common/operator.yaml
-	kubectl delete -f https://raw.githubusercontent.com/scylladb/scylla-operator/master/examples/common/cert-manager.yaml
+
+.PHONY: k8s/external/cert-manager/deploy
+## deploy cert-manager
+k8s/external/cert-manager/deploy:
+	kubectl apply -f https://github.com/jetstack/cert-manager/releases/latest/download/cert-manager.yaml
+	kubectl wait -n cert-manager --for=condition=ready pod -l app=cert-manager --timeout=60s
+	kubectl wait -n cert-manager --for=condition=ready pod -l app=cainjector --timeout=60s
+	kubectl wait -n cert-manager --for=condition=ready pod -l app=webhook --timeout=60s
+	kubectl wait -n cert-manager --for=condition=Available deployment --timeout=60s --all
+	sleep 20
+
+.PHONY: k8s/external/cert-manager/delete
+## delete cert-manager
+k8s/external/cert-manager/delete:
+	kubectl delete -f https://github.com/jetstack/cert-manager/releases/latest/download/cert-manager.yaml
 
 .PHONY: k8s/metrics/metrics-server/deploy
 ## deploy metrics-serrver
 k8s/metrics/metrics-server/deploy:
-	kubectl apply -f k8s/metrics/metrics-server
+	kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 
 .PHONY: k8s/metrics/metrics-server/delete
 ## delete metrics-serrver
 k8s/metrics/metrics-server/delete:
-	-kubectl delete -f k8s/metrics/metrics-server
+	kubectl delete -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 
 .PHONY: k8s/metrics/prometheus/deploy
 ## deploy prometheus and grafana
@@ -300,9 +313,9 @@ k8s/metrics/prometheus/deploy:
 .PHONY: k8s/metrics/prometheus/delete
 ## delete prometheus and grafana
 k8s/metrics/prometheus/delete:
-	-kubectl delete -f k8s/metrics/prometheus
-	-kubectl delete configmap grafana-dashboards
-	-kubectl delete -f k8s/metrics/grafana
+	kubectl delete -f k8s/metrics/prometheus
+	kubectl delete configmap grafana-dashboards
+	kubectl delete -f k8s/metrics/grafana
 
 .PHONY: k8s/metrics/jaeger/deploy
 ## deploy jaeger
@@ -312,7 +325,7 @@ k8s/metrics/jaeger/deploy:
 .PHONY: k8s/metrics/jaeger/delete
 ## delete jaeger
 k8s/metrics/jaeger/delete:
-	-kubectl delete -f k8s/metrics/jaeger
+	kubectl delete -f k8s/metrics/jaeger
 
 .PHONY: k8s/metrics/profefe/deploy
 ## deploy profefe
@@ -322,7 +335,7 @@ k8s/metrics/profefe/deploy:
 .PHONY: k8s/metrics/profefe/delete
 ## delete profefe
 k8s/metrics/profefe/delete:
-	-kubectl delete -f k8s/metrics/profefe
+	kubectl delete -f k8s/metrics/profefe
 
 .PHONY: k8s/linkerd/deploy
 ## deploy linkerd to k8s

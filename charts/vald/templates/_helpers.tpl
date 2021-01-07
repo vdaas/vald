@@ -175,6 +175,19 @@ ports:
 {{- end -}}
 
 {/*
+Ingress port
+*/}
+{{- define "vald.ingressPort" -}}
+port:
+  {{- if regexMatch "^()([1-9]|[1-5]?[0-9]{2,4}|6[1-4][0-9]{3}|65[1-4][0-9]{2}|655[1-2][0-9]|6553[1-5])$" .Values.servicePort -}}
+  number: {{ .Values.servicePort }}
+  {{- else }}
+  name: {{ .Values.servicePort }}
+  {{- end -}}
+{{- end -}}
+
+
+{/*
 Service ports
 */}
 {{- define "vald.servicePorts" -}}
