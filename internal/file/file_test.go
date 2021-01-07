@@ -145,7 +145,7 @@ func TestOpen(t *testing.T) {
 			args: args{
 				path: "dummy",
 				flg:  os.O_RDONLY,
-				perm: os.ModeDir,
+				perm: os.ModePerm,
 			},
 			want: want{
 				want: nil,
@@ -165,7 +165,7 @@ func TestOpen(t *testing.T) {
 			args: args{
 				path: "dummy/dummy",
 				flg:  os.O_RDONLY,
-				perm: os.ModeDir,
+				perm: os.ModePerm,
 			},
 			want: want{
 				want: nil,
@@ -177,6 +177,12 @@ func TestOpen(t *testing.T) {
 						return err
 					}(),
 				},
+			},
+			afterFunc: func(t *testing.T, _ args) {
+				t.Helper()
+				if err := os.RemoveAll("dummy"); err != nil {
+					t.Fatal(err)
+				}
 			},
 		},
 	}
