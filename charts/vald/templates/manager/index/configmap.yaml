@@ -55,7 +55,7 @@ data:
           {{- $discovererServerPort := $discoverer.server_config.servers.grpc.port }}
           {{- $defaultDiscovererHost := printf "%s.%s.svc.cluster.local" $discoverer.name .Release.Namespace }}
           {{- $defaultDiscovererPort := default .Values.defaults.server_config.servers.grpc.port $discovererServerPort }}
-          {{- $defaultDiscovererAddr := printf "%s:%d" $defaultDiscovererHost (int64 $defaultDiscovererPort) }}
+          {{- $defaultDiscovererAddr := (list (printf "%s:%d" $defaultDiscovererHost (int64 $defaultDiscovererPort))) }}
           {{- $discovererAddrs := dict "Values" $discovererClient.addrs "default" $defaultDiscovererAddr }}
           {{- include "vald.grpc.client.addrs" $discovererAddrs | nindent 10 }}
           {{- $discovererGRPCclient := dict "Values" $discovererClient "default" .Values.defaults.grpc.client }}

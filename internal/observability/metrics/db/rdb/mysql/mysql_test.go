@@ -516,8 +516,7 @@ func Test_mysqlMetrics_SpanError(t *testing.T) {
 		ms                []metrics.Measurement
 		NullEventReceiver mysql.NullEventReceiver
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -615,8 +614,7 @@ func Test_mysqlMetrics_SpanFinish(t *testing.T) {
 		ms                []metrics.Measurement
 		NullEventReceiver mysql.NullEventReceiver
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

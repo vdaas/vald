@@ -113,8 +113,7 @@ func Test_insert_Run(t *testing.T) {
 	type fields struct {
 		parallel bool
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -204,8 +203,7 @@ func Test_insert_run(t *testing.T) {
 	type fields struct {
 		parallel bool
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -295,8 +293,7 @@ func Test_insert_runParallel(t *testing.T) {
 	type fields struct {
 		parallel bool
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -387,8 +384,7 @@ func Test_insert_do(t *testing.T) {
 	type fields struct {
 		parallel bool
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

@@ -113,8 +113,7 @@ func Test_remove_Run(t *testing.T) {
 	type fields struct {
 		parallel bool
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -204,8 +203,7 @@ func Test_remove_run(t *testing.T) {
 	type fields struct {
 		parallel bool
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -295,8 +293,7 @@ func Test_remove_runParallel(t *testing.T) {
 	type fields struct {
 		parallel bool
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -386,8 +383,7 @@ func Test_remove_do(t *testing.T) {
 	type fields struct {
 		parallel bool
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

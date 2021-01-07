@@ -18,8 +18,6 @@
 package service
 
 import (
-	"fmt"
-
 	"github.com/vdaas/vald/internal/cache"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/timeutil"
@@ -31,20 +29,6 @@ var defaultMetaOpts = []MetaOption{
 	WithMetaCacheEnabled(true),
 	WithMetaCacheExpireDuration("30m"),
 	WithMetaCacheExpiredCheckDuration("2m"),
-}
-
-func WithMetaAddr(addr string) MetaOption {
-	return func(m *meta) error {
-		m.addr = addr
-		return nil
-	}
-}
-
-func WithMetaHostPort(host string, port int) MetaOption {
-	return func(m *meta) error {
-		m.addr = fmt.Sprintf("%s:%d", host, port)
-		return nil
-	}
 }
 
 func WithMetaClient(client grpc.Client) MetaOption {

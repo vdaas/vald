@@ -313,8 +313,7 @@ func TestMockDecoder_Close(t *testing.T) {
 		ReadFunc    func(p []byte) (int, error)
 		WriteToFunc func(w io.Writer) (int64, error)
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields

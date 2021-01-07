@@ -191,8 +191,7 @@ func Test_streamInsert_Run(t *testing.T) {
 		c       client.Client
 		dataset assets.Dataset
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

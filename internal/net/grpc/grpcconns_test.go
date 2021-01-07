@@ -296,8 +296,7 @@ func Test_grpcConns_Store(t *testing.T) {
 		dirty  map[string]*entryGrpcConns
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -551,8 +550,7 @@ func Test_entryGrpcConns_storeLocked(t *testing.T) {
 	type fields struct {
 		p unsafe.Pointer
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -636,8 +634,7 @@ func Test_grpcConns_Delete(t *testing.T) {
 		dirty  map[string]*entryGrpcConns
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -806,8 +803,7 @@ func Test_grpcConns_Range(t *testing.T) {
 		dirty  map[string]*entryGrpcConns
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -897,8 +893,7 @@ func Test_grpcConns_missLocked(t *testing.T) {
 		dirty  map[string]*entryGrpcConns
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields
@@ -981,8 +976,7 @@ func Test_grpcConns_dirtyLocked(t *testing.T) {
 		dirty  map[string]*entryGrpcConns
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields

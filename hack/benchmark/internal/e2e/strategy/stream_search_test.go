@@ -205,8 +205,7 @@ func Test_streamSearch_Run(t *testing.T) {
 	type fields struct {
 		cfg *client.SearchConfig
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

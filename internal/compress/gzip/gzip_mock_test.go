@@ -324,8 +324,7 @@ func TestMockReader_Multistream(t *testing.T) {
 		ResetFunc       func(r io.Reader) error
 		MultistreamFunc func(ok bool)
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

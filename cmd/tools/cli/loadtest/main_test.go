@@ -23,8 +23,7 @@ import (
 
 func Test_main(t *testing.T) {
 	t.Parallel()
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		want       want

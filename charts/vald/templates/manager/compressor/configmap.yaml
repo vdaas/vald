@@ -42,14 +42,12 @@ data:
       {{- $observability := dict "Values" $compressor.observability "default" .Values.defaults.observability }}
       {{- include "vald.observability" $observability | nindent 6 }}
     backup:
-      host: {{ $backup.name }}.{{ .Release.Namespace }}.svc.cluster.local
-      port: {{ default .Values.defaults.server_config.servers.grpc.port $backup.server_config.servers.grpc.port }}
       client:
         {{- $backupClient := $compressor.backup.client }}
         {{- $backupServerPort := $backup.server_config.servers.grpc.port }}
         {{- $defaultBackupHost := printf "%s.%s.svc.cluster.local" $backup.name .Release.Namespace }}
         {{- $defaultBackupPort := default .Values.defaults.server_config.servers.grpc.port $backupServerPort }}
-        {{- $defaultBackupAddr := printf "%s:%d" $defaultBackupHost (int64 $defaultBackupPort) }}
+        {{- $defaultBackupAddr := (list (printf "%s:%d" $defaultBackupHost (int64 $defaultBackupPort))) }}
         {{- $backupAddrs := dict "Values" $backupClient.addrs "default" $defaultBackupAddr }}
         {{- include "vald.grpc.client.addrs" $backupAddrs | nindent 8 }}
         {{- $backupGRPCclient := dict "Values" $backupClient "default" .Values.defaults.grpc.client }}
@@ -68,9 +66,9 @@ data:
           {{- $compressorServerPort := $compressor.server_config.servers.grpc.port }}
           {{- $defaultCompressorHost := printf "%s.%s.svc.cluster.local" $compressor.name .Release.Namespace }}
           {{- $defaultCompressorPort := default .Values.defaults.server_config.servers.grpc.port $compressorServerPort }}
-          {{- $defaultCompressorAddr := printf "%s:%d" $defaultCompressorHost (int64 $defaultCompressorPort) }}
+          {{- $defaultCompressorAddr := (list (printf "%s:%d" $defaultCompressorHost (int64 $defaultCompressorPort))) }}
           {{- $compressorAddrs := dict "Values" $compressorClient.addrs "default" $defaultCompressorAddr }}
-          {{- include "vald.grpc.client.addrs" $compressorAddrs | nindent 8 }}
+          {{- include "vald.grpc.client.addrs" $compressorAddrs | nindent 10 }}
           {{- $compressorGRPCclient := dict "Values" $compressorClient "default" .Values.defaults.grpc.client }}
-          {{- include "vald.grpc.client" $compressorGRPCclient | nindent 8 }}
+          {{- include "vald.grpc.client" $compressorGRPCclient | nindent 10 }}
 {{- end }}

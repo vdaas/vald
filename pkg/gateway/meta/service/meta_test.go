@@ -111,7 +111,6 @@ func Test_meta_Start(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		addr                string
 		client              grpc.Client
 		cache               cache.Cache
 		enableCache         bool
@@ -149,7 +148,6 @@ func Test_meta_Start(t *testing.T) {
 		           ctx: nil,
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -170,7 +168,6 @@ func Test_meta_Start(t *testing.T) {
 		           ctx: nil,
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -199,7 +196,6 @@ func Test_meta_Start(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &meta{
-				addr:                test.fields.addr,
 				client:              test.fields.client,
 				cache:               test.fields.cache,
 				enableCache:         test.fields.enableCache,
@@ -222,7 +218,6 @@ func Test_meta_Exists(t *testing.T) {
 		meta string
 	}
 	type fields struct {
-		addr                string
 		client              grpc.Client
 		cache               cache.Cache
 		enableCache         bool
@@ -261,7 +256,6 @@ func Test_meta_Exists(t *testing.T) {
 		           meta: "",
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -283,7 +277,6 @@ func Test_meta_Exists(t *testing.T) {
 		           meta: "",
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -312,7 +305,6 @@ func Test_meta_Exists(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &meta{
-				addr:                test.fields.addr,
 				client:              test.fields.client,
 				cache:               test.fields.cache,
 				enableCache:         test.fields.enableCache,
@@ -335,7 +327,6 @@ func Test_meta_GetMeta(t *testing.T) {
 		uuid string
 	}
 	type fields struct {
-		addr                string
 		client              grpc.Client
 		cache               cache.Cache
 		enableCache         bool
@@ -374,7 +365,6 @@ func Test_meta_GetMeta(t *testing.T) {
 		           uuid: "",
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -396,7 +386,6 @@ func Test_meta_GetMeta(t *testing.T) {
 		           uuid: "",
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -425,7 +414,6 @@ func Test_meta_GetMeta(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &meta{
-				addr:                test.fields.addr,
 				client:              test.fields.client,
 				cache:               test.fields.cache,
 				enableCache:         test.fields.enableCache,
@@ -448,7 +436,6 @@ func Test_meta_GetMetas(t *testing.T) {
 		uuids []string
 	}
 	type fields struct {
-		addr                string
 		client              grpc.Client
 		cache               cache.Cache
 		enableCache         bool
@@ -487,7 +474,6 @@ func Test_meta_GetMetas(t *testing.T) {
 		           uuids: nil,
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -509,7 +495,6 @@ func Test_meta_GetMetas(t *testing.T) {
 		           uuids: nil,
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -538,7 +523,6 @@ func Test_meta_GetMetas(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &meta{
-				addr:                test.fields.addr,
 				client:              test.fields.client,
 				cache:               test.fields.cache,
 				enableCache:         test.fields.enableCache,
@@ -561,7 +545,6 @@ func Test_meta_GetUUID(t *testing.T) {
 		meta string
 	}
 	type fields struct {
-		addr                string
 		client              grpc.Client
 		cache               cache.Cache
 		enableCache         bool
@@ -600,7 +583,6 @@ func Test_meta_GetUUID(t *testing.T) {
 		           meta: "",
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -622,7 +604,6 @@ func Test_meta_GetUUID(t *testing.T) {
 		           meta: "",
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -651,7 +632,6 @@ func Test_meta_GetUUID(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &meta{
-				addr:                test.fields.addr,
 				client:              test.fields.client,
 				cache:               test.fields.cache,
 				enableCache:         test.fields.enableCache,
@@ -674,7 +654,6 @@ func Test_meta_GetUUIDs(t *testing.T) {
 		metas []string
 	}
 	type fields struct {
-		addr                string
 		client              grpc.Client
 		cache               cache.Cache
 		enableCache         bool
@@ -713,7 +692,6 @@ func Test_meta_GetUUIDs(t *testing.T) {
 		           metas: nil,
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -735,7 +713,6 @@ func Test_meta_GetUUIDs(t *testing.T) {
 		           metas: nil,
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -764,7 +741,6 @@ func Test_meta_GetUUIDs(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &meta{
-				addr:                test.fields.addr,
 				client:              test.fields.client,
 				cache:               test.fields.cache,
 				enableCache:         test.fields.enableCache,
@@ -788,7 +764,6 @@ func Test_meta_SetUUIDandMeta(t *testing.T) {
 		meta string
 	}
 	type fields struct {
-		addr                string
 		client              grpc.Client
 		cache               cache.Cache
 		enableCache         bool
@@ -824,7 +799,6 @@ func Test_meta_SetUUIDandMeta(t *testing.T) {
 		           meta: "",
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -847,7 +821,6 @@ func Test_meta_SetUUIDandMeta(t *testing.T) {
 		           meta: "",
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -876,7 +849,6 @@ func Test_meta_SetUUIDandMeta(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &meta{
-				addr:                test.fields.addr,
 				client:              test.fields.client,
 				cache:               test.fields.cache,
 				enableCache:         test.fields.enableCache,
@@ -899,7 +871,6 @@ func Test_meta_SetUUIDandMetas(t *testing.T) {
 		kvs map[string]string
 	}
 	type fields struct {
-		addr                string
 		client              grpc.Client
 		cache               cache.Cache
 		enableCache         bool
@@ -934,7 +905,6 @@ func Test_meta_SetUUIDandMetas(t *testing.T) {
 		           kvs: nil,
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -956,7 +926,6 @@ func Test_meta_SetUUIDandMetas(t *testing.T) {
 		           kvs: nil,
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -985,7 +954,6 @@ func Test_meta_SetUUIDandMetas(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &meta{
-				addr:                test.fields.addr,
 				client:              test.fields.client,
 				cache:               test.fields.cache,
 				enableCache:         test.fields.enableCache,
@@ -1008,7 +976,6 @@ func Test_meta_DeleteMeta(t *testing.T) {
 		uuid string
 	}
 	type fields struct {
-		addr                string
 		client              grpc.Client
 		cache               cache.Cache
 		enableCache         bool
@@ -1047,7 +1014,6 @@ func Test_meta_DeleteMeta(t *testing.T) {
 		           uuid: "",
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -1069,7 +1035,6 @@ func Test_meta_DeleteMeta(t *testing.T) {
 		           uuid: "",
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -1098,7 +1063,6 @@ func Test_meta_DeleteMeta(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &meta{
-				addr:                test.fields.addr,
 				client:              test.fields.client,
 				cache:               test.fields.cache,
 				enableCache:         test.fields.enableCache,
@@ -1121,7 +1085,6 @@ func Test_meta_DeleteMetas(t *testing.T) {
 		uuids []string
 	}
 	type fields struct {
-		addr                string
 		client              grpc.Client
 		cache               cache.Cache
 		enableCache         bool
@@ -1160,7 +1123,6 @@ func Test_meta_DeleteMetas(t *testing.T) {
 		           uuids: nil,
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -1182,7 +1144,6 @@ func Test_meta_DeleteMetas(t *testing.T) {
 		           uuids: nil,
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -1211,7 +1172,6 @@ func Test_meta_DeleteMetas(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &meta{
-				addr:                test.fields.addr,
 				client:              test.fields.client,
 				cache:               test.fields.cache,
 				enableCache:         test.fields.enableCache,
@@ -1234,7 +1194,6 @@ func Test_meta_DeleteUUID(t *testing.T) {
 		meta string
 	}
 	type fields struct {
-		addr                string
 		client              grpc.Client
 		cache               cache.Cache
 		enableCache         bool
@@ -1273,7 +1232,6 @@ func Test_meta_DeleteUUID(t *testing.T) {
 		           meta: "",
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -1295,7 +1253,6 @@ func Test_meta_DeleteUUID(t *testing.T) {
 		           meta: "",
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -1324,7 +1281,6 @@ func Test_meta_DeleteUUID(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &meta{
-				addr:                test.fields.addr,
 				client:              test.fields.client,
 				cache:               test.fields.cache,
 				enableCache:         test.fields.enableCache,
@@ -1347,7 +1303,6 @@ func Test_meta_DeleteUUIDs(t *testing.T) {
 		metas []string
 	}
 	type fields struct {
-		addr                string
 		client              grpc.Client
 		cache               cache.Cache
 		enableCache         bool
@@ -1386,7 +1341,6 @@ func Test_meta_DeleteUUIDs(t *testing.T) {
 		           metas: nil,
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -1408,7 +1362,6 @@ func Test_meta_DeleteUUIDs(t *testing.T) {
 		           metas: nil,
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -1437,7 +1390,6 @@ func Test_meta_DeleteUUIDs(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &meta{
-				addr:                test.fields.addr,
 				client:              test.fields.client,
 				cache:               test.fields.cache,
 				enableCache:         test.fields.enableCache,

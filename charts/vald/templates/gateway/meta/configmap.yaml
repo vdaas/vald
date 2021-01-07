@@ -47,7 +47,7 @@ data:
       {{- $backupServerPort := $backup.server_config.servers.grpc.port }}
       {{- $defaultBackupHost := printf "%s.%s.svc.cluster.local" $backup.name .Release.Namespace }}
       {{- $defaultBackupPort := default .Values.defaults.server_config.servers.grpc.port $backupServerPort }}
-      {{- $defaultBackupAddr := printf "%s:%d" $defaultBackupHost (int64 $defaultBackupPort) }}
+      {{- $defaultBackupAddr := (list (printf "%s:%d" $defaultBackupHost (int64 $defaultBackupPort))) }}
       {{- $backupAddrs := dict "Values" $nextGatewayClient.addrs "default" $defaultBackupAddr }}
       {{- include "vald.grpc.client.addrs" $backupAddrs | nindent 6 }}
       {{- $backupGRPCclient := dict "Values" $nextGatewayClient "default" .Values.defaults.grpc.client }}
@@ -58,7 +58,7 @@ data:
         {{- $metaServerPort := $meta.server_config.servers.grpc.port }}
         {{- $defaultMetaHost := printf "%s.%s.svc.cluster.local" $meta.name .Release.Namespace }}
         {{- $defaultMetaPort := default .Values.defaults.server_config.servers.grpc.port $metaServerPort }}
-        {{- $defaultMetaAddr := printf "%s:%d" $defaultMetaHost (int64 $defaultMetaPort) }}
+        {{- $defaultMetaAddr := (list (printf "%s:%d" $defaultMetaHost (int64 $defaultMetaPort))) }}
         {{- $metaAddrs := dict "Values" $metaClient.addrs "default" $defaultMetaAddr }}
         {{- include "vald.grpc.client.addrs" $metaAddrs | nindent 8 }}
         {{- $metaGRPCclient := dict "Values" $metaClient "default" .Values.defaults.grpc.client }}

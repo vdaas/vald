@@ -208,8 +208,7 @@ func Test_atomicAddrs_Range(t *testing.T) {
 		addrSeeker uint64
 		l          uint64
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -306,8 +305,7 @@ func Test_atomicAddrs_Add(t *testing.T) {
 		addrSeeker uint64
 		l          uint64
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -404,8 +402,7 @@ func Test_atomicAddrs_Delete(t *testing.T) {
 		addrSeeker uint64
 		l          uint64
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

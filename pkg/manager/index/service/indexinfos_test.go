@@ -295,8 +295,7 @@ func Test_indexInfos_Store(t *testing.T) {
 		dirty  map[string]*entryIndexInfos
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -550,8 +549,7 @@ func Test_entryIndexInfos_storeLocked(t *testing.T) {
 	type fields struct {
 		p unsafe.Pointer
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -635,8 +633,7 @@ func Test_indexInfos_Delete(t *testing.T) {
 		dirty  map[string]*entryIndexInfos
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -805,8 +802,7 @@ func Test_indexInfos_Range(t *testing.T) {
 		dirty  map[string]*entryIndexInfos
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -896,8 +892,7 @@ func Test_indexInfos_missLocked(t *testing.T) {
 		dirty  map[string]*entryIndexInfos
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields
@@ -980,8 +975,7 @@ func Test_indexInfos_dirtyLocked(t *testing.T) {
 		dirty  map[string]*entryIndexInfos
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields

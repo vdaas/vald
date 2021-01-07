@@ -31,8 +31,8 @@ func (d *Discoverer) Bind() *Discoverer {
 }
 
 type DiscovererClient struct {
-	Duration    string      `json:"duration" yaml:"duration"`
-	Client      *GRPCClient `json:"client" yaml:"client"`
+	Duration           string      `json:"duration" yaml:"duration"`
+	Client             *GRPCClient `json:"client" yaml:"client"`
 	AgentClientOptions *GRPCClient `json:"agent_client_options" yaml:"agent_client_options"`
 }
 

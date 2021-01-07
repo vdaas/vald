@@ -104,8 +104,7 @@ func TestRecord(t *testing.T) {
 		ctx context.Context
 		ms  []Measurement
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

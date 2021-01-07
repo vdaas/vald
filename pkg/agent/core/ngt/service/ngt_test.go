@@ -5170,8 +5170,7 @@ func Test_ngt_gc(t *testing.T) {
 		idelay            time.Duration
 		dcd               bool
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields

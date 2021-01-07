@@ -22,8 +22,7 @@ import (
 )
 
 func Test_main(t *testing.T) {
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		want       want

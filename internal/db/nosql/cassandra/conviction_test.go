@@ -139,8 +139,7 @@ func Test_convictionPolicy_Reset(t *testing.T) {
 	type args struct {
 		host *gocql.HostInfo
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

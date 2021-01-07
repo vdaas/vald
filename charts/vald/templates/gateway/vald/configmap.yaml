@@ -58,7 +58,7 @@ data:
           {{- $discovererServerPort := $discoverer.server_config.servers.grpc.port }}
           {{- $defaultDiscovererHost := printf "%s.%s.svc.cluster.local" $discoverer.name .Release.Namespace }}
           {{- $defaultDiscovererPort := default .Values.defaults.server_config.servers.grpc.port $discovererServerPort }}
-          {{- $defaultDiscovererAddr := printf "%s:%d" $defaultDiscovererHost (int64 $defaultDiscovererPort) }}
+          {{- $defaultDiscovererAddr := (list (printf "%s:%d" $defaultDiscovererHost (int64 $defaultDiscovererPort))) }}
           {{- $discovererAddrs := dict "Values" $discovererClient.addrs "default" $defaultDiscovererAddr }}
           {{- include "vald.grpc.client.addrs" $discovererAddrs | nindent 10 }}
           {{- $discovererGRPCclient := dict "Values" $discovererClient "default" .Values.defaults.grpc.client }}
@@ -72,7 +72,7 @@ data:
           {{- $metaServerPort := $meta.server_config.servers.grpc.port }}
           {{- $defaultMetaHost := printf "%s.%s.svc.cluster.local" $meta.name .Release.Namespace }}
           {{- $defaultMetaPort := default .Values.defaults.server_config.servers.grpc.port $metaServerPort }}
-          {{- $defaultMetaAddr := printf "%s:%d" $defaultMetaHost (int64 $defaultMetaPort) }}
+          {{- $defaultMetaAddr := (list (printf "%s:%d" $defaultMetaHost (int64 $defaultMetaPort))) }}
           {{- $metaAddrs := dict "Values" $metaClient.addrs "default" $defaultMetaAddr }}
           {{- include "vald.grpc.client.addrs" $metaAddrs | nindent 10 }}
           {{- $metaGRPCclient := dict "Values" $metaClient "default" .Values.defaults.grpc.client }}
@@ -86,7 +86,7 @@ data:
           {{- $compressorServerPort := $backup.server_config.servers.grpc.port }}
           {{- $defaultCompressorHost := printf "%s.%s.svc.cluster.local" $backup.name .Release.Namespace }}
           {{- $defaultCompressorPort := default .Values.defaults.server_config.servers.grpc.port $compressorServerPort }}
-          {{- $defaultCompressorAddr := printf "%s:%d" $defaultCompressorHost (int64 $defaultCompressorPort) }}
+          {{- $defaultCompressorAddr := (list (printf "%s:%d" $defaultCompressorHost (int64 $defaultCompressorPort))) }}
           {{- $compressorAddrs := dict "Values" $compressorClient.addrs "default" $defaultCompressorAddr }}
           {{- include "vald.grpc.client.addrs" $compressorAddrs | nindent 10 }}
           {{- $compressorGRPCclient := dict "Values" $compressorClient "default" .Values.defaults.grpc.client }}

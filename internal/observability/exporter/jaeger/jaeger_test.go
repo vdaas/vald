@@ -196,8 +196,7 @@ func Test_exp_Stop(t *testing.T) {
 		exporter *jaeger.Exporter
 		options  jaegerOptions
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

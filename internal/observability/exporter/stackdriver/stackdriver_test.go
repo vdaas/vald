@@ -206,8 +206,7 @@ func Test_exp_Stop(t *testing.T) {
 		tracingEnabled    bool
 		Options           *stackdriver.Options
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

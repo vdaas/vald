@@ -115,8 +115,7 @@ func Test_server_Start(t *testing.T) {
 		dsc   service.Discoverer
 		group singleflight.Group
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

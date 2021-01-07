@@ -120,8 +120,7 @@ func Test_connection_SetConnMaxLifetime(t *testing.T) {
 	type fields struct {
 		Connection *dbr.Connection
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -202,8 +201,7 @@ func Test_connection_SetMaxIdleConns(t *testing.T) {
 	type fields struct {
 		Connection *dbr.Connection
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -284,8 +282,7 @@ func Test_connection_SetMaxOpenConns(t *testing.T) {
 	type fields struct {
 		Connection *dbr.Connection
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
