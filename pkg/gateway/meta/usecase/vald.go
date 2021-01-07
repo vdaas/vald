@@ -70,11 +70,10 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		)
 	}
 
-	if addrs := cfg.Meta.Client.Addrs; len(addrs) == 0 {
+	if len(cfg.Meta.Client.Addrs) == 0 {
 		return nil, errors.ErrInvalidMetaDataConfig
 	}
 	metadata, err = service.New(
-		service.WithMetaAddr(cfg.Meta.Client.Addrs[0]),
 		service.WithMetaClient(
 			grpc.New(metadataClientOptions...),
 		),
@@ -86,7 +85,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 
-	if addrs := cfg.Client.Addrs; len(addrs) == 0 {
+	if len(cfg.Client.Addrs) == 0 {
 		return nil, errors.ErrGRPCTargetAddrNotFound
 	}
 

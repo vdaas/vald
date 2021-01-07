@@ -110,7 +110,6 @@ func Test_backup_Start(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		addr   string
 		client grpc.Client
 	}
 	type want struct {
@@ -144,7 +143,6 @@ func Test_backup_Start(t *testing.T) {
 		           ctx: nil,
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		       },
 		       want: want{},
@@ -161,7 +159,6 @@ func Test_backup_Start(t *testing.T) {
 		           ctx: nil,
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           },
 		           want: want{},
@@ -186,7 +183,6 @@ func Test_backup_Start(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			b := &backup{
-				addr:   test.fields.addr,
 				client: test.fields.client,
 			}
 
@@ -205,7 +201,6 @@ func Test_backup_GetObject(t *testing.T) {
 		uuid string
 	}
 	type fields struct {
-		addr   string
 		client grpc.Client
 	}
 	type want struct {
@@ -240,7 +235,6 @@ func Test_backup_GetObject(t *testing.T) {
 		           uuid: "",
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		       },
 		       want: want{},
@@ -258,7 +252,6 @@ func Test_backup_GetObject(t *testing.T) {
 		           uuid: "",
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           },
 		           want: want{},
@@ -283,7 +276,6 @@ func Test_backup_GetObject(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			b := &backup{
-				addr:   test.fields.addr,
 				client: test.fields.client,
 			}
 
@@ -302,7 +294,6 @@ func Test_backup_GetLocation(t *testing.T) {
 		uuid string
 	}
 	type fields struct {
-		addr   string
 		client grpc.Client
 	}
 	type want struct {
@@ -337,7 +328,6 @@ func Test_backup_GetLocation(t *testing.T) {
 		           uuid: "",
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		       },
 		       want: want{},
@@ -355,7 +345,6 @@ func Test_backup_GetLocation(t *testing.T) {
 		           uuid: "",
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           },
 		           want: want{},
@@ -380,7 +369,6 @@ func Test_backup_GetLocation(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			b := &backup{
-				addr:   test.fields.addr,
 				client: test.fields.client,
 			}
 
@@ -399,7 +387,6 @@ func Test_backup_Register(t *testing.T) {
 		vec *payload.Backup_Vector
 	}
 	type fields struct {
-		addr   string
 		client grpc.Client
 	}
 	type want struct {
@@ -430,7 +417,6 @@ func Test_backup_Register(t *testing.T) {
 		           vec: nil,
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		       },
 		       want: want{},
@@ -448,7 +434,6 @@ func Test_backup_Register(t *testing.T) {
 		           vec: nil,
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           },
 		           want: want{},
@@ -473,7 +458,6 @@ func Test_backup_Register(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			b := &backup{
-				addr:   test.fields.addr,
 				client: test.fields.client,
 			}
 
@@ -492,7 +476,6 @@ func Test_backup_RegisterMultiple(t *testing.T) {
 		vecs *payload.Backup_Vectors
 	}
 	type fields struct {
-		addr   string
 		client grpc.Client
 	}
 	type want struct {
@@ -523,7 +506,6 @@ func Test_backup_RegisterMultiple(t *testing.T) {
 		           vecs: nil,
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		       },
 		       want: want{},
@@ -541,7 +523,6 @@ func Test_backup_RegisterMultiple(t *testing.T) {
 		           vecs: nil,
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           },
 		           want: want{},
@@ -566,7 +547,6 @@ func Test_backup_RegisterMultiple(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			b := &backup{
-				addr:   test.fields.addr,
 				client: test.fields.client,
 			}
 
@@ -585,7 +565,6 @@ func Test_backup_Remove(t *testing.T) {
 		uuid string
 	}
 	type fields struct {
-		addr   string
 		client grpc.Client
 	}
 	type want struct {
@@ -616,7 +595,6 @@ func Test_backup_Remove(t *testing.T) {
 		           uuid: "",
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		       },
 		       want: want{},
@@ -634,7 +612,6 @@ func Test_backup_Remove(t *testing.T) {
 		           uuid: "",
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           },
 		           want: want{},
@@ -659,7 +636,6 @@ func Test_backup_Remove(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			b := &backup{
-				addr:   test.fields.addr,
 				client: test.fields.client,
 			}
 
@@ -678,7 +654,6 @@ func Test_backup_RemoveMultiple(t *testing.T) {
 		uuids []string
 	}
 	type fields struct {
-		addr   string
 		client grpc.Client
 	}
 	type want struct {
@@ -709,7 +684,6 @@ func Test_backup_RemoveMultiple(t *testing.T) {
 		           uuids: nil,
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		       },
 		       want: want{},
@@ -727,7 +701,6 @@ func Test_backup_RemoveMultiple(t *testing.T) {
 		           uuids: nil,
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           },
 		           want: want{},
@@ -752,7 +725,6 @@ func Test_backup_RemoveMultiple(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			b := &backup{
-				addr:   test.fields.addr,
 				client: test.fields.client,
 			}
 

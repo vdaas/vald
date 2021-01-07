@@ -23,13 +23,6 @@ type BackupOption func(b *backup) error
 
 var defaultBackupOpts = []BackupOption{}
 
-func WithBackupAddr(addr string) BackupOption {
-	return func(b *backup) error {
-		b.addr = addr
-		return nil
-	}
-}
-
 func WithBackupClient(client grpc.Client) BackupOption {
 	return func(b *backup) error {
 		if client != nil {

@@ -56,7 +56,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	backupClientOptions := append(
 		cfg.Backup.Opts(),
 		grpc.WithErrGroup(eg),
-		grpc.WithAddrs(cfg.Backup.Addrs...),
 	)
 
 	var obs observability.Observability

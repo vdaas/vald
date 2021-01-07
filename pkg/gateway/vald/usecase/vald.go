@@ -105,7 +105,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 
 	backup, err = service.NewBackup(
-		service.WithBackupAddr(cfg.Gateway.BackupManager.Client.Addrs[0]),
 		service.WithBackupClient(
 			grpc.New(backupClientOptions...),
 		),
@@ -139,7 +138,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, errors.ErrInvalidMetaDataConfig
 	}
 	metadata, err = service.NewMeta(
-		service.WithMetaAddr(cfg.Gateway.Meta.Client.Addrs[0]),
 		service.WithMetaClient(
 			grpc.New(metadataClientOptions...),
 		),

@@ -55,7 +55,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	var b service.Backup
 
-	if addrs := cfg.BackupManager.Client.Addrs; len(addrs) == 0 {
+	if len(cfg.BackupManager.Client.Addrs) == 0 {
 		return nil, errors.ErrInvalidBackupConfig
 	}
 
@@ -74,7 +74,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 
 	b, err = service.NewBackup(
-		service.WithBackupAddr(cfg.BackupManager.Client.Addrs[0]),
 		service.WithBackupClient(
 			grpc.New(backupClientOptions...),
 		),
