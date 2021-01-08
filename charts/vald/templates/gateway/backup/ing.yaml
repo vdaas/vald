@@ -36,5 +36,12 @@ spec:
       name: {{ $gateway.name }}
       {{- include "vald.ingressPort" (dict "Values" $gateway.ingress) | nindent 6 }}
   rules:
-    - host: {{ $gateway.ingress.host }}
+  - host: {{ $gateway.ingress.host }}
+    http:
+      paths:
+      - backend:
+          service:
+            name: {{ $gateway.name }}
+            {{- include "vald.ingressPort" (dict "Values" $gateway.ingress) | nindent 12 }}
+        pathType: {{ $gateway.ingress.pathType }}
 {{- end }}

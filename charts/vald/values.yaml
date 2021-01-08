@@ -973,6 +973,9 @@ gateway:
           service: vald-gateway
     # @schema {"name": "gateway.vald.ingress", "type": "object"}
     ingress:
+      # @schema {"name": "gateway.vald.ingress.pathType", "type": "string"}
+      # gateway.vald.ingress.pathType -- gateway ingress pathType
+      pathType: ImplementationSpecific
       # @schema {"name": "gateway.vald.ingress.enabled", "type": "boolean"}
       # gateway.vald.ingress.enabled -- gateway ingress enabled
       enabled: false
@@ -1226,6 +1229,9 @@ gateway:
           service: vald-backup-gateway
     # @schema {"name": "gateway.backup.ingress", "type": "object"}
     ingress:
+      # @schema {"name": "gateway.backup.ingress.pathType", "type": "string"}
+      # gateway.backup.ingress.pathType -- gateway ingress pathType
+      pathType: ImplementationSpecific
       # @schema {"name": "gateway.backup.ingress.enabled", "type": "boolean"}
       # gateway.backup.ingress.enabled -- gateway ingress enabled
       enabled: false
@@ -1454,6 +1460,9 @@ gateway:
           service: vald-lb-gateway
     # @schema {"name": "gateway.lb.ingress", "type": "object"}
     ingress:
+      # @schema {"name": "gateway.lb.ingress.pathType", "type": "string"}
+      # gateway.lb.ingress.pathType -- gateway ingress pathType
+      pathType: ImplementationSpecific
       # @schema {"name": "gateway.lb.ingress.enabled", "type": "boolean"}
       # gateway.lb.ingress.enabled -- gateway ingress enabled
       enabled: false
@@ -1688,6 +1697,9 @@ gateway:
           service: vald-meta-gateway
     # @schema {"name": "gateway.meta.ingress", "type": "object"}
     ingress:
+      # @schema {"name": "gateway.meta.ingress.pathType", "type": "string"}
+      # gateway.meta.ingress.pathType -- gateway ingress pathType
+      pathType: ImplementationSpecific
       # @schema {"name": "gateway.meta.ingress.enabled", "type": "boolean"}
       # gateway.meta.ingress.enabled -- gateway ingress enabled
       enabled: true
