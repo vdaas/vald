@@ -269,6 +269,7 @@ k8s/external/scylla/deploy: \
 	kubectl -n scylla get ScyllaCluster
 	kubectl -n scylla get pods
 	kubectl apply -f k8s/jobs/db/initialize/scylla
+	kubectl wait --for=condition=complete job/scylla-init --timeout=60s
 
 .PHONY: k8s/external/scylla/delete
 ## delete scylla from k8s
@@ -297,6 +298,7 @@ k8s/external/cert-manager/delete:
 ## deploy metrics-serrver
 k8s/metrics/metrics-server/deploy:
 	kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+	kubectl wait -n kube-system --for=condition=ready pod -l k8s-app=metrics-server --timeout=600s
 
 .PHONY: k8s/metrics/metrics-server/delete
 ## delete metrics-serrver

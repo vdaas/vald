@@ -92,7 +92,8 @@ If you want to learn about Scylla, please refer to [the official website](https:
 
     ```bash
 
-    kubectl apply -f k8s/jobs/db/initialize/scylla 
+    kubectl apply -f k8s/jobs/db/initialize/scylla
+    kubectl wait --for=condition=complete job/scylla-init --timeout=60s
     ```
 
     </details>
@@ -106,6 +107,7 @@ If you want to learn about Scylla, please refer to [the official website](https:
 
     ```bash
     kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+    kubectl wait -n kube-system --for=condition=ready pod -l k8s-app=metrics-server --timeout=600s
     ```
 
 3. Deploy Vald using helm
