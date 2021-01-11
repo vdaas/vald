@@ -10,7 +10,72 @@
   "produces": [
     "application/json"
   ],
-  "paths": {},
+  "paths": {
+    "/remove": {
+      "post": {
+        "operationId": "Remove_Remove",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ObjectLocation"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/payloadv1RemoveRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Remove"
+        ]
+      }
+    },
+    "/remove/multiple": {
+      "post": {
+        "operationId": "Remove_MultiRemove",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ObjectLocations"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1RemoveMultiRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Remove"
+        ]
+      }
+    }
+  },
   "definitions": {
     "ObjectID": {
       "type": "object",
@@ -122,6 +187,17 @@
       "properties": {
         "skipStrictExistCheck": {
           "type": "boolean"
+        }
+      }
+    },
+    "v1RemoveMultiRequest": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/payloadv1RemoveRequest"
+          }
         }
       }
     }

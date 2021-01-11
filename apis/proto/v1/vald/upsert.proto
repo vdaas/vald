@@ -34,9 +34,15 @@ service Upsert {
       post : "/upsert"
       body : "*"
     };
-
   }
+
   rpc StreamUpsert(stream payload.v1.Upsert.Request)
       returns (stream payload.v1.Object.Location) {}
-  rpc MultiUpsert(payload.v1.Upsert.MultiRequest) returns (payload.v1.Object.Locations) {}
+
+  rpc MultiUpsert(payload.v1.Upsert.MultiRequest) returns (payload.v1.Object.Locations) {
+    option (google.api.http) = {
+      post : "/upsert/multiple"
+      body : "*"
+    };
+  }
 }

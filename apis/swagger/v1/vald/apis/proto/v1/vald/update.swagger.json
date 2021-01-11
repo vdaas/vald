@@ -42,6 +42,38 @@
           "Update"
         ]
       }
+    },
+    "/update/multiple": {
+      "post": {
+        "operationId": "Update_MultiUpdate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ObjectLocations"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpdateMultiRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Update"
+        ]
+      }
     }
   },
   "definitions": {
@@ -165,6 +197,17 @@
         },
         "filters": {
           "$ref": "#/definitions/v1FilterConfig"
+        }
+      }
+    },
+    "v1UpdateMultiRequest": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1UpdateRequest"
+          }
         }
       }
     },

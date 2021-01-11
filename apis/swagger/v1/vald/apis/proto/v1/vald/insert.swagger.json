@@ -42,6 +42,38 @@
           "Insert"
         ]
       }
+    },
+    "/insert/multiple": {
+      "post": {
+        "operationId": "Insert_MultiInsert",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ObjectLocations"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1InsertMultiRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Insert"
+        ]
+      }
     }
   },
   "definitions": {
@@ -122,6 +154,17 @@
         },
         "filters": {
           "$ref": "#/definitions/v1FilterConfig"
+        }
+      }
+    },
+    "v1InsertMultiRequest": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1InsertRequest"
+          }
         }
       }
     },

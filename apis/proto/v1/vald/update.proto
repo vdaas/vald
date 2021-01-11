@@ -34,9 +34,15 @@ service Update {
       post : "/update"
       body : "*"
     };
-
   }
+
   rpc StreamUpdate(stream payload.v1.Update.Request)
       returns (stream payload.v1.Object.Location) {}
-  rpc MultiUpdate(payload.v1.Update.MultiRequest) returns (payload.v1.Object.Locations) {}
+
+  rpc MultiUpdate(payload.v1.Update.MultiRequest) returns (payload.v1.Object.Locations) {
+    option (google.api.http) = {
+      post : "/update/multiple"
+      body : "*"
+    };
+  }
 }

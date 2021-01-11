@@ -35,18 +35,27 @@ service Search {
       body : "*"
     };
   }
+
   rpc SearchByID(payload.v1.Search.IDRequest) returns (payload.v1.Search.Response) {
     option (google.api.http) = {
       post : "/search/id"
       body : "*"
     };
   }
+
   rpc StreamSearch(stream payload.v1.Search.Request)
       returns (stream payload.v1.Search.Response) {}
+
   rpc StreamSearchByID(stream payload.v1.Search.IDRequest)
       returns (stream payload.v1.Search.Response) {}
+
   rpc MultiSearch(payload.v1.Search.MultiRequest)
-      returns (payload.v1.Search.Responses) {}
+    returns (payload.v1.Search.Responses) {
+      option (google.api.http) = {
+        post : "/search/multiple"
+        body : "*"
+      };
+  }
   rpc MultiSearchByID(payload.v1.Search.MultiIDRequest)
       returns (payload.v1.Search.Responses) {}
 
