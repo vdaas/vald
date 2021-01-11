@@ -197,8 +197,7 @@ func Test_exp_Stop(t *testing.T) {
 		exporter *prometheus.Exporter
 		options  prometheusOptions
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

@@ -18,7 +18,6 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
@@ -52,11 +51,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	discovererClientOptions := append(
 		cfg.Gateway.Discoverer.Client.Opts(),
-		grpc.WithErrGroup(eg),
-		grpc.WithAddrs(fmt.Sprintf("%s:%d",
-			cfg.Gateway.Discoverer.Host,
-			cfg.Gateway.Discoverer.Port,
-		)))
+		grpc.WithErrGroup(eg))
 
 	var obs observability.Observability
 	if cfg.Observability.Enabled {
@@ -79,12 +74,8 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		discoverer.WithPort(cfg.Gateway.AgentPort),
 		discoverer.WithServiceDNSARecord(cfg.Gateway.AgentDNS),
 		discoverer.WithDiscovererClient(grpc.New(discovererClientOptions...)),
-		discoverer.WithDiscovererHostPort(
-			cfg.Gateway.Discoverer.Host,
-			cfg.Gateway.Discoverer.Port,
-		),
 		discoverer.WithDiscoverDuration(cfg.Gateway.Discoverer.Duration),
-		discoverer.WithOptions(cfg.Gateway.Discoverer.AgentClient.Opts()...),
+		discoverer.WithOptions(cfg.Gateway.Discoverer.AgentClientOptions.Opts()...),
 		discoverer.WithNodeName(cfg.Gateway.NodeName),
 	)
 	if err != nil {

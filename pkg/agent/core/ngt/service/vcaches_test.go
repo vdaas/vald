@@ -299,8 +299,7 @@ func Test_vcaches_Store(t *testing.T) {
 		dirty  map[string]*entryVCache
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -557,8 +556,7 @@ func Test_entryVCache_storeLocked(t *testing.T) {
 	type fields struct {
 		p unsafe.Pointer
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -643,8 +641,7 @@ func Test_vcaches_Delete(t *testing.T) {
 		dirty  map[string]*entryVCache
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -817,8 +814,7 @@ func Test_vcaches_Range(t *testing.T) {
 		dirty  map[string]*entryVCache
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -912,8 +908,7 @@ func Test_vcaches_missLocked(t *testing.T) {
 		dirty  map[string]*entryVCache
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields
@@ -1000,8 +995,7 @@ func Test_vcaches_dirtyLocked(t *testing.T) {
 		dirty  map[string]*entryVCache
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields

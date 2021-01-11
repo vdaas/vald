@@ -295,8 +295,7 @@ func Test_nodeMetricsMap_Store(t *testing.T) {
 		dirty  map[string]*entryNodeMetricsMap
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -550,8 +549,7 @@ func Test_entryNodeMetricsMap_storeLocked(t *testing.T) {
 	type fields struct {
 		p unsafe.Pointer
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -834,8 +832,7 @@ func Test_nodeMetricsMap_Delete(t *testing.T) {
 		dirty  map[string]*entryNodeMetricsMap
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1004,8 +1001,7 @@ func Test_nodeMetricsMap_Range(t *testing.T) {
 		dirty  map[string]*entryNodeMetricsMap
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1095,8 +1091,7 @@ func Test_nodeMetricsMap_missLocked(t *testing.T) {
 		dirty  map[string]*entryNodeMetricsMap
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields
@@ -1179,8 +1174,7 @@ func Test_nodeMetricsMap_dirtyLocked(t *testing.T) {
 		dirty  map[string]*entryNodeMetricsMap
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields

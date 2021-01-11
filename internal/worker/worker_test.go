@@ -585,8 +585,7 @@ func Test_worker_Pause(t *testing.T) {
 		requestedCount uint64
 		completedCount uint64
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields
@@ -658,8 +657,7 @@ func Test_worker_Resume(t *testing.T) {
 		requestedCount uint64
 		completedCount uint64
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields

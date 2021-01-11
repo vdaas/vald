@@ -807,8 +807,7 @@ func TestMockTx_RollbackUnlessCommitted(t *testing.T) {
 		SelectFunc                  func(column ...string) SelectStmt
 		DeleteFromFunc              func(table string) DeleteStmt
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields
@@ -1444,8 +1443,7 @@ func TestMockConn_SetConnMaxLifetime(t *testing.T) {
 		SetMaxIdleConnsFunc    func(n int)
 		SetMaxOpenConnsFunc    func(n int)
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1538,8 +1536,7 @@ func TestMockConn_SetMaxIdleConns(t *testing.T) {
 		SetMaxIdleConnsFunc    func(n int)
 		SetMaxOpenConnsFunc    func(n int)
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1632,8 +1629,7 @@ func TestMockConn_SetMaxOpenConns(t *testing.T) {
 		SetMaxIdleConnsFunc    func(n int)
 		SetMaxOpenConnsFunc    func(n int)
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

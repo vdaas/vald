@@ -294,8 +294,7 @@ func Test_ou_Store(t *testing.T) {
 		dirty  map[uint32]*entryOu
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -549,8 +548,7 @@ func Test_entryOu_storeLocked(t *testing.T) {
 	type fields struct {
 		p unsafe.Pointer
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -634,8 +632,7 @@ func Test_ou_Delete(t *testing.T) {
 		dirty  map[uint32]*entryOu
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -801,8 +798,7 @@ func Test_ou_missLocked(t *testing.T) {
 		dirty  map[uint32]*entryOu
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields
@@ -885,8 +881,7 @@ func Test_ou_dirtyLocked(t *testing.T) {
 		dirty  map[uint32]*entryOu
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields

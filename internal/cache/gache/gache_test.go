@@ -133,8 +133,7 @@ func Test_cache_Start(t *testing.T) {
 		expireCheckDur time.Duration
 		expiredHook    func(context.Context, string)
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

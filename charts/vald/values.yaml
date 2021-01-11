@@ -973,6 +973,9 @@ gateway:
           service: vald-gateway
     # @schema {"name": "gateway.vald.ingress", "type": "object"}
     ingress:
+      # @schema {"name": "gateway.vald.ingress.pathType", "type": "string"}
+      # gateway.vald.ingress.pathType -- gateway ingress pathType
+      pathType: ImplementationSpecific
       # @schema {"name": "gateway.vald.ingress.enabled", "type": "boolean"}
       # gateway.vald.ingress.enabled -- gateway ingress enabled
       enabled: false
@@ -1013,12 +1016,12 @@ gateway:
         # @schema {"name": "gateway.vald.gateway_config.discoverer.duration", "type": "string"}
         # gateway.vald.gateway_config.discoverer.duration -- discoverer duration
         duration: 200ms
-        # @schema {"name": "gateway.vald.gateway_config.discoverer.discover_client", "alias": "grpc.client"}
-        # gateway.vald.gateway_config.discoverer.discover_client -- gRPC client for discoverer (overrides defaults.grpc.client)
-        discover_client: {}
-        # @schema {"name": "gateway.vald.gateway_config.discoverer.agent_client", "alias": "grpc.client"}
-        # gateway.vald.gateway_config.discoverer.agent_client -- gRPC client for agents (overrides defaults.grpc.client)
-        agent_client: {}
+        # @schema {"name": "gateway.vald.gateway_config.discoverer.client", "alias": "grpc.client"}
+        # gateway.vald.gateway_config.discoverer.client -- gRPC client for discoverer (overrides defaults.grpc.client)
+        client: {}
+        # @schema {"name": "gateway.vald.gateway_config.discoverer.agent_client_options", "alias": "grpc.client"}
+        # gateway.vald.gateway_config.discoverer.agent_client_options -- gRPC client options for agents (overrides defaults.grpc.client)
+        agent_client_options: {}
       # @schema {"name": "gateway.vald.gateway_config.meta", "type": "object"}
       meta:
         # @schema {"name": "gateway.vald.gateway_config.meta.client", "alias": "grpc.client"}
@@ -1226,6 +1229,9 @@ gateway:
           service: vald-backup-gateway
     # @schema {"name": "gateway.backup.ingress", "type": "object"}
     ingress:
+      # @schema {"name": "gateway.backup.ingress.pathType", "type": "string"}
+      # gateway.backup.ingress.pathType -- gateway ingress pathType
+      pathType: ImplementationSpecific
       # @schema {"name": "gateway.backup.ingress.enabled", "type": "boolean"}
       # gateway.backup.ingress.enabled -- gateway ingress enabled
       enabled: false
@@ -1252,16 +1258,12 @@ gateway:
         memory: 700Mi
     # @schema {"name": "gateway.backup.gateway_config", "type": "object"}
     gateway_config:
-      # @schema {"name": "gateway.backup.gateway_config.client", "alias": "grpc.client"}
-      # gateway.backup.gateway_config.client -- gRPC client for next gateway (overrides defaults.grpc.client)
-      client:
-        addrs:
-          - "vald-lb-gateway.vald.svc.cluster.local"
-      # @schema {"name": "gateway.backup.gateway_config.backup", "type": "object"}
-      backup:
-        # @schema {"name": "gateway.backup.gateway_config.backup.client", "alias": "grpc.client"}
-        # gateway.backup.gateway_config.backup.client -- gRPC client for backup (overrides defaults.grpc.client)
-        client: {}
+      # @schema {"name": "gateway.backup.gateway_config.gateway_client", "alias": "grpc.client"}
+      # gateway.backup.gateway_config.gateway_client -- gRPC client for next gateway (overrides defaults.grpc.client)
+      gateway_client: {}
+      # @schema {"name": "gateway.backup.gateway_config.backup_client", "alias": "grpc.client"}
+      # gateway.backup.gateway_config.backup_client -- gRPC client for backup manager (overrides defaults.grpc.client)
+      backup_client: {}
   # @schema {"name": "gateway.lb", "type": "object"}
   lb:
     # @schema {"name": "gateway.lb.enabled", "type": "boolean"}
@@ -1458,6 +1460,9 @@ gateway:
           service: vald-lb-gateway
     # @schema {"name": "gateway.lb.ingress", "type": "object"}
     ingress:
+      # @schema {"name": "gateway.lb.ingress.pathType", "type": "string"}
+      # gateway.lb.ingress.pathType -- gateway ingress pathType
+      pathType: ImplementationSpecific
       # @schema {"name": "gateway.lb.ingress.enabled", "type": "boolean"}
       # gateway.lb.ingress.enabled -- gateway ingress enabled
       enabled: false
@@ -1498,12 +1503,12 @@ gateway:
         # @schema {"name": "gateway.lb.gateway_config.discoverer.duration", "type": "string"}
         # gateway.lb.discoverer.duration -- discoverer duration
         duration: 200ms
-        # @schema {"name": "gateway.lb.gateway_config.discoverer.discover_client", "alias": "grpc.client"}
-        # gateway.lb.gateway_config.discoverer.discover_client -- gRPC client for discoverer (overrides defaults.grpc.client)
-        discover_client: {}
-        # @schema {"name": "gateway.lb.gateway_config.discoverer.agent_client", "alias": "grpc.client"}
-        # gateway.lb.gateway_config.discoverer.agent_client -- gRPC client for agents (overrides defaults.grpc.client)
-        agent_client: {}
+        # @schema {"name": "gateway.lb.gateway_config.discoverer.client", "alias": "grpc.client"}
+        # gateway.lb.gateway_config.discoverer.client -- gRPC client for discoverer (overrides defaults.grpc.client)
+        client: {}
+        # @schema {"name": "gateway.lb.gateway_config.discoverer.agent_client_options", "alias": "grpc.client"}
+        # gateway.lb.gateway_config.discoverer.agent_client_options -- gRPC client options for agents (overrides defaults.grpc.client)
+        agent_client_options: {}
   # @schema {"name": "gateway.meta", "type": "object"}
   meta:
     # @schema {"name": "gateway.meta.enabled", "type": "boolean"}
@@ -1692,6 +1697,9 @@ gateway:
           service: vald-meta-gateway
     # @schema {"name": "gateway.meta.ingress", "type": "object"}
     ingress:
+      # @schema {"name": "gateway.meta.ingress.pathType", "type": "string"}
+      # gateway.meta.ingress.pathType -- gateway ingress pathType
+      pathType: ImplementationSpecific
       # @schema {"name": "gateway.meta.ingress.enabled", "type": "boolean"}
       # gateway.meta.ingress.enabled -- gateway ingress enabled
       enabled: true
@@ -1718,11 +1726,9 @@ gateway:
         memory: 700Mi
     # @schema {"name": "gateway.meta.gateway_config", "type": "object"}
     gateway_config:
-      # @schema {"name": "gateway.meta.gateway_config.client", "alias": "grpc.client"}
-      # gateway.meta.gateway_config.client -- gRPC client for next gateway (overrides defaults.grpc.client)
-      client:
-        addrs:
-          - "vald-backup-gateway.vald.svc.cluster.local"
+      # @schema {"name": "gateway.meta.gateway_config.gateway_client", "alias": "grpc.client"}
+      # gateway.meta.gateway_config.gateway_client -- gRPC client for next gateway (overrides defaults.grpc.client)
+      gateway_client: {}
       # @schema {"name": "gateway.meta.gateway_config.meta", "type": "object"}
       meta:
         # @schema {"name": "gateway.meta.gateway_config.meta.client", "alias": "grpc.client"}
@@ -2502,7 +2508,6 @@ discoverer:
 
 # @schema {"name": "manager", "type": "object"}
 manager:
-
   # @schema {"name": "manager.compressor", "type": "object"}
   compressor:
     # @schema {"name": "manager.compressor.enabled", "type": "boolean"}
@@ -3348,16 +3353,16 @@ manager:
         # @schema {"name": "manager.index.indexer.discoverer.duration", "type": "string"}
         # manager.index.indexer.discoverer.duration -- refresh duration to discover
         duration: 500ms
-        # @schema {"name": "manager.index.indexer.discoverer.discover_client", "alias": "grpc.client"}
-        # manager.index.indexer.discoverer.discover_client -- gRPC client for discoverer (overrides defaults.grpc.client)
-        discover_client: {}
-        # @schema {"name": "manager.index.indexer.discoverer.agent_client", "alias": "grpc.client"}
-        # manager.index.indexer.discoverer.agent_client -- gRPC client for agents (overrides defaults.grpc.client)
-        agent_client:
+        # @schema {"name": "manager.index.indexer.discoverer.client", "alias": "grpc.client"}
+        # manager.index.indexer.discoverer.client -- gRPC client for discoverer (overrides defaults.grpc.client)
+        client: {}
+        # @schema {"name": "manager.index.indexer.discoverer.agent_client_options", "alias": "grpc.client"}
+        # manager.index.indexer.discoverer.agent_client_options -- gRPC client options for agents (overrides defaults.grpc.client)
+        agent_client_options:
           dial_option:
             tcp:
               dialer:
-                keep_alive: 15m
+                keep_alive: 15m #indexer fetches uncommitted index length, which includes huge payload so we need to set keep_alive longer than usual
 
 # @schema {"name": "meta", "type": "object"}
 meta:

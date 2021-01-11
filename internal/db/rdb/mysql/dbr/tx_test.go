@@ -182,8 +182,7 @@ func Test_tx_RollbackUnlessCommitted(t *testing.T) {
 	type fields struct {
 		Tx *dbr.Tx
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields

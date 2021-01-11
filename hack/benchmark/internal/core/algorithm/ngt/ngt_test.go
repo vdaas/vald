@@ -222,8 +222,7 @@ func Test_core_Close(t *testing.T) {
 		dimension  int
 		NGT        ngt.NGT
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields

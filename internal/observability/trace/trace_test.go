@@ -181,8 +181,7 @@ func Test_tracer_Start(t *testing.T) {
 	type fields struct {
 		samplingRate float64
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

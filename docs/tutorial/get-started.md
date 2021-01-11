@@ -55,14 +55,59 @@ If you want to learn about Scylla, please refer to [the official website](https:
     Deploy Scylla as a backup database.
 
     ```bash
-    kubectl apply -f k8s/jobs/db/initialize/cassandra/configmap.yaml
-    kubectl apply -f k8s/external/scylla
+    make k8s/external/scylla/deploy
     ```
 
+
+    In this make command, we are deploying a lightweight Cassandra-compatible scylladb using Operator.
+    <details><summary>If you're interested in this make command, take a look here for more detail of make command</summary><br>
+    
+    1. Deploy cert-manager for ScyllaDB  
+   
+    ```bash
+    kubectl apply -f https://github.com/jetstack/cert-manager/releases/latest/download/cert-manager.yaml
+    kubectl wait -n cert-manager --for=condition=ready pod -l app=cert-manager --timeout=60s
+    kubectl wait -n cert-manager --for=condition=ready pod -l app=cainjector --timeout=60s
+    kubectl wait -n cert-manager --for=condition=ready pod -l app=webhook --timeout=60s
+    ```
+
+    2. Deploy ScyllaDB Operator  
+
+    ```bash
+    kubectl apply -f https://raw.githubusercontent.com/scylladb/scylla-operator/master/examples/common/operator.yaml
+    kubectl wait -n scylla-operator-system --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=scylla-operator-controller-manager-0 --timeout=600s
+    ```
+
+    3. Deploy ScyllaDB  
+
+    ```bash
+    kubectl apply -f k8s/external/scylla/scyllacluster.yaml
+    kubectl wait -n scylla --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=vald-scylla-cluster-dc0-rack0-0 --timeout=600s
+    kubectl wait -n scylla --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=vald-scylla-cluster-dc0-rack0-1 --timeout=600s
+    kubectl wait -n scylla --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=vald-scylla-cluster-dc0-rack0-2 --timeout=600s
+    kubectl -n scylla get pods
+    ```
+    
+    4. Configure ScyllaDB  
+
+    ```bash
+
+    kubectl apply -f k8s/jobs/db/initialize/scylla
+    kubectl wait --for=condition=complete job/scylla-init --timeout=60s
+    ```
+
+    </details>
+    
+    
+    For documentation on scylladb operator, please refer to [here](http://operator.docs.scylladb.com/master/generic)
+    
+    
+    
     Apply kubernetes metrics-server
 
     ```bash
-    kubectl apply -f k8s/metrics/metrics-server
+    kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+    kubectl wait -n kube-system --for=condition=ready pod -l k8s-app=metrics-server --timeout=600s
     ```
 
 3. Deploy Vald using helm

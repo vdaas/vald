@@ -91,8 +91,6 @@ func TestBackupManager_Bind(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			b := &BackupManager{
-				Host:   test.fields.Host,
-				Port:   test.fields.Port,
 				Client: test.fields.Client,
 			}
 

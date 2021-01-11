@@ -19,7 +19,6 @@ package discoverer
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/vdaas/vald/internal/errgroup"
@@ -65,20 +64,6 @@ func WithOnDisconnectFunc(f func(ctx context.Context, c Client, addr string) err
 func WithDiscovererClient(gc grpc.Client) Option {
 	return func(c *client) error {
 		c.dscClient = gc
-		return nil
-	}
-}
-
-func WithDiscovererAddr(addr string) Option {
-	return func(c *client) error {
-		c.dscAddr = addr
-		return nil
-	}
-}
-
-func WithDiscovererHostPort(host string, port int) Option {
-	return func(c *client) error {
-		c.dscAddr = fmt.Sprintf("%s:%d", host, port)
 		return nil
 	}
 }

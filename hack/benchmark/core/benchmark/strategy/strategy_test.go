@@ -391,8 +391,7 @@ func Test_strategy_Run(t *testing.T) {
 		prop64    func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset, []uint, *uint64) (interface{}, error)
 		parallel  bool
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -517,8 +516,7 @@ func Test_strategy_Close(t *testing.T) {
 		prop64    func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset, []uint, *uint64) (interface{}, error)
 		parallel  bool
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields
@@ -637,8 +635,7 @@ func Test_strategy_float32(t *testing.T) {
 		prop64    func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset, []uint, *uint64) (interface{}, error)
 		parallel  bool
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -772,8 +769,7 @@ func Test_strategy_float64(t *testing.T) {
 		prop64    func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset, []uint, *uint64) (interface{}, error)
 		parallel  bool
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

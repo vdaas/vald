@@ -1112,8 +1112,7 @@ func Test_logger_Info(t *testing.T) {
 		retry  retry.Retry
 		glg    *glg.Glg
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1204,8 +1203,7 @@ func Test_logger_Infof(t *testing.T) {
 		retry  retry.Retry
 		glg    *glg.Glg
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1297,8 +1295,7 @@ func Test_logger_Debug(t *testing.T) {
 		retry  retry.Retry
 		glg    *glg.Glg
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1389,8 +1386,7 @@ func Test_logger_Debugf(t *testing.T) {
 		retry  retry.Retry
 		glg    *glg.Glg
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1482,8 +1478,7 @@ func Test_logger_Warn(t *testing.T) {
 		retry  retry.Retry
 		glg    *glg.Glg
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1574,8 +1569,7 @@ func Test_logger_Warnf(t *testing.T) {
 		retry  retry.Retry
 		glg    *glg.Glg
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1667,8 +1661,7 @@ func Test_logger_Error(t *testing.T) {
 		retry  retry.Retry
 		glg    *glg.Glg
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1759,8 +1752,7 @@ func Test_logger_Errorf(t *testing.T) {
 		retry  retry.Retry
 		glg    *glg.Glg
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1852,8 +1844,7 @@ func Test_logger_Fatal(t *testing.T) {
 		retry  retry.Retry
 		glg    *glg.Glg
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1944,8 +1935,7 @@ func Test_logger_Fatalf(t *testing.T) {
 		retry  retry.Retry
 		glg    *glg.Glg
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

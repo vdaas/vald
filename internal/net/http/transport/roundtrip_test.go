@@ -524,8 +524,7 @@ func Test_closeBody(t *testing.T) {
 	type args struct {
 		rc io.ReadCloser
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

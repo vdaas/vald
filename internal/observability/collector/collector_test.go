@@ -294,8 +294,7 @@ func Test_collector_Stop(t *testing.T) {
 		metrics  []metrics.Metric
 		eg       errgroup.Group
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

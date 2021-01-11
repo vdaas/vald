@@ -295,8 +295,7 @@ func Test_bidi_Set(t *testing.T) {
 		uo [slen]*uo
 		l  uint64
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -584,8 +583,7 @@ func Test_bidi_Range(t *testing.T) {
 		uo [slen]*uo
 		l  uint64
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

@@ -660,8 +660,7 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 		der                   *net.Dialer
 		dialer                func(ctx context.Context, network, addr string) (net.Conn, error)
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1630,8 +1629,7 @@ func Test_dialer_cacheExpireHook(t *testing.T) {
 		der                   *net.Dialer
 		dialer                func(ctx context.Context, network, addr string) (net.Conn, error)
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

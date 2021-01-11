@@ -108,8 +108,7 @@ func Test_benchmark_Run(t *testing.T) {
 		dataset    assets.Dataset
 		strategies []Strategy
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

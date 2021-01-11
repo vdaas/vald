@@ -95,7 +95,6 @@ docker/build/discoverer-k8s:
 	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
-	    --build-arg BASE_TAG=$(TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
 .PHONY: docker/name/gateway-vald

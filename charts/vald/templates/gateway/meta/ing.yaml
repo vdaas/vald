@@ -15,7 +15,7 @@
 #
 {{- $gateway := .Values.gateway.meta -}}
 {{- if and $gateway.enabled $gateway.ingress.enabled }}
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
@@ -31,11 +31,17 @@ metadata:
     app.kubernetes.io/component: gateway-meta
   name: {{ $gateway.name }}-ingress
 spec:
+  defaultBackend:
+    service:
+      name: {{ $gateway.name }}
+      {{- include "vald.ingressPort" (dict "Values" $gateway.ingress) | nindent 6 }}
   rules:
-    - host: {{ $gateway.ingress.host }}
-      http:
-        paths:
-          - backend:
-              serviceName: {{ $gateway.name }}
-              servicePort: {{ $gateway.ingress.servicePort }}
+  - host: {{ $gateway.ingress.host }}
+    http:
+      paths:
+      - backend:
+          service:
+            name: {{ $gateway.name }}
+            {{- include "vald.ingressPort" (dict "Values" $gateway.ingress) | nindent 12 }}
+        pathType: {{ $gateway.ingress.pathType }}
 {{- end }}

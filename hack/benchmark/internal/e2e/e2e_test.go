@@ -117,8 +117,7 @@ func Test_e2e_Run(t *testing.T) {
 		client     client.Client
 		srvStarter func(context.Context, testing.TB, assets.Dataset) func()
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

@@ -16,7 +16,6 @@
 
 package redis
 
-type Setter interface {
-	// Set(string, string) *redis.StringCmd
+type Setter interface { // Set(string, string) *redis.StringCmd
 	// MSet(map[string]string) *redis.StringCmd
 }

@@ -500,8 +500,7 @@ func Test_cassandraMetrics_ObserveQuery(t *testing.T) {
 		mu                 sync.Mutex
 		ms                 []metrics.MeasurementWithTags
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

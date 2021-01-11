@@ -105,7 +105,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 
 	backup, err = service.NewBackup(
-		service.WithBackupAddr(cfg.Gateway.BackupManager.Client.Addrs[0]),
 		service.WithBackupClient(
 			grpc.New(backupClientOptions...),
 		),
@@ -120,12 +119,8 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		discoverer.WithPort(cfg.Gateway.AgentPort),
 		discoverer.WithServiceDNSARecord(cfg.Gateway.AgentDNS),
 		discoverer.WithDiscovererClient(grpc.New(discovererClientOptions...)),
-		discoverer.WithDiscovererHostPort(
-			cfg.Gateway.Discoverer.Host,
-			cfg.Gateway.Discoverer.Port,
-		),
 		discoverer.WithDiscoverDuration(cfg.Gateway.Discoverer.Duration),
-		discoverer.WithOptions(cfg.Gateway.Discoverer.AgentClient.Opts()...),
+		discoverer.WithOptions(cfg.Gateway.Discoverer.AgentClientOptions.Opts()...),
 		discoverer.WithNodeName(cfg.Gateway.NodeName),
 	)
 	if err != nil {
@@ -143,7 +138,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, errors.ErrInvalidMetaDataConfig
 	}
 	metadata, err = service.NewMeta(
-		service.WithMetaAddr(cfg.Gateway.Meta.Client.Addrs[0]),
 		service.WithMetaClient(
 			grpc.New(metadataClientOptions...),
 		),

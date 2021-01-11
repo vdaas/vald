@@ -393,8 +393,7 @@ func Test_observability_Stop(t *testing.T) {
 		exporters []exporter.Exporter
 		profilers []profiler.Profiler
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

@@ -114,8 +114,7 @@ func Test_createIndex_Run(t *testing.T) {
 		poolSize uint32
 		Indexer  client.Indexer
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -207,8 +206,7 @@ func Test_createIndex_do(t *testing.T) {
 		poolSize uint32
 		Indexer  client.Indexer
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

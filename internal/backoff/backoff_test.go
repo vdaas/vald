@@ -472,8 +472,7 @@ func Test_backoff_Close(t *testing.T) {
 		backoffTimeLimit      time.Duration
 		errLog                bool
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields

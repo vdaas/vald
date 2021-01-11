@@ -114,8 +114,7 @@ func Test_search_Run(t *testing.T) {
 		parallel bool
 		cfg      *client.SearchConfig
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -209,8 +208,7 @@ func Test_search_run(t *testing.T) {
 		parallel bool
 		cfg      *client.SearchConfig
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -304,8 +302,7 @@ func Test_search_runParallel(t *testing.T) {
 		parallel bool
 		cfg      *client.SearchConfig
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -399,8 +396,7 @@ func Test_search_do(t *testing.T) {
 		parallel bool
 		cfg      *client.SearchConfig
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

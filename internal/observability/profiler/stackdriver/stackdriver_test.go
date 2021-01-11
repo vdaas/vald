@@ -197,8 +197,7 @@ func Test_prof_Stop(t *testing.T) {
 		Config     *profiler.Config
 		clientOpts []google.Option
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
