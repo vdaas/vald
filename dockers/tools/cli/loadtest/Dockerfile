@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 #
 
 ARG GO_VERSION=latest
+ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>
 
 FROM golang:${GO_VERSION} AS golang
 
@@ -84,6 +85,7 @@ RUN GO_VERSION="$(cat GO_VERSION)" \
 FROM ubuntu:devel
 # Start From Alpine For Debug Environment
 # FROM alpine:latest
+LABEL maintainer "${MAINTAINER}"
 
 ENV APP_NAME loadtest
 

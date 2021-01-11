@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +14,9 @@
 # limitations under the License.
 #
 
-REPO                           ?= vdaas
+ORG                             ?= vdaas
 NAME                            = vald
-GOPKG                           = github.com/$(REPO)/$(NAME)
+GOPKG                           = github.com/$(ORG)/$(NAME)
 GOPRIVATE                       = $(GOPKG),$(GOPKG)/apis
 DATETIME                        = $(eval DATETIME := $(shell date -u +%Y/%m/%d_%H:%M:%S%z))$(DATETIME)
 TAG                            ?= latest
@@ -40,6 +40,7 @@ MANAGER_INDEX_IMAGE             = $(NAME)-manager-index
 META_CASSANDRA_IMAGE            = $(NAME)-meta-cassandra
 META_GATEWAY_IMAGE              = $(NAME)-meta-gateway
 META_REDIS_IMAGE                = $(NAME)-meta-redis
+MAINTAINER                      = "$(ORG).org $(NAME) team <$(NAME)@$(ORG).org>"
 
 VERSION ?= $(eval VALD_VERSION := $(shell cat versions/VALD_VERSION))$(VALD_VERSION)
 
@@ -222,6 +223,11 @@ SHELL = bash
 
 include Makefile.d/functions.mk
 
+.PHONY: maintainer
+## print maintainer
+maintainer:
+	@echo $(MAINTAINER)
+
 .PHONY: help
 ## print all available commands
 help:
@@ -273,8 +279,8 @@ clean:
 ## add license to files
 license:
 	GOPRIVATE=$(GOPRIVATE) \
+	MAINTAINER=$(MAINTAINER) \
 	go run hack/license/gen/main.go ./
-
 
 .PHONY: init
 ## initialize development environment
