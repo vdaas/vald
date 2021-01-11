@@ -9,9 +9,6 @@
 - [apis/proto/gateway/vald/vald.proto](#apis/proto/gateway/vald/vald.proto)
     - [Vald](#vald.Vald)
   
-- [apis/proto/gateway/filter/filter.proto](#apis/proto/gateway/filter/filter.proto)
-    - [Filter](#filter.Filter)
-  
 - [apis/proto/payload/payload.proto](#apis/proto/payload/payload.proto)
     - [Backup](#payload.Backup)
     - [Backup.Compressed](#payload.Backup.Compressed)
@@ -150,42 +147,6 @@
 | MultiRemove | [.payload.Object.IDs](#payload.Object.IDs) | [.payload.Object.Locations](#payload.Object.Locations) |  |
 | GetObject | [.payload.Object.ID](#payload.Object.ID) | [.payload.Object.Vector](#payload.Object.Vector) |  |
 | StreamGetObject | [.payload.Object.ID](#payload.Object.ID) stream | [.payload.Object.Vector](#payload.Object.Vector) stream |  |
-
- 
-
-
-
-<a name="apis/proto/gateway/filter/filter.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## apis/proto/gateway/filter/filter.proto
-
-
- 
-
- 
-
- 
-
-
-<a name="filter.Filter"></a>
-
-### Filter
-
-
-| Method Name | Request Type | Response Type | Description |
-| ----------- | ------------ | ------------- | ------------|
-| SearchObject | [.payload.Search.ObjectRequest](#payload.Search.ObjectRequest) | [.payload.Search.Response](#payload.Search.Response) |  |
-| StreamSearchObject | [.payload.Search.ObjectRequest](#payload.Search.ObjectRequest) stream | [.payload.Search.Response](#payload.Search.Response) stream |  |
-| InsertObject | [.payload.Object.Blob](#payload.Object.Blob) | [.payload.Object.Location](#payload.Object.Location) |  |
-| StreamInsertObject | [.payload.Object.Blob](#payload.Object.Blob) stream | [.payload.Object.Location](#payload.Object.Location) stream |  |
-| MultiInsertObject | [.payload.Object.Blob](#payload.Object.Blob) | [.payload.Object.Locations](#payload.Object.Locations) |  |
-| UpdateObject | [.payload.Object.Blob](#payload.Object.Blob) | [.payload.Object.Location](#payload.Object.Location) |  |
-| StreamUpdateObject | [.payload.Object.Blob](#payload.Object.Blob) stream | [.payload.Object.Location](#payload.Object.Location) stream |  |
-| MultiUpdateObject | [.payload.Object.Blob](#payload.Object.Blob) | [.payload.Object.Locations](#payload.Object.Locations) |  |
-| UpsertObject | [.payload.Object.Blob](#payload.Object.Blob) | [.payload.Object.Location](#payload.Object.Location) |  |
-| StreamUpsertObject | [.payload.Object.Blob](#payload.Object.Blob) stream | [.payload.Object.Location](#payload.Object.Location) stream |  |
-| MultiUpsertObject | [.payload.Object.Blob](#payload.Object.Blob) | [.payload.Object.Locations](#payload.Object.Locations) |  |
 
  
 
