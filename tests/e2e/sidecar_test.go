@@ -31,8 +31,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vdaas/vald/apis/grpc/agent/core"
-	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/agent/core"
+	"github.com/vdaas/vald/apis/grpc/v1/gateway/vald"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/tests/e2e/portforward"
 
 	"gonum.org/v1/hdf5"
@@ -209,7 +210,7 @@ func readDatasetI32(file *hdf5.File, name string) (map[string][]int32, error) {
 	return vecs, nil
 }
 
-func getClient(ctx context.Context) (core.AgentClient, error) {
+func getAgentClient(ctx context.Context) (core.AgentClient, error) {
 	conn, err := grpc.DialContext(
 		ctx,
 		host+":"+strconv.Itoa(port),
@@ -227,6 +228,26 @@ func getClient(ctx context.Context) (core.AgentClient, error) {
 	}
 
 	return core.NewAgentClient(conn), nil
+}
+
+func getClient(ctx context.Context) (vald.ValdClient, error) {
+	conn, err := grpc.DialContext(
+		ctx,
+		host+":"+strconv.Itoa(port),
+		grpc.WithInsecure(),
+		grpc.WithKeepaliveParams(
+			keepalive.ClientParameters{
+				Time:                time.Second,
+				Timeout:             5 * time.Second,
+				PermitWithoutStream: true,
+			},
+		),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return vald.NewValdClient(conn), nil
 }
 
 func TestE2EInsert(t *testing.T) {
@@ -296,7 +317,7 @@ func TestE2EInsert(t *testing.T) {
 func TestE2ECreateIndex(t *testing.T) {
 	ctx := context.Background()
 
-	client, err := getClient(ctx)
+	client, err := getAgentClient(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -395,7 +416,7 @@ func TestE2ESearch(t *testing.T) {
 func TestE2EIndexInfo(t *testing.T) {
 	ctx := context.Background()
 
-	client, err := getClient(ctx)
+	client, err := getAgentClient(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}

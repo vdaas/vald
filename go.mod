@@ -81,16 +81,10 @@ require (
 	google.golang.org/genproto v0.0.0-20210114201628-6edceaf6022f
 	google.golang.org/grpc v1.34.0
 	gopkg.in/yaml.v2 v2.4.0
-<<<<<<< HEAD
 	k8s.io/api v0.20.2
 	k8s.io/apimachinery v0.20.2
-	k8s.io/client-go v0.20.2
-=======
-	k8s.io/api v0.20.1
-	k8s.io/apimachinery v0.20.1
 	k8s.io/cli-runtime v0.0.0-00010101000000-000000000000
-	k8s.io/client-go v0.20.1
->>>>>>> aee7f915 (:sparkles: add tests/e2e package)
+	k8s.io/client-go v0.20.2
 	k8s.io/metrics v0.0.0-00010101000000-000000000000
 	sigs.k8s.io/controller-runtime v0.0.0-00010101000000-000000000000
 )
