@@ -75,7 +75,7 @@ jobs:
       - name: Determine tag name (master)
         if: github.ref == 'refs/heads/master'
         run: |
-          echo "PRIMARY_TAG=nightly" >> $GITHUB_ENV
+          echo "PRIMARY_TAG=latest" >> $GITHUB_ENV
       - name: Determine tag name (pull request)
         if: github.event_name == 'pull_request'
         run: |
