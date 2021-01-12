@@ -63,9 +63,7 @@ func Do(ctx context.Context, opts ...Option) error {
 		opt(r)
 	}
 
-	if err := info.Init(r.name); err != nil {
-		return err
-	}
+	info.Init(r.name)
 
 	p, isHelp, err := params.New(
 		params.WithConfigFileDescription(fmt.Sprintf("%s config file path", r.name)),
