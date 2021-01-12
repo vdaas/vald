@@ -83,37 +83,37 @@ func (c *compressorMetrics) MeasurementWithTags(ctx context.Context) ([]metrics.
 
 func (c *compressorMetrics) View() []*metrics.View {
 	return []*metrics.View{
-		&metrics.View{
+		{
 			Name:        "compressor_compressor_buffer",
 			Description: c.compressorBuffer.Description(),
 			Measure:     &c.compressorBuffer,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "compressor_compressor_requested_jobs_total",
 			Description: c.compressorTotalRequestedJob.Description(),
 			Measure:     &c.compressorTotalRequestedJob,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "compressor_compressor_completed_jobs_total",
 			Description: c.compressorTotalCompletedJob.Description(),
 			Measure:     &c.compressorTotalCompletedJob,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "compressor_registerer_buffer",
 			Description: c.registererBuffer.Description(),
 			Measure:     &c.registererBuffer,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "compressor_registerer_requested_jobs_total",
 			Description: c.registererTotalRequestedJob.Description(),
 			Measure:     &c.registererTotalRequestedJob,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "compressor_registerer_completed_jobs_total",
 			Description: c.registererTotalCompletedJob.Description(),
 			Measure:     &c.registererTotalCompletedJob,

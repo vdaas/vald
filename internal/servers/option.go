@@ -27,11 +27,9 @@ import (
 
 type Option func(*listener)
 
-var (
-	defaultOpts = []Option{
-		WithErrorGroup(errgroup.Get()),
-	}
-)
+var defaultOptions = []Option{
+	WithErrorGroup(errgroup.Get()),
+}
 
 func WithServer(srv server.Server) Option {
 	return func(l *listener) {

@@ -27,14 +27,12 @@ import (
 
 type Option func(*server)
 
-var (
-	defaultOpts = []Option{
-		WithErrGroup(errgroup.Get()),
-		WithReplicationCount(3),
-		WithStreamConcurrency(20),
-		WithTimeout("5s"),
-	}
-)
+var defaultOptions = []Option{
+	WithErrGroup(errgroup.Get()),
+	WithReplicationCount(3),
+	WithStreamConcurrency(20),
+	WithTimeout("5s"),
+}
 
 func WithGateway(g service.Gateway) Option {
 	return func(s *server) {
@@ -88,7 +86,7 @@ func WithTimeout(dur string) Option {
 
 func WithReplicationCount(rep int) Option {
 	return func(s *server) {
-		if rep > 1 {
+		if rep > 0 {
 			s.replica = rep
 		}
 	}

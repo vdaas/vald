@@ -26,12 +26,10 @@ import (
 
 type TimeoutOption func(*timeout)
 
-var (
-	defaultTimeoutOpts = []TimeoutOption{
-		WithTimeout("3s"),
-		WithErrorGroup(errgroup.Get()),
-	}
-)
+var defaultTimeoutOpts = []TimeoutOption{
+	WithTimeout("3s"),
+	WithErrorGroup(errgroup.Get()),
+}
 
 func WithTimeout(dur string) TimeoutOption {
 	return func(t *timeout) {

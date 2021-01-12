@@ -106,7 +106,6 @@ func TestNewWithConfig(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -181,7 +180,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -281,7 +279,6 @@ func Test_observability_PreStart(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -381,7 +378,6 @@ func Test_observability_Start(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -397,8 +393,7 @@ func Test_observability_Stop(t *testing.T) {
 		exporters []exporter.Exporter
 		profilers []profiler.Profiler
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

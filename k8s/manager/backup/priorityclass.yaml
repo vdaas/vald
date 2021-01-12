@@ -27,4 +27,4 @@ metadata:
     app.kubernetes.io/component: manager-backup
 value: 1e+06
 globalDefault: false
-description: "A priority class for Vald backupManager."
+description: "A priority class for Vald backup manager."

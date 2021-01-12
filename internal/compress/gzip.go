@@ -144,7 +144,7 @@ type gzipWriter struct {
 	w   io.WriteCloser
 }
 
-// Write writes len(p) bytes from p
+// Write writes len(p) bytes from p.
 func (g *gzipWriter) Write(p []byte) (n int, err error) {
 	return g.w.Write(p)
 }

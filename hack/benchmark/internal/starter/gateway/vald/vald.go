@@ -24,8 +24,7 @@ import (
 	"github.com/vdaas/vald/hack/benchmark/internal/starter"
 )
 
-type server struct {
-	// cfg *config.Data
+type server struct { // cfg *config.Data
 }
 
 func New(opts ...Option) starter.Starter {

@@ -20,6 +20,7 @@ import (
 	"github.com/kpango/glg"
 	"github.com/vdaas/vald/internal/log/format"
 	"github.com/vdaas/vald/internal/log/level"
+	log "github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/log/retry"
 )
 
@@ -31,9 +32,9 @@ type logger struct {
 }
 
 // New returns a new logger instance.
-func New(opts ...Option) *logger {
+func New(opts ...Option) log.Logger {
 	l := new(logger)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(l)
 	}
 

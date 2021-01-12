@@ -20,6 +20,8 @@ package errors
 import (
 	"reflect"
 	"testing"
+
+	"go.uber.org/goleak"
 )
 
 func TestErrRedisNotFoundIdentity_Error(t *testing.T) {
@@ -90,7 +92,6 @@ func TestErrRedisNotFoundIdentity_Error(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -160,7 +161,81 @@ func TestIsErrRedisNotFound(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+		})
+	}
+}
 
+func TestErrRedisNotFoundIdentity_Unwrap(t *testing.T) {
+	t.Parallel()
+	type fields struct {
+		err error
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !Is(err, w.err) {
+			return Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           err: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           err: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			e := &ErrRedisNotFoundIdentity{
+				err: test.fields.err,
+			}
+
+			err := e.Unwrap()
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
 		})
 	}
 }

@@ -105,21 +105,21 @@ func (sm *sidecarMetrics) View() []*metrics.View {
 	}
 
 	return []*metrics.View{
-		&metrics.View{
+		{
 			Name:        "agent_sidecar_completed_upload_total",
 			Description: sm.uploadTotal.Description(),
 			TagKeys:     uploadKeys,
 			Measure:     &sm.uploadTotal,
 			Aggregation: metrics.Count(),
 		},
-		&metrics.View{
+		{
 			Name:        "agent_sidecar_upload_bytes",
 			Description: sm.uploadBytes.Description(),
 			TagKeys:     uploadKeys,
 			Measure:     &sm.uploadBytes,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "agent_sidecar_upload_latency",
 			Description: sm.uploadLatency.Description(),
 			TagKeys:     uploadKeys,

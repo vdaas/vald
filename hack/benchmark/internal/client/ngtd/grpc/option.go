@@ -24,24 +24,22 @@ import (
 
 type Option func(*ngtdClient)
 
-var (
-	defaultOptions = []Option{
-		WithAddr("127.0.0.1:8200"),
-		WithGRPCClientOption(
-			(&config.GRPCClient{
-				Addrs: []string{
-					"127.0.0.1:8200",
-				},
-				CallOption: &config.CallOption{
-					MaxRecvMsgSize: 100000000000,
-				},
-				DialOption: &config.DialOption{
-					Insecure: true,
-				},
-			}).Bind().Opts()...,
-		),
-	}
-)
+var defaultOptions = []Option{
+	WithAddr("127.0.0.1:8200"),
+	WithGRPCClientOption(
+		(&config.GRPCClient{
+			Addrs: []string{
+				"127.0.0.1:8200",
+			},
+			CallOption: &config.CallOption{
+				MaxRecvMsgSize: 100000000000,
+			},
+			DialOption: &config.DialOption{
+				Insecure: true,
+			},
+		}).Bind().Opts()...,
+	),
+}
 
 func WithAddr(addr string) Option {
 	return func(c *ngtdClient) {

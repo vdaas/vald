@@ -20,23 +20,21 @@ package service
 import (
 	"time"
 
-	"github.com/vdaas/vald/internal/client/discoverer"
+	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
 type Option func(i *index) error
 
-var (
-	defaultOpts = []Option{
-		WithErrGroup(errgroup.Get()),
-		WithIndexingConcurrency(1),
-		WithIndexingDuration("1m"),
-		WithIndexingDurationLimit("30m"),
-		WithMinUncommitted(100),
-		WithCreationPoolSize(10000),
-	}
-)
+var defaultOptions = []Option{
+	WithErrGroup(errgroup.Get()),
+	WithIndexingConcurrency(1),
+	WithIndexingDuration("1m"),
+	WithIndexingDurationLimit("30m"),
+	WithMinUncommitted(100),
+	WithCreationPoolSize(10000),
+}
 
 func WithIndexingConcurrency(c int) Option {
 	return func(idx *index) error {

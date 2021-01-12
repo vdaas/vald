@@ -28,15 +28,13 @@ import (
 
 type Option func(o *observer) error
 
-var (
-	defaultOpts = []Option{
-		WithErrGroup(errgroup.Get()),
-		WithBackupDuration("10m"),
-		WithPostStopTimeout("2m"),
-		WithWatch(true),
-		WithTicker(true),
-	}
-)
+var defaultOptions = []Option{
+	WithErrGroup(errgroup.Get()),
+	WithBackupDuration("10m"),
+	WithPostStopTimeout("2m"),
+	WithWatch(true),
+	WithTicker(true),
+}
 
 func WithBackupDuration(dur string) Option {
 	return func(o *observer) error {

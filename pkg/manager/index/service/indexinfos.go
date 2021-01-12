@@ -21,7 +21,7 @@ import (
 	"sync/atomic"
 	"unsafe"
 
-	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 )
 
 type indexInfos struct {

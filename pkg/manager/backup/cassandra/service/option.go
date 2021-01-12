@@ -23,11 +23,9 @@ import (
 
 type Option func(*client) error
 
-var (
-	defaultOpts = []Option{
-		WithMetaTable("meta_vector"),
-	}
-)
+var defaultOptions = []Option{
+	WithTableName("backup_vector"),
+}
 
 func WithCassandra(db cassandra.Cassandra) Option {
 	return func(c *client) error {
@@ -39,10 +37,10 @@ func WithCassandra(db cassandra.Cassandra) Option {
 	}
 }
 
-func WithMetaTable(name string) Option {
+func WithTableName(name string) Option {
 	return func(c *client) error {
 		if name != "" {
-			c.metaTable = name
+			c.tableName = name
 		}
 
 		return nil

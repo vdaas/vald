@@ -24,8 +24,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/vdaas/vald/apis/grpc/manager/replication/agent"
-	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/manager/replication/agent"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
@@ -53,12 +53,12 @@ type replicator struct {
 
 func New(opts ...Option) (rp Replicator, err error) {
 	r := new(replicator)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(r); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
-	r.pods.Store(make([]string, 0, 0))
+	r.pods.Store(make([]string, 0))
 
 	r.ctrl, err = k8s.New(
 		k8s.WithControllerName("vald k8s replication manager controller"),
@@ -138,7 +138,6 @@ func (r *replicator) Start(ctx context.Context) (<-chan error, error) {
 					ech <- err
 				}
 			}
-
 		}
 	}))
 	return ech, nil

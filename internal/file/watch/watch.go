@@ -53,7 +53,7 @@ type watch struct {
 // New returns Watcher implementation.
 func New(opts ...Option) (Watcher, error) {
 	w := new(watch)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(w); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}

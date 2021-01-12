@@ -68,19 +68,19 @@ func (i *indexerMetrics) MeasurementWithTags(ctx context.Context) ([]metrics.Mea
 
 func (i *indexerMetrics) View() []*metrics.View {
 	return []*metrics.View{
-		&metrics.View{
+		{
 			Name:        "indexer_uuid_count",
 			Description: i.uuidCount.Description(),
 			Measure:     &i.uuidCount,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "indexer_uncommitted_uuid_count",
 			Description: i.uncommittedUUIDCount.Description(),
 			Measure:     &i.uncommittedUUIDCount,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "indexer_is_indexing",
 			Description: i.isIndexing.Description(),
 			Measure:     &i.isIndexing,

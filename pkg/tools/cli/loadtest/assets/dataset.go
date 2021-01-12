@@ -25,9 +25,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 )
 
-var (
-	ErrOutOfBounds = x1b.ErrOutOfBounds
-)
+var ErrOutOfBounds = x1b.ErrOutOfBounds
 
 // Dataset is representation of train and test dataset.
 type Dataset interface {

@@ -219,7 +219,6 @@ func Test_writer_Open(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -316,7 +315,6 @@ func Test_writer_Close(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -430,7 +428,6 @@ func Test_writer_Write(t *testing.T) {
 			if err := test.checkFunc(test.want, gotN, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

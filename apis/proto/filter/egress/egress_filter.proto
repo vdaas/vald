@@ -23,8 +23,7 @@ option java_multiple_files = true;
 option java_package = "org.vdaas.vald.filter.egress";
 option java_outer_classname = "ValdEgressFilter";
 
-import "payload.proto";
-import "google/api/annotations.proto";
+import "apis/proto/payload/payload.proto";
 
 service EgressFilter {
   rpc Filter(payload.Search.Response) returns (payload.Search.Response) {}

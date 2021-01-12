@@ -26,7 +26,6 @@ import (
 	"github.com/vdaas/vald/internal/servers"
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/tls"
-
 	"go.uber.org/goleak"
 )
 
@@ -569,7 +568,6 @@ func Test_srvs_setupAPIs(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -677,7 +675,6 @@ func Test_srvs_setupHealthCheck(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -785,7 +782,6 @@ func Test_srvs_setupMetrics(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

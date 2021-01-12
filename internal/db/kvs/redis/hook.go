@@ -17,8 +17,10 @@
 package redis
 
 import (
-	redis "github.com/go-redis/redis/v7"
+	redis "github.com/go-redis/redis/v8"
 )
 
-type Hook = redis.Hook
-type Cmder = redis.Cmder
+type (
+	Hook  = redis.Hook
+	Cmder = redis.Cmder
+)

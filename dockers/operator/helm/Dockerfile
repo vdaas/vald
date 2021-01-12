@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 ARG OPERATOR_SDK_VERSION
-ARG VERSION="v1alpha1"
+ARG VERSION="v1"
 ARG GROUP="vald.vdaas.org"
 ARG VALD_KIND="ValdRelease"
 ARG VALD_HELM_OPERATOR_KIND="ValdHelmOperatorRelease"
@@ -43,8 +43,14 @@ RUN { \
         echo "  chart: helm-charts/vald-helm-operator"; \
     } > /tmp/watches.yaml
 
-WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal
-COPY internal .
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/apis/grpc/v1/errors
+COPY apis/grpc/v1/errors .
+
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal/errors
+COPY internal/errors .
+
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal/log
+COPY internal/log .
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/versions
 COPY versions .
@@ -52,8 +58,8 @@ COPY versions .
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/charts
 COPY charts .
 
-WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/hack
-COPY hack .
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/hack/helm/schema/gen
+COPY hack/helm/schema/gen .
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/Makefile.d
 COPY Makefile.d .

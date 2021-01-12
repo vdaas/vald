@@ -58,7 +58,7 @@ type bs struct {
 
 func New(opts ...Option) (Storage, error) {
 	b := new(bs)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(b); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}

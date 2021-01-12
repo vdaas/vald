@@ -29,12 +29,10 @@ import (
 
 type CollectorOption func(*collector) error
 
-var (
-	collectorDefaultOpts = []CollectorOption{
-		WithErrGroup(errgroup.Get()),
-		WithDuration("5s"),
-	}
-)
+var collectorDefaultOpts = []CollectorOption{
+	WithErrGroup(errgroup.Get()),
+	WithDuration("5s"),
+}
 
 func WithErrGroup(eg errgroup.Group) CollectorOption {
 	return func(c *collector) error {

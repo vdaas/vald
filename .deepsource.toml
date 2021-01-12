@@ -15,6 +15,15 @@
 #
 version = 1
 
+exclude_patterns = [
+  "apis/**/*.pb.go",
+  "example/**"
+]
+
+test_patterns = [
+  "*_test.go"
+]
+
 [[analyzers]]
 name = "go"
 enabled = true

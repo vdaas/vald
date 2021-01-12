@@ -19,11 +19,9 @@ package strategy
 
 type RemoveOption func(*remove)
 
-var (
-	defaultRemoveOptions = []RemoveOption{
-		WithParallelRemove(false),
-	}
-)
+var defaultRemoveOptions = []RemoveOption{
+	WithParallelRemove(false),
+}
 
 func WithParallelRemove(flag bool) RemoveOption {
 	return func(e *remove) {

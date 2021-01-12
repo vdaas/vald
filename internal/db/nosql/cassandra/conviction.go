@@ -22,8 +22,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 )
 
-type convictionPolicy struct {
-}
+type convictionPolicy struct{}
 
 // NewConvictionPolicy returns the implementation of gocql.ConvictionPolicy.
 func NewConvictionPolicy() gocql.ConvictionPolicy {

@@ -24,8 +24,8 @@ import (
 )
 
 func Test_main(t *testing.T) {
-	type want struct {
-	}
+	t.Parallel()
+	type want struct{}
 	type test struct {
 		name       string
 		want       want
@@ -58,9 +58,11 @@ func Test_main(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}

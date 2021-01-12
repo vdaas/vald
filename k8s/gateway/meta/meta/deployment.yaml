@@ -1,0 +1,152 @@
+---
+#
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vald-meta-gateway
+  labels:
+    app: vald-meta-gateway
+    app.kubernetes.io/name: vald
+    helm.sh/chart: vald-v0.0.62
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: v0.0.62
+    app.kubernetes.io/component: gateway
+spec:
+  progressDeadlineSeconds: 600
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: vald-meta-gateway
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: vald-meta-gateway
+        app.kubernetes.io/name: vald
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/component: gateway
+      annotations:
+        checksum/configmap: c3f09585a4920380c6d23df27c7450b5b4f06ff8e02b974311cdc7c720f83567
+    spec:
+      initContainers:
+        - name: wait-for-meta
+          image: busybox
+          command:
+            - /bin/sh
+            - -e
+            - -c
+            - |
+              until [ "$(wget --server-response --spider --quiet http://vald-meta.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
+                echo "waiting for meta to be ready..."
+                sleep 2;
+              done
+        - name: wait-for-gateway-backup
+          image: busybox
+          command:
+            - /bin/sh
+            - -e
+            - -c
+            - |
+              until [ "$(wget --server-response --spider --quiet http://vald-backup-gateway.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
+                echo "waiting for gateway-backup to be ready..."
+                sleep 2;
+              done
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution: []
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution: []
+          requiredDuringSchedulingIgnoredDuringExecution: []
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - vald-meta-gateway
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+          requiredDuringSchedulingIgnoredDuringExecution: []
+      containers:
+        - name: vald-meta-gateway
+          image: "vdaas/vald-meta-gateway:nightly"
+          imagePullPolicy: Always
+          livenessProbe:
+            failureThreshold: 2
+            httpGet:
+              path: /liveness
+              port: liveness
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 3
+            successThreshold: 1
+            timeoutSeconds: 2
+          readinessProbe:
+            failureThreshold: 2
+            httpGet:
+              path: /readiness
+              port: readiness
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 3
+            successThreshold: 1
+            timeoutSeconds: 2
+          ports:
+            - name: liveness
+              protocol: TCP
+              containerPort: 3000
+            - name: readiness
+              protocol: TCP
+              containerPort: 3001
+            - name: grpc
+              protocol: TCP
+              containerPort: 8081
+            - name: pprof
+              protocol: TCP
+              containerPort: 6060
+          resources:
+            limits:
+              cpu: 2000m
+              memory: 700Mi
+            requests:
+              cpu: 200m
+              memory: 150Mi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - name: vald-meta-gateway-config
+              mountPath: /etc/server/
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: vald-meta-gateway-config
+          configMap:
+            defaultMode: 420
+            name: vald-meta-gateway-config
+      priorityClassName: vald-meta-gateway-priority
+status:

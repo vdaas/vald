@@ -94,7 +94,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -109,8 +108,7 @@ func Test_benchmark_Run(t *testing.T) {
 		dataset    assets.Dataset
 		strategies []Strategy
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

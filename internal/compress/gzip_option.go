@@ -25,12 +25,10 @@ import (
 // GzipOption represents the functional option for gzipCompressor.
 type GzipOption func(c *gzipCompressor) error
 
-var (
-	defaultGzipOpts = []GzipOption{
-		WithGzipGob(),
-		WithGzipCompressionLevel(gzip.DefaultCompression),
-	}
-)
+var defaultGzipOpts = []GzipOption{
+	WithGzipGob(),
+	WithGzipCompressionLevel(gzip.DefaultCompression),
+}
 
 // WithGzipGob represents the option to set the GobOption to initialize Gob.
 func WithGzipGob(opts ...GobOption) GzipOption {

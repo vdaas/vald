@@ -30,7 +30,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/config"
-	core "github.com/vdaas/vald/internal/core/ngt"
+	core "github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
@@ -124,7 +124,7 @@ const (
 func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 	n := new(ngt)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(n); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
@@ -238,7 +238,6 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 	// it should exit this function and leave this goroutine running.
 	go func() {
 		defer close(ech)
-
 		err = safety.RecoverFunc(func() (err error) {
 			err = eg.Wait()
 			if err != nil {

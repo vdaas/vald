@@ -21,9 +21,7 @@ import "sigs.k8s.io/controller-runtime/pkg/manager"
 
 type Option func(*reconciler) error
 
-var (
-	defaultOpts = []Option{}
-)
+var defaultOptions = []Option{}
 
 func WithControllerName(name string) Option {
 	return func(r *reconciler) error {

@@ -20,8 +20,10 @@ import (
 	"github.com/gocql/gocql"
 )
 
-type QueryObserver = gocql.QueryObserver
-type ObservedQuery = gocql.ObservedQuery
+type (
+	QueryObserver = gocql.QueryObserver
+	ObservedQuery = gocql.ObservedQuery
+)
 
 type BatchObserver = gocql.BatchObserver
 

@@ -149,9 +149,7 @@ func Test_gzipCompressor_CompressVector(t *testing.T) {
 				gzip: &gzip.MockGzip{
 					NewWriterLevelFunc: func(w io.Writer, level int) (gzip.Writer, error) {
 						return &gzip.MockWriter{
-							WriteFunc: func(p []byte) (n int, err error) {
-								return w.Write(p)
-							},
+							WriteFunc: w.Write,
 							CloseFunc: func() error {
 								return nil
 							},
@@ -788,7 +786,6 @@ func Test_gzipReader_Read(t *testing.T) {
 			if err := test.checkFunc(test.want, gotN, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -914,7 +911,6 @@ func Test_gzipReader_Close(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -990,7 +986,6 @@ func Test_gzipWriter_Write(t *testing.T) {
 			if err := test.checkFunc(test.want, gotN, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1116,7 +1111,6 @@ func Test_gzipWriter_Close(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

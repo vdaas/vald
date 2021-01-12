@@ -46,7 +46,7 @@ func (c *cgo) MeasurementWithTags(ctx context.Context) ([]metrics.MeasurementWit
 
 func (c *cgo) View() []*metrics.View {
 	return []*metrics.View{
-		&metrics.View{
+		{
 			Name:        "cgo_call_count",
 			Description: c.count.Description(),
 			Measure:     &c.count,

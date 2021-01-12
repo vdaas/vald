@@ -24,11 +24,9 @@ import (
 
 type Option func(*controller) error
 
-var (
-	defaultOpts = []Option{
-		WithErrGroup(errgroup.Get()),
-	}
-)
+var defaultOptions = []Option{
+	WithErrGroup(errgroup.Get()),
+}
 
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(c *controller) error {

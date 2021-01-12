@@ -22,15 +22,15 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/vdaas/vald/apis/grpc/manager/index"
-	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/manager/index"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/pkg/manager/index/service"
-
 	"go.uber.org/goleak"
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []Option
 	}
@@ -79,9 +79,11 @@ func TestNew(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -96,12 +98,12 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_server_IndexInfo(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		in1 *payload.Empty
@@ -167,9 +169,11 @@ func Test_server_IndexInfo(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -187,7 +191,6 @@ func Test_server_IndexInfo(t *testing.T) {
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

@@ -25,21 +25,19 @@ import (
 // Option represents the functional option for session.
 type Option func(s *sess) error
 
-var (
-	defaultOpts = []Option{
-		WithMaxRetries(-1),
-		WithForcePathStyle(false),
-		WithUseAccelerate(false),
-		WithUseARNRegion(false),
-		WithUseDualStack(false),
-		WithEnableSSL(true),
-		WithEnableParamValidation(true),
-		WithEnable100Continue(true),
-		WithEnableContentMD5Validation(true),
-		WithEnableEndpointDiscovery(false),
-		WithEnableEndpointHostPrefix(true),
-	}
-)
+var defaultOptions = []Option{
+	WithMaxRetries(-1),
+	WithForcePathStyle(false),
+	WithUseAccelerate(false),
+	WithUseARNRegion(false),
+	WithUseDualStack(false),
+	WithEnableSSL(true),
+	WithEnableParamValidation(true),
+	WithEnable100Continue(true),
+	WithEnableContentMD5Validation(true),
+	WithEnableEndpointDiscovery(false),
+	WithEnableEndpointHostPrefix(true),
+}
 
 // WithEndpoint returns the option to set the endpoint.
 func WithEndpoint(ep string) Option {

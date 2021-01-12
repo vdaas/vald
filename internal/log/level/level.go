@@ -23,19 +23,19 @@ type Level uint8
 const (
 	Unknown Level = iota
 
-	// DEBUG is debug log level
+	// DEBUG is debug log level.
 	DEBUG
 
-	// INFO is info log level
+	// INFO is info log level.
 	INFO
 
-	// WARN is warning log level
+	// WARN is warning log level.
 	WARN
 
-	// ERRO is error log level
+	// ERRO is error log level.
 	ERROR
 
-	// FATAL is fatal log level
+	// FATAL is fatal log level.
 	FATAL
 )
 

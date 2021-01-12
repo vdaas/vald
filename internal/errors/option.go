@@ -15,7 +15,7 @@
 //
 package errors
 
-// ErrInvalidOption represent the invalid option error
+// ErrInvalidOption represent the invalid option error.
 type ErrInvalidOption struct {
 	err    error
 	origin error
@@ -58,7 +58,7 @@ func (e *ErrInvalidOption) Unwrap() error {
    ErrCriticalOption
 */
 
-// ErrCriticalOption represent the critical option error
+// ErrCriticalOption represent the critical option error.
 type ErrCriticalOption struct {
 	err    error
 	origin error

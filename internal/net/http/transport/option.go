@@ -26,11 +26,9 @@ import (
 // Option represents the functional option for transport and backoff.
 type Option func(*ert)
 
-var (
-	defaultOpts = []Option{
-		WithRoundTripper(http.DefaultTransport),
-	}
-)
+var defaultOptions = []Option{
+	WithRoundTripper(http.DefaultTransport),
+}
 
 // WithRoundTripper returns the Option that set the RoundTripper.
 func WithRoundTripper(tr http.RoundTripper) Option {

@@ -17,7 +17,7 @@
 // Package strategy provides strategy for e2e testing functions
 package strategy
 
-import "github.com/vdaas/vald/internal/client"
+import "github.com/vdaas/vald/internal/client/v1/client"
 
 type SearchOption func(*search)
 
@@ -27,12 +27,10 @@ var searchCfg = &client.SearchConfig{
 	Epsilon: 0.01,
 }
 
-var (
-	defaultSearchOptions = []SearchOption{
-		WithSearchParallel(false),
-		WithSearchConfig(searchCfg),
-	}
-)
+var defaultSearchOptions = []SearchOption{
+	WithSearchParallel(false),
+	WithSearchConfig(searchCfg),
+}
 
 func WithSearchParallel(flag bool) SearchOption {
 	return func(s *search) {

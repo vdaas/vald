@@ -30,13 +30,11 @@ import (
 // Option represent the functional option for transport.
 type Option func(*transport) error
 
-var (
-	defaultOpts = []Option{
-		WithProxy(http.ProxyFromEnvironment),
-		WithEnableKeepAlives(true),
-		WithEnableCompression(true),
-	}
-)
+var defaultOptions = []Option{
+	WithProxy(http.ProxyFromEnvironment),
+	WithEnableKeepAlives(true),
+	WithEnableCompression(true),
+}
 
 // WithProxy returns the option to set the transport proxy.
 func WithProxy(px func(*http.Request) (*url.URL, error)) Option {
@@ -60,7 +58,6 @@ func WithDialContext(dx func(ctx context.Context, network, addr string) (net.Con
 
 		return nil
 	}
-
 }
 
 // WithTLSHandshakeTimeout returns the option to set the TLS handshake timeout.

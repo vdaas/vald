@@ -101,7 +101,6 @@ func TestStartSpan(t *testing.T) {
 			if err := test.checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -171,7 +170,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -183,8 +181,7 @@ func Test_tracer_Start(t *testing.T) {
 	type fields struct {
 		samplingRate float64
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

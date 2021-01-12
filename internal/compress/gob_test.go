@@ -22,10 +22,9 @@ import (
 	"reflect"
 	"testing"
 
-	"go.uber.org/goleak"
-
 	"github.com/vdaas/vald/internal/compress/gob"
 	"github.com/vdaas/vald/internal/errors"
+	"go.uber.org/goleak"
 )
 
 func TestNewGob(t *testing.T) {
@@ -455,7 +454,6 @@ func Test_gobCompressor_Reader(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

@@ -32,11 +32,11 @@ type router struct {
 	timeout string
 }
 
-// New returns REST route&method information from handler interface
+// New returns REST route&method information from handler interface.
 func New(opts ...Option) http.Handler {
 	r := new(router)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(r)
 	}
 
@@ -48,14 +48,15 @@ func New(opts ...Option) http.Handler {
 				middleware.WithTimeout(r.timeout),
 				middleware.WithErrorGroup(r.eg),
 			)),
-		routing.WithRoutes([]routing.Route{{
-			"GetVector",
-			[]string{
-				http.MethodGet,
+		routing.WithRoutes([]routing.Route{
+			{
+				"GetVector",
+				[]string{
+					http.MethodGet,
+				},
+				"/vector/{uuid}",
+				h.GetVector,
 			},
-			"/vector/{uuid}",
-			h.GetVector,
-		},
 			{
 				"Locations",
 				[]string{

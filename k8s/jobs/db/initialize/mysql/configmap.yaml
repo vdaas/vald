@@ -25,10 +25,9 @@ data:
 
     USE `vald` ;
 
-    CREATE TABLE IF NOT EXISTS `vald`.`meta_vector` (
+    CREATE TABLE IF NOT EXISTS `vald`.`backup_vector` (
         `uuid` VARCHAR(255) NOT NULL,
         `vector` BLOB NOT NULL,
-        `meta` VARCHAR(1024) NOT NULL,
         `id` int NOT NULL AUTO_INCREMENT,
         PRIMARY KEY (`uuid`),
         UNIQUE INDEX `id_unique` (`id` ASC),

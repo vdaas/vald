@@ -21,7 +21,6 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errgroup"
-
 	"go.uber.org/goleak"
 )
 

@@ -26,13 +26,11 @@ import (
 
 type Option func(r *replicator) error
 
-var (
-	defaultOpts = []Option{
-		WithRecoverCheckDuration("1m"),
-		WithErrGroup(errgroup.Get()),
-		WithNamespace("vald"),
-	}
-)
+var defaultOptions = []Option{
+	WithRecoverCheckDuration("1m"),
+	WithErrGroup(errgroup.Get()),
+	WithNamespace("vald"),
+}
 
 func WithName(name string) Option {
 	return func(r *replicator) error {

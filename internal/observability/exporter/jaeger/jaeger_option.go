@@ -24,16 +24,14 @@ import (
 
 type JaegerOption func(*jaegerOptions) error
 
-var (
-	jaegerDefaultOpts = []JaegerOption{
-		WithServiceName("vald"),
-		WithOnErrorFunc(func(err error) {
-			if err != nil {
-				log.Warnf("Error when uploading spans to Jaeger: %v", err)
-			}
-		}),
-	}
-)
+var jaegerDefaultOpts = []JaegerOption{
+	WithServiceName("vald"),
+	WithOnErrorFunc(func(err error) {
+		if err != nil {
+			log.Warnf("Error when uploading spans to Jaeger: %v", err)
+		}
+	}),
+}
 
 func WithCollectorEndpoint(cep string) JaegerOption {
 	return func(jo *jaegerOptions) error {

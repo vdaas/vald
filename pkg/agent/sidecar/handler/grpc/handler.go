@@ -18,7 +18,7 @@
 package grpc
 
 import (
-	"github.com/vdaas/vald/apis/grpc/agent/sidecar"
+	"github.com/vdaas/vald/apis/grpc/v1/agent/sidecar"
 	"github.com/vdaas/vald/pkg/agent/sidecar/service/observer"
 )
 
@@ -29,7 +29,7 @@ type server struct {
 func New(opts ...Option) sidecar.SidecarServer {
 	s := new(server)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(s)
 	}
 	return s

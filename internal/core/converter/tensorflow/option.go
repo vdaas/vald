@@ -24,14 +24,12 @@ import (
 // Option is tensorflow configure.
 type Option func(*tensorflow)
 
-var (
-	defaultOpts = []Option{
-		withLoadFunc(tf.LoadSavedModel), // set to default
-		WithOperations(),                // set to default
-		WithSessionOptions(nil),         // set to default
-		WithNdim(0),                     // set to default
-	}
-)
+var defaultOptions = []Option{
+	withLoadFunc(tf.LoadSavedModel), // set to default
+	WithOperations(),                // set to default
+	WithSessionOptions(nil),         // set to default
+	WithNdim(0),                     // set to default
+}
 
 // WithSessionOptions returns Option that sets options.
 func WithSessionOptions(opts *SessionOptions) Option {

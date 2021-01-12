@@ -17,8 +17,6 @@
 // Package errors provides error types and function
 package errors
 
-var (
-	ErrParseUnitFailed = func(s string) error {
-		return Errorf("failed to parse: '%s'", s)
-	}
-)
+var ErrParseUnitFailed = func(s string) error {
+	return Errorf("failed to parse: '%s'", s)
+}

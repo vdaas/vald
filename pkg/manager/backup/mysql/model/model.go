@@ -17,14 +17,12 @@
 // Package grpc provides grpc server logic
 package model
 
-type MetaVector struct {
+type Vector struct {
 	UUID   string
 	Vector []byte
-	Meta   string
 	IPs    []string
 }
 
-func (m *MetaVector) GetUUID() string   { return m.UUID }
-func (m *MetaVector) GetVector() []byte { return m.Vector }
-func (m *MetaVector) GetMeta() string   { return m.Meta }
-func (m *MetaVector) GetIPs() []string  { return m.IPs }
+func (m *Vector) GetUUID() string   { return m.UUID }
+func (m *Vector) GetVector() []byte { return m.Vector }
+func (m *Vector) GetIPs() []string  { return m.IPs }

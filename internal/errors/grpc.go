@@ -17,6 +17,12 @@
 // Package errors provides error types and function
 package errors
 
+import (
+	"github.com/vdaas/vald/apis/grpc/v1/errors"
+)
+
+type Errors_RPC = errors.Errors_RPC
+
 var (
 
 	// ErrGRPCClientConnectionClose represents a function to generate an error that the gRPC connection couldn't close.
@@ -46,6 +52,9 @@ var (
 	ErrGRPCClientConnNotFound = func(addr string) error {
 		return Errorf("gRPC client connection not found in %s", addr)
 	}
+
+	// ErrGRPCClientStreamNotFound represents an error that the vald internal gRPC client couldn't find any grpc client stream connection.
+	ErrGRPCClientStreamNotFound = New("vald internal gRPC client grpc client stream not found")
 
 	// ErrRPCCallFailed represents a function to generate an error that the RPC call failed.
 	ErrRPCCallFailed = func(addr string, err error) error {

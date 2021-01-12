@@ -25,8 +25,7 @@ import (
 )
 
 func Test_main(t *testing.T) {
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		want       want
@@ -146,7 +145,6 @@ func Test_genJSONSchema(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -221,7 +219,6 @@ func Test_objectProperties(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -296,7 +293,6 @@ func Test_genNode(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -367,7 +363,6 @@ func Test_newRoot(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

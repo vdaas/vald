@@ -20,7 +20,7 @@ package rest
 import (
 	"net/http"
 
-	"github.com/vdaas/vald/apis/grpc/manager/replication/controller"
+	"github.com/vdaas/vald/apis/grpc/v1/manager/replication/controller"
 	"github.com/vdaas/vald/internal/net/http/dump"
 	"github.com/vdaas/vald/internal/net/http/json"
 )
@@ -36,7 +36,7 @@ type handler struct {
 func New(opts ...Option) Handler {
 	h := new(handler)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(h)
 	}
 	return h

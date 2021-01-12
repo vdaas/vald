@@ -25,9 +25,8 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net"
-	"google.golang.org/grpc"
-
 	"go.uber.org/goleak"
+	"google.golang.org/grpc"
 )
 
 func TestWithHost(t *testing.T) {
@@ -2301,7 +2300,7 @@ func TestDefaultOption(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.checkFunc(defaultOpts); err != nil {
+			if err := tt.checkFunc(defaultOptions); err != nil {
 				t.Error(err)
 			}
 		})

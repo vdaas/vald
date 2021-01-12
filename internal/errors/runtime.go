@@ -20,7 +20,7 @@ package errors
 import "runtime"
 
 var (
-	// Runtime
+	// Runtime.
 
 	ErrPanicRecovered = func(err error, rec interface{}) error {
 		return Wrap(err, Errorf("panic recovered: %v", rec).Error())
@@ -31,6 +31,6 @@ var (
 	}
 
 	ErrRuntimeError = func(err error, r runtime.Error) error {
-		return Wrap(err, Errorf("system paniced caused by runtime error: %v", r).Error())
+		return Wrap(err, Errorf("system panicked caused by runtime error: %v", r).Error())
 	}
 )

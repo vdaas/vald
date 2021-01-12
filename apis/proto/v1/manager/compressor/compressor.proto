@@ -1,0 +1,89 @@
+//
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+syntax = "proto3";
+
+package manager.compressor.v1;
+
+option go_package = "github.com/vdaas/vald/apis/grpc/v1/manager/compressor";
+option java_multiple_files = true;
+option java_package = "org.vdaas.vald.api.v1.manager.compressor";
+option java_outer_classname = "ValdCompressor";
+
+import "apis/proto/v1/payload/payload.proto";
+import "google/api/annotations.proto";
+
+
+service Backup {
+
+
+  rpc GetVector(payload.v1.Backup.GetVector.Request) returns (payload.v1.Backup.Vector) {
+    option (google.api.http).get = "/vector/{uuid}";
+  }
+
+  // rpc GetVectorsByOwner(payload.v1.Backup.GetVector.Owner) returns (stream payload.v1.Backup.Vector) {
+  //   option (google.api.http).get = "/vector/{uuid}";
+  // }
+
+  rpc Locations(payload.v1.Backup.Locations.Request) returns (payload.v1.Info.IPs) {
+    option (google.api.http).get = "/locations/{uuid}";
+  }
+
+  rpc Register(payload.v1.Backup.Vector) returns (payload.v1.Empty) {
+    option (google.api.http) = {
+post : "/register"
+         body : "*"
+    };
+
+  }
+
+  rpc RegisterMulti(payload.v1.Backup.Vectors) returns (payload.v1.Empty) {
+    option (google.api.http) = {
+post : "/register/multi"
+         body : "*"
+    };
+
+  }
+
+  rpc Remove(payload.v1.Backup.Remove.Request) returns (payload.v1.Empty) {
+    option (google.api.http).delete = "/delete/{uuid}";
+
+  }
+
+  rpc RemoveMulti(payload.v1.Backup.Remove.RequestMulti) returns (payload.v1.Empty) {
+    option (google.api.http) = {
+post : "/delete/multi"
+         body : "*"
+    };
+
+  }
+
+  rpc RegisterIPs(payload.v1.Backup.IP.Register.Request) returns (payload.v1.Empty) {
+    option (google.api.http) = {
+post : "/ip"
+         body : "*"
+    };
+
+  }
+
+  rpc RemoveIPs(payload.v1.Backup.IP.Remove.Request) returns (payload.v1.Empty) {
+    option (google.api.http) = {
+post : "/ip/delete"
+         body : "*"
+    };
+
+  }
+}

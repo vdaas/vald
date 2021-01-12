@@ -24,19 +24,19 @@ import (
 type Func func(http.ResponseWriter, *http.Request) (code int, err error)
 
 const (
-	// ContentType represents a HTTP header name "Content-Type"
+	// ContentType represents a HTTP header name "Content-Type".
 	ContentType = "Content-Type"
 
-	// ApplicationJSON represents a HTTP content type "application/json"
+	// ApplicationJSON represents a HTTP content type "application/json".
 	ApplicationJSON = "application/json"
 
-	// ProblemJSON represents a HTTP content type "application/problem+json"
+	// ProblemJSON represents a HTTP content type "application/problem+json".
 	ProblemJSON = "application/problem+json"
 
-	// TextPlain represents a HTTP content type "text/plain"
+	// TextPlain represents a HTTP content type "text/plain".
 	TextPlain = "text/plain"
 
-	// CharsetUTF8 represents a UTF-8 charset for HTTP response "charset=UTF-8"
+	// CharsetUTF8 represents a UTF-8 charset for HTTP response "charset=UTF-8".
 	CharsetUTF8 = "charset=UTF-8"
 )
 

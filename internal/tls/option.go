@@ -21,7 +21,7 @@ import "crypto/tls"
 
 type Option func(*credentials) error
 
-func defaultOptions() []Option {
+var defaultOptions = func() []Option {
 	return []Option{
 		WithTLSConfig(&tls.Config{
 			MinVersion: tls.VersionTLS12,

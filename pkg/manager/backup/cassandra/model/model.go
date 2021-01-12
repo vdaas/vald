@@ -17,9 +17,8 @@
 // Package grpc provides grpc server logic
 package model
 
-type MetaVector struct {
+type Vector struct {
 	UUID   string   `db:"uuid"`
 	Vector []byte   `db:"vector"`
-	Meta   string   `db:"meta"`
 	IPs    []string `db:"ips"`
 }

@@ -1,0 +1,87 @@
+#
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+{{- $gateway := .Values.gateway.meta -}}
+{{- $backup := .Values.gateway.backup -}}
+{{- $lb := .Values.gateway.lb -}}
+{{- $meta := .Values.meta -}}
+{{- $agent := .Values.agent -}}
+{{- if $gateway.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $gateway.name }}-config
+  labels:
+    app.kubernetes.io/name: {{ include "vald.name" . }}
+    helm.sh/chart: {{ include "vald.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.Version }}
+    app.kubernetes.io/component: gateway-meta
+data:
+  config.yaml: |
+    ---
+    version: {{ $gateway.version }}
+    time_zone: {{ default .Values.defaults.time_zone $gateway.time_zone }}
+    logging:
+      {{- $logging := dict "Values" $gateway.logging "default" .Values.defaults.logging }}
+      {{- include "vald.logging" $logging | nindent 6 }}
+    server_config:
+      {{- $servers := dict "Values" $gateway.server_config "default" .Values.defaults.server_config }}
+      {{- include "vald.servers" $servers | nindent 6 }}
+    observability:
+      {{- $observability := dict "Values" $gateway.observability "default" .Values.defaults.observability }}
+      {{- include "vald.observability" $observability | nindent 6 }}
+    client:
+      {{- $nextGatewayClient := $gateway.gateway_config.gateway_client }}
+      {{- if $backup.enabled -}}
+      {{- $backupServerPort := $backup.server_config.servers.grpc.port }}
+      {{- $defaultBackupHost := printf "%s.%s.svc.cluster.local" $backup.name .Release.Namespace }}
+      {{- $defaultBackupPort := default .Values.defaults.server_config.servers.grpc.port $backupServerPort }}
+      {{- $defaultBackupAddr := (list (printf "%s:%d" $defaultBackupHost (int64 $defaultBackupPort))) }}
+      {{- $backupAddrs := dict "Values" $nextGatewayClient.addrs "default" $defaultBackupAddr }}
+      {{- include "vald.grpc.client.addrs" $backupAddrs | nindent 6 }}
+      {{- else if $lb.enabled -}}
+      {{- $lbServerPort := $lb.server_config.servers.grpc.port }}
+      {{- $defaultLBHost := printf "%s.%s.svc.cluster.local" $lb.name .Release.Namespace }}
+      {{- $defaultLBPort := default .Values.defaults.server_config.servers.grpc.port $lbServerPort }}
+      {{- $defaultLBAddr := (list (printf "%s:%d" $defaultLBHost (int64 $defaultLBPort))) }}
+      {{- $lbAddrs := dict "Values" $nextGatewayClient.addrs "default" $defaultLBAddr }}
+      {{- include "vald.grpc.client.addrs" $lbAddrs | nindent 6 }}
+      {{- else -}}
+      {{- $agentServerPort := $agent.server_config.servers.grpc.port }}
+      {{- $defaultAgentHost := printf "%s.%s.svc.cluster.local" $agent.name .Release.Namespace }}
+      {{- $defaultAgentPort := default .Values.defaults.server_config.servers.grpc.port $agentServerPort }}
+      {{- $defaultAgentAddr := (list (printf "%s:%d" $defaultAgentHost (int64 $defaultAgentPort))) }}
+      {{- $agentAddrs := dict "Values" $nextGatewayClient.addrs "default" $defaultAgentAddr }}
+      {{- include "vald.grpc.client.addrs" $agentAddrs | nindent 6 }}
+      {{- end -}}
+      {{- $nextGRPCClient := dict "Values" $nextGatewayClient "default" .Values.defaults.grpc.client }}
+      {{- include "vald.grpc.client" $nextGRPCClient | nindent 6 }}
+    meta:
+      client:
+        {{- $metaClient := $gateway.gateway_config.meta.client }}
+        {{- $metaServerPort := $meta.server_config.servers.grpc.port }}
+        {{- $defaultMetaHost := printf "%s.%s.svc.cluster.local" $meta.name .Release.Namespace }}
+        {{- $defaultMetaPort := default .Values.defaults.server_config.servers.grpc.port $metaServerPort }}
+        {{- $defaultMetaAddr := (list (printf "%s:%d" $defaultMetaHost (int64 $defaultMetaPort))) }}
+        {{- $metaAddrs := dict "Values" $metaClient.addrs "default" $defaultMetaAddr }}
+        {{- include "vald.grpc.client.addrs" $metaAddrs | nindent 8 }}
+        {{- $metaGRPCclient := dict "Values" $metaClient "default" .Values.defaults.grpc.client }}
+        {{- include "vald.grpc.client" $metaGRPCclient | nindent 8 }}
+      enable_cache: {{ $gateway.gateway_config.meta.enable_cache }}
+      cache_expiration: {{ $gateway.gateway_config.meta.cache_expiration }}
+      expired_cache_check_duration: {{ $gateway.gateway_config.meta.expired_cache_check_duration }}
+{{- end }}

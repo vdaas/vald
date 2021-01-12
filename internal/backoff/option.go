@@ -25,17 +25,15 @@ import (
 
 type Option func(*backoff)
 
-var (
-	defaultOpts = []Option{
-		WithInitialDuration("10ms"),
-		WithBackOffTimeLimit("5m"),
-		WithMaximumDuration("1h"),
-		WithJitterLimit("1m"),
-		WithBackOffFactor(1.5),
-		WithRetryCount(50),
-		WithEnableErrorLog(),
-	}
-)
+var defaultOptions = []Option{
+	WithInitialDuration("10ms"),
+	WithBackOffTimeLimit("5m"),
+	WithMaximumDuration("1h"),
+	WithJitterLimit("1m"),
+	WithBackOffFactor(1.5),
+	WithRetryCount(50),
+	WithEnableErrorLog(),
+}
 
 func WithInitialDuration(dur string) Option {
 	return func(b *backoff) {

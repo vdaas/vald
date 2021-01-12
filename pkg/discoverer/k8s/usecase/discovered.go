@@ -19,7 +19,7 @@ package usecase
 import (
 	"context"
 
-	"github.com/vdaas/vald/apis/grpc/discoverer"
+	"github.com/vdaas/vald/apis/grpc/v1/discoverer"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -114,7 +114,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		}),
 		// TODO add GraphQL handler
 	)
-
 	if err != nil {
 		return nil, err
 	}

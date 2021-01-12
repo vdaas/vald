@@ -23,11 +23,9 @@ import (
 
 type Option func(*router)
 
-var (
-	defaultOpts = []Option{
-		WithTimeout("3s"),
-	}
-)
+var defaultOptions = []Option{
+	WithTimeout("3s"),
+}
 
 func WithHandler(h rest.Handler) Option {
 	return func(r *router) {

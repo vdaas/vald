@@ -98,7 +98,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, gotS, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -186,7 +185,6 @@ func Test_prof_Start(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -199,8 +197,7 @@ func Test_prof_Stop(t *testing.T) {
 		Config     *profiler.Config
 		clientOpts []google.Option
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

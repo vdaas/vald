@@ -25,13 +25,11 @@ import (
 
 type Option func(l *logger)
 
-var (
-	defaultOpts = []Option{
-		WithGlg(glg.Get()),
-		WithLevel(level.DEBUG.String()),
-		WithRetry(retry.New()),
-	}
-)
+var defaultOptions = []Option{
+	WithGlg(glg.Get()),
+	WithLevel(level.DEBUG.String()),
+	WithRetry(retry.New()),
+}
 
 func WithGlg(g *glg.Glg) Option {
 	return func(l *logger) {

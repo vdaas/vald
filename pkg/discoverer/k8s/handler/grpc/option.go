@@ -23,9 +23,7 @@ import (
 
 type Option func(*server) error
 
-var (
-	defaultOpts = []Option{}
-)
+var defaultOptions = []Option{}
 
 func WithDiscoverer(dsc service.Discoverer) Option {
 	return func(s *server) error {

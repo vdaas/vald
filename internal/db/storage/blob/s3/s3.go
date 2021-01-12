@@ -50,7 +50,7 @@ type client struct {
 // New returns blob.Bucket implementation if no error occurs.
 func New(opts ...Option) (b blob.Bucket, err error) {
 	c := new(client)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(c); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}

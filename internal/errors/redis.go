@@ -19,7 +19,7 @@ package errors
 
 var (
 
-	// Redis
+	// Redis.
 	ErrRedisInvalidKVVKPrefix = func(kv, vk string) error {
 		return Errorf("kv index and vk prefix must be defferent.\t(kv: %s,\tvk: %s)", kv, vk)
 	}
@@ -33,6 +33,8 @@ var (
 	ErrRedisNotFound = func(key string) error {
 		return Wrapf(NewErrRedisNotFoundIdentity(), "error redis key '%s' not found", key)
 	}
+
+	ErrRedisInvalidOption = New("error redis invalid option")
 
 	ErrRedisGetOperationFailed = func(key string, err error) error {
 		return Wrapf(err, "Failed to fetch key (%s)", key)

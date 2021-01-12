@@ -19,16 +19,14 @@ package params
 
 type Option func(*parser)
 
-var (
-	defaultOpts = []Option{
-		WithConfigFilePathKeys("f", "file", "c", "config"),
-		WithConfigFilePathDefault("/etc/server/config.yaml"),
-		WithConfigFileDescription("config file path"),
-		WithVersionKeys("v", "ver", "version"),
-		WithVersionFlagDefault(false),
-		WithVersionDescription("show server version"),
-	}
-)
+var defaultOptions = []Option{
+	WithConfigFilePathKeys("f", "file", "c", "config"),
+	WithConfigFilePathDefault("/etc/server/config.yaml"),
+	WithConfigFileDescription("config file path"),
+	WithVersionKeys("v", "ver", "version"),
+	WithVersionFlagDefault(false),
+	WithVersionDescription("show server version"),
+}
 
 // WithConfigFilePathKeys returns Option that sets filePath.keys.
 func WithConfigFilePathKeys(keys ...string) Option {

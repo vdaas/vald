@@ -30,7 +30,7 @@ import (
 func TestWithLogger(t *testing.T) {
 	type T = option
 	type args struct {
-		logger Logger
+		logger logger.Logger
 	}
 	type want struct {
 		obj *T

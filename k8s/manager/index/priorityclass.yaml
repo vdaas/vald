@@ -27,4 +27,4 @@ metadata:
     app.kubernetes.io/component: manager-index
 value: 1e+06
 globalDefault: false
-description: "A priority class for Vald indexManager."
+description: "A priority class for Vald index manager."

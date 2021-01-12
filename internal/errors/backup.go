@@ -17,6 +17,4 @@
 // Package errors provides error types and function
 package errors
 
-var (
-	ErrInvalidBackupConfig = New("invalid backup config")
-)
+var ErrInvalidBackupConfig = New("invalid backup config")

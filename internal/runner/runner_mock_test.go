@@ -36,9 +36,11 @@ func (m *runnerMock) Start(ctx context.Context) (<-chan error, error) {
 func (m *runnerMock) PreStop(ctx context.Context) error {
 	return m.PreStopFunc(ctx)
 }
+
 func (m *runnerMock) Stop(ctx context.Context) error {
 	return m.StopFunc(ctx)
 }
+
 func (m *runnerMock) PostStop(ctx context.Context) error {
 	return m.PostStopFunc(ctx)
 }

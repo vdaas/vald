@@ -23,12 +23,10 @@ import (
 
 type Option func(*client) error
 
-var (
-	defaultOpts = []Option{
-		WithKVTable("kv"),
-		WithVKTable("vk"),
-	}
-)
+var defaultOptions = []Option{
+	WithKVTable("kv"),
+	WithVKTable("vk"),
+}
 
 func WithCassandra(db cassandra.Cassandra) Option {
 	return func(c *client) error {

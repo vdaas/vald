@@ -21,7 +21,6 @@ logging:
   logger: glg
   level: info
   format: raw
-service: gateway
 operation: insert
 dataset: fashion-mnist
 concurrency: 100
@@ -55,7 +54,7 @@ client:
       permit_without_stream: false
       time: ""
       timeout: ""
-    max_backoff_delay: ""
+    backoff_max_delay: ""
     max_msg_size: 0
     read_buffer_size: 0
     tcp:

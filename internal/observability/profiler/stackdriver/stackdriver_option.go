@@ -24,15 +24,13 @@ import (
 
 type Option func(p *prof) error
 
-var (
-	defaultOpts = []Option{
-		WithCPUProfiling(true),
-		WithAllocProfiling(true),
-		WithHeapProfiling(true),
-		WithGoroutineProfiling(true),
-		WithServiceVersion(info.Version),
-	}
-)
+var defaultOptions = []Option{
+	WithCPUProfiling(true),
+	WithAllocProfiling(true),
+	WithHeapProfiling(true),
+	WithGoroutineProfiling(true),
+	WithServiceVersion(info.Version),
+}
 
 func WithProjectID(pid string) Option {
 	return func(p *prof) error {

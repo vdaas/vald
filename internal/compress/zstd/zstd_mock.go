@@ -43,7 +43,7 @@ func (m *MockEncoder) ReadFrom(r io.Reader) (n int64, err error) {
 	return m.ReadFromFunc(r)
 }
 
-// MockDecoder represents
+// MockDecoder represents.
 type MockDecoder struct {
 	CloseFunc   func()
 	ReadFunc    func(p []byte) (int, error)

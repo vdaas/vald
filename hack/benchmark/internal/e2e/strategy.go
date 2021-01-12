@@ -22,7 +22,7 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
-	"github.com/vdaas/vald/internal/client"
+	"github.com/vdaas/vald/internal/client/v1/client"
 )
 
 type Strategy interface {

@@ -163,7 +163,7 @@ func (s *smallDataset) Distance(i int) ([]float32, error) {
 	return s.distances[i], nil
 }
 
-// DistanceSize returns size of distances
+// DistanceSize returns size of distances.
 func (s *smallDataset) DistanceSize() int {
 	return len(s.distances)
 }

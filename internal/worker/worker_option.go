@@ -23,13 +23,11 @@ import (
 
 type WorkerOption func(w *worker) error
 
-var (
-	defaultWorkerOpts = []WorkerOption{
-		WithName("worker"),
-		WithLimitation(10),
-		WithErrGroup(errgroup.Get()),
-	}
-)
+var defaultWorkerOpts = []WorkerOption{
+	WithName("worker"),
+	WithLimitation(10),
+	WithErrGroup(errgroup.Get()),
+}
 
 func WithName(name string) WorkerOption {
 	return func(w *worker) error {

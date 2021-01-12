@@ -24,8 +24,10 @@ import (
 	"google.golang.org/grpc"
 )
 
-type UnaryServerInterceptor = grpc.UnaryServerInterceptor
-type StreamServerInterceptor = grpc.StreamServerInterceptor
+type (
+	UnaryServerInterceptor  = grpc.UnaryServerInterceptor
+	StreamServerInterceptor = grpc.StreamServerInterceptor
+)
 
 var (
 	UnaryInterceptor       = grpc.UnaryInterceptor

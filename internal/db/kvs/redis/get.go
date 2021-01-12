@@ -17,10 +17,12 @@
 package redis
 
 import (
-	redis "github.com/go-redis/redis/v7"
+	"context"
+
+	redis "github.com/go-redis/redis/v8"
 )
 
 type Getter interface {
-	Get(string) *redis.StringCmd
-	MGet(...string) *redis.SliceCmd
+	Get(context.Context, string) *redis.StringCmd
+	MGet(context.Context, ...string) *redis.SliceCmd
 }

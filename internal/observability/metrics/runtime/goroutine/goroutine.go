@@ -46,7 +46,7 @@ func (g *goroutines) MeasurementWithTags(ctx context.Context) ([]metrics.Measure
 
 func (g *goroutines) View() []*metrics.View {
 	return []*metrics.View{
-		&metrics.View{
+		{
 			Name:        "goroutine_count",
 			Description: g.count.Description(),
 			Measure:     &g.count,

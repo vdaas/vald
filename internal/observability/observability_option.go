@@ -27,11 +27,9 @@ import (
 
 type Option func(*observability) error
 
-var (
-	observabilityDefaultOpts = []Option{
-		WithErrGroup(errgroup.Get()),
-	}
-)
+var observabilityDefaultOpts = []Option{
+	WithErrGroup(errgroup.Get()),
+}
 
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(o *observability) error {

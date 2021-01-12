@@ -141,8 +141,8 @@ func TestWithDirs(t *testing.T) {
 			want: want{
 				obj: &T{
 					dirs: map[string]struct{}{
-						"vdaas": struct{}{},
-						"vald":  struct{}{},
+						"vdaas": {},
+						"vald":  {},
 					},
 				},
 			},
@@ -157,15 +157,15 @@ func TestWithDirs(t *testing.T) {
 			},
 			field: field{
 				dirs: map[string]struct{}{
-					"team": struct{}{},
+					"team": {},
 				},
 			},
 			want: want{
 				obj: &T{
 					dirs: map[string]struct{}{
-						"team":  struct{}{},
-						"vdaas": struct{}{},
-						"vald":  struct{}{},
+						"team":  {},
+						"vdaas": {},
+						"vald":  {},
 					},
 				},
 			},

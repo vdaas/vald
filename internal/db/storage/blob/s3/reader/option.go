@@ -26,16 +26,14 @@ import (
 // Option represents the functional option for reader.
 type Option func(r *reader)
 
-var (
-	defaultOpts = []Option{
-		WithErrGroup(errgroup.Get()),
-		WithMaxChunkSize(512 * 1024 * 1024),
-		WithBackoff(false),
-		func(r *reader) {
-			r.ctxio = io.New()
-		},
-	}
-)
+var defaultOptions = []Option{
+	WithErrGroup(errgroup.Get()),
+	WithMaxChunkSize(512 * 1024 * 1024),
+	WithBackoff(false),
+	func(r *reader) {
+		r.ctxio = io.New()
+	},
+}
 
 // WithErrGroup returns the option to set the eg.
 func WithErrGroup(eg errgroup.Group) Option {

@@ -108,7 +108,7 @@ func main() {
 
 	canvas := vgsvg.New(vg.Length(*width), vg.Length(*height))
 	p.Draw(draw.New(canvas))
-	out, err := os.OpenFile(*output, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	out, err := os.OpenFile(*output, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, os.ModePerm)
 	if err != nil {
 		log.Error(err)
 	}

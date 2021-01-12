@@ -19,11 +19,9 @@ package trace
 
 type TraceOption func(*tracer)
 
-var (
-	traceDefaultOpts = []TraceOption{
-		WithSamplingRate(1.0),
-	}
-)
+var traceDefaultOpts = []TraceOption{
+	WithSamplingRate(1.0),
+}
 
 func WithSamplingRate(rate float64) TraceOption {
 	return func(t *tracer) {

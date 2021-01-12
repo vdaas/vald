@@ -15,7 +15,7 @@
 //
 package mock
 
-// Retry represents struct of mock retry structure
+// Retry represents struct of mock retry structure.
 type Retry struct {
 	OutFunc func(
 		fn func(vals ...interface{}) error,
@@ -29,7 +29,7 @@ type Retry struct {
 	)
 }
 
-// Out calls OutFunc
+// Out calls OutFunc.
 func (r *Retry) Out(
 	fn func(vals ...interface{}) error,
 	vals ...interface{},
@@ -37,7 +37,7 @@ func (r *Retry) Out(
 	r.OutFunc(fn, vals...)
 }
 
-// Outf calls OutfFunc
+// Outf calls OutfFunc.
 func (r *Retry) Outf(
 	fn func(format string, vals ...interface{}) error,
 	format string, vals ...interface{},

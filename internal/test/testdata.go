@@ -21,7 +21,7 @@ import (
 	"strings"
 )
 
-// GetTestdataPath returns the test data file path under `internal/test/data`
+// GetTestdataPath returns the test data file path under `internal/test/data`.
 func GetTestdataPath(filename string) string {
 	fp, _ := filepath.Abs(baseDir() + "/internal/test/data/" + filename)
 	return fp

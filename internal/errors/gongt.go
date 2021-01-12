@@ -17,6 +17,4 @@
 // Package errors provides benchmark error
 package errors
 
-var (
-	ErrGoNGTNotSupportedMethod = New("not supported method")
-)
+var ErrGoNGTNotSupportedMethod = New("not supported method")

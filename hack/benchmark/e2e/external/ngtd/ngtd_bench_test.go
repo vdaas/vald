@@ -30,9 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 )
 
-var (
-	targets []string
-)
+var targets []string
 
 func init() {
 	testing.Init()

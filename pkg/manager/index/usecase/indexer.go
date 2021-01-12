@@ -19,8 +19,8 @@ package usecase
 import (
 	"context"
 
-	"github.com/vdaas/vald/apis/grpc/manager/index"
-	"github.com/vdaas/vald/internal/client/discoverer"
+	"github.com/vdaas/vald/apis/grpc/v1/manager/index"
+	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -49,9 +49,7 @@ type run struct {
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
 
-	var (
-		indexer service.Indexer
-	)
+	var indexer service.Indexer
 
 	discovererClientOptions := append(
 		cfg.Indexer.Discoverer.Client.Opts(),
@@ -74,12 +72,8 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		discoverer.WithPort(cfg.Indexer.AgentPort),
 		discoverer.WithServiceDNSARecord(cfg.Indexer.AgentDNS),
 		discoverer.WithDiscovererClient(grpc.New(discovererClientOptions...)),
-		discoverer.WithDiscovererHostPort(
-			cfg.Indexer.Discoverer.Host,
-			cfg.Indexer.Discoverer.Port,
-		),
 		discoverer.WithDiscoverDuration(cfg.Indexer.Discoverer.Duration),
-		discoverer.WithOptions(cfg.Indexer.Discoverer.AgentClient.Opts()...),
+		discoverer.WithOptions(cfg.Indexer.Discoverer.AgentClientOptions.Opts()...),
 		discoverer.WithNodeName(cfg.Indexer.NodeName),
 		discoverer.WithOnDiscoverFunc(func(ctx context.Context, c discoverer.Client, addrs []string) error {
 			last := len(addrs) - 1
