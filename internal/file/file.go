@@ -42,9 +42,11 @@ func Open(path string, flg int, perm os.FileMode) (*os.File, error) {
 			}
 		}
 
-		file, err = os.Create(path)
-		if err != nil {
-			return nil, err
+		if flg&(os.O_CREATE|os.O_APPEND) > 0 {
+			file, err = os.Create(path)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		if file != nil {

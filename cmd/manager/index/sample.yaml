@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
----
 version: v0.0.0
 time_zone: JST
 logging:
@@ -114,7 +112,7 @@ observability:
     agent_endpoint: "jaeger-agent.default.svc.cluster.local:6831"
     username: ""
     password: ""
-    service_name: "vald-meta"
+    service_name: "vald-manager-index"
     buffer_max_count: 10
   stackdriver:
     project_id: ""
@@ -144,7 +142,7 @@ observability:
       tracing_enabled: false
     profiler:
       enabled: false
-      service: "vald-meta"
+      service: "vald-manager-index"
       service_version: ""
       debug_logging: false
       mutex_profiling: true
@@ -156,66 +154,135 @@ observability:
       api_addr: ""
       instance: ""
       zone: ""
-cassandra_config:
-  connect_timeout: 3s
-  consistency: quorum
-  cql_version: 3.0.0
-  default_idempotence: false
-  default_timestamp: true
-  disable_initial_host_lookup: false
-  disable_node_status_events: false
-  disable_skip_metadata: false
-  disable_topology_events: false
-  enable_host_verification: false
-  host_filter:
-    data_center: ""
-    enabled: false
-    white_list: []
-  hosts:
-    - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
-    - vald-scylla-cluster-dc0-rack0-1.scylla.svc.cluster.local
-    - vald-scylla-cluster-dc0-rack0-2.scylla.svc.cluster.local
-  ignore_peer_addr: false
-  keyspace: vald
-  max_prepared_stmts: 1000
-  max_routing_key_info: 1000
-  max_wait_schema_agreement: 1m
-  num_conns: 2
-  page_size: 5000
-  password: _CASSANDRA_PASSWORD_
-  pool_config:
-    data_center: ""
-    dc_aware_routing: false
-    non_local_replicas_fallback: false
-    shuffle_replicas: false
-    token_aware_host_policy: false
-  port: 9042
-  proto_version: 0
-  reconnect_interval: 100ms
-  reconnection_policy:
-    initial_interval: 100ms
-    max_retries: 3
-  retry_policy:
-    max_duration: 1s
-    min_duration: 10ms
-    num_retries: 3
-  serial_consistency: localserial
-  socket_keepalive: 0s
-  tcp:
-    dialer:
-      dual_stack_enabled: false
-      keep_alive: 10m
-      timeout: 30s
-    dns:
-      cache_enabled: true
-      cache_expiration: 24h
-      refresh_duration: 5m
-  timeout: 600ms
-  tls:
-    ca: /path/to/ca
-    cert: /path/to/cert
-    enabled: false
-    key: /path/to/key
-  username: root
-  vector_backup_table: backup_vector
-  write_coalesce_wait_time: 200µs
+indexer:
+  agent_port: 8081
+  agent_name: "vald-agent-ngt"
+  agent_dns: vald-agent-ngt.default.svc.cluster.local
+  agent_namespace: "_MY_POD_NAMESPACE_"
+  node_name: ""
+  discoverer:
+    duration: 500ms
+    client:
+      addrs:
+        - vald-discoverer.default.svc.cluster.local:8081
+      health_check_duration: "1s"
+      connection_pool:
+        enable_dns_resolver: true
+        enable_rebalance: true
+        old_conn_close_duration: 3s
+        rebalance_duration: 30m
+        size: 3
+      backoff:
+        backoff_factor: 1.1
+        backoff_time_limit: 5s
+        enable_error_log: true
+        initial_duration: 5ms
+        jitter_limit: 100ms
+        maximum_duration: 5s
+        retry_count: 100
+      call_option:
+        max_recv_msg_size: 0
+        max_retry_rpc_buffer_size: 0
+        max_send_msg_size: 0
+        wait_for_ready: true
+      dial_option:
+        backoff_base_delay: 1s
+        backoff_jitter: 0.2
+        backoff_max_delay: 120s
+        backoff_multiplier: 1.6
+        enable_backoff: false
+        initial_connection_window_size: 0
+        initial_window_size: 0
+        insecure: true
+        keep_alive:
+          permit_without_stream: false
+          time: ""
+          timeout: ""
+        max_msg_size: 0
+        min_connection_timeout: 20s
+        read_buffer_size: 0
+        tcp:
+          dialer:
+            dual_stack_enabled: true
+            keep_alive: ""
+            timeout: ""
+          dns:
+            cache_enabled: true
+            cache_expiration: 1h
+            refresh_duration: 30m
+          tls:
+            ca: /path/to/ca
+            cert: /path/to/cert
+            enabled: false
+            key: /path/to/key
+        timeout: ""
+        write_buffer_size: 0
+      tls:
+        ca: /path/to/ca
+        cert: /path/to/cert
+        enabled: false
+        key: /path/to/key
+    agent_client_options:
+      addrs: []
+      health_check_duration: "1s"
+      connection_pool:
+        enable_dns_resolver: true
+        enable_rebalance: true
+        old_conn_close_duration: 3s
+        rebalance_duration: 30m
+        size: 3
+      backoff:
+        backoff_factor: 1.1
+        backoff_time_limit: 5s
+        enable_error_log: true
+        initial_duration: 5ms
+        jitter_limit: 100ms
+        maximum_duration: 5s
+        retry_count: 100
+      call_option:
+        max_recv_msg_size: 0
+        max_retry_rpc_buffer_size: 0
+        max_send_msg_size: 0
+        wait_for_ready: true
+      dial_option:
+        write_buffer_size: 0
+        read_buffer_size: 0
+        initial_window_size: 0
+        initial_connection_window_size: 0
+        max_msg_size: 0
+        backoff_max_delay: "120s"
+        backoff_base_delay: "1s"
+        backoff_multiplier: 1.6
+        backoff_jitter: 0.2
+        min_connection_timeout: "20s"
+        enable_backoff: false
+        insecure: true
+        timeout: ""
+        tcp:
+          dns:
+            cache_enabled: true
+            cache_expiration: 1h
+            refresh_duration: 30m
+          dialer:
+            timeout: ""
+            keep_alive: "15m"
+            dual_stack_enabled: true
+          tls:
+            ca: /path/to/ca
+            cert: /path/to/cert
+            enabled: false
+            key: /path/to/key
+        keep_alive:
+          permit_without_stream: false
+          time: ""
+          timeout: ""
+      tls:
+        ca: /path/to/ca
+        cert: /path/to/cert
+        enabled: false
+        key: /path/to/key
+  concurrency: 1
+  auto_index_duration_limit: 30m
+  auto_index_check_duration: 1m
+  auto_index_length: 100
+  creation_pool_size: 10000

@@ -166,8 +166,20 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 }
 
 func (n *ngt) initNGT(opts ...core.Option) (err error) {
-	if _, err = os.Stat(n.path); os.IsNotExist(err) || n.inMem {
+	if n.inMem {
+		log.Debug("vald agent starts with in-memory mode")
 		n.core, err = core.New(opts...)
+		return err
+	}
+
+	_, err = os.Stat(n.path)
+	if os.IsNotExist(err) {
+		log.Debugf("index file not exists,\tpath: %s,\terr: %v", n.path, err)
+		n.core, err = core.New(opts...)
+		return err
+	}
+	if os.IsPermission(err) {
+		log.Debugf("no permission for index path,\tpath: %s,\terr: %v", n.path, err)
 		return err
 	}
 
@@ -176,6 +188,20 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 	agentMetadata, err := metadata.Load(filepath.Join(n.path, metadata.AgentMetadataFileName))
 	if err != nil {
 		log.Warnf("cannot read metadata from %s: %s", metadata.AgentMetadataFileName, err)
+	}
+	if os.IsNotExist(err) || agentMetadata == nil || agentMetadata.NGT == nil || agentMetadata.NGT.IndexCount == 0 {
+		log.Warnf("cannot read metadata from %s: %v", metadata.AgentMetadataFileName, err)
+
+		if fi, err := os.Stat(filepath.Join(n.path, kvsFileName)); os.IsNotExist(err) || fi.Size() == 0 {
+			log.Warn("kvsdb file is not exist")
+			n.core, err = core.New(opts...)
+			return err
+		}
+
+		if os.IsPermission(err) {
+			log.Debugf("no permission for kvsdb file,\tpath: %s,\terr: %v", filepath.Join(n.path, kvsFileName), err)
+			return err
+		}
 	}
 
 	var timeout time.Duration
@@ -191,7 +217,7 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 			),
 		)
 	} else {
-		log.Debugf("cannot inspect the backup index size. starting to load.")
+		log.Debugf("cannot inspect the backup index size. starting to load default value.")
 		timeout = time.Duration(math.Min(float64(n.minLit), float64(n.maxLit)))
 	}
 
@@ -269,6 +295,7 @@ func (n *ngt) loadKVS() error {
 	m := make(map[string]uint32)
 	err = gob.NewDecoder(f).Decode(&m)
 	if err != nil {
+		log.Errorf("error decoding kvsdb file,\terr: %v", err)
 		return err
 	}
 

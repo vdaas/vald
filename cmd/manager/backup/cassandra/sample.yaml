@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
----
 version: v0.0.0
 time_zone: JST
 logging:
@@ -114,7 +112,7 @@ observability:
     agent_endpoint: "jaeger-agent.default.svc.cluster.local:6831"
     username: ""
     password: ""
-    service_name: "vald-meta"
+    service_name: "vald-manager-backup"
     buffer_max_count: 10
   stackdriver:
     project_id: ""
@@ -144,7 +142,7 @@ observability:
       tracing_enabled: false
     profiler:
       enabled: false
-      service: "vald-meta"
+      service: "vald-manager-backup"
       service_version: ""
       debug_logging: false
       mutex_profiling: true
