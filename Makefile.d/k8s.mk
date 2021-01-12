@@ -404,3 +404,18 @@ telepresence/swap/manager-compressor:
 ## swap manager-index deployment using telepresence
 telepresence/swap/manager-index:
 	@$(call telepresence,vald-manager-index,vdaas/vald-manager-index)
+
+.PHONY: telepresence/swap/lb-gateway
+## swap lb-gateway deployment using telepresence
+telepresence/swap/lb-gateway:
+	@$(call telepresence,vald-lb-gateway,vdaas/vald-lb-gateway)
+
+.PHONY: telepresence/swap/backup-gateway
+## swap backup-gateway deployment using telepresence
+telepresence/swap/backup-gateway:
+	@$(call telepresence,vald-backup-gateway,vdaas/vald-backup-gateway)
+
+.PHONY: telepresence/swap/meta-gateway
+## swap meta-gateway deployment using telepresence
+telepresence/swap/meta-gateway:
+	@$(call telepresence,vald-meta-gateway,vdaas/vald-meta-gateway)

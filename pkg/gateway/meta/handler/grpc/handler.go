@@ -117,7 +117,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 	meta := req.GetId()
 	req.Id, err = s.metadata.GetUUID(ctx, meta)
 	if err != nil {
-		log.Debugf("MultiRemove API failed to process request uuids:\t%v\terror:\t%s", meta, err.Error())
+		log.Debugf("SearchByID API failed to process request uuids:\t%v\terror:\t%s", meta, err.Error())
 		req.Id = meta
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
@@ -131,7 +131,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
-		return nil, status.WrapWithNotFound("Search API failed to process search request", err, req, info.Get())
+		return nil, status.WrapWithNotFound("SearchByID API failed to process search request", err, req, info.Get())
 	}
 	return res, nil
 }
