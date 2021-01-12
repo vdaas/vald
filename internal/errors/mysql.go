@@ -18,7 +18,7 @@
 package errors
 
 var (
-	// MySQL.
+	// ErrMySQLConnectionPingFailed represents an error that the ping to MySQL failed.
 	ErrMySQLConnectionPingFailed = New("error MySQL connection ping failed")
 
 	NewErrMySQLNotFoundIdentity = func() error {
