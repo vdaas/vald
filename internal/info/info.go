@@ -90,15 +90,15 @@ var (
 )
 
 // Init initializes Detail object only once.
-func Init(name string) error {
+func Init(name string) {
 	i, err := New(WithServerName(name))
 	if err != nil {
-		return err
+		log.Init()
+		log.Fatal(errors.ErrFailedToInitInfo(err))
 	}
 	once.Do(func() {
 		infoProvider = i
 	})
-	return nil
 }
 
 // New initializes and returns the info object or any error occurred.
