@@ -22,6 +22,7 @@ import (
 	"os"
 
 	"github.com/vdaas/vald/internal/encoding/json"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 )
 
@@ -38,20 +39,27 @@ type NGT struct {
 	IndexCount uint64 `json:"index_count" yaml:"index_count"`
 }
 
-func Load(path string) (*Metadata, error) {
+func Load(path string) (meta *Metadata, err error) {
+	var fi os.FileInfo
+	if fi, err = os.Stat(path); err != nil {
+		return nil, err
+	}
+	if fi.Size() == 0 {
+		return nil, errors.ErrMetadataFileEmpty
+	}
+
 	f, err := file.Open(path, os.O_RDONLY|os.O_SYNC, os.ModePerm)
 	if err != nil {
 		return nil, err
 	}
 	defer f.Close()
 
-	var meta Metadata
 	err = json.Decode(f, &meta)
 	if err != nil && err != io.EOF {
 		return nil, err
 	}
 
-	return &meta, nil
+	return meta, nil
 }
 
 func Store(path string, meta *Metadata) error {
