@@ -211,10 +211,15 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 					mu.Lock()
 					dar := make([]int32, len(desiredAgentReplicas))
 					_ = copy(dar, desiredAgentReplicas)
+					log.Debugf("[test] before creating job: desiredAgentReplicas: %v", dar)
 					mu.Unlock()
 
+					// var muPod sync.Mutex
+					// muPod.Lock()
+					// defer muPod.Unlock()
 					if len(dar) > 0 {
 						ppod, ok := r.pods.Load().([]pod.Pod)
+						log.Debugf("[test] len(pod): %d, len(prev pod): %d", len(pods), len(ppod))
 						if ok && len(pods) < len(ppod) && len(pods) == int(dar[0]) {
 							decreasedPodNames := getDecreasedPodNames(ppod, pods, r.agentNamespace)
 							jobTpl, err := r.genJobTpl()
@@ -233,11 +238,14 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 							}
 							mu.Lock()
 							desiredAgentReplicas = desiredAgentReplicas[1:]
+							log.Debugf("[test] after creating job: desiredAgentReplicas: %v", desiredAgentReplicas)
 							mu.Unlock()
 
+							log.Debug("[test] Store pods when len(dar) > 0")
 							r.pods.Store(pods)
 						}
 					} else {
+						log.Debug("[test] Store pods when len(dar) = 0")
 						r.pods.Store(pods)
 					}
 				} else {
