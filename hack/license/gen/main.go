@@ -54,15 +54,16 @@ var (
 )
 
 type Data struct {
-	Escape   string
+	Escape     string
 	Maintainer string
-	Year     int
+	Year       int
 }
 
 const (
-	defaultMaintainer     = "vdaas.org vald team <vald@vdaas.org>"
-	maintainerKey         = "MAINTAINER"
+	defaultMaintainer = "vdaas.org vald team <vald@vdaas.org>"
+	maintainerKey     = "MAINTAINER"
 )
+
 func main() {
 	if len(os.Args) < 2 {
 		log.Fatal(errors.New("invalid argument"))
@@ -171,8 +172,8 @@ func readAndRewrite(path string) error {
 	}
 	d := Data{
 		Maintainer: maintainer,
-		Year:     time.Now().Year(),
-		Escape:   sharpEscape,
+		Year:       time.Now().Year(),
+		Escape:     sharpEscape,
 	}
 	if fi.Name() == "LICENSE" {
 		err = license.Execute(buf, d)
