@@ -165,6 +165,10 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 				if ok {
 					log.Debugf("[reconcile StatefulSet] StatefulSet[%s]: %d\tdesired replica: %d, current replica: %d", r.agentName, *sss[0].Spec.Replicas, sss[0].Status.Replicas)
 					if len(sss) == 1 {
+						if *sss[0].Spec.Replicas != sss[0].Status.Replicas {
+							return
+						}
+
 						pss, ok := r.statefulSets.Load().(statefulset.StatefulSet)
 						if ok && *sss[0].Spec.Replicas < *pss.Spec.Replicas {
 							mu.Lock()
