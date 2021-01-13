@@ -517,11 +517,11 @@ func TestE2EGetObject(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			if !reflect.DeepEqual(res.GetVector(), ds.train[res.GetMeta()]) {
+			if !reflect.DeepEqual(res.GetVector(), ds.train[res.GetId()]) {
 				t.Errorf(
 					"result: %#v, expected: %#v",
 					res.GetVector(),
-					ds.train[res.GetMeta()],
+					ds.train[res.GetId()],
 				)
 			}
 
