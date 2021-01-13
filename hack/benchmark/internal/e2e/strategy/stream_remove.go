@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,7 +25,8 @@ import (
 
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e"
-	"github.com/vdaas/vald/internal/client"
+	"github.com/vdaas/vald/internal/client/v1/client"
+	"github.com/vdaas/vald/internal/net/grpc"
 )
 
 type streamRemove struct{}
@@ -38,7 +39,7 @@ func NewStreamRemove(opts ...StreamRemoveOption) e2e.Strategy {
 	return sr
 }
 
-func (sr *streamRemove) dataProvider(total *uint32, b *testing.B, dataset assets.Dataset) func() *client.ObjectID {
+func (sr *streamRemove) dataProvider(total *uint32, b *testing.B, dataset assets.Dataset) func() *client.RemoveRequest {
 	var cnt uint32
 
 	b.StopTimer()
@@ -47,15 +48,17 @@ func (sr *streamRemove) dataProvider(total *uint32, b *testing.B, dataset assets
 	b.StartTimer()
 	defer b.StopTimer()
 
-	return func() *client.ObjectID {
+	return func() *client.RemoveRequest {
 		n := int(atomic.AddUint32(&cnt, 1)) - 1
 		if n >= b.N {
 			return nil
 		}
 
 		total := int(atomic.AddUint32(total, 1)) - 1
-		return &client.ObjectID{
-			Id: fmt.Sprint(total % dataset.TrainSize()),
+		return &client.RemoveRequest{
+			Id: &client.ObjectID{
+				Id: fmt.Sprint(total % dataset.TrainSize()),
+			},
 		}
 	}
 }
@@ -63,10 +66,15 @@ func (sr *streamRemove) dataProvider(total *uint32, b *testing.B, dataset assets
 func (sr *streamRemove) Run(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
 	var total uint32
 	b.Run("StreamRemove", func(bb *testing.B) {
-		c.StreamRemove(ctx, sr.dataProvider(&total, bb, dataset), func(err error) {
-			if err != nil {
-				b.Error(err)
-			}
+		srv, err := c.StreamRemove(ctx)
+		if err != nil {
+			bb.Error(err)
+		}
+		grpc.BidirectionalStreamClient(srv, func() interface{} {
+			return sr.dataProvider(&total, bb, dataset)()
+		}, func() interface{} {
+			return new(client.RemoveRequest)
+		}, func(msg interface{}, err error) {
 		})
 	})
 }

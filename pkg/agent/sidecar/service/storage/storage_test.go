@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []Option
 	}
@@ -85,8 +86,10 @@ func TestNew(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -102,12 +105,12 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_bs_initCompressor(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		eg                errgroup.Group
 		storageType       string
@@ -186,8 +189,10 @@ func Test_bs_initCompressor(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -216,12 +221,12 @@ func Test_bs_initCompressor(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_bs_initBucket(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		eg                errgroup.Group
 		storageType       string
@@ -300,8 +305,10 @@ func Test_bs_initBucket(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -330,12 +337,12 @@ func Test_bs_initBucket(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_bs_Start(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -428,8 +435,10 @@ func Test_bs_Start(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -458,12 +467,12 @@ func Test_bs_Start(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_bs_Reader(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -556,8 +565,10 @@ func Test_bs_Reader(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -586,12 +597,12 @@ func Test_bs_Reader(t *testing.T) {
 			if err := test.checkFunc(test.want, gotR, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_bs_Writer(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -684,8 +695,10 @@ func Test_bs_Writer(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -714,7 +727,122 @@ func Test_bs_Writer(t *testing.T) {
 			if err := test.checkFunc(test.want, gotW, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+		})
+	}
+}
 
+func Test_bs_StorageInfo(t *testing.T) {
+	t.Parallel()
+	type fields struct {
+		eg                errgroup.Group
+		storageType       string
+		bucketName        string
+		filename          string
+		suffix            string
+		s3Opts            []s3.Option
+		s3SessionOpts     []session.Option
+		compressAlgorithm string
+		compressionLevel  int
+		bucket            blob.Bucket
+		compressor        compress.Compressor
+	}
+	type want struct {
+		want *StorageInfo
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, *StorageInfo) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got *StorageInfo) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           eg: nil,
+		           storageType: "",
+		           bucketName: "",
+		           filename: "",
+		           suffix: "",
+		           s3Opts: nil,
+		           s3SessionOpts: nil,
+		           compressAlgorithm: "",
+		           compressionLevel: 0,
+		           bucket: nil,
+		           compressor: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           eg: nil,
+		           storageType: "",
+		           bucketName: "",
+		           filename: "",
+		           suffix: "",
+		           s3Opts: nil,
+		           s3SessionOpts: nil,
+		           compressAlgorithm: "",
+		           compressionLevel: 0,
+		           bucket: nil,
+		           compressor: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			b := &bs{
+				eg:                test.fields.eg,
+				storageType:       test.fields.storageType,
+				bucketName:        test.fields.bucketName,
+				filename:          test.fields.filename,
+				suffix:            test.fields.suffix,
+				s3Opts:            test.fields.s3Opts,
+				s3SessionOpts:     test.fields.s3SessionOpts,
+				compressAlgorithm: test.fields.compressAlgorithm,
+				compressionLevel:  test.fields.compressionLevel,
+				bucket:            test.fields.bucket,
+				compressor:        test.fields.compressor,
+			}
+
+			got := b.StorageInfo()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
 		})
 	}
 }

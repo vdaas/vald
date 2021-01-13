@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,13 +25,11 @@ import (
 // QueueOption represents the functional option for queue.
 type QueueOption func(q *queue) error
 
-var (
-	defaultQueueOpts = []QueueOption{
-		WithQueueBuffer(10),
-		WithQueueErrGroup(errgroup.Get()),
-		WithQueueCheckDuration("200ms"),
-	}
-)
+var defaultQueueOpts = []QueueOption{
+	WithQueueBuffer(10),
+	WithQueueErrGroup(errgroup.Get()),
+	WithQueueCheckDuration("200ms"),
+}
 
 // WithQueueBuffer returns the option to set the buffer for queue.
 func WithQueueBuffer(buffer int) QueueOption {

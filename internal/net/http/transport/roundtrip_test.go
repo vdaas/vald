@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -105,7 +105,6 @@ func TestNewExpBackoff(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -175,8 +174,9 @@ func Test_ert_RoundTrip(t *testing.T) {
 					},
 				},
 				bo: &backoffMock{
-					DoFunc: func(ctx context.Context, fn func() (interface{}, error)) (interface{}, error) {
-						return fn()
+					DoFunc: func(ctx context.Context, fn func(context.Context) (interface{}, bool, error)) (interface{}, error) {
+						val, _, err := fn(ctx)
+						return val, err
 					},
 				},
 			},
@@ -200,8 +200,9 @@ func Test_ert_RoundTrip(t *testing.T) {
 					},
 				},
 				bo: &backoffMock{
-					DoFunc: func(ctx context.Context, fn func() (interface{}, error)) (interface{}, error) {
-						return fn()
+					DoFunc: func(ctx context.Context, fn func(context.Context) (interface{}, bool, error)) (interface{}, error) {
+						val, _, err := fn(ctx)
+						return val, err
 					},
 				},
 			},
@@ -225,8 +226,9 @@ func Test_ert_RoundTrip(t *testing.T) {
 					},
 				},
 				bo: &backoffMock{
-					DoFunc: func(ctx context.Context, fn func() (interface{}, error)) (interface{}, error) {
-						return fn()
+					DoFunc: func(ctx context.Context, fn func(context.Context) (interface{}, bool, error)) (interface{}, error) {
+						val, _, err := fn(ctx)
+						return val, err
 					},
 				},
 			},
@@ -243,7 +245,7 @@ func Test_ert_RoundTrip(t *testing.T) {
 			},
 			fields: fields{
 				bo: &backoffMock{
-					DoFunc: func(ctx context.Context, fn func() (interface{}, error)) (interface{}, error) {
+					DoFunc: func(ctx context.Context, fn func(context.Context) (interface{}, bool, error)) (interface{}, error) {
 						return nil, errors.New("error")
 					},
 				},
@@ -264,8 +266,9 @@ func Test_ert_RoundTrip(t *testing.T) {
 					},
 				},
 				bo: &backoffMock{
-					DoFunc: func(ctx context.Context, fn func() (interface{}, error)) (interface{}, error) {
-						return fn()
+					DoFunc: func(ctx context.Context, fn func(context.Context) (interface{}, bool, error)) (interface{}, error) {
+						val, _, err := fn(ctx)
+						return val, err
 					},
 				},
 			},
@@ -285,8 +288,9 @@ func Test_ert_RoundTrip(t *testing.T) {
 					},
 				},
 				bo: &backoffMock{
-					DoFunc: func(ctx context.Context, fn func() (interface{}, error)) (interface{}, error) {
-						return fn()
+					DoFunc: func(ctx context.Context, fn func(context.Context) (interface{}, bool, error)) (interface{}, error) {
+						val, _, err := fn(ctx)
+						return val, err
 					},
 				},
 			},
@@ -317,7 +321,6 @@ func Test_ert_RoundTrip(t *testing.T) {
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -450,7 +453,6 @@ func Test_ert_roundTrip(t *testing.T) {
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -514,7 +516,6 @@ func Test_retryableStatusCode(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -523,8 +524,7 @@ func Test_closeBody(t *testing.T) {
 	type args struct {
 		rc io.ReadCloser
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

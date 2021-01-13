@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,19 +24,19 @@ import (
 type Func func(http.ResponseWriter, *http.Request) (code int, err error)
 
 const (
-	// ContentType represents a HTTP header name "Content-Type"
+	// ContentType represents a HTTP header name "Content-Type".
 	ContentType = "Content-Type"
 
-	// ApplicationJSON represents a HTTP content type "application/json"
+	// ApplicationJSON represents a HTTP content type "application/json".
 	ApplicationJSON = "application/json"
 
-	// ProblemJSON represents a HTTP content type "application/problem+json"
+	// ProblemJSON represents a HTTP content type "application/problem+json".
 	ProblemJSON = "application/problem+json"
 
-	// TextPlain represents a HTTP content type "text/plain"
+	// TextPlain represents a HTTP content type "text/plain".
 	TextPlain = "text/plain"
 
-	// CharsetUTF8 represents a UTF-8 charset for HTTP response "charset=UTF-8"
+	// CharsetUTF8 represents a UTF-8 charset for HTTP response "charset=UTF-8".
 	CharsetUTF8 = "charset=UTF-8"
 )
 

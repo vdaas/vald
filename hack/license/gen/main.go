@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import (
 
 var (
 	apache = template.Must(template.New("Apache License").Parse(`{{.Escape}}
-{{.Escape}} Copyright (C) 2019-{{.Year}} {{.NickName}} ({{.FullName}})
+{{.Escape}} Copyright (C) 2019-{{.Year}} {{.Maintainer}}
 {{.Escape}}
 {{.Escape}} Licensed under the Apache License, Version 2.0 (the "License");
 {{.Escape}} you may not use this file except in compliance with the License.
@@ -54,14 +54,19 @@ var (
 )
 
 type Data struct {
-	Escape   string
-	NickName string
-	FullName string
-	Year     int
+	Escape     string
+	Maintainer string
+	Year       int
 }
 
+const (
+	minimumArgumentLength = 2
+	defaultMaintainer     = "vdaas.org vald team <vald@vdaas.org>"
+	maintainerKey         = "MAINTAINER"
+)
+
 func main() {
-	if len(os.Args) < 2 {
+	if len(os.Args) < minimumArgumentLength {
 		log.Fatal(errors.New("invalid argument"))
 	}
 	for _, path := range dirwalk(os.Args[1]) {
@@ -72,6 +77,7 @@ func main() {
 		}
 	}
 }
+
 func dirwalk(dir string) []string {
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
@@ -82,7 +88,8 @@ func dirwalk(dir string) []string {
 		if file.IsDir() {
 			if !strings.Contains(file.Name(), "vendor") &&
 				!strings.Contains(file.Name(), "versions") &&
-				!strings.Contains(file.Name(), ".git") {
+				!strings.Contains(file.Name(), ".git") ||
+				strings.HasPrefix(file.Name(), ".github") {
 				paths = append(paths, dirwalk(filepath.Join(dir, file.Name()))...)
 			}
 			continue
@@ -90,6 +97,7 @@ func dirwalk(dir string) []string {
 		switch filepath.Ext(file.Name()) {
 		case
 			".ai",
+			".all-contributorsrc",
 			".cfg",
 			".crt",
 			".default",
@@ -113,8 +121,8 @@ func dirwalk(dir string) []string {
 			".ssv",
 			".sum",
 			".svg",
-			".tpl",
 			".tmpl",
+			".tpl",
 			".txt",
 			".whitesource",
 			"LICENSE",
@@ -122,17 +130,17 @@ func dirwalk(dir string) []string {
 		default:
 			switch file.Name() {
 			case
-				"GO_VERSION",
-				"NGT_VERSION",
-				"VALD_VERSION",
-				"TENSORFLOW_C_VERSION",
 				"AUTHORS",
 				"CONTRIBUTORS",
+				"GO_VERSION",
+				"NGT_VERSION",
 				"Pipefile",
+				"TENSORFLOW_C_VERSION",
+				"VALD_VERSION",
 				"grp",
-				"src",
 				"obj",
 				"prf",
+				"src",
 				"tre":
 			default:
 				path, err := filepath.Abs(filepath.Join(dir, file.Name()))
@@ -145,8 +153,9 @@ func dirwalk(dir string) []string {
 	}
 	return paths
 }
+
 func readAndRewrite(path string) error {
-	f, err := os.Open(path)
+	f, err := os.OpenFile(path, os.O_RDWR|os.O_SYNC, os.ModePerm)
 	if err != nil {
 		return errors.Errorf("filepath %s, could not open", path)
 	}
@@ -159,11 +168,14 @@ func readAndRewrite(path string) error {
 		return errors.Errorf("filepath %s, could not open", path)
 	}
 	buf := bytes.NewBuffer(make([]byte, 0, fi.Size()))
+	maintainer := os.Getenv(maintainerKey)
+	if len(maintainer) == 0 {
+		maintainer = defaultMaintainer
+	}
 	d := Data{
-		NickName: "Vdaas.org Vald team",
-		FullName: " kpango, rinx, kmrmt ",
-		Year:     time.Now().Year(),
-		Escape:   sharpEscape,
+		Maintainer: maintainer,
+		Year:       time.Now().Year(),
+		Escape:     sharpEscape,
 	}
 	if fi.Name() == "LICENSE" {
 		err = license.Execute(buf, d)
@@ -260,9 +272,8 @@ func readAndRewrite(path string) error {
 	return nil
 }
 
-var (
-	license = template.Must(template.New("LICENSE").Parse(
-		`                                 Apache License
+var license = template.Must(template.New("LICENSE").Parse(
+	`                                 Apache License
                            Version 2.0, January 2004
                         https://www.apache.org/licenses/
 
@@ -450,7 +461,7 @@ var (
       same "printed page" as the copyright notice for easier
       identification within third-party archives.
 
-   Copyright (C) 2019-{{.Year}} {{.NickName}} ({{.FullName}})
+   Copyright (C) 2019-{{.Year}} {{.Maintainer}}
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -463,4 +474,3 @@ var (
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.`))
-)

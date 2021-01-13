@@ -1,0 +1,319 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "apis/proto/v1/vald/filter.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/insert/object": {
+      "post": {
+        "operationId": "Filter_InsertObject",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ObjectLocation"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ObjectBlob"
+            }
+          }
+        ],
+        "tags": [
+          "Filter"
+        ]
+      }
+    },
+    "/search/object": {
+      "post": {
+        "operationId": "Filter_SearchObject",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/SearchResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SearchObjectRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Filter"
+        ]
+      }
+    },
+    "/update/object": {
+      "post": {
+        "operationId": "Filter_UpdateObject",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ObjectLocation"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ObjectBlob"
+            }
+          }
+        ],
+        "tags": [
+          "Filter"
+        ]
+      }
+    },
+    "/upsert/object": {
+      "post": {
+        "operationId": "Filter_UpsertObject",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ObjectLocation"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ObjectBlob"
+            }
+          }
+        ],
+        "tags": [
+          "Filter"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "ObjectBlob": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "object": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "ObjectDistance": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "distance": {
+          "type": "number",
+          "format": "float"
+        }
+      }
+    },
+    "SearchObjectRequest": {
+      "type": "object",
+      "properties": {
+        "object": {
+          "type": "string",
+          "format": "byte"
+        },
+        "config": {
+          "$ref": "#/definitions/v1SearchConfig"
+        }
+      }
+    },
+    "SearchResponse": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string"
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ObjectDistance"
+          }
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "runtimeStreamError": {
+      "type": "object",
+      "properties": {
+        "grpcCode": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "httpCode": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "httpStatus": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1FilterConfig": {
+      "type": "object",
+      "properties": {
+        "targets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1ObjectLocation": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "uuid": {
+          "type": "string"
+        },
+        "ips": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1ObjectLocations": {
+      "type": "object",
+      "properties": {
+        "locations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1ObjectLocation"
+          }
+        }
+      }
+    },
+    "v1SearchConfig": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string"
+        },
+        "num": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "radius": {
+          "type": "number",
+          "format": "float"
+        },
+        "epsilon": {
+          "type": "number",
+          "format": "float"
+        },
+        "timeout": {
+          "type": "string",
+          "format": "int64"
+        },
+        "filters": {
+          "$ref": "#/definitions/v1FilterConfig"
+        }
+      }
+    }
+  }
+}

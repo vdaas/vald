@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -130,11 +130,15 @@ var (
 	ValdOrg = "vald.vdaas.org"
 )
 
-type Measurement = stats.Measurement
-type View = view.View
+type (
+	Measurement = stats.Measurement
+	View        = view.View
+)
 
-type Int64Measure = stats.Int64Measure
-type Float64Measure = stats.Float64Measure
+type (
+	Int64Measure   = stats.Int64Measure
+	Float64Measure = stats.Float64Measure
+)
 
 type Key = tag.Key
 

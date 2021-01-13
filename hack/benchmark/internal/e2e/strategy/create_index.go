@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import (
 
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e"
-	"github.com/vdaas/vald/internal/client"
+	"github.com/vdaas/vald/internal/client/v1/client"
 )
 
 type createIndex struct {
@@ -48,7 +48,7 @@ func (ci *createIndex) Run(ctx context.Context, b *testing.B, c client.Client, d
 }
 
 func (ci *createIndex) do(ctx context.Context, b *testing.B) {
-	if err := ci.Indexer.CreateIndex(ctx, &client.ControlCreateIndexRequest{
+	if _, err := ci.Indexer.CreateIndex(ctx, &client.ControlCreateIndexRequest{
 		PoolSize: ci.poolSize,
 	}); err != nil {
 		b.Error(err)

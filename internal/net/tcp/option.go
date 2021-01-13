@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,26 +25,24 @@ import (
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
-// DialerOption represent the functional option for dialer
+// DialerOption represent the functional option for dialer.
 type DialerOption func(*dialer)
 
-var (
-	defaultDialerOptions = []DialerOption{
-		WithDialerKeepAlive("30s"),
-		WithDialerTimeout("30s"),
-		WithEnableDialerDualStack(),
-		WithDisableDNSCache(),
-	}
-)
+var defaultDialerOptions = []DialerOption{
+	WithDialerKeepAlive("30s"),
+	WithDialerTimeout("30s"),
+	WithEnableDialerDualStack(),
+	WithDisableDNSCache(),
+}
 
-// WithCache returns the functional option to set the cache
+// WithCache returns the functional option to set the cache.
 func WithCache(c cache.Cache) DialerOption {
 	return func(d *dialer) {
 		d.cache = c
 	}
 }
 
-// WithDNSRefreshDuration returns the functional option to set the DNSRefreshDuration
+// WithDNSRefreshDuration returns the functional option to set the DNSRefreshDuration.
 func WithDNSRefreshDuration(dur string) DialerOption {
 	return func(d *dialer) {
 		if dur == "" {
@@ -60,7 +58,7 @@ func WithDNSRefreshDuration(dur string) DialerOption {
 	}
 }
 
-// WithDNSCacheExpiration returns the functional option to set the DNSCacheExpiration
+// WithDNSCacheExpiration returns the functional option to set the DNSCacheExpiration.
 func WithDNSCacheExpiration(dur string) DialerOption {
 	return func(d *dialer) {
 		if dur == "" {
@@ -79,7 +77,7 @@ func WithDNSCacheExpiration(dur string) DialerOption {
 	}
 }
 
-// WithDialerTimeout returns the functional option to set the DialerTimeout
+// WithDialerTimeout returns the functional option to set the DialerTimeout.
 func WithDialerTimeout(dur string) DialerOption {
 	return func(d *dialer) {
 		if dur == "" {
@@ -93,7 +91,7 @@ func WithDialerTimeout(dur string) DialerOption {
 	}
 }
 
-// WithDialerKeepAlive returns the functional option to set the DialerKeepAlive
+// WithDialerKeepAlive returns the functional option to set the DialerKeepAlive.
 func WithDialerKeepAlive(dur string) DialerOption {
 	return func(d *dialer) {
 		if dur == "" {
@@ -107,35 +105,35 @@ func WithDialerKeepAlive(dur string) DialerOption {
 	}
 }
 
-// WithTLS returns the functional option to set the DialerTLS
+// WithTLS returns the functional option to set the DialerTLS.
 func WithTLS(cfg *tls.Config) DialerOption {
 	return func(d *dialer) {
 		d.tlsConfig = cfg
 	}
 }
 
-// WithEnableDNSCache returns the functional option to enable DNSCache
+// WithEnableDNSCache returns the functional option to enable DNSCache.
 func WithEnableDNSCache() DialerOption {
 	return func(d *dialer) {
 		d.dnsCache = true
 	}
 }
 
-// WithDisableDNSCache returns the functional option to disable DNSCache
+// WithDisableDNSCache returns the functional option to disable DNSCache.
 func WithDisableDNSCache() DialerOption {
 	return func(d *dialer) {
 		d.dnsCache = false
 	}
 }
 
-// WithEnableDialerDualStack returns the functional option to enable DialerDualStack
+// WithEnableDialerDualStack returns the functional option to enable DialerDualStack.
 func WithEnableDialerDualStack() DialerOption {
 	return func(d *dialer) {
 		d.dialerDualStack = true
 	}
 }
 
-// WithDisableDialerDualStack returns the functional option to disable DialerDualStack
+// WithDisableDialerDualStack returns the functional option to disable DialerDualStack.
 func WithDisableDialerDualStack() DialerOption {
 	return func(d *dialer) {
 		d.dialerDualStack = false

@@ -1,6 +1,6 @@
 ---
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,10 +21,10 @@ metadata:
   labels:
     app: vald-manager-backup
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v0.0.64
+    helm.sh/chart: vald-v0.0.66
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v0.0.64
+    app.kubernetes.io/version: v0.0.66
     app.kubernetes.io/component: manager-backup
 spec:
   progressDeadlineSeconds: 600
@@ -46,7 +46,7 @@ spec:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/component: manager-backup
       annotations:
-        checksum/configmap: d8a952e12d80eed07f4a85d061638ecd6e1cf74b04f8694a4a7789b1b2751e3e
+        checksum/configmap: 5b3eed9e92582e48a8615cf278f943abc57a299d7b2a1415930757a4442487ea
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-manager-backup

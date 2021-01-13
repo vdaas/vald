@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,12 +22,13 @@ import (
 	"reflect"
 	"testing"
 
-	agent "github.com/vdaas/vald/apis/grpc/agent/core"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/pkg/agent/core/ngt/handler/grpc"
 	"go.uber.org/goleak"
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []Option
 	}
@@ -76,8 +77,10 @@ func TestNew(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -93,18 +96,18 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_handler_Index(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		w http.ResponseWriter
 		r *http.Request
 	}
 	type fields struct {
-		agent agent.AgentServer
+		agent grpc.Server
 	}
 	type want struct {
 		want int
@@ -164,8 +167,10 @@ func Test_handler_Index(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -184,18 +189,18 @@ func Test_handler_Index(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_handler_Search(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		w http.ResponseWriter
 		r *http.Request
 	}
 	type fields struct {
-		agent agent.AgentServer
+		agent grpc.Server
 	}
 	type want struct {
 		wantCode int
@@ -255,8 +260,10 @@ func Test_handler_Search(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -275,18 +282,18 @@ func Test_handler_Search(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_handler_SearchByID(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		w http.ResponseWriter
 		r *http.Request
 	}
 	type fields struct {
-		agent agent.AgentServer
+		agent grpc.Server
 	}
 	type want struct {
 		wantCode int
@@ -346,8 +353,10 @@ func Test_handler_SearchByID(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -366,18 +375,18 @@ func Test_handler_SearchByID(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_handler_Insert(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		w http.ResponseWriter
 		r *http.Request
 	}
 	type fields struct {
-		agent agent.AgentServer
+		agent grpc.Server
 	}
 	type want struct {
 		wantCode int
@@ -437,8 +446,10 @@ func Test_handler_Insert(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -457,18 +468,18 @@ func Test_handler_Insert(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_handler_MultiInsert(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		w http.ResponseWriter
 		r *http.Request
 	}
 	type fields struct {
-		agent agent.AgentServer
+		agent grpc.Server
 	}
 	type want struct {
 		wantCode int
@@ -528,8 +539,10 @@ func Test_handler_MultiInsert(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -548,18 +561,18 @@ func Test_handler_MultiInsert(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_handler_Update(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		w http.ResponseWriter
 		r *http.Request
 	}
 	type fields struct {
-		agent agent.AgentServer
+		agent grpc.Server
 	}
 	type want struct {
 		wantCode int
@@ -619,8 +632,10 @@ func Test_handler_Update(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -639,18 +654,18 @@ func Test_handler_Update(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_handler_MultiUpdate(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		w http.ResponseWriter
 		r *http.Request
 	}
 	type fields struct {
-		agent agent.AgentServer
+		agent grpc.Server
 	}
 	type want struct {
 		wantCode int
@@ -710,8 +725,10 @@ func Test_handler_MultiUpdate(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -730,18 +747,18 @@ func Test_handler_MultiUpdate(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_handler_Remove(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		w http.ResponseWriter
 		r *http.Request
 	}
 	type fields struct {
-		agent agent.AgentServer
+		agent grpc.Server
 	}
 	type want struct {
 		wantCode int
@@ -801,8 +818,10 @@ func Test_handler_Remove(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -821,18 +840,18 @@ func Test_handler_Remove(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_handler_MultiRemove(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		w http.ResponseWriter
 		r *http.Request
 	}
 	type fields struct {
-		agent agent.AgentServer
+		agent grpc.Server
 	}
 	type want struct {
 		wantCode int
@@ -892,8 +911,10 @@ func Test_handler_MultiRemove(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -912,18 +933,18 @@ func Test_handler_MultiRemove(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_handler_CreateIndex(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		w http.ResponseWriter
 		r *http.Request
 	}
 	type fields struct {
-		agent agent.AgentServer
+		agent grpc.Server
 	}
 	type want struct {
 		wantCode int
@@ -983,8 +1004,10 @@ func Test_handler_CreateIndex(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1003,18 +1026,18 @@ func Test_handler_CreateIndex(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_handler_SaveIndex(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		w http.ResponseWriter
 		r *http.Request
 	}
 	type fields struct {
-		agent agent.AgentServer
+		agent grpc.Server
 	}
 	type want struct {
 		wantCode int
@@ -1074,8 +1097,10 @@ func Test_handler_SaveIndex(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1094,18 +1119,18 @@ func Test_handler_SaveIndex(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_handler_CreateAndSaveIndex(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		w http.ResponseWriter
 		r *http.Request
 	}
 	type fields struct {
-		agent agent.AgentServer
+		agent grpc.Server
 	}
 	type want struct {
 		wantCode int
@@ -1165,8 +1190,10 @@ func Test_handler_CreateAndSaveIndex(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1185,18 +1212,18 @@ func Test_handler_CreateAndSaveIndex(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_handler_GetObject(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		w http.ResponseWriter
 		r *http.Request
 	}
 	type fields struct {
-		agent agent.AgentServer
+		agent grpc.Server
 	}
 	type want struct {
 		wantCode int
@@ -1256,8 +1283,10 @@ func Test_handler_GetObject(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1276,18 +1305,18 @@ func Test_handler_GetObject(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_handler_Exists(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		w http.ResponseWriter
 		r *http.Request
 	}
 	type fields struct {
-		agent agent.AgentServer
+		agent grpc.Server
 	}
 	type want struct {
 		wantCode int
@@ -1347,8 +1376,10 @@ func Test_handler_Exists(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1367,7 +1398,6 @@ func Test_handler_Exists(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

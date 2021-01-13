@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,11 +25,13 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s/node"
+	"go.uber.org/goleak"
 )
 
 func Test_newEntryNodeMap(t *testing.T) {
+	t.Parallel()
 	type args struct {
-		i node.Node
+		i *node.Node
 	}
 	type want struct {
 		want *entryNodeMap
@@ -76,8 +78,11 @@ func Test_newEntryNodeMap(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -92,12 +97,12 @@ func Test_newEntryNodeMap(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_nodeMap_Load(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key string
 	}
@@ -108,7 +113,7 @@ func Test_nodeMap_Load(t *testing.T) {
 		misses int
 	}
 	type want struct {
-		wantValue node.Node
+		wantValue *node.Node
 		wantOk    bool
 	}
 	type test struct {
@@ -116,11 +121,11 @@ func Test_nodeMap_Load(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, node.Node, bool) error
+		checkFunc  func(want, *node.Node, bool) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotValue node.Node, gotOk bool) error {
+	defaultCheckFunc := func(w want, gotValue *node.Node, gotOk bool) error {
 		if !reflect.DeepEqual(gotValue, w.wantValue) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotValue, w.wantValue)
 		}
@@ -169,8 +174,11 @@ func Test_nodeMap_Load(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -191,28 +199,28 @@ func Test_nodeMap_Load(t *testing.T) {
 			if err := test.checkFunc(test.want, gotValue, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_entryNodeMap_load(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		p unsafe.Pointer
 	}
 	type want struct {
-		wantValue node.Node
+		wantValue *node.Node
 		wantOk    bool
 	}
 	type test struct {
 		name       string
 		fields     fields
 		want       want
-		checkFunc  func(want, node.Node, bool) error
+		checkFunc  func(want, *node.Node, bool) error
 		beforeFunc func()
 		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want, gotValue node.Node, gotOk bool) error {
+	defaultCheckFunc := func(w want, gotValue *node.Node, gotOk bool) error {
 		if !reflect.DeepEqual(gotValue, w.wantValue) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotValue, w.wantValue)
 		}
@@ -249,8 +257,11 @@ func Test_entryNodeMap_load(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -268,15 +279,15 @@ func Test_entryNodeMap_load(t *testing.T) {
 			if err := test.checkFunc(test.want, gotValue, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_nodeMap_Store(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key   string
-		value node.Node
+		value *node.Node
 	}
 	type fields struct {
 		mu     sync.Mutex
@@ -284,8 +295,7 @@ func Test_nodeMap_Store(t *testing.T) {
 		dirty  map[string]*entryNodeMap
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -340,8 +350,11 @@ func Test_nodeMap_Store(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -367,8 +380,9 @@ func Test_nodeMap_Store(t *testing.T) {
 }
 
 func Test_entryNodeMap_tryStore(t *testing.T) {
+	t.Parallel()
 	type args struct {
-		i *node.Node
+		i **node.Node
 	}
 	type fields struct {
 		p unsafe.Pointer
@@ -425,8 +439,11 @@ func Test_entryNodeMap_tryStore(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -444,12 +461,12 @@ func Test_entryNodeMap_tryStore(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_entryNodeMap_unexpungeLocked(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		p unsafe.Pointer
 	}
@@ -498,8 +515,11 @@ func Test_entryNodeMap_unexpungeLocked(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -517,20 +537,19 @@ func Test_entryNodeMap_unexpungeLocked(t *testing.T) {
 			if err := test.checkFunc(test.want, gotWasExpunged); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_entryNodeMap_storeLocked(t *testing.T) {
+	t.Parallel()
 	type args struct {
-		i *node.Node
+		i **node.Node
 	}
 	type fields struct {
 		p unsafe.Pointer
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -577,8 +596,11 @@ func Test_entryNodeMap_storeLocked(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -601,9 +623,10 @@ func Test_entryNodeMap_storeLocked(t *testing.T) {
 }
 
 func Test_nodeMap_LoadOrStore(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key   string
-		value node.Node
+		value *node.Node
 	}
 	type fields struct {
 		mu     sync.Mutex
@@ -612,7 +635,7 @@ func Test_nodeMap_LoadOrStore(t *testing.T) {
 		misses int
 	}
 	type want struct {
-		wantActual node.Node
+		wantActual *node.Node
 		wantLoaded bool
 	}
 	type test struct {
@@ -620,11 +643,11 @@ func Test_nodeMap_LoadOrStore(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, node.Node, bool) error
+		checkFunc  func(want, *node.Node, bool) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotActual node.Node, gotLoaded bool) error {
+	defaultCheckFunc := func(w want, gotActual *node.Node, gotLoaded bool) error {
 		if !reflect.DeepEqual(gotActual, w.wantActual) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotActual, w.wantActual)
 		}
@@ -675,8 +698,11 @@ func Test_nodeMap_LoadOrStore(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -697,20 +723,20 @@ func Test_nodeMap_LoadOrStore(t *testing.T) {
 			if err := test.checkFunc(test.want, gotActual, gotLoaded); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_entryNodeMap_tryLoadOrStore(t *testing.T) {
+	t.Parallel()
 	type args struct {
-		i node.Node
+		i *node.Node
 	}
 	type fields struct {
 		p unsafe.Pointer
 	}
 	type want struct {
-		wantActual node.Node
+		wantActual *node.Node
 		wantLoaded bool
 		wantOk     bool
 	}
@@ -719,11 +745,11 @@ func Test_entryNodeMap_tryLoadOrStore(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, node.Node, bool, bool) error
+		checkFunc  func(want, *node.Node, bool, bool) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotActual node.Node, gotLoaded bool, gotOk bool) error {
+	defaultCheckFunc := func(w want, gotActual *node.Node, gotLoaded bool, gotOk bool) error {
 		if !reflect.DeepEqual(gotActual, w.wantActual) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotActual, w.wantActual)
 		}
@@ -769,8 +795,11 @@ func Test_entryNodeMap_tryLoadOrStore(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -788,12 +817,12 @@ func Test_entryNodeMap_tryLoadOrStore(t *testing.T) {
 			if err := test.checkFunc(test.want, gotActual, gotLoaded, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
-func Test_nodeMap_Delete(t *testing.T) {
+func Test_nodeMap_LoadAndDelete(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key string
 	}
@@ -804,7 +833,108 @@ func Test_nodeMap_Delete(t *testing.T) {
 		misses int
 	}
 	type want struct {
+		wantValue  *node.Node
+		wantLoaded bool
 	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *node.Node, bool) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotValue *node.Node, gotLoaded bool) error {
+		if !reflect.DeepEqual(gotValue, w.wantValue) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotValue, w.wantValue)
+		}
+		if !reflect.DeepEqual(gotLoaded, w.wantLoaded) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLoaded, w.wantLoaded)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           key: "",
+		       },
+		       fields: fields {
+		           mu: sync.Mutex{},
+		           read: nil,
+		           dirty: nil,
+		           misses: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           key: "",
+		           },
+		           fields: fields {
+		           mu: sync.Mutex{},
+		           read: nil,
+		           dirty: nil,
+		           misses: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			m := &nodeMap{
+				mu:     test.fields.mu,
+				read:   test.fields.read,
+				dirty:  test.fields.dirty,
+				misses: test.fields.misses,
+			}
+
+			gotValue, gotLoaded := m.LoadAndDelete(test.args.key)
+			if err := test.checkFunc(test.want, gotValue, gotLoaded); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_nodeMap_Delete(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		key string
+	}
+	type fields struct {
+		mu     sync.Mutex
+		read   atomic.Value
+		dirty  map[string]*entryNodeMap
+		misses int
+	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -857,8 +987,11 @@ func Test_nodeMap_Delete(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -884,23 +1017,28 @@ func Test_nodeMap_Delete(t *testing.T) {
 }
 
 func Test_entryNodeMap_delete(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		p unsafe.Pointer
 	}
 	type want struct {
-		wantHadValue bool
+		wantValue *node.Node
+		wantOk    bool
 	}
 	type test struct {
 		name       string
 		fields     fields
 		want       want
-		checkFunc  func(want, bool) error
+		checkFunc  func(want, *node.Node, bool) error
 		beforeFunc func()
 		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want, gotHadValue bool) error {
-		if !reflect.DeepEqual(gotHadValue, w.wantHadValue) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotHadValue, w.wantHadValue)
+	defaultCheckFunc := func(w want, gotValue *node.Node, gotOk bool) error {
+		if !reflect.DeepEqual(gotValue, w.wantValue) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotValue, w.wantValue)
+		}
+		if !reflect.DeepEqual(gotOk, w.wantOk) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOk, w.wantOk)
 		}
 		return nil
 	}
@@ -932,8 +1070,11 @@ func Test_entryNodeMap_delete(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -947,18 +1088,18 @@ func Test_entryNodeMap_delete(t *testing.T) {
 				p: test.fields.p,
 			}
 
-			gotHadValue := e.delete()
-			if err := test.checkFunc(test.want, gotHadValue); err != nil {
+			gotValue, gotOk := e.delete()
+			if err := test.checkFunc(test.want, gotValue, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_nodeMap_Range(t *testing.T) {
+	t.Parallel()
 	type args struct {
-		f func(key string, value node.Node) bool
+		f func(key string, value *node.Node) bool
 	}
 	type fields struct {
 		mu     sync.Mutex
@@ -966,8 +1107,7 @@ func Test_nodeMap_Range(t *testing.T) {
 		dirty  map[string]*entryNodeMap
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1020,8 +1160,11 @@ func Test_nodeMap_Range(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1047,14 +1190,14 @@ func Test_nodeMap_Range(t *testing.T) {
 }
 
 func Test_nodeMap_missLocked(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		mu     sync.Mutex
 		read   atomic.Value
 		dirty  map[string]*entryNodeMap
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields
@@ -1100,8 +1243,11 @@ func Test_nodeMap_missLocked(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1127,14 +1273,14 @@ func Test_nodeMap_missLocked(t *testing.T) {
 }
 
 func Test_nodeMap_dirtyLocked(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		mu     sync.Mutex
 		read   atomic.Value
 		dirty  map[string]*entryNodeMap
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields
@@ -1180,8 +1326,11 @@ func Test_nodeMap_dirtyLocked(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1207,6 +1356,7 @@ func Test_nodeMap_dirtyLocked(t *testing.T) {
 }
 
 func Test_entryNodeMap_tryExpungeLocked(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		p unsafe.Pointer
 	}
@@ -1255,8 +1405,11 @@ func Test_entryNodeMap_tryExpungeLocked(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1274,7 +1427,6 @@ func Test_entryNodeMap_tryExpungeLocked(t *testing.T) {
 			if err := test.checkFunc(test.want, gotIsExpunged); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

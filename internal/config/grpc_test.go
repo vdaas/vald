@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,9 +23,11 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"go.uber.org/goleak"
 )
 
 func Test_newGRPCClientConfig(t *testing.T) {
+	t.Parallel()
 	type want struct {
 		want *GRPCClient
 	}
@@ -64,8 +66,11 @@ func Test_newGRPCClientConfig(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -80,12 +85,12 @@ func Test_newGRPCClientConfig(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func TestGRPCClient_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		Addrs               []string
 		HealthCheckDuration string
@@ -152,8 +157,11 @@ func TestGRPCClient_Bind(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -177,12 +185,12 @@ func TestGRPCClient_Bind(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func TestGRPCClientKeepalive_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		Time                string
 		Timeout             string
@@ -237,8 +245,11 @@ func TestGRPCClientKeepalive_Bind(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -258,12 +269,12 @@ func TestGRPCClientKeepalive_Bind(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func TestCallOption_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		WaitForReady          bool
 		MaxRetryRPCBufferSize int
@@ -321,8 +332,11 @@ func TestCallOption_Bind(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -343,19 +357,23 @@ func TestCallOption_Bind(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func TestDialOption_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		WriteBufferSize             int
 		ReadBufferSize              int
 		InitialWindowSize           int
 		InitialConnectionWindowSize int
 		MaxMsgSize                  int
-		MaxBackoffDelay             string
+		BackoffMaxDelay             string
+		BackoffBaseDelay            string
+		BackoffJitter               float64
+		BackoffMultiplier           float64
+		MinimumConnectionTimeout    string
 		EnableBackoff               bool
 		Insecure                    bool
 		Timeout                     string
@@ -390,7 +408,11 @@ func TestDialOption_Bind(t *testing.T) {
 		           InitialWindowSize: 0,
 		           InitialConnectionWindowSize: 0,
 		           MaxMsgSize: 0,
-		           MaxBackoffDelay: "",
+		           BackoffMaxDelay: "",
+		           BackoffBaseDelay: "",
+		           BackoffJitter: 0,
+		           BackoffMultiplier: 0,
+		           MinimumConnectionTimeout: "",
 		           EnableBackoff: false,
 		           Insecure: false,
 		           Timeout: "",
@@ -413,7 +435,11 @@ func TestDialOption_Bind(t *testing.T) {
 		           InitialWindowSize: 0,
 		           InitialConnectionWindowSize: 0,
 		           MaxMsgSize: 0,
-		           MaxBackoffDelay: "",
+		           BackoffMaxDelay: "",
+		           BackoffBaseDelay: "",
+		           BackoffJitter: 0,
+		           BackoffMultiplier: 0,
+		           MinimumConnectionTimeout: "",
 		           EnableBackoff: false,
 		           Insecure: false,
 		           Timeout: "",
@@ -427,8 +453,11 @@ func TestDialOption_Bind(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -444,7 +473,11 @@ func TestDialOption_Bind(t *testing.T) {
 				InitialWindowSize:           test.fields.InitialWindowSize,
 				InitialConnectionWindowSize: test.fields.InitialConnectionWindowSize,
 				MaxMsgSize:                  test.fields.MaxMsgSize,
-				MaxBackoffDelay:             test.fields.MaxBackoffDelay,
+				BackoffMaxDelay:             test.fields.BackoffMaxDelay,
+				BackoffBaseDelay:            test.fields.BackoffBaseDelay,
+				BackoffJitter:               test.fields.BackoffJitter,
+				BackoffMultiplier:           test.fields.BackoffMultiplier,
+				MinimumConnectionTimeout:    test.fields.MinimumConnectionTimeout,
 				EnableBackoff:               test.fields.EnableBackoff,
 				Insecure:                    test.fields.Insecure,
 				Timeout:                     test.fields.Timeout,
@@ -456,12 +489,12 @@ func TestDialOption_Bind(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func TestGRPCClient_Opts(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		Addrs               []string
 		HealthCheckDuration string
@@ -528,8 +561,11 @@ func TestGRPCClient_Opts(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -553,7 +589,6 @@ func TestGRPCClient_Opts(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

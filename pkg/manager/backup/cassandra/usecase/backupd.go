@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package usecase
 import (
 	"context"
 
-	"github.com/vdaas/vald/apis/grpc/manager/backup"
+	"github.com/vdaas/vald/apis/grpc/v1/manager/backup"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/db/nosql/cassandra"
 	"github.com/vdaas/vald/internal/errgroup"
@@ -72,7 +72,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	c, err := service.New(
 		service.WithCassandra(db),
-		service.WithMetaTable(cfg.Cassandra.MetaTable),
+		service.WithTableName(cfg.Cassandra.VectorBackupTable),
 	)
 	if err != nil {
 		return nil, err
@@ -136,7 +136,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		}),
 		// TODO add GraphQL handler
 	)
-
 	if err != nil {
 		return nil, err
 	}

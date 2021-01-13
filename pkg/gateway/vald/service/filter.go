@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/filter/egress"
 	"github.com/vdaas/vald/apis/grpc/payload"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 )
 
@@ -52,7 +53,7 @@ func (f *filter) Start(ctx context.Context) (<-chan error, error) {
 
 func (f *filter) FilterSearch(ctx context.Context, res *payload.Search_Response) (*payload.Search_Response, error) {
 	var rerr error
-	f.client.Range(ctx,
+	err := f.client.Range(ctx,
 		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 			r, err := egress.NewEgressFilterClient(conn).Filter(ctx, res, copts...)
 			if err != nil {
@@ -62,6 +63,9 @@ func (f *filter) FilterSearch(ctx context.Context, res *payload.Search_Response)
 			}
 			return nil
 		})
+	if err != nil {
+		log.Error(err)
+	}
 
 	return res, rerr
 }

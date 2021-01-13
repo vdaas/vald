@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,13 +19,15 @@ package config
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"unsafe"
 
 	"github.com/vdaas/vald/internal/encoding/json"
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/io/ioutil"
+	"github.com/vdaas/vald/internal/log"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -73,12 +75,18 @@ func (c *GlobalConfig) UnmarshalJSON(data []byte) (err error) {
 }
 
 // New returns config struct or error when decode the configuration file to actually *Config struct.
-func Read(path string, cfg interface{}) error {
-	f, err := os.OpenFile(path, os.O_RDONLY, 0600)
+func Read(path string, cfg interface{}) (err error) {
+	f, err := os.OpenFile(path, os.O_RDONLY, 0o600)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() {
+		if err != nil {
+			err = errors.Wrap(f.Close(), err.Error())
+			return
+		}
+		err = f.Close()
+	}()
 	switch filepath.Ext(path) {
 	case ".yaml":
 		err = yaml.NewDecoder(f).Decode(cfg)
@@ -100,13 +108,7 @@ func GetActualValue(val string) (res string) {
 	}
 	res = os.ExpandEnv(val)
 	if strings.HasPrefix(res, fileValuePrefix) {
-		path := strings.TrimPrefix(res, fileValuePrefix)
-		file, err := os.OpenFile(path, os.O_RDONLY, 0600)
-		defer file.Close()
-		if err != nil {
-			return
-		}
-		body, err := ioutil.ReadAll(file)
+		body, err := ioutil.ReadFile(strings.TrimPrefix(res, fileValuePrefix))
 		if err != nil {
 			return
 		}
@@ -122,13 +124,16 @@ func GetActualValues(vals []string) []string {
 	return vals
 }
 
-// checkPrefixAndSuffix checks if the str has prefix and suffix
+// checkPrefixAndSuffix checks if the str has prefix and suffix.
 func checkPrefixAndSuffix(str, pref, suf string) bool {
 	return strings.HasPrefix(str, pref) && strings.HasSuffix(str, suf)
 }
 
 func ToRawYaml(data interface{}) string {
 	buf := bytes.NewBuffer(nil)
-	yaml.NewEncoder(buf).Encode(data)
+	err := yaml.NewEncoder(buf).Encode(data)
+	if err != nil {
+		log.Error(err)
+	}
 	return buf.String()
 }

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/vdaas/vald/apis/grpc/manager/replication/agent"
-	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/manager/replication/agent"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -38,7 +38,7 @@ type server struct {
 func New(opts ...Option) Server {
 	s := new(server)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(s)
 	}
 	return s
@@ -70,6 +70,7 @@ func (s *server) Rebalance(ctx context.Context, req *payload.Replication_Rebalan
 	}()
 	return new(payload.Empty), nil
 }
+
 func (s *server) AgentInfo(ctx context.Context, req *payload.Empty) (*payload.Replication_Agents, error) {
 	// TODO implement this later
 	ctx, span := trace.StartSpan(ctx, "vald/manager-replication-agent.AgentInfo")

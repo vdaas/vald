@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,12 +28,12 @@ import (
 type MySQL interface {
 	Connect(ctx context.Context) error
 	Close(ctx context.Context) error
-	GetMeta(ctx context.Context, uuid string) (*model.MetaVector, error)
+	GetVector(ctx context.Context, uuid string) (*model.Vector, error)
 	GetIPs(ctx context.Context, uuid string) ([]string, error)
-	SetMeta(ctx context.Context, meta *model.MetaVector) error
-	SetMetas(ctx context.Context, metas ...*model.MetaVector) error
-	DeleteMeta(ctx context.Context, uuid string) error
-	DeleteMetas(ctx context.Context, uuids ...string) error
+	SetVector(ctx context.Context, vector *model.Vector) error
+	SetVectors(ctx context.Context, vectors ...*model.Vector) error
+	DeleteVector(ctx context.Context, uuid string) error
+	DeleteVectors(ctx context.Context, uuids ...string) error
 	SetIPs(ctx context.Context, uuid string, ips ...string) error
 	RemoveIPs(ctx context.Context, ips ...string) error
 }
@@ -44,7 +44,7 @@ type client struct {
 
 func New(opts ...Option) (ms MySQL, err error) {
 	c := new(client)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(c); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
@@ -61,16 +61,15 @@ func (c *client) Close(ctx context.Context) error {
 	return c.db.Close(ctx)
 }
 
-func (c *client) GetMeta(ctx context.Context, uuid string) (*model.MetaVector, error) {
-	res, err := c.db.GetMeta(ctx, uuid)
+func (c *client) GetVector(ctx context.Context, uuid string) (*model.Vector, error) {
+	res, err := c.db.GetVector(ctx, uuid)
 	if err != nil {
 		return nil, err
 	}
 
-	return &model.MetaVector{
+	return &model.Vector{
 		UUID:   res.GetUUID(),
 		Vector: res.GetVector(),
-		Meta:   res.GetMeta(),
 		IPs:    res.GetIPs(),
 	}, err
 }
@@ -79,25 +78,25 @@ func (c *client) GetIPs(ctx context.Context, uuid string) ([]string, error) {
 	return c.db.GetIPs(ctx, uuid)
 }
 
-func (c *client) SetMeta(ctx context.Context, meta *model.MetaVector) error {
-	return c.db.SetMeta(ctx, meta)
+func (c *client) SetVector(ctx context.Context, vector *model.Vector) error {
+	return c.db.SetVector(ctx, vector)
 }
 
-func (c *client) SetMetas(ctx context.Context, metas ...*model.MetaVector) error {
-	ms := make([]mysql.MetaVector, 0, len(metas))
-	for _, meta := range metas {
-		m := meta
+func (c *client) SetVectors(ctx context.Context, vectors ...*model.Vector) error {
+	ms := make([]mysql.Vector, 0, len(vectors))
+	for _, vector := range vectors {
+		m := vector
 		ms = append(ms, m)
 	}
-	return c.db.SetMetas(ctx, ms...)
+	return c.db.SetVectors(ctx, ms...)
 }
 
-func (c *client) DeleteMeta(ctx context.Context, uuid string) error {
-	return c.db.DeleteMeta(ctx, uuid)
+func (c *client) DeleteVector(ctx context.Context, uuid string) error {
+	return c.db.DeleteVector(ctx, uuid)
 }
 
-func (c *client) DeleteMetas(ctx context.Context, uuids ...string) error {
-	return c.db.DeleteMetas(ctx, uuids...)
+func (c *client) DeleteVectors(ctx context.Context, uuids ...string) error {
+	return c.db.DeleteVectors(ctx, uuids...)
 }
 
 func (c *client) SetIPs(ctx context.Context, uuid string, ips ...string) error {

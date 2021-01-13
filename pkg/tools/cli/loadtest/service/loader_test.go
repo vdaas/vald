@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import (
 )
 
 func TestNewLoader(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []Option
 	}
@@ -81,8 +82,10 @@ func TestNewLoader(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -98,12 +101,12 @@ func TestNewLoader(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_loader_Prepare(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		in0 context.Context
 	}
@@ -118,7 +121,6 @@ func Test_loader_Prepare(t *testing.T) {
 		loaderFunc       loadFunc
 		dataProvider     func() interface{}
 		dataSize         int
-		service          config.Service
 		operation        config.Operation
 	}
 	type want struct {
@@ -158,7 +160,6 @@ func Test_loader_Prepare(t *testing.T) {
 		           loaderFunc: nil,
 		           dataProvider: nil,
 		           dataSize: 0,
-		           service: nil,
 		           operation: nil,
 		       },
 		       want: want{},
@@ -185,7 +186,6 @@ func Test_loader_Prepare(t *testing.T) {
 		           loaderFunc: nil,
 		           dataProvider: nil,
 		           dataSize: 0,
-		           service: nil,
 		           operation: nil,
 		           },
 		           want: want{},
@@ -195,8 +195,10 @@ func Test_loader_Prepare(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -218,7 +220,6 @@ func Test_loader_Prepare(t *testing.T) {
 				loaderFunc:       test.fields.loaderFunc,
 				dataProvider:     test.fields.dataProvider,
 				dataSize:         test.fields.dataSize,
-				service:          test.fields.service,
 				operation:        test.fields.operation,
 			}
 
@@ -226,12 +227,12 @@ func Test_loader_Prepare(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_loader_Do(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -246,7 +247,6 @@ func Test_loader_Do(t *testing.T) {
 		loaderFunc       loadFunc
 		dataProvider     func() interface{}
 		dataSize         int
-		service          config.Service
 		operation        config.Operation
 	}
 	type want struct {
@@ -286,7 +286,6 @@ func Test_loader_Do(t *testing.T) {
 		           loaderFunc: nil,
 		           dataProvider: nil,
 		           dataSize: 0,
-		           service: nil,
 		           operation: nil,
 		       },
 		       want: want{},
@@ -313,7 +312,6 @@ func Test_loader_Do(t *testing.T) {
 		           loaderFunc: nil,
 		           dataProvider: nil,
 		           dataSize: 0,
-		           service: nil,
 		           operation: nil,
 		           },
 		           want: want{},
@@ -323,8 +321,10 @@ func Test_loader_Do(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -346,7 +346,6 @@ func Test_loader_Do(t *testing.T) {
 				loaderFunc:       test.fields.loaderFunc,
 				dataProvider:     test.fields.dataProvider,
 				dataSize:         test.fields.dataSize,
-				service:          test.fields.service,
 				operation:        test.fields.operation,
 			}
 
@@ -354,12 +353,12 @@ func Test_loader_Do(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_loader_do(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx    context.Context
 		f      func(interface{}, error)
@@ -376,7 +375,6 @@ func Test_loader_do(t *testing.T) {
 		loaderFunc       loadFunc
 		dataProvider     func() interface{}
 		dataSize         int
-		service          config.Service
 		operation        config.Operation
 	}
 	type want struct {
@@ -418,7 +416,6 @@ func Test_loader_do(t *testing.T) {
 		           loaderFunc: nil,
 		           dataProvider: nil,
 		           dataSize: 0,
-		           service: nil,
 		           operation: nil,
 		       },
 		       want: want{},
@@ -447,7 +444,6 @@ func Test_loader_do(t *testing.T) {
 		           loaderFunc: nil,
 		           dataProvider: nil,
 		           dataSize: 0,
-		           service: nil,
 		           operation: nil,
 		           },
 		           want: want{},
@@ -457,8 +453,10 @@ func Test_loader_do(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -480,7 +478,6 @@ func Test_loader_do(t *testing.T) {
 				loaderFunc:       test.fields.loaderFunc,
 				dataProvider:     test.fields.dataProvider,
 				dataSize:         test.fields.dataSize,
-				service:          test.fields.service,
 				operation:        test.fields.operation,
 			}
 
@@ -488,7 +485,6 @@ func Test_loader_do(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,15 +18,17 @@
 package errors
 
 var (
-	// io
+	// NewErrContextNotProvided represents a function to generate an error that the context is not provided.
 	NewErrContextNotProvided = func() error {
 		return New("context not provided")
 	}
 
+	// NewErrReaderNotProvided represents a function to generate an error that the io.Reader is not provided.
 	NewErrReaderNotProvided = func() error {
 		return New("io.Reader not provided")
 	}
 
+	// NewErrWriterNotProvided represents a function to generate an error that the io.Writer is not provided.
 	NewErrWriterNotProvided = func() error {
 		return New("io.Writer not provided")
 	}

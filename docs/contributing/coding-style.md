@@ -572,7 +572,7 @@ If we forgot to set the option method, an error will be returned so we can handl
 ```go
 func func New(opts ...Option) (Server, error) {
     srv := new(server)
-    for _, opt := range append(defaultOpts, opts...) {
+    for _, opt := range append(defaultOptions, opts...) {
         if err := opt(srv); err != nil {
             werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 
@@ -597,7 +597,7 @@ func func New(opts ...Option) (Server, error) {
 We also recommend that you use the default options and the unexported functional option to set the objects so that we cannot use it externally.
 
 ```go
-var defaultOpts = []Option {
+var defaultOptions = []Option {
     func(s *server) error {
         s.ctxio = io.New()
         return nil

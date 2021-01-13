@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -40,41 +40,44 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-func init() { proto.RegisterFile("vald/vald.proto", fileDescriptor_b17c9fbea32974eb) }
+func init() {
+	proto.RegisterFile("apis/proto/gateway/vald/vald.proto", fileDescriptor_667acc189b85e014)
+}
 
-var fileDescriptor_b17c9fbea32974eb = []byte{
-	// 495 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x94, 0x4f, 0x8b, 0xd3, 0x40,
-	0x18, 0xc6, 0x8d, 0x2c, 0x59, 0x1c, 0xeb, 0x56, 0xc6, 0x3f, 0xab, 0x51, 0x7a, 0xe8, 0x49, 0x16,
-	0xc9, 0x88, 0x7a, 0x58, 0xc4, 0x8b, 0xa1, 0x6b, 0xe9, 0xa1, 0xac, 0xee, 0xe2, 0x22, 0xde, 0xa6,
-	0xc9, 0x4b, 0x76, 0x34, 0xcd, 0x8c, 0x99, 0x37, 0xd5, 0x22, 0x5e, 0xfc, 0x0a, 0x1e, 0xfd, 0x42,
-	0x1e, 0x05, 0xbf, 0x80, 0x14, 0x3f, 0x88, 0x64, 0x66, 0x5a, 0xba, 0x6d, 0x40, 0x92, 0x4b, 0x48,
-	0xde, 0x79, 0x9f, 0x27, 0xbf, 0xf7, 0x85, 0x79, 0x48, 0x77, 0xc6, 0xb3, 0x84, 0x55, 0x8f, 0x50,
-	0x15, 0x12, 0x25, 0xdd, 0xa9, 0xde, 0x83, 0x6b, 0x8a, 0xcf, 0x33, 0xc9, 0x5d, 0x31, 0xb8, 0x9f,
-	0x4a, 0x99, 0x66, 0xc0, 0xb8, 0x12, 0x8c, 0xe7, 0xb9, 0x44, 0x8e, 0x42, 0xe6, 0xda, 0x9e, 0x3e,
-	0xfe, 0x41, 0xc8, 0xce, 0x19, 0xcf, 0x12, 0xfa, 0x92, 0xf8, 0x47, 0x9f, 0x85, 0x46, 0x4d, 0x69,
-	0xb8, 0x34, 0x38, 0x9e, 0xbc, 0x87, 0x18, 0xc3, 0xd1, 0x20, 0xa8, 0xa9, 0xf5, 0x6f, 0x7e, 0xfb,
-	0xfd, 0xf7, 0xfb, 0xe5, 0x3d, 0xda, 0x61, 0x60, 0x84, 0xec, 0x8b, 0x48, 0xbe, 0xd2, 0x63, 0xe2,
-	0x9f, 0x02, 0x2f, 0xe2, 0x73, 0xba, 0xbf, 0xd2, 0xd8, 0x42, 0x78, 0x02, 0x1f, 0x4b, 0xd0, 0x18,
-	0xdc, 0xd9, 0x3e, 0xd0, 0x4a, 0xe6, 0x1a, 0xfa, 0xd4, 0x58, 0x76, 0xfa, 0xbb, 0x4c, 0x9b, 0x93,
-	0x67, 0xde, 0x01, 0x7d, 0x4b, 0x88, 0x6d, 0x8b, 0xe6, 0xa3, 0x01, 0xbd, 0xbb, 0xa9, 0x1d, 0x0d,
-	0xfe, 0x6f, 0x7b, 0xcb, 0xd8, 0x76, 0xfb, 0xc4, 0xd9, 0x32, 0x91, 0x54, 0xce, 0x43, 0xd2, 0x39,
-	0xc5, 0x02, 0xf8, 0xb4, 0x3d, 0xf0, 0xa5, 0x07, 0xde, 0x23, 0x8f, 0x8e, 0xc9, 0xf5, 0x75, 0xa3,
-	0xf6, 0xa0, 0xd6, 0x6e, 0x40, 0xfc, 0x51, 0xae, 0xa1, 0x40, 0x7a, 0x7b, 0x73, 0xed, 0x67, 0x10,
-	0xa3, 0x2c, 0x82, 0xbd, 0x55, 0xfd, 0x68, 0xaa, 0x70, 0xbe, 0xb6, 0x37, 0x61, 0x84, 0xd5, 0x74,
-	0xcf, 0x97, 0xd3, 0x35, 0xf4, 0xb2, 0x0c, 0x87, 0xe4, 0xea, 0xb8, 0xcc, 0x50, 0x38, 0xf1, 0x7e,
-	0xbd, 0x58, 0x6f, 0xab, 0x2b, 0xfa, 0x37, 0x2a, 0xe1, 0x08, 0x2d, 0xe8, 0x4b, 0x23, 0xbc, 0x40,
-	0xdf, 0xd0, 0xeb, 0x22, 0xbd, 0x13, 0x37, 0xa5, 0x6f, 0xb9, 0xfb, 0x52, 0x6d, 0xed, 0xbe, 0xa1,
-	0xd7, 0x26, 0x7d, 0xd3, 0xdd, 0x47, 0xc4, 0x3f, 0x81, 0xa9, 0x9c, 0x41, 0xed, 0x25, 0xde, 0xec,
-	0x77, 0x17, 0xf8, 0xa0, 0xc3, 0x0a, 0x23, 0xb2, 0x17, 0xf8, 0x70, 0xc9, 0xde, 0xc0, 0xc9, 0x72,
-	0x3f, 0x75, 0xdc, 0x4e, 0x78, 0x63, 0x5b, 0x58, 0xc7, 0xfc, 0x9a, 0x5c, 0x19, 0x02, 0xda, 0x96,
-	0xda, 0x9f, 0x05, 0xab, 0x5a, 0xc4, 0xe3, 0x0f, 0xa5, 0x0a, 0xc7, 0x80, 0xdc, 0xee, 0x60, 0x2d,
-	0x83, 0xa4, 0xe9, 0xb7, 0x23, 0x0c, 0x49, 0xd7, 0x8e, 0xd0, 0xde, 0xd8, 0x4c, 0x14, 0x4d, 0x7e,
-	0x2e, 0x7a, 0xde, 0xaf, 0x45, 0xcf, 0xfb, 0xb3, 0xe8, 0x79, 0xe4, 0x9e, 0x2c, 0xd2, 0x70, 0x96,
-	0x70, 0xae, 0x43, 0x13, 0xba, 0x29, 0x47, 0xf8, 0xc4, 0xe7, 0xe6, 0x23, 0xda, 0xad, 0x52, 0xf4,
-	0x85, 0x12, 0xaf, 0xbc, 0x77, 0x0f, 0x53, 0x81, 0xe7, 0xe5, 0x24, 0x8c, 0xe5, 0x94, 0x99, 0x76,
-	0x93, 0xd1, 0x55, 0x00, 0x6b, 0x96, 0x16, 0x2a, 0x66, 0x4e, 0x68, 0xca, 0x13, 0xdf, 0x04, 0xf1,
-	0x93, 0x7f, 0x01, 0x00, 0x00, 0xff, 0xff, 0xc3, 0xa8, 0x52, 0x8e, 0xce, 0x05, 0x00, 0x00,
+var fileDescriptor_667acc189b85e014 = []byte{
+	// 500 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x95, 0x4f, 0x6b, 0x13, 0x41,
+	0x14, 0xc0, 0xbb, 0x52, 0xb6, 0x38, 0x0d, 0x56, 0xc6, 0x3f, 0xb5, 0xab, 0x04, 0xd9, 0x93, 0x14,
+	0xd9, 0x11, 0xbd, 0x79, 0x11, 0xd3, 0xd8, 0x12, 0x68, 0xac, 0xb4, 0x58, 0xc4, 0xdb, 0x64, 0x77,
+	0xd8, 0x8e, 0x6c, 0x76, 0xc6, 0x99, 0xd9, 0x68, 0x10, 0x2f, 0x7e, 0x01, 0x0f, 0x7e, 0x29, 0x8f,
+	0x82, 0x5f, 0x40, 0x82, 0x1f, 0x44, 0xf6, 0xcd, 0x44, 0x36, 0xc9, 0x86, 0xc0, 0xee, 0x25, 0x7f,
+	0xde, 0xcc, 0xfb, 0xf1, 0x7e, 0xf3, 0xe0, 0x3d, 0x14, 0x52, 0xc9, 0x35, 0x91, 0x4a, 0x18, 0x41,
+	0x52, 0x6a, 0xd8, 0x27, 0x3a, 0x25, 0x13, 0x9a, 0x25, 0xf0, 0x11, 0x41, 0x1c, 0x6f, 0x97, 0xbf,
+	0x83, 0x87, 0x95, 0x9b, 0x92, 0x4e, 0x33, 0x41, 0x93, 0xf9, 0xb7, 0xbd, 0x17, 0x3c, 0x48, 0x85,
+	0x48, 0x33, 0x46, 0xa8, 0xe4, 0x84, 0xe6, 0xb9, 0x30, 0xd4, 0x70, 0x91, 0x6b, 0x7b, 0xfa, 0xf4,
+	0xfb, 0x2e, 0xda, 0xbe, 0xa4, 0x59, 0x82, 0x8f, 0x91, 0xff, 0xea, 0x33, 0xd7, 0x46, 0x63, 0x1c,
+	0xcd, 0x01, 0x67, 0xa3, 0x0f, 0x2c, 0x36, 0xd1, 0xa0, 0x1f, 0xd4, 0xc4, 0xc2, 0xdb, 0xdf, 0x7e,
+	0xff, 0xfd, 0x71, 0xed, 0x06, 0xee, 0x10, 0x06, 0x89, 0xe4, 0x0b, 0x4f, 0xbe, 0xe2, 0x33, 0xe4,
+	0x5f, 0x30, 0xaa, 0xe2, 0x2b, 0xbc, 0xff, 0x3f, 0xc7, 0x06, 0xa2, 0x73, 0xf6, 0xb1, 0x60, 0xda,
+	0x04, 0xf7, 0x56, 0x0f, 0xb4, 0x14, 0xb9, 0x66, 0x21, 0x06, 0x64, 0x27, 0xdc, 0x21, 0x1a, 0x4e,
+	0x9e, 0x7b, 0x87, 0xf8, 0x1d, 0x42, 0xf6, 0x5a, 0x6f, 0x3a, 0xe8, 0xe3, 0x83, 0xe5, 0xdc, 0x41,
+	0x7f, 0x33, 0xf6, 0x0e, 0x60, 0xf7, 0x42, 0xe4, 0xb0, 0x84, 0x27, 0x25, 0xf9, 0x04, 0x75, 0x2e,
+	0x8c, 0x62, 0x74, 0xdc, 0xbc, 0xe0, 0xad, 0x47, 0xde, 0x13, 0x0f, 0x0f, 0xd1, 0xcd, 0x2a, 0xa8,
+	0x79, 0xa1, 0x16, 0xf7, 0x1a, 0xf9, 0x83, 0x5c, 0x33, 0x65, 0xf0, 0xdd, 0xe5, 0x67, 0xbf, 0x64,
+	0xb1, 0x11, 0xaa, 0x42, 0x70, 0xf1, 0x53, 0x11, 0x43, 0x5b, 0x2b, 0x2f, 0xc8, 0x01, 0x51, 0x7a,
+	0x1e, 0xcf, 0x3d, 0x1b, 0x53, 0x6d, 0x5d, 0x47, 0x68, 0x77, 0x58, 0x64, 0x86, 0x3b, 0xcc, 0x7e,
+	0x3d, 0x46, 0x07, 0x07, 0xeb, 0x38, 0x3a, 0xdc, 0x2a, 0xe5, 0xde, 0xca, 0x84, 0x1a, 0xd6, 0x4a,
+	0xae, 0x00, 0xc4, 0x82, 0x5c, 0x63, 0xea, 0xa2, 0x9c, 0xc3, 0xb4, 0x90, 0x6b, 0xdd, 0xb9, 0x42,
+	0xae, 0x74, 0xae, 0x31, 0x75, 0x59, 0xae, 0x45, 0xe7, 0x4e, 0x91, 0x7f, 0xce, 0xc6, 0x62, 0xc2,
+	0x6a, 0x27, 0xc4, 0xfa, 0x12, 0xdc, 0x9c, 0x38, 0xec, 0x10, 0x05, 0xe9, 0x76, 0x4e, 0xf4, 0xe6,
+	0x6a, 0x8d, 0x98, 0x56, 0xeb, 0x85, 0xd3, 0x72, 0x88, 0x5b, 0xab, 0x88, 0x0d, 0x4a, 0x43, 0x74,
+	0xfd, 0x84, 0x19, 0x7b, 0x50, 0x5b, 0xc1, 0x9a, 0x07, 0xaf, 0xcc, 0x3e, 0x01, 0x71, 0xeb, 0x74,
+	0x84, 0xf6, 0xac, 0x53, 0x33, 0x28, 0x48, 0xf5, 0x46, 0x3f, 0x67, 0x5d, 0xef, 0xd7, 0xac, 0xeb,
+	0xfd, 0x99, 0x75, 0x3d, 0x74, 0x5f, 0xa8, 0x34, 0x9a, 0x24, 0x94, 0xea, 0x08, 0x66, 0xbf, 0xdb,
+	0x06, 0xf0, 0xa7, 0xb7, 0x53, 0x4e, 0xee, 0x97, 0x92, 0xbf, 0xf1, 0xde, 0x3f, 0x4e, 0xb9, 0xb9,
+	0x2a, 0x46, 0x51, 0x2c, 0xc6, 0x04, 0xae, 0xdb, 0x7d, 0x01, 0xdb, 0x21, 0x55, 0x32, 0x5e, 0x58,
+	0x23, 0x23, 0x1f, 0x86, 0xff, 0xb3, 0x7f, 0x01, 0x00, 0x00, 0xff, 0xff, 0xe7, 0x4b, 0x07, 0xef,
+	0x68, 0x06, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -94,19 +97,19 @@ type ValdClient interface {
 	SearchByID(ctx context.Context, in *payload.Search_IDRequest, opts ...grpc.CallOption) (*payload.Search_Response, error)
 	StreamSearch(ctx context.Context, opts ...grpc.CallOption) (Vald_StreamSearchClient, error)
 	StreamSearchByID(ctx context.Context, opts ...grpc.CallOption) (Vald_StreamSearchByIDClient, error)
-	Insert(ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption) (*payload.Empty, error)
+	Insert(ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption) (*payload.Object_Location, error)
 	StreamInsert(ctx context.Context, opts ...grpc.CallOption) (Vald_StreamInsertClient, error)
-	MultiInsert(ctx context.Context, in *payload.Object_Vectors, opts ...grpc.CallOption) (*payload.Empty, error)
-	Update(ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption) (*payload.Empty, error)
+	MultiInsert(ctx context.Context, in *payload.Object_Vectors, opts ...grpc.CallOption) (*payload.Object_Locations, error)
+	Update(ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption) (*payload.Object_Location, error)
 	StreamUpdate(ctx context.Context, opts ...grpc.CallOption) (Vald_StreamUpdateClient, error)
-	MultiUpdate(ctx context.Context, in *payload.Object_Vectors, opts ...grpc.CallOption) (*payload.Empty, error)
-	Upsert(ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption) (*payload.Empty, error)
+	MultiUpdate(ctx context.Context, in *payload.Object_Vectors, opts ...grpc.CallOption) (*payload.Object_Locations, error)
+	Upsert(ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption) (*payload.Object_Location, error)
 	StreamUpsert(ctx context.Context, opts ...grpc.CallOption) (Vald_StreamUpsertClient, error)
-	MultiUpsert(ctx context.Context, in *payload.Object_Vectors, opts ...grpc.CallOption) (*payload.Empty, error)
-	Remove(ctx context.Context, in *payload.Object_ID, opts ...grpc.CallOption) (*payload.Empty, error)
+	MultiUpsert(ctx context.Context, in *payload.Object_Vectors, opts ...grpc.CallOption) (*payload.Object_Locations, error)
+	Remove(ctx context.Context, in *payload.Object_ID, opts ...grpc.CallOption) (*payload.Object_Location, error)
 	StreamRemove(ctx context.Context, opts ...grpc.CallOption) (Vald_StreamRemoveClient, error)
-	MultiRemove(ctx context.Context, in *payload.Object_IDs, opts ...grpc.CallOption) (*payload.Empty, error)
-	GetObject(ctx context.Context, in *payload.Object_ID, opts ...grpc.CallOption) (*payload.Backup_MetaVector, error)
+	MultiRemove(ctx context.Context, in *payload.Object_IDs, opts ...grpc.CallOption) (*payload.Object_Locations, error)
+	GetObject(ctx context.Context, in *payload.Object_ID, opts ...grpc.CallOption) (*payload.Object_Vector, error)
 	StreamGetObject(ctx context.Context, opts ...grpc.CallOption) (Vald_StreamGetObjectClient, error)
 }
 
@@ -207,8 +210,8 @@ func (x *valdStreamSearchByIDClient) Recv() (*payload.Search_Response, error) {
 	return m, nil
 }
 
-func (c *valdClient) Insert(ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption) (*payload.Empty, error) {
-	out := new(payload.Empty)
+func (c *valdClient) Insert(ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption) (*payload.Object_Location, error) {
+	out := new(payload.Object_Location)
 	err := c.cc.Invoke(ctx, "/vald.Vald/Insert", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -227,7 +230,7 @@ func (c *valdClient) StreamInsert(ctx context.Context, opts ...grpc.CallOption) 
 
 type Vald_StreamInsertClient interface {
 	Send(*payload.Object_Vector) error
-	Recv() (*payload.Empty, error)
+	Recv() (*payload.Object_Location, error)
 	grpc.ClientStream
 }
 
@@ -239,16 +242,16 @@ func (x *valdStreamInsertClient) Send(m *payload.Object_Vector) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *valdStreamInsertClient) Recv() (*payload.Empty, error) {
-	m := new(payload.Empty)
+func (x *valdStreamInsertClient) Recv() (*payload.Object_Location, error) {
+	m := new(payload.Object_Location)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-func (c *valdClient) MultiInsert(ctx context.Context, in *payload.Object_Vectors, opts ...grpc.CallOption) (*payload.Empty, error) {
-	out := new(payload.Empty)
+func (c *valdClient) MultiInsert(ctx context.Context, in *payload.Object_Vectors, opts ...grpc.CallOption) (*payload.Object_Locations, error) {
+	out := new(payload.Object_Locations)
 	err := c.cc.Invoke(ctx, "/vald.Vald/MultiInsert", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -256,8 +259,8 @@ func (c *valdClient) MultiInsert(ctx context.Context, in *payload.Object_Vectors
 	return out, nil
 }
 
-func (c *valdClient) Update(ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption) (*payload.Empty, error) {
-	out := new(payload.Empty)
+func (c *valdClient) Update(ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption) (*payload.Object_Location, error) {
+	out := new(payload.Object_Location)
 	err := c.cc.Invoke(ctx, "/vald.Vald/Update", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -276,7 +279,7 @@ func (c *valdClient) StreamUpdate(ctx context.Context, opts ...grpc.CallOption) 
 
 type Vald_StreamUpdateClient interface {
 	Send(*payload.Object_Vector) error
-	Recv() (*payload.Empty, error)
+	Recv() (*payload.Object_Location, error)
 	grpc.ClientStream
 }
 
@@ -288,16 +291,16 @@ func (x *valdStreamUpdateClient) Send(m *payload.Object_Vector) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *valdStreamUpdateClient) Recv() (*payload.Empty, error) {
-	m := new(payload.Empty)
+func (x *valdStreamUpdateClient) Recv() (*payload.Object_Location, error) {
+	m := new(payload.Object_Location)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-func (c *valdClient) MultiUpdate(ctx context.Context, in *payload.Object_Vectors, opts ...grpc.CallOption) (*payload.Empty, error) {
-	out := new(payload.Empty)
+func (c *valdClient) MultiUpdate(ctx context.Context, in *payload.Object_Vectors, opts ...grpc.CallOption) (*payload.Object_Locations, error) {
+	out := new(payload.Object_Locations)
 	err := c.cc.Invoke(ctx, "/vald.Vald/MultiUpdate", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -305,8 +308,8 @@ func (c *valdClient) MultiUpdate(ctx context.Context, in *payload.Object_Vectors
 	return out, nil
 }
 
-func (c *valdClient) Upsert(ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption) (*payload.Empty, error) {
-	out := new(payload.Empty)
+func (c *valdClient) Upsert(ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption) (*payload.Object_Location, error) {
+	out := new(payload.Object_Location)
 	err := c.cc.Invoke(ctx, "/vald.Vald/Upsert", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -325,7 +328,7 @@ func (c *valdClient) StreamUpsert(ctx context.Context, opts ...grpc.CallOption) 
 
 type Vald_StreamUpsertClient interface {
 	Send(*payload.Object_Vector) error
-	Recv() (*payload.Empty, error)
+	Recv() (*payload.Object_Location, error)
 	grpc.ClientStream
 }
 
@@ -337,16 +340,16 @@ func (x *valdStreamUpsertClient) Send(m *payload.Object_Vector) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *valdStreamUpsertClient) Recv() (*payload.Empty, error) {
-	m := new(payload.Empty)
+func (x *valdStreamUpsertClient) Recv() (*payload.Object_Location, error) {
+	m := new(payload.Object_Location)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-func (c *valdClient) MultiUpsert(ctx context.Context, in *payload.Object_Vectors, opts ...grpc.CallOption) (*payload.Empty, error) {
-	out := new(payload.Empty)
+func (c *valdClient) MultiUpsert(ctx context.Context, in *payload.Object_Vectors, opts ...grpc.CallOption) (*payload.Object_Locations, error) {
+	out := new(payload.Object_Locations)
 	err := c.cc.Invoke(ctx, "/vald.Vald/MultiUpsert", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -354,8 +357,8 @@ func (c *valdClient) MultiUpsert(ctx context.Context, in *payload.Object_Vectors
 	return out, nil
 }
 
-func (c *valdClient) Remove(ctx context.Context, in *payload.Object_ID, opts ...grpc.CallOption) (*payload.Empty, error) {
-	out := new(payload.Empty)
+func (c *valdClient) Remove(ctx context.Context, in *payload.Object_ID, opts ...grpc.CallOption) (*payload.Object_Location, error) {
+	out := new(payload.Object_Location)
 	err := c.cc.Invoke(ctx, "/vald.Vald/Remove", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -374,7 +377,7 @@ func (c *valdClient) StreamRemove(ctx context.Context, opts ...grpc.CallOption) 
 
 type Vald_StreamRemoveClient interface {
 	Send(*payload.Object_ID) error
-	Recv() (*payload.Empty, error)
+	Recv() (*payload.Object_Location, error)
 	grpc.ClientStream
 }
 
@@ -386,16 +389,16 @@ func (x *valdStreamRemoveClient) Send(m *payload.Object_ID) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *valdStreamRemoveClient) Recv() (*payload.Empty, error) {
-	m := new(payload.Empty)
+func (x *valdStreamRemoveClient) Recv() (*payload.Object_Location, error) {
+	m := new(payload.Object_Location)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-func (c *valdClient) MultiRemove(ctx context.Context, in *payload.Object_IDs, opts ...grpc.CallOption) (*payload.Empty, error) {
-	out := new(payload.Empty)
+func (c *valdClient) MultiRemove(ctx context.Context, in *payload.Object_IDs, opts ...grpc.CallOption) (*payload.Object_Locations, error) {
+	out := new(payload.Object_Locations)
 	err := c.cc.Invoke(ctx, "/vald.Vald/MultiRemove", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -403,8 +406,8 @@ func (c *valdClient) MultiRemove(ctx context.Context, in *payload.Object_IDs, op
 	return out, nil
 }
 
-func (c *valdClient) GetObject(ctx context.Context, in *payload.Object_ID, opts ...grpc.CallOption) (*payload.Backup_MetaVector, error) {
-	out := new(payload.Backup_MetaVector)
+func (c *valdClient) GetObject(ctx context.Context, in *payload.Object_ID, opts ...grpc.CallOption) (*payload.Object_Vector, error) {
+	out := new(payload.Object_Vector)
 	err := c.cc.Invoke(ctx, "/vald.Vald/GetObject", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -423,7 +426,7 @@ func (c *valdClient) StreamGetObject(ctx context.Context, opts ...grpc.CallOptio
 
 type Vald_StreamGetObjectClient interface {
 	Send(*payload.Object_ID) error
-	Recv() (*payload.Backup_MetaVector, error)
+	Recv() (*payload.Object_Vector, error)
 	grpc.ClientStream
 }
 
@@ -435,8 +438,8 @@ func (x *valdStreamGetObjectClient) Send(m *payload.Object_ID) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *valdStreamGetObjectClient) Recv() (*payload.Backup_MetaVector, error) {
-	m := new(payload.Backup_MetaVector)
+func (x *valdStreamGetObjectClient) Recv() (*payload.Object_Vector, error) {
+	m := new(payload.Object_Vector)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -450,19 +453,19 @@ type ValdServer interface {
 	SearchByID(context.Context, *payload.Search_IDRequest) (*payload.Search_Response, error)
 	StreamSearch(Vald_StreamSearchServer) error
 	StreamSearchByID(Vald_StreamSearchByIDServer) error
-	Insert(context.Context, *payload.Object_Vector) (*payload.Empty, error)
+	Insert(context.Context, *payload.Object_Vector) (*payload.Object_Location, error)
 	StreamInsert(Vald_StreamInsertServer) error
-	MultiInsert(context.Context, *payload.Object_Vectors) (*payload.Empty, error)
-	Update(context.Context, *payload.Object_Vector) (*payload.Empty, error)
+	MultiInsert(context.Context, *payload.Object_Vectors) (*payload.Object_Locations, error)
+	Update(context.Context, *payload.Object_Vector) (*payload.Object_Location, error)
 	StreamUpdate(Vald_StreamUpdateServer) error
-	MultiUpdate(context.Context, *payload.Object_Vectors) (*payload.Empty, error)
-	Upsert(context.Context, *payload.Object_Vector) (*payload.Empty, error)
+	MultiUpdate(context.Context, *payload.Object_Vectors) (*payload.Object_Locations, error)
+	Upsert(context.Context, *payload.Object_Vector) (*payload.Object_Location, error)
 	StreamUpsert(Vald_StreamUpsertServer) error
-	MultiUpsert(context.Context, *payload.Object_Vectors) (*payload.Empty, error)
-	Remove(context.Context, *payload.Object_ID) (*payload.Empty, error)
+	MultiUpsert(context.Context, *payload.Object_Vectors) (*payload.Object_Locations, error)
+	Remove(context.Context, *payload.Object_ID) (*payload.Object_Location, error)
 	StreamRemove(Vald_StreamRemoveServer) error
-	MultiRemove(context.Context, *payload.Object_IDs) (*payload.Empty, error)
-	GetObject(context.Context, *payload.Object_ID) (*payload.Backup_MetaVector, error)
+	MultiRemove(context.Context, *payload.Object_IDs) (*payload.Object_Locations, error)
+	GetObject(context.Context, *payload.Object_ID) (*payload.Object_Vector, error)
 	StreamGetObject(Vald_StreamGetObjectServer) error
 }
 
@@ -485,43 +488,43 @@ func (*UnimplementedValdServer) StreamSearch(srv Vald_StreamSearchServer) error 
 func (*UnimplementedValdServer) StreamSearchByID(srv Vald_StreamSearchByIDServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamSearchByID not implemented")
 }
-func (*UnimplementedValdServer) Insert(ctx context.Context, req *payload.Object_Vector) (*payload.Empty, error) {
+func (*UnimplementedValdServer) Insert(ctx context.Context, req *payload.Object_Vector) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Insert not implemented")
 }
 func (*UnimplementedValdServer) StreamInsert(srv Vald_StreamInsertServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamInsert not implemented")
 }
-func (*UnimplementedValdServer) MultiInsert(ctx context.Context, req *payload.Object_Vectors) (*payload.Empty, error) {
+func (*UnimplementedValdServer) MultiInsert(ctx context.Context, req *payload.Object_Vectors) (*payload.Object_Locations, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiInsert not implemented")
 }
-func (*UnimplementedValdServer) Update(ctx context.Context, req *payload.Object_Vector) (*payload.Empty, error) {
+func (*UnimplementedValdServer) Update(ctx context.Context, req *payload.Object_Vector) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
 }
 func (*UnimplementedValdServer) StreamUpdate(srv Vald_StreamUpdateServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamUpdate not implemented")
 }
-func (*UnimplementedValdServer) MultiUpdate(ctx context.Context, req *payload.Object_Vectors) (*payload.Empty, error) {
+func (*UnimplementedValdServer) MultiUpdate(ctx context.Context, req *payload.Object_Vectors) (*payload.Object_Locations, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiUpdate not implemented")
 }
-func (*UnimplementedValdServer) Upsert(ctx context.Context, req *payload.Object_Vector) (*payload.Empty, error) {
+func (*UnimplementedValdServer) Upsert(ctx context.Context, req *payload.Object_Vector) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Upsert not implemented")
 }
 func (*UnimplementedValdServer) StreamUpsert(srv Vald_StreamUpsertServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamUpsert not implemented")
 }
-func (*UnimplementedValdServer) MultiUpsert(ctx context.Context, req *payload.Object_Vectors) (*payload.Empty, error) {
+func (*UnimplementedValdServer) MultiUpsert(ctx context.Context, req *payload.Object_Vectors) (*payload.Object_Locations, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiUpsert not implemented")
 }
-func (*UnimplementedValdServer) Remove(ctx context.Context, req *payload.Object_ID) (*payload.Empty, error) {
+func (*UnimplementedValdServer) Remove(ctx context.Context, req *payload.Object_ID) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Remove not implemented")
 }
 func (*UnimplementedValdServer) StreamRemove(srv Vald_StreamRemoveServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamRemove not implemented")
 }
-func (*UnimplementedValdServer) MultiRemove(ctx context.Context, req *payload.Object_IDs) (*payload.Empty, error) {
+func (*UnimplementedValdServer) MultiRemove(ctx context.Context, req *payload.Object_IDs) (*payload.Object_Locations, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiRemove not implemented")
 }
-func (*UnimplementedValdServer) GetObject(ctx context.Context, req *payload.Object_ID) (*payload.Backup_MetaVector, error) {
+func (*UnimplementedValdServer) GetObject(ctx context.Context, req *payload.Object_ID) (*payload.Object_Vector, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetObject not implemented")
 }
 func (*UnimplementedValdServer) StreamGetObject(srv Vald_StreamGetObjectServer) error {
@@ -661,7 +664,7 @@ func _Vald_StreamInsert_Handler(srv interface{}, stream grpc.ServerStream) error
 }
 
 type Vald_StreamInsertServer interface {
-	Send(*payload.Empty) error
+	Send(*payload.Object_Location) error
 	Recv() (*payload.Object_Vector, error)
 	grpc.ServerStream
 }
@@ -670,7 +673,7 @@ type valdStreamInsertServer struct {
 	grpc.ServerStream
 }
 
-func (x *valdStreamInsertServer) Send(m *payload.Empty) error {
+func (x *valdStreamInsertServer) Send(m *payload.Object_Location) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -723,7 +726,7 @@ func _Vald_StreamUpdate_Handler(srv interface{}, stream grpc.ServerStream) error
 }
 
 type Vald_StreamUpdateServer interface {
-	Send(*payload.Empty) error
+	Send(*payload.Object_Location) error
 	Recv() (*payload.Object_Vector, error)
 	grpc.ServerStream
 }
@@ -732,7 +735,7 @@ type valdStreamUpdateServer struct {
 	grpc.ServerStream
 }
 
-func (x *valdStreamUpdateServer) Send(m *payload.Empty) error {
+func (x *valdStreamUpdateServer) Send(m *payload.Object_Location) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -785,7 +788,7 @@ func _Vald_StreamUpsert_Handler(srv interface{}, stream grpc.ServerStream) error
 }
 
 type Vald_StreamUpsertServer interface {
-	Send(*payload.Empty) error
+	Send(*payload.Object_Location) error
 	Recv() (*payload.Object_Vector, error)
 	grpc.ServerStream
 }
@@ -794,7 +797,7 @@ type valdStreamUpsertServer struct {
 	grpc.ServerStream
 }
 
-func (x *valdStreamUpsertServer) Send(m *payload.Empty) error {
+func (x *valdStreamUpsertServer) Send(m *payload.Object_Location) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -847,7 +850,7 @@ func _Vald_StreamRemove_Handler(srv interface{}, stream grpc.ServerStream) error
 }
 
 type Vald_StreamRemoveServer interface {
-	Send(*payload.Empty) error
+	Send(*payload.Object_Location) error
 	Recv() (*payload.Object_ID, error)
 	grpc.ServerStream
 }
@@ -856,7 +859,7 @@ type valdStreamRemoveServer struct {
 	grpc.ServerStream
 }
 
-func (x *valdStreamRemoveServer) Send(m *payload.Empty) error {
+func (x *valdStreamRemoveServer) Send(m *payload.Object_Location) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -909,7 +912,7 @@ func _Vald_StreamGetObject_Handler(srv interface{}, stream grpc.ServerStream) er
 }
 
 type Vald_StreamGetObjectServer interface {
-	Send(*payload.Backup_MetaVector) error
+	Send(*payload.Object_Vector) error
 	Recv() (*payload.Object_ID, error)
 	grpc.ServerStream
 }
@@ -918,7 +921,7 @@ type valdStreamGetObjectServer struct {
 	grpc.ServerStream
 }
 
-func (x *valdStreamGetObjectServer) Send(m *payload.Backup_MetaVector) error {
+func (x *valdStreamGetObjectServer) Send(m *payload.Object_Vector) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -1027,5 +1030,5 @@ var _Vald_serviceDesc = grpc.ServiceDesc{
 			ClientStreams: true,
 		},
 	},
-	Metadata: "vald/vald.proto",
+	Metadata: "apis/proto/gateway/vald/vald.proto",
 }

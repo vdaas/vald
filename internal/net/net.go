@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,26 +39,24 @@ const (
 )
 
 type (
-	// Conn is an alias of net.Conn
+	// Conn is an alias of net.Conn.
 	Conn = net.Conn
 
-	// Dialer is an alias of net.Dialer
+	// Dialer is an alias of net.Dialer.
 	Dialer = net.Dialer
 
-	// ListenConfig is an alias of net.ListenConfig
+	// ListenConfig is an alias of net.ListenConfig.
 	ListenConfig = net.ListenConfig
 
-	// Listener is an alias of net.Listener
+	// Listener is an alias of net.Listener.
 	Listener = net.Listener
 
-	// Resolver is an alias of net.Resolver
+	// Resolver is an alias of net.Resolver.
 	Resolver = net.Resolver
 )
 
-var (
-	// DefaultResolver is an alias of net.DefaultResolver
-	DefaultResolver = net.DefaultResolver
-)
+// DefaultResolver is an alias of net.DefaultResolver.
+var DefaultResolver = net.DefaultResolver
 
 // Listen is a wrapper function of the net.Listen function.
 func Listen(network, address string) (Listener, error) {
@@ -105,12 +103,7 @@ func IsIPv4(addr string) bool {
 // IPv6 loopback address is not supported yet.
 // For more information, please read https://github.com/vdaas/vald/projects/3#card-43504189
 func SplitHostPort(hostport string) (host string, port uint16, err error) {
-	switch {
-	/* TODO: IPv6 loopback address support
-	case strings.HasPrefix(hostport, "::"):
-		hostport = localIPv6 + hostport
-	*/
-	case strings.HasPrefix(hostport, ":"):
+	if !strings.HasPrefix(hostport, "::") && strings.HasPrefix(hostport, ":") {
 		hostport = localIPv4 + hostport
 	}
 	host, portStr, err := net.SplitHostPort(hostport)
@@ -173,8 +166,24 @@ func ScanPorts(ctx context.Context, start, end uint16, host string) (ports []uin
 	}
 
 	if len(ports) == 0 {
-		return nil, errors.ErrNoPortAvailable
+		return nil, errors.ErrNoPortAvailable(host, start, end)
 	}
 
 	return ports, nil
+}
+
+func LoadLocalIP() string {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		log.Warn(err)
+		return ""
+	}
+	for _, address := range addrs {
+		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+				return ipnet.IP.String()
+			}
+		}
+	}
+	return ""
 }

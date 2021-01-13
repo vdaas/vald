@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import (
 
 	"github.com/vdaas/vald/hack/benchmark/core/benchmark"
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
-	"github.com/vdaas/vald/hack/benchmark/internal/core"
+	"github.com/vdaas/vald/hack/benchmark/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/errors"
 
 	"go.uber.org/goleak"
@@ -96,7 +96,6 @@ func Test_newStrategy(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -108,18 +107,18 @@ func Test_strategy_Init(t *testing.T) {
 		dataset assets.Dataset
 	}
 	type fields struct {
-		core32     core.Core32
-		core64     core.Core64
-		initCore32 func(context.Context, *testing.B, assets.Dataset) (core.Core32, core.Closer, error)
-		initCore64 func(context.Context, *testing.B, assets.Dataset) (core.Core64, core.Closer, error)
-		closer     core.Closer
-		propName   string
-		preProp32  func(context.Context, *testing.B, core.Core32, assets.Dataset) ([]uint, error)
-		preProp64  func(context.Context, *testing.B, core.Core64, assets.Dataset) ([]uint, error)
-		mode       core.Mode
-		prop32     func(context.Context, *testing.B, core.Core32, assets.Dataset, []uint, *uint64) (interface{}, error)
-		prop64     func(context.Context, *testing.B, core.Core64, assets.Dataset, []uint, *uint64) (interface{}, error)
-		parallel   bool
+		core32    algorithm.Bit32
+		core64    algorithm.Bit64
+		initBit32 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit32, algorithm.Closer, error)
+		initBit64 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit64, algorithm.Closer, error)
+		closer    algorithm.Closer
+		propName  string
+		preProp32 func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset) ([]uint, error)
+		preProp64 func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset) ([]uint, error)
+		mode      algorithm.Mode
+		prop32    func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset, []uint, *uint64) (interface{}, error)
+		prop64    func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset, []uint, *uint64) (interface{}, error)
+		parallel  bool
 	}
 	type want struct {
 		err error
@@ -152,8 +151,8 @@ func Test_strategy_Init(t *testing.T) {
 		       fields: fields {
 		           core32: nil,
 		           core64: nil,
-		           initCore32: nil,
-		           initCore64: nil,
+		           initBit32: nil,
+		           initBit64: nil,
 		           closer: nil,
 		           propName: "",
 		           preProp32: nil,
@@ -181,8 +180,8 @@ func Test_strategy_Init(t *testing.T) {
 		           fields: fields {
 		           core32: nil,
 		           core64: nil,
-		           initCore32: nil,
-		           initCore64: nil,
+		           initBit32: nil,
+		           initBit64: nil,
 		           closer: nil,
 		           propName: "",
 		           preProp32: nil,
@@ -212,25 +211,24 @@ func Test_strategy_Init(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &strategy{
-				core32:     test.fields.core32,
-				core64:     test.fields.core64,
-				initCore32: test.fields.initCore32,
-				initCore64: test.fields.initCore64,
-				closer:     test.fields.closer,
-				propName:   test.fields.propName,
-				preProp32:  test.fields.preProp32,
-				preProp64:  test.fields.preProp64,
-				mode:       test.fields.mode,
-				prop32:     test.fields.prop32,
-				prop64:     test.fields.prop64,
-				parallel:   test.fields.parallel,
+				core32:    test.fields.core32,
+				core64:    test.fields.core64,
+				initBit32: test.fields.initBit32,
+				initBit64: test.fields.initBit64,
+				closer:    test.fields.closer,
+				propName:  test.fields.propName,
+				preProp32: test.fields.preProp32,
+				preProp64: test.fields.preProp64,
+				mode:      test.fields.mode,
+				prop32:    test.fields.prop32,
+				prop64:    test.fields.prop64,
+				parallel:  test.fields.parallel,
 			}
 
 			err := s.Init(test.args.ctx, test.args.b, test.args.dataset)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -242,18 +240,18 @@ func Test_strategy_PreProp(t *testing.T) {
 		dataset assets.Dataset
 	}
 	type fields struct {
-		core32     core.Core32
-		core64     core.Core64
-		initCore32 func(context.Context, *testing.B, assets.Dataset) (core.Core32, core.Closer, error)
-		initCore64 func(context.Context, *testing.B, assets.Dataset) (core.Core64, core.Closer, error)
-		closer     core.Closer
-		propName   string
-		preProp32  func(context.Context, *testing.B, core.Core32, assets.Dataset) ([]uint, error)
-		preProp64  func(context.Context, *testing.B, core.Core64, assets.Dataset) ([]uint, error)
-		mode       core.Mode
-		prop32     func(context.Context, *testing.B, core.Core32, assets.Dataset, []uint, *uint64) (interface{}, error)
-		prop64     func(context.Context, *testing.B, core.Core64, assets.Dataset, []uint, *uint64) (interface{}, error)
-		parallel   bool
+		core32    algorithm.Bit32
+		core64    algorithm.Bit64
+		initBit32 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit32, algorithm.Closer, error)
+		initBit64 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit64, algorithm.Closer, error)
+		closer    algorithm.Closer
+		propName  string
+		preProp32 func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset) ([]uint, error)
+		preProp64 func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset) ([]uint, error)
+		mode      algorithm.Mode
+		prop32    func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset, []uint, *uint64) (interface{}, error)
+		prop64    func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset, []uint, *uint64) (interface{}, error)
+		parallel  bool
 	}
 	type want struct {
 		want []uint
@@ -290,8 +288,8 @@ func Test_strategy_PreProp(t *testing.T) {
 		       fields: fields {
 		           core32: nil,
 		           core64: nil,
-		           initCore32: nil,
-		           initCore64: nil,
+		           initBit32: nil,
+		           initBit64: nil,
 		           closer: nil,
 		           propName: "",
 		           preProp32: nil,
@@ -319,8 +317,8 @@ func Test_strategy_PreProp(t *testing.T) {
 		           fields: fields {
 		           core32: nil,
 		           core64: nil,
-		           initCore32: nil,
-		           initCore64: nil,
+		           initBit32: nil,
+		           initBit64: nil,
 		           closer: nil,
 		           propName: "",
 		           preProp32: nil,
@@ -350,25 +348,24 @@ func Test_strategy_PreProp(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &strategy{
-				core32:     test.fields.core32,
-				core64:     test.fields.core64,
-				initCore32: test.fields.initCore32,
-				initCore64: test.fields.initCore64,
-				closer:     test.fields.closer,
-				propName:   test.fields.propName,
-				preProp32:  test.fields.preProp32,
-				preProp64:  test.fields.preProp64,
-				mode:       test.fields.mode,
-				prop32:     test.fields.prop32,
-				prop64:     test.fields.prop64,
-				parallel:   test.fields.parallel,
+				core32:    test.fields.core32,
+				core64:    test.fields.core64,
+				initBit32: test.fields.initBit32,
+				initBit64: test.fields.initBit64,
+				closer:    test.fields.closer,
+				propName:  test.fields.propName,
+				preProp32: test.fields.preProp32,
+				preProp64: test.fields.preProp64,
+				mode:      test.fields.mode,
+				prop32:    test.fields.prop32,
+				prop64:    test.fields.prop64,
+				parallel:  test.fields.parallel,
 			}
 
 			got, err := s.PreProp(test.args.ctx, test.args.b, test.args.dataset)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -381,21 +378,20 @@ func Test_strategy_Run(t *testing.T) {
 		ids     []uint
 	}
 	type fields struct {
-		core32     core.Core32
-		core64     core.Core64
-		initCore32 func(context.Context, *testing.B, assets.Dataset) (core.Core32, core.Closer, error)
-		initCore64 func(context.Context, *testing.B, assets.Dataset) (core.Core64, core.Closer, error)
-		closer     core.Closer
-		propName   string
-		preProp32  func(context.Context, *testing.B, core.Core32, assets.Dataset) ([]uint, error)
-		preProp64  func(context.Context, *testing.B, core.Core64, assets.Dataset) ([]uint, error)
-		mode       core.Mode
-		prop32     func(context.Context, *testing.B, core.Core32, assets.Dataset, []uint, *uint64) (interface{}, error)
-		prop64     func(context.Context, *testing.B, core.Core64, assets.Dataset, []uint, *uint64) (interface{}, error)
-		parallel   bool
+		core32    algorithm.Bit32
+		core64    algorithm.Bit64
+		initBit32 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit32, algorithm.Closer, error)
+		initBit64 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit64, algorithm.Closer, error)
+		closer    algorithm.Closer
+		propName  string
+		preProp32 func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset) ([]uint, error)
+		preProp64 func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset) ([]uint, error)
+		mode      algorithm.Mode
+		prop32    func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset, []uint, *uint64) (interface{}, error)
+		prop64    func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset, []uint, *uint64) (interface{}, error)
+		parallel  bool
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -422,8 +418,8 @@ func Test_strategy_Run(t *testing.T) {
 		       fields: fields {
 		           core32: nil,
 		           core64: nil,
-		           initCore32: nil,
-		           initCore64: nil,
+		           initBit32: nil,
+		           initBit64: nil,
 		           closer: nil,
 		           propName: "",
 		           preProp32: nil,
@@ -452,8 +448,8 @@ func Test_strategy_Run(t *testing.T) {
 		           fields: fields {
 		           core32: nil,
 		           core64: nil,
-		           initCore32: nil,
-		           initCore64: nil,
+		           initBit32: nil,
+		           initBit64: nil,
 		           closer: nil,
 		           propName: "",
 		           preProp32: nil,
@@ -483,18 +479,18 @@ func Test_strategy_Run(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &strategy{
-				core32:     test.fields.core32,
-				core64:     test.fields.core64,
-				initCore32: test.fields.initCore32,
-				initCore64: test.fields.initCore64,
-				closer:     test.fields.closer,
-				propName:   test.fields.propName,
-				preProp32:  test.fields.preProp32,
-				preProp64:  test.fields.preProp64,
-				mode:       test.fields.mode,
-				prop32:     test.fields.prop32,
-				prop64:     test.fields.prop64,
-				parallel:   test.fields.parallel,
+				core32:    test.fields.core32,
+				core64:    test.fields.core64,
+				initBit32: test.fields.initBit32,
+				initBit64: test.fields.initBit64,
+				closer:    test.fields.closer,
+				propName:  test.fields.propName,
+				preProp32: test.fields.preProp32,
+				preProp64: test.fields.preProp64,
+				mode:      test.fields.mode,
+				prop32:    test.fields.prop32,
+				prop64:    test.fields.prop64,
+				parallel:  test.fields.parallel,
 			}
 
 			s.Run(test.args.ctx, test.args.b, test.args.dataset, test.args.ids)
@@ -507,21 +503,20 @@ func Test_strategy_Run(t *testing.T) {
 
 func Test_strategy_Close(t *testing.T) {
 	type fields struct {
-		core32     core.Core32
-		core64     core.Core64
-		initCore32 func(context.Context, *testing.B, assets.Dataset) (core.Core32, core.Closer, error)
-		initCore64 func(context.Context, *testing.B, assets.Dataset) (core.Core64, core.Closer, error)
-		closer     core.Closer
-		propName   string
-		preProp32  func(context.Context, *testing.B, core.Core32, assets.Dataset) ([]uint, error)
-		preProp64  func(context.Context, *testing.B, core.Core64, assets.Dataset) ([]uint, error)
-		mode       core.Mode
-		prop32     func(context.Context, *testing.B, core.Core32, assets.Dataset, []uint, *uint64) (interface{}, error)
-		prop64     func(context.Context, *testing.B, core.Core64, assets.Dataset, []uint, *uint64) (interface{}, error)
-		parallel   bool
+		core32    algorithm.Bit32
+		core64    algorithm.Bit64
+		initBit32 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit32, algorithm.Closer, error)
+		initBit64 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit64, algorithm.Closer, error)
+		closer    algorithm.Closer
+		propName  string
+		preProp32 func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset) ([]uint, error)
+		preProp64 func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset) ([]uint, error)
+		mode      algorithm.Mode
+		prop32    func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset, []uint, *uint64) (interface{}, error)
+		prop64    func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset, []uint, *uint64) (interface{}, error)
+		parallel  bool
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields
@@ -541,8 +536,8 @@ func Test_strategy_Close(t *testing.T) {
 		       fields: fields {
 		           core32: nil,
 		           core64: nil,
-		           initCore32: nil,
-		           initCore64: nil,
+		           initBit32: nil,
+		           initBit64: nil,
 		           closer: nil,
 		           propName: "",
 		           preProp32: nil,
@@ -565,8 +560,8 @@ func Test_strategy_Close(t *testing.T) {
 		           fields: fields {
 		           core32: nil,
 		           core64: nil,
-		           initCore32: nil,
-		           initCore64: nil,
+		           initBit32: nil,
+		           initBit64: nil,
 		           closer: nil,
 		           propName: "",
 		           preProp32: nil,
@@ -596,18 +591,18 @@ func Test_strategy_Close(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &strategy{
-				core32:     test.fields.core32,
-				core64:     test.fields.core64,
-				initCore32: test.fields.initCore32,
-				initCore64: test.fields.initCore64,
-				closer:     test.fields.closer,
-				propName:   test.fields.propName,
-				preProp32:  test.fields.preProp32,
-				preProp64:  test.fields.preProp64,
-				mode:       test.fields.mode,
-				prop32:     test.fields.prop32,
-				prop64:     test.fields.prop64,
-				parallel:   test.fields.parallel,
+				core32:    test.fields.core32,
+				core64:    test.fields.core64,
+				initBit32: test.fields.initBit32,
+				initBit64: test.fields.initBit64,
+				closer:    test.fields.closer,
+				propName:  test.fields.propName,
+				preProp32: test.fields.preProp32,
+				preProp64: test.fields.preProp64,
+				mode:      test.fields.mode,
+				prop32:    test.fields.prop32,
+				prop64:    test.fields.prop64,
+				parallel:  test.fields.parallel,
 			}
 
 			s.Close()
@@ -627,21 +622,20 @@ func Test_strategy_float32(t *testing.T) {
 		cnt     *uint64
 	}
 	type fields struct {
-		core32     core.Core32
-		core64     core.Core64
-		initCore32 func(context.Context, *testing.B, assets.Dataset) (core.Core32, core.Closer, error)
-		initCore64 func(context.Context, *testing.B, assets.Dataset) (core.Core64, core.Closer, error)
-		closer     core.Closer
-		propName   string
-		preProp32  func(context.Context, *testing.B, core.Core32, assets.Dataset) ([]uint, error)
-		preProp64  func(context.Context, *testing.B, core.Core64, assets.Dataset) ([]uint, error)
-		mode       core.Mode
-		prop32     func(context.Context, *testing.B, core.Core32, assets.Dataset, []uint, *uint64) (interface{}, error)
-		prop64     func(context.Context, *testing.B, core.Core64, assets.Dataset, []uint, *uint64) (interface{}, error)
-		parallel   bool
+		core32    algorithm.Bit32
+		core64    algorithm.Bit64
+		initBit32 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit32, algorithm.Closer, error)
+		initBit64 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit64, algorithm.Closer, error)
+		closer    algorithm.Closer
+		propName  string
+		preProp32 func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset) ([]uint, error)
+		preProp64 func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset) ([]uint, error)
+		mode      algorithm.Mode
+		prop32    func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset, []uint, *uint64) (interface{}, error)
+		prop64    func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset, []uint, *uint64) (interface{}, error)
+		parallel  bool
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -669,8 +663,8 @@ func Test_strategy_float32(t *testing.T) {
 		       fields: fields {
 		           core32: nil,
 		           core64: nil,
-		           initCore32: nil,
-		           initCore64: nil,
+		           initBit32: nil,
+		           initBit64: nil,
 		           closer: nil,
 		           propName: "",
 		           preProp32: nil,
@@ -700,8 +694,8 @@ func Test_strategy_float32(t *testing.T) {
 		           fields: fields {
 		           core32: nil,
 		           core64: nil,
-		           initCore32: nil,
-		           initCore64: nil,
+		           initBit32: nil,
+		           initBit64: nil,
 		           closer: nil,
 		           propName: "",
 		           preProp32: nil,
@@ -731,18 +725,18 @@ func Test_strategy_float32(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &strategy{
-				core32:     test.fields.core32,
-				core64:     test.fields.core64,
-				initCore32: test.fields.initCore32,
-				initCore64: test.fields.initCore64,
-				closer:     test.fields.closer,
-				propName:   test.fields.propName,
-				preProp32:  test.fields.preProp32,
-				preProp64:  test.fields.preProp64,
-				mode:       test.fields.mode,
-				prop32:     test.fields.prop32,
-				prop64:     test.fields.prop64,
-				parallel:   test.fields.parallel,
+				core32:    test.fields.core32,
+				core64:    test.fields.core64,
+				initBit32: test.fields.initBit32,
+				initBit64: test.fields.initBit64,
+				closer:    test.fields.closer,
+				propName:  test.fields.propName,
+				preProp32: test.fields.preProp32,
+				preProp64: test.fields.preProp64,
+				mode:      test.fields.mode,
+				prop32:    test.fields.prop32,
+				prop64:    test.fields.prop64,
+				parallel:  test.fields.parallel,
 			}
 
 			s.float32(test.args.ctx, test.args.b, test.args.dataset, test.args.ids, test.args.cnt)
@@ -762,21 +756,20 @@ func Test_strategy_float64(t *testing.T) {
 		cnt     *uint64
 	}
 	type fields struct {
-		core32     core.Core32
-		core64     core.Core64
-		initCore32 func(context.Context, *testing.B, assets.Dataset) (core.Core32, core.Closer, error)
-		initCore64 func(context.Context, *testing.B, assets.Dataset) (core.Core64, core.Closer, error)
-		closer     core.Closer
-		propName   string
-		preProp32  func(context.Context, *testing.B, core.Core32, assets.Dataset) ([]uint, error)
-		preProp64  func(context.Context, *testing.B, core.Core64, assets.Dataset) ([]uint, error)
-		mode       core.Mode
-		prop32     func(context.Context, *testing.B, core.Core32, assets.Dataset, []uint, *uint64) (interface{}, error)
-		prop64     func(context.Context, *testing.B, core.Core64, assets.Dataset, []uint, *uint64) (interface{}, error)
-		parallel   bool
+		core32    algorithm.Bit32
+		core64    algorithm.Bit64
+		initBit32 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit32, algorithm.Closer, error)
+		initBit64 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit64, algorithm.Closer, error)
+		closer    algorithm.Closer
+		propName  string
+		preProp32 func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset) ([]uint, error)
+		preProp64 func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset) ([]uint, error)
+		mode      algorithm.Mode
+		prop32    func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset, []uint, *uint64) (interface{}, error)
+		prop64    func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset, []uint, *uint64) (interface{}, error)
+		parallel  bool
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -804,8 +797,8 @@ func Test_strategy_float64(t *testing.T) {
 		       fields: fields {
 		           core32: nil,
 		           core64: nil,
-		           initCore32: nil,
-		           initCore64: nil,
+		           initBit32: nil,
+		           initBit64: nil,
 		           closer: nil,
 		           propName: "",
 		           preProp32: nil,
@@ -835,8 +828,8 @@ func Test_strategy_float64(t *testing.T) {
 		           fields: fields {
 		           core32: nil,
 		           core64: nil,
-		           initCore32: nil,
-		           initCore64: nil,
+		           initBit32: nil,
+		           initBit64: nil,
 		           closer: nil,
 		           propName: "",
 		           preProp32: nil,
@@ -866,18 +859,18 @@ func Test_strategy_float64(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			s := &strategy{
-				core32:     test.fields.core32,
-				core64:     test.fields.core64,
-				initCore32: test.fields.initCore32,
-				initCore64: test.fields.initCore64,
-				closer:     test.fields.closer,
-				propName:   test.fields.propName,
-				preProp32:  test.fields.preProp32,
-				preProp64:  test.fields.preProp64,
-				mode:       test.fields.mode,
-				prop32:     test.fields.prop32,
-				prop64:     test.fields.prop64,
-				parallel:   test.fields.parallel,
+				core32:    test.fields.core32,
+				core64:    test.fields.core64,
+				initBit32: test.fields.initBit32,
+				initBit64: test.fields.initBit64,
+				closer:    test.fields.closer,
+				propName:  test.fields.propName,
+				preProp32: test.fields.preProp32,
+				preProp64: test.fields.preProp64,
+				mode:      test.fields.mode,
+				prop32:    test.fields.prop32,
+				prop64:    test.fields.prop64,
+				parallel:  test.fields.parallel,
 			}
 
 			s.float64(test.args.ctx, test.args.b, test.args.dataset, test.args.ids, test.args.cnt)

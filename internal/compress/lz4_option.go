@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,12 +24,10 @@ import (
 // LZ4Option represents the functional option for lz4Compressor.
 type LZ4Option func(c *lz4Compressor) error
 
-var (
-	defaultLZ4Opts = []LZ4Option{
-		WithLZ4Gob(),
-		WithLZ4CompressionLevel(0),
-	}
-)
+var defaultLZ4Opts = []LZ4Option{
+	WithLZ4Gob(),
+	WithLZ4CompressionLevel(0),
+}
 
 // WithLZ4Gob returns the option to set gobc for lz4Compressor.
 func WithLZ4Gob(opts ...GobOption) LZ4Option {

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,11 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if .Values.compressor.enabled }}
+{{- $compressor := .Values.manager.compressor -}}
+{{- $backup := .Values.manager.backup -}}
+{{- if $compressor.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Values.compressor.name }}-config
+  name: {{ $compressor.name }}-config
   labels:
     app.kubernetes.io/name: {{ include "vald.name" . }}
     helm.sh/chart: {{ include "vald.chart" . }}
@@ -28,35 +30,45 @@ metadata:
 data:
   config.yaml: |
     ---
-    version: {{ .Values.compressor.version }}
-    time_zone: {{ default .Values.defaults.time_zone .Values.compressor.time_zone }}
+    version: {{ $compressor.version }}
+    time_zone: {{ default .Values.defaults.time_zone $compressor.time_zone }}
     logging:
-      {{- $logging := dict "Values" .Values.compressor.logging "default" .Values.defaults.logging }}
+      {{- $logging := dict "Values" $compressor.logging "default" .Values.defaults.logging }}
       {{- include "vald.logging" $logging | nindent 6 }}
     server_config:
-      {{- $servers := dict "Values" .Values.compressor.server_config "default" .Values.defaults.server_config }}
+      {{- $servers := dict "Values" $compressor.server_config "default" .Values.defaults.server_config }}
       {{- include "vald.servers" $servers | nindent 6 }}
     observability:
-      {{- $observability := dict "Values" .Values.compressor.observability "default" .Values.defaults.observability }}
+      {{- $observability := dict "Values" $compressor.observability "default" .Values.defaults.observability }}
       {{- include "vald.observability" $observability | nindent 6 }}
     backup:
-      host: {{ .Values.backupManager.name }}.{{ .Release.Namespace }}.svc.cluster.local
-      port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.backupManager.server_config.servers.grpc.port }}
       client:
-        {{- $backupClient := dict "Values" .Values.compressor.backup.client "default" .Values.defaults.grpc.client }}
-        {{- include "vald.grpc.client" $backupClient | nindent 8 }}
+        {{- $backupClient := $compressor.backup.client }}
+        {{- $backupServerPort := $backup.server_config.servers.grpc.port }}
+        {{- $defaultBackupHost := printf "%s.%s.svc.cluster.local" $backup.name .Release.Namespace }}
+        {{- $defaultBackupPort := default .Values.defaults.server_config.servers.grpc.port $backupServerPort }}
+        {{- $defaultBackupAddr := (list (printf "%s:%d" $defaultBackupHost (int64 $defaultBackupPort))) }}
+        {{- $backupAddrs := dict "Values" $backupClient.addrs "default" $defaultBackupAddr }}
+        {{- include "vald.grpc.client.addrs" $backupAddrs | nindent 8 }}
+        {{- $backupGRPCclient := dict "Values" $backupClient "default" .Values.defaults.grpc.client }}
+        {{- include "vald.grpc.client" $backupGRPCclient | nindent 8 }}
     compressor:
-      compress_algorithm: {{ .Values.compressor.compress.compress_algorithm | quote }}
-      compression_level: {{ .Values.compressor.compress.compression_level }}
-      concurrent_limit: {{ .Values.compressor.compress.concurrent_limit }}
-      queue_check_duration: {{ .Values.compressor.compress.queue_check_duration }}
+      compress_algorithm: {{ $compressor.compress.compress_algorithm | quote }}
+      compression_level: {{ $compressor.compress.compression_level }}
+      concurrent_limit: {{ $compressor.compress.concurrent_limit }}
+      queue_check_duration: {{ $compressor.compress.queue_check_duration }}
     registerer:
-      concurrent_limit: {{ .Values.compressor.registerer.concurrent_limit }}
-      queue_check_duration: {{ .Values.compressor.registerer.queue_check_duration }}
+      concurrent_limit: {{ $compressor.registerer.concurrent_limit }}
+      queue_check_duration: {{ $compressor.registerer.queue_check_duration }}
       compressor:
-        host: {{ .Values.compressor.name }}.{{ .Release.Namespace }}.svc.cluster.local
-        port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.compressor.server_config.servers.grpc.port }}
         client:
-          {{- $compressorClient := dict "Values" .Values.compressor.registerer.compressor.client "default" .Values.defaults.grpc.client }}
-          {{- include "vald.grpc.client" $compressorClient | nindent 12 }}
+          {{- $compressorClient := $compressor.registerer.compressor.client }}
+          {{- $compressorServerPort := $compressor.server_config.servers.grpc.port }}
+          {{- $defaultCompressorHost := printf "%s.%s.svc.cluster.local" $compressor.name .Release.Namespace }}
+          {{- $defaultCompressorPort := default .Values.defaults.server_config.servers.grpc.port $compressorServerPort }}
+          {{- $defaultCompressorAddr := (list (printf "%s:%d" $defaultCompressorHost (int64 $defaultCompressorPort))) }}
+          {{- $compressorAddrs := dict "Values" $compressorClient.addrs "default" $defaultCompressorAddr }}
+          {{- include "vald.grpc.client.addrs" $compressorAddrs | nindent 10 }}
+          {{- $compressorGRPCclient := dict "Values" $compressorClient "default" .Values.defaults.grpc.client }}
+          {{- include "vald.grpc.client" $compressorGRPCclient | nindent 10 }}
 {{- end }}

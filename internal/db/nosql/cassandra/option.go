@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -34,38 +34,36 @@ import (
 // https://pkg.go.dev/github.com/gocql/gocql?tab=doc#ClusterConfig
 type Option func(*client) error
 
-var (
-	defaultOpts = []Option{
-		WithCQLVersion("3.0.0"),
-		WithConnectTimeout("600ms"),
-		WithConsistency(cQuorumKey),
-		WithDCAwareRouting(false),
-		WithDefaultIdempotence(false),
-		WithDefaultTimestamp(true),
-		WithDisableInitialHostLookup(false),
-		WithDisableNodeStatusEvents(false),
-		WithDisableSkipMetadata(false),
-		WithDisableTopologyEvents(false),
-		WithEnableHostVerification(false),
-		WithIgnorePeerAddr(false),
-		WithMaxPreparedStmts(1000),
-		WithMaxRoutingKeyInfo(1000),
-		WithMaxWaitSchemaAgreement("1m"),
-		WithNonLocalReplicasFallback(false),
-		WithNumConns(2),
-		WithPageSize(5000),
-		WithPort(9042),
-		WithProtoVersion(0),
-		WithReconnectInterval("1m"),
-		WithSerialConsistency(scLocalSerialKey),
-		WithShuffleReplicas(false),
-		WithTimeout("600ms"),
-		WithTokenAwareHostPolicy(true),
-		WithWriteCoalesceWaitTime("200µs"),
-	}
-)
+var defaultOptions = []Option{
+	WithCQLVersion("3.0.0"),
+	WithConnectTimeout("600ms"),
+	WithConsistency(cQuorumKey),
+	WithDCAwareRouting(false),
+	WithDefaultIdempotence(false),
+	WithDefaultTimestamp(true),
+	WithDisableInitialHostLookup(false),
+	WithDisableNodeStatusEvents(false),
+	WithDisableSkipMetadata(false),
+	WithDisableTopologyEvents(false),
+	WithEnableHostVerification(false),
+	WithIgnorePeerAddr(false),
+	WithMaxPreparedStmts(1000),
+	WithMaxRoutingKeyInfo(1000),
+	WithMaxWaitSchemaAgreement("1m"),
+	WithNonLocalReplicasFallback(false),
+	WithNumConns(2),
+	WithPageSize(5000),
+	WithPort(9042),
+	WithProtoVersion(0),
+	WithReconnectInterval("1m"),
+	WithSerialConsistency(scLocalSerialKey),
+	WithShuffleReplicas(false),
+	WithTimeout("600ms"),
+	WithTokenAwareHostPolicy(true),
+	WithWriteCoalesceWaitTime("200µs"),
+}
 
-// WithHosts returns the option to set the hosts
+// WithHosts returns the option to set the hosts.
 func WithHosts(hosts ...string) Option {
 	return func(c *client) error {
 		if len(hosts) == 0 {
@@ -80,7 +78,7 @@ func WithHosts(hosts ...string) Option {
 	}
 }
 
-// WithDialer returns the option to set the dialer
+// WithDialer returns the option to set the dialer.
 func WithDialer(der gocql.Dialer) Option {
 	return func(c *client) error {
 		if der == nil {
@@ -91,7 +89,7 @@ func WithDialer(der gocql.Dialer) Option {
 	}
 }
 
-// WithCQLVersion returns the option to set the CQL version
+// WithCQLVersion returns the option to set the CQL version.
 func WithCQLVersion(version string) Option {
 	return func(c *client) error {
 		if len(version) == 0 {
@@ -102,7 +100,7 @@ func WithCQLVersion(version string) Option {
 	}
 }
 
-// WithProtoVersion returns the option to set the proto version
+// WithProtoVersion returns the option to set the proto version.
 func WithProtoVersion(version int) Option {
 	return func(c *client) error {
 		if version < 0 {
@@ -113,7 +111,7 @@ func WithProtoVersion(version int) Option {
 	}
 }
 
-// WithTimeout returns the option to set the cassandra connect timeout time
+// WithTimeout returns the option to set the cassandra connect timeout time.
 func WithTimeout(dur string) Option {
 	return func(c *client) error {
 		if len(dur) == 0 {
@@ -128,7 +126,7 @@ func WithTimeout(dur string) Option {
 	}
 }
 
-// WithConnectTimeout returns the option to set the cassandra initial connection timeout
+// WithConnectTimeout returns the option to set the cassandra initial connection timeout.
 func WithConnectTimeout(dur string) Option {
 	return func(c *client) error {
 		if len(dur) == 0 {
@@ -144,7 +142,7 @@ func WithConnectTimeout(dur string) Option {
 	}
 }
 
-// WithPort returns the option to set the port number
+// WithPort returns the option to set the port number.
 func WithPort(port int) Option {
 	return func(c *client) error {
 		if port <= 0 || port > math.MaxUint16 {
@@ -155,7 +153,7 @@ func WithPort(port int) Option {
 	}
 }
 
-// WithKeyspace returns the option to set the keyspace
+// WithKeyspace returns the option to set the keyspace.
 func WithKeyspace(keyspace string) Option {
 	return func(c *client) error {
 		if len(keyspace) == 0 {
@@ -166,7 +164,7 @@ func WithKeyspace(keyspace string) Option {
 	}
 }
 
-// WithNumConns returns the option to set the number of connection per host
+// WithNumConns returns the option to set the number of connection per host.
 func WithNumConns(numConns int) Option {
 	return func(c *client) error {
 		if numConns < 0 {
@@ -201,7 +199,7 @@ var (
 	}
 )
 
-// WithConsistency returns the option to set the cassandra consistency level
+// WithConsistency returns the option to set the cassandra consistency level.
 func WithConsistency(consistency string) Option {
 	return func(c *client) error {
 		if len(consistency) == 0 {
@@ -225,7 +223,7 @@ var (
 	}
 )
 
-// WithSerialConsistency returns the option to set the cassandra serial consistency level
+// WithSerialConsistency returns the option to set the cassandra serial consistency level.
 func WithSerialConsistency(consistency string) Option {
 	return func(c *client) error {
 		if len(consistency) == 0 {
@@ -240,7 +238,7 @@ func WithSerialConsistency(consistency string) Option {
 	}
 }
 
-// WithCompressor returns the option to set the compressor
+// WithCompressor returns the option to set the compressor.
 func WithCompressor(compressor gocql.Compressor) Option {
 	return func(c *client) error {
 		if compressor == nil {
@@ -251,7 +249,7 @@ func WithCompressor(compressor gocql.Compressor) Option {
 	}
 }
 
-// WithUsername returns the option to set the username
+// WithUsername returns the option to set the username.
 func WithUsername(username string) Option {
 	return func(c *client) error {
 		if len(username) == 0 {
@@ -262,7 +260,7 @@ func WithUsername(username string) Option {
 	}
 }
 
-// WithPassword returns the option to set the password
+// WithPassword returns the option to set the password.
 func WithPassword(password string) Option {
 	return func(c *client) error {
 		if len(password) == 0 {
@@ -273,7 +271,7 @@ func WithPassword(password string) Option {
 	}
 }
 
-// WithAuthProvider returns the option to set the auth provider
+// WithAuthProvider returns the option to set the auth provider.
 func WithAuthProvider(authProvider func(h *gocql.HostInfo) (gocql.Authenticator, error)) Option {
 	return func(c *client) error {
 		if authProvider == nil {
@@ -284,7 +282,7 @@ func WithAuthProvider(authProvider func(h *gocql.HostInfo) (gocql.Authenticator,
 	}
 }
 
-// WithRetryPolicyNumRetries returns the option to set the number of retries
+// WithRetryPolicyNumRetries returns the option to set the number of retries.
 func WithRetryPolicyNumRetries(n int) Option {
 	return func(c *client) error {
 		if n < 0 {
@@ -295,7 +293,7 @@ func WithRetryPolicyNumRetries(n int) Option {
 	}
 }
 
-// WithRetryPolicyMinDuration returns the option to set the retry min duration
+// WithRetryPolicyMinDuration returns the option to set the retry min duration.
 func WithRetryPolicyMinDuration(minDuration string) Option {
 	return func(c *client) error {
 		if len(minDuration) == 0 {
@@ -310,7 +308,7 @@ func WithRetryPolicyMinDuration(minDuration string) Option {
 	}
 }
 
-// WithRetryPolicyMaxDuration returns the option to set the retry max duration
+// WithRetryPolicyMaxDuration returns the option to set the retry max duration.
 func WithRetryPolicyMaxDuration(maxDuration string) Option {
 	return func(c *client) error {
 		if len(maxDuration) == 0 {
@@ -325,7 +323,7 @@ func WithRetryPolicyMaxDuration(maxDuration string) Option {
 	}
 }
 
-// WithReconnectionPolicyInitialInterval returns the option to set the reconnect initial interval
+// WithReconnectionPolicyInitialInterval returns the option to set the reconnect initial interval.
 func WithReconnectionPolicyInitialInterval(initialInterval string) Option {
 	return func(c *client) error {
 		if len(initialInterval) == 0 {
@@ -340,7 +338,7 @@ func WithReconnectionPolicyInitialInterval(initialInterval string) Option {
 	}
 }
 
-// WithReconnectionPolicyMaxRetries returns the option to set the reconnect max retries
+// WithReconnectionPolicyMaxRetries returns the option to set the reconnect max retries.
 func WithReconnectionPolicyMaxRetries(maxRetries int) Option {
 	return func(c *client) error {
 		if maxRetries < 0 {
@@ -351,7 +349,7 @@ func WithReconnectionPolicyMaxRetries(maxRetries int) Option {
 	}
 }
 
-// WithSocketKeepalive returns the option to set the socket keepalive time
+// WithSocketKeepalive returns the option to set the socket keepalive time.
 func WithSocketKeepalive(socketKeepalive string) Option {
 	return func(c *client) error {
 		if len(socketKeepalive) == 0 {
@@ -366,7 +364,7 @@ func WithSocketKeepalive(socketKeepalive string) Option {
 	}
 }
 
-// WithMaxPreparedStmts returns the option to set the max prepared statement
+// WithMaxPreparedStmts returns the option to set the max prepared statement.
 func WithMaxPreparedStmts(maxPreparedStmts int) Option {
 	return func(c *client) error {
 		if maxPreparedStmts < 0 {
@@ -377,7 +375,7 @@ func WithMaxPreparedStmts(maxPreparedStmts int) Option {
 	}
 }
 
-// WithMaxRoutingKeyInfo returns the option to set the max routing key info
+// WithMaxRoutingKeyInfo returns the option to set the max routing key info.
 func WithMaxRoutingKeyInfo(maxRoutingKeyInfo int) Option {
 	return func(c *client) error {
 		if maxRoutingKeyInfo < 0 {
@@ -388,7 +386,7 @@ func WithMaxRoutingKeyInfo(maxRoutingKeyInfo int) Option {
 	}
 }
 
-// WithPageSize returns the option to set the page size
+// WithPageSize returns the option to set the page size.
 func WithPageSize(pageSize int) Option {
 	return func(c *client) error {
 		if pageSize < 0 {
@@ -399,7 +397,7 @@ func WithPageSize(pageSize int) Option {
 	}
 }
 
-// WithTLS returns the option to set the TLS config
+// WithTLS returns the option to set the TLS config.
 func WithTLS(tls *tls.Config) Option {
 	return func(c *client) error {
 		if tls == nil {
@@ -410,7 +408,7 @@ func WithTLS(tls *tls.Config) Option {
 	}
 }
 
-// WithTLSCertPath returns the option to set the TLS cert path
+// WithTLSCertPath returns the option to set the TLS cert path.
 func WithTLSCertPath(certPath string) Option {
 	return func(c *client) error {
 		if len(certPath) == 0 {
@@ -421,7 +419,7 @@ func WithTLSCertPath(certPath string) Option {
 	}
 }
 
-// WithTLSKeyPath returns the option to set the TLS key path
+// WithTLSKeyPath returns the option to set the TLS key path.
 func WithTLSKeyPath(keyPath string) Option {
 	return func(c *client) error {
 		if len(keyPath) == 0 {
@@ -432,7 +430,7 @@ func WithTLSKeyPath(keyPath string) Option {
 	}
 }
 
-// WithTLSCAPath returns the option to set the TLS CA path
+// WithTLSCAPath returns the option to set the TLS CA path.
 func WithTLSCAPath(caPath string) Option {
 	return func(c *client) error {
 		if len(caPath) == 0 {
@@ -443,7 +441,7 @@ func WithTLSCAPath(caPath string) Option {
 	}
 }
 
-// WithEnableHostVerification returns the option to set the host verification enable flag
+// WithEnableHostVerification returns the option to set the host verification enable flag.
 func WithEnableHostVerification(enableHostVerification bool) Option {
 	return func(c *client) error {
 		c.enableHostVerification = enableHostVerification
@@ -451,7 +449,7 @@ func WithEnableHostVerification(enableHostVerification bool) Option {
 	}
 }
 
-// WithDefaultTimestamp returns the option to set the default timestamp enable flag
+// WithDefaultTimestamp returns the option to set the default timestamp enable flag.
 func WithDefaultTimestamp(defaultTimestamp bool) Option {
 	return func(c *client) error {
 		c.defaultTimestamp = defaultTimestamp
@@ -459,7 +457,7 @@ func WithDefaultTimestamp(defaultTimestamp bool) Option {
 	}
 }
 
-// WithDC returns the option to set the data center name
+// WithDC returns the option to set the data center name.
 func WithDC(name string) Option {
 	return func(c *client) error {
 		if len(name) == 0 {
@@ -470,7 +468,7 @@ func WithDC(name string) Option {
 	}
 }
 
-// WithDCAwareRouting returns the option to set the data center aware routing enable flag
+// WithDCAwareRouting returns the option to set the data center aware routing enable flag.
 func WithDCAwareRouting(dcAwareRouting bool) Option {
 	return func(c *client) error {
 		c.poolConfig.enableDCAwareRouting = dcAwareRouting
@@ -478,7 +476,7 @@ func WithDCAwareRouting(dcAwareRouting bool) Option {
 	}
 }
 
-// WithNonLocalReplicasFallback returns the option to set the non local replicas fallback enable flag
+// WithNonLocalReplicasFallback returns the option to set the non local replicas fallback enable flag.
 func WithNonLocalReplicasFallback(nonLocalReplicasFallBack bool) Option {
 	return func(c *client) error {
 		c.poolConfig.enableNonLocalReplicasFallback = nonLocalReplicasFallBack
@@ -486,7 +484,7 @@ func WithNonLocalReplicasFallback(nonLocalReplicasFallBack bool) Option {
 	}
 }
 
-// WithShuffleReplicas returns the option to set the shuffle replicas enable flag
+// WithShuffleReplicas returns the option to set the shuffle replicas enable flag.
 func WithShuffleReplicas(shuffleReplicas bool) Option {
 	return func(c *client) error {
 		c.poolConfig.enableShuffleReplicas = shuffleReplicas
@@ -494,7 +492,7 @@ func WithShuffleReplicas(shuffleReplicas bool) Option {
 	}
 }
 
-// WithTokenAwareHostPolicy returns the option to set the token aware host policy enable flag
+// WithTokenAwareHostPolicy returns the option to set the token aware host policy enable flag.
 func WithTokenAwareHostPolicy(tokenAwareHostPolicy bool) Option {
 	return func(c *client) error {
 		c.poolConfig.enableTokenAwareHostPolicy = tokenAwareHostPolicy
@@ -502,7 +500,7 @@ func WithTokenAwareHostPolicy(tokenAwareHostPolicy bool) Option {
 	}
 }
 
-// WithMaxWaitSchemaAgreement returns the option to set the max wait schema agreement
+// WithMaxWaitSchemaAgreement returns the option to set the max wait schema agreement.
 func WithMaxWaitSchemaAgreement(maxWaitSchemaAgreement string) Option {
 	return func(c *client) error {
 		if len(maxWaitSchemaAgreement) == 0 {
@@ -517,7 +515,7 @@ func WithMaxWaitSchemaAgreement(maxWaitSchemaAgreement string) Option {
 	}
 }
 
-// WithReconnectInterval returns the option to set the reconnect interval
+// WithReconnectInterval returns the option to set the reconnect interval.
 func WithReconnectInterval(reconnectInterval string) Option {
 	return func(c *client) error {
 		if len(reconnectInterval) == 0 {
@@ -532,7 +530,7 @@ func WithReconnectInterval(reconnectInterval string) Option {
 	}
 }
 
-// WithIgnorePeerAddr returns the option to set ignore peer address flag
+// WithIgnorePeerAddr returns the option to set ignore peer address flag.
 func WithIgnorePeerAddr(ignorePeerAddr bool) Option {
 	return func(c *client) error {
 		c.ignorePeerAddr = ignorePeerAddr
@@ -540,7 +538,7 @@ func WithIgnorePeerAddr(ignorePeerAddr bool) Option {
 	}
 }
 
-// WithDisableInitialHostLookup returns the option to set disable initial host lookup flag
+// WithDisableInitialHostLookup returns the option to set disable initial host lookup flag.
 func WithDisableInitialHostLookup(disableInitialHostLookup bool) Option {
 	return func(c *client) error {
 		c.disableInitialHostLookup = disableInitialHostLookup
@@ -548,7 +546,7 @@ func WithDisableInitialHostLookup(disableInitialHostLookup bool) Option {
 	}
 }
 
-// WithDisableNodeStatusEvents returns the option to set disable node status events flag
+// WithDisableNodeStatusEvents returns the option to set disable node status events flag.
 func WithDisableNodeStatusEvents(disableNodeStatusEvents bool) Option {
 	return func(c *client) error {
 		c.disableNodeStatusEvents = disableNodeStatusEvents
@@ -556,7 +554,7 @@ func WithDisableNodeStatusEvents(disableNodeStatusEvents bool) Option {
 	}
 }
 
-// WithDisableTopologyEvents returns the option to set disable topology events flag
+// WithDisableTopologyEvents returns the option to set disable topology events flag.
 func WithDisableTopologyEvents(disableTopologyEvents bool) Option {
 	return func(c *client) error {
 		c.disableTopologyEvents = disableTopologyEvents
@@ -564,7 +562,7 @@ func WithDisableTopologyEvents(disableTopologyEvents bool) Option {
 	}
 }
 
-// WithDisableSchemaEvents returns the option to set disable schema events flag
+// WithDisableSchemaEvents returns the option to set disable schema events flag.
 func WithDisableSchemaEvents(disableSchemaEvents bool) Option {
 	return func(c *client) error {
 		c.disableSchemaEvents = disableSchemaEvents
@@ -572,7 +570,7 @@ func WithDisableSchemaEvents(disableSchemaEvents bool) Option {
 	}
 }
 
-// WithDisableSkipMetadata returns the option to set disable skip metadata flag
+// WithDisableSkipMetadata returns the option to set disable skip metadata flag.
 func WithDisableSkipMetadata(disableSkipMetadata bool) Option {
 	return func(c *client) error {
 		c.disableSkipMetadata = disableSkipMetadata
@@ -580,7 +578,7 @@ func WithDisableSkipMetadata(disableSkipMetadata bool) Option {
 	}
 }
 
-// WithQueryObserver returns the option to set query observer
+// WithQueryObserver returns the option to set query observer.
 func WithQueryObserver(obs QueryObserver) Option {
 	return func(c *client) error {
 		if obs == nil {
@@ -592,7 +590,7 @@ func WithQueryObserver(obs QueryObserver) Option {
 	}
 }
 
-// WithBatchObserver returns the option to set batch observer
+// WithBatchObserver returns the option to set batch observer.
 func WithBatchObserver(obs BatchObserver) Option {
 	return func(c *client) error {
 		if obs == nil {
@@ -604,7 +602,7 @@ func WithBatchObserver(obs BatchObserver) Option {
 	}
 }
 
-// WithConnectObserver returns the option to set connect observer
+// WithConnectObserver returns the option to set connect observer.
 func WithConnectObserver(obs ConnectObserver) Option {
 	return func(c *client) error {
 		if obs == nil {
@@ -616,7 +614,7 @@ func WithConnectObserver(obs ConnectObserver) Option {
 	}
 }
 
-// WithFrameHeaderObserver returns the option to set FrameHeader observer
+// WithFrameHeaderObserver returns the option to set FrameHeader observer.
 func WithFrameHeaderObserver(obs FrameHeaderObserver) Option {
 	return func(c *client) error {
 		if obs == nil {
@@ -628,7 +626,7 @@ func WithFrameHeaderObserver(obs FrameHeaderObserver) Option {
 	}
 }
 
-// WithDefaultIdempotence returns the option to set default idempotence flag
+// WithDefaultIdempotence returns the option to set default idempotence flag.
 func WithDefaultIdempotence(defaultIdempotence bool) Option {
 	return func(c *client) error {
 		c.defaultIdempotence = defaultIdempotence
@@ -636,7 +634,7 @@ func WithDefaultIdempotence(defaultIdempotence bool) Option {
 	}
 }
 
-// WithWriteCoalesceWaitTime returns the option to set the write coalesce wait time
+// WithWriteCoalesceWaitTime returns the option to set the write coalesce wait time.
 func WithWriteCoalesceWaitTime(writeCoalesceWaitTime string) Option {
 	return func(c *client) error {
 		if len(writeCoalesceWaitTime) == 0 {
@@ -651,7 +649,7 @@ func WithWriteCoalesceWaitTime(writeCoalesceWaitTime string) Option {
 	}
 }
 
-// WithHostFilter returns the option to set the host filter enable flag
+// WithHostFilter returns the option to set the host filter enable flag.
 func WithHostFilter(flg bool) Option {
 	return func(c *client) error {
 		c.hostFilter.enable = flg
@@ -659,7 +657,7 @@ func WithHostFilter(flg bool) Option {
 	}
 }
 
-// WithDCHostFilter returns the option to set the DC host filter
+// WithDCHostFilter returns the option to set the DC host filter.
 func WithDCHostFilter(dc string) Option {
 	return func(c *client) error {
 		if len(dc) == 0 {
@@ -667,13 +665,13 @@ func WithDCHostFilter(dc string) Option {
 		}
 		c.hostFilter.dcHost = dc
 		if !c.hostFilter.enable {
-			WithHostFilter(true)(c)
+			return WithHostFilter(true)(c)
 		}
 		return nil
 	}
 }
 
-// WithWhiteListHostFilter returns the option to set the white list host filter
+// WithWhiteListHostFilter returns the option to set the white list host filter.
 func WithWhiteListHostFilter(list []string) Option {
 	return func(c *client) error {
 		if len(list) <= 0 {
@@ -681,7 +679,7 @@ func WithWhiteListHostFilter(list []string) Option {
 		}
 		c.hostFilter.whiteList = list
 		if !c.hostFilter.enable {
-			WithHostFilter(true)(c)
+			return WithHostFilter(true)(c)
 		}
 		return nil
 	}

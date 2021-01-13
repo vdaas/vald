@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,16 +19,14 @@ package params
 
 type Option func(*parser)
 
-var (
-	defaultOpts = []Option{
-		WithConfigFilePathKeys("f", "file", "c", "config"),
-		WithConfigFilePathDefault("/etc/server/config.yaml"),
-		WithConfigFileDescription("config file path"),
-		WithVersionKeys("v", "ver", "version"),
-		WithVersionFlagDefault(false),
-		WithVersionDescription("show server version"),
-	}
-)
+var defaultOptions = []Option{
+	WithConfigFilePathKeys("f", "file", "c", "config"),
+	WithConfigFilePathDefault("/etc/server/config.yaml"),
+	WithConfigFileDescription("config file path"),
+	WithVersionKeys("v", "ver", "version"),
+	WithVersionFlagDefault(false),
+	WithVersionDescription("show server version"),
+}
 
 // WithConfigFilePathKeys returns Option that sets filePath.keys.
 func WithConfigFilePathKeys(keys ...string) Option {

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/vdaas/vald/apis/grpc/manager/compressor"
-	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/manager/compressor"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/status"
@@ -41,13 +41,13 @@ type server struct {
 func New(opts ...Option) Server {
 	s := new(server)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(s)
 	}
 	return s
 }
 
-func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Request) (res *payload.Backup_MetaVector, err error) {
+func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Request) (res *payload.Backup_Vector, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor.GetVector")
 	defer func() {
 		if span != nil {
@@ -73,9 +73,8 @@ func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Re
 		return nil, status.WrapWithInternal(fmt.Sprintf("GetVector API uuid %s's object failed to decompress %#v", uuid, r), err, info.Get())
 	}
 
-	return &payload.Backup_MetaVector{
+	return &payload.Backup_Vector{
 		Uuid:   r.GetUuid(),
-		Meta:   r.GetMeta(),
 		Vector: vector,
 		Ips:    r.GetIps(),
 	}, nil
@@ -103,7 +102,7 @@ func (s *server) Locations(ctx context.Context, req *payload.Backup_Locations_Re
 	}, nil
 }
 
-func (s *server) Register(ctx context.Context, meta *payload.Backup_MetaVector) (res *payload.Empty, err error) {
+func (s *server) Register(ctx context.Context, vec *payload.Backup_Vector) (res *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor.Register")
 	defer func() {
 		if span != nil {
@@ -111,20 +110,20 @@ func (s *server) Register(ctx context.Context, meta *payload.Backup_MetaVector) 
 		}
 	}()
 
-	err = s.registerer.Register(ctx, meta)
+	err = s.registerer.Register(ctx, vec)
 	if err != nil {
 		log.Errorf("[Register]\tregisterer returns error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
 		return nil, status.WrapWithInternal(
-			fmt.Sprintf("Register API uuid %s could not processed", meta.GetUuid()), err, info.Get())
+			fmt.Sprintf("Register API uuid %s could not processed", vec.GetUuid()), err, info.Get())
 	}
 
 	return new(payload.Empty), nil
 }
 
-func (s *server) RegisterMulti(ctx context.Context, metas *payload.Backup_MetaVectors) (res *payload.Empty, err error) {
+func (s *server) RegisterMulti(ctx context.Context, vecs *payload.Backup_Vectors) (res *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor.RegisterMulti")
 	defer func() {
 		if span != nil {
@@ -132,7 +131,7 @@ func (s *server) RegisterMulti(ctx context.Context, metas *payload.Backup_MetaVe
 		}
 	}()
 
-	err = s.registerer.RegisterMulti(ctx, metas)
+	err = s.registerer.RegisterMulti(ctx, vecs)
 	if err != nil {
 		log.Errorf("[RegisterMulti]\tregisterer returns error\t%+v", err)
 		if span != nil {

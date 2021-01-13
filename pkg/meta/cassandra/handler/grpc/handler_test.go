@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,15 +22,15 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/vdaas/vald/apis/grpc/meta"
-	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/meta"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/pkg/meta/cassandra/service"
-
 	"go.uber.org/goleak"
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []Option
 	}
@@ -79,9 +79,11 @@ func TestNew(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -96,12 +98,12 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_server_GetMeta(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		key *payload.Meta_Key
@@ -167,9 +169,11 @@ func Test_server_GetMeta(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -187,12 +191,12 @@ func Test_server_GetMeta(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_server_GetMetas(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		keys *payload.Meta_Keys
@@ -258,9 +262,11 @@ func Test_server_GetMetas(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -278,12 +284,12 @@ func Test_server_GetMetas(t *testing.T) {
 			if err := test.checkFunc(test.want, gotMv, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_server_GetMetaInverse(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		val *payload.Meta_Val
@@ -349,9 +355,11 @@ func Test_server_GetMetaInverse(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -369,12 +377,12 @@ func Test_server_GetMetaInverse(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_server_GetMetasInverse(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		vals *payload.Meta_Vals
@@ -440,9 +448,11 @@ func Test_server_GetMetasInverse(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -460,12 +470,12 @@ func Test_server_GetMetasInverse(t *testing.T) {
 			if err := test.checkFunc(test.want, gotMk, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_server_SetMeta(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		kv  *payload.Meta_KeyVal
@@ -531,9 +541,11 @@ func Test_server_SetMeta(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -551,12 +563,12 @@ func Test_server_SetMeta(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_server_SetMetas(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		kvs *payload.Meta_KeyVals
@@ -622,9 +634,11 @@ func Test_server_SetMetas(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -642,12 +656,12 @@ func Test_server_SetMetas(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_server_DeleteMeta(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		key *payload.Meta_Key
@@ -713,9 +727,11 @@ func Test_server_DeleteMeta(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -733,12 +749,12 @@ func Test_server_DeleteMeta(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_server_DeleteMetas(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		keys *payload.Meta_Keys
@@ -804,9 +820,11 @@ func Test_server_DeleteMetas(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -824,12 +842,12 @@ func Test_server_DeleteMetas(t *testing.T) {
 			if err := test.checkFunc(test.want, gotMv, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_server_DeleteMetaInverse(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		val *payload.Meta_Val
@@ -895,9 +913,11 @@ func Test_server_DeleteMetaInverse(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -915,12 +935,12 @@ func Test_server_DeleteMetaInverse(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_server_DeleteMetasInverse(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		vals *payload.Meta_Vals
@@ -986,9 +1006,11 @@ func Test_server_DeleteMetasInverse(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1006,7 +1028,6 @@ func Test_server_DeleteMetasInverse(t *testing.T) {
 			if err := test.checkFunc(test.want, gotMk, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

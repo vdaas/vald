@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,11 +26,11 @@ import (
 
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errors"
-
 	"go.uber.org/goleak"
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		opts []Option
@@ -86,9 +86,11 @@ func TestNew(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -103,12 +105,12 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, gotC, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_pool_Connect(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -127,6 +129,7 @@ func Test_pool_Connect(t *testing.T) {
 		roccd         time.Duration
 		closing       atomic.Value
 		isIP          bool
+		resolveDNS    bool
 		reconnectHash string
 	}
 	type want struct {
@@ -174,6 +177,7 @@ func Test_pool_Connect(t *testing.T) {
 		           roccd: nil,
 		           closing: nil,
 		           isIP: false,
+		           resolveDNS: false,
 		           reconnectHash: "",
 		       },
 		       want: want{},
@@ -204,6 +208,7 @@ func Test_pool_Connect(t *testing.T) {
 		           roccd: nil,
 		           closing: nil,
 		           isIP: false,
+		           resolveDNS: false,
 		           reconnectHash: "",
 		           },
 		           want: want{},
@@ -213,9 +218,11 @@ func Test_pool_Connect(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -240,6 +247,7 @@ func Test_pool_Connect(t *testing.T) {
 				roccd:         test.fields.roccd,
 				closing:       test.fields.closing,
 				isIP:          test.fields.isIP,
+				resolveDNS:    test.fields.resolveDNS,
 				reconnectHash: test.fields.reconnectHash,
 			}
 
@@ -247,12 +255,12 @@ func Test_pool_Connect(t *testing.T) {
 			if err := test.checkFunc(test.want, gotC, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_pool_load(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		idx int
 	}
@@ -271,6 +279,7 @@ func Test_pool_load(t *testing.T) {
 		roccd         time.Duration
 		closing       atomic.Value
 		isIP          bool
+		resolveDNS    bool
 		reconnectHash string
 	}
 	type want struct {
@@ -318,6 +327,7 @@ func Test_pool_load(t *testing.T) {
 		           roccd: nil,
 		           closing: nil,
 		           isIP: false,
+		           resolveDNS: false,
 		           reconnectHash: "",
 		       },
 		       want: want{},
@@ -348,6 +358,7 @@ func Test_pool_load(t *testing.T) {
 		           roccd: nil,
 		           closing: nil,
 		           isIP: false,
+		           resolveDNS: false,
 		           reconnectHash: "",
 		           },
 		           want: want{},
@@ -357,9 +368,11 @@ func Test_pool_load(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -384,6 +397,7 @@ func Test_pool_load(t *testing.T) {
 				roccd:         test.fields.roccd,
 				closing:       test.fields.closing,
 				isIP:          test.fields.isIP,
+				resolveDNS:    test.fields.resolveDNS,
 				reconnectHash: test.fields.reconnectHash,
 			}
 
@@ -391,12 +405,12 @@ func Test_pool_load(t *testing.T) {
 			if err := test.checkFunc(test.want, gotPc, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_pool_connect(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -415,6 +429,7 @@ func Test_pool_connect(t *testing.T) {
 		roccd         time.Duration
 		closing       atomic.Value
 		isIP          bool
+		resolveDNS    bool
 		reconnectHash string
 	}
 	type want struct {
@@ -462,6 +477,7 @@ func Test_pool_connect(t *testing.T) {
 		           roccd: nil,
 		           closing: nil,
 		           isIP: false,
+		           resolveDNS: false,
 		           reconnectHash: "",
 		       },
 		       want: want{},
@@ -492,6 +508,7 @@ func Test_pool_connect(t *testing.T) {
 		           roccd: nil,
 		           closing: nil,
 		           isIP: false,
+		           resolveDNS: false,
 		           reconnectHash: "",
 		           },
 		           want: want{},
@@ -501,9 +518,11 @@ func Test_pool_connect(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -528,6 +547,7 @@ func Test_pool_connect(t *testing.T) {
 				roccd:         test.fields.roccd,
 				closing:       test.fields.closing,
 				isIP:          test.fields.isIP,
+				resolveDNS:    test.fields.resolveDNS,
 				reconnectHash: test.fields.reconnectHash,
 			}
 
@@ -535,12 +555,12 @@ func Test_pool_connect(t *testing.T) {
 			if err := test.checkFunc(test.want, gotC, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_pool_Disconnect(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		pool          []atomic.Value
 		startPort     uint16
@@ -556,6 +576,7 @@ func Test_pool_Disconnect(t *testing.T) {
 		roccd         time.Duration
 		closing       atomic.Value
 		isIP          bool
+		resolveDNS    bool
 		reconnectHash string
 	}
 	type want struct {
@@ -595,6 +616,7 @@ func Test_pool_Disconnect(t *testing.T) {
 		           roccd: nil,
 		           closing: nil,
 		           isIP: false,
+		           resolveDNS: false,
 		           reconnectHash: "",
 		       },
 		       want: want{},
@@ -622,6 +644,7 @@ func Test_pool_Disconnect(t *testing.T) {
 		           roccd: nil,
 		           closing: nil,
 		           isIP: false,
+		           resolveDNS: false,
 		           reconnectHash: "",
 		           },
 		           want: want{},
@@ -631,9 +654,11 @@ func Test_pool_Disconnect(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -658,6 +683,7 @@ func Test_pool_Disconnect(t *testing.T) {
 				roccd:         test.fields.roccd,
 				closing:       test.fields.closing,
 				isIP:          test.fields.isIP,
+				resolveDNS:    test.fields.resolveDNS,
 				reconnectHash: test.fields.reconnectHash,
 			}
 
@@ -665,12 +691,12 @@ func Test_pool_Disconnect(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_pool_dial(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		addr string
@@ -690,6 +716,7 @@ func Test_pool_dial(t *testing.T) {
 		roccd         time.Duration
 		closing       atomic.Value
 		isIP          bool
+		resolveDNS    bool
 		reconnectHash string
 	}
 	type want struct {
@@ -738,6 +765,7 @@ func Test_pool_dial(t *testing.T) {
 		           roccd: nil,
 		           closing: nil,
 		           isIP: false,
+		           resolveDNS: false,
 		           reconnectHash: "",
 		       },
 		       want: want{},
@@ -769,6 +797,7 @@ func Test_pool_dial(t *testing.T) {
 		           roccd: nil,
 		           closing: nil,
 		           isIP: false,
+		           resolveDNS: false,
 		           reconnectHash: "",
 		           },
 		           want: want{},
@@ -778,9 +807,11 @@ func Test_pool_dial(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -805,6 +836,7 @@ func Test_pool_dial(t *testing.T) {
 				roccd:         test.fields.roccd,
 				closing:       test.fields.closing,
 				isIP:          test.fields.isIP,
+				resolveDNS:    test.fields.resolveDNS,
 				reconnectHash: test.fields.reconnectHash,
 			}
 
@@ -812,12 +844,12 @@ func Test_pool_dial(t *testing.T) {
 			if err := test.checkFunc(test.want, gotConn, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_pool_IsHealthy(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -836,6 +868,7 @@ func Test_pool_IsHealthy(t *testing.T) {
 		roccd         time.Duration
 		closing       atomic.Value
 		isIP          bool
+		resolveDNS    bool
 		reconnectHash string
 	}
 	type want struct {
@@ -879,6 +912,7 @@ func Test_pool_IsHealthy(t *testing.T) {
 		           roccd: nil,
 		           closing: nil,
 		           isIP: false,
+		           resolveDNS: false,
 		           reconnectHash: "",
 		       },
 		       want: want{},
@@ -909,6 +943,7 @@ func Test_pool_IsHealthy(t *testing.T) {
 		           roccd: nil,
 		           closing: nil,
 		           isIP: false,
+		           resolveDNS: false,
 		           reconnectHash: "",
 		           },
 		           want: want{},
@@ -918,9 +953,11 @@ func Test_pool_IsHealthy(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -945,6 +982,7 @@ func Test_pool_IsHealthy(t *testing.T) {
 				roccd:         test.fields.roccd,
 				closing:       test.fields.closing,
 				isIP:          test.fields.isIP,
+				resolveDNS:    test.fields.resolveDNS,
 				reconnectHash: test.fields.reconnectHash,
 			}
 
@@ -952,12 +990,12 @@ func Test_pool_IsHealthy(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_pool_Do(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		f func(conn *ClientConn) error
 	}
@@ -976,6 +1014,7 @@ func Test_pool_Do(t *testing.T) {
 		roccd         time.Duration
 		closing       atomic.Value
 		isIP          bool
+		resolveDNS    bool
 		reconnectHash string
 	}
 	type want struct {
@@ -1019,6 +1058,7 @@ func Test_pool_Do(t *testing.T) {
 		           roccd: nil,
 		           closing: nil,
 		           isIP: false,
+		           resolveDNS: false,
 		           reconnectHash: "",
 		       },
 		       want: want{},
@@ -1049,6 +1089,7 @@ func Test_pool_Do(t *testing.T) {
 		           roccd: nil,
 		           closing: nil,
 		           isIP: false,
+		           resolveDNS: false,
 		           reconnectHash: "",
 		           },
 		           want: want{},
@@ -1058,9 +1099,11 @@ func Test_pool_Do(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1085,6 +1128,7 @@ func Test_pool_Do(t *testing.T) {
 				roccd:         test.fields.roccd,
 				closing:       test.fields.closing,
 				isIP:          test.fields.isIP,
+				resolveDNS:    test.fields.resolveDNS,
 				reconnectHash: test.fields.reconnectHash,
 			}
 
@@ -1092,12 +1136,12 @@ func Test_pool_Do(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_pool_Get(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		pool          []atomic.Value
 		startPort     uint16
@@ -1113,6 +1157,7 @@ func Test_pool_Get(t *testing.T) {
 		roccd         time.Duration
 		closing       atomic.Value
 		isIP          bool
+		resolveDNS    bool
 		reconnectHash string
 	}
 	type want struct {
@@ -1156,6 +1201,7 @@ func Test_pool_Get(t *testing.T) {
 		           roccd: nil,
 		           closing: nil,
 		           isIP: false,
+		           resolveDNS: false,
 		           reconnectHash: "",
 		       },
 		       want: want{},
@@ -1183,6 +1229,7 @@ func Test_pool_Get(t *testing.T) {
 		           roccd: nil,
 		           closing: nil,
 		           isIP: false,
+		           resolveDNS: false,
 		           reconnectHash: "",
 		           },
 		           want: want{},
@@ -1192,9 +1239,11 @@ func Test_pool_Get(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1219,6 +1268,7 @@ func Test_pool_Get(t *testing.T) {
 				roccd:         test.fields.roccd,
 				closing:       test.fields.closing,
 				isIP:          test.fields.isIP,
+				resolveDNS:    test.fields.resolveDNS,
 				reconnectHash: test.fields.reconnectHash,
 			}
 
@@ -1226,12 +1276,12 @@ func Test_pool_Get(t *testing.T) {
 			if err := test.checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_pool_get(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		retry uint64
 	}
@@ -1250,6 +1300,7 @@ func Test_pool_get(t *testing.T) {
 		roccd         time.Duration
 		closing       atomic.Value
 		isIP          bool
+		resolveDNS    bool
 		reconnectHash string
 	}
 	type want struct {
@@ -1297,6 +1348,7 @@ func Test_pool_get(t *testing.T) {
 		           roccd: nil,
 		           closing: nil,
 		           isIP: false,
+		           resolveDNS: false,
 		           reconnectHash: "",
 		       },
 		       want: want{},
@@ -1327,6 +1379,7 @@ func Test_pool_get(t *testing.T) {
 		           roccd: nil,
 		           closing: nil,
 		           isIP: false,
+		           resolveDNS: false,
 		           reconnectHash: "",
 		           },
 		           want: want{},
@@ -1336,9 +1389,11 @@ func Test_pool_get(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1363,6 +1418,7 @@ func Test_pool_get(t *testing.T) {
 				roccd:         test.fields.roccd,
 				closing:       test.fields.closing,
 				isIP:          test.fields.isIP,
+				resolveDNS:    test.fields.resolveDNS,
 				reconnectHash: test.fields.reconnectHash,
 			}
 
@@ -1370,12 +1426,12 @@ func Test_pool_get(t *testing.T) {
 			if err := test.checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_pool_Len(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		pool          []atomic.Value
 		startPort     uint16
@@ -1391,6 +1447,7 @@ func Test_pool_Len(t *testing.T) {
 		roccd         time.Duration
 		closing       atomic.Value
 		isIP          bool
+		resolveDNS    bool
 		reconnectHash string
 	}
 	type want struct {
@@ -1430,6 +1487,7 @@ func Test_pool_Len(t *testing.T) {
 		           roccd: nil,
 		           closing: nil,
 		           isIP: false,
+		           resolveDNS: false,
 		           reconnectHash: "",
 		       },
 		       want: want{},
@@ -1457,6 +1515,7 @@ func Test_pool_Len(t *testing.T) {
 		           roccd: nil,
 		           closing: nil,
 		           isIP: false,
+		           resolveDNS: false,
 		           reconnectHash: "",
 		           },
 		           want: want{},
@@ -1466,9 +1525,11 @@ func Test_pool_Len(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1493,6 +1554,7 @@ func Test_pool_Len(t *testing.T) {
 				roccd:         test.fields.roccd,
 				closing:       test.fields.closing,
 				isIP:          test.fields.isIP,
+				resolveDNS:    test.fields.resolveDNS,
 				reconnectHash: test.fields.reconnectHash,
 			}
 
@@ -1500,12 +1562,12 @@ func Test_pool_Len(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_pool_Size(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		pool          []atomic.Value
 		startPort     uint16
@@ -1521,6 +1583,7 @@ func Test_pool_Size(t *testing.T) {
 		roccd         time.Duration
 		closing       atomic.Value
 		isIP          bool
+		resolveDNS    bool
 		reconnectHash string
 	}
 	type want struct {
@@ -1560,6 +1623,7 @@ func Test_pool_Size(t *testing.T) {
 		           roccd: nil,
 		           closing: nil,
 		           isIP: false,
+		           resolveDNS: false,
 		           reconnectHash: "",
 		       },
 		       want: want{},
@@ -1587,6 +1651,7 @@ func Test_pool_Size(t *testing.T) {
 		           roccd: nil,
 		           closing: nil,
 		           isIP: false,
+		           resolveDNS: false,
 		           reconnectHash: "",
 		           },
 		           want: want{},
@@ -1596,9 +1661,11 @@ func Test_pool_Size(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1623,6 +1690,7 @@ func Test_pool_Size(t *testing.T) {
 				roccd:         test.fields.roccd,
 				closing:       test.fields.closing,
 				isIP:          test.fields.isIP,
+				resolveDNS:    test.fields.resolveDNS,
 				reconnectHash: test.fields.reconnectHash,
 			}
 
@@ -1630,12 +1698,12 @@ func Test_pool_Size(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_pool_lookupIPAddr(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -1654,6 +1722,7 @@ func Test_pool_lookupIPAddr(t *testing.T) {
 		roccd         time.Duration
 		closing       atomic.Value
 		isIP          bool
+		resolveDNS    bool
 		reconnectHash string
 	}
 	type want struct {
@@ -1701,6 +1770,7 @@ func Test_pool_lookupIPAddr(t *testing.T) {
 		           roccd: nil,
 		           closing: nil,
 		           isIP: false,
+		           resolveDNS: false,
 		           reconnectHash: "",
 		       },
 		       want: want{},
@@ -1731,6 +1801,7 @@ func Test_pool_lookupIPAddr(t *testing.T) {
 		           roccd: nil,
 		           closing: nil,
 		           isIP: false,
+		           resolveDNS: false,
 		           reconnectHash: "",
 		           },
 		           want: want{},
@@ -1740,9 +1811,11 @@ func Test_pool_lookupIPAddr(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1767,6 +1840,7 @@ func Test_pool_lookupIPAddr(t *testing.T) {
 				roccd:         test.fields.roccd,
 				closing:       test.fields.closing,
 				isIP:          test.fields.isIP,
+				resolveDNS:    test.fields.resolveDNS,
 				reconnectHash: test.fields.reconnectHash,
 			}
 
@@ -1774,12 +1848,12 @@ func Test_pool_lookupIPAddr(t *testing.T) {
 			if err := test.checkFunc(test.want, gotIps, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_pool_Reconnect(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx   context.Context
 		force bool
@@ -1799,6 +1873,7 @@ func Test_pool_Reconnect(t *testing.T) {
 		roccd         time.Duration
 		closing       atomic.Value
 		isIP          bool
+		resolveDNS    bool
 		reconnectHash string
 	}
 	type want struct {
@@ -1847,6 +1922,7 @@ func Test_pool_Reconnect(t *testing.T) {
 		           roccd: nil,
 		           closing: nil,
 		           isIP: false,
+		           resolveDNS: false,
 		           reconnectHash: "",
 		       },
 		       want: want{},
@@ -1878,6 +1954,7 @@ func Test_pool_Reconnect(t *testing.T) {
 		           roccd: nil,
 		           closing: nil,
 		           isIP: false,
+		           resolveDNS: false,
 		           reconnectHash: "",
 		           },
 		           want: want{},
@@ -1887,9 +1964,11 @@ func Test_pool_Reconnect(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1914,6 +1993,7 @@ func Test_pool_Reconnect(t *testing.T) {
 				roccd:         test.fields.roccd,
 				closing:       test.fields.closing,
 				isIP:          test.fields.isIP,
+				resolveDNS:    test.fields.resolveDNS,
 				reconnectHash: test.fields.reconnectHash,
 			}
 
@@ -1921,12 +2001,12 @@ func Test_pool_Reconnect(t *testing.T) {
 			if err := test.checkFunc(test.want, gotC, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_pool_scanGRPCPort(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -1945,6 +2025,7 @@ func Test_pool_scanGRPCPort(t *testing.T) {
 		roccd         time.Duration
 		closing       atomic.Value
 		isIP          bool
+		resolveDNS    bool
 		reconnectHash string
 	}
 	type want struct {
@@ -1988,6 +2069,7 @@ func Test_pool_scanGRPCPort(t *testing.T) {
 		           roccd: nil,
 		           closing: nil,
 		           isIP: false,
+		           resolveDNS: false,
 		           reconnectHash: "",
 		       },
 		       want: want{},
@@ -2018,6 +2100,7 @@ func Test_pool_scanGRPCPort(t *testing.T) {
 		           roccd: nil,
 		           closing: nil,
 		           isIP: false,
+		           resolveDNS: false,
 		           reconnectHash: "",
 		           },
 		           want: want{},
@@ -2027,9 +2110,11 @@ func Test_pool_scanGRPCPort(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -2054,6 +2139,7 @@ func Test_pool_scanGRPCPort(t *testing.T) {
 				roccd:         test.fields.roccd,
 				closing:       test.fields.closing,
 				isIP:          test.fields.isIP,
+				resolveDNS:    test.fields.resolveDNS,
 				reconnectHash: test.fields.reconnectHash,
 			}
 
@@ -2061,12 +2147,12 @@ func Test_pool_scanGRPCPort(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_isGRPCPort(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		host string
@@ -2121,9 +2207,11 @@ func Test_isGRPCPort(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -2138,12 +2226,12 @@ func Test_isGRPCPort(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_isHealthy(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		conn *ClientConn
 	}
@@ -2192,9 +2280,11 @@ func Test_isHealthy(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -2209,7 +2299,6 @@ func Test_isHealthy(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

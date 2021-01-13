@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,16 +24,14 @@ import (
 
 type Option func(*pool)
 
-var (
-	defaultOpts = []Option{
-		WithSize(3),
-		WithStartPort(80),
-		WithEndPort(65535),
-		WithDialTimeout("1s"),
-		WithOldConnCloseDuration("1s"),
-		WithResolveDNS(true),
-	}
-)
+var defaultOptions = []Option{
+	WithSize(3),
+	WithStartPort(80),
+	WithEndPort(65535),
+	WithDialTimeout("1s"),
+	WithOldConnCloseDuration("1s"),
+	WithResolveDNS(true),
+}
 
 func WithAddr(addr string) Option {
 	return func(p *pool) {
@@ -106,7 +104,7 @@ func WithSize(size uint64) Option {
 
 func WithDialOptions(opts ...DialOption) Option {
 	return func(p *pool) {
-		if opts != nil && len(opts) > 0 {
+		if len(opts) > 0 {
 			if len(p.dopts) > 0 {
 				p.dopts = append(p.dopts, opts...)
 			} else {

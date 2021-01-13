@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -44,13 +44,11 @@ import (
 	"go.uber.org/goleak"
 )
 
-var (
-	goleakIgnoreOptions = []goleak.Option{
-		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
-		goleak.IgnoreTopFunction("internal/poll.runtime_pollWait"),
-		goleak.IgnoreTopFunction("net._C2func_getaddrinfo"),
-	}
-)
+var goleakIgnoreOptions = []goleak.Option{
+	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+	goleak.IgnoreTopFunction("internal/poll.runtime_pollWait"),
+	goleak.IgnoreTopFunction("net._C2func_getaddrinfo"),
+}
 
 func Test_dialerCache_IP(t *testing.T) {
 	type fields struct {
@@ -172,7 +170,6 @@ func Test_dialerCache_IP(t *testing.T) {
 			if err := test.checkFunc(d, test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -230,7 +227,6 @@ func Test_dialerCache_Len(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -265,8 +261,9 @@ func TestNewDialer(t *testing.T) {
 
 		want := w.wantDer.(*dialer)
 		got := gotDer.(*dialer)
-		opts := []cmp.Option{cmp.AllowUnexported(*want),
-			cmpopts.IgnoreFields(*want, "dialer", "der"),
+		opts := []cmp.Option{
+			cmp.AllowUnexported(*want),
+			cmpopts.IgnoreFields(*want, "dialer", "der", "addrs"),
 			cmp.Comparer(func(x, y cache.Cache) bool {
 				if x == nil && y == nil {
 					return true
@@ -404,7 +401,6 @@ func TestNewDialer(t *testing.T) {
 			if err := test.checkFunc(test.want, gotDer, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -467,7 +463,6 @@ func Test_dialer_GetDialer(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -646,6 +641,7 @@ func Test_dialer_lookup(t *testing.T) {
 		})
 	}
 }
+
 func Test_dialer_StartDialerCache(t *testing.T) {
 	type args struct {
 		ctx context.Context
@@ -664,8 +660,7 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 		der                   *net.Dialer
 		dialer                func(ctx context.Context, network, addr string) (net.Conn, error)
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1407,7 +1402,6 @@ func Test_dialer_cachedDialer(t *testing.T) {
 			if err := test.checkFunc(d, test.want, gotConn, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1612,7 +1606,6 @@ func Test_dialer_dial(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1636,8 +1629,7 @@ func Test_dialer_cacheExpireHook(t *testing.T) {
 		der                   *net.Dialer
 		dialer                func(ctx context.Context, network, addr string) (net.Conn, error)
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

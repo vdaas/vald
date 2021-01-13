@@ -1,0 +1,70 @@
+//
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+syntax = "proto3";
+
+package vald.v1;
+
+option go_package = "github.com/vdaas/vald/apis/grpc/v1/vald";
+option java_multiple_files = true;
+option java_package = "org.vdaas.vald.api.v1.vald";
+option java_outer_classname = "ValdFilter";
+
+import "apis/proto/v1/payload/payload.proto";
+import "google/api/annotations.proto";
+
+
+service Filter {
+  rpc SearchObject(payload.v1.Search.ObjectRequest) returns (payload.v1.Search.Response) {
+    option (google.api.http) = {
+      post : "/search/object"
+      body : "*"
+    };
+  }
+  rpc StreamSearchObject(stream payload.v1.Search.ObjectRequest)
+      returns (stream payload.v1.Search.Response) {}
+
+  rpc InsertObject(payload.v1.Object.Blob) returns (payload.v1.Object.Location) {
+    option (google.api.http) = {
+      post : "/insert/object"
+      body : "*"
+    };
+
+  }
+  rpc StreamInsertObject(stream payload.v1.Object.Blob)
+      returns (stream payload.v1.Object.Location) {}
+  rpc MultiInsertObject(payload.v1.Object.Blob) returns (payload.v1.Object.Locations) {}
+
+  rpc UpdateObject(payload.v1.Object.Blob) returns (payload.v1.Object.Location) {
+    option (google.api.http) = {
+      post : "/update/object"
+      body : "*"
+    };
+  }
+  rpc StreamUpdateObject(stream payload.v1.Object.Blob)
+      returns (stream payload.v1.Object.Location) {}
+  rpc MultiUpdateObject(payload.v1.Object.Blob) returns (payload.v1.Object.Locations) {}
+
+  rpc UpsertObject(payload.v1.Object.Blob) returns (payload.v1.Object.Location) {
+    option (google.api.http) = {
+      post : "/upsert/object"
+      body : "*"
+    };
+  }
+  rpc StreamUpsertObject(stream payload.v1.Object.Blob)
+      returns (stream payload.v1.Object.Location) {}
+  rpc MultiUpsertObject(payload.v1.Object.Blob) returns (payload.v1.Object.Locations) {}
+}

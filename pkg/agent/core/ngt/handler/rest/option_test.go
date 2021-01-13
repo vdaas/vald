@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,15 +20,16 @@ package rest
 import (
 	"testing"
 
-	agent "github.com/vdaas/vald/apis/grpc/agent/core"
+	"github.com/vdaas/vald/pkg/agent/core/ngt/handler/grpc"
 	"go.uber.org/goleak"
 )
 
 func TestWithAgent(t *testing.T) {
+	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		a agent.AgentServer
+		a grpc.Server
 	}
 	type want struct {
 		obj *T
@@ -99,8 +100,10 @@ func TestWithAgent(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)

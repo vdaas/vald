@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,29 +24,29 @@ import (
 
 	"github.com/vdaas/vald/hack/benchmark/core/benchmark"
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
-	"github.com/vdaas/vald/hack/benchmark/internal/core"
+	"github.com/vdaas/vald/hack/benchmark/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/errors"
 )
 
 type strategy struct {
-	core32     core.Core32
-	core64     core.Core64
-	initCore32 func(context.Context, *testing.B, assets.Dataset) (core.Core32, core.Closer, error)
-	initCore64 func(context.Context, *testing.B, assets.Dataset) (core.Core64, core.Closer, error)
-	closer     core.Closer
-	propName   string
-	preProp32  func(context.Context, *testing.B, core.Core32, assets.Dataset) ([]uint, error)
-	preProp64  func(context.Context, *testing.B, core.Core64, assets.Dataset) ([]uint, error)
-	mode       core.Mode
-	prop32     func(context.Context, *testing.B, core.Core32, assets.Dataset, []uint, *uint64) (interface{}, error)
-	prop64     func(context.Context, *testing.B, core.Core64, assets.Dataset, []uint, *uint64) (interface{}, error)
-	parallel   bool
+	core32    algorithm.Bit32
+	core64    algorithm.Bit64
+	initBit32 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit32, algorithm.Closer, error)
+	initBit64 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit64, algorithm.Closer, error)
+	closer    algorithm.Closer
+	propName  string
+	preProp32 func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset) ([]uint, error)
+	preProp64 func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset) ([]uint, error)
+	mode      algorithm.Mode
+	prop32    func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset, []uint, *uint64) (interface{}, error)
+	prop64    func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset, []uint, *uint64) (interface{}, error)
+	parallel  bool
 }
 
 func newStrategy(opts ...StrategyOption) benchmark.Strategy {
 	s := &strategy{
 		// invalid mode.
-		mode: core.Mode(100),
+		mode: algorithm.Mode(100),
 	}
 	for _, opt := range append(defaultStrategyOptions, opts...) {
 		opt(s)
@@ -57,15 +57,15 @@ func newStrategy(opts ...StrategyOption) benchmark.Strategy {
 func (s *strategy) Init(ctx context.Context, b *testing.B, dataset assets.Dataset) error {
 	b.Helper()
 	switch s.mode {
-	case core.Float32:
-		core32, closer, err := s.initCore32(ctx, b, dataset)
+	case algorithm.Float32:
+		core32, closer, err := s.initBit32(ctx, b, dataset)
 		if err != nil {
 			b.Error(err)
 			return err
 		}
 		s.core32, s.closer = core32, closer
-	case core.Float64:
-		core64, closer, err := s.initCore64(ctx, b, dataset)
+	case algorithm.Float64:
+		core64, closer, err := s.initBit64(ctx, b, dataset)
 		if err != nil {
 			b.Error(err)
 			return err
@@ -82,9 +82,9 @@ func (s *strategy) PreProp(ctx context.Context, b *testing.B, dataset assets.Dat
 	b.Helper()
 
 	switch s.mode {
-	case core.Float32:
+	case algorithm.Float32:
 		return s.preProp32(ctx, b, s.core32, dataset)
-	case core.Float64:
+	case algorithm.Float64:
 		return s.preProp64(ctx, b, s.core64, dataset)
 	default:
 		return nil, errors.ErrInvalidCoreMode
@@ -103,11 +103,11 @@ func (s *strategy) Run(ctx context.Context, b *testing.B, dataset assets.Dataset
 	defer b.StopTimer()
 
 	switch s.mode {
-	case core.Float32:
+	case algorithm.Float32:
 		b.Run(s.propName, func(bb *testing.B) {
 			s.float32(ctx, bb, dataset, ids, &cnt)
 		})
-	case core.Float64:
+	case algorithm.Float64:
 		b.Run(s.propName, func(bb *testing.B) {
 			s.float64(ctx, bb, dataset, ids, &cnt)
 		})

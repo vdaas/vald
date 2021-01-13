@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,12 +29,10 @@ import (
 	"go.uber.org/goleak"
 )
 
-var (
-	// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
-	goleakIgnoreOptions = []goleak.Option{
-		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
-	}
-)
+// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
+var goleakIgnoreOptions = []goleak.Option{
+	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+}
 
 func TestWithErrGroup(t *testing.T) {
 	type T = reader
@@ -372,7 +370,6 @@ func TestWithBackoff(t *testing.T) {
 			if err := test.checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -380,8 +377,8 @@ func TestWithBackoff(t *testing.T) {
 func TestWithBackoffOpts(t *testing.T) {
 	type T = reader
 	type args struct {
-		opts        []backoff.Option
-		defaultOpts []backoff.Option
+		opts           []backoff.Option
+		defaultOptions []backoff.Option
 	}
 	type want struct {
 		obj *T
@@ -428,23 +425,23 @@ func TestWithBackoffOpts(t *testing.T) {
 			}
 		}(),
 		func() test {
-			defaultOpts := []backoff.Option{}
+			defaultOptions := []backoff.Option{}
 			opts := []backoff.Option{
 				backoff.WithRetryCount(1),
 			}
 			return test{
 				name: "set success when opts is not nil and backoffOpts is not nil",
 				args: args{
-					opts:        opts,
-					defaultOpts: defaultOpts,
+					opts:           opts,
+					defaultOptions: defaultOptions,
 				},
 				want: want{
 					obj: &T{
-						backoffOpts: append(defaultOpts, opts...),
+						backoffOpts: append(defaultOptions, opts...),
 					},
 				},
 				beforeFunc: func(args args, r *T) {
-					r.backoffOpts = args.defaultOpts
+					r.backoffOpts = args.defaultOptions
 				},
 			}
 		}(),

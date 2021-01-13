@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,14 +22,18 @@ import (
 	"crypto/x509"
 	stderrs "errors"
 	"fmt"
-	"io/ioutil"
 	"reflect"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/io/ioutil"
 	testdata "github.com/vdaas/vald/internal/test"
 	"go.uber.org/goleak"
 )
+
+var goleakIgnoreOptions = []goleak.Option{
+	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+}
 
 func TestNew(t *testing.T) {
 	type args struct {
@@ -173,7 +177,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -188,7 +192,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -286,7 +289,7 @@ func TestNewClientConfig(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -301,7 +304,6 @@ func TestNewClientConfig(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -413,7 +415,7 @@ func TestNewX509CertPool(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

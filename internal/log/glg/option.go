@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,13 +25,11 @@ import (
 
 type Option func(l *logger)
 
-var (
-	defaultOpts = []Option{
-		WithGlg(glg.Get()),
-		WithLevel(level.DEBUG.String()),
-		WithRetry(retry.New()),
-	}
-)
+var defaultOptions = []Option{
+	WithGlg(glg.Get()),
+	WithLevel(level.DEBUG.String()),
+	WithRetry(retry.New()),
+}
 
 func WithGlg(g *glg.Glg) Option {
 	return func(l *logger) {

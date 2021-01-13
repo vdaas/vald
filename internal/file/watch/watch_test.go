@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -32,14 +32,12 @@ import (
 	"go.uber.org/goleak"
 )
 
-var (
-	// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
-	goleakIgnoreOptions = []goleak.Option{
-		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
-		goleak.IgnoreTopFunction("syscall.Syscall6"),
-		goleak.IgnoreTopFunction("syscall.syscall6"),
-	}
-)
+// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
+var goleakIgnoreOptions = []goleak.Option{
+	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+	goleak.IgnoreTopFunction("syscall.Syscall6"),
+	goleak.IgnoreTopFunction("syscall.syscall6"),
+}
 
 func TestMain(m *testing.M) {
 	log.Init()
@@ -156,7 +154,7 @@ func Test_watch_init(t *testing.T) {
 			name: "returns no such file or directory error when file not exists",
 			fields: fields{
 				dirs: map[string]struct{}{
-					"vald.go": struct{}{},
+					"vald.go": {},
 				},
 			},
 			want: want{
@@ -168,7 +166,7 @@ func Test_watch_init(t *testing.T) {
 			name: "returns no such file or directory error when directory not exists",
 			fields: fields{
 				dirs: map[string]struct{}{
-					"test": struct{}{},
+					"test": {},
 				},
 			},
 			want: want{
@@ -180,8 +178,8 @@ func Test_watch_init(t *testing.T) {
 			name: "returns no such file or directory error when some file not exists",
 			fields: fields{
 				dirs: map[string]struct{}{
-					"watch.go": struct{}{},
-					"vald.go":  struct{}{},
+					"watch.go": {},
+					"vald.go":  {},
 				},
 			},
 			want: want{
@@ -193,9 +191,9 @@ func Test_watch_init(t *testing.T) {
 			name: "returns nil when watcher already created and initialize success",
 			fields: fields{
 				dirs: map[string]struct{}{
-					"../watch":      struct{}{},
-					"watch.go":      struct{}{},
-					"watch_test.go": struct{}{},
+					"../watch":      {},
+					"watch.go":      {},
+					"watch_test.go": {},
 				},
 				w: func() *fsnotify.Watcher {
 					w, _ := fsnotify.NewWatcher()
@@ -223,9 +221,9 @@ func Test_watch_init(t *testing.T) {
 			name: "returns nil when initialize success",
 			fields: fields{
 				dirs: map[string]struct{}{
-					"../watch":      struct{}{},
-					"watch.go":      struct{}{},
-					"watch_test.go": struct{}{},
+					"../watch":      {},
+					"watch.go":      {},
+					"watch_test.go": {},
 				},
 			},
 			checkFunc: func(w want, got *watch, err error) error {
@@ -334,7 +332,7 @@ func Test_watch_Start(t *testing.T) {
 						w:  w,
 						eg: errgroup.Get(),
 						dirs: map[string]struct{}{
-							"vald": struct{}{},
+							"vald": {},
 						},
 					}
 				},
@@ -727,7 +725,6 @@ func Test_watch_Start(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -788,16 +785,16 @@ func Test_watch_Add(t *testing.T) {
 			},
 			fields: fields{
 				dirs: map[string]struct{}{
-					"watch_test.go": struct{}{},
+					"watch_test.go": {},
 				},
 			},
 			want: want{
 				err: nil,
 				want: &watch{
 					dirs: map[string]struct{}{
-						"watch_test.go": struct{}{},
-						"./watch.go":    struct{}{},
-						"./option.go":   struct{}{},
+						"watch_test.go": {},
+						"./watch.go":    {},
+						"./option.go":   {},
 					},
 				},
 			},
@@ -817,7 +814,7 @@ func Test_watch_Add(t *testing.T) {
 				err: nil,
 				want: &watch{
 					dirs: map[string]struct{}{
-						"../watch": struct{}{},
+						"../watch": {},
 					},
 				},
 			},
@@ -838,7 +835,7 @@ func Test_watch_Add(t *testing.T) {
 				err: syscall.Errno(0x2),
 				want: &watch{
 					dirs: map[string]struct{}{
-						"watch.go": struct{}{},
+						"watch.go": {},
 					},
 				},
 			},
@@ -945,15 +942,15 @@ func Test_watch_Remove(t *testing.T) {
 			},
 			fields: fields{
 				dirs: map[string]struct{}{
-					"watch.go":      struct{}{},
-					"watch_test.go": struct{}{},
-					"option.go":     struct{}{},
+					"watch.go":      {},
+					"watch_test.go": {},
+					"option.go":     {},
 				},
 			},
 			want: want{
 				want: &watch{
 					dirs: map[string]struct{}{
-						"option.go": struct{}{},
+						"option.go": {},
 					},
 				},
 				err: nil,
@@ -969,7 +966,7 @@ func Test_watch_Remove(t *testing.T) {
 			},
 			fields: fields{
 				dirs: map[string]struct{}{
-					"../watch": struct{}{},
+					"../watch": {},
 				},
 			},
 			want: want{
@@ -991,14 +988,14 @@ func Test_watch_Remove(t *testing.T) {
 			},
 			fields: fields{
 				dirs: map[string]struct{}{
-					"watch.go":      struct{}{},
-					"watch_test.go": struct{}{},
+					"watch.go":      {},
+					"watch_test.go": {},
 				},
 			},
 			want: want{
 				want: &watch{
 					dirs: map[string]struct{}{
-						"watch_test.go": struct{}{},
+						"watch_test.go": {},
 					},
 				},
 				err: fmt.Errorf("can't remove non-existent"),
@@ -1098,9 +1095,9 @@ func Test_watch_Stop(t *testing.T) {
 			},
 			fields: fields{
 				dirs: map[string]struct{}{
-					"../watch":      struct{}{},
-					"watch.go":      struct{}{},
-					"watch_test.go": struct{}{},
+					"../watch":      {},
+					"watch.go":      {},
+					"watch_test.go": {},
 				},
 			},
 			beforeFunc: func(t *testing.T, fields *fields, args args) {
@@ -1129,7 +1126,7 @@ func Test_watch_Stop(t *testing.T) {
 			},
 			fields: fields{
 				dirs: map[string]struct{}{
-					"watch.go": struct{}{},
+					"watch.go": {},
 				},
 			},
 			want: want{

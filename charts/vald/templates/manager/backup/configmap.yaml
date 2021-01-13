@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,11 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if .Values.backupManager.enabled }}
+{{- $backup := .Values.manager.backup -}}
+{{- if $backup.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Values.backupManager.name }}-config
+  name: {{ $backup.name }}-config
   labels:
     app.kubernetes.io/name: {{ include "vald.name" . }}
     helm.sh/chart: {{ include "vald.chart" . }}
@@ -28,23 +29,23 @@ metadata:
 data:
   config.yaml: |
     ---
-    version: {{ .Values.backupManager.version }}
-    time_zone: {{ default .Values.defaults.time_zone .Values.backupManager.time_zone }}
+    version: {{ $backup.version }}
+    time_zone: {{ default .Values.defaults.time_zone $backup.time_zone }}
     logging:
-      {{- $logging := dict "Values" .Values.backupManager.logging "default" .Values.defaults.logging }}
+      {{- $logging := dict "Values" $backup.logging "default" .Values.defaults.logging }}
       {{- include "vald.logging" $logging | nindent 6 }}
     server_config:
-      {{- $servers := dict "Values" .Values.backupManager.server_config "default" .Values.defaults.server_config }}
+      {{- $servers := dict "Values" $backup.server_config "default" .Values.defaults.server_config }}
       {{- include "vald.servers" $servers | nindent 6 }}
     observability:
-      {{- $observability := dict "Values" .Values.backupManager.observability "default" .Values.defaults.observability }}
+      {{- $observability := dict "Values" $backup.observability "default" .Values.defaults.observability }}
       {{- include "vald.observability" $observability | nindent 6 }}
-    {{- if .Values.backupManager.mysql.enabled }}
+    {{- if $backup.mysql.enabled }}
     mysql_config:
-      {{- toYaml .Values.backupManager.mysql.config | nindent 6 }}
+      {{- toYaml $backup.mysql.config | nindent 6 }}
     {{- end }}
-    {{- if .Values.backupManager.cassandra.enabled }}
+    {{- if $backup.cassandra.enabled }}
     cassandra_config:
-      {{- toYaml .Values.backupManager.cassandra.config | nindent 6 }}
+      {{- toYaml $backup.cassandra.config | nindent 6 }}
     {{- end }}
 {{- end }}

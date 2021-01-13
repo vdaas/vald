@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,35 +25,33 @@ import (
 
 type Option func(*option)
 
-var (
-	defaultOptions = []Option{
-		WithLevel(level.DEBUG.String()),
-		WithLogger(
-			glg.New(
-				glg.WithRetry(
-					retry.New(
-						retry.WithError(Error),
-						retry.WithWarn(Warn),
-					),
+var defaultOptions = []Option{
+	WithLevel(level.DEBUG.String()),
+	WithLogger(
+		glg.New(
+			glg.WithRetry(
+				retry.New(
+					retry.WithError(Error),
+					retry.WithWarn(Warn),
 				),
 			),
 		),
-	}
-)
+	),
+}
 
 type option struct {
 	logType logger.Type
 	level   level.Level
 	format  format.Format
-	logger  Logger
+	logger  logger.Logger
 }
 
-func WithLogger(logger Logger) Option {
+func WithLogger(l logger.Logger) Option {
 	return func(o *option) {
-		if logger == nil {
+		if l == nil {
 			return
 		}
-		o.logger = logger
+		o.logger = l
 	}
 }
 

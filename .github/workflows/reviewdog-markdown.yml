@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -36,4 +36,4 @@ jobs:
           level: warning
           language: en-US
           disabled_rules: "DOUBLE_PUNCTUATION,WORD_CONTAINS_UNDERSCORE,ARROWS,CURRENCY,DASH_RULE,EN_QUOTES"
-          disabled_categories: "TYPOS,TYPOGRAPHY"
+          disabled_categories: "TYPOS,TYPOGRAPHY,STYLE"

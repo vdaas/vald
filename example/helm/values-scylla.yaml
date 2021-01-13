@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -75,7 +75,9 @@ backupManager:
       image: cassandra:latest
       cassandra:
         hosts:
-          - scylla-0.scylla.default.svc.cluster.local
+          - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
+          - vald-scylla-cluster-dc0-rack0-1.scylla.svc.cluster.local
+          - vald-scylla-cluster-dc0-rack0-2.scylla.svc.cluster.local
       sleepDuration: 2
   env: []
   resources:
@@ -88,7 +90,9 @@ backupManager:
     enabled: true
     config:
       hosts:
-        - scylla-0.scylla.default.svc.cluster.local
+        - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
+        - vald-scylla-cluster-dc0-rack0-1.scylla.svc.cluster.local
+        - vald-scylla-cluster-dc0-rack0-2.scylla.svc.cluster.local
       consistency: one
 
 meta:
@@ -100,7 +104,9 @@ meta:
       image: cassandra:latest
       cassandra:
         hosts:
-          - scylla-0.scylla.default.svc.cluster.local
+          - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
+          - vald-scylla-cluster-dc0-rack0-1.scylla.svc.cluster.local
+          - vald-scylla-cluster-dc0-rack0-2.scylla.svc.cluster.local
       sleepDuration: 2
   env: []
   resources:
@@ -113,5 +119,7 @@ meta:
     enabled: true
     config:
       hosts:
-        - scylla-0.scylla.default.svc.cluster.local
+        - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
+        - vald-scylla-cluster-dc0-rack0-1.scylla.svc.cluster.local
+        - vald-scylla-cluster-dc0-rack0-2.scylla.svc.cluster.local
       consistency: one

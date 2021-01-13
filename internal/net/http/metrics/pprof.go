@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import (
 	"github.com/vdaas/vald/internal/net/http/routing"
 )
 
-// NewPProfRoutes returns PProf server route&method information from debug flag
+// NewPProfRoutes returns PProf server route&method information from debug flag.
 func NewPProfHandler() http.Handler {
 	return routing.New(
 		routing.WithRoutes([]routing.Route{

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,127 +16,206 @@
 
 ---
 version: v0.0.0
+time_zone: JST
+logging:
+  format: raw
+  level: debug
+  logger: glg
 server_config:
   servers:
-    - name: meta-rest
-      host: 127.0.0.1
-      port: 8080
-      mode: REST
-      probe_wait_time: 3s
-      http:
-        shutdown_duration: 5s
-        handler_timeout: 5s
-        idle_timeout: 2s
-        read_header_timeout: 1s
-        read_timeout: 1s
-        write_timeout: 1s
-    - name: meta-grpc
-      host: 127.0.0.1
-      port: 8082
+    - name: grpc
+      host: 0.0.0.0
+      port: 8081
+      grpc:
+        bidirectional_stream_concurrency: 20
+        connection_timeout: ""
+        header_table_size: 0
+        initial_conn_window_size: 0
+        initial_window_size: 0
+        interceptors: []
+        keepalive:
+          max_conn_age: ""
+          max_conn_age_grace: ""
+          max_conn_idle: ""
+          time: ""
+          timeout: ""
+        max_header_list_size: 0
+        max_receive_message_size: 0
+        max_send_message_size: 0
+        read_buffer_size: 0
+        write_buffer_size: 0
       mode: GRPC
-      probe_wait_time: "3s"
-      http:
-        shutdown_duration: "5s"
-        handler_timeout: ""
-        idle_timeout: ""
-        read_header_timeout: ""
-        read_timeout: ""
-        write_timeout: ""
-  health_check_servers:
-    - name: livenesss
-      host: 127.0.0.1
-      port: 3000
-      mode: ""
-      probe_wait_time: "3s"
-      http:
-        shutdown_duration: "5s"
-        handler_timeout: ""
-        idle_timeout: ""
-        read_header_timeout: ""
-        read_timeout: ""
-        write_timeout: ""
-    - name: readiness
-      host: 127.0.0.1
-      port: 3001
-      mode: ""
-      probe_wait_time: "3s"
-      http:
-        shutdown_duration: "5s"
-        handler_timeout: ""
-        idle_timeout: ""
-        read_header_timeout: ""
-        read_timeout: ""
-        write_timeout: ""
-  metrics_servers:
-    - name: pprof
-      host: 127.0.0.1
-      port: 6060
-      mode: REST
       probe_wait_time: 3s
+      restart: true
+  health_check_servers:
+    - name: liveness
+      host: 0.0.0.0
+      port: 3000
       http:
+        handler_timeout: ""
+        idle_timeout: ""
+        read_header_timeout: ""
+        read_timeout: ""
         shutdown_duration: 5s
-        handler_timeout: 5s
-        idle_timeout: 2s
-        read_header_timeout: 1s
-        read_timeout: 1s
-        write_timeout: 1s
+        write_timeout: ""
+      mode: ""
+      probe_wait_time: 3s
+    - name: readiness
+      host: 0.0.0.0
+      port: 3001
+      http:
+        handler_timeout: ""
+        idle_timeout: ""
+        read_header_timeout: ""
+        read_timeout: ""
+        shutdown_duration: 0s
+        write_timeout: ""
+      mode: ""
+      probe_wait_time: 3s
+  metrics_servers:
   startup_strategy:
-    - livenesss
-    - pprof
-    - meta-grpc
-    - meta-rest
+    - liveness
+    - grpc
     - readiness
-  shutdown_strategy:
-    - readiness
-    - meta-rest
-    - meta-grpc
-    - pprof
-    - livenesss
   full_shutdown_duration: 600s
   tls:
-    enabled: false
-    cert: /path/to/cert
-    key: /path/to/key
     ca: /path/to/ca
+    cert: /path/to/cert
+    enabled: false
+    key: /path/to/key
+observability:
+  enabled: false
+  collector:
+    duration: 5s
+    metrics:
+      enable_cgo: true
+      enable_goroutine: true
+      enable_memory: true
+      enable_version_info: true
+      version_info_labels:
+        - vald_version
+        - server_name
+        - git_commit
+        - build_time
+        - go_version
+        - go_os
+        - go_arch
+        - ngt_version
+  trace:
+    enabled: false
+    sampling_rate: 1
+  prometheus:
+    enabled: false
+    endpoint: /metrics
+    namespace: vald
+  jaeger:
+    enabled: false
+    collector_endpoint: ""
+    agent_endpoint: "jaeger-agent.default.svc.cluster.local:6831"
+    username: ""
+    password: ""
+    service_name: "vald-meta"
+    buffer_max_count: 10
+  stackdriver:
+    project_id: ""
+    client:
+      api_key: ""
+      audiences: []
+      authentication_enabled: true
+      credentials_file: ""
+      credentials_json: ""
+      endpoint: ""
+      quota_project: ""
+      request_reason: ""
+      scopes: []
+      telemetry_enabled: true
+      user_agent: ""
+    exporter:
+      bundle_count_threshold: 0
+      bundle_delay_threshold: "0"
+      location: ""
+      metric_prefix: vald.vdaas.org
+      monitoring_enabled: false
+      number_of_workers: 1
+      reporting_interval: 1m
+      skip_cmd: false
+      timeout: 5s
+      trace_spans_buffer_max_bytes: 0
+      tracing_enabled: false
+    profiler:
+      enabled: false
+      service: "vald-meta"
+      service_version: ""
+      debug_logging: false
+      mutex_profiling: true
+      cpu_profiling: true
+      alloc_profiling: true
+      heap_profiling: true
+      goroutine_profiling: true
+      alloc_force_gc: false
+      api_addr: ""
+      instance: ""
+      zone: ""
 cassandra_config:
-  hosts:
-    - localhost
-  cql_version: 3.0.0
-  proto_version: 0
-  timeout: 600ms
-  connect_timeout: 600ms
-  port: 9042
-  keyspace: vald
-  num_conns: 2
+  connect_timeout: 3s
   consistency: quorum
-  username: ""
-  password: ""
-  retry_policy:
-    num_retries: 3
-    min_duration: 1s
-    max_duration: 30s
-  reconnection_policy:
-    max_retries: 3
-    initial_interval: 1m
-  socket_keepalive: 0s
-  max_prepared_stmts: 1000
-  max_routing_key_info: 1000
-  page_size: 5000
-  tls:
-    enabled: false
-    cert: /path/to/cert
-    key: /path/to/key
-    ca: /path/to/ca
-  enable_host_verification: false
+  cql_version: 3.0.0
+  default_idempotence: false
   default_timestamp: true
-  reconnect_interval: 1m
-  max_wait_schema_agreement: 1m
-  ignore_peer_addr: false
   disable_initial_host_lookup: false
   disable_node_status_events: false
-  disable_topology_events: false
   disable_skip_metadata: false
-  default_idempotence: false
-  write_coalesce_wait_time: 200ms
-  kv_table: kv
-  vk_table: vk
+  disable_topology_events: false
+  enable_host_verification: false
+  host_filter:
+    data_center: ""
+    enabled: false
+    white_list: []
+  hosts:
+    - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
+    - vald-scylla-cluster-dc0-rack0-1.scylla.svc.cluster.local
+    - vald-scylla-cluster-dc0-rack0-2.scylla.svc.cluster.local
+  ignore_peer_addr: false
+  keyspace: vald
+  max_prepared_stmts: 1000
+  max_routing_key_info: 1000
+  max_wait_schema_agreement: 1m
+  num_conns: 2
+  page_size: 5000
+  password: _CASSANDRA_PASSWORD_
+  pool_config:
+    data_center: ""
+    dc_aware_routing: false
+    non_local_replicas_fallback: false
+    shuffle_replicas: false
+    token_aware_host_policy: false
+  port: 9042
+  proto_version: 0
+  reconnect_interval: 100ms
+  reconnection_policy:
+    initial_interval: 100ms
+    max_retries: 3
+  retry_policy:
+    max_duration: 1s
+    min_duration: 10ms
+    num_retries: 3
+  serial_consistency: localserial
+  socket_keepalive: 0s
+  tcp:
+    dialer:
+      dual_stack_enabled: false
+      keep_alive: 10m
+      timeout: 30s
+    dns:
+      cache_enabled: true
+      cache_expiration: 24h
+      refresh_duration: 5m
+  timeout: 600ms
+  tls:
+    ca: /path/to/ca
+    cert: /path/to/cert
+    enabled: false
+    key: /path/to/key
+  username: root
+  vector_backup_table: backup_vector
+  write_coalesce_wait_time: 200µs

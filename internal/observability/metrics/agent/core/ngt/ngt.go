@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -103,49 +103,49 @@ func (n *ngtMetrics) MeasurementWithTags(ctx context.Context) ([]metrics.Measure
 
 func (n *ngtMetrics) View() []*metrics.View {
 	return []*metrics.View{
-		&metrics.View{
+		{
 			Name:        "ngt_index_count",
 			Description: n.indexCount.Description(),
 			Measure:     &n.indexCount,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "ngt_uncommitted_index_count",
 			Description: n.uncommittedIndexCount.Description(),
 			Measure:     &n.uncommittedIndexCount,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "ngt_insert_vcache_count",
 			Description: n.insertVCacheCount.Description(),
 			Measure:     &n.insertVCacheCount,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "ngt_delete_vcache_count",
 			Description: n.deleteVCacheCount.Description(),
 			Measure:     &n.deleteVCacheCount,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "ngt_completed_create_index_total",
 			Description: n.completedCreateIndexTotal.Description(),
 			Measure:     &n.completedCreateIndexTotal,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "ngt_executed_proactive_gc_total",
 			Description: n.executedProactiveGCTotal.Description(),
 			Measure:     &n.executedProactiveGCTotal,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "ngt_is_indexing",
 			Description: n.isIndexing.Description(),
 			Measure:     &n.isIndexing,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "ngt_is_saving",
 			Description: n.isSaving.Description(),
 			Measure:     &n.isSaving,

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,29 +13,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if and .Values.gateway.enabled .Values.gateway.ingress.enabled }}
-apiVersion: networking.k8s.io/v1beta1
-# apiVersion: networking.k8s.io/v1
+{{- $gateway := .Values.gateway.vald -}}
+{{- if and $gateway.enabled $gateway.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
-    {{- toYaml .Values.gateway.ingress.annotations | nindent 4 }}
+    {{- toYaml $gateway.ingress.annotations | nindent 4 }}
   labels:
-    name: {{ .Values.gateway.name }}-ingress
-    app: {{ .Values.gateway.name }}-ingress
+    name: {{ $gateway.name }}-ingress
+    app: {{ $gateway.name }}-ingress
     app.kubernetes.io/name: {{ include "vald.name" . }}
     helm.sh/chart: {{ include "vald.chart" . }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/version: {{ .Chart.Version }}
     app.kubernetes.io/component: gateway
-  name: {{ .Values.gateway.name }}-ingress
+  name: {{ $gateway.name }}-ingress
 spec:
+  defaultBackend:
+    service:
+      name: {{ $gateway.name }}
+      {{- include "vald.ingressPort" (dict "Values" $gateway.ingress) | nindent 6 }}
   rules:
-    - host: {{ .Values.gateway.ingress.host }}
-      http:
-        paths:
-          - backend:
-              serviceName: {{ .Values.gateway.name }}
-              servicePort: {{ .Values.gateway.ingress.servicePort }}
+  - host: {{ $gateway.ingress.host }}
+    http:
+      paths:
+      - backend:
+          service:
+            name: {{ $gateway.name }}
+            {{- include "vald.ingressPort" (dict "Values" $gateway.ingress) | nindent 12 }}
+        pathType: {{ $gateway.ingress.pathType }}
 {{- end }}

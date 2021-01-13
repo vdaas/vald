@@ -1,6 +1,6 @@
 ---
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -39,8 +39,8 @@ data:
     );
     // backup
 
-    DROP TABLE IF EXISTS vald.meta_vector;
-    CREATE TABLE vald.meta_vector (
+    DROP TABLE IF EXISTS vald.backup_vector;
+    CREATE TABLE vald.backup_vector (
       uuid   text,
       vector blob,
       meta   text,
@@ -48,5 +48,5 @@ data:
       PRIMARY KEY (uuid)
     );
 
-    DROP INDEX IF EXISTS vald.meta_vector;
-    CREATE INDEX ON vald.meta_vector (ips);
+    DROP INDEX IF EXISTS vald.backup_vector;
+    CREATE INDEX ON vald.backup_vector (ips);

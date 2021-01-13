@@ -1,6 +1,6 @@
 ---
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,10 +21,10 @@ metadata:
   labels:
     app: vald-agent-ngt
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v0.0.64
+    helm.sh/chart: vald-v0.0.66
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v0.0.64
+    app.kubernetes.io/version: v0.0.66
     app.kubernetes.io/component: agent
 spec:
   serviceName: vald-agent-ngt
@@ -51,7 +51,7 @@ spec:
         profefe.com/port: "6060"
         profefe.com/service: vald-agent-ngt
       # annotations:
-      #   checksum/configmap: f0c5b9fab04487f517b69a9de4a3a15553384b19916d64496afced4de2cf7fad
+      #   checksum/configmap: a2ed5ad4495fb073b77cb9bcdb606c899c0288abf9330bc52f07aa316758ecfb
     spec:
       affinity:
         nodeAffinity:

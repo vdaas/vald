@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@ func TestSet(t *testing.T) {
 				if got == nil {
 					return errors.New("got is nil")
 				} else if got, want := got.String(), locationGMT; got != want {
-					return errors.Errorf("String() not equals. want: %v, but got: %v")
+					return errors.Errorf("String() not equals. want: %v, but got: %v", want, got)
 				}
 				return nil
 			},
@@ -73,7 +73,7 @@ func TestSet(t *testing.T) {
 				if got == nil {
 					return errors.New("got is nil")
 				} else if got, want := got.String(), locationGMT; got != want {
-					return errors.Errorf("String() not equals. want: %v, but got: %v")
+					return errors.Errorf("String() not equals. want: %v, but got: %v", want, got)
 				}
 				return nil
 			},
@@ -86,7 +86,7 @@ func TestSet(t *testing.T) {
 				if got == nil {
 					return errors.New("got is nil")
 				} else if got, want := got.String(), locationJST; got != want {
-					return errors.Errorf("String() not equals. want: %v, but got: %v")
+					return errors.Errorf("String() not equals. want: %v, but got: %v", want, got)
 				}
 				return nil
 			},
@@ -98,8 +98,8 @@ func TestSet(t *testing.T) {
 			checkFunc: func(got *time.Location) error {
 				if got == nil {
 					return errors.New("got is nil")
-				} else if got, want := got.String(), "Jst"; got != want {
-					return errors.Errorf("String() not equals. want: %v, but got: %v")
+				} else if got, want := got.String(), locationJST; got != want {
+					return errors.Errorf("String() not equals. want: %v, but got: %v", want, got)
 				}
 				return nil
 			},
@@ -111,8 +111,8 @@ func TestSet(t *testing.T) {
 			checkFunc: func(got *time.Location) error {
 				if got == nil {
 					return errors.New("got is nil")
-				} else if got, want := got.String(), locationTokyo; got != want {
-					return errors.Errorf("String() not equals. want: %v, but got: %v")
+				} else if got, want := got.String(), locationJST; got != want {
+					return errors.Errorf("String() not equals. want: %v, but got: %v", want, got)
 				}
 				return nil
 			},
@@ -124,8 +124,8 @@ func TestSet(t *testing.T) {
 			checkFunc: func(got *time.Location) error {
 				if got == nil {
 					return errors.New("got is nil")
-				} else if got, want := got.String(), "ASIA/Tokyo"; got != want {
-					return errors.Errorf("String() not equals. want: %v, but got: %v")
+				} else if got, want := got.String(), locationJST; got != want {
+					return errors.Errorf("String() not equals. want: %v, but got: %v", want, got)
 				}
 				return nil
 			},
@@ -138,7 +138,7 @@ func TestSet(t *testing.T) {
 				if got == nil {
 					return errors.New("got is nil")
 				} else if got, want := got.String(), "invalid"; got != want {
-					return errors.Errorf("String() not equals. want: %v, but got: %v")
+					return errors.Errorf("String() not equals. want: %v, but got: %v", want, got)
 				}
 				return nil
 			},

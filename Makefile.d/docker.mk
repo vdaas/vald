@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,9 @@ docker/build: \
 	docker/build/agent-sidecar \
 	docker/build/discoverer-k8s \
 	docker/build/gateway-vald \
+	docker/build/gateway-lb \
+	docker/build/gateway-meta \
+	docker/build/gateway-backup \
 	docker/build/meta-redis \
 	docker/build/meta-cassandra \
 	docker/build/backup-manager-mysql \
@@ -35,7 +38,7 @@ docker/platforms:
 
 .PHONY: docker/name/base
 docker/name/base:
-	@echo "$(REPO)/$(BASE_IMAGE)"
+	@echo "$(ORG)/$(BASE_IMAGE)"
 
 .PHONY: docker/build/base
 ## build base image
@@ -43,12 +46,13 @@ docker/build/base:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/base/Dockerfile \
-	    -t $(REPO)/$(BASE_IMAGE):$(TAG) . \
+	    -t $(ORG)/$(BASE_IMAGE):$(TAG) . \
+	    --build-arg MAINTAINER=$(MAINTAINER) \
 	    --build-arg GO_VERSION=$(GO_VERSION)
 
 .PHONY: docker/name/agent-ngt
 docker/name/agent-ngt:
-	@echo "$(REPO)/$(AGENT_IMAGE)"
+	@echo "$(ORG)/$(AGENT_IMAGE)"
 
 .PHONY: docker/build/agent-ngt
 ## build agent-ngt image
@@ -56,15 +60,16 @@ docker/build/agent-ngt:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/agent/core/ngt/Dockerfile \
-	    -t $(REPO)/$(AGENT_IMAGE):$(TAG) . \
+	    -t $(ORG)/$(AGENT_IMAGE):$(TAG) . \
 	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg MAINTAINER=$(MAINTAINER) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
 .PHONY: docker/name/agent-sidecar
 docker/name/agent-sidecar:
-	@echo "$(REPO)/$(AGENT_SIDECAR_IMAGE)"
+	@echo "$(ORG)/$(AGENT_SIDECAR_IMAGE)"
 
 .PHONY: docker/build/agent-sidecar
 ## build agent-sidecar image
@@ -72,15 +77,16 @@ docker/build/agent-sidecar:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/agent/sidecar/Dockerfile \
-	    -t $(REPO)/$(AGENT_SIDECAR_IMAGE):$(TAG) . \
+	    -t $(ORG)/$(AGENT_SIDECAR_IMAGE):$(TAG) . \
 	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg MAINTAINER=$(MAINTAINER) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
 .PHONY: docker/name/discoverer-k8s
 docker/name/discoverer-k8s:
-	@echo "$(REPO)/$(DISCOVERER_IMAGE)"
+	@echo "$(ORG)/$(DISCOVERER_IMAGE)"
 
 .PHONY: docker/build/discoverer-k8s
 ## build discoverer-k8s image
@@ -88,15 +94,16 @@ docker/build/discoverer-k8s:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/discoverer/k8s/Dockerfile \
-	    -t $(REPO)/$(DISCOVERER_IMAGE):$(TAG) . \
+	    -t $(ORG)/$(DISCOVERER_IMAGE):$(TAG) . \
 	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg MAINTAINER=$(MAINTAINER) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
 .PHONY: docker/name/gateway-vald
 docker/name/gateway-vald:
-	@echo "$(REPO)/$(GATEWAY_IMAGE)"
+	@echo "$(ORG)/$(GATEWAY_IMAGE)"
 
 .PHONY: docker/build/gateway-vald
 ## build gateway-vald image
@@ -104,7 +111,56 @@ docker/build/gateway-vald:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/gateway/vald/Dockerfile \
-	    -t $(REPO)/$(GATEWAY_IMAGE):$(TAG) . \
+	    -t $(ORG)/$(GATEWAY_IMAGE):$(TAG) . \
+	    --build-arg GO_VERSION=$(GO_VERSION) \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg MAINTAINER=$(MAINTAINER) \
+	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
+
+.PHONY: docker/name/gateway-lb
+docker/name/gateway-lb:
+	@echo "$(ORG)/$(LB_GATEWAY_IMAGE)"
+
+.PHONY: docker/build/gateway-lb
+## build gateway-lb image
+docker/build/gateway-lb:
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
+	    -f dockers/gateway/lb/Dockerfile \
+	    -t $(ORG)/$(LB_GATEWAY_IMAGE):$(TAG) . \
+	    --build-arg GO_VERSION=$(GO_VERSION) \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
+
+.PHONY: docker/name/gateway-meta
+docker/name/gateway-meta:
+	@echo "$(ORG)/$(META_GATEWAY_IMAGE)"
+
+.PHONY: docker/build/gateway-meta
+## build gateway-meta image
+docker/build/gateway-meta:
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
+	    -f dockers/gateway/meta/Dockerfile \
+	    -t $(ORG)/$(META_GATEWAY_IMAGE):$(TAG) . \
+	    --build-arg GO_VERSION=$(GO_VERSION) \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
+
+.PHONY: docker/name/gateway-backup
+docker/name/gateway-backup:
+	@echo "$(ORG)/$(BACKUP_GATEWAY_IMAGE)"
+
+.PHONY: docker/build/gateway-backup
+## build gateway-backup image
+docker/build/gateway-backup:
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
+	    -f dockers/gateway/backup/Dockerfile \
+	    -t $(ORG)/$(BACKUP_GATEWAY_IMAGE):$(TAG) . \
 	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
@@ -112,7 +168,7 @@ docker/build/gateway-vald:
 
 .PHONY: docker/name/meta-redis
 docker/name/meta-redis:
-	@echo "$(REPO)/$(META_REDIS_IMAGE)"
+	@echo "$(ORG)/$(META_REDIS_IMAGE)"
 
 .PHONY: docker/build/meta-redis
 ## build meta-redis image
@@ -120,15 +176,16 @@ docker/build/meta-redis:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/meta/redis/Dockerfile \
-	    -t $(REPO)/$(META_REDIS_IMAGE):$(TAG) . \
+	    -t $(ORG)/$(META_REDIS_IMAGE):$(TAG) . \
 	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg MAINTAINER=$(MAINTAINER) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
 .PHONY: docker/name/meta-cassandra
 docker/name/meta-cassandra:
-	@echo "$(REPO)/$(META_CASSANDRA_IMAGE)"
+	@echo "$(ORG)/$(META_CASSANDRA_IMAGE)"
 
 .PHONY: docker/build/meta-cassandra
 ## build meta-cassandra image
@@ -136,15 +193,16 @@ docker/build/meta-cassandra:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/meta/cassandra/Dockerfile \
-	    -t $(REPO)/$(META_CASSANDRA_IMAGE):$(TAG) . \
+	    -t $(ORG)/$(META_CASSANDRA_IMAGE):$(TAG) . \
 	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg MAINTAINER=$(MAINTAINER) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
 .PHONY: docker/name/backup-manager-mysql
 docker/name/backup-manager-mysql:
-	@echo "$(REPO)/$(MANAGER_BACKUP_MYSQL_IMAGE)"
+	@echo "$(ORG)/$(MANAGER_BACKUP_MYSQL_IMAGE)"
 
 .PHONY: docker/build/backup-manager-mysql
 ## build backup-manager-mysql image
@@ -152,15 +210,16 @@ docker/build/backup-manager-mysql:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/manager/backup/mysql/Dockerfile \
-	    -t $(REPO)/$(MANAGER_BACKUP_MYSQL_IMAGE):$(TAG) . \
+	    -t $(ORG)/$(MANAGER_BACKUP_MYSQL_IMAGE):$(TAG) . \
 	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg MAINTAINER=$(MAINTAINER) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
 .PHONY: docker/name/backup-manager-cassandra
 docker/name/backup-manager-cassandra:
-	@echo "$(REPO)/$(MANAGER_BACKUP_CASSANDRA_IMAGE)"
+	@echo "$(ORG)/$(MANAGER_BACKUP_CASSANDRA_IMAGE)"
 
 .PHONY: docker/build/backup-manager-cassandra
 ## build backup-manager-cassandra image
@@ -168,15 +227,16 @@ docker/build/backup-manager-cassandra:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/manager/backup/cassandra/Dockerfile \
-	    -t $(REPO)/$(MANAGER_BACKUP_CASSANDRA_IMAGE):$(TAG) . \
+	    -t $(ORG)/$(MANAGER_BACKUP_CASSANDRA_IMAGE):$(TAG) . \
 	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg MAINTAINER=$(MAINTAINER) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
 .PHONY: docker/name/manager-compressor
 docker/name/manager-compressor:
-	@echo "$(REPO)/$(MANAGER_COMPRESSOR_IMAGE)"
+	@echo "$(ORG)/$(MANAGER_COMPRESSOR_IMAGE)"
 
 .PHONY: docker/build/manager-compressor
 ## build manager-compressor image
@@ -184,15 +244,16 @@ docker/build/manager-compressor:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/manager/compressor/Dockerfile \
-	    -t $(REPO)/$(MANAGER_COMPRESSOR_IMAGE):$(TAG) . \
+	    -t $(ORG)/$(MANAGER_COMPRESSOR_IMAGE):$(TAG) . \
 	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg MAINTAINER=$(MAINTAINER) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
 .PHONY: docker/name/manager-index
 docker/name/manager-index:
-	@echo "$(REPO)/$(MANAGER_INDEX_IMAGE)"
+	@echo "$(ORG)/$(MANAGER_INDEX_IMAGE)"
 
 .PHONY: docker/build/manager-index
 ## build manager-index image
@@ -200,15 +261,16 @@ docker/build/manager-index:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/manager/index/Dockerfile \
-	    -t $(REPO)/$(MANAGER_INDEX_IMAGE):$(TAG) . \
+	    -t $(ORG)/$(MANAGER_INDEX_IMAGE):$(TAG) . \
 	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg MAINTAINER=$(MAINTAINER) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
 .PHONY: docker/name/ci-container
 docker/name/ci-container:
-	@echo "$(REPO)/$(CI_CONTAINER_IMAGE)"
+	@echo "$(ORG)/$(CI_CONTAINER_IMAGE)"
 
 .PHONY: docker/build/ci-container
 ## build ci-container image
@@ -216,12 +278,13 @@ docker/build/ci-container:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/ci/base/Dockerfile \
-	    -t $(REPO)/$(CI_CONTAINER_IMAGE):$(TAG) . \
+	    -t $(ORG)/$(CI_CONTAINER_IMAGE):$(TAG) . \
+	    --build-arg MAINTAINER=$(MAINTAINER) \
 	    --build-arg GO_VERSION=$(GO_VERSION)
 
 .PHONY: docker/name/dev-container
 docker/name/dev-container:
-	@echo "$(REPO)/$(DEV_CONTAINER_IMAGE)"
+	@echo "$(ORG)/$(DEV_CONTAINER_IMAGE)"
 
 .PHONY: docker/build/dev-container
 ## build dev-container image
@@ -229,12 +292,13 @@ docker/build/dev-container: docker/build/ci-container
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/dev/Dockerfile \
-	    -t $(REPO)/$(DEV_CONTAINER_IMAGE):$(TAG) . \
+	    -t $(ORG)/$(DEV_CONTAINER_IMAGE):$(TAG) . \
+	    --build-arg MAINTAINER=$(MAINTAINER) \
 	    --build-arg BASE_TAG=$(TAG)
 
 .PHONY: docker/name/operator/helm
 docker/name/operator/helm:
-	@echo "$(REPO)/$(HELM_OPERATOR_IMAGE)"
+	@echo "$(ORG)/$(HELM_OPERATOR_IMAGE)"
 
 .PHONY: docker/build/operator/helm
 ## build helm-operator image
@@ -242,12 +306,13 @@ docker/build/operator/helm:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/operator/helm/Dockerfile \
-	    -t $(REPO)/$(HELM_OPERATOR_IMAGE):$(TAG) . \
+	    -t $(ORG)/$(HELM_OPERATOR_IMAGE):$(TAG) . \
+	    --build-arg MAINTAINER=$(MAINTAINER) \
 	    --build-arg OPERATOR_SDK_VERSION=$(OPERATOR_SDK_VERSION)
 
 .PHONY: docker/name/loadtest
 docker/name/loadtest:
-	@echo "$(REPO)/$(LOADTEST_IMAGE)"
+	@echo "$(ORG)/$(LOADTEST_IMAGE)"
 
 .PHONY: docker/build/loadtest
 ## build loadtest image
@@ -255,5 +320,6 @@ docker/build/loadtest:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/tools/cli/loadtest/Dockerfile \
-	    -t $(REPO)/$(LOADTEST_IMAGE):$(TAG) . \
+	    -t $(ORG)/$(LOADTEST_IMAGE):$(TAG) . \
+	    --build-arg MAINTAINER=$(MAINTAINER) \
 	    --build-arg GO_VERSION=$(GO_VERSION)

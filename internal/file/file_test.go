@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package file
 
 import (
 	"os"
+	"syscall"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -136,6 +137,52 @@ func TestOpen(t *testing.T) {
 			want: want{
 				want: nil,
 				err:  errors.ErrPathNotSpecified,
+			},
+		},
+
+		{
+			name: "returns (nil, error) when file does not exists and flag is not CREATE or APPEND",
+			args: args{
+				path: "dummy",
+				flg:  os.O_RDONLY,
+				perm: os.ModePerm,
+			},
+			want: want{
+				want: nil,
+				err: &os.PathError{
+					Op:   "open",
+					Path: "dummy",
+					Err: func() error {
+						_, err := syscall.Open("dummy", syscall.O_RDONLY|syscall.O_CLOEXEC, 0)
+						return err
+					}(),
+				},
+			},
+		},
+
+		{
+			name: "returns (nil, error) when the folder does not exists and flag is not CREATE or APPEND",
+			args: args{
+				path: "dummy/dummy",
+				flg:  os.O_RDONLY,
+				perm: os.ModePerm,
+			},
+			want: want{
+				want: nil,
+				err: &os.PathError{
+					Op:   "open",
+					Path: "dummy/dummy",
+					Err: func() error {
+						_, err := syscall.Open("dummy/", syscall.O_RDONLY|syscall.O_CLOEXEC, 0)
+						return err
+					}(),
+				},
+			},
+			afterFunc: func(t *testing.T, _ args) {
+				t.Helper()
+				if err := os.RemoveAll("dummy"); err != nil {
+					t.Fatal(err)
+				}
 			},
 		},
 	}

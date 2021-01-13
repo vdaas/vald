@@ -175,6 +175,19 @@ ports:
 {{- end -}}
 
 {/*
+Ingress port
+*/}
+{{- define "vald.ingressPort" -}}
+port:
+  {{- if regexMatch "^()([1-9]|[1-5]?[0-9]{2,4}|6[1-4][0-9]{3}|65[1-4][0-9]{2}|655[1-2][0-9]|6553[1-5])$" .Values.servicePort -}}
+  number: {{ .Values.servicePort }}
+  {{- else }}
+  name: {{ .Values.servicePort }}
+  {{- end -}}
+{{- end -}}
+
+
+{/*
 Service ports
 */}
 {{- define "vald.servicePorts" -}}
@@ -441,18 +454,24 @@ tls:
 {{- end -}}
 
 {{/*
+gRPC client addr configuration
+*/}}
+{{- define "vald.grpc.client.addrs" -}}
+{{- if .Values -}}
+addrs:
+  {{- toYaml .Values | nindent 2 }}
+{{- else if .default -}}
+addrs:
+  {{- toYaml .default | nindent 2 }}
+{{- else -}}
+addrs: []
+{{- end -}}
+{{- end -}}
+
+{{/*
 gRPC client configuration
 */}}
 {{- define "vald.grpc.client" -}}
-{{- if .Values.addrs }}
-addrs:
-  {{- toYaml .Values.addrs | nindent 2 }}
-{{- else if .default.addrs }}
-addrs:
-  {{- toYaml .default.addrs | nindent 2 }}
-{{- else -}}
-addrs: []
-{{- end }}
 health_check_duration: {{ default .default.health_check_duration .Values.health_check_duration | quote }}
 connection_pool:
   {{- if .Values.connection_pool }}
@@ -492,7 +511,11 @@ dial_option:
   initial_window_size: {{ default .default.dial_option.initial_window_size .Values.dial_option.initial_window_size }}
   initial_connection_window_size: {{ default .default.dial_option.initial_connection_window_size .Values.dial_option.initial_connection_window_size }}
   max_msg_size: {{ default .default.dial_option.max_msg_size .Values.dial_option.max_msg_size }}
-  max_backoff_delay: {{ default .default.dial_option.max_backoff_delay .Values.dial_option.max_backoff_delay | quote }}
+  backoff_max_delay: {{ default .default.dial_option.backoff_max_delay .Values.dial_option.backoff_max_delay | quote }}
+  backoff_base_delay: {{ default .default.dial_option.backoff_base_delay .Values.dial_option.backoff_base_delay | quote }}
+  backoff_multiplier: {{ default .default.dial_option.backoff_multiplier .Values.dial_option.backoff_multiplier }}
+  backoff_jitter: {{ default .default.dial_option.backoff_jitter .Values.dial_option.backoff_jitter }}
+  min_connection_timeout: {{ default .default.dial_option.min_connection_timeout .Values.dial_option.min_connection_timeout | quote }}
   enable_backoff: {{ default .default.dial_option.enable_backoff .Values.dial_option.enable_backoff }}
   insecure: {{ default .default.dial_option.insecure .Values.dial_option.insecure }}
   timeout: {{ default .default.dial_option.timeout .Values.dial_option.timeout | quote }}
@@ -691,9 +714,9 @@ initContainers
     - -c
     - |
       {{- if eq .target "compressor" }}
-      {{- $compressorReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.compressor.server_config.healths.readiness.port }}
+      {{- $compressorReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.manager.compressor.server_config.healths.readiness.port }}
       {{- $compressorReadinessPath := default $.Values.defaults.server_config.healths.readiness.readinessProbe.httpGet.path .readinessPath }}
-      until [ "$(wget --server-response --spider --quiet http://{{ $.Values.compressor.name }}.{{ $.namespace }}.svc.cluster.local:{{ $compressorReadinessPort }}{{ $compressorReadinessPath }} 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
+      until [ "$(wget --server-response --spider --quiet http://{{ $.Values.manager.compressor.name }}.{{ $.namespace }}.svc.cluster.local:{{ $compressorReadinessPort }}{{ $compressorReadinessPath }} 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
       {{- else if eq .target "meta" }}
       {{- $metaReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.meta.server_config.healths.readiness.port }}
       {{- $metaReadinessPath := default $.Values.defaults.server_config.healths.readiness.readinessProbe.httpGet.path .readinessPath }}
@@ -707,9 +730,21 @@ initContainers
       {{- $agentReadinessPath := default $.Values.defaults.server_config.healths.readiness.readinessProbe.httpGet.path .readinessPath }}
       until [ "$(wget --server-response --spider --quiet http://{{ $.Values.agent.name }}.{{ $.namespace }}.svc.cluster.local:{{ $agentReadinessPort }}{{ $agentReadinessPath }} 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
       {{- else if eq .target "manager-backup" }}
-      {{- $backupManagerReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.backupManager.server_config.healths.readiness.port }}
+      {{- $backupManagerReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.manager.backup.server_config.healths.readiness.port }}
       {{- $backupManagerReadinessPath := default $.Values.defaults.server_config.healths.readiness.readinessProbe.httpGet.path .readinessPath }}
-      until [ "$(wget --server-response --spider --quiet http://{{ $.Values.backupManager.name }}.{{ $.namespace }}.svc.cluster.local:{{ $backupManagerReadinessPort }}{{ $backupManagerReadinessPath }} 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
+      until [ "$(wget --server-response --spider --quiet http://{{ $.Values.manager.backup.name }}.{{ $.namespace }}.svc.cluster.local:{{ $backupManagerReadinessPort }}{{ $backupManagerReadinessPath }} 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
+      {{- else if eq .target "gateway-backup" }}
+      {{- $backupGatewayReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.gateway.backup.server_config.healths.readiness.port }}
+      {{- $backupGatewayReadinessPath := default $.Values.defaults.server_config.healths.readiness.readinessProbe.httpGet.path .readinessPath }}
+      until [ "$(wget --server-response --spider --quiet http://{{ $.Values.gateway.backup.name }}.{{ $.namespace }}.svc.cluster.local:{{ $backupGatewayReadinessPort }}{{ $backupGatewayReadinessPath }} 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
+      {{- else if eq .target "gateway-lb" }}
+      {{- $lbGatewayReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.gateway.lb.server_config.healths.readiness.port }}
+      {{- $lbGatewayReadinessPath := default $.Values.defaults.server_config.healths.readiness.readinessProbe.httpGet.path .readinessPath }}
+      until [ "$(wget --server-response --spider --quiet http://{{ $.Values.gateway.lb.name }}.{{ $.namespace }}.svc.cluster.local:{{ $lbGatewayReadinessPort }}{{ $lbGatewayReadinessPath }} 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
+      {{- else if eq .target "gateway-meta" }}
+      {{- $metaGatewayReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.gateway.meta.server_config.healths.readiness.port }}
+      {{- $metaGatewayReadinessPath := default $.Values.defaults.server_config.healths.readiness.readinessProbe.httpGet.path .readinessPath }}
+      until [ "$(wget --server-response --spider --quiet http://{{ $.Values.gateway.meta.name }}.{{ $.namespace }}.svc.cluster.local:{{ $metaGatewayReadinessPort }}{{ $metaGatewayReadinessPath }} 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
       {{- else if .untilCondition }}
       until [ {{ .untilCondition }} ]; do
       {{- else if .whileCondition }}

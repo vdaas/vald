@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +14,12 @@
 # limitations under the License.
 #
 ARG OPERATOR_SDK_VERSION
-ARG VERSION="v1alpha1"
+ARG VERSION="v1"
 ARG GROUP="vald.vdaas.org"
 ARG VALD_KIND="ValdRelease"
 ARG VALD_HELM_OPERATOR_KIND="ValdHelmOperatorRelease"
 ARG BASE_TAG=latest
+ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>
 
 FROM vdaas/vald-base:${BASE_TAG} AS builder
 ARG OPERATOR_SDK_VERSION
@@ -42,8 +43,14 @@ RUN { \
         echo "  chart: helm-charts/vald-helm-operator"; \
     } > /tmp/watches.yaml
 
-WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal
-COPY internal .
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/apis/grpc/v1/errors
+COPY apis/grpc/v1/errors .
+
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal/errors
+COPY internal/errors .
+
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal/log
+COPY internal/log .
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/versions
 COPY versions .
@@ -51,8 +58,8 @@ COPY versions .
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/charts
 COPY charts .
 
-WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/hack
-COPY hack .
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/hack/helm/schema/gen
+COPY hack/helm/schema/gen .
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/Makefile.d
 COPY Makefile.d .
@@ -66,7 +73,7 @@ RUN make helm/schema/vald-helm-operator
 RUN cp -r charts /charts
 
 FROM quay.io/operator-framework/helm-operator:${OPERATOR_SDK_VERSION}
-LABEL maintainer "Vald team <vald@vdaas.org>"
+LABEL maintainer "${MAINTAINER}"
 
 COPY --from=builder /tmp/watches.yaml ${HOME}/watches.yaml
 

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 // Package strategy provides strategy for e2e testing functions
 package strategy
 
-import "github.com/vdaas/vald/internal/client"
+import "github.com/vdaas/vald/internal/client/v1/client"
 
 type SearchOption func(*search)
 
@@ -27,12 +27,10 @@ var searchCfg = &client.SearchConfig{
 	Epsilon: 0.01,
 }
 
-var (
-	defaultSearchOptions = []SearchOption{
-		WithSearchParallel(false),
-		WithSearchConfig(searchCfg),
-	}
-)
+var defaultSearchOptions = []SearchOption{
+	WithSearchParallel(false),
+	WithSearchConfig(searchCfg),
+}
 
 func WithSearchParallel(flag bool) SearchOption {
 	return func(s *search) {

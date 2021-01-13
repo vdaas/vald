@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,13 +20,14 @@ package service
 import (
 	"testing"
 
-	"github.com/vdaas/vald/internal/client/discoverer"
+	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	"github.com/vdaas/vald/internal/errgroup"
-
 	"go.uber.org/goleak"
 )
 
 func TestWithIndexingConcurrency(t *testing.T) {
+	t.Parallel()
+	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
 		c int
@@ -64,7 +65,7 @@ func TestWithIndexingConcurrency(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
+	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 	       }
 	       return nil
 	   }
@@ -100,9 +101,11 @@ func TestWithIndexingConcurrency(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -123,7 +126,7 @@ func TestWithIndexingConcurrency(t *testing.T) {
 			   }
 			*/
 
-			// Uncomment this block if the option returns an error, otherwise delete it
+			// Uncomment this block if the option do not return an error, otherwise delete it
 			/*
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
@@ -131,7 +134,7 @@ func TestWithIndexingConcurrency(t *testing.T) {
 			   got := WithIndexingConcurrency(test.args.c)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := test.checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -140,6 +143,8 @@ func TestWithIndexingConcurrency(t *testing.T) {
 }
 
 func TestWithIndexingDuration(t *testing.T) {
+	t.Parallel()
+	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
 		dur string
@@ -177,7 +182,7 @@ func TestWithIndexingDuration(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
+	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 	       }
 	       return nil
 	   }
@@ -213,9 +218,11 @@ func TestWithIndexingDuration(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -236,7 +243,7 @@ func TestWithIndexingDuration(t *testing.T) {
 			   }
 			*/
 
-			// Uncomment this block if the option returns an error, otherwise delete it
+			// Uncomment this block if the option do not return an error, otherwise delete it
 			/*
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
@@ -244,7 +251,7 @@ func TestWithIndexingDuration(t *testing.T) {
 			   got := WithIndexingDuration(test.args.dur)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := test.checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -253,6 +260,8 @@ func TestWithIndexingDuration(t *testing.T) {
 }
 
 func TestWithIndexingDurationLimit(t *testing.T) {
+	t.Parallel()
+	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
 		dur string
@@ -290,7 +299,7 @@ func TestWithIndexingDurationLimit(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
+	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 	       }
 	       return nil
 	   }
@@ -326,9 +335,11 @@ func TestWithIndexingDurationLimit(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -349,7 +360,7 @@ func TestWithIndexingDurationLimit(t *testing.T) {
 			   }
 			*/
 
-			// Uncomment this block if the option returns an error, otherwise delete it
+			// Uncomment this block if the option do not return an error, otherwise delete it
 			/*
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
@@ -357,7 +368,7 @@ func TestWithIndexingDurationLimit(t *testing.T) {
 			   got := WithIndexingDurationLimit(test.args.dur)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := test.checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -366,6 +377,8 @@ func TestWithIndexingDurationLimit(t *testing.T) {
 }
 
 func TestWithMinUncommitted(t *testing.T) {
+	t.Parallel()
+	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
 		n uint32
@@ -403,7 +416,7 @@ func TestWithMinUncommitted(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
+	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 	       }
 	       return nil
 	   }
@@ -439,9 +452,11 @@ func TestWithMinUncommitted(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -462,7 +477,7 @@ func TestWithMinUncommitted(t *testing.T) {
 			   }
 			*/
 
-			// Uncomment this block if the option returns an error, otherwise delete it
+			// Uncomment this block if the option do not return an error, otherwise delete it
 			/*
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
@@ -470,7 +485,7 @@ func TestWithMinUncommitted(t *testing.T) {
 			   got := WithMinUncommitted(test.args.n)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := test.checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -479,6 +494,8 @@ func TestWithMinUncommitted(t *testing.T) {
 }
 
 func TestWithCreationPoolSize(t *testing.T) {
+	t.Parallel()
+	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
 		size uint32
@@ -516,7 +533,7 @@ func TestWithCreationPoolSize(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
+	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 	       }
 	       return nil
 	   }
@@ -552,9 +569,11 @@ func TestWithCreationPoolSize(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -575,7 +594,7 @@ func TestWithCreationPoolSize(t *testing.T) {
 			   }
 			*/
 
-			// Uncomment this block if the option returns an error, otherwise delete it
+			// Uncomment this block if the option do not return an error, otherwise delete it
 			/*
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
@@ -583,7 +602,7 @@ func TestWithCreationPoolSize(t *testing.T) {
 			   got := WithCreationPoolSize(test.args.size)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := test.checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -592,6 +611,8 @@ func TestWithCreationPoolSize(t *testing.T) {
 }
 
 func TestWithDiscoverer(t *testing.T) {
+	t.Parallel()
+	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
 		c discoverer.Client
@@ -629,7 +650,7 @@ func TestWithDiscoverer(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
+	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 	       }
 	       return nil
 	   }
@@ -665,9 +686,11 @@ func TestWithDiscoverer(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -688,7 +711,7 @@ func TestWithDiscoverer(t *testing.T) {
 			   }
 			*/
 
-			// Uncomment this block if the option returns an error, otherwise delete it
+			// Uncomment this block if the option do not return an error, otherwise delete it
 			/*
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
@@ -696,7 +719,7 @@ func TestWithDiscoverer(t *testing.T) {
 			   got := WithDiscoverer(test.args.c)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := test.checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -705,6 +728,8 @@ func TestWithDiscoverer(t *testing.T) {
 }
 
 func TestWithErrGroup(t *testing.T) {
+	t.Parallel()
+	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
 		eg errgroup.Group
@@ -742,7 +767,7 @@ func TestWithErrGroup(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
+	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 	       }
 	       return nil
 	   }
@@ -778,9 +803,11 @@ func TestWithErrGroup(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -801,7 +828,7 @@ func TestWithErrGroup(t *testing.T) {
 			   }
 			*/
 
-			// Uncomment this block if the option returns an error, otherwise delete it
+			// Uncomment this block if the option do not return an error, otherwise delete it
 			/*
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
@@ -809,7 +836,7 @@ func TestWithErrGroup(t *testing.T) {
 			   got := WithErrGroup(test.args.eg)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := test.checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/

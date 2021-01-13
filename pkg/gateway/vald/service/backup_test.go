@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,14 +21,14 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
-
 	"go.uber.org/goleak"
 )
 
 func TestNewBackup(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []BackupOption
 	}
@@ -81,9 +81,11 @@ func TestNewBackup(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -98,17 +100,16 @@ func TestNewBackup(t *testing.T) {
 			if err := test.checkFunc(test.want, gotBu, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_backup_Start(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
 	type fields struct {
-		addr   string
 		client grpc.Client
 	}
 	type want struct {
@@ -142,7 +143,6 @@ func Test_backup_Start(t *testing.T) {
 		           ctx: nil,
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		       },
 		       want: want{},
@@ -159,7 +159,6 @@ func Test_backup_Start(t *testing.T) {
 		           ctx: nil,
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           },
 		           want: want{},
@@ -169,9 +168,11 @@ func Test_backup_Start(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -182,7 +183,6 @@ func Test_backup_Start(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			b := &backup{
-				addr:   test.fields.addr,
 				client: test.fields.client,
 			}
 
@@ -190,22 +190,21 @@ func Test_backup_Start(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_backup_GetObject(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		uuid string
 	}
 	type fields struct {
-		addr   string
 		client grpc.Client
 	}
 	type want struct {
-		wantVec *payload.Backup_MetaVector
+		wantVec *payload.Backup_Vector
 		err     error
 	}
 	type test struct {
@@ -213,11 +212,11 @@ func Test_backup_GetObject(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Backup_MetaVector, error) error
+		checkFunc  func(want, *payload.Backup_Vector, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotVec *payload.Backup_MetaVector, err error) error {
+	defaultCheckFunc := func(w want, gotVec *payload.Backup_Vector, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -236,7 +235,6 @@ func Test_backup_GetObject(t *testing.T) {
 		           uuid: "",
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		       },
 		       want: want{},
@@ -254,7 +252,6 @@ func Test_backup_GetObject(t *testing.T) {
 		           uuid: "",
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           },
 		           want: want{},
@@ -264,9 +261,11 @@ func Test_backup_GetObject(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -277,7 +276,6 @@ func Test_backup_GetObject(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			b := &backup{
-				addr:   test.fields.addr,
 				client: test.fields.client,
 			}
 
@@ -285,18 +283,17 @@ func Test_backup_GetObject(t *testing.T) {
 			if err := test.checkFunc(test.want, gotVec, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_backup_GetLocation(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		uuid string
 	}
 	type fields struct {
-		addr   string
 		client grpc.Client
 	}
 	type want struct {
@@ -331,7 +328,6 @@ func Test_backup_GetLocation(t *testing.T) {
 		           uuid: "",
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		       },
 		       want: want{},
@@ -349,7 +345,6 @@ func Test_backup_GetLocation(t *testing.T) {
 		           uuid: "",
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           },
 		           want: want{},
@@ -359,9 +354,11 @@ func Test_backup_GetLocation(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -372,7 +369,6 @@ func Test_backup_GetLocation(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			b := &backup{
-				addr:   test.fields.addr,
 				client: test.fields.client,
 			}
 
@@ -380,18 +376,17 @@ func Test_backup_GetLocation(t *testing.T) {
 			if err := test.checkFunc(test.want, gotIpList, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_backup_Register(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
-		vec *payload.Backup_MetaVector
+		vec *payload.Backup_Vector
 	}
 	type fields struct {
-		addr   string
 		client grpc.Client
 	}
 	type want struct {
@@ -422,7 +417,6 @@ func Test_backup_Register(t *testing.T) {
 		           vec: nil,
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		       },
 		       want: want{},
@@ -440,7 +434,6 @@ func Test_backup_Register(t *testing.T) {
 		           vec: nil,
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           },
 		           want: want{},
@@ -450,9 +443,11 @@ func Test_backup_Register(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -463,7 +458,6 @@ func Test_backup_Register(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			b := &backup{
-				addr:   test.fields.addr,
 				client: test.fields.client,
 			}
 
@@ -471,18 +465,17 @@ func Test_backup_Register(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_backup_RegisterMultiple(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
-		vecs *payload.Backup_MetaVectors
+		vecs *payload.Backup_Vectors
 	}
 	type fields struct {
-		addr   string
 		client grpc.Client
 	}
 	type want struct {
@@ -513,7 +506,6 @@ func Test_backup_RegisterMultiple(t *testing.T) {
 		           vecs: nil,
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		       },
 		       want: want{},
@@ -531,7 +523,6 @@ func Test_backup_RegisterMultiple(t *testing.T) {
 		           vecs: nil,
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           },
 		           want: want{},
@@ -541,9 +532,11 @@ func Test_backup_RegisterMultiple(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -554,7 +547,6 @@ func Test_backup_RegisterMultiple(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			b := &backup{
-				addr:   test.fields.addr,
 				client: test.fields.client,
 			}
 
@@ -562,18 +554,17 @@ func Test_backup_RegisterMultiple(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_backup_Remove(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		uuid string
 	}
 	type fields struct {
-		addr   string
 		client grpc.Client
 	}
 	type want struct {
@@ -604,7 +595,6 @@ func Test_backup_Remove(t *testing.T) {
 		           uuid: "",
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		       },
 		       want: want{},
@@ -622,7 +612,6 @@ func Test_backup_Remove(t *testing.T) {
 		           uuid: "",
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           },
 		           want: want{},
@@ -632,9 +621,11 @@ func Test_backup_Remove(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -645,7 +636,6 @@ func Test_backup_Remove(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			b := &backup{
-				addr:   test.fields.addr,
 				client: test.fields.client,
 			}
 
@@ -653,18 +643,17 @@ func Test_backup_Remove(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_backup_RemoveMultiple(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx   context.Context
 		uuids []string
 	}
 	type fields struct {
-		addr   string
 		client grpc.Client
 	}
 	type want struct {
@@ -695,7 +684,6 @@ func Test_backup_RemoveMultiple(t *testing.T) {
 		           uuids: nil,
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		       },
 		       want: want{},
@@ -713,7 +701,6 @@ func Test_backup_RemoveMultiple(t *testing.T) {
 		           uuids: nil,
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           },
 		           want: want{},
@@ -723,9 +710,11 @@ func Test_backup_RemoveMultiple(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -736,7 +725,6 @@ func Test_backup_RemoveMultiple(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			b := &backup{
-				addr:   test.fields.addr,
 				client: test.fields.client,
 			}
 
@@ -744,7 +732,6 @@ func Test_backup_RemoveMultiple(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

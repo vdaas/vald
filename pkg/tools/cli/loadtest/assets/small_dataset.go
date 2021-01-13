@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -163,7 +163,7 @@ func (s *smallDataset) Distance(i int) ([]float32, error) {
 	return s.distances[i], nil
 }
 
-// DistanceSize returns size of distances
+// DistanceSize returns size of distances.
 func (s *smallDataset) DistanceSize() int {
 	return len(s.distances)
 }

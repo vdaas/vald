@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,97 +18,150 @@
 version: v0.0.0
 time_zone: JST
 logging:
-  logger: glg
+  format: raw
   level: debug
-  format: json
+  logger: glg
 server_config:
   servers:
-    - name: agent-rest
-      host: 127.0.0.1
-      port: 8080
-      mode: REST
-      probe_wait_time: 3s
-      http:
-        shutdown_duration: 5s
-        handler_timeout: 5s
-        idle_timeout: 2s
-        read_header_timeout: 1s
-        read_timeout: 1s
-        write_timeout: 1s
-    - name: agent-grpc
-      host: 127.0.0.1
-      port: 8082
+    - name: grpc
+      host: 0.0.0.0
+      port: 8081
+      grpc:
+        bidirectional_stream_concurrency: 20
+        connection_timeout: ""
+        header_table_size: 0
+        initial_conn_window_size: 0
+        initial_window_size: 0
+        interceptors: []
+        keepalive:
+          max_conn_age: ""
+          max_conn_age_grace: ""
+          max_conn_idle: ""
+          time: ""
+          timeout: ""
+        max_header_list_size: 0
+        max_receive_message_size: 0
+        max_send_message_size: 0
+        read_buffer_size: 0
+        write_buffer_size: 0
       mode: GRPC
-      probe_wait_time: "3s"
-      http:
-        shutdown_duration: "5s"
-        handler_timeout: ""
-        idle_timeout: ""
-        read_header_timeout: ""
-        read_timeout: ""
-        write_timeout: ""
-  health_check_servers:
-    - name: livenesss
-      host: 127.0.0.1
-      port: 3000
-      mode: ""
-      probe_wait_time: "3s"
-      http:
-        shutdown_duration: "5s"
-        handler_timeout: ""
-        idle_timeout: ""
-        read_header_timeout: ""
-        read_timeout: ""
-        write_timeout: ""
-    - name: readiness
-      host: 127.0.0.1
-      port: 3001
-      mode: ""
-      probe_wait_time: "3s"
-      http:
-        shutdown_duration: "5s"
-        handler_timeout: ""
-        idle_timeout: ""
-        read_header_timeout: ""
-        read_timeout: ""
-        write_timeout: ""
-  metrics_servers:
-    - name: pprof
-      host: 127.0.0.1
-      port: 6060
-      mode: REST
       probe_wait_time: 3s
+      restart: true
+  health_check_servers:
+    - name: readiness
+      host: 0.0.0.0
+      port: 3001
       http:
-        shutdown_duration: 5s
-        handler_timeout: 5s
-        idle_timeout: 2s
-        read_header_timeout: 1s
-        read_timeout: 1s
-        write_timeout: 1s
+        handler_timeout: ""
+        idle_timeout: ""
+        read_header_timeout: ""
+        read_timeout: ""
+        shutdown_duration: 0s
+        write_timeout: ""
+      mode: ""
+      probe_wait_time: 3s
+  metrics_servers:
   startup_strategy:
-    - livenesss
-    - pprof
-    - agent-grpc
-    - agent-rest
+    - grpc
     - readiness
-  shutdown_strategy:
-    - readiness
-    - agent-rest
-    - agent-grpc
-    - pprof
-    - livenesss
   full_shutdown_duration: 600s
   tls:
-    enabled: false
-    cert: /path/to/cert
-    key: /path/to/key
     ca: /path/to/ca
+    cert: /path/to/cert
+    enabled: false
+    key: /path/to/key
+observability:
+  enabled: false
+  collector:
+    duration: 5s
+    metrics:
+      enable_cgo: true
+      enable_goroutine: true
+      enable_memory: true
+      enable_version_info: true
+      version_info_labels:
+        - vald_version
+        - server_name
+        - git_commit
+        - build_time
+        - go_version
+        - go_os
+        - go_arch
+        - ngt_version
+  trace:
+    enabled: false
+    sampling_rate: 1
+  prometheus:
+    enabled: false
+    endpoint: /metrics
+    namespace: vald
+  jaeger:
+    enabled: false
+    collector_endpoint: ""
+    agent_endpoint: "jaeger-agent.default.svc.cluster.local:6831"
+    username: ""
+    password: ""
+    service_name: "vald-agent-ngt"
+    buffer_max_count: 10
+  stackdriver:
+    project_id: ""
+    client:
+      api_key: ""
+      audiences: []
+      authentication_enabled: true
+      credentials_file: ""
+      credentials_json: ""
+      endpoint: ""
+      quota_project: ""
+      request_reason: ""
+      scopes: []
+      telemetry_enabled: true
+      user_agent: ""
+    exporter:
+      bundle_count_threshold: 0
+      bundle_delay_threshold: "0"
+      location: ""
+      metric_prefix: vald.vdaas.org
+      monitoring_enabled: false
+      number_of_workers: 1
+      reporting_interval: 1m
+      skip_cmd: false
+      timeout: 5s
+      trace_spans_buffer_max_bytes: 0
+      tracing_enabled: false
+    profiler:
+      enabled: false
+      service: "vald-agent-ngt"
+      service_version: ""
+      debug_logging: false
+      mutex_profiling: true
+      cpu_profiling: true
+      alloc_profiling: true
+      heap_profiling: true
+      goroutine_profiling: true
+      alloc_force_gc: false
+      api_addr: ""
+      instance: ""
+      zone: ""
 ngt:
-  # index_path: /path/to/index
-  dimension: 4096
+  auto_create_index_pool_size: 10000
+  auto_index_check_duration: 30m
+  auto_index_duration_limit: 24h
+  auto_index_length: 100
+  auto_save_index_duration: 35m
   bulk_insert_chunk_size: 10
-  distance_type: l2
-  object_type: float
   creation_edge_size: 20
-  search_edge_size: 10
+  default_epsilon: 0.01
+  default_pool_size: 10000
+  default_radius: -1
+  dimension: 4096
+  distance_type: l2
   enable_in_memory_mode: true
+  enable_proactive_gc: true
+  index_path: ""
+  initial_delay_max_duration: 3m
+  load_index_timeout_factor: 1ms
+  max_load_index_timeout: 10m
+  min_load_index_timeout: 3m
+  object_type: float
+  search_edge_size: 10

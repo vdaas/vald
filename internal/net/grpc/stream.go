@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -102,9 +102,12 @@ func BidirectionalStream(ctx context.Context, stream grpc.ServerStream,
 
 // BidirectionalStreamClient is gRPC client stream.
 func BidirectionalStreamClient(stream grpc.ClientStream,
-	dataProvider func() interface{},
-	newData func() interface{},
+	dataProvider, newData func() interface{},
 	f func(interface{}, error)) (err error) {
+	if stream == nil {
+		return errors.ErrGRPCClientStreamNotFound
+	}
+
 	ctx, cancel := context.WithCancel(stream.Context())
 	eg, ctx := errgroup.New(ctx)
 

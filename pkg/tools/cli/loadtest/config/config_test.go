@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import (
 )
 
 func TestOperationMethod(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		s string
 	}
@@ -74,9 +75,11 @@ func TestOperationMethod(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -91,12 +94,12 @@ func TestOperationMethod(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func TestOperation_String(t *testing.T) {
+	t.Parallel()
 	type want struct {
 		want string
 	}
@@ -136,9 +139,11 @@ func TestOperation_String(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -153,12 +158,12 @@ func TestOperation_String(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func TestNewConfig(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		path string
 	}
@@ -211,9 +216,11 @@ func TestNewConfig(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -228,140 +235,6 @@ func TestNewConfig(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCfg, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
-		})
-	}
-}
-
-func TestServiceMethod(t *testing.T) {
-	type args struct {
-		s string
-	}
-	type want struct {
-		want Service
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, Service) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got Service) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           s: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           s: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-
-			got := ServiceMethod(test.args.s)
-			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func TestService_String(t *testing.T) {
-	type want struct {
-		want string
-	}
-	type test struct {
-		name       string
-		s          Service
-		want       want
-		checkFunc  func(want, string) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, got string) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-
-			got := test.s.String()
-			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
 		})
 	}
 }

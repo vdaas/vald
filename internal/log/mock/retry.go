@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 //
 package mock
 
-// Retry represents struct of mock retry structure
+// Retry represents struct of mock retry structure.
 type Retry struct {
 	OutFunc func(
 		fn func(vals ...interface{}) error,
@@ -29,7 +29,7 @@ type Retry struct {
 	)
 }
 
-// Out calls OutFunc
+// Out calls OutFunc.
 func (r *Retry) Out(
 	fn func(vals ...interface{}) error,
 	vals ...interface{},
@@ -37,7 +37,7 @@ func (r *Retry) Out(
 	r.OutFunc(fn, vals...)
 }
 
-// Outf calls OutfFunc
+// Outf calls OutfFunc.
 func (r *Retry) Outf(
 	fn func(format string, vals ...interface{}) error,
 	format string, vals ...interface{},
