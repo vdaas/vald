@@ -139,8 +139,8 @@ jobs:
             -host=localhost \
             -port=8081 \
             -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
-            -insert-num=1000 \
-            -search-num=1000 \
+            -insert-num=100 \
+            -search-num=100 \
             -search-by-id-num=10 \
             -get-object-num=10 \
             -update-num=10 \
@@ -257,8 +257,8 @@ jobs:
             -host=localhost \
             -port=8081 \
             -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
-            -insert-num=10000 \
-            -search-num=10000 \
+            -insert-num=1000 \
+            -search-num=1000 \
             -search-by-id-num=100 \
             -get-object-num=100 \
             -update-num=100 \
@@ -362,8 +362,8 @@ jobs:
             -host=localhost \
             -port=8081 \
             -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
-            -insert-num=10000 \
-            -search-num=10000 \
+            -insert-num=1000 \
+            -search-num=1000 \
             -portforward \
             -portforward-ns=default \
             -portforward-pod-name=${podname} \
