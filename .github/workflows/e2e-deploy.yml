@@ -43,7 +43,9 @@ jobs:
             vdaas/vald-manager-compressor \
             vdaas/vald-meta-redis \
             vdaas/vald-manager-backup-mysql \
-            vdaas/vald-gateway \
+            vdaas/vald-backup-gateway \
+            vdaas/vald-lb-gateway \
+            vdaas/vald-meta-gateway \
             vdaas/vald-manager-index
           do
             echo "searching ${image}:${tag}"
@@ -71,8 +73,14 @@ jobs:
           if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-manager-backup-mysql/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
             export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set manager.backup.image.tag=pr-${pr_num}"
           fi
-          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-gateway/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
-            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set gateway.vald.image.tag=pr-${pr_num}"
+          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-backup-gateway/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
+            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set gateway.backup.image.tag=pr-${pr_num}"
+          fi
+          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-lb-gateway/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
+            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set gateway.lb.image.tag=pr-${pr_num}"
+          fi
+          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-meta-gateway/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
+            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set gateway.meta.image.tag=pr-${pr_num}"
           fi
           if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-manager-index/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
             export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set manager.index.image.tag=pr-${pr_num}"
@@ -120,8 +128,8 @@ jobs:
             --values .github/helm/values/values-redis-mysql.yaml \
             --set defaults.image.tag=${tag} \
             ${HELM_EXTRA_OPTIONS} \
-            --generate-name vald/vald
-          until [ $(kubectl get pod -o json | jq -r "$jq_query" | wc -l) -ge 17 ]
+            --generate-name charts/vald
+          until [ $(kubectl get pod -o json | jq -r "$jq_query" | wc -l) -ge 19 ]
           do
             echo "waiting for Vald to be ready..."
             kubectl get pods
@@ -131,7 +139,7 @@ jobs:
       - name: run E2E CRUD
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
-          podname=`kubectl get pods --selector=app=vald-gateway | tail -1 | awk '{print $1}'`
+          podname=`kubectl get pods --selector=app=vald-meta-gateway | tail -1 | awk '{print $1}'`
           go test \
             -v tests/e2e/crud_test.go \
             -tags "e2e" \
@@ -143,7 +151,7 @@ jobs:
             -search-num=100 \
             -search-by-id-num=10 \
             -get-object-num=10 \
-            -update-num=10 \
+            -update-num=2 \
             -remove-num=10 \
             -wait-after-insert=2m \
             -portforward \
@@ -170,7 +178,9 @@ jobs:
             vdaas/vald-manager-compressor \
             vdaas/vald-meta-cassandra \
             vdaas/vald-manager-backup-cassandra \
-            vdaas/vald-gateway \
+            vdaas/vald-backup-gateway \
+            vdaas/vald-lb-gateway \
+            vdaas/vald-meta-gateway \
             vdaas/vald-manager-index
           do
             echo "searching ${image}:${tag}"
@@ -198,8 +208,14 @@ jobs:
           if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-manager-backup-cassandra/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
             export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set manager.backup.image.tag=pr-${pr_num}"
           fi
-          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-gateway/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
-            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set gateway.vald.image.tag=pr-${pr_num}"
+          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-backup-gateway/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
+            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set gateway.backup.image.tag=pr-${pr_num}"
+          fi
+          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-lb-gateway/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
+            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set gateway.lb.image.tag=pr-${pr_num}"
+          fi
+          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-meta-gateway/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
+            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set gateway.meta.image.tag=pr-${pr_num}"
           fi
           if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-manager-index/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
             export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set manager.index.image.tag=pr-${pr_num}"
@@ -238,8 +254,8 @@ jobs:
             --values .github/helm/values/values-scylla.yaml \
             --set defaults.image.tag=${tag} \
             ${HELM_EXTRA_OPTIONS} \
-            --generate-name vald/vald
-          until [ $(kubectl get pod -o json | jq -r "$jq_query" | wc -l) -ge 16 ]
+            --generate-name charts/vald
+          until [ $(kubectl get pod -o json | jq -r "$jq_query" | wc -l) -ge 17 ]
           do
             echo "waiting for Vald to be ready..."
             kubectl get pods
@@ -249,7 +265,7 @@ jobs:
       - name: run E2E CRUD
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
-          podname=`kubectl get pods --selector=app=vald-gateway | tail -1 | awk '{print $1}'`
+          podname=`kubectl get pods --selector=app=vald-meta-gateway | tail -1 | awk '{print $1}'`
           go test \
             -v tests/e2e/crud_test.go \
             -tags "e2e" \
@@ -261,7 +277,7 @@ jobs:
             -search-num=1000 \
             -search-by-id-num=100 \
             -get-object-num=100 \
-            -update-num=100 \
+            -update-num=3 \
             -remove-num=100 \
             -wait-after-insert=2m \
             -portforward \
@@ -343,7 +359,7 @@ jobs:
             --values .github/helm/values/values-agent-sidecar.yaml \
             --set defaults.image.tag=${tag} \
             ${HELM_EXTRA_OPTIONS} \
-            --generate-name vald/vald
+            --generate-name charts/vald
           until [ $(kubectl get pod --selector=app=vald-agent-ngt -o json | jq -r "$jq_query" | wc -l) -ge 1 ]
           do
             echo "waiting for Vald to be ready..."
@@ -386,8 +402,8 @@ jobs:
             -host=localhost \
             -port=8081 \
             -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
-            -insert-num=10000 \
-            -search-num=10000 \
+            -insert-num=1000 \
+            -search-num=1000 \
             -portforward \
             -portforward-ns=default \
             -portforward-pod-name=${podname} \

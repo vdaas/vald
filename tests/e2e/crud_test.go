@@ -32,8 +32,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vdaas/vald/apis/grpc/v1/gateway/vald"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/tests/e2e/portforward"
 
 	"gonum.org/v1/hdf5"
@@ -236,7 +236,7 @@ func readDatasetI32(file *hdf5.File, name string) (map[string][]int32, error) {
 	return vecs, nil
 }
 
-func getClient(ctx context.Context) (vald.ValdClient, error) {
+func getClient(ctx context.Context) (vald.Client, error) {
 	conn, err := grpc.DialContext(
 		ctx,
 		host+":"+strconv.Itoa(port),
@@ -301,12 +301,17 @@ func TestE2EInsert(t *testing.T) {
 	t.Log("insert start")
 	for i := insertFrom; i < len(ds.train); i++ {
 		id := strconv.Itoa(i)
-		err := sc.Send(&payload.Object_Vector{
-			Id:     id,
-			Vector: ds.train[id],
+		err := sc.Send(&payload.Insert_Request{
+			Vector: &payload.Object_Vector{
+				Id:     id,
+				Vector: ds.train[id],
+			},
+			Config: &payload.Insert_Config{
+				SkipStrictExistCheck: false,
+			},
 		})
 		if err != nil {
-			t.Fatal(err)
+			t.Fatalf("send failed at %d: %s", i+1, err)
 		}
 
 		if (i+1)%1000 == 0 {
@@ -600,9 +605,14 @@ func TestE2EUpdate(t *testing.T) {
 	for i := updateFrom; i < len(ds.train); i++ {
 		id := strconv.Itoa(i)
 		v := ds.train[id]
-		err := sc.Send(&payload.Object_Vector{
-			Id:     id,
-			Vector: append(v[1:], v[0]), // shift
+		err := sc.Send(&payload.Update_Request{
+			Vector: &payload.Object_Vector{
+				Id:     id,
+				Vector: append(v[1:], v[0]), // shift
+			},
+			Config: &payload.Update_Config{
+				SkipStrictExistCheck: false,
+			},
 		})
 		if err != nil {
 			t.Fatal(err)
@@ -664,8 +674,13 @@ func TestE2ERemove(t *testing.T) {
 	t.Log("remove start")
 	for i := removeFrom; i < len(ds.train); i++ {
 		id := strconv.Itoa(i)
-		err := sc.Send(&payload.Object_ID{
-			Id: id,
+		err := sc.Send(&payload.Remove_Request{
+			Id: &payload.Object_ID{
+				Id: id,
+			},
+			Config: &payload.Remove_Config{
+				SkipStrictExistCheck: false,
+			},
 		})
 		if err != nil {
 			t.Fatal(err)

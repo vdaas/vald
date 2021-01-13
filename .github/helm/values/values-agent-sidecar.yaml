@@ -14,6 +14,10 @@
 # limitations under the License.
 #
 
+defaults:
+  logging:
+    level: info
+
 agent:
   minReplicas: 1
   podManagementPolicy: Parallel
@@ -59,7 +63,14 @@ agent:
           force_path_style: true
 
 gateway:
-  enabled: false
+  vald:
+    enabled: false
+  lb:
+    enabled: false
+  backup:
+    enabled: false
+  meta:
+    enabled: false
 
 discoverer:
   enabled: false

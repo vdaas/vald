@@ -32,8 +32,8 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/agent/core"
-	"github.com/vdaas/vald/apis/grpc/v1/gateway/vald"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/tests/e2e/portforward"
 
 	"gonum.org/v1/hdf5"
@@ -230,7 +230,7 @@ func getAgentClient(ctx context.Context) (core.AgentClient, error) {
 	return core.NewAgentClient(conn), nil
 }
 
-func getClient(ctx context.Context) (vald.ValdClient, error) {
+func getClient(ctx context.Context) (vald.Client, error) {
 	conn, err := grpc.DialContext(
 		ctx,
 		host+":"+strconv.Itoa(port),
@@ -289,9 +289,14 @@ func TestE2EInsert(t *testing.T) {
 	t.Log("insert start")
 	for i := 0; i < len(ds.train); i++ {
 		id := strconv.Itoa(i)
-		err := sc.Send(&payload.Object_Vector{
-			Id:     id,
-			Vector: ds.train[id],
+		err := sc.Send(&payload.Insert_Request{
+			Vector: &payload.Object_Vector{
+				Id:     id,
+				Vector: ds.train[id],
+			},
+			Config: &payload.Insert_Config{
+				SkipStrictExistCheck: false,
+			},
 		})
 		if err != nil {
 			t.Fatal(err)

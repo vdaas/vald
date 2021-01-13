@@ -14,8 +14,14 @@
 # limitations under the License.
 #
 
+defaults:
+  logging:
+    level: info
+
 gateway:
   vald:
+    enabled: false
+  lb:
     enabled: true
     minReplicas: 1
     hpa:
@@ -26,12 +32,24 @@ gateway:
         memory: 50Mi
     gateway_config:
       index_replica: 3
-  lb:
-    enabled: false
   backup:
-    enabled: false
+    enabled: true
+    minReplicas: 1
+    hpa:
+      enabled: false
+    resources:
+      requests:
+        cpu: 100m
+        memory: 50Mi
   meta:
-    enabled: false
+    enabled: true
+    minReplicas: 1
+    hpa:
+      enabled: false
+    resources:
+      requests:
+        cpu: 100m
+        memory: 50Mi
 
 agent:
   minReplicas: 3
