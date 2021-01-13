@@ -82,7 +82,7 @@ data:
         expired_cache_check_duration: {{ $gateway.gateway_config.meta.expired_cache_check_duration }}
       backup:
         client:
-          {{- $compressorClient := $gateway.gateway_config.backup_client }}
+          {{- $compressorClient := $gateway.gateway_config.backup.client }}
           {{- $compressorServerPort := $backup.server_config.servers.grpc.port }}
           {{- $defaultCompressorHost := printf "%s.%s.svc.cluster.local" $backup.name .Release.Namespace }}
           {{- $defaultCompressorPort := default .Values.defaults.server_config.servers.grpc.port $compressorServerPort }}
