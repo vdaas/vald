@@ -425,8 +425,9 @@ func (g *gRPCClient) RoundRobin(ctx context.Context, f func(ctx context.Context,
 			p, ok := g.conns.Load(addr)
 			if !ok || p == nil {
 				g.crl.Store(addr, struct{}{})
-				log.Warn(errors.ErrGRPCClientConnNotFound(addr))
-				return nil, true, errors.ErrGRPCClientConnNotFound(addr)
+				err = errors.ErrGRPCClientConnNotFound(addr)
+				log.Warn(err)
+				return nil, true, err
 			}
 			r, err = g.do(ictx, p, addr, false, f)
 			if err != nil {
@@ -454,8 +455,9 @@ func (g *gRPCClient) Do(ctx context.Context, addr string,
 	p, ok := g.conns.Load(addr)
 	if !ok || p == nil {
 		g.crl.Store(addr, struct{}{})
-		log.Warn(errors.ErrGRPCClientConnNotFound(addr))
-		return nil, errors.ErrGRPCClientConnNotFound(addr)
+		err = errors.ErrGRPCClientConnNotFound(addr)
+		log.Warn(err)
+		return nil, err
 	}
 	return g.do(sctx, p, addr, true, f)
 }
@@ -464,7 +466,9 @@ func (g *gRPCClient) do(ctx context.Context, p pool.Conn, addr string, enableBac
 	f func(ctx context.Context,
 		conn *ClientConn, copts ...CallOption) (interface{}, error)) (data interface{}, err error) {
 	if p == nil {
-		return nil, errors.ErrGRPCClientConnNotFound(addr)
+		err = errors.ErrGRPCClientConnNotFound(addr)
+		log.Warn(err)
+		return nil, err
 	}
 	sctx, span := trace.StartSpan(ctx, "vald/internal/grpc/Client.do/"+addr)
 	defer func() {
