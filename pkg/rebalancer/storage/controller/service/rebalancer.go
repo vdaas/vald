@@ -163,9 +163,10 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 				log.Debugf("[reconcile StatefulSet] length StatefulSet[%s]: %d", r.agentName, len(statefulSetList))
 				sss, ok := statefulSetList[r.agentName]
 				if ok {
-					log.Debugf("[reconcile StatefulSet] StatefulSet[%s]: %d\tdesired replica: %d, current replica: %d", r.agentName, *sss[0].Spec.Replicas, sss[0].Status.Replicas)
+					log.Debugf("[reconcile StatefulSet] StatefulSet[%s]: desired replica: %d, current replica: %d", r.agentName, *sss[0].Spec.Replicas, sss[0].Status.Replicas)
 					if len(sss) == 1 {
 						if *sss[0].Spec.Replicas != sss[0].Status.Replicas {
+							log.Debug("[test] skip store")
 							return
 						}
 
