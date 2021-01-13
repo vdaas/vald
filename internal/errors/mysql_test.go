@@ -414,7 +414,7 @@ func TestErrMySQLNotFoundIdentity_Error(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return string of internal error when err of fields is 'error mysql element not found'",
+			name: "return string of internal error when err of field is 'error mysql element not found'",
 			fields: fields{
 				err: New("error mysql element not found"),
 			},
@@ -474,7 +474,7 @@ func TestErrMySQLNotFoundIdentity_Unwrap(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return internal error when err of fields is 'error mysql element not found'",
+			name: "return internal error when err of field is 'error mysql element not found'",
 			fields: fields{
 				err: New("error mysql element not found"),
 			},
@@ -543,7 +543,7 @@ func TestIsErrMySQLNotFound(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return true when err is 'ErrMySQLNotFoundIdentity'",
+			name: "return true when err is ErrMySQLNotFoundIdentity",
 			args: args{
 				err: new(ErrMySQLNotFoundIdentity),
 			},
@@ -618,7 +618,7 @@ func TestErrMySQLInvalidArgumentIdentity_Error(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return string of internal error when err of fields is 'error mysql invalid argument'",
+			name: "return string of internal error when err of field is 'error mysql invalid argument'",
 			fields: fields{
 				err: New("error mysql invalid argument"),
 			},
@@ -678,16 +678,16 @@ func TestErrMySQLInvalidArgumentIdentity_Unwrap(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return internal error when err of fields is 'rror mysql invalid argument'",
+			name: "return internal error when err of field is 'error mysql invalid argument'",
 			fields: fields{
-				err: New("rror mysql invalid argument"),
+				err: New("error mysql invalid argument"),
 			},
 			want: want{
-				err: New("rror mysql invalid argument"),
+				err: New("error mysql invalid argument"),
 			},
 		},
 		{
-			name: "return nil when err of fields is nil'",
+			name: "return nil when err of field is nil'",
 			fields: fields{
 				err: nil,
 			},
@@ -747,7 +747,7 @@ func TestIsErrMySQLInvalidArgument(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return true when err is 'ErrMySQLInvalidArgumentIdentity'",
+			name: "return true when err is ErrMySQLInvalidArgumentIdentity",
 			args: args{
 				err: new(ErrMySQLInvalidArgumentIdentity),
 			},
