@@ -16,6 +16,7 @@
 
 gateway:
   vald:
+    enabled: true
     minReplicas: 1
     hpa:
       enabled: false
@@ -25,6 +26,12 @@ gateway:
         memory: 50Mi
     gateway_config:
       index_replica: 3
+  lb:
+    enabled: false
+  backup:
+    enabled: false
+  meta:
+    enabled: false
 
 agent:
   minReplicas: 3

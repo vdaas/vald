@@ -64,14 +64,15 @@ gateway:
 discoverer:
   enabled: false
 
-compressor:
-  enabled: false
+manager:
+  compressor:
+    enabled: false
 
-backupManager:
-  enabled: false
+  backup:
+    enabled: false
 
-indexManager:
-  enabled: false
+  index:
+    enabled: false
 
 meta:
   enabled: false

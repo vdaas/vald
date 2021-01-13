@@ -15,15 +15,23 @@
 #
 
 gateway:
-  minReplicas: 1
-  hpa:
+  vald:
+    enabled: true
+    minReplicas: 1
+    hpa:
+      enabled: false
+    resources:
+      requests:
+        cpu: 100m
+        memory: 50Mi
+    gateway_config:
+      index_replica: 3
+  lb:
     enabled: false
-  resources:
-    requests:
-      cpu: 100m
-      memory: 50Mi
-  gateway_config:
-    index_replica: 3
+  backup:
+    enabled: false
+  meta:
+    enabled: false
 
 agent:
   minReplicas: 3
@@ -50,51 +58,56 @@ discoverer:
       cpu: 100m
       memory: 50Mi
 
-compressor:
-  minReplicas: 3
-  hpa:
-    enabled: false
-  resources:
-    requests:
-      cpu: 100m
-      memory: 50Mi
-  compress:
-    compress_algorithm: gob
+manager:
+  compressor:
+    minReplicas: 3
+    hpa:
+      enabled: false
+    resources:
+      requests:
+        cpu: 100m
+        memory: 50Mi
+    compress:
+      compress_algorithm: gob
 
-backupManager:
-  minReplicas: 3
-  hpa:
-    enabled: false
-  resources:
-    requests:
-      cpu: 100m
-      memory: 30Mi
-  image:
-    repository: vdaas/vald-manager-backup-cassandra
-  initContainers:
-    - type: wait-for-cassandra
-      name: wait-for-scylla
-      image: cassandra:latest
-      cassandra:
+  backup:
+    minReplicas: 3
+    hpa:
+      enabled: false
+    resources:
+      requests:
+        cpu: 100m
+        memory: 30Mi
+    image:
+      repository: vdaas/vald-manager-backup-cassandra
+    initContainers:
+      - type: wait-for-cassandra
+        name: wait-for-scylla
+        image: cassandra:latest
+        cassandra:
+          hosts:
+            - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
+            - vald-scylla-cluster-dc0-rack0-1.scylla.svc.cluster.local
+            - vald-scylla-cluster-dc0-rack0-2.scylla.svc.cluster.local
+        sleepDuration: 2
+    env: []
+    mysql:
+      enabled: false
+    cassandra:
+      enabled: true
+      config:
         hosts:
-          - scylla-0.scylla.default.svc.cluster.local
-      sleepDuration: 2
-  env: []
-  mysql:
-    enabled: false
-  cassandra:
-    enabled: true
-    config:
-      hosts:
-        - scylla-0.scylla.default.svc.cluster.local
-      consistency: one
+          - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
+          - vald-scylla-cluster-dc0-rack0-1.scylla.svc.cluster.local
+          - vald-scylla-cluster-dc0-rack0-2.scylla.svc.cluster.local
+        consistency: one
 
-indexManager:
-  replicas: 1
-  resources:
-    requests:
-      cpu: 100m
-      memory: 30Mi
+  index:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 30Mi
 
 meta:
   minReplicas: 3
@@ -112,7 +125,9 @@ meta:
       image: cassandra:latest
       cassandra:
         hosts:
-          - scylla-0.scylla.default.svc.cluster.local
+          - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
+          - vald-scylla-cluster-dc0-rack0-1.scylla.svc.cluster.local
+          - vald-scylla-cluster-dc0-rack0-2.scylla.svc.cluster.local
       sleepDuration: 2
   env: []
   redis:
@@ -121,5 +136,7 @@ meta:
     enabled: true
     config:
       hosts:
-        - scylla-0.scylla.default.svc.cluster.local
+        - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
+        - vald-scylla-cluster-dc0-rack0-1.scylla.svc.cluster.local
+        - vald-scylla-cluster-dc0-rack0-2.scylla.svc.cluster.local
       consistency: one
