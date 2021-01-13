@@ -19,6 +19,7 @@ package grpc
 
 import (
 	"context"
+	"math"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -155,11 +156,15 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 		prTick := &time.Ticker{
 			C: make(chan time.Time),
 		}
-		if g.enablePoolRebalance {
+		reconnLimitDuration := time.Second
+		hcTick := time.NewTicker(g.hcDur)
+		if g.enablePoolRebalance && g.prDur.Nanoseconds() > 0 {
 			prTick.Stop()
 			prTick = time.NewTicker(g.prDur)
+			reconnLimitDuration = time.Duration(int64(math.Min(float64(g.hcDur.Nanoseconds()), float64(g.prDur.Nanoseconds()))))
+		} else {
+			reconnLimitDuration = g.hcDur
 		}
-		hcTick := time.NewTicker(g.hcDur)
 		defer close(ech)
 		defer g.Close(context.Background())
 		defer hcTick.Stop()
@@ -227,19 +232,26 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 					return true
 				})
 			}
+			clctx, cancel := context.WithTimeout(ctx, reconnLimitDuration)
 			g.crl.Range(func(a, _ interface{}) bool {
-				addr := a.(string)
-				defer g.crl.Delete(addr)
-				_, err = g.bo.Do(ctx, func(_ context.Context) (r interface{}, ret bool, err error) {
-					_, err = g.Connect(ctx, addr)
-					return nil, err != nil, err
-				})
-				if err != nil {
-					g.conns.Delete(addr)
-					g.atomicAddrs.Delete(addr)
+				select {
+				case <-clctx.Done():
+					return false
+				default:
+					addr := a.(string)
+					defer g.crl.Delete(addr)
+					_, err = g.bo.Do(clctx, func(ictx context.Context) (r interface{}, ret bool, err error) {
+						_, err = g.Connect(ictx, addr)
+						return nil, err != nil, err
+					})
+					if err != nil {
+						g.conns.Delete(addr)
+						g.atomicAddrs.Delete(addr)
+					}
+					return true
 				}
-				return true
 			})
+			cancel()
 		}
 	}))
 	return ech, nil
