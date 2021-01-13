@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,16 +22,16 @@ import (
 	"reflect"
 	"testing"
 
-	agent "github.com/vdaas/vald/apis/grpc/agent/core"
-	"github.com/vdaas/vald/internal/client/discoverer"
+	"github.com/vdaas/vald/apis/grpc/v1/vald"
+	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
-
 	"go.uber.org/goleak"
 )
 
 func TestNewGateway(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []GWOption
 	}
@@ -84,9 +84,11 @@ func TestNewGateway(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -101,12 +103,12 @@ func TestNewGateway(t *testing.T) {
 			if err := test.checkFunc(test.want, gotGw, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_gateway_Start(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -172,9 +174,11 @@ func Test_gateway_Start(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -193,15 +197,15 @@ func Test_gateway_Start(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_gateway_BroadCast(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
-		f   func(ctx context.Context, target string, ac agent.AgentClient, copts ...grpc.CallOption) error
+		f   func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error
 	}
 	type fields struct {
 		client discoverer.Client
@@ -263,9 +267,11 @@ func Test_gateway_BroadCast(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -284,15 +290,15 @@ func Test_gateway_BroadCast(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_gateway_Do(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
-		f   func(ctx context.Context, target string, ac agent.AgentClient, copts ...grpc.CallOption) error
+		f   func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error
 	}
 	type fields struct {
 		client discoverer.Client
@@ -354,9 +360,11 @@ func Test_gateway_Do(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -375,16 +383,16 @@ func Test_gateway_Do(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_gateway_DoMulti(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		num int
-		f   func(ctx context.Context, target string, ac agent.AgentClient, copts ...grpc.CallOption) error
+		f   func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error
 	}
 	type fields struct {
 		client discoverer.Client
@@ -448,9 +456,11 @@ func Test_gateway_DoMulti(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -469,12 +479,12 @@ func Test_gateway_DoMulti(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_gateway_GetAgentCount(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -536,9 +546,11 @@ func Test_gateway_GetAgentCount(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -557,7 +569,6 @@ func Test_gateway_GetAgentCount(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

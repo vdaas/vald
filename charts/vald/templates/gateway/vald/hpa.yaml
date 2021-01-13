@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,11 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if and .Values.gateway.enabled .Values.gateway.hpa.enabled }}
+{{- $gateway := .Values.gateway.vald -}}
+{{- if and $gateway.enabled $gateway.hpa.enabled }}
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ .Values.gateway.name }}
+  name: {{ $gateway.name }}
   labels:
     app.kubernetes.io/name: {{ include "vald.name" . }}
     helm.sh/chart: {{ include "vald.chart" . }}
@@ -26,12 +27,12 @@ metadata:
     app.kubernetes.io/version: {{ .Chart.Version }}
     app.kubernetes.io/component: gateway
 spec:
-  maxReplicas: {{ .Values.gateway.maxReplicas }}
-  minReplicas: {{ .Values.gateway.minReplicas }}
+  maxReplicas: {{ $gateway.maxReplicas }}
+  minReplicas: {{ $gateway.minReplicas }}
   scaleTargetRef:
     apiVersion: apps/v1
-    kind: {{ .Values.gateway.kind }}
-    name: {{ .Values.gateway.name }}
-  targetCPUUtilizationPercentage: {{ .Values.gateway.hpa.targetCPUUtilizationPercentage }}
+    kind: {{ $gateway.kind }}
+    name: {{ $gateway.name }}
+  targetCPUUtilizationPercentage: {{ $gateway.hpa.targetCPUUtilizationPercentage }}
 status:
 {{- end }}

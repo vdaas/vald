@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -47,7 +47,11 @@ type DialOption struct {
 	InitialWindowSize           int                  `json:"initial_window_size" yaml:"initial_window_size"`
 	InitialConnectionWindowSize int                  `json:"initial_connection_window_size" yaml:"initial_connection_window_size"`
 	MaxMsgSize                  int                  `json:"max_msg_size" yaml:"max_msg_size"`
-	MaxBackoffDelay             string               `json:"max_backoff_delay" yaml:"max_backoff_delay"`
+	BackoffMaxDelay             string               `json:"backoff_max_delay" yaml:"backoff_max_delay"`
+	BackoffBaseDelay            string               `json:"backoff_base_delay" yaml:"backoff_base_delay"`
+	BackoffJitter               float64              `json:"backoff_jitter" yaml:"backoff_jitter"`
+	BackoffMultiplier           float64              `json:"backoff_multiplier" yaml:"backoff_multiplier"`
+	MinimumConnectionTimeout    string               `json:"min_connection_timeout" yaml:"min_connection_timeout"`
 	EnableBackoff               bool                 `json:"enable_backoff" yaml:"enable_backoff"`
 	Insecure                    bool                 `json:"insecure" yaml:"insecure"`
 	Timeout                     string               `json:"timeout" yaml:"timeout"`
@@ -128,7 +132,7 @@ func (c *CallOption) Bind() *CallOption {
 }
 
 func (d *DialOption) Bind() *DialOption {
-	d.MaxBackoffDelay = GetActualValue(d.MaxBackoffDelay)
+	d.BackoffMaxDelay = GetActualValue(d.BackoffMaxDelay)
 	d.Timeout = GetActualValue(d.Timeout)
 	return d
 }
@@ -179,7 +183,8 @@ func (g *GRPCClient) Opts() []grpc.Option {
 			grpc.WithInitialConnectionWindowSize(g.DialOption.InitialWindowSize),
 			grpc.WithMaxMsgSize(g.DialOption.MaxMsgSize),
 			grpc.WithInsecure(g.DialOption.Insecure),
-			grpc.WithMaxBackoffDelay(g.DialOption.MaxBackoffDelay),
+			grpc.WithBackoffMaxDelay(g.DialOption.BackoffMaxDelay),
+			grpc.WithBackoffMaxDelay(g.DialOption.BackoffMaxDelay),
 			grpc.WithDialTimeout(g.DialOption.Timeout),
 		)
 

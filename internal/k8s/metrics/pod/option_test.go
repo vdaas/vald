@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,12 +20,13 @@ package pod
 import (
 	"testing"
 
-	"sigs.k8s.io/controller-runtime/pkg/manager"
-
 	"go.uber.org/goleak"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 func TestWithControllerName(t *testing.T) {
+	t.Parallel()
+	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
 		name string
@@ -63,7 +64,7 @@ func TestWithControllerName(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
+	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 	       }
 	       return nil
 	   }
@@ -99,9 +100,11 @@ func TestWithControllerName(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -122,7 +125,7 @@ func TestWithControllerName(t *testing.T) {
 			   }
 			*/
 
-			// Uncomment this block if the option returns an error, otherwise delete it
+			// Uncomment this block if the option do not return an error, otherwise delete it
 			/*
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
@@ -130,7 +133,7 @@ func TestWithControllerName(t *testing.T) {
 			   got := WithControllerName(test.args.name)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := test.checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -139,6 +142,8 @@ func TestWithControllerName(t *testing.T) {
 }
 
 func TestWithManager(t *testing.T) {
+	t.Parallel()
+	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
 		mgr manager.Manager
@@ -176,7 +181,7 @@ func TestWithManager(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
+	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 	       }
 	       return nil
 	   }
@@ -212,9 +217,11 @@ func TestWithManager(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -235,7 +242,7 @@ func TestWithManager(t *testing.T) {
 			   }
 			*/
 
-			// Uncomment this block if the option returns an error, otherwise delete it
+			// Uncomment this block if the option do not return an error, otherwise delete it
 			/*
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
@@ -243,7 +250,7 @@ func TestWithManager(t *testing.T) {
 			   got := WithManager(test.args.mgr)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := test.checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -252,6 +259,8 @@ func TestWithManager(t *testing.T) {
 }
 
 func TestWithOnErrorFunc(t *testing.T) {
+	t.Parallel()
+	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
 		f func(err error)
@@ -289,7 +298,7 @@ func TestWithOnErrorFunc(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
+	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 	       }
 	       return nil
 	   }
@@ -325,9 +334,11 @@ func TestWithOnErrorFunc(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -348,7 +359,7 @@ func TestWithOnErrorFunc(t *testing.T) {
 			   }
 			*/
 
-			// Uncomment this block if the option returns an error, otherwise delete it
+			// Uncomment this block if the option do not return an error, otherwise delete it
 			/*
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
@@ -356,7 +367,7 @@ func TestWithOnErrorFunc(t *testing.T) {
 			   got := WithOnErrorFunc(test.args.f)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := test.checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -365,6 +376,8 @@ func TestWithOnErrorFunc(t *testing.T) {
 }
 
 func TestWithOnReconcileFunc(t *testing.T) {
+	t.Parallel()
+	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
 		f func(podList map[string]Pod)
@@ -402,7 +415,7 @@ func TestWithOnReconcileFunc(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
+	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 	       }
 	       return nil
 	   }
@@ -438,9 +451,11 @@ func TestWithOnReconcileFunc(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -461,7 +476,7 @@ func TestWithOnReconcileFunc(t *testing.T) {
 			   }
 			*/
 
-			// Uncomment this block if the option returns an error, otherwise delete it
+			// Uncomment this block if the option do not return an error, otherwise delete it
 			/*
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
@@ -469,7 +484,7 @@ func TestWithOnReconcileFunc(t *testing.T) {
 			   got := WithOnReconcileFunc(test.args.f)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := test.checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/

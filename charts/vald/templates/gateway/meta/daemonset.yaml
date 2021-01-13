@@ -1,0 +1,118 @@
+#
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+{{- $gateway := .Values.gateway.meta -}}
+{{- if and $gateway.enabled (eq $gateway.kind "DaemonSet") }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ $gateway.name }}
+  labels:
+    app: {{ $gateway.name }}
+    app.kubernetes.io/name: {{ include "vald.name" . }}
+    helm.sh/chart: {{ include "vald.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.Version }}
+    app.kubernetes.io/component: gateway-meta
+  {{- if $gateway.annotations }}
+  annotations:
+    {{- toYaml $gateway.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  revisionHistoryLimit: {{ $gateway.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      app: {{ $gateway.name }}
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: {{ $gateway.rollingUpdate.maxUnavailable }}
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: {{ $gateway.name }}
+        app.kubernetes.io/name: {{ include "vald.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: gateway
+      annotations:
+        checksum/configmap: {{ include (print $.Template.BasePath "/gateway/meta/configmap.yaml") . | sha256sum }}
+        {{- if $gateway.podAnnotations }}
+        {{- toYaml $gateway.podAnnotations | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- if $gateway.initContainers }}
+      initContainers:
+        {{- $initContainers := dict "initContainers" $gateway.initContainers "Values" .Values "namespace" .Release.Namespace -}}
+        {{- include "vald.initContainers" $initContainers | trim | nindent 8 }}
+      {{- end }}
+      affinity:
+        {{- include "vald.affinity" $gateway.affinity | nindent 8 }}
+      {{- if $gateway.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml $gateway.topologySpreadConstraints | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ $gateway.name }}
+          image: "{{ $gateway.image.repository }}:{{ default .Values.defaults.image.tag $gateway.image.tag }}"
+          imagePullPolicy: {{ $gateway.image.pullPolicy }}
+          {{- $servers := dict "Values" $gateway.server_config "default" .Values.defaults.server_config -}}
+          {{- include "vald.containerPorts" $servers | trim | nindent 10 }}
+          resources:
+            {{- toYaml $gateway.resources | nindent 12 }}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          {{- if $gateway.env }}
+          env:
+            {{- toYaml $gateway.env | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: {{ $gateway.name }}-config
+              mountPath: /etc/server/
+            {{- if $gateway.volumeMounts }}
+            {{- toYaml $gateway.volumeMounts | nindent 12 }}
+            {{- end }}
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: {{ $gateway.terminationGracePeriodSeconds }}
+      volumes:
+        - name: {{ $gateway.name }}-config
+          configMap:
+            defaultMode: 420
+            name: {{ $gateway.name }}-config
+        {{- if $gateway.volumes }}
+        {{- toYaml $gateway.volumes | nindent 8 }}
+        {{- end }}
+      {{- if $gateway.nodeName }}
+      nodeName: {{ $gateway.nodeName }}
+      {{- end }}
+      {{- if $gateway.nodeSelector }}
+      nodeSelector:
+        {{- toYaml $gateway.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if $gateway.tolerations }}
+      tolerations:
+        {{- toYaml $gateway.tolerations | nindent 8 }}
+      {{- end }}
+      {{- if $gateway.podPriority }}
+      {{- if $gateway.podPriority.enabled }}
+      priorityClassName: {{ $gateway.name }}-priority
+      {{- end }}
+      {{- end }}
+status:
+{{- end }}

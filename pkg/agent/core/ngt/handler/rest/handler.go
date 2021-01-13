@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,14 +18,12 @@
 package rest
 
 import (
-	"io"
-	"io/ioutil"
 	"net/http"
 
-	agent "github.com/vdaas/vald/apis/grpc/agent/core"
-	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/net/http/dump"
 	"github.com/vdaas/vald/internal/net/http/json"
+	"github.com/vdaas/vald/pkg/agent/core/ngt/handler/grpc"
 )
 
 type Handler interface {
@@ -46,13 +44,13 @@ type Handler interface {
 }
 
 type handler struct {
-	agent agent.AgentServer
+	agent grpc.Server
 }
 
 func New(opts ...Option) Handler {
 	h := new(handler)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(h)
 	}
 	return h
@@ -80,42 +78,42 @@ func (h *handler) SearchByID(w http.ResponseWriter, r *http.Request) (code int, 
 }
 
 func (h *handler) Insert(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Object_Vector
+	var req *payload.Insert_Request
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.agent.Insert(r.Context(), req)
 	})
 }
 
 func (h *handler) MultiInsert(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Object_Vectors
+	var req *payload.Insert_MultiRequest
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.agent.MultiInsert(r.Context(), req)
 	})
 }
 
 func (h *handler) Update(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Object_Vector
+	var req *payload.Update_Request
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.agent.Update(r.Context(), req)
 	})
 }
 
 func (h *handler) MultiUpdate(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Object_Vectors
+	var req *payload.Update_MultiRequest
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.agent.MultiUpdate(r.Context(), req)
 	})
 }
 
 func (h *handler) Remove(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Object_ID
+	var req *payload.Remove_Request
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.agent.Remove(r.Context(), req)
 	})
 }
 
 func (h *handler) MultiRemove(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Object_IDs
+	var req *payload.Remove_MultiRequest
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.agent.MultiRemove(r.Context(), req)
 	})
@@ -129,10 +127,10 @@ func (h *handler) CreateIndex(w http.ResponseWriter, r *http.Request) (code int,
 }
 
 func (h *handler) SaveIndex(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	io.Copy(ioutil.Discard, r.Body)
-	r.Body.Close()
-	_, err = h.agent.SaveIndex(r.Context(), nil)
-	return
+	var req *payload.Empty
+	return json.Handler(w, r, &req, func() (interface{}, error) {
+		return h.agent.SaveIndex(r.Context(), req)
+	})
 }
 
 func (h *handler) CreateAndSaveIndex(w http.ResponseWriter, r *http.Request) (code int, err error) {

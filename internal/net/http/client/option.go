@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,13 +30,11 @@ import (
 // Option represent the functional option for transport.
 type Option func(*transport) error
 
-var (
-	defaultOpts = []Option{
-		WithProxy(http.ProxyFromEnvironment),
-		WithEnableKeepAlives(true),
-		WithEnableCompression(true),
-	}
-)
+var defaultOptions = []Option{
+	WithProxy(http.ProxyFromEnvironment),
+	WithEnableKeepAlives(true),
+	WithEnableCompression(true),
+}
 
 // WithProxy returns the option to set the transport proxy.
 func WithProxy(px func(*http.Request) (*url.URL, error)) Option {
@@ -60,7 +58,6 @@ func WithDialContext(dx func(ctx context.Context, network, addr string) (net.Con
 
 		return nil
 	}
-
 }
 
 // WithTLSHandshakeTimeout returns the option to set the TLS handshake timeout.

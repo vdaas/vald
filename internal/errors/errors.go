@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"reflect"
 	"runtime"
+	"strings"
 )
 
 var (
@@ -79,7 +80,7 @@ var (
 
 	Wrapf = func(err error, format string, args ...interface{}) error {
 		if err != nil {
-			if format != "" && len(args) > 0 {
+			if format != "" && len(args) != 0 {
 				return Wrap(err, fmt.Sprintf(format, args...))
 			}
 			return err
@@ -97,10 +98,20 @@ var (
 	Unwrap = errors.Unwrap
 
 	Errorf = func(format string, args ...interface{}) error {
-		if format != "" && args != nil && len(args) > 0 {
+		const delim = " "
+		if format == "" && len(args) == 0 {
+			return nil
+		}
+		if len(args) != 0 {
+			if format == "" {
+				for range args {
+					format += "%v" + delim
+				}
+				format = strings.TrimSuffix(format, delim)
+			}
 			return fmt.Errorf(format, args...)
 		}
-		return nil
+		return New(format)
 	}
 
 	Is = func(err, target error) bool {
@@ -110,7 +121,8 @@ var (
 
 		isComparable := reflect.TypeOf(target).Comparable()
 		for {
-			if isComparable && (err == target || err.Error() == target.Error()) {
+			if isComparable && (err == target ||
+				err.Error() == target.Error()) {
 				return true
 			}
 			if x, ok := err.(interface {

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,12 +27,10 @@ import (
 	"go.uber.org/goleak"
 )
 
-var (
-	// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
-	goleakIgnoreOptions = []goleak.Option{
-		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
-	}
-)
+// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
+var goleakIgnoreOptions = []goleak.Option{
+	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+}
 
 func TestWithRoundTripper(t *testing.T) {
 	type T = ert

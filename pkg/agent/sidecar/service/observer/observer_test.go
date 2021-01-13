@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []Option
 	}
@@ -83,8 +84,10 @@ func TestNew(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -100,12 +103,12 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, gotSo, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_observer_Start(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -120,6 +123,7 @@ func Test_observer_Start(t *testing.T) {
 		tickerEnabled   bool
 		storage         storage.Storage
 		ch              chan struct{}
+		hooks           []Hook
 	}
 	type want struct {
 		want <-chan error
@@ -162,6 +166,7 @@ func Test_observer_Start(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -187,6 +192,7 @@ func Test_observer_Start(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -195,8 +201,10 @@ func Test_observer_Start(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -218,18 +226,19 @@ func Test_observer_Start(t *testing.T) {
 				tickerEnabled:   test.fields.tickerEnabled,
 				storage:         test.fields.storage,
 				ch:              test.fields.ch,
+				hooks:           test.fields.hooks,
 			}
 
 			got, err := o.Start(test.args.ctx)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_observer_PostStop(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -244,6 +253,7 @@ func Test_observer_PostStop(t *testing.T) {
 		tickerEnabled   bool
 		storage         storage.Storage
 		ch              chan struct{}
+		hooks           []Hook
 	}
 	type want struct {
 		err error
@@ -282,6 +292,7 @@ func Test_observer_PostStop(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -307,6 +318,7 @@ func Test_observer_PostStop(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -315,8 +327,10 @@ func Test_observer_PostStop(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -338,18 +352,19 @@ func Test_observer_PostStop(t *testing.T) {
 				tickerEnabled:   test.fields.tickerEnabled,
 				storage:         test.fields.storage,
 				ch:              test.fields.ch,
+				hooks:           test.fields.hooks,
 			}
 
 			err := o.PostStop(test.args.ctx)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_observer_startTicker(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -364,6 +379,7 @@ func Test_observer_startTicker(t *testing.T) {
 		tickerEnabled   bool
 		storage         storage.Storage
 		ch              chan struct{}
+		hooks           []Hook
 	}
 	type want struct {
 		want <-chan error
@@ -406,6 +422,7 @@ func Test_observer_startTicker(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -431,6 +448,7 @@ func Test_observer_startTicker(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -439,8 +457,10 @@ func Test_observer_startTicker(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -462,18 +482,19 @@ func Test_observer_startTicker(t *testing.T) {
 				tickerEnabled:   test.fields.tickerEnabled,
 				storage:         test.fields.storage,
 				ch:              test.fields.ch,
+				hooks:           test.fields.hooks,
 			}
 
 			got, err := o.startTicker(test.args.ctx)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_observer_startBackupLoop(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -488,6 +509,7 @@ func Test_observer_startBackupLoop(t *testing.T) {
 		tickerEnabled   bool
 		storage         storage.Storage
 		ch              chan struct{}
+		hooks           []Hook
 	}
 	type want struct {
 		want <-chan error
@@ -530,6 +552,7 @@ func Test_observer_startBackupLoop(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -555,6 +578,7 @@ func Test_observer_startBackupLoop(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -563,8 +587,10 @@ func Test_observer_startBackupLoop(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -586,18 +612,19 @@ func Test_observer_startBackupLoop(t *testing.T) {
 				tickerEnabled:   test.fields.tickerEnabled,
 				storage:         test.fields.storage,
 				ch:              test.fields.ch,
+				hooks:           test.fields.hooks,
 			}
 
 			got, err := o.startBackupLoop(test.args.ctx)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_observer_onWrite(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		name string
@@ -613,6 +640,7 @@ func Test_observer_onWrite(t *testing.T) {
 		tickerEnabled   bool
 		storage         storage.Storage
 		ch              chan struct{}
+		hooks           []Hook
 	}
 	type want struct {
 		err error
@@ -652,6 +680,7 @@ func Test_observer_onWrite(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -678,6 +707,7 @@ func Test_observer_onWrite(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -686,8 +716,10 @@ func Test_observer_onWrite(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -709,18 +741,19 @@ func Test_observer_onWrite(t *testing.T) {
 				tickerEnabled:   test.fields.tickerEnabled,
 				storage:         test.fields.storage,
 				ch:              test.fields.ch,
+				hooks:           test.fields.hooks,
 			}
 
 			err := o.onWrite(test.args.ctx, test.args.name)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_observer_onCreate(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		name string
@@ -736,6 +769,7 @@ func Test_observer_onCreate(t *testing.T) {
 		tickerEnabled   bool
 		storage         storage.Storage
 		ch              chan struct{}
+		hooks           []Hook
 	}
 	type want struct {
 		err error
@@ -775,6 +809,7 @@ func Test_observer_onCreate(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -801,6 +836,7 @@ func Test_observer_onCreate(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -809,8 +845,10 @@ func Test_observer_onCreate(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -832,20 +870,19 @@ func Test_observer_onCreate(t *testing.T) {
 				tickerEnabled:   test.fields.tickerEnabled,
 				storage:         test.fields.storage,
 				ch:              test.fields.ch,
+				hooks:           test.fields.hooks,
 			}
 
 			err := o.onCreate(test.args.ctx, test.args.name)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_observer_isValidMetadata(t *testing.T) {
-	type args struct {
-	}
+	t.Parallel()
 	type fields struct {
 		w               watch.Watcher
 		dir             string
@@ -857,6 +894,7 @@ func Test_observer_isValidMetadata(t *testing.T) {
 		tickerEnabled   bool
 		storage         storage.Storage
 		ch              chan struct{}
+		hooks           []Hook
 	}
 	type want struct {
 		want bool
@@ -864,12 +902,11 @@ func Test_observer_isValidMetadata(t *testing.T) {
 	}
 	type test struct {
 		name       string
-		args       args
 		fields     fields
 		want       want
 		checkFunc  func(want, bool, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func()
+		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, got bool, err error) error {
 		if !errors.Is(err, w.err) {
@@ -885,8 +922,6 @@ func Test_observer_isValidMetadata(t *testing.T) {
 		/*
 		   {
 		       name: "test_case_1",
-		       args: args {
-		       },
 		       fields: fields {
 		           w: nil,
 		           dir: "",
@@ -898,6 +933,7 @@ func Test_observer_isValidMetadata(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -909,8 +945,6 @@ func Test_observer_isValidMetadata(t *testing.T) {
 		   func() test {
 		       return test {
 		           name: "test_case_2",
-		           args: args {
-		           },
 		           fields: fields {
 		           w: nil,
 		           dir: "",
@@ -922,6 +956,7 @@ func Test_observer_isValidMetadata(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -930,14 +965,16 @@ func Test_observer_isValidMetadata(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc()
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -953,18 +990,19 @@ func Test_observer_isValidMetadata(t *testing.T) {
 				tickerEnabled:   test.fields.tickerEnabled,
 				storage:         test.fields.storage,
 				ch:              test.fields.ch,
+				hooks:           test.fields.hooks,
 			}
 
 			got, err := o.isValidMetadata()
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_observer_terminate(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		w               watch.Watcher
 		dir             string
@@ -976,6 +1014,7 @@ func Test_observer_terminate(t *testing.T) {
 		tickerEnabled   bool
 		storage         storage.Storage
 		ch              chan struct{}
+		hooks           []Hook
 	}
 	type want struct {
 		err error
@@ -1010,6 +1049,7 @@ func Test_observer_terminate(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1032,6 +1072,7 @@ func Test_observer_terminate(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1040,8 +1081,10 @@ func Test_observer_terminate(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -1063,18 +1106,19 @@ func Test_observer_terminate(t *testing.T) {
 				tickerEnabled:   test.fields.tickerEnabled,
 				storage:         test.fields.storage,
 				ch:              test.fields.ch,
+				hooks:           test.fields.hooks,
 			}
 
 			err := o.terminate()
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_observer_requestBackup(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -1089,6 +1133,7 @@ func Test_observer_requestBackup(t *testing.T) {
 		tickerEnabled   bool
 		storage         storage.Storage
 		ch              chan struct{}
+		hooks           []Hook
 	}
 	type want struct {
 		err error
@@ -1127,6 +1172,7 @@ func Test_observer_requestBackup(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1152,6 +1198,7 @@ func Test_observer_requestBackup(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1160,8 +1207,10 @@ func Test_observer_requestBackup(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1183,18 +1232,19 @@ func Test_observer_requestBackup(t *testing.T) {
 				tickerEnabled:   test.fields.tickerEnabled,
 				storage:         test.fields.storage,
 				ch:              test.fields.ch,
+				hooks:           test.fields.hooks,
 			}
 
 			err := o.requestBackup(test.args.ctx)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_observer_backup(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -1209,6 +1259,7 @@ func Test_observer_backup(t *testing.T) {
 		tickerEnabled   bool
 		storage         storage.Storage
 		ch              chan struct{}
+		hooks           []Hook
 	}
 	type want struct {
 		err error
@@ -1247,6 +1298,7 @@ func Test_observer_backup(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1272,6 +1324,7 @@ func Test_observer_backup(t *testing.T) {
 		           tickerEnabled: false,
 		           storage: nil,
 		           ch: nil,
+		           hooks: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1280,8 +1333,10 @@ func Test_observer_backup(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1303,13 +1358,13 @@ func Test_observer_backup(t *testing.T) {
 				tickerEnabled:   test.fields.tickerEnabled,
 				storage:         test.fields.storage,
 				ch:              test.fields.ch,
+				hooks:           test.fields.hooks,
 			}
 
 			err := o.backup(test.args.ctx)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

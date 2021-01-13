@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,29 +14,39 @@
 # limitations under the License.
 #
 
-backupManager:
+defaults:
+  time_zone: JST
+  logging:
+    level: debug
   image:
-    repository: vdaas/vald-manager-backup-cassandra
-  initContainers:
-    - type: wait-for-cassandra
-      name: wait-for-scylla
-      image: cassandra:latest
-      cassandra:
+    tag: pr-826
+agent:
+  minReplicas: 5
+manager:
+  backup:
+    image:
+      repository: vdaas/vald-manager-backup-cassandra
+    initContainers:
+      - type: wait-for-cassandra
+        name: wait-for-scylla
+        image: cassandra:latest
+        cassandra:
+          hosts:
+            - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
+            - vald-scylla-cluster-dc0-rack0-1.scylla.svc.cluster.local
+            - vald-scylla-cluster-dc0-rack0-2.scylla.svc.cluster.local
+        sleepDuration: 2
+        env: []
+    env: []
+    mysql:
+      enabled: false
+    cassandra:
+      enabled: true
+      config:
         hosts:
-          - scylla-0.scylla.default.svc.cluster.local
-          - scylla-1.scylla.default.svc.cluster.local
-          - scylla-2.scylla.default.svc.cluster.local
-      sleepDuration: 2
-  env: []
-  mysql:
-    enabled: false
-  cassandra:
-    enabled: true
-    config:
-      hosts:
-        - scylla-0.scylla.default.svc.cluster.local
-        - scylla-1.scylla.default.svc.cluster.local
-        - scylla-2.scylla.default.svc.cluster.local
+          - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
+          - vald-scylla-cluster-dc0-rack0-1.scylla.svc.cluster.local
+          - vald-scylla-cluster-dc0-rack0-2.scylla.svc.cluster.local
 
 meta:
   image:
@@ -47,10 +57,11 @@ meta:
       image: cassandra:latest
       cassandra:
         hosts:
-          - scylla-0.scylla.default.svc.cluster.local
-          - scylla-1.scylla.default.svc.cluster.local
-          - scylla-2.scylla.default.svc.cluster.local
+          - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
+          - vald-scylla-cluster-dc0-rack0-1.scylla.svc.cluster.local
+          - vald-scylla-cluster-dc0-rack0-2.scylla.svc.cluster.local
       sleepDuration: 2
+      env: []
   env: []
   redis:
     enabled: false
@@ -58,6 +69,6 @@ meta:
     enabled: true
     config:
       hosts:
-        - scylla-0.scylla.default.svc.cluster.local
-        - scylla-1.scylla.default.svc.cluster.local
-        - scylla-2.scylla.default.svc.cluster.local
+        - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
+        - vald-scylla-cluster-dc0-rack0-1.scylla.svc.cluster.local
+        - vald-scylla-cluster-dc0-rack0-2.scylla.svc.cluster.local

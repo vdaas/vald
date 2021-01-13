@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,14 +23,15 @@ defaults:
         enabled: true
 
 gateway:
-  podAnnotations:
-    profefe.com/enable: "true"
-    profefe.com/port: "6060"
-    profefe.com/service: "vald-gateway"
-  resources:
-    requests:
-      cpu: 100m
-      memory: 50Mi
+  vald:
+    podAnnotations:
+      profefe.com/enable: "true"
+      profefe.com/port: "6060"
+      profefe.com/service: "vald-gateway"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 50Mi
 
 agent:
   podAnnotations:
@@ -55,35 +56,36 @@ discoverer:
       cpu: 100m
       memory: 50Mi
 
-compressor:
-  podAnnotations:
-    profefe.com/enable: "true"
-    profefe.com/port: "6060"
-    profefe.com/service: "vald-manager-compressor"
-  resources:
-    requests:
-      cpu: 100m
-      memory: 50Mi
+manager:
+  compressor:
+    podAnnotations:
+      profefe.com/enable: "true"
+      profefe.com/port: "6060"
+      profefe.com/service: "vald-manager-compressor"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 50Mi
 
-backupManager:
-  podAnnotations:
-    profefe.com/enable: "true"
-    profefe.com/port: "6060"
-    profefe.com/service: "vald-manager-backup"
-  resources:
-    requests:
-      cpu: 100m
-      memory: 30Mi
+  backup:
+    podAnnotations:
+      profefe.com/enable: "true"
+      profefe.com/port: "6060"
+      profefe.com/service: "vald-manager-backup"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 30Mi
 
-indexManager:
-  podAnnotations:
-    profefe.com/enable: "true"
-    profefe.com/port: "6060"
-    profefe.com/service: "vald-manager-index"
-  resources:
-    requests:
-      cpu: 100m
-      memory: 30Mi
+  index:
+    podAnnotations:
+      profefe.com/enable: "true"
+      profefe.com/port: "6060"
+      profefe.com/service: "vald-manager-index"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 30Mi
 
 meta:
   podAnnotations:

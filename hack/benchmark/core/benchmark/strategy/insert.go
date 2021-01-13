@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,14 +24,14 @@ import (
 
 	"github.com/vdaas/vald/hack/benchmark/core/benchmark"
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
-	"github.com/vdaas/vald/hack/benchmark/internal/core"
+	"github.com/vdaas/vald/hack/benchmark/internal/core/algorithm"
 )
 
 func NewInsert(opts ...StrategyOption) benchmark.Strategy {
 	return newStrategy(append([]StrategyOption{
 		WithPropName("Insert"),
 		WithProp32(
-			func(ctx context.Context, b *testing.B, c core.Core32, dataset assets.Dataset, ids []uint, cnt *uint64) (interface{}, error) {
+			func(ctx context.Context, b *testing.B, c algorithm.Bit32, dataset assets.Dataset, ids []uint, cnt *uint64) (interface{}, error) {
 				v, err := dataset.Train(int(atomic.LoadUint64(cnt)) % dataset.TrainSize())
 				if err != nil {
 					return nil, err
@@ -42,7 +42,7 @@ func NewInsert(opts ...StrategyOption) benchmark.Strategy {
 			},
 		),
 		WithProp64(
-			func(ctx context.Context, b *testing.B, c core.Core64, dataset assets.Dataset, ids []uint, cnt *uint64) (interface{}, error) {
+			func(ctx context.Context, b *testing.B, c algorithm.Bit64, dataset assets.Dataset, ids []uint, cnt *uint64) (interface{}, error) {
 				v, err := dataset.Train(int(atomic.LoadUint64(cnt)) % dataset.TrainSize())
 				if err != nil {
 					return nil, err

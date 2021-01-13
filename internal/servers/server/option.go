@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import (
 type Option func(*server)
 
 var (
-	defaultOpts = []Option{
+	defaultOptions = []Option{
 		WithDisableRestart(),
 		WithServerMode(REST),
 		WithErrorGroup(errgroup.Get()),
@@ -270,6 +270,7 @@ func WithGRPCMaxReceiveMessageSize(size int) Option {
 		}
 	}
 }
+
 func WithGRPCMaxSendMessageSize(size int) Option {
 	return func(s *server) {
 		if size > 0 || size == -1 {
@@ -277,6 +278,7 @@ func WithGRPCMaxSendMessageSize(size int) Option {
 		}
 	}
 }
+
 func WithGRPCInitialWindowSize(size int) Option {
 	return func(s *server) {
 		if size > 0 || size == -1 {
@@ -284,6 +286,7 @@ func WithGRPCInitialWindowSize(size int) Option {
 		}
 	}
 }
+
 func WithGRPCInitialConnWindowSize(size int) Option {
 	return func(s *server) {
 		if size > 0 || size == -1 {
@@ -307,6 +310,7 @@ func WithGRPCKeepaliveMaxConnIdle(max string) Option {
 		s.grpc.keepAlive.maxConnIdle = d
 	}
 }
+
 func WithGRPCKeepaliveMaxConnAge(max string) Option {
 	return func(s *server) {
 		if len(max) == 0 {
@@ -322,6 +326,7 @@ func WithGRPCKeepaliveMaxConnAge(max string) Option {
 		s.grpc.keepAlive.maxConnAge = d
 	}
 }
+
 func WithGRPCKeepaliveMaxConnAgeGrace(max string) Option {
 	return func(s *server) {
 		if len(max) == 0 {
@@ -337,6 +342,7 @@ func WithGRPCKeepaliveMaxConnAgeGrace(max string) Option {
 		s.grpc.keepAlive.maxConnAgeGrace = d
 	}
 }
+
 func WithGRPCKeepaliveTime(dur string) Option {
 	return func(s *server) {
 		if len(dur) == 0 {
@@ -352,6 +358,7 @@ func WithGRPCKeepaliveTime(dur string) Option {
 		s.grpc.keepAlive.t = d
 	}
 }
+
 func WithGRPCKeepaliveTimeout(dur string) Option {
 	return func(s *server) {
 		if len(dur) == 0 {
@@ -367,6 +374,7 @@ func WithGRPCKeepaliveTimeout(dur string) Option {
 		s.grpc.keepAlive.timeout = d
 	}
 }
+
 func WithGRPCWriteBufferSize(size int) Option {
 	return func(s *server) {
 		if size > 0 || size == -1 {
@@ -374,6 +382,7 @@ func WithGRPCWriteBufferSize(size int) Option {
 		}
 	}
 }
+
 func WithGRPCReadBufferSize(size int) Option {
 	return func(s *server) {
 		if size > 0 || size == -1 {
@@ -381,6 +390,7 @@ func WithGRPCReadBufferSize(size int) Option {
 		}
 	}
 }
+
 func WithGRPCConnectionTimeout(to string) Option {
 	return func(s *server) {
 		if len(to) == 0 {
@@ -393,6 +403,7 @@ func WithGRPCConnectionTimeout(to string) Option {
 		s.grpc.opts = append(s.grpc.opts, grpc.ConnectionTimeout(d))
 	}
 }
+
 func WithGRPCMaxHeaderListSize(size int) Option {
 	return func(s *server) {
 		if size > 0 {
@@ -400,6 +411,7 @@ func WithGRPCMaxHeaderListSize(size int) Option {
 		}
 	}
 }
+
 func WithGRPCHeaderTableSize(size int) Option {
 	return func(s *server) {
 		if size > 0 {
@@ -407,6 +419,7 @@ func WithGRPCHeaderTableSize(size int) Option {
 		}
 	}
 }
+
 func WithGRPCInterceptors(name ...string) Option {
 	return func(s *server) {
 		// s.grpc.opts = append(s.grpc.opts, grpc.UnaryInterceptor(uint32(size)))

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -124,7 +124,7 @@ func New(opts ...Option) (Server, error) {
 	srv.mu.Lock()
 	defer srv.mu.Unlock()
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(srv)
 	}
 	if srv.eg == nil {
@@ -307,13 +307,17 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 			s.wg.Done()
 			return err
 		}))
-		time.Sleep(s.pwt)
+		tctx, cancel := context.WithTimeout(ctx, s.pwt)
+		defer cancel()
+		<-tctx.Done()
 		err := <-ech
 		if err != nil {
 			rerr = err
 		}
 	} else {
-		time.Sleep(s.pwt)
+		tctx, cancel := context.WithTimeout(ctx, s.pwt)
+		defer cancel()
+		<-tctx.Done()
 	}
 
 	log.Warnf("%s server %s is now shutting down", s.mode.String(), s.name)

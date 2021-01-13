@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,8 +23,7 @@ option java_multiple_files = true;
 option java_package = "org.vdaas.vald.filter.egress";
 option java_outer_classname = "ValdEgressFilter";
 
-import "payload.proto";
-import "google/api/annotations.proto";
+import "apis/proto/payload/payload.proto";
 
 service EgressFilter {
   rpc Filter(payload.Search.Response) returns (payload.Search.Response) {}

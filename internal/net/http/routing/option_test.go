@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -124,7 +124,7 @@ func TestWithMiddlewares(t *testing.T) {
 						return errors.New("invalid params count was set")
 					}
 
-					mws = append([]middleware.Wrapper{mw}, mws[:]...)
+					mws = append([]middleware.Wrapper{mw}, mws...)
 					for i := range got.middlewares {
 						if got, want := got.middlewares[i], mws[i]; !reflect.DeepEqual(got, want) {
 							return errors.New("invalid params was set")
@@ -199,8 +199,8 @@ func TestWithRoutes(t *testing.T) {
 	tests := []test{
 		func() test {
 			rs := []Route{
-				Route{},
-				Route{},
+				{},
+				{},
 			}
 
 			return test{
@@ -229,8 +229,8 @@ func TestWithRoutes(t *testing.T) {
 			r := Route{}
 
 			rs := []Route{
-				Route{},
-				Route{},
+				{},
+				{},
 			}
 
 			return test{
@@ -248,7 +248,7 @@ func TestWithRoutes(t *testing.T) {
 						return errors.New("invalid params count was set")
 					}
 
-					rs = append([]Route{r}, rs[:]...)
+					rs = append([]Route{r}, rs...)
 					for i := range got.routes {
 						if got, want := got.routes[i], rs[i]; !reflect.DeepEqual(got, want) {
 							return errors.New("invalid params was set")

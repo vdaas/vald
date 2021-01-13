@@ -1,6 +1,6 @@
 ---
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,10 +20,10 @@ metadata:
   name: vald-manager-compressor-config
   labels:
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v0.0.64
+    helm.sh/chart: vald-v0.0.66
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v0.0.64
+    app.kubernetes.io/version: v0.0.66
     app.kubernetes.io/component: manager-compressor
 data:
   config.yaml: |
@@ -208,6 +208,10 @@ data:
           max_send_msg_size: 0
           wait_for_ready: true
         dial_option:
+          backoff_base_delay: 1s
+          backoff_jitter: 0.2
+          backoff_max_delay: 120s
+          backoff_multiplier: 1.6
           enable_backoff: false
           initial_connection_window_size: 0
           initial_window_size: 0
@@ -216,8 +220,8 @@ data:
             permit_without_stream: false
             time: ""
             timeout: ""
-          max_backoff_delay: ""
           max_msg_size: 0
+          min_connection_timeout: 20s
           read_buffer_size: 0
           tcp:
             dialer:
@@ -274,6 +278,10 @@ data:
               max_send_msg_size: 0
               wait_for_ready: true
             dial_option:
+              backoff_base_delay: 1s
+              backoff_jitter: 0.2
+              backoff_max_delay: 120s
+              backoff_multiplier: 1.6
               enable_backoff: false
               initial_connection_window_size: 0
               initial_window_size: 0
@@ -282,8 +290,8 @@ data:
                 permit_without_stream: false
                 time: ""
                 timeout: ""
-              max_backoff_delay: ""
               max_msg_size: 0
+              min_connection_timeout: 20s
               read_buffer_size: 0
               tcp:
                 dialer:

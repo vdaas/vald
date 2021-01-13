@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,15 +28,13 @@ import (
 
 type Option func(o *observer) error
 
-var (
-	defaultOpts = []Option{
-		WithErrGroup(errgroup.Get()),
-		WithBackupDuration("10m"),
-		WithPostStopTimeout("2m"),
-		WithWatch(true),
-		WithTicker(true),
-	}
-)
+var defaultOptions = []Option{
+	WithErrGroup(errgroup.Get()),
+	WithBackupDuration("10m"),
+	WithPostStopTimeout("2m"),
+	WithWatch(true),
+	WithTicker(true),
+}
 
 func WithBackupDuration(dur string) Option {
 	return func(o *observer) error {

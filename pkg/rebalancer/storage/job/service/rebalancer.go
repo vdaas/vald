@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,8 +28,7 @@ type Rebalancer interface {
 	Start(context.Context) (<-chan error, error)
 }
 
-type rebalancer struct {
-}
+type rebalancer struct{}
 
 func New(opts ...Option) (dsc Rebalancer, err error) {
 	r := new(rebalancer)

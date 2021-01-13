@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,11 +25,11 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/worker"
-
 	"go.uber.org/goleak"
 )
 
 func TestNewCompressor(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []CompressorOption
 	}
@@ -82,9 +82,11 @@ func TestNewCompressor(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -99,12 +101,12 @@ func TestNewCompressor(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_compressor_PreStart(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -178,9 +180,11 @@ func Test_compressor_PreStart(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -203,12 +207,12 @@ func Test_compressor_PreStart(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_compressor_Start(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -286,9 +290,11 @@ func Test_compressor_Start(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -311,12 +317,12 @@ func Test_compressor_Start(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_compressor_dispatchCompress(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx     context.Context
 		vectors [][]float32
@@ -397,9 +403,11 @@ func Test_compressor_dispatchCompress(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -422,12 +430,12 @@ func Test_compressor_dispatchCompress(t *testing.T) {
 			if err := test.checkFunc(test.want, gotResults, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_compressor_dispatchDecompress(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx    context.Context
 		bytess [][]byte
@@ -508,9 +516,11 @@ func Test_compressor_dispatchDecompress(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -533,12 +543,12 @@ func Test_compressor_dispatchDecompress(t *testing.T) {
 			if err := test.checkFunc(test.want, gotResults, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_compressor_Compress(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx    context.Context
 		vector []float32
@@ -619,9 +629,11 @@ func Test_compressor_Compress(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -644,12 +656,12 @@ func Test_compressor_Compress(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_compressor_Decompress(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx   context.Context
 		bytes []byte
@@ -730,9 +742,11 @@ func Test_compressor_Decompress(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -755,12 +769,12 @@ func Test_compressor_Decompress(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_compressor_MultiCompress(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx     context.Context
 		vectors [][]float32
@@ -841,9 +855,11 @@ func Test_compressor_MultiCompress(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -866,12 +882,12 @@ func Test_compressor_MultiCompress(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_compressor_MultiDecompress(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx    context.Context
 		bytess [][]byte
@@ -952,9 +968,11 @@ func Test_compressor_MultiDecompress(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -977,12 +995,12 @@ func Test_compressor_MultiDecompress(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_compressor_Len(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		algorithm        string
 		compressionLevel int
@@ -1046,9 +1064,11 @@ func Test_compressor_Len(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1071,12 +1091,12 @@ func Test_compressor_Len(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_compressor_TotalRequested(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		algorithm        string
 		compressionLevel int
@@ -1140,9 +1160,11 @@ func Test_compressor_TotalRequested(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1165,12 +1187,12 @@ func Test_compressor_TotalRequested(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_compressor_TotalCompleted(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		algorithm        string
 		compressionLevel int
@@ -1234,9 +1256,11 @@ func Test_compressor_TotalCompleted(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1259,7 +1283,6 @@ func Test_compressor_TotalCompleted(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

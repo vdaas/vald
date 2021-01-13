@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,14 +33,13 @@ import (
 )
 
 const (
-	metaVectorTableName = "meta_vector"
-	podIPTableName      = "pod_ip"
-	idColumnName        = "id"
-	uuidColumnName      = "uuid"
-	vectorColumnName    = "vector"
-	metaColumnName      = "meta"
-	ipColumnName        = "ip"
-	asterisk            = "*"
+	vectorTableName  = "backup_vector"
+	podIPTableName   = "pod_ip"
+	idColumnName     = "id"
+	uuidColumnName   = "uuid"
+	vectorColumnName = "vector"
+	ipColumnName     = "ip"
+	asterisk         = "*"
 )
 
 // MySQL represents the interface to handle MySQL operation.
@@ -80,7 +79,7 @@ func New(opts ...Option) (MySQL, error) {
 	m := &mySQLClient{
 		dbr: dbr.New(),
 	}
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(m); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
@@ -91,7 +90,7 @@ func New(opts ...Option) (MySQL, error) {
 
 // Open opens the connection with MySQL.
 // It will return error when connecting to MySQL ends with fail.
-func (m *mySQLClient) Open(ctx context.Context) error {
+func (m *mySQLClient) Open(ctx context.Context) (err error) {
 	if m.dialer != nil {
 		m.dialer.StartDialerCache(ctx)
 		m.dialerFunc = m.dialer.GetDialer()
@@ -109,7 +108,10 @@ func (m *mySQLClient) Open(ctx context.Context) error {
 
 	if m.tlsConfig != nil {
 		tlsConfName := "tls"
-		mysql.RegisterTLSConfig(tlsConfName, m.tlsConfig)
+		err = mysql.RegisterTLSConfig(tlsConfName, m.tlsConfig)
+		if err != nil {
+			return err
+		}
 		addParam += "&tls=" + tlsConfName
 	}
 
@@ -167,49 +169,51 @@ func (m *mySQLClient) Ping(ctx context.Context) (err error) {
 
 // Close closes the connection of MySQL database.
 // If the connection is already closed or closing conncection is failed, it returns error.
-func (m *mySQLClient) Close(ctx context.Context) error {
+func (m *mySQLClient) Close(ctx context.Context) (err error) {
 	if m.connected.Load().(bool) {
-		m.session.Close()
-		m.connected.Store(false)
+		err = m.session.Close()
+		if err == nil {
+			m.connected.Store(false)
+		}
 	}
 	return nil
 }
 
-// GetMeta gets the metadata and podIPs which have index of metadata's vector.
-func (m *mySQLClient) GetMeta(ctx context.Context, uuid string) (MetaVector, error) {
+// GetVector gets the vector data and podIPs which have index of vector.
+func (m *mySQLClient) GetVector(ctx context.Context, uuid string) (Vector, error) {
 	if !m.connected.Load().(bool) {
 		return nil, errors.ErrMySQLConnectionClosed
 	}
 
-	var meta *meta
-	_, err := m.session.Select(asterisk).From(metaVectorTableName).Where(m.dbr.Eq(uuidColumnName, uuid)).Limit(1).LoadContext(ctx, &meta)
+	var data *data
+	_, err := m.session.Select(asterisk).From(vectorTableName).Where(m.dbr.Eq(uuidColumnName, uuid)).Limit(1).LoadContext(ctx, &data)
 	if err != nil {
 		return nil, err
 	}
-	if meta == nil {
+	if data == nil {
 		return nil, errors.ErrRequiredElementNotFoundByUUID(uuid)
 	}
 
 	var podIPs []podIP
-	_, err = m.session.Select(asterisk).From(podIPTableName).Where(m.dbr.Eq(idColumnName, meta.ID)).LoadContext(ctx, &podIPs)
+	_, err = m.session.Select(asterisk).From(podIPTableName).Where(m.dbr.Eq(idColumnName, data.ID)).LoadContext(ctx, &podIPs)
 	if err != nil {
 		return nil, err
 	}
 
-	return &metaVector{
-		meta:   *meta,
+	return &vector{
+		data:   *data,
 		podIPs: podIPs,
 	}, nil
 }
 
-// GetIPs gets the pod ips which have index of requested uuids' metadata's vector.
+// GetIPs gets the pod ips which have index of requested uuids' vector data's vector.
 func (m *mySQLClient) GetIPs(ctx context.Context, uuid string) ([]string, error) {
 	if !m.connected.Load().(bool) {
 		return nil, errors.ErrMySQLConnectionClosed
 	}
 
 	var id int64
-	_, err := m.session.Select(idColumnName).From(metaVectorTableName).Where(m.dbr.Eq(uuidColumnName, uuid)).Limit(1).LoadContext(ctx, &id)
+	_, err := m.session.Select(idColumnName).From(vectorTableName).Where(m.dbr.Eq(uuidColumnName, uuid)).Limit(1).LoadContext(ctx, &id)
 	if err != nil {
 		return nil, err
 	}
@@ -231,16 +235,16 @@ func (m *mySQLClient) GetIPs(ctx context.Context, uuid string) ([]string, error)
 	return ips, nil
 }
 
-func validateMeta(meta MetaVector) error {
-	if len(meta.GetVector()) == 0 {
+func validateVector(vec Vector) error {
+	if len(vec.GetVector()) == 0 {
 		return errors.ErrRequiredMemberNotFilled("vector")
 	}
 	return nil
 }
 
-// SetMeta records metadata at meta_vector table and set of (podIP, uuid) at podIPtable through same transaction.
+// SetVector records vector data at backup_vector table and set of (podIP, uuid) at podIPtable through same transaction.
 // If error occurs it will rollback by defer function.
-func (m *mySQLClient) SetMeta(ctx context.Context, mv MetaVector) error {
+func (m *mySQLClient) SetVector(ctx context.Context, vec Vector) error {
 	if !m.connected.Load().(bool) {
 		return errors.ErrMySQLConnectionClosed
 	}
@@ -251,28 +255,26 @@ func (m *mySQLClient) SetMeta(ctx context.Context, mv MetaVector) error {
 	}
 	defer tx.RollbackUnlessCommitted()
 
-	err = validateMeta(mv)
+	err = validateVector(vec)
 	if err != nil {
 		return err
 	}
 
-	_, err = tx.InsertBySql("INSERT INTO meta_vector(uuid, vector, meta) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE vector = ?, meta = ?",
-		mv.GetUUID(),
-		mv.GetVector(),
-		mv.GetMeta(),
-		mv.GetVector(),
-		mv.GetMeta()).ExecContext(ctx)
+	_, err = tx.InsertBySql("INSERT INTO "+vectorTableName+"(uuid, vector) VALUES (?, ?) ON DUPLICATE KEY UPDATE vector = ?",
+		vec.GetUUID(),
+		vec.GetVector(),
+		vec.GetVector()).ExecContext(ctx)
 	if err != nil {
 		return err
 	}
 
 	var id int64
-	_, err = tx.Select(idColumnName).From(metaVectorTableName).Where(m.dbr.Eq(uuidColumnName, mv.GetUUID())).Limit(1).LoadContext(ctx, &id)
+	_, err = tx.Select(idColumnName).From(vectorTableName).Where(m.dbr.Eq(uuidColumnName, vec.GetUUID())).Limit(1).LoadContext(ctx, &id)
 	if err != nil {
 		return err
 	}
 	if id == 0 {
-		return errors.ErrRequiredElementNotFoundByUUID(mv.GetUUID())
+		return errors.ErrRequiredElementNotFoundByUUID(vec.GetUUID())
 	}
 
 	_, err = tx.DeleteFrom(podIPTableName).Where(m.dbr.Eq(idColumnName, id)).ExecContext(ctx)
@@ -281,7 +283,7 @@ func (m *mySQLClient) SetMeta(ctx context.Context, mv MetaVector) error {
 	}
 
 	stmt := tx.InsertInto(podIPTableName).Columns(idColumnName, ipColumnName)
-	for _, ip := range mv.GetIPs() {
+	for _, ip := range vec.GetIPs() {
 		stmt.Record(&podIP{ID: id, IP: ip})
 	}
 	_, err = stmt.ExecContext(ctx)
@@ -292,8 +294,8 @@ func (m *mySQLClient) SetMeta(ctx context.Context, mv MetaVector) error {
 	return tx.Commit()
 }
 
-// SetMetas records multiple metadata like as SetMeta().
-func (m *mySQLClient) SetMetas(ctx context.Context, metas ...MetaVector) error {
+// SetVectors records multiple vector data like as SetVector().
+func (m *mySQLClient) SetVectors(ctx context.Context, vecs ...Vector) error {
 	if !m.connected.Load().(bool) {
 		return errors.ErrMySQLConnectionClosed
 	}
@@ -304,31 +306,29 @@ func (m *mySQLClient) SetMetas(ctx context.Context, metas ...MetaVector) error {
 	}
 	defer tx.RollbackUnlessCommitted()
 
-	for _, meta := range metas {
-		err = validateMeta(meta)
+	for _, vec := range vecs {
+		err = validateVector(vec)
 		if err != nil {
 			return err
 		}
 
-		_, err = tx.InsertBySql("INSERT INTO meta_vector(uuid, vector, meta) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE vector = ?, meta = ?",
-			meta.GetUUID(),
-			meta.GetVector(),
-			meta.GetMeta(),
-			meta.GetVector(),
-			meta.GetMeta()).ExecContext(ctx)
+		_, err = tx.InsertBySql("INSERT INTO "+vectorTableName+"(uuid, vector) VALUES (?, ?) ON DUPLICATE KEY UPDATE vector = ?",
+			vec.GetUUID(),
+			vec.GetVector(),
+			vec.GetVector()).ExecContext(ctx)
 		if err != nil {
 			return err
 		}
 	}
 
-	for _, meta := range metas {
+	for _, vec := range vecs {
 		var id int64
-		_, err = tx.Select(idColumnName).From(metaVectorTableName).Where(m.dbr.Eq(uuidColumnName, meta.GetUUID())).Limit(1).LoadContext(ctx, &id)
+		_, err = tx.Select(idColumnName).From(vectorTableName).Where(m.dbr.Eq(uuidColumnName, vec.GetUUID())).Limit(1).LoadContext(ctx, &id)
 		if err != nil {
 			return err
 		}
 		if id == 0 {
-			return errors.ErrRequiredElementNotFoundByUUID(meta.GetUUID())
+			return errors.ErrRequiredElementNotFoundByUUID(vec.GetUUID())
 		}
 
 		_, err = tx.DeleteFrom(podIPTableName).Where(m.dbr.Eq(idColumnName, id)).ExecContext(ctx)
@@ -337,7 +337,7 @@ func (m *mySQLClient) SetMetas(ctx context.Context, metas ...MetaVector) error {
 		}
 
 		stmt := tx.InsertInto(podIPTableName).Columns(idColumnName, ipColumnName)
-		for _, ip := range meta.GetIPs() {
+		for _, ip := range vec.GetIPs() {
 			stmt.Record(&podIP{ID: id, IP: ip})
 		}
 		_, err = stmt.ExecContext(ctx)
@@ -349,7 +349,7 @@ func (m *mySQLClient) SetMetas(ctx context.Context, metas ...MetaVector) error {
 	return tx.Commit()
 }
 
-func (m *mySQLClient) deleteMeta(ctx context.Context, val interface{}) error {
+func (m *mySQLClient) deleteVector(ctx context.Context, val interface{}) error {
 	if !m.connected.Load().(bool) {
 		return errors.ErrMySQLConnectionClosed
 	}
@@ -363,7 +363,7 @@ func (m *mySQLClient) deleteMeta(ctx context.Context, val interface{}) error {
 	}
 	defer tx.RollbackUnlessCommitted()
 
-	_, err = tx.DeleteFrom(metaVectorTableName).Where(m.dbr.Eq(uuidColumnName, val)).ExecContext(ctx)
+	_, err = tx.DeleteFrom(vectorTableName).Where(m.dbr.Eq(uuidColumnName, val)).ExecContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -375,14 +375,14 @@ func (m *mySQLClient) deleteMeta(ctx context.Context, val interface{}) error {
 	return tx.Commit()
 }
 
-// DeleteMeta deletes metadata from meta_vector table and podIPs from pod_ip table using meta's uuid.
-func (m *mySQLClient) DeleteMeta(ctx context.Context, uuid string) error {
-	return m.deleteMeta(ctx, uuid)
+// DeleteVector deletes vector data from backup_vector table and podIPs from pod_ip table using vector's uuid.
+func (m *mySQLClient) DeleteVector(ctx context.Context, uuid string) error {
+	return m.deleteVector(ctx, uuid)
 }
 
-// DeleteMetas is the same as DeleteMeta() but it deletes multiple records.
-func (m *mySQLClient) DeleteMetas(ctx context.Context, uuids ...string) error {
-	return m.deleteMeta(ctx, uuids)
+// DeleteVectors is the same as DeleteVector() but it deletes multiple records.
+func (m *mySQLClient) DeleteVectors(ctx context.Context, uuids ...string) error {
+	return m.deleteVector(ctx, uuids)
 }
 
 // SetIPs insert the vector's uuid and the podIPs into database.
@@ -398,7 +398,7 @@ func (m *mySQLClient) SetIPs(ctx context.Context, uuid string, ips ...string) er
 	defer tx.RollbackUnlessCommitted()
 
 	var id int64
-	_, err = tx.Select(idColumnName).From(metaVectorTableName).Where(m.dbr.Eq(uuidColumnName, uuid)).Limit(1).LoadContext(ctx, &id)
+	_, err = tx.Select(idColumnName).From(vectorTableName).Where(m.dbr.Eq(uuidColumnName, uuid)).Limit(1).LoadContext(ctx, &id)
 	if err != nil {
 		return err
 	}

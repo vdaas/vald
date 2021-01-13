@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -141,8 +141,8 @@ func TestWithDirs(t *testing.T) {
 			want: want{
 				obj: &T{
 					dirs: map[string]struct{}{
-						"vdaas": struct{}{},
-						"vald":  struct{}{},
+						"vdaas": {},
+						"vald":  {},
 					},
 				},
 			},
@@ -157,15 +157,15 @@ func TestWithDirs(t *testing.T) {
 			},
 			field: field{
 				dirs: map[string]struct{}{
-					"team": struct{}{},
+					"team": {},
 				},
 			},
 			want: want{
 				obj: &T{
 					dirs: map[string]struct{}{
-						"team":  struct{}{},
-						"vdaas": struct{}{},
-						"vald":  struct{}{},
+						"team":  {},
+						"vdaas": {},
+						"vald":  {},
 					},
 				},
 			},

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -49,14 +49,18 @@ type restorer struct {
 
 	backoffEnabled bool
 	backoffOpts    []backoff.Option
+	bo             backoff.Backoff
 }
 
 func New(opts ...Option) (Restorer, error) {
 	r := new(restorer)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(r); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
+	}
+	if r.backoffEnabled {
+		r.bo = backoff.New(r.backoffOpts...)
 	}
 
 	return r, nil
@@ -82,6 +86,9 @@ func (r *restorer) Start(ctx context.Context) (<-chan error, error) {
 
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
+		if r.backoffEnabled {
+			defer r.bo.Close()
+		}
 
 		for {
 			select {
@@ -112,27 +119,23 @@ func (r *restorer) startRestore(ctx context.Context) (<-chan error, error) {
 		return ech, err
 	}
 
-	restore := func() (interface{}, error) {
+	restore := func(ctx context.Context) (interface{}, bool, error) {
 		err := r.restore(ctx)
 		if err != nil {
 			log.Errorf("restoring failed: %s", err)
-
-			return nil, err
+			return nil, true, err
 		}
 
-		return nil, nil
+		return nil, false, nil
 	}
 
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
 
 		if r.backoffEnabled {
-			b := backoff.New(r.backoffOpts...)
-			defer b.Close()
-
-			_, err = b.Do(ctx, restore)
+			_, err = r.bo.Do(ctx, restore)
 		} else {
-			_, err = restore()
+			_, _, err = restore(ctx)
 		}
 
 		if err != nil {
@@ -212,7 +215,7 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 		case tar.TypeDir:
 			_, err = os.Stat(target)
 			if err != nil {
-				err = os.MkdirAll(target, 0700)
+				err = os.MkdirAll(target, 0o700)
 				if err != nil {
 					return err
 				}

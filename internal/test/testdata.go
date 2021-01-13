@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import (
 	"strings"
 )
 
-// GetTestdataPath returns the test data file path under `internal/test/data`
+// GetTestdataPath returns the test data file path under `internal/test/data`.
 func GetTestdataPath(filename string) string {
 	fp, _ := filepath.Abs(baseDir() + "/internal/test/data/" + filename)
 	return fp

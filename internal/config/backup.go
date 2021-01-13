@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,23 +17,15 @@
 // Package config providers configuration type and load configuration logic
 package config
 
-import "fmt"
-
 type BackupManager struct {
-	Host   string      `json:"host" yaml:"host"`
-	Port   int         `json:"port" yaml:"port"`
 	Client *GRPCClient `json:"client" yaml:"client"`
 }
 
 func (b *BackupManager) Bind() *BackupManager {
-	b.Host = GetActualValue(b.Host)
 	if b.Client != nil {
 		b.Client = b.Client.Bind()
 	} else {
 		b.Client = newGRPCClientConfig()
-	}
-	if len(b.Host) != 0 {
-		b.Client.Addrs = append(b.Client.Addrs, fmt.Sprintf("%s:%d", b.Host, b.Port))
 	}
 	return b
 }

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -49,8 +49,10 @@ type MetricsHook interface {
 	redis.Hook
 }
 
-type startTimeKey struct{}
-type pipelineStartTimeKey struct{}
+type (
+	startTimeKey         struct{}
+	pipelineStartTimeKey struct{}
+)
 
 func New() (o MetricsHook, err error) {
 	rms := new(redisMetrics)
@@ -118,28 +120,28 @@ func (rm *redisMetrics) View() []*metrics.View {
 	}
 
 	return []*metrics.View{
-		&metrics.View{
+		{
 			Name:        "db_kvs_redis_completed_query_total",
 			Description: rm.queryTotal.Description(),
 			TagKeys:     queryKeys,
 			Measure:     &rm.queryTotal,
 			Aggregation: metrics.Count(),
 		},
-		&metrics.View{
+		{
 			Name:        "db_kvs_redis_query_latency",
 			Description: rm.queryLatency.Description(),
 			TagKeys:     queryKeys,
 			Measure:     &rm.queryLatency,
 			Aggregation: metrics.DefaultMillisecondsDistribution,
 		},
-		&metrics.View{
+		{
 			Name:        "db_kvs_redis_completed_pipeline_total",
 			Description: rm.pipelineTotal.Description(),
 			TagKeys:     pipelineKeys,
 			Measure:     &rm.pipelineTotal,
 			Aggregation: metrics.Count(),
 		},
-		&metrics.View{
+		{
 			Name:        "db_kvs_redis_pipeline_latency",
 			Description: rm.pipelineLatency.Description(),
 			TagKeys:     pipelineKeys,

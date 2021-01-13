@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -70,46 +70,11 @@ func (o Operation) String() string {
 	}
 }
 
-// Service is service type of implemented load test.
-type Service uint8
-
-// Service definitions.
-const (
-	UnknownService Service = iota
-	Agent
-	Gateway
-)
-
-// ServiceMethod converts string to Service.
-func ServiceMethod(s string) Service {
-	switch strings.ToLower(s) {
-	case "agent":
-		return Agent
-	case "gateway":
-		return Gateway
-	default:
-		return UnknownService
-	}
-}
-
-// String converts Service to string.
-func (s Service) String() string {
-	switch s {
-	case Agent:
-		return "Agent"
-	case Gateway:
-		return "Gateway"
-	default:
-		return "Unknown service"
-	}
-}
-
 // Data represent a application setting data content (config.yaml).
 // In K8s environment, this configuration is stored in K8s ConfigMap.
 type Data struct {
 	config.GlobalConfig `json:",inline" yaml:",inline"`
 	Addr                string             `json:"addr" yaml:"addr"`
-	Service             string             `json:"service" yaml:"service"`
 	Operation           string             `json:"operation" yaml:"operation"`
 	Dataset             string             `json:"dataset" yaml:"dataset"`
 	Concurrency         int                `json:"concurrency" yaml:"concurrency"`
@@ -137,7 +102,6 @@ func NewConfig(path string) (cfg *Data, err error) {
 	cfg.Operation = config.GetActualValue(cfg.Operation)
 	cfg.Dataset = config.GetActualValue(cfg.Dataset)
 	cfg.ProgressDuration = config.GetActualValue(cfg.ProgressDuration)
-	cfg.Service = config.GetActualValue(cfg.Service)
 
 	return cfg, nil
 }

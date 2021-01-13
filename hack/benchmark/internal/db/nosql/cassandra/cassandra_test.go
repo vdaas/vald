@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,10 +24,11 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/db/nosql/cassandra"
+	"github.com/vdaas/vald/internal/log"
 )
 
 var (
-	metaTable = "meta_vector"
+	metaTable = "backup_vector"
 
 	uuidColumn   = "uuid"
 	vectorColumn = "vector"
@@ -36,13 +37,12 @@ var (
 
 	metaColumnSlice = []string{uuidColumn, vectorColumn, metaColumn, ipsColumn}
 
-	dropStmt = "DROP TABLE IF EXISTS vald.meta_vector;"
+	dropStmt = "DROP TABLE IF EXISTS vald.backup_vector;"
 
 	schema = `
-CREATE TABLE vald.meta_vector (
+CREATE TABLE vald.backup_vector (
   uuid   text,
   vector blob,
-  meta   text,
   ips    list<text>,
   PRIMARY KEY (uuid)
 );
@@ -66,6 +66,7 @@ type MetaVector struct {
 }
 
 func init() {
+	log.Init()
 	var err error
 	c, err = cassandra.New(
 		cassandra.WithHosts(

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,14 +29,14 @@ helm-docs/install: $(BINDIR)/helm-docs
 ifeq ($(UNAME),Darwin)
 $(BINDIR)/helm-docs:
 	mkdir -p $(BINDIR)
-	cd $$(mktemp -d) \
+	cd $(TEMP_DIR) \
 	    && curl -LO https://github.com/norwoodj/helm-docs/releases/download/v$(HELM_DOCS_VERSION)/helm-docs_$(HELM_DOCS_VERSION)_Darwin_x86_64.tar.gz \
 	    && tar xzvf helm-docs_$(HELM_DOCS_VERSION)_Darwin_x86_64.tar.gz \
 	    && mv helm-docs $(BINDIR)/helm-docs
 else
 $(BINDIR)/helm-docs:
 	mkdir -p $(BINDIR)
-	cd $$(mktemp -d) \
+	cd $(TEMP_DIR) \
 	    && curl -LO https://github.com/norwoodj/helm-docs/releases/download/v$(HELM_DOCS_VERSION)/helm-docs_$(HELM_DOCS_VERSION)_Linux_x86_64.tar.gz \
 	    && tar xzvf helm-docs_$(HELM_DOCS_VERSION)_Linux_x86_64.tar.gz \
 	    && mv helm-docs $(BINDIR)/helm-docs
@@ -84,6 +84,7 @@ helm/schema/vald: charts/vald/values.schema.json
 charts/vald/values.schema.json: \
 	charts/vald/values.yaml \
 	hack/helm/schema/gen/main.go
+	GOPRIVATE=$(GOPRIVATE) \
 	go run hack/helm/schema/gen/main.go charts/vald/values.yaml > charts/vald/values.schema.json
 
 .PHONY: helm/schema/vald-helm-operator
@@ -93,4 +94,5 @@ helm/schema/vald-helm-operator: charts/vald-helm-operator/values.schema.json
 charts/vald-helm-operator/values.schema.json: \
 	charts/vald-helm-operator/values.yaml \
 	hack/helm/schema/gen/main.go
+	GOPRIVATE=$(GOPRIVATE) \
 	go run hack/helm/schema/gen/main.go charts/vald-helm-operator/values.yaml > charts/vald-helm-operator/values.schema.json

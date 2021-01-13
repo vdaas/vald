@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,12 +29,10 @@ import (
 
 type CollectorOption func(*collector) error
 
-var (
-	collectorDefaultOpts = []CollectorOption{
-		WithErrGroup(errgroup.Get()),
-		WithDuration("5s"),
-	}
-)
+var collectorDefaultOpts = []CollectorOption{
+	WithErrGroup(errgroup.Get()),
+	WithDuration("5s"),
+}
 
 func WithErrGroup(eg errgroup.Group) CollectorOption {
 	return func(c *collector) error {

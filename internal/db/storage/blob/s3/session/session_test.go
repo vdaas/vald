@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -181,7 +181,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -481,7 +480,7 @@ func Test_sess_Session(t *testing.T) {
 					Config: &aws.Config{
 						Region:      atop(""),
 						Credentials: nil,
-						//DisableSSL:                    btop(false),
+						// DisableSSL:                    btop(false),
 						HTTPClient:                    &http.Client{},
 						LogLevel:                      aws.LogLevel(aws.LogLevelType(uint(0))),
 						MaxRetries:                    itop(0),
@@ -524,7 +523,7 @@ func Test_sess_Session(t *testing.T) {
 						DisableEndpointHostPrefix:     btop(true),
 						STSRegionalEndpoint:           endpoints.LegacySTSEndpoint,
 						S3UsEast1RegionalEndpoint:     endpoints.LegacyS3UsEast1Endpoint,
-						//DisableParamValidation:        btop(true),
+						// DisableParamValidation:        btop(true),
 					},
 				},
 			},
@@ -544,7 +543,7 @@ func Test_sess_Session(t *testing.T) {
 						LogLevel:         aws.LogLevel(aws.LogLevelType(uint(0))),
 						MaxRetries:       itop(0),
 						S3ForcePathStyle: btop(false),
-						//S3Disable100Continue:          btop(true),
+						// S3Disable100Continue:          btop(true),
 						S3UseAccelerate:               btop(false),
 						S3DisableContentMD5Validation: btop(true),
 						S3UseARNRegion:                btop(false),
@@ -608,7 +607,7 @@ func Test_sess_Session(t *testing.T) {
 						S3UseARNRegion:                btop(false),
 						UseDualStack:                  btop(false),
 						EnableEndpointDiscovery:       btop(false),
-						//DisableEndpointHostPrefix:     btop(true),
+						// DisableEndpointHostPrefix:     btop(true),
 						STSRegionalEndpoint:       endpoints.LegacySTSEndpoint,
 						S3UsEast1RegionalEndpoint: endpoints.LegacyS3UsEast1Endpoint,
 						DisableParamValidation:    btop(true),
@@ -686,7 +685,6 @@ func Test_sess_Session(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

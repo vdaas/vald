@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,12 +29,10 @@ import (
 	"go.uber.org/goleak"
 )
 
-var (
-	// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
-	goleakIgnoreOptions = []goleak.Option{
-		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
-	}
-)
+// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
+var goleakIgnoreOptions = []goleak.Option{
+	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+}
 
 func TestNew(t *testing.T) {
 	type args struct {
@@ -135,8 +133,7 @@ func Test_cache_Start(t *testing.T) {
 		expireCheckDur time.Duration
 		expiredHook    func(context.Context, string)
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -567,7 +564,6 @@ func Test_cache_GetAndDelete(t *testing.T) {
 			if err := test.checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

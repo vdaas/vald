@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import (
 )
 
 func Test_open(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		fname       string
 		elementSize int
@@ -42,10 +43,10 @@ func Test_open(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotF *file, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotF, w.wantF) {
-			return errors.Errorf("got = %v, want %v", gotF, w.wantF)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotF, w.wantF)
 		}
 		return nil
 	}
@@ -79,8 +80,10 @@ func Test_open(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -96,12 +99,12 @@ func Test_open(t *testing.T) {
 			if err := test.checkFunc(test.want, gotF, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_file_Close(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		mem   []byte
 		dim   int
@@ -121,7 +124,7 @@ func Test_file_Close(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -159,8 +162,10 @@ func Test_file_Close(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -182,12 +187,12 @@ func Test_file_Close(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_file_load(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		i int
 	}
@@ -212,10 +217,10 @@ func Test_file_load(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got []byte, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -259,8 +264,10 @@ func Test_file_load(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -282,12 +289,12 @@ func Test_file_load(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_file_Dimension(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		mem   []byte
 		dim   int
@@ -307,7 +314,7 @@ func Test_file_Dimension(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got int) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -345,8 +352,10 @@ func Test_file_Dimension(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -368,12 +377,12 @@ func Test_file_Dimension(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_file_Size(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		mem   []byte
 		dim   int
@@ -393,7 +402,7 @@ func Test_file_Size(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got int) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -431,8 +440,10 @@ func Test_file_Size(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -454,12 +465,12 @@ func Test_file_Size(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_bvecs_LoadUint8(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		i int
 	}
@@ -481,10 +492,10 @@ func Test_bvecs_LoadUint8(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got []uint8, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -522,8 +533,10 @@ func Test_bvecs_LoadUint8(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -542,12 +555,12 @@ func Test_bvecs_LoadUint8(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_bvecs_Load(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		i int
 	}
@@ -569,10 +582,10 @@ func Test_bvecs_Load(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got interface{}, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -610,8 +623,10 @@ func Test_bvecs_Load(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -630,12 +645,12 @@ func Test_bvecs_Load(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_fvecs_LoadFloat32(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		i int
 	}
@@ -657,10 +672,10 @@ func Test_fvecs_LoadFloat32(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got []float32, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -698,8 +713,10 @@ func Test_fvecs_LoadFloat32(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -718,12 +735,12 @@ func Test_fvecs_LoadFloat32(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_fvecs_Load(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		i int
 	}
@@ -745,10 +762,10 @@ func Test_fvecs_Load(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got interface{}, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -786,8 +803,10 @@ func Test_fvecs_Load(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -806,12 +825,12 @@ func Test_fvecs_Load(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_ivecs_LoadInt32(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		i int
 	}
@@ -833,10 +852,10 @@ func Test_ivecs_LoadInt32(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got []int32, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -874,8 +893,10 @@ func Test_ivecs_LoadInt32(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -894,12 +915,12 @@ func Test_ivecs_LoadInt32(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_ivecs_Load(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		i int
 	}
@@ -921,10 +942,10 @@ func Test_ivecs_Load(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got interface{}, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -962,8 +983,10 @@ func Test_ivecs_Load(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -982,12 +1005,12 @@ func Test_ivecs_Load(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
-func TestNewBVecs(t *testing.T) {
+func TestNewUint8Vectors(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		fname string
 	}
@@ -1005,10 +1028,10 @@ func TestNewBVecs(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got Uint8Vectors, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1040,8 +1063,10 @@ func TestNewBVecs(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1057,12 +1082,12 @@ func TestNewBVecs(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
-func TestNewFVecs(t *testing.T) {
+func TestNewFloatVectors(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		fname string
 	}
@@ -1080,10 +1105,10 @@ func TestNewFVecs(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got FloatVectors, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1115,8 +1140,10 @@ func TestNewFVecs(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1132,12 +1159,12 @@ func TestNewFVecs(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
-func TestNewIVecs(t *testing.T) {
+func TestNewInt32Vectors(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		fname string
 	}
@@ -1155,10 +1182,10 @@ func TestNewIVecs(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got Int32Vectors, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1190,8 +1217,10 @@ func TestNewIVecs(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1207,12 +1236,12 @@ func TestNewIVecs(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func TestOpen(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		fname string
 	}
@@ -1230,10 +1259,10 @@ func TestOpen(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got BillionScaleVectors, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1265,8 +1294,10 @@ func TestOpen(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1282,7 +1313,6 @@ func TestOpen(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

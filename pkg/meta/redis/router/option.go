@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,11 +24,9 @@ import (
 
 type Option func(*router)
 
-var (
-	defaultOpts = []Option{
-		WithTimeout("3s"),
-	}
-)
+var defaultOptions = []Option{
+	WithTimeout("3s"),
+}
 
 func WithHandler(h rest.Handler) Option {
 	return func(r *router) {

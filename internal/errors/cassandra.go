@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
 package errors
 
 var (
-
 	// ErrCassandraInvalidConsistencyType represents a function to generate an error of consistency type not defined.
 	ErrCassandraInvalidConsistencyType = func(consistency string) error {
 		return Errorf("consistetncy type %q is not defined", consistency)
@@ -71,6 +70,9 @@ var (
 	// ErrCassandraHostDownDetected represents a function to generate an error of cassandra host down detected.
 	ErrCassandraHostDownDetected = func(err error, nodeInfo string) error {
 		return Wrapf(err, "error cassandra host down detected\t%s", nodeInfo)
+	}
+	ErrCassandraFailedToCreateSession = func(err error, hosts []string, port int, cqlVersion string) error {
+		return Wrapf(err, "error cassandra client failed to create session to hosts: %v\tport: %d\tcql_version: %s ", hosts, port, cqlVersion)
 	}
 )
 

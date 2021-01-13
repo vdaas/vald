@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,21 +23,8 @@ import (
 	logger "github.com/vdaas/vald/internal/log/logger"
 )
 
-type Logger interface {
-	Debug(vals ...interface{})
-	Debugf(format string, vals ...interface{})
-	Info(vals ...interface{})
-	Infof(format string, vals ...interface{})
-	Warn(vals ...interface{})
-	Warnf(format string, vals ...interface{})
-	Error(vals ...interface{})
-	Errorf(format string, vals ...interface{})
-	Fatal(vals ...interface{})
-	Fatalf(format string, vals ...interface{})
-}
-
 var (
-	l    Logger
+	l    logger.Logger
 	once sync.Once
 )
 
@@ -51,7 +38,7 @@ func Init(opts ...Option) {
 	})
 }
 
-func getLogger(o *option) Logger {
+func getLogger(o *option) logger.Logger {
 	switch o.logType {
 	case logger.GLG:
 		fallthrough

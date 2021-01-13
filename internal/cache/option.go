@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,13 +27,11 @@ import (
 // Option represents the functional option for cache.
 type Option func(*cache)
 
-var (
-	defaultOpts = []Option{
-		WithType(cacher.GACHE.String()),
-		WithExpireDuration("30m"),
-		WithExpireCheckDuration("5m"),
-	}
-)
+var defaultOptions = []Option{
+	WithType(cacher.GACHE.String()),
+	WithExpireDuration("30m"),
+	WithExpireCheckDuration("5m"),
+}
 
 // WithExpiredHook returns Option after set expiredHook when f is not nil.
 func WithExpiredHook(f func(context.Context, string)) Option {

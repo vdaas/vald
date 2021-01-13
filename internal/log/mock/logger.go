@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 //
 package mock
 
-// Logger represents struct of each log level function
+// Logger represents struct of each log level function.
 type Logger struct {
 	DebugFunc  func(vals ...interface{})
 	DebugfFunc func(format string, vals ...interface{})
@@ -29,52 +29,52 @@ type Logger struct {
 	FatalfFunc func(format string, vals ...interface{})
 }
 
-// Debug calls DebugFunc of Logger
+// Debug calls DebugFunc of Logger.
 func (l *Logger) Debug(vals ...interface{}) {
 	l.DebugFunc(vals...)
 }
 
-// Debugf calls DebugfFunc of Logger
+// Debugf calls DebugfFunc of Logger.
 func (l *Logger) Debugf(format string, vals ...interface{}) {
 	l.DebugfFunc(format, vals...)
 }
 
-// Info calls InfoFunc of Logger
+// Info calls InfoFunc of Logger.
 func (l *Logger) Info(vals ...interface{}) {
 	l.InfoFunc(vals...)
 }
 
-// Infof calls InfofFunc of Logger
+// Infof calls InfofFunc of Logger.
 func (l *Logger) Infof(format string, vals ...interface{}) {
 	l.InfofFunc(format, vals...)
 }
 
-// Warn calls WarnFunc of Logger
+// Warn calls WarnFunc of Logger.
 func (l *Logger) Warn(vals ...interface{}) {
 	l.WarnFunc(vals...)
 }
 
-// Warnf calls WarnfFunc of Logger
+// Warnf calls WarnfFunc of Logger.
 func (l *Logger) Warnf(format string, vals ...interface{}) {
 	l.WarnfFunc(format, vals...)
 }
 
-// Error calls ErrorFunc of Logger
+// Error calls ErrorFunc of Logger.
 func (l *Logger) Error(vals ...interface{}) {
 	l.ErrorFunc(vals...)
 }
 
-// Errorf calls ErrorfFunc of Logger
+// Errorf calls ErrorfFunc of Logger.
 func (l *Logger) Errorf(format string, vals ...interface{}) {
 	l.ErrorfFunc(format, vals...)
 }
 
-// Fatal calls FatalFunc of Logger
+// Fatal calls FatalFunc of Logger.
 func (l *Logger) Fatal(vals ...interface{}) {
 	l.FatalFunc(vals...)
 }
 
-// Fatalf calls FatalfFunc of Logger
+// Fatalf calls FatalfFunc of Logger.
 func (l *Logger) Fatalf(format string, vals ...interface{}) {
 	l.FatalfFunc(format, vals...)
 }

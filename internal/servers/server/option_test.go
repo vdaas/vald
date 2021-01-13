@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,9 +25,8 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net"
-	"google.golang.org/grpc"
-
 	"go.uber.org/goleak"
+	"google.golang.org/grpc"
 )
 
 func TestWithHost(t *testing.T) {
@@ -2301,7 +2300,7 @@ func TestDefaultOption(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.checkFunc(defaultOpts); err != nil {
+			if err := tt.checkFunc(defaultOptions); err != nil {
 				t.Error(err)
 			}
 		})

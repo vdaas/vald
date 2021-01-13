@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,10 +19,10 @@ package mysql
 import "context"
 
 type Setter interface {
-	SetMeta(ctx context.Context, meta MetaVector) error
-	SetMetas(ctx context.Context, metas ...MetaVector) error
-	DeleteMeta(ctx context.Context, uuid string) error
-	DeleteMetas(ctx context.Context, uuids ...string) error
+	SetVector(ctx context.Context, vec Vector) error
+	SetVectors(ctx context.Context, vecs ...Vector) error
+	DeleteVector(ctx context.Context, uuid string) error
+	DeleteVectors(ctx context.Context, uuids ...string) error
 	SetIPs(ctx context.Context, uuid string, ips ...string) error
 	RemoveIPs(ctx context.Context, ips ...string) error
 }

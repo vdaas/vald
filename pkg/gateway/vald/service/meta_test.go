@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,11 +25,11 @@ import (
 	"github.com/vdaas/vald/internal/cache"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
-
 	"go.uber.org/goleak"
 )
 
 func TestNewMeta(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []MetaOption
 	}
@@ -82,9 +82,11 @@ func TestNewMeta(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -99,17 +101,16 @@ func TestNewMeta(t *testing.T) {
 			if err := test.checkFunc(test.want, gotMi, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_meta_Start(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
 	type fields struct {
-		addr                string
 		client              grpc.Client
 		cache               cache.Cache
 		enableCache         bool
@@ -147,7 +148,6 @@ func Test_meta_Start(t *testing.T) {
 		           ctx: nil,
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -168,7 +168,6 @@ func Test_meta_Start(t *testing.T) {
 		           ctx: nil,
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -182,9 +181,11 @@ func Test_meta_Start(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -195,7 +196,6 @@ func Test_meta_Start(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &meta{
-				addr:                test.fields.addr,
 				client:              test.fields.client,
 				cache:               test.fields.cache,
 				enableCache:         test.fields.enableCache,
@@ -207,18 +207,17 @@ func Test_meta_Start(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_meta_Exists(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		meta string
 	}
 	type fields struct {
-		addr                string
 		client              grpc.Client
 		cache               cache.Cache
 		enableCache         bool
@@ -257,7 +256,6 @@ func Test_meta_Exists(t *testing.T) {
 		           meta: "",
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -279,7 +277,6 @@ func Test_meta_Exists(t *testing.T) {
 		           meta: "",
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -293,9 +290,11 @@ func Test_meta_Exists(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -306,7 +305,6 @@ func Test_meta_Exists(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &meta{
-				addr:                test.fields.addr,
 				client:              test.fields.client,
 				cache:               test.fields.cache,
 				enableCache:         test.fields.enableCache,
@@ -318,18 +316,17 @@ func Test_meta_Exists(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_meta_GetMeta(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		uuid string
 	}
 	type fields struct {
-		addr                string
 		client              grpc.Client
 		cache               cache.Cache
 		enableCache         bool
@@ -368,7 +365,6 @@ func Test_meta_GetMeta(t *testing.T) {
 		           uuid: "",
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -390,7 +386,6 @@ func Test_meta_GetMeta(t *testing.T) {
 		           uuid: "",
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -404,9 +399,11 @@ func Test_meta_GetMeta(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -417,7 +414,6 @@ func Test_meta_GetMeta(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &meta{
-				addr:                test.fields.addr,
 				client:              test.fields.client,
 				cache:               test.fields.cache,
 				enableCache:         test.fields.enableCache,
@@ -429,18 +425,17 @@ func Test_meta_GetMeta(t *testing.T) {
 			if err := test.checkFunc(test.want, gotV, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_meta_GetMetas(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx   context.Context
 		uuids []string
 	}
 	type fields struct {
-		addr                string
 		client              grpc.Client
 		cache               cache.Cache
 		enableCache         bool
@@ -479,7 +474,6 @@ func Test_meta_GetMetas(t *testing.T) {
 		           uuids: nil,
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -501,7 +495,6 @@ func Test_meta_GetMetas(t *testing.T) {
 		           uuids: nil,
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -515,9 +508,11 @@ func Test_meta_GetMetas(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -528,7 +523,6 @@ func Test_meta_GetMetas(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &meta{
-				addr:                test.fields.addr,
 				client:              test.fields.client,
 				cache:               test.fields.cache,
 				enableCache:         test.fields.enableCache,
@@ -540,18 +534,17 @@ func Test_meta_GetMetas(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_meta_GetUUID(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		meta string
 	}
 	type fields struct {
-		addr                string
 		client              grpc.Client
 		cache               cache.Cache
 		enableCache         bool
@@ -590,7 +583,6 @@ func Test_meta_GetUUID(t *testing.T) {
 		           meta: "",
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -612,7 +604,6 @@ func Test_meta_GetUUID(t *testing.T) {
 		           meta: "",
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -626,9 +617,11 @@ func Test_meta_GetUUID(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -639,7 +632,6 @@ func Test_meta_GetUUID(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &meta{
-				addr:                test.fields.addr,
 				client:              test.fields.client,
 				cache:               test.fields.cache,
 				enableCache:         test.fields.enableCache,
@@ -651,18 +643,17 @@ func Test_meta_GetUUID(t *testing.T) {
 			if err := test.checkFunc(test.want, gotK, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_meta_GetUUIDs(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx   context.Context
 		metas []string
 	}
 	type fields struct {
-		addr                string
 		client              grpc.Client
 		cache               cache.Cache
 		enableCache         bool
@@ -701,7 +692,6 @@ func Test_meta_GetUUIDs(t *testing.T) {
 		           metas: nil,
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -723,7 +713,6 @@ func Test_meta_GetUUIDs(t *testing.T) {
 		           metas: nil,
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -737,9 +726,11 @@ func Test_meta_GetUUIDs(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -750,7 +741,6 @@ func Test_meta_GetUUIDs(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &meta{
-				addr:                test.fields.addr,
 				client:              test.fields.client,
 				cache:               test.fields.cache,
 				enableCache:         test.fields.enableCache,
@@ -762,19 +752,18 @@ func Test_meta_GetUUIDs(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_meta_SetUUIDandMeta(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		uuid string
 		meta string
 	}
 	type fields struct {
-		addr                string
 		client              grpc.Client
 		cache               cache.Cache
 		enableCache         bool
@@ -810,7 +799,6 @@ func Test_meta_SetUUIDandMeta(t *testing.T) {
 		           meta: "",
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -833,7 +821,6 @@ func Test_meta_SetUUIDandMeta(t *testing.T) {
 		           meta: "",
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -847,9 +834,11 @@ func Test_meta_SetUUIDandMeta(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -860,7 +849,6 @@ func Test_meta_SetUUIDandMeta(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &meta{
-				addr:                test.fields.addr,
 				client:              test.fields.client,
 				cache:               test.fields.cache,
 				enableCache:         test.fields.enableCache,
@@ -872,18 +860,17 @@ func Test_meta_SetUUIDandMeta(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_meta_SetUUIDandMetas(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		kvs map[string]string
 	}
 	type fields struct {
-		addr                string
 		client              grpc.Client
 		cache               cache.Cache
 		enableCache         bool
@@ -918,7 +905,6 @@ func Test_meta_SetUUIDandMetas(t *testing.T) {
 		           kvs: nil,
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -940,7 +926,6 @@ func Test_meta_SetUUIDandMetas(t *testing.T) {
 		           kvs: nil,
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -954,9 +939,11 @@ func Test_meta_SetUUIDandMetas(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -967,7 +954,6 @@ func Test_meta_SetUUIDandMetas(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &meta{
-				addr:                test.fields.addr,
 				client:              test.fields.client,
 				cache:               test.fields.cache,
 				enableCache:         test.fields.enableCache,
@@ -979,18 +965,17 @@ func Test_meta_SetUUIDandMetas(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_meta_DeleteMeta(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		uuid string
 	}
 	type fields struct {
-		addr                string
 		client              grpc.Client
 		cache               cache.Cache
 		enableCache         bool
@@ -1029,7 +1014,6 @@ func Test_meta_DeleteMeta(t *testing.T) {
 		           uuid: "",
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -1051,7 +1035,6 @@ func Test_meta_DeleteMeta(t *testing.T) {
 		           uuid: "",
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -1065,9 +1048,11 @@ func Test_meta_DeleteMeta(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1078,7 +1063,6 @@ func Test_meta_DeleteMeta(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &meta{
-				addr:                test.fields.addr,
 				client:              test.fields.client,
 				cache:               test.fields.cache,
 				enableCache:         test.fields.enableCache,
@@ -1090,18 +1074,17 @@ func Test_meta_DeleteMeta(t *testing.T) {
 			if err := test.checkFunc(test.want, gotV, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_meta_DeleteMetas(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx   context.Context
 		uuids []string
 	}
 	type fields struct {
-		addr                string
 		client              grpc.Client
 		cache               cache.Cache
 		enableCache         bool
@@ -1140,7 +1123,6 @@ func Test_meta_DeleteMetas(t *testing.T) {
 		           uuids: nil,
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -1162,7 +1144,6 @@ func Test_meta_DeleteMetas(t *testing.T) {
 		           uuids: nil,
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -1176,9 +1157,11 @@ func Test_meta_DeleteMetas(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1189,7 +1172,6 @@ func Test_meta_DeleteMetas(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &meta{
-				addr:                test.fields.addr,
 				client:              test.fields.client,
 				cache:               test.fields.cache,
 				enableCache:         test.fields.enableCache,
@@ -1201,18 +1183,17 @@ func Test_meta_DeleteMetas(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_meta_DeleteUUID(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		meta string
 	}
 	type fields struct {
-		addr                string
 		client              grpc.Client
 		cache               cache.Cache
 		enableCache         bool
@@ -1251,7 +1232,6 @@ func Test_meta_DeleteUUID(t *testing.T) {
 		           meta: "",
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -1273,7 +1253,6 @@ func Test_meta_DeleteUUID(t *testing.T) {
 		           meta: "",
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -1287,9 +1266,11 @@ func Test_meta_DeleteUUID(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1300,7 +1281,6 @@ func Test_meta_DeleteUUID(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &meta{
-				addr:                test.fields.addr,
 				client:              test.fields.client,
 				cache:               test.fields.cache,
 				enableCache:         test.fields.enableCache,
@@ -1312,18 +1292,17 @@ func Test_meta_DeleteUUID(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_meta_DeleteUUIDs(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx   context.Context
 		metas []string
 	}
 	type fields struct {
-		addr                string
 		client              grpc.Client
 		cache               cache.Cache
 		enableCache         bool
@@ -1362,7 +1341,6 @@ func Test_meta_DeleteUUIDs(t *testing.T) {
 		           metas: nil,
 		       },
 		       fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -1384,7 +1362,6 @@ func Test_meta_DeleteUUIDs(t *testing.T) {
 		           metas: nil,
 		           },
 		           fields: fields {
-		           addr: "",
 		           client: nil,
 		           cache: nil,
 		           enableCache: false,
@@ -1398,9 +1375,11 @@ func Test_meta_DeleteUUIDs(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1411,7 +1390,6 @@ func Test_meta_DeleteUUIDs(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &meta{
-				addr:                test.fields.addr,
 				client:              test.fields.client,
 				cache:               test.fields.cache,
 				enableCache:         test.fields.enableCache,
@@ -1423,7 +1401,6 @@ func Test_meta_DeleteUUIDs(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

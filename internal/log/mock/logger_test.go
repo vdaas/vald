@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,8 +30,7 @@ func TestLogger_Debug(t *testing.T) {
 	type fields struct {
 		DebugFunc func(vals ...interface{})
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -109,8 +108,7 @@ func TestLogger_Debugf(t *testing.T) {
 	type fields struct {
 		DebugfFunc func(format string, vals ...interface{})
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -189,8 +187,7 @@ func TestLogger_Info(t *testing.T) {
 	type fields struct {
 		InfoFunc func(vals ...interface{})
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -268,8 +265,7 @@ func TestLogger_Infof(t *testing.T) {
 	type fields struct {
 		InfofFunc func(format string, vals ...interface{})
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -348,8 +344,7 @@ func TestLogger_Warn(t *testing.T) {
 	type fields struct {
 		WarnFunc func(vals ...interface{})
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -427,8 +422,7 @@ func TestLogger_Warnf(t *testing.T) {
 	type fields struct {
 		WarnfFunc func(format string, vals ...interface{})
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -507,8 +501,7 @@ func TestLogger_Error(t *testing.T) {
 	type fields struct {
 		ErrorFunc func(vals ...interface{})
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -586,8 +579,7 @@ func TestLogger_Errorf(t *testing.T) {
 	type fields struct {
 		ErrorfFunc func(format string, vals ...interface{})
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -666,8 +658,7 @@ func TestLogger_Fatal(t *testing.T) {
 	type fields struct {
 		FatalFunc func(vals ...interface{})
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -745,8 +736,7 @@ func TestLogger_Fatalf(t *testing.T) {
 	type fields struct {
 		FatalfFunc func(format string, vals ...interface{})
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

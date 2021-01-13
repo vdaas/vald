@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,11 +23,13 @@ import (
 
 	"github.com/kpango/fuid"
 	"github.com/kpango/glg"
-	agent "github.com/vdaas/vald-client-go/agent/core"
-	"github.com/vdaas/vald-client-go/payload"
+	"google.golang.org/grpc"
+
+	"github.com/vdaas/vald-client-go/v1/vald"
+	// agent "github.com/vdaas/vald-client-go/v1/agent/core"
+	"github.com/vdaas/vald-client-go/v1/payload"
 
 	"gonum.org/v1/hdf5"
-	"google.golang.org/grpc"
 )
 
 const (
@@ -72,7 +74,7 @@ func main() {
 	}
 
 	// Creates Vald Agent client for gRPC.
-	client := agent.NewAgentClient(conn)
+	client := vald.NewValdClient(conn)
 
 	glg.Infof("Start Inserting %d training vector to Vald Agent", insertCount)
 	// Insert 400 example vectors into Vald cluster
@@ -82,9 +84,14 @@ func main() {
 		}
 		// Calls `Insert` function of Vald Agent client.
 		// Sends set of vector and id to server via gRPC.
-		_, err := client.Insert(ctx, &payload.Object_Vector{
-			Id:     ids[i],
-			Vector: train[i],
+		_, err := client.Insert(ctx, &payload.Insert_Request{
+			Vector: &payload.Object_Vector{
+				Id:     ids[i],
+				Vector: train[i],
+			},
+			Config: &payload.Insert_Config{
+				SkipStrictExistCheck: true,
+			},
 		})
 		if err != nil {
 			glg.Fatal(err)
@@ -95,7 +102,7 @@ func main() {
 	If you run client.CreateIndex, it costs less time for search
 	**/
 	// glg.Info("Start Indexing dataset.")
-	// _, err = client.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+	// _, err = agent.NewAgentClient(conn).CreateIndex(ctx, &payload.Control_CreateIndexRequest{
 	// 	PoolSize: uint32(insertCount),
 	// })
 	// if err != nil {

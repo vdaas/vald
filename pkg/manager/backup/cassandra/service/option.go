@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,11 +23,9 @@ import (
 
 type Option func(*client) error
 
-var (
-	defaultOpts = []Option{
-		WithMetaTable("meta_vector"),
-	}
-)
+var defaultOptions = []Option{
+	WithTableName("backup_vector"),
+}
 
 func WithCassandra(db cassandra.Cassandra) Option {
 	return func(c *client) error {
@@ -39,10 +37,10 @@ func WithCassandra(db cassandra.Cassandra) Option {
 	}
 }
 
-func WithMetaTable(name string) Option {
+func WithTableName(name string) Option {
 	return func(c *client) error {
 		if name != "" {
-			c.metaTable = name
+			c.tableName = name
 		}
 
 		return nil

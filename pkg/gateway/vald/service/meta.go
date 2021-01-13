@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import (
 	"context"
 	"reflect"
 
-	gmeta "github.com/vdaas/vald/apis/grpc/meta"
-	"github.com/vdaas/vald/apis/grpc/payload"
+	gmeta "github.com/vdaas/vald/apis/grpc/v1/meta"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/cache"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -46,7 +46,6 @@ type Meta interface {
 }
 
 type meta struct {
-	addr                string
 	client              grpc.Client
 	cache               cache.Cache
 	enableCache         bool
@@ -102,7 +101,7 @@ func (m *meta) Exists(ctx context.Context, meta string) (bool, error) {
 			return true, nil
 		}
 	}
-	key, err := m.client.Do(ctx, m.addr, func(ctx context.Context,
+	key, err := m.client.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		key, err := gmeta.NewMetaClient(conn).GetMetaInverse(ctx, &payload.Meta_Val{
 			Val: meta,
@@ -145,7 +144,7 @@ func (m *meta) GetMeta(ctx context.Context, uuid string) (v string, err error) {
 			return data.(string), nil
 		}
 	}
-	val, err := m.client.Do(ctx, m.addr, func(ctx context.Context,
+	val, err := m.client.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		val, err := gmeta.NewMetaClient(conn).GetMeta(ctx, &payload.Meta_Key{
 			Key: uuid,
@@ -190,7 +189,7 @@ func (m *meta) GetMetas(ctx context.Context, uuids ...string) ([]string, error) 
 			return metas, nil
 		}
 	}
-	vals, err := m.client.Do(ctx, m.addr, func(ctx context.Context,
+	vals, err := m.client.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		vals, err := gmeta.NewMetaClient(conn).GetMetas(ctx, &payload.Meta_Keys{
 			Keys: uuids,
@@ -230,7 +229,7 @@ func (m *meta) GetUUID(ctx context.Context, meta string) (k string, err error) {
 			return data.(string), nil
 		}
 	}
-	key, err := m.client.Do(ctx, m.addr, func(ctx context.Context,
+	key, err := m.client.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		key, err := gmeta.NewMetaClient(conn).GetMetaInverse(ctx, &payload.Meta_Val{
 			Val: meta,
@@ -275,7 +274,7 @@ func (m *meta) GetUUIDs(ctx context.Context, metas ...string) ([]string, error) 
 			return uuids, nil
 		}
 	}
-	keys, err := m.client.Do(ctx, m.addr, func(ctx context.Context,
+	keys, err := m.client.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		keys, err := gmeta.NewMetaClient(conn).GetMetasInverse(ctx, &payload.Meta_Vals{
 			Vals: metas,
@@ -309,7 +308,7 @@ func (m *meta) SetUUIDandMeta(ctx context.Context, uuid, meta string) (err error
 		}
 	}()
 
-	_, err = m.client.Do(ctx, m.addr, func(ctx context.Context,
+	_, err = m.client.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		_, err := gmeta.NewMetaClient(conn).SetMeta(ctx, &payload.Meta_KeyVal{
 			Key: uuid,
@@ -344,7 +343,7 @@ func (m *meta) SetUUIDandMetas(ctx context.Context, kvs map[string]string) (err 
 			Val: meta,
 		})
 	}
-	_, err = m.client.Do(ctx, m.addr, func(ctx context.Context,
+	_, err = m.client.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		_, err := gmeta.NewMetaClient(conn).SetMetas(ctx, &payload.Meta_KeyVals{
 			Kvs: data,
@@ -379,7 +378,7 @@ func (m *meta) DeleteMeta(ctx context.Context, uuid string) (v string, err error
 			m.cache.Delete(uuidCacheKeyPref + meta.(string))
 		}
 	}
-	val, err := m.client.Do(ctx, m.addr, func(ctx context.Context,
+	val, err := m.client.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		val, err := gmeta.NewMetaClient(conn).DeleteMeta(ctx, &payload.Meta_Key{
 			Key: uuid,
@@ -411,7 +410,7 @@ func (m *meta) DeleteMetas(ctx context.Context, uuids ...string) ([]string, erro
 			}
 		}
 	}
-	vals, err := m.client.Do(ctx, m.addr, func(ctx context.Context,
+	vals, err := m.client.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		vals, err := gmeta.NewMetaClient(conn).DeleteMetas(ctx, &payload.Meta_Keys{
 			Keys: uuids,
@@ -441,7 +440,7 @@ func (m *meta) DeleteUUID(ctx context.Context, meta string) (string, error) {
 			m.cache.Delete(metaCacheKeyPref + uuid.(string))
 		}
 	}
-	key, err := m.client.Do(ctx, m.addr, func(ctx context.Context,
+	key, err := m.client.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		key, err := gmeta.NewMetaClient(conn).DeleteMetaInverse(ctx, &payload.Meta_Val{
 			Val: meta,
@@ -473,7 +472,7 @@ func (m *meta) DeleteUUIDs(ctx context.Context, metas ...string) ([]string, erro
 			}
 		}
 	}
-	keys, err := m.client.Do(ctx, m.addr, func(ctx context.Context,
+	keys, err := m.client.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		keys, err := gmeta.NewMetaClient(conn).DeleteMetasInverse(ctx, &payload.Meta_Vals{
 			Vals: metas,

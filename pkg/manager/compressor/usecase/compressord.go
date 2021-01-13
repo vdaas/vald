@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ package usecase
 import (
 	"context"
 
-	"github.com/vdaas/vald/apis/grpc/manager/compressor"
-	cclient "github.com/vdaas/vald/internal/client/compressor"
+	"github.com/vdaas/vald/apis/grpc/v1/manager/compressor"
+	cclient "github.com/vdaas/vald/internal/client/v1/client/compressor"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -53,11 +53,9 @@ type run struct {
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
 
-	var (
-		b service.Backup
-	)
+	var b service.Backup
 
-	if addrs := cfg.BackupManager.Client.Addrs; len(addrs) == 0 {
+	if len(cfg.BackupManager.Client.Addrs) == 0 {
 		return nil, errors.ErrInvalidBackupConfig
 	}
 
@@ -76,7 +74,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 
 	b, err = service.NewBackup(
-		service.WithBackupAddr(cfg.BackupManager.Client.Addrs[0]),
 		service.WithBackupClient(
 			grpc.New(backupClientOptions...),
 		),
@@ -106,6 +103,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	compressorClientOptions := append(
 		cfg.Registerer.Compressor.Client.Opts(),
 		grpc.WithErrGroup(eg),
+		grpc.WithAddrs(cfg.Registerer.Compressor.Client.Addrs...),
 	)
 
 	if cfg.Observability.Enabled {
@@ -118,7 +116,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 
 	cc, err := cclient.New(
-		cclient.WithAddr(cfg.Registerer.Compressor.Client.Addrs[0]),
 		cclient.WithClient(grpc.New(compressorClientOptions...)),
 	)
 	if err != nil {
@@ -206,7 +203,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		}),
 		// TODO add GraphQL handler
 	)
-
 	if err != nil {
 		return nil, err
 	}

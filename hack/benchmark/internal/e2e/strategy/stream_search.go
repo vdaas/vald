@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,7 +24,8 @@ import (
 
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e"
-	"github.com/vdaas/vald/internal/client"
+	"github.com/vdaas/vald/internal/client/v1/client"
+	"github.com/vdaas/vald/internal/net/grpc"
 )
 
 type streamSearch struct {
@@ -68,10 +69,15 @@ func (s *streamSearch) dataProvider(total *uint32, b *testing.B, dataset assets.
 func (s *streamSearch) Run(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
 	var total uint32
 	b.Run("StreamSearch", func(bb *testing.B) {
-		c.StreamSearch(ctx, s.dataProvider(&total, bb, dataset), func(_ *client.SearchResponse, err error) {
-			if err != nil {
-				bb.Error(err)
-			}
+		srv, err := c.StreamSearch(ctx)
+		if err != nil {
+			bb.Error(err)
+		}
+		grpc.BidirectionalStreamClient(srv, func() interface{} {
+			return s.dataProvider(&total, bb, dataset)()
+		}, func() interface{} {
+			return new(client.SearchRequest)
+		}, func(msg interface{}, err error) {
 		})
 	})
 }

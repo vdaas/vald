@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
@@ -62,7 +62,7 @@ type discoverer struct {
 
 func New(opts ...Option) (dsc Discoverer, err error) {
 	d := new(discoverer)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(d); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
@@ -144,9 +144,9 @@ func New(opts ...Option) (dsc Discoverer, err error) {
 				nm := make(map[string]struct{}, len(nodes))
 				for _, n := range nodes {
 					nm[n.Name] = struct{}{}
-					d.nodes.Store(n.Name, n)
+					d.nodes.Store(n.Name, &n)
 				}
-				d.nodes.Range(func(name string, _ node.Node) bool {
+				d.nodes.Range(func(name string, _ *node.Node) bool {
 					_, ok := nm[name]
 					if !ok {
 						d.nodes.Delete(name)
@@ -184,7 +184,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 					nodeByName      = make(map[string]*payload.Info_Node)                        // map[name]node
 				)
 
-				d.nodes.Range(func(nodeName string, n node.Node) bool {
+				d.nodes.Range(func(nodeName string, n *node.Node) bool {
 					select {
 					case <-ctx.Done():
 						return false
@@ -355,7 +355,6 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 					ech <- err
 				}
 			}
-
 		}
 	}))
 	return ech, nil

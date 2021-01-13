@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,11 +22,12 @@ import (
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/worker"
-
 	"go.uber.org/goleak"
 )
 
 func TestWithCompressAlgorithm(t *testing.T) {
+	t.Parallel()
+	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
 		name string
@@ -64,7 +65,7 @@ func TestWithCompressAlgorithm(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
+	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 	       }
 	       return nil
 	   }
@@ -100,9 +101,11 @@ func TestWithCompressAlgorithm(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -123,7 +126,7 @@ func TestWithCompressAlgorithm(t *testing.T) {
 			   }
 			*/
 
-			// Uncomment this block if the option returns an error, otherwise delete it
+			// Uncomment this block if the option do not return an error, otherwise delete it
 			/*
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
@@ -131,7 +134,7 @@ func TestWithCompressAlgorithm(t *testing.T) {
 			   got := WithCompressAlgorithm(test.args.name)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := test.checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -140,6 +143,8 @@ func TestWithCompressAlgorithm(t *testing.T) {
 }
 
 func TestWithCompressionLevel(t *testing.T) {
+	t.Parallel()
+	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
 		level int
@@ -177,7 +182,7 @@ func TestWithCompressionLevel(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
+	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 	       }
 	       return nil
 	   }
@@ -213,9 +218,11 @@ func TestWithCompressionLevel(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -236,7 +243,7 @@ func TestWithCompressionLevel(t *testing.T) {
 			   }
 			*/
 
-			// Uncomment this block if the option returns an error, otherwise delete it
+			// Uncomment this block if the option do not return an error, otherwise delete it
 			/*
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
@@ -244,7 +251,7 @@ func TestWithCompressionLevel(t *testing.T) {
 			   got := WithCompressionLevel(test.args.level)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := test.checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -253,6 +260,8 @@ func TestWithCompressionLevel(t *testing.T) {
 }
 
 func TestWithCompressorWorker(t *testing.T) {
+	t.Parallel()
+	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
 		opts []worker.WorkerOption
@@ -290,7 +299,7 @@ func TestWithCompressorWorker(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
+	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 	       }
 	       return nil
 	   }
@@ -326,9 +335,11 @@ func TestWithCompressorWorker(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -349,7 +360,7 @@ func TestWithCompressorWorker(t *testing.T) {
 			   }
 			*/
 
-			// Uncomment this block if the option returns an error, otherwise delete it
+			// Uncomment this block if the option do not return an error, otherwise delete it
 			/*
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
@@ -357,7 +368,7 @@ func TestWithCompressorWorker(t *testing.T) {
 			   got := WithCompressorWorker(test.args.opts...)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := test.checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -366,6 +377,8 @@ func TestWithCompressorWorker(t *testing.T) {
 }
 
 func TestWithCompressorErrGroup(t *testing.T) {
+	t.Parallel()
+	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
 		eg errgroup.Group
@@ -403,7 +416,7 @@ func TestWithCompressorErrGroup(t *testing.T) {
 	/*
 	   defaultCheckFunc := func(w want, obj *T) error {
 	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
+	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 	       }
 	       return nil
 	   }
@@ -439,9 +452,11 @@ func TestWithCompressorErrGroup(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -462,7 +477,7 @@ func TestWithCompressorErrGroup(t *testing.T) {
 			   }
 			*/
 
-			// Uncomment this block if the option returns an error, otherwise delete it
+			// Uncomment this block if the option do not return an error, otherwise delete it
 			/*
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
@@ -470,7 +485,7 @@ func TestWithCompressorErrGroup(t *testing.T) {
 			   got := WithCompressorErrGroup(test.args.eg)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := test.checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/

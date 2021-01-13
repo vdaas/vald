@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,29 +29,27 @@ import (
 	"go.uber.org/goleak"
 )
 
-var (
-	// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
-	goleakIgnoreOptions = []goleak.Option{
-		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
-	}
-)
+// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
+var goleakIgnoreOptions = []goleak.Option{
+	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+}
 
 func TestInit(t *testing.T) {
 	type args struct {
 		opts []Option
 	}
 	type want struct {
-		l Logger
+		l logger.Logger
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, Logger) error
+		checkFunc  func(want, logger.Logger) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got Logger) error {
+	defaultCheckFunc := func(w want, got logger.Logger) error {
 		if !reflect.DeepEqual(got, l) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.l)
 		}
@@ -118,17 +116,17 @@ func Test_getLogger(t *testing.T) {
 		o *option
 	}
 	type want struct {
-		want Logger
+		want logger.Logger
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, Logger) error
+		checkFunc  func(want, logger.Logger) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got Logger) error {
+	defaultCheckFunc := func(w want, got logger.Logger) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}

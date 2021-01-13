@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import (
 	"crypto/tls"
 	"time"
 
-	redis "github.com/go-redis/redis/v7"
+	redis "github.com/go-redis/redis/v8"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/timeutil"
@@ -31,12 +31,21 @@ import (
 // Option represents the functional option for redisClient.
 type Option func(*redisClient) error
 
-var (
-	defaultOpts = []Option{
-		WithInitialPingDuration("30ms"),
-		WithInitialPingTimeLimit("5m"),
+var defaultOptions = []Option{
+	WithInitialPingDuration("30ms"),
+	WithInitialPingTimeLimit("5m"),
+	WithNetwork("tcp"),
+}
+
+// WithNetwork returns the option to set the network like tcp or unix.
+func WithNetwork(network string) Option {
+	return func(r *redisClient) error {
+		if network != "" {
+			r.network = network
+		}
+		return nil
 	}
-)
+}
 
 // WithDialer returns the option to set the dialer.
 func WithDialer(der tcp.Dialer) Option {
@@ -82,7 +91,7 @@ func WithDB(db int) Option {
 }
 
 // WithClusterSlots returns the option to set the clusterSlots.
-func WithClusterSlots(f func() ([]redis.ClusterSlot, error)) Option {
+func WithClusterSlots(f func(context.Context) ([]redis.ClusterSlot, error)) Option {
 	return func(r *redisClient) error {
 		if f != nil {
 			r.clusterSlots = f
@@ -216,7 +225,7 @@ func WithMinimumRetryBackoff(dur string) Option {
 }
 
 // WithOnConnectFunction returns the option to set the onConnect.
-func WithOnConnectFunction(f func(*redis.Conn) error) Option {
+func WithOnConnectFunction(f func(context.Context, *redis.Conn) error) Option {
 	return func(r *redisClient) error {
 		if f != nil {
 			r.onConnect = f
@@ -225,11 +234,31 @@ func WithOnConnectFunction(f func(*redis.Conn) error) Option {
 	}
 }
 
-// WithOnNewNodeFunction returns the option to set the onNewNode.
-func WithOnNewNodeFunction(f func(*redis.Client)) Option {
+// WithUsername returns the option to set the username.
+func WithUsername(name string) Option {
 	return func(r *redisClient) error {
-		if f != nil {
-			r.onNewNode = f
+		if name != "" {
+			r.username = name
+		}
+		return nil
+	}
+}
+
+// WithSentinelMasterName returns the option to set the password.
+func WithSentinelMasterName(name string) Option {
+	return func(r *redisClient) error {
+		if name != "" {
+			r.sentinelMasterName = name
+		}
+		return nil
+	}
+}
+
+// WithSentinelPassword returns the option to set the password.
+func WithSentinelPassword(password string) Option {
+	return func(r *redisClient) error {
+		if password != "" {
+			r.sentinelPassword = password
 		}
 		return nil
 	}
@@ -362,7 +391,7 @@ func WithInitialPingDuration(dur string) Option {
 	}
 }
 
-// WithHooks returns the option to add hooks
+// WithHooks returns the option to add hooks.
 func WithHooks(hooks ...Hook) Option {
 	return func(r *redisClient) error {
 		if hooks == nil {
@@ -375,6 +404,18 @@ func WithHooks(hooks ...Hook) Option {
 		}
 
 		r.hooks = hooks
+
+		return nil
+	}
+}
+
+// WithLimiter returns the option to limiter.
+func WithLimiter(limiter Limiter) Option {
+	return func(r *redisClient) error {
+		if limiter == nil {
+			return nil
+		}
+		r.limiter = limiter
 
 		return nil
 	}

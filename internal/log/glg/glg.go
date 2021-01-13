@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import (
 	"github.com/kpango/glg"
 	"github.com/vdaas/vald/internal/log/format"
 	"github.com/vdaas/vald/internal/log/level"
+	log "github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/log/retry"
 )
 
@@ -31,9 +32,9 @@ type logger struct {
 }
 
 // New returns a new logger instance.
-func New(opts ...Option) *logger {
+func New(opts ...Option) log.Logger {
 	l := new(logger)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(l)
 	}
 

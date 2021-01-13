@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ option java_multiple_files = true;
 option java_package = "org.vdaas.vald.gateway.vald";
 option java_outer_classname = "ValdApi";
 
-import "payload.proto";
+import "apis/proto/payload/payload.proto";
 import "google/api/annotations.proto";
 
 service Vald {
@@ -48,45 +48,45 @@ service Vald {
   rpc StreamSearchByID(stream payload.Search.IDRequest)
       returns (stream payload.Search.Response) {}
 
-  rpc Insert(payload.Object.Vector) returns (payload.Empty) {
+  rpc Insert(payload.Object.Vector) returns (payload.Object.Location) {
     option (google.api.http) = {
       post : "/insert"
       body : "*"
     };
   }
   rpc StreamInsert(stream payload.Object.Vector)
-      returns (stream payload.Empty) {}
-  rpc MultiInsert(payload.Object.Vectors) returns (payload.Empty) {}
+      returns (stream payload.Object.Location) {}
+  rpc MultiInsert(payload.Object.Vectors) returns (payload.Object.Locations) {}
 
-  rpc Update(payload.Object.Vector) returns (payload.Empty) {
+  rpc Update(payload.Object.Vector) returns (payload.Object.Location) {
     option (google.api.http) = {
       post : "/update"
       body : "*"
     };
   }
   rpc StreamUpdate(stream payload.Object.Vector)
-      returns (stream payload.Empty) {}
-  rpc MultiUpdate(payload.Object.Vectors) returns (payload.Empty) {}
+      returns (stream payload.Object.Location) {}
+  rpc MultiUpdate(payload.Object.Vectors) returns (payload.Object.Locations) {}
 
-  rpc Upsert(payload.Object.Vector) returns (payload.Empty) {
+  rpc Upsert(payload.Object.Vector) returns (payload.Object.Location) {
     option (google.api.http) = {
       post : "/upsert"
       body : "*"
     };
   }
   rpc StreamUpsert(stream payload.Object.Vector)
-      returns (stream payload.Empty) {}
-  rpc MultiUpsert(payload.Object.Vectors) returns (payload.Empty) {}
+      returns (stream payload.Object.Location) {}
+  rpc MultiUpsert(payload.Object.Vectors) returns (payload.Object.Locations) {}
 
-  rpc Remove(payload.Object.ID) returns (payload.Empty) {
+  rpc Remove(payload.Object.ID) returns (payload.Object.Location) {
     option (google.api.http).delete = "/remove/{id}";
   }
-  rpc StreamRemove(stream payload.Object.ID) returns (stream payload.Empty) {}
-  rpc MultiRemove(payload.Object.IDs) returns (payload.Empty) {}
+  rpc StreamRemove(stream payload.Object.ID) returns (stream payload.Object.Location) {}
+  rpc MultiRemove(payload.Object.IDs) returns (payload.Object.Locations) {}
 
-  rpc GetObject(payload.Object.ID) returns (payload.Backup.MetaVector) {
+  rpc GetObject(payload.Object.ID) returns (payload.Object.Vector) {
     option (google.api.http).get = "/object/{id}";
   }
   rpc StreamGetObject(stream payload.Object.ID)
-      returns (stream payload.Backup.MetaVector) {}
+      returns (stream payload.Object.Vector) {}
 }

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,13 +26,11 @@ import (
 // Option represents the functional option for writer.
 type Option func(w *writer) error
 
-var (
-	defaultOpts = []Option{
-		WithErrGroup(errgroup.Get()),
-		WithContentType("application/octet-stream"),
-		WithMaxPartSize(64 * 1024 * 1024),
-	}
-)
+var defaultOptions = []Option{
+	WithErrGroup(errgroup.Get()),
+	WithContentType("application/octet-stream"),
+	WithMaxPartSize(64 * 1024 * 1024),
+}
 
 // WithErrGroup returns the option to set eg for writer.
 func WithErrGroup(eg errgroup.Group) Option {

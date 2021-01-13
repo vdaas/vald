@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -32,11 +32,11 @@ type router struct {
 	timeout string
 }
 
-// New returns REST route&method information from handler interface
+// New returns REST route&method information from handler interface.
 func New(opts ...Option) http.Handler {
 	r := new(router)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(r)
 	}
 
@@ -48,14 +48,15 @@ func New(opts ...Option) http.Handler {
 				middleware.WithTimeout(r.timeout),
 				middleware.WithErrorGroup(r.eg),
 			)),
-		routing.WithRoutes([]routing.Route{{
-			"GetVector",
-			[]string{
-				http.MethodGet,
+		routing.WithRoutes([]routing.Route{
+			{
+				"GetVector",
+				[]string{
+					http.MethodGet,
+				},
+				"/vector/{uuid}",
+				h.GetVector,
 			},
-			"/vector/{uuid}",
-			h.GetVector,
-		},
 			{
 				"Locations",
 				[]string{

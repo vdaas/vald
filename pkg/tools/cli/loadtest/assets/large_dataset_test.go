@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import (
 )
 
 func Test_loadLargeData(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		trainFileName       string
 		queryFileName       string
@@ -47,7 +48,7 @@ func Test_loadLargeData(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got func() (Dataset, error)) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -91,8 +92,10 @@ func Test_loadLargeData(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -108,12 +111,12 @@ func Test_loadLargeData(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_largeDataset_Train(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		i int
 	}
@@ -139,10 +142,10 @@ func Test_largeDataset_Train(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got interface{}, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -188,8 +191,10 @@ func Test_largeDataset_Train(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -212,12 +217,12 @@ func Test_largeDataset_Train(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_largeDataset_TrainSize(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		dataset     *dataset
 		train       x1b.BillionScaleVectors
@@ -238,7 +243,7 @@ func Test_largeDataset_TrainSize(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got int) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -278,8 +283,10 @@ func Test_largeDataset_TrainSize(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -302,12 +309,12 @@ func Test_largeDataset_TrainSize(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_largeDataset_Query(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		i int
 	}
@@ -333,10 +340,10 @@ func Test_largeDataset_Query(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got interface{}, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -382,8 +389,10 @@ func Test_largeDataset_Query(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -406,12 +415,12 @@ func Test_largeDataset_Query(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_largeDataset_QuerySize(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		dataset     *dataset
 		train       x1b.BillionScaleVectors
@@ -432,7 +441,7 @@ func Test_largeDataset_QuerySize(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got int) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -472,8 +481,10 @@ func Test_largeDataset_QuerySize(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -496,12 +507,12 @@ func Test_largeDataset_QuerySize(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_largeDataset_Distance(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		i int
 	}
@@ -527,10 +538,10 @@ func Test_largeDataset_Distance(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got []float32, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -576,8 +587,10 @@ func Test_largeDataset_Distance(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -600,12 +613,12 @@ func Test_largeDataset_Distance(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_largeDataset_DistanceSize(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		dataset     *dataset
 		train       x1b.BillionScaleVectors
@@ -626,7 +639,7 @@ func Test_largeDataset_DistanceSize(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got int) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -666,8 +679,10 @@ func Test_largeDataset_DistanceSize(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -690,12 +705,12 @@ func Test_largeDataset_DistanceSize(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_largeDataset_Neighbor(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		i int
 	}
@@ -721,10 +736,10 @@ func Test_largeDataset_Neighbor(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got []int, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got error = %v, want %v", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -770,8 +785,10 @@ func Test_largeDataset_Neighbor(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -794,12 +811,12 @@ func Test_largeDataset_Neighbor(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_largeDataset_NeighborSize(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		dataset     *dataset
 		train       x1b.BillionScaleVectors
@@ -820,7 +837,7 @@ func Test_largeDataset_NeighborSize(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got int) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -860,8 +877,10 @@ func Test_largeDataset_NeighborSize(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -884,12 +903,12 @@ func Test_largeDataset_NeighborSize(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_largeDataset_Dimension(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		dataset     *dataset
 		train       x1b.BillionScaleVectors
@@ -910,7 +929,7 @@ func Test_largeDataset_Dimension(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got int) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -950,8 +969,10 @@ func Test_largeDataset_Dimension(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -974,12 +995,12 @@ func Test_largeDataset_Dimension(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_largeDataset_DistanceType(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		dataset     *dataset
 		train       x1b.BillionScaleVectors
@@ -1000,7 +1021,7 @@ func Test_largeDataset_DistanceType(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1040,8 +1061,10 @@ func Test_largeDataset_DistanceType(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -1064,12 +1087,12 @@ func Test_largeDataset_DistanceType(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_largeDataset_ObjectType(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		dataset     *dataset
 		train       x1b.BillionScaleVectors
@@ -1090,7 +1113,7 @@ func Test_largeDataset_ObjectType(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1130,8 +1153,10 @@ func Test_largeDataset_ObjectType(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -1154,12 +1179,12 @@ func Test_largeDataset_ObjectType(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_largeDataset_Name(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		dataset     *dataset
 		train       x1b.BillionScaleVectors
@@ -1180,7 +1205,7 @@ func Test_largeDataset_Name(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1220,8 +1245,10 @@ func Test_largeDataset_Name(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -1244,7 +1271,6 @@ func Test_largeDataset_Name(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

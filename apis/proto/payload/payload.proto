@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,30 +23,46 @@ option java_multiple_files = true;
 option java_package = "org.vdaas.vald.payload";
 option java_outer_classname = "ValdPayload";
 
-import "validate/validate.proto";
-/*
 import "github.com/envoyproxy/protoc-gen-validate/validate/validate.proto";
- */
 
 message Search {
   message Request {
     repeated float vector = 1 [ (validate.rules).repeated .min_items = 2 ];
     Config config = 2;
   }
+  message MultiRequest {
+    repeated Request requests = 1;
+  }
 
   message IDRequest {
     string id = 1;
     Config config = 2;
   }
-
-  message Config {
-    uint32 num = 1 [ (validate.rules).uint32.gte = 1 ];
-    float radius = 2;
-    float epsilon = 3;
-    int64 timeout = 4;
+  message MultiIDRequest {
+    repeated IDRequest requests = 1;
   }
 
-  message Response { repeated Object.Distance results = 1; }
+  message ObjectRequest {
+    bytes object = 1;
+    Config config = 2;
+  }
+
+  message Config {
+    string request_id = 1;
+    uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
+    float radius = 3;
+    float epsilon = 4;
+    int64 timeout = 5;
+  }
+
+  message Response { 
+    string request_id = 1;
+    repeated Object.Distance results = 2; 
+  }
+
+  message Responses { 
+    repeated Response responses = 1; 
+  }
 }
 
 message Meta {
@@ -75,6 +91,21 @@ message Object {
     repeated float vector = 2 [ (validate.rules).repeated .min_items = 2 ];
   }
   message Vectors { repeated Vector vectors = 1; }
+
+  message Blob {
+    string id = 1 [ (validate.rules).string.min_len = 1 ];
+    bytes object = 2;
+  }
+
+  message Location {
+    string name = 1;
+    string uuid = 2;
+    repeated string ips = 3;
+  }
+
+  message Locations {
+    repeated Location locations = 1;
+  }
 }
 
 message Control {
@@ -141,7 +172,6 @@ message Backup {
 
   message MetaVector {
     string uuid = 1;
-    string meta = 2;
     repeated float vector = 3 [ (validate.rules).repeated .min_items = 2 ];
     repeated string ips = 4;
   }
@@ -150,7 +180,6 @@ message Backup {
   message Compressed {
     message MetaVector {
       string uuid = 1;
-      string meta = 2;
       bytes vector = 3;
       repeated string ips = 4;
     }

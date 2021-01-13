@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,14 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if .Values.discoverer.enabled }}
+{{- $discoverer := .Values.discoverer -}}
+{{- if $discoverer.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.discoverer.name }}
-  {{- if .Values.discoverer.service.annotations }}
+  name: {{ $discoverer.name }}
+  {{- if $discoverer.service.annotations }}
   annotations:
-    {{- toYaml .Values.discoverer.service.annotations | nindent 4 }}
+    {{- toYaml $discoverer.service.annotations | nindent 4 }}
   {{- end }}
   labels:
     app.kubernetes.io/name: {{ include "vald.name" . }}
@@ -29,20 +30,20 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/version: {{ .Chart.Version }}
     app.kubernetes.io/component: discoverer
-    {{- if .Values.discoverer.service.labels }}
-    {{- toYaml .Values.discoverer.service.labels | nindent 4 }}
+    {{- if $discoverer.service.labels }}
+    {{- toYaml $discoverer.service.labels | nindent 4 }}
     {{- end }}
 spec:
-  {{- $servers := dict "Values" .Values.discoverer.server_config "default" .Values.defaults.server_config }}
+  {{- $servers := dict "Values" $discoverer.server_config "default" .Values.defaults.server_config }}
   {{- include "vald.servicePorts" $servers | nindent 2 }}
   selector:
     app.kubernetes.io/name: {{ include "vald.name" . }}
     app.kubernetes.io/component: discoverer
-  {{- if eq .Values.discoverer.serviceType "ClusterIP" }}
+  {{- if eq $discoverer.serviceType "ClusterIP" }}
   clusterIP: None
   {{- end }}
-  type: {{ .Values.discoverer.serviceType }}
-  {{- if .Values.discoverer.externalTrafficPolicy }}
-  externalTrafficPolicy: {{ .Values.discoverer.externalTrafficPolicy }}
+  type: {{ $discoverer.serviceType }}
+  {{- if $discoverer.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ $discoverer.externalTrafficPolicy }}
   {{- end }}
 {{- end }}

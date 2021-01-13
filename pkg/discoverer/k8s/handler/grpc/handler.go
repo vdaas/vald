@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/vdaas/vald/apis/grpc/discoverer"
-	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/discoverer"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/proto"
@@ -52,7 +52,7 @@ const (
 func New(opts ...Option) (ds DiscovererServer, err error) {
 	s := new(server)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		err = opt(s)
 		if err != nil {
 			return nil, err
@@ -74,7 +74,7 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 			span.End()
 		}
 	}()
-	res, err, _ := s.group.Do(ctx, singleflightKey(podPrefix, req), func() (interface{}, error) {
+	res, _, err := s.group.Do(ctx, singleflightKey(podPrefix, req), func() (interface{}, error) {
 		return s.dsc.GetPods(req)
 	})
 	if err != nil {
@@ -94,7 +94,7 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 			span.End()
 		}
 	}()
-	res, err, _ := s.group.Do(ctx, singleflightKey(nodePrefix, req), func() (interface{}, error) {
+	res, _, err := s.group.Do(ctx, singleflightKey(nodePrefix, req), func() (interface{}, error) {
 		return s.dsc.GetNodes(req)
 	})
 	if err != nil {

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -48,6 +48,7 @@ type reader struct {
 
 	backoffEnabled bool
 	backoffOpts    []backoff.Option
+	bo             backoff.Backoff
 	maxChunkSize   int64
 }
 
@@ -60,7 +61,7 @@ type Reader interface {
 // New returns Reader implementation.
 func New(opts ...Option) (Reader, error) {
 	r := new(reader)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(r)
 	}
 
@@ -85,6 +86,10 @@ func (r *reader) Open(ctx context.Context, key string) (err error) {
 		defer pw.Close()
 
 		var offset int64
+
+		if r.backoffEnabled {
+			r.bo = backoff.New(r.backoffOpts...)
+		}
 
 		for {
 			select {
@@ -126,20 +131,18 @@ func (r *reader) Open(ctx context.Context, key string) (err error) {
 	return nil
 }
 
-func (r *reader) getObjectWithBackoff(ctx context.Context, key string, offset, length int64) (io.Reader, error) {
-	getFunc := func() (interface{}, error) {
+func (r *reader) getObjectWithBackoff(ctx context.Context, key string, offset, length int64) (res io.Reader, err error) {
+	if !r.backoffEnabled || r.bo == nil {
 		return r.getObject(ctx, key, offset, length)
 	}
-
-	b := backoff.New(r.backoffOpts...)
-	defer b.Close()
-
-	res, err := b.Do(ctx, getFunc)
+	_, err = r.bo.Do(ctx, func(ctx context.Context) (interface{}, bool, error) {
+		res, err = r.getObject(ctx, key, offset, length)
+		return res, err != nil, err
+	})
 	if err != nil {
 		return nil, err
 	}
-
-	return res.(io.Reader), nil
+	return res, nil
 }
 
 func (r *reader) getObject(ctx context.Context, key string, offset, length int64) (io.Reader, error) {
@@ -155,7 +158,6 @@ func (r *reader) getObject(ctx context.Context, key string, offset, length int64
 			),
 		},
 	)
-
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
@@ -197,6 +199,9 @@ func (r *reader) getObject(ctx context.Context, key string, offset, length int64
 
 // Close closes the reader.
 func (r *reader) Close() error {
+	if r.bo != nil {
+		defer r.bo.Close()
+	}
 	if r.pr != nil {
 		return r.pr.Close()
 	}

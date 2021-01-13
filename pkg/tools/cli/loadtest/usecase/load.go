@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -56,7 +56,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithClient(run.client),
 		service.WithConcurrency(cfg.Concurrency),
 		service.WithProgressDuration(cfg.ProgressDuration),
-		service.WithService(cfg.Service),
 	)
 	if err != nil {
 		return nil, err
@@ -85,7 +84,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 		finalize := func() (err error) {
 			var errs error
 			if r.client != nil {
-				err = r.client.Close()
+				err = r.client.Close(ctx)
 				if err != nil {
 					errs = errors.Wrap(errs, err.Error())
 				}

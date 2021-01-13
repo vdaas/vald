@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/config"
-	core "github.com/vdaas/vald/internal/core/ngt"
+	core "github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/model"
@@ -34,6 +34,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		cfg  *config.NGT
 		opts []Option
@@ -89,8 +90,10 @@ func TestNew(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -106,12 +109,12 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, gotNn, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_ngt_initNGT(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []core.Option
 	}
@@ -245,8 +248,10 @@ func Test_ngt_initNGT(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -290,12 +295,12 @@ func Test_ngt_initNGT(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_ngt_loadKVS(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		core              core.NGT
 		eg                errgroup.Group
@@ -419,8 +424,10 @@ func Test_ngt_loadKVS(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -464,12 +471,12 @@ func Test_ngt_loadKVS(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_ngt_Start(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -603,8 +610,10 @@ func Test_ngt_Start(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -648,12 +657,12 @@ func Test_ngt_Start(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_ngt_Search(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		vec     []float32
 		size    uint32
@@ -800,8 +809,10 @@ func Test_ngt_Search(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -845,12 +856,12 @@ func Test_ngt_Search(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_ngt_SearchByID(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		uuid    string
 		size    uint32
@@ -997,8 +1008,10 @@ func Test_ngt_SearchByID(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1042,12 +1055,12 @@ func Test_ngt_SearchByID(t *testing.T) {
 			if err := test.checkFunc(test.want, gotDst, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_ngt_Insert(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		uuid string
 		vec  []float32
@@ -1184,8 +1197,10 @@ func Test_ngt_Insert(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1229,12 +1244,12 @@ func Test_ngt_Insert(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_ngt_insert(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		uuid       string
 		vec        []float32
@@ -1377,8 +1392,10 @@ func Test_ngt_insert(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1422,12 +1439,12 @@ func Test_ngt_insert(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_ngt_InsertMultiple(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		vecs map[string][]float32
 	}
@@ -1561,8 +1578,10 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1606,12 +1625,12 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_ngt_Update(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		uuid string
 		vec  []float32
@@ -1748,8 +1767,10 @@ func Test_ngt_Update(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1793,12 +1814,12 @@ func Test_ngt_Update(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_ngt_UpdateMultiple(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		vecs map[string][]float32
 	}
@@ -1932,8 +1953,10 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1977,12 +2000,12 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_ngt_Delete(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		uuid string
 	}
@@ -2116,8 +2139,10 @@ func Test_ngt_Delete(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -2161,12 +2186,12 @@ func Test_ngt_Delete(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_ngt_delete(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		uuid string
 		t    int64
@@ -2303,8 +2328,10 @@ func Test_ngt_delete(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -2348,12 +2375,12 @@ func Test_ngt_delete(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_ngt_DeleteMultiple(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		uuids []string
 	}
@@ -2487,8 +2514,10 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -2532,12 +2561,12 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_ngt_GetObject(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		uuid string
 	}
@@ -2675,8 +2704,10 @@ func Test_ngt_GetObject(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -2720,12 +2751,12 @@ func Test_ngt_GetObject(t *testing.T) {
 			if err := test.checkFunc(test.want, gotVec, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_ngt_CreateIndex(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx      context.Context
 		poolSize uint32
@@ -2862,8 +2893,10 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -2907,12 +2940,12 @@ func Test_ngt_CreateIndex(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_ngt_SaveIndex(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -3046,8 +3079,10 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -3091,12 +3126,12 @@ func Test_ngt_SaveIndex(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_ngt_saveIndex(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -3230,8 +3265,10 @@ func Test_ngt_saveIndex(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -3275,12 +3312,12 @@ func Test_ngt_saveIndex(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_ngt_CreateAndSaveIndex(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx      context.Context
 		poolSize uint32
@@ -3417,8 +3454,10 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -3462,12 +3501,12 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_ngt_Exists(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		uuid string
 	}
@@ -3605,8 +3644,10 @@ func Test_ngt_Exists(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -3650,12 +3691,201 @@ func Test_ngt_Exists(t *testing.T) {
 			if err := test.checkFunc(test.want, gotOid, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+		})
+	}
+}
 
+func Test_ngt_readyForUpdate(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		uuid string
+		vec  []float32
+	}
+	type fields struct {
+		core              core.NGT
+		eg                errgroup.Group
+		kvs               kvs.BidiMap
+		ivc               *vcaches
+		dvc               *vcaches
+		indexing          atomic.Value
+		saving            atomic.Value
+		lastNoice         uint64
+		ic                uint64
+		nocie             uint64
+		nogce             uint64
+		inMem             bool
+		alen              int
+		lim               time.Duration
+		dur               time.Duration
+		sdur              time.Duration
+		minLit            time.Duration
+		maxLit            time.Duration
+		litFactor         time.Duration
+		enableProactiveGC bool
+		path              string
+		poolSize          uint32
+		radius            float32
+		epsilon           float32
+		idelay            time.Duration
+		dcd               bool
+	}
+	type want struct {
+		wantReady bool
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, bool) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotReady bool) error {
+		if !reflect.DeepEqual(gotReady, w.wantReady) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotReady, w.wantReady)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           uuid: "",
+		           vec: nil,
+		       },
+		       fields: fields {
+		           core: nil,
+		           eg: nil,
+		           kvs: nil,
+		           ivc: vcaches{},
+		           dvc: vcaches{},
+		           indexing: nil,
+		           saving: nil,
+		           lastNoice: 0,
+		           ic: 0,
+		           nocie: 0,
+		           nogce: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
+		           enableProactiveGC: false,
+		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
+		           dcd: false,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           uuid: "",
+		           vec: nil,
+		           },
+		           fields: fields {
+		           core: nil,
+		           eg: nil,
+		           kvs: nil,
+		           ivc: vcaches{},
+		           dvc: vcaches{},
+		           indexing: nil,
+		           saving: nil,
+		           lastNoice: 0,
+		           ic: 0,
+		           nocie: 0,
+		           nogce: 0,
+		           inMem: false,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
+		           enableProactiveGC: false,
+		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
+		           dcd: false,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			n := &ngt{
+				core:              test.fields.core,
+				eg:                test.fields.eg,
+				kvs:               test.fields.kvs,
+				ivc:               test.fields.ivc,
+				dvc:               test.fields.dvc,
+				indexing:          test.fields.indexing,
+				saving:            test.fields.saving,
+				lastNoice:         test.fields.lastNoice,
+				ic:                test.fields.ic,
+				nocie:             test.fields.nocie,
+				nogce:             test.fields.nogce,
+				inMem:             test.fields.inMem,
+				alen:              test.fields.alen,
+				lim:               test.fields.lim,
+				dur:               test.fields.dur,
+				sdur:              test.fields.sdur,
+				minLit:            test.fields.minLit,
+				maxLit:            test.fields.maxLit,
+				litFactor:         test.fields.litFactor,
+				enableProactiveGC: test.fields.enableProactiveGC,
+				path:              test.fields.path,
+				poolSize:          test.fields.poolSize,
+				radius:            test.fields.radius,
+				epsilon:           test.fields.epsilon,
+				idelay:            test.fields.idelay,
+				dcd:               test.fields.dcd,
+			}
+
+			gotReady := n.readyForUpdate(test.args.uuid, test.args.vec)
+			if err := test.checkFunc(test.want, gotReady); err != nil {
+				tt.Errorf("error = %v", err)
+			}
 		})
 	}
 }
 
 func Test_ngt_insertCache(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		uuid string
 	}
@@ -3793,8 +4023,10 @@ func Test_ngt_insertCache(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -3838,12 +4070,12 @@ func Test_ngt_insertCache(t *testing.T) {
 			if err := test.checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_ngt_IsSaving(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		core              core.NGT
 		eg                errgroup.Group
@@ -3967,8 +4199,10 @@ func Test_ngt_IsSaving(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -4012,12 +4246,12 @@ func Test_ngt_IsSaving(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_ngt_IsIndexing(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		core              core.NGT
 		eg                errgroup.Group
@@ -4141,8 +4375,10 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -4186,12 +4422,12 @@ func Test_ngt_IsIndexing(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_ngt_UUIDs(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -4325,8 +4561,10 @@ func Test_ngt_UUIDs(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -4370,12 +4608,12 @@ func Test_ngt_UUIDs(t *testing.T) {
 			if err := test.checkFunc(test.want, gotUuids); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_ngt_UncommittedUUIDs(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		core              core.NGT
 		eg                errgroup.Group
@@ -4499,8 +4737,10 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -4544,12 +4784,12 @@ func Test_ngt_UncommittedUUIDs(t *testing.T) {
 			if err := test.checkFunc(test.want, gotUuids); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		core              core.NGT
 		eg                errgroup.Group
@@ -4673,8 +4913,10 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -4718,12 +4960,12 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		core              core.NGT
 		eg                errgroup.Group
@@ -4847,8 +5089,10 @@ func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -4892,12 +5136,12 @@ func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_ngt_gc(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		core              core.NGT
 		eg                errgroup.Group
@@ -4926,8 +5170,7 @@ func Test_ngt_gc(t *testing.T) {
 		idelay            time.Duration
 		dcd               bool
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields
@@ -5017,8 +5260,10 @@ func Test_ngt_gc(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -5067,6 +5312,7 @@ func Test_ngt_gc(t *testing.T) {
 }
 
 func Test_ngt_Len(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		core              core.NGT
 		eg                errgroup.Group
@@ -5190,8 +5436,10 @@ func Test_ngt_Len(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -5235,12 +5483,12 @@ func Test_ngt_Len(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_ngt_InsertVCacheLen(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		core              core.NGT
 		eg                errgroup.Group
@@ -5364,8 +5612,10 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -5409,12 +5659,12 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_ngt_DeleteVCacheLen(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		core              core.NGT
 		eg                errgroup.Group
@@ -5538,8 +5788,10 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -5583,12 +5835,12 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_ngt_Close(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -5722,8 +5974,10 @@ func Test_ngt_Close(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -5767,7 +6021,6 @@ func Test_ngt_Close(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

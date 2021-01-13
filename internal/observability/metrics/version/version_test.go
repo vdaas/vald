@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		labels []string
 	}
@@ -82,6 +83,7 @@ func TestNew(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -97,12 +99,12 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_labelKVs(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		labels []string
 	}
@@ -157,6 +159,7 @@ func Test_labelKVs(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -172,12 +175,12 @@ func Test_labelKVs(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_version_Measurement(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -245,6 +248,7 @@ func Test_version_Measurement(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -264,12 +268,12 @@ func Test_version_Measurement(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_version_MeasurementWithTags(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -337,6 +341,7 @@ func Test_version_MeasurementWithTags(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -356,12 +361,12 @@ func Test_version_MeasurementWithTags(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_version_View(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		info metrics.Int64Measure
 		kvs  map[metrics.Key]string
@@ -415,6 +420,7 @@ func Test_version_View(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -434,7 +440,6 @@ func Test_version_View(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

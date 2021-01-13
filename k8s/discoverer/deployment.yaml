@@ -1,6 +1,6 @@
 ---
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,10 +21,10 @@ metadata:
   labels:
     app: vald-discoverer
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v0.0.64
+    helm.sh/chart: vald-v0.0.66
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v0.0.64
+    app.kubernetes.io/version: v0.0.66
     app.kubernetes.io/component: discoverer
 spec:
   progressDeadlineSeconds: 600
@@ -47,7 +47,7 @@ spec:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/component: discoverer
       annotations:
-        checksum/configmap: 31a1503c81b5a456c3b48dc3ffd4746a2d65828bf14fc06fb61c561937a6e8c7
+        checksum/configmap: f8221b17e94929be80537b2b69733bbc3b8351ebb0cab426f2deb02595fe34c5
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-discoverer

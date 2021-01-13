@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -73,7 +73,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -188,11 +187,7 @@ func Test_group_Do(t *testing.T) {
 					if got, want := int(atomic.LoadUint32(&cnt)), 11; got != want {
 						return errors.Errorf("cnt got = %d, want = %d", got, want)
 					}
-
-					if err := defaultCheckFunc(w, gotV, gotShared, err); err != nil {
-						return err
-					}
-					return nil
+					return defaultCheckFunc(w, gotV, gotShared, err)
 				},
 			}
 		}(),
@@ -273,10 +268,7 @@ func Test_group_Do(t *testing.T) {
 						return errors.Errorf("cnt got = %d, want = %d", got, want)
 					}
 
-					if err := defaultCheckFunc(w, gotV, gotShared, err); err != nil {
-						return err
-					}
-					return nil
+					return defaultCheckFunc(w, gotV, gotShared, err)
 				},
 			}
 		}(),
@@ -307,7 +299,7 @@ func Test_group_Do(t *testing.T) {
 			test.util.wg.Add(1)
 			go func() {
 				defer test.util.wg.Done()
-				gotV, err, gotShared = g.Do(context.Background(), test.args.key, test.args.fn)
+				gotV, gotShared, err = g.Do(context.Background(), test.args.key, test.args.fn)
 			}()
 
 			test.util.cond.Broadcast()

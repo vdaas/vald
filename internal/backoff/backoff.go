@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,11 +20,13 @@ package backoff
 import (
 	"context"
 	"math"
+	"strconv"
 	"sync"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/rand"
 )
 
@@ -42,13 +44,15 @@ type backoff struct {
 }
 
 type Backoff interface {
-	Do(context.Context, func() (interface{}, error)) (interface{}, error)
+	Do(context.Context, func(ctx context.Context) (interface{}, bool, error)) (interface{}, error)
 	Close()
 }
 
+const traceTag = "vald/internal/backoff/Backoff.Do/retry"
+
 func New(opts ...Option) Backoff {
 	b := new(backoff)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(b)
 	}
 	if b.backoffFactor < 1 {
@@ -60,39 +64,57 @@ func New(opts ...Option) Backoff {
 	return b
 }
 
-func (b *backoff) Do(ctx context.Context, f func() (interface{}, error)) (res interface{}, err error) {
-	res, err = f()
-	if err == nil {
+func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val interface{}, retryable bool, err error)) (res interface{}, err error) {
+	res, ret, err := f(ctx)
+	if err == nil || !ret {
 		return
 	}
 
+	sctx, span := trace.StartSpan(ctx, traceTag)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	b.wg.Add(1)
 	defer b.wg.Done()
-	limit := time.NewTimer(b.backoffTimeLimit)
-	defer limit.Stop()
-
 	timer := time.NewTimer(time.Minute)
 	defer timer.Stop()
 
 	dur := b.initialDuration
 	jdur := b.jittedInitialDuration
 
+	dctx, cancel := context.WithDeadline(sctx, time.Now().Add(b.backoffTimeLimit))
+	defer cancel()
 	for cnt := 0; cnt < b.maxRetryCount; cnt++ {
 		select {
-		case <-ctx.Done():
-			return nil, errors.Wrap(err, ctx.Err().Error())
+		case <-dctx.Done():
+			return nil, errors.Wrap(err, dctx.Err().Error())
 		default:
-			res, err = f()
-			if err != nil {
+			res, ret, err = func() (val interface{}, retryable bool, err error) {
+				ssctx, span := trace.StartSpan(dctx, traceTag+"/"+strconv.Itoa(cnt+1))
+				defer func() {
+					if span != nil {
+						span.End()
+					}
+				}()
+				return f(ssctx)
+			}()
+			if ret && err != nil {
 				if b.errLog {
 					log.Error(err)
 				}
 				timer.Reset(time.Duration(jdur))
 				select {
-				case <-limit.C:
-					return nil, errors.ErrBackoffTimeout(err)
-				case <-ctx.Done():
-					return nil, errors.Wrap(ctx.Err(), err.Error())
+				case <-dctx.Done():
+					switch dctx.Err() {
+					case context.DeadlineExceeded:
+						return nil, errors.ErrBackoffTimeout(err)
+					case context.Canceled:
+						return nil, err
+					default:
+						return nil, errors.Wrap(dctx.Err(), err.Error())
+					}
 				case <-timer.C:
 					if dur >= b.durationLimit {
 						dur = b.maxDuration
@@ -105,7 +127,7 @@ func (b *backoff) Do(ctx context.Context, f func() (interface{}, error)) (res in
 				}
 			}
 		}
-		return res, nil
+		return res, err
 	}
 	return res, err
 }

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -94,85 +94,85 @@ func (m *memory) MeasurementWithTags(ctx context.Context) ([]metrics.Measurement
 
 func (m *memory) View() []*metrics.View {
 	return []*metrics.View{
-		&metrics.View{
+		{
 			Name:        "alloc_bytes",
 			Description: m.alloc.Description(),
 			Measure:     &m.alloc,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "alloc_bytes_total",
 			Description: m.totalAlloc.Description(),
 			Measure:     &m.totalAlloc,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "sys_bytes",
 			Description: m.sys.Description(),
 			Measure:     &m.sys,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "mallocs_total",
 			Description: m.mallocs.Description(),
 			Measure:     &m.mallocs,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "frees_total",
 			Description: m.frees.Description(),
 			Measure:     &m.frees,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "heap_alloc_bytes",
 			Description: m.heapAlloc.Description(),
 			Measure:     &m.heapAlloc,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "heap_sys_bytes",
 			Description: m.heapSys.Description(),
 			Measure:     &m.heapSys,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "heap_idle_bytes",
 			Description: m.heapIdle.Description(),
 			Measure:     &m.heapIdle,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "heap_inuse_bytes",
 			Description: m.heapInuse.Description(),
 			Measure:     &m.heapInuse,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "heap_released_bytes",
 			Description: m.heapReleased.Description(),
 			Measure:     &m.heapReleased,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "stack_inuse_bytes",
 			Description: m.stackInuse.Description(),
 			Measure:     &m.stackInuse,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "stack_sys_bytes",
 			Description: m.stackSys.Description(),
 			Measure:     &m.stackSys,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "pause_ms_total",
 			Description: m.pauseTotalMs.Description(),
 			Measure:     &m.pauseTotalMs,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "gc_count",
 			Description: m.numGC.Description(),
 			Measure:     &m.numGC,

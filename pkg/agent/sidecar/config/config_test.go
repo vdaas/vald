@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import (
 )
 
 func TestMode_String(t *testing.T) {
+	t.Parallel()
 	type want struct {
 		want string
 	}
@@ -65,9 +66,11 @@ func TestMode_String(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -82,12 +85,12 @@ func TestMode_String(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func TestSidecarMode(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		m string
 	}
@@ -136,9 +139,11 @@ func TestSidecarMode(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -153,12 +158,12 @@ func TestSidecarMode(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func TestNewConfig(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		path string
 	}
@@ -211,9 +216,11 @@ func TestNewConfig(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -228,7 +235,6 @@ func TestNewConfig(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCfg, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

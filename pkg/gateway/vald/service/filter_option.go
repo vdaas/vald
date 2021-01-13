@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,9 +21,7 @@ import "github.com/vdaas/vald/internal/net/grpc"
 
 type FilterOption func(f *filter) error
 
-var (
-	defaultFilterOpts = []FilterOption{}
-)
+var defaultFilterOpts = []FilterOption{}
 
 func WithFilterClient(client grpc.Client) FilterOption {
 	return func(f *filter) error {

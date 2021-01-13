@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []Option
 	}
@@ -80,8 +81,10 @@ func TestNew(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -97,12 +100,12 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_client_Disconnect(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		connector       redis.Connector
 		db              redis.Redis
@@ -163,8 +166,10 @@ func Test_client_Disconnect(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -187,12 +192,12 @@ func Test_client_Disconnect(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_client_Connect(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -263,8 +268,10 @@ func Test_client_Connect(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -287,12 +294,12 @@ func Test_client_Connect(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_client_Get(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		key string
@@ -370,8 +377,10 @@ func Test_client_Get(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -394,12 +403,12 @@ func Test_client_Get(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_client_GetMultiple(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		keys []string
@@ -477,8 +486,10 @@ func Test_client_GetMultiple(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -501,12 +512,12 @@ func Test_client_GetMultiple(t *testing.T) {
 			if err := test.checkFunc(test.want, gotVals, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_client_GetInverse(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		val string
@@ -584,8 +595,10 @@ func Test_client_GetInverse(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -608,12 +621,12 @@ func Test_client_GetInverse(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_client_GetInverseMultiple(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		vals []string
@@ -691,8 +704,10 @@ func Test_client_GetInverseMultiple(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -715,12 +730,12 @@ func Test_client_GetInverseMultiple(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_client_appendPrefix(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		prefix string
 		key    string
@@ -794,8 +809,10 @@ func Test_client_appendPrefix(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -818,12 +835,12 @@ func Test_client_appendPrefix(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_client_get(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx    context.Context
 		prefix string
@@ -904,8 +921,10 @@ func Test_client_get(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -928,12 +947,12 @@ func Test_client_get(t *testing.T) {
 			if err := test.checkFunc(test.want, gotVal, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_client_getMulti(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx    context.Context
 		prefix string
@@ -1014,8 +1033,10 @@ func Test_client_getMulti(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1038,12 +1059,12 @@ func Test_client_getMulti(t *testing.T) {
 			if err := test.checkFunc(test.want, gotVals, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_client_Set(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		key string
@@ -1120,8 +1141,10 @@ func Test_client_Set(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1144,12 +1167,12 @@ func Test_client_Set(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_client_SetMultiple(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		kvs map[string]string
@@ -1223,8 +1246,10 @@ func Test_client_SetMultiple(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1247,12 +1272,12 @@ func Test_client_SetMultiple(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_client_Delete(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		key string
@@ -1330,8 +1355,10 @@ func Test_client_Delete(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1354,12 +1381,12 @@ func Test_client_Delete(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_client_DeleteMultiple(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		keys []string
@@ -1437,8 +1464,10 @@ func Test_client_DeleteMultiple(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1461,12 +1490,12 @@ func Test_client_DeleteMultiple(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_client_DeleteInverse(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		val string
@@ -1544,8 +1573,10 @@ func Test_client_DeleteInverse(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1568,12 +1599,12 @@ func Test_client_DeleteInverse(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_client_DeleteInverseMultiple(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		vals []string
@@ -1651,8 +1682,10 @@ func Test_client_DeleteInverseMultiple(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1675,12 +1708,12 @@ func Test_client_DeleteInverseMultiple(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_client_delete(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx    context.Context
 		pfx    string
@@ -1764,8 +1797,10 @@ func Test_client_delete(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1788,12 +1823,12 @@ func Test_client_delete(t *testing.T) {
 			if err := test.checkFunc(test.want, gotVal, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_client_deleteMulti(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx    context.Context
 		pfx    string
@@ -1877,8 +1912,10 @@ func Test_client_deleteMulti(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1901,7 +1938,6 @@ func Test_client_deleteMulti(t *testing.T) {
 			if err := test.checkFunc(test.want, gotVals, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ package errors
 import "runtime"
 
 var (
-	// Runtime
+	// Runtime.
 
 	ErrPanicRecovered = func(err error, rec interface{}) error {
 		return Wrap(err, Errorf("panic recovered: %v", rec).Error())
@@ -31,6 +31,6 @@ var (
 	}
 
 	ErrRuntimeError = func(err error, r runtime.Error) error {
-		return Wrap(err, Errorf("system paniced caused by runtime error: %v", r).Error())
+		return Wrap(err, Errorf("system panicked caused by runtime error: %v", r).Error())
 	}
 )

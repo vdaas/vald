@@ -1,0 +1,75 @@
+#
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+name: Run formatter
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  format:
+    name: Run formatter
+    runs-on: ubuntu-latest
+    container:
+      image: vdaas/vald-ci-container:nightly
+    steps:
+      - name: Check out code.
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.DISPATCH_TOKEN }}
+      - name: switch new branch
+        id: switch_to_new_branch
+        run: |
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S_%3N)
+          BRANCH_NAME="formatter/go_and_yaml/format_at_${TIMESTAMP}"
+          git checkout master
+          git checkout -b ${BRANCH_NAME}
+          echo "::set-output name=BRANCH_NAME::${BRANCH_NAME}"
+      - name: Run formatter and license.go
+        run: |
+          make update/goimports
+          make format/yaml
+          make license
+          git checkout go.mod go.sum
+      - name: Check and Push to master
+        continue-on-error: true
+        run: |
+          if git diff --quiet --exit-code; then
+            echo "Nothing updated"
+          else
+            git config --global user.name "vdaas-ci"
+            git config --global user.email "ci@vdaas.org"
+
+            git add .
+            git commit --signoff -m ":robot: Update license headers / Format Go codes and YAML files"
+
+            git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+            git push -u origin ${BRANCH_NAME}
+
+            curl --include --verbose --fail \
+            -H "Accept: application/json" \
+            -H "Content-Type:application/json" \
+            -H "Authorization: token ${GITHUB_TOKEN}" \
+            --request POST \
+            --data "{\"title\": \"Update license headers / Format codes\", \"head\": \"${BRANCH_NAME}\", \"base\": \"master\", \"body\": \"Update license headers / Format Go codes and YAML files.\", \"maintainer_can_modify\": true}" \
+            $API_URL
+          fi
+        env:
+          GITHUB_USER: ${{ secrets.DISPATCH_USER }}
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          API_URL: https://api.github.com/repos/vdaas/vald/pulls
+          BRANCH_NAME: ${{ steps.switch_to_new_branch.outputs.BRANCH_NAME }}

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -84,7 +84,7 @@ func TestNew(t *testing.T) {
 				},
 			},
 			beforeFunc: func(args args) {
-				defaultOpts = []Option{}
+				defaultOptions = []Option{}
 			},
 		},
 		{
@@ -126,7 +126,7 @@ func TestNew(t *testing.T) {
 				},
 			},
 			beforeFunc: func(args args) {
-				defaultOpts = []Option{}
+				defaultOptions = []Option{}
 			},
 		},
 		{
@@ -142,7 +142,7 @@ func TestNew(t *testing.T) {
 				err: errors.New("load error"),
 			},
 			beforeFunc: func(args args) {
-				defaultOpts = []Option{}
+				defaultOptions = []Option{}
 			},
 		},
 		{
@@ -157,7 +157,7 @@ func TestNew(t *testing.T) {
 				err: errors.ErrInputLength(1, 0),
 			},
 			beforeFunc: func(args args) {
-				defaultOpts = []Option{}
+				defaultOptions = []Option{}
 			},
 		},
 	}

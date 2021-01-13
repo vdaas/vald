@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,14 +22,14 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/pkg/manager/compressor/service"
-
 	"go.uber.org/goleak"
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []Option
 	}
@@ -78,9 +78,11 @@ func TestNew(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -95,12 +97,12 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_server_GetVector(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Backup_GetVector_Request
@@ -111,7 +113,7 @@ func Test_server_GetVector(t *testing.T) {
 		registerer service.Registerer
 	}
 	type want struct {
-		wantRes *payload.Backup_MetaVector
+		wantRes *payload.Backup_Vector
 		err     error
 	}
 	type test struct {
@@ -119,11 +121,11 @@ func Test_server_GetVector(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Backup_MetaVector, error) error
+		checkFunc  func(want, *payload.Backup_Vector, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotRes *payload.Backup_MetaVector, err error) error {
+	defaultCheckFunc := func(w want, gotRes *payload.Backup_Vector, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -172,9 +174,11 @@ func Test_server_GetVector(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -194,12 +198,12 @@ func Test_server_GetVector(t *testing.T) {
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_server_Locations(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Backup_Locations_Request
@@ -271,9 +275,11 @@ func Test_server_Locations(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -293,15 +299,15 @@ func Test_server_Locations(t *testing.T) {
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_server_Register(t *testing.T) {
+	t.Parallel()
 	type args struct {
-		ctx  context.Context
-		meta *payload.Backup_MetaVector
+		ctx context.Context
+		vec *payload.Backup_Vector
 	}
 	type fields struct {
 		backup     service.Backup
@@ -337,7 +343,7 @@ func Test_server_Register(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           meta: nil,
+		           vec: nil,
 		       },
 		       fields: fields {
 		           backup: nil,
@@ -356,7 +362,7 @@ func Test_server_Register(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           meta: nil,
+		           vec: nil,
 		           },
 		           fields: fields {
 		           backup: nil,
@@ -370,9 +376,11 @@ func Test_server_Register(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -388,19 +396,19 @@ func Test_server_Register(t *testing.T) {
 				registerer: test.fields.registerer,
 			}
 
-			gotRes, err := s.Register(test.args.ctx, test.args.meta)
+			gotRes, err := s.Register(test.args.ctx, test.args.vec)
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_server_RegisterMulti(t *testing.T) {
+	t.Parallel()
 	type args struct {
-		ctx   context.Context
-		metas *payload.Backup_MetaVectors
+		ctx  context.Context
+		vecs *payload.Backup_Vectors
 	}
 	type fields struct {
 		backup     service.Backup
@@ -436,7 +444,7 @@ func Test_server_RegisterMulti(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           metas: nil,
+		           vecs: nil,
 		       },
 		       fields: fields {
 		           backup: nil,
@@ -455,7 +463,7 @@ func Test_server_RegisterMulti(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           metas: nil,
+		           vecs: nil,
 		           },
 		           fields: fields {
 		           backup: nil,
@@ -469,9 +477,11 @@ func Test_server_RegisterMulti(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -487,16 +497,16 @@ func Test_server_RegisterMulti(t *testing.T) {
 				registerer: test.fields.registerer,
 			}
 
-			gotRes, err := s.RegisterMulti(test.args.ctx, test.args.metas)
+			gotRes, err := s.RegisterMulti(test.args.ctx, test.args.vecs)
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_server_Remove(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Backup_Remove_Request
@@ -568,9 +578,11 @@ func Test_server_Remove(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -590,12 +602,12 @@ func Test_server_Remove(t *testing.T) {
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_server_RemoveMulti(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Backup_Remove_RequestMulti
@@ -667,9 +679,11 @@ func Test_server_RemoveMulti(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -689,12 +703,12 @@ func Test_server_RemoveMulti(t *testing.T) {
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_server_RegisterIPs(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Backup_IP_Register_Request
@@ -766,9 +780,11 @@ func Test_server_RegisterIPs(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -788,12 +804,12 @@ func Test_server_RegisterIPs(t *testing.T) {
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_server_RemoveIPs(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Backup_IP_Remove_Request
@@ -865,9 +881,11 @@ func Test_server_RemoveIPs(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -887,7 +905,6 @@ func Test_server_RemoveIPs(t *testing.T) {
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

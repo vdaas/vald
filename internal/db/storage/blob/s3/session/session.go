@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -49,15 +49,15 @@ type sess struct {
 	client *http.Client
 }
 
-// Session represents the interface to get AWS S3 session
+// Session represents the interface to get AWS S3 session.
 type Session interface {
 	Session() (*session.Session, error)
 }
 
-// New returns the session implementation
+// New returns the session implementation.
 func New(opts ...Option) Session {
 	s := new(sess)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(s); err != nil {
 			log.Warn(errors.ErrOptionFailed(err, reflect.ValueOf(opt)))
 		}
@@ -66,7 +66,7 @@ func New(opts ...Option) Session {
 	return s
 }
 
-// Session returns the AWS S3 session or any error occurred
+// Session returns the AWS S3 session or any error occurred.
 func (s *sess) Session() (*session.Session, error) {
 	cfg := aws.NewConfig().WithRegion(s.region)
 

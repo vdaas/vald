@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,32 +28,37 @@ import (
 	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/timeutil"
 	"google.golang.org/grpc"
+	gbackoff "google.golang.org/grpc/backoff"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
 )
 
 type Option func(*gRPCClient)
 
-var (
-	defaultOpts = []Option{
-		WithConnectionPoolSize(3),
-		WithEnableConnectionPoolRebalance(false),
-		WithConnectionPoolRebalanceDuration("1h"),
-		WithErrGroup(errgroup.Get()),
-		WithHealthCheckDuration("10s"),
-		WithResolveDNS(true),
-	}
-)
+var defaultOptions = []Option{
+	WithConnectionPoolSize(3),
+	WithEnableConnectionPoolRebalance(false),
+	WithConnectionPoolRebalanceDuration("1h"),
+	WithErrGroup(errgroup.Get()),
+	WithHealthCheckDuration("10s"),
+	WithResolveDNS(true),
+	WithBackoffMaxDelay(gbackoff.DefaultConfig.MaxDelay.String()),
+	WithBackoffBaseDelay(gbackoff.DefaultConfig.BaseDelay.String()),
+	WithBackoffMultiplier(gbackoff.DefaultConfig.Multiplier),
+	WithBackoffJitter(gbackoff.DefaultConfig.Jitter),
+	WithMinConnectTimeout("20s"),
+}
 
 func WithAddrs(addrs ...string) Option {
 	return func(g *gRPCClient) {
 		if len(addrs) == 0 {
 			return
 		}
-		if g.addrs == nil || len(g.addrs) == 0 {
-			g.addrs = addrs
-		} else {
-			g.addrs = append(g.addrs, addrs...)
+		if g.addrs == nil {
+			g.addrs = make(map[string]struct{})
+		}
+		for _, addr := range addrs {
+			g.addrs[addr] = struct{}{}
 		}
 	}
 }
@@ -111,20 +116,45 @@ func WithDialOptions(opts ...grpc.DialOption) Option {
 	}
 }
 
-func WithMaxBackoffDelay(dur string) Option {
+func WithBackoffMaxDelay(dur string) Option {
 	return func(g *gRPCClient) {
 		d, err := timeutil.Parse(dur)
 		if err != nil {
 			d = time.Second
 		}
-		g.dopts = append(g.dopts,
-			// grpc.WithConnectParams(grpc.ConnectParams{
-			// 	Backoff: backoff.Config{
-			// 		MaxDelay: d,
-			// 	},
-			// }),
-			grpc.WithBackoffMaxDelay(d),
-		)
+		g.gbo.MaxDelay = d
+	}
+}
+
+func WithBackoffBaseDelay(dur string) Option {
+	return func(g *gRPCClient) {
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			d = time.Second
+		}
+		g.gbo.BaseDelay = d
+	}
+}
+
+func WithBackoffMultiplier(m float64) Option {
+	return func(g *gRPCClient) {
+		g.gbo.Multiplier = m
+	}
+}
+
+func WithBackoffJitter(j float64) Option {
+	return func(g *gRPCClient) {
+		g.gbo.Jitter = j
+	}
+}
+
+func WithMinConnectTimeout(dur string) Option {
+	return func(g *gRPCClient) {
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			d = time.Second
+		}
+		g.mcd = d
 	}
 }
 
@@ -161,6 +191,7 @@ func WithWaitForReady(flg bool) Option {
 		)
 	}
 }
+
 func WithMaxRetryRPCBufferSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
@@ -170,6 +201,7 @@ func WithMaxRetryRPCBufferSize(size int) Option {
 		}
 	}
 }
+
 func WithMaxRecvMsgSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
@@ -179,6 +211,7 @@ func WithMaxRecvMsgSize(size int) Option {
 		}
 	}
 }
+
 func WithMaxSendMsgSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
@@ -188,6 +221,7 @@ func WithMaxSendMsgSize(size int) Option {
 		}
 	}
 }
+
 func WithWriteBufferSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
@@ -197,6 +231,7 @@ func WithWriteBufferSize(size int) Option {
 		}
 	}
 }
+
 func WithReadBufferSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
@@ -206,6 +241,7 @@ func WithReadBufferSize(size int) Option {
 		}
 	}
 }
+
 func WithInitialWindowSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
@@ -215,6 +251,7 @@ func WithInitialWindowSize(size int) Option {
 		}
 	}
 }
+
 func WithInitialConnectionWindowSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
@@ -224,6 +261,7 @@ func WithInitialConnectionWindowSize(size int) Option {
 		}
 	}
 }
+
 func WithMaxMsgSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {

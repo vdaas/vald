@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,16 +26,14 @@ import (
 // Option represents the functional option for reader.
 type Option func(r *reader)
 
-var (
-	defaultOpts = []Option{
-		WithErrGroup(errgroup.Get()),
-		WithMaxChunkSize(512 * 1024 * 1024),
-		WithBackoff(false),
-		func(r *reader) {
-			r.ctxio = io.New()
-		},
-	}
-)
+var defaultOptions = []Option{
+	WithErrGroup(errgroup.Get()),
+	WithMaxChunkSize(512 * 1024 * 1024),
+	WithBackoff(false),
+	func(r *reader) {
+		r.ctxio = io.New()
+	},
+}
 
 // WithErrGroup returns the option to set the eg.
 func WithErrGroup(eg errgroup.Group) Option {

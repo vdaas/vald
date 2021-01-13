@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -82,7 +82,7 @@ type readOnlyNodeMap struct {
 
 // expunged is an arbitrary pointer that marks entries which have been deleted
 // from the dirty map.
-var expungedNodeMap = unsafe.Pointer(new(node.Node))
+var expungedNodeMap = unsafe.Pointer(new(*node.Node))
 
 // An entry is a slot in the map corresponding to a particular key.
 type entryNodeMap struct {
@@ -107,14 +107,14 @@ type entryNodeMap struct {
 	p unsafe.Pointer // *interface{}
 }
 
-func newEntryNodeMap(i node.Node) *entryNodeMap {
+func newEntryNodeMap(i *node.Node) *entryNodeMap {
 	return &entryNodeMap{p: unsafe.Pointer(&i)}
 }
 
 // Load returns the value stored in the map for a key, or nil if no
 // value is present.
 // The ok result indicates whether value was found in the map.
-func (m *nodeMap) Load(key string) (value node.Node, ok bool) {
+func (m *nodeMap) Load(key string) (value *node.Node, ok bool) {
 	read, _ := m.read.Load().(readOnlyNodeMap)
 	e, ok := read.m[key]
 	if !ok && read.amended {
@@ -139,16 +139,16 @@ func (m *nodeMap) Load(key string) (value node.Node, ok bool) {
 	return e.load()
 }
 
-func (e *entryNodeMap) load() (value node.Node, ok bool) {
+func (e *entryNodeMap) load() (value *node.Node, ok bool) {
 	p := atomic.LoadPointer(&e.p)
 	if p == nil || p == expungedNodeMap {
 		return value, false
 	}
-	return *(*node.Node)(p), true
+	return *(**node.Node)(p), true
 }
 
 // Store sets the value for a key.
-func (m *nodeMap) Store(key string, value node.Node) {
+func (m *nodeMap) Store(key string, value *node.Node) {
 	read, _ := m.read.Load().(readOnlyNodeMap)
 	if e, ok := read.m[key]; ok && e.tryStore(&value) {
 		return
@@ -181,7 +181,7 @@ func (m *nodeMap) Store(key string, value node.Node) {
 //
 // If the entry is expunged, tryStore returns false and leaves the entry
 // unchanged.
-func (e *entryNodeMap) tryStore(i *node.Node) bool {
+func (e *entryNodeMap) tryStore(i **node.Node) bool {
 	for {
 		p := atomic.LoadPointer(&e.p)
 		if p == expungedNodeMap {
@@ -204,14 +204,14 @@ func (e *entryNodeMap) unexpungeLocked() (wasExpunged bool) {
 // storeLocked unconditionally stores a value to the entry.
 //
 // The entry must be known not to be expunged.
-func (e *entryNodeMap) storeLocked(i *node.Node) {
+func (e *entryNodeMap) storeLocked(i **node.Node) {
 	atomic.StorePointer(&e.p, unsafe.Pointer(i))
 }
 
 // LoadOrStore returns the existing value for the key if present.
 // Otherwise, it stores and returns the given value.
 // The loaded result is true if the value was loaded, false if stored.
-func (m *nodeMap) LoadOrStore(key string, value node.Node) (actual node.Node, loaded bool) {
+func (m *nodeMap) LoadOrStore(key string, value *node.Node) (actual *node.Node, loaded bool) {
 	// Avoid locking if it's a clean hit.
 	read, _ := m.read.Load().(readOnlyNodeMap)
 	if e, ok := read.m[key]; ok {
@@ -251,13 +251,13 @@ func (m *nodeMap) LoadOrStore(key string, value node.Node) (actual node.Node, lo
 //
 // If the entry is expunged, tryLoadOrStore leaves the entry unchanged and
 // returns with ok==false.
-func (e *entryNodeMap) tryLoadOrStore(i node.Node) (actual node.Node, loaded, ok bool) {
+func (e *entryNodeMap) tryLoadOrStore(i *node.Node) (actual *node.Node, loaded, ok bool) {
 	p := atomic.LoadPointer(&e.p)
 	if p == expungedNodeMap {
 		return actual, false, false
 	}
 	if p != nil {
-		return *(*node.Node)(p), true, true
+		return *(**node.Node)(p), true, true
 	}
 
 	// Copy the interface after the first load to make this method more amenable
@@ -273,13 +273,14 @@ func (e *entryNodeMap) tryLoadOrStore(i node.Node) (actual node.Node, loaded, ok
 			return actual, false, false
 		}
 		if p != nil {
-			return *(*node.Node)(p), true, true
+			return *(**node.Node)(p), true, true
 		}
 	}
 }
 
-// Delete deletes the value for a key.
-func (m *nodeMap) Delete(key string) {
+// LoadAndDelete deletes the value for a key, returning the previous value if any.
+// The loaded result reports whether the key was present.
+func (m *nodeMap) LoadAndDelete(key string) (value *node.Node, loaded bool) {
 	read, _ := m.read.Load().(readOnlyNodeMap)
 	e, ok := read.m[key]
 	if !ok && read.amended {
@@ -287,23 +288,34 @@ func (m *nodeMap) Delete(key string) {
 		read, _ = m.read.Load().(readOnlyNodeMap)
 		e, ok = read.m[key]
 		if !ok && read.amended {
+			e, ok = m.dirty[key]
 			delete(m.dirty, key)
+			// Regardless of whether the entry was present, record a miss: this key
+			// will take the slow path until the dirty map is promoted to the read
+			// map.
+			m.missLocked()
 		}
 		m.mu.Unlock()
 	}
 	if ok {
-		e.delete()
+		return e.delete()
 	}
+	return value, false
 }
 
-func (e *entryNodeMap) delete() (hadValue bool) {
+// Delete deletes the value for a key.
+func (m *nodeMap) Delete(key string) {
+	m.LoadAndDelete(key)
+}
+
+func (e *entryNodeMap) delete() (value *node.Node, ok bool) {
 	for {
 		p := atomic.LoadPointer(&e.p)
 		if p == nil || p == expungedNodeMap {
-			return false
+			return value, false
 		}
 		if atomic.CompareAndSwapPointer(&e.p, p, nil) {
-			return true
+			return *(**node.Node)(p), true
 		}
 	}
 }
@@ -318,7 +330,7 @@ func (e *entryNodeMap) delete() (hadValue bool) {
 //
 // Range may be O(N) with the number of elements in the map even if f returns
 // false after a constant number of calls.
-func (m *nodeMap) Range(f func(key string, value node.Node) bool) {
+func (m *nodeMap) Range(f func(key string, value *node.Node) bool) {
 	// We need to be able to iterate over all of the keys that were already
 	// present at the start of the call to Range.
 	// If read.amended is false, then read.m satisfies that property without

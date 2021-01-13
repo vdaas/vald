@@ -1,16 +1,37 @@
+#
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 area/agent/core:
+  - apis/proto/v1/agent/core/**/*
+  - apis/grpc/v1/agent/core/**/*
   - apis/proto/agent/core/**/*
   - apis/grpc/agent/core/**/*
   - cmd/agent/core/**/*
   - pkg/agent/core/**/*
 
 area/agent/sidecar:
+  - apis/proto/v1/agent/sidecar/**/*
+  - apis/grpc/v1/agent/sidecar/**/*
   - apis/proto/agent/sidecar/**/*
   - apis/grpc/agent/sidecar/**/*
   - cmd/agent/sidecar/**/*
   - pkg/agent/sidecar/**/*
 
 area/discoverer:
+  - apis/proto/v1/discoverer/**/*
+  - apis/grpc/v1/discoverer/**/*
   - apis/proto/discoverer/**/*
   - apis/grpc/discoverer/**/*
   - cmd/discoverer/**/*
@@ -29,10 +50,40 @@ area/filter/ingress:
   - pkg/filter/ingress/**/*
 
 area/gateway:
-  - apis/proto/vald/**/*
-  - apis/grpc/vald/**/*
-  - cmd/gateway/**/*
-  - pkg/gateway/**/*
+  - apis/proto/v1/gateway/vald/**/*
+  - apis/grpc/v1/gateway/vald/**/*
+  - apis/proto/gateway/vald/**/*
+  - apis/grpc/gateway/vald/**/*
+  - cmd/gateway/vald/**/*
+  - pkg/gateway/vald/**/*
+
+area/gateway/lb:
+  - apis/proto/v1/payload/**/*
+  - apis/proto/v1/vald/**/*
+  - apis/grpc/v1/vald/**/*
+  - cmd/gateway/lb/**/*
+  - pkg/gateway/lb/**/*
+
+area/gateway/meta:
+  - apis/proto/v1/payload/**/*
+  - apis/proto/v1/vald/**/*
+  - apis/grpc/v1/vald/**/*
+  - cmd/gateway/meta/**/*
+  - pkg/gateway/meta/**/*
+
+area/gateway/backup:
+  - apis/proto/v1/payload/**/*
+  - apis/proto/v1/vald/**/*
+  - apis/grpc/v1/vald/**/*
+  - cmd/gateway/backup/**/*
+  - pkg/gateway/backup/**/*
+
+area/gateway/filter:
+  - apis/proto/v1/payload/**/*
+  - apis/proto/v1/vald/**/*
+  - apis/grpc/v1/vald/**/*
+  - cmd/gateway/filter/**/*
+  - pkg/gateway/filter/**/*
 
 area/manager/backup:
   - apis/proto/manager/backup/**/*

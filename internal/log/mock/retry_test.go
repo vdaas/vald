@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -31,8 +31,7 @@ func TestRetry_Out(t *testing.T) {
 	type fields struct {
 		OutFunc func(fn func(vals ...interface{}) error, vals ...interface{})
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -120,8 +119,7 @@ func TestRetry_Outf(t *testing.T) {
 	type fields struct {
 		OutfFunc func(fn func(format string, vals ...interface{}) error, format string, vals ...interface{})
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

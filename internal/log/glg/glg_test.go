@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import (
 	"github.com/vdaas/vald/internal/log/level"
 	"github.com/vdaas/vald/internal/log/mock"
 	"github.com/vdaas/vald/internal/log/retry"
-
 	"go.uber.org/goleak"
 )
 
@@ -44,7 +43,7 @@ func TestNew(t *testing.T) {
 			retry := retry.New()
 
 			return test{
-				name: "returns logger object when option and defaultOpts is set",
+				name: "returns logger object when option and defaultOptions is set",
 				opts: []Option{
 					WithGlg(glg),
 					WithRetry(retry),
@@ -1004,7 +1003,6 @@ func Test_logger_setLevelMode(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1100,7 +1098,6 @@ func Test_logger_setLogFormat(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1115,8 +1112,7 @@ func Test_logger_Info(t *testing.T) {
 		retry  retry.Retry
 		glg    *glg.Glg
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1207,8 +1203,7 @@ func Test_logger_Infof(t *testing.T) {
 		retry  retry.Retry
 		glg    *glg.Glg
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1300,8 +1295,7 @@ func Test_logger_Debug(t *testing.T) {
 		retry  retry.Retry
 		glg    *glg.Glg
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1392,8 +1386,7 @@ func Test_logger_Debugf(t *testing.T) {
 		retry  retry.Retry
 		glg    *glg.Glg
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1485,8 +1478,7 @@ func Test_logger_Warn(t *testing.T) {
 		retry  retry.Retry
 		glg    *glg.Glg
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1577,8 +1569,7 @@ func Test_logger_Warnf(t *testing.T) {
 		retry  retry.Retry
 		glg    *glg.Glg
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1670,8 +1661,7 @@ func Test_logger_Error(t *testing.T) {
 		retry  retry.Retry
 		glg    *glg.Glg
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1762,8 +1752,7 @@ func Test_logger_Errorf(t *testing.T) {
 		retry  retry.Retry
 		glg    *glg.Glg
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1855,8 +1844,7 @@ func Test_logger_Fatal(t *testing.T) {
 		retry  retry.Retry
 		glg    *glg.Glg
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1947,8 +1935,7 @@ func Test_logger_Fatalf(t *testing.T) {
 		retry  retry.Retry
 		glg    *glg.Glg
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

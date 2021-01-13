@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,11 +23,13 @@ import (
 	"testing"
 	"unsafe"
 
-	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
+	"go.uber.org/goleak"
 )
 
 func Test_newEntryIndexInfos(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		i *payload.Info_Index_Count
 	}
@@ -76,8 +78,11 @@ func Test_newEntryIndexInfos(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -92,12 +97,12 @@ func Test_newEntryIndexInfos(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_indexInfos_Load(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key string
 	}
@@ -169,8 +174,11 @@ func Test_indexInfos_Load(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -191,12 +199,12 @@ func Test_indexInfos_Load(t *testing.T) {
 			if err := test.checkFunc(test.want, gotValue, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_entryIndexInfos_load(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		p unsafe.Pointer
 	}
@@ -249,8 +257,11 @@ func Test_entryIndexInfos_load(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -268,12 +279,12 @@ func Test_entryIndexInfos_load(t *testing.T) {
 			if err := test.checkFunc(test.want, gotValue, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_indexInfos_Store(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key   string
 		value *payload.Info_Index_Count
@@ -284,8 +295,7 @@ func Test_indexInfos_Store(t *testing.T) {
 		dirty  map[string]*entryIndexInfos
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -340,8 +350,11 @@ func Test_indexInfos_Store(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -367,6 +380,7 @@ func Test_indexInfos_Store(t *testing.T) {
 }
 
 func Test_entryIndexInfos_tryStore(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		i **payload.Info_Index_Count
 	}
@@ -425,8 +439,11 @@ func Test_entryIndexInfos_tryStore(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -444,12 +461,12 @@ func Test_entryIndexInfos_tryStore(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_entryIndexInfos_unexpungeLocked(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		p unsafe.Pointer
 	}
@@ -498,8 +515,11 @@ func Test_entryIndexInfos_unexpungeLocked(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -517,20 +537,19 @@ func Test_entryIndexInfos_unexpungeLocked(t *testing.T) {
 			if err := test.checkFunc(test.want, gotWasExpunged); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_entryIndexInfos_storeLocked(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		i **payload.Info_Index_Count
 	}
 	type fields struct {
 		p unsafe.Pointer
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -577,8 +596,11 @@ func Test_entryIndexInfos_storeLocked(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -601,6 +623,7 @@ func Test_entryIndexInfos_storeLocked(t *testing.T) {
 }
 
 func Test_indexInfos_Delete(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key string
 	}
@@ -610,8 +633,7 @@ func Test_indexInfos_Delete(t *testing.T) {
 		dirty  map[string]*entryIndexInfos
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -664,8 +686,11 @@ func Test_indexInfos_Delete(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -691,6 +716,7 @@ func Test_indexInfos_Delete(t *testing.T) {
 }
 
 func Test_entryIndexInfos_delete(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		p unsafe.Pointer
 	}
@@ -739,8 +765,11 @@ func Test_entryIndexInfos_delete(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -758,12 +787,12 @@ func Test_entryIndexInfos_delete(t *testing.T) {
 			if err := test.checkFunc(test.want, gotHadValue); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_indexInfos_Range(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		f func(key string, value *payload.Info_Index_Count) bool
 	}
@@ -773,8 +802,7 @@ func Test_indexInfos_Range(t *testing.T) {
 		dirty  map[string]*entryIndexInfos
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -827,8 +855,11 @@ func Test_indexInfos_Range(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -854,14 +885,14 @@ func Test_indexInfos_Range(t *testing.T) {
 }
 
 func Test_indexInfos_missLocked(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		mu     sync.Mutex
 		read   atomic.Value
 		dirty  map[string]*entryIndexInfos
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields
@@ -907,8 +938,11 @@ func Test_indexInfos_missLocked(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -934,14 +968,14 @@ func Test_indexInfos_missLocked(t *testing.T) {
 }
 
 func Test_indexInfos_dirtyLocked(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		mu     sync.Mutex
 		read   atomic.Value
 		dirty  map[string]*entryIndexInfos
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields
@@ -987,8 +1021,11 @@ func Test_indexInfos_dirtyLocked(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1014,6 +1051,7 @@ func Test_indexInfos_dirtyLocked(t *testing.T) {
 }
 
 func Test_entryIndexInfos_tryExpungeLocked(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		p unsafe.Pointer
 	}
@@ -1062,8 +1100,11 @@ func Test_entryIndexInfos_tryExpungeLocked(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1081,7 +1122,6 @@ func Test_entryIndexInfos_tryExpungeLocked(t *testing.T) {
 			if err := test.checkFunc(test.want, gotIsExpunged); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

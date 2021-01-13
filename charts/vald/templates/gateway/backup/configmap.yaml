@@ -1,0 +1,75 @@
+#
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+{{- $gateway := .Values.gateway.backup -}}
+{{- $lb := .Values.gateway.lb -}}
+{{- $backup := .Values.manager.compressor -}}
+{{- $agent := .Values.agent -}}
+{{- if $gateway.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $gateway.name }}-config
+  labels:
+    app.kubernetes.io/name: {{ include "vald.name" . }}
+    helm.sh/chart: {{ include "vald.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.Version }}
+    app.kubernetes.io/component: gateway-backup
+data:
+  config.yaml: |
+    ---
+    version: {{ $gateway.version }}
+    time_zone: {{ default .Values.defaults.time_zone $gateway.time_zone }}
+    logging:
+      {{- $logging := dict "Values" $gateway.logging "default" .Values.defaults.logging }}
+      {{- include "vald.logging" $logging | nindent 6 }}
+    server_config:
+      {{- $servers := dict "Values" $gateway.server_config "default" .Values.defaults.server_config }}
+      {{- include "vald.servers" $servers | nindent 6 }}
+    observability:
+      {{- $observability := dict "Values" $gateway.observability "default" .Values.defaults.observability }}
+      {{- include "vald.observability" $observability | nindent 6 }}
+    client:
+      {{- $nextGatewayClient := $gateway.gateway_config.gateway_client }}
+      {{- if $lb.enabled -}}
+      {{- $lbServerPort := $lb.server_config.servers.grpc.port }}
+      {{- $defaultLBHost := printf "%s.%s.svc.cluster.local" $lb.name .Release.Namespace }}
+      {{- $defaultLBPort := default .Values.defaults.server_config.servers.grpc.port $lbServerPort }}
+      {{- $defaultLBAddr := (list (printf "%s:%d" $defaultLBHost (int64 $defaultLBPort))) }}
+      {{- $lbAddrs := dict "Values" $nextGatewayClient.addrs "default" $defaultLBAddr }}
+      {{- include "vald.grpc.client.addrs" $lbAddrs | nindent 6 }}
+      {{- else -}}
+      {{- $agentServerPort := $agent.server_config.servers.grpc.port }}
+      {{- $defaultAgentHost := printf "%s.%s.svc.cluster.local" $agent.name .Release.Namespace }}
+      {{- $defaultAgentPort := default .Values.defaults.server_config.servers.grpc.port $agentServerPort }}
+      {{- $defaultAgentAddr := (list (printf "%s:%d" $defaultAgentHost (int64 $defaultAgentPort))) }}
+      {{- $agentAddrs := dict "Values" $nextGatewayClient.addrs "default" $defaultAgentAddr }}
+      {{- include "vald.grpc.client.addrs" $agentAddrs | nindent 6 }}
+      {{- end -}}
+      {{- $nextGRPCClient := dict "Values" $nextGatewayClient "default" .Values.defaults.grpc.client }}
+      {{- include "vald.grpc.client" $nextGRPCClient | nindent 6 }}
+    backup:
+      {{- $compressorClient := $gateway.gateway_config.backup_client }}
+      {{- $compressorServerPort := $backup.server_config.servers.grpc.port }}
+      {{- $defaultCompressorHost := printf "%s.%s.svc.cluster.local" $backup.name .Release.Namespace }}
+      {{- $defaultCompressorPort := default .Values.defaults.server_config.servers.grpc.port $compressorServerPort }}
+      {{- $defaultCompressorAddr := (list (printf "%s:%d" $defaultCompressorHost (int64 $defaultCompressorPort))) }}
+      {{- $compressorAddrs := dict "Values" $compressorClient.addrs "default" $defaultCompressorAddr }}
+      {{- include "vald.grpc.client.addrs" $compressorAddrs | nindent 6 }}
+      {{- $compressorGRPCclient := dict "Values" $compressorClient "default" .Values.defaults.grpc.client }}
+      {{- include "vald.grpc.client" $compressorGRPCclient | nindent 6 }}
+{{- end }}

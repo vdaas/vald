@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,10 +25,9 @@ data:
 
     USE `{{ .Values.initializer.mysql.configmap.schema }}` ;
 
-    CREATE TABLE IF NOT EXISTS `{{ .Values.initializer.mysql.configmap.schema }}`.`meta_vector` (
+    CREATE TABLE IF NOT EXISTS `{{ .Values.initializer.mysql.configmap.schema }}`.`backup_vector` (
         `uuid` VARCHAR(255) NOT NULL,
         `vector` BLOB NOT NULL,
-        `meta` VARCHAR(1024) NOT NULL,
         `id` int NOT NULL AUTO_INCREMENT,
         PRIMARY KEY (`uuid`),
         UNIQUE INDEX `id_unique` (`id` ASC),

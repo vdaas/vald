@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,8 +26,8 @@ import (
 	"github.com/vdaas/vald/hack/benchmark/core/benchmark"
 	"github.com/vdaas/vald/hack/benchmark/core/benchmark/strategy"
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
-	"github.com/vdaas/vald/hack/benchmark/internal/core"
-	"github.com/vdaas/vald/hack/benchmark/internal/core/ngt"
+	"github.com/vdaas/vald/hack/benchmark/internal/core/algorithm"
+	"github.com/vdaas/vald/hack/benchmark/internal/core/algorithm/ngt"
 )
 
 const (
@@ -47,7 +47,7 @@ func init() {
 	targets = strings.Split(strings.TrimSpace(dataset), ",")
 }
 
-func initCore(ctx context.Context, b *testing.B, dataset assets.Dataset) (core.Core32, core.Closer, error) {
+func initCore(ctx context.Context, b *testing.B, dataset assets.Dataset) (algorithm.Bit32, algorithm.Closer, error) {
 	ngt, err := ngt.New(
 		ngt.WithDimension(dataset.Dimension()),
 		ngt.WithObjectType(dataset.ObjectType()),
@@ -65,7 +65,7 @@ func BenchmarkNGTSequential_Insert(b *testing.B) {
 			benchmark.WithName(target),
 			benchmark.WithStrategy(
 				strategy.NewInsert(
-					strategy.WithCore32(initCore),
+					strategy.WithBit32(initCore),
 				),
 			),
 		).Run(ctx, b)
@@ -79,7 +79,7 @@ func BenchmarkNGTParallel_Insert(b *testing.B) {
 			benchmark.WithName(target),
 			benchmark.WithStrategy(
 				strategy.NewInsert(
-					strategy.WithCore32(initCore),
+					strategy.WithBit32(initCore),
 					strategy.WithParallel(),
 				),
 			),
@@ -94,7 +94,7 @@ func BenchmarkNGTSequential_BulkInsert(b *testing.B) {
 			benchmark.WithName(target),
 			benchmark.WithStrategy(
 				strategy.NewBulkInsert(
-					strategy.WithCore32(initCore),
+					strategy.WithBit32(initCore),
 				),
 			),
 		).Run(ctx, b)
@@ -108,7 +108,7 @@ func BenchmarkNGTParallel_BulkInsert(b *testing.B) {
 			benchmark.WithName(target),
 			benchmark.WithStrategy(
 				strategy.NewBulkInsert(
-					strategy.WithCore32(initCore),
+					strategy.WithBit32(initCore),
 					strategy.WithParallel(),
 				),
 			),
@@ -124,7 +124,7 @@ func BenchmarkNGTSequential_InsertCommit(b *testing.B) {
 			benchmark.WithStrategy(
 				strategy.NewInsertCommit(
 					10,
-					strategy.WithCore32(initCore),
+					strategy.WithBit32(initCore),
 				),
 			),
 		).Run(ctx, b)
@@ -139,7 +139,7 @@ func BenchmarkNGTParallel_InsertCommit(b *testing.B) {
 			benchmark.WithStrategy(
 				strategy.NewInsertCommit(
 					10,
-					strategy.WithCore32(initCore),
+					strategy.WithBit32(initCore),
 					strategy.WithParallel(),
 				),
 			),
@@ -155,7 +155,7 @@ func BenchmarkNGTSequential_BulkInsertCommit(b *testing.B) {
 			benchmark.WithStrategy(
 				strategy.NewBulkInsertCommit(
 					10,
-					strategy.WithCore32(initCore),
+					strategy.WithBit32(initCore),
 				),
 			),
 		).Run(ctx, b)
@@ -170,7 +170,7 @@ func BenchmarkNGTParallel_BulkInsertCommit(b *testing.B) {
 			benchmark.WithStrategy(
 				strategy.NewBulkInsertCommit(
 					10,
-					strategy.WithCore32(initCore),
+					strategy.WithBit32(initCore),
 					strategy.WithParallel(),
 				),
 			),
@@ -186,7 +186,7 @@ func BenchmarkNGTSequential_Search(b *testing.B) {
 			benchmark.WithStrategy(
 				strategy.NewSearch(
 					size, radius, epsilon,
-					strategy.WithCore32(initCore),
+					strategy.WithBit32(initCore),
 				),
 			),
 		).Run(ctx, b)
@@ -201,7 +201,7 @@ func BenchmarkNGTParallel_Search(b *testing.B) {
 			benchmark.WithStrategy(
 				strategy.NewSearch(
 					size, radius, epsilon,
-					strategy.WithCore32(initCore),
+					strategy.WithBit32(initCore),
 					strategy.WithParallel(),
 				),
 			),
@@ -216,7 +216,7 @@ func BenchmarkNGTSequential_Remove(b *testing.B) {
 			benchmark.WithName(target),
 			benchmark.WithStrategy(
 				strategy.NewRemove(
-					strategy.WithCore32(initCore),
+					strategy.WithBit32(initCore),
 				),
 			),
 		).Run(ctx, b)
@@ -230,7 +230,7 @@ func BenchmarkNGTParallel_Remove(b *testing.B) {
 			benchmark.WithName(target),
 			benchmark.WithStrategy(
 				strategy.NewRemove(
-					strategy.WithCore32(initCore),
+					strategy.WithBit32(initCore),
 					strategy.WithParallel(),
 				),
 			),
@@ -245,7 +245,7 @@ func BenchmarkNGTSequential_GetVector(b *testing.B) {
 			benchmark.WithName(target),
 			benchmark.WithStrategy(
 				strategy.NewGetVector(
-					strategy.WithCore32(initCore),
+					strategy.WithBit32(initCore),
 				),
 			),
 		).Run(ctx, b)
@@ -259,7 +259,7 @@ func BenchmarkNGTParallel_GetVector(b *testing.B) {
 			benchmark.WithName(target),
 			benchmark.WithStrategy(
 				strategy.NewGetVector(
-					strategy.WithCore32(initCore),
+					strategy.WithBit32(initCore),
 					strategy.WithParallel(),
 				),
 			),

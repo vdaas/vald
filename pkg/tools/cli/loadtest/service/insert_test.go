@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import (
 )
 
 func Test_insertRequestProvider(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		dataset   assets.Dataset
 		batchSize int
@@ -88,8 +89,10 @@ func Test_insertRequestProvider(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -105,12 +108,12 @@ func Test_insertRequestProvider(t *testing.T) {
 			if err := test.checkFunc(test.want, gotF, gotSize, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_objectVectorProvider(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		dataset assets.Dataset
 	}
@@ -163,8 +166,10 @@ func Test_objectVectorProvider(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -180,12 +185,12 @@ func Test_objectVectorProvider(t *testing.T) {
 			if err := test.checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_objectVectorsProvider(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		dataset assets.Dataset
 		n       int
@@ -241,8 +246,10 @@ func Test_objectVectorsProvider(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -258,296 +265,12 @@ func Test_objectVectorsProvider(t *testing.T) {
 			if err := test.checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
-		})
-	}
-}
-
-func Test_agent(t *testing.T) {
-	type args struct {
-		conn *grpc.ClientConn
-	}
-	type want struct {
-		want inserter
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, inserter) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got inserter) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           conn: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           conn: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-
-			got := agent(test.args.conn)
-			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_gateway(t *testing.T) {
-	type args struct {
-		conn *grpc.ClientConn
-	}
-	type want struct {
-		want inserter
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, inserter) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got inserter) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           conn: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           conn: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-
-			got := gateway(test.args.conn)
-			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_insert(t *testing.T) {
-	type args struct {
-		c func(*grpc.ClientConn) inserter
-	}
-	type want struct {
-		want loadFunc
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, loadFunc) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got loadFunc) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           c: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           c: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-
-			got := insert(test.args.c)
-			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_bulkInsert(t *testing.T) {
-	type args struct {
-		c func(*grpc.ClientConn) inserter
-	}
-	type want struct {
-		want loadFunc
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, loadFunc) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got loadFunc) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           c: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           c: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-
-			got := bulkInsert(test.args.c)
-			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
 		})
 	}
 }
 
 func Test_loader_newInsert(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		eg               errgroup.Group
 		client           grpc.Client
@@ -559,7 +282,6 @@ func Test_loader_newInsert(t *testing.T) {
 		loaderFunc       loadFunc
 		dataProvider     func() interface{}
 		dataSize         int
-		service          config.Service
 		operation        config.Operation
 	}
 	type want struct {
@@ -599,7 +321,6 @@ func Test_loader_newInsert(t *testing.T) {
 		           loaderFunc: nil,
 		           dataProvider: nil,
 		           dataSize: 0,
-		           service: nil,
 		           operation: nil,
 		       },
 		       want: want{},
@@ -623,7 +344,6 @@ func Test_loader_newInsert(t *testing.T) {
 		           loaderFunc: nil,
 		           dataProvider: nil,
 		           dataSize: 0,
-		           service: nil,
 		           operation: nil,
 		           },
 		           want: want{},
@@ -633,8 +353,10 @@ func Test_loader_newInsert(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -656,7 +378,6 @@ func Test_loader_newInsert(t *testing.T) {
 				loaderFunc:       test.fields.loaderFunc,
 				dataProvider:     test.fields.dataProvider,
 				dataSize:         test.fields.dataSize,
-				service:          test.fields.service,
 				operation:        test.fields.operation,
 			}
 
@@ -664,12 +385,12 @@ func Test_loader_newInsert(t *testing.T) {
 			if err := test.checkFunc(test.want, gotF, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_loader_newStreamInsert(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		eg               errgroup.Group
 		client           grpc.Client
@@ -681,7 +402,6 @@ func Test_loader_newStreamInsert(t *testing.T) {
 		loaderFunc       loadFunc
 		dataProvider     func() interface{}
 		dataSize         int
-		service          config.Service
 		operation        config.Operation
 	}
 	type want struct {
@@ -721,7 +441,6 @@ func Test_loader_newStreamInsert(t *testing.T) {
 		           loaderFunc: nil,
 		           dataProvider: nil,
 		           dataSize: 0,
-		           service: nil,
 		           operation: nil,
 		       },
 		       want: want{},
@@ -745,7 +464,6 @@ func Test_loader_newStreamInsert(t *testing.T) {
 		           loaderFunc: nil,
 		           dataProvider: nil,
 		           dataSize: 0,
-		           service: nil,
 		           operation: nil,
 		           },
 		           want: want{},
@@ -755,8 +473,10 @@ func Test_loader_newStreamInsert(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -778,7 +498,6 @@ func Test_loader_newStreamInsert(t *testing.T) {
 				loaderFunc:       test.fields.loaderFunc,
 				dataProvider:     test.fields.dataProvider,
 				dataSize:         test.fields.dataSize,
-				service:          test.fields.service,
 				operation:        test.fields.operation,
 			}
 
@@ -786,7 +505,6 @@ func Test_loader_newStreamInsert(t *testing.T) {
 			if err := test.checkFunc(test.want, gotF, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

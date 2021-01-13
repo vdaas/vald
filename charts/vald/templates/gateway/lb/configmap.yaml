@@ -1,0 +1,67 @@
+#
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+{{- $gateway := .Values.gateway.lb -}}
+{{- $agent := .Values.agent -}}
+{{- $discoverer := .Values.discoverer -}}
+{{- if $gateway.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $gateway.name }}-config
+  labels:
+    app.kubernetes.io/name: {{ include "vald.name" . }}
+    helm.sh/chart: {{ include "vald.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.Version }}
+    app.kubernetes.io/component: gateway-lb
+data:
+  config.yaml: |
+    ---
+    version: {{ $gateway.version }}
+    time_zone: {{ default .Values.defaults.time_zone $gateway.time_zone }}
+    logging:
+      {{- $logging := dict "Values" $gateway.logging "default" .Values.defaults.logging }}
+      {{- include "vald.logging" $logging | nindent 6 }}
+    server_config:
+      {{- $servers := dict "Values" $gateway.server_config "default" .Values.defaults.server_config }}
+      {{- include "vald.servers" $servers | nindent 6 }}
+    observability:
+      {{- $observability := dict "Values" $gateway.observability "default" .Values.defaults.observability }}
+      {{- include "vald.observability" $observability | nindent 6 }}
+    gateway:
+      agent_port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.agent.server_config.servers.grpc.port }}
+      agent_name: {{ .Values.agent.name | quote }}
+      agent_dns: {{ .Values.agent.name }}.{{ .Release.Namespace }}.svc.cluster.local
+      agent_namespace: {{ $gateway.gateway_config.agent_namespace | quote }}
+      node_name: {{ $gateway.gateway_config.node_name | quote }}
+      index_replica: {{ $gateway.gateway_config.index_replica }}
+      discoverer:
+        duration: {{ $gateway.gateway_config.discoverer.duration }}
+        client:
+          {{- $discovererClient := $gateway.gateway_config.discoverer.client }}
+          {{- $discovererServerPort := $discoverer.server_config.servers.grpc.port }}
+          {{- $defaultDiscovererHost := printf "%s.%s.svc.cluster.local" $discoverer.name .Release.Namespace }}
+          {{- $defaultDiscovererPort := default .Values.defaults.server_config.servers.grpc.port $discovererServerPort }}
+          {{- $defaultDiscovererAddr := (list (printf "%s:%d" $defaultDiscovererHost (int64 $defaultDiscovererPort))) }}
+          {{- $discovererAddrs := dict "Values" $discovererClient.addrs "default" $defaultDiscovererAddr }}
+          {{- include "vald.grpc.client.addrs" $discovererAddrs | nindent 10 }}
+          {{- $discovererGRPCclient := dict "Values" $discovererClient "default" .Values.defaults.grpc.client }}
+          {{- include "vald.grpc.client" $discovererGRPCclient | nindent 10 }}
+        agent_client_options:
+          {{- include "vald.grpc.client.addrs" (dict "Valued" $gateway.gateway_config.discoverer.agent_client_options.addrs) | nindent 10 }}
+          {{- include "vald.grpc.client" (dict "Values" $gateway.gateway_config.discoverer.agent_client_options "default" .Values.defaults.grpc.client) | nindent 10 }}
+{{- end }}
