@@ -27,8 +27,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 
-	"k8s.io/apimachinery/pkg/runtime"
-
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -40,7 +39,6 @@ import (
 type ConfigMapWatcher k8s.ResourceController
 
 type reconciler struct {
-	ctx         context.Context
 	mgr         manager.Manager
 	name        string
 	namespaces  []string
@@ -72,7 +70,7 @@ func New(opts ...Option) (ConfigMapWatcher, error) {
 }
 
 // Reconcile implements k8s reconciliation loop to retrive the ConfigMap information from k8s.
-func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err error) {
+func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
 	cml := new(corev1.ConfigMapList)
 
 	listOpts := make([]client.ListOption, 0, len(r.namespaces))
@@ -83,7 +81,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 
 	// TODO: add option for config map name.
 
-	err = r.mgr.GetClient().List(r.ctx, cml, listOpts...)
+	err = r.mgr.GetClient().List(ctx, cml, listOpts...)
 	if err != nil {
 		if r.onError != nil {
 			r.onError(err)
@@ -127,11 +125,7 @@ func (r *reconciler) GetName() string {
 }
 
 // NewReconciler returns the reconciler for the ConfigMap.
-func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler {
-	if r.ctx == nil && ctx != nil {
-		r.ctx = ctx
-	}
-
+func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
 	if r.mgr == nil && mgr != nil {
 		r.mgr = mgr
 	}
@@ -141,19 +135,19 @@ func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) rec
 }
 
 // For returns the runtime.Object which is ConfigMap.
-func (r *reconciler) For() runtime.Object {
-	return new(corev1.ConfigMap)
+func (r *reconciler) For() (client.Object, []builder.ForOption) {
+	return new(corev1.ConfigMap), nil
 }
 
 // Owns returns the owner of the ConfigMap wathcer.
 // It will always return nil.
-func (r *reconciler) Owns() runtime.Object {
-	return nil
+func (r *reconciler) Owns() (client.Object, []builder.OwnsOption) {
+	return nil, nil
 }
 
 // Watches returns the kind of the ConfigMap and the event handler.
 // It will always retrun nil.
-func (r *reconciler) Watches() (*source.Kind, handler.EventHandler) {
+func (r *reconciler) Watches() (*source.Kind, handler.EventHandler, []builder.WatchesOption) {
 	// return &source.kind{Type: new(corev1.Pod)}, &handler.EnqueueRequestForObject{}
-	return nil, nil
+	return nil, nil, nil
 }

@@ -24,7 +24,7 @@ import (
 
 	batchv1 "k8s.io/api/batch/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -40,7 +40,6 @@ import (
 type JobWatcher k8s.ResourceController
 
 type reconciler struct {
-	ctx         context.Context
 	mgr         manager.Manager
 	name        string
 	namespaces  []string
@@ -72,7 +71,7 @@ func New(opts ...Option) (JobWatcher, error) {
 }
 
 // Reconcile implements k8s reconciliation loop to retrieve the Job information from k8s.
-func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err error) {
+func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
 	js := new(batchv1.JobList)
 
 	listOpts := make([]client.ListOption, 0, len(r.namespaces))
@@ -80,7 +79,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 		listOpts = append(listOpts, client.InNamespace(ns))
 	}
 
-	err = r.mgr.GetClient().List(r.ctx, js, listOpts...)
+	err = r.mgr.GetClient().List(ctx, js, listOpts...)
 	if err != nil {
 		if r.onError != nil {
 			r.onError(err)
@@ -132,10 +131,7 @@ func (r *reconciler) GetName() string {
 }
 
 // NewReconciler returns the reconciler for the Job.
-func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler {
-	if r.ctx == nil && ctx != nil {
-		r.ctx = ctx
-	}
+func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
 	if r.mgr == nil && mgr != nil {
 		r.mgr = mgr
 	}
@@ -145,19 +141,19 @@ func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) rec
 }
 
 // For returns the runtime.Object which is job.
-func (r *reconciler) For() runtime.Object {
-	return new(batchv1.Job)
+func (r *reconciler) For() (client.Object, []builder.ForOption) {
+	return new(batchv1.Job), nil
 }
 
 // Owns returns the owner of the job watcher.
 // It will always return nil.
-func (r *reconciler) Owns() runtime.Object {
-	return nil
+func (r *reconciler) Owns() (client.Object, []builder.OwnsOption) {
+	return nil, nil
 }
 
 // Watches returns the kind of the job and the event handler.
 // It will always return nil.
-func (r *reconciler) Watches() (*source.Kind, handler.EventHandler) {
+func (r *reconciler) Watches() (*source.Kind, handler.EventHandler, []builder.WatchesOption) {
 	// return &source.Kind{Type: new(corev1.Pod)}, &handler.EnqueueRequestForObject{}
-	return nil, nil
+	return nil, nil, nil
 }
