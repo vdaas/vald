@@ -227,11 +227,16 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 					return true
 				})
 			}
-			g.crl.Range(func(addr, _ interface{}) bool {
+			g.crl.Range(func(a, _ interface{}) bool {
+				addr := a.(string)
 				defer g.crl.Delete(addr)
-				_, err := g.Connect(ctx, addr.(string))
+				_, err = g.bo.Do(ctx, func(_ context.Context) (r interface{}, ret bool, err error) {
+					_, err = g.Connect(ctx, addr)
+					return nil, err != nil, err
+				})
 				if err != nil {
-					log.Error(err)
+					g.conns.Delete(addr)
+					g.atomicAddrs.Delete(addr)
 				}
 				return true
 			})
