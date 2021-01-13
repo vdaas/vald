@@ -19,7 +19,7 @@ defaults:
   logging:
     level: debug
   image:
-    tag: pr-826
+    tag: nightly
 agent:
   minReplicas: 5
 manager:
