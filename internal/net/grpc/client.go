@@ -186,19 +186,22 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 									ech <- err
 								}
 							}
-							if err == nil {
+							if err == nil && addr != "" && p != nil {
 								g.conns.Store(addr, p)
 							} else {
 								g.conns.Delete(addr)
 								g.atomicAddrs.Delete(addr)
 							}
+						} else {
+							g.conns.Delete(addr)
+							g.atomicAddrs.Delete(addr)
 						}
 						return true
 					})
 				}
 			case <-hcTick.C:
 				g.conns.Range(func(addr string, p pool.Conn) bool {
-					if len(addr) != 0 && !p.IsHealthy(ctx) {
+					if len(addr) != 0 && p != nil && !p.IsHealthy(ctx) {
 						var err error
 						p, err = p.Reconnect(ctx, false)
 						if err != nil {
@@ -210,13 +213,17 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 								ech <- err
 							}
 						}
-						if err == nil {
+						if err == nil && addr != "" && p != nil {
 							g.conns.Store(addr, p)
 						} else {
 							g.conns.Delete(addr)
 							g.atomicAddrs.Delete(addr)
 						}
+					} else {
+						g.conns.Delete(addr)
+						g.atomicAddrs.Delete(addr)
 					}
+
 					return true
 				})
 			}
@@ -317,7 +324,7 @@ func (g *gRPCClient) OrderedRange(ctx context.Context,
 			return nil
 		default:
 			p, ok := g.conns.Load(addr)
-			if !ok {
+			if !ok || p == nil {
 				g.crl.Store(addr, struct{}{})
 				log.Warn(errors.ErrGRPCClientConnNotFound(addr))
 				continue
@@ -358,10 +365,10 @@ func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
 		addr := order
 		eg.Go(safety.RecoverFunc(func() (err error) {
 			p, ok := g.conns.Load(addr)
-			if !ok {
+			if !ok || p == nil {
 				g.crl.Store(addr, struct{}{})
+				log.Warn(errors.ErrGRPCClientConnNotFound(addr))
 				return nil
-
 			}
 			ssctx, sspan := trace.StartSpan(sctx, "vald/internal/grpc/Client.OrderedRangeConcurrent/"+addr)
 			defer func() {
@@ -399,8 +406,9 @@ func (g *gRPCClient) RoundRobin(ctx context.Context, f func(ctx context.Context,
 				return nil, false, errors.ErrGRPCClientNotFound
 			}
 			p, ok := g.conns.Load(addr)
-			if !ok {
+			if !ok || p == nil {
 				g.crl.Store(addr, struct{}{})
+				log.Warn(errors.ErrGRPCClientConnNotFound(addr))
 				return nil, true, errors.ErrGRPCClientConnNotFound(addr)
 			}
 			r, err = g.do(ictx, p, addr, false, f)
@@ -427,8 +435,9 @@ func (g *gRPCClient) Do(ctx context.Context, addr string,
 		}
 	}()
 	p, ok := g.conns.Load(addr)
-	if !ok {
+	if !ok || p == nil {
 		g.crl.Store(addr, struct{}{})
+		log.Warn(errors.ErrGRPCClientConnNotFound(addr))
 		return nil, errors.ErrGRPCClientConnNotFound(addr)
 	}
 	return g.do(sctx, p, addr, true, f)
@@ -437,6 +446,9 @@ func (g *gRPCClient) Do(ctx context.Context, addr string,
 func (g *gRPCClient) do(ctx context.Context, p pool.Conn, addr string, enableBackoff bool,
 	f func(ctx context.Context,
 		conn *ClientConn, copts ...CallOption) (interface{}, error)) (data interface{}, err error) {
+	if p == nil {
+		return nil, errors.ErrGRPCClientConnNotFound(addr)
+	}
 	sctx, span := trace.StartSpan(ctx, "vald/internal/grpc/Client.do/"+addr)
 	defer func() {
 		if span != nil {
@@ -535,7 +547,7 @@ func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOpti
 			opts = append(opts, pool.WithBackoff(g.bo))
 		}
 		conn, err = pool.New(ctx, opts...)
-		if err != nil {
+		if err != nil || conn == nil {
 			g.conns.Delete(addr)
 			return nil, err
 		}
@@ -544,6 +556,9 @@ func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOpti
 		if err != nil {
 			g.conns.Delete(addr)
 			return nil, err
+		}
+		if conn == nil {
+			return nil, errors.ErrGRPCClientConnNotFound(addr)
 		}
 		atomic.AddUint64(&g.clientCount, 1)
 		g.conns.Store(addr, conn)
@@ -587,8 +602,8 @@ func (g *gRPCClient) Close(ctx context.Context) (err error) {
 	if cc := int(atomic.LoadUint64(&g.clientCount)); cc > 0 {
 		closeList = make([]string, 0, cc)
 	}
-	g.conns.Range(func(addr string, pool pool.Conn) bool {
-		if pool != nil {
+	g.conns.Range(func(addr string, p pool.Conn) bool {
+		if p != nil {
 			closeList = append(closeList, addr)
 		}
 		return true
