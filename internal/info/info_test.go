@@ -609,9 +609,9 @@ func Test_info_Get(t *testing.T) {
 					rtCaller: func(skip int) (pc uintptr, file string, line int, ok bool) {
 						if i == 0 {
 							i++
-							return uintptr(0), "info.go", 100, true
+							return uintptr(0), "info_test.go", 100, true
 						}
-						return uintptr(1), "info.go", 100, false
+						return uintptr(1), "info_test.go", 100, false
 					},
 					rtFuncForPC: func(ptr uintptr) *runtime.Func {
 						return runtime.FuncForPC(reflect.ValueOf(Test_info_Get).Pointer())
@@ -630,7 +630,7 @@ func Test_info_Get(t *testing.T) {
 						StackTrace{
 							URL:      "https://github.com/vdaas/vald/tree/master",
 							FuncName: "github.com/vdaas/vald/internal/info.Test_info_Get",
-							File:     "info.go",
+							File:     "info_test.go",
 							Line:     100,
 						},
 					},
