@@ -115,7 +115,6 @@ func BidirectionalStream(ctx context.Context, stream grpc.ServerStream,
 					if err != nil {
 						runtime.Gosched()
 						errMap.Store(err.Error(), err)
-						return nil
 					}
 					if res != nil {
 						mu.Lock()
