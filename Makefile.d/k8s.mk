@@ -264,8 +264,6 @@ k8s/external/scylla/deploy: \
 	kubectl -n scylla get ScyllaCluster
 	kubectl -n scylla get pods
 	kubectl wait -n scylla --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=vald-scylla-cluster-dc0-rack0-0 --timeout=600s
-	kubectl wait -n scylla --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=vald-scylla-cluster-dc0-rack0-1 --timeout=600s
-	kubectl wait -n scylla --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=vald-scylla-cluster-dc0-rack0-2 --timeout=600s
 	kubectl -n scylla get ScyllaCluster
 	kubectl -n scylla get pods
 	kubectl apply -f k8s/jobs/db/initialize/scylla

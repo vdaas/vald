@@ -105,8 +105,6 @@ manager:
         cassandra:
           hosts:
             - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
-            - vald-scylla-cluster-dc0-rack0-1.scylla.svc.cluster.local
-            - vald-scylla-cluster-dc0-rack0-2.scylla.svc.cluster.local
         sleepDuration: 2
     env: []
     mysql:
@@ -116,8 +114,6 @@ manager:
       config:
         hosts:
           - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
-          - vald-scylla-cluster-dc0-rack0-1.scylla.svc.cluster.local
-          - vald-scylla-cluster-dc0-rack0-2.scylla.svc.cluster.local
         consistency: one
 
   index:
@@ -144,8 +140,6 @@ meta:
       cassandra:
         hosts:
           - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
-          - vald-scylla-cluster-dc0-rack0-1.scylla.svc.cluster.local
-          - vald-scylla-cluster-dc0-rack0-2.scylla.svc.cluster.local
       sleepDuration: 2
   env: []
   redis:
@@ -155,6 +149,4 @@ meta:
     config:
       hosts:
         - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
-        - vald-scylla-cluster-dc0-rack0-1.scylla.svc.cluster.local
-        - vald-scylla-cluster-dc0-rack0-2.scylla.svc.cluster.local
       consistency: one
