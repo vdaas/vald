@@ -260,7 +260,7 @@ k8s/external/scylla/deploy: \
 	kubectl apply -f https://raw.githubusercontent.com/scylladb/scylla-operator/master/examples/common/operator.yaml
 	kubectl wait -n scylla-operator-system --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=scylla-operator-controller-manager-0 --timeout=600s
 	kubectl -n scylla-operator-system get pod
-	kubectl apply -f k8s/external/scylla/scyllacluster.yaml
+	kubectl apply -f $(K8S_EXTERNAL_SCYLLA_MANIFEST)
 	kubectl -n scylla get ScyllaCluster
 	kubectl -n scylla get pods
 	kubectl wait -n scylla --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=vald-scylla-cluster-dc0-rack0-0 --timeout=600s
@@ -274,7 +274,7 @@ k8s/external/scylla/deploy: \
 k8s/external/scylla/delete: \
 	k8s/external/cert-manager/delete
 	kubectl delete -f k8s/jobs/db/initialize/scylla
-	kubectl delete -f k8s/external/scylla/scyllacluster.yaml
+	kubectl delete -f $(K8S_EXTERNAL_SCYLLA_MANIFEST)
 	kubectl delete -f https://raw.githubusercontent.com/scylladb/scylla-operator/master/examples/common/operator.yaml
 
 .PHONY: k8s/external/cert-manager/deploy
