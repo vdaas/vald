@@ -15,7 +15,7 @@
 #
 
 ARG BASE_TAG=latest
-ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>
+ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
 FROM vdaas/vald-ci-container:${BASE_TAG} AS vald
 

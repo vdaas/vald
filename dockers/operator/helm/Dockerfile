@@ -19,7 +19,7 @@ ARG GROUP="vald.vdaas.org"
 ARG VALD_KIND="ValdRelease"
 ARG VALD_HELM_OPERATOR_KIND="ValdHelmOperatorRelease"
 ARG BASE_TAG=latest
-ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>
+ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
 FROM vdaas/vald-base:${BASE_TAG} AS builder
 ARG OPERATOR_SDK_VERSION
