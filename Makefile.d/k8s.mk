@@ -292,6 +292,16 @@ k8s/external/cert-manager/deploy:
 k8s/external/cert-manager/delete:
 	kubectl delete -f https://github.com/jetstack/cert-manager/releases/latest/download/cert-manager.yaml
 
+.PHONY: k8s/external/minio/deploy
+## deploy minio
+k8s/external/minio/deploy:
+	kubectl apply -f k8s/external/minio
+
+.PHONY: k8s/external/minio/delete
+## delete minio
+k8s/external/minio/delete:
+	kubectl delete -f k8s/external/minio
+
 .PHONY: k8s/metrics/metrics-server/deploy
 ## deploy metrics-serrver
 k8s/metrics/metrics-server/deploy:

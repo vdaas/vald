@@ -33,7 +33,7 @@ spec:
               mc mb minio/vald-minio
           env:
             - name: ENDPOINT
-              value: http://minio.default.svc.cluster.local:9000
+              value: http://minio:9000
             - name: MINIO_ACCESS_KEY
               value: ACCESSKEY
             - name: MINIO_SECRET_KEY

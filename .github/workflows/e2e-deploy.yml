@@ -345,7 +345,7 @@ jobs:
           helm version
       - name: deploy vald
         run: |
-          kubectl apply -f k8s/external/minio
+          make k8s/external/minio/deploy
           jq_query='.items[] | select( ([ .status.conditions[] | select( .type == "Ready" and .status == "True" ) ] | length ) == 1) | .metadata.namespace + "/" + .metadata.name'
           until [ $(kubectl get pod --selector=app=minio -o json | jq -r "$jq_query" | wc -l) -ge 1 ]
           do
