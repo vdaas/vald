@@ -28,6 +28,7 @@ type AtomicAddrs interface {
 	Add(addr string)
 	Delete(addr string)
 	Next() (string, bool)
+	Len() uint64
 }
 
 type atomicAddrs struct {
@@ -128,4 +129,8 @@ func (a *atomicAddrs) Next() (string, bool) {
 		}
 	}
 	return "", false
+}
+
+func (a *atomicAddrs) Len() uint64 {
+	return atomic.LoadUint64(&a.l)
 }

@@ -419,12 +419,13 @@ func (p *pool) lookupIPAddr(ctx context.Context) (ips []string, err error) {
 }
 
 func (p *pool) Reconnect(ctx context.Context, force bool) (c Conn, err error) {
-	if p.isIP && p.reconnectHash != "" && !p.IsHealthy(ctx) {
+	healthy := p.IsHealthy(ctx)
+	if p.isIP && p.reconnectHash != "" && !healthy {
 		return nil, errors.ErrInvalidGRPCClientConn(p.addr)
 	}
 
 	if p.reconnectHash == "" {
-		log.Debugf("connection history for %s not found starting connection phase", p.addr)
+		log.Debugf("connection history for %s not found starting first connection phase", p.addr)
 		if p.isIP || !p.resolveDNS {
 			return p.connect(ctx)
 		}
@@ -433,7 +434,7 @@ func (p *pool) Reconnect(ctx context.Context, force bool) (c Conn, err error) {
 
 	ips, err := p.lookupIPAddr(ctx)
 	if err != nil || p.isIP {
-		if !p.IsHealthy(ctx) {
+		if !healthy {
 			if p.isIP {
 				return nil, errors.ErrInvalidGRPCClientConn(p.addr)
 			}
@@ -441,7 +442,7 @@ func (p *pool) Reconnect(ctx context.Context, force bool) (c Conn, err error) {
 		}
 		return p, nil
 	}
-	if !p.IsHealthy(ctx) || p.reconnectHash != strings.Join(ips, "-") || force {
+	if !healthy || p.reconnectHash != strings.Join(ips, "-") || force {
 		return p.Connect(ctx)
 	}
 	return p, nil
