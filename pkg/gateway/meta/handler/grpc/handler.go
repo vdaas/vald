@@ -503,7 +503,6 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) error {
 					Location: res,
 				},
 			}, nil
-
 		})
 }
 

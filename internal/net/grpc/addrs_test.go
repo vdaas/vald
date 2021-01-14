@@ -107,7 +107,6 @@ func Test_atomicAddrs_GetAll(t *testing.T) {
 		dupCheck   map[string]bool
 		mu         sync.RWMutex
 		addrSeeker uint64
-		l          uint64
 	}
 	type want struct {
 		want  []string
@@ -140,7 +139,6 @@ func Test_atomicAddrs_GetAll(t *testing.T) {
 		           dupCheck: nil,
 		           mu: sync.RWMutex{},
 		           addrSeeker: 0,
-		           l: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -157,7 +155,6 @@ func Test_atomicAddrs_GetAll(t *testing.T) {
 		           dupCheck: nil,
 		           mu: sync.RWMutex{},
 		           addrSeeker: 0,
-		           l: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -185,7 +182,6 @@ func Test_atomicAddrs_GetAll(t *testing.T) {
 				dupCheck:   test.fields.dupCheck,
 				mu:         test.fields.mu,
 				addrSeeker: test.fields.addrSeeker,
-				l:          test.fields.l,
 			}
 
 			got, got1 := a.GetAll()
@@ -206,7 +202,6 @@ func Test_atomicAddrs_Range(t *testing.T) {
 		dupCheck   map[string]bool
 		mu         sync.RWMutex
 		addrSeeker uint64
-		l          uint64
 	}
 	type want struct{}
 	type test struct {
@@ -234,7 +229,6 @@ func Test_atomicAddrs_Range(t *testing.T) {
 		           dupCheck: nil,
 		           mu: sync.RWMutex{},
 		           addrSeeker: 0,
-		           l: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -254,7 +248,6 @@ func Test_atomicAddrs_Range(t *testing.T) {
 		           dupCheck: nil,
 		           mu: sync.RWMutex{},
 		           addrSeeker: 0,
-		           l: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -282,7 +275,6 @@ func Test_atomicAddrs_Range(t *testing.T) {
 				dupCheck:   test.fields.dupCheck,
 				mu:         test.fields.mu,
 				addrSeeker: test.fields.addrSeeker,
-				l:          test.fields.l,
 			}
 
 			a.Range(test.args.f)
@@ -303,7 +295,6 @@ func Test_atomicAddrs_Add(t *testing.T) {
 		dupCheck   map[string]bool
 		mu         sync.RWMutex
 		addrSeeker uint64
-		l          uint64
 	}
 	type want struct{}
 	type test struct {
@@ -331,7 +322,6 @@ func Test_atomicAddrs_Add(t *testing.T) {
 		           dupCheck: nil,
 		           mu: sync.RWMutex{},
 		           addrSeeker: 0,
-		           l: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -351,7 +341,6 @@ func Test_atomicAddrs_Add(t *testing.T) {
 		           dupCheck: nil,
 		           mu: sync.RWMutex{},
 		           addrSeeker: 0,
-		           l: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -379,7 +368,6 @@ func Test_atomicAddrs_Add(t *testing.T) {
 				dupCheck:   test.fields.dupCheck,
 				mu:         test.fields.mu,
 				addrSeeker: test.fields.addrSeeker,
-				l:          test.fields.l,
 			}
 
 			a.Add(test.args.addr)
@@ -400,7 +388,6 @@ func Test_atomicAddrs_Delete(t *testing.T) {
 		dupCheck   map[string]bool
 		mu         sync.RWMutex
 		addrSeeker uint64
-		l          uint64
 	}
 	type want struct{}
 	type test struct {
@@ -428,7 +415,6 @@ func Test_atomicAddrs_Delete(t *testing.T) {
 		           dupCheck: nil,
 		           mu: sync.RWMutex{},
 		           addrSeeker: 0,
-		           l: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -448,7 +434,6 @@ func Test_atomicAddrs_Delete(t *testing.T) {
 		           dupCheck: nil,
 		           mu: sync.RWMutex{},
 		           addrSeeker: 0,
-		           l: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -476,7 +461,6 @@ func Test_atomicAddrs_Delete(t *testing.T) {
 				dupCheck:   test.fields.dupCheck,
 				mu:         test.fields.mu,
 				addrSeeker: test.fields.addrSeeker,
-				l:          test.fields.l,
 			}
 
 			a.Delete(test.args.addr)
@@ -494,7 +478,6 @@ func Test_atomicAddrs_Next(t *testing.T) {
 		dupCheck   map[string]bool
 		mu         sync.RWMutex
 		addrSeeker uint64
-		l          uint64
 	}
 	type want struct {
 		want  string
@@ -527,7 +510,6 @@ func Test_atomicAddrs_Next(t *testing.T) {
 		           dupCheck: nil,
 		           mu: sync.RWMutex{},
 		           addrSeeker: 0,
-		           l: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -544,7 +526,6 @@ func Test_atomicAddrs_Next(t *testing.T) {
 		           dupCheck: nil,
 		           mu: sync.RWMutex{},
 		           addrSeeker: 0,
-		           l: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -572,11 +553,98 @@ func Test_atomicAddrs_Next(t *testing.T) {
 				dupCheck:   test.fields.dupCheck,
 				mu:         test.fields.mu,
 				addrSeeker: test.fields.addrSeeker,
-				l:          test.fields.l,
 			}
 
 			got, got1 := a.Next()
 			if err := test.checkFunc(test.want, got, got1); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_atomicAddrs_Len(t *testing.T) {
+	t.Parallel()
+	type fields struct {
+		addrs      atomic.Value
+		dupCheck   map[string]bool
+		mu         sync.RWMutex
+		addrSeeker uint64
+	}
+	type want struct {
+		want uint64
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, uint64) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got uint64) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           addrs: nil,
+		           dupCheck: nil,
+		           mu: sync.RWMutex{},
+		           addrSeeker: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           addrs: nil,
+		           dupCheck: nil,
+		           mu: sync.RWMutex{},
+		           addrSeeker: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			a := &atomicAddrs{
+				addrs:      test.fields.addrs,
+				dupCheck:   test.fields.dupCheck,
+				mu:         test.fields.mu,
+				addrSeeker: test.fields.addrSeeker,
+			}
+
+			got := a.Len()
+			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

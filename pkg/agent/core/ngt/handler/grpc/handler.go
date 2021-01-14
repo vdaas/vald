@@ -321,7 +321,6 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) error {
 					Location: res,
 				},
 			}, nil
-
 		})
 }
 
