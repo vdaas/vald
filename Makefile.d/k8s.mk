@@ -203,6 +203,7 @@ k8s/vald/delete/scylla: \
 k8s/external/mysql/deploy:
 	kubectl apply -f k8s/jobs/db/initialize/mysql/configmap.yaml
 	kubectl apply -f k8s/external/mysql
+	kubectl wait --for=condition=ready pod -l app=mysql --timeout=600s
 
 .PHONY: k8s/external/mysql/delete
 ## delete mysql from k8s
@@ -221,6 +222,7 @@ k8s/external/mysql/initialize:
 ## deploy redis to k8s
 k8s/external/redis/deploy:
 	kubectl apply -f k8s/external/redis
+	kubectl wait --for=condition=ready pod -l app=redis --timeout=600s
 
 .PHONY: k8s/external/redis/delete
 ## delete redis from k8s
@@ -296,6 +298,7 @@ k8s/external/cert-manager/delete:
 ## deploy minio
 k8s/external/minio/deploy:
 	kubectl apply -f k8s/external/minio
+	kubectl wait --for=condition=ready pod -l app=minio --timeout=600s
 
 .PHONY: k8s/external/minio/delete
 ## delete minio
