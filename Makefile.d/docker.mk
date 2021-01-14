@@ -288,13 +288,12 @@ docker/name/dev-container:
 
 .PHONY: docker/build/dev-container
 ## build dev-container image
-docker/build/dev-container: docker/build/ci-container
+docker/build/dev-container:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/dev/Dockerfile \
 	    -t $(ORG)/$(DEV_CONTAINER_IMAGE):$(TAG) . \
-	    --build-arg MAINTAINER=$(MAINTAINER) \
-	    --build-arg BASE_TAG=$(TAG)
+	    --build-arg MAINTAINER=$(MAINTAINER)
 
 .PHONY: docker/name/operator/helm
 docker/name/operator/helm:
