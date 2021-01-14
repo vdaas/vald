@@ -63,12 +63,7 @@ func BidirectionalStream(ctx context.Context, stream grpc.ServerStream,
 			}
 			errs = errors.Wrap(errs, err.Error())
 			gerr := status.FromError(err)
-			if gerr != nil {
-				if gerrs == nil {
-					gerrs = gerr
-					return true
-				}
-			} else if msg, ok := m.(string); ok {
+			if msg, ok := m.(string); ok && gerr == nil {
 				hostname, err := os.Hostname()
 				if err != nil {
 					log.Warn("failed to fetch hostname:", err)
@@ -79,9 +74,17 @@ func BidirectionalStream(ctx context.Context, stream grpc.ServerStream,
 					Instance: hostname,
 				}
 			}
-			if gerr != nil {
-				gerrs.Roots = append(gerrs.Roots, gerr)
+			if gerr == nil {
+				return true
 			}
+			if gerrs == nil {
+				gerrs = gerr
+				return true
+			}
+			if gerrs.Roots == nil {
+				gerr.Roots = make([]*errors.Errors_RPC, concurrency)
+			}
+			gerrs.Roots = append(gerrs.Roots, gerr)
 			return true
 		})
 		st, err := status.New(status.Unknown, errs.Error()).WithDetails(gerrs)
