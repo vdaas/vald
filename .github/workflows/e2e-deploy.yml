@@ -58,33 +58,29 @@ jobs:
         if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
         run: |
           pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
-          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-agent-ngt/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
-            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set agent.image.tag=pr-${pr_num}"
-          fi
-          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-discoverer-k8s/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
-            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set discoverer.image.tag=pr-${pr_num}"
-          fi
-          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-manager-compressor/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
-            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set manager.compressor.image.tag=pr-${pr_num}"
-          fi
-          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-meta-redis/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
-            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set meta.image.tag=pr-${pr_num}"
-          fi
-          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-manager-backup-mysql/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
-            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set manager.backup.image.tag=pr-${pr_num}"
-          fi
-          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-backup-gateway/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
-            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set gateway.backup.image.tag=pr-${pr_num}"
-          fi
-          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-lb-gateway/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
-            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set gateway.lb.image.tag=pr-${pr_num}"
-          fi
-          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-meta-gateway/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
-            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set gateway.meta.image.tag=pr-${pr_num}"
-          fi
-          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-manager-index/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
-            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set manager.index.image.tag=pr-${pr_num}"
-          fi
+
+          declare -A images=(
+            ["vdaas/vald-agent-ngt"]="agent.image.tag"
+            ["vdaas/vald-discoverer-k8s"]="discoverer.image.tag"
+            ["vdaas/vald-manager-compressor"]="manager.compressor.image.tag"
+            ["vdaas/vald-meta-redis"]="meta.image.tag"
+            ["vdaas/vald-manager-backup-mysql"]="manager.backup.image.tag"
+            ["vdaas/vald-backup-gateway"]="gateway.backup.image.tag"
+            ["vdaas/vald-lb-gateway"]="gateway.lb.image.tag"
+            ["vdaas/vald-meta-gateway"]="gateway.meta.image.tag"
+            ["vdaas/vald-manager-index"]="manager.index.image.tag"
+          )
+
+          for image in "${!images[@]}"
+          do
+            echo "check for ${image}"
+
+            if curl -s "https://registry.hub.docker.com/v2/repositories/${image}/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
+              echo "${image}:pr-${pr_num} exists. adding a helm option '--set ${images[${image}]}=pr-${pr_num}'."
+              export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set ${images[${image}]}=pr-${pr_num}"
+            fi
+          done
+
           echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}"
           echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}" >> $GITHUB_ENV
       - name: Install dependencies
@@ -185,33 +181,29 @@ jobs:
         if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
         run: |
           pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
-          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-agent-ngt/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
-            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set agent.image.tag=pr-${pr_num}"
-          fi
-          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-discoverer-k8s/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
-            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set discoverer.image.tag=pr-${pr_num}"
-          fi
-          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-manager-compressor/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
-            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set manager.compressor.image.tag=pr-${pr_num}"
-          fi
-          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-meta-cassandra/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
-            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set meta.image.tag=pr-${pr_num}"
-          fi
-          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-manager-backup-cassandra/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
-            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set manager.backup.image.tag=pr-${pr_num}"
-          fi
-          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-backup-gateway/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
-            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set gateway.backup.image.tag=pr-${pr_num}"
-          fi
-          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-lb-gateway/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
-            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set gateway.lb.image.tag=pr-${pr_num}"
-          fi
-          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-meta-gateway/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
-            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set gateway.meta.image.tag=pr-${pr_num}"
-          fi
-          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-manager-index/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
-            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set manager.index.image.tag=pr-${pr_num}"
-          fi
+
+          declare -A images=(
+            ["vdaas/vald-agent-ngt"]="agent.image.tag"
+            ["vdaas/vald-discoverer-k8s"]="discoverer.image.tag"
+            ["vdaas/vald-manager-compressor"]="manager.compressor.image.tag"
+            ["vdaas/vald-meta-cassandra"]="meta.image.tag"
+            ["vdaas/vald-manager-backup-cassandra"]="manager.backup.image.tag"
+            ["vdaas/vald-backup-gateway"]="gateway.backup.image.tag"
+            ["vdaas/vald-lb-gateway"]="gateway.lb.image.tag"
+            ["vdaas/vald-meta-gateway"]="gateway.meta.image.tag"
+            ["vdaas/vald-manager-index"]="manager.index.image.tag"
+          )
+
+          for image in "${!images[@]}"
+          do
+            echo "check for ${image}"
+
+            if curl -s "https://registry.hub.docker.com/v2/repositories/${image}/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
+              echo "${image}:pr-${pr_num} exists. adding a helm option '--set ${images[${image}]}=pr-${pr_num}'."
+              export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set ${images[${image}]}=pr-${pr_num}"
+            fi
+          done
+
           echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}"
           echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}" >> $GITHUB_ENV
       - name: Install dependencies
@@ -302,12 +294,22 @@ jobs:
         if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
         run: |
           pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
-          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-agent-ngt/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
-            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set agent.image.tag=pr-${pr_num}"
-          fi
-          if curl -s "https://registry.hub.docker.com/v2/repositories/vdaas/vald-agent-sidecar/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
-            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set agent.sidecar.image.tag=pr-${pr_num}"
-          fi
+
+          declare -A images=(
+            ["vdaas/vald-agent-ngt"]="agent.image.tag"
+            ["vdaas/vald-agent-sidecar"]="agent.sidecar.image.tag"
+          )
+
+          for image in "${!images[@]}"
+          do
+            echo "check for ${image}"
+
+            if curl -s "https://registry.hub.docker.com/v2/repositories/${image}/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
+              echo "${image}:pr-${pr_num} exists. adding a helm option '--set ${images[${image}]}=pr-${pr_num}'."
+              export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set ${images[${image}]}=pr-${pr_num}"
+            fi
+          done
+
           echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}"
           echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}" >> $GITHUB_ENV
       - name: Install dependencies
