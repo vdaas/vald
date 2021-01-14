@@ -77,6 +77,50 @@
     }
   },
   "definitions": {
+    "ErrorsRPC": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "msg": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "instance": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "format": "int64"
+        },
+        "error": {
+          "type": "string"
+        },
+        "roots": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ErrorsRPC"
+          }
+        }
+      }
+    },
+    "ObjectStreamLocation": {
+      "type": "object",
+      "properties": {
+        "location": {
+          "$ref": "#/definitions/v1ObjectLocation"
+        },
+        "error": {
+          "$ref": "#/definitions/ErrorsRPC"
+        }
+      }
+    },
     "protobufAny": {
       "type": "object",
       "properties": {

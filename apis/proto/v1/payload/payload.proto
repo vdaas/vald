@@ -69,7 +69,7 @@ message Search {
   message StreamResponse { 
     oneof payload{
       Response response = 1;
-      errors.Errors.RPC error = 2;
+      errors.v1.Errors.RPC error = 2;
     }
   }
 }
@@ -160,7 +160,7 @@ message Object {
   message StreamDistance { 
     oneof payload{
       Distance distance = 1;
-      errors.Errors.RPC error = 2;
+      errors.v1.Errors.RPC error = 2;
     }
   }
 
@@ -176,7 +176,7 @@ message Object {
   message StreamVector { 
     oneof payload{
       Vector vector = 1;
-      errors.Errors.RPC error = 2;
+      errors.v1.Errors.RPC error = 2;
     }
   }
 
@@ -188,7 +188,7 @@ message Object {
   message StreamBlob { 
     oneof payload{
       Blob blob = 1;
-      errors.Errors.RPC error = 2;
+      errors.v1.Errors.RPC error = 2;
     }
   }
 
@@ -202,7 +202,7 @@ message Object {
   message StreamLocation { 
     oneof payload{
       Location location = 1;
-      errors.Errors.RPC error = 2;
+      errors.v1.Errors.RPC error = 2;
     }
   }
 
