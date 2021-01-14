@@ -29,14 +29,6 @@ LABEL maintainer "${MAINTAINER}"
 
 COPY --from=golang /usr/local/go $GOROOT
 
-WORKDIR ${GOPATH}/src/github.com/vdaas/vald
-
-COPY Makefile .
-COPY Makefile.d Makefile.d
-COPY apis/proto apis/proto
-COPY versions versions
-COPY hack/go.mod.default hack/go.mod.default
-
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libhdf5-dev \
     graphviz \
@@ -49,12 +41,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN cd /tmp \
-    && curl -OL "https://github.com/google/protobuf/releases/download/v${PROTOBUF_VERSION}/protoc-${PROTOBUF_VERSION}-linux-x86_64.zip" \
+WORKDIR /tmp
+RUN curl -OL "https://github.com/google/protobuf/releases/download/v${PROTOBUF_VERSION}/protoc-${PROTOBUF_VERSION}-linux-x86_64.zip" \
     && unzip protoc-${PROTOBUF_VERSION}-linux-x86_64.zip -d protoc3 \
     && mv protoc3/bin/* /usr/local/bin/ \
     && mv protoc3/include/* /usr/local/include/ \
     && rm -rf protoc-${PROTOBUF_VERSION}-linux-x86_64.zip protoc3
+
+WORKDIR ${GOPATH}/src/github.com/vdaas/vald
+
+COPY Makefile .
+COPY Makefile.d Makefile.d
+COPY apis/proto apis/proto
+COPY versions versions
+COPY hack/go.mod.default hack/go.mod.default
 
 RUN make deps
 
@@ -68,7 +68,7 @@ RUN make valdcli/install
 
 RUN make tparse/install
 
-RUN curl -L https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl -o /usr/local/bin/kubectl \
+RUN curl -L "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl" -o /usr/local/bin/kubectl \
     && chmod a+x /usr/local/bin/kubectl
 
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \

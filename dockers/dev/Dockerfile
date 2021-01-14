@@ -23,14 +23,15 @@ ARG GOLANGCI_LINT_VERSION=v1.35.2
 ARG REVIEWDOG_VERSION=v0.11.0
 ARG YQ_VERSION=4.3.2
 
-RUN cd /tmp \
-    && curl -OL "https://github.com/google/protobuf/releases/download/v${PROTOBUF_VERSION}/protoc-${PROTOBUF_VERSION}-linux-x86_64.zip" \
+WORKDIR /tmp
+
+RUN curl -OL "https://github.com/google/protobuf/releases/download/v${PROTOBUF_VERSION}/protoc-${PROTOBUF_VERSION}-linux-x86_64.zip" \
     && unzip protoc-${PROTOBUF_VERSION}-linux-x86_64.zip -d protoc3 \
     && mv protoc3/bin/* /usr/local/bin/ \
     && mv protoc3/include/* /usr/local/include/ \
     && rm -rf protoc-${PROTOBUF_VERSION}-linux-x86_64.zip protoc3
 
-RUN curl -L https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl -o /usr/local/bin/kubectl \
+RUN curl -L "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl" -o /usr/local/bin/kubectl \
     && chmod a+x /usr/local/bin/kubectl
 
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
