@@ -35,7 +35,7 @@ service Filter {
     };
   }
   rpc StreamSearchObject(stream payload.v1.Search.ObjectRequest)
-      returns (stream payload.v1.Search.Response) {}
+      returns (stream payload.v1.Search.StreamResponse) {}
 
   rpc InsertObject(payload.v1.Object.Blob) returns (payload.v1.Object.Location) {
     option (google.api.http) = {
@@ -45,7 +45,7 @@ service Filter {
 
   }
   rpc StreamInsertObject(stream payload.v1.Object.Blob)
-      returns (stream payload.v1.Object.Location) {}
+      returns (stream payload.v1.Object.StreamLocation) {}
   rpc MultiInsertObject(payload.v1.Object.Blob) returns (payload.v1.Object.Locations) {}
 
   rpc UpdateObject(payload.v1.Object.Blob) returns (payload.v1.Object.Location) {
@@ -55,7 +55,7 @@ service Filter {
     };
   }
   rpc StreamUpdateObject(stream payload.v1.Object.Blob)
-      returns (stream payload.v1.Object.Location) {}
+      returns (stream payload.v1.Object.StreamLocation) {}
   rpc MultiUpdateObject(payload.v1.Object.Blob) returns (payload.v1.Object.Locations) {}
 
   rpc UpsertObject(payload.v1.Object.Blob) returns (payload.v1.Object.Location) {
@@ -65,6 +65,6 @@ service Filter {
     };
   }
   rpc StreamUpsertObject(stream payload.v1.Object.Blob)
-      returns (stream payload.v1.Object.Location) {}
+      returns (stream payload.v1.Object.StreamLocation) {}
   rpc MultiUpsertObject(payload.v1.Object.Blob) returns (payload.v1.Object.Locations) {}
 }

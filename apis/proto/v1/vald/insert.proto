@@ -37,7 +37,7 @@ service Insert {
   }
 
   rpc StreamInsert(stream payload.v1.Insert.Request)
-      returns (stream payload.v1.Object.Location) {}
+      returns (stream payload.v1.Object.StreamLocation) {}
 
   rpc MultiInsert(payload.v1.Insert.MultiRequest) returns (payload.v1.Object.Locations) {
     option (google.api.http) = {

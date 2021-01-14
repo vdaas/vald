@@ -37,7 +37,7 @@ service Update {
   }
 
   rpc StreamUpdate(stream payload.v1.Update.Request)
-      returns (stream payload.v1.Object.Location) {}
+      returns (stream payload.v1.Object.StreamLocation) {}
 
   rpc MultiUpdate(payload.v1.Update.MultiRequest) returns (payload.v1.Object.Locations) {
     option (google.api.http) = {

@@ -49,6 +49,10 @@ var (
 	Code = status.Code
 )
 
+func New(c codes.Code, msg string) *status.Status {
+	return status.New(c, msg)
+}
+
 func newStatus(code codes.Code, msg string, err error, details ...interface{}) (st *status.Status) {
 	st = status.New(code, msg)
 
@@ -158,6 +162,9 @@ func WrapWithUnauthenticated(msg string, err error, details ...interface{}) erro
 }
 
 func FromError(err error) *errors.Errors_RPC {
+	if err == nil {
+		return nil
+	}
 	for _, detail := range status.Convert(err).Details() {
 		if err, ok := detail.(*errors.Errors_RPC); ok {
 			return err
