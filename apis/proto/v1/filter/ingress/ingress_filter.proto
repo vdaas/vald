@@ -35,7 +35,7 @@ service IngressFilter {
     };
   }
   rpc StreamGenVector(stream payload.v1.Object.Blob)
-      returns (stream payload.v1.Object.Vector) {}
+      returns (stream payload.v1.Object.StreamVector) {}
 
   rpc FilterVector(payload.v1.Object.Vector) returns (payload.v1.Object.Vector) {
     option (google.api.http) = {
@@ -45,5 +45,5 @@ service IngressFilter {
 
   }
   rpc StreamFilterVector(stream payload.v1.Object.Vector)
-      returns (stream payload.v1.Object.Vector) {}
+      returns (stream payload.v1.Object.StreamVector) {}
 }

@@ -36,7 +36,6 @@ type atomicAddrs struct {
 	dupCheck   map[string]bool
 	mu         sync.RWMutex
 	addrSeeker uint64
-	l          uint64
 }
 
 func newAddr(addrList map[string]struct{}) AtomicAddrs {
@@ -51,7 +50,6 @@ func newAddr(addrList map[string]struct{}) AtomicAddrs {
 			addrs = append(addrs, addr)
 		}
 		a.addrs.Store(addrs)
-		atomic.StoreUint64(&a.l, uint64(len(addrs)))
 	}
 	return a
 }
@@ -99,7 +97,6 @@ func (a *atomicAddrs) Add(addr string) {
 		}
 		a.dupCheck[addr] = true
 		a.addrs.Store(append(addrs, addr))
-		atomic.StoreUint64(&a.l, uint64(len(addrs)))
 	}
 }
 
@@ -113,17 +110,20 @@ func (a *atomicAddrs) Delete(addr string) {
 			addrs = append(addrs, addr)
 		}
 		a.addrs.Store(addrs)
-		atomic.StoreUint64(&a.l, uint64(len(addrs)))
 	}
 }
 
 func (a *atomicAddrs) Next() (string, bool) {
 	addrs, ok := a.GetAll()
-	if !ok {
+	if !ok || len(addrs) == 0 {
 		return "", false
 	}
+	l := uint64(len(addrs))
+	if l == 1 {
+		return addrs[0], true
+	}
 	for range addrs {
-		addr := addrs[atomic.AddUint64(&a.addrSeeker, 1)%atomic.LoadUint64(&a.l)]
+		addr := addrs[atomic.AddUint64(&a.addrSeeker, 1)%l]
 		if len(addr) != 0 {
 			return addr, true
 		}
@@ -132,5 +132,9 @@ func (a *atomicAddrs) Next() (string, bool) {
 }
 
 func (a *atomicAddrs) Len() uint64 {
-	return atomic.LoadUint64(&a.l)
+	addrs, ok := a.GetAll()
+	if !ok {
+		return 0
+	}
+	return uint64(len(addrs))
 }

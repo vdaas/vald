@@ -29,5 +29,5 @@ service EgressFilter {
 
   rpc Filter(payload.v1.Object.Distance) returns (payload.v1.Object.Distance) {}
   rpc StreamFilter(stream payload.v1.Object.Distance)
-      returns (stream payload.v1.Object.Distance) {}
+      returns (stream payload.v1.Object.StreamDistance) {}
 }

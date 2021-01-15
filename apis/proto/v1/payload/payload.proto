@@ -23,6 +23,7 @@ option java_multiple_files = true;
 option java_package = "org.vdaas.vald.api.v1.payload";
 option java_outer_classname = "ValdPayload";
 
+import "apis/proto/v1/errors/errors.proto";
 import "github.com/envoyproxy/protoc-gen-validate/validate/validate.proto";
 
 message Search {
@@ -63,6 +64,13 @@ message Search {
 
   message Responses { 
     repeated Response responses = 1; 
+  }
+
+  message StreamResponse { 
+    oneof payload{
+      Response response = 1;
+      errors.v1.Errors.RPC error = 2;
+    }
   }
 }
 
@@ -149,6 +157,13 @@ message Object {
     float distance = 2;
   }
 
+  message StreamDistance { 
+    oneof payload{
+      Distance distance = 1;
+      errors.v1.Errors.RPC error = 2;
+    }
+  }
+
   message ID { string id = 1 [ (validate.rules).string.min_len = 1 ]; }
   message IDs { repeated string ids = 1; }
 
@@ -158,15 +173,37 @@ message Object {
   }
   message Vectors { repeated Vector vectors = 1; }
 
+  message StreamVector { 
+    oneof payload{
+      Vector vector = 1;
+      errors.v1.Errors.RPC error = 2;
+    }
+  }
+
   message Blob {
     string id = 1 [ (validate.rules).string.min_len = 1 ];
     bytes object = 2;
   }
 
+  message StreamBlob { 
+    oneof payload{
+      Blob blob = 1;
+      errors.v1.Errors.RPC error = 2;
+    }
+  }
+
+
   message Location {
     string name = 1;
     string uuid = 2;
     repeated string ips = 3;
+  }
+
+  message StreamLocation { 
+    oneof payload{
+      Location location = 1;
+      errors.v1.Errors.RPC error = 2;
+    }
   }
 
   message Locations {

@@ -36,5 +36,5 @@ service Object {
     option (google.api.http).get = "/object/{id}";
   }
   rpc StreamGetObject(stream payload.v1.Object.ID)
-      returns (stream payload.v1.Object.Vector) {}
+      returns (stream payload.v1.Object.StreamVector) {}
 }

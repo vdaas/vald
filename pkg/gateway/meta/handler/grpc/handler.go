@@ -175,7 +175,19 @@ func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) error {
 	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Search_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			return s.Search(ctx, data.(*payload.Search_Request))
+			res, err := s.Search(ctx, data.(*payload.Search_Request))
+			if err != nil {
+				return &payload.Search_StreamResponse{
+					Payload: &payload.Search_StreamResponse_Error{
+						Error: status.FromError(err),
+					},
+				}, err
+			}
+			return &payload.Search_StreamResponse{
+				Payload: &payload.Search_StreamResponse_Response{
+					Response: res,
+				},
+			}, nil
 		})
 }
 
@@ -189,7 +201,19 @@ func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) err
 	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Search_IDRequest) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			return s.SearchByID(ctx, data.(*payload.Search_IDRequest))
+			res, err := s.SearchByID(ctx, data.(*payload.Search_IDRequest))
+			if err != nil {
+				return &payload.Search_StreamResponse{
+					Payload: &payload.Search_StreamResponse_Error{
+						Error: status.FromError(err),
+					},
+				}, err
+			}
+			return &payload.Search_StreamResponse{
+				Payload: &payload.Search_StreamResponse_Response{
+					Response: res,
+				},
+			}, nil
 		})
 }
 
@@ -342,7 +366,19 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) error {
 	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Insert_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			return s.Insert(ctx, data.(*payload.Insert_Request))
+			res, err := s.Insert(ctx, data.(*payload.Insert_Request))
+			if err != nil {
+				return &payload.Object_StreamLocation{
+					Payload: &payload.Object_StreamLocation_Error{
+						Error: status.FromError(err),
+					},
+				}, err
+			}
+			return &payload.Object_StreamLocation{
+				Payload: &payload.Object_StreamLocation_Location{
+					Location: res,
+				},
+			}, nil
 		})
 }
 
@@ -454,7 +490,19 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) error {
 	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Update_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			return s.Update(ctx, data.(*payload.Update_Request))
+			res, err := s.Update(ctx, data.(*payload.Update_Request))
+			if err != nil {
+				return &payload.Object_StreamLocation{
+					Payload: &payload.Object_StreamLocation_Error{
+						Error: status.FromError(err),
+					},
+				}, err
+			}
+			return &payload.Object_StreamLocation{
+				Payload: &payload.Object_StreamLocation_Location{
+					Location: res,
+				},
+			}, nil
 		})
 }
 
@@ -543,7 +591,19 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) error {
 	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Upsert_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			return s.Upsert(ctx, data.(*payload.Upsert_Request))
+			res, err := s.Upsert(ctx, data.(*payload.Upsert_Request))
+			if err != nil {
+				return &payload.Object_StreamLocation{
+					Payload: &payload.Object_StreamLocation_Error{
+						Error: status.FromError(err),
+					},
+				}, err
+			}
+			return &payload.Object_StreamLocation{
+				Payload: &payload.Object_StreamLocation_Location{
+					Location: res,
+				},
+			}, nil
 		})
 }
 
@@ -687,7 +747,19 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) error {
 	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Remove_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			return s.Remove(ctx, data.(*payload.Remove_Request))
+			res, err := s.Remove(ctx, data.(*payload.Remove_Request))
+			if err != nil {
+				return &payload.Object_StreamLocation{
+					Payload: &payload.Object_StreamLocation_Error{
+						Error: status.FromError(err),
+					},
+				}, err
+			}
+			return &payload.Object_StreamLocation{
+				Payload: &payload.Object_StreamLocation_Location{
+					Location: res,
+				},
+			}, nil
 		})
 }
 
@@ -767,6 +839,18 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) error
 	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Object_ID) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			return s.GetObject(ctx, data.(*payload.Object_ID))
+			res, err := s.GetObject(ctx, data.(*payload.Object_ID))
+			if err != nil {
+				return &payload.Object_StreamVector{
+					Payload: &payload.Object_StreamVector_Error{
+						Error: status.FromError(err),
+					},
+				}, err
+			}
+			return &payload.Object_StreamVector{
+				Payload: &payload.Object_StreamVector_Vector{
+					Vector: res,
+				},
+			}, nil
 		})
 }

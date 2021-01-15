@@ -87,7 +87,8 @@ service Vald {
     option (google.api.http).delete = "/remove/{id}";
 
   }
-  rpc StreamRemove(stream payload.v1.Object.ID) returns (stream payload.v1.Object.Location) {}
+  rpc StreamRemove(stream payload.v1.Object.ID) 
+      returns (stream payload.v1.Object.Location) {}
   rpc MultiRemove(payload.v1.Object.IDs) returns (payload.v1.Object.Locations) {}
 
   rpc GetObject(payload.v1.Object.ID) returns (payload.v1.Object.Vector) {

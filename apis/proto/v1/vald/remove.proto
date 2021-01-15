@@ -29,16 +29,19 @@ import "google/api/annotations.proto";
 service Remove {
 
   rpc Remove(payload.v1.Remove.Request) returns (payload.v1.Object.Location) {
-    option (google.api.http) = {
-      post : "/remove"
-      body : "*"
-    };
+      option (google.api.http) = {
+        post : "/remove"
+        body : "*"
+      };
   }
-  rpc StreamRemove(stream payload.v1.Remove.Request) returns (stream payload.v1.Object.Location) {}
+
+  rpc StreamRemove(stream payload.v1.Remove.Request) 
+      returns (stream payload.v1.Object.StreamLocation) {}
+
   rpc MultiRemove(payload.v1.Remove.MultiRequest) returns (payload.v1.Object.Locations) {
-    option (google.api.http) = {
-      post : "/remove/multiple"
-      body : "*"
-    };
+      option (google.api.http) = {
+        post : "/remove/multiple"
+        body : "*"
+      };
   }
 }

@@ -44,10 +44,10 @@ service Search {
   }
 
   rpc StreamSearch(stream payload.v1.Search.Request)
-      returns (stream payload.v1.Search.Response) {}
+      returns (stream payload.v1.Search.StreamResponse) {}
 
   rpc StreamSearchByID(stream payload.v1.Search.IDRequest)
-      returns (stream payload.v1.Search.Response) {}
+      returns (stream payload.v1.Search.StreamResponse) {}
 
   rpc MultiSearch(payload.v1.Search.MultiRequest)
     returns (payload.v1.Search.Responses) {

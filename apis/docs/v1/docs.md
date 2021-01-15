@@ -102,6 +102,10 @@
     - [Object.IDs](#payload.v1.Object.IDs)
     - [Object.Location](#payload.v1.Object.Location)
     - [Object.Locations](#payload.v1.Object.Locations)
+    - [Object.StreamBlob](#payload.v1.Object.StreamBlob)
+    - [Object.StreamDistance](#payload.v1.Object.StreamDistance)
+    - [Object.StreamLocation](#payload.v1.Object.StreamLocation)
+    - [Object.StreamVector](#payload.v1.Object.StreamVector)
     - [Object.Vector](#payload.v1.Object.Vector)
     - [Object.Vectors](#payload.v1.Object.Vectors)
     - [Remove](#payload.v1.Remove)
@@ -121,6 +125,7 @@
     - [Search.Request](#payload.v1.Search.Request)
     - [Search.Response](#payload.v1.Search.Response)
     - [Search.Responses](#payload.v1.Search.Responses)
+    - [Search.StreamResponse](#payload.v1.Search.StreamResponse)
     - [Update](#payload.v1.Update)
     - [Update.Config](#payload.v1.Update.Config)
     - [Update.MultiRequest](#payload.v1.Update.MultiRequest)
@@ -304,7 +309,7 @@
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
 | Filter | [.payload.v1.Object.Distance](#payload.v1.Object.Distance) | [.payload.v1.Object.Distance](#payload.v1.Object.Distance) |  |
-| StreamFilter | [.payload.v1.Object.Distance](#payload.v1.Object.Distance) stream | [.payload.v1.Object.Distance](#payload.v1.Object.Distance) stream |  |
+| StreamFilter | [.payload.v1.Object.Distance](#payload.v1.Object.Distance) stream | [.payload.v1.Object.StreamDistance](#payload.v1.Object.StreamDistance) stream |  |
 
  
 
@@ -331,9 +336,9 @@
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
 | GenVector | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) |  |
-| StreamGenVector | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) stream | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) stream |  |
+| StreamGenVector | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) stream | [.payload.v1.Object.StreamVector](#payload.v1.Object.StreamVector) stream |  |
 | FilterVector | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) |  |
-| StreamFilterVector | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) stream | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) stream |  |
+| StreamFilterVector | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) stream | [.payload.v1.Object.StreamVector](#payload.v1.Object.StreamVector) stream |  |
 
  
 
@@ -1383,6 +1388,70 @@
 
 
 
+<a name="payload.v1.Object.StreamBlob"></a>
+
+### Object.StreamBlob
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| blob | [Object.Blob](#payload.v1.Object.Blob) |  |  |
+| error | [errors.v1.Errors.RPC](#errors.v1.Errors.RPC) |  |  |
+
+
+
+
+
+
+<a name="payload.v1.Object.StreamDistance"></a>
+
+### Object.StreamDistance
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| distance | [Object.Distance](#payload.v1.Object.Distance) |  |  |
+| error | [errors.v1.Errors.RPC](#errors.v1.Errors.RPC) |  |  |
+
+
+
+
+
+
+<a name="payload.v1.Object.StreamLocation"></a>
+
+### Object.StreamLocation
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| location | [Object.Location](#payload.v1.Object.Location) |  |  |
+| error | [errors.v1.Errors.RPC](#errors.v1.Errors.RPC) |  |  |
+
+
+
+
+
+
+<a name="payload.v1.Object.StreamVector"></a>
+
+### Object.StreamVector
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| vector | [Object.Vector](#payload.v1.Object.Vector) |  |  |
+| error | [errors.v1.Errors.RPC](#errors.v1.Errors.RPC) |  |  |
+
+
+
+
+
+
 <a name="payload.v1.Object.Vector"></a>
 
 ### Object.Vector
@@ -1667,6 +1736,22 @@
 
 
 
+<a name="payload.v1.Search.StreamResponse"></a>
+
+### Search.StreamResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| response | [Search.Response](#payload.v1.Search.Response) |  |  |
+| error | [errors.v1.Errors.RPC](#errors.v1.Errors.RPC) |  |  |
+
+
+
+
+
+
 <a name="payload.v1.Update"></a>
 
 ### Update
@@ -1811,15 +1896,15 @@
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
 | SearchObject | [.payload.v1.Search.ObjectRequest](#payload.v1.Search.ObjectRequest) | [.payload.v1.Search.Response](#payload.v1.Search.Response) |  |
-| StreamSearchObject | [.payload.v1.Search.ObjectRequest](#payload.v1.Search.ObjectRequest) stream | [.payload.v1.Search.Response](#payload.v1.Search.Response) stream |  |
+| StreamSearchObject | [.payload.v1.Search.ObjectRequest](#payload.v1.Search.ObjectRequest) stream | [.payload.v1.Search.StreamResponse](#payload.v1.Search.StreamResponse) stream |  |
 | InsertObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
-| StreamInsertObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
+| StreamInsertObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) stream | [.payload.v1.Object.StreamLocation](#payload.v1.Object.StreamLocation) stream |  |
 | MultiInsertObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
 | UpdateObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
-| StreamUpdateObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
+| StreamUpdateObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) stream | [.payload.v1.Object.StreamLocation](#payload.v1.Object.StreamLocation) stream |  |
 | MultiUpdateObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
 | UpsertObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
-| StreamUpsertObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
+| StreamUpsertObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) stream | [.payload.v1.Object.StreamLocation](#payload.v1.Object.StreamLocation) stream |  |
 | MultiUpsertObject | [.payload.v1.Object.Blob](#payload.v1.Object.Blob) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
 
  
@@ -1847,7 +1932,7 @@
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
 | Insert | [.payload.v1.Insert.Request](#payload.v1.Insert.Request) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
-| StreamInsert | [.payload.v1.Insert.Request](#payload.v1.Insert.Request) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
+| StreamInsert | [.payload.v1.Insert.Request](#payload.v1.Insert.Request) stream | [.payload.v1.Object.StreamLocation](#payload.v1.Object.StreamLocation) stream |  |
 | MultiInsert | [.payload.v1.Insert.MultiRequest](#payload.v1.Insert.MultiRequest) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
 
  
@@ -1876,7 +1961,7 @@
 | ----------- | ------------ | ------------- | ------------|
 | Exists | [.payload.v1.Object.ID](#payload.v1.Object.ID) | [.payload.v1.Object.ID](#payload.v1.Object.ID) |  |
 | GetObject | [.payload.v1.Object.ID](#payload.v1.Object.ID) | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) |  |
-| StreamGetObject | [.payload.v1.Object.ID](#payload.v1.Object.ID) stream | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) stream |  |
+| StreamGetObject | [.payload.v1.Object.ID](#payload.v1.Object.ID) stream | [.payload.v1.Object.StreamVector](#payload.v1.Object.StreamVector) stream |  |
 
  
 
@@ -1903,7 +1988,7 @@
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
 | Remove | [.payload.v1.Remove.Request](#payload.v1.Remove.Request) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
-| StreamRemove | [.payload.v1.Remove.Request](#payload.v1.Remove.Request) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
+| StreamRemove | [.payload.v1.Remove.Request](#payload.v1.Remove.Request) stream | [.payload.v1.Object.StreamLocation](#payload.v1.Object.StreamLocation) stream |  |
 | MultiRemove | [.payload.v1.Remove.MultiRequest](#payload.v1.Remove.MultiRequest) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
 
  
@@ -1932,8 +2017,8 @@
 | ----------- | ------------ | ------------- | ------------|
 | Search | [.payload.v1.Search.Request](#payload.v1.Search.Request) | [.payload.v1.Search.Response](#payload.v1.Search.Response) |  |
 | SearchByID | [.payload.v1.Search.IDRequest](#payload.v1.Search.IDRequest) | [.payload.v1.Search.Response](#payload.v1.Search.Response) |  |
-| StreamSearch | [.payload.v1.Search.Request](#payload.v1.Search.Request) stream | [.payload.v1.Search.Response](#payload.v1.Search.Response) stream |  |
-| StreamSearchByID | [.payload.v1.Search.IDRequest](#payload.v1.Search.IDRequest) stream | [.payload.v1.Search.Response](#payload.v1.Search.Response) stream |  |
+| StreamSearch | [.payload.v1.Search.Request](#payload.v1.Search.Request) stream | [.payload.v1.Search.StreamResponse](#payload.v1.Search.StreamResponse) stream |  |
+| StreamSearchByID | [.payload.v1.Search.IDRequest](#payload.v1.Search.IDRequest) stream | [.payload.v1.Search.StreamResponse](#payload.v1.Search.StreamResponse) stream |  |
 | MultiSearch | [.payload.v1.Search.MultiRequest](#payload.v1.Search.MultiRequest) | [.payload.v1.Search.Responses](#payload.v1.Search.Responses) |  |
 | MultiSearchByID | [.payload.v1.Search.MultiIDRequest](#payload.v1.Search.MultiIDRequest) | [.payload.v1.Search.Responses](#payload.v1.Search.Responses) |  |
 
@@ -1962,7 +2047,7 @@
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
 | Update | [.payload.v1.Update.Request](#payload.v1.Update.Request) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
-| StreamUpdate | [.payload.v1.Update.Request](#payload.v1.Update.Request) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
+| StreamUpdate | [.payload.v1.Update.Request](#payload.v1.Update.Request) stream | [.payload.v1.Object.StreamLocation](#payload.v1.Object.StreamLocation) stream |  |
 | MultiUpdate | [.payload.v1.Update.MultiRequest](#payload.v1.Update.MultiRequest) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
 
  
@@ -1990,7 +2075,7 @@
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
 | Upsert | [.payload.v1.Upsert.Request](#payload.v1.Upsert.Request) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
-| StreamUpsert | [.payload.v1.Upsert.Request](#payload.v1.Upsert.Request) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
+| StreamUpsert | [.payload.v1.Upsert.Request](#payload.v1.Upsert.Request) stream | [.payload.v1.Object.StreamLocation](#payload.v1.Object.StreamLocation) stream |  |
 | MultiUpsert | [.payload.v1.Upsert.MultiRequest](#payload.v1.Upsert.MultiRequest) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
 
  

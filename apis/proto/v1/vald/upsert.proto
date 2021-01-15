@@ -37,7 +37,7 @@ service Upsert {
   }
 
   rpc StreamUpsert(stream payload.v1.Upsert.Request)
-      returns (stream payload.v1.Object.Location) {}
+      returns (stream payload.v1.Object.StreamLocation) {}
 
   rpc MultiUpsert(payload.v1.Upsert.MultiRequest) returns (payload.v1.Object.Locations) {
     option (google.api.http) = {

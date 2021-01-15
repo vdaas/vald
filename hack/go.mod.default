@@ -26,11 +26,11 @@ replace (
 	golang.org/x/crypto => golang.org/x/crypto latest
 	google.golang.org/grpc => google.golang.org/grpc latest
 	google.golang.org/protobuf => google.golang.org/protobuf latest
-	k8s.io/api => k8s.io/api v0.20.1
-	k8s.io/client-go => k8s.io/client-go v0.20.1
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.20.1
-	k8s.io/apimachinery => k8s.io/apimachinery v0.20.1
-	k8s.io/client-go => k8s.io/client-go v0.20.1
-	k8s.io/metrics => k8s.io/metrics v0.20.1
+	k8s.io/api => k8s.io/api v0.20.2
+	k8s.io/client-go => k8s.io/client-go v0.20.2
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.20.2
+	k8s.io/apimachinery => k8s.io/apimachinery v0.20.2
+	k8s.io/client-go => k8s.io/client-go v0.20.2
+	k8s.io/metrics => k8s.io/metrics v0.20.2
 	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.7.0
 )

@@ -141,6 +141,39 @@
     }
   },
   "definitions": {
+    "ErrorsRPC": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "msg": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "instance": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "format": "int64"
+        },
+        "error": {
+          "type": "string"
+        },
+        "roots": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ErrorsRPC"
+          }
+        }
+      }
+    },
     "ObjectBlob": {
       "type": "object",
       "properties": {
@@ -162,6 +195,17 @@
         "distance": {
           "type": "number",
           "format": "float"
+        }
+      }
+    },
+    "ObjectStreamLocation": {
+      "type": "object",
+      "properties": {
+        "location": {
+          "$ref": "#/definitions/v1ObjectLocation"
+        },
+        "error": {
+          "$ref": "#/definitions/ErrorsRPC"
         }
       }
     },
@@ -188,6 +232,17 @@
           "items": {
             "$ref": "#/definitions/ObjectDistance"
           }
+        }
+      }
+    },
+    "SearchStreamResponse": {
+      "type": "object",
+      "properties": {
+        "response": {
+          "$ref": "#/definitions/SearchResponse"
+        },
+        "error": {
+          "$ref": "#/definitions/ErrorsRPC"
         }
       }
     },
