@@ -121,6 +121,8 @@ jobs:
             ${HELM_EXTRA_OPTIONS} \
             --generate-name charts/vald
 
+          sleep 3
+
           kubectl wait --for=condition=ready pod -l app=vald-meta-gateway --timeout=600s
 
           kubectl get pods
@@ -241,6 +243,8 @@ jobs:
             ${HELM_EXTRA_OPTIONS} \
             --generate-name charts/vald
 
+          sleep 3
+
           kubectl wait --for=condition=ready pod -l app=vald-meta-gateway --timeout=600s
 
           kubectl get pods
@@ -346,6 +350,8 @@ jobs:
             --set defaults.image.tag=${tag} \
             ${HELM_EXTRA_OPTIONS} \
             --generate-name charts/vald
+
+          sleep 3
 
           kubectl wait --for=condition=ready pod -l app=vald-agent-ngt --timeout=600s
 
