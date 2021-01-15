@@ -361,19 +361,27 @@ func TestE2ESearch(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			topKIDs := make([]string, len(res.GetResults()))
-			for i, d := range res.GetResults() {
-				topKIDs[i] = d.Id
-			}
+			resp := res.GetResponse()
+			if resp == nil {
+				err := res.GetError()
+				if err != nil {
+					t.Errorf("an error returned: %s", err)
+				}
+			} else {
+				topKIDs := make([]string, len(resp.GetResults()))
+				for i, d := range resp.GetResults() {
+					topKIDs[i] = d.Id
+				}
 
-			if len(topKIDs) == 0 {
-				t.Errorf("empty result is returned for ID %d: %#v", k, topKIDs)
-			}
+				if len(topKIDs) == 0 {
+					t.Errorf("empty result is returned for ID %d: %#v", k, topKIDs)
+				}
 
-			// TODO: validation
-			// calculate recall?
-			// t.Logf("result: %#v", topKIDs)
-			// t.Logf("expected: %#v", ds.neighbors[strconv.Itoa(k)][:len(topKIDs)])
+				// TODO: validation
+				// calculate recall?
+				// t.Logf("result: %#v", topKIDs)
+				// t.Logf("expected: %#v", ds.neighbors[strconv.Itoa(k)][:len(topKIDs)])
+			}
 
 			k++
 
@@ -444,13 +452,21 @@ func TestE2ESearchByID(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			topKIDs := make([]string, len(res.GetResults()))
-			for i, d := range res.GetResults() {
-				topKIDs[i] = d.Id
-			}
+			resp := res.GetResponse()
+			if resp == nil {
+				err := res.GetError()
+				if err != nil {
+					t.Errorf("an error returned: %s", err)
+				}
+			} else {
+				topKIDs := make([]string, len(resp.GetResults()))
+				for i, d := range resp.GetResults() {
+					topKIDs[i] = d.Id
+				}
 
-			if len(topKIDs) == 0 {
-				t.Errorf("empty result is returned: %#v", topKIDs)
+				if len(topKIDs) == 0 {
+					t.Errorf("empty result is returned: %#v", topKIDs)
+				}
 			}
 
 			count++
@@ -522,12 +538,20 @@ func TestE2EGetObject(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			if !reflect.DeepEqual(res.GetVector(), ds.train[res.GetId()]) {
-				t.Errorf(
-					"result: %#v, expected: %#v",
-					res.GetVector(),
-					ds.train[res.GetId()],
-				)
+			resp := res.GetVector()
+			if resp == nil {
+				err := res.GetError()
+				if err != nil {
+					t.Errorf("an error returned: %s", err)
+				}
+			} else {
+				if !reflect.DeepEqual(res.GetVector(), ds.train[resp.GetId()]) {
+					t.Errorf(
+						"result: %#v, expected: %#v",
+						res.GetVector(),
+						ds.train[resp.GetId()],
+					)
+				}
 			}
 
 			count++
