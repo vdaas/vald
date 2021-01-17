@@ -105,11 +105,11 @@ func BidirectionalStream(ctx context.Context, stream grpc.ServerStream,
 			data := newData()
 			err = stream.RecvMsg(data)
 			if err != nil {
-				if err == io.EOF {
+				if err == io.EOF || errors.Is(err, io.EOF) {
 					return finalize()
 				}
 				log.Errorf("failed to receive stream message %v", err)
-				continue
+				return errors.Wrap(finalize(), err.Error())
 			}
 			if data != nil {
 				eg.Go(safety.RecoverWithoutPanicFunc(func() (err error) {
