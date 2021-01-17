@@ -149,6 +149,8 @@ PORT      ?= 80
 NUMBER    ?= 10
 DIMENSION ?= 6
 NUMPANES  ?= 4
+MEAN      ?= 0.0
+STDDEV    ?= 1.0
 
 BODY = ""
 
