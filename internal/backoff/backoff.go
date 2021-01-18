@@ -89,7 +89,14 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 	for cnt := 0; cnt < b.maxRetryCount; cnt++ {
 		select {
 		case <-dctx.Done():
-			return nil, errors.Wrap(err, dctx.Err().Error())
+			switch dctx.Err() {
+			case context.DeadlineExceeded:
+				return nil, errors.ErrBackoffTimeout(err)
+			case context.Canceled:
+				return nil, err
+			default:
+				return nil, errors.Wrap(err, dctx.Err().Error())
+			}
 		default:
 			res, ret, err = func() (val interface{}, retryable bool, err error) {
 				ssctx, span := trace.StartSpan(dctx, traceTag+"/"+strconv.Itoa(cnt+1))
@@ -100,34 +107,36 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 				}()
 				return f(ssctx)
 			}()
-			if ret && err != nil {
-				if b.errLog {
-					log.Error(err)
+			if !ret {
+				return res, err
+			}
+			if err == nil {
+				return res, nil
+			}
+			if b.errLog {
+				log.Error(err)
+			}
+			timer.Reset(time.Duration(jdur))
+			select {
+			case <-dctx.Done():
+				switch dctx.Err() {
+				case context.DeadlineExceeded:
+					return nil, errors.ErrBackoffTimeout(err)
+				case context.Canceled:
+					return nil, err
+				default:
+					return nil, errors.Wrap(dctx.Err(), err.Error())
 				}
-				timer.Reset(time.Duration(jdur))
-				select {
-				case <-dctx.Done():
-					switch dctx.Err() {
-					case context.DeadlineExceeded:
-						return nil, errors.ErrBackoffTimeout(err)
-					case context.Canceled:
-						return nil, err
-					default:
-						return nil, errors.Wrap(dctx.Err(), err.Error())
-					}
-				case <-timer.C:
-					if dur >= b.durationLimit {
-						dur = b.maxDuration
-						jdur = b.maxDuration
-					} else {
-						dur *= b.backoffFactor
-						jdur = b.addJitter(dur)
-					}
-					continue
+			case <-timer.C:
+				if dur >= b.durationLimit {
+					dur = b.maxDuration
+					jdur = b.maxDuration
+				} else {
+					dur *= b.backoffFactor
+					jdur = b.addJitter(dur)
 				}
 			}
 		}
-		return res, err
 	}
 	return res, err
 }
