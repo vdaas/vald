@@ -65,6 +65,7 @@ RUN make helm/install
 RUN make helm-docs/install
 RUN make kind/install
 RUN make valdcli/install
+RUN make kubelinter/install
 
 RUN make tparse/install
 

@@ -419,3 +419,25 @@ telepresence/swap/backup-gateway:
 ## swap meta-gateway deployment using telepresence
 telepresence/swap/meta-gateway:
 	@$(call telepresence,vald-meta-gateway,vdaas/vald-meta-gateway)
+
+.PHONY: kubelinter/install
+## install kubelinter
+kubelinter/install: $(BINDIR)/kube-linter
+
+ifeq ($(UNAME),Darwin)
+$(BINDIR)/kube-linter:
+	mkdir -p $(BINDIR)
+	cd $(TEMP_DIR) \
+	    && curl -LO https://github.com/stackrox/kube-linter/releases/download/$(KUBELINTER_VERSION)/kube-linter-darwin.zip \
+	    && unzip kube-linter-darwin.zip \
+	    && chmod a+x kube-linter \
+	    && mv kube-linter $(BINDIR)/kube-linter
+else
+$(BINDIR)/kube-linter:
+	mkdir -p $(BINDIR)
+	cd $(TEMP_DIR) \
+	    && curl -LO https://github.com/stackrox/kube-linter/releases/download/$(KUBELINTER_VERSION)/kube-linter-linux.zip \
+	    && unzip kube-linter-linux.zip \
+	    && chmod a+x kube-linter \
+	    && mv kube-linter $(BINDIR)/kube-linter
+endif
