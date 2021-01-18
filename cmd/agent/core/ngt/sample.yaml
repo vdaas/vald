@@ -154,7 +154,7 @@ ngt:
   default_epsilon: 0.01
   default_pool_size: 10000
   default_radius: -1
-  dimension: 4096
+  dimension: 6
   distance_type: l2
   enable_in_memory_mode: true
   enable_proactive_gc: true

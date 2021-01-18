@@ -87,6 +87,9 @@ func BidirectionalStream(ctx context.Context, stream grpc.ServerStream,
 			gerrs.Roots = append(gerrs.Roots, gerr)
 			return true
 		})
+		if errs == nil {
+			return nil
+		}
 		st, err := status.New(status.Unknown, errs.Error()).WithDetails(gerrs)
 		if err != nil {
 			log.Warn(err)
@@ -102,11 +105,11 @@ func BidirectionalStream(ctx context.Context, stream grpc.ServerStream,
 			data := newData()
 			err = stream.RecvMsg(data)
 			if err != nil {
-				if err == io.EOF {
+				if err == io.EOF || errors.Is(err, io.EOF) {
 					return finalize()
 				}
-				log.Error(err)
-				continue
+				log.Errorf("failed to receive stream message %v", err)
+				return errors.Wrap(finalize(), err.Error())
 			}
 			if data != nil {
 				eg.Go(safety.RecoverWithoutPanicFunc(func() (err error) {

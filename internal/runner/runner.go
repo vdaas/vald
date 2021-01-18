@@ -26,6 +26,7 @@ import (
 	"syscall"
 
 	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
@@ -94,6 +95,21 @@ func Do(ctx context.Context, opts ...Option) error {
 	} else {
 		log.Init()
 	}
+
+	log.Debugf("version info:\t\t%s\n\nconfiguration:\t\t%s\n\n",
+		func() string {
+			b, err := json.Marshal(info.Get())
+			if err != nil {
+				return "failed to serialize build information"
+			}
+			return string(b)
+		}(), func() string {
+			b, err := json.Marshal(cfg)
+			if err != nil {
+				return "failed to serialize configuration"
+			}
+			return string(b)
+		}())
 
 	// set location temporary for initialization logging
 	location.Set(ccfg.TZ)
@@ -197,7 +213,7 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 			}
 
 			err = errgroup.Wait()
-			if err != nil {
+			if err != nil && !errors.Is(err, context.Canceled) {
 				log.Error(errors.ErrRunnerWait(name, err))
 				if _, ok := emap[err.Error()]; !ok {
 					errs = append(errs, err)
