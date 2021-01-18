@@ -22,6 +22,18 @@ import (
 )
 
 type (
-	DebugInfo = errdetails.DebugInfo
-	ErrorInfo = errdetails.ErrorInfo
+	DebugInfo                    = errdetails.DebugInfo
+	ErrorInfo                    = errdetails.ErrorInfo
+	BadRequest                   = errdetails.BadRequest
+	BadRequestFieldViolation     = errdetails.BadRequest_FieldViolation
+	LocalizedMessage             = errdetails.LocalizedMessage
+	PreconditionFailure          = errdetails.PreconditionFailure
+	PreconditionFailureViolation = errdetails.PreconditionFailure_Violation
+	Help                         = errdetails.Help
+	HelpLink                     = errdetails.Help_Link
+	QuotaFailure                 = errdetails.QuotaFailure
+	QuotaFailureViolation        = errdetails.QuotaFailure_Violation
+	RequestInfo                  = errdetails.RequestInfo
+	ResourceInfo                 = errdetails.ResourceInfo
+	RetryInfo                    = errdetails.RetryInfo
 )

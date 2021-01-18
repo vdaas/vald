@@ -34,6 +34,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
@@ -116,7 +117,14 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 		}
-		return nil, status.WrapWithInvalidArgument("Search API invalid vector argument", err, req, info.Get())
+		return nil, status.WrapWithInvalidArgument("Search API invalid vector argument", err, req, &errdetails.BadRequest{
+			FieldViolations: []*errdetails.BadRequestFieldViolation{
+				{
+					Field:       "vector dimension size",
+					Description: err.Error(),
+				},
+			},
+		}, info.Get())
 	}
 	res, err = s.search(ctx, req.GetConfig(),
 		func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
@@ -144,7 +152,14 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 		}
-		return nil, status.WrapWithInvalidArgument("SearchByID API invalid uuid", err, req, info.Get())
+		return nil, status.WrapWithInvalidArgument("SearchByID API invalid uuid", err, req, &errdetails.BadRequest{
+			FieldViolations: []*errdetails.BadRequestFieldViolation{
+				{
+					Field:       "invalid id",
+					Description: err.Error(),
+				},
+			},
+		}, info.Get())
 	}
 	vec, err := s.GetObject(ctx, &payload.Object_ID{
 		Id: req.GetId(),
@@ -155,21 +170,10 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		}
 		return nil, status.WrapWithNotFound(fmt.Sprintf("SearchByID API uuid %s's object not found", req.GetId()), err, info.Get())
 	}
-	vl := len(vec.GetVector())
-	if vl < algorithm.MinimumVectorDimensionSize {
-		err = errors.ErrInvalidDimensionSize(vl, 0)
-		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
-		}
-		return nil, status.WrapWithInvalidArgument("SearchByID API invalid vector length fetched", err, req, info.Get())
-	}
-	res, err = s.search(ctx, req.GetConfig(),
-		func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
-			return vc.Search(ctx, &payload.Search_Request{
-				Vector: vec.GetVector(),
-				Config: req.GetConfig(),
-			}, copts...)
-		})
+	res, err = s.Search(ctx, &payload.Search_Request{
+		Vector: vec.GetVector(),
+		Config: req.GetConfig(),
+	})
 	if err != nil {
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
@@ -392,7 +396,16 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 				}
 				mu.Lock()
-				errs = errors.Wrap(errs, status.WrapWithNotFound(fmt.Sprintf("MultiSearch API vector %v's search request result not found", query.GetVector()), err, info.Get()).Error())
+				if errs == nil {
+					errs = status.WrapWithNotFound(
+						fmt.Sprintf("MultiSearch API vector %v's search request result not found",
+							query.GetVector()), err, info.Get())
+				} else {
+					errs = errors.Wrap(errs,
+						status.WrapWithNotFound(
+							fmt.Sprintf("MultiSearch API vector %v's search request result not found",
+								query.GetVector()), err, info.Get()).Error())
+				}
 				mu.Unlock()
 				return nil
 			}
@@ -428,7 +441,16 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 				}
 				mu.Lock()
-				errs = errors.Wrap(errs, status.WrapWithNotFound(fmt.Sprintf("MultiSearchByID API uuid %v's search by id request result not found", query.GetId()), err, info.Get()).Error())
+				if errs == nil {
+					errs = status.WrapWithNotFound(
+						fmt.Sprintf("MultiSearchByID API uuid %v's search by id request result not found",
+							query.GetId()), err, info.Get())
+				} else {
+					errs = errors.Wrap(errs,
+						status.WrapWithNotFound(
+							fmt.Sprintf("MultiSearchByID API uuid %v's search by id request result not found",
+								query.GetId()), err, info.Get()).Error())
+				}
 				mu.Unlock()
 				return nil
 			}
@@ -455,7 +477,14 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 		}
-		return nil, status.WrapWithInvalidArgument("Search API invalid vector argument", err, req, info.Get())
+		return nil, status.WrapWithInvalidArgument("Search API invalid vector argument", err, req, &errdetails.BadRequest{
+			FieldViolations: []*errdetails.BadRequestFieldViolation{
+				{
+					Field:       "vector dimension size",
+					Description: err.Error(),
+				},
+			},
+		}, info.Get())
 	}
 	if !req.GetConfig().GetSkipStrictExistCheck() {
 		id, err := s.Exists(ctx, &payload.Object_ID{

@@ -26,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/cache"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 )
@@ -107,7 +108,7 @@ func (m *meta) Exists(ctx context.Context, meta string) (bool, error) {
 			Val: meta,
 		}, copts...)
 		if err != nil {
-			if status.Code(err) == status.NotFound {
+			if status.Code(err) == codes.NotFound {
 				return "", nil
 			}
 			return nil, err

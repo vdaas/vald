@@ -30,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
@@ -155,7 +156,7 @@ func (idx *index) execute(ctx context.Context, enableLowIndexSkip bool) (err err
 					PoolSize: idx.creationPoolSize,
 				}, copts...)
 				if err != nil {
-					if status.Code(err) == status.FailedPrecondition {
+					if status.Code(err) == codes.FailedPrecondition {
 						log.Debugf("CreateIndex of %s skipped: %s", addr, err)
 						return nil
 					}

@@ -209,6 +209,11 @@ func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) err
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			res, err := s.SearchByID(ctx, data.(*payload.Search_IDRequest))
 			if err != nil {
+				st, ok := status.FromError(err)
+				if !ok {
+					st = status.New(codes.Internal, errors.Wrap(err, "failed to parse grpc status from error").Error())
+					err = errors.Wrap(st.Err(), err.Error())
+				}
 				return &payload.Search_StreamResponse{
 					Payload: &payload.Search_StreamResponse_Status{
 						Status: st.Proto(),
