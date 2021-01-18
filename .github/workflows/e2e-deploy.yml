@@ -140,9 +140,9 @@ jobs:
             -insert-num=100 \
             -search-num=100 \
             -search-by-id-num=10 \
-            -get-object-num=10 \
+            -get-object-num=5 \
             -update-num=2 \
-            -remove-num=10 \
+            -remove-num=2 \
             -wait-after-insert=2m \
             -portforward \
             -portforward-ns=default \
@@ -261,10 +261,10 @@ jobs:
             -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
             -insert-num=1000 \
             -search-num=1000 \
-            -search-by-id-num=100 \
-            -get-object-num=100 \
+            -search-by-id-num=10 \
+            -get-object-num=10 \
             -update-num=3 \
-            -remove-num=100 \
+            -remove-num=2 \
             -wait-after-insert=2m \
             -portforward \
             -portforward-ns=default \
