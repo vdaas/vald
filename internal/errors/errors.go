@@ -31,13 +31,13 @@ var (
 		return Errorf("invalid timeout value: %s\t:timeout parse error out put failed", timeout)
 	}
 
-	// ErrServerNotFound represents a funtion to generate an error that the server is not found.
+	// ErrServerNotFound represents a function to generate an error that the server not found.
 	ErrServerNotFound = func(name string) error {
 		return Errorf("server %s not found", name)
 	}
 
-	// ErrOptionFailed represents a function to generate an error that the option setup is failed.
-	// When ref is zero Value, it will return error with ref is invalid.
+	// ErrOptionFailed represents a function to generate an error that the option setup failed.
+	// When ref is zero value, it will return an error with ref is invalid.
 	ErrOptionFailed = func(err error, ref reflect.Value) error {
 		var str string
 		if ref.IsValid() {
@@ -46,7 +46,7 @@ var (
 		return Wrapf(err, "failed to setup option :\t%s", str)
 	}
 
-	// ErrArgumentParseFailed represents a function to generate an error that argument parse is failed.
+	// ErrArgumentParseFailed represents a function to generate an error that argument parse failed.
 	ErrArgumentParseFailed = func(err error) error {
 		return Wrap(err, "argument parse failed")
 	}
@@ -56,7 +56,7 @@ var (
 		return Wrap(err, "backoff timeout by limitation")
 	}
 
-	// Err represents a function to generate an error that type conversion fails due to an invalid input type.
+	// ErrInvalidTypeConversion represents a function to generate an error that type conversion fails due to an invalid input type.
 	ErrInvalidTypeConversion = func(i interface{}, tgt interface{}) error {
 		return Errorf("invalid type conversion %v to %v", reflect.TypeOf(i), reflect.TypeOf(tgt))
 	}
@@ -79,8 +79,8 @@ var (
 		return Wrapf(err, "failed to output %s logs", str)
 	}
 
-	// New represents a function to generate the new error with message.
-	// When message is nil, it will return nil instead of error.
+	// New represents a function to generate the new error with a message.
+	// When the message is nil, it will return nil instead of an error.
 	New = func(msg string) error {
 		if msg == "" {
 			return nil
@@ -88,9 +88,9 @@ var (
 		return errors.New(msg)
 	}
 
-	// Wrap represents a function to generate an error which is used by input error and message.
-	// When both of input is nil, it will return new error with message even message is nil.
-	// When input error is not nil, it will return error based on input error.
+	// Wrap represents a function to generate an error that is used by input error and message.
+	// When both of the input is nil, it will return a new error with the message even message is nil.
+	// When the input error is not nil, it will return the error based on the input error.
 	Wrap = func(err error, msg string) error {
 		if err != nil {
 			if msg != "" {
@@ -101,9 +101,9 @@ var (
 		return New(msg)
 	}
 
-	// Wrapf represents a function to generate an error which is used by input error, format and args.
-	// When all of input is nil, it will return new error based on format and args even these are nil.
-	// When input error is not nil, it will return error based on input error.
+	// Wrapf represents a function to generate an error that is used by input error, format, and args.
+	// When all of the input is nil, it will return a new error based on format and args even these are nil.
+	// When the input error is not nil, it will return an error based on the input error.
 	Wrapf = func(err error, format string, args ...interface{}) error {
 		if err != nil {
 			if format != "" && len(args) != 0 {
@@ -114,7 +114,7 @@ var (
 		return Errorf(format, args...)
 	}
 
-	// Cause represents a function to generate error when inpurt error is not nil.
+	// Cause represents a function to generate an error when the input error is not nil.
 	// When input is nil, it will return nil.
 	Cause = func(err error) error {
 		if err != nil {
@@ -123,10 +123,10 @@ var (
 		return nil
 	}
 
-	// Unwrap represents errors.Unwrap
+	// Unwrap represents errors.Unwrap.
 	Unwrap = errors.Unwrap
 
-	// Errorf represents a function to generate an error that based on format and args.
+	// Errorf represents a function to generate an error based on format and args.
 	// When format and args do not satisfy the condition, it will return nil.
 	Errorf = func(format string, args ...interface{}) error {
 		const delim = " "
@@ -145,7 +145,7 @@ var (
 		return New(format)
 	}
 
-	// Is represents a function to check whether err and target is same or not.
+	// Is represents a function to check whether err and the target is the same or not.
 	Is = func(err, target error) bool {
 		if target == nil {
 			return err == target
@@ -170,6 +170,6 @@ var (
 		}
 	}
 
-	// As represents errors.As
+	// As represents errors.As.
 	As = errors.As
 )

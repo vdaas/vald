@@ -24,7 +24,6 @@ func TestErrTimeoutParseFailed(t *testing.T) {
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got error) error {
-		// if got.Error() != w.want.Error() {
 		if !Is(got, w.want) {
 			return fmt.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -94,7 +93,7 @@ func TestErrServerNotFound(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return an ErrServerNotFound error when name is not empty.",
+			name: "return an ErrServerNotFound error when the name is not empty.",
 			args: args{
 				name: "gateway.vald.svc.cluster.local",
 			},
@@ -103,7 +102,7 @@ func TestErrServerNotFound(t *testing.T) {
 			},
 		},
 		{
-			name: "return an ErrServerNotFound error when name is empty.",
+			name: "return an ErrServerNotFound error when the name is empty.",
 			args: args{
 				name: "",
 			},
@@ -699,7 +698,7 @@ func TestWrap(t *testing.T) {
 			},
 		},
 		{
-			name: "return nil when err and msg are empty",
+			name: "return nil when err and msg are empty.",
 			args: args{},
 			want: want{},
 		},
@@ -756,7 +755,7 @@ func TestWrapf(t *testing.T) {
 				"timeout error",
 			}
 			return test{
-				name: "return an error when err and format are not empty and args has single value",
+				name: "return an error when err and format are not empty and args has a single value.",
 				args: args{
 					err:    err,
 					format: format,
@@ -775,7 +774,7 @@ func TestWrapf(t *testing.T) {
 				10,
 			}
 			return test{
-				name: "return an error when err and format are not empty and args has multiple value",
+				name: "return an error when err and format are not empty and args has multiple values.",
 				args: args{
 					err:    err,
 					format: format,
@@ -793,7 +792,7 @@ func TestWrapf(t *testing.T) {
 				10,
 			}
 			return test{
-				name: "return an error when err is nor empty and format is empty and args has multiple value",
+				name: "return an error when err is not empty and format is empty and args has multiple values.",
 				args: args{
 					err:  err,
 					args: val,
@@ -807,7 +806,7 @@ func TestWrapf(t *testing.T) {
 			err := errors.New("err: ")
 			format := "error is occured: %v : %v"
 			return test{
-				name: "return an error when err and format are not empty and args is empty",
+				name: "return an error when err and format are not empty and args is empty.",
 				args: args{
 					err:    err,
 					format: format,
@@ -820,7 +819,7 @@ func TestWrapf(t *testing.T) {
 		func() test {
 			err := errors.New("err: ")
 			return test{
-				name: "return an error when err is not empty and format and args are empty",
+				name: "return an error when err is not empty and format and args are empty.",
 				args: args{
 					err: err,
 				},
@@ -836,7 +835,7 @@ func TestWrapf(t *testing.T) {
 				10,
 			}
 			return test{
-				name: "return an error when err is empty and format and args are not empty",
+				name: "return an error when err is empty and format and args are not empty.",
 				args: args{
 					format: format,
 					args:   val,
@@ -849,7 +848,7 @@ func TestWrapf(t *testing.T) {
 		func() test {
 			format := "error is occured: %v : %v"
 			return test{
-				name: "return an error when err and args are empty and format is not empty",
+				name: "return an error when err and args are empty and format is not empty.",
 				args: args{
 					format: format,
 				},
@@ -860,7 +859,7 @@ func TestWrapf(t *testing.T) {
 		}(),
 		func() test {
 			return test{
-				name: "return an error when all of input is empty",
+				name: "return an error when all of the input is empty.",
 				args: args{},
 				want: want{},
 			}
@@ -871,7 +870,7 @@ func TestWrapf(t *testing.T) {
 				10,
 			}
 			return test{
-				name: "return nil when format is empty and args has multiple value",
+				name: "return nil when a format is empty and args has multiple values.",
 				args: args{
 					args: val,
 				},
@@ -885,7 +884,7 @@ func TestWrapf(t *testing.T) {
 				map[string]int{"invalid time_duration": 10},
 			}
 			return test{
-				name: "return an error when format is empty and args has single value",
+				name: "return an error when a format is empty and args has a single value",
 				args: args{
 					args: val,
 				},
@@ -948,7 +947,7 @@ func TestCause(t *testing.T) {
 			},
 		},
 		{
-			name: "return nil when err is empty",
+			name: "return nil when err is empty.",
 			args: args{},
 			want: want{},
 		},
@@ -1006,7 +1005,7 @@ func TestUnwarp(t *testing.T) {
 			},
 		},
 		{
-			name: "return nil when err is empty",
+			name: "return nil when err is empty.",
 			args: args{},
 			want: want{},
 		},
@@ -1061,7 +1060,7 @@ func TestErrorf(t *testing.T) {
 				"timeout error",
 			}
 			return test{
-				name: "return an error when format is not empty and args has single value",
+				name: "return an error when a format is not empty and args has a single value.",
 				args: args{
 					format: format,
 					args:   val,
@@ -1078,7 +1077,7 @@ func TestErrorf(t *testing.T) {
 				10,
 			}
 			return test{
-				name: "return an error when format is not empty and args has multiple value",
+				name: "return an error when a format is not empty and args has multiple values.",
 				args: args{
 					format: format,
 					args:   val,
@@ -1094,7 +1093,7 @@ func TestErrorf(t *testing.T) {
 				10,
 			}
 			return test{
-				name: "return an error when format is empty and args has multiple value",
+				name: "return an error when a format is empty and args has multiple values.",
 				args: args{
 					args: val,
 				},
@@ -1108,7 +1107,7 @@ func TestErrorf(t *testing.T) {
 				map[string]int{"invalid time_duration": 10},
 			}
 			return test{
-				name: "return nil when format is empty and args has single value",
+				name: "return nil when a format is empty and args has a single value.",
 				args: args{
 					args: val,
 				},
@@ -1119,7 +1118,7 @@ func TestErrorf(t *testing.T) {
 		}(),
 		func() test {
 			return test{
-				name: "return nil when all of input is empty",
+				name: "return nil when all of the input is empty.",
 				args: args{},
 				want: want{},
 			}
@@ -1214,14 +1213,14 @@ func TestIs(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "return false when target is nil",
+			name: "return false when target is nil.",
 			args: args{
 				err: errors.New("invalid parameter"),
 			},
 			want: want{},
 		},
 		{
-			name: "return true when err is same comparable errors type and same error as target",
+			name: "return true when err is same comparable errors type and same error as target.",
 			args: args{
 				err:    errors.New("invalid parameter"),
 				target: errors.New("invalid parameter"),
@@ -1231,7 +1230,7 @@ func TestIs(t *testing.T) {
 			},
 		},
 		{
-			name: "return false when err is same comparable errors type and differ error as target",
+			name: "return false when err is same comparable errors type and differ error as target.",
 			args: args{
 				err:    errors.New(""),
 				target: errors.New("err is occured"),
@@ -1239,7 +1238,7 @@ func TestIs(t *testing.T) {
 			want: want{},
 		},
 		{
-			name: "return true when err is comparable error and target is uncomparable error and both err msg is same",
+			name: "return true when err is comparable error and target is uncomparable error and both err msg is same.",
 			args: args{
 				err: errors.New("err is occured"),
 				target: uncomparableErr{
@@ -1255,7 +1254,7 @@ func TestIs(t *testing.T) {
 			},
 		},
 		{
-			name: "return false when err is comparable error and target is uncomparable error and both err msg is not same",
+			name: "return false when err is comparable error and target is uncomparable error and both err msg is not same.",
 			args: args{
 				err: errors.New("err is occured"),
 				target: uncomparableErr{
@@ -1269,7 +1268,7 @@ func TestIs(t *testing.T) {
 			want: want{},
 		},
 		{
-			name: "return true when err is wrapped comparable error and target is uncomparable error and err.err.Error() and target msg are same",
+			name: "return true when err is wrapped comparable error and target is uncomparable error and err.err.Error() and target msg are same.",
 			args: args{
 				err: wrapErr{
 					err: errors.New("invalid parameter"),
@@ -1287,7 +1286,7 @@ func TestIs(t *testing.T) {
 			},
 		},
 		{
-			name: "return false when err is wrapped comparable error and target is uncomparable error and err.err.Error() and target msg are not same",
+			name: "return false when err is wrapped comparable error and target is uncomparable error and err.err.Error() and target msg are not same.",
 			args: args{
 				err: wrapErr{
 					err: errors.New("err is occured"),
@@ -1303,7 +1302,7 @@ func TestIs(t *testing.T) {
 			want: want{},
 		},
 		{
-			name: "return false when err is comparable error with Is() implemented and target is uncomparable error and target msg is empty",
+			name: "return false when err is comparable error with Is() implemented and target is uncomparable error and target msg is empty.",
 			args: args{
 				err: isErr{
 					err: errors.New("err is occured"),
@@ -1313,7 +1312,7 @@ func TestIs(t *testing.T) {
 			want: want{},
 		},
 		{
-			name: "return true when err is comparable error with Is() implemented and target is uncomparable error and target msg is not empty",
+			name: "return true when err is comparable error with Is() implemented and target is uncomparable error and target msg is not empty.",
 			args: args{
 				err: isErr{
 					err: errors.New("err is occured"),
