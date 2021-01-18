@@ -93,7 +93,7 @@ func TestNewErrMySQLNotFoundIdentity(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return NewErrMySQLNotFoundIdentity error",
+			name: "return ErrMySQLNotFoundIdentity error",
 			want: want{
 				want: &ErrMySQLNotFoundIdentity{
 					err: New("error mysql element not found"),
