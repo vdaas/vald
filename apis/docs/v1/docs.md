@@ -12,10 +12,6 @@
 - [apis/proto/v1/discoverer/discoverer.proto](#apis/proto/v1/discoverer/discoverer.proto)
     - [Discoverer](#discoverer.v1.Discoverer)
   
-- [apis/proto/v1/errors/errors.proto](#apis/proto/v1/errors/errors.proto)
-    - [Errors](#errors.v1.Errors)
-    - [Errors.RPC](#errors.v1.Errors.RPC)
-  
 - [apis/proto/v1/filter/egress/egress_filter.proto](#apis/proto/v1/filter/egress/egress_filter.proto)
     - [EgressFilter](#filter.egress.v1.EgressFilter)
   
@@ -236,53 +232,6 @@
 | ----------- | ------------ | ------------- | ------------|
 | Pods | [.payload.v1.Discoverer.Request](#payload.v1.Discoverer.Request) | [.payload.v1.Info.Pods](#payload.v1.Info.Pods) |  |
 | Nodes | [.payload.v1.Discoverer.Request](#payload.v1.Discoverer.Request) | [.payload.v1.Info.Nodes](#payload.v1.Info.Nodes) |  |
-
- 
-
-
-
-<a name="apis/proto/v1/errors/errors.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## apis/proto/v1/errors/errors.proto
-
-
-
-<a name="errors.v1.Errors"></a>
-
-### Errors
-
-
-
-
-
-
-
-<a name="errors.v1.Errors.RPC"></a>
-
-### Errors.RPC
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| type | [string](#string) |  |  |
-| msg | [string](#string) |  |  |
-| details | [string](#string) | repeated |  |
-| instance | [string](#string) |  |  |
-| status | [int64](#int64) |  |  |
-| error | [string](#string) |  |  |
-| roots | [Errors.RPC](#errors.v1.Errors.RPC) | repeated |  |
-
-
-
-
-
- 
-
- 
-
- 
 
  
 
@@ -1397,7 +1346,7 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | blob | [Object.Blob](#payload.v1.Object.Blob) |  |  |
-| error | [errors.v1.Errors.RPC](#errors.v1.Errors.RPC) |  |  |
+| status | [google.rpc.Status](#google.rpc.Status) |  |  |
 
 
 
@@ -1413,7 +1362,7 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | distance | [Object.Distance](#payload.v1.Object.Distance) |  |  |
-| error | [errors.v1.Errors.RPC](#errors.v1.Errors.RPC) |  |  |
+| status | [google.rpc.Status](#google.rpc.Status) |  |  |
 
 
 
@@ -1429,7 +1378,7 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | location | [Object.Location](#payload.v1.Object.Location) |  |  |
-| error | [errors.v1.Errors.RPC](#errors.v1.Errors.RPC) |  |  |
+| status | [google.rpc.Status](#google.rpc.Status) |  |  |
 
 
 
@@ -1445,7 +1394,7 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | vector | [Object.Vector](#payload.v1.Object.Vector) |  |  |
-| error | [errors.v1.Errors.RPC](#errors.v1.Errors.RPC) |  |  |
+| status | [google.rpc.Status](#google.rpc.Status) |  |  |
 
 
 
@@ -1745,7 +1694,7 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | response | [Search.Response](#payload.v1.Search.Response) |  |  |
-| error | [errors.v1.Errors.RPC](#errors.v1.Errors.RPC) |  |  |
+| status | [google.rpc.Status](#google.rpc.Status) |  |  |
 
 
 

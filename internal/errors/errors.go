@@ -71,7 +71,7 @@ var (
 	Wrap = func(err error, msg string) error {
 		if err != nil {
 			if msg != "" {
-				return fmt.Errorf("%s: %w", msg, err)
+				return fmt.Errorf("%w; %s", err, msg)
 			}
 			return err
 		}

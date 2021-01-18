@@ -18,14 +18,21 @@ syntax = "proto3";
 
 package vald.v1;
 
+import "apis/proto/v1/payload/payload.proto";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "github.com/gogo/googleapis/google/api/annotations.proto";
+
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/vald";
 option java_multiple_files = true;
 option java_package = "org.vdaas.vald.api.v1.vald";
 option java_outer_classname = "ValdSearch";
 
-import "apis/proto/v1/payload/payload.proto";
-import "google/api/annotations.proto";
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.goproto_registration) = true;
 
+option (gogoproto.messagename_all) = true;
 
 service Search {
 

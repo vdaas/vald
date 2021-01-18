@@ -14,23 +14,14 @@
 // limitations under the License.
 //
 
-syntax = "proto3";
+// Package errdetails provides error detail for grpc status
+package errdetails
 
-package sidecar.v1;
+import (
+	errdetails "github.com/gogo/googleapis/google/rpc"
+)
 
-import "github.com/gogo/protobuf/gogoproto/gogo.proto";
-
-option go_package = "github.com/vdaas/vald/apis/grpc/v1/agent/sidecar";
-option java_multiple_files = true;
-option java_package = "org.vdaas.vald.api.v1.agent.sidecar";
-option java_outer_classname = "ValdAgentSidecar";
-
-option (gogoproto.goproto_registration) = true;
-option (gogoproto.marshaler_all) = true;
-option (gogoproto.unmarshaler_all) = true;
-option (gogoproto.sizer_all) = true;
-
-option (gogoproto.messagename_all) = true;
-
-service Sidecar {
-}
+type (
+	DebugInfo = errdetails.DebugInfo
+	ErrorInfo = errdetails.ErrorInfo
+)

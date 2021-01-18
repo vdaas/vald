@@ -29,9 +29,9 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/tcp"
 	"go.uber.org/goleak"
-	"google.golang.org/grpc"
 )
 
 func TestString(t *testing.T) {

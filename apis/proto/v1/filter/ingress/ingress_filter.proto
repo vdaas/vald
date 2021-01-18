@@ -18,14 +18,21 @@ syntax = "proto3";
 
 package filter.ingress.v1;
 
+import "apis/proto/v1/payload/payload.proto";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "github.com/gogo/googleapis/google/api/annotations.proto";
+
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/filter/ingress";
 option java_multiple_files = true;
 option java_package = "org.vdaas.vald.api.v1.filter.ingress";
 option java_outer_classname = "ValdIngressFilter";
 
-import "apis/proto/v1/payload/payload.proto";
-import "google/api/annotations.proto";
+option (gogoproto.goproto_registration) = true;
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.sizer_all) = true;
 
+option (gogoproto.messagename_all) = true;
 
 service IngressFilter {
   rpc GenVector(payload.v1.Object.Blob) returns (payload.v1.Object.Vector) {

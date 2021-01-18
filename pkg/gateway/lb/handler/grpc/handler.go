@@ -33,6 +33,7 @@ import (
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
@@ -317,9 +318,14 @@ func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) error {
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			res, err := s.Search(ctx, data.(*payload.Search_Request))
 			if err != nil {
+				st, ok := status.FromError(err)
+				if !ok {
+					st = status.New(codes.Internal, errors.Wrap(err, "failed to parse grpc status from error").Error())
+					err = errors.Wrap(st.Err(), err.Error())
+				}
 				return &payload.Search_StreamResponse{
-					Payload: &payload.Search_StreamResponse_Error{
-						Error: status.FromError(err),
+					Payload: &payload.Search_StreamResponse_Status{
+						Status: st.Proto(),
 					},
 				}, err
 			}
@@ -343,9 +349,14 @@ func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) err
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			res, err := s.SearchByID(ctx, data.(*payload.Search_IDRequest))
 			if err != nil {
+				st, ok := status.FromError(err)
+				if !ok {
+					st = status.New(codes.Internal, errors.Wrap(err, "failed to parse grpc status from error").Error())
+					err = errors.Wrap(st.Err(), err.Error())
+				}
 				return &payload.Search_StreamResponse{
-					Payload: &payload.Search_StreamResponse_Error{
-						Error: status.FromError(err),
+					Payload: &payload.Search_StreamResponse_Status{
+						Status: st.Proto(),
 					},
 				}, err
 			}
@@ -513,9 +524,14 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) error {
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			res, err := s.Insert(ctx, data.(*payload.Insert_Request))
 			if err != nil {
+				st, ok := status.FromError(err)
+				if !ok {
+					st = status.New(codes.Internal, errors.Wrap(err, "failed to parse grpc status from error").Error())
+					err = errors.Wrap(st.Err(), err.Error())
+				}
 				return &payload.Object_StreamLocation{
-					Payload: &payload.Object_StreamLocation_Error{
-						Error: status.FromError(err),
+					Payload: &payload.Object_StreamLocation_Status{
+						Status: st.Proto(),
 					},
 				}, err
 			}
@@ -638,9 +654,14 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) error {
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			res, err := s.Update(ctx, data.(*payload.Update_Request))
 			if err != nil {
+				st, ok := status.FromError(err)
+				if !ok {
+					st = status.New(codes.Internal, errors.Wrap(err, "failed to parse grpc status from error").Error())
+					err = errors.Wrap(st.Err(), err.Error())
+				}
 				return &payload.Object_StreamLocation{
-					Payload: &payload.Object_StreamLocation_Error{
-						Error: status.FromError(err),
+					Payload: &payload.Object_StreamLocation_Status{
+						Status: st.Proto(),
 					},
 				}, err
 			}
@@ -758,9 +779,14 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) error {
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			res, err := s.Upsert(ctx, data.(*payload.Upsert_Request))
 			if err != nil {
+				st, ok := status.FromError(err)
+				if !ok {
+					st = status.New(codes.Internal, errors.Wrap(err, "failed to parse grpc status from error").Error())
+					err = errors.Wrap(st.Err(), err.Error())
+				}
 				return &payload.Object_StreamLocation{
-					Payload: &payload.Object_StreamLocation_Error{
-						Error: status.FromError(err),
+					Payload: &payload.Object_StreamLocation_Status{
+						Status: st.Proto(),
 					},
 				}, err
 			}
@@ -938,9 +964,14 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) error {
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			res, err := s.Remove(ctx, data.(*payload.Remove_Request))
 			if err != nil {
+				st, ok := status.FromError(err)
+				if !ok {
+					st = status.New(codes.Internal, errors.Wrap(err, "failed to parse grpc status from error").Error())
+					err = errors.Wrap(st.Err(), err.Error())
+				}
 				return &payload.Object_StreamLocation{
-					Payload: &payload.Object_StreamLocation_Error{
-						Error: status.FromError(err),
+					Payload: &payload.Object_StreamLocation_Status{
+						Status: st.Proto(),
 					},
 				}, err
 			}
@@ -1063,9 +1094,14 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) error
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			res, err := s.GetObject(ctx, data.(*payload.Object_ID))
 			if err != nil {
+				st, ok := status.FromError(err)
+				if !ok {
+					st = status.New(codes.Internal, errors.Wrap(err, "failed to parse grpc status from error").Error())
+					err = errors.Wrap(st.Err(), err.Error())
+				}
 				return &payload.Object_StreamVector{
-					Payload: &payload.Object_StreamVector_Error{
-						Error: status.FromError(err),
+					Payload: &payload.Object_StreamVector_Status{
+						Status: st.Proto(),
 					},
 				}, err
 			}

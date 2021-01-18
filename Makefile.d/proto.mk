@@ -57,7 +57,8 @@ proto/deps: \
 	$(GOPATH)/bin/swagger \
 	$(GOPATH)/src/google.golang.org/genproto \
 	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
-	$(GOPATH)/src/github.com/googleapis/googleapis \
+	$(GOPATH)/src/github.com/gogo/googleapis \
+	$(GOPATH)/src/github.com/gogo/protobuf \
 	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
 
 $(GOPATH)/src/github.com/protocolbuffers/protobuf:
@@ -66,11 +67,17 @@ $(GOPATH)/src/github.com/protocolbuffers/protobuf:
 		https://github.com/protocolbuffers/protobuf \
 		$(GOPATH)/src/github.com/protocolbuffers/protobuf
 
-$(GOPATH)/src/github.com/googleapis/googleapis:
+$(GOPATH)/src/github.com/gogo/googleapis:
 	git clone \
 		--depth 1 \
-		https://github.com/googleapis/googleapis \
-		$(GOPATH)/src/github.com/googleapis/googleapis
+		https://github.com/gogo/googleapis \
+		$(GOPATH)/src/github.com/gogo/googleapis
+
+$(GOPATH)/src/github.com/gogo/protobuf:
+	git clone \
+		--depth 1 \
+		https://github.com/gogo/protobuf \
+		$(GOPATH)/src/github.com/gogo/protobuf
 
 $(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate:
 	git clone \
@@ -137,6 +144,8 @@ $(PBGOS): \
 	@$(call green, "generating pb.go files...")
 	$(call mkdir, $(dir $@))
 	$(call protoc-gen, $(patsubst apis/grpc/%.pb.go,apis/proto/%.proto,$@), --gogofast_out=plugins=grpc:$(GOPATH)/src)
+	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs sed -i -E "s%google.golang.org/grpc/codes%github.com/vdaas/vald/internal/net/grpc/codes%g"
+	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs sed -i -E "s%google.golang.org/grpc/status%github.com/vdaas/vald/internal/net/grpc/status%g"
 	# we have to enable validate after https://github.com/envoyproxy/protoc-gen-validate/pull/257 is merged
 	# $(call protoc-gen, $(patsubst apis/grpc/%.pb.go,apis/proto/%.proto,$@), --gogofast_out=plugins=grpc:$(GOPATH)/src --validate_out=lang=gogo:$(GOPATH)/src)
 
