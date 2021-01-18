@@ -93,9 +93,12 @@ spec:
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
-      serviceAccount: vald
-      serviceAccountName: vald
-      securityContext: {}
+      serviceAccount: {{ $discoverer.serviceAccount.name }}
+      serviceAccountName: {{ $discoverer.serviceAccount.name }}
+      {{- if $discoverer.securityContext }}
+      securityContext:
+        {{- toYaml $discoverer.securityContext | nindent 8 }}
+      {{- end }}
       terminationGracePeriodSeconds: {{ $discoverer.terminationGracePeriodSeconds }}
       volumes:
         - name: {{ $discoverer.name }}-config

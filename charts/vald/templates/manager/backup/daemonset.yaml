@@ -88,7 +88,10 @@ spec:
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
-      securityContext: {}
+      {{- if $backup.securityContext }}
+      securityContext:
+        {{- toYaml $backup.securityContext | nindent 8 }}
+      {{- end }}
       terminationGracePeriodSeconds: {{ $backup.terminationGracePeriodSeconds }}
       volumes:
         - name: {{ $backup.name }}-config

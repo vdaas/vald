@@ -18,13 +18,15 @@ name: "reviewdog - K8s manifests"
 on:
   pull_request:
     paths:
+      - "charts/**"
       - "k8s/**"
 
 jobs:
   kubeval-conflint:
     name: runner / kubeval-conflint
     runs-on: ubuntu-latest
-    container: mumoshu/conflint:latest
+    container:
+      image: mumoshu/conflint:latest
     steps:
       - uses: actions/checkout@v2
       - name: kubeval-conflint
@@ -36,17 +38,29 @@ jobs:
           CONFLINT_LOG: DEBUG
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPORTER: github-pr-review
-  kubelinter:
+  kubelinter-k8s-manifests:
     name: runner / kubelinter
     runs-on: ubuntu-latest
+    container:
+      image: vdaas/vald-ci-container:nightly
     steps:
       - uses: actions/checkout@v2
-      - name: setup-kubelinter
+      - name: kubelinter for k8s directory
         run: |
-          wget https://github.com/stackrox/kube-linter/releases/download/${KUBELINTER_VERSION}/kube-linter-linux.zip
-          unzip kube-linter-linux.zip
-        env:
-          KUBELINTER_VERSION: 0.1.2
-      - name: kubelinter
+          kube-linter lint \
+            --config .github/kubelinter.yaml \
+            k8s/agent \
+            k8s/discoverer \
+            k8s/gateway \
+            k8s/manager \
+            k8s/meta
+  kubelinter-vald-chart:
+    name: runner / kubelinter for vald chart
+    runs-on: ubuntu-latest
+    container:
+      image: vdaas/vald-ci-container:nightly
+    steps:
+      - uses: actions/checkout@v2
+      - name: kubelinter for generated manifests
         run: |
-          ./kube-linter lint --config .github/kubelinter.yaml k8s
+          kube-linter lint charts/vald

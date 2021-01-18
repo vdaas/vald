@@ -813,6 +813,11 @@ gateway:
     # @schema {"name": "gateway.vald.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
     # gateway.vald.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
     terminationGracePeriodSeconds: 30
+    # @schema {"name": "gateway.vald.securityContext", "type": "object"}
+    # gateway.vald.securityContext -- security context
+    securityContext:
+      runAsUser: 1002
+      runAsNonRoot: true
     # @schema {"name": "gateway.vald.podPriority", "type": "object", "anchor": "podPriority"}
     podPriority:
       # @schema {"name": "gateway.vald.podPriority.enabled", "type": "boolean"}
@@ -1087,6 +1092,11 @@ gateway:
     # @schema {"name": "gateway.backup.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
     # gateway.backup.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
     terminationGracePeriodSeconds: 30
+    # @schema {"name": "gateway.backup.securityContext", "type": "object"}
+    # gateway.backup.securityContext -- security context
+    securityContext:
+      runAsUser: 1002
+      runAsNonRoot: true
     # @schema {"name": "gateway.backup.podPriority", "type": "object", "anchor": "podPriority"}
     podPriority:
       # @schema {"name": "gateway.backup.podPriority.enabled", "type": "boolean"}
@@ -1310,6 +1320,11 @@ gateway:
     # @schema {"name": "gateway.lb.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
     # gateway.lb.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
     terminationGracePeriodSeconds: 30
+    # @schema {"name": "gateway.lb.securityContext", "type": "object"}
+    # gateway.lb.securityContext -- security context
+    securityContext:
+      runAsUser: 1002
+      runAsNonRoot: true
     # @schema {"name": "gateway.lb.podPriority", "type": "object", "anchor": "podPriority"}
     podPriority:
       # @schema {"name": "gateway.lb.podPriority.enabled", "type": "boolean"}
@@ -1555,6 +1570,11 @@ gateway:
     # @schema {"name": "gateway.meta.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
     # gateway.meta.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
     terminationGracePeriodSeconds: 30
+    # @schema {"name": "gateway.meta.securityContext", "type": "object"}
+    # gateway.meta.securityContext -- security context
+    securityContext:
+      runAsUser: 1002
+      runAsNonRoot: true
     # @schema {"name": "gateway.meta.podPriority", "type": "object", "anchor": "podPriority"}
     podPriority:
       # @schema {"name": "gateway.meta.podPriority.enabled", "type": "boolean"}
@@ -1790,6 +1810,11 @@ agent:
   # @schema {"name": "agent.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
   # agent.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
   terminationGracePeriodSeconds: 120
+  # @schema {"name": "agent.securityContext", "type": "object"}
+  # agent.securityContext -- security context
+  securityContext:
+    runAsUser: 1002
+    runAsNonRoot: true
   # @schema {"name": "agent.podManagementPolicy", "type": "string", "enum": ["OrderedReady", "Parallel"]}
   # agent.podManagementPolicy -- pod management policy: OrderedReady or Parallel
   podManagementPolicy: OrderedReady
@@ -2348,6 +2373,11 @@ discoverer:
   # @schema {"name": "discoverer.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
   # discoverer.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
   terminationGracePeriodSeconds: 30
+  # @schema {"name": "discoverer.securityContext", "type": "object"}
+  # discoverer.securityContext -- security context
+  securityContext:
+    runAsUser: 1002
+    runAsNonRoot: true
   # @schema {"name": "discoverer.podPriority", "alias": "podPriority"}
   podPriority:
     # discoverer.podPriority.enabled -- discoverer pod PriorityClass enabled
@@ -2554,6 +2584,11 @@ manager:
     # @schema {"name": "manager.compressor.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
     # manager.compressor.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
     terminationGracePeriodSeconds: 120
+    # @schema {"name": "manager.compressor.securityContext", "type": "object"}
+    # manager.compressor.securityContext -- security context
+    securityContext:
+      runAsUser: 1002
+      runAsNonRoot: true
     # @schema {"name": "manager.compressor.podPriority", "alias": "podPriority"}
     podPriority:
       # manager.compressor.podPriority.enabled -- compressor pod PriorityClass enabled
@@ -2760,6 +2795,11 @@ manager:
     # @schema {"name": "manager.backup.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
     # manager.backup.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
     terminationGracePeriodSeconds: 30
+    # @schema {"name": "manager.backup.securityContext", "type": "object"}
+    # manager.backup.securityContext -- security context
+    securityContext:
+      runAsUser: 1002
+      runAsNonRoot: true
     # @schema {"name": "manager.backup.podPriority", "alias": "podPriority"}
     podPriority:
       # manager.backup.podPriority.enabled -- backup manager pod PriorityClass enabled
@@ -3204,6 +3244,11 @@ manager:
     # @schema {"name": "manager.index.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
     # manager.index.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
     terminationGracePeriodSeconds: 30
+    # @schema {"name": "mangaer.index.securityContext", "type": "object"}
+    # manager.index.securityContext -- security context
+    securityContext:
+      runAsUser: 1002
+      runAsNonRoot: true
     # @schema {"name": "manager.index.podPriority", "alias": "podPriority"}
     podPriority:
       # manager.index.podPriority.enabled -- index manager pod PriorityClass enabled
@@ -3410,6 +3455,11 @@ meta:
   # @schema {"name": "meta.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
   # meta.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
   terminationGracePeriodSeconds: 30
+  # @schema {"name": "meta.securityContext", "type": "object"}
+  # meta.securityContext -- security context
+  securityContext:
+    runAsUser: 1002
+    runAsNonRoot: true
   # @schema {"name": "meta.podPriority", "alias": "podPriority"}
   podPriority:
     # meta.podPriority.enabled -- meta pod PriorityClass enabled
