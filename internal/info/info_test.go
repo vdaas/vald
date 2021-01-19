@@ -554,6 +554,120 @@ func Test_info_String(t *testing.T) {
 	}
 }
 
+func TestDetail_String(t *testing.T) {
+	type fields struct {
+		Version           string
+		ServerName        string
+		GitCommit         string
+		BuildTime         string
+		GoVersion         string
+		GoOS              string
+		GoArch            string
+		CGOEnabled        string
+		NGTVersion        string
+		BuildCPUInfoFlags []string
+		StackTrace        []StackTrace
+	}
+	type want struct {
+		want string
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, string) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got string) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "return string when stacktrace is initialized",
+			fields: fields{
+				Version:           "1.0",
+				ServerName:        "srv",
+				GitCommit:         "commit",
+				BuildTime:         "bt",
+				GoVersion:         "1.1",
+				GoOS:              "goos",
+				GoArch:            "goarch",
+				CGOEnabled:        "true",
+				NGTVersion:        "1.2",
+				BuildCPUInfoFlags: nil,
+				StackTrace: []StackTrace{
+					StackTrace{
+						URL:      "url",
+						FuncName: "func",
+						File:     "file",
+						Line:     10,
+					},
+				},
+			},
+			want: want{
+				want: "\nbuild cpu info flags ->\t[]\nbuild time           ->\tbt\ncgo enabled          ->\ttrue\ngit commit           ->\tcommit\ngo arch              ->\tgoarch\ngo os                ->\tgoos\ngo version           ->\t1.1\nngt version          ->\t1.2\nserver name          ->\tsrv\nstack trace-0        ->\turl\tfunc\nvald version         ->\t\x1b[1m1.0\x1b[22m",
+			},
+		},
+		{
+			name: "return string when no stacktrace initialized",
+			fields: fields{
+				Version:           "1.0",
+				ServerName:        "srv",
+				GitCommit:         "commit",
+				BuildTime:         "bt",
+				GoVersion:         "1.1",
+				GoOS:              "goos",
+				GoArch:            "goarch",
+				CGOEnabled:        "true",
+				NGTVersion:        "1.2",
+				BuildCPUInfoFlags: nil,
+				StackTrace:        []StackTrace{},
+			},
+			want: want{
+				want: "\nbuild cpu info flags ->\t[]\nbuild time           ->\tbt\ncgo enabled          ->\ttrue\ngit commit           ->\tcommit\ngo arch              ->\tgoarch\ngo os                ->\tgoos\ngo version           ->\t1.1\nngt version          ->\t1.2\nserver name          ->\tsrv\nvald version         ->\t\x1b[1m1.0\x1b[22m",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			d := Detail{
+				Version:           test.fields.Version,
+				ServerName:        test.fields.ServerName,
+				GitCommit:         test.fields.GitCommit,
+				BuildTime:         test.fields.BuildTime,
+				GoVersion:         test.fields.GoVersion,
+				GoOS:              test.fields.GoOS,
+				GoArch:            test.fields.GoArch,
+				CGOEnabled:        test.fields.CGOEnabled,
+				NGTVersion:        test.fields.NGTVersion,
+				BuildCPUInfoFlags: test.fields.BuildCPUInfoFlags,
+				StackTrace:        test.fields.StackTrace,
+			}
+
+			got := d.String()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
 func Test_info_Get(t *testing.T) {
 	type fields struct {
 		detail      Detail
