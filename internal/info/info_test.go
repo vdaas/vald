@@ -648,9 +648,9 @@ func Test_info_Get(t *testing.T) {
 					rtCaller: func(skip int) (pc uintptr, file string, line int, ok bool) {
 						if i == 0 {
 							i++
-							return uintptr(0), runtime.GOROOT() + "/src/info.go", 100, true
+							return uintptr(0), runtime.GOROOT() + "/src/info_test.go", 100, true
 						}
-						return uintptr(1), "info.go", 100, false
+						return uintptr(1), "info_test.go", 100, false
 					},
 					rtFuncForPC: func(ptr uintptr) *runtime.Func {
 						return runtime.FuncForPC(reflect.ValueOf(Test_info_Get).Pointer())
@@ -667,9 +667,9 @@ func Test_info_Get(t *testing.T) {
 					CGOEnabled: CGOEnabled,
 					StackTrace: []StackTrace{
 						StackTrace{
-							URL:      "https://github.com/golang/go/blob/" + runtime.Version() + "/src/info.go#L100",
+							URL:      "https://github.com/golang/go/blob/" + runtime.Version() + "/src/info_test.go#L100",
 							FuncName: "github.com/vdaas/vald/internal/info.Test_info_Get",
-							File:     runtime.GOROOT() + "/src/info.go",
+							File:     runtime.GOROOT() + "/src/info_test.go",
 							Line:     100,
 						},
 					},
@@ -687,9 +687,9 @@ func Test_info_Get(t *testing.T) {
 					rtCaller: func(skip int) (pc uintptr, file string, line int, ok bool) {
 						if i == 0 {
 							i++
-							return uintptr(0), "/tmp/go/pkg/mod/github.com/vdaas/vald/internal/info.go", 100, true
+							return uintptr(0), "/tmp/go/pkg/mod/github.com/vdaas/vald/internal/info_test.go", 100, true
 						}
-						return uintptr(1), "info.go", 100, false
+						return uintptr(1), "info_test.go", 100, false
 					},
 					rtFuncForPC: func(ptr uintptr) *runtime.Func {
 						return runtime.FuncForPC(reflect.ValueOf(Test_info_Get).Pointer())
@@ -706,9 +706,9 @@ func Test_info_Get(t *testing.T) {
 					CGOEnabled: CGOEnabled,
 					StackTrace: []StackTrace{
 						StackTrace{
-							URL:      "https://github.com/vdaas/vald/internal/info.go#L100",
+							URL:      "https://github.com/vdaas/vald/internal/info_test.go#L100",
 							FuncName: "github.com/vdaas/vald/internal/info.Test_info_Get",
-							File:     "/tmp/go/pkg/mod/github.com/vdaas/vald/internal/info.go",
+							File:     "/tmp/go/pkg/mod/github.com/vdaas/vald/internal/info_test.go",
 							Line:     100,
 						},
 					},
@@ -726,9 +726,9 @@ func Test_info_Get(t *testing.T) {
 					rtCaller: func(skip int) (pc uintptr, file string, line int, ok bool) {
 						if i == 0 {
 							i++
-							return uintptr(0), "/tmp/go/pkg/mod/github.com/vdaas@v0.0.0-20171023180738-a3a6125de932/vald/internal/info.go", 100, true
+							return uintptr(0), "/tmp/go/pkg/mod/github.com/vdaas@v0.0.0-20171023180738-a3a6125de932/vald/internal/info_test.go", 100, true
 						}
-						return uintptr(1), "info.go", 100, false
+						return uintptr(1), "info_test.go", 100, false
 					},
 					rtFuncForPC: func(ptr uintptr) *runtime.Func {
 						return runtime.FuncForPC(reflect.ValueOf(Test_info_Get).Pointer())
@@ -745,9 +745,9 @@ func Test_info_Get(t *testing.T) {
 					CGOEnabled: CGOEnabled,
 					StackTrace: []StackTrace{
 						StackTrace{
-							URL:      "https://github.com/vdaas/blob/v0.0.0-20171023180738-a3a6125de932/vald/internal/info.go#L100",
+							URL:      "https://github.com/vdaas/blob/v0.0.0-20171023180738-a3a6125de932/vald/internal/info_test.go#L100",
 							FuncName: "github.com/vdaas/vald/internal/info.Test_info_Get",
-							File:     "/tmp/go/pkg/mod/github.com/vdaas@v0.0.0-20171023180738-a3a6125de932/vald/internal/info.go",
+							File:     "/tmp/go/pkg/mod/github.com/vdaas@v0.0.0-20171023180738-a3a6125de932/vald/internal/info_test.go",
 							Line:     100,
 						},
 					},
@@ -765,9 +765,9 @@ func Test_info_Get(t *testing.T) {
 					rtCaller: func(skip int) (pc uintptr, file string, line int, ok bool) {
 						if i == 0 {
 							i++
-							return uintptr(0), "/tmp/go/pkg/mod/github.com/vdaas@v0.0.0-20171023180738-a3a6125de932-a843423387/vald/internal/info.go", 100, true
+							return uintptr(0), "/tmp/go/pkg/mod/github.com/vdaas@v0.0.0-20171023180738-a3a6125de932-a843423387/vald/internal/info_test.go", 100, true
 						}
-						return uintptr(1), "info.go", 100, false
+						return uintptr(1), "info_test.go", 100, false
 					},
 					rtFuncForPC: func(ptr uintptr) *runtime.Func {
 						return runtime.FuncForPC(reflect.ValueOf(Test_info_Get).Pointer())
@@ -784,9 +784,9 @@ func Test_info_Get(t *testing.T) {
 					CGOEnabled: CGOEnabled,
 					StackTrace: []StackTrace{
 						StackTrace{
-							URL:      "https://github.com/vdaas/blob/master/vald/internal/info.go#L100",
+							URL:      "https://github.com/vdaas/blob/master/vald/internal/info_test.go#L100",
 							FuncName: "github.com/vdaas/vald/internal/info.Test_info_Get",
-							File:     "/tmp/go/pkg/mod/github.com/vdaas@v0.0.0-20171023180738-a3a6125de932-a843423387/vald/internal/info.go",
+							File:     "/tmp/go/pkg/mod/github.com/vdaas@v0.0.0-20171023180738-a3a6125de932-a843423387/vald/internal/info_test.go",
 							Line:     100,
 						},
 					},
@@ -804,9 +804,9 @@ func Test_info_Get(t *testing.T) {
 					rtCaller: func(skip int) (pc uintptr, file string, line int, ok bool) {
 						if i == 0 {
 							i++
-							return uintptr(0), "/tmp/go/src/github.com/vdaas/vald/internal/info.go", 100, true
+							return uintptr(0), "/tmp/go/src/github.com/vdaas/vald/internal/info_test.go", 100, true
 						}
-						return uintptr(1), "info.go", 100, false
+						return uintptr(1), "info_test.go", 100, false
 					},
 					rtFuncForPC: func(ptr uintptr) *runtime.Func {
 						return runtime.FuncForPC(reflect.ValueOf(Test_info_Get).Pointer())
@@ -823,9 +823,9 @@ func Test_info_Get(t *testing.T) {
 					CGOEnabled: CGOEnabled,
 					StackTrace: []StackTrace{
 						StackTrace{
-							URL:      "https://github.com/vdaas/vald/blob/master/internal/info.go#L100",
+							URL:      "https://github.com/vdaas/vald/blob/master/internal/info_test.go#L100",
 							FuncName: "github.com/vdaas/vald/internal/info.Test_info_Get",
-							File:     "/tmp/go/src/github.com/vdaas/vald/internal/info.go",
+							File:     "/tmp/go/src/github.com/vdaas/vald/internal/info_test.go",
 							Line:     100,
 						},
 					},
@@ -950,13 +950,13 @@ func Test_info_prepare(t *testing.T) {
 			name: "Version field is not overwritten when GitCommit field is `v1.0.0`",
 			fields: fields{
 				detail: Detail{
-					GitCommit: "internal",
+					GitCommit: "v1.0.0",
 				},
 			},
 			want: want{
 				want: info{
 					detail: Detail{
-						GitCommit:  "internal",
+						GitCommit:  "v1.0.0",
 						Version:    "gitcommit",
 						BuildTime:  "1s",
 						GoVersion:  runtime.Version(),
