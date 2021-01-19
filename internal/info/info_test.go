@@ -69,7 +69,7 @@ func TestString(t *testing.T) {
 				}))
 			},
 			want: want{
-				want: "\nbuild cpu info flags -> []\nbuild time           -> \ncgo enabled          -> \ngit commit           -> master\ngo arch              -> " + runtime.GOARCH + "\ngo os                -> " + runtime.GOOS + "\ngo version           -> " + runtime.Version() + "\nngt version          -> \nserver name          -> \nvald version         -> \x1b[1mv0.0.1\x1b[22m",
+				want: "\nbuild cpu info flags ->\t[]\ngit commit           ->\tmaster\ngo arch              ->\tamd64\ngo os                ->\tdarwin\ngo version           ->\tgo1.15.6\nvald version         ->\t\x1b[1mv0.0.1\x1b[22m",
 			},
 		},
 	}
@@ -498,7 +498,7 @@ func Test_info_String(t *testing.T) {
 				},
 			},
 			want: want{
-				want: "\nbuild cpu info flags -> []\nbuild time           -> bt\ncgo enabled          -> true\ngit commit           -> commit\ngo arch              -> goarch\ngo os                -> goos\ngo version           -> 1.1\nngt version          -> 1.2\nserver name          -> srv\nstack trace-0        -> url\tfunc\nvald version         -> \x1b[1m1.0\x1b[22m",
+				want: "\nbuild cpu info flags ->\t[]\nbuild time           ->\tbt\ncgo enabled          ->\ttrue\ngit commit           ->\tcommit\ngo arch              ->\tgoarch\ngo os                ->\tgoos\ngo version           ->\t1.1\nngt version          ->\t1.2\nserver name          ->\tsrv\nstack trace-0        ->\turl\tfunc\nvald version         ->\t\x1b[1m1.0\x1b[22m",
 			},
 		},
 		{
@@ -522,7 +522,7 @@ func Test_info_String(t *testing.T) {
 				},
 			},
 			want: want{
-				want: "\nbuild cpu info flags -> [avx512f avx512dq]\nbuild time           -> bt\ncgo enabled          -> true\ngit commit           -> commit\ngo arch              -> goarch\ngo os                -> goos\ngo version           -> 1.1\nngt version          -> 1.2\nserver name          -> srv\nvald version         -> \x1b[1m1.0\x1b[22m",
+				want: "\nbuild cpu info flags ->\t[avx512f avx512dq]\nbuild time           ->\tbt\ncgo enabled          ->\ttrue\ngit commit           ->\tcommit\ngo arch              ->\tgoarch\ngo os                ->\tgoos\ngo version           ->\t1.1\nngt version          ->\t1.2\nserver name          ->\tsrv\nvald version         ->\t\x1b[1m1.0\x1b[22m",
 			},
 		},
 	}
@@ -923,6 +923,31 @@ func Test_info_prepare(t *testing.T) {
 		},
 		{
 			name: "GitCommit field is not overwritten when GitCommit field is `internal`",
+			fields: fields{
+				detail: Detail{
+					GitCommit: "internal",
+				},
+			},
+			want: want{
+				want: info{
+					detail: Detail{
+						GitCommit:  "internal",
+						Version:    "gitcommit",
+						BuildTime:  "1s",
+						GoVersion:  runtime.Version(),
+						GoOS:       runtime.GOOS,
+						GoArch:     runtime.GOARCH,
+						CGOEnabled: "true",
+						NGTVersion: "v1.11.6",
+						BuildCPUInfoFlags: []string{
+							"avx512f", "avx512dq",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Version field is not overwritten when GitCommit field is `v1.0.0`",
 			fields: fields{
 				detail: Detail{
 					GitCommit: "internal",
