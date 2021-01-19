@@ -143,7 +143,6 @@ func BidirectionalStreamClient(stream ClientStream,
 	}))
 
 	defer func() {
-		status.FromError(err)
 		if err != nil {
 			err = errors.Wrap(stream.CloseSend(), err.Error())
 		} else {
