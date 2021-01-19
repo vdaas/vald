@@ -25,6 +25,7 @@ import (
 )
 
 func TestErrMySQLConnectionPingFailed(t *testing.T) {
+	t.Parallel()
 	type want struct {
 		want error
 	}
@@ -52,7 +53,8 @@ func TestErrMySQLConnectionPingFailed(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -72,6 +74,7 @@ func TestErrMySQLConnectionPingFailed(t *testing.T) {
 }
 
 func TestNewErrMySQLNotFoundIdentity(t *testing.T) {
+	t.Parallel()
 	type want struct {
 		want error
 	}
@@ -101,7 +104,8 @@ func TestNewErrMySQLNotFoundIdentity(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -121,6 +125,7 @@ func TestNewErrMySQLNotFoundIdentity(t *testing.T) {
 }
 
 func TestErrMySQLConnectionClosed(t *testing.T) {
+	t.Parallel()
 	type want struct {
 		want error
 	}
@@ -148,7 +153,8 @@ func TestErrMySQLConnectionClosed(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -168,6 +174,7 @@ func TestErrMySQLConnectionClosed(t *testing.T) {
 }
 
 func TestErrMySQLTransactionNotCreated(t *testing.T) {
+	t.Parallel()
 	type want struct {
 		want error
 	}
@@ -195,7 +202,8 @@ func TestErrMySQLTransactionNotCreated(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -215,6 +223,7 @@ func TestErrMySQLTransactionNotCreated(t *testing.T) {
 }
 
 func TestErrRequiredElementNotFoundByUUID(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		uuid string
 	}
@@ -262,7 +271,8 @@ func TestErrRequiredElementNotFoundByUUID(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -282,6 +292,7 @@ func TestErrRequiredElementNotFoundByUUID(t *testing.T) {
 }
 
 func TestNewErrMySQLInvalidArgumentIdentity(t *testing.T) {
+	t.Parallel()
 	type want struct {
 		want error
 	}
@@ -311,7 +322,8 @@ func TestNewErrMySQLInvalidArgumentIdentity(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -331,6 +343,7 @@ func TestNewErrMySQLInvalidArgumentIdentity(t *testing.T) {
 }
 
 func TestErrRequiredMemberNotFilled(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		member string
 	}
@@ -378,7 +391,8 @@ func TestErrRequiredMemberNotFilled(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -398,6 +412,7 @@ func TestErrRequiredMemberNotFilled(t *testing.T) {
 }
 
 func TestErrMySQLNotFoundIdentity_Error(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		err error
 	}
@@ -432,7 +447,8 @@ func TestErrMySQLNotFoundIdentity_Error(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -455,6 +471,7 @@ func TestErrMySQLNotFoundIdentity_Error(t *testing.T) {
 }
 
 func TestErrMySQLNotFoundIdentity_Unwrap(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		err error
 	}
@@ -498,7 +515,8 @@ func TestErrMySQLNotFoundIdentity_Unwrap(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -521,6 +539,7 @@ func TestErrMySQLNotFoundIdentity_Unwrap(t *testing.T) {
 }
 
 func TestIsErrMySQLNotFound(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		err error
 	}
@@ -573,7 +592,8 @@ func TestIsErrMySQLNotFound(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -593,6 +613,7 @@ func TestIsErrMySQLNotFound(t *testing.T) {
 }
 
 func TestErrMySQLInvalidArgumentIdentity_Error(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		err error
 	}
@@ -627,7 +648,8 @@ func TestErrMySQLInvalidArgumentIdentity_Error(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -650,6 +672,7 @@ func TestErrMySQLInvalidArgumentIdentity_Error(t *testing.T) {
 }
 
 func TestErrMySQLInvalidArgumentIdentity_Unwrap(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		err error
 	}
@@ -693,7 +716,8 @@ func TestErrMySQLInvalidArgumentIdentity_Unwrap(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -716,6 +740,7 @@ func TestErrMySQLInvalidArgumentIdentity_Unwrap(t *testing.T) {
 }
 
 func TestIsErrMySQLInvalidArgument(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		err error
 	}
@@ -768,7 +793,8 @@ func TestIsErrMySQLInvalidArgument(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
