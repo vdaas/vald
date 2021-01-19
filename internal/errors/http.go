@@ -20,31 +20,37 @@ package errors
 import "time"
 
 var (
-	// HTTP.
-
+	// ErrInvalidAPIConfig represents an error that the API configuration is invalid.
 	ErrInvalidAPIConfig = New("invalid api config")
 
+	// ErrInvalidRequest represents an error that the API request is invalid.
 	ErrInvalidRequest = New("invalid request")
 
+	// ErrHandler represents a function to generate an error that the handler returned an error.
 	ErrHandler = func(err error) error {
 		return Wrap(err, "handler returned error")
 	}
 
+	// ErrHandlerTimeout represents a function to generate an error that the handler was time out.
 	ErrHandlerTimeout = func(err error, dur time.Duration) error {
 		return Wrapf(err, "handler timeout %s", dur.String())
 	}
 
+	// ErrRequestBodyCloseAndFlush represents a function to generate an error that the flush of the request body and the close failed.
 	ErrRequestBodyCloseAndFlush = func(err error) error {
 		return Wrap(err, "request body flush & close failed")
 	}
 
+	// ErrRequestBodyClose represents a function to generate an error that the close of the request body failed.
 	ErrRequestBodyClose = func(err error) error {
 		return Wrap(err, "request body close failed")
 	}
 
+	// ErrRequestBodyFlush represents a function to generate an error that the flush of the request body failed.
 	ErrRequestBodyFlush = func(err error) error {
 		return Wrap(err, "request body flush failed")
 	}
 
+	// ErrTransportRetryable represents an error that the transport is retryable.
 	ErrTransportRetryable = New("transport is retryable")
 )
