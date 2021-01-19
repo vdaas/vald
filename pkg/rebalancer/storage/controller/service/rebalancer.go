@@ -267,6 +267,11 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 							r.pods.Store(pods)
 						}
 					} else {
+						ss, ok := r.statefulSets.Load().(statefulset.StatefulSet)
+						if !ok || *ss.Spec.Replicas != int32(len(pods)) {
+							log.Debugf("[test] Skip store pods, ss.Spec.Replica: %d\tlen(pods): %d", *ss.Spec.Replicas != int32(len(pods)))
+							return
+						}
 						log.Debug("[test] Store pods when len(dar) = 0")
 						r.pods.Store(pods)
 					}
