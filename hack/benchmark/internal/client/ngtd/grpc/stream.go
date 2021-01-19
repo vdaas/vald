@@ -57,7 +57,7 @@ func (s *streamSearch) Send(req *payload.Search_Request) error {
 	})
 }
 
-func (s *streamSearch) Recv() (*payload.Search_Response, error) {
+func (s *streamSearch) Recv() (*payload.Search_StreamResponse, error) {
 	data, err := s.ngtd.Recv()
 	if err != nil {
 		return nil, err
@@ -74,7 +74,11 @@ func (s *streamSearch) Recv() (*payload.Search_Response, error) {
 			Id:       string(dist.GetId()),
 		})
 	}
-	return res, nil
+	return &payload.Search_StreamResponse{
+		Payload: &payload.Search_StreamResponse_Response{
+			Response: res,
+		},
+	}, nil
 }
 
 type streamSearchByID struct {
@@ -95,7 +99,7 @@ func (s *streamSearchByID) Send(req *payload.Search_IDRequest) error {
 	})
 }
 
-func (s *streamSearchByID) Recv() (*payload.Search_Response, error) {
+func (s *streamSearchByID) Recv() (*payload.Search_StreamResponse, error) {
 	data, err := s.ngtd.Recv()
 	if err != nil {
 		return nil, err
@@ -112,7 +116,11 @@ func (s *streamSearchByID) Recv() (*payload.Search_Response, error) {
 			Id:       string(dist.GetId()),
 		})
 	}
-	return res, nil
+	return &payload.Search_StreamResponse{
+		Payload: &payload.Search_StreamResponse_Response{
+			Response: res,
+		},
+	}, nil
 }
 
 type streamInsert struct {
@@ -138,7 +146,7 @@ func (s *streamInsert) Send(req *payload.Insert_Request) error {
 	})
 }
 
-func (s *streamInsert) Recv() (*payload.Object_Location, error) {
+func (s *streamInsert) Recv() (*payload.Object_StreamLocation, error) {
 	data, err := s.ngtd.Recv()
 	if err != nil {
 		return nil, err
@@ -181,7 +189,7 @@ func (s *streamUpdate) Send(req *payload.Update_Request) error {
 	return err
 }
 
-func (s *streamUpdate) Recv() (*payload.Object_Location, error) {
+func (s *streamUpdate) Recv() (*payload.Object_StreamLocation, error) {
 	rdata, err := s.rc.Recv()
 	if err != nil {
 		return nil, err
@@ -236,13 +244,17 @@ func (s *streamUpsert) Send(req *payload.Upsert_Request) error {
 	return nil
 }
 
-func (s *streamUpsert) Recv() (loc *payload.Object_Location, err error) {
+func (s *streamUpsert) Recv() (loc *payload.Object_StreamLocation, err error) {
 	ctx := s.ClientStream.Context()
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	case loc := <-s.ch:
-		return loc, err
+		return &payload.Object_StreamLocation{
+			Payload: &payload.Object_StreamLocation_Location{
+				Location: loc,
+			},
+		}, err
 	}
 }
 
@@ -264,7 +276,7 @@ func (s *streamRemove) Send(req *payload.Remove_Request) error {
 	})
 }
 
-func (s *streamRemove) Recv() (*payload.Object_Location, error) {
+func (s *streamRemove) Recv() (*payload.Object_StreamLocation, error) {
 	data, err := s.ngtd.Recv()
 	if err != nil {
 		return nil, err
@@ -293,7 +305,7 @@ func (s *streamGetObject) Send(req *payload.Object_ID) error {
 	})
 }
 
-func (s *streamGetObject) Recv() (*payload.Object_Vector, error) {
+func (s *streamGetObject) Recv() (*payload.Object_StreamVector, error) {
 	data, err := s.ngtd.Recv()
 	if err != nil {
 		return nil, err
@@ -301,8 +313,12 @@ func (s *streamGetObject) Recv() (*payload.Object_Vector, error) {
 	if len(data.GetError()) != 0 {
 		return nil, errors.New(data.GetError())
 	}
-	return &payload.Object_Vector{
-		Id:     string(data.GetId()),
-		Vector: data.GetVector(),
+	return &payload.Object_StreamVector{
+		Payload: &payload.Object_StreamVector_Vector{
+			Vector: &payload.Object_Vector{
+				Id:     string(data.GetId()),
+				Vector: data.GetVector(),
+			},
+		},
 	}, nil
 }
