@@ -739,7 +739,9 @@ tests := map[string]func(t *testing.T) test {
 }
 ```
 
-### The steps to create a Table-Driven-Test
+### Create a Table-Driven-Test
+
+#### Structures
 
 1. `args` structure
 
@@ -776,6 +778,34 @@ tests := map[string]func(t *testing.T) test {
     }
     ```
 
+#### Inputs
+
+1. test case name
+
+    Test case name should be readable, meaningful and understandable easily. 
+    If you create a new test, the test name should be named based on the below naming templates.
+
+    - Success cases:
+        - Start with `success` or `{verb} success` or `success {verb}`
+        - End with the condition `when {condition}` or `with {condition}
+        - e.g.: `set success when the value is default value`
+    - Fail/Error cases:
+        - Start with `fail` or `{verb} fail` or `fail {verb}`
+        - End with the condition `when {condition}` or `with {condition}
+        - e.g.: `fail option setting when value is invalid value(string)`
+    - Return cases:
+        - If the test case do not match with `Success` or `Fails`, please use `Return` pattern.
+        - Start with `Returns {Object}`
+        - End with the condition `when {condition}` or `with {condition}
+        - e.g.: `return invalid error when the input is invalid`
+
+1. testing arguments
+
+    Input arguments for testing should be a meaningful value.
+    We should test with more realistic value as user use, to produce more realistic testing result.
+
+    For example, to test the function with `host` argument, you should set your hostname (e.g. `vald.vdaas.com`) as the input value to the `host` argument.
+
 Example:
 
 ```go
@@ -795,17 +825,17 @@ type test struct {
 }
 
 tests := map[string]func(*testing.T) test {
-    "test name": func(tt *testing.T) test {
+    "send success when host and port are correct value": func(tt *testing.T) test {
         tt.Helper()
 
         return test {
             args: args {
-                host: "host",
-                port: "port",
+                host: "vdaas.vald.org",
+                port: "80",
             },
             field: field {
-                host: "host",
-                port: "port",
+                host: "vdaas.vald.org",
+                port: "80",
             },
             checkFunc func(tt *testing.T, err error) {
                 t.Helper()
