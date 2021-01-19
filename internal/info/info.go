@@ -146,12 +146,17 @@ func Get() Detail {
 }
 
 // String returns summary of Detail object.
+// The stacktrace will be initialized when the stacktrace is not initialized yet.
 func (i info) String() string {
 	if len(i.detail.StackTrace) == 0 {
 		i.detail = i.Get()
 	}
 
-	d := i.detail
+	return i.detail.String()
+}
+
+// String returns summary of Detail object.
+func (d Detail) String() string {
 	d.Version = log.Bold(d.Version)
 	maxlen, l := 0, 0
 	rt, rv := reflect.TypeOf(d), reflect.ValueOf(d)
