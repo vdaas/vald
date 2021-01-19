@@ -30,11 +30,11 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/credentials"
+	"github.com/vdaas/vald/internal/net/grpc/keepalive"
 	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/safety"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
-	keepalive "google.golang.org/grpc/keepalive"
 )
 
 type Server interface {

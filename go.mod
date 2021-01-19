@@ -5,7 +5,7 @@ go 1.15
 replace (
 	cloud.google.com/go => cloud.google.com/go v0.75.0
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0+incompatible
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.36.26
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.36.28
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
@@ -16,12 +16,12 @@ replace (
 	github.com/gogo/googleapis => github.com/gogo/googleapis v1.4.0
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 	github.com/google/go-cmp => github.com/google/go-cmp v0.5.4
-	github.com/google/pprof => github.com/google/pprof v0.0.0-20210113181839-3dbeb6209700
+	github.com/google/pprof => github.com/google/pprof v0.0.0-20210115211752-39141e76b647
 	github.com/googleapis/gnostic => github.com/googleapis/gnostic v0.5.3
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.15.0
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.2
 	github.com/hailocab/go-hostpool => github.com/monzo/go-hostpool v0.0.0-20200724120130-287edbb29340
-	github.com/klauspost/compress => github.com/klauspost/compress v1.11.7-0.20210113214823-85d8ebff245c
+	github.com/klauspost/compress => github.com/klauspost/compress v1.11.8-0.20210114122944-19479720016a
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.2+incompatible
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
 	google.golang.org/grpc => google.golang.org/grpc v1.35.0
@@ -48,7 +48,10 @@ require (
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gocql/gocql v0.0.0-20200131111108-92af2e088537
 	github.com/gocraft/dbr/v2 v2.7.1
+	github.com/gogo/googleapis v0.0.0-20180223154316-0cd9801be74a
 	github.com/gogo/protobuf v1.3.1
+	github.com/gogo/status v1.1.0
+	github.com/golang/protobuf v1.4.3
 	github.com/google/go-cmp v0.5.4
 	github.com/google/gofuzz v1.2.0
 	github.com/gorilla/mux v1.8.0
@@ -74,7 +77,7 @@ require (
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/plot v0.8.1
 	google.golang.org/api v0.36.0
-	google.golang.org/genproto v0.0.0-20210113195801-ae06605f4595
+	google.golang.org/genproto v0.0.0-20210114201628-6edceaf6022f
 	google.golang.org/grpc v1.34.0
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.20.2

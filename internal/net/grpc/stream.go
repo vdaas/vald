@@ -20,22 +20,25 @@ package grpc
 import (
 	"context"
 	"io"
-	"os"
 	"runtime"
 	"sync"
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/safety"
 	"google.golang.org/grpc"
 )
 
-type ClientStream = grpc.ClientStream
+type (
+	ClientStream = grpc.ClientStream
+	ServerStream = grpc.ServerStream
+)
 
 // BidirectionalStream represents gRPC bidirectional stream server handler.
-func BidirectionalStream(ctx context.Context, stream grpc.ServerStream,
+func BidirectionalStream(ctx context.Context, stream ServerStream,
 	concurrency int,
 	newData func() interface{},
 	f func(context.Context, interface{}) (interface{}, error)) (err error) {
@@ -51,48 +54,24 @@ func BidirectionalStream(ctx context.Context, stream grpc.ServerStream,
 	finalize := func() error {
 		var errs error
 		err = eg.Wait()
-		if err != nil {
-			errs = errors.Wrap(errs, err.Error())
-			log.Error(err)
-		}
-		var gerrs *errors.Errors_RPC
-		errMap.Range(func(m, e interface{}) bool {
+		errMap.Range(func(_, e interface{}) bool {
 			err, ok := e.(error)
 			if !ok || err == nil {
 				return true
 			}
-			errs = errors.Wrap(errs, err.Error())
-			gerr := status.FromError(err)
-			if msg, ok := m.(string); ok && gerr == nil {
-				hostname, err := os.Hostname()
-				if err != nil {
-					log.Warn("failed to fetch hostname:", err)
-				}
-				gerr = &errors.Errors_RPC{
-					Type:     status.Unknown.String(),
-					Msg:      msg,
-					Instance: hostname,
-				}
+			if errs == nil {
+				errs = err
+			} else {
+				errs = errors.Wrap(err, errs.Error())
 			}
-			if gerr == nil {
-				return true
-			}
-			if gerrs == nil {
-				gerrs = gerr
-				return true
-			}
-			if gerrs.Roots == nil {
-				gerr.Roots = make([]*errors.Errors_RPC, concurrency)
-			}
-			gerrs.Roots = append(gerrs.Roots, gerr)
 			return true
 		})
 		if errs == nil {
 			return nil
 		}
-		st, err := status.New(status.Unknown, errs.Error()).WithDetails(gerrs)
-		if err != nil {
-			log.Warn(err)
+		st, ok := status.FromError(err)
+		if !ok {
+			return status.New(codes.Unknown, errs.Error()).Err()
 		}
 		return st.Err()
 	}
@@ -136,7 +115,7 @@ func BidirectionalStream(ctx context.Context, stream grpc.ServerStream,
 }
 
 // BidirectionalStreamClient is gRPC client stream.
-func BidirectionalStreamClient(stream grpc.ClientStream,
+func BidirectionalStreamClient(stream ClientStream,
 	dataProvider, newData func() interface{},
 	f func(interface{}, error)) (err error) {
 	if stream == nil {

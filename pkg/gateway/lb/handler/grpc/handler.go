@@ -33,6 +33,8 @@ import (
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
@@ -115,7 +117,14 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 		}
-		return nil, status.WrapWithInvalidArgument("Search API invalid vector argument", err, req, info.Get())
+		return nil, status.WrapWithInvalidArgument("Search API invalid vector argument", err, req, &errdetails.BadRequest{
+			FieldViolations: []*errdetails.BadRequestFieldViolation{
+				{
+					Field:       "vector dimension size",
+					Description: err.Error(),
+				},
+			},
+		}, info.Get())
 	}
 	res, err = s.search(ctx, req.GetConfig(),
 		func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
@@ -143,7 +152,14 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 		}
-		return nil, status.WrapWithInvalidArgument("SearchByID API invalid uuid", err, req, info.Get())
+		return nil, status.WrapWithInvalidArgument("SearchByID API invalid uuid", err, req, &errdetails.BadRequest{
+			FieldViolations: []*errdetails.BadRequestFieldViolation{
+				{
+					Field:       "invalid id",
+					Description: err.Error(),
+				},
+			},
+		}, info.Get())
 	}
 	vec, err := s.GetObject(ctx, &payload.Object_ID{
 		Id: req.GetId(),
@@ -154,21 +170,10 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		}
 		return nil, status.WrapWithNotFound(fmt.Sprintf("SearchByID API uuid %s's object not found", req.GetId()), err, info.Get())
 	}
-	vl := len(vec.GetVector())
-	if vl < algorithm.MinimumVectorDimensionSize {
-		err = errors.ErrInvalidDimensionSize(vl, 0)
-		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
-		}
-		return nil, status.WrapWithInvalidArgument("SearchByID API invalid vector length fetched", err, req, info.Get())
-	}
-	res, err = s.search(ctx, req.GetConfig(),
-		func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
-			return vc.Search(ctx, &payload.Search_Request{
-				Vector: vec.GetVector(),
-				Config: req.GetConfig(),
-			}, copts...)
-		})
+	res, err = s.Search(ctx, &payload.Search_Request{
+		Vector: vec.GetVector(),
+		Config: req.GetConfig(),
+	})
 	if err != nil {
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
@@ -317,9 +322,14 @@ func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) error {
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			res, err := s.Search(ctx, data.(*payload.Search_Request))
 			if err != nil {
+				st, ok := status.FromError(err)
+				if !ok {
+					st = status.New(codes.Internal, errors.Wrap(err, "failed to parse grpc status from error").Error())
+					err = errors.Wrap(st.Err(), err.Error())
+				}
 				return &payload.Search_StreamResponse{
-					Payload: &payload.Search_StreamResponse_Error{
-						Error: status.FromError(err),
+					Payload: &payload.Search_StreamResponse_Status{
+						Status: st.Proto(),
 					},
 				}, err
 			}
@@ -343,9 +353,14 @@ func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) err
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			res, err := s.SearchByID(ctx, data.(*payload.Search_IDRequest))
 			if err != nil {
+				st, ok := status.FromError(err)
+				if !ok {
+					st = status.New(codes.Internal, errors.Wrap(err, "failed to parse grpc status from error").Error())
+					err = errors.Wrap(st.Err(), err.Error())
+				}
 				return &payload.Search_StreamResponse{
-					Payload: &payload.Search_StreamResponse_Error{
-						Error: status.FromError(err),
+					Payload: &payload.Search_StreamResponse_Status{
+						Status: st.Proto(),
 					},
 				}, err
 			}
@@ -381,7 +396,16 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 				}
 				mu.Lock()
-				errs = errors.Wrap(errs, status.WrapWithNotFound(fmt.Sprintf("MultiSearch API vector %v's search request result not found", query.GetVector()), err, info.Get()).Error())
+				if errs == nil {
+					errs = status.WrapWithNotFound(
+						fmt.Sprintf("MultiSearch API vector %v's search request result not found",
+							query.GetVector()), err, info.Get())
+				} else {
+					errs = errors.Wrap(errs,
+						status.WrapWithNotFound(
+							fmt.Sprintf("MultiSearch API vector %v's search request result not found",
+								query.GetVector()), err, info.Get()).Error())
+				}
 				mu.Unlock()
 				return nil
 			}
@@ -417,7 +441,16 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 				}
 				mu.Lock()
-				errs = errors.Wrap(errs, status.WrapWithNotFound(fmt.Sprintf("MultiSearchByID API uuid %v's search by id request result not found", query.GetId()), err, info.Get()).Error())
+				if errs == nil {
+					errs = status.WrapWithNotFound(
+						fmt.Sprintf("MultiSearchByID API uuid %v's search by id request result not found",
+							query.GetId()), err, info.Get())
+				} else {
+					errs = errors.Wrap(errs,
+						status.WrapWithNotFound(
+							fmt.Sprintf("MultiSearchByID API uuid %v's search by id request result not found",
+								query.GetId()), err, info.Get()).Error())
+				}
 				mu.Unlock()
 				return nil
 			}
@@ -444,7 +477,14 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 		}
-		return nil, status.WrapWithInvalidArgument("Search API invalid vector argument", err, req, info.Get())
+		return nil, status.WrapWithInvalidArgument("Search API invalid vector argument", err, req, &errdetails.BadRequest{
+			FieldViolations: []*errdetails.BadRequestFieldViolation{
+				{
+					Field:       "vector dimension size",
+					Description: err.Error(),
+				},
+			},
+		}, info.Get())
 	}
 	if !req.GetConfig().GetSkipStrictExistCheck() {
 		id, err := s.Exists(ctx, &payload.Object_ID{
@@ -513,9 +553,14 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) error {
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			res, err := s.Insert(ctx, data.(*payload.Insert_Request))
 			if err != nil {
+				st, ok := status.FromError(err)
+				if !ok {
+					st = status.New(codes.Internal, errors.Wrap(err, "failed to parse grpc status from error").Error())
+					err = errors.Wrap(st.Err(), err.Error())
+				}
 				return &payload.Object_StreamLocation{
-					Payload: &payload.Object_StreamLocation_Error{
-						Error: status.FromError(err),
+					Payload: &payload.Object_StreamLocation_Status{
+						Status: st.Proto(),
 					},
 				}, err
 			}
@@ -638,9 +683,14 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) error {
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			res, err := s.Update(ctx, data.(*payload.Update_Request))
 			if err != nil {
+				st, ok := status.FromError(err)
+				if !ok {
+					st = status.New(codes.Internal, errors.Wrap(err, "failed to parse grpc status from error").Error())
+					err = errors.Wrap(st.Err(), err.Error())
+				}
 				return &payload.Object_StreamLocation{
-					Payload: &payload.Object_StreamLocation_Error{
-						Error: status.FromError(err),
+					Payload: &payload.Object_StreamLocation_Status{
+						Status: st.Proto(),
 					},
 				}, err
 			}
@@ -758,9 +808,14 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) error {
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			res, err := s.Upsert(ctx, data.(*payload.Upsert_Request))
 			if err != nil {
+				st, ok := status.FromError(err)
+				if !ok {
+					st = status.New(codes.Internal, errors.Wrap(err, "failed to parse grpc status from error").Error())
+					err = errors.Wrap(st.Err(), err.Error())
+				}
 				return &payload.Object_StreamLocation{
-					Payload: &payload.Object_StreamLocation_Error{
-						Error: status.FromError(err),
+					Payload: &payload.Object_StreamLocation_Status{
+						Status: st.Proto(),
 					},
 				}, err
 			}
@@ -938,9 +993,14 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) error {
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			res, err := s.Remove(ctx, data.(*payload.Remove_Request))
 			if err != nil {
+				st, ok := status.FromError(err)
+				if !ok {
+					st = status.New(codes.Internal, errors.Wrap(err, "failed to parse grpc status from error").Error())
+					err = errors.Wrap(st.Err(), err.Error())
+				}
 				return &payload.Object_StreamLocation{
-					Payload: &payload.Object_StreamLocation_Error{
-						Error: status.FromError(err),
+					Payload: &payload.Object_StreamLocation_Status{
+						Status: st.Proto(),
 					},
 				}, err
 			}
@@ -1063,9 +1123,14 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) error
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			res, err := s.GetObject(ctx, data.(*payload.Object_ID))
 			if err != nil {
+				st, ok := status.FromError(err)
+				if !ok {
+					st = status.New(codes.Internal, errors.Wrap(err, "failed to parse grpc status from error").Error())
+					err = errors.Wrap(st.Err(), err.Error())
+				}
 				return &payload.Object_StreamVector{
-					Payload: &payload.Object_StreamVector_Error{
-						Error: status.FromError(err),
+					Payload: &payload.Object_StreamVector_Status{
+						Status: st.Proto(),
 					},
 				}, err
 			}

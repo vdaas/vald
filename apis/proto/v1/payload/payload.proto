@@ -18,13 +18,20 @@ syntax = "proto3";
 
 package payload.v1;
 
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "github.com/gogo/googleapis/google/rpc/status.proto";
+import "github.com/envoyproxy/protoc-gen-validate/validate/validate.proto";
+
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/payload";
 option java_multiple_files = true;
 option java_package = "org.vdaas.vald.api.v1.payload";
 option java_outer_classname = "ValdPayload";
 
-import "apis/proto/v1/errors/errors.proto";
-import "github.com/envoyproxy/protoc-gen-validate/validate/validate.proto";
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.goproto_registration) = true;
+option (gogoproto.messagename_all) = true;
 
 message Search {
   message Request {
@@ -69,7 +76,7 @@ message Search {
   message StreamResponse { 
     oneof payload{
       Response response = 1;
-      errors.v1.Errors.RPC error = 2;
+      google.rpc.Status status = 2;
     }
   }
 }
@@ -160,7 +167,7 @@ message Object {
   message StreamDistance { 
     oneof payload{
       Distance distance = 1;
-      errors.v1.Errors.RPC error = 2;
+      google.rpc.Status status = 2;
     }
   }
 
@@ -176,7 +183,7 @@ message Object {
   message StreamVector { 
     oneof payload{
       Vector vector = 1;
-      errors.v1.Errors.RPC error = 2;
+      google.rpc.Status status = 2;
     }
   }
 
@@ -188,7 +195,7 @@ message Object {
   message StreamBlob { 
     oneof payload{
       Blob blob = 1;
-      errors.v1.Errors.RPC error = 2;
+      google.rpc.Status status = 2;
     }
   }
 
@@ -202,7 +209,7 @@ message Object {
   message StreamLocation { 
     oneof payload{
       Location location = 1;
-      errors.v1.Errors.RPC error = 2;
+      google.rpc.Status status = 2;
     }
   }
 

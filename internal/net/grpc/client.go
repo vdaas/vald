@@ -38,11 +38,9 @@ import (
 )
 
 type (
-	Server       = grpc.Server
-	ServerOption = grpc.ServerOption
-	CallOption   = grpc.CallOption
-	DialOption   = pool.DialOption
-	ClientConn   = pool.ClientConn
+	CallOption = grpc.CallOption
+	DialOption = pool.DialOption
+	ClientConn = pool.ClientConn
 )
 
 type Client interface {

@@ -24,6 +24,8 @@ output:
 
 linters:
   enable-all: true
+  disable:
+    - godot
 
 issues:
   exclude-use-default: false

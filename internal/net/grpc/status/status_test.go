@@ -21,11 +21,87 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/gogo/status"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"go.uber.org/goleak"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
+
+func TestNew(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		c   codes.Code
+		msg string
+	}
+	type want struct {
+		want *status.Status
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *status.Status) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got *status.Status) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           c: nil,
+		           msg: "",
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           c: nil,
+		           msg: "",
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := New(test.args.c, test.args.msg)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
 
 func Test_newStatus(t *testing.T) {
 	t.Parallel()
@@ -1373,25 +1449,26 @@ func TestWrapWithUnauthenticated(t *testing.T) {
 	}
 }
 
-func TestFromError(t *testing.T) {
+func TestError(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		err error
+		code codes.Code
+		msg  string
 	}
 	type want struct {
-		want *errors.Errors_RPC
+		err error
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, *errors.Errors_RPC) error
+		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *errors.Errors_RPC) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -1401,7 +1478,8 @@ func TestFromError(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           err: nil,
+		           code: nil,
+		           msg: "",
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1414,7 +1492,8 @@ func TestFromError(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           err: nil,
+		           code: nil,
+		           msg: "",
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1438,34 +1517,35 @@ func TestFromError(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got := FromError(test.args.err)
-			if err := test.checkFunc(test.want, got); err != nil {
+			err := Error(test.args.code, test.args.msg)
+			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
 	}
 }
 
-func TestNew(t *testing.T) {
+func TestErrorf(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		c   codes.Code
-		msg string
+		code   codes.Code
+		format string
+		args   []interface{}
 	}
 	type want struct {
-		want *status.Status
+		err error
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, *status.Status) error
+		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *status.Status) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -1475,8 +1555,9 @@ func TestNew(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           c: nil,
-		           msg: "",
+		           code: nil,
+		           format: "",
+		           args: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1489,8 +1570,9 @@ func TestNew(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           c: nil,
-		           msg: "",
+		           code: nil,
+		           format: "",
+		           args: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1514,8 +1596,85 @@ func TestNew(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got := New(test.args.c, test.args.msg)
-			if err := test.checkFunc(test.want, got); err != nil {
+			err := Errorf(test.args.code, test.args.format, test.args.args...)
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestFromError(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		err error
+	}
+	type want struct {
+		wantSt *status.Status
+		wantOk bool
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *status.Status, bool) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotSt *status.Status, gotOk bool) error {
+		if !reflect.DeepEqual(gotSt, w.wantSt) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotSt, w.wantSt)
+		}
+		if !reflect.DeepEqual(gotOk, w.wantOk) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOk, w.wantOk)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           err: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           err: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			gotSt, gotOk := FromError(test.args.err)
+			if err := test.checkFunc(test.want, gotSt, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

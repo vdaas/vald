@@ -18,78 +18,86 @@
 package status
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"strings"
 
+	"github.com/gogo/status"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/net/grpc/errdetails"
+	"github.com/vdaas/vald/internal/net/grpc/proto"
 )
 
-var (
-	Canceled           = codes.Canceled
-	Unknown            = codes.Unknown
-	InvalidArgument    = codes.InvalidArgument
-	DeadlineExceeded   = codes.DeadlineExceeded
-	NotFound           = codes.NotFound
-	AlreadyExists      = codes.AlreadyExists
-	PermissionDenied   = codes.PermissionDenied
-	ResourceExhausted  = codes.ResourceExhausted
-	FailedPrecondition = codes.FailedPrecondition
-	Aborted            = codes.Aborted
-	OutOfRange         = codes.OutOfRange
-	Unimplemented      = codes.Unimplemented
-	Internal           = codes.Internal
-	Unavailable        = codes.Unavailable
-	DataLoss           = codes.DataLoss
-	Unauthenticated    = codes.Unauthenticated
-
-	Code = status.Code
-)
+var Code = status.Code
 
 func New(c codes.Code, msg string) *status.Status {
 	return status.New(c, msg)
 }
 
 func newStatus(code codes.Code, msg string, err error, details ...interface{}) (st *status.Status) {
-	st = status.New(code, msg)
+	st = New(code, msg)
 
-	data := errors.Errors_RPC{
-		Type:   code.String(),
-		Msg:    msg,
-		Status: int64(code),
-	}
-	if err != nil {
-		data.Error = err.Error()
-	}
-
+	messages := make([]proto.Message, 0, 4)
 	if len(details) != 0 {
-		data.Details = make([]string, 0, len(details))
 		for _, detail := range details {
 			switch v := detail.(type) {
-			case *errors.Errors_RPC:
-				data.Roots = append(data.Roots, v)
 			case info.Detail:
-				data.Details = append(data.Details, v.String())
-			default:
-				data.Details = append(data.Details, fmt.Sprintf("%#v", detail))
+				debug := &errdetails.DebugInfo{
+					Detail: fmt.Sprintf("Version: %s,Name: %s, GitCommit: %s, BuildTime: %s, NGT_Version: %s ,Go_Version: %s, GOARCH: %s, GOOS: %s, CGO_Enabled: %s, BuildCPUInfo: [%s]",
+						v.Version,
+						v.ServerName,
+						v.GitCommit,
+						v.BuildTime,
+						v.NGTVersion,
+						v.GoVersion,
+						v.GoArch,
+						v.GoOS,
+						v.CGOEnabled,
+						strings.Join(v.BuildCPUInfoFlags, ", "),
+					),
+				}
+				if debug.StackEntries == nil {
+					debug.StackEntries = make([]string, 0, len(v.StackTrace))
+				}
+				for i, stack := range v.StackTrace {
+					debug.StackEntries = append(debug.StackEntries, fmt.Sprintf("id: %d stack_trace: %s", i, stack.String()))
+				}
+				messages = append(messages, debug)
+			case proto.Message:
+				messages = append(messages, v)
 			}
 		}
 	}
 
-	root := FromError(err)
-	if root != nil {
-		data.Roots = append(data.Roots, root)
-	}
-
-	data.Instance, err = os.Hostname()
 	if err != nil {
-		log.Warn("failed to fetch hostname:", err)
+		messages = append(messages, &errdetails.ErrorInfo{
+			Reason: err.Error(),
+			Domain: func() (hostname string) {
+				var err error
+				hostname, err = os.Hostname()
+				if err != nil {
+					log.Warn("failed to fetch hostname:", err)
+				}
+				return hostname
+			}(),
+		})
 	}
 
-	st, err = st.WithDetails(&data)
+	prevSt, ok := FromError(err)
+	if ok {
+		for _, detail := range prevSt.Details() {
+			dm, ok := detail.(proto.Message)
+			if ok {
+				messages = append(messages, dm)
+			}
+		}
+	}
+
+	st, err = st.WithDetails(messages...)
 	if err != nil {
 		log.Warn("failed to set error details:", err)
 	}
@@ -161,14 +169,69 @@ func WrapWithUnauthenticated(msg string, err error, details ...interface{}) erro
 	return newStatus(codes.Unauthenticated, msg, err, details...).Err()
 }
 
-func FromError(err error) *errors.Errors_RPC {
+func Error(code codes.Code, msg string) error {
+	return status.Error(code, msg)
+}
+
+func Errorf(code codes.Code, format string, args ...interface{}) error {
+	return status.Errorf(code, format, args...)
+}
+
+func FromError(err error) (st *status.Status, ok bool) {
 	if err == nil {
-		return nil
+		return nil, false
 	}
-	for _, detail := range status.Convert(err).Details() {
-		if err, ok := detail.(*errors.Errors_RPC); ok {
-			return err
+	root := err
+	defer func() {
+		if !ok {
+			return
+		}
+		sst, ok := FromError(errors.Unwrap(err))
+		if ok && sst != nil && sst.Err() != nil {
+			pms := make([]proto.Message, 0, len(st.Details())+len(sst.Details())+1)
+			for _, detail := range append(st.Details(), sst.Details()) {
+				pm, ok := detail.(proto.Message)
+				if ok {
+					pms = append(pms, pm)
+				}
+			}
+			pms = append(pms, &errdetails.ErrorInfo{
+				Domain: fmt.Sprintf("code: %d, message: %s", sst.Code(), sst.Message()),
+				Reason: sst.Err().Error(),
+			})
+			ist, err := New(st.Code(), st.Message()).WithDetails(pms...)
+			if err == nil {
+				st = ist
+			}
+		}
+	}()
+
+	for {
+		if st, ok = status.FromError(err); ok && st != nil {
+			return st, true
+		}
+		if uerr := errors.Unwrap(err); uerr != nil {
+			err = uerr
+		} else {
+			err = root
+			for {
+				switch err {
+				case context.DeadlineExceeded:
+					st = newStatus(codes.DeadlineExceeded, root.Error(), errors.Unwrap(err))
+					return st, true
+				case context.Canceled:
+					st = newStatus(codes.Canceled, root.Error(), errors.Unwrap(err))
+					return st, true
+				case nil:
+					st = New(codes.Unknown, root.Error())
+					return st, false
+				}
+				if uerr := errors.Unwrap(err); uerr == nil {
+					return New(codes.Unknown, root.Error()), false
+				} else {
+					err = uerr
+				}
+			}
 		}
 	}
-	return nil
 }
