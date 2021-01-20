@@ -83,8 +83,6 @@ If you want to learn about Scylla, please refer to [the official website](https:
     ```bash
     kubectl apply -f k8s/external/scylla/scyllacluster.yaml
     kubectl wait -n scylla --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=vald-scylla-cluster-dc0-rack0-0 --timeout=600s
-    kubectl wait -n scylla --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=vald-scylla-cluster-dc0-rack0-1 --timeout=600s
-    kubectl wait -n scylla --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=vald-scylla-cluster-dc0-rack0-2 --timeout=600s
     kubectl -n scylla get pods
     ```
     
