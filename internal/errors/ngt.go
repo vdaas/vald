@@ -37,7 +37,7 @@ var (
 		return Errorf("dimension size %d is invalid, the supporting dimension size must be between 2 ~ %d", current, limit)
 	}
 
-	// ErrDimensionLimitExceed represents a function to generate an error that the supported dimension limit exceded.
+	// ErrDimensionLimitExceed represents a function to generate an error that the supported dimension limit exceeded.
 	ErrDimensionLimitExceed = func(current, limit int) error {
 		return Errorf("supported dimension limit exceed:\trequired = %d,\tlimit = %d", current, limit)
 	}
@@ -78,7 +78,7 @@ var (
 		return Wrap(err, "failed to set search edge size")
 	}
 
-	// ErrUncommittedIndexExists represents a function to generate an error that the uncommitted indexes exists.
+	// ErrUncommittedIndexExists represents a function to generate an error that the uncommitted indexes exist.
 	ErrUncommittedIndexExists = func(num uint64) error {
 		return Errorf("%d indexes are not committed", num)
 	}
