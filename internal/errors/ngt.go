@@ -18,16 +18,18 @@
 package errors
 
 var (
-	// NGT.
-
+	// ErrCreateProperty represents an error that the property creation failed.
 	ErrCreateProperty = func(err error) error {
 		return Wrap(err, "failed to create property")
 	}
 
+	// ErrIndexNotFound represents an error that the index file is not found.
 	ErrIndexNotFound = New("index file not found")
 
+	// ErrIndexLoadTimeout represents an error that the index loading timeout.
 	ErrIndexLoadTimeout = New("index load timeout")
 
+	// ErrInvalidDimensionSize represents a function to generate an error that the dimension size is invalid.
 	ErrInvalidDimensionSize = func(current, limit int) error {
 		if limit == 0 {
 			return Errorf("dimension size %d is invalid, the supporting dimension size must be bigger than 2", current)
@@ -35,51 +37,64 @@ var (
 		return Errorf("dimension size %d is invalid, the supporting dimension size must be between 2 ~ %d", current, limit)
 	}
 
+	// ErrDimensionLimitExceed represents a function to generate an error that the supported dimension limit exceded.
 	ErrDimensionLimitExceed = func(current, limit int) error {
 		return Errorf("supported dimension limit exceed:\trequired = %d,\tlimit = %d", current, limit)
 	}
 
+	// ErrIncompatibleDimensionSize represents a function to generate an error that the incompatible dimension size detected.
 	ErrIncompatibleDimensionSize = func(req, dim int) error {
 		return Errorf("incompatible dimension size detected\trequested: %d,\tconfigured: %d", req, dim)
 	}
 
+	// ErrUnsupportedObjectType represents an error that the object type is unsupported.
 	ErrUnsupportedObjectType = New("unsupported ObjectType")
 
+	// ErrUnsupportedDistanceType represents an error that the distance type is unsupported.
 	ErrUnsupportedDistanceType = New("unsupported DistanceType")
 
+	// ErrFailedToSetDistanceType represents a function to generate an error that the set of distance type failed.
 	ErrFailedToSetDistanceType = func(err error, distance string) error {
 		return Wrap(err, "failed to set distance type "+distance)
 	}
 
+	// ErrFailedToSetObjectType represents a function to generate an error that the set of object type failed.
 	ErrFailedToSetObjectType = func(err error, t string) error {
 		return Wrap(err, "failed to set object type "+t)
 	}
 
+	// ErrFailedToSetDimension represents a function to generate an error that the set of dimension failed.
 	ErrFailedToSetDimension = func(err error) error {
 		return Wrap(err, "failed to set dimension")
 	}
 
+	// ErrFailedToSetCreationEdgeSize represents a function to generate an error that the set of creation edge size failed.
 	ErrFailedToSetCreationEdgeSize = func(err error) error {
 		return Wrap(err, "failed to set creation edge size")
 	}
 
+	// ErrFailedToSetSearchEdgeSize represents a function to generate an error that the set of search edge size failed.
 	ErrFailedToSetSearchEdgeSize = func(err error) error {
 		return Wrap(err, "failed to set search edge size")
 	}
 
+	// ErrUncommittedIndexExists represents a function to generate an error that the uncommitted indexes exists.
 	ErrUncommittedIndexExists = func(num uint64) error {
 		return Errorf("%d indexes are not committed", num)
 	}
 
+	// ErrUncommittedIndexNotFound represents an error that the uncommitted indexes are not found.
 	ErrUncommittedIndexNotFound = New("uncommitted indexes are not found")
 
-	// ErrCAPINotImplemented raises using not implemented function in C API.
+	// ErrCAPINotImplemented represents an error that the function is not implemented in C API.
 	ErrCAPINotImplemented = New("not implemented in C API")
 
+	// ErrUUIDAlreadyExists represents a function to generate an error that the uuid already exists.
 	ErrUUIDAlreadyExists = func(uuid string, oid uint) error {
 		return Errorf("ngt uuid %s object id %d already exists ", uuid, oid)
 	}
 
+	// ErrUUIDNotFound represents a function to generate an error that the uuid is not found.
 	ErrUUIDNotFound = func(id uint32) error {
 		if id == 0 {
 			return Errorf("ngt object uuid not found", id)
@@ -87,14 +102,17 @@ var (
 		return Errorf("ngt object uuid %d's metadata not found", id)
 	}
 
+	// ErrObjectIDNotFound represents a function to generate an error that the object id is not found.
 	ErrObjectIDNotFound = func(uuid string) error {
 		return Errorf("ngt uuid %s's object id not found", uuid)
 	}
 
+	// ErrObjectNotFound represents a function to generate an error that the object is not found.
 	ErrObjectNotFound = func(err error, uuid string) error {
 		return Wrapf(err, "ngt uuid %s's object not found", uuid)
 	}
 
+	// ErrRemoveRequestedBeforeIndexing represents a function to generate an error that the object is not indexed so can not remove it.
 	ErrRemoveRequestedBeforeIndexing = func(oid uint) error {
 		return Errorf("object id %d is not indexed we cannot remove it", oid)
 	}
