@@ -349,7 +349,7 @@ func (m *mySQLClient) SetVectors(ctx context.Context, vecs ...Vector) error {
 	return tx.Commit()
 }
 
-func (m *mySQLClient) deleteVector(ctx context.Context, val interface{}) error {
+func (m *mySQLClient) deleteVector(ctx context.Context, val string) error {
 	if !m.connected.Load().(bool) {
 		return errors.ErrMySQLConnectionClosed
 	}
@@ -363,12 +363,21 @@ func (m *mySQLClient) deleteVector(ctx context.Context, val interface{}) error {
 	}
 	defer tx.RollbackUnlessCommitted()
 
+	var id int64
+	_, err = tx.Select(idColumnName).From(vectorTableName).Where(m.dbr.Eq(uuidColumnName, val)).Limit(1).LoadContext(ctx, &id)
+	if err != nil {
+		return err
+	}
+	if id == 0 {
+		return errors.ErrRequiredElementNotFoundByUUID(val)
+	}
+
 	_, err = tx.DeleteFrom(vectorTableName).Where(m.dbr.Eq(uuidColumnName, val)).ExecContext(ctx)
 	if err != nil {
 		return err
 	}
 
-	_, err = tx.DeleteFrom(podIPTableName).Where(m.dbr.Eq(uuidColumnName, val)).ExecContext(ctx)
+	_, err = tx.DeleteFrom(podIPTableName).Where(m.dbr.Eq(idColumnName, id)).ExecContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -381,8 +390,15 @@ func (m *mySQLClient) DeleteVector(ctx context.Context, uuid string) error {
 }
 
 // DeleteVectors is the same as DeleteVector() but it deletes multiple records.
-func (m *mySQLClient) DeleteVectors(ctx context.Context, uuids ...string) error {
-	return m.deleteVector(ctx, uuids)
+func (m *mySQLClient) DeleteVectors(ctx context.Context, uuids ...string) (err error) {
+	for _, uuid := range uuids {
+		err = m.deleteVector(ctx, uuid)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // SetIPs insert the vector's uuid and the podIPs into database.

@@ -1,0 +1,89 @@
+#
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+defaults:
+  logging:
+    level: info
+
+agent:
+  minReplicas: 1
+  podManagementPolicy: Parallel
+  hpa:
+    enabled: false
+  resources:
+    requests:
+      cpu: 100m
+      memory: 50Mi
+  volumes:
+    - name: ngt-index
+      emptyDir: {}
+  volumeMounts:
+    - name: ngt-index
+      mountPath: /var/ngt
+  ngt:
+    auto_index_duration_limit: 3m
+    auto_index_check_duration: 1m
+    auto_index_length: 1000
+    dimension: 784
+    index_path: /var/ngt/index
+    enable_in_memory_mode: false
+  sidecar:
+    enabled: true
+    initContainerEnabled: true
+    env:
+      - name: AWS_ACCESS_KEY
+        value: ACCESSKEY
+      - name: AWS_SECRET_ACCESS_KEY
+        value: SECRETKEY
+    resources:
+      requests:
+        cpu: 100m
+        memory: 100Mi
+    config:
+      filename: vald-agent-ngt-index
+      blob_storage:
+        storage_type: "s3"
+        bucket: "vald-minio"
+        s3:
+          endpoint: "http://minio.default.svc.cluster.local:9000"
+          region: "us-east-1"
+          force_path_style: true
+
+gateway:
+  vald:
+    enabled: false
+  lb:
+    enabled: false
+  backup:
+    enabled: false
+  meta:
+    enabled: false
+
+discoverer:
+  enabled: false
+
+manager:
+  compressor:
+    enabled: false
+
+  backup:
+    enabled: false
+
+  index:
+    enabled: false
+
+meta:
+  enabled: false

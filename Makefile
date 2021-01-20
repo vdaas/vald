@@ -177,6 +177,7 @@ GO_SOURCES = $(eval GO_SOURCES := $(shell find \
 		-not -path './hack/license/*' \
 		-not -path './hack/swagger/*' \
 		-not -path './hack/tools/*' \
+		-not -path './tests/*' \
 		-type f \
 		-name '*.go' \
 		-not -regex '.*options?\.go' \
@@ -198,6 +199,7 @@ GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell find \
 		-not -path './hack/license/*' \
 		-not -path './hack/swagger/*' \
 		-not -path './hack/tools/*' \
+		-not -path './tests/*' \
 		-type f \
 		-regex '.*options?\.go' \
 		-not -name '*_test.go' \
@@ -219,6 +221,8 @@ DOCKER_OPTS      ?=
 DISTROLESS_IMAGE      ?= gcr.io/distroless/static
 DISTROLESS_IMAGE_TAG  ?= nonroot
 UPX_OPTIONS           ?= -9
+
+K8S_EXTERNAL_SCYLLA_MANIFEST ?= k8s/external/scylla/scyllacluster.yaml
 
 COMMA := ,
 SHELL = bash

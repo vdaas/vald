@@ -4,3 +4,4 @@
 - :white_check_mark: `/gen-test` - generate test codes
 - :label: `/label` - add labels
 - :rewind: `/rebase` - rebase master
+- :end: :two: :end: `/label actions/e2e-deploy` - run E2E deploy & integration test

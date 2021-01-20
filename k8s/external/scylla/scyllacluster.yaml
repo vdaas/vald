@@ -95,7 +95,7 @@ spec:
     name: dc0
     racks:
       - agentResources: {}
-        members: 3
+        members: 1
         name: rack0
         resources:
           limits:

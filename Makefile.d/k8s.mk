@@ -203,6 +203,7 @@ k8s/vald/delete/scylla: \
 k8s/external/mysql/deploy:
 	kubectl apply -f k8s/jobs/db/initialize/mysql/configmap.yaml
 	kubectl apply -f k8s/external/mysql
+	kubectl wait --for=condition=ready pod -l app=mysql --timeout=600s
 
 .PHONY: k8s/external/mysql/delete
 ## delete mysql from k8s
@@ -221,6 +222,7 @@ k8s/external/mysql/initialize:
 ## deploy redis to k8s
 k8s/external/redis/deploy:
 	kubectl apply -f k8s/external/redis
+	kubectl wait --for=condition=ready pod -l app=redis --timeout=600s
 
 .PHONY: k8s/external/redis/delete
 ## delete redis from k8s
@@ -260,12 +262,10 @@ k8s/external/scylla/deploy: \
 	kubectl apply -f https://raw.githubusercontent.com/scylladb/scylla-operator/master/examples/common/operator.yaml
 	kubectl wait -n scylla-operator-system --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=scylla-operator-controller-manager-0 --timeout=600s
 	kubectl -n scylla-operator-system get pod
-	kubectl apply -f k8s/external/scylla/scyllacluster.yaml
+	kubectl apply -f $(K8S_EXTERNAL_SCYLLA_MANIFEST)
 	kubectl -n scylla get ScyllaCluster
 	kubectl -n scylla get pods
 	kubectl wait -n scylla --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=vald-scylla-cluster-dc0-rack0-0 --timeout=600s
-	kubectl wait -n scylla --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=vald-scylla-cluster-dc0-rack0-1 --timeout=600s
-	kubectl wait -n scylla --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=vald-scylla-cluster-dc0-rack0-2 --timeout=600s
 	kubectl -n scylla get ScyllaCluster
 	kubectl -n scylla get pods
 	kubectl apply -f k8s/jobs/db/initialize/scylla
@@ -276,7 +276,7 @@ k8s/external/scylla/deploy: \
 k8s/external/scylla/delete: \
 	k8s/external/cert-manager/delete
 	kubectl delete -f k8s/jobs/db/initialize/scylla
-	kubectl delete -f k8s/external/scylla/scyllacluster.yaml
+	kubectl delete -f $(K8S_EXTERNAL_SCYLLA_MANIFEST)
 	kubectl delete -f https://raw.githubusercontent.com/scylladb/scylla-operator/master/examples/common/operator.yaml
 
 .PHONY: k8s/external/cert-manager/deploy
@@ -293,6 +293,17 @@ k8s/external/cert-manager/deploy:
 ## delete cert-manager
 k8s/external/cert-manager/delete:
 	kubectl delete -f https://github.com/jetstack/cert-manager/releases/latest/download/cert-manager.yaml
+
+.PHONY: k8s/external/minio/deploy
+## deploy minio
+k8s/external/minio/deploy:
+	kubectl apply -f k8s/external/minio
+	kubectl wait --for=condition=ready pod -l app=minio --timeout=600s
+
+.PHONY: k8s/external/minio/delete
+## delete minio
+k8s/external/minio/delete:
+	kubectl delete -f k8s/external/minio
 
 .PHONY: k8s/metrics/metrics-server/deploy
 ## deploy metrics-serrver
