@@ -28,6 +28,18 @@ import (
 	"google.golang.org/grpc"
 )
 
+const (
+	grpcKindUnary  = "unary"
+	grpcKindStream = "stream"
+
+	traceAttrGRPCKind    = "grpc.kind"
+	traceAttrGRPCService = "grpc.service"
+	traceAttrGRPCMethod  = "grpc.method"
+
+	traceAttrGRPCRequestPayload  = "grpc.request.payload"
+	traceAttrGRPCResponsePayload = "grpc.response.payload"
+)
+
 func TracePayloadInterceptor() grpc.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,
@@ -42,14 +54,14 @@ func TracePayloadInterceptor() grpc.UnaryServerInterceptor {
 
 		service, method := parseMethod(info.FullMethod)
 		span.AddAttributes(
-			trace.StringAttribute("grpc.kind", "unary"),
-			trace.StringAttribute("grpc.service", service),
-			trace.StringAttribute("grpc.method", method),
+			trace.StringAttribute(traceAttrGRPCKind, grpcKindUnary),
+			trace.StringAttribute(traceAttrGRPCService, service),
+			trace.StringAttribute(traceAttrGRPCMethod, method),
 		)
 
 		if reqj := marshalJSON(req); reqj != "" {
 			span.AddAttributes(
-				trace.StringAttribute("grpc.request.payload", reqj),
+				trace.StringAttribute(traceAttrGRPCRequestPayload, reqj),
 			)
 		}
 
@@ -57,7 +69,7 @@ func TracePayloadInterceptor() grpc.UnaryServerInterceptor {
 
 		if resj := marshalJSON(resp); resj != "" {
 			span.AddAttributes(
-				trace.StringAttribute("grpc.response.payload", resj),
+				trace.StringAttribute(traceAttrGRPCResponsePayload, resj),
 			)
 		}
 
@@ -79,9 +91,9 @@ func TracePayloadStreamInterceptor() grpc.StreamServerInterceptor {
 
 		service, method := parseMethod(info.FullMethod)
 		span.AddAttributes(
-			trace.StringAttribute("grpc.kind", "stream"),
-			trace.StringAttribute("grpc.service", service),
-			trace.StringAttribute("grpc.method", method),
+			trace.StringAttribute(traceAttrGRPCKind, grpcKindStream),
+			trace.StringAttribute(traceAttrGRPCService, service),
+			trace.StringAttribute(traceAttrGRPCMethod, method),
 		)
 
 		tss := &tracingServerStream{
@@ -91,8 +103,8 @@ func TracePayloadStreamInterceptor() grpc.StreamServerInterceptor {
 		err := handler(srv, tss)
 
 		span.AddAttributes(
-			trace.StringAttribute("grpc.request.payload.first", tss.request),
-			trace.StringAttribute("grpc.response.payload.first", tss.response),
+			trace.StringAttribute(traceAttrGRPCRequestPayload, tss.request),
+			trace.StringAttribute(traceAttrGRPCResponsePayload, tss.response),
 		)
 
 		return err
