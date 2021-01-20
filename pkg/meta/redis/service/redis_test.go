@@ -85,7 +85,7 @@ func TestNew(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -170,7 +170,7 @@ func Test_client_Disconnect(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -272,7 +272,7 @@ func Test_client_Connect(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -381,7 +381,7 @@ func Test_client_Get(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -490,7 +490,7 @@ func Test_client_GetMultiple(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -599,7 +599,7 @@ func Test_client_GetInverse(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -708,7 +708,7 @@ func Test_client_GetInverseMultiple(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -813,7 +813,7 @@ func Test_client_appendPrefix(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -925,7 +925,7 @@ func Test_client_get(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1037,7 +1037,7 @@ func Test_client_getMulti(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1145,7 +1145,7 @@ func Test_client_Set(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1250,7 +1250,7 @@ func Test_client_SetMultiple(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1359,7 +1359,7 @@ func Test_client_Delete(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1468,7 +1468,7 @@ func Test_client_DeleteMultiple(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1577,7 +1577,7 @@ func Test_client_DeleteInverse(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1686,7 +1686,7 @@ func Test_client_DeleteInverseMultiple(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1801,7 +1801,7 @@ func Test_client_delete(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1916,7 +1916,7 @@ func Test_client_deleteMulti(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

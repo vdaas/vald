@@ -69,7 +69,7 @@ func TestRecoverInterceptor(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -132,7 +132,7 @@ func TestRecoverStreamInterceptor(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}

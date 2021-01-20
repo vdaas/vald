@@ -82,7 +82,7 @@ func Test_newEntryIndexInfos(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -178,7 +178,7 @@ func Test_indexInfos_Load(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -261,7 +261,7 @@ func Test_entryIndexInfos_load(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -354,7 +354,7 @@ func Test_indexInfos_Store(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -443,7 +443,7 @@ func Test_entryIndexInfos_tryStore(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -519,7 +519,7 @@ func Test_entryIndexInfos_unexpungeLocked(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -600,7 +600,7 @@ func Test_entryIndexInfos_storeLocked(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -690,7 +690,7 @@ func Test_indexInfos_Delete(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -769,7 +769,7 @@ func Test_entryIndexInfos_delete(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -859,7 +859,7 @@ func Test_indexInfos_Range(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -942,7 +942,7 @@ func Test_indexInfos_missLocked(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1025,7 +1025,7 @@ func Test_indexInfos_dirtyLocked(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1104,7 +1104,7 @@ func Test_entryIndexInfos_tryExpungeLocked(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}

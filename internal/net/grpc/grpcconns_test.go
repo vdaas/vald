@@ -83,7 +83,7 @@ func Test_newEntryGrpcConns(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -179,7 +179,7 @@ func Test_grpcConns_Load(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -262,7 +262,7 @@ func Test_entryGrpcConns_load(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -355,7 +355,7 @@ func Test_grpcConns_Store(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -444,7 +444,7 @@ func Test_entryGrpcConns_tryStore(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -520,7 +520,7 @@ func Test_entryGrpcConns_unexpungeLocked(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -601,7 +601,7 @@ func Test_entryGrpcConns_storeLocked(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -691,7 +691,7 @@ func Test_grpcConns_Delete(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -770,7 +770,7 @@ func Test_entryGrpcConns_delete(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -860,7 +860,7 @@ func Test_grpcConns_Range(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -943,7 +943,7 @@ func Test_grpcConns_missLocked(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1026,7 +1026,7 @@ func Test_grpcConns_dirtyLocked(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -1105,7 +1105,7 @@ func Test_entryGrpcConns_tryExpungeLocked(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}

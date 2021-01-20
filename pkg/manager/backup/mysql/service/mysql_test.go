@@ -85,7 +85,7 @@ func TestNew(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -168,7 +168,7 @@ func Test_client_Connect(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -254,7 +254,7 @@ func Test_client_Close(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -347,7 +347,7 @@ func Test_client_GetVector(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -440,7 +440,7 @@ func Test_client_GetIPs(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -529,7 +529,7 @@ func Test_client_SetVector(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -618,7 +618,7 @@ func Test_client_SetVectors(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -707,7 +707,7 @@ func Test_client_DeleteVector(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -796,7 +796,7 @@ func Test_client_DeleteVectors(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -888,7 +888,7 @@ func Test_client_SetIPs(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -977,7 +977,7 @@ func Test_client_RemoveIPs(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
