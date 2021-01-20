@@ -30,24 +30,30 @@ func TestErrTimeoutParseFailed(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		{
-			name: "return an ErrTimeoutParseFailed error when timeout is not empty.",
-			args: args{
-				timeout: "10hours",
-			},
-			want: want{
-				errors.New("invalid timeout value: 10hours\t:timeout parse error out put failed"),
-			},
-		},
-		{
-			name: "return an ErrTimeoutParseFailed error when timeout is empty.",
-			args: args{
-				timeout: "",
-			},
-			want: want{
-				errors.New("invalid timeout value: \t:timeout parse error out put failed"),
-			},
-		},
+		func() test {
+			wantErr := errors.New("invalid timeout value: 10hours\t:timeout parse error out put failed")
+			return test{
+				name: "return an ErrTimeoutParseFailed error when timeout is not empty.",
+				args: args{
+					timeout: "10hours",
+				},
+				want: want{
+					wantErr,
+				},
+			}
+		}(),
+		func() test {
+			wantErr := errors.New("invalid timeout value: \t:timeout parse error out put failed")
+			return test{
+				name: "return an ErrTimeoutParseFailed error when timeout is empty.",
+				args: args{
+					timeout: "",
+				},
+				want: want{
+					wantErr,
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
@@ -92,24 +98,30 @@ func TestErrServerNotFound(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		{
-			name: "return an ErrServerNotFound error when the name is not empty.",
-			args: args{
-				name: "gateway.vald.svc.cluster.local",
-			},
-			want: want{
-				errors.New("server gateway.vald.svc.cluster.local not found"),
-			},
-		},
-		{
-			name: "return an ErrServerNotFound error when the name is empty.",
-			args: args{
-				name: "",
-			},
-			want: want{
-				errors.New("server  not found"),
-			},
-		},
+		func() test {
+			wantErr := errors.New("server gateway.vald.svc.cluster.local not found")
+			return test{
+				name: "return an ErrServerNotFound error when the name is not empty.",
+				args: args{
+					name: "gateway.vald.svc.cluster.local",
+				},
+				want: want{
+					wantErr,
+				},
+			}
+		}(),
+		func() test {
+			wantErr := errors.New("server  not found")
+			return test{
+				name: "return an ErrServerNotFound error when the name is empty.",
+				args: args{
+					name: "",
+				},
+				want: want{
+					wantErr,
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
@@ -150,45 +162,57 @@ func TestErrOptionFailed(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
+			fmt.Println(got)
 			return fmt.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
 	tests := []test{
-		{
-			name: "return an ErrOptionFailed error when err and ref are not empty.",
-			args: args{
-				err: errors.New("option failed error"),
-				ref: func() reflect.Value {
-					var i int
-					return reflect.ValueOf(&i)
-				}(),
-			},
-			want: want{
-				errors.New("failed to setup option :\t: option failed error"),
-			},
-		},
-		{
-			name: "return an ErrOptionFailed error when err is empty and ref is not empty.",
-			args: args{
-				ref: func() reflect.Value {
-					var i func()
-					return reflect.ValueOf(&i)
-				}(),
-			},
-			want: want{
-				errors.New("failed to setup option :\t"),
-			},
-		},
-		{
-			name: "return an ErrOptionFailed error when err is not empty and ref is empty.",
-			args: args{
-				err: errors.New("option failed error"),
-			},
-			want: want{
-				errors.New("failed to setup option :\t: option failed error"),
-			},
-		},
+		func() test {
+			wantErr := errors.New("failed to setup option :\tfmt.Println: option failed error")
+			return test{
+				name: "return an ErrOptionFailed error when err and ref are not empty.",
+				args: args{
+					err: errors.New("option failed error"),
+					ref: func() reflect.Value {
+						var i interface{}
+						i = fmt.Println
+						return reflect.ValueOf(i)
+					}(),
+				},
+				want: want{
+					wantErr,
+				},
+			}
+		}(),
+		func() test {
+			wantErr := errors.New("failed to setup option :\tfmt.Println")
+			return test{
+				name: "return an ErrOptionFailed error when err is empty and ref is not empty.",
+				args: args{
+					ref: func() reflect.Value {
+						var i interface{}
+						i = fmt.Println
+						return reflect.ValueOf(i)
+					}(),
+				},
+				want: want{
+					wantErr,
+				},
+			}
+		}(),
+		func() test {
+			wantErr := errors.New("failed to setup option :\t: option failed error")
+			return test{
+				name: "return an ErrOptionFailed error when err is not empty and ref is empty.",
+				args: args{
+					err: errors.New("option failed error"),
+				},
+				want: want{
+					wantErr,
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
@@ -233,22 +257,28 @@ func TestErrArgumentPraseFailed(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		{
-			name: "return an ErrArgumentParseFailed error when err is not empty.",
-			args: args{
-				err: errors.New("argument parse error"),
-			},
-			want: want{
-				errors.New("argument parse failed: argument parse error"),
-			},
-		},
-		{
-			name: "return an ErrArgumentParseFailed error when err is empty.",
-			args: args{},
-			want: want{
-				errors.New("argument parse failed"),
-			},
-		},
+		func() test {
+			wantErr := errors.New("argument parse failed: argument parse error")
+			return test{
+				name: "return an ErrArgumentParseFailed error when err is not empty.",
+				args: args{
+					err: errors.New("argument parse error"),
+				},
+				want: want{
+					wantErr,
+				},
+			}
+		}(),
+		func() test {
+			wantErr := errors.New("argument parse failed")
+			return test{
+				name: "return an ErrArgumentParseFailed error when err is empty.",
+				args: args{},
+				want: want{
+					wantErr,
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
@@ -293,22 +323,28 @@ func TestErrBackoffTimeout(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		{
-			name: "return an ErrBackoffTimeout error when err is not empty.",
-			args: args{
-				err: errors.New("backoff is timeout"),
-			},
-			want: want{
-				errors.New("backoff timeout by limitation: backoff is timeout"),
-			},
-		},
-		{
-			name: "return an ErrBackoffTimeout error when err is empty.",
-			args: args{},
-			want: want{
-				errors.New("backoff timeout by limitation"),
-			},
-		},
+		func() test {
+			wantErr := errors.New("backoff timeout by limitation: backoff is timeout")
+			return test{
+				name: "return an ErrBackoffTimeout error when err is not empty.",
+				args: args{
+					err: errors.New("backoff is timeout"),
+				},
+				want: want{
+					wantErr,
+				},
+			}
+		}(),
+		func() test {
+			wantErr := errors.New("backoff timeout by limitation")
+			return test{
+				name: "return an ErrBackoffTimeout error when err is empty.",
+				args: args{},
+				want: want{
+					wantErr,
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
@@ -357,6 +393,7 @@ func TestErrInvalidTypeConversion(t *testing.T) {
 		func() test {
 			i := []string{"slice string"}
 			tgt := 10
+			wantErr := fmt.Errorf("invalid type conversion %v to %v", reflect.TypeOf(i), reflect.TypeOf(tgt))
 			return test{
 				name: "return an ErrBackoffTimeout error when i is []string and tgt is int.",
 				args: args{
@@ -364,13 +401,14 @@ func TestErrInvalidTypeConversion(t *testing.T) {
 					tgt: tgt,
 				},
 				want: want{
-					fmt.Errorf("invalid type conversion %v to %v", reflect.TypeOf(i), reflect.TypeOf(tgt)),
+					wantErr,
 				},
 			}
 		}(),
 		func() test {
 			i := &[]string{"ptr of slice string"}
 			tgt := "string"
+			wantErr := fmt.Errorf("invalid type conversion %v to %v", reflect.TypeOf(i), reflect.TypeOf(tgt))
 			return test{
 				name: "return an ErrBackoffTimeout error when i is &[]string and tgt is string.",
 				args: args{
@@ -378,13 +416,14 @@ func TestErrInvalidTypeConversion(t *testing.T) {
 					tgt: tgt,
 				},
 				want: want{
-					fmt.Errorf("invalid type conversion %v to %v", reflect.TypeOf(i), reflect.TypeOf(tgt)),
+					wantErr,
 				},
 			}
 		}(),
 		func() test {
 			i := map[string]int{"replicas": 0}
 			tgt := []float64{math.MaxFloat64}
+			wantErr := fmt.Errorf("invalid type conversion %v to %v", reflect.TypeOf(i), reflect.TypeOf(tgt))
 			return test{
 				name: "return an ErrBackoffTimeout error when i is map[string]int and []float64.",
 				args: args{
@@ -392,16 +431,17 @@ func TestErrInvalidTypeConversion(t *testing.T) {
 					tgt: tgt,
 				},
 				want: want{
-					fmt.Errorf("invalid type conversion %v to %v", reflect.TypeOf(i), reflect.TypeOf(tgt)),
+					wantErr,
 				},
 			}
 		}(),
 		func() test {
+			wantErr := fmt.Errorf("invalid type conversion %v to %v", reflect.TypeOf(nil), reflect.TypeOf(nil))
 			return test{
 				name: "return an ErrInvalidTypeConversion error when i and tgt are <nil>.",
 				args: args{},
 				want: want{
-					fmt.Errorf("invalid type conversion %v to %v", reflect.TypeOf(nil), reflect.TypeOf(nil)),
+					wantErr,
 				},
 			}
 		}(),
@@ -450,40 +490,50 @@ func TestErrLoggingRetry(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		{
-			name: "return an ErrLoggingRetry error when err and ref are not empty.",
-			args: args{
-				err: errors.New("logging retry"),
-				ref: func() reflect.Value {
-					var i int
-					return reflect.ValueOf(&i)
-				}(),
-			},
-			want: want{
-				errors.New("failed to output  logs, retrying...: logging retry"),
-			},
-		},
-		{
-			name: "return an ErrLoggingRetry error when err is not empty and ref is empty.",
-			args: args{
-				err: errors.New("logging retry"),
-			},
-			want: want{
-				errors.New("failed to output  logs, retrying...: logging retry"),
-			},
-		},
-		{
-			name: "return an ErrLoggingRetry error when err is empty and ref is not empty.",
-			args: args{
-				ref: func() reflect.Value {
-					var i int
-					return reflect.ValueOf(&i)
-				}(),
-			},
-			want: want{
-				errors.New("failed to output  logs, retrying..."),
-			},
-		},
+		func() test {
+			wantErr := errors.New("failed to output  logs, retrying...: logging retry")
+			return test{
+				name: "return an ErrLoggingRetry error when err and ref are not empty.",
+				args: args{
+					err: errors.New("logging retry"),
+					ref: func() reflect.Value {
+						var i int
+						return reflect.ValueOf(&i)
+					}(),
+				},
+				want: want{
+					wantErr,
+				},
+			}
+		}(),
+		func() test {
+			wantErr := errors.New("failed to output  logs, retrying...: logging retry")
+			return test{
+				name: "return an ErrLoggingRetry error when err is not empty and ref is empty.",
+				args: args{
+					err: errors.New("logging retry"),
+				},
+				want: want{
+					wantErr,
+				},
+			}
+		}(),
+		func() test {
+			wantErr := errors.New("failed to output  logs, retrying...")
+
+			return test{
+				name: "return an ErrLoggingRetry error when err is empty and ref is not empty.",
+				args: args{
+					ref: func() reflect.Value {
+						var i int
+						return reflect.ValueOf(&i)
+					}(),
+				},
+				want: want{
+					wantErr,
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
@@ -529,40 +579,49 @@ func TestErrLoggingFailed(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		{
-			name: "return an ErrLoggingFailed error when err and ref are not empty.",
-			args: args{
-				err: errors.New("logging retry"),
-				ref: func() reflect.Value {
-					var i int
-					return reflect.ValueOf(&i)
-				}(),
-			},
-			want: want{
-				errors.New("failed to output  logs: logging retry"),
-			},
-		},
-		{
-			name: "return an ErrLoggingFailed error when err is not empty and ref is empty.",
-			args: args{
-				err: errors.New("logging retry"),
-			},
-			want: want{
-				errors.New("failed to output  logs: logging retry"),
-			},
-		},
-		{
-			name: "return an ErrLoggingFailed error when err is empty and ref is not empty.",
-			args: args{
-				ref: func() reflect.Value {
-					var i int
-					return reflect.ValueOf(&i)
-				}(),
-			},
-			want: want{
-				errors.New("failed to output  logs"),
-			},
-		},
+		func() test {
+			wantErr := errors.New("failed to output  logs: logging retry")
+			return test{
+				name: "return an ErrLoggingFailed error when err and ref are not empty.",
+				args: args{
+					err: errors.New("logging retry"),
+					ref: func() reflect.Value {
+						var i int
+						return reflect.ValueOf(&i)
+					}(),
+				},
+				want: want{
+					wantErr,
+				},
+			}
+		}(),
+		func() test {
+			wantErr := errors.New("failed to output  logs: logging retry")
+			return test{
+				name: "return an ErrLoggingFailed error when err is not empty and ref is empty.",
+				args: args{
+					err: errors.New("logging retry"),
+				},
+				want: want{
+					wantErr,
+				},
+			}
+		}(),
+		func() test {
+			wantErr := errors.New("failed to output  logs")
+			return test{
+				name: "return an ErrLoggingFailed error when err is empty and ref is not empty.",
+				args: args{
+					ref: func() reflect.Value {
+						var i int
+						return reflect.ValueOf(&i)
+					}(),
+				},
+				want: want{
+					wantErr,
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
@@ -607,20 +666,25 @@ func TestNew(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		{
-			name: "return a New error when msg is not empty.",
-			args: args{
-				msg: "error is occurred",
-			},
-			want: want{
-				errors.New("error is occurred"),
-			},
-		},
-		{
-			name: "return nil when msg is empty.",
-			args: args{},
-			want: want{},
-		},
+		func() test {
+			wantErr := errors.New("error is occurred")
+			return test{
+				name: "return a New error when msg is not empty.",
+				args: args{
+					msg: "error is occurred",
+				},
+				want: want{
+					wantErr,
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return nil when msg is empty.",
+				args: args{},
+				want: want{},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
@@ -666,39 +730,50 @@ func TestWrap(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		{
-			name: "return an error when err and msg are not empty.",
-			args: args{
-				err: errors.New("err"),
-				msg: "error is occurred",
-			},
-			want: want{
-				fmt.Errorf("error is occurred: err"),
-			},
-		},
-		{
-			name: "return an error when err is not empty and msg is empty.",
-			args: args{
-				err: errors.New("err"),
-			},
-			want: want{
-				errors.New("err"),
-			},
-		},
-		{
-			name: "return an error when err is empty and msg is not empty.",
-			args: args{
-				msg: "error is occurred",
-			},
-			want: want{
-				errors.New("error is occurred"),
-			},
-		},
-		{
-			name: "return nil when err and msg are empty.",
-			args: args{},
-			want: want{},
-		},
+		func() test {
+			wantErr := fmt.Errorf("error is occurred: err")
+			return test{
+				name: "return an error when err and msg are not empty.",
+				args: args{
+					err: errors.New("err"),
+					msg: "error is occurred",
+				},
+				want: want{
+					wantErr,
+				},
+			}
+		}(),
+		func() test {
+			wantErr := errors.New("err")
+			return test{
+				name: "return an error when err is not empty and msg is empty.",
+				args: args{
+					err: errors.New("err"),
+				},
+				want: want{
+					wantErr,
+				},
+			}
+		}(),
+		func() test {
+			wantErr := errors.New("error is occurred")
+			return test{
+				name: "return an error when err is empty and msg is not empty.",
+				args: args{
+					msg: "error is occurred",
+				},
+				want: want{
+					wantErr,
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return nil when err and msg are empty.",
+				args: args{},
+				want: want{},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
@@ -751,6 +826,7 @@ func TestWrapf(t *testing.T) {
 			val := []interface{}{
 				"timeout error",
 			}
+			wantErr := fmt.Errorf("%s: %w", fmt.Sprintf(format, val...), err)
 			return test{
 				name: "return an error when err and format are not empty and args has a single value.",
 				args: args{
@@ -759,7 +835,7 @@ func TestWrapf(t *testing.T) {
 					args:   val,
 				},
 				want: want{
-					fmt.Errorf("%s: %w", fmt.Sprintf(format, val...), err),
+					wantErr,
 				},
 			}
 		}(),
@@ -770,6 +846,7 @@ func TestWrapf(t *testing.T) {
 				"invalid time_duration",
 				10,
 			}
+			wantErr := fmt.Errorf("%s: %w", fmt.Sprintf(format, val...), err)
 			return test{
 				name: "return an error when err and format are not empty and args has multiple values.",
 				args: args{
@@ -778,7 +855,7 @@ func TestWrapf(t *testing.T) {
 					args:   val,
 				},
 				want: want{
-					fmt.Errorf("%s: %w", fmt.Sprintf(format, val...), err),
+					wantErr,
 				},
 			}
 		}(),
@@ -788,6 +865,7 @@ func TestWrapf(t *testing.T) {
 				"invalid time_duration",
 				10,
 			}
+			wantErr := err
 			return test{
 				name: "return an error when err is not empty and format is empty and args has multiple values.",
 				args: args{
@@ -795,13 +873,14 @@ func TestWrapf(t *testing.T) {
 					args: val,
 				},
 				want: want{
-					err,
+					wantErr,
 				},
 			}
 		}(),
 		func() test {
 			err := errors.New("err: ")
 			format := "error is occurred: %v : %v"
+			wantErr := err
 			return test{
 				name: "return an error when err and format are not empty and args is empty.",
 				args: args{
@@ -809,19 +888,20 @@ func TestWrapf(t *testing.T) {
 					format: format,
 				},
 				want: want{
-					err,
+					wantErr,
 				},
 			}
 		}(),
 		func() test {
 			err := errors.New("err: ")
+			wantErr := err
 			return test{
 				name: "return an error when err is not empty and format and args are empty.",
 				args: args{
 					err: err,
 				},
 				want: want{
-					err,
+					wantErr,
 				},
 			}
 		}(),
@@ -831,6 +911,7 @@ func TestWrapf(t *testing.T) {
 				"invalid time_duration",
 				10,
 			}
+			wantErr := fmt.Errorf(format, val...)
 			return test{
 				name: "return an error when err is empty and format and args are not empty.",
 				args: args{
@@ -838,19 +919,20 @@ func TestWrapf(t *testing.T) {
 					args:   val,
 				},
 				want: want{
-					fmt.Errorf(format, val...),
+					wantErr,
 				},
 			}
 		}(),
 		func() test {
 			format := "error is occurred: %v : %v"
+			wantErr := errors.New(format)
 			return test{
 				name: "return an error when err and args are empty and format is not empty.",
 				args: args{
 					format: format,
 				},
 				want: want{
-					errors.New(format),
+					wantErr,
 				},
 			}
 		}(),
@@ -866,13 +948,14 @@ func TestWrapf(t *testing.T) {
 				"invalid time_duration",
 				10,
 			}
+			wantErr := fmt.Errorf("%v %v", val[0], val[1])
 			return test{
 				name: "return nil when a format is empty and args has multiple values.",
 				args: args{
 					args: val,
 				},
 				want: want{
-					fmt.Errorf("%v %v", val[0], val[1]),
+					wantErr,
 				},
 			}
 		}(),
@@ -880,13 +963,14 @@ func TestWrapf(t *testing.T) {
 			val := []interface{}{
 				map[string]int{"invalid time_duration": 10},
 			}
+			wantErr := fmt.Errorf("%v", val[0])
 			return test{
 				name: "return an error when a format is empty and args has a single value",
 				args: args{
 					args: val,
 				},
 				want: want{
-					fmt.Errorf("%v", val[0]),
+					wantErr,
 				},
 			}
 		}(),
@@ -934,20 +1018,25 @@ func TestCause(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		{
-			name: "return an unwrapped error when err is not empty.",
-			args: args{
-				err: Wrap(errors.New("err"), "invalid parameter"),
-			},
-			want: want{
-				errors.Unwrap(Wrap(errors.New("err"), "invalid parameter")),
-			},
-		},
-		{
-			name: "return nil when err is empty.",
-			args: args{},
-			want: want{},
-		},
+		func() test {
+			wantErr := errors.Unwrap(Wrap(errors.New("err"), "invalid parameter"))
+			return test{
+				name: "return an unwrapped error when err is not empty.",
+				args: args{
+					err: Wrap(errors.New("err"), "invalid parameter"),
+				},
+				want: want{
+					wantErr,
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return nil when err is empty.",
+				args: args{},
+				want: want{},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
@@ -992,20 +1081,25 @@ func TestUnwarp(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		{
-			name: "return an unwrapped error when err is not empty.",
-			args: args{
-				err: errors.New("err"),
-			},
-			want: want{
-				errors.Unwrap(errors.New("err")),
-			},
-		},
-		{
-			name: "return nil when err is empty.",
-			args: args{},
-			want: want{},
-		},
+		func() test {
+			wantErr := errors.Unwrap(errors.New("err"))
+			return test{
+				name: "return an unwrapped error when err is not empty.",
+				args: args{
+					err: errors.New("err"),
+				},
+				want: want{
+					wantErr,
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return nil when err is empty.",
+				args: args{},
+				want: want{},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
@@ -1056,6 +1150,7 @@ func TestErrorf(t *testing.T) {
 			val := []interface{}{
 				"timeout error",
 			}
+			wantErr := fmt.Errorf(format, val...)
 			return test{
 				name: "return an error when a format is not empty and args has a single value.",
 				args: args{
@@ -1063,7 +1158,7 @@ func TestErrorf(t *testing.T) {
 					args:   val,
 				},
 				want: want{
-					fmt.Errorf(format, val...),
+					wantErr,
 				},
 			}
 		}(),
@@ -1073,6 +1168,7 @@ func TestErrorf(t *testing.T) {
 				"invalid time_duration",
 				10,
 			}
+			wantErr := fmt.Errorf(format, val...)
 			return test{
 				name: "return an error when a format is not empty and args has multiple values.",
 				args: args{
@@ -1080,7 +1176,7 @@ func TestErrorf(t *testing.T) {
 					args:   val,
 				},
 				want: want{
-					fmt.Errorf(format, val...),
+					wantErr,
 				},
 			}
 		}(),
@@ -1089,13 +1185,14 @@ func TestErrorf(t *testing.T) {
 				"invalid time_duration",
 				10,
 			}
+			wantErr := fmt.Errorf("%v %v", val[0], val[1])
 			return test{
 				name: "return an error when a format is empty and args has multiple values.",
 				args: args{
 					args: val,
 				},
 				want: want{
-					fmt.Errorf("%v %v", val[0], val[1]),
+					wantErr,
 				},
 			}
 		}(),
@@ -1103,13 +1200,14 @@ func TestErrorf(t *testing.T) {
 			val := []interface{}{
 				map[string]int{"invalid time_duration": 10},
 			}
+			wantErr := fmt.Errorf("%v", val[0])
 			return test{
 				name: "return nil when a format is empty and args has a single value.",
 				args: args{
 					args: val,
 				},
 				want: want{
-					fmt.Errorf("%v", val[0]),
+					wantErr,
 				},
 			}
 		}(),
