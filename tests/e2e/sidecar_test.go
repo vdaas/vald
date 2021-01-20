@@ -365,9 +365,9 @@ func TestE2ESearch(t *testing.T) {
 
 			resp := res.GetResponse()
 			if resp == nil {
-				err := res.GetError()
+				err := res.GetStatus()
 				if err != nil {
-					t.Errorf("an error returned: %s", err)
+					t.Errorf("an error returned: %s", err.GetMessage())
 				}
 			} else {
 				topKIDs := make([]string, len(resp.GetResults()))
