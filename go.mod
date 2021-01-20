@@ -61,7 +61,7 @@ require (
 	github.com/klauspost/compress v0.0.0-00010101000000-000000000000
 	github.com/kpango/fastime v1.0.16
 	github.com/kpango/fuid v0.0.0-20200823100533-287aa95e0641
-	github.com/kpango/gache v1.2.3
+	github.com/kpango/gache v1.2.4
 	github.com/kpango/glg v1.5.1
 	github.com/lucasb-eyer/go-colorful v1.0.3
 	github.com/pierrec/lz4/v3 v3.3.2

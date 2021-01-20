@@ -23,14 +23,13 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
-	"google.golang.org/grpc"
 )
 
 func TestBidirectionalStream(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx         context.Context
-		stream      grpc.ServerStream
+		stream      ServerStream
 		concurrency int
 		newData     func() interface{}
 		f           func(context.Context, interface{}) (interface{}, error)
@@ -92,7 +91,7 @@ func TestBidirectionalStream(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -114,7 +113,7 @@ func TestBidirectionalStream(t *testing.T) {
 func TestBidirectionalStreamClient(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		stream       grpc.ClientStream
+		stream       ClientStream
 		dataProvider func() interface{}
 		newData      func() interface{}
 		f            func(interface{}, error)
@@ -174,7 +173,7 @@ func TestBidirectionalStreamClient(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

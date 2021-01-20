@@ -307,8 +307,8 @@ github.com/kpango/fastime v1.0.16 h1:1prFG/3pTjzcDeCTxt98VB4IvjxcySLs0ldCEhZg0R8
 github.com/kpango/fastime v1.0.16/go.mod h1:lVqUTcXmQnk1wriyvq5DElbRSRDC0XtqbXQRdz0Eo+g=
 github.com/kpango/fuid v0.0.0-20200823100533-287aa95e0641 h1:KJDBz1a/9AfYwqE+K1CM58jpT+F0aK8BY+Mc9lt4shU=
 github.com/kpango/fuid v0.0.0-20200823100533-287aa95e0641/go.mod h1:daBIyhkrFS6U/7vPRxeQ6pZWmqLKlwqJwsoPzei2YwU=
-github.com/kpango/gache v1.2.3 h1:ubXdhzgEALNwujqzsI0FwdoCGWce6AEtvqAxmf597jI=
-github.com/kpango/gache v1.2.3/go.mod h1:Nn2eMfM4Yq5M2QvUJ4Z6VeGEK5ZBFAzLOBGf/TKdVDM=
+github.com/kpango/gache v1.2.4 h1:CeJT2d2fZRv3vRXZcQreDiNmJOXbsyUxZRIBF9g5Muo=
+github.com/kpango/gache v1.2.4/go.mod h1:Ck9K2na9kKz2+7PR2v9Asevjo9QIEYKcwVsmWqTLXh4=
 github.com/kpango/glg v1.3.0/go.mod h1:7zzaAoMqvngad+sagWLjr00EQMJaqyGONdg0WYBAO3M=
 github.com/kpango/glg v1.4.1/go.mod h1:YM6wQXx2ktVPw7qf5UQUg2y29lub0KZ46L3zI3O1IiA=
 github.com/kpango/glg v1.5.1 h1:ecOOgdPMt7OdDUYjoUZ9dbnY8MVwUUMc6D5ZN3exLNM=
@@ -504,8 +504,8 @@ github.com/yahoojapan/ngtd v0.0.0-20200424071638-9872bbae3700/go.mod h1:K4qaOV0B
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
-github.com/zeebo/xxh3 v0.8.2 h1:8V3CL8YrAiyCw8W9fN8CsZsknxMrbVaLEDva6+ajFUw=
-github.com/zeebo/xxh3 v0.8.2/go.mod h1:AQY73TOrhF3jNsdiM9zZOb8MThrYbZONHj7ryDBaLpg=
+github.com/zeebo/xxh3 v0.10.0 h1:1+2Mov9zfxTNUeoDG9k9i13VfxTR0p1JQu8L0vikxB0=
+github.com/zeebo/xxh3 v0.10.0/go.mod h1:AQY73TOrhF3jNsdiM9zZOb8MThrYbZONHj7ryDBaLpg=
 go.etcd.io/bbolt v1.3.2/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
 go.etcd.io/bbolt v1.3.3/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
 go.etcd.io/bbolt v1.3.5/go.mod h1:G5EMThwa9y8QZGBClrRx5EY+Yw9kAhnjy3bSjsnlVTQ=
