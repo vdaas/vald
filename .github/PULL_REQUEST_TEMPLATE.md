@@ -21,10 +21,10 @@
 
 <!--- Please change the versions below along with your environment -->
 
-- Go Version: 1.15.6
+- Go Version: 1.15.7
 - Docker Version: 19.03.8
 - Kubernetes Version: 1.18.2
-- NGT Version: 1.12.3
+- NGT Version: 1.13.1
 
 ### Types of changes:
 
