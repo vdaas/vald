@@ -32,6 +32,14 @@ docker/build: \
 	docker/build/manager-index \
 	docker/build/helm-operator
 
+.PHONY: docker/name/org
+docker/name/org:
+	@echo "$(ORG)"
+
+.PHONY: docker/name/org/alter
+docker/name/org/alter:
+	@echo "ghcr.io/vdaas/vald"
+
 .PHONY: docker/platforms
 docker/platforms:
 	@echo "linux/amd64,linux/arm64"
