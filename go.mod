@@ -5,7 +5,7 @@ go 1.15
 replace (
 	cloud.google.com/go => cloud.google.com/go v0.75.0
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0+incompatible
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.36.28
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.36.29
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
@@ -32,7 +32,7 @@ replace (
 	k8s.io/cli-runtime => k8s.io/cli-runtime v0.20.2
 	k8s.io/client-go => k8s.io/client-go v0.20.2
 	k8s.io/metrics => k8s.io/metrics v0.20.2
-	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.7.0
+	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.8.0
 )
 
 require (
@@ -45,7 +45,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.1
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/fsnotify/fsnotify v1.4.9
-	github.com/go-redis/redis/v8 v8.4.8
+	github.com/go-redis/redis/v8 v8.4.9
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gocql/gocql v0.0.0-20200131111108-92af2e088537
 	github.com/gocraft/dbr/v2 v2.7.1
@@ -72,13 +72,13 @@ require (
 	go.opencensus.io v0.22.5
 	go.uber.org/automaxprocs v1.3.0
 	go.uber.org/goleak v1.1.10
-	golang.org/x/net v0.0.0-20201224014010-6772e930b67b
+	golang.org/x/net v0.0.0-20210119194325-5f4716e94777
 	golang.org/x/sync v0.0.0-20201207232520-09787c993a3a
-	golang.org/x/sys v0.0.0-20210113181707-4bcb84eeeb78
+	golang.org/x/sys v0.0.0-20210119212857-b64e53b001e4
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/plot v0.8.1
 	google.golang.org/api v0.36.0
-	google.golang.org/genproto v0.0.0-20210114201628-6edceaf6022f
+	google.golang.org/genproto v0.0.0-20210119180700-e258113e47cc
 	google.golang.org/grpc v1.34.0
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.20.2
