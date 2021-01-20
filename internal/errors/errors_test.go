@@ -172,7 +172,7 @@ func TestErrOptionFailed(t *testing.T) {
 			name: "return an ErrOptionFailed error when err is empty and ref is not empty.",
 			args: args{
 				ref: func() reflect.Value {
-					var i int
+					var i func()
 					return reflect.ValueOf(&i)
 				}(),
 			},
@@ -367,7 +367,6 @@ func TestErrInvalidTypeConversion(t *testing.T) {
 					fmt.Errorf("invalid type conversion %v to %v", reflect.TypeOf(i), reflect.TypeOf(tgt)),
 				},
 			}
-
 		}(),
 		func() test {
 			i := &[]string{"ptr of slice string"}
@@ -382,7 +381,6 @@ func TestErrInvalidTypeConversion(t *testing.T) {
 					fmt.Errorf("invalid type conversion %v to %v", reflect.TypeOf(i), reflect.TypeOf(tgt)),
 				},
 			}
-
 		}(),
 		func() test {
 			i := map[string]int{"replicas": 0}
@@ -397,7 +395,6 @@ func TestErrInvalidTypeConversion(t *testing.T) {
 					fmt.Errorf("invalid type conversion %v to %v", reflect.TypeOf(i), reflect.TypeOf(tgt)),
 				},
 			}
-
 		}(),
 		func() test {
 			return test{
@@ -613,10 +610,10 @@ func TestNew(t *testing.T) {
 		{
 			name: "return a New error when msg is not empty.",
 			args: args{
-				msg: "error is occured",
+				msg: "error is occurred",
 			},
 			want: want{
-				errors.New("error is occured"),
+				errors.New("error is occurred"),
 			},
 		},
 		{
@@ -673,10 +670,10 @@ func TestWrap(t *testing.T) {
 			name: "return an error when err and msg are not empty.",
 			args: args{
 				err: errors.New("err"),
-				msg: "error is occured",
+				msg: "error is occurred",
 			},
 			want: want{
-				fmt.Errorf("error is occured: err"),
+				fmt.Errorf("error is occurred: err"),
 			},
 		},
 		{
@@ -691,10 +688,10 @@ func TestWrap(t *testing.T) {
 		{
 			name: "return an error when err is empty and msg is not empty.",
 			args: args{
-				msg: "error is occured",
+				msg: "error is occurred",
 			},
 			want: want{
-				errors.New("error is occured"),
+				errors.New("error is occurred"),
 			},
 		},
 		{
@@ -750,7 +747,7 @@ func TestWrapf(t *testing.T) {
 	tests := []test{
 		func() test {
 			err := errors.New("err: ")
-			format := "error is occured: %v"
+			format := "error is occurred: %v"
 			val := []interface{}{
 				"timeout error",
 			}
@@ -768,7 +765,7 @@ func TestWrapf(t *testing.T) {
 		}(),
 		func() test {
 			err := errors.New("err: ")
-			format := "error is occured: %v : %v"
+			format := "error is occurred: %v : %v"
 			val := []interface{}{
 				"invalid time_duration",
 				10,
@@ -804,7 +801,7 @@ func TestWrapf(t *testing.T) {
 		}(),
 		func() test {
 			err := errors.New("err: ")
-			format := "error is occured: %v : %v"
+			format := "error is occurred: %v : %v"
 			return test{
 				name: "return an error when err and format are not empty and args is empty.",
 				args: args{
@@ -829,7 +826,7 @@ func TestWrapf(t *testing.T) {
 			}
 		}(),
 		func() test {
-			format := "error is occured: %v : %v"
+			format := "error is occurred: %v : %v"
 			val := []interface{}{
 				"invalid time_duration",
 				10,
@@ -846,7 +843,7 @@ func TestWrapf(t *testing.T) {
 			}
 		}(),
 		func() test {
-			format := "error is occured: %v : %v"
+			format := "error is occurred: %v : %v"
 			return test{
 				name: "return an error when err and args are empty and format is not empty.",
 				args: args{
@@ -940,10 +937,10 @@ func TestCause(t *testing.T) {
 		{
 			name: "return an unwrapped error when err is not empty.",
 			args: args{
-				err: errors.New("err"),
+				err: Wrap(errors.New("err"), "invalid parameter"),
 			},
 			want: want{
-				errors.Unwrap(errors.New("err")),
+				errors.Unwrap(Wrap(errors.New("err"), "invalid parameter")),
 			},
 		},
 		{
@@ -1055,7 +1052,7 @@ func TestErrorf(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			format := "error is occured: %v"
+			format := "error is occurred: %v"
 			val := []interface{}{
 				"timeout error",
 			}
@@ -1071,7 +1068,7 @@ func TestErrorf(t *testing.T) {
 			}
 		}(),
 		func() test {
-			format := "error is occured: %v : %v"
+			format := "error is occurred: %v : %v"
 			val := []interface{}{
 				"invalid time_duration",
 				10,
@@ -1233,18 +1230,18 @@ func TestIs(t *testing.T) {
 			name: "return false when err is same comparable errors type and differ error as target.",
 			args: args{
 				err:    errors.New(""),
-				target: errors.New("err is occured"),
+				target: errors.New("err is occurred"),
 			},
 			want: want{},
 		},
 		{
 			name: "return true when err is comparable error and target is uncomparable error and both err msg is same.",
 			args: args{
-				err: errors.New("err is occured"),
+				err: errors.New("err is occurred"),
 				target: uncomparableErr{
 					[]interErr{
 						{
-							msg: "err is occured",
+							msg: "err is occurred",
 						},
 					},
 				},
@@ -1256,7 +1253,7 @@ func TestIs(t *testing.T) {
 		{
 			name: "return false when err is comparable error and target is uncomparable error and both err msg is not same.",
 			args: args{
-				err: errors.New("err is occured"),
+				err: errors.New("err is occurred"),
 				target: uncomparableErr{
 					[]interErr{
 						{
@@ -1289,7 +1286,7 @@ func TestIs(t *testing.T) {
 			name: "return false when err is wrapped comparable error and target is uncomparable error and err.err.Error() and target msg are not same.",
 			args: args{
 				err: wrapErr{
-					err: errors.New("err is occured"),
+					err: errors.New("err is occurred"),
 				},
 				target: uncomparableErr{
 					[]interErr{
@@ -1305,7 +1302,7 @@ func TestIs(t *testing.T) {
 			name: "return false when err is comparable error with Is() implemented and target is uncomparable error and target msg is empty.",
 			args: args{
 				err: isErr{
-					err: errors.New("err is occured"),
+					err: errors.New("err is occurred"),
 				},
 				target: uncomparableErr{},
 			},
@@ -1315,12 +1312,12 @@ func TestIs(t *testing.T) {
 			name: "return true when err is comparable error with Is() implemented and target is uncomparable error and target msg is not empty.",
 			args: args{
 				err: isErr{
-					err: errors.New("err is occured"),
+					err: errors.New("err is occurred"),
 				},
 				target: uncomparableErr{
 					[]interErr{
 						{
-							msg: "err is occured",
+							msg: "err is occurred",
 						},
 					},
 				},
@@ -1378,7 +1375,7 @@ func TestAs(t *testing.T) {
 			name: "return true when err and target is not empty.",
 			args: args{
 				err:    errors.New("err"),
-				target: errors.New("err is occured"),
+				target: errors.New("err is occurred"),
 			},
 			want: want{
 				true,
