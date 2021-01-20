@@ -89,13 +89,17 @@ jobs:
         id: image_name
         run: |
           image_name=`make docker/name/backup-manager-mysql`
+          alter_org=`make docker/name/org/alter`
+          alter_image_name=`make ORG="${alter_org}" docker/name/backup-manager-mysql`
           base_platforms=`make docker/platforms`
           echo "IMAGE_NAME=${image_name}" >> $GITHUB_ENV
+          echo "ALTER_IMAGE_NAME=${alter_image_name}" >> $GITHUB_ENV
           echo "::set-output name=IMAGE_NAME::${image_name}"
           echo "::set-output name=BASE_PLATFORMS::${base_platforms}"
       - name: Determine tag name (master)
         if: github.ref == 'refs/heads/master'
         run: |
+          echo "nightly" > versions/VALD_VERSION
           echo "PRIMARY_TAG=nightly" >> $GITHUB_ENV
           echo "PLATFORMS=${PLATFORMS}" >> $GITHUB_ENV
         env:
@@ -119,17 +123,20 @@ jobs:
           echo "PLATFORMS=${PLATFORMS}" >> $GITHUB_ENV
         env:
           PLATFORMS: ${{ steps.image_name.outputs.BASE_PLATFORMS }}
+      - name: Add extra tags
+        run: |
+          EXTRA_TAGS="-t ${ALTER_IMAGE_NAME}:${PRIMARY_TAG}"
+          echo "EXTRA_TAGS=${EXTRA_TAGS}" >> $GITHUB_ENV
+      - name: Add latest tags
+        if: startsWith( github.ref, 'refs/tags/')
+        run: |
+          LATEST_TAGS="-t ${IMAGE_NAME}:latest -t ${ALTER_IMAGE_NAME}:latest"
+          echo "LATEST_TAGS=${LATEST_TAGS}" >> $GITHUB_ENV
       - name: Build and Push
         run: |
           make \
             DOCKER="docker buildx" \
-            DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS} ${LABEL_OPTS} --push" \
-            TAG="${PRIMARY_TAG}" \
-            docker/build/backup-manager-mysql
-          make \
-            ORG="ghcr.io/vdaas/vald" \
-            DOCKER="docker buildx" \
-            DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS} ${LABEL_OPTS} --push" \
+            DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS} ${LABEL_OPTS} ${EXTRA_TAGS} ${LATEST_TAGS} --push" \
             TAG="${PRIMARY_TAG}" \
             docker/build/backup-manager-mysql
         env:
