@@ -16,7 +16,7 @@
 
 defaults:
   image:
-    tag: pr-852
+    tag: nightly
   logging:
     logger: zap
     format: json
@@ -38,75 +38,3 @@ defaults:
       enabled: true
     jaeger:
       enabled: true
-
-gateway:
-  minReplicas: 1
-  hpa:
-    enabled: false
-  resources:
-    requests:
-      cpu: 100m
-      memory: 50Mi
-  gateway_config:
-    index_replica: 3
-
-agent:
-  minReplicas: 3
-  maxReplicas: 10
-  podManagementPolicy: Parallel
-  hpa:
-    enabled: false
-  resources:
-    requests:
-      cpu: 100m
-      memory: 50Mi
-  ngt:
-    auto_index_duration_limit: 60s
-    auto_index_check_duration: 5s
-    auto_index_length: 10
-    dimension: 6
-
-discoverer:
-  minReplicas: 1
-  hpa:
-    enabled: false
-  resources:
-    requests:
-      cpu: 100m
-      memory: 50Mi
-
-compressor:
-  minReplicas: 1
-  hpa:
-    enabled: false
-  resources:
-    requests:
-      cpu: 100m
-      memory: 50Mi
-  compress:
-    compress_algorithm: gob
-
-backupManager:
-  minReplicas: 1
-  hpa:
-    enabled: false
-  resources:
-    requests:
-      cpu: 100m
-      memory: 30Mi
-
-indexManager:
-  replicas: 1
-  resources:
-    requests:
-      cpu: 100m
-      memory: 30Mi
-
-meta:
-  minReplicas: 1
-  hpa:
-    enabled: false
-  resources:
-    requests:
-      cpu: 100m
-      memory: 30Mi
