@@ -1297,7 +1297,6 @@ func Test_info_prepare(t *testing.T) {
 }
 
 func TestStackTrace_String(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		URL      string
 		FuncName string
@@ -1322,44 +1321,23 @@ func TestStackTrace_String(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           URL: "",
-		           FuncName: "",
-		           File: "",
-		           Line: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           URL: "",
-		           FuncName: "",
-		           File: "",
-		           Line: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return stacktrace string",
+			fields: fields{
+				URL:      "https://github.com/golang/go/blob/v1.0.0/internal/info/info_test.go#L40",
+				FuncName: "TestStackTrace_String",
+				File:     "info_test.go",
+				Line:     40,
+			},
+			want: want{
+				want: "URL: https://github.com/golang/go/blob/v1.0.0/internal/info/info_test.go#L40\tFile: info_test.go\tLine: #40\tFuncName: TestStackTrace_String",
+			},
+		},
 	}
 
-	for _, tc := range tests {
-		test := tc
+	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
