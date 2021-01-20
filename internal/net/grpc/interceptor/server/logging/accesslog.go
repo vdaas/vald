@@ -28,14 +28,14 @@ import (
 )
 
 type AccessLogEntity struct {
-	Grpc      *AccessLogGrpcEntity `json:"grpc,omitempty" yaml:"grpc"`
+	GRPC      *AccessLogGRPCEntity `json:"grpc,omitempty" yaml:"grpc"`
 	StartTime float64              `json:"startTime,omitempty" yaml:"startTime"`
 	Latency   float64              `json:"latency,omitempty" yaml:"latency"`
 	TraceID   string               `json:"traceID,omitempty" yaml:"traceID"`
 	Error     error                `json:"error,omitempty" yaml:"error"`
 }
 
-type AccessLogGrpcEntity struct {
+type AccessLogGRPCEntity struct {
 	Kind    string `json:"kind,omitempty" yaml:"kind"`
 	Service string `json:"service,omitempty" yaml:"service"`
 	Method  string `json:"method,omitempty" yaml:"method"`
@@ -65,7 +65,7 @@ func AccessLogInterceptor() grpc.UnaryServerInterceptor {
 		service, method := parseMethod(info.FullMethod)
 
 		entity := &AccessLogEntity{
-			Grpc: &AccessLogGrpcEntity{
+			GRPC: &AccessLogGRPCEntity{
 				Kind:    "unary",
 				Service: service,
 				Method:  method,
@@ -113,7 +113,7 @@ func AccessLogStreamInterceptor() grpc.StreamServerInterceptor {
 		service, method := parseMethod(info.FullMethod)
 
 		entity := &AccessLogEntity{
-			Grpc: &AccessLogGrpcEntity{
+			GRPC: &AccessLogGRPCEntity{
 				Kind:    "stream",
 				Service: service,
 				Method:  method,
