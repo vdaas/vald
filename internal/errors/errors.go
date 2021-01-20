@@ -115,7 +115,7 @@ var (
 	}
 
 	// Cause represents a function to generate an error when the input error is not nil.
-	// When input is nil, it will return nil.
+	// When the input is nil, it will return nil.
 	Cause = func(err error) error {
 		if err != nil {
 			return errors.Unwrap(err)
