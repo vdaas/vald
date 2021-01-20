@@ -69,7 +69,7 @@ func TestString(t *testing.T) {
 				}))
 			},
 			want: want{
-				want: "\nbuild cpu info flags ->\t[]\ngit commit           ->\tmaster\ngo arch              ->\tamd64\ngo os                ->\tdarwin\ngo version           ->\tgo1.15.6\nvald version         ->\t\x1b[1mv0.0.1\x1b[22m",
+				want: "\nbuild cpu info flags ->\t[]\ngit commit           ->\tmaster\ngo arch              ->\t" + runtime.GOARCH + "\ngo os                ->\t" + runtime.GOOS + "\ngo version           ->\t" + runtime.Version() + "\nvald version         ->\t\x1b[1mv0.0.1\x1b[22m",
 			},
 		},
 	}
