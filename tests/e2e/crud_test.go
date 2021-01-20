@@ -282,12 +282,22 @@ func TestE2EInsert(t *testing.T) {
 
 		count := 0
 		for {
-			_, err := sc.Recv()
+			res, err := sc.Recv()
 			if err == io.EOF {
 				t.Logf("%d items inserted.", count)
 				return
 			} else if err != nil {
 				t.Fatal(err)
+			}
+
+			loc := res.GetLocation()
+			if loc == nil {
+				err := res.GetStatus()
+				if err != nil {
+					t.Errorf("an error returned: %s", err.GetMessage())
+				}
+			} else {
+				t.Logf("returned: %s", loc)
 			}
 
 			count++
@@ -609,12 +619,22 @@ func TestE2EUpdate(t *testing.T) {
 
 		count := 0
 		for {
-			_, err := sc.Recv()
+			res, err := sc.Recv()
 			if err == io.EOF {
 				t.Logf("%d items updated.", count)
 				return
 			} else if err != nil {
 				t.Fatal(err)
+			}
+
+			loc := res.GetLocation()
+			if loc == nil {
+				err := res.GetStatus()
+				if err != nil {
+					t.Errorf("an error returned: %s", err.GetMessage())
+				}
+			} else {
+				t.Logf("returned: %s", loc)
 			}
 
 			count++
@@ -679,12 +699,22 @@ func TestE2ERemove(t *testing.T) {
 
 		count := 0
 		for {
-			_, err := sc.Recv()
+			res, err := sc.Recv()
 			if err == io.EOF {
 				t.Logf("%d items removed.", count)
 				return
 			} else if err != nil {
 				t.Fatal(err)
+			}
+
+			loc := res.GetLocation()
+			if loc == nil {
+				err := res.GetStatus()
+				if err != nil {
+					t.Errorf("an error returned: %s", err.GetMessage())
+				}
+			} else {
+				t.Logf("returned: %s", loc)
 			}
 
 			count++
