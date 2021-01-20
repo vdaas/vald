@@ -27,6 +27,11 @@ import (
 	"google.golang.org/grpc"
 )
 
+const (
+	grpcKindUnary  = "unary"
+	grpcKindStream = "stream"
+)
+
 type AccessLogEntity struct {
 	GRPC      *AccessLogGRPCEntity `json:"grpc,omitempty" yaml:"grpc"`
 	StartTime float64              `json:"startTime,omitempty" yaml:"startTime"`
@@ -66,7 +71,7 @@ func AccessLogInterceptor() grpc.UnaryServerInterceptor {
 
 		entity := &AccessLogEntity{
 			GRPC: &AccessLogGRPCEntity{
-				Kind:    "unary",
+				Kind:    grpcKindUnary,
 				Service: service,
 				Method:  method,
 			},
@@ -114,7 +119,7 @@ func AccessLogStreamInterceptor() grpc.StreamServerInterceptor {
 
 		entity := &AccessLogEntity{
 			GRPC: &AccessLogGRPCEntity{
-				Kind:    "stream",
+				Kind:    grpcKindStream,
 				Service: service,
 				Method:  method,
 			},
