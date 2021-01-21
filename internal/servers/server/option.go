@@ -29,6 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/recover"
 	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/trace"
 	"github.com/vdaas/vald/internal/net/http/rest"
 	"github.com/vdaas/vald/internal/timeutil"
@@ -426,6 +427,12 @@ func WithGRPCInterceptors(names ...string) Option {
 	return func(s *server) {
 		for _, name := range names {
 			switch strings.ToLower(name) {
+			case "recoverinterceptor", "recover":
+				s.grpc.opts = append(
+					s.grpc.opts,
+					grpc.ChainUnaryInterceptor(recover.RecoverInterceptor()),
+					grpc.ChainStreamInterceptor(recover.RecoverStreamInterceptor()),
+				)
 			case "tracepayloadinterceptor", "tracepayload":
 				s.grpc.opts = append(
 					s.grpc.opts,

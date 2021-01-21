@@ -2254,6 +2254,34 @@ func TestWithGRPCInterceptors(t *testing.T) {
 			},
 		},
 		{
+			name:  "Add RecoverInterceptor using 'RecoverInterceptor'",
+			names: []string{"RecoverInterceptor"},
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if len(got.grpc.opts) != 2 {
+					return errors.Errorf("Expecting two elements in got.grpc.opts: got = %#v", got)
+				}
+
+				return nil
+			},
+		},
+		{
+			name:  "Add RecoverInterceptor using 'Recover'",
+			names: []string{"Recover"},
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if len(got.grpc.opts) != 2 {
+					return errors.Errorf("Expecting two elements in got.grpc.opts: got = %#v", got)
+				}
+
+				return nil
+			},
+		},
+		{
 			name:  "Add TracePayloadInterceptor using 'TracePayloadInterceptor'",
 			names: []string{"TracePayloadInterceptor"},
 			checkFunc: func(opt Option) error {

@@ -24,8 +24,8 @@ import (
 	"sync"
 
 	"github.com/vdaas/vald/internal/encoding/json"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability/trace"
-	"google.golang.org/grpc"
 )
 
 const (
