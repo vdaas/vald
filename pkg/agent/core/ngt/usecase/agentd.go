@@ -79,10 +79,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			agent.RegisterAgentServer(srv, g)
 			vald.RegisterValdServer(srv, g)
 		}),
-		server.WithGRPCOption(
-			grpc.ChainUnaryInterceptor(grpc.RecoverInterceptor()),
-			grpc.ChainStreamInterceptor(grpc.RecoverStreamInterceptor()),
-		),
 		server.WithPreStartFunc(func() error {
 			return nil
 		}),
