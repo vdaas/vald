@@ -1,4 +1,5 @@
 ---
+# Source: vald/templates/manager/index/configmap.yaml
 #
 # Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
@@ -45,7 +46,8 @@ data:
             header_table_size: 0
             initial_conn_window_size: 0
             initial_window_size: 0
-            interceptors: []
+            interceptors:
+            - RecoverInterceptor
             keepalive:
               max_conn_age: ""
               max_conn_age_grace: ""
@@ -189,11 +191,10 @@ data:
       agent_namespace: "_MY_POD_NAMESPACE_"
       node_name: ""
       discoverer:
-        host: vald-discoverer.default.svc.cluster.local
-        port: 8081
         duration: 500ms
         client:
-          addrs: []
+          addrs:
+            - vald-discoverer.default.svc.cluster.local:8081
           health_check_duration: "1s"
           connection_pool:
             enable_dns_resolver: true

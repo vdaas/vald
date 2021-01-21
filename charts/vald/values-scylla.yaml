@@ -64,3 +64,10 @@ meta:
     config:
       hosts:
         - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
+
+initializer:
+  cassandra:
+    enabled: true
+  env:
+      - name: CASSANDRA_HOST
+        value: vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local

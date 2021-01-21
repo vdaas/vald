@@ -75,6 +75,38 @@
         ]
       }
     },
+    "/search/id/multiple": {
+      "post": {
+        "operationId": "Search_MultiSearchByID",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/SearchResponses"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SearchMultiIDRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Search"
+        ]
+      }
+    },
     "/search/multiple": {
       "post": {
         "operationId": "Search_MultiSearch",
@@ -109,6 +141,18 @@
     }
   },
   "definitions": {
+    "FilterTarget": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
     "ObjectDistance": {
       "type": "object",
       "properties": {
@@ -129,6 +173,17 @@
         },
         "config": {
           "$ref": "#/definitions/v1SearchConfig"
+        }
+      }
+    },
+    "SearchMultiIDRequest": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SearchIDRequest"
+          }
         }
       }
     },
@@ -257,7 +312,7 @@
         "targets": {
           "type": "array",
           "items": {
-            "type": "string"
+            "$ref": "#/definitions/FilterTarget"
           }
         }
       }
@@ -284,7 +339,10 @@
           "type": "string",
           "format": "int64"
         },
-        "filters": {
+        "ingressFilters": {
+          "$ref": "#/definitions/v1FilterConfig"
+        },
+        "egressFilters": {
           "$ref": "#/definitions/v1FilterConfig"
         }
       }

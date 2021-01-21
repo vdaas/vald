@@ -80,6 +80,10 @@ spec:
             {{- toYaml $compressor.resources | nindent 12 }}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
+          {{- if $compressor.securityContext }}
+          securityContext:
+            {{- toYaml $compressor.securityContext | nindent 12 }}
+          {{- end }}
           {{- if $compressor.env }}
           env:
             {{- toYaml $compressor.env | nindent 12 }}
@@ -93,9 +97,9 @@ spec:
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
-      {{- if $compressor.securityContext }}
+      {{- if $compressor.podSecurityContext }}
       securityContext:
-        {{- toYaml $compressor.securityContext | nindent 8 }}
+        {{- toYaml $compressor.podSecurityContext | nindent 8 }}
       {{- end }}
       terminationGracePeriodSeconds: {{ $compressor.terminationGracePeriodSeconds }}
       volumes:

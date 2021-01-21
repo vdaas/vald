@@ -77,6 +77,18 @@
     }
   },
   "definitions": {
+    "FilterTarget": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
     "ObjectStreamLocation": {
       "type": "object",
       "properties": {
@@ -177,7 +189,7 @@
         "targets": {
           "type": "array",
           "items": {
-            "type": "string"
+            "$ref": "#/definitions/FilterTarget"
           }
         }
       }

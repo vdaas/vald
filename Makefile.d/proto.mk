@@ -57,6 +57,7 @@ proto/deps: \
 	$(GOPATH)/bin/swagger \
 	$(GOPATH)/src/google.golang.org/genproto \
 	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
+	$(GOPATH)/src/github.com/googleapis/googleapis \
 	$(GOPATH)/src/github.com/gogo/googleapis \
 	$(GOPATH)/src/github.com/gogo/protobuf \
 	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
@@ -66,6 +67,12 @@ $(GOPATH)/src/github.com/protocolbuffers/protobuf:
 		--depth 1 \
 		https://github.com/protocolbuffers/protobuf \
 		$(GOPATH)/src/github.com/protocolbuffers/protobuf
+
+$(GOPATH)/src/github.com/googleapis/googleapis:
+	git clone \
+		--depth 1 \
+		https://github.com/googleapis/googleapis \
+		$(GOPATH)/src/github.com/googleapis/googleapis
 
 $(GOPATH)/src/github.com/gogo/googleapis:
 	git clone \
@@ -140,6 +147,7 @@ $(PBGOS): \
 	$(GOPATH)/src/google.golang.org/genproto \
 	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
 	$(GOPATH)/src/github.com/googleapis/googleapis \
+	$(GOPATH)/src/github.com/gogo/googleapis \
 	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
 	@$(call green, "generating pb.go files...")
 	$(call mkdir, $(dir $@))
@@ -165,12 +173,14 @@ $(SWAGGERS): \
 	$(GOPATH)/src/google.golang.org/genproto \
 	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
 	$(GOPATH)/src/github.com/googleapis/googleapis \
+	$(GOPATH)/src/github.com/gogo/googleapis \
 	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
 	@$(call green, "generating swagger.json files...")
 	$(call mkdir, $(dir $@))
 	$(call protoc-gen, $(patsubst apis/swagger/%.swagger.json,apis/proto/%.proto,$@), --swagger_out=json_names_for_fields=true:$(dir $@))
 
 $(PBDOCS): \
+	$(PROTOS) \
 	$(GOPATH)/bin/protoc-gen-doc \
 	$(GOPATH)/bin/protoc-gen-go \
 	$(GOPATH)/bin/protoc-gen-gogo \
@@ -185,6 +195,7 @@ $(PBDOCS): \
 	$(GOPATH)/src/google.golang.org/genproto \
 	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
 	$(GOPATH)/src/github.com/googleapis/googleapis \
+	$(GOPATH)/src/github.com/gogo/googleapis \
 	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
 
 apis/docs/v0/docs.md: $(PROTOS_V0)

@@ -1,4 +1,5 @@
 ---
+# Source: vald/templates/gateway/meta/pdb.yaml
 #
 # Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
@@ -20,10 +21,10 @@ metadata:
   name: vald-meta-gateway
   labels:
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v0.0.62
+    helm.sh/chart: vald-v0.0.66
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v0.0.62
+    app.kubernetes.io/version: v0.0.66
     app.kubernetes.io/component: gateway-meta
 spec:
   maxUnavailable: 50%

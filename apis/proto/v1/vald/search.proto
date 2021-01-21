@@ -36,18 +36,20 @@ option (gogoproto.messagename_all) = true;
 
 service Search {
 
-  rpc Search(payload.v1.Search.Request) returns (payload.v1.Search.Response) {
-    option (google.api.http) = {
-      post : "/search"
-      body : "*"
-    };
+  rpc Search(payload.v1.Search.Request)
+    returns (payload.v1.Search.Response) {
+      option (google.api.http) = {
+        post : "/search"
+        body : "*"
+      };
   }
 
-  rpc SearchByID(payload.v1.Search.IDRequest) returns (payload.v1.Search.Response) {
-    option (google.api.http) = {
-      post : "/search/id"
-      body : "*"
-    };
+  rpc SearchByID(payload.v1.Search.IDRequest)
+    returns (payload.v1.Search.Response) {
+      option (google.api.http) = {
+        post : "/search/id"
+        body : "*"
+      };
   }
 
   rpc StreamSearch(stream payload.v1.Search.Request)
@@ -63,7 +65,13 @@ service Search {
         body : "*"
       };
   }
+
   rpc MultiSearchByID(payload.v1.Search.MultiIDRequest)
-      returns (payload.v1.Search.Responses) {}
+    returns (payload.v1.Search.Responses) {
+      option (google.api.http) = {
+        post : "/search/id/multiple"
+        body : "*"
+      };
+  }
 
 }

@@ -46,6 +46,7 @@ type (
 type Client interface {
 	StartConnectionMonitor(ctx context.Context) (<-chan error, error)
 	Connect(ctx context.Context, addr string, dopts ...DialOption) (pool.Conn, error)
+	IsConnected(ctx context.Context, addr string) bool
 	Disconnect(ctx context.Context, addr string) error
 	Range(ctx context.Context,
 		f func(ctx context.Context,
@@ -607,7 +608,7 @@ func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOpti
 			}
 			return nil, err
 		}
-		if conn == nil {
+		if conn == nil || !conn.IsHealthy(ctx) {
 			return nil, errors.ErrGRPCClientConnNotFound(addr)
 		}
 		atomic.AddUint64(&g.clientCount, 1)
@@ -619,6 +620,14 @@ func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOpti
 		return nil, err
 	}
 	return conn, nil
+}
+
+func (g *gRPCClient) IsConnected(ctx context.Context, addr string) bool {
+	p, ok := g.conns.Load(addr)
+	if !ok || p == nil {
+		return false
+	}
+	return p.IsHealthy(ctx)
 }
 
 func (g *gRPCClient) Disconnect(ctx context.Context, addr string) error {

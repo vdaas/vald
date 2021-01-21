@@ -53,6 +53,11 @@ message Search {
   message ObjectRequest {
     bytes object = 1;
     Config config = 2;
+    Filter.Target vectorizer = 3;
+  }
+
+  message MultiObjectRequest {
+    repeated ObjectRequest requests = 1;
   }
 
   message Config {
@@ -61,7 +66,8 @@ message Search {
     float radius = 3;
     float epsilon = 4;
     int64 timeout = 5;
-    Filter.Config filters = 6;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
   }
 
   message Response { 
@@ -86,8 +92,9 @@ message Filter {
     string host = 1;
     uint32 port = 2;
   }
+
   message Config{
-    repeated string targets = 1;
+    repeated Target targets = 1;
   }
 }
 
@@ -98,6 +105,14 @@ message Insert {
   }
   message MultiRequest {
     repeated Request requests = 1;
+  }
+  message ObjectRequest {
+    Object.Blob object = 1;
+    Config config = 2;
+    Filter.Target vectorizer = 3;
+  }
+  message MultiObjectRequest {
+    repeated ObjectRequest requests = 1;
   }
   message Config {
     bool skip_strict_exist_check = 1;
@@ -113,6 +128,14 @@ message Update {
   message MultiRequest {
     repeated Request requests = 1;
   }
+  message ObjectRequest {
+    Object.Blob object = 1;
+    Config config = 2;
+    Filter.Target vectorizer = 3;
+  }
+  message MultiObjectRequest {
+    repeated ObjectRequest requests = 1;
+  }
   message Config {
     bool skip_strict_exist_check = 1;
     Filter.Config filters = 2;
@@ -126,6 +149,14 @@ message Upsert {
   }
   message MultiRequest {
     repeated Request requests = 1;
+  }
+  message ObjectRequest {
+    Object.Blob object = 1;
+    Config config = 2;
+    Filter.Target vectorizer = 3;
+  }
+  message MultiObjectRequest {
+    repeated ObjectRequest requests = 1;
   }
   message Config {
     bool skip_strict_exist_check = 1;
@@ -146,19 +177,12 @@ message Remove {
   }
 }
 
-message Meta {
-  message Key { string key = 1; }
-  message Keys { repeated string keys = 1; }
-  message Val { string val = 1; }
-  message Vals { repeated string vals = 1; }
-  message KeyVal {
-    string key = 1;
-    string val = 2;
-  }
-  message KeyVals { repeated KeyVal kvs = 1; }
-}
-
 message Object {
+  message Request {
+    ID id = 1 [ (validate.rules).repeated .min_items = 2 ];
+    Filter.Config filters = 2;
+  }
+
   message Distance {
     string id = 1;
     float distance = 2;
@@ -199,7 +223,6 @@ message Object {
     }
   }
 
-
   message Location {
     string name = 1;
     string uuid = 2;
@@ -216,6 +239,18 @@ message Object {
   message Locations {
     repeated Location locations = 1;
   }
+}
+
+message Meta {
+  message Key { string key = 1; }
+  message Keys { repeated string keys = 1; }
+  message Val { string val = 1; }
+  message Vals { repeated string vals = 1; }
+  message KeyVal {
+    string key = 1;
+    string val = 2;
+  }
+  message KeyVals { repeated KeyVal kvs = 1; }
 }
 
 message Control {

@@ -161,8 +161,11 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 			},
 		}, info.Get())
 	}
-	vec, err := s.GetObject(ctx, &payload.Object_ID{
-		Id: req.GetId(),
+	vec, err := s.GetObject(ctx, &payload.Object_Request{
+		Id: &payload.Object_ID{
+			Id: req.GetId(),
+		},
+		Filters: req.GetConfig().GetEgressFilters(),
 	})
 	if err != nil {
 		if span != nil {
@@ -1069,7 +1072,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 	return location.ReStructure(ids, locs), nil
 }
 
-func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (vec *payload.Object_Vector, err error) {
+func (s *server) GetObject(ctx context.Context, req *payload.Object_Request) (vec *payload.Object_Vector, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".GetObject")
 	defer func() {
 		if span != nil {
@@ -1086,7 +1089,7 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (vec *pay
 				span.End()
 			}
 		}()
-		ovec, err := vc.GetObject(ctx, id, copts...)
+		ovec, err := vc.GetObject(ctx, req, copts...)
 		if err != nil {
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
@@ -1102,7 +1105,7 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (vec *pay
 		return nil
 	})
 	if err != nil || vec == nil || vec.GetId() == "" || vec.GetVector() == nil {
-		err = errors.ErrObjectNotFound(err, id.GetId())
+		err = errors.ErrObjectNotFound(err, req.GetId().GetId())
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
@@ -1121,7 +1124,7 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) error
 	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Object_ID) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			res, err := s.GetObject(ctx, data.(*payload.Object_ID))
+			res, err := s.GetObject(ctx, data.(*payload.Object_Request))
 			if err != nil {
 				st, ok := status.FromError(err)
 				if !ok {

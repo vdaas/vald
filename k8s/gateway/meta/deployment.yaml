@@ -1,4 +1,5 @@
 ---
+# Source: vald/templates/gateway/meta/deployment.yaml
 #
 # Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
@@ -21,10 +22,10 @@ metadata:
   labels:
     app: vald-meta-gateway
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v0.0.62
+    helm.sh/chart: vald-v0.0.66
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v0.0.62
+    app.kubernetes.io/version: v0.0.66
     app.kubernetes.io/component: gateway
 spec:
   progressDeadlineSeconds: 600
@@ -46,7 +47,7 @@ spec:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/component: gateway
       annotations:
-        checksum/configmap: c3f09585a4920380c6d23df27c7450b5b4f06ff8e02b974311cdc7c720f83567
+        checksum/configmap: f8840e833cb2820441e3508aec34165312def8215b2aeccb57e990b50b4d998f
     spec:
       initContainers:
         - name: wait-for-meta
@@ -82,10 +83,10 @@ spec:
             - podAffinityTerm:
                 labelSelector:
                   matchExpressions:
-                    - key: app
-                      operator: In
-                      values:
-                        - vald-meta-gateway
+                  - key: app
+                    operator: In
+                    values:
+                    - vald-meta-gateway
                 topologyKey: kubernetes.io/hostname
               weight: 100
           requiredDuringSchedulingIgnoredDuringExecution: []
@@ -135,13 +136,28 @@ spec:
               memory: 150Mi
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 2002
+            runAsNonRoot: true
+            runAsUser: 1002
           volumeMounts:
             - name: vald-meta-gateway-config
               mountPath: /etc/server/
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
-      securityContext: {}
+      securityContext:
+        fsGroup: 3002
+        fsGroupChangePolicy: OnRootMismatch
+        runAsGroup: 2002
+        runAsNonRoot: true
+        runAsUser: 1002
       terminationGracePeriodSeconds: 30
       volumes:
         - name: vald-meta-gateway-config

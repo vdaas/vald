@@ -41,7 +41,7 @@
         ]
       }
     },
-    "/object/{id}": {
+    "/object/{id.id}": {
       "get": {
         "operationId": "Object_GetObject",
         "responses": {
@@ -60,7 +60,7 @@
         },
         "parameters": [
           {
-            "name": "id",
+            "name": "id.id",
             "in": "path",
             "required": true,
             "type": "string"
@@ -73,6 +73,18 @@
     }
   },
   "definitions": {
+    "FilterTarget": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
     "ObjectID": {
       "type": "object",
       "properties": {
@@ -171,6 +183,17 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1FilterConfig": {
+      "type": "object",
+      "properties": {
+        "targets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FilterTarget"
           }
         }
       }
