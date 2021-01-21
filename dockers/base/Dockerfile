@@ -14,10 +14,12 @@
 # limitations under the License.
 #
 ARG GO_VERSION=latest
+ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
 FROM golang:${GO_VERSION} AS golang
 
 FROM ubuntu:devel AS builder
+LABEL maintainer "${MAINTAINER}"
 
 ENV GO111MODULE on
 ENV DEBIAN_FRONTEND noninteractive

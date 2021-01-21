@@ -90,7 +90,10 @@ spec:
       schedulerName: default-scheduler
       serviceAccount: vald
       serviceAccountName: vald
-      securityContext: {}
+      {{- if $discoverer.securityContext }}
+      securityContext:
+        {{- toYaml $discoverer.securityContext | nindent 8 }}
+      {{- end }}
       terminationGracePeriodSeconds: {{ $discoverer.terminationGracePeriodSeconds }}
       volumes:
         - name: {{ $discoverer.name }}-config

@@ -340,7 +340,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 			select {
 			case <-ctx.Done():
 				err = n.CreateIndex(ctx, n.poolSize)
-				if err != nil {
+				if err != nil && !errors.Is(err, errors.ErrUncommittedIndexNotFound) {
 					ech <- err
 					return errors.Wrap(ctx.Err(), err.Error())
 				}
@@ -757,7 +757,7 @@ func (n *ngt) CreateAndSaveIndex(ctx context.Context, poolSize uint32) (err erro
 	}()
 
 	err = n.CreateIndex(ctx, poolSize)
-	if err != nil && err != errors.ErrUncommittedIndexNotFound {
+	if err != nil {
 		return err
 	}
 	return n.SaveIndex(ctx)

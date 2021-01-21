@@ -21,15 +21,18 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/recover"
+	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/trace"
 	"github.com/vdaas/vald/internal/net/http/rest"
 	"github.com/vdaas/vald/internal/timeutil"
-	"google.golang.org/grpc"
 )
 
 type Option func(*server)
@@ -420,8 +423,24 @@ func WithGRPCHeaderTableSize(size int) Option {
 	}
 }
 
-func WithGRPCInterceptors(name ...string) Option {
+func WithGRPCInterceptors(names ...string) Option {
 	return func(s *server) {
-		// s.grpc.opts = append(s.grpc.opts, grpc.UnaryInterceptor(uint32(size)))
+		for _, name := range names {
+			switch strings.ToLower(name) {
+			case "recoverinterceptor", "recover":
+				s.grpc.opts = append(
+					s.grpc.opts,
+					grpc.ChainUnaryInterceptor(recover.RecoverInterceptor()),
+					grpc.ChainStreamInterceptor(recover.RecoverStreamInterceptor()),
+				)
+			case "tracepayloadinterceptor", "tracepayload":
+				s.grpc.opts = append(
+					s.grpc.opts,
+					grpc.ChainUnaryInterceptor(trace.TracePayloadInterceptor()),
+					grpc.ChainStreamInterceptor(trace.TracePayloadStreamInterceptor()),
+				)
+			default:
+			}
+		}
 	}
 }

@@ -171,8 +171,6 @@ cassandra_config:
     white_list: []
   hosts:
     - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
-    - vald-scylla-cluster-dc0-rack0-1.scylla.svc.cluster.local
-    - vald-scylla-cluster-dc0-rack0-2.scylla.svc.cluster.local
   ignore_peer_addr: false
   keyspace: vald
   max_prepared_stmts: 1000

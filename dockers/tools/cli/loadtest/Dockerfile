@@ -15,7 +15,7 @@
 #
 
 ARG GO_VERSION=latest
-ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>
+ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
 FROM golang:${GO_VERSION} AS golang
 

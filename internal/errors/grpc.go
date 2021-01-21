@@ -17,12 +17,6 @@
 // Package errors provides error types and function
 package errors
 
-import (
-	"github.com/vdaas/vald/apis/grpc/v1/errors"
-)
-
-type Errors_RPC = errors.Errors_RPC
-
 var (
 
 	// ErrGRPCClientConnectionClose represents a function to generate an error that the gRPC connection couldn't close.

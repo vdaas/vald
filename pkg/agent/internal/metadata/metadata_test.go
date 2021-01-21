@@ -31,8 +31,8 @@ func TestLoad(t *testing.T) {
 		path string
 	}
 	type want struct {
-		want *Metadata
-		err  error
+		wantMeta *Metadata
+		err      error
 	}
 	type test struct {
 		name       string
@@ -42,12 +42,12 @@ func TestLoad(t *testing.T) {
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *Metadata, err error) error {
+	defaultCheckFunc := func(w want, gotMeta *Metadata, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		if !reflect.DeepEqual(gotMeta, w.wantMeta) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotMeta, w.wantMeta)
 		}
 		return nil
 	}
@@ -83,7 +83,7 @@ func TestLoad(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -94,8 +94,8 @@ func TestLoad(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got, err := Load(test.args.path)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			gotMeta, err := Load(test.args.path)
+			if err := test.checkFunc(test.want, gotMeta, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -159,7 +159,7 @@ func TestStore(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

@@ -18,12 +18,20 @@ syntax = "proto3";
 
 package payload.v1;
 
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "github.com/gogo/googleapis/google/rpc/status.proto";
+import "github.com/envoyproxy/protoc-gen-validate/validate/validate.proto";
+
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/payload";
 option java_multiple_files = true;
 option java_package = "org.vdaas.vald.api.v1.payload";
 option java_outer_classname = "ValdPayload";
 
-import "github.com/envoyproxy/protoc-gen-validate/validate/validate.proto";
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.goproto_registration) = true;
+option (gogoproto.messagename_all) = true;
 
 message Search {
   message Request {
@@ -63,6 +71,13 @@ message Search {
 
   message Responses { 
     repeated Response responses = 1; 
+  }
+
+  message StreamResponse { 
+    oneof payload{
+      Response response = 1;
+      google.rpc.Status status = 2;
+    }
   }
 }
 
@@ -149,6 +164,13 @@ message Object {
     float distance = 2;
   }
 
+  message StreamDistance { 
+    oneof payload{
+      Distance distance = 1;
+      google.rpc.Status status = 2;
+    }
+  }
+
   message ID { string id = 1 [ (validate.rules).string.min_len = 1 ]; }
   message IDs { repeated string ids = 1; }
 
@@ -158,15 +180,37 @@ message Object {
   }
   message Vectors { repeated Vector vectors = 1; }
 
+  message StreamVector { 
+    oneof payload{
+      Vector vector = 1;
+      google.rpc.Status status = 2;
+    }
+  }
+
   message Blob {
     string id = 1 [ (validate.rules).string.min_len = 1 ];
     bytes object = 2;
   }
 
+  message StreamBlob { 
+    oneof payload{
+      Blob blob = 1;
+      google.rpc.Status status = 2;
+    }
+  }
+
+
   message Location {
     string name = 1;
     string uuid = 2;
     repeated string ips = 3;
+  }
+
+  message StreamLocation { 
+    oneof payload{
+      Location location = 1;
+      google.rpc.Status status = 2;
+    }
   }
 
   message Locations {

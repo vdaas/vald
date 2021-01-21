@@ -61,10 +61,11 @@ TENSORFLOW_C_VERSION := $(eval TENSORFLOW_C_VERSION := $(shell cat versions/TENS
 OPERATOR_SDK_VERSION := $(eval OPERATOR_SDK_VERSION := $(shell cat versions/OPERATOR_SDK_VERSION))$(OPERATOR_SDK_VERSION)
 
 KIND_VERSION         ?= v0.9.0
-HELM_VERSION         ?= v3.4.2
-HELM_DOCS_VERSION    ?= 1.4.0
-VALDCLI_VERSION      ?= v0.0.62
+HELM_VERSION         ?= v3.5.0
+HELM_DOCS_VERSION    ?= 1.5.0
+VALDCLI_VERSION      ?= v0.0.66
 TELEPRESENCE_VERSION ?= 0.108
+KUBELINTER_VERSION   ?= 0.1.6
 
 SWAP_DEPLOYMENT_TYPE ?= deployment
 SWAP_IMAGE           ?= ""
@@ -150,6 +151,8 @@ PORT      ?= 80
 NUMBER    ?= 10
 DIMENSION ?= 6
 NUMPANES  ?= 4
+MEAN      ?= 0.0
+STDDEV    ?= 1.0
 
 BODY = ""
 
@@ -175,6 +178,7 @@ GO_SOURCES = $(eval GO_SOURCES := $(shell find \
 		-not -path './hack/license/*' \
 		-not -path './hack/swagger/*' \
 		-not -path './hack/tools/*' \
+		-not -path './tests/*' \
 		-type f \
 		-name '*.go' \
 		-not -regex '.*options?\.go' \
@@ -196,6 +200,7 @@ GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell find \
 		-not -path './hack/license/*' \
 		-not -path './hack/swagger/*' \
 		-not -path './hack/tools/*' \
+		-not -path './tests/*' \
 		-type f \
 		-regex '.*options?\.go' \
 		-not -name '*_test.go' \
@@ -217,6 +222,8 @@ DOCKER_OPTS      ?=
 DISTROLESS_IMAGE      ?= gcr.io/distroless/static
 DISTROLESS_IMAGE_TAG  ?= nonroot
 UPX_OPTIONS           ?= -9
+
+K8S_EXTERNAL_SCYLLA_MANIFEST ?= k8s/external/scylla/scyllacluster.yaml
 
 COMMA := ,
 SHELL = bash
@@ -363,9 +370,7 @@ goimports/install:
 
 .PHONY: prettier/install
 prettier/install:
-	if !type prettier >/dev/null 2>&1; then \
-		npm install -g npm prettier; \
-	fi
+	type prettier || npm install -g prettier
 
 .PHONY: version/vald
 ## print vald version

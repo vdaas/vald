@@ -17,7 +17,7 @@
 ARG DISTROLESS_IMAGE=gcr.io/distroless/static
 ARG DISTROLESS_IMAGE_TAG=nonroot
 ARG UPX_OPTIONS=-9
-ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>
+ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
 FROM vdaas/vald-base:latest AS builder
 ARG UPX_OPTIONS

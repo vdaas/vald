@@ -76,8 +76,6 @@ backupManager:
       cassandra:
         hosts:
           - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
-          - vald-scylla-cluster-dc0-rack0-1.scylla.svc.cluster.local
-          - vald-scylla-cluster-dc0-rack0-2.scylla.svc.cluster.local
       sleepDuration: 2
   env: []
   resources:
@@ -91,8 +89,6 @@ backupManager:
     config:
       hosts:
         - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
-        - vald-scylla-cluster-dc0-rack0-1.scylla.svc.cluster.local
-        - vald-scylla-cluster-dc0-rack0-2.scylla.svc.cluster.local
       consistency: one
 
 meta:
@@ -105,8 +101,6 @@ meta:
       cassandra:
         hosts:
           - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
-          - vald-scylla-cluster-dc0-rack0-1.scylla.svc.cluster.local
-          - vald-scylla-cluster-dc0-rack0-2.scylla.svc.cluster.local
       sleepDuration: 2
   env: []
   resources:
@@ -120,6 +114,4 @@ meta:
     config:
       hosts:
         - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
-        - vald-scylla-cluster-dc0-rack0-1.scylla.svc.cluster.local
-        - vald-scylla-cluster-dc0-rack0-2.scylla.svc.cluster.local
       consistency: one

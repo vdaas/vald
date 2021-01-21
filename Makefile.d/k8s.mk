@@ -203,6 +203,7 @@ k8s/vald/delete/scylla: \
 k8s/external/mysql/deploy:
 	kubectl apply -f k8s/jobs/db/initialize/mysql/configmap.yaml
 	kubectl apply -f k8s/external/mysql
+	kubectl wait --for=condition=ready pod -l app=mysql --timeout=600s
 
 .PHONY: k8s/external/mysql/delete
 ## delete mysql from k8s
@@ -221,6 +222,7 @@ k8s/external/mysql/initialize:
 ## deploy redis to k8s
 k8s/external/redis/deploy:
 	kubectl apply -f k8s/external/redis
+	kubectl wait --for=condition=ready pod -l app=redis --timeout=600s
 
 .PHONY: k8s/external/redis/delete
 ## delete redis from k8s
@@ -260,12 +262,10 @@ k8s/external/scylla/deploy: \
 	kubectl apply -f https://raw.githubusercontent.com/scylladb/scylla-operator/master/examples/common/operator.yaml
 	kubectl wait -n scylla-operator-system --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=scylla-operator-controller-manager-0 --timeout=600s
 	kubectl -n scylla-operator-system get pod
-	kubectl apply -f k8s/external/scylla/scyllacluster.yaml
+	kubectl apply -f $(K8S_EXTERNAL_SCYLLA_MANIFEST)
 	kubectl -n scylla get ScyllaCluster
 	kubectl -n scylla get pods
 	kubectl wait -n scylla --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=vald-scylla-cluster-dc0-rack0-0 --timeout=600s
-	kubectl wait -n scylla --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=vald-scylla-cluster-dc0-rack0-1 --timeout=600s
-	kubectl wait -n scylla --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=vald-scylla-cluster-dc0-rack0-2 --timeout=600s
 	kubectl -n scylla get ScyllaCluster
 	kubectl -n scylla get pods
 	kubectl apply -f k8s/jobs/db/initialize/scylla
@@ -276,7 +276,7 @@ k8s/external/scylla/deploy: \
 k8s/external/scylla/delete: \
 	k8s/external/cert-manager/delete
 	kubectl delete -f k8s/jobs/db/initialize/scylla
-	kubectl delete -f k8s/external/scylla/scyllacluster.yaml
+	kubectl delete -f $(K8S_EXTERNAL_SCYLLA_MANIFEST)
 	kubectl delete -f https://raw.githubusercontent.com/scylladb/scylla-operator/master/examples/common/operator.yaml
 
 .PHONY: k8s/external/cert-manager/deploy
@@ -294,6 +294,17 @@ k8s/external/cert-manager/deploy:
 k8s/external/cert-manager/delete:
 	kubectl delete -f https://github.com/jetstack/cert-manager/releases/latest/download/cert-manager.yaml
 
+.PHONY: k8s/external/minio/deploy
+## deploy minio
+k8s/external/minio/deploy:
+	kubectl apply -f k8s/external/minio
+	kubectl wait --for=condition=ready pod -l app=minio --timeout=600s
+
+.PHONY: k8s/external/minio/delete
+## delete minio
+k8s/external/minio/delete:
+	kubectl delete -f k8s/external/minio
+
 .PHONY: k8s/metrics/metrics-server/deploy
 ## deploy metrics-serrver
 k8s/metrics/metrics-server/deploy:
@@ -306,17 +317,25 @@ k8s/metrics/metrics-server/delete:
 	kubectl delete -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 
 .PHONY: k8s/metrics/prometheus/deploy
-## deploy prometheus and grafana
+## deploy prometheus
 k8s/metrics/prometheus/deploy:
 	kubectl apply -f k8s/metrics/prometheus
-	kubectl create configmap grafana-dashboards --from-file=k8s/metrics/grafana/dashboards/
-	kubectl apply -f k8s/metrics/grafana
 
 .PHONY: k8s/metrics/prometheus/delete
-## delete prometheus and grafana
+## delete prometheus
 k8s/metrics/prometheus/delete:
 	kubectl delete -f k8s/metrics/prometheus
-	kubectl delete configmap grafana-dashboards
+
+.PHONY: k8s/metrics/grafana/deploy
+## deploy grafana
+k8s/metrics/grafana/deploy:
+	kubectl apply -f k8s/metrics/grafana/dashboards
+	kubectl apply -f k8s/metrics/grafana
+
+.PHONY: k8s/metrics/grafana/delete
+## delete grafana
+k8s/metrics/grafana/delete:
+	kubectl delete -f k8s/metrics/grafana/dashboards
 	kubectl delete -f k8s/metrics/grafana
 
 .PHONY: k8s/metrics/jaeger/deploy
@@ -328,6 +347,26 @@ k8s/metrics/jaeger/deploy:
 ## delete jaeger
 k8s/metrics/jaeger/delete:
 	kubectl delete -f k8s/metrics/jaeger
+
+.PHONY: k8s/metrics/loki/deploy
+## deploy loki and promtail
+k8s/metrics/loki/deploy:
+	kubectl apply -f k8s/metrics/loki
+
+.PHONY: k8s/metrics/loki/delete
+## delete loki and promtail
+k8s/metrics/loki/delete:
+	kubectl delete -f k8s/metrics/loki
+
+.PHONY: k8s/metrics/tempo/deploy
+## deploy tempo and jaeger-agent
+k8s/metrics/tempo/deploy:
+	kubectl apply -f k8s/metrics/tempo
+
+.PHONY: k8s/metrics/tempo/delete
+## delete tempo and jaeger-agent
+k8s/metrics/tempo/delete:
+	kubectl delete -f k8s/metrics/tempo
 
 .PHONY: k8s/metrics/profefe/deploy
 ## deploy profefe
@@ -419,3 +458,25 @@ telepresence/swap/backup-gateway:
 ## swap meta-gateway deployment using telepresence
 telepresence/swap/meta-gateway:
 	@$(call telepresence,vald-meta-gateway,vdaas/vald-meta-gateway)
+
+.PHONY: kubelinter/install
+## install kubelinter
+kubelinter/install: $(BINDIR)/kube-linter
+
+ifeq ($(UNAME),Darwin)
+$(BINDIR)/kube-linter:
+	mkdir -p $(BINDIR)
+	cd $(TEMP_DIR) \
+	    && curl -LO https://github.com/stackrox/kube-linter/releases/download/$(KUBELINTER_VERSION)/kube-linter-darwin.zip \
+	    && unzip kube-linter-darwin.zip \
+	    && chmod a+x kube-linter \
+	    && mv kube-linter $(BINDIR)/kube-linter
+else
+$(BINDIR)/kube-linter:
+	mkdir -p $(BINDIR)
+	cd $(TEMP_DIR) \
+	    && curl -LO https://github.com/stackrox/kube-linter/releases/download/$(KUBELINTER_VERSION)/kube-linter-linux.zip \
+	    && unzip kube-linter-linux.zip \
+	    && chmod a+x kube-linter \
+	    && mv kube-linter $(BINDIR)/kube-linter
+endif

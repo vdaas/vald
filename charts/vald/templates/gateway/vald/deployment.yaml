@@ -93,7 +93,10 @@ spec:
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
-      securityContext: {}
+      {{- if $gateway.securityContext }}
+      securityContext:
+        {{- toYaml $gateway.securityContext | nindent 8 }}
+      {{- end }}
       terminationGracePeriodSeconds: {{ $gateway.terminationGracePeriodSeconds }}
       volumes:
         - name: {{ $gateway.name }}-config
