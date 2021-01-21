@@ -1277,10 +1277,7 @@ func (err isErr) Error() string {
 }
 
 func (err isErr) Is(e error) bool {
-	if err.err.Error() == e.Error() {
-		return true
-	}
-	return false
+	return err.err.Error() == e.Error()
 }
 
 func TestIs(t *testing.T) {
