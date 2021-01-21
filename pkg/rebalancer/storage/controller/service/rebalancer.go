@@ -36,42 +36,24 @@ import (
 	"github.com/vdaas/vald/internal/k8s/statefulset"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/pkg/rebalancer/storage/controller/config"
 	"github.com/vdaas/vald/pkg/rebalancer/storage/controller/model"
 
 	// TODO: move to internal after internal/k8s refactoring
 	batchv1 "k8s.io/api/batch/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/client/config"
+	cconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/conversion"
+)
+
+const (
+	jobType = "rebalancer"
 )
 
 // Rebalancer represents the rebalancer interface.
 type Rebalancer interface {
 	Start(ctx context.Context) (<-chan error, error)
-}
-
-type reason uint8
-
-const (
-	BIAS reason = iota
-	RECOVERY
-	MANUAL
-
-	jobType = "rebalancer"
-)
-
-func (r reason) String() string {
-	switch r {
-	case BIAS:
-		return "bias"
-	case RECOVERY:
-		return "recovery"
-	case MANUAL:
-		return "manual"
-	default:
-		return "unknown"
-	}
 }
 
 type rebalancer struct {
@@ -86,7 +68,7 @@ type rebalancer struct {
 
 	agentName         string
 	agentNamespace    string
-	agentResourceType string // TODO: use custom type insteaf of string
+	agentResourceType config.AgentResourceType
 	pods              atomic.Value
 	podMetrics        atomic.Value
 
@@ -169,7 +151,7 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 	desiredAgentReplicas := make([]int32, 0)
 	var rc k8s.ResourceController
 	switch r.agentResourceType {
-	case "statefulset":
+	case config.STATEFULSET:
 		rc, err = statefulset.New(
 			statefulset.WithControllerName("statefulset rebalancer"),
 			statefulset.WithNamespaces(r.agentNamespace),
@@ -205,14 +187,14 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 		if err != nil {
 			return nil, err
 		}
-	case "replicaset":
+	case config.REPLICASET:
 		// TODO: implment get replicaset reconciled result
 		return nil, nil
-	case "daemonset":
+	case config.DAEMONSET:
 		// TODO: implment get daemonset reconciled result
 		return nil, nil
 	default:
-		return nil, errors.New("invalid agent resource type: " + r.agentResourceType)
+		return nil, errors.Errorf("invalid agent resource type: %s", r.agentResourceType.String())
 	}
 
 	r.ctrl, err = k8s.New(
@@ -354,7 +336,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 
 				// TODO: cache specified reconciled result based on agentResourceType.
 				switch r.agentResourceType {
-				case "statefulset":
+				case config.STATEFULSET:
 					ss, ok = r.statefulSets.Load().(statefulset.StatefulSet)
 					if !ok {
 						log.Info("statefulset is empty")
@@ -411,7 +393,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, reason reason, agentName, agentNs string) error {
+func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, reason config.RebalanceReason, agentName, agentNs string) error {
 	jobTpl.Name += "-" + strconv.FormatInt(time.Now().Unix(), 10)
 
 	if len(r.jobNamespace) != 0 {
@@ -428,7 +410,7 @@ func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, reason reaso
 	jobTpl.Labels["controller_name"] = r.podName
 	jobTpl.Labels["controller_namespace"] = r.podNamespace
 
-	cfg, err := config.GetConfig()
+	cfg, err := cconfig.GetConfig()
 	if err != nil {
 		return err
 	}

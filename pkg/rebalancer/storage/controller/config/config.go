@@ -18,10 +18,68 @@
 package config
 
 import (
+	"strings"
+
 	"github.com/vdaas/vald/internal/config"
 )
 
 type GlobalConfig = config.GlobalConfig
+
+type RebalanceReason uint8
+
+const (
+	BIAS RebalanceReason = iota
+	RECOVERY
+	MANUAL
+)
+
+func (r RebalanceReason) String() string {
+	switch r {
+	case BIAS:
+		return "bias"
+	case RECOVERY:
+		return "recovery"
+	case MANUAL:
+		return "manual"
+	default:
+		return "unknown"
+	}
+}
+
+type AgentResourceType uint8
+
+const (
+	UNKNOWN_RESOURCE_TYPE AgentResourceType = iota
+	STATEFULSET
+	DAEMONSET
+	REPLICASET
+)
+
+func (t AgentResourceType) String() string {
+	switch t {
+	case STATEFULSET:
+		return "statefulset"
+	case REPLICASET:
+		return "replicaset"
+	case DAEMONSET:
+		return "daemonset"
+	default:
+		return "unknown"
+	}
+}
+
+func AToAgentResourceType(t string) AgentResourceType {
+	switch strings.ToLower(t) {
+	case "statefulset":
+		return STATEFULSET
+	case "replicaset":
+		return REPLICASET
+	case "daemonset":
+		return DAEMONSET
+	default:
+		return UNKNOWN_RESOURCE_TYPE
+	}
+}
 
 // Config represent a application setting data content (config.yaml).
 // In K8s environment, this configuration is stored in K8s ConfigMap.

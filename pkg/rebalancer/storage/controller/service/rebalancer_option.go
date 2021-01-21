@@ -4,6 +4,8 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/pkg/rebalancer/storage/controller/config"
 )
 
 type RebalancerOption func(r *rebalancer) error
@@ -63,7 +65,10 @@ func WithAgentNamespace(ans string) RebalancerOption {
 
 func WithAgentResourceType(art string) RebalancerOption {
 	return func(r *rebalancer) error {
-		r.agentResourceType = art
+		r.agentResourceType = config.AToAgentResourceType(art)
+		if r.agentResourceType == config.UNKNOWN_RESOURCE_TYPE {
+			return errors.NewErrCriticalOption("agentResourceType", art)
+		}
 		return nil
 	}
 }
