@@ -659,7 +659,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 		Vector: req.GetVector(),
 		Config: &payload.Insert_Config{
 			SkipStrictExistCheck: true,
-			Filters:              req.GetConfig().Filters,
+			Filters:              req.GetConfig().GetFilters(),
 		},
 	})
 	if err != nil {
