@@ -361,7 +361,6 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 							log.Debugf("[rate/podname checking] pod name, rate, rateThreshold: %s, %.3f, %f", maxPodName, rate, r.rateThreshold)
 							continue
 						}
-						// log.Debugf("[bias/jobcheck] jobName: %#v", [r.jobNamespace])
 
 						if !r.isJobRunning(namespaceByJobs, ns) {
 							log.Debugf("[bias] creating job for pod %s, rate: %v", maxPodName, rate)
@@ -403,12 +402,12 @@ func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, reason confi
 	if jobTpl.Labels == nil {
 		jobTpl.Labels = make(map[string]string)
 	}
-	jobTpl.Labels["type"] = jobType
-	jobTpl.Labels["reason"] = reason.String()
-	jobTpl.Labels["target_agent_name"] = agentName
-	jobTpl.Labels["target_agent_namespace"] = agentNs
-	jobTpl.Labels["controller_name"] = r.podName
-	jobTpl.Labels["controller_namespace"] = r.podNamespace
+	jobTpl.Labels[config.JOB_LABEL_NAME_TYPE] = jobType
+	jobTpl.Labels[config.JOB_LABEL_NAME_REASON] = reason.String()
+	jobTpl.Labels[config.JOB_LABEL_NAME_TARGET_AGENT_NAME] = agentName
+	jobTpl.Labels[config.JOB_LABEL_NAME_TARGET_AGENT_NAMESPACE] = agentNs
+	jobTpl.Labels[config.JOB_LABEL_NAME_CONTROLLER_NAME] = r.podName
+	jobTpl.Labels[config.JOB_LABEL_NAME_CONTROLLER_NAMESPACE] = r.podNamespace
 
 	cfg, err := cconfig.GetConfig()
 	if err != nil {
@@ -463,18 +462,18 @@ func (r *rebalancer) genPodModels() (podModels map[string][]*model.Pod, err erro
 	return
 }
 
-func (r *rebalancer) namespaceByJobs() (jobmap map[string][]job.Job, err error) {
+func (r *rebalancer) namespaceByJobs() (jobsmap map[string][]job.Job, err error) {
 	jobs, ok := r.jobs.Load().([]job.Job)
 	if !ok {
 		return nil, errors.New("job is empty")
 	}
 
-	jobmap = make(map[string][]job.Job)
+	jobsmap = make(map[string][]job.Job)
 	for _, j := range jobs {
-		if _, ok := jobmap[j.Namespace]; !ok {
-			jobmap[j.Namespace] = make([]job.Job, 0)
+		if _, ok := jobsmap[j.Namespace]; !ok {
+			jobsmap[j.Namespace] = make([]job.Job, 0)
 		}
-		jobmap[j.Namespace] = append(jobmap[j.Namespace], j)
+		jobsmap[j.Namespace] = append(jobsmap[j.Namespace], j)
 	}
 
 	return
@@ -581,7 +580,7 @@ func calSigMemUsg(pm []*model.Pod, avgMemUsg float64) (sig float64) {
 func (r *rebalancer) isJobRunning(jobsmap map[string][]job.Job, ns string) bool {
 	for _, jobs := range jobsmap {
 		for _, job := range jobs {
-			if job.Labels["type"] == jobType && job.Status.Active != 0 && job.Labels["target_agent_namespace"] == ns {
+			if job.Labels != nil && job.Labels[config.JOB_LABEL_NAME_TYPE] == jobType && job.Status.Active != 0 && job.Labels[config.JOB_LABEL_NAME_TARGET_AGENT_NAMESPACE] == ns {
 				return true
 			}
 		}
