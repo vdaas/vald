@@ -28,6 +28,12 @@ agent:
 gateway:
   vald:
     enabled: false
+  lb:
+    enabled: false
+  meta:
+    enabled: false
+  backup:
+    enabled: false
 
 discoverer:
   enabled: false
