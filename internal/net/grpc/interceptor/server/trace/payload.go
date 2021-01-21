@@ -23,8 +23,7 @@ import (
 	"path"
 	"sync"
 
-	"github.com/gogo/protobuf/jsonpb"
-	"github.com/vdaas/vald/internal/net/grpc/proto"
+	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"google.golang.org/grpc"
 )
@@ -156,18 +155,12 @@ func parseMethod(fullMethod string) (service, method string) {
 }
 
 func marshalJSON(pbMsg interface{}) string {
-	p, ok := pbMsg.(proto.Message)
-	if !ok {
-		return ""
-	}
-
 	b := bufferPool.Get().(*bytes.Buffer)
 	defer bufferPool.Put(b)
 	defer b.Reset()
 
-	marshaler := &jsonpb.Marshaler{}
-
-	if err := marshaler.Marshal(b, p); err != nil {
+	err := json.Encode(b, pbMsg)
+	if err != nil {
 		return ""
 	}
 
