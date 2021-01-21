@@ -235,7 +235,7 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 							for _, name := range decreasedPodNames {
 								log.Debugf("[recovery] creating job for pod %s", name)
 								ctx := context.TODO()
-								if err := r.createJob(ctx, *jobTpl, RECOVERY, name, r.agentNamespace); err != nil {
+								if err := r.createJob(ctx, *jobTpl, config.RECOVERY, name, r.agentNamespace); err != nil {
 									log.Errorf("[recovery] failed to create job: %s", err)
 									continue
 								}
@@ -311,10 +311,10 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 					ss statefulset.StatefulSet
 					ok bool
 
-					podModels map[string][]*model.Pod
-					jobModels map[string][]*model.Job
-					ssModel   map[string]*model.StatefulSet
-					jobTpl    *job.Job
+					podModels       map[string][]*model.Pod
+					namespaceByJobs map[string][]job.Job
+					ssModel         map[string]*model.StatefulSet
+					jobTpl          *job.Job
 				)
 
 				podModels, err := r.genPodModels()
@@ -323,7 +323,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 					continue
 				}
 
-				jobModels, err = r.genJobModels()
+				namespaceByJobs, err = r.namespaceByJobs()
 				if err != nil {
 					log.Infof("error generating job models: %s", err.Error())
 				}
@@ -361,11 +361,11 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 							log.Debugf("[rate/podname checking] pod name, rate, rateThreshold: %s, %.3f, %f", maxPodName, rate, r.rateThreshold)
 							continue
 						}
-						log.Debugf("[bias/jobcheck] job: %#v", jobModels[r.jobNamespace])
+						// log.Debugf("[bias/jobcheck] jobName: %#v", [r.jobNamespace])
 
-						if !r.isJobRunning(jobModels, ns) {
+						if !r.isJobRunning(namespaceByJobs, ns) {
 							log.Debugf("[bias] creating job for pod %s, rate: %v", maxPodName, rate)
-							if err := r.createJob(ctx, *jobTpl, BIAS, maxPodName, ns); err != nil {
+							if err := r.createJob(ctx, *jobTpl, config.BIAS, maxPodName, ns); err != nil {
 								log.Errorf("[bias] failed to create job: %s", err)
 								continue
 							}
@@ -463,34 +463,18 @@ func (r *rebalancer) genPodModels() (podModels map[string][]*model.Pod, err erro
 	return
 }
 
-func (r *rebalancer) genJobModels() (jobModels map[string][]*model.Job, err error) {
+func (r *rebalancer) namespaceByJobs() (jobmap map[string][]job.Job, err error) {
 	jobs, ok := r.jobs.Load().([]job.Job)
 	if !ok {
 		return nil, errors.New("job is empty")
 	}
 
-	jobModels = make(map[string][]*model.Job)
+	jobmap = make(map[string][]job.Job)
 	for _, j := range jobs {
-		var t time.Time
-		if j.Status.StartTime != nil {
-			t = j.Status.StartTime.Time
+		if _, ok := jobmap[j.Namespace]; !ok {
+			jobmap[j.Namespace] = make([]job.Job, 0)
 		}
-		if _, ok := jobModels[j.Namespace]; !ok {
-			jobModels[j.Namespace] = make([]*model.Job, 0)
-		}
-
-		jobModels[j.Namespace] = append(jobModels[j.Namespace], &model.Job{
-			Name:                 j.Name,
-			Namespace:            j.Namespace,
-			Active:               j.Status.Active,
-			StartTime:            t,
-			Type:                 j.Labels["type"],
-			Reason:               j.Labels["reason"],
-			TargetAgentNamespace: j.Labels["target_agent_namespace"],
-			TargetAgentName:      j.Labels["target_agent_name"],
-			ControllerNamespace:  j.Labels["controller_namespace"],
-			ControllerName:       j.Labels["controller_name"],
-		})
+		jobmap[j.Namespace] = append(jobmap[j.Namespace], j)
 	}
 
 	return
@@ -594,10 +578,10 @@ func calSigMemUsg(pm []*model.Pod, avgMemUsg float64) (sig float64) {
 	return
 }
 
-func (r *rebalancer) isJobRunning(jobModels map[string][]*model.Job, ns string) bool {
-	for _, jobs := range jobModels {
+func (r *rebalancer) isJobRunning(jobsmap map[string][]job.Job, ns string) bool {
+	for _, jobs := range jobsmap {
 		for _, job := range jobs {
-			if job.Type == jobType && job.Active != 0 && job.TargetAgentNamespace == ns {
+			if job.Labels["type"] == jobType && job.Status.Active != 0 && job.Labels["target_agent_namespace"] == ns {
 				return true
 			}
 		}
