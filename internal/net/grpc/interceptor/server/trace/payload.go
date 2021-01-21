@@ -21,6 +21,7 @@ import (
 	"bytes"
 	"context"
 	"path"
+	"sync"
 
 	"github.com/gogo/protobuf/jsonpb"
 	"github.com/vdaas/vald/internal/net/grpc/proto"
@@ -38,6 +39,14 @@ const (
 
 	traceAttrGRPCRequestPayload  = "grpc.request.payload"
 	traceAttrGRPCResponsePayload = "grpc.response.payload"
+)
+
+var (
+	bufferPool = sync.Pool{
+		New: func() interface{} {
+			return &bytes.Buffer{}
+		},
+	}
 )
 
 func TracePayloadInterceptor() grpc.UnaryServerInterceptor {
@@ -152,7 +161,10 @@ func marshalJSON(pbMsg interface{}) string {
 		return ""
 	}
 
-	b := &bytes.Buffer{}
+	b := bufferPool.Get().(*bytes.Buffer)
+	defer bufferPool.Put(b)
+	defer b.Reset()
+
 	marshaler := &jsonpb.Marshaler{}
 
 	if err := marshaler.Marshal(b, p); err != nil {
