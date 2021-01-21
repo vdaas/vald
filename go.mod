@@ -78,7 +78,7 @@ require (
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/plot v0.8.1
 	google.golang.org/api v0.36.0
-	google.golang.org/genproto v0.0.0-20210119180700-e258113e47cc
+	google.golang.org/genproto v0.0.0-20210120162456-f5e8c5e2aaf2
 	google.golang.org/grpc v1.34.0
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.20.2

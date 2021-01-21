@@ -40,13 +40,11 @@ const (
 	traceAttrGRPCResponsePayload = "grpc.response.payload"
 )
 
-var (
-	bufferPool = sync.Pool{
-		New: func() interface{} {
-			return &bytes.Buffer{}
-		},
-	}
-)
+var bufferPool = sync.Pool{
+	New: func() interface{} {
+		return &bytes.Buffer{}
+	},
+}
 
 func TracePayloadInterceptor() grpc.UnaryServerInterceptor {
 	return func(
