@@ -23,6 +23,7 @@ import (
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/recover"
 	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/observability"
 	"github.com/vdaas/vald/internal/runner"
@@ -80,8 +81,8 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			rebalancer.RegisterControllerServer(srv, h)
 		}),
 		server.WithGRPCOption(
-			grpc.ChainUnaryInterceptor(grpc.RecoverInterceptor()),
-			grpc.ChainStreamInterceptor(grpc.RecoverStreamInterceptor()),
+			grpc.ChainUnaryInterceptor(recover.RecoverInterceptor()),
+			grpc.ChainStreamInterceptor(recover.RecoverStreamInterceptor()),
 		),
 		server.WithPreStartFunc(func() error {
 			return nil
