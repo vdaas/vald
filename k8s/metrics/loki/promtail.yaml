@@ -27,6 +27,10 @@ spec:
     metadata:
       labels:
         name: promtail
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "80"
     spec:
       containers:
         - args:
