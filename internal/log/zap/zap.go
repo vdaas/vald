@@ -16,6 +16,7 @@
 package zap
 
 import (
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log/format"
 	"github.com/vdaas/vald/internal/log/level"
 
@@ -90,6 +91,15 @@ func (l *logger) initialize(sinkPath, errSinkPath string) (err error) {
 	l.sugar = l.logger.Sugar()
 
 	return nil
+}
+
+func (l *logger) Close() error {
+	err := l.logger.Sync()
+	if err != nil {
+		return errors.Wrap(l.sugar.Sync(), err.Error())
+	}
+
+	return l.sugar.Sync()
 }
 
 func toZapLevel(lv level.Level) zapcore.Level {
