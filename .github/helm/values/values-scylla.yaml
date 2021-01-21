@@ -14,8 +14,15 @@
 # limitations under the License.
 #
 
+defaults:
+  logging:
+    level: info
+
 gateway:
   vald:
+    enabled: false
+  lb:
+    enabled: true
     minReplicas: 1
     hpa:
       enabled: false
@@ -25,6 +32,24 @@ gateway:
         memory: 50Mi
     gateway_config:
       index_replica: 3
+  backup:
+    enabled: true
+    minReplicas: 1
+    hpa:
+      enabled: false
+    resources:
+      requests:
+        cpu: 100m
+        memory: 50Mi
+  meta:
+    enabled: true
+    minReplicas: 1
+    hpa:
+      enabled: false
+    resources:
+      requests:
+        cpu: 100m
+        memory: 50Mi
 
 agent:
   minReplicas: 3
@@ -37,10 +62,10 @@ agent:
       cpu: 100m
       memory: 50Mi
   ngt:
-    auto_index_duration_limit: 60s
-    auto_index_check_duration: 5s
-    auto_index_length: 10
-    dimension: 6
+    auto_index_duration_limit: 3m
+    auto_index_check_duration: 1m
+    auto_index_length: 1000
+    dimension: 784
 
 discoverer:
   minReplicas: 1
@@ -53,7 +78,7 @@ discoverer:
 
 manager:
   compressor:
-    minReplicas: 1
+    minReplicas: 3
     hpa:
       enabled: false
     resources:
@@ -64,13 +89,32 @@ manager:
       compress_algorithm: gob
 
   backup:
-    minReplicas: 1
+    minReplicas: 3
     hpa:
       enabled: false
     resources:
       requests:
         cpu: 100m
         memory: 30Mi
+    image:
+      repository: vdaas/vald-manager-backup-cassandra
+    initContainers:
+      - type: wait-for-cassandra
+        name: wait-for-scylla
+        image: cassandra:latest
+        cassandra:
+          hosts:
+            - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
+        sleepDuration: 2
+    env: []
+    mysql:
+      enabled: false
+    cassandra:
+      enabled: true
+      config:
+        hosts:
+          - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
+        consistency: one
 
   index:
     replicas: 1
@@ -80,10 +124,29 @@ manager:
         memory: 30Mi
 
 meta:
-  minReplicas: 1
+  minReplicas: 3
   hpa:
     enabled: false
   resources:
     requests:
       cpu: 100m
       memory: 30Mi
+  image:
+    repository: vdaas/vald-meta-cassandra
+  initContainers:
+    - type: wait-for-cassandra
+      name: wait-for-scylla
+      image: cassandra:latest
+      cassandra:
+        hosts:
+          - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
+      sleepDuration: 2
+  env: []
+  redis:
+    enabled: false
+  cassandra:
+    enabled: true
+    config:
+      hosts:
+        - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
+      consistency: one

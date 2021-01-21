@@ -1,0 +1,112 @@
+---
+#
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loki
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: loki
+  template:
+    metadata:
+      labels:
+        name: loki
+    spec:
+      containers:
+        - args:
+            - -config.file=/etc/loki/loki.yaml
+          image: grafana/loki:2.0.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: http-metrics
+            initialDelaySeconds: 45
+          name: loki
+          ports:
+            - containerPort: 3100
+              name: http-metrics
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http-metrics
+            initialDelaySeconds: 45
+          volumeMounts:
+            - mountPath: /etc/loki
+              name: loki-config
+      volumes:
+        - name: loki-config
+          configMap:
+            name: loki
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: loki
+  name: loki
+spec:
+  ports:
+    - name: loki-http-metrics
+      port: 3100
+      targetPort: 3100
+  selector:
+    name: loki
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: loki
+data:
+  loki.yaml: |
+    auth_enabled: false
+    chunk_store_config:
+      max_look_back_period: 0
+    ingester:
+      chunk_block_size: 262144
+      chunk_idle_period: 3m
+      chunk_retain_period: 1m
+      lifecycler:
+        ring:
+          kvstore:
+            store: inmemory
+          replication_factor: 1
+    limits_config:
+      enforce_metric_name: false
+      reject_old_samples: true
+      reject_old_samples_max_age: 168h
+    schema_config:
+      configs:
+        - from: "2018-04-15"
+          index:
+            period: 168h
+            prefix: index_
+          object_store: filesystem
+          schema: v9
+          store: boltdb
+    server:
+      http_listen_port: 3100
+    storage_config:
+      boltdb:
+        directory: /loki/index
+      filesystem:
+        directory: /loki/chunks
+    table_manager:
+      retention_deletes_enabled: false
+      retention_period: 0

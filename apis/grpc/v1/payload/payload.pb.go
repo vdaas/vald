@@ -24,11 +24,15 @@ import (
 	math_bits "math/bits"
 
 	_ "github.com/envoyproxy/protoc-gen-validate/validate"
+	rpc "github.com/gogo/googleapis/google/rpc"
+	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
+	golang_proto "github.com/golang/protobuf/proto"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
+var _ = golang_proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
@@ -76,6 +80,10 @@ func (m *Search) XXX_DiscardUnknown() {
 }
 
 var xxx_messageInfo_Search proto.InternalMessageInfo
+
+func (*Search) XXX_MessageName() string {
+	return "payload.v1.Search"
+}
 
 type Search_Request struct {
 	Vector               []float32      `protobuf:"fixed32,1,rep,packed,name=vector,proto3" json:"vector,omitempty"`
@@ -132,6 +140,10 @@ func (m *Search_Request) GetConfig() *Search_Config {
 	return nil
 }
 
+func (*Search_Request) XXX_MessageName() string {
+	return "payload.v1.Search.Request"
+}
+
 type Search_MultiRequest struct {
 	Requests             []*Search_Request `protobuf:"bytes,1,rep,name=requests,proto3" json:"requests,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
@@ -177,6 +189,10 @@ func (m *Search_MultiRequest) GetRequests() []*Search_Request {
 		return m.Requests
 	}
 	return nil
+}
+
+func (*Search_MultiRequest) XXX_MessageName() string {
+	return "payload.v1.Search.MultiRequest"
 }
 
 type Search_IDRequest struct {
@@ -234,6 +250,10 @@ func (m *Search_IDRequest) GetConfig() *Search_Config {
 	return nil
 }
 
+func (*Search_IDRequest) XXX_MessageName() string {
+	return "payload.v1.Search.IDRequest"
+}
+
 type Search_MultiIDRequest struct {
 	Requests             []*Search_IDRequest `protobuf:"bytes,1,rep,name=requests,proto3" json:"requests,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}            `json:"-"`
@@ -279,6 +299,10 @@ func (m *Search_MultiIDRequest) GetRequests() []*Search_IDRequest {
 		return m.Requests
 	}
 	return nil
+}
+
+func (*Search_MultiIDRequest) XXX_MessageName() string {
+	return "payload.v1.Search.MultiIDRequest"
 }
 
 type Search_ObjectRequest struct {
@@ -334,6 +358,10 @@ func (m *Search_ObjectRequest) GetConfig() *Search_Config {
 		return m.Config
 	}
 	return nil
+}
+
+func (*Search_ObjectRequest) XXX_MessageName() string {
+	return "payload.v1.Search.ObjectRequest"
 }
 
 type Search_Config struct {
@@ -423,6 +451,10 @@ func (m *Search_Config) GetFilters() *Filter_Config {
 	return nil
 }
 
+func (*Search_Config) XXX_MessageName() string {
+	return "payload.v1.Search.Config"
+}
+
 type Search_Response struct {
 	RequestId            string             `protobuf:"bytes,1,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
 	Results              []*Object_Distance `protobuf:"bytes,2,rep,name=results,proto3" json:"results,omitempty"`
@@ -478,6 +510,10 @@ func (m *Search_Response) GetResults() []*Object_Distance {
 	return nil
 }
 
+func (*Search_Response) XXX_MessageName() string {
+	return "payload.v1.Search.Response"
+}
+
 type Search_Responses struct {
 	Responses            []*Search_Response `protobuf:"bytes,1,rep,name=responses,proto3" json:"responses,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
@@ -525,6 +561,102 @@ func (m *Search_Responses) GetResponses() []*Search_Response {
 	return nil
 }
 
+func (*Search_Responses) XXX_MessageName() string {
+	return "payload.v1.Search.Responses"
+}
+
+type Search_StreamResponse struct {
+	// Types that are valid to be assigned to Payload:
+	//	*Search_StreamResponse_Response
+	//	*Search_StreamResponse_Status
+	Payload              isSearch_StreamResponse_Payload `protobuf_oneof:"payload"`
+	XXX_NoUnkeyedLiteral struct{}                        `json:"-"`
+	XXX_unrecognized     []byte                          `json:"-"`
+	XXX_sizecache        int32                           `json:"-"`
+}
+
+func (m *Search_StreamResponse) Reset()         { *m = Search_StreamResponse{} }
+func (m *Search_StreamResponse) String() string { return proto.CompactTextString(m) }
+func (*Search_StreamResponse) ProtoMessage()    {}
+func (*Search_StreamResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f0518b37b4e7594b, []int{0, 8}
+}
+func (m *Search_StreamResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *Search_StreamResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_Search_StreamResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *Search_StreamResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Search_StreamResponse.Merge(m, src)
+}
+func (m *Search_StreamResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *Search_StreamResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_Search_StreamResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Search_StreamResponse proto.InternalMessageInfo
+
+type isSearch_StreamResponse_Payload interface {
+	isSearch_StreamResponse_Payload()
+	MarshalTo([]byte) (int, error)
+	Size() int
+}
+
+type Search_StreamResponse_Response struct {
+	Response *Search_Response `protobuf:"bytes,1,opt,name=response,proto3,oneof" json:"response,omitempty"`
+}
+type Search_StreamResponse_Status struct {
+	Status *rpc.Status `protobuf:"bytes,2,opt,name=status,proto3,oneof" json:"status,omitempty"`
+}
+
+func (*Search_StreamResponse_Response) isSearch_StreamResponse_Payload() {}
+func (*Search_StreamResponse_Status) isSearch_StreamResponse_Payload()   {}
+
+func (m *Search_StreamResponse) GetPayload() isSearch_StreamResponse_Payload {
+	if m != nil {
+		return m.Payload
+	}
+	return nil
+}
+
+func (m *Search_StreamResponse) GetResponse() *Search_Response {
+	if x, ok := m.GetPayload().(*Search_StreamResponse_Response); ok {
+		return x.Response
+	}
+	return nil
+}
+
+func (m *Search_StreamResponse) GetStatus() *rpc.Status {
+	if x, ok := m.GetPayload().(*Search_StreamResponse_Status); ok {
+		return x.Status
+	}
+	return nil
+}
+
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*Search_StreamResponse) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
+		(*Search_StreamResponse_Response)(nil),
+		(*Search_StreamResponse_Status)(nil),
+	}
+}
+
+func (*Search_StreamResponse) XXX_MessageName() string {
+	return "payload.v1.Search.StreamResponse"
+}
+
 type Filter struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -563,6 +695,10 @@ func (m *Filter) XXX_DiscardUnknown() {
 }
 
 var xxx_messageInfo_Filter proto.InternalMessageInfo
+
+func (*Filter) XXX_MessageName() string {
+	return "payload.v1.Filter"
+}
 
 type Filter_Target struct {
 	Host                 string   `protobuf:"bytes,1,opt,name=host,proto3" json:"host,omitempty"`
@@ -619,6 +755,10 @@ func (m *Filter_Target) GetPort() uint32 {
 	return 0
 }
 
+func (*Filter_Target) XXX_MessageName() string {
+	return "payload.v1.Filter.Target"
+}
+
 type Filter_Config struct {
 	Targets              []string `protobuf:"bytes,1,rep,name=targets,proto3" json:"targets,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -666,6 +806,10 @@ func (m *Filter_Config) GetTargets() []string {
 	return nil
 }
 
+func (*Filter_Config) XXX_MessageName() string {
+	return "payload.v1.Filter.Config"
+}
+
 type Insert struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -704,6 +848,10 @@ func (m *Insert) XXX_DiscardUnknown() {
 }
 
 var xxx_messageInfo_Insert proto.InternalMessageInfo
+
+func (*Insert) XXX_MessageName() string {
+	return "payload.v1.Insert"
+}
 
 type Insert_Request struct {
 	Vector               *Object_Vector `protobuf:"bytes,1,opt,name=vector,proto3" json:"vector,omitempty"`
@@ -760,6 +908,10 @@ func (m *Insert_Request) GetConfig() *Insert_Config {
 	return nil
 }
 
+func (*Insert_Request) XXX_MessageName() string {
+	return "payload.v1.Insert.Request"
+}
+
 type Insert_MultiRequest struct {
 	Requests             []*Insert_Request `protobuf:"bytes,1,rep,name=requests,proto3" json:"requests,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
@@ -805,6 +957,10 @@ func (m *Insert_MultiRequest) GetRequests() []*Insert_Request {
 		return m.Requests
 	}
 	return nil
+}
+
+func (*Insert_MultiRequest) XXX_MessageName() string {
+	return "payload.v1.Insert.MultiRequest"
 }
 
 type Insert_Config struct {
@@ -862,6 +1018,10 @@ func (m *Insert_Config) GetFilters() *Filter_Config {
 	return nil
 }
 
+func (*Insert_Config) XXX_MessageName() string {
+	return "payload.v1.Insert.Config"
+}
+
 type Update struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -900,6 +1060,10 @@ func (m *Update) XXX_DiscardUnknown() {
 }
 
 var xxx_messageInfo_Update proto.InternalMessageInfo
+
+func (*Update) XXX_MessageName() string {
+	return "payload.v1.Update"
+}
 
 type Update_Request struct {
 	Vector               *Object_Vector `protobuf:"bytes,1,opt,name=vector,proto3" json:"vector,omitempty"`
@@ -956,6 +1120,10 @@ func (m *Update_Request) GetConfig() *Update_Config {
 	return nil
 }
 
+func (*Update_Request) XXX_MessageName() string {
+	return "payload.v1.Update.Request"
+}
+
 type Update_MultiRequest struct {
 	Requests             []*Update_Request `protobuf:"bytes,1,rep,name=requests,proto3" json:"requests,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
@@ -1001,6 +1169,10 @@ func (m *Update_MultiRequest) GetRequests() []*Update_Request {
 		return m.Requests
 	}
 	return nil
+}
+
+func (*Update_MultiRequest) XXX_MessageName() string {
+	return "payload.v1.Update.MultiRequest"
 }
 
 type Update_Config struct {
@@ -1058,6 +1230,10 @@ func (m *Update_Config) GetFilters() *Filter_Config {
 	return nil
 }
 
+func (*Update_Config) XXX_MessageName() string {
+	return "payload.v1.Update.Config"
+}
+
 type Upsert struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -1096,6 +1272,10 @@ func (m *Upsert) XXX_DiscardUnknown() {
 }
 
 var xxx_messageInfo_Upsert proto.InternalMessageInfo
+
+func (*Upsert) XXX_MessageName() string {
+	return "payload.v1.Upsert"
+}
 
 type Upsert_Request struct {
 	Vector               *Object_Vector `protobuf:"bytes,1,opt,name=vector,proto3" json:"vector,omitempty"`
@@ -1152,6 +1332,10 @@ func (m *Upsert_Request) GetConfig() *Upsert_Config {
 	return nil
 }
 
+func (*Upsert_Request) XXX_MessageName() string {
+	return "payload.v1.Upsert.Request"
+}
+
 type Upsert_MultiRequest struct {
 	Requests             []*Upsert_Request `protobuf:"bytes,1,rep,name=requests,proto3" json:"requests,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
@@ -1197,6 +1381,10 @@ func (m *Upsert_MultiRequest) GetRequests() []*Upsert_Request {
 		return m.Requests
 	}
 	return nil
+}
+
+func (*Upsert_MultiRequest) XXX_MessageName() string {
+	return "payload.v1.Upsert.MultiRequest"
 }
 
 type Upsert_Config struct {
@@ -1254,6 +1442,10 @@ func (m *Upsert_Config) GetFilters() *Filter_Config {
 	return nil
 }
 
+func (*Upsert_Config) XXX_MessageName() string {
+	return "payload.v1.Upsert.Config"
+}
+
 type Remove struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -1292,6 +1484,10 @@ func (m *Remove) XXX_DiscardUnknown() {
 }
 
 var xxx_messageInfo_Remove proto.InternalMessageInfo
+
+func (*Remove) XXX_MessageName() string {
+	return "payload.v1.Remove"
+}
 
 type Remove_Request struct {
 	Id                   *Object_ID     `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -1348,6 +1544,10 @@ func (m *Remove_Request) GetConfig() *Remove_Config {
 	return nil
 }
 
+func (*Remove_Request) XXX_MessageName() string {
+	return "payload.v1.Remove.Request"
+}
+
 type Remove_MultiRequest struct {
 	Requests             []*Remove_Request `protobuf:"bytes,1,rep,name=requests,proto3" json:"requests,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
@@ -1393,6 +1593,10 @@ func (m *Remove_MultiRequest) GetRequests() []*Remove_Request {
 		return m.Requests
 	}
 	return nil
+}
+
+func (*Remove_MultiRequest) XXX_MessageName() string {
+	return "payload.v1.Remove.MultiRequest"
 }
 
 type Remove_Config struct {
@@ -1442,6 +1646,10 @@ func (m *Remove_Config) GetSkipStrictExistCheck() bool {
 	return false
 }
 
+func (*Remove_Config) XXX_MessageName() string {
+	return "payload.v1.Remove.Config"
+}
+
 type Meta struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -1480,6 +1688,10 @@ func (m *Meta) XXX_DiscardUnknown() {
 }
 
 var xxx_messageInfo_Meta proto.InternalMessageInfo
+
+func (*Meta) XXX_MessageName() string {
+	return "payload.v1.Meta"
+}
 
 type Meta_Key struct {
 	Key                  string   `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
@@ -1526,6 +1738,10 @@ func (m *Meta_Key) GetKey() string {
 		return m.Key
 	}
 	return ""
+}
+
+func (*Meta_Key) XXX_MessageName() string {
+	return "payload.v1.Meta.Key"
 }
 
 type Meta_Keys struct {
@@ -1575,6 +1791,10 @@ func (m *Meta_Keys) GetKeys() []string {
 	return nil
 }
 
+func (*Meta_Keys) XXX_MessageName() string {
+	return "payload.v1.Meta.Keys"
+}
+
 type Meta_Val struct {
 	Val                  string   `protobuf:"bytes,1,opt,name=val,proto3" json:"val,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -1622,6 +1842,10 @@ func (m *Meta_Val) GetVal() string {
 	return ""
 }
 
+func (*Meta_Val) XXX_MessageName() string {
+	return "payload.v1.Meta.Val"
+}
+
 type Meta_Vals struct {
 	Vals                 []string `protobuf:"bytes,1,rep,name=vals,proto3" json:"vals,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -1667,6 +1891,10 @@ func (m *Meta_Vals) GetVals() []string {
 		return m.Vals
 	}
 	return nil
+}
+
+func (*Meta_Vals) XXX_MessageName() string {
+	return "payload.v1.Meta.Vals"
 }
 
 type Meta_KeyVal struct {
@@ -1724,6 +1952,10 @@ func (m *Meta_KeyVal) GetVal() string {
 	return ""
 }
 
+func (*Meta_KeyVal) XXX_MessageName() string {
+	return "payload.v1.Meta.KeyVal"
+}
+
 type Meta_KeyVals struct {
 	Kvs                  []*Meta_KeyVal `protobuf:"bytes,1,rep,name=kvs,proto3" json:"kvs,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
@@ -1771,6 +2003,10 @@ func (m *Meta_KeyVals) GetKvs() []*Meta_KeyVal {
 	return nil
 }
 
+func (*Meta_KeyVals) XXX_MessageName() string {
+	return "payload.v1.Meta.KeyVals"
+}
+
 type Object struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -1809,6 +2045,10 @@ func (m *Object) XXX_DiscardUnknown() {
 }
 
 var xxx_messageInfo_Object proto.InternalMessageInfo
+
+func (*Object) XXX_MessageName() string {
+	return "payload.v1.Object"
+}
 
 type Object_Distance struct {
 	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -1865,6 +2105,102 @@ func (m *Object_Distance) GetDistance() float32 {
 	return 0
 }
 
+func (*Object_Distance) XXX_MessageName() string {
+	return "payload.v1.Object.Distance"
+}
+
+type Object_StreamDistance struct {
+	// Types that are valid to be assigned to Payload:
+	//	*Object_StreamDistance_Distance
+	//	*Object_StreamDistance_Status
+	Payload              isObject_StreamDistance_Payload `protobuf_oneof:"payload"`
+	XXX_NoUnkeyedLiteral struct{}                        `json:"-"`
+	XXX_unrecognized     []byte                          `json:"-"`
+	XXX_sizecache        int32                           `json:"-"`
+}
+
+func (m *Object_StreamDistance) Reset()         { *m = Object_StreamDistance{} }
+func (m *Object_StreamDistance) String() string { return proto.CompactTextString(m) }
+func (*Object_StreamDistance) ProtoMessage()    {}
+func (*Object_StreamDistance) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f0518b37b4e7594b, []int{7, 1}
+}
+func (m *Object_StreamDistance) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *Object_StreamDistance) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_Object_StreamDistance.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *Object_StreamDistance) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Object_StreamDistance.Merge(m, src)
+}
+func (m *Object_StreamDistance) XXX_Size() int {
+	return m.Size()
+}
+func (m *Object_StreamDistance) XXX_DiscardUnknown() {
+	xxx_messageInfo_Object_StreamDistance.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Object_StreamDistance proto.InternalMessageInfo
+
+type isObject_StreamDistance_Payload interface {
+	isObject_StreamDistance_Payload()
+	MarshalTo([]byte) (int, error)
+	Size() int
+}
+
+type Object_StreamDistance_Distance struct {
+	Distance *Object_Distance `protobuf:"bytes,1,opt,name=distance,proto3,oneof" json:"distance,omitempty"`
+}
+type Object_StreamDistance_Status struct {
+	Status *rpc.Status `protobuf:"bytes,2,opt,name=status,proto3,oneof" json:"status,omitempty"`
+}
+
+func (*Object_StreamDistance_Distance) isObject_StreamDistance_Payload() {}
+func (*Object_StreamDistance_Status) isObject_StreamDistance_Payload()   {}
+
+func (m *Object_StreamDistance) GetPayload() isObject_StreamDistance_Payload {
+	if m != nil {
+		return m.Payload
+	}
+	return nil
+}
+
+func (m *Object_StreamDistance) GetDistance() *Object_Distance {
+	if x, ok := m.GetPayload().(*Object_StreamDistance_Distance); ok {
+		return x.Distance
+	}
+	return nil
+}
+
+func (m *Object_StreamDistance) GetStatus() *rpc.Status {
+	if x, ok := m.GetPayload().(*Object_StreamDistance_Status); ok {
+		return x.Status
+	}
+	return nil
+}
+
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*Object_StreamDistance) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
+		(*Object_StreamDistance_Distance)(nil),
+		(*Object_StreamDistance_Status)(nil),
+	}
+}
+
+func (*Object_StreamDistance) XXX_MessageName() string {
+	return "payload.v1.Object.StreamDistance"
+}
+
 type Object_ID struct {
 	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -1876,7 +2212,7 @@ func (m *Object_ID) Reset()         { *m = Object_ID{} }
 func (m *Object_ID) String() string { return proto.CompactTextString(m) }
 func (*Object_ID) ProtoMessage()    {}
 func (*Object_ID) Descriptor() ([]byte, []int) {
-	return fileDescriptor_f0518b37b4e7594b, []int{7, 1}
+	return fileDescriptor_f0518b37b4e7594b, []int{7, 2}
 }
 func (m *Object_ID) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1912,6 +2248,10 @@ func (m *Object_ID) GetId() string {
 	return ""
 }
 
+func (*Object_ID) XXX_MessageName() string {
+	return "payload.v1.Object.ID"
+}
+
 type Object_IDs struct {
 	Ids                  []string `protobuf:"bytes,1,rep,name=ids,proto3" json:"ids,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -1923,7 +2263,7 @@ func (m *Object_IDs) Reset()         { *m = Object_IDs{} }
 func (m *Object_IDs) String() string { return proto.CompactTextString(m) }
 func (*Object_IDs) ProtoMessage()    {}
 func (*Object_IDs) Descriptor() ([]byte, []int) {
-	return fileDescriptor_f0518b37b4e7594b, []int{7, 2}
+	return fileDescriptor_f0518b37b4e7594b, []int{7, 3}
 }
 func (m *Object_IDs) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1959,6 +2299,10 @@ func (m *Object_IDs) GetIds() []string {
 	return nil
 }
 
+func (*Object_IDs) XXX_MessageName() string {
+	return "payload.v1.Object.IDs"
+}
+
 type Object_Vector struct {
 	Id                   string    `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Vector               []float32 `protobuf:"fixed32,2,rep,packed,name=vector,proto3" json:"vector,omitempty"`
@@ -1971,7 +2315,7 @@ func (m *Object_Vector) Reset()         { *m = Object_Vector{} }
 func (m *Object_Vector) String() string { return proto.CompactTextString(m) }
 func (*Object_Vector) ProtoMessage()    {}
 func (*Object_Vector) Descriptor() ([]byte, []int) {
-	return fileDescriptor_f0518b37b4e7594b, []int{7, 3}
+	return fileDescriptor_f0518b37b4e7594b, []int{7, 4}
 }
 func (m *Object_Vector) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -2014,6 +2358,10 @@ func (m *Object_Vector) GetVector() []float32 {
 	return nil
 }
 
+func (*Object_Vector) XXX_MessageName() string {
+	return "payload.v1.Object.Vector"
+}
+
 type Object_Vectors struct {
 	Vectors              []*Object_Vector `protobuf:"bytes,1,rep,name=vectors,proto3" json:"vectors,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
@@ -2025,7 +2373,7 @@ func (m *Object_Vectors) Reset()         { *m = Object_Vectors{} }
 func (m *Object_Vectors) String() string { return proto.CompactTextString(m) }
 func (*Object_Vectors) ProtoMessage()    {}
 func (*Object_Vectors) Descriptor() ([]byte, []int) {
-	return fileDescriptor_f0518b37b4e7594b, []int{7, 4}
+	return fileDescriptor_f0518b37b4e7594b, []int{7, 5}
 }
 func (m *Object_Vectors) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -2061,6 +2409,102 @@ func (m *Object_Vectors) GetVectors() []*Object_Vector {
 	return nil
 }
 
+func (*Object_Vectors) XXX_MessageName() string {
+	return "payload.v1.Object.Vectors"
+}
+
+type Object_StreamVector struct {
+	// Types that are valid to be assigned to Payload:
+	//	*Object_StreamVector_Vector
+	//	*Object_StreamVector_Status
+	Payload              isObject_StreamVector_Payload `protobuf_oneof:"payload"`
+	XXX_NoUnkeyedLiteral struct{}                      `json:"-"`
+	XXX_unrecognized     []byte                        `json:"-"`
+	XXX_sizecache        int32                         `json:"-"`
+}
+
+func (m *Object_StreamVector) Reset()         { *m = Object_StreamVector{} }
+func (m *Object_StreamVector) String() string { return proto.CompactTextString(m) }
+func (*Object_StreamVector) ProtoMessage()    {}
+func (*Object_StreamVector) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f0518b37b4e7594b, []int{7, 6}
+}
+func (m *Object_StreamVector) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *Object_StreamVector) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_Object_StreamVector.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *Object_StreamVector) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Object_StreamVector.Merge(m, src)
+}
+func (m *Object_StreamVector) XXX_Size() int {
+	return m.Size()
+}
+func (m *Object_StreamVector) XXX_DiscardUnknown() {
+	xxx_messageInfo_Object_StreamVector.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Object_StreamVector proto.InternalMessageInfo
+
+type isObject_StreamVector_Payload interface {
+	isObject_StreamVector_Payload()
+	MarshalTo([]byte) (int, error)
+	Size() int
+}
+
+type Object_StreamVector_Vector struct {
+	Vector *Object_Vector `protobuf:"bytes,1,opt,name=vector,proto3,oneof" json:"vector,omitempty"`
+}
+type Object_StreamVector_Status struct {
+	Status *rpc.Status `protobuf:"bytes,2,opt,name=status,proto3,oneof" json:"status,omitempty"`
+}
+
+func (*Object_StreamVector_Vector) isObject_StreamVector_Payload() {}
+func (*Object_StreamVector_Status) isObject_StreamVector_Payload() {}
+
+func (m *Object_StreamVector) GetPayload() isObject_StreamVector_Payload {
+	if m != nil {
+		return m.Payload
+	}
+	return nil
+}
+
+func (m *Object_StreamVector) GetVector() *Object_Vector {
+	if x, ok := m.GetPayload().(*Object_StreamVector_Vector); ok {
+		return x.Vector
+	}
+	return nil
+}
+
+func (m *Object_StreamVector) GetStatus() *rpc.Status {
+	if x, ok := m.GetPayload().(*Object_StreamVector_Status); ok {
+		return x.Status
+	}
+	return nil
+}
+
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*Object_StreamVector) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
+		(*Object_StreamVector_Vector)(nil),
+		(*Object_StreamVector_Status)(nil),
+	}
+}
+
+func (*Object_StreamVector) XXX_MessageName() string {
+	return "payload.v1.Object.StreamVector"
+}
+
 type Object_Blob struct {
 	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Object               []byte   `protobuf:"bytes,2,opt,name=object,proto3" json:"object,omitempty"`
@@ -2073,7 +2517,7 @@ func (m *Object_Blob) Reset()         { *m = Object_Blob{} }
 func (m *Object_Blob) String() string { return proto.CompactTextString(m) }
 func (*Object_Blob) ProtoMessage()    {}
 func (*Object_Blob) Descriptor() ([]byte, []int) {
-	return fileDescriptor_f0518b37b4e7594b, []int{7, 5}
+	return fileDescriptor_f0518b37b4e7594b, []int{7, 7}
 }
 func (m *Object_Blob) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -2116,6 +2560,102 @@ func (m *Object_Blob) GetObject() []byte {
 	return nil
 }
 
+func (*Object_Blob) XXX_MessageName() string {
+	return "payload.v1.Object.Blob"
+}
+
+type Object_StreamBlob struct {
+	// Types that are valid to be assigned to Payload:
+	//	*Object_StreamBlob_Blob
+	//	*Object_StreamBlob_Status
+	Payload              isObject_StreamBlob_Payload `protobuf_oneof:"payload"`
+	XXX_NoUnkeyedLiteral struct{}                    `json:"-"`
+	XXX_unrecognized     []byte                      `json:"-"`
+	XXX_sizecache        int32                       `json:"-"`
+}
+
+func (m *Object_StreamBlob) Reset()         { *m = Object_StreamBlob{} }
+func (m *Object_StreamBlob) String() string { return proto.CompactTextString(m) }
+func (*Object_StreamBlob) ProtoMessage()    {}
+func (*Object_StreamBlob) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f0518b37b4e7594b, []int{7, 8}
+}
+func (m *Object_StreamBlob) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *Object_StreamBlob) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_Object_StreamBlob.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *Object_StreamBlob) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Object_StreamBlob.Merge(m, src)
+}
+func (m *Object_StreamBlob) XXX_Size() int {
+	return m.Size()
+}
+func (m *Object_StreamBlob) XXX_DiscardUnknown() {
+	xxx_messageInfo_Object_StreamBlob.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Object_StreamBlob proto.InternalMessageInfo
+
+type isObject_StreamBlob_Payload interface {
+	isObject_StreamBlob_Payload()
+	MarshalTo([]byte) (int, error)
+	Size() int
+}
+
+type Object_StreamBlob_Blob struct {
+	Blob *Object_Blob `protobuf:"bytes,1,opt,name=blob,proto3,oneof" json:"blob,omitempty"`
+}
+type Object_StreamBlob_Status struct {
+	Status *rpc.Status `protobuf:"bytes,2,opt,name=status,proto3,oneof" json:"status,omitempty"`
+}
+
+func (*Object_StreamBlob_Blob) isObject_StreamBlob_Payload()   {}
+func (*Object_StreamBlob_Status) isObject_StreamBlob_Payload() {}
+
+func (m *Object_StreamBlob) GetPayload() isObject_StreamBlob_Payload {
+	if m != nil {
+		return m.Payload
+	}
+	return nil
+}
+
+func (m *Object_StreamBlob) GetBlob() *Object_Blob {
+	if x, ok := m.GetPayload().(*Object_StreamBlob_Blob); ok {
+		return x.Blob
+	}
+	return nil
+}
+
+func (m *Object_StreamBlob) GetStatus() *rpc.Status {
+	if x, ok := m.GetPayload().(*Object_StreamBlob_Status); ok {
+		return x.Status
+	}
+	return nil
+}
+
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*Object_StreamBlob) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
+		(*Object_StreamBlob_Blob)(nil),
+		(*Object_StreamBlob_Status)(nil),
+	}
+}
+
+func (*Object_StreamBlob) XXX_MessageName() string {
+	return "payload.v1.Object.StreamBlob"
+}
+
 type Object_Location struct {
 	Name                 string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	Uuid                 string   `protobuf:"bytes,2,opt,name=uuid,proto3" json:"uuid,omitempty"`
@@ -2129,7 +2669,7 @@ func (m *Object_Location) Reset()         { *m = Object_Location{} }
 func (m *Object_Location) String() string { return proto.CompactTextString(m) }
 func (*Object_Location) ProtoMessage()    {}
 func (*Object_Location) Descriptor() ([]byte, []int) {
-	return fileDescriptor_f0518b37b4e7594b, []int{7, 6}
+	return fileDescriptor_f0518b37b4e7594b, []int{7, 9}
 }
 func (m *Object_Location) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -2179,6 +2719,102 @@ func (m *Object_Location) GetIps() []string {
 	return nil
 }
 
+func (*Object_Location) XXX_MessageName() string {
+	return "payload.v1.Object.Location"
+}
+
+type Object_StreamLocation struct {
+	// Types that are valid to be assigned to Payload:
+	//	*Object_StreamLocation_Location
+	//	*Object_StreamLocation_Status
+	Payload              isObject_StreamLocation_Payload `protobuf_oneof:"payload"`
+	XXX_NoUnkeyedLiteral struct{}                        `json:"-"`
+	XXX_unrecognized     []byte                          `json:"-"`
+	XXX_sizecache        int32                           `json:"-"`
+}
+
+func (m *Object_StreamLocation) Reset()         { *m = Object_StreamLocation{} }
+func (m *Object_StreamLocation) String() string { return proto.CompactTextString(m) }
+func (*Object_StreamLocation) ProtoMessage()    {}
+func (*Object_StreamLocation) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f0518b37b4e7594b, []int{7, 10}
+}
+func (m *Object_StreamLocation) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *Object_StreamLocation) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_Object_StreamLocation.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *Object_StreamLocation) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Object_StreamLocation.Merge(m, src)
+}
+func (m *Object_StreamLocation) XXX_Size() int {
+	return m.Size()
+}
+func (m *Object_StreamLocation) XXX_DiscardUnknown() {
+	xxx_messageInfo_Object_StreamLocation.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Object_StreamLocation proto.InternalMessageInfo
+
+type isObject_StreamLocation_Payload interface {
+	isObject_StreamLocation_Payload()
+	MarshalTo([]byte) (int, error)
+	Size() int
+}
+
+type Object_StreamLocation_Location struct {
+	Location *Object_Location `protobuf:"bytes,1,opt,name=location,proto3,oneof" json:"location,omitempty"`
+}
+type Object_StreamLocation_Status struct {
+	Status *rpc.Status `protobuf:"bytes,2,opt,name=status,proto3,oneof" json:"status,omitempty"`
+}
+
+func (*Object_StreamLocation_Location) isObject_StreamLocation_Payload() {}
+func (*Object_StreamLocation_Status) isObject_StreamLocation_Payload()   {}
+
+func (m *Object_StreamLocation) GetPayload() isObject_StreamLocation_Payload {
+	if m != nil {
+		return m.Payload
+	}
+	return nil
+}
+
+func (m *Object_StreamLocation) GetLocation() *Object_Location {
+	if x, ok := m.GetPayload().(*Object_StreamLocation_Location); ok {
+		return x.Location
+	}
+	return nil
+}
+
+func (m *Object_StreamLocation) GetStatus() *rpc.Status {
+	if x, ok := m.GetPayload().(*Object_StreamLocation_Status); ok {
+		return x.Status
+	}
+	return nil
+}
+
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*Object_StreamLocation) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
+		(*Object_StreamLocation_Location)(nil),
+		(*Object_StreamLocation_Status)(nil),
+	}
+}
+
+func (*Object_StreamLocation) XXX_MessageName() string {
+	return "payload.v1.Object.StreamLocation"
+}
+
 type Object_Locations struct {
 	Locations            []*Object_Location `protobuf:"bytes,1,rep,name=locations,proto3" json:"locations,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
@@ -2190,7 +2826,7 @@ func (m *Object_Locations) Reset()         { *m = Object_Locations{} }
 func (m *Object_Locations) String() string { return proto.CompactTextString(m) }
 func (*Object_Locations) ProtoMessage()    {}
 func (*Object_Locations) Descriptor() ([]byte, []int) {
-	return fileDescriptor_f0518b37b4e7594b, []int{7, 7}
+	return fileDescriptor_f0518b37b4e7594b, []int{7, 11}
 }
 func (m *Object_Locations) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -2224,6 +2860,10 @@ func (m *Object_Locations) GetLocations() []*Object_Location {
 		return m.Locations
 	}
 	return nil
+}
+
+func (*Object_Locations) XXX_MessageName() string {
+	return "payload.v1.Object.Locations"
 }
 
 type Control struct {
@@ -2264,6 +2904,10 @@ func (m *Control) XXX_DiscardUnknown() {
 }
 
 var xxx_messageInfo_Control proto.InternalMessageInfo
+
+func (*Control) XXX_MessageName() string {
+	return "payload.v1.Control"
+}
 
 type Control_CreateIndexRequest struct {
 	PoolSize             uint32   `protobuf:"varint,1,opt,name=pool_size,json=poolSize,proto3" json:"pool_size,omitempty"`
@@ -2312,6 +2956,10 @@ func (m *Control_CreateIndexRequest) GetPoolSize() uint32 {
 	return 0
 }
 
+func (*Control_CreateIndexRequest) XXX_MessageName() string {
+	return "payload.v1.Control.CreateIndexRequest"
+}
+
 type Replication struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -2350,6 +2998,10 @@ func (m *Replication) XXX_DiscardUnknown() {
 }
 
 var xxx_messageInfo_Replication proto.InternalMessageInfo
+
+func (*Replication) XXX_MessageName() string {
+	return "payload.v1.Replication"
+}
 
 type Replication_Recovery struct {
 	DeletedAgents        []string `protobuf:"bytes,1,rep,name=deleted_agents,json=deletedAgents,proto3" json:"deleted_agents,omitempty"`
@@ -2396,6 +3048,10 @@ func (m *Replication_Recovery) GetDeletedAgents() []string {
 		return m.DeletedAgents
 	}
 	return nil
+}
+
+func (*Replication_Recovery) XXX_MessageName() string {
+	return "payload.v1.Replication.Recovery"
 }
 
 type Replication_Rebalance struct {
@@ -2451,6 +3107,10 @@ func (m *Replication_Rebalance) GetLowUsageAgents() []string {
 		return m.LowUsageAgents
 	}
 	return nil
+}
+
+func (*Replication_Rebalance) XXX_MessageName() string {
+	return "payload.v1.Replication.Rebalance"
 }
 
 type Replication_Agents struct {
@@ -2516,6 +3176,10 @@ func (m *Replication_Agents) GetReplicatingAgent() []string {
 	return nil
 }
 
+func (*Replication_Agents) XXX_MessageName() string {
+	return "payload.v1.Replication.Agents"
+}
+
 type Discoverer struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -2554,6 +3218,10 @@ func (m *Discoverer) XXX_DiscardUnknown() {
 }
 
 var xxx_messageInfo_Discoverer proto.InternalMessageInfo
+
+func (*Discoverer) XXX_MessageName() string {
+	return "payload.v1.Discoverer"
+}
 
 type Discoverer_Request struct {
 	Name                 string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
@@ -2618,6 +3286,10 @@ func (m *Discoverer_Request) GetNode() string {
 	return ""
 }
 
+func (*Discoverer_Request) XXX_MessageName() string {
+	return "payload.v1.Discoverer.Request"
+}
+
 type Backup struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -2657,6 +3329,10 @@ func (m *Backup) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Backup proto.InternalMessageInfo
 
+func (*Backup) XXX_MessageName() string {
+	return "payload.v1.Backup"
+}
+
 type Backup_GetVector struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -2695,6 +3371,10 @@ func (m *Backup_GetVector) XXX_DiscardUnknown() {
 }
 
 var xxx_messageInfo_Backup_GetVector proto.InternalMessageInfo
+
+func (*Backup_GetVector) XXX_MessageName() string {
+	return "payload.v1.Backup.GetVector"
+}
 
 type Backup_GetVector_Request struct {
 	Uuid                 string   `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"`
@@ -2741,6 +3421,10 @@ func (m *Backup_GetVector_Request) GetUuid() string {
 		return m.Uuid
 	}
 	return ""
+}
+
+func (*Backup_GetVector_Request) XXX_MessageName() string {
+	return "payload.v1.Backup.GetVector.Request"
 }
 
 type Backup_GetVector_Owner struct {
@@ -2790,6 +3474,10 @@ func (m *Backup_GetVector_Owner) GetIp() string {
 	return ""
 }
 
+func (*Backup_GetVector_Owner) XXX_MessageName() string {
+	return "payload.v1.Backup.GetVector.Owner"
+}
+
 type Backup_Locations struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -2828,6 +3516,10 @@ func (m *Backup_Locations) XXX_DiscardUnknown() {
 }
 
 var xxx_messageInfo_Backup_Locations proto.InternalMessageInfo
+
+func (*Backup_Locations) XXX_MessageName() string {
+	return "payload.v1.Backup.Locations"
+}
 
 type Backup_Locations_Request struct {
 	Uuid                 string   `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"`
@@ -2876,6 +3568,10 @@ func (m *Backup_Locations_Request) GetUuid() string {
 	return ""
 }
 
+func (*Backup_Locations_Request) XXX_MessageName() string {
+	return "payload.v1.Backup.Locations.Request"
+}
+
 type Backup_Remove struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -2914,6 +3610,10 @@ func (m *Backup_Remove) XXX_DiscardUnknown() {
 }
 
 var xxx_messageInfo_Backup_Remove proto.InternalMessageInfo
+
+func (*Backup_Remove) XXX_MessageName() string {
+	return "payload.v1.Backup.Remove"
+}
 
 type Backup_Remove_Request struct {
 	Uuid                 string   `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"`
@@ -2960,6 +3660,10 @@ func (m *Backup_Remove_Request) GetUuid() string {
 		return m.Uuid
 	}
 	return ""
+}
+
+func (*Backup_Remove_Request) XXX_MessageName() string {
+	return "payload.v1.Backup.Remove.Request"
 }
 
 type Backup_Remove_RequestMulti struct {
@@ -3009,6 +3713,10 @@ func (m *Backup_Remove_RequestMulti) GetUuids() []string {
 	return nil
 }
 
+func (*Backup_Remove_RequestMulti) XXX_MessageName() string {
+	return "payload.v1.Backup.Remove.RequestMulti"
+}
+
 type Backup_IP struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -3048,6 +3756,10 @@ func (m *Backup_IP) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Backup_IP proto.InternalMessageInfo
 
+func (*Backup_IP) XXX_MessageName() string {
+	return "payload.v1.Backup.IP"
+}
+
 type Backup_IP_Register struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -3086,6 +3798,10 @@ func (m *Backup_IP_Register) XXX_DiscardUnknown() {
 }
 
 var xxx_messageInfo_Backup_IP_Register proto.InternalMessageInfo
+
+func (*Backup_IP_Register) XXX_MessageName() string {
+	return "payload.v1.Backup.IP.Register"
+}
 
 type Backup_IP_Register_Request struct {
 	Uuid                 string   `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"`
@@ -3142,6 +3858,10 @@ func (m *Backup_IP_Register_Request) GetIps() []string {
 	return nil
 }
 
+func (*Backup_IP_Register_Request) XXX_MessageName() string {
+	return "payload.v1.Backup.IP.Register.Request"
+}
+
 type Backup_IP_Remove struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -3180,6 +3900,10 @@ func (m *Backup_IP_Remove) XXX_DiscardUnknown() {
 }
 
 var xxx_messageInfo_Backup_IP_Remove proto.InternalMessageInfo
+
+func (*Backup_IP_Remove) XXX_MessageName() string {
+	return "payload.v1.Backup.IP.Remove"
+}
 
 type Backup_IP_Remove_Request struct {
 	Ips                  []string `protobuf:"bytes,1,rep,name=ips,proto3" json:"ips,omitempty"`
@@ -3226,6 +3950,10 @@ func (m *Backup_IP_Remove_Request) GetIps() []string {
 		return m.Ips
 	}
 	return nil
+}
+
+func (*Backup_IP_Remove_Request) XXX_MessageName() string {
+	return "payload.v1.Backup.IP.Remove.Request"
 }
 
 type Backup_Vector struct {
@@ -3291,6 +4019,10 @@ func (m *Backup_Vector) GetIps() []string {
 	return nil
 }
 
+func (*Backup_Vector) XXX_MessageName() string {
+	return "payload.v1.Backup.Vector"
+}
+
 type Backup_Vectors struct {
 	Vectors              []*Backup_Vector `protobuf:"bytes,1,rep,name=vectors,proto3" json:"vectors,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
@@ -3338,6 +4070,10 @@ func (m *Backup_Vectors) GetVectors() []*Backup_Vector {
 	return nil
 }
 
+func (*Backup_Vectors) XXX_MessageName() string {
+	return "payload.v1.Backup.Vectors"
+}
+
 type Backup_Compressed struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -3376,6 +4112,10 @@ func (m *Backup_Compressed) XXX_DiscardUnknown() {
 }
 
 var xxx_messageInfo_Backup_Compressed proto.InternalMessageInfo
+
+func (*Backup_Compressed) XXX_MessageName() string {
+	return "payload.v1.Backup.Compressed"
+}
 
 type Backup_Compressed_Vector struct {
 	Uuid                 string   `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"`
@@ -3440,6 +4180,10 @@ func (m *Backup_Compressed_Vector) GetIps() []string {
 	return nil
 }
 
+func (*Backup_Compressed_Vector) XXX_MessageName() string {
+	return "payload.v1.Backup.Compressed.Vector"
+}
+
 type Backup_Compressed_Vectors struct {
 	Vectors              []*Backup_Compressed_Vector `protobuf:"bytes,1,rep,name=vectors,proto3" json:"vectors,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                    `json:"-"`
@@ -3487,6 +4231,10 @@ func (m *Backup_Compressed_Vectors) GetVectors() []*Backup_Compressed_Vector {
 	return nil
 }
 
+func (*Backup_Compressed_Vectors) XXX_MessageName() string {
+	return "payload.v1.Backup.Compressed.Vectors"
+}
+
 type Info struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -3526,6 +4274,10 @@ func (m *Info) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Info proto.InternalMessageInfo
 
+func (*Info) XXX_MessageName() string {
+	return "payload.v1.Info"
+}
+
 type Info_Index struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -3564,6 +4316,10 @@ func (m *Info_Index) XXX_DiscardUnknown() {
 }
 
 var xxx_messageInfo_Info_Index proto.InternalMessageInfo
+
+func (*Info_Index) XXX_MessageName() string {
+	return "payload.v1.Info.Index"
+}
 
 type Info_Index_Count struct {
 	Stored               uint32   `protobuf:"varint,1,opt,name=stored,proto3" json:"stored,omitempty"`
@@ -3628,6 +4384,10 @@ func (m *Info_Index_Count) GetIndexing() bool {
 	return false
 }
 
+func (*Info_Index_Count) XXX_MessageName() string {
+	return "payload.v1.Info.Index.Count"
+}
+
 type Info_Index_UUID struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -3666,6 +4426,10 @@ func (m *Info_Index_UUID) XXX_DiscardUnknown() {
 }
 
 var xxx_messageInfo_Info_Index_UUID proto.InternalMessageInfo
+
+func (*Info_Index_UUID) XXX_MessageName() string {
+	return "payload.v1.Info.Index.UUID"
+}
 
 type Info_Index_UUID_Committed struct {
 	Uuid                 string   `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"`
@@ -3714,6 +4478,10 @@ func (m *Info_Index_UUID_Committed) GetUuid() string {
 	return ""
 }
 
+func (*Info_Index_UUID_Committed) XXX_MessageName() string {
+	return "payload.v1.Info.Index.UUID.Committed"
+}
+
 type Info_Index_UUID_Uncommitted struct {
 	Uuid                 string   `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -3759,6 +4527,10 @@ func (m *Info_Index_UUID_Uncommitted) GetUuid() string {
 		return m.Uuid
 	}
 	return ""
+}
+
+func (*Info_Index_UUID_Uncommitted) XXX_MessageName() string {
+	return "payload.v1.Info.Index.UUID.Uncommitted"
 }
 
 type Info_Pod struct {
@@ -3856,6 +4628,10 @@ func (m *Info_Pod) GetNode() *Info_Node {
 	return nil
 }
 
+func (*Info_Pod) XXX_MessageName() string {
+	return "payload.v1.Info.Pod"
+}
+
 type Info_Node struct {
 	Name                 string       `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	InternalAddr         string       `protobuf:"bytes,2,opt,name=internal_addr,json=internalAddr,proto3" json:"internal_addr,omitempty"`
@@ -3943,6 +4719,10 @@ func (m *Info_Node) GetPods() *Info_Pods {
 	return nil
 }
 
+func (*Info_Node) XXX_MessageName() string {
+	return "payload.v1.Info.Node"
+}
+
 type Info_CPU struct {
 	Limit                float64  `protobuf:"fixed64,1,opt,name=limit,proto3" json:"limit,omitempty"`
 	Request              float64  `protobuf:"fixed64,2,opt,name=request,proto3" json:"request,omitempty"`
@@ -4004,6 +4784,10 @@ func (m *Info_CPU) GetUsage() float64 {
 		return m.Usage
 	}
 	return 0
+}
+
+func (*Info_CPU) XXX_MessageName() string {
+	return "payload.v1.Info.CPU"
 }
 
 type Info_Memory struct {
@@ -4069,6 +4853,10 @@ func (m *Info_Memory) GetUsage() float64 {
 	return 0
 }
 
+func (*Info_Memory) XXX_MessageName() string {
+	return "payload.v1.Info.Memory"
+}
+
 type Info_Pods struct {
 	Pods                 []*Info_Pod `protobuf:"bytes,1,rep,name=pods,proto3" json:"pods,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}    `json:"-"`
@@ -4114,6 +4902,10 @@ func (m *Info_Pods) GetPods() []*Info_Pod {
 		return m.Pods
 	}
 	return nil
+}
+
+func (*Info_Pods) XXX_MessageName() string {
+	return "payload.v1.Info.Pods"
 }
 
 type Info_Nodes struct {
@@ -4163,6 +4955,10 @@ func (m *Info_Nodes) GetNodes() []*Info_Node {
 	return nil
 }
 
+func (*Info_Nodes) XXX_MessageName() string {
+	return "payload.v1.Info.Nodes"
+}
+
 type Info_IPs struct {
 	Ip                   []string `protobuf:"bytes,1,rep,name=ip,proto3" json:"ip,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -4210,6 +5006,10 @@ func (m *Info_IPs) GetIp() []string {
 	return nil
 }
 
+func (*Info_IPs) XXX_MessageName() string {
+	return "payload.v1.Info.IPs"
+}
+
 type Empty struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -4249,207 +5049,320 @@ func (m *Empty) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Empty proto.InternalMessageInfo
 
+func (*Empty) XXX_MessageName() string {
+	return "payload.v1.Empty"
+}
 func init() {
 	proto.RegisterType((*Search)(nil), "payload.v1.Search")
+	golang_proto.RegisterType((*Search)(nil), "payload.v1.Search")
 	proto.RegisterType((*Search_Request)(nil), "payload.v1.Search.Request")
+	golang_proto.RegisterType((*Search_Request)(nil), "payload.v1.Search.Request")
 	proto.RegisterType((*Search_MultiRequest)(nil), "payload.v1.Search.MultiRequest")
+	golang_proto.RegisterType((*Search_MultiRequest)(nil), "payload.v1.Search.MultiRequest")
 	proto.RegisterType((*Search_IDRequest)(nil), "payload.v1.Search.IDRequest")
+	golang_proto.RegisterType((*Search_IDRequest)(nil), "payload.v1.Search.IDRequest")
 	proto.RegisterType((*Search_MultiIDRequest)(nil), "payload.v1.Search.MultiIDRequest")
+	golang_proto.RegisterType((*Search_MultiIDRequest)(nil), "payload.v1.Search.MultiIDRequest")
 	proto.RegisterType((*Search_ObjectRequest)(nil), "payload.v1.Search.ObjectRequest")
+	golang_proto.RegisterType((*Search_ObjectRequest)(nil), "payload.v1.Search.ObjectRequest")
 	proto.RegisterType((*Search_Config)(nil), "payload.v1.Search.Config")
+	golang_proto.RegisterType((*Search_Config)(nil), "payload.v1.Search.Config")
 	proto.RegisterType((*Search_Response)(nil), "payload.v1.Search.Response")
+	golang_proto.RegisterType((*Search_Response)(nil), "payload.v1.Search.Response")
 	proto.RegisterType((*Search_Responses)(nil), "payload.v1.Search.Responses")
+	golang_proto.RegisterType((*Search_Responses)(nil), "payload.v1.Search.Responses")
+	proto.RegisterType((*Search_StreamResponse)(nil), "payload.v1.Search.StreamResponse")
+	golang_proto.RegisterType((*Search_StreamResponse)(nil), "payload.v1.Search.StreamResponse")
 	proto.RegisterType((*Filter)(nil), "payload.v1.Filter")
+	golang_proto.RegisterType((*Filter)(nil), "payload.v1.Filter")
 	proto.RegisterType((*Filter_Target)(nil), "payload.v1.Filter.Target")
+	golang_proto.RegisterType((*Filter_Target)(nil), "payload.v1.Filter.Target")
 	proto.RegisterType((*Filter_Config)(nil), "payload.v1.Filter.Config")
+	golang_proto.RegisterType((*Filter_Config)(nil), "payload.v1.Filter.Config")
 	proto.RegisterType((*Insert)(nil), "payload.v1.Insert")
+	golang_proto.RegisterType((*Insert)(nil), "payload.v1.Insert")
 	proto.RegisterType((*Insert_Request)(nil), "payload.v1.Insert.Request")
+	golang_proto.RegisterType((*Insert_Request)(nil), "payload.v1.Insert.Request")
 	proto.RegisterType((*Insert_MultiRequest)(nil), "payload.v1.Insert.MultiRequest")
+	golang_proto.RegisterType((*Insert_MultiRequest)(nil), "payload.v1.Insert.MultiRequest")
 	proto.RegisterType((*Insert_Config)(nil), "payload.v1.Insert.Config")
+	golang_proto.RegisterType((*Insert_Config)(nil), "payload.v1.Insert.Config")
 	proto.RegisterType((*Update)(nil), "payload.v1.Update")
+	golang_proto.RegisterType((*Update)(nil), "payload.v1.Update")
 	proto.RegisterType((*Update_Request)(nil), "payload.v1.Update.Request")
+	golang_proto.RegisterType((*Update_Request)(nil), "payload.v1.Update.Request")
 	proto.RegisterType((*Update_MultiRequest)(nil), "payload.v1.Update.MultiRequest")
+	golang_proto.RegisterType((*Update_MultiRequest)(nil), "payload.v1.Update.MultiRequest")
 	proto.RegisterType((*Update_Config)(nil), "payload.v1.Update.Config")
+	golang_proto.RegisterType((*Update_Config)(nil), "payload.v1.Update.Config")
 	proto.RegisterType((*Upsert)(nil), "payload.v1.Upsert")
+	golang_proto.RegisterType((*Upsert)(nil), "payload.v1.Upsert")
 	proto.RegisterType((*Upsert_Request)(nil), "payload.v1.Upsert.Request")
+	golang_proto.RegisterType((*Upsert_Request)(nil), "payload.v1.Upsert.Request")
 	proto.RegisterType((*Upsert_MultiRequest)(nil), "payload.v1.Upsert.MultiRequest")
+	golang_proto.RegisterType((*Upsert_MultiRequest)(nil), "payload.v1.Upsert.MultiRequest")
 	proto.RegisterType((*Upsert_Config)(nil), "payload.v1.Upsert.Config")
+	golang_proto.RegisterType((*Upsert_Config)(nil), "payload.v1.Upsert.Config")
 	proto.RegisterType((*Remove)(nil), "payload.v1.Remove")
+	golang_proto.RegisterType((*Remove)(nil), "payload.v1.Remove")
 	proto.RegisterType((*Remove_Request)(nil), "payload.v1.Remove.Request")
+	golang_proto.RegisterType((*Remove_Request)(nil), "payload.v1.Remove.Request")
 	proto.RegisterType((*Remove_MultiRequest)(nil), "payload.v1.Remove.MultiRequest")
+	golang_proto.RegisterType((*Remove_MultiRequest)(nil), "payload.v1.Remove.MultiRequest")
 	proto.RegisterType((*Remove_Config)(nil), "payload.v1.Remove.Config")
+	golang_proto.RegisterType((*Remove_Config)(nil), "payload.v1.Remove.Config")
 	proto.RegisterType((*Meta)(nil), "payload.v1.Meta")
+	golang_proto.RegisterType((*Meta)(nil), "payload.v1.Meta")
 	proto.RegisterType((*Meta_Key)(nil), "payload.v1.Meta.Key")
+	golang_proto.RegisterType((*Meta_Key)(nil), "payload.v1.Meta.Key")
 	proto.RegisterType((*Meta_Keys)(nil), "payload.v1.Meta.Keys")
+	golang_proto.RegisterType((*Meta_Keys)(nil), "payload.v1.Meta.Keys")
 	proto.RegisterType((*Meta_Val)(nil), "payload.v1.Meta.Val")
+	golang_proto.RegisterType((*Meta_Val)(nil), "payload.v1.Meta.Val")
 	proto.RegisterType((*Meta_Vals)(nil), "payload.v1.Meta.Vals")
+	golang_proto.RegisterType((*Meta_Vals)(nil), "payload.v1.Meta.Vals")
 	proto.RegisterType((*Meta_KeyVal)(nil), "payload.v1.Meta.KeyVal")
+	golang_proto.RegisterType((*Meta_KeyVal)(nil), "payload.v1.Meta.KeyVal")
 	proto.RegisterType((*Meta_KeyVals)(nil), "payload.v1.Meta.KeyVals")
+	golang_proto.RegisterType((*Meta_KeyVals)(nil), "payload.v1.Meta.KeyVals")
 	proto.RegisterType((*Object)(nil), "payload.v1.Object")
+	golang_proto.RegisterType((*Object)(nil), "payload.v1.Object")
 	proto.RegisterType((*Object_Distance)(nil), "payload.v1.Object.Distance")
+	golang_proto.RegisterType((*Object_Distance)(nil), "payload.v1.Object.Distance")
+	proto.RegisterType((*Object_StreamDistance)(nil), "payload.v1.Object.StreamDistance")
+	golang_proto.RegisterType((*Object_StreamDistance)(nil), "payload.v1.Object.StreamDistance")
 	proto.RegisterType((*Object_ID)(nil), "payload.v1.Object.ID")
+	golang_proto.RegisterType((*Object_ID)(nil), "payload.v1.Object.ID")
 	proto.RegisterType((*Object_IDs)(nil), "payload.v1.Object.IDs")
+	golang_proto.RegisterType((*Object_IDs)(nil), "payload.v1.Object.IDs")
 	proto.RegisterType((*Object_Vector)(nil), "payload.v1.Object.Vector")
+	golang_proto.RegisterType((*Object_Vector)(nil), "payload.v1.Object.Vector")
 	proto.RegisterType((*Object_Vectors)(nil), "payload.v1.Object.Vectors")
+	golang_proto.RegisterType((*Object_Vectors)(nil), "payload.v1.Object.Vectors")
+	proto.RegisterType((*Object_StreamVector)(nil), "payload.v1.Object.StreamVector")
+	golang_proto.RegisterType((*Object_StreamVector)(nil), "payload.v1.Object.StreamVector")
 	proto.RegisterType((*Object_Blob)(nil), "payload.v1.Object.Blob")
+	golang_proto.RegisterType((*Object_Blob)(nil), "payload.v1.Object.Blob")
+	proto.RegisterType((*Object_StreamBlob)(nil), "payload.v1.Object.StreamBlob")
+	golang_proto.RegisterType((*Object_StreamBlob)(nil), "payload.v1.Object.StreamBlob")
 	proto.RegisterType((*Object_Location)(nil), "payload.v1.Object.Location")
+	golang_proto.RegisterType((*Object_Location)(nil), "payload.v1.Object.Location")
+	proto.RegisterType((*Object_StreamLocation)(nil), "payload.v1.Object.StreamLocation")
+	golang_proto.RegisterType((*Object_StreamLocation)(nil), "payload.v1.Object.StreamLocation")
 	proto.RegisterType((*Object_Locations)(nil), "payload.v1.Object.Locations")
+	golang_proto.RegisterType((*Object_Locations)(nil), "payload.v1.Object.Locations")
 	proto.RegisterType((*Control)(nil), "payload.v1.Control")
+	golang_proto.RegisterType((*Control)(nil), "payload.v1.Control")
 	proto.RegisterType((*Control_CreateIndexRequest)(nil), "payload.v1.Control.CreateIndexRequest")
+	golang_proto.RegisterType((*Control_CreateIndexRequest)(nil), "payload.v1.Control.CreateIndexRequest")
 	proto.RegisterType((*Replication)(nil), "payload.v1.Replication")
+	golang_proto.RegisterType((*Replication)(nil), "payload.v1.Replication")
 	proto.RegisterType((*Replication_Recovery)(nil), "payload.v1.Replication.Recovery")
+	golang_proto.RegisterType((*Replication_Recovery)(nil), "payload.v1.Replication.Recovery")
 	proto.RegisterType((*Replication_Rebalance)(nil), "payload.v1.Replication.Rebalance")
+	golang_proto.RegisterType((*Replication_Rebalance)(nil), "payload.v1.Replication.Rebalance")
 	proto.RegisterType((*Replication_Agents)(nil), "payload.v1.Replication.Agents")
+	golang_proto.RegisterType((*Replication_Agents)(nil), "payload.v1.Replication.Agents")
 	proto.RegisterType((*Discoverer)(nil), "payload.v1.Discoverer")
+	golang_proto.RegisterType((*Discoverer)(nil), "payload.v1.Discoverer")
 	proto.RegisterType((*Discoverer_Request)(nil), "payload.v1.Discoverer.Request")
+	golang_proto.RegisterType((*Discoverer_Request)(nil), "payload.v1.Discoverer.Request")
 	proto.RegisterType((*Backup)(nil), "payload.v1.Backup")
+	golang_proto.RegisterType((*Backup)(nil), "payload.v1.Backup")
 	proto.RegisterType((*Backup_GetVector)(nil), "payload.v1.Backup.GetVector")
+	golang_proto.RegisterType((*Backup_GetVector)(nil), "payload.v1.Backup.GetVector")
 	proto.RegisterType((*Backup_GetVector_Request)(nil), "payload.v1.Backup.GetVector.Request")
+	golang_proto.RegisterType((*Backup_GetVector_Request)(nil), "payload.v1.Backup.GetVector.Request")
 	proto.RegisterType((*Backup_GetVector_Owner)(nil), "payload.v1.Backup.GetVector.Owner")
+	golang_proto.RegisterType((*Backup_GetVector_Owner)(nil), "payload.v1.Backup.GetVector.Owner")
 	proto.RegisterType((*Backup_Locations)(nil), "payload.v1.Backup.Locations")
+	golang_proto.RegisterType((*Backup_Locations)(nil), "payload.v1.Backup.Locations")
 	proto.RegisterType((*Backup_Locations_Request)(nil), "payload.v1.Backup.Locations.Request")
+	golang_proto.RegisterType((*Backup_Locations_Request)(nil), "payload.v1.Backup.Locations.Request")
 	proto.RegisterType((*Backup_Remove)(nil), "payload.v1.Backup.Remove")
+	golang_proto.RegisterType((*Backup_Remove)(nil), "payload.v1.Backup.Remove")
 	proto.RegisterType((*Backup_Remove_Request)(nil), "payload.v1.Backup.Remove.Request")
+	golang_proto.RegisterType((*Backup_Remove_Request)(nil), "payload.v1.Backup.Remove.Request")
 	proto.RegisterType((*Backup_Remove_RequestMulti)(nil), "payload.v1.Backup.Remove.RequestMulti")
+	golang_proto.RegisterType((*Backup_Remove_RequestMulti)(nil), "payload.v1.Backup.Remove.RequestMulti")
 	proto.RegisterType((*Backup_IP)(nil), "payload.v1.Backup.IP")
+	golang_proto.RegisterType((*Backup_IP)(nil), "payload.v1.Backup.IP")
 	proto.RegisterType((*Backup_IP_Register)(nil), "payload.v1.Backup.IP.Register")
+	golang_proto.RegisterType((*Backup_IP_Register)(nil), "payload.v1.Backup.IP.Register")
 	proto.RegisterType((*Backup_IP_Register_Request)(nil), "payload.v1.Backup.IP.Register.Request")
+	golang_proto.RegisterType((*Backup_IP_Register_Request)(nil), "payload.v1.Backup.IP.Register.Request")
 	proto.RegisterType((*Backup_IP_Remove)(nil), "payload.v1.Backup.IP.Remove")
+	golang_proto.RegisterType((*Backup_IP_Remove)(nil), "payload.v1.Backup.IP.Remove")
 	proto.RegisterType((*Backup_IP_Remove_Request)(nil), "payload.v1.Backup.IP.Remove.Request")
+	golang_proto.RegisterType((*Backup_IP_Remove_Request)(nil), "payload.v1.Backup.IP.Remove.Request")
 	proto.RegisterType((*Backup_Vector)(nil), "payload.v1.Backup.Vector")
+	golang_proto.RegisterType((*Backup_Vector)(nil), "payload.v1.Backup.Vector")
 	proto.RegisterType((*Backup_Vectors)(nil), "payload.v1.Backup.Vectors")
+	golang_proto.RegisterType((*Backup_Vectors)(nil), "payload.v1.Backup.Vectors")
 	proto.RegisterType((*Backup_Compressed)(nil), "payload.v1.Backup.Compressed")
+	golang_proto.RegisterType((*Backup_Compressed)(nil), "payload.v1.Backup.Compressed")
 	proto.RegisterType((*Backup_Compressed_Vector)(nil), "payload.v1.Backup.Compressed.Vector")
+	golang_proto.RegisterType((*Backup_Compressed_Vector)(nil), "payload.v1.Backup.Compressed.Vector")
 	proto.RegisterType((*Backup_Compressed_Vectors)(nil), "payload.v1.Backup.Compressed.Vectors")
+	golang_proto.RegisterType((*Backup_Compressed_Vectors)(nil), "payload.v1.Backup.Compressed.Vectors")
 	proto.RegisterType((*Info)(nil), "payload.v1.Info")
+	golang_proto.RegisterType((*Info)(nil), "payload.v1.Info")
 	proto.RegisterType((*Info_Index)(nil), "payload.v1.Info.Index")
+	golang_proto.RegisterType((*Info_Index)(nil), "payload.v1.Info.Index")
 	proto.RegisterType((*Info_Index_Count)(nil), "payload.v1.Info.Index.Count")
+	golang_proto.RegisterType((*Info_Index_Count)(nil), "payload.v1.Info.Index.Count")
 	proto.RegisterType((*Info_Index_UUID)(nil), "payload.v1.Info.Index.UUID")
+	golang_proto.RegisterType((*Info_Index_UUID)(nil), "payload.v1.Info.Index.UUID")
 	proto.RegisterType((*Info_Index_UUID_Committed)(nil), "payload.v1.Info.Index.UUID.Committed")
+	golang_proto.RegisterType((*Info_Index_UUID_Committed)(nil), "payload.v1.Info.Index.UUID.Committed")
 	proto.RegisterType((*Info_Index_UUID_Uncommitted)(nil), "payload.v1.Info.Index.UUID.Uncommitted")
+	golang_proto.RegisterType((*Info_Index_UUID_Uncommitted)(nil), "payload.v1.Info.Index.UUID.Uncommitted")
 	proto.RegisterType((*Info_Pod)(nil), "payload.v1.Info.Pod")
+	golang_proto.RegisterType((*Info_Pod)(nil), "payload.v1.Info.Pod")
 	proto.RegisterType((*Info_Node)(nil), "payload.v1.Info.Node")
+	golang_proto.RegisterType((*Info_Node)(nil), "payload.v1.Info.Node")
 	proto.RegisterType((*Info_CPU)(nil), "payload.v1.Info.CPU")
+	golang_proto.RegisterType((*Info_CPU)(nil), "payload.v1.Info.CPU")
 	proto.RegisterType((*Info_Memory)(nil), "payload.v1.Info.Memory")
+	golang_proto.RegisterType((*Info_Memory)(nil), "payload.v1.Info.Memory")
 	proto.RegisterType((*Info_Pods)(nil), "payload.v1.Info.Pods")
+	golang_proto.RegisterType((*Info_Pods)(nil), "payload.v1.Info.Pods")
 	proto.RegisterType((*Info_Nodes)(nil), "payload.v1.Info.Nodes")
+	golang_proto.RegisterType((*Info_Nodes)(nil), "payload.v1.Info.Nodes")
 	proto.RegisterType((*Info_IPs)(nil), "payload.v1.Info.IPs")
+	golang_proto.RegisterType((*Info_IPs)(nil), "payload.v1.Info.IPs")
 	proto.RegisterType((*Empty)(nil), "payload.v1.Empty")
+	golang_proto.RegisterType((*Empty)(nil), "payload.v1.Empty")
 }
 
 func init() {
 	proto.RegisterFile("apis/proto/v1/payload/payload.proto", fileDescriptor_f0518b37b4e7594b)
 }
+func init() {
+	golang_proto.RegisterFile("apis/proto/v1/payload/payload.proto", fileDescriptor_f0518b37b4e7594b)
+}
 
 var fileDescriptor_f0518b37b4e7594b = []byte{
-	// 1705 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x58, 0x4f, 0x93, 0x1b, 0x47,
-	0x15, 0x67, 0x46, 0xd2, 0x48, 0x7a, 0xda, 0x35, 0xce, 0x94, 0xe3, 0x55, 0xda, 0xb1, 0x11, 0x4a,
-	0x9c, 0xda, 0x18, 0x22, 0xe1, 0x35, 0x0e, 0x10, 0xaa, 0x4c, 0x59, 0x92, 0x4d, 0x29, 0x8b, 0x37,
-	0xaa, 0x31, 0xda, 0xa2, 0x52, 0x45, 0x94, 0xde, 0x99, 0x5e, 0x6d, 0xb3, 0xa3, 0xe9, 0x61, 0x7a,
-	0x24, 0xaf, 0x72, 0xe7, 0x0b, 0x70, 0x82, 0x13, 0xdf, 0x21, 0xdf, 0x80, 0x82, 0x43, 0x8e, 0x1c,
-	0xf8, 0x00, 0x94, 0x4f, 0xdc, 0xb8, 0x71, 0xc8, 0x89, 0xea, 0x7f, 0x33, 0xa3, 0x95, 0x96, 0x2c,
-	0x59, 0x2a, 0xe5, 0x93, 0xe6, 0xbd, 0xfe, 0xbd, 0xbf, 0xfd, 0xde, 0xeb, 0x6e, 0xc1, 0x5b, 0x38,
-	0xa6, 0xbc, 0x1b, 0x27, 0x2c, 0x65, 0xdd, 0xc5, 0xfd, 0x6e, 0x8c, 0x97, 0x21, 0xc3, 0x81, 0xf9,
-	0xed, 0xc8, 0x05, 0x17, 0x0c, 0xb9, 0xb8, 0x8f, 0x1e, 0x4f, 0x69, 0x7a, 0x32, 0x3f, 0xea, 0xf8,
-	0x6c, 0xd6, 0x25, 0xd1, 0x82, 0x2d, 0xe3, 0x84, 0x9d, 0x2d, 0x95, 0x06, 0xff, 0xbd, 0x29, 0x89,
-	0xde, 0x5b, 0xe0, 0x90, 0x06, 0x38, 0x25, 0xdd, 0xb5, 0x0f, 0xa5, 0xae, 0xfd, 0x07, 0x07, 0x9c,
-	0xe7, 0x04, 0x27, 0xfe, 0x09, 0xfa, 0x04, 0xaa, 0x1e, 0xf9, 0xed, 0x9c, 0xf0, 0xd4, 0x6d, 0x81,
-	0xb3, 0x20, 0x7e, 0xca, 0x92, 0xa6, 0xd5, 0x2a, 0xed, 0xda, 0xbd, 0xda, 0x97, 0xbd, 0xca, 0xef,
-	0x2d, 0xbb, 0x66, 0x7b, 0x9a, 0xef, 0xde, 0x07, 0xc7, 0x67, 0xd1, 0x31, 0x9d, 0x36, 0xed, 0x96,
-	0xb5, 0xdb, 0xd8, 0x7b, 0xa3, 0x93, 0xfb, 0xd5, 0x51, 0x0a, 0x3b, 0x7d, 0x09, 0xf0, 0x34, 0x10,
-	0x3d, 0x85, 0xad, 0x67, 0xf3, 0x30, 0xa5, 0xc6, 0xc8, 0xfb, 0x50, 0x4b, 0xd4, 0x27, 0x97, 0x66,
-	0x1a, 0x7b, 0x68, 0x83, 0x12, 0x8d, 0xf6, 0x32, 0x2c, 0x3a, 0x80, 0xfa, 0x70, 0x60, 0x94, 0x5c,
-	0x03, 0x9b, 0x06, 0x4d, 0xab, 0x65, 0xed, 0xd6, 0x3d, 0x9b, 0x06, 0x5f, 0xc7, 0xaf, 0x0f, 0xe1,
-	0x9a, 0xf4, 0x2b, 0x57, 0xfa, 0xe3, 0x35, 0xcf, 0xde, 0xdc, 0xa0, 0x26, 0xc3, 0x17, 0x7c, 0xfb,
-	0x18, 0xb6, 0x3f, 0x3a, 0xfa, 0x0d, 0xf1, 0x53, 0xa3, 0xea, 0x26, 0x38, 0x4c, 0x32, 0xa4, 0x8f,
-	0x5b, 0x9e, 0xa6, 0xbe, 0x8e, 0x9f, 0x7f, 0xb1, 0xc0, 0x51, 0x2c, 0xf7, 0x36, 0x80, 0x36, 0x39,
-	0xc9, 0xa2, 0xaf, 0x6b, 0xce, 0x30, 0x70, 0xdf, 0x80, 0x52, 0x34, 0x9f, 0x49, 0xcd, 0xdb, 0xbd,
-	0xea, 0x97, 0xbd, 0xf2, 0x3d, 0x7b, 0xd7, 0xf2, 0x04, 0x4f, 0xf8, 0x93, 0xe0, 0x80, 0xce, 0x79,
-	0xb3, 0xd4, 0xb2, 0x76, 0x6d, 0x4f, 0x53, 0x6e, 0x13, 0xaa, 0x24, 0xe6, 0x34, 0x64, 0x51, 0xb3,
-	0x2c, 0x17, 0x0c, 0x29, 0x56, 0x52, 0x3a, 0x23, 0x6c, 0x9e, 0x36, 0x2b, 0x2d, 0x6b, 0xb7, 0xe4,
-	0x19, 0xd2, 0x7d, 0x00, 0xd5, 0x63, 0x1a, 0xa6, 0x24, 0xe1, 0x4d, 0x67, 0x3d, 0x88, 0xa7, 0x72,
-	0xc9, 0x04, 0x61, 0x90, 0xe8, 0x53, 0xa8, 0x79, 0x84, 0xc7, 0x2c, 0xe2, 0xe4, 0xab, 0xc2, 0x78,
-	0x08, 0xd5, 0x84, 0xf0, 0x79, 0x98, 0xf2, 0xa6, 0x2d, 0x77, 0xe1, 0x56, 0x51, 0xbf, 0xca, 0x73,
-	0x67, 0x40, 0x79, 0x8a, 0x23, 0x9f, 0x78, 0x06, 0x8b, 0x9e, 0x42, 0xdd, 0x58, 0xe0, 0xee, 0x4f,
-	0xa0, 0x9e, 0x18, 0x42, 0xef, 0xe5, 0xad, 0x8d, 0x55, 0xa6, 0x30, 0x5e, 0x8e, 0x6e, 0x7f, 0x02,
-	0x8e, 0x8a, 0x01, 0xfd, 0x00, 0x9c, 0x5f, 0xe2, 0x64, 0x4a, 0x52, 0xd7, 0x85, 0xf2, 0x09, 0xe3,
-	0xa9, 0xf6, 0x55, 0x7e, 0x0b, 0x5e, 0xcc, 0x92, 0x54, 0xa5, 0xdb, 0x93, 0xdf, 0xa8, 0x9d, 0x6d,
-	0x95, 0x48, 0x9f, 0x94, 0x55, 0xe6, 0xeb, 0x9e, 0x21, 0xdb, 0x7f, 0xb6, 0xc1, 0x19, 0x46, 0x9c,
-	0x24, 0x29, 0x5a, 0xe6, 0xad, 0xf7, 0xd3, 0x42, 0xeb, 0xad, 0xe5, 0x54, 0xc7, 0x7c, 0x28, 0x01,
-	0xff, 0x6b, 0x57, 0x2a, 0x5b, 0x57, 0xec, 0x4a, 0xad, 0x64, 0xbd, 0xf2, 0xd3, 0x2c, 0xe2, 0x87,
-	0xb0, 0xc3, 0x4f, 0x69, 0x3c, 0xe1, 0x69, 0x42, 0xfd, 0x74, 0x42, 0xce, 0x28, 0x4f, 0x27, 0xfe,
-	0x09, 0xf1, 0x4f, 0x65, 0x48, 0x35, 0xef, 0x86, 0x58, 0x7e, 0x2e, 0x57, 0x9f, 0x88, 0xc5, 0xbe,
-	0x58, 0x2b, 0x56, 0x93, 0x7d, 0xd9, 0x6a, 0x92, 0x39, 0x1c, 0xc7, 0x62, 0x9e, 0x7d, 0x33, 0x39,
-	0x54, 0xb6, 0xae, 0x98, 0x43, 0xad, 0xe4, 0xd5, 0xca, 0xe1, 0x37, 0x57, 0x87, 0xca, 0xd6, 0x95,
-	0x73, 0xf8, 0x4a, 0xd5, 0xe1, 0xbf, 0x2d, 0x70, 0x3c, 0x32, 0x63, 0x0b, 0x82, 0xfc, 0x3c, 0x87,
-	0x77, 0xb3, 0xc3, 0xa9, 0xb1, 0xf7, 0xfa, 0x86, 0xfc, 0x0d, 0x07, 0x5f, 0x7d, 0x66, 0x29, 0xad,
-	0x57, 0xcc, 0x96, 0x56, 0xb2, 0x9e, 0xad, 0x9f, 0x5d, 0x31, 0x5b, 0xed, 0xbf, 0x5b, 0x50, 0x7e,
-	0x46, 0x52, 0x8c, 0x76, 0xa0, 0xb4, 0x4f, 0x96, 0xee, 0x75, 0x28, 0x9d, 0x92, 0xa5, 0x9e, 0x8f,
-	0xe2, 0x13, 0x21, 0x28, 0xef, 0x93, 0x25, 0x17, 0x63, 0xf2, 0x94, 0x2c, 0xcd, 0x14, 0x94, 0xdf,
-	0x42, 0xe8, 0x10, 0x87, 0x42, 0x68, 0x81, 0x43, 0x23, 0xb4, 0xc0, 0xa1, 0x10, 0x3a, 0xc4, 0xa1,
-	0x14, 0x5a, 0xe0, 0x30, 0x13, 0x12, 0xdf, 0xe8, 0xfb, 0xe0, 0xec, 0x93, 0xa5, 0x96, 0x5b, 0x35,
-	0x66, 0x34, 0xd9, 0xb9, 0xa6, 0x1f, 0x42, 0x55, 0xa1, 0xb9, 0xfb, 0x2e, 0x94, 0x4e, 0x17, 0x26,
-	0x3f, 0x3b, 0xc5, 0xfc, 0x88, 0x08, 0x3a, 0x0a, 0xe6, 0x09, 0x4c, 0xfb, 0xaf, 0x25, 0x70, 0xd4,
-	0x26, 0xa1, 0xf7, 0xa1, 0x66, 0xce, 0x98, 0xb5, 0xdb, 0x06, 0x82, 0x5a, 0xa0, 0xd7, 0xa4, 0x4d,
-	0xdb, 0xcb, 0x68, 0x74, 0x1b, 0xec, 0xe1, 0xc0, 0xdd, 0xc9, 0x25, 0xe4, 0x49, 0x9c, 0xd8, 0xd7,
-	0x2d, 0x21, 0x2a, 0x42, 0x1f, 0x0e, 0xb8, 0x70, 0x98, 0x06, 0x26, 0x3e, 0xf1, 0x89, 0xfa, 0xe0,
-	0xa8, 0xbe, 0xba, 0x50, 0xb6, 0x70, 0x3d, 0xb3, 0x37, 0x5f, 0xcf, 0xd0, 0x23, 0xa8, 0x2a, 0x25,
-	0x5c, 0xd4, 0xb3, 0x62, 0x9a, 0xc8, 0x2f, 0xee, 0x64, 0xcf, 0x20, 0xd1, 0x8f, 0xa0, 0xdc, 0x0b,
-	0xd9, 0xd1, 0xc5, 0x2e, 0xe4, 0xf7, 0x1a, 0xbb, 0x78, 0xaf, 0x41, 0x03, 0xa8, 0xfd, 0x82, 0xf9,
-	0x38, 0xa5, 0x2c, 0x12, 0x9b, 0x17, 0xe1, 0x19, 0x31, 0x87, 0xa5, 0xf8, 0x16, 0xbc, 0xf9, 0x9c,
-	0x06, 0x7a, 0x87, 0xe4, 0xb7, 0xcc, 0x41, 0x2c, 0x2e, 0x24, 0x2a, 0x07, 0xb1, 0x3c, 0xc2, 0x8d,
-	0x16, 0x79, 0x84, 0x87, 0x86, 0xd8, 0x74, 0x84, 0xeb, 0x10, 0x8c, 0x80, 0x97, 0xa3, 0xdb, 0x4f,
-	0xa0, 0xda, 0x67, 0x51, 0x9a, 0xb0, 0x10, 0x7d, 0x00, 0x6e, 0x3f, 0x21, 0x38, 0x25, 0xc3, 0x28,
-	0x20, 0x67, 0xa6, 0x6f, 0xde, 0x86, 0x7a, 0xcc, 0x58, 0x38, 0xe1, 0xf4, 0x33, 0xe5, 0x67, 0x76,
-	0x5f, 0xfa, 0x96, 0x57, 0x13, 0x2b, 0xcf, 0xe9, 0x67, 0xa4, 0xfd, 0x47, 0x1b, 0x1a, 0x1e, 0x89,
-	0x43, 0xaa, 0xf4, 0xa2, 0xfb, 0xe2, 0x0e, 0xe3, 0xb3, 0x05, 0x49, 0x96, 0xee, 0x5d, 0xb8, 0x16,
-	0x90, 0x90, 0xa4, 0x24, 0x98, 0xe0, 0x29, 0x89, 0xb2, 0x63, 0x7e, 0x5b, 0x73, 0x1f, 0x4b, 0x26,
-	0xc2, 0xe2, 0x52, 0x72, 0x84, 0x43, 0x59, 0x46, 0xf7, 0xe0, 0xb5, 0x13, 0x3a, 0x3d, 0x99, 0xcc,
-	0x39, 0x9e, 0x92, 0x55, 0xb1, 0x6f, 0x8b, 0x85, 0xb1, 0xe0, 0x2b, 0x41, 0x77, 0x17, 0xae, 0x87,
-	0xec, 0xc5, 0x2a, 0xd4, 0x96, 0xd0, 0x6b, 0x21, 0x7b, 0x51, 0x40, 0x8a, 0xc9, 0xa7, 0x65, 0x6e,
-	0x82, 0xb3, 0xa2, 0x54, 0x53, 0xc2, 0xd7, 0x44, 0x4e, 0x82, 0x60, 0x55, 0xd3, 0xb6, 0xe6, 0x6a,
-	0xf1, 0xef, 0xc1, 0x6b, 0x89, 0x89, 0x36, 0x9a, 0x2a, 0xa8, 0xde, 0x9d, 0xeb, 0x85, 0x05, 0x89,
-	0x6e, 0x1f, 0x03, 0x0c, 0x28, 0x97, 0xc9, 0x20, 0x09, 0xfa, 0x55, 0x3e, 0xfc, 0x6e, 0x15, 0x77,
-	0x3f, 0x2f, 0x1e, 0x55, 0x06, 0x6f, 0x42, 0x5d, 0xfc, 0xf2, 0x18, 0xeb, 0xce, 0xa9, 0x7b, 0x39,
-	0x43, 0x16, 0x0e, 0x0b, 0x88, 0xbc, 0xa2, 0x8a, 0xc2, 0x61, 0x01, 0x69, 0x7f, 0x5e, 0x01, 0xa7,
-	0x87, 0xfd, 0xd3, 0x79, 0x8c, 0xc6, 0x50, 0xff, 0x39, 0x49, 0x55, 0xc9, 0xa2, 0x77, 0x56, 0x2c,
-	0xca, 0xda, 0x3a, 0x6f, 0x51, 0x30, 0x51, 0x0b, 0x2a, 0x1f, 0xbd, 0x88, 0x88, 0xea, 0xaa, 0x78,
-	0xbd, 0xa4, 0x63, 0xf4, 0xa0, 0x50, 0x74, 0x97, 0x56, 0xfb, 0x69, 0x36, 0xf7, 0x2f, 0x2b, 0xd1,
-	0x81, 0x2d, 0x8d, 0x93, 0x13, 0xdc, 0xbd, 0x03, 0x15, 0xc1, 0xd7, 0x7b, 0x95, 0xf5, 0xb2, 0xe5,
-	0x29, 0x36, 0xfa, 0x9d, 0x05, 0xf6, 0x70, 0x84, 0x0e, 0x44, 0xcd, 0x4d, 0x29, 0x17, 0xf7, 0xd1,
-	0xde, 0xe5, 0x4c, 0xb9, 0x48, 0x35, 0x96, 0x7d, 0x4e, 0xb1, 0x6c, 0xb1, 0x6e, 0xe6, 0xf8, 0xdd,
-	0x5c, 0x9b, 0x16, 0xb0, 0x36, 0x09, 0x8c, 0xb2, 0xb9, 0xe4, 0x16, 0x6d, 0x6a, 0x53, 0xf9, 0x48,
-	0x2a, 0x5d, 0xf0, 0x62, 0xd4, 0x5d, 0x5e, 0xce, 0xbb, 0xfc, 0xd2, 0x43, 0x4a, 0xed, 0xfb, 0xda,
-	0x90, 0xfa, 0x93, 0x05, 0xd0, 0x67, 0xb3, 0x38, 0x21, 0x9c, 0x93, 0x00, 0x3d, 0xfd, 0xaf, 0x0e,
-	0xde, 0x2c, 0x38, 0x28, 0x07, 0xd6, 0x85, 0x6e, 0x0d, 0x73, 0xb7, 0x1e, 0x9d, 0x77, 0xeb, 0xed,
-	0x0d, 0x6e, 0xe5, 0x2e, 0x9c, 0xf7, 0xb0, 0xfd, 0x45, 0x15, 0xca, 0xc3, 0xe8, 0x98, 0xa1, 0xcf,
-	0x2d, 0xa8, 0xc8, 0xc1, 0x83, 0x7e, 0x0d, 0x95, 0x3e, 0x9b, 0x47, 0xf2, 0x65, 0xc8, 0x53, 0x96,
-	0x10, 0xe5, 0xe6, 0xb6, 0xa7, 0x29, 0xb7, 0x05, 0x8d, 0x79, 0xe4, 0xb3, 0xd9, 0x8c, 0xa6, 0x29,
-	0x09, 0xf4, 0xab, 0xa2, 0xc8, 0x12, 0xa7, 0x0e, 0x15, 0xba, 0x68, 0x34, 0x95, 0xc1, 0xd4, 0xbc,
-	0x8c, 0x46, 0x1f, 0x42, 0x79, 0x3c, 0x1e, 0x0e, 0xd0, 0x77, 0xa0, 0xde, 0xcf, 0x04, 0x36, 0xe4,
-	0x03, 0x7d, 0x17, 0x1a, 0xe3, 0x82, 0xce, 0x4d, 0x90, 0x7f, 0x59, 0x50, 0x1a, 0x31, 0xf1, 0x9c,
-	0xac, 0xe1, 0x38, 0x9e, 0x14, 0x66, 0x79, 0x15, 0xc7, 0xf1, 0x81, 0x1e, 0xe7, 0x92, 0x6d, 0x17,
-	0x46, 0xfc, 0x4a, 0x6f, 0x97, 0xce, 0xf7, 0xb6, 0x6a, 0xbf, 0x72, 0xa1, 0x5c, 0xcf, 0x64, 0xfb,
-	0xb9, 0xef, 0x40, 0xc9, 0x8f, 0xe7, 0xf2, 0x8d, 0xd9, 0xd8, 0xbb, 0xb1, 0xfa, 0xe6, 0x38, 0x66,
-	0x9d, 0xfe, 0x68, 0xec, 0x09, 0x80, 0xdb, 0x05, 0x67, 0x46, 0x66, 0x2c, 0x59, 0xea, 0x47, 0xe7,
-	0xce, 0x1a, 0xf4, 0x99, 0x5c, 0xf6, 0x34, 0xcc, 0x7d, 0x57, 0x4f, 0x93, 0xea, 0xfa, 0x3d, 0x4c,
-	0xc2, 0x0f, 0x58, 0x40, 0xd4, 0x90, 0x41, 0xff, 0xb4, 0xa0, 0x2c, 0xc8, 0x8d, 0x47, 0xd7, 0x5b,
-	0xb0, 0x4d, 0xa3, 0x94, 0x24, 0x11, 0x0e, 0x27, 0x38, 0x08, 0x12, 0x1d, 0xf4, 0x96, 0x61, 0x3e,
-	0x0e, 0x82, 0x44, 0x80, 0xc8, 0x59, 0x11, 0xa4, 0x12, 0xb0, 0x65, 0x98, 0x12, 0xa4, 0x43, 0x2d,
-	0x5f, 0x3e, 0xd4, 0xca, 0xa5, 0x43, 0x1d, 0xb1, 0xc0, 0x3c, 0xc7, 0xd7, 0x43, 0x15, 0x8b, 0x9e,
-	0x84, 0xa0, 0x7d, 0x28, 0xf5, 0x47, 0x63, 0xf7, 0x06, 0x54, 0x42, 0x3a, 0xa3, 0xea, 0x45, 0x6b,
-	0x79, 0x8a, 0x10, 0x8f, 0x56, 0x7d, 0x45, 0x94, 0x41, 0x5a, 0x9e, 0x21, 0x05, 0x5e, 0x1e, 0x45,
-	0x32, 0x2e, 0x31, 0xa3, 0x04, 0x81, 0x0e, 0xc0, 0x51, 0x9e, 0xfc, 0x9f, 0xf4, 0x7d, 0xa0, 0xe2,
-	0x70, 0xf7, 0xc4, 0xd3, 0x3a, 0x30, 0xcd, 0x77, 0x63, 0x53, 0x3c, 0x85, 0x31, 0x25, 0xb1, 0xe8,
-	0x11, 0x54, 0xc4, 0x16, 0x72, 0xf7, 0x21, 0x54, 0xc4, 0xa6, 0x1a, 0xe9, 0xcd, 0x1b, 0x5f, 0x9c,
-	0xb7, 0x12, 0x8d, 0x5e, 0x87, 0xd2, 0x70, 0xc4, 0xe5, 0x55, 0x2f, 0xd6, 0xe7, 0xa7, 0x4d, 0xe3,
-	0x76, 0x15, 0x2a, 0x4f, 0x66, 0x71, 0xba, 0xec, 0x1d, 0x7f, 0xf1, 0xf2, 0x8e, 0xf5, 0xb7, 0x97,
-	0x77, 0xac, 0x7f, 0xbc, 0xbc, 0x63, 0xc1, 0x6d, 0x96, 0x4c, 0x3b, 0x8b, 0x00, 0x63, 0xde, 0x59,
-	0xe0, 0x30, 0xe8, 0xe0, 0x98, 0x0a, 0xfd, 0xda, 0x54, 0xaf, 0x71, 0x88, 0xc3, 0x60, 0xa4, 0x88,
-	0x91, 0xf5, 0xf1, 0xbd, 0xc2, 0x1f, 0x76, 0x52, 0xa8, 0x2b, 0x84, 0xba, 0xf2, 0x7f, 0xbf, 0x69,
-	0x12, 0xfb, 0x85, 0xbf, 0xfd, 0x8e, 0x1c, 0xf9, 0x07, 0xdd, 0x83, 0xff, 0x04, 0x00, 0x00, 0xff,
-	0xff, 0xdf, 0xa0, 0xb1, 0x70, 0x16, 0x14, 0x00, 0x00,
+	// 1896 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x58, 0x4f, 0x6f, 0x1b, 0xc7,
+	0x15, 0xf7, 0x2e, 0xc9, 0x25, 0xf9, 0xf4, 0xa7, 0xce, 0xc2, 0xb1, 0xe8, 0x71, 0xac, 0xaa, 0x4c,
+	0x1c, 0x28, 0x6e, 0x4c, 0xd6, 0x72, 0x9d, 0xd6, 0x29, 0xe0, 0xc2, 0xa4, 0xec, 0x9a, 0x71, 0xad,
+	0x10, 0xab, 0x4a, 0x28, 0x02, 0x34, 0xcc, 0x68, 0x77, 0x44, 0x6d, 0xb5, 0xdc, 0xd9, 0xee, 0x0c,
+	0x69, 0x31, 0xe8, 0xb1, 0xfd, 0x02, 0xbd, 0xf5, 0x94, 0xef, 0x90, 0x4f, 0xd0, 0xa2, 0x40, 0xe1,
+	0x63, 0x0f, 0xfd, 0x00, 0x85, 0x73, 0xe9, 0xad, 0xb7, 0x1e, 0x72, 0x2a, 0xe6, 0xdf, 0xee, 0x4a,
+	0xa4, 0x1c, 0x55, 0x0a, 0x02, 0x9f, 0x38, 0xf3, 0xe6, 0xf7, 0xde, 0xbc, 0xf7, 0xe6, 0xfd, 0xe3,
+	0xc2, 0xdb, 0x38, 0x09, 0x59, 0x3b, 0x49, 0x29, 0xa7, 0xed, 0xc9, 0x9d, 0x76, 0x82, 0xa7, 0x11,
+	0xc5, 0x81, 0xf9, 0x6d, 0xc9, 0x03, 0x17, 0xcc, 0x76, 0x72, 0x07, 0xdd, 0x1e, 0x86, 0xfc, 0x60,
+	0xbc, 0xd7, 0xf2, 0xe9, 0xa8, 0x3d, 0xa4, 0x43, 0xaa, 0x78, 0xf7, 0xc6, 0xfb, 0x72, 0xa7, 0x04,
+	0x89, 0x95, 0x62, 0x45, 0x1b, 0x27, 0xe1, 0x43, 0x4a, 0x87, 0x11, 0x91, 0xb7, 0xaa, 0x65, 0x3b,
+	0x4d, 0xfc, 0x36, 0xe3, 0x98, 0x8f, 0x99, 0xe6, 0x79, 0x58, 0xe0, 0x21, 0xf1, 0x84, 0x4e, 0x93,
+	0x94, 0x1e, 0x4d, 0xd5, 0x45, 0xfe, 0xed, 0x21, 0x89, 0x6f, 0x4f, 0x70, 0x14, 0x06, 0x98, 0x93,
+	0xf6, 0xcc, 0x42, 0x89, 0x68, 0x7e, 0x51, 0x05, 0x67, 0x9b, 0xe0, 0xd4, 0x3f, 0x40, 0x9f, 0x42,
+	0xd5, 0x23, 0xbf, 0x1b, 0x13, 0xc6, 0xdd, 0x35, 0x70, 0x26, 0xc4, 0xe7, 0x34, 0x6d, 0x58, 0x6b,
+	0xa5, 0x75, 0xbb, 0x53, 0xfb, 0xba, 0x53, 0xf9, 0x93, 0x65, 0xd7, 0x6c, 0x4f, 0xd3, 0xdd, 0x3b,
+	0xe0, 0xf8, 0x34, 0xde, 0x0f, 0x87, 0x0d, 0x7b, 0xcd, 0x5a, 0x5f, 0xd8, 0xb8, 0xd6, 0xca, 0x4d,
+	0x6f, 0x29, 0x81, 0xad, 0xae, 0x04, 0x78, 0x1a, 0x88, 0x1e, 0xc3, 0xe2, 0xb3, 0x71, 0xc4, 0x43,
+	0x73, 0xc9, 0x07, 0x50, 0x4b, 0xd5, 0x92, 0xc9, 0x6b, 0x16, 0x36, 0xd0, 0x1c, 0x21, 0x1a, 0xed,
+	0x65, 0x58, 0xb4, 0x05, 0xf5, 0xde, 0xa6, 0x11, 0xb2, 0x0c, 0x76, 0x18, 0x34, 0xac, 0x35, 0x6b,
+	0xbd, 0xee, 0xd9, 0x61, 0x70, 0x1e, 0xbd, 0x3e, 0x82, 0x65, 0xa9, 0x57, 0x2e, 0xf4, 0xa7, 0x33,
+	0x9a, 0xbd, 0x35, 0x47, 0x4c, 0x86, 0x2f, 0xe8, 0xf6, 0x09, 0x2c, 0x7d, 0xbc, 0xf7, 0x5b, 0xe2,
+	0x73, 0x23, 0xea, 0x2a, 0x38, 0x54, 0x12, 0xa4, 0x8e, 0x8b, 0x9e, 0xde, 0x9d, 0x47, 0xcf, 0xbf,
+	0x59, 0xe0, 0x28, 0x92, 0x7b, 0x03, 0x40, 0x5f, 0x39, 0xc8, 0xac, 0xaf, 0x6b, 0x4a, 0x2f, 0x70,
+	0xaf, 0x41, 0x29, 0x1e, 0x8f, 0xa4, 0xe4, 0xa5, 0x4e, 0xf5, 0xeb, 0x4e, 0xf9, 0x96, 0xbd, 0x6e,
+	0x79, 0x82, 0x26, 0xf4, 0x49, 0x71, 0x10, 0x8e, 0x59, 0xa3, 0xb4, 0x66, 0xad, 0xdb, 0x9e, 0xde,
+	0xb9, 0x0d, 0xa8, 0x92, 0x84, 0x85, 0x11, 0x8d, 0x1b, 0x65, 0x79, 0x60, 0xb6, 0xe2, 0x84, 0x87,
+	0x23, 0x42, 0xc7, 0xbc, 0x51, 0x59, 0xb3, 0xd6, 0x4b, 0x9e, 0xd9, 0xba, 0x77, 0xa1, 0xba, 0x1f,
+	0x46, 0x9c, 0xa4, 0xac, 0xe1, 0xcc, 0x1a, 0xf1, 0x58, 0x1e, 0x19, 0x23, 0x0c, 0x12, 0x7d, 0x06,
+	0x35, 0x8f, 0xb0, 0x84, 0xc6, 0x8c, 0x7c, 0x93, 0x19, 0xf7, 0xa0, 0x9a, 0x12, 0x36, 0x8e, 0x38,
+	0x6b, 0xd8, 0xf2, 0x15, 0xae, 0x17, 0xe5, 0x2b, 0x3f, 0xb7, 0x36, 0x43, 0xc6, 0x71, 0xec, 0x13,
+	0xcf, 0x60, 0xd1, 0x63, 0xa8, 0x9b, 0x1b, 0x98, 0x7b, 0x1f, 0xea, 0xa9, 0xd9, 0xe8, 0xb7, 0xbc,
+	0x3e, 0x37, 0xca, 0x14, 0xc6, 0xcb, 0xd1, 0xe8, 0x0f, 0x16, 0x2c, 0x6f, 0xf3, 0x94, 0xe0, 0x51,
+	0xa6, 0xf0, 0x7d, 0x11, 0x18, 0x6a, 0x2d, 0xd5, 0x7d, 0xb5, 0xb0, 0x27, 0x97, 0xbc, 0x0c, 0xee,
+	0xbe, 0x0f, 0x8e, 0xca, 0x5d, 0xfd, 0xe0, 0x6e, 0x4b, 0x65, 0x75, 0x2b, 0x4d, 0xfc, 0xd6, 0xb6,
+	0x3c, 0x79, 0x72, 0xc9, 0xd3, 0x98, 0x4e, 0x1d, 0xaa, 0x5a, 0x6e, 0xf3, 0x53, 0x70, 0x94, 0x2b,
+	0xd1, 0x8f, 0xc0, 0xf9, 0x15, 0x4e, 0x87, 0x84, 0xbb, 0x2e, 0x94, 0x0f, 0x28, 0xe3, 0xda, 0x65,
+	0x72, 0x2d, 0x68, 0x09, 0x4d, 0xb9, 0x7a, 0x75, 0x4f, 0xae, 0x51, 0x33, 0x8b, 0x18, 0xf1, 0x8a,
+	0x92, 0x57, 0x79, 0xa1, 0xee, 0x99, 0x6d, 0xf3, 0xaf, 0x36, 0x38, 0xbd, 0x98, 0x91, 0x94, 0xa3,
+	0x69, 0x5e, 0x01, 0x7e, 0x56, 0xa8, 0x00, 0x33, 0x4f, 0xab, 0x5d, 0xbf, 0x2b, 0x01, 0xff, 0x6f,
+	0x71, 0x50, 0x77, 0x5d, 0xb0, 0x38, 0x68, 0x21, 0xb3, 0x09, 0xc8, 0x33, 0x8b, 0xef, 0xc1, 0x0a,
+	0x3b, 0x0c, 0x93, 0x01, 0xe3, 0x69, 0xe8, 0xf3, 0x01, 0x39, 0x0a, 0x19, 0x1f, 0xf8, 0x07, 0xc4,
+	0x3f, 0x94, 0x26, 0xd5, 0xbc, 0x2b, 0xe2, 0x78, 0x5b, 0x9e, 0x3e, 0x12, 0x87, 0x5d, 0x71, 0x56,
+	0x0c, 0x6a, 0xfb, 0xac, 0x41, 0x2d, 0x7d, 0xb8, 0x93, 0x88, 0xb2, 0xfa, 0xdd, 0xf8, 0x50, 0xdd,
+	0x75, 0x41, 0x1f, 0x6a, 0x21, 0xaf, 0x97, 0x0f, 0xbf, 0xbb, 0x38, 0x54, 0x77, 0x5d, 0xd8, 0x87,
+	0xaf, 0x55, 0x1c, 0xfe, 0xd7, 0x02, 0xc7, 0x23, 0x23, 0x3a, 0x21, 0xc8, 0xcf, 0x7d, 0x78, 0x33,
+	0xeb, 0x91, 0x0b, 0x1b, 0x6f, 0xce, 0xf1, 0x5f, 0x6f, 0xf3, 0x9b, 0x5b, 0xa7, 0x92, 0x7a, 0x41,
+	0x6f, 0x69, 0x21, 0xb3, 0xde, 0xfa, 0xf9, 0x05, 0xbd, 0xd5, 0xfc, 0xa7, 0x05, 0xe5, 0x67, 0x84,
+	0x63, 0xb4, 0x02, 0xa5, 0xa7, 0x64, 0xea, 0x5e, 0x86, 0xd2, 0x21, 0x99, 0xea, 0xfa, 0x28, 0x96,
+	0x08, 0x41, 0xf9, 0x29, 0x99, 0x32, 0x51, 0x26, 0x0f, 0xc9, 0xd4, 0x54, 0x41, 0xb9, 0x16, 0x4c,
+	0xbb, 0x38, 0x12, 0x4c, 0x13, 0x1c, 0x19, 0xa6, 0x09, 0x8e, 0x04, 0xd3, 0x2e, 0x8e, 0x24, 0xd3,
+	0x04, 0x47, 0x19, 0x93, 0x58, 0xa3, 0xf7, 0xc1, 0x79, 0x4a, 0xa6, 0x9a, 0xef, 0xf8, 0x65, 0x46,
+	0x92, 0x9d, 0x4b, 0xfa, 0x31, 0x54, 0x15, 0x9a, 0xb9, 0xef, 0x41, 0xe9, 0x70, 0x62, 0xfc, 0xb3,
+	0x52, 0xf4, 0x8f, 0xb0, 0xa0, 0xa5, 0x60, 0x9e, 0xc0, 0x34, 0xff, 0x5e, 0x05, 0x47, 0x3d, 0x12,
+	0xfa, 0x00, 0x6a, 0xa6, 0xd5, 0xcd, 0x0c, 0x3d, 0x08, 0x6a, 0x81, 0x3e, 0x93, 0x77, 0xda, 0x5e,
+	0xb6, 0x2f, 0x74, 0xb1, 0x8c, 0xfd, 0x7e, 0x01, 0x3e, 0xa7, 0x8b, 0x9d, 0x68, 0xac, 0xa2, 0x8b,
+	0x19, 0xf8, 0xb9, 0xbb, 0x18, 0xba, 0x01, 0x76, 0x6f, 0xd3, 0x5d, 0xc9, 0x15, 0x97, 0x73, 0x49,
+	0x6a, 0x5f, 0xb6, 0x84, 0x05, 0xe2, 0x05, 0x7a, 0x9b, 0x4c, 0xf8, 0x2d, 0x0c, 0x8c, 0x9b, 0xc5,
+	0x12, 0x75, 0xc1, 0x51, 0xe9, 0x7d, 0x2a, 0x6f, 0x61, 0x58, 0xb5, 0xe7, 0x0f, 0xab, 0xe8, 0x01,
+	0x54, 0x95, 0x10, 0x26, 0xd2, 0x4a, 0x11, 0xcd, 0x03, 0x9c, 0x5e, 0x50, 0x3c, 0x83, 0x44, 0xbf,
+	0x87, 0x45, 0xe5, 0x42, 0xad, 0xca, 0xdd, 0x33, 0x17, 0x25, 0xe1, 0x0c, 0x5d, 0x8c, 0xce, 0xed,
+	0xba, 0x9f, 0x40, 0xb9, 0x13, 0xd1, 0xbd, 0xd3, 0x1d, 0x90, 0xcf, 0x98, 0x76, 0x71, 0xc6, 0x44,
+	0x1c, 0x40, 0xa9, 0x2d, 0xd9, 0x6f, 0x43, 0x79, 0x2f, 0xa2, 0x7b, 0x5a, 0xe5, 0x95, 0x39, 0x2a,
+	0x0b, 0xd8, 0x93, 0x4b, 0x9e, 0x84, 0x9d, 0x5f, 0xdd, 0x4d, 0xa8, 0xfd, 0x92, 0xfa, 0x98, 0x87,
+	0x34, 0x16, 0x79, 0x13, 0xe3, 0x11, 0x31, 0x73, 0x8a, 0x58, 0x0b, 0xda, 0x78, 0x1c, 0x06, 0x3a,
+	0x39, 0xe4, 0x5a, 0xbe, 0x7b, 0x22, 0x46, 0x52, 0xf5, 0xee, 0x49, 0x71, 0xf8, 0xca, 0x84, 0xdd,
+	0x87, 0x5a, 0xa4, 0xd7, 0xaf, 0x08, 0x5b, 0x03, 0x17, 0x61, 0x6b, 0xe0, 0xe7, 0x37, 0xe6, 0x31,
+	0xd4, 0x8d, 0x40, 0x39, 0x4b, 0x1a, 0x89, 0x73, 0x67, 0xc9, 0x13, 0x1a, 0x78, 0x39, 0xba, 0xf9,
+	0x08, 0xaa, 0x5d, 0x1a, 0xf3, 0x94, 0x46, 0xe8, 0x43, 0x70, 0xbb, 0x29, 0xc1, 0x9c, 0xf4, 0xe2,
+	0x80, 0x1c, 0x99, 0xca, 0xf9, 0x0e, 0xd4, 0x13, 0x4a, 0xa3, 0x01, 0x0b, 0x3f, 0x57, 0xee, 0xca,
+	0x06, 0xf7, 0x4b, 0x5e, 0x4d, 0x9c, 0x6c, 0x87, 0x9f, 0x93, 0xe6, 0x9f, 0x6d, 0x58, 0xf0, 0x48,
+	0x12, 0x85, 0x4a, 0x2e, 0xba, 0x23, 0x86, 0x69, 0x9f, 0x4e, 0x48, 0x3a, 0x75, 0x6f, 0xc2, 0x72,
+	0x40, 0x22, 0xc2, 0x49, 0x30, 0xc0, 0x43, 0x12, 0x67, 0x83, 0xde, 0x92, 0xa6, 0x3e, 0x94, 0x44,
+	0x84, 0xc5, 0x74, 0xbc, 0x87, 0x23, 0x99, 0xce, 0xb7, 0xe0, 0x8d, 0x83, 0x70, 0x78, 0x30, 0x18,
+	0x33, 0x3c, 0x24, 0xc7, 0xd9, 0xbe, 0x27, 0x0e, 0x76, 0x04, 0x5d, 0x31, 0xba, 0xeb, 0x70, 0x39,
+	0xa2, 0xcf, 0x8f, 0x43, 0x6d, 0x09, 0x5d, 0x8e, 0xe8, 0xf3, 0x02, 0x52, 0xf4, 0x3e, 0xcd, 0x73,
+	0x15, 0x9c, 0x63, 0x42, 0xf5, 0x4e, 0xe8, 0x9a, 0xca, 0x5e, 0x10, 0x1c, 0x97, 0xb4, 0xa4, 0xa9,
+	0x9a, 0xfd, 0x87, 0xf0, 0x46, 0x6a, 0xac, 0x8d, 0x87, 0x0a, 0xaa, 0x83, 0xe4, 0x72, 0xe1, 0x40,
+	0xa2, 0x9b, 0xfb, 0x00, 0x9b, 0x21, 0x93, 0xce, 0x20, 0x29, 0xfa, 0x75, 0xde, 0xfe, 0xae, 0x17,
+	0x83, 0x30, 0xcf, 0x1c, 0x15, 0x8d, 0x6f, 0x41, 0x5d, 0xfc, 0xb2, 0x04, 0xeb, 0xda, 0x59, 0xf7,
+	0x72, 0x82, 0x8c, 0x5f, 0x1a, 0x10, 0xf9, 0x5f, 0x49, 0xc4, 0x2f, 0x0d, 0x48, 0xf3, 0xcb, 0x0a,
+	0x38, 0x1d, 0xec, 0x1f, 0x8e, 0x13, 0xb4, 0x03, 0xf5, 0x5f, 0x10, 0xae, 0x32, 0x1d, 0xbd, 0x7b,
+	0xec, 0x46, 0x19, 0xe2, 0x27, 0x6f, 0x14, 0x44, 0xb4, 0x06, 0x95, 0x8f, 0x9f, 0xc7, 0x44, 0x15,
+	0xb4, 0x64, 0x36, 0x9f, 0x13, 0x74, 0xb7, 0x10, 0x74, 0x67, 0x16, 0xfb, 0x59, 0xd6, 0xf9, 0xcf,
+	0xca, 0xd1, 0x82, 0x45, 0x8d, 0x93, 0x3d, 0xdc, 0x5d, 0x85, 0x8a, 0xa0, 0xeb, 0xb7, 0xca, 0xca,
+	0xa8, 0xe5, 0x29, 0x32, 0xfa, 0xa3, 0x05, 0x76, 0xaf, 0x8f, 0xb6, 0x44, 0xcc, 0x0d, 0x43, 0x26,
+	0xfe, 0x91, 0x74, 0xce, 0x76, 0x95, 0x8b, 0x54, 0x7e, 0xdb, 0x27, 0x04, 0xcb, 0x4c, 0x6f, 0x67,
+	0x8a, 0xdf, 0xcc, 0xa5, 0x69, 0x06, 0x6b, 0x1e, 0x43, 0x3f, 0x6b, 0x09, 0x6e, 0xf1, 0x4e, 0x7d,
+	0x55, 0xde, 0x0d, 0x4a, 0xa7, 0x7c, 0xba, 0xd0, 0xc5, 0xa6, 0x9c, 0x17, 0x9b, 0x33, 0xf7, 0x07,
+	0xf5, 0xee, 0x33, 0xfd, 0xe1, 0x0b, 0x0b, 0xa0, 0x4b, 0x47, 0x49, 0x4a, 0x18, 0x23, 0xa2, 0x68,
+	0xbc, 0x4a, 0xc1, 0xab, 0x05, 0x05, 0x65, 0xb5, 0x3e, 0x55, 0xad, 0x5e, 0xae, 0xd6, 0x83, 0x93,
+	0x6a, 0xbd, 0x33, 0x47, 0xad, 0x5c, 0x85, 0x93, 0x1a, 0x36, 0x5f, 0x54, 0xa1, 0xdc, 0x8b, 0xf7,
+	0x29, 0xfa, 0xd2, 0x82, 0x8a, 0x2c, 0x3c, 0xe8, 0x37, 0x50, 0xe9, 0xd2, 0x71, 0x2c, 0x3f, 0x51,
+	0x30, 0x4e, 0x53, 0xa2, 0xd4, 0x5c, 0xf2, 0xf4, 0xce, 0x5d, 0x83, 0x85, 0x71, 0xec, 0xd3, 0xd1,
+	0x28, 0xe4, 0x9c, 0x04, 0xfa, 0x7f, 0x65, 0x91, 0x24, 0xe6, 0x8e, 0x50, 0xc8, 0x0a, 0xe3, 0xa1,
+	0x34, 0xa6, 0xe6, 0x65, 0x7b, 0xf4, 0x11, 0x94, 0x77, 0x76, 0x7a, 0x9b, 0xe8, 0xfb, 0x50, 0xef,
+	0x66, 0x0c, 0x73, 0xfc, 0x81, 0x7e, 0x00, 0x0b, 0x3b, 0x05, 0x99, 0xf3, 0x20, 0xff, 0xb1, 0xa0,
+	0xd4, 0xa7, 0x81, 0x7b, 0x0d, 0x6a, 0x38, 0x49, 0x06, 0x85, 0x96, 0x52, 0xc5, 0x49, 0xb2, 0xa5,
+	0xbb, 0x8a, 0x24, 0xdb, 0x85, 0x4e, 0x73, 0x2c, 0xb7, 0x4b, 0x27, 0x73, 0x5b, 0xa5, 0x5f, 0xb9,
+	0x10, 0xae, 0x47, 0x32, 0xfd, 0xdc, 0x77, 0xa1, 0xe4, 0x27, 0x63, 0xf9, 0xb1, 0x63, 0x61, 0xe3,
+	0xca, 0xf1, 0x7f, 0x9d, 0xfb, 0xb4, 0xd5, 0xed, 0xef, 0x78, 0x02, 0xe0, 0xb6, 0xc1, 0x19, 0x91,
+	0x11, 0x4d, 0xa7, 0xfa, 0xeb, 0xc7, 0xca, 0x0c, 0xf4, 0x99, 0x3c, 0xf6, 0x34, 0xcc, 0x7d, 0x4f,
+	0x57, 0x93, 0xea, 0xec, 0x24, 0x2e, 0xe1, 0x5b, 0x34, 0x20, 0xaa, 0xc8, 0xa0, 0x7f, 0x5b, 0x50,
+	0x16, 0xdb, 0xb9, 0x1d, 0xf4, 0x6d, 0x58, 0x0a, 0x63, 0x4e, 0xd2, 0x18, 0x47, 0x03, 0x1c, 0x04,
+	0xa9, 0x36, 0x7a, 0xd1, 0x10, 0x1f, 0x06, 0x41, 0x2a, 0x40, 0xe4, 0xa8, 0x08, 0x52, 0x0e, 0x58,
+	0x34, 0x44, 0x09, 0xd2, 0xa6, 0x96, 0xcf, 0x6e, 0x6a, 0xe5, 0xcc, 0xa6, 0xf6, 0x69, 0x60, 0xbe,
+	0x0b, 0xcd, 0x9a, 0x2a, 0x0e, 0x3d, 0x09, 0x41, 0x4f, 0xa1, 0xd4, 0xed, 0xef, 0xb8, 0x57, 0xa0,
+	0x12, 0x85, 0xa3, 0x50, 0x7d, 0xd3, 0xb0, 0x3c, 0xb5, 0x71, 0x1b, 0x50, 0xd5, 0x7f, 0x12, 0xa4,
+	0x91, 0x96, 0x67, 0xb6, 0x02, 0x2f, 0x5b, 0x91, 0xb4, 0x4b, 0xd4, 0x28, 0xb1, 0x41, 0x5b, 0xe0,
+	0x28, 0x4d, 0xbe, 0x25, 0x79, 0x1f, 0x2a, 0x3b, 0xdc, 0x0d, 0x28, 0x27, 0x34, 0x30, 0xc9, 0x77,
+	0x65, 0x9e, 0x3d, 0x85, 0x32, 0x25, 0xb1, 0xe8, 0x01, 0x54, 0xc4, 0x13, 0x32, 0xf7, 0x1e, 0x54,
+	0xc4, 0xa3, 0x1a, 0xee, 0xf9, 0x0f, 0x5f, 0xac, 0xb7, 0x12, 0x8d, 0xde, 0x84, 0x52, 0xaf, 0xcf,
+	0xe4, 0xb0, 0x9f, 0xe8, 0xfe, 0x69, 0x87, 0x49, 0xb3, 0x0a, 0x95, 0x47, 0xa3, 0x84, 0x4f, 0x3b,
+	0xf1, 0x8b, 0x97, 0xab, 0xd6, 0x3f, 0x5e, 0xae, 0x5a, 0xff, 0x7a, 0xb9, 0x6a, 0xfd, 0xe5, 0xab,
+	0x55, 0xeb, 0xc5, 0x57, 0xab, 0x16, 0xdc, 0xa0, 0xe9, 0xb0, 0x35, 0x09, 0x30, 0x66, 0xad, 0x09,
+	0x8e, 0x82, 0x16, 0x4e, 0x42, 0x71, 0x8f, 0xbe, 0xb2, 0xb3, 0xb0, 0x8b, 0xa3, 0xa0, 0xaf, 0x36,
+	0x7d, 0xeb, 0x93, 0x5b, 0x85, 0x2f, 0xc8, 0x92, 0xa9, 0x2d, 0x98, 0xda, 0xea, 0xab, 0x73, 0x9a,
+	0xf8, 0x85, 0x4f, 0xdd, 0x7b, 0x8e, 0xfc, 0x62, 0x7c, 0xf7, 0x7f, 0x01, 0x00, 0x00, 0xff, 0xff,
+	0xf6, 0x9e, 0x06, 0x3c, 0x0a, 0x17, 0x00, 0x00,
 }
 
 func (m *Search) Marshal() (dAtA []byte, err error) {
@@ -4859,6 +5772,84 @@ func (m *Search_Responses) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *Search_StreamResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *Search_StreamResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Search_StreamResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if m.Payload != nil {
+		{
+			size := m.Payload.Size()
+			i -= size
+			if _, err := m.Payload.MarshalTo(dAtA[i:]); err != nil {
+				return 0, err
+			}
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *Search_StreamResponse_Response) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Search_StreamResponse_Response) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.Response != nil {
+		{
+			size, err := m.Response.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintPayload(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+func (m *Search_StreamResponse_Status) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Search_StreamResponse_Status) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.Status != nil {
+		{
+			size, err := m.Status.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintPayload(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	return len(dAtA) - i, nil
+}
 func (m *Filter) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -5937,6 +6928,84 @@ func (m *Object_Distance) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *Object_StreamDistance) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *Object_StreamDistance) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Object_StreamDistance) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if m.Payload != nil {
+		{
+			size := m.Payload.Size()
+			i -= size
+			if _, err := m.Payload.MarshalTo(dAtA[i:]); err != nil {
+				return 0, err
+			}
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *Object_StreamDistance_Distance) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Object_StreamDistance_Distance) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.Distance != nil {
+		{
+			size, err := m.Distance.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintPayload(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+func (m *Object_StreamDistance_Status) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Object_StreamDistance_Status) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.Status != nil {
+		{
+			size, err := m.Status.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintPayload(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	return len(dAtA) - i, nil
+}
 func (m *Object_ID) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -6033,9 +7102,9 @@ func (m *Object_Vector) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	}
 	if len(m.Vector) > 0 {
 		for iNdEx := len(m.Vector) - 1; iNdEx >= 0; iNdEx-- {
-			f17 := math.Float32bits(float32(m.Vector[iNdEx]))
+			f21 := math.Float32bits(float32(m.Vector[iNdEx]))
 			i -= 4
-			encoding_binary.LittleEndian.PutUint32(dAtA[i:], uint32(f17))
+			encoding_binary.LittleEndian.PutUint32(dAtA[i:], uint32(f21))
 		}
 		i = encodeVarintPayload(dAtA, i, uint64(len(m.Vector)*4))
 		i--
@@ -6092,6 +7161,84 @@ func (m *Object_Vectors) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *Object_StreamVector) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *Object_StreamVector) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Object_StreamVector) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if m.Payload != nil {
+		{
+			size := m.Payload.Size()
+			i -= size
+			if _, err := m.Payload.MarshalTo(dAtA[i:]); err != nil {
+				return 0, err
+			}
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *Object_StreamVector_Vector) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Object_StreamVector_Vector) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.Vector != nil {
+		{
+			size, err := m.Vector.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintPayload(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+func (m *Object_StreamVector_Status) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Object_StreamVector_Status) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.Status != nil {
+		{
+			size, err := m.Status.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintPayload(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	return len(dAtA) - i, nil
+}
 func (m *Object_Blob) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -6133,6 +7280,84 @@ func (m *Object_Blob) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *Object_StreamBlob) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *Object_StreamBlob) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Object_StreamBlob) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if m.Payload != nil {
+		{
+			size := m.Payload.Size()
+			i -= size
+			if _, err := m.Payload.MarshalTo(dAtA[i:]); err != nil {
+				return 0, err
+			}
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *Object_StreamBlob_Blob) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Object_StreamBlob_Blob) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.Blob != nil {
+		{
+			size, err := m.Blob.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintPayload(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+func (m *Object_StreamBlob_Status) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Object_StreamBlob_Status) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.Status != nil {
+		{
+			size, err := m.Status.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintPayload(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	return len(dAtA) - i, nil
+}
 func (m *Object_Location) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -6183,6 +7408,84 @@ func (m *Object_Location) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *Object_StreamLocation) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *Object_StreamLocation) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Object_StreamLocation) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if m.Payload != nil {
+		{
+			size := m.Payload.Size()
+			i -= size
+			if _, err := m.Payload.MarshalTo(dAtA[i:]); err != nil {
+				return 0, err
+			}
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *Object_StreamLocation_Location) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Object_StreamLocation_Location) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.Location != nil {
+		{
+			size, err := m.Location.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintPayload(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+func (m *Object_StreamLocation_Status) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Object_StreamLocation_Status) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.Status != nil {
+		{
+			size, err := m.Status.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintPayload(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	return len(dAtA) - i, nil
+}
 func (m *Object_Locations) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -6995,9 +8298,9 @@ func (m *Backup_Vector) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	}
 	if len(m.Vector) > 0 {
 		for iNdEx := len(m.Vector) - 1; iNdEx >= 0; iNdEx-- {
-			f18 := math.Float32bits(float32(m.Vector[iNdEx]))
+			f28 := math.Float32bits(float32(m.Vector[iNdEx]))
 			i -= 4
-			encoding_binary.LittleEndian.PutUint32(dAtA[i:], uint32(f18))
+			encoding_binary.LittleEndian.PutUint32(dAtA[i:], uint32(f28))
 		}
 		i = encodeVarintPayload(dAtA, i, uint64(len(m.Vector)*4))
 		i--
@@ -7968,6 +9271,45 @@ func (m *Search_Responses) Size() (n int) {
 	return n
 }
 
+func (m *Search_StreamResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Payload != nil {
+		n += m.Payload.Size()
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *Search_StreamResponse_Response) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Response != nil {
+		l = m.Response.Size()
+		n += 1 + l + sovPayload(uint64(l))
+	}
+	return n
+}
+func (m *Search_StreamResponse_Status) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Status != nil {
+		l = m.Status.Size()
+		n += 1 + l + sovPayload(uint64(l))
+	}
+	return n
+}
 func (m *Filter) Size() (n int) {
 	if m == nil {
 		return 0
@@ -8438,6 +9780,45 @@ func (m *Object_Distance) Size() (n int) {
 	return n
 }
 
+func (m *Object_StreamDistance) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Payload != nil {
+		n += m.Payload.Size()
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *Object_StreamDistance_Distance) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Distance != nil {
+		l = m.Distance.Size()
+		n += 1 + l + sovPayload(uint64(l))
+	}
+	return n
+}
+func (m *Object_StreamDistance_Status) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Status != nil {
+		l = m.Status.Size()
+		n += 1 + l + sovPayload(uint64(l))
+	}
+	return n
+}
 func (m *Object_ID) Size() (n int) {
 	if m == nil {
 		return 0
@@ -8509,6 +9890,45 @@ func (m *Object_Vectors) Size() (n int) {
 	return n
 }
 
+func (m *Object_StreamVector) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Payload != nil {
+		n += m.Payload.Size()
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *Object_StreamVector_Vector) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Vector != nil {
+		l = m.Vector.Size()
+		n += 1 + l + sovPayload(uint64(l))
+	}
+	return n
+}
+func (m *Object_StreamVector_Status) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Status != nil {
+		l = m.Status.Size()
+		n += 1 + l + sovPayload(uint64(l))
+	}
+	return n
+}
 func (m *Object_Blob) Size() (n int) {
 	if m == nil {
 		return 0
@@ -8529,6 +9949,45 @@ func (m *Object_Blob) Size() (n int) {
 	return n
 }
 
+func (m *Object_StreamBlob) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Payload != nil {
+		n += m.Payload.Size()
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *Object_StreamBlob_Blob) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Blob != nil {
+		l = m.Blob.Size()
+		n += 1 + l + sovPayload(uint64(l))
+	}
+	return n
+}
+func (m *Object_StreamBlob_Status) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Status != nil {
+		l = m.Status.Size()
+		n += 1 + l + sovPayload(uint64(l))
+	}
+	return n
+}
 func (m *Object_Location) Size() (n int) {
 	if m == nil {
 		return 0
@@ -8555,6 +10014,45 @@ func (m *Object_Location) Size() (n int) {
 	return n
 }
 
+func (m *Object_StreamLocation) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Payload != nil {
+		n += m.Payload.Size()
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *Object_StreamLocation_Location) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Location != nil {
+		l = m.Location.Size()
+		n += 1 + l + sovPayload(uint64(l))
+	}
+	return n
+}
+func (m *Object_StreamLocation_Status) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Status != nil {
+		l = m.Status.Size()
+		n += 1 + l + sovPayload(uint64(l))
+	}
+	return n
+}
 func (m *Object_Locations) Size() (n int) {
 	if m == nil {
 		return 0
@@ -10264,6 +11762,127 @@ func (m *Search_Responses) Unmarshal(dAtA []byte) error {
 			if err := m.Responses[len(m.Responses)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipPayload(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthPayload
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *Search_StreamResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowPayload
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: StreamResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: StreamResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Response", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPayload
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthPayload
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthPayload
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &Search_Response{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.Payload = &Search_StreamResponse_Response{v}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Status", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPayload
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthPayload
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthPayload
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &rpc.Status{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.Payload = &Search_StreamResponse_Status{v}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -12679,6 +14298,127 @@ func (m *Object_Distance) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+func (m *Object_StreamDistance) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowPayload
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: StreamDistance: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: StreamDistance: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Distance", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPayload
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthPayload
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthPayload
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &Object_Distance{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.Payload = &Object_StreamDistance_Distance{v}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Status", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPayload
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthPayload
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthPayload
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &rpc.Status{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.Payload = &Object_StreamDistance_Status{v}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipPayload(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthPayload
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
 func (m *Object_ID) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -13067,6 +14807,127 @@ func (m *Object_Vectors) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+func (m *Object_StreamVector) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowPayload
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: StreamVector: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: StreamVector: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Vector", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPayload
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthPayload
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthPayload
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &Object_Vector{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.Payload = &Object_StreamVector_Vector{v}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Status", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPayload
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthPayload
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthPayload
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &rpc.Status{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.Payload = &Object_StreamVector_Status{v}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipPayload(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthPayload
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
 func (m *Object_Blob) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -13161,6 +15022,127 @@ func (m *Object_Blob) Unmarshal(dAtA []byte) error {
 			if m.Object == nil {
 				m.Object = []byte{}
 			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipPayload(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthPayload
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *Object_StreamBlob) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowPayload
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: StreamBlob: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: StreamBlob: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Blob", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPayload
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthPayload
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthPayload
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &Object_Blob{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.Payload = &Object_StreamBlob_Blob{v}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Status", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPayload
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthPayload
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthPayload
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &rpc.Status{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.Payload = &Object_StreamBlob_Status{v}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -13308,6 +15290,127 @@ func (m *Object_Location) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.Ips = append(m.Ips, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipPayload(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthPayload
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *Object_StreamLocation) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowPayload
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: StreamLocation: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: StreamLocation: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Location", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPayload
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthPayload
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthPayload
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &Object_Location{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.Payload = &Object_StreamLocation_Location{v}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Status", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPayload
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthPayload
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthPayload
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &rpc.Status{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.Payload = &Object_StreamLocation_Status{v}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

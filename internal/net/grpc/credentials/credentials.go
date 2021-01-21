@@ -14,23 +14,15 @@
 // limitations under the License.
 //
 
-syntax = "proto3";
+// Package credentials provides generic functionality for grpc credentials setting
+package credentials
 
-package errors.v1;
+import (
+	"crypto/tls"
 
-option go_package = "github.com/vdaas/vald/apis/grpc/v1/errors";
-option java_multiple_files = true;
-option java_package = "org.vdaas.vald.api.v1.errors";
-option java_outer_classname = "ValdErrors";
+	"google.golang.org/grpc/credentials"
+)
 
-message Errors {
-  message RPC {
-    string type = 1;
-    string msg = 2;
-    repeated string details = 3;
-    string instance = 4;
-    int64 status = 5;
-    string error = 6;
-    repeated RPC roots = 7;
-  }
+func NewTLS(c *tls.Config) credentials.TransportCredentials {
+	return credentials.NewTLS(c)
 }

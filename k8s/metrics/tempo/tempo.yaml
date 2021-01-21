@@ -1,0 +1,156 @@
+---
+#
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: tempo
+  name: tempo
+spec:
+  ports:
+    - name: tempo-prom-metrics
+      port: 3100
+      targetPort: 3100
+    - name: tempo-grpc
+      port: 14250
+      protocol: TCP
+      targetPort: 14250
+    - name: tempo-query-jaeger-ui
+      port: 16686
+      targetPort: 16686
+    - name: http
+      port: 80
+      targetPort: 16686
+    - name: receiver
+      port: 6831
+      protocol: UDP
+      targetPort: 6831
+  selector:
+    name: tempo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo
+spec:
+  minReadySeconds: 10
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      name: tempo
+  strategy:
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        name: tempo
+    spec:
+      containers:
+        - args:
+            - -config.file=/conf/tempo.yaml
+            - -mem-ballast-size-mbs=1024
+          env:
+            - name: JAEGER_AGENT_PORT
+              value: ""
+          image: grafana/tempo:latest
+          imagePullPolicy: IfNotPresent
+          name: tempo
+          ports:
+            - containerPort: 3100
+              name: prom-metrics
+            - containerPort: 14250
+              name: jaeger-grpc
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /conf
+              name: tempo-conf
+        - args:
+            - --query.base-path=/
+            - --grpc-storage-plugin.configuration-file=/conf/tempo-query.yaml
+          env:
+            - name: JAEGER_AGENT_PORT
+              value: ""
+          image: grafana/tempo-query:latest
+          imagePullPolicy: IfNotPresent
+          name: tempo-query
+          ports:
+            - containerPort: 16686
+              name: jaeger-ui
+          volumeMounts:
+            - mountPath: /conf
+              name: tempo-query-conf
+      volumes:
+        - configMap:
+            name: tempo
+          name: tempo-conf
+        - configMap:
+            name: tempo-query
+          name: tempo-query-conf
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tempo
+data:
+  tempo.yaml: |
+    auth_enabled: false
+    compactor:
+      compaction:
+        chunk_size_bytes: 1048576 # 1024 * 1024
+        compaction_window: 1h
+        max_compaction_objects: 1000000
+        block_retention: 1h
+        compacted_block_retention: 2m
+    distributor:
+      receivers:
+        jaeger:
+          protocols:
+            grpc:
+              endpoint: 0.0.0.0:14250
+    ingester:
+      lifecycler:
+        address: 0.0.0.0
+        ring:
+          kvstore:
+            store: inmemory
+          replication_factor: 1
+        final_sleep: 0s
+      trace_idle_period: 10s
+      traces_per_block: 100
+      max_block_duration: 1h
+      complete_block_timeout: 2m
+    server:
+      http_listen_port: 3100
+    storage:
+      trace:
+        backend: local
+        blocklist_poll: 30s
+        local:
+          path: /tmp/tempo/traces
+        wal:
+          path: /var/tempo/wal
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tempo-query
+data:
+  tempo-query.yaml: |
+    backend: localhost:3100

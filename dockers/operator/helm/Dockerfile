@@ -19,7 +19,7 @@ ARG GROUP="vald.vdaas.org"
 ARG VALD_KIND="ValdRelease"
 ARG VALD_HELM_OPERATOR_KIND="ValdHelmOperatorRelease"
 ARG BASE_TAG=latest
-ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>
+ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
 FROM vdaas/vald-base:${BASE_TAG} AS builder
 ARG OPERATOR_SDK_VERSION
@@ -42,9 +42,6 @@ RUN { \
         echo "  kind: ${VALD_HELM_OPERATOR_KIND}"; \
         echo "  chart: helm-charts/vald-helm-operator"; \
     } > /tmp/watches.yaml
-
-WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/apis/grpc/v1/errors
-COPY apis/grpc/v1/errors .
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal/errors
 COPY internal/errors .

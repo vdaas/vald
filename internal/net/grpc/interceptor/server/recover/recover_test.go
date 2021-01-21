@@ -14,30 +14,31 @@
 // limitations under the License.
 //
 
-// Package grpc provides generic functionality for grpc
-package grpc
+// Package recover provides gRPC interceptors for recovery
+package recover
 
 import (
 	"reflect"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"go.uber.org/goleak"
 )
 
 func TestRecoverInterceptor(t *testing.T) {
 	t.Parallel()
 	type want struct {
-		want UnaryServerInterceptor
+		want grpc.UnaryServerInterceptor
 	}
 	type test struct {
 		name       string
 		want       want
-		checkFunc  func(want, UnaryServerInterceptor) error
+		checkFunc  func(want, grpc.UnaryServerInterceptor) error
 		beforeFunc func()
 		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want, got UnaryServerInterceptor) error {
+	defaultCheckFunc := func(w want, got grpc.UnaryServerInterceptor) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -69,7 +70,7 @@ func TestRecoverInterceptor(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -91,16 +92,16 @@ func TestRecoverInterceptor(t *testing.T) {
 func TestRecoverStreamInterceptor(t *testing.T) {
 	t.Parallel()
 	type want struct {
-		want StreamServerInterceptor
+		want grpc.StreamServerInterceptor
 	}
 	type test struct {
 		name       string
 		want       want
-		checkFunc  func(want, StreamServerInterceptor) error
+		checkFunc  func(want, grpc.StreamServerInterceptor) error
 		beforeFunc func()
 		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want, got StreamServerInterceptor) error {
+	defaultCheckFunc := func(w want, got grpc.StreamServerInterceptor) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -132,7 +133,7 @@ func TestRecoverStreamInterceptor(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}

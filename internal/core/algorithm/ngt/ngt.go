@@ -393,24 +393,14 @@ func (n *ngt) BulkInsert(vecs [][]float32) ([]uint, []error) {
 	ids := make([]uint, 0, len(vecs))
 	errs := make([]error, 0, len(vecs))
 
-	dim := int(n.dimension)
-	var id uint
-	n.mu.Lock()
-	for _, vec := range vecs {
-		id = 0
-		if len(vec) != dim {
-			errs = append(errs, errors.ErrIncompatibleDimensionSize(len(vec), dim))
-		} else {
-			// n.mu.Lock()
-			id = uint(C.ngt_insert_index_as_float(n.index, (*C.float)(&vec[0]), C.uint32_t(n.dimension), n.ebuf))
-			// n.mu.Unlock()
-			if id == 0 {
-				errs = append(errs, n.newGoError(n.ebuf))
-			}
+	log.Infof("started to bulk insert %d of vectors", len(vecs))
+	for i, vec := range vecs {
+		id, err := n.Insert(vec)
+		if err != nil {
+			errs = append(errs, errors.Wrapf(err, "bulkinsert error detected index number: %d,\tid: %d", i, id))
 		}
 		ids = append(ids, id)
 	}
-	n.mu.Unlock()
 
 	return ids, errs
 }

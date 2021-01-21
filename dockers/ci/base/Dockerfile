@@ -16,24 +16,18 @@
 
 ARG GO_VERSION=latest
 ARG BASE_TAG=latest
+ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
 FROM golang:${GO_VERSION} AS golang
 
 FROM vdaas/vald-base:${BASE_TAG} AS builder
-ARG PROTOBUF_VERSION=3.13.0
-ARG GOLANGCI_LINT_VERSION=v1.31.0
-ARG REVIEWDOG_VERSION=v0.10.2
-ARG YQ_VERSION=3.3.4
+ARG PROTOBUF_VERSION=3.14.0
+ARG GOLANGCI_LINT_VERSION=v1.35.2
+ARG REVIEWDOG_VERSION=v0.11.0
+ARG YQ_VERSION=4.3.2
+LABEL maintainer "${MAINTAINER}"
 
 COPY --from=golang /usr/local/go $GOROOT
-
-WORKDIR ${GOPATH}/src/github.com/vdaas/vald
-
-COPY Makefile .
-COPY Makefile.d Makefile.d
-COPY apis/proto apis/proto
-COPY versions versions
-COPY hack/go.mod.default hack/go.mod.default
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libhdf5-dev \
@@ -47,12 +41,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN cd /tmp \
-    && curl -OL "https://github.com/google/protobuf/releases/download/v${PROTOBUF_VERSION}/protoc-${PROTOBUF_VERSION}-linux-x86_64.zip" \
+WORKDIR /tmp
+RUN curl -OL "https://github.com/google/protobuf/releases/download/v${PROTOBUF_VERSION}/protoc-${PROTOBUF_VERSION}-linux-x86_64.zip" \
     && unzip protoc-${PROTOBUF_VERSION}-linux-x86_64.zip -d protoc3 \
     && mv protoc3/bin/* /usr/local/bin/ \
     && mv protoc3/include/* /usr/local/include/ \
     && rm -rf protoc-${PROTOBUF_VERSION}-linux-x86_64.zip protoc3
+
+WORKDIR ${GOPATH}/src/github.com/vdaas/vald
+
+COPY Makefile .
+COPY Makefile.d Makefile.d
+COPY apis/proto apis/proto
+COPY versions versions
+COPY hack/go.mod.default hack/go.mod.default
 
 RUN make deps
 
@@ -63,10 +65,11 @@ RUN make helm/install
 RUN make helm-docs/install
 RUN make kind/install
 RUN make valdcli/install
+RUN make kubelinter/install
 
 RUN make tparse/install
 
-RUN curl -L https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl -o /usr/local/bin/kubectl \
+RUN curl -L "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl" -o /usr/local/bin/kubectl \
     && chmod a+x /usr/local/bin/kubectl
 
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \

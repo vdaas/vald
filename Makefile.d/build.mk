@@ -47,7 +47,7 @@ cmd/agent/core/ngt/ngt: \
 	GOPRIVATE=$(GOPRIVATE) \
 	go build \
 		--ldflags "-s -w -linkmode 'external' \
-		-extldflags '-static -fPIC -pthread -fopenmp -std=gnu++20 -lstdc++ -O3 -lm $(EXTLDFLAGS)' \
+		-extldflags '-static -fPIC -pthread -fopenmp -std=gnu++20 -lstdc++ -lm $(EXTLDFLAGS)' \
 		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
 		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
 		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
