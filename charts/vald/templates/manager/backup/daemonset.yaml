@@ -75,6 +75,10 @@ spec:
             {{- toYaml $backup.resources | nindent 12 }}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
+          {{- if $backup.securityContext }}
+          securityContext:
+            {{- toYaml $backup.securityContext | nindent 12 }}
+          {{- end }}
           {{- if $backup.env }}
           env:
             {{- toYaml $backup.env | nindent 12 }}
@@ -88,9 +92,9 @@ spec:
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
-      {{- if $backup.securityContext }}
+      {{- if $backup.podSecurityContext }}
       securityContext:
-        {{- toYaml $backup.securityContext | nindent 8 }}
+        {{- toYaml $backup.podSecurityContext | nindent 8 }}
       {{- end }}
       terminationGracePeriodSeconds: {{ $backup.terminationGracePeriodSeconds }}
       volumes:

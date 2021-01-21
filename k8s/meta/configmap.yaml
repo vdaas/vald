@@ -1,4 +1,5 @@
 ---
+# Source: vald/templates/meta/configmap.yaml
 #
 # Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
@@ -45,7 +46,8 @@ data:
             header_table_size: 0
             initial_conn_window_size: 0
             initial_window_size: 0
-            interceptors: []
+            interceptors:
+            - RecoverInterceptor
             keepalive:
               max_conn_age: ""
               max_conn_age_grace: ""
@@ -197,6 +199,7 @@ data:
       max_retry_backoff: 512ms
       min_idle_conns: 0
       min_retry_backoff: 8ms
+      network: tcp
       password: _REDIS_PASSWORD_
       pool_size: 10
       pool_timeout: 4s
@@ -205,6 +208,8 @@ data:
       read_timeout: 3s
       route_by_latency: false
       route_randomly: true
+      sentinel_master_name: ""
+      sentinel_password: ""
       tcp:
         dialer:
           dual_stack_enabled: false

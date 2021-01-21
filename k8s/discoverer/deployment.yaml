@@ -1,4 +1,5 @@
 ---
+# Source: vald/templates/discoverer/deployment.yaml
 #
 # Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
@@ -47,7 +48,7 @@ spec:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/component: discoverer
       annotations:
-        checksum/configmap: f8221b17e94929be80537b2b69733bbc3b8351ebb0cab426f2deb02595fe34c5
+        checksum/configmap: f287cfdd8c5b31dc2c71a9f02a319fa0bffc19865e1171bdece0898e33c1d698
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-discoverer
@@ -63,10 +64,10 @@ spec:
             - podAffinityTerm:
                 labelSelector:
                   matchExpressions:
-                    - key: app
-                      operator: In
-                      values:
-                        - vald-discoverer
+                  - key: app
+                    operator: In
+                    values:
+                    - vald-discoverer
                 topologyKey: kubernetes.io/hostname
               weight: 100
           requiredDuringSchedulingIgnoredDuringExecution: []
@@ -116,6 +117,16 @@ spec:
               memory: 50Mi
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 2002
+            runAsNonRoot: true
+            runAsUser: 1002
           env:
             - name: MY_POD_NAMESPACE
               valueFrom:
@@ -127,9 +138,13 @@ spec:
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
-      serviceAccount: vald
       serviceAccountName: vald
-      securityContext: {}
+      securityContext:
+        fsGroup: 3002
+        fsGroupChangePolicy: OnRootMismatch
+        runAsGroup: 2002
+        runAsNonRoot: true
+        runAsUser: 1002
       terminationGracePeriodSeconds: 30
       volumes:
         - name: vald-discoverer-config

@@ -2421,7 +2421,7 @@ func Test_server_GetObject(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx context.Context
-		id  *payload.Object_ID
+		id  *payload.Object_Request
 	}
 	type fields struct {
 		name              string

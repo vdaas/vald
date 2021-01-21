@@ -622,14 +622,14 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 	return s.newLocations(uuids...), nil
 }
 
-func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (res *payload.Object_Vector, err error) {
+func (s *server) GetObject(ctx context.Context, id *payload.Object_Request) (res *payload.Object_Vector, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".GetObject")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	uuid := id.GetId()
+	uuid := id.GetId().GetId()
 	vec, err := s.ngt.GetObject(uuid)
 	if err != nil {
 		log.Warnf("[GetObject]\tUUID not found\t%v", uuid)
@@ -654,7 +654,7 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) error
 	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Object_ID) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			res, err := s.GetObject(ctx, data.(*payload.Object_ID))
+			res, err := s.GetObject(ctx, data.(*payload.Object_Request))
 			if err != nil {
 				st, ok := status.FromError(err)
 				if !ok {

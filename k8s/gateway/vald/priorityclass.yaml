@@ -1,4 +1,5 @@
 ---
+# Source: vald/templates/gateway/vald/priorityclass.yaml
 #
 # Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
@@ -14,17 +15,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-apiVersion: scheduling.k8s.io/v1
-kind: PriorityClass
-metadata:
-  name: default-vald-gateway-priority
-  labels:
-    app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v0.0.66
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v0.0.66
-    app.kubernetes.io/component: gateway
-value: 1e+06
-globalDefault: false
-description: "A priority class for Vald gateway."

@@ -19,12 +19,13 @@ k8s/manifest/clean:
 	rm -rf \
 	    k8s/agent \
 	    k8s/discoverer \
-	    k8s/gateway/vald \
-	    k8s/manager/backup \
-	    k8s/manager/compressor \
-	    k8s/manager/index \
+	    k8s/gateway \
+	    k8s/manager/ \
+	    k8s/manager \
 	    k8s/meta \
-	    k8s/jobs
+	    k8s/jobs/db/initialize/cassandra \
+	    k8s/jobs/db/initialize/mysql \
+	    k8s/jobs/db/initialize/redis
 
 .PHONY: k8s/manifest/update
 ## update k8s manifests using helm templates
@@ -42,7 +43,9 @@ k8s/manifest/update: \
 	mv $(TEMP_DIR)/vald/templates/gateway/lb k8s/gateway/lb
 	mv $(TEMP_DIR)/vald/templates/gateway/meta k8s/gateway/meta
 	mv $(TEMP_DIR)/vald/templates/gateway/vald k8s/gateway/vald
-	mv $(TEMP_DIR)/vald/templates/jobs k8s/jobs
+	mv $(TEMP_DIR)/vald/templates/jobs/db/initialize/cassandra k8s/jobs/db/initialize/cassandra
+	mv $(TEMP_DIR)/vald/templates/jobs/db/initialize/mysql k8s/jobs/db/initialize/mysql
+	mv $(TEMP_DIR)/vald/templates/jobs/db/initialize/redis k8s/jobs/db/initialize/redis
 	mv $(TEMP_DIR)/vald/templates/manager/backup k8s/manager/backup
 	mv $(TEMP_DIR)/vald/templates/manager/compressor k8s/manager/compressor
 	mv $(TEMP_DIR)/vald/templates/manager/index k8s/manager/index
@@ -260,6 +263,7 @@ k8s/external/cassandra/initialize:
 k8s/external/scylla/deploy: \
 	k8s/external/cert-manager/deploy
 	kubectl apply -f https://raw.githubusercontent.com/scylladb/scylla-operator/master/examples/common/operator.yaml
+	sleep 2
 	kubectl wait -n scylla-operator-system --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=scylla-operator-controller-manager-0 --timeout=600s
 	kubectl -n scylla-operator-system get pod
 	kubectl apply -f $(K8S_EXTERNAL_SCYLLA_MANIFEST)
@@ -283,6 +287,7 @@ k8s/external/scylla/delete: \
 ## deploy cert-manager
 k8s/external/cert-manager/deploy:
 	kubectl apply -f https://github.com/jetstack/cert-manager/releases/latest/download/cert-manager.yaml
+	sleep 2
 	kubectl wait -n cert-manager --for=condition=ready pod -l app=cert-manager --timeout=60s
 	kubectl wait -n cert-manager --for=condition=ready pod -l app=cainjector --timeout=60s
 	kubectl wait -n cert-manager --for=condition=ready pod -l app=webhook --timeout=60s

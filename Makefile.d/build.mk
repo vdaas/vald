@@ -24,6 +24,7 @@ binary/build: \
 	cmd/gateway/lb/lb \
 	cmd/gateway/meta/meta \
 	cmd/gateway/backup/backup \
+	cmd/gateway/filter/filter \
 	cmd/meta/redis/meta \
 	cmd/meta/cassandra/meta \
 	cmd/manager/backup/mysql/backup \
@@ -194,6 +195,31 @@ cmd/gateway/backup/backup: \
 	$(PBGOS) \
 	$(shell find ./cmd/gateway/backup -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
 	$(shell find ./pkg/gateway/backup -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	CGO_ENABLED=0 \
+	GO111MODULE=on \
+	GOPRIVATE=$(GOPRIVATE) \
+	go build \
+		--ldflags "-s -w -extldflags=-static \
+		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
+		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
+		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
+		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
+		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
+		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
+		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
+		-buildid=" \
+		-a \
+		-tags "osusergo netgo static_build" \
+		-trimpath \
+		-o $@ \
+		$(dir $@)main.go
+
+cmd/gateway/filter/filter: \
+	$(GO_SOURCES_INTERNAL) \
+	$(PBGOS) \
+	$(shell find ./cmd/gateway/filter -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find ./pkg/gateway/filter -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	CGO_ENABLED=0 \
 	GO111MODULE=on \
 	GOPRIVATE=$(GOPRIVATE) \
@@ -456,6 +482,10 @@ artifacts/vald-meta-gateway-$(GOOS)-$(GOARCH).zip: cmd/gateway/meta/meta
 	zip --junk-paths $@ $<
 
 artifacts/vald-backup-gateway-$(GOOS)-$(GOARCH).zip: cmd/gateway/backup/backup
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+
+artifacts/vald-filter-gateway-$(GOOS)-$(GOARCH).zip: cmd/gateway/filter/filter
 	$(call mkdir, $(dir $@))
 	zip --junk-paths $@ $<
 

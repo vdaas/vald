@@ -34,7 +34,39 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/ObjectBlob"
+              "$ref": "#/definitions/v1InsertObjectRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Filter"
+        ]
+      }
+    },
+    "/insert/object/multiple": {
+      "post": {
+        "operationId": "Filter_MultiInsertObject",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ObjectLocations"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1InsertMultiObjectRequest"
             }
           }
         ],
@@ -66,7 +98,39 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/SearchObjectRequest"
+              "$ref": "#/definitions/v1SearchObjectRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Filter"
+        ]
+      }
+    },
+    "/search/object/multiple": {
+      "post": {
+        "operationId": "Filter_MultiSearchObject",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/SearchResponses"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1SearchMultiObjectRequest"
             }
           }
         ],
@@ -98,7 +162,39 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/ObjectBlob"
+              "$ref": "#/definitions/v1UpdateObjectRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Filter"
+        ]
+      }
+    },
+    "/update/object/multiple": {
+      "post": {
+        "operationId": "Filter_MultiUpdateObject",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ObjectLocations"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpdateMultiObjectRequest"
             }
           }
         ],
@@ -130,7 +226,39 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/ObjectBlob"
+              "$ref": "#/definitions/v1UpsertObjectRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Filter"
+        ]
+      }
+    },
+    "/upsert/object/multiple": {
+      "post": {
+        "operationId": "Filter_MultiUpsertObject",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ObjectLocations"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpsertMultiObjectRequest"
             }
           }
         ],
@@ -141,6 +269,18 @@
     }
   },
   "definitions": {
+    "FilterTarget": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
     "ObjectBlob": {
       "type": "object",
       "properties": {
@@ -176,18 +316,6 @@
         }
       }
     },
-    "SearchObjectRequest": {
-      "type": "object",
-      "properties": {
-        "object": {
-          "type": "string",
-          "format": "byte"
-        },
-        "config": {
-          "$ref": "#/definitions/v1SearchConfig"
-        }
-      }
-    },
     "SearchResponse": {
       "type": "object",
       "properties": {
@@ -198,6 +326,17 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/ObjectDistance"
+          }
+        }
+      }
+    },
+    "SearchResponses": {
+      "type": "object",
+      "properties": {
+        "responses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SearchResponse"
           }
         }
       }
@@ -302,8 +441,44 @@
         "targets": {
           "type": "array",
           "items": {
-            "type": "string"
+            "$ref": "#/definitions/FilterTarget"
           }
+        }
+      }
+    },
+    "v1InsertConfig": {
+      "type": "object",
+      "properties": {
+        "skipStrictExistCheck": {
+          "type": "boolean"
+        },
+        "filters": {
+          "$ref": "#/definitions/v1FilterConfig"
+        }
+      }
+    },
+    "v1InsertMultiObjectRequest": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1InsertObjectRequest"
+          }
+        }
+      }
+    },
+    "v1InsertObjectRequest": {
+      "type": "object",
+      "properties": {
+        "object": {
+          "$ref": "#/definitions/ObjectBlob"
+        },
+        "config": {
+          "$ref": "#/definitions/v1InsertConfig"
+        },
+        "vectorizer": {
+          "$ref": "#/definitions/FilterTarget"
         }
       }
     },
@@ -357,8 +532,109 @@
           "type": "string",
           "format": "int64"
         },
+        "ingressFilters": {
+          "$ref": "#/definitions/v1FilterConfig"
+        },
+        "egressFilters": {
+          "$ref": "#/definitions/v1FilterConfig"
+        }
+      }
+    },
+    "v1SearchMultiObjectRequest": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1SearchObjectRequest"
+          }
+        }
+      }
+    },
+    "v1SearchObjectRequest": {
+      "type": "object",
+      "properties": {
+        "object": {
+          "type": "string",
+          "format": "byte"
+        },
+        "config": {
+          "$ref": "#/definitions/v1SearchConfig"
+        },
+        "vectorizer": {
+          "$ref": "#/definitions/FilterTarget"
+        }
+      }
+    },
+    "v1UpdateConfig": {
+      "type": "object",
+      "properties": {
+        "skipStrictExistCheck": {
+          "type": "boolean"
+        },
         "filters": {
           "$ref": "#/definitions/v1FilterConfig"
+        }
+      }
+    },
+    "v1UpdateMultiObjectRequest": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1UpdateObjectRequest"
+          }
+        }
+      }
+    },
+    "v1UpdateObjectRequest": {
+      "type": "object",
+      "properties": {
+        "object": {
+          "$ref": "#/definitions/ObjectBlob"
+        },
+        "config": {
+          "$ref": "#/definitions/v1UpdateConfig"
+        },
+        "vectorizer": {
+          "$ref": "#/definitions/FilterTarget"
+        }
+      }
+    },
+    "v1UpsertConfig": {
+      "type": "object",
+      "properties": {
+        "skipStrictExistCheck": {
+          "type": "boolean"
+        },
+        "filters": {
+          "$ref": "#/definitions/v1FilterConfig"
+        }
+      }
+    },
+    "v1UpsertMultiObjectRequest": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1UpsertObjectRequest"
+          }
+        }
+      }
+    },
+    "v1UpsertObjectRequest": {
+      "type": "object",
+      "properties": {
+        "object": {
+          "$ref": "#/definitions/ObjectBlob"
+        },
+        "config": {
+          "$ref": "#/definitions/v1UpsertConfig"
+        },
+        "vectorizer": {
+          "$ref": "#/definitions/FilterTarget"
         }
       }
     }
