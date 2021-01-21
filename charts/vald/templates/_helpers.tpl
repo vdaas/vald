@@ -307,7 +307,15 @@ servers:
       connection_timeout: {{ default .default.servers.grpc.server.grpc.connection_timeout .Values.servers.grpc.server.grpc.connection_timeout | quote }}
       max_header_list_size: {{ default .default.servers.grpc.server.grpc.max_header_list_size .Values.servers.grpc.server.grpc.max_header_list_size }}
       header_table_size: {{ default .default.servers.grpc.server.grpc.header_table_size .Values.servers.grpc.server.grpc.header_table_size }}
-      interceptors: {{ default .default.servers.grpc.server.grpc.interceptors .Values.servers.grpc.server.grpc.interceptors }}
+      {{- if .Values.servers.grpc.server.grpc.interceptors }}
+      interceptors:
+        {{- toYaml .Values.servers.grpc.server.grpc.interceptors | nindent 8 }}
+      {{- else if .default.servers.grpc.server.grpc.interceptors }}
+      interceptors:
+        {{- toYaml .default.servers.grpc.server.grpc.interceptors | nindent 8 }}
+      {{- else }}
+      interceptors: []
+      {{- end }}
       {{- else }}
       {{- toYaml .default.servers.grpc.server.grpc | nindent 6 }}
       {{- end }}
