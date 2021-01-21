@@ -246,7 +246,7 @@ func TestErrRequiredElementNotFoundByUUID(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return wrapped ErrRequiredElementNotFoundByUUID error when uuid is 'ef45b56c-1d90-12a7-c143-2567vaef218d'",
+			name: "return wrapped ErrRequiredElementNotFoundByUUID error when uuid is ef45b56c-1d90-12a7-c143-2567vaef218d",
 			args: args{
 				uuid: "ef45b56c-1d90-12a7-c143-2567vaef218d",
 			},
@@ -366,7 +366,7 @@ func TestErrRequiredMemberNotFilled(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return wrapped ErrRequiredMemberNotFilled error when member is 'vector'",
+			name: "return wrapped ErrRequiredMemberNotFilled error when member is vector",
 			args: args{
 				member: "vector",
 			},
@@ -494,7 +494,7 @@ func TestErrMySQLNotFoundIdentity_Unwrap(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return internal error when err of field is 'error mysql element not found'",
+			name: "return internal error when err of field is error mysql element not found",
 			fields: fields{
 				err: New("error mysql element not found"),
 			},
@@ -503,7 +503,7 @@ func TestErrMySQLNotFoundIdentity_Unwrap(t *testing.T) {
 			},
 		},
 		{
-			name: "return nil when err of field is nil'",
+			name: "return nil when err of field is nil",
 			fields: fields{
 				err: nil,
 			},
@@ -571,7 +571,7 @@ func TestIsErrMySQLNotFound(t *testing.T) {
 			},
 		},
 		{
-			name: "return false when err is 'database error'",
+			name: "return false when err is database error",
 			args: args{
 				err: New("database error"),
 			},
@@ -636,7 +636,7 @@ func TestErrMySQLInvalidArgumentIdentity_Error(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return string of internal error when err of field is 'error mysql invalid argument'",
+			name: "return string of internal error when err of field is error mysql invalid argument",
 			fields: fields{
 				err: New("error mysql invalid argument"),
 			},
@@ -695,7 +695,7 @@ func TestErrMySQLInvalidArgumentIdentity_Unwrap(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return internal error when err of field is 'error mysql invalid argument'",
+			name: "return internal error when err of field is error mysql invalid argument",
 			fields: fields{
 				err: New("error mysql invalid argument"),
 			},
@@ -772,7 +772,7 @@ func TestIsErrMySQLInvalidArgument(t *testing.T) {
 			},
 		},
 		{
-			name: "return false when err is 'database error'",
+			name: "return false when err is database error",
 			args: args{
 				err: New("database error"),
 			},
