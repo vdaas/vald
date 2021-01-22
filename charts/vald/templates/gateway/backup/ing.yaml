@@ -15,7 +15,7 @@
 #
 {{- $gateway := .Values.gateway.backup -}}
 {{- if and $gateway.enabled $gateway.ingress.enabled }}
-{{- if $gateway.ingress.usev1beta1 }}
+{{- if .Values.defaults.ingress.usev1beta1 }}
 apiVersion: networking.k8s.io/v1beta1
 {{- else }}
 apiVersion: networking.k8s.io/v1
@@ -34,7 +34,7 @@ metadata:
     app.kubernetes.io/version: {{ .Chart.Version }}
     app.kubernetes.io/component: gateway-backup
   name: {{ $gateway.name }}-ingress
-{{- if $gateway.ingress.usev1beta1 }}
+{{- if .Values.defaults.ingress.usev1beta1 }}
 spec:
   rules:
     - host: {{ $gateway.ingress.host }}

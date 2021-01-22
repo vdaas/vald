@@ -765,6 +765,12 @@ defaults:
         # defaults.observability.stackdriver.profiler.zone -- the zone of Compute Engine instance.
         # This is normally determined from the Compute Engine metadata server and doesn't need to be initialized.
         zone: ""
+  # @schema {"name": "defaults.ingress", "type": "object"}
+  ingress:
+    # @schema {"name": "defaults.ingress.usev1beta1", "type": "boolean"}
+    # defaults.ingress.usev1beta1 -- use networking.k8s.io/v1beta1 instead of v1 for ingresses.
+    # This option will be removed once k8s 1.22 is released.
+    usev1beta1: false
 
 # @schema {"name": "gateway", "type": "object"}
 gateway:
@@ -995,9 +1001,6 @@ gateway:
       # @schema {"name": "gateway.vald.ingress.servicePort", "type": "string"}
       # gateway.vald.ingress.servicePort -- service port to be exposed by ingress
       servicePort: grpc
-      # @schema {"name": "gateway.vald.ingress.usev1beta1", "type": "boolean"}
-      # gateway.vald.ingress.usev1beta1 -- use networking.k8s.io/v1beta1 instead of v1
-      usev1beta1: false
     # @schema {"name": "gateway.vald.resources", "type": "object", "anchor": "resources"}
     # gateway.vald.resources -- compute resources
     resources:
@@ -1259,9 +1262,6 @@ gateway:
       # @schema {"name": "gateway.backup.ingress.servicePort", "type": "string"}
       # gateway.backup.ingress.servicePort -- service port to be exposed by ingress
       servicePort: grpc
-      # @schema {"name": "gateway.backup.ingress.usev1beta1", "type": "boolean"}
-      # gateway.backup.ingress.usev1beta1 -- use networking.k8s.io/v1beta1 instead of v1
-      usev1beta1: false
     # @schema {"name": "gateway.backup.resources", "type": "object", "anchor": "resources"}
     # gateway.backup.resources -- compute resources
     resources:
@@ -1498,9 +1498,6 @@ gateway:
       # @schema {"name": "gateway.lb.ingress.servicePort", "type": "string"}
       # gateway.lb.ingress.servicePort -- service port to be exposed by ingress
       servicePort: grpc
-      # @schema {"name": "gateway.lb.ingress.usev1beta1", "type": "boolean"}
-      # gateway.lb.ingress.usev1beta1 -- use networking.k8s.io/v1beta1 instead of v1
-      usev1beta1: false
     # @schema {"name": "gateway.lb.resources", "type": "object", "anchor": "resources"}
     # gateway.lb.resources -- compute resources
     resources:
@@ -1743,9 +1740,6 @@ gateway:
       # @schema {"name": "gateway.meta.ingress.servicePort", "type": "string"}
       # gateway.meta.ingress.servicePort -- service port to be exposed by ingress
       servicePort: grpc
-      # @schema {"name": "gateway.meta.ingress.usev1beta1", "type": "boolean"}
-      # gateway.meta.ingress.usev1beta1 -- use networking.k8s.io/v1beta1 instead of v1
-      usev1beta1: false
     # @schema {"name": "gateway.meta.resources", "type": "object", "anchor": "resources"}
     # gateway.meta.resources -- compute resources
     resources:
