@@ -765,6 +765,12 @@ defaults:
         # defaults.observability.stackdriver.profiler.zone -- the zone of Compute Engine instance.
         # This is normally determined from the Compute Engine metadata server and doesn't need to be initialized.
         zone: ""
+  # @schema {"name": "defaults.ingress", "type": "object"}
+  ingress:
+    # @schema {"name": "defaults.ingress.usev1beta1", "type": "boolean"}
+    # defaults.ingress.usev1beta1 -- use networking.k8s.io/v1beta1 instead of v1 for ingresses.
+    # This option will be removed once k8s 1.22 is released.
+    usev1beta1: false
 
 # @schema {"name": "gateway", "type": "object"}
 gateway:
