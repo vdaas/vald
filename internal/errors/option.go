@@ -15,12 +15,13 @@
 //
 package errors
 
-// ErrInvalidOption represent the invalid option error.
+// ErrInvalidOption represents the invalid option error.
 type ErrInvalidOption struct {
 	err    error
 	origin error
 }
 
+// NewErrInvalidOption represents a function to generate a new error of ErrInvalidOption that invalid option.
 func NewErrInvalidOption(name string, val interface{}, errs ...error) error {
 	if len(errs) == 0 {
 		return &ErrInvalidOption{
@@ -46,24 +47,26 @@ func NewErrInvalidOption(name string, val interface{}, errs ...error) error {
 	}
 }
 
+// Errors returns a string of ErrInvalidOption.err.
 func (e *ErrInvalidOption) Error() string {
+	if e.err == nil {
+		return ""
+	}
 	return e.err.Error()
 }
 
+// Unwrap returns an origin error of ErrInvalidOption.
 func (e *ErrInvalidOption) Unwrap() error {
 	return e.origin
 }
 
-/*
-   ErrCriticalOption
-*/
-
-// ErrCriticalOption represent the critical option error.
+// ErrCriticalOption represents the critical option error.
 type ErrCriticalOption struct {
 	err    error
 	origin error
 }
 
+// NewErrCriticalOption represents a function to generate a new error of ErrCriticalOption that invalid option.
 func NewErrCriticalOption(name string, val interface{}, errs ...error) error {
 	if len(errs) == 0 {
 		return &ErrCriticalOption{
@@ -90,10 +93,15 @@ func NewErrCriticalOption(name string, val interface{}, errs ...error) error {
 	}
 }
 
+// Errors returns a string of ErrCriticalOption.err.
 func (e *ErrCriticalOption) Error() string {
+	if e.err == nil {
+		return ""
+	}
 	return e.err.Error()
 }
 
+// Unwrap returns an origin error of ErrCriticalOption.
 func (e *ErrCriticalOption) Unwrap() error {
 	return e.origin
 }
