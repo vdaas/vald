@@ -16,7 +16,6 @@
 package errors
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -44,8 +43,6 @@ func TestNewErrInvalidOption(t *testing.T) {
 
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
-			fmt.Println(got)
-			fmt.Println(w.want)
 			return Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
@@ -119,7 +116,7 @@ func TestNewErrInvalidOption(t *testing.T) {
 				}
 			}
 			return test{
-				name: "return ErrInvalidOpton when all of parameter has value, but errs has nil as value.",
+				name: "return ErrInvalidOpton when all of parameter has value and errs has nil as value.",
 				args: args{
 					name: name,
 					val:  val,
@@ -151,7 +148,7 @@ func TestNewErrInvalidOption(t *testing.T) {
 				}
 			}
 			return test{
-				name: "return ErrInvalidOpton when name is nil and vals and errs have values.",
+				name: "return ErrInvalidOpton when name is nil and val and errs have values.",
 				args: args{
 					val:  val,
 					errs: errs,
@@ -246,14 +243,14 @@ func TestErrInvalidOption_Error(t *testing.T) {
 
 	tests := []test{
 		{
-			name:   "return empty string when e.err is nil",
+			name:   "return empty string when e.err is nil.",
 			fields: fields{},
 			want: want{
 				want: "",
 			},
 		},
 		{
-			name: "return empty string when e.err is not nil",
+			name: "return empty string when e.err is not nil.",
 			fields: fields{
 				err: Errorf("invalid option. name: WithPort, val: 8080"),
 			},
@@ -377,9 +374,6 @@ func TestNewErrCriticalOption(t *testing.T) {
 	}
 
 	defaultCheckFunc := func(w want, got T) error {
-		fmt.Println(got)
-		fmt.Println(w.want)
-		fmt.Print("\n")
 		if !Is(got, w.want) {
 			return Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -454,7 +448,7 @@ func TestNewErrCriticalOption(t *testing.T) {
 				}
 			}
 			return test{
-				name: "return ErrCriticalOption when all of parameter has value, but errs has nil as value.",
+				name: "return ErrCriticalOption when all of parameter has value and errs has nil as value.",
 				args: args{
 					name: name,
 					val:  val,
@@ -486,7 +480,7 @@ func TestNewErrCriticalOption(t *testing.T) {
 				}
 			}
 			return test{
-				name: "return ErrCriticalOption when name is nil and vals and errs have values.",
+				name: "return ErrCriticalOption when name is nil and val and errs have values.",
 				args: args{
 					val:  val,
 					errs: errs,
