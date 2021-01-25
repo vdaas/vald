@@ -71,7 +71,6 @@ func Do(ctx context.Context, opts ...Option) error {
 
 	if isHelp || err != nil {
 		log.Init(log.WithLevel(level.FATAL.String()))
-		defer log.Close()
 		return err
 	}
 
@@ -85,7 +84,6 @@ func Do(ctx context.Context, opts ...Option) error {
 	cfg, ccfg, err := r.loadConfig(p.ConfigFilePath())
 	if err != nil {
 		log.Init(log.WithLevel(level.FATAL.String()))
-		defer log.Close()
 		return err
 	}
 
