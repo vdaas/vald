@@ -39,6 +39,11 @@ func (l *Logger) Debugf(format string, vals ...interface{}) {
 	l.DebugfFunc(format, vals...)
 }
 
+// Debugd calls DebugfFunc of Logger.
+func (l *Logger) Debugd(msg string, details ...interface{}) {
+	l.DebugfFunc(msg, details...)
+}
+
 // Info calls InfoFunc of Logger.
 func (l *Logger) Info(vals ...interface{}) {
 	l.InfoFunc(vals...)
@@ -47,6 +52,11 @@ func (l *Logger) Info(vals ...interface{}) {
 // Infof calls InfofFunc of Logger.
 func (l *Logger) Infof(format string, vals ...interface{}) {
 	l.InfofFunc(format, vals...)
+}
+
+// Infod calls InfofFunc of Logger.
+func (l *Logger) Infod(msg string, details ...interface{}) {
+	l.InfofFunc(msg, details...)
 }
 
 // Warn calls WarnFunc of Logger.
@@ -59,6 +69,11 @@ func (l *Logger) Warnf(format string, vals ...interface{}) {
 	l.WarnfFunc(format, vals...)
 }
 
+// Warnd calls WarnfFunc of Logger.
+func (l *Logger) Warnd(msg string, details ...interface{}) {
+	l.WarnfFunc(msg, details...)
+}
+
 // Error calls ErrorFunc of Logger.
 func (l *Logger) Error(vals ...interface{}) {
 	l.ErrorFunc(vals...)
@@ -69,6 +84,11 @@ func (l *Logger) Errorf(format string, vals ...interface{}) {
 	l.ErrorfFunc(format, vals...)
 }
 
+// Errord calls ErrorfFunc of Logger.
+func (l *Logger) Errord(msg string, details ...interface{}) {
+	l.ErrorfFunc(msg, details...)
+}
+
 // Fatal calls FatalFunc of Logger.
 func (l *Logger) Fatal(vals ...interface{}) {
 	l.FatalFunc(vals...)
@@ -77,4 +97,13 @@ func (l *Logger) Fatal(vals ...interface{}) {
 // Fatalf calls FatalfFunc of Logger.
 func (l *Logger) Fatalf(format string, vals ...interface{}) {
 	l.FatalfFunc(format, vals...)
+}
+
+// Fatald calls FatalfFunc of Logger.
+func (l *Logger) Fatald(msg string, details ...interface{}) {
+	l.FatalfFunc(msg, details...)
+}
+
+func (l *Logger) Close() error {
+	return nil
 }

@@ -76,6 +76,7 @@ func Do(ctx context.Context, opts ...Option) error {
 
 	if p.ShowVersion() {
 		log.Init(log.WithLevel(level.INFO.String()))
+		defer log.Close()
 		log.Info(info.String())
 		return nil
 	}
@@ -95,6 +96,7 @@ func Do(ctx context.Context, opts ...Option) error {
 	} else {
 		log.Init()
 	}
+	defer log.Close()
 
 	log.Debugf("version info:\t\t%s\n\nconfiguration:\t\t%s\n\n",
 		func() string {
