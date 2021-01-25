@@ -175,8 +175,7 @@ func TestErrOptionFailed(t *testing.T) {
 				args: args{
 					err: errors.New("option failed error"),
 					ref: func() reflect.Value {
-						var i interface{}
-						i = fmt.Println
+						var i interface{} = fmt.Println
 						return reflect.ValueOf(i)
 					}(),
 				},
@@ -191,8 +190,7 @@ func TestErrOptionFailed(t *testing.T) {
 				name: "return an ErrOptionFailed error when err is empty and ref is not empty.",
 				args: args{
 					ref: func() reflect.Value {
-						var i interface{}
-						i = fmt.Println
+						var i interface{} = fmt.Println
 						return reflect.ValueOf(i)
 					}(),
 				},
@@ -1082,11 +1080,12 @@ func TestUnwarp(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			wantErr := errors.Unwrap(errors.New("err"))
+			wantErr := errors.New("err")
+			err := fmt.Errorf("%s: %w", "error occurs", wantErr)
 			return test{
 				name: "return an unwrapped error when err is not empty.",
 				args: args{
-					err: errors.New("err"),
+					err: err,
 				},
 				want: want{
 					wantErr,
