@@ -404,7 +404,8 @@ func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, reason confi
 	jobTpl.Labels["controller_name"] = r.podName
 	jobTpl.Labels["controller_namespace"] = r.podNamespace
 
-	if err := job.Create(ctx, &jobTpl); err != nil {
+	mgr := r.ctrl.GetManager()
+	if err := job.Create(ctx, &jobTpl, mgr); err != nil {
 		return err
 	}
 

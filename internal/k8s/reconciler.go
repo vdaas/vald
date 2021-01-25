@@ -34,13 +34,16 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
+type Manager = manager.Manager
+
 type Controller interface {
 	Start(ctx context.Context) (<-chan error, error)
+	GetManager() Manager
 }
 
 type ResourceController interface {
 	GetName() string
-	NewReconciler(mgr manager.Manager) reconcile.Reconciler
+	NewReconciler(mgr Manager) reconcile.Reconciler
 	For() (client.Object, []builder.ForOption)
 	Owns() (client.Object, []builder.OwnsOption)
 	Watches() (*source.Kind, handler.EventHandler, []builder.WatchesOption)
@@ -52,7 +55,7 @@ type controller struct {
 	merticsAddr      string
 	leaderElection   bool
 	leaderElectionID string
-	mgr              manager.Manager
+	mgr              Manager
 	rcs              []ResourceController
 }
 
@@ -127,4 +130,8 @@ func (c *controller) Start(ctx context.Context) (<-chan error, error) {
 	}))
 
 	return ech, nil
+}
+
+func (c *controller) GetManager() Manager {
+	return c.mgr
 }
