@@ -160,7 +160,108 @@ func TestErrIndexLoadTimeout(t *testing.T) {
 }
 
 func TestErrInvalidDimensionSize(t *testing.T) {
+	type args struct {
+		current int
+		limit   int
+	}
+	type want struct {
+		want error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got error) error {
+		if !Is(got, w.want) {
+			return Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "return ErrInvalidDimensionSize error when current is 10 and limit is 5",
+			args: args{
+				current: 10,
+				limit:   5,
+			},
+			want: want{
+				want: New("dimension size 10 is invalid, the supporting dimension size must be between 2 ~ 5"),
+			},
+		},
+		{
+			name: "return ErrInvalidDimensionSize error when current is 0 and limit is 5",
+			args: args{
+				current: 0,
+				limit:   5,
+			},
+			want: want{
+				want: New("dimension size 0 is invalid, the supporting dimension size must be between 2 ~ 5"),
+			},
+		},
+		{
+			name: "return ErrInvalidDimensionSize error when current is 10 and limit is 0",
+			args: args{
+				current: 10,
+				limit:   0,
+			},
+			want: want{
+				want: New("dimension size 10 is invalid, the supporting dimension size must be bigger than 2"),
+			},
+		},
+		{
+			name: "return ErrInvalidDimensionSize error when current is 0 and limit is 0",
+			args: args{
+				current: 0,
+				limit:   0,
+			},
+			want: want{
+				want: New("dimension size 0 is invalid, the supporting dimension size must be bigger than 2"),
+			},
+		},
+		{
+			name: "return ErrInvalidDimensionSize error when current and limit are the minimum value of int",
+			args: args{
+				current: int(math.MinInt64),
+				limit:   int(math.MinInt64),
+			},
+			want: want{
+				want: Errorf("dimension size %d is invalid, the supporting dimension size must be between 2 ~ %d", int(math.MinInt64), int(math.MinInt64)),
+			},
+		},
+		{
+			name: "return ErrInvalidDimensionSize error when current and limit are the minimum value of int",
+			args: args{
+				current: int(math.MaxInt64),
+				limit:   int(math.MaxInt64),
+			},
+			want: want{
+				want: Errorf("dimension size %d is invalid, the supporting dimension size must be between 2 ~ %d", int(math.MaxInt64), int(math.MaxInt64)),
+			},
+		},
+	}
 
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := ErrInvalidDimensionSize(test.args.current, test.args.limit)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
 }
 
 func TestErrDimensionLimitExceed(t *testing.T) {
@@ -719,41 +820,34 @@ func TestErrUncommittedIndexExists(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		func() test {
-			return test{
-				name: "return ErrUncommittedIndexExists error when num is 100",
-				args: args{
-					num: 100,
-				},
-				want: want{
-					want: New("100 indexes are not committed"),
-				},
-			}
-		}(),
+		{
+			name: "return ErrUncommittedIndexExists error when num is 100",
+			args: args{
+				num: 100,
+			},
+			want: want{
+				want: New("100 indexes are not committed"),
+			},
+		},
 
-		func() test {
-			return test{
-				name: "return ErrUncommittedIndexExists error when num is 0",
-				args: args{
-					num: 0,
-				},
-				want: want{
-					want: New("0 indexes are not committed"),
-				},
-			}
-		}(),
-		func() test {
-			var num uint64 = math.MaxUint64
-			return test{
-				name: "return ErrUncommittedIndexExists error when num is the maximum value of uint64",
-				args: args{
-					num: num,
-				},
-				want: want{
-					want: Errorf("%d indexes are not committed", num),
-				},
-			}
-		}(),
+		{
+			name: "return ErrUncommittedIndexExists error when num is 0",
+			args: args{
+				num: 0,
+			},
+			want: want{
+				want: New("0 indexes are not committed"),
+			},
+		},
+		{
+			name: "return ErrUncommittedIndexExists error when num is the maximum value of uint64",
+			args: args{
+				num: math.MaxUint64,
+			},
+			want: want{
+				want: Errorf("%d indexes are not committed", uint(math.MaxUint64)),
+			},
+		},
 	}
 
 	for _, test := range tests {
