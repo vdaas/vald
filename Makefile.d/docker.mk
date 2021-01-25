@@ -31,6 +31,7 @@ docker/build: \
 	docker/build/backup-manager-cassandra \
 	docker/build/manager-compressor \
 	docker/build/manager-index \
+	docker/build/filter-ingress-tensorflow \
 	docker/build/helm-operator
 
 .PHONY: docker/name/org
@@ -288,6 +289,23 @@ docker/build/manager-index:
 	    $(DOCKER_OPTS) \
 	    -f dockers/manager/index/Dockerfile \
 	    -t $(ORG)/$(MANAGER_INDEX_IMAGE):$(TAG) . \
+	    --build-arg GO_VERSION=$(GO_VERSION) \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg MAINTAINER=$(MAINTAINER) \
+	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
+
+.PHONY: docker/name/filter-ingress-tensorflow
+docker/name/filter-ingress-tensorflow:
+	@echo "$(ORG)/$(MANAGER_INDEX_IMAGE)"
+
+.PHONY: docker/build/filter-ingress-tensorflow
+## build filter-ingress-tensorflow image
+docker/build/filter-ingress-tensorflow:
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
+	    -f dockers/filter/ingress/tensorflow/Dockerfile \
+	    -t $(ORG)/$(FILTER_INGRESS_TF_IMAGE):$(TAG) . \
 	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \

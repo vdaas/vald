@@ -28,6 +28,7 @@ CI_CONTAINER_IMAGE              = $(NAME)-ci-container
 DEV_CONTAINER_IMAGE             = $(NAME)-dev-container
 DISCOVERER_IMAGE                = $(NAME)-discoverer-k8s
 FILTER_GATEWAY_IMAGE            = $(NAME)-filter-gateway
+FILTER_INGRESS_TF_IMAGE         = $(NAME)-filter-ingress-tensorflow
 GATEWAY_IMAGE                   = $(NAME)-gateway
 HELM_OPERATOR_IMAGE             = $(NAME)-helm-operator
 LB_GATEWAY_IMAGE                = $(NAME)-lb-gateway

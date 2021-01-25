@@ -1,0 +1,185 @@
+#
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+name: "Build docker image: filter-ingress-tensorflow"
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - "*.*.*"
+      - "v*.*.*"
+      - "*.*.*-*"
+      - "v*.*.*-*"
+    paths:
+      - "go.mod"
+      - "go.sum"
+      - "internal/**"
+      - "!internal/**/*_test.go"
+      - "!internal/**/*_mock.go"
+      - "!internal/db/**"
+      - "!internal/k8s/**"
+      - "apis/grpc/**"
+      - "pkg/filter/ingress/tensorflow/**"
+      - "cmd/filter/ingress/tensorflow/**"
+      - "dockers/base/Dockerfile"
+      - "dockers/filter/ingress/tensorflow/Dockerfile"
+      - "versions/GO_VERSION"
+  pull_request:
+    paths:
+      - "go.mod"
+      - "go.sum"
+      - "internal/**"
+      - "!internal/**/*_test.go"
+      - "!internal/**/*_mock.go"
+      - "!internal/db/**"
+      - "!internal/k8s/**"
+      - "apis/grpc/**"
+      - "pkg/filter/ingress/tensorflow/**"
+      - "cmd/filter/ingress/tensorflow/**"
+      - "dockers/base/Dockerfile"
+      - "dockers/filter/ingress/tensorflow/Dockerfile"
+      - "versions/GO_VERSION"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup QEMU
+        uses: docker/setup-qemu-action@v1
+        with:
+          platforms: all
+      - name: Setup Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          buildkitd-flags: "--debug"
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-vald-filter-ingress-tensorflow-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-vald-filter-ingress-tensorflow-
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PASS }}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.PACKAGE_USER }}
+          password: ${{ secrets.PACKAGE_TOKEN }}
+      - name: Image name
+        id: image_name
+        run: |
+          image_name=`make docker/name/filter-ingress-tensorflow`
+          alter_org=`make docker/name/org/alter`
+          alter_image_name=`make ORG="${alter_org}" docker/name/filter-ingress-tensorflow`
+          base_platforms=`make docker/platforms`
+          echo "IMAGE_NAME=${image_name}" >> $GITHUB_ENV
+          echo "ALTER_IMAGE_NAME=${alter_image_name}" >> $GITHUB_ENV
+          echo "::set-output name=IMAGE_NAME::${image_name}"
+          echo "::set-output name=BASE_PLATFORMS::${base_platforms}"
+      - name: Determine tag name (master)
+        if: github.ref == 'refs/heads/master'
+        run: |
+          echo "nightly" > versions/VALD_VERSION
+          echo "PRIMARY_TAG=nightly" >> $GITHUB_ENV
+          echo "PLATFORMS=${PLATFORMS}" >> $GITHUB_ENV
+        env:
+          PLATFORMS: ${{ steps.image_name.outputs.BASE_PLATFORMS }}
+      - name: Determine tag name (pull request)
+        if: github.event_name == 'pull_request'
+        run: |
+          pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
+          echo "PR-${pr_num}" > versions/VALD_VERSION
+          echo "PRIMARY_TAG=pr-${pr_num}" >> $GITHUB_ENV
+          echo "PLATFORMS=${PLATFORMS}" >> $GITHUB_ENV
+        env:
+          PLATFORMS: linux/amd64
+      - name: Determine tag name (tags)
+        if: startsWith( github.ref, 'refs/tags/')
+        id: determine_tag
+        run: |
+          tag_name=`echo $GITHUB_REF | sed -e 's:^refs/tags/::'`
+          echo "::set-output name=TAG_NAME::${tag_name}"
+          echo "PRIMARY_TAG=${tag_name}" >> $GITHUB_ENV
+          echo "PLATFORMS=${PLATFORMS}" >> $GITHUB_ENV
+        env:
+          PLATFORMS: ${{ steps.image_name.outputs.BASE_PLATFORMS }}
+      - name: Add extra tags
+        run: |
+          EXTRA_TAGS="-t ${ALTER_IMAGE_NAME}:${PRIMARY_TAG}"
+          echo "EXTRA_TAGS=${EXTRA_TAGS}" >> $GITHUB_ENV
+      - name: Add latest tags
+        if: startsWith( github.ref, 'refs/tags/')
+        run: |
+          LATEST_TAGS="-t ${IMAGE_NAME}:latest -t ${ALTER_IMAGE_NAME}:latest"
+          echo "LATEST_TAGS=${LATEST_TAGS}" >> $GITHUB_ENV
+      - name: Build and Push
+        run: |
+          make \
+            DOCKER="docker buildx" \
+            DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS} ${LABEL_OPTS} ${EXTRA_TAGS} ${LATEST_TAGS} --push" \
+            TAG="${PRIMARY_TAG}" \
+            docker/build/filter-ingress-tensorflow
+        env:
+          DOCKER_BUILDKIT: 1
+          BUILDER: ${{ steps.buildx.outputs.name }}
+          CACHE_OPTS: "--cache-from=type=local,src=/tmp/.buildx-cache --cache-to=type=local,mode=max,dest=/tmp/.buildx-cache"
+          LABEL_OPTS: "--label org.opencontainers.image.url=${{ github.event.repository.html_url }} --label org.opencontainers.image.source=${{ github.event.repository.html_url }} --label org.opencontainers.image.revision=${{ github.sha }}"
+      - name: Initialize CodeQL
+        if: startsWith( github.ref, 'refs/tags/')
+        uses: github/codeql-action/init@v1
+      - name: Run vulnerability scanner (table)
+        if: startsWith( github.ref, 'refs/tags/')
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: "${{ steps.image_name.outputs.IMAGE_NAME }}:${{ steps.determine_tag.outputs.TAG_NAME }}"
+          format: "table"
+      - name: Run vulnerability scanner (sarif)
+        if: startsWith( github.ref, 'refs/tags/')
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: "${{ steps.image_name.outputs.IMAGE_NAME }}:${{ steps.determine_tag.outputs.TAG_NAME }}"
+          format: "template"
+          template: "@/contrib/sarif.tpl"
+          output: "trivy-results.sarif"
+      - name: Upload Trivy scan results to Security tab
+        if: startsWith( github.ref, 'refs/tags/')
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: "trivy-results.sarif"
+  slack:
+    name: Slack notification
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master' || startsWith( github.ref, 'refs/tags/')
+    steps:
+      - uses: technote-space/workflow-conclusion-action@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: 8398a7/action-slack@v2
+        with:
+          author_name: vald-filter-ingress-tensorflow image build
+          status: ${{ env.WORKFLOW_CONCLUSION }}
+          only_mention_fail: channel
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_NOTIFY_WEBHOOK_URL }}
