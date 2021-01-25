@@ -24,8 +24,10 @@ import (
 
 	batchv1 "k8s.io/api/batch/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -156,4 +158,30 @@ func (r *reconciler) Owns() (client.Object, []builder.OwnsOption) {
 func (r *reconciler) Watches() (*source.Kind, handler.EventHandler, []builder.WatchesOption) {
 	// return &source.Kind{Type: new(corev1.Pod)}, &handler.EnqueueRequestForObject{}
 	return nil, nil, nil
+}
+
+// Create creates batchjob object along with job template and given context.
+func Create(ctx context.Context, job *Job) error {
+	// TODO: get config from cache.
+	cfg, err := config.GetConfig()
+	if err != nil {
+		return err
+	}
+
+	scheme := runtime.NewScheme()
+	if err = batchv1.AddToScheme(scheme); err != nil {
+		return err
+	}
+
+	c, err := client.New(cfg, client.Options{
+		Scheme: scheme,
+	})
+	if err != nil {
+		return err
+	}
+
+	if err := c.Create(ctx, job); err != nil {
+		return err
+	}
+	return nil
 }

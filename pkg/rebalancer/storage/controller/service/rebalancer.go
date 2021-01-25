@@ -30,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
 	"github.com/vdaas/vald/internal/k8s/configmap"
+	"github.com/vdaas/vald/internal/k8s/decoder"
 	"github.com/vdaas/vald/internal/k8s/job"
 	mpod "github.com/vdaas/vald/internal/k8s/metrics/pod"
 	"github.com/vdaas/vald/internal/k8s/pod"
@@ -38,13 +39,6 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/pkg/rebalancer/storage/controller/config"
 	"github.com/vdaas/vald/pkg/rebalancer/storage/controller/model"
-
-	// TODO: move to internal after internal/k8s refactoring
-	batchv1 "k8s.io/api/batch/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	cconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
-	"sigs.k8s.io/controller-runtime/pkg/webhook/conversion"
 )
 
 const (
@@ -84,7 +78,7 @@ type rebalancer struct {
 	ctrl          k8s.Controller
 	tolerance     float64
 	rateThreshold float64
-	decoder       *conversion.Decoder
+	decoder       *decoder.Decoder
 }
 
 // NewRebalancer initialize job, configmap, pod, podMetrics, statefulset, replicaset, daemonset reconciler.
@@ -281,7 +275,7 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 		return nil, err
 	}
 
-	r.decoder, err = conversion.NewDecoder(runtime.NewScheme())
+	r.decoder, err = decoder.NewDecoder()
 	if err != nil {
 		return nil, err
 	}
@@ -410,24 +404,7 @@ func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, reason confi
 	jobTpl.Labels["controller_name"] = r.podName
 	jobTpl.Labels["controller_namespace"] = r.podNamespace
 
-	cfg, err := cconfig.GetConfig()
-	if err != nil {
-		return err
-	}
-
-	scheme := runtime.NewScheme()
-	if err = batchv1.AddToScheme(scheme); err != nil {
-		return err
-	}
-
-	c, err := client.New(cfg, client.Options{
-		Scheme: scheme,
-	})
-	if err != nil {
-		return err
-	}
-
-	if err := c.Create(ctx, &jobTpl); err != nil {
+	if err := job.Create(ctx, &jobTpl); err != nil {
 		return err
 	}
 
