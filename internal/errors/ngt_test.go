@@ -208,7 +208,7 @@ func TestErrDimensionLimitExceed(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrDimensionLimitExceed error when current and limit are the minimum value of math.Int64",
+			name: "return ErrDimensionLimitExceed error when current and limit are the minimum value of int",
 			args: args{
 				current: int(math.MinInt64),
 				limit:   int(math.MinInt64),
@@ -218,7 +218,7 @@ func TestErrDimensionLimitExceed(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrDimensionLimitExceed error when current and limit are the maximum value of math.Int64",
+			name: "return ErrDimensionLimitExceed error when current and limit are the maximum value of int",
 			args: args{
 				current: int(math.MaxInt64),
 				limit:   int(math.MaxInt64),
@@ -605,7 +605,7 @@ func TestErrFailedToSetCreationEdgeSize(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrFailedToSetCreationEdgeSize error when err is ngt error",
+			name: "return ErrFailedToSetCreationEdgeSize error when err is nil",
 			args: args{
 				err: nil,
 			},
@@ -745,7 +745,7 @@ func TestErrUncommittedIndexExists(t *testing.T) {
 		func() test {
 			var num uint64 = math.MaxUint64
 			return test{
-				name: "return ErrUncommittedIndexExists error when num is the maximum value of math.Uint64",
+				name: "return ErrUncommittedIndexExists error when num is the maximum value of uint64",
 				args: args{
 					num: num,
 				},
@@ -912,7 +912,7 @@ func TestErrUUIDAlreadyExists(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrUUIDAlreadyExists error when uuid is '550e8400-e29b-41d4' and oid is maximum value of math.Uint64",
+			name: "return ErrUUIDAlreadyExists error when uuid is '550e8400-e29b-41d4' and oid is the maximum value of uint64",
 			args: args{
 				uuid: "550e8400-e29b-41d4",
 				oid:  uint(math.MaxUint64),
@@ -985,7 +985,7 @@ func TestErrUUIDNotFound(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrUUIDNotFound error when id is maximum value of math.Uint32",
+			name: "return ErrUUIDNotFound error when id is the maximum value of uint32",
 			args: args{
 				id: math.MaxUint32,
 			},
