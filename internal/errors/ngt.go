@@ -97,7 +97,7 @@ var (
 	// ErrUUIDNotFound represents a function to generate an error that the uuid is not found.
 	ErrUUIDNotFound = func(id uint32) error {
 		if id == 0 {
-			return Errorf("ngt object uuid not found", id)
+			return New("ngt object uuid not found")
 		}
 		return Errorf("ngt object uuid %d's metadata not found", id)
 	}
