@@ -81,15 +81,6 @@ func AToAgentResourceType(t string) AgentResourceType {
 	}
 }
 
-const (
-	JOB_LABEL_NAME_TYPE                   = "type"
-	JOB_LABEL_NAME_REASON                 = "reason"
-	JOB_LABEL_NAME_TARGET_AGENT_NAME      = "target_agent_name"
-	JOB_LABEL_NAME_TARGET_AGENT_NAMESPACE = "target_agent_namespace"
-	JOB_LABEL_NAME_CONTROLLER_NAME        = "target_controller_name"
-	JOB_LABEL_NAME_CONTROLLER_NAMESPACE   = "target_controller_namespace"
-)
-
 // Config represent a application setting data content (config.yaml).
 // In K8s environment, this configuration is stored in K8s ConfigMap.
 type Data struct {
