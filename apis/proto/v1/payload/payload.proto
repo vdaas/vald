@@ -178,7 +178,7 @@ message Remove {
 }
 
 message Object {
-  message Request {
+  message VectorRequest {
     ID id = 1 [ (validate.rules).repeated .min_items = 2 ];
     Filter.Config filters = 2;
   }

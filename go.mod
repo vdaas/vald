@@ -12,7 +12,7 @@ replace (
 	github.com/docker/docker => github.com/moby/moby v20.10.2+incompatible
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.4.1
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.5.0
-	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20201215165327-e49edf966d90
+	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20210125064827-43a8f9bf6605
 	github.com/gogo/googleapis => github.com/gogo/googleapis v1.4.0
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 	github.com/google/go-cmp => github.com/google/go-cmp v0.5.4
@@ -74,7 +74,7 @@ require (
 	go.uber.org/goleak v1.1.10
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777
 	golang.org/x/sync v0.0.0-20201207232520-09787c993a3a
-	golang.org/x/sys v0.0.0-20210123231150-1d476976d117
+	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/plot v0.8.1
 	google.golang.org/api v0.36.0

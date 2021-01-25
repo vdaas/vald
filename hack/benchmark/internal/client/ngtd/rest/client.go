@@ -51,7 +51,7 @@ func New(ctx context.Context, opts ...Option) (Client, error) {
 }
 
 func (c *ngtdClient) Exists(ctx context.Context, in *payload.Object_ID, opts ...grpc.CallOption) (oid *payload.Object_ID, err error) {
-	id, err := c.GetObject(ctx, &payload.Object_Request{
+	id, err := c.GetObject(ctx, &payload.Object_VectorRequest{
 		Id: in,
 	}, opts...)
 	if err != nil {
@@ -266,7 +266,7 @@ func (c *ngtdClient) MultiRemove(ctx context.Context, in *payload.Remove_MultiRe
 	return nil, json.Request(ctx, http.MethodPost, c.addr+"/multiremove", req, &r)
 }
 
-func (c *ngtdClient) GetObject(ctx context.Context, in *payload.Object_Request, opts ...grpc.CallOption) (*payload.Object_Vector, error) {
+func (c *ngtdClient) GetObject(ctx context.Context, in *payload.Object_VectorRequest, opts ...grpc.CallOption) (*payload.Object_Vector, error) {
 	var res model.GetObjectsResponse
 	err := json.Request(ctx, http.MethodPost, c.addr+"/getobjects", model.GetObjectsRequest{
 		IDs: []string{in.GetId().GetId()},

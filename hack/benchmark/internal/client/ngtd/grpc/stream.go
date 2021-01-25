@@ -299,7 +299,7 @@ func NewStreamObjectClient(ngtd proto.NGTD_StreamGetObjectClient) StreamObject {
 	}
 }
 
-func (s *streamGetObject) Send(req *payload.Object_Request) error {
+func (s *streamGetObject) Send(req *payload.Object_VectorRequest) error {
 	return s.ngtd.Send(&proto.GetObjectRequest{
 		Id: []byte(req.GetId().GetId()),
 	})

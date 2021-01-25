@@ -435,7 +435,7 @@ func (c *ngtdClient) MultiRemove(ctx context.Context, in *payload.Remove_MultiRe
 	return res, nil
 }
 
-func (c *ngtdClient) GetObject(ctx context.Context, in *payload.Object_Request, opts ...grpc.CallOption) (*payload.Object_Vector, error) {
+func (c *ngtdClient) GetObject(ctx context.Context, in *payload.Object_VectorRequest, opts ...grpc.CallOption) (*payload.Object_Vector, error) {
 	res, err := c.c.Do(ctx, c.addr, func(
 		ctx context.Context,
 		conn *grpc.ClientConn,

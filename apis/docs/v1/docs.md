@@ -100,12 +100,12 @@
     - [Object.IDs](#payload.v1.Object.IDs)
     - [Object.Location](#payload.v1.Object.Location)
     - [Object.Locations](#payload.v1.Object.Locations)
-    - [Object.Request](#payload.v1.Object.Request)
     - [Object.StreamBlob](#payload.v1.Object.StreamBlob)
     - [Object.StreamDistance](#payload.v1.Object.StreamDistance)
     - [Object.StreamLocation](#payload.v1.Object.StreamLocation)
     - [Object.StreamVector](#payload.v1.Object.StreamVector)
     - [Object.Vector](#payload.v1.Object.Vector)
+    - [Object.VectorRequest](#payload.v1.Object.VectorRequest)
     - [Object.Vectors](#payload.v1.Object.Vectors)
     - [Remove](#payload.v1.Remove)
     - [Remove.Config](#payload.v1.Remove.Config)
@@ -1375,22 +1375,6 @@
 
 
 
-<a name="payload.v1.Object.Request"></a>
-
-### Object.Request
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| id | [Object.ID](#payload.v1.Object.ID) |  |  |
-| filters | [Filter.Config](#payload.v1.Filter.Config) |  |  |
-
-
-
-
-
-
 <a name="payload.v1.Object.StreamBlob"></a>
 
 ### Object.StreamBlob
@@ -1465,6 +1449,22 @@
 | ----- | ---- | ----- | ----------- |
 | id | [string](#string) |  |  |
 | vector | [float](#float) | repeated |  |
+
+
+
+
+
+
+<a name="payload.v1.Object.VectorRequest"></a>
+
+### Object.VectorRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [Object.ID](#payload.v1.Object.ID) |  |  |
+| filters | [Filter.Config](#payload.v1.Filter.Config) |  |  |
 
 
 
@@ -2045,8 +2045,8 @@
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
 | Exists | [.payload.v1.Object.ID](#payload.v1.Object.ID) | [.payload.v1.Object.ID](#payload.v1.Object.ID) |  |
-| GetObject | [.payload.v1.Object.Request](#payload.v1.Object.Request) | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) |  |
-| StreamGetObject | [.payload.v1.Object.Request](#payload.v1.Object.Request) stream | [.payload.v1.Object.StreamVector](#payload.v1.Object.StreamVector) stream |  |
+| GetObject | [.payload.v1.Object.VectorRequest](#payload.v1.Object.VectorRequest) | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) |  |
+| StreamGetObject | [.payload.v1.Object.VectorRequest](#payload.v1.Object.VectorRequest) stream | [.payload.v1.Object.StreamVector](#payload.v1.Object.StreamVector) stream |  |
 
  
 

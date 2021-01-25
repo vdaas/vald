@@ -161,7 +161,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 			},
 		}, info.Get())
 	}
-	vec, err := s.GetObject(ctx, &payload.Object_Request{
+	vec, err := s.GetObject(ctx, &payload.Object_VectorRequest{
 		Id: &payload.Object_ID{
 			Id: req.GetId(),
 		},
@@ -1072,7 +1072,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 	return location.ReStructure(ids, locs), nil
 }
 
-func (s *server) GetObject(ctx context.Context, req *payload.Object_Request) (vec *payload.Object_Vector, err error) {
+func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorRequest) (vec *payload.Object_Vector, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".GetObject")
 	defer func() {
 		if span != nil {
@@ -1124,7 +1124,7 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) error
 	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Object_ID) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			res, err := s.GetObject(ctx, data.(*payload.Object_Request))
+			res, err := s.GetObject(ctx, data.(*payload.Object_VectorRequest))
 			if err != nil {
 				st, ok := status.FromError(err)
 				if !ok {

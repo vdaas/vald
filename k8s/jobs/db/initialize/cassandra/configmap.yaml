@@ -1,5 +1,4 @@
 ---
-# Source: vald/templates/jobs/db/initialize/cassandra/configmap.yaml
 #
 # Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
@@ -45,9 +44,9 @@ data:
       uuid   text,
       vector blob,
       meta   text,
-      ips    list<text>,
+      ips    frozen<list<text>>,
       PRIMARY KEY (uuid)
     );
 
     DROP INDEX IF EXISTS vald.backup_vector;
-    CREATE INDEX ON vald.backup_vector (ips);
+    CREATE INDEX ON vald.backup_vector (full(ips));

@@ -1,5 +1,4 @@
 ---
-# Source: vald/templates/gateway/meta/ing.yaml
 #
 # Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
@@ -37,12 +36,12 @@ spec:
       port:
         name: grpc
   rules:
-  - host: meta.gateway.vald.vdaas.org
-    http:
-      paths:
-      - backend:
-          service:
-            name: vald-meta-gateway
-            port:
-              name: grpc
-        pathType: ImplementationSpecific
+    - host: meta.gateway.vald.vdaas.org
+      http:
+        paths:
+          - backend:
+              service:
+                name: vald-meta-gateway
+                port:
+                  name: grpc
+            pathType: ImplementationSpecific

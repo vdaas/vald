@@ -2138,7 +2138,7 @@ func Test_server_GetObject(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx context.Context
-		req *payload.Object_Request
+		req *payload.Object_VectorRequest
 	}
 	type fields struct {
 		eg                errgroup.Group

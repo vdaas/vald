@@ -20,12 +20,9 @@ k8s/manifest/clean:
 	    k8s/agent \
 	    k8s/discoverer \
 	    k8s/gateway \
-	    k8s/manager/ \
 	    k8s/manager \
 	    k8s/meta \
-	    k8s/jobs/db/initialize/cassandra \
-	    k8s/jobs/db/initialize/mysql \
-	    k8s/jobs/db/initialize/redis
+	    k8s/jobs
 
 .PHONY: k8s/manifest/update
 ## update k8s manifests using helm templates
@@ -43,9 +40,7 @@ k8s/manifest/update: \
 	mv $(TEMP_DIR)/vald/templates/gateway/lb k8s/gateway/lb
 	mv $(TEMP_DIR)/vald/templates/gateway/meta k8s/gateway/meta
 	mv $(TEMP_DIR)/vald/templates/gateway/vald k8s/gateway/vald
-	mv $(TEMP_DIR)/vald/templates/jobs/db/initialize/cassandra k8s/jobs/db/initialize/cassandra
-	mv $(TEMP_DIR)/vald/templates/jobs/db/initialize/mysql k8s/jobs/db/initialize/mysql
-	mv $(TEMP_DIR)/vald/templates/jobs/db/initialize/redis k8s/jobs/db/initialize/redis
+	mv $(TEMP_DIR)/vald/templates/jobs k8s/jobs
 	mv $(TEMP_DIR)/vald/templates/manager/backup k8s/manager/backup
 	mv $(TEMP_DIR)/vald/templates/manager/compressor k8s/manager/compressor
 	mv $(TEMP_DIR)/vald/templates/manager/index k8s/manager/index
@@ -167,15 +162,15 @@ k8s/vald/deploy/scylla: \
 	    --set defaults.image.tag=$(VERSION) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
-	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/backup
-	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/compressor
-	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/index
+	kubectl apply -f $(TEMP_DIR)/vald/templates/jobs/db/initialize/cassandra
 	kubectl apply -f $(TEMP_DIR)/vald/templates/agent
 	kubectl apply -f $(TEMP_DIR)/vald/templates/discoverer
-	kubectl apply -f $(TEMP_DIR)/vald/templates/meta
-	# kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/vald
+	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/index
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/lb
+	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/backup
+	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/compressor
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/backup
+	kubectl apply -f $(TEMP_DIR)/vald/templates/meta
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/meta
 	rm -rf $(TEMP_DIR)
 
@@ -189,16 +184,16 @@ k8s/vald/delete/scylla: \
 	    --set defaults.image.tag=$(VERSION) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
-	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/backup
-	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/compressor
-	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/index
-	kubectl delete -f $(TEMP_DIR)/vald/templates/agent
-	kubectl delete -f $(TEMP_DIR)/vald/templates/discoverer
-	kubectl delete -f $(TEMP_DIR)/vald/templates/meta
-	# kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/vald
-	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/lb
-	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/backup
 	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/meta
+	kubectl delete -f $(TEMP_DIR)/vald/templates/meta
+	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/backup
+	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/compressor
+	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/backup
+	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/lb
+	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/index
+	kubectl delete -f $(TEMP_DIR)/vald/templates/discoverer
+	kubectl delete -f $(TEMP_DIR)/vald/templates/agent
+	kubectl delete -f $(TEMP_DIR)/vald/templates/jobs/db/initialize/cassandra
 	rm -rf $(TEMP_DIR)
 
 .PHONY: k8s/external/mysql/deploy
@@ -272,14 +267,11 @@ k8s/external/scylla/deploy: \
 	kubectl wait -n scylla --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=vald-scylla-cluster-dc0-rack0-0 --timeout=600s
 	kubectl -n scylla get ScyllaCluster
 	kubectl -n scylla get pods
-	kubectl apply -f k8s/jobs/db/initialize/scylla
-	kubectl wait --for=condition=complete job/scylla-init --timeout=60s
 
 .PHONY: k8s/external/scylla/delete
 ## delete scylla from k8s
 k8s/external/scylla/delete: \
 	k8s/external/cert-manager/delete
-	kubectl delete -f k8s/jobs/db/initialize/scylla
 	kubectl delete -f $(K8S_EXTERNAL_SCYLLA_MANIFEST)
 	kubectl delete -f https://raw.githubusercontent.com/scylladb/scylla-operator/master/examples/common/operator.yaml
 

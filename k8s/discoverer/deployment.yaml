@@ -1,5 +1,4 @@
 ---
-# Source: vald/templates/discoverer/deployment.yaml
 #
 # Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
@@ -64,10 +63,10 @@ spec:
             - podAffinityTerm:
                 labelSelector:
                   matchExpressions:
-                  - key: app
-                    operator: In
-                    values:
-                    - vald-discoverer
+                    - key: app
+                      operator: In
+                      values:
+                        - vald-discoverer
                 topologyKey: kubernetes.io/hostname
               weight: 100
           requiredDuringSchedulingIgnoredDuringExecution: []
@@ -121,7 +120,7 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop:
-              - ALL
+                - ALL
             privileged: false
             readOnlyRootFilesystem: true
             runAsGroup: 2002

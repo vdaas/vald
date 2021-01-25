@@ -149,7 +149,7 @@ func (h *handler) MultiRemove(w http.ResponseWriter, r *http.Request) (code int,
 }
 
 func (h *handler) GetObject(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Object_Request
+	var req *payload.Object_VectorRequest
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.vald.GetObject(r.Context(), req)
 	})

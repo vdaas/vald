@@ -4365,13 +4365,6 @@ initializer:
     env:
       - name: CASSANDRA_HOST
         value: cassandra.default.svc.cluster.local
-      - name: CASSANDRA_USER
-        value: root
-      - name: CASSANDRA_PASSWORD
-        valueFrom:
-          secretKeyRef:
-            name: cassandra-secret
-            key: password
     configmap:
       # initializer.cassandra.configmap.enabled -- cassandra schema configmap will be created
       enabled: false
@@ -4379,12 +4372,15 @@ initializer:
       name: cassandra-initdb
       # initializer.cassandra.configmap.filename -- cassandra schema filename
       filename: init.cql
+      # initializer.cassandra.configmap.user -- cassandra user
+      user: root 
       # initializer.cassandra.configmap.keyspace -- cassandra keyspace
       keyspace: vald
       # initializer.cassandra.configmap.replication_class -- cassandra replication class
       replication_class: SimpleStrategy
       # initializer.cassandra.configmap.replication_factor -- cassandra replication factor
       replication_factor: 3
+      # initializer.cassandra.configmap.meta -- cassandra settings for metadata store
       meta:
         # initializer.cassandra.configmap.meta.enabled -- meta table enabled
         enabled: true

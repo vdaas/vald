@@ -68,6 +68,13 @@ meta:
 initializer:
   cassandra:
     enabled: true
-  env:
+    name: scylla-init
+    env:
       - name: CASSANDRA_HOST
         value: vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
+    configmap:
+      enabled: true
+      name: scylla-initdb
+      user: ""
+    secret:
+      enabled: false

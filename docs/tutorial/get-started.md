@@ -90,7 +90,7 @@ If you want to learn about Scylla, please refer to [the official website](https:
 
     ```bash
 
-    kubectl apply -f k8s/jobs/db/initialize/scylla
+    kubectl apply -f k8s/jobs/db/initialize/cassandra
     kubectl wait --for=condition=complete job/scylla-init --timeout=60s
     ```
 

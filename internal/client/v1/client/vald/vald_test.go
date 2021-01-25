@@ -2256,7 +2256,7 @@ func Test_client_GetObject(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx  context.Context
-		in   *payload.Object_Request
+		in   *payload.Object_VectorRequest
 		opts []grpc.CallOption
 	}
 	type fields struct {

@@ -145,7 +145,7 @@ func (h *handler) CreateAndSaveIndex(w http.ResponseWriter, r *http.Request) (co
 }
 
 func (h *handler) GetObject(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Object_Request
+	var req *payload.Object_VectorRequest
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.agent.GetObject(r.Context(), req)
 	})

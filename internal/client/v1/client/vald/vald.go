@@ -434,7 +434,7 @@ func (c *client) MultiRemove(ctx context.Context, in *payload.Remove_MultiReques
 	return res, nil
 }
 
-func (c *client) GetObject(ctx context.Context, in *payload.Object_Request, opts ...grpc.CallOption) (res *payload.Object_Vector, err error) {
+func (c *client) GetObject(ctx context.Context, in *payload.Object_VectorRequest, opts ...grpc.CallOption) (res *payload.Object_Vector, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/Client.GetObject")
 	defer func() {
 		if span != nil {
