@@ -37,6 +37,7 @@ const (
 type AccessLogEntity struct {
 	GRPC      *AccessLogGRPCEntity `json:"grpc,omitempty" yaml:"grpc"`
 	StartTime int64                `json:"startTime,omitempty" yaml:"startTime"`
+	EndTime   int64                `json:"endTime,omitempty" yaml:"endTime"`
 	Latency   int64                `json:"latency,omitempty" yaml:"latency"`
 	TraceID   string               `json:"traceID,omitempty" yaml:"traceID"`
 	Error     error                `json:"error,omitempty" yaml:"error"`
@@ -66,8 +67,7 @@ func AccessLogInterceptor() grpc.UnaryServerInterceptor {
 
 		resp, err = handler(ctx, req)
 
-		latency := time.Since(start).Nanoseconds()
-		startTime := start.UnixNano()
+		end := time.Now()
 
 		service, method := parseMethod(info.FullMethod)
 
@@ -77,8 +77,9 @@ func AccessLogInterceptor() grpc.UnaryServerInterceptor {
 				Service: service,
 				Method:  method,
 			},
-			StartTime: startTime,
-			Latency:   latency,
+			StartTime: start.UnixNano(),
+			EndTime:   end.UnixNano(),
+			Latency:   end.Sub(start).Nanoseconds(),
 		}
 
 		if traceID != "" {
@@ -114,8 +115,7 @@ func AccessLogStreamInterceptor() grpc.StreamServerInterceptor {
 
 		err := handler(srv, ss)
 
-		latency := time.Since(start).Nanoseconds()
-		startTime := start.UnixNano()
+		end := time.Now()
 
 		service, method := parseMethod(info.FullMethod)
 
@@ -125,8 +125,9 @@ func AccessLogStreamInterceptor() grpc.StreamServerInterceptor {
 				Service: service,
 				Method:  method,
 			},
-			StartTime: startTime,
-			Latency:   latency,
+			StartTime: start.UnixNano(),
+			EndTime:   end.UnixNano(),
+			Latency:   end.Sub(start).Nanoseconds(),
 		}
 
 		if traceID != "" {

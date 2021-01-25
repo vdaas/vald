@@ -138,6 +138,8 @@ data:
                 grpcKind: details.grpc.kind
                 grpcService: details.grpc.service
                 grpcMethod: details.grpc.method
+                startTime: details.startTime
+                EndTime: details.endTime
                 latency: details.latency
                 traceID: details.traceID
           - labels:
