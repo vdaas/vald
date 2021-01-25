@@ -24,6 +24,10 @@ import (
 	"github.com/vdaas/vald/internal/log/retry"
 )
 
+const (
+	detailsFormat = "%s\tdetails: %#v"
+)
+
 type logger struct {
 	format format.Format
 	level  level.Level
@@ -86,7 +90,7 @@ func (l *logger) Infof(format string, vals ...interface{}) {
 }
 
 func (l *logger) Infod(msg string, details ...interface{}) {
-	l.Infof(msg+"\tdetails: %#v", details)
+	l.Infof(detailsFormat, msg, details)
 }
 
 func (l *logger) Debug(vals ...interface{}) {
@@ -98,7 +102,7 @@ func (l *logger) Debugf(format string, vals ...interface{}) {
 }
 
 func (l *logger) Debugd(msg string, details ...interface{}) {
-	l.Debugf(msg+"\tdetails: %#v", details)
+	l.Debugf(detailsFormat, msg, details)
 }
 
 func (l *logger) Warn(vals ...interface{}) {
@@ -110,7 +114,7 @@ func (l *logger) Warnf(format string, vals ...interface{}) {
 }
 
 func (l *logger) Warnd(msg string, details ...interface{}) {
-	l.Warnf(msg+"\tdetails: %#v", details)
+	l.Warnf(detailsFormat, msg, details)
 }
 
 func (l *logger) Error(vals ...interface{}) {
@@ -122,7 +126,7 @@ func (l *logger) Errorf(format string, vals ...interface{}) {
 }
 
 func (l *logger) Errord(msg string, details ...interface{}) {
-	l.Errorf(msg+"\tdetails: %#v", details)
+	l.Errorf(detailsFormat, msg, details)
 }
 
 func (l *logger) Fatal(vals ...interface{}) {
@@ -134,5 +138,5 @@ func (l *logger) Fatalf(format string, vals ...interface{}) {
 }
 
 func (l *logger) Fatald(msg string, details ...interface{}) {
-	l.Fatalf(msg+"\tdetails: %#v", details)
+	l.Fatalf(detailsFormat, msg, details)
 }
