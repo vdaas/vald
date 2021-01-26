@@ -157,38 +157,3 @@ func (r *reconciler) Watches() (*source.Kind, handler.EventHandler, []builder.Wa
 	// return &source.Kind{Type: new(corev1.Pod)}, &handler.EnqueueRequestForObject{}
 	return nil, nil, nil
 }
-
-// Create creates batchjob object along with job template and given context.
-func Create(ctx context.Context, job *Job, mgr k8s.Manager) error {
-
-	// TODO: get config from cache.
-	// cfg, err := config.GetConfig()
-	// if err != nil {
-	// 	return err
-	// }
-
-	// scheme := runtime.NewScheme()
-	// if err = batchv1.AddToScheme(scheme); err != nil {
-	// 	return err
-	// }
-
-	// c, err := client.New(cfg, client.Options{
-	// 	Scheme: scheme,
-	// })
-	// if err != nil {
-	// 	return err
-	// }
-
-	scheme := mgr.GetScheme()
-	if err := batchv1.AddToScheme(scheme); err != nil {
-		return err
-	}
-	c := mgr.GetClient()
-    if c == nil {
-        return errors.New("no client")
-    }
-	if err := c.Create(ctx, job); err != nil {
-		return err
-	}
-	return nil
-}

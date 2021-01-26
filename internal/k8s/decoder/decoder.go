@@ -10,6 +10,6 @@ type Decoder = conversion.Decoder
 
 // NewDecoder creates a Decoder given the runtime.Scheme.
 // It will return an error when NewDecoder method failed.
-func NewDecoder() (*Decoder, error) {
-	return conversion.NewDecoder(runtime.NewScheme())
+func NewDecoder(scheme *runtime.Scheme) (*Decoder, error) {
+	return conversion.NewDecoder(scheme)
 }
