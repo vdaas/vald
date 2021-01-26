@@ -388,7 +388,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 }
 
 func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, reason config.RebalanceReason, agentName, agentNs string) error {
-	jobTpl.Name += "-" + strconv.FormatInt(time.Now().Unix(), 10)
+	jobTpl.Name += "-" + strconv.FormatInt(time.Now().UnixNano(), 10)
 
 	if len(r.jobNamespace) != 0 {
 		jobTpl.Namespace = r.jobNamespace
