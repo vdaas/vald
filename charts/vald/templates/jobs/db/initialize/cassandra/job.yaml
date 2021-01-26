@@ -17,7 +17,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: cassandra-init
+  name: {{ .Values.initializer.cassandra.name }}
 spec:
   template:
     spec:
