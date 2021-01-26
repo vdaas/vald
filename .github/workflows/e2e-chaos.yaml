@@ -120,7 +120,7 @@ jobs:
             -host=localhost \
             -port=8081 \
             -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
-            -insert-num=1000 \
+            -insert-num=100 \
             -wait-after-insert=2m \
             -portforward \
             -portforward-ns=default \
@@ -147,9 +147,9 @@ jobs:
             -host=localhost \
             -port=8081 \
             -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
-            -insert-from=1000 \
-            -insert-num=10000 \
-            -search-num=10000 \
+            -insert-from=100 \
+            -insert-num=1000 \
+            -search-num=1000 \
             -wait-after-insert=2m \
             -portforward \
             -portforward-ns=default \
@@ -267,7 +267,7 @@ jobs:
             -host=localhost \
             -port=8081 \
             -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
-            -insert-num=1000 \
+            -insert-num=100 \
             -wait-after-insert=2m \
             -portforward \
             -portforward-ns=default \
@@ -295,9 +295,9 @@ jobs:
             -host=localhost \
             -port=8081 \
             -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
-            -insert-from=1000 \
-            -insert-num=10000 \
-            -search-num=10000 \
+            -insert-from=100 \
+            -insert-num=1000 \
+            -search-num=1000 \
             -wait-after-insert=2m \
             -portforward \
             -portforward-ns=default \
@@ -421,8 +421,8 @@ jobs:
             -host=localhost \
             -port=8081 \
             -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
-            -insert-num=10000 \
-            -search-num=10000 \
+            -insert-num=1000 \
+            -search-num=1000 \
             -wait-after-insert=2m \
             -portforward \
             -portforward-ns=default \
