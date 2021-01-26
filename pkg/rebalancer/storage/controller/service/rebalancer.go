@@ -188,7 +188,7 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 		// TODO: implment get daemonset reconciled result
 		return nil, nil
 	default:
-		return nil, errors.Errorf("invalid agent resource type: %s", r.agentResourceType.String())
+		return nil, errors.ErrInvalidAgentResourceType(r.agentResourceType.String())
 	}
 
 	r.ctrl, err = k8s.New(
@@ -369,8 +369,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 					}
 
 				default:
-					// TODO: define error for return
-					return nil
+					return errors.ErrInvalidAgentResourceType(r.agentResourceType.String())
 				}
 			case err := <-cech:
 				if err != nil {
@@ -406,7 +405,7 @@ func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, reason confi
 
 	c := r.ctrl.GetManager().GetClient()
 	if err := c.Create(ctx, &jobTpl); err != nil {
-		return err
+		return errors.ErrK8sFailedToCreateJob(err)
 	}
 
 	return nil
