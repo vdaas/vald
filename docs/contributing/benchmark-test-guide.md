@@ -1,20 +1,38 @@
 # Benchmark Test Guideline
 
-## About
+## What is the problem now?
 
-Benchmarking is used to measure performance of target elements to produce a performance metics that used to compare to others or future performance investigation.
+In Vald, performance is a critical requirement and factor for users. If Vald does not perform good and stable performance, user may leave Vald.
 
-Unlike unit testing, benchmark test only focus of measure on the benchmark of the function. We can measure the CPU and the memory usage/allocation information of the target function.
+So it is important to capture the performance statistic for Vald to measure the performance of Vald and help to find the bottleneck of Vald.
 
-This is the guideline to help you to implement benchmark code. Implement benchmark test code allows continous measurement on the performance.
+## How can we resolve this problem?
 
+Benchmarking is used to measure the performance of target elements to produce a performance metrics for future performance investigation.
 
-## Which package / file to test?
+We can measure the performance statistic in 3 different levels:
 
-We should only test on the function that is performance critical or the function that is used frequently.
+1. Code bench
+1. Code level E2E
+1. Component level E2E
 
+Unlike unit testing, benchmark test only focus of measure on the performance of the function but not the functionality of the function.
 
-## How to write bench code?
+## Code bench
+
+Code bench is the lowest level of benchmarking in above. It performs the benchmark testing on functions and it provide useful statistic for investigation.
+
+In golang, it supports the get the benchmark metrics by using `go` command.
+
+We can measure the CPU and the memory usage/allocation information of the target function.
+
+e.g. The result is as follow.
+
+```
+Benchmark_Uint32/test_rand-4         	17290003	        82.3 ns/op	       0 B/op	       0 allocs/op
+```
+
+### How to write bench code?
 
 Create / generate a file called `[filename]_bench_test.go`.
 
