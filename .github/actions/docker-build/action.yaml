@@ -1,0 +1,105 @@
+name: 'Build Docker images'
+description: 'Build Docker images and publish them'
+inputs:
+  target:
+    description: 'build target'
+    required: true
+    default: 'base'
+  builder:
+    description: 'buildx builder name'
+    required: true
+    default: ''
+outputs:
+  IMAGE_NAME:
+    description: "image name"
+    value: ${{ steps.image_name.outputs.IMAGE_NAME }}
+  ALTER_IMAGE_NAME:
+    description: "alter image name"
+    value: ${{ steps.image_name.outputs.ALTER_IMAGE_NAME }}
+  PRIMARY_TAG:
+    description: "primary tag"
+    value: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
+  PLATFORMS:
+    description: "target platforms"
+    value: ${{ steps.determine_platforms.outputs.PLATFORMS }}
+  EXTRA_TAGS:
+    description: "extra tags"
+    value: ${{ steps.add_extra_tags.outputs.EXTRA_TAGS }}
+runs:
+  using: "composite"
+  steps:
+    - name: Image name
+      shell: bash
+      id: image_name
+      run: |
+        image_name=`make docker/name/${TARGET}`
+        alter_org=`make docker/name/org/alter`
+        alter_image_name=`make ORG="${alter_org}" docker/name/${TARGET}`
+        echo "IMAGE_NAME is: ${image_name}"
+        echo "ALTER_IMAGE_NAME is: ${alter_image_name}"
+        echo "::set-output name=IMAGE_NAME::${image_name}"
+        echo "::set-output name=ALTER_IMAGE_NAME::${alter_image_name}"
+      env:
+        TARGET: ${{ inputs.target }}
+    - name: Determine tag name
+      shell: bash
+      id: determine_tag_name
+      run: |
+        if [[ "$GITHUB_REF" =~ ^refs/tags/.* ]]; then
+          tag_name=`echo $GITHUB_REF | sed -e 's:^refs/tags/::'`
+          primary_tag="${tag_name}"
+        elif [ "$GITHUB_REF" = "refs/heads/master" ]; then
+          echo "nightly" > versions/VALD_VERSION
+          primary_tag="nightly"
+        elif [ "${{ github.event_name }}" = "pull_request" ]; then
+          pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
+          echo "PR-${pr_num}" > versions/VALD_VERSION
+          primary_tag="pr-${pr_num}"
+        else
+          primary_tag="unknown"
+        fi
+        echo "PRIMARY_TAG is determined: ${primary_tag}"
+        echo "::set-output name=PRIMARY_TAG::${primary_tag}"
+    - name: Determine platforms
+      shell: bash
+      id: determine_platforms
+      run: |
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          platforms="linux/amd64"
+        else
+          platforms=`make docker/platforms`
+        fi
+        echo "PLATFORMS is determined: ${platforms}"
+        echo "::set-output name=PLATFORMS::${platforms}"
+    - name: Add extra tags
+      shell: bash
+      id: add_extra_tags
+      run: |
+        extra_tags="-t ${ALTER_IMAGE_NAME}:${PRIMARY_TAG}"
+        if [[ "$GITHUB_REF" =~ ^refs/tags/.* ]]; then
+          latest_tags="-t ${IMAGE_NAME}:latest -t ${ALTER_IMAGE_NAME}:latest"
+          extra_tags="${extra_tags} ${latest_tags}"
+        fi
+        echo "EXTRA_TAGS is determined: ${extra_tags}"
+        echo "::set-output name=EXTRA_TAGS::${extra_tags}"
+      env:
+        IMAGE_NAME: ${{ steps.image_name.outputs.IMAGE_NAME }}
+        ALTER_IMAGE_NAME: ${{ steps.image_name.outputs.ALTER_IMAGE_NAME }}
+        PRIMARY_TAG: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
+    - name: Build and Push
+      shell: bash
+      id: build_and_push
+      run: |
+        make \
+          DOCKER="docker buildx" \
+          DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} ${LABEL_OPTS} ${EXTRA_TAGS} --push" \
+          TAG="${PRIMARY_TAG}" \
+          docker/build/${TARGET}
+      env:
+        TARGET: ${{ inputs.target }}
+        DOCKER_BUILDKIT: "1"
+        PLATFORMS: ${{ steps.determine_platforms.outputs.PLATFORMS }}
+        BUILDER: ${{ inputs.builder }}
+        LABEL_OPTS: "--label org.opencontainers.image.url=${{ github.event.repository.html_url }} --label org.opencontainers.image.source=${{ github.event.repository.html_url }} --label org.opencontainers.image.revision=${{ github.sha }}"
+        EXTRA_TAGS: ${{ steps.add_extra_tags.outputs.EXTRA_TAGS }}
+        PRIMARY_TAG: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
