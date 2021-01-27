@@ -27,4 +27,8 @@ var (
 	ErrK8sFailedToCreateJob = func(err error) error {
 		return Wrap(err, "failed to create k8s job")
 	}
+
+	ErrEmptyReconileResult = func(resType string) error {
+		return Errorf("reconile result is empty: %s", resType)
+	}
 )

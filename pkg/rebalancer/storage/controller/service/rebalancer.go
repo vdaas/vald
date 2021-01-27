@@ -414,12 +414,12 @@ func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, reason confi
 func (r *rebalancer) genPodModels() (podModels map[string][]*model.Pod, err error) {
 	mpods, ok := r.podMetrics.Load().(map[string]mpod.Pod)
 	if !ok {
-		return nil, errors.New("pod metrics is empty")
+		return nil, errors.ErrEmptyReconileResult("pod metrics")
 	}
 
 	pods, ok := r.pods.Load().([]pod.Pod)
 	if !ok {
-		return nil, errors.New("pod is empty")
+		return nil, errors.ErrEmptyReconileResult("pod")
 	}
 
 	podModels = make(map[string][]*model.Pod)
@@ -443,7 +443,7 @@ func (r *rebalancer) genPodModels() (podModels map[string][]*model.Pod, err erro
 func (r *rebalancer) namespaceByJobs() (jobmap map[string][]job.Job, err error) {
 	jobs, ok := r.jobs.Load().([]job.Job)
 	if !ok {
-		return nil, errors.New("job is empty")
+		return nil, errors.ErrEmptyReconileResult("job")
 	}
 
 	jobmap = make(map[string][]job.Job)
@@ -460,12 +460,12 @@ func (r *rebalancer) namespaceByJobs() (jobmap map[string][]job.Job, err error) 
 func (r *rebalancer) genJobTpl() (jobTpl *job.Job, err error) {
 	tmpl, ok := r.jobTemplate.Load().(string)
 	if !ok {
-		return nil, errors.New("job template is empty")
+		return nil, errors.ErrJobTemplateNotFound()
 	}
 	jobTpl = &job.Job{}
 	err = r.decoder.DecodeInto([]byte(tmpl), jobTpl)
 	if err != nil {
-		return nil, errors.Wrap(err, "fails decoding template")
+		return nil, errors.ErrFailedToDecodeJobTemplate(err)
 	}
 	return
 }
