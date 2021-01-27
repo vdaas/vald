@@ -28,7 +28,7 @@ func TestErrCreateProperty(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return wrapped ErrCreateProperty error when err is ngt error",
+			name: "return a wrapped ErrCreateProperty error when err is ngt error",
 			args: args{
 				err: New("ngt error"),
 			},
@@ -37,7 +37,7 @@ func TestErrCreateProperty(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrCreateProperty error when err is nil",
+			name: "return an ErrCreateProperty error when err is nil",
 			args: args{
 				err: nil,
 			},
@@ -86,7 +86,7 @@ func TestErrIndexNotFound(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return ErrIndexNotFound error",
+			name: "return an ErrIndexNotFound error",
 			want: want{
 				want: New("index file not found"),
 			},
@@ -132,7 +132,7 @@ func TestErrIndexLoadTimeout(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return ErrIndexLoadTimeout error",
+			name: "return an ErrIndexLoadTimeout error",
 			want: want{
 				want: New("index load timeout"),
 			},
@@ -183,7 +183,7 @@ func TestErrInvalidDimensionSize(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return ErrInvalidDimensionSize error when current is 10 and limit is 5",
+			name: "return an ErrInvalidDimensionSize error when current is 10 and limit is 5",
 			args: args{
 				current: 10,
 				limit:   5,
@@ -193,7 +193,7 @@ func TestErrInvalidDimensionSize(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrInvalidDimensionSize error when current is 0 and limit is 5",
+			name: "return an ErrInvalidDimensionSize error when current is 0 and limit is 5",
 			args: args{
 				current: 0,
 				limit:   5,
@@ -203,7 +203,7 @@ func TestErrInvalidDimensionSize(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrInvalidDimensionSize error when current is 10 and limit is 0",
+			name: "return an ErrInvalidDimensionSize error when current is 10 and limit is 0",
 			args: args{
 				current: 10,
 				limit:   0,
@@ -213,7 +213,7 @@ func TestErrInvalidDimensionSize(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrInvalidDimensionSize error when current is 0 and limit is 0",
+			name: "return an ErrInvalidDimensionSize error when current is 0 and limit is 0",
 			args: args{
 				current: 0,
 				limit:   0,
@@ -223,7 +223,7 @@ func TestErrInvalidDimensionSize(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrInvalidDimensionSize error when current and limit are the minimum value of int",
+			name: "return an ErrInvalidDimensionSize error when current and limit are the minimum value of int",
 			args: args{
 				current: int(math.MinInt64),
 				limit:   int(math.MinInt64),
@@ -233,7 +233,7 @@ func TestErrInvalidDimensionSize(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrInvalidDimensionSize error when current and limit are the minimum value of int",
+			name: "return an ErrInvalidDimensionSize error when current and limit are the minimum value of int",
 			args: args{
 				current: int(math.MaxInt64),
 				limit:   int(math.MaxInt64),
@@ -288,7 +288,7 @@ func TestErrDimensionLimitExceed(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return ErrDimensionLimitExceed error when current is 10 and limit is 5",
+			name: "return an ErrDimensionLimitExceed error when current is 10 and limit is 5",
 			args: args{
 				current: 10,
 				limit:   5,
@@ -299,7 +299,7 @@ func TestErrDimensionLimitExceed(t *testing.T) {
 		},
 
 		{
-			name: "return ErrDimensionLimitExceed error when current is 0 and limit is 0",
+			name: "return an ErrDimensionLimitExceed error when current is 0 and limit is 0",
 			args: args{
 				current: 0,
 				limit:   0,
@@ -309,7 +309,7 @@ func TestErrDimensionLimitExceed(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrDimensionLimitExceed error when current and limit are the minimum value of int",
+			name: "return an ErrDimensionLimitExceed error when current and limit are the minimum value of int",
 			args: args{
 				current: int(math.MinInt64),
 				limit:   int(math.MinInt64),
@@ -319,7 +319,7 @@ func TestErrDimensionLimitExceed(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrDimensionLimitExceed error when current and limit are the maximum value of int",
+			name: "return an ErrDimensionLimitExceed error when current and limit are the maximum value of int",
 			args: args{
 				current: int(math.MaxInt64),
 				limit:   int(math.MaxInt64),
@@ -369,7 +369,7 @@ func TestErrUnsupportedObjectType(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return ErrUnsupportedObjectType error",
+			name: "return an ErrUnsupportedObjectType error",
 			want: want{
 				want: New("unsupported ObjectType"),
 			},
@@ -466,7 +466,7 @@ func TestErrFailedToSetDistanceType(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return wrapped ErrFailedToSetDistanceType error when err is ngt error and distance is 'l2'",
+			name: "return a wrapped ErrFailedToSetDistanceType error when err is ngt error and distance is l2",
 			args: args{
 				err:      New("ngt error"),
 				distance: "l2",
@@ -476,7 +476,7 @@ func TestErrFailedToSetDistanceType(t *testing.T) {
 			},
 		},
 		{
-			name: "return wrapped ErrFailedToSetDistanceType error when err is ngt error and distance is empty",
+			name: "return a wrapped ErrFailedToSetDistanceType error when err is ngt error and distance is empty",
 			args: args{
 				err:      New("ngt error"),
 				distance: "",
@@ -486,17 +486,17 @@ func TestErrFailedToSetDistanceType(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrFailedToSetDistanceType error when err is nil and distance is 'l2'",
+			name: "return an ErrFailedToSetDistanceType error when err is nil and distance is cos",
 			args: args{
 				err:      nil,
-				distance: "l2",
+				distance: "cos",
 			},
 			want: want{
-				want: New("failed to set distance type l2"),
+				want: New("failed to set distance type cos"),
 			},
 		},
 		{
-			name: "return ErrFailedToSetDistanceType error when err is nil and distance is empty",
+			name: "return an ErrFailedToSetDistanceType error when err is nil and distance is empty",
 			args: args{
 				err:      nil,
 				distance: "",
@@ -551,7 +551,7 @@ func TestErrFailedToSetObjectType(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return wrapped ErrFailedToSetObjectType error when err is ngt error and t is 'Float'",
+			name: "return a wrapped ErrFailedToSetObjectType error when err is ngt error and t is Float",
 			args: args{
 				err: New("ngt error"),
 				t:   "Float",
@@ -561,7 +561,7 @@ func TestErrFailedToSetObjectType(t *testing.T) {
 			},
 		},
 		{
-			name: "return wrapped ErrFailedToSetObjectType error when err is ngt error and t is empty",
+			name: "return a wrapped ErrFailedToSetObjectType error when err is ngt error and t is empty",
 			args: args{
 				err: New("ngt error"),
 				t:   "",
@@ -571,17 +571,17 @@ func TestErrFailedToSetObjectType(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrFailedToSetObjectType error when err is nil and t is 'Float'",
+			name: "return an ErrFailedToSetObjectType error when err is nil and t is Float",
 			args: args{
 				err: nil,
-				t:   "Float",
+				t:   "Int",
 			},
 			want: want{
-				want: New("failed to set object type Float"),
+				want: New("failed to set object type Int"),
 			},
 		},
 		{
-			name: "return ErrFailedToSetObjectType error when err is nil and t is empty",
+			name: "return an ErrFailedToSetObjectType error when err is nil and t is empty",
 			args: args{
 				err: nil,
 				t:   "",
@@ -697,7 +697,7 @@ func TestErrFailedToSetCreationEdgeSize(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return wrapped ErrFailedToSetCreationEdgeSize error when err is ngt error",
+			name: "return a wrapped ErrFailedToSetCreationEdgeSize error when err is ngt error",
 			args: args{
 				err: New("ngt error"),
 			},
@@ -706,7 +706,7 @@ func TestErrFailedToSetCreationEdgeSize(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrFailedToSetCreationEdgeSize error when err is nil",
+			name: "return an ErrFailedToSetCreationEdgeSize error when err is nil",
 			args: args{
 				err: nil,
 			},
@@ -759,7 +759,7 @@ func TestErrFailedToSetSearchEdgeSize(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return wrapped ErrFailedToSetSearchEdgeSize error when err is ngt error",
+			name: "return a wrapped ErrFailedToSetSearchEdgeSize error when err is ngt error",
 			args: args{
 				err: New("ngt error"),
 			},
@@ -768,7 +768,7 @@ func TestErrFailedToSetSearchEdgeSize(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrFailedToSetSearchEdgeSize error when err is nil",
+			name: "return an ErrFailedToSetSearchEdgeSize error when err is nil",
 			args: args{
 				err: nil,
 			},
@@ -821,7 +821,7 @@ func TestErrUncommittedIndexExists(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return ErrUncommittedIndexExists error when num is 100",
+			name: "return an ErrUncommittedIndexExists error when num is 100",
 			args: args{
 				num: 100,
 			},
@@ -831,7 +831,7 @@ func TestErrUncommittedIndexExists(t *testing.T) {
 		},
 
 		{
-			name: "return ErrUncommittedIndexExists error when num is 0",
+			name: "return an ErrUncommittedIndexExists error when num is 0",
 			args: args{
 				num: 0,
 			},
@@ -840,7 +840,7 @@ func TestErrUncommittedIndexExists(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrUncommittedIndexExists error when num is the maximum value of uint64",
+			name: "return an ErrUncommittedIndexExists error when num is the maximum value of uint64",
 			args: args{
 				num: math.MaxUint64,
 			},
@@ -986,7 +986,7 @@ func TestErrUUIDAlreadyExists(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return ErrUUIDAlreadyExists error when uuid is '550e8400-e29b-41d4' and oid is 100",
+			name: "return an ErrUUIDAlreadyExists error when uuid is 550e8400-e29b-41d4 and oid is 100",
 			args: args{
 				uuid: "550e8400-e29b-41d4",
 				oid:  100,
@@ -996,7 +996,7 @@ func TestErrUUIDAlreadyExists(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrUUIDAlreadyExists error when uuid is empty and oid is 100",
+			name: "return an ErrUUIDAlreadyExists error when uuid is empty and oid is 100",
 			args: args{
 				uuid: "",
 				oid:  100,
@@ -1006,7 +1006,7 @@ func TestErrUUIDAlreadyExists(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrUUIDAlreadyExists error when uuid is '550e8400-e29b-41d4' and oid is the maximum value of uint64",
+			name: "return an ErrUUIDAlreadyExists error when uuid is 550e8400-e29b-41d4 and oid is the maximum value of uint64",
 			args: args{
 				uuid: "550e8400-e29b-41d4",
 				oid:  uint(math.MaxUint64),
@@ -1016,7 +1016,7 @@ func TestErrUUIDAlreadyExists(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrUUIDAlreadyExists error when uuid is empty and oid is 0",
+			name: "return an ErrUUIDAlreadyExists error when uuid is empty and oid is 0",
 			args: args{
 				uuid: "",
 				oid:  0,
@@ -1070,7 +1070,7 @@ func TestErrUUIDNotFound(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return ErrUUIDNotFound error when id is 1234",
+			name: "return an ErrUUIDNotFound error when id is 1234",
 			args: args{
 				id: 1234,
 			},
@@ -1079,7 +1079,7 @@ func TestErrUUIDNotFound(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrUUIDNotFound error when id is the maximum value of uint32",
+			name: "return an ErrUUIDNotFound error when id is the maximum value of uint32",
 			args: args{
 				id: math.MaxUint32,
 			},
@@ -1088,7 +1088,7 @@ func TestErrUUIDNotFound(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrUUIDNotFound error when id is 0",
+			name: "return an ErrUUIDNotFound error when id is 0",
 			args: args{
 				id: 0,
 			},
@@ -1141,7 +1141,7 @@ func TestErrObjectIDNotFound(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return ErrObjectIDNotFound error when uuid is '550e8400-e29b-41d4'",
+			name: "return an ErrObjectIDNotFound error when uuid is 550e8400-e29b-41d4.",
 			args: args{
 				uuid: "550e8400-e29b-41d4",
 			},
@@ -1150,7 +1150,7 @@ func TestErrObjectIDNotFound(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrObjectIDNotFound error when uuid is empty",
+			name: "return an ErrObjectIDNotFound error when uuid is empty.",
 			args: args{
 				uuid: "",
 			},
@@ -1204,7 +1204,7 @@ func TestErrObjectNotFound(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return wrapped ErrObjectNotFound error when err is ngt error and uuid is '550e8400-e29b-41d4'",
+			name: "return a wrapped ErrObjectNotFound error when err is ngt error and uuid is 550e8400-e29b-41d4",
 			args: args{
 				err:  New("ngt error"),
 				uuid: "550e8400-e29b-41d4",
@@ -1214,7 +1214,7 @@ func TestErrObjectNotFound(t *testing.T) {
 			},
 		},
 		{
-			name: "return wrapped ErrObjectNotFound error when err is ngt error and uuid is empty",
+			name: "return a wrapped ErrObjectNotFound error when err is ngt error and uuid is empty",
 			args: args{
 				err:  New("ngt error"),
 				uuid: "",
@@ -1224,7 +1224,7 @@ func TestErrObjectNotFound(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrObjectNotFound error when err is nil and uuid is '550e8400-e29b-41d4'",
+			name: "return an ErrObjectNotFound error when err is nil and uuid is 550e8400-e29b-41d4",
 			args: args{
 				err:  nil,
 				uuid: "550e8400-e29b-41d4",
@@ -1234,7 +1234,7 @@ func TestErrObjectNotFound(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrObjectNotFound error when err is nil and uuid is empty",
+			name: "return an ErrObjectNotFound error when err is nil and uuid is empty",
 			args: args{
 				err:  nil,
 				uuid: "",
@@ -1288,7 +1288,7 @@ func TestErrRemoveRequestedBeforeIndexing(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return ErrRemoveRequestedBeforeIndexing error when oid is 100",
+			name: "return an ErrRemoveRequestedBeforeIndexing error when oid is 100",
 			args: args{
 				oid: 100,
 			},
@@ -1297,7 +1297,7 @@ func TestErrRemoveRequestedBeforeIndexing(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrRemoveRequestedBeforeIndexing error when oid is 0",
+			name: "return an ErrRemoveRequestedBeforeIndexing error when oid is 0",
 			args: args{
 				oid: 0,
 			},
@@ -1306,7 +1306,7 @@ func TestErrRemoveRequestedBeforeIndexing(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrRemoveRequestedBeforeIndexing error when oid is maximum value of uint",
+			name: "return an ErrRemoveRequestedBeforeIndexing error when oid is maximum value of uint",
 			args: args{
 				oid: uint(math.MaxUint64),
 			},

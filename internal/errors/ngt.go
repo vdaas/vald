@@ -18,7 +18,7 @@
 package errors
 
 var (
-	// ErrCreateProperty represents an error that the property creation failed.
+	// ErrCreateProperty represents a function to generate an error that the property creation failed.
 	ErrCreateProperty = func(err error) error {
 		return Wrap(err, "failed to create property")
 	}
