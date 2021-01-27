@@ -65,13 +65,6 @@ jobs:
         uses: docker/setup-buildx-action@v1
         with:
           buildkitd-flags: "--debug"
-      - name: Cache Docker layers
-        uses: actions/cache@v2
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-vald-loadtest-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-vald-loadtest-
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
@@ -123,14 +116,13 @@ jobs:
         run: |
           make \
             DOCKER="docker buildx" \
-            DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS} ${LABEL_OPTS} ${EXTRA_TAGS} ${LATEST_TAGS} --push" \
+            DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} ${LABEL_OPTS} ${EXTRA_TAGS} ${LATEST_TAGS} --push" \
             TAG="${PRIMARY_TAG}" \
             docker/build/loadtest
         env:
           DOCKER_BUILDKIT: 1
           PLATFORMS: linux/amd64
           BUILDER: ${{ steps.buildx.outputs.name }}
-          CACHE_OPTS: "--cache-from=type=local,src=/tmp/.buildx-cache --cache-to=type=local,mode=max,dest=/tmp/.buildx-cache"
           LABEL_OPTS: "--label org.opencontainers.image.url=${{ github.event.repository.html_url }} --label org.opencontainers.image.source=${{ github.event.repository.html_url }} --label org.opencontainers.image.revision=${{ github.sha }}"
       - name: Initialize CodeQL
         if: startsWith( github.ref, 'refs/tags/')
