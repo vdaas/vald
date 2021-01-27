@@ -61,7 +61,6 @@ cmd/agent/core/ngt/ngt: \
 		-buildid=" \
 		-mod=readonly \
 		-modcacherw \
-		-buildmode=pie \
 		-a \
 		-tags "cgo osusergo netgo static_build" \
 		-trimpath \
@@ -89,7 +88,6 @@ cmd/agent/sidecar/sidecar: \
 		-buildid=" \
 		-mod=readonly \
 		-modcacherw \
-		-buildmode=pie \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -117,7 +115,6 @@ cmd/discoverer/k8s/discoverer: \
 		-buildid=" \
 		-mod=readonly \
 		-modcacherw \
-		-buildmode=pie \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -145,7 +142,6 @@ cmd/gateway/vald/vald: \
 		-buildid=" \
 		-mod=readonly \
 		-modcacherw \
-		-buildmode=pie \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -173,7 +169,6 @@ cmd/gateway/lb/lb: \
 		-buildid=" \
 		-mod=readonly \
 		-modcacherw \
-		-buildmode=pie \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -201,7 +196,6 @@ cmd/gateway/meta/meta: \
 		-buildid=" \
 		-mod=readonly \
 		-modcacherw \
-		-buildmode=pie \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -229,7 +223,6 @@ cmd/gateway/backup/backup: \
 		-buildid=" \
 		-mod=readonly \
 		-modcacherw \
-		-buildmode=pie \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -257,7 +250,6 @@ cmd/gateway/filter/filter: \
 		-buildid=" \
 		-mod=readonly \
 		-modcacherw \
-		-buildmode=pie \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -285,7 +277,6 @@ cmd/meta/redis/meta: \
 		-buildid=" \
 		-mod=readonly \
 		-modcacherw \
-		-buildmode=pie \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -313,7 +304,6 @@ cmd/meta/cassandra/meta: \
 		-buildid=" \
 		-mod=readonly \
 		-modcacherw \
-		-buildmode=pie \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -341,7 +331,6 @@ cmd/manager/backup/mysql/backup: \
 		-buildid=" \
 		-mod=readonly \
 		-modcacherw \
-		-buildmode=pie \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -369,7 +358,6 @@ cmd/manager/backup/cassandra/backup: \
 		-buildid=" \
 		-mod=readonly \
 		-modcacherw \
-		-buildmode=pie \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -397,7 +385,6 @@ cmd/manager/compressor/compressor: \
 		-buildid=" \
 		-mod=readonly \
 		-modcacherw \
-		-buildmode=pie \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -425,7 +412,6 @@ cmd/manager/index/index: \
 		-buildid=" \
 		-mod=readonly \
 		-modcacherw \
-		-buildmode=pie \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -453,7 +439,6 @@ cmd/manager/replication/agent/agent: \
 		-buildid=" \
 		-mod=readonly \
 		-modcacherw \
-		-buildmode=pie \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -481,7 +466,6 @@ cmd/manager/replication/controller/controller: \
 		-buildid=" \
 		-mod=readonly \
 		-modcacherw \
-		-buildmode=pie \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
