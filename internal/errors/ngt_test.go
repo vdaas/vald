@@ -571,7 +571,7 @@ func TestErrFailedToSetObjectType(t *testing.T) {
 			},
 		},
 		{
-			name: "return an ErrFailedToSetObjectType error when err is nil and t is Float",
+			name: "return an ErrFailedToSetObjectType error when err is nil and t is Int",
 			args: args{
 				err: nil,
 				t:   "Int",
