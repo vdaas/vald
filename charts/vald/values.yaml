@@ -2075,12 +2075,40 @@ gateway:
       # @schema {"name": "gateway.filter.gateway_config.gateway_client", "alias": "grpc.client"}
       # gateway.filter.gateway_config.gateway_client -- gRPC client for next gateway (overrides defaults.grpc.client)
       gateway_client: {}
-      # @schema {"name": "gateway.filter.gateway_config.ingress_filter_client", "alias": "grpc.client"}
-      # gateway.filter.gateway_config.ingress_filter_client -- gRPC client for ingress filter (overrides defaults.grpc.client)
-      ingress_filter_client: {}
-      # @schema {"name": "gateway.filter.gateway_config.egress_filter_client", "alias": "grpc.client"}
-      # gateway.filter.gateway_config.egress_filter_client -- gRPC client for egress filter (overrides defaults.grpc.client)
-      egress_filter_client: {}
+      # @schema {"name": "gateway.filter.gateway_config.ingress_filter", "type": "object"}
+      # gateway.filter.gateway_config.ingress_filter -- gRPC client config for ingress filter
+      ingress_filter: 
+        # @schema {"name": "gateway.filter.gateway_config.ingress_filter.client", "alias": "grpc.client"}
+        # gateway.filter.gateway_config.ingress_filter.client -- gRPC client for ingress filter (overrides defaults.grpc.client)
+        client: {}
+        # @schema {"name": "gateway.filter.gateway_config.ingress_filter.vectorizer", "type": "string"}
+        # gateway.filter.gateway_config.ingress_filter.vectorizer -- object ingress vectorize filter targets
+        vectorizer: ""
+        # @schema {"name": "gateway.filter.gateway_config.ingress_filter.search_filters", "type": "array", "items": {"type": "string"}}
+        # gateway.filter.gateway_config.ingress_filter.search_filters -- search ingress vector filter targets
+        search_filters: []
+        # @schema {"name": "gateway.filter.gateway_config.ingress_filter.insert_filters", "type": "array", "items": {"type": "string"}}
+        # gateway.filter.gateway_config.ingress_filter.insert_filters -- insert ingress vector filter targets
+        insert_filters: []
+        # @schema {"name": "gateway.filter.gateway_config.ingress_filter.update_filters", "type": "array", "items": {"type": "string"}}
+        # gateway.filter.gateway_config.ingress_filter.update_filters -- update ingress vector filter targets
+        update_filters: []
+        # @schema {"name": "gateway.filter.gateway_config.ingress_filter.upsert_filters", "type": "array", "items": {"type": "string"}}
+        # gateway.filter.gateway_config.ingress_filter.upsert_filters -- upsert ingress vector filter targets
+        upsert_filters: []
+      # @schema {"name": "gateway.filter.gateway_config.egress_filter", "type": "object"}
+      # gateway.filter.gateway_config.egress_filter -- gRPC client config for egress filter
+      egress_filter:
+        # @schema {"name": "gateway.filter.gateway_config.egress_filter.client", "alias": "grpc.client"}
+        # gateway.filter.gateway_config.egress_filter.client -- gRPC client config for egress filter (overrides defaults.grpc.client)
+        client: {}
+        # @schema {"name": "gateway.filter.gateway_config.egress_filter.object_filters", "type": "array", "items": {"type": "string"}}
+        # gateway.filter.gateway_config.egress_filter.object_filters -- object egress vector filter targets
+        object_filters: []
+        # @schema {"name": "gateway.filter.gateway_config.egress_filter.distance_filters", "type": "array", "items": {"type": "string"}}
+        # gateway.filter.gateway_config.egress_filter.distance_filters -- distance egress vector filter targets
+        distance_filters: []
+
 
 # @schema {"name": "agent", "type": "object"}
 agent:

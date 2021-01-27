@@ -48,7 +48,7 @@ cmd/agent/core/ngt/ngt: \
 	GOPRIVATE=$(GOPRIVATE) \
 	go build \
 		--ldflags "-s -w -linkmode 'external' \
-		-extldflags '-static -fPIC -pthread -fopenmp -std=gnu++20 -lstdc++ -lm $(EXTLDFLAGS)' \
+		-extldflags '-static -fPIC -pthread -fopenmp -std=gnu++20 -lstdc++ -lm -z relro -z now $(EXTLDFLAGS)' \
 		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
 		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
 		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
@@ -59,6 +59,9 @@ cmd/agent/core/ngt/ngt: \
 		-X '$(GOPKG)/internal/info.NGTVersion=$(NGT_VERSION)' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
+		-buildmode=pie \
 		-a \
 		-tags "cgo osusergo netgo static_build" \
 		-trimpath \
@@ -84,6 +87,9 @@ cmd/agent/sidecar/sidecar: \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
+		-buildmode=pie \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -109,6 +115,9 @@ cmd/discoverer/k8s/discoverer: \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
+		-buildmode=pie \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -134,6 +143,9 @@ cmd/gateway/vald/vald: \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
+		-buildmode=pie \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -159,6 +171,9 @@ cmd/gateway/lb/lb: \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
+		-buildmode=pie \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -184,6 +199,9 @@ cmd/gateway/meta/meta: \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
+		-buildmode=pie \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -209,6 +227,9 @@ cmd/gateway/backup/backup: \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
+		-buildmode=pie \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -234,6 +255,9 @@ cmd/gateway/filter/filter: \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
+		-buildmode=pie \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -259,6 +283,9 @@ cmd/meta/redis/meta: \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
+		-buildmode=pie \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -284,6 +311,9 @@ cmd/meta/cassandra/meta: \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
+		-buildmode=pie \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -309,6 +339,9 @@ cmd/manager/backup/mysql/backup: \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
+		-buildmode=pie \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -334,6 +367,9 @@ cmd/manager/backup/cassandra/backup: \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
+		-buildmode=pie \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -359,6 +395,9 @@ cmd/manager/compressor/compressor: \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
+		-buildmode=pie \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -384,6 +423,9 @@ cmd/manager/index/index: \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
+		-buildmode=pie \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -409,6 +451,9 @@ cmd/manager/replication/agent/agent: \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
+		-buildmode=pie \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -434,6 +479,9 @@ cmd/manager/replication/controller/controller: \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
+		-buildmode=pie \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \

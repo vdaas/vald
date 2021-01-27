@@ -22,12 +22,10 @@ import (
 
 type Option func(l *logger)
 
-var (
-	defaultOpts = []Option{
-		WithLevel(level.DEBUG.String()),
-		WithFormat(format.JSON.String()),
-	}
-)
+var defaultOpts = []Option{
+	WithLevel(level.DEBUG.String()),
+	WithFormat(format.JSON.String()),
+}
 
 func WithLevel(lv string) Option {
 	return func(l *logger) {

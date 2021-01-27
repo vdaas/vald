@@ -826,8 +826,7 @@ func TestLogger_Debugd(t *testing.T) {
 		FatalFunc  func(vals ...interface{})
 		FatalfFunc func(format string, vals ...interface{})
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -947,8 +946,7 @@ func TestLogger_Infod(t *testing.T) {
 		FatalFunc  func(vals ...interface{})
 		FatalfFunc func(format string, vals ...interface{})
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1068,8 +1066,7 @@ func TestLogger_Warnd(t *testing.T) {
 		FatalFunc  func(vals ...interface{})
 		FatalfFunc func(format string, vals ...interface{})
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1189,8 +1186,7 @@ func TestLogger_Errord(t *testing.T) {
 		FatalFunc  func(vals ...interface{})
 		FatalfFunc func(format string, vals ...interface{})
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1310,8 +1306,7 @@ func TestLogger_Fatald(t *testing.T) {
 		FatalFunc  func(vals ...interface{})
 		FatalfFunc func(format string, vals ...interface{})
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1521,7 +1516,6 @@ func TestLogger_Close(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

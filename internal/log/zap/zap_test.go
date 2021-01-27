@@ -105,7 +105,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -276,7 +275,6 @@ func Test_logger_initialize(t *testing.T) {
 			if err := test.checkFunc(test.want, l, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -376,7 +374,6 @@ func Test_toZapLevel(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -459,7 +456,6 @@ func Test_toZapEncoder(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -475,8 +471,7 @@ func Test_logger_Debug(t *testing.T) {
 		logger       *zap.Logger
 		sugar        *zap.SugaredLogger
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -547,8 +542,7 @@ func Test_logger_Debugf(t *testing.T) {
 		logger       *zap.Logger
 		sugar        *zap.SugaredLogger
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -619,8 +613,7 @@ func Test_logger_Info(t *testing.T) {
 		logger       *zap.Logger
 		sugar        *zap.SugaredLogger
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -691,8 +684,7 @@ func Test_logger_Infof(t *testing.T) {
 		logger       *zap.Logger
 		sugar        *zap.SugaredLogger
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -763,8 +755,7 @@ func Test_logger_Warn(t *testing.T) {
 		logger       *zap.Logger
 		sugar        *zap.SugaredLogger
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -835,8 +826,7 @@ func Test_logger_Warnf(t *testing.T) {
 		logger       *zap.Logger
 		sugar        *zap.SugaredLogger
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -907,8 +897,7 @@ func Test_logger_Error(t *testing.T) {
 		logger       *zap.Logger
 		sugar        *zap.SugaredLogger
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -979,8 +968,7 @@ func Test_logger_Errorf(t *testing.T) {
 		logger       *zap.Logger
 		sugar        *zap.SugaredLogger
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1051,8 +1039,7 @@ func Test_logger_Fatal(t *testing.T) {
 		logger       *zap.Logger
 		sugar        *zap.SugaredLogger
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1123,8 +1110,7 @@ func Test_logger_Fatalf(t *testing.T) {
 		logger       *zap.Logger
 		sugar        *zap.SugaredLogger
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1197,8 +1183,7 @@ func Test_logger_Debugd(t *testing.T) {
 		logger       *zap.Logger
 		sugar        *zap.SugaredLogger
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1292,8 +1277,7 @@ func Test_logger_Infod(t *testing.T) {
 		logger       *zap.Logger
 		sugar        *zap.SugaredLogger
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1387,8 +1371,7 @@ func Test_logger_Warnd(t *testing.T) {
 		logger       *zap.Logger
 		sugar        *zap.SugaredLogger
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1482,8 +1465,7 @@ func Test_logger_Errord(t *testing.T) {
 		logger       *zap.Logger
 		sugar        *zap.SugaredLogger
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1577,8 +1559,7 @@ func Test_logger_Fatald(t *testing.T) {
 		logger       *zap.Logger
 		sugar        *zap.SugaredLogger
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1747,7 +1728,6 @@ func Test_logger_Close(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

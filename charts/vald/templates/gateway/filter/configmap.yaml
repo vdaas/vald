@@ -78,15 +78,54 @@ data:
       {{- $nextGRPCClient := dict "Values" $nextGatewayClient "default" .Values.defaults.grpc.client }}
       {{- include "vald.grpc.client" $nextGRPCClient | nindent 6 }}
     ingress_filter:
-      {{- $ingressFilterClient := $gateway.gateway_config.ingress_filter_client }}
-      {{- $ingressFilterAddrs := dict "Values" $ingressFilterClient.addrs }}
-      {{- include "vald.grpc.client.addrs" $ingressFilterAddrs | nindent 6 }}
-      {{- $ingressFilterGRPCClient := dict "Values" $ingressFilterClient "default" .Values.defaults.grpc.client }}
-      {{- include "vald.grpc.client" $ingressFilterGRPCClient | nindent 6 }}
+      client:
+        {{- $ingressFilterClient := $gateway.gateway_config.ingress_filter }}
+        {{- $ingressFilterAddrs := dict "Values" $ingressFilterClient.addrs }}
+        {{- include "vald.grpc.client.addrs" $ingressFilterAddrs | nindent 8 }}
+        {{- $ingressFilterGRPCClient := dict "Values" $ingressFilterClient "default" .Values.defaults.grpc.client }}
+        {{- include "vald.grpc.client" $ingressFilterGRPCClient | nindent 8 }}
+      vectorizer: {{- $gateway.gateway_config.ingress_filter.vectorizer | quote }}
+      {{- if $gateway.gateway_config.ingress_filter.search_filters }}
+      search_filters: 
+        {{- toYaml $gateway.gateway_config.ingress_filter.search_filters | nindent 8 }}
+      {{- else }}
+      search_filters: []
+      {{- end }}
+      {{- if $gateway.gateway_config.ingress_filter.insert_filters }}
+      insert_filters: 
+        {{- toYaml $gateway.gateway_config.ingress_filter.insert_filters | nindent 8 }}
+      {{- else }}
+      insert_filters: []
+      {{- end }}
+      {{- if $gateway.gateway_config.ingress_filter.update_filters }}
+      update_filters: 
+        {{- toYaml $gateway.gateway_config.ingress_filter.update_filters | nindent 8 }}
+      {{- else }}
+      update_filters: []
+      {{- end }}
+      {{- if $gateway.gateway_config.ingress_filter.upsert_filters }}
+      upsert_filters: 
+        {{- toYaml $gateway.gateway_config.ingress_filter.upsert_filters | nindent 8 }}
+      {{- else }}
+      upsert_filters: []
+      {{- end }}
     egress_filter:
-      {{- $egressFilterClient := $gateway.gateway_config.egress_filter_client }}
-      {{- $egressFilterAddrs := dict "Values" $egressFilterClient.addrs }}
-      {{- include "vald.grpc.client.addrs" $egressFilterAddrs | nindent 6 }}
-      {{- $egressFilterGRPCClient := dict "Values" $egressFilterClient "default" .Values.defaults.grpc.client }}
-      {{- include "vald.grpc.client" $egressFilterGRPCClient | nindent 6 }}
+      client:
+        {{- $egressFilterClient := $gateway.gateway_config.egress_filter }}
+        {{- $egressFilterAddrs := dict "Values" $egressFilterClient.addrs }}
+        {{- include "vald.grpc.client.addrs" $egressFilterAddrs | nindent 8 }}
+        {{- $egressFilterGRPCClient := dict "Values" $egressFilterClient "default" .Values.defaults.grpc.client }}
+        {{- include "vald.grpc.client" $egressFilterGRPCClient | nindent 8 }}
+      {{- if $gateway.gateway_config.egress_filter.object_filters }}
+      object_filters: 
+        {{- toYaml $gateway.gateway_config.egress_filter.object_filters | nindent 8 }}
+      {{- else }}
+      object_filters: []
+      {{- end }}
+      {{- if $gateway.gateway_config.egress_filter.distance_filters }}
+      distance_filters: 
+        {{- toYaml $gateway.gateway_config.egress_filter.distance_filters | nindent 8 }}
+      {{- else }}
+      distance_filters: []
+      {{- end }}
 {{- end }}

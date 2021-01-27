@@ -2029,8 +2029,7 @@ func Test_logger_Infod(t *testing.T) {
 		retry  retry.Retry
 		glg    *glg.Glg
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -2126,8 +2125,7 @@ func Test_logger_Debugd(t *testing.T) {
 		retry  retry.Retry
 		glg    *glg.Glg
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -2223,8 +2221,7 @@ func Test_logger_Warnd(t *testing.T) {
 		retry  retry.Retry
 		glg    *glg.Glg
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -2320,8 +2317,7 @@ func Test_logger_Errord(t *testing.T) {
 		retry  retry.Retry
 		glg    *glg.Glg
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -2417,8 +2413,7 @@ func Test_logger_Fatald(t *testing.T) {
 		retry  retry.Retry
 		glg    *glg.Glg
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -2586,7 +2581,6 @@ func Test_logger_Close(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
