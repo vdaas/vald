@@ -94,17 +94,7 @@ func TestNewErrInvalidOption(t *testing.T) {
 				nil,
 				New("set option failed."),
 			}
-			var e error
-			for _, err := range errs {
-				if err == nil {
-					continue
-				}
-				if e != nil {
-					e = Wrap(err, e.Error())
-				} else {
-					e = err
-				}
-			}
+			e := errs[1]
 			return test{
 				name: "return ErrInvalidOpton when all of parameter has value and errs has nil as value.",
 				args: args{
@@ -126,17 +116,7 @@ func TestNewErrInvalidOption(t *testing.T) {
 				New("set option failed."),
 				New("name is nil."),
 			}
-			var e error
-			for _, err := range errs {
-				if err == nil {
-					continue
-				}
-				if e != nil {
-					e = Wrap(err, e.Error())
-				} else {
-					e = err
-				}
-			}
+			e := Wrap(errs[1], errs[0].Error())
 			return test{
 				name: "return ErrInvalidOpton when name is nil and val and errs have values.",
 				args: args{
@@ -157,17 +137,7 @@ func TestNewErrInvalidOption(t *testing.T) {
 				New("set option failed."),
 				New("val is nil."),
 			}
-			var e error
-			for _, err := range errs {
-				if err == nil {
-					continue
-				}
-				if e != nil {
-					e = Wrap(err, e.Error())
-				} else {
-					e = err
-				}
-			}
+			e := Wrap(errs[1], errs[0].Error())
 			return test{
 				name: "return ErrInvalidOpton when val is nil and name and errs have values.",
 				args: args{
@@ -396,17 +366,7 @@ func TestNewErrCriticalOption(t *testing.T) {
 			errs := []error{
 				New("set option failed"),
 			}
-			var e error
-			for _, err := range errs {
-				if err == nil {
-					continue
-				}
-				if e != nil {
-					e = Wrap(err, e.Error())
-				} else {
-					e = err
-				}
-			}
+			e := errs[0]
 			return test{
 				name: "return ErrCriticalOption when all of parameter has value.",
 				args: args{
@@ -429,17 +389,7 @@ func TestNewErrCriticalOption(t *testing.T) {
 				nil,
 				New("set option failed."),
 			}
-			var e error
-			for _, err := range errs {
-				if err == nil {
-					continue
-				}
-				if e != nil {
-					e = Wrap(err, e.Error())
-				} else {
-					e = err
-				}
-			}
+			e := errs[1]
 			return test{
 				name: "return ErrCriticalOption when all of parameter has value and errs has nil as value.",
 				args: args{
@@ -461,17 +411,7 @@ func TestNewErrCriticalOption(t *testing.T) {
 				New("set option failed."),
 				New("name is nil."),
 			}
-			var e error
-			for _, err := range errs {
-				if err == nil {
-					continue
-				}
-				if e != nil {
-					e = Wrap(err, e.Error())
-				} else {
-					e = err
-				}
-			}
+			e := Wrap(errs[1], errs[0].Error())
 			return test{
 				name: "return ErrCriticalOption when name is nil and val and errs have values.",
 				args: args{
@@ -492,17 +432,7 @@ func TestNewErrCriticalOption(t *testing.T) {
 				New("set option failed."),
 				New("val is nil."),
 			}
-			var e error
-			for _, err := range errs {
-				if err == nil {
-					continue
-				}
-				if e != nil {
-					e = Wrap(err, e.Error())
-				} else {
-					e = err
-				}
-			}
+			e := Wrap(errs[1], errs[0].Error())
 			return test{
 				name: "return ErrCriticalOption when val is nil and name and errs have values.",
 				args: args{
