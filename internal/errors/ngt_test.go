@@ -415,7 +415,7 @@ func TestErrUnsupportedDistanceType(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return ErrUnsupportedDistanceType error",
+			name: "return an ErrUnsupportedDistanceType error",
 			want: want{
 				want: New("unsupported DistanceType"),
 			},
@@ -635,7 +635,7 @@ func TestErrFailedToSetDimension(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return wrapped ErrFailedToSetDimension error when err is ngt error",
+			name: "return a wrapped ErrFailedToSetDimension error when err is ngt error",
 			args: args{
 				err: New("ngt error"),
 			},
@@ -644,7 +644,7 @@ func TestErrFailedToSetDimension(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrFailedToSetDimension error when err is nil",
+			name: "return an ErrFailedToSetDimension error when err is nil",
 			args: args{
 				err: nil,
 			},
@@ -889,7 +889,7 @@ func TestErrUncommittedIndexNotFound(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return ErrUncommittedIndexNotFound error",
+			name: "return an ErrUncommittedIndexNotFound error",
 			want: want{
 				want: New("uncommitted indexes are not found"),
 			},
@@ -935,7 +935,7 @@ func TestErrCAPINotImplemented(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return ErrCAPINotImplemented error",
+			name: "return an ErrCAPINotImplemented error",
 			want: want{
 				want: New("not implemented in C API"),
 			},
