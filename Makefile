@@ -159,7 +159,8 @@ PROTO_PATHS = \
 	$(PWD) \
 	$(GOPATH)/src \
 	$(GOPATH)/src/$(GOPKG) \
-	$(GOPATH)/src/github.com/googleapis/googleapis
+	$(GOPATH)/src/github.com/googleapis/googleapis \
+	$(GOPATH)/src/github.com/gogo/googleapis
 
 GO_SOURCES = $(eval GO_SOURCES := $(shell find \
 		./cmd \

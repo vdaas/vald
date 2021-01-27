@@ -32,7 +32,6 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
-	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/safety"
 )
 
@@ -91,9 +90,6 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 				c.opts,
 				grpc.WithAddrs(addrs...),
 				grpc.WithErrGroup(c.eg),
-				grpc.WithDialOptions(
-					grpc.WithStatsHandler(metric.NewClientHandler()),
-				),
 			)...,
 		)
 		if c.client != nil {

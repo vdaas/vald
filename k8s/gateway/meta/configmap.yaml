@@ -20,10 +20,10 @@ metadata:
   name: vald-meta-gateway-config
   labels:
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v0.0.62
+    helm.sh/chart: vald-v0.0.66
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v0.0.62
+    app.kubernetes.io/version: v0.0.66
     app.kubernetes.io/component: gateway-meta
 data:
   config.yaml: |
@@ -45,7 +45,8 @@ data:
             header_table_size: 0
             initial_conn_window_size: 0
             initial_window_size: 0
-            interceptors: []
+            interceptors:
+            - RecoverInterceptor
             keepalive:
               max_conn_age: ""
               max_conn_age_grace: ""
@@ -183,9 +184,8 @@ data:
           instance: ""
           zone: ""
     client:
-      
       addrs:
-        - vald-backup-gateway.vald.svc.cluster.local
+        - vald-backup-gateway.default.svc.cluster.local:8081
       health_check_duration: "1s"
       connection_pool:
         enable_dns_resolver: true
@@ -244,10 +244,9 @@ data:
         enabled: false
         key: /path/to/key
     meta:
-      host: vald-meta.default.svc.cluster.local
-      port: 8081
       client:
-        addrs: []
+        addrs:
+          - vald-meta.default.svc.cluster.local:8081
         health_check_duration: "1s"
         connection_pool:
           enable_dns_resolver: true

@@ -833,14 +833,14 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 	return locs, nil
 }
 
-func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (vec *payload.Object_Vector, err error) {
+func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorRequest) (vec *payload.Object_Vector, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".GetObject")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	meta := id.GetId()
+	meta := req.GetId().GetId()
 	uuid, err := s.metadata.GetUUID(ctx, meta)
 	if err != nil {
 		if span != nil {
@@ -848,8 +848,8 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (vec *pay
 		}
 		return nil, status.WrapWithNotFound(fmt.Sprintf("GetObject API meta %s's uuid not found", meta), err, info.Get())
 	}
-	id.Id = uuid
-	vec, err = s.gateway.GetObject(ctx, id, s.copts...)
+	req.Id.Id = uuid
+	vec, err = s.gateway.GetObject(ctx, req, s.copts...)
 	if err != nil {
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
@@ -870,7 +870,7 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) error
 	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Object_ID) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			res, err := s.GetObject(ctx, data.(*payload.Object_ID))
+			res, err := s.GetObject(ctx, data.(*payload.Object_VectorRequest))
 			if err != nil {
 				st, ok := status.FromError(err)
 				if !ok {

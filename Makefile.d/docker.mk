@@ -24,6 +24,7 @@ docker/build: \
 	docker/build/gateway-lb \
 	docker/build/gateway-meta \
 	docker/build/gateway-backup \
+	docker/build/gateway-filter \
 	docker/build/meta-redis \
 	docker/build/meta-cassandra \
 	docker/build/backup-manager-mysql \
@@ -173,6 +174,23 @@ docker/build/gateway-backup:
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
+
+.PHONY: docker/name/gateway-filter
+docker/name/gateway-filter:
+	@echo "$(ORG)/$(FILTER_GATEWAY_IMAGE)"
+
+.PHONY: docker/build/gateway-filter
+## build gateway-filter image
+docker/build/gateway-filter:
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
+	    -f dockers/gateway/filter/Dockerfile \
+	    -t $(ORG)/$(FILTER_GATEWAY_IMAGE):$(TAG) . \
+	    --build-arg GO_VERSION=$(GO_VERSION) \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
+
 
 .PHONY: docker/name/meta-redis
 docker/name/meta-redis:

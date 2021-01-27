@@ -85,7 +85,6 @@ func TestAccessLogInterceptor(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -149,7 +148,6 @@ func TestAccessLogStreamInterceptor(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -227,7 +225,6 @@ func Test_parseMethod(t *testing.T) {
 			if err := test.checkFunc(test.want, gotService, gotMethod); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

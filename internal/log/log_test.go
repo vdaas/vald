@@ -1019,8 +1019,7 @@ func TestDebugd(t *testing.T) {
 		msg     string
 		details []interface{}
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1091,8 +1090,7 @@ func TestInfod(t *testing.T) {
 		msg     string
 		details []interface{}
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1163,8 +1161,7 @@ func TestWarnd(t *testing.T) {
 		msg     string
 		details []interface{}
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1235,8 +1232,7 @@ func TestErrord(t *testing.T) {
 		msg     string
 		details []interface{}
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1307,8 +1303,7 @@ func TestFatald(t *testing.T) {
 		msg     string
 		details []interface{}
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1432,7 +1427,6 @@ func TestClose(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

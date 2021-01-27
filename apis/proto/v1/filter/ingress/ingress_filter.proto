@@ -31,26 +31,20 @@ option (gogoproto.goproto_registration) = true;
 option (gogoproto.marshaler_all) = true;
 option (gogoproto.unmarshaler_all) = true;
 option (gogoproto.sizer_all) = true;
-
 option (gogoproto.messagename_all) = true;
 
-service IngressFilter {
+service Filter {
   rpc GenVector(payload.v1.Object.Blob) returns (payload.v1.Object.Vector) {
     option (google.api.http) = {
-      post : "/object"
+      post : "/filter/ingress/object"
       body : "*"
     };
   }
-  rpc StreamGenVector(stream payload.v1.Object.Blob)
-      returns (stream payload.v1.Object.StreamVector) {}
 
   rpc FilterVector(payload.v1.Object.Vector) returns (payload.v1.Object.Vector) {
     option (google.api.http) = {
-      post : "/vector"
+      post : "/filter/ingress/vector"
       body : "*"
     };
-
   }
-  rpc StreamFilterVector(stream payload.v1.Object.Vector)
-      returns (stream payload.v1.Object.StreamVector) {}
 }

@@ -1851,6 +1851,163 @@ func Test_gRPCClient_Connect(t *testing.T) {
 	}
 }
 
+func Test_gRPCClient_IsConnected(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ctx  context.Context
+		addr string
+	}
+	type fields struct {
+		addrs               map[string]struct{}
+		atomicAddrs         AtomicAddrs
+		poolSize            uint64
+		clientCount         uint64
+		conns               grpcConns
+		hcDur               time.Duration
+		prDur               time.Duration
+		enablePoolRebalance bool
+		resolveDNS          bool
+		dopts               []DialOption
+		copts               []CallOption
+		roccd               string
+		eg                  errgroup.Group
+		bo                  backoff.Backoff
+		gbo                 gbackoff.Config
+		mcd                 time.Duration
+		group               singleflight.Group
+		crl                 sync.Map
+	}
+	type want struct {
+		want bool
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, bool) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got bool) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           addr: "",
+		       },
+		       fields: fields {
+		           addrs: nil,
+		           atomicAddrs: nil,
+		           poolSize: 0,
+		           clientCount: 0,
+		           conns: grpcConns{},
+		           hcDur: nil,
+		           prDur: nil,
+		           enablePoolRebalance: false,
+		           resolveDNS: false,
+		           dopts: nil,
+		           copts: nil,
+		           roccd: "",
+		           eg: nil,
+		           bo: nil,
+		           gbo: nil,
+		           mcd: nil,
+		           group: nil,
+		           crl: sync.Map{},
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           addr: "",
+		           },
+		           fields: fields {
+		           addrs: nil,
+		           atomicAddrs: nil,
+		           poolSize: 0,
+		           clientCount: 0,
+		           conns: grpcConns{},
+		           hcDur: nil,
+		           prDur: nil,
+		           enablePoolRebalance: false,
+		           resolveDNS: false,
+		           dopts: nil,
+		           copts: nil,
+		           roccd: "",
+		           eg: nil,
+		           bo: nil,
+		           gbo: nil,
+		           mcd: nil,
+		           group: nil,
+		           crl: sync.Map{},
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			g := &gRPCClient{
+				addrs:               test.fields.addrs,
+				atomicAddrs:         test.fields.atomicAddrs,
+				poolSize:            test.fields.poolSize,
+				clientCount:         test.fields.clientCount,
+				conns:               test.fields.conns,
+				hcDur:               test.fields.hcDur,
+				prDur:               test.fields.prDur,
+				enablePoolRebalance: test.fields.enablePoolRebalance,
+				resolveDNS:          test.fields.resolveDNS,
+				dopts:               test.fields.dopts,
+				copts:               test.fields.copts,
+				roccd:               test.fields.roccd,
+				eg:                  test.fields.eg,
+				bo:                  test.fields.bo,
+				gbo:                 test.fields.gbo,
+				mcd:                 test.fields.mcd,
+				group:               test.fields.group,
+				crl:                 test.fields.crl,
+			}
+
+			got := g.IsConnected(test.args.ctx, test.args.addr)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
 func Test_gRPCClient_Disconnect(t *testing.T) {
 	t.Parallel()
 	type args struct {

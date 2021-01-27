@@ -19,10 +19,8 @@ k8s/manifest/clean:
 	rm -rf \
 	    k8s/agent \
 	    k8s/discoverer \
-	    k8s/gateway/vald \
-	    k8s/manager/backup \
-	    k8s/manager/compressor \
-	    k8s/manager/index \
+	    k8s/gateway \
+	    k8s/manager \
 	    k8s/meta \
 	    k8s/jobs
 
@@ -164,15 +162,15 @@ k8s/vald/deploy/scylla: \
 	    --set defaults.image.tag=$(VERSION) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
-	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/backup
-	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/compressor
-	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/index
+	kubectl apply -f $(TEMP_DIR)/vald/templates/jobs/db/initialize/cassandra
 	kubectl apply -f $(TEMP_DIR)/vald/templates/agent
 	kubectl apply -f $(TEMP_DIR)/vald/templates/discoverer
-	kubectl apply -f $(TEMP_DIR)/vald/templates/meta
-	# kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/vald
+	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/index
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/lb
+	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/backup
+	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/compressor
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/backup
+	kubectl apply -f $(TEMP_DIR)/vald/templates/meta
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/meta
 	rm -rf $(TEMP_DIR)
 
@@ -186,16 +184,16 @@ k8s/vald/delete/scylla: \
 	    --set defaults.image.tag=$(VERSION) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
-	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/backup
-	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/compressor
-	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/index
-	kubectl delete -f $(TEMP_DIR)/vald/templates/agent
-	kubectl delete -f $(TEMP_DIR)/vald/templates/discoverer
-	kubectl delete -f $(TEMP_DIR)/vald/templates/meta
-	# kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/vald
-	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/lb
-	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/backup
 	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/meta
+	kubectl delete -f $(TEMP_DIR)/vald/templates/meta
+	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/backup
+	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/compressor
+	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/backup
+	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/lb
+	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/index
+	kubectl delete -f $(TEMP_DIR)/vald/templates/discoverer
+	kubectl delete -f $(TEMP_DIR)/vald/templates/agent
+	kubectl delete -f $(TEMP_DIR)/vald/templates/jobs/db/initialize/cassandra
 	rm -rf $(TEMP_DIR)
 
 .PHONY: k8s/external/mysql/deploy
@@ -260,6 +258,7 @@ k8s/external/cassandra/initialize:
 k8s/external/scylla/deploy: \
 	k8s/external/cert-manager/deploy
 	kubectl apply -f https://raw.githubusercontent.com/scylladb/scylla-operator/master/examples/common/operator.yaml
+	sleep 2
 	kubectl wait -n scylla-operator-system --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=scylla-operator-controller-manager-0 --timeout=600s
 	kubectl -n scylla-operator-system get pod
 	kubectl apply -f $(K8S_EXTERNAL_SCYLLA_MANIFEST)
@@ -268,14 +267,11 @@ k8s/external/scylla/deploy: \
 	kubectl wait -n scylla --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=vald-scylla-cluster-dc0-rack0-0 --timeout=600s
 	kubectl -n scylla get ScyllaCluster
 	kubectl -n scylla get pods
-	kubectl apply -f k8s/jobs/db/initialize/scylla
-	kubectl wait --for=condition=complete job/scylla-init --timeout=60s
 
 .PHONY: k8s/external/scylla/delete
 ## delete scylla from k8s
 k8s/external/scylla/delete: \
 	k8s/external/cert-manager/delete
-	kubectl delete -f k8s/jobs/db/initialize/scylla
 	kubectl delete -f $(K8S_EXTERNAL_SCYLLA_MANIFEST)
 	kubectl delete -f https://raw.githubusercontent.com/scylladb/scylla-operator/master/examples/common/operator.yaml
 
@@ -283,6 +279,7 @@ k8s/external/scylla/delete: \
 ## deploy cert-manager
 k8s/external/cert-manager/deploy:
 	kubectl apply -f https://github.com/jetstack/cert-manager/releases/latest/download/cert-manager.yaml
+	sleep 2
 	kubectl wait -n cert-manager --for=condition=ready pod -l app=cert-manager --timeout=60s
 	kubectl wait -n cert-manager --for=condition=ready pod -l app=cainjector --timeout=60s
 	kubectl wait -n cert-manager --for=condition=ready pod -l app=webhook --timeout=60s

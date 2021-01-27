@@ -63,18 +63,22 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, errors.ErrInvalidBackupConfig
 	}
 
-	backupClientOptions := append(
+	bopts := append(
 		cfg.Gateway.BackupManager.Client.Opts(),
 		grpc.WithErrGroup(eg),
 	)
 
-	discovererClientOptions := append(
+	dopts := append(
 		cfg.Gateway.Discoverer.Client.Opts(),
 		grpc.WithErrGroup(eg),
 	)
 
-	metadataClientOptions := append(
+	mopts := append(
 		cfg.Gateway.Meta.Client.Opts(),
+		grpc.WithErrGroup(eg),
+	)
+	aopts := append(
+		cfg.Gateway.Discoverer.AgentClientOptions.Opts(),
 		grpc.WithErrGroup(eg),
 	)
 
@@ -84,20 +88,20 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		if err != nil {
 			return nil, err
 		}
-		backupClientOptions = append(
-			backupClientOptions,
+		bopts = append(
+			bopts,
 			grpc.WithDialOptions(
 				grpc.WithStatsHandler(metric.NewClientHandler()),
 			),
 		)
-		discovererClientOptions = append(
-			discovererClientOptions,
+		dopts = append(
+			dopts,
 			grpc.WithDialOptions(
 				grpc.WithStatsHandler(metric.NewClientHandler()),
 			),
 		)
-		metadataClientOptions = append(
-			metadataClientOptions,
+		mopts = append(
+			mopts,
 			grpc.WithDialOptions(
 				grpc.WithStatsHandler(metric.NewClientHandler()),
 			),
@@ -106,7 +110,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	backup, err = service.NewBackup(
 		service.WithBackupClient(
-			grpc.New(backupClientOptions...),
+			grpc.New(bopts...),
 		),
 	)
 	if err != nil {
@@ -118,9 +122,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		discoverer.WithNamespace(cfg.Gateway.AgentNamespace),
 		discoverer.WithPort(cfg.Gateway.AgentPort),
 		discoverer.WithServiceDNSARecord(cfg.Gateway.AgentDNS),
-		discoverer.WithDiscovererClient(grpc.New(discovererClientOptions...)),
+		discoverer.WithDiscovererClient(grpc.New(dopts...)),
 		discoverer.WithDiscoverDuration(cfg.Gateway.Discoverer.Duration),
-		discoverer.WithOptions(cfg.Gateway.Discoverer.AgentClientOptions.Opts()...),
+		discoverer.WithOptions(aopts...),
 		discoverer.WithNodeName(cfg.Gateway.NodeName),
 	)
 	if err != nil {
@@ -138,9 +142,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, errors.ErrInvalidMetaDataConfig
 	}
 	metadata, err = service.NewMeta(
-		service.WithMetaClient(
-			grpc.New(metadataClientOptions...),
-		),
+		service.WithMetaClient(grpc.New(mopts...)),
 		service.WithMetaCacheEnabled(cfg.Gateway.Meta.EnableCache),
 		service.WithMetaCacheExpireDuration(cfg.Gateway.Meta.CacheExpiration),
 		service.WithMetaCacheExpiredCheckDuration(cfg.Gateway.Meta.ExpiredCacheCheckDuration),
