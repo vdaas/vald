@@ -9,6 +9,10 @@ inputs:
     description: 'buildx builder name'
     required: true
     default: ''
+  platforms:
+    description: 'if it is specified, specified platforms will be used.'
+    required: false
+    default: ''
 outputs:
   IMAGE_NAME:
     description: "image name"
@@ -64,13 +68,19 @@ runs:
       shell: bash
       id: determine_platforms
       run: |
-        if [ "${{ github.event_name }}" = "pull_request" ]; then
-          platforms="linux/amd64"
+        if [ "${TARGET_PLATFORMS}" = "" ]; then
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            platforms="linux/amd64"
+          else
+            platforms=`make docker/platforms`
+          fi
         else
-          platforms=`make docker/platforms`
+          platforms="${TARGET_PLATFORMS}"
         fi
         echo "PLATFORMS is determined: ${platforms}"
         echo "::set-output name=PLATFORMS::${platforms}"
+      env:
+        TARGET_PLATFORMS: ${{ inputs.platforms }}
     - name: Add extra tags
       shell: bash
       id: add_extra_tags
