@@ -229,7 +229,7 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 							for _, name := range decreasedPodNames {
 								log.Debugf("[recovery] creating job for pod %s", name)
 								ctx := context.TODO()
-								if err := r.createJob(ctx, *jobTpl, config.RECOVERY, name, r.agentNamespace); err != nil {
+								if err := r.createJob(ctx, *jobTpl, config.RECOVERY, name, r.agentNamespace, 1); err != nil {
 									log.Errorf("[recovery] failed to create job: %s", err)
 									continue
 								}
@@ -359,7 +359,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 
 						if !r.isJobRunning(namespaceByJobs, ns) {
 							log.Debugf("[bias] creating job for pod %s, rate: %v", maxPodName, rate)
-							if err := r.createJob(ctx, *jobTpl, config.BIAS, maxPodName, ns); err != nil {
+							if err := r.createJob(ctx, *jobTpl, config.BIAS, maxPodName, ns, rate); err != nil {
 								log.Errorf("[bias] failed to create job: %s", err)
 								continue
 							}
@@ -386,7 +386,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, reason config.RebalanceReason, agentName, agentNs string) error {
+func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, reason config.RebalanceReason, agentName, agentNs string, rate float64) error {
 	jobTpl.Name += "-" + strconv.FormatInt(time.Now().UnixNano(), 10)
 
 	if len(r.jobNamespace) != 0 {
@@ -402,6 +402,9 @@ func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, reason confi
 	jobTpl.Labels["target_agent_namespace"] = agentNs
 	jobTpl.Labels["controller_name"] = r.podName
 	jobTpl.Labels["controller_namespace"] = r.podNamespace
+	if rate > 0 {
+		jobTpl.Labels["rate"] = strconv.FormatFloat(rate, 'f', 4, 64)
+	}
 
 	c := r.ctrl.GetManager().GetClient()
 	if err := c.Create(ctx, &jobTpl); err != nil {
