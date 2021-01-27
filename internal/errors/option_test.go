@@ -71,17 +71,7 @@ func TestNewErrInvalidOption(t *testing.T) {
 			errs := []error{
 				New("set option failed"),
 			}
-			var e error
-			for _, err := range errs {
-				if err == nil {
-					continue
-				}
-				if e != nil {
-					e = Wrap(err, e.Error())
-				} else {
-					e = err
-				}
-			}
+			e := errs[0]
 			return test{
 				name: "return ErrInvalidOpton when all of parameter has value.",
 				args: args{
@@ -253,7 +243,7 @@ func TestErrInvalidOption_Error(t *testing.T) {
 		{
 			name: "return empty string when e.err is not nil.",
 			fields: fields{
-				err: Errorf("invalid option. name: WithPort, val: 8080"),
+				err: New("invalid option. name: WithPort, val: 8080"),
 			},
 			want: want{
 				want: "invalid option. name: WithPort, val: 8080",
@@ -587,7 +577,7 @@ func TestErrCriticalOption_Error(t *testing.T) {
 		{
 			name: "return empty string when e.err is not nil",
 			fields: fields{
-				err: Errorf("invalid option. name: WithPort, val: 8080"),
+				err: New("invalid option. name: WithPort, val: 8080"),
 			},
 			want: want{
 				want: "invalid option. name: WithPort, val: 8080",
