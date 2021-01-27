@@ -88,7 +88,7 @@ func (c *client) GRPCClient() grpc.Client {
 }
 
 func (c *client) Target(ctx context.Context, targets ...string) (ingress.FilterClient, error) {
-	if targets == nil {
+	if len(targets) == 0 {
 		return nil, errors.ErrTargetNotFound
 	}
 	if len(targets) == 1 {

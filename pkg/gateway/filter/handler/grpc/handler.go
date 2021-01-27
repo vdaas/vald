@@ -798,7 +798,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 		req.Config.SkipStrictExistCheck = true
 	}
 	targets := req.GetConfig().GetFilters().GetTargets()
-	if targets == nil && s.InsertFilters == nil {
+	if len(targets) == 0 && len(s.InsertFilters) == 0 {
 		return s.gateway.Insert(ctx, req)
 	}
 	addrs := make([]string, 0, len(targets)+len(s.InsertFilters))
@@ -935,7 +935,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 		req.Config.SkipStrictExistCheck = true
 	}
 	targets := req.GetConfig().GetFilters().GetTargets()
-	if targets == nil && s.UpdateFilters == nil {
+	if len(targets) == 0 && len(s.UpdateFilters) == 0 {
 		return s.gateway.Update(ctx, req)
 	}
 	addrs := make([]string, 0, len(targets)+len(s.UpdateFilters))
@@ -1072,7 +1072,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 		req.Config.SkipStrictExistCheck = true
 	}
 	targets := req.GetConfig().GetFilters().GetTargets()
-	if targets == nil && s.UpsertFilters == nil {
+	if len(targets) == 0 && len(s.UpsertFilters) == 0 {
 		return s.gateway.Upsert(ctx, req)
 	}
 	addrs := make([]string, 0, len(targets))
