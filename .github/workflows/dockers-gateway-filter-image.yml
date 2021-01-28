@@ -87,65 +87,12 @@ jobs:
           registry: ghcr.io
           username: ${{ secrets.PACKAGE_USER }}
           password: ${{ secrets.PACKAGE_TOKEN }}
-      - name: Image name
-        id: image_name
-        run: |
-          image_name=`make docker/name/gateway-filter`
-          alter_org=`make docker/name/org/alter`
-          alter_image_name=`make ORG="${alter_org}" docker/name/gateway-filter`
-          base_platforms=`make docker/platforms`
-          echo "IMAGE_NAME=${image_name}" >> $GITHUB_ENV
-          echo "ALTER_IMAGE_NAME=${alter_image_name}" >> $GITHUB_ENV
-          echo "::set-output name=IMAGE_NAME::${image_name}"
-          echo "::set-output name=BASE_PLATFORMS::${base_platforms}"
-      - name: Determine tag name (master)
-        if: github.ref == 'refs/heads/master'
-        run: |
-          echo "nightly" > versions/VALD_VERSION
-          echo "PRIMARY_TAG=nightly" >> $GITHUB_ENV
-          echo "PLATFORMS=${PLATFORMS}" >> $GITHUB_ENV
-        env:
-          PLATFORMS: ${{ steps.image_name.outputs.BASE_PLATFORMS }}
-      - name: Determine tag name (pull request)
-        if: github.event_name == 'pull_request'
-        run: |
-          pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
-          echo "PR-${pr_num}" > versions/VALD_VERSION
-          echo "PRIMARY_TAG=pr-${pr_num}" >> $GITHUB_ENV
-          echo "PLATFORMS=${PLATFORMS}" >> $GITHUB_ENV
-        env:
-          PLATFORMS: linux/amd64
-      - name: Determine tag name (tags)
-        if: startsWith( github.ref, 'refs/tags/')
-        id: determine_tag
-        run: |
-          tag_name=`echo $GITHUB_REF | sed -e 's:^refs/tags/::'`
-          echo "::set-output name=TAG_NAME::${tag_name}"
-          echo "PRIMARY_TAG=${tag_name}" >> $GITHUB_ENV
-          echo "PLATFORMS=${PLATFORMS}" >> $GITHUB_ENV
-        env:
-          PLATFORMS: ${{ steps.image_name.outputs.BASE_PLATFORMS }}
-      - name: Add extra tags
-        run: |
-          EXTRA_TAGS="-t ${ALTER_IMAGE_NAME}:${PRIMARY_TAG}"
-          echo "EXTRA_TAGS=${EXTRA_TAGS}" >> $GITHUB_ENV
-      - name: Add latest tags
-        if: startsWith( github.ref, 'refs/tags/')
-        run: |
-          LATEST_TAGS="-t ${IMAGE_NAME}:latest -t ${ALTER_IMAGE_NAME}:latest"
-          echo "LATEST_TAGS=${LATEST_TAGS}" >> $GITHUB_ENV
-      - name: Build and Push
-        run: |
-          make \
-            DOCKER="docker buildx" \
-            DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} ${CACHE_OPTS} ${LABEL_OPTS} ${EXTRA_TAGS} ${LATEST_TAGS} --push" \
-            TAG="${PRIMARY_TAG}" \
-            docker/build/gateway-filter
-        env:
-          DOCKER_BUILDKIT: 1
-          BUILDER: ${{ steps.buildx.outputs.name }}
-          CACHE_OPTS: "--cache-from=type=local,src=/tmp/.buildx-cache --cache-to=type=local,mode=max,dest=/tmp/.buildx-cache"
-          LABEL_OPTS: "--label org.opencontainers.image.url=${{ github.event.repository.html_url }} --label org.opencontainers.image.source=${{ github.event.repository.html_url }} --label org.opencontainers.image.revision=${{ github.sha }}"
+      - name: Build and Publish
+        id: build_and_publish
+        uses: ./.github/actions/docker-build
+        with:
+          target: gateway-filter
+          builder: ${{ steps.buildx.outputs.name }}
       - name: Initialize CodeQL
         if: startsWith( github.ref, 'refs/tags/')
         uses: github/codeql-action/init@v1
@@ -153,13 +100,13 @@ jobs:
         if: startsWith( github.ref, 'refs/tags/')
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: "${{ steps.image_name.outputs.IMAGE_NAME }}:${{ steps.determine_tag.outputs.TAG_NAME }}"
+          image-ref: "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}"
           format: "table"
       - name: Run vulnerability scanner (sarif)
         if: startsWith( github.ref, 'refs/tags/')
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: "${{ steps.image_name.outputs.IMAGE_NAME }}:${{ steps.determine_tag.outputs.TAG_NAME }}"
+          image-ref: "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}"
           format: "template"
           template: "@/contrib/sarif.tpl"
           output: "trivy-results.sarif"
