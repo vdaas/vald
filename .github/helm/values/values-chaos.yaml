@@ -18,7 +18,7 @@ gateway:
     enabled: false
   lb:
     enabled: true
-    minReplicas: 3
+    minReplicas: 2
     hpa:
       enabled: false
     resources:
@@ -26,10 +26,10 @@ gateway:
         cpu: 100m
         memory: 50Mi
     gateway_config:
-      index_replica: 3
+      index_replica: 2
   backup:
     enabled: true
-    minReplicas: 3
+    minReplicas: 2
     hpa:
       enabled: false
     resources:
@@ -38,7 +38,7 @@ gateway:
         memory: 50Mi
   meta:
     enabled: true
-    minReplicas: 3
+    minReplicas: 2
     hpa:
       enabled: false
     resources:
@@ -47,7 +47,7 @@ gateway:
         memory: 50Mi
 
 agent:
-  minReplicas: 3
+  minReplicas: 5
   maxReplicas: 10
   podManagementPolicy: Parallel
   hpa:
@@ -63,7 +63,7 @@ agent:
     dimension: 784
 
 discoverer:
-  minReplicas: 3
+  minReplicas: 2
   hpa:
     enabled: false
   resources:
@@ -73,7 +73,7 @@ discoverer:
 
 manager:
   compressor:
-    minReplicas: 3
+    minReplicas: 2
     hpa:
       enabled: false
     resources:
@@ -84,7 +84,7 @@ manager:
       compress_algorithm: gob
 
   backup:
-    minReplicas: 3
+    minReplicas: 2
     hpa:
       enabled: false
     resources:
@@ -112,14 +112,14 @@ manager:
         consistency: one
 
   index:
-    replicas: 3
+    replicas: 2
     resources:
       requests:
         cpu: 100m
         memory: 30Mi
 
 meta:
-  minReplicas: 3
+  minReplicas: 2
   hpa:
     enabled: false
   resources:
