@@ -4,17 +4,23 @@
 
 In Vald, performance is a critical requirement and factor for users. If Vald does not perform good and stable performance, user may leave Vald.
 
-So it is important to capture the performance statistic for Vald to measure the performance of Vald and help to find the bottleneck of Vald.
+So it is important to capture the performance statistic for Vald to perform performance tunning and help to find the bottleneck of Vald when there is some performance issue in Vald.
 
 ## How can we resolve this problem?
 
 Benchmarking is used to measure the performance of target elements to produce a performance metrics for future performance investigation.
 
-We can measure the performance statistic in 3 different levels:
+We can measure the performance statistic in 3 different levels to measure different level of performance:
 
-1. Code bench
-1. Code level E2E
-1. Component level E2E
+1. Code benchmarking
+  - to capture performance metrics by function level
+  - to perform lowest level of performance investigation
+
+1. Code level E2E benchmarking
+  - to capture performance metrics by use case level
+
+1. Component level E2E benchmarking
+  - to capture performance metrics by component level
 
 Unlike unit testing, benchmark test only focus of measure on the performance of the function but not the functionality of the function.
 
