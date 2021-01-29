@@ -150,3 +150,17 @@ meta:
       hosts:
         - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
       consistency: one
+
+initializer:
+  cassandra:
+    enabled: true
+    name: scylla-init
+    env:
+      - name: CASSANDRA_HOST
+        value: vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
+    configmap:
+      enabled: true
+      name: scylla-initdb
+      user: ""
+    secret:
+      enabled: false
