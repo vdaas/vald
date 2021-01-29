@@ -5,14 +5,14 @@ go 1.15
 replace (
 	cloud.google.com/go => cloud.google.com/go v0.75.0
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0+incompatible
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.36.32
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.37.0
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
 	github.com/docker/docker => github.com/moby/moby v20.10.2+incompatible
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.4.1
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.5.0
-	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20210126191932-9e3bb6cbd881
+	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20210128155005-14aa133462a3
 	github.com/gogo/googleapis => github.com/gogo/googleapis v1.4.0
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 	github.com/google/go-cmp => github.com/google/go-cmp v0.5.4
@@ -40,7 +40,7 @@ require (
 	code.cloudfoundry.org/bytefmt v0.0.0-20200131002437-cf55d5288a48
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
 	contrib.go.opencensus.io/exporter/prometheus v0.2.0
-	contrib.go.opencensus.io/exporter/stackdriver v0.13.4
+	contrib.go.opencensus.io/exporter/stackdriver v0.13.5
 	github.com/aws/aws-sdk-go v1.23.20
 	github.com/cespare/xxhash/v2 v2.1.1
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
@@ -63,7 +63,7 @@ require (
 	github.com/kpango/fuid v0.0.0-20200823100533-287aa95e0641
 	github.com/kpango/gache v1.2.4
 	github.com/kpango/glg v1.5.1
-	github.com/lucasb-eyer/go-colorful v1.0.3
+	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/pierrec/lz4/v3 v3.3.2
 	github.com/scylladb/gocqlx v1.5.0
 	github.com/tensorflow/tensorflow v0.0.0-00010101000000-000000000000
