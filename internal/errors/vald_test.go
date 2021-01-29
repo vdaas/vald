@@ -79,7 +79,6 @@ func TestErrMetaDataAlreadyExists(t *testing.T) {
 				tt.Errorf("error = %v", err)
 			}
 		})
-
 	}
 }
 
