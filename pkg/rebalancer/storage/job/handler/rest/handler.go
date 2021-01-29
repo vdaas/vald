@@ -24,7 +24,7 @@ import (
 type Handler interface{}
 
 type handler struct {
-	rb rebalancer.Job
+	rb rebalancer.JobServer
 }
 
 func New(opts ...Option) Handler {
