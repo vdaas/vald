@@ -201,6 +201,7 @@ k8s/vald/delete/scylla: \
 k8s/external/mysql/deploy:
 	kubectl apply -f k8s/jobs/db/initialize/mysql/configmap.yaml
 	kubectl apply -f k8s/external/mysql
+	sleep 2
 	kubectl wait --for=condition=ready pod -l app=mysql --timeout=600s
 
 .PHONY: k8s/external/mysql/delete
@@ -220,6 +221,7 @@ k8s/external/mysql/initialize:
 ## deploy redis to k8s
 k8s/external/redis/deploy:
 	kubectl apply -f k8s/external/redis
+	sleep 2
 	kubectl wait --for=condition=ready pod -l app=redis --timeout=600s
 
 .PHONY: k8s/external/redis/delete
@@ -264,6 +266,7 @@ k8s/external/scylla/deploy: \
 	kubectl apply -f $(K8S_EXTERNAL_SCYLLA_MANIFEST)
 	kubectl -n scylla get ScyllaCluster
 	kubectl -n scylla get pods
+	sleep 1
 	kubectl wait -n scylla --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=vald-scylla-cluster-dc0-rack0-0 --timeout=600s
 	kubectl -n scylla get ScyllaCluster
 	kubectl -n scylla get pods
@@ -295,6 +298,7 @@ k8s/external/cert-manager/delete:
 ## deploy minio
 k8s/external/minio/deploy:
 	kubectl apply -f k8s/external/minio
+	sleep 2
 	kubectl wait --for=condition=ready pod -l app=minio --timeout=600s
 
 .PHONY: k8s/external/minio/delete
@@ -306,6 +310,7 @@ k8s/external/minio/delete:
 ## deploy metrics-serrver
 k8s/metrics/metrics-server/deploy:
 	kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+	sleep 2
 	kubectl wait -n kube-system --for=condition=ready pod -l k8s-app=metrics-server --timeout=600s
 
 .PHONY: k8s/metrics/metrics-server/delete
