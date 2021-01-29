@@ -201,7 +201,7 @@ k8s/vald/delete/scylla: \
 k8s/external/mysql/deploy:
 	kubectl apply -f k8s/jobs/db/initialize/mysql/configmap.yaml
 	kubectl apply -f k8s/external/mysql
-	sleep 2
+	sleep ${K8S_SLEEP_DURATION_FOR_WAIT_COMMAND}
 	kubectl wait --for=condition=ready pod -l app=mysql --timeout=600s
 
 .PHONY: k8s/external/mysql/delete
@@ -221,7 +221,7 @@ k8s/external/mysql/initialize:
 ## deploy redis to k8s
 k8s/external/redis/deploy:
 	kubectl apply -f k8s/external/redis
-	sleep 2
+	sleep ${K8S_SLEEP_DURATION_FOR_WAIT_COMMAND}
 	kubectl wait --for=condition=ready pod -l app=redis --timeout=600s
 
 .PHONY: k8s/external/redis/delete
@@ -260,7 +260,7 @@ k8s/external/cassandra/initialize:
 k8s/external/scylla/deploy: \
 	k8s/external/cert-manager/deploy
 	kubectl apply -f https://raw.githubusercontent.com/scylladb/scylla-operator/master/examples/common/operator.yaml
-	sleep 2
+	sleep ${K8S_SLEEP_DURATION_FOR_WAIT_COMMAND}
 	kubectl wait -n scylla-operator-system --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=scylla-operator-controller-manager-0 --timeout=600s
 	kubectl -n scylla-operator-system get pod
 	kubectl apply -f $(K8S_EXTERNAL_SCYLLA_MANIFEST)
@@ -282,7 +282,7 @@ k8s/external/scylla/delete: \
 ## deploy cert-manager
 k8s/external/cert-manager/deploy:
 	kubectl apply -f https://github.com/jetstack/cert-manager/releases/latest/download/cert-manager.yaml
-	sleep 2
+	sleep ${K8S_SLEEP_DURATION_FOR_WAIT_COMMAND}
 	kubectl wait -n cert-manager --for=condition=ready pod -l app=cert-manager --timeout=60s
 	kubectl wait -n cert-manager --for=condition=ready pod -l app=cainjector --timeout=60s
 	kubectl wait -n cert-manager --for=condition=ready pod -l app=webhook --timeout=60s
@@ -298,7 +298,7 @@ k8s/external/cert-manager/delete:
 ## deploy minio
 k8s/external/minio/deploy:
 	kubectl apply -f k8s/external/minio
-	sleep 2
+	sleep ${K8S_SLEEP_DURATION_FOR_WAIT_COMMAND}
 	kubectl wait --for=condition=ready pod -l app=minio --timeout=600s
 
 .PHONY: k8s/external/minio/delete
@@ -310,7 +310,7 @@ k8s/external/minio/delete:
 ## deploy metrics-serrver
 k8s/metrics/metrics-server/deploy:
 	kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
-	sleep 2
+	sleep ${K8S_SLEEP_DURATION_FOR_WAIT_COMMAND}
 	kubectl wait -n kube-system --for=condition=ready pod -l k8s-app=metrics-server --timeout=600s
 
 .PHONY: k8s/metrics/metrics-server/delete

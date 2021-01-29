@@ -223,7 +223,8 @@ DISTROLESS_IMAGE      ?= gcr.io/distroless/static
 DISTROLESS_IMAGE_TAG  ?= nonroot
 UPX_OPTIONS           ?= -9
 
-K8S_EXTERNAL_SCYLLA_MANIFEST ?= k8s/external/scylla/scyllacluster.yaml
+K8S_EXTERNAL_SCYLLA_MANIFEST        ?= k8s/external/scylla/scyllacluster.yaml
+K8S_SLEEP_DURATION_FOR_WAIT_COMMAND ?= 2
 
 COMMA := ,
 SHELL = bash
