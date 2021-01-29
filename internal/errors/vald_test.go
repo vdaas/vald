@@ -128,6 +128,5 @@ func TestErrMetadataCannotFetch(t *testing.T) {
 				tt.Errorf("error = %v", err)
 			}
 		})
-
 	}
 }
