@@ -89,7 +89,7 @@ var (
 	}
 
 	// Wrap represents a function to generate an error that is used by input error and message.
-	// When both of the input is nil, it will return a new error with the message even message is nil.
+	// When both of the input are nil, it will return an error when the error message is not empty.
 	// When the input error is not nil, it will return the error based on the input error.
 	Wrap = func(err error, msg string) error {
 		if err != nil {
