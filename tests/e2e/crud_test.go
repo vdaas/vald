@@ -575,8 +575,10 @@ func TestE2EGetObject(t *testing.T) {
 	t.Log("get object start")
 	for i := getObjectFrom; i < len(ds.train); i++ {
 		id := strconv.Itoa(i)
-		err := sc.Send(&payload.Object_ID{
-			Id: id,
+		err := sc.Send(&payload.Object_VectorRequest{
+			Id: &payload.Object_ID{
+				Id: id,
+			},
 		})
 		if err != nil {
 			t.Fatal(err)
