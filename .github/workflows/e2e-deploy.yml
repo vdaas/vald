@@ -110,8 +110,8 @@ jobs:
         run: |
           sudo apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld
 
-          K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 make k8s/external/mysql/deploy
-          K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 make k8s/external/redis/deploy
+          make K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 k8s/external/mysql/deploy
+          make K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 k8s/external/redis/deploy
 
           helm repo add vald https://vald.vdaas.org/charts
           tag=$(cat versions/VALD_VERSION)
@@ -233,7 +233,7 @@ jobs:
           helm version
       - name: deploy vald
         run: |
-          K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 make k8s/external/scylla/deploy
+          make K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 k8s/external/scylla/deploy
 
           helm repo add vald https://vald.vdaas.org/charts
           tag=$(cat versions/VALD_VERSION)
@@ -341,7 +341,7 @@ jobs:
           helm version
       - name: deploy vald
         run: |
-          K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 make k8s/external/minio/deploy
+          make K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 k8s/external/minio/deploy
 
           helm repo add vald https://vald.vdaas.org/charts
           tag=$(cat versions/VALD_VERSION)
