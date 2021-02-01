@@ -66,7 +66,6 @@ func newStatus(code codes.Code, msg string, err error, details ...interface{}) (
 		return debug
 	}
 	if len(details) != 0 {
-
 		for _, detail := range details {
 			switch v := detail.(type) {
 			case *info.Detail:

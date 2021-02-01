@@ -706,7 +706,9 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 			Id: uuid,
 		})
 		if err != nil || id == nil || len(id.GetId()) == 0 {
-			err = errors.ErrObjectIDNotFound(uuid)
+			if err == nil {
+				err = errors.ErrObjectIDNotFound(uuid)
+			}
 			err = status.WrapWithNotFound(fmt.Sprintf("Update API ID = %v not found", uuid), err,
 				&errdetails.RequestInfo{
 					RequestId:   uuid,
@@ -873,7 +875,9 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 				Id: uuid,
 			})
 			if err != nil || id == nil || len(id.GetId()) == 0 {
-				err = errors.ErrObjectIDNotFound(uuid)
+				if err == nil {
+					err = errors.ErrObjectIDNotFound(uuid)
+				}
 				err = status.WrapWithNotFound(fmt.Sprintf("MultiUpdate API ID = %v not found", uuid), err,
 					&errdetails.RequestInfo{
 						RequestId:   uuid,
@@ -1227,7 +1231,9 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 	if !req.GetConfig().GetSkipStrictExistCheck() {
 		id, err := s.Exists(ctx, id)
 		if err != nil || id == nil || len(id.GetId()) == 0 {
-			err = errors.ErrObjectIDNotFound(id.GetId())
+			if err == nil {
+				err = errors.ErrObjectIDNotFound(id.GetId())
+			}
 			err = status.WrapWithNotFound(fmt.Sprintf("Remove API ID = %v not found", id.GetId()), err,
 				&errdetails.RequestInfo{
 					RequestId:   id.GetId(),
@@ -1354,7 +1360,9 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 		if !req.GetConfig().GetSkipStrictExistCheck() {
 			sid, err := s.Exists(ctx, id)
 			if err != nil || sid == nil || len(sid.GetId()) == 0 {
-				err = errors.ErrObjectIDNotFound(id.GetId())
+				if err == nil {
+					err = errors.ErrObjectIDNotFound(id.GetId())
+				}
 				err = status.WrapWithNotFound(fmt.Sprintf("MultiRemove API ID = %v not found", id.GetId()), err,
 					&errdetails.RequestInfo{
 						RequestId:   id.GetId(),

@@ -298,7 +298,7 @@ func TestE2EInsert(t *testing.T) {
 			if loc == nil {
 				err := res.GetStatus()
 				if err != nil {
-					t.Errorf("an error returned:\terror: %v\tcode: %d\tmessage: %s\tdetails: %s", err, err.GetCode(), err.GetMessage(),errdetails.Serialize(err.GetDetails()))
+					t.Errorf("an error returned:\terror: %v\tcode: %d\tmessage: %s\tdetails: %s", err, err.GetCode(), err.GetMessage(), errdetails.Serialize(err.GetDetails()))
 				}
 			} else {
 				t.Logf("returned: %s", loc)
@@ -380,7 +380,7 @@ func TestE2ESearch(t *testing.T) {
 			if resp == nil {
 				err := res.GetStatus()
 				if err != nil {
-					t.Errorf("an error returned:\terror: %v\tcode: %d\tmessage: %s\tdetails: %s", err, err.GetCode(), err.GetMessage(),errdetails.Serialize(err.GetDetails()))
+					t.Errorf("an error returned:\terror: %v\tcode: %d\tmessage: %s\tdetails: %s", err, err.GetCode(), err.GetMessage(), errdetails.Serialize(err.GetDetails()))
 				}
 			} else {
 				topKIDs := make([]string, len(resp.GetResults()))
@@ -472,7 +472,7 @@ func TestE2ESearchByID(t *testing.T) {
 			if resp == nil {
 				err := res.GetStatus()
 				if err != nil {
-					t.Errorf("an error returned:\terror: %v\tcode: %d\tmessage: %s\tdetails: %s", err, err.GetCode(), err.GetMessage(),errdetails.Serialize(err.GetDetails()))
+					t.Errorf("an error returned:\terror: %v\tcode: %d\tmessage: %s\tdetails: %s", err, err.GetCode(), err.GetMessage(), errdetails.Serialize(err.GetDetails()))
 				}
 			} else {
 				topKIDs := make([]string, len(resp.GetResults()))
@@ -559,7 +559,7 @@ func TestE2EGetObject(t *testing.T) {
 			if resp == nil {
 				err := res.GetStatus()
 				if err != nil {
-					t.Errorf("an error returned:\terror: %v\tcode: %d\tmessage: %s\tdetails: %s", err, err.GetCode(), err.GetMessage(),errdetails.Serialize(err.GetDetails()))
+					t.Errorf("an error returned:\terror: %v\tcode: %d\tmessage: %s\tdetails: %s", err, err.GetCode(), err.GetMessage(), errdetails.Serialize(err.GetDetails()))
 				}
 			} else {
 				if !reflect.DeepEqual(res.GetVector(), ds.train[resp.GetId()]) {
@@ -641,7 +641,7 @@ func TestE2EUpdate(t *testing.T) {
 			if loc == nil {
 				err := res.GetStatus()
 				if err != nil {
-					t.Errorf("an error returned:\terror: %v\tcode: %d\tmessage: %s\tdetails: %s", err, err.GetCode(), err.GetMessage(),errdetails.Serialize(err.GetDetails()))
+					t.Errorf("an error returned:\terror: %v\tcode: %d\tmessage: %s\tdetails: %s", err, err.GetCode(), err.GetMessage(), errdetails.Serialize(err.GetDetails()))
 				}
 			} else {
 				t.Logf("returned: %s", loc)
@@ -722,7 +722,7 @@ func TestE2ERemove(t *testing.T) {
 			if loc == nil {
 				err := res.GetStatus()
 				if err != nil {
-					t.Errorf("an error returned:\terror: %v\tcode: %d\tmessage: %s\tdetails: %s", err, err.GetCode(), err.GetMessage(),errdetails.Serialize(err.GetDetails()))
+					t.Errorf("an error returned:\terror: %v\tcode: %d\tmessage: %s\tdetails: %s", err, err.GetCode(), err.GetMessage(), errdetails.Serialize(err.GetDetails()))
 				}
 			} else {
 				t.Logf("returned: %s", loc)

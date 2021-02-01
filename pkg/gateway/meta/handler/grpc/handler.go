@@ -865,6 +865,9 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 	}
 	uuid, err := s.metadata.GetUUID(ctx, meta)
 	if err != nil || len(uuid) == 0 {
+		if err == nil {
+			err = errors.ErrObjectIDNotFound(meta)
+		}
 		err = status.WrapWithNotFound(fmt.Sprintf("Update API ID = %v not found", uuid), err,
 			&errdetails.RequestInfo{
 				RequestId:   uuid,
