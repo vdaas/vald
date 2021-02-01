@@ -86,10 +86,10 @@ func TestErrInvalidDNSConfig(t *testing.T) {
 			},
 		},
 		{
-			name: "return an ErrInvalidDNSConfig when dnsRefreshDur is 0 minute, dnsCacheExp is 0 minute",
+			name: "return an ErrInvalidDNSConfig when dnsRefreshDur is 0, dnsCacheExp is 0",
 			args: args{
-				dnsRefreshDur: 0 * time.Minute,
-				dnsCacheExp:   0 * time.Minute,
+				dnsRefreshDur: 0,
+				dnsCacheExp:   0,
 			},
 			want: want{
 				want: New("dnsRefreshDuration  > dnsCacheExp, 0s, 0s"),
