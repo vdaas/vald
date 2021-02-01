@@ -143,7 +143,7 @@ jobs:
             -get-object-num=5 \
             -update-num=2 \
             -remove-num=2 \
-            -wait-after-insert=2m \
+            -wait-after-insert=3m \
             -portforward \
             -portforward-ns=default \
             -portforward-pod-name=${podname} \
@@ -265,7 +265,7 @@ jobs:
             -get-object-num=10 \
             -update-num=3 \
             -remove-num=2 \
-            -wait-after-insert=2m \
+            -wait-after-insert=3m \
             -portforward \
             -portforward-ns=default \
             -portforward-pod-name=${podname} \

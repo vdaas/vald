@@ -62,8 +62,8 @@ agent:
       cpu: 100m
       memory: 50Mi
   ngt:
-    auto_index_duration_limit: 3m
-    auto_index_check_duration: 1m
+    auto_index_duration_limit: 2m
+    auto_index_check_duration: 30s
     auto_index_length: 1000
     dimension: 784
 
@@ -122,6 +122,10 @@ manager:
       requests:
         cpu: 100m
         memory: 30Mi
+    indexer:
+      auto_index_duration_limit: 2m
+      auto_index_check_duration: 30s
+      auto_index_length: 1000
 
 meta:
   minReplicas: 3
