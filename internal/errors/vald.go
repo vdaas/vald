@@ -18,10 +18,12 @@
 package errors
 
 var (
+	// ErrMetaDataAlreadyExists represents a function to generate an error that vald metadata is already exists.
 	ErrMetaDataAlreadyExists = func(meta string) error {
 		return Errorf("vald metadata:\t%s\talready exists ", meta)
 	}
 
+	// ErrMetaDataCannotFetch represents a function to generate an error that vald metadata cannot fetch.
 	ErrMetaDataCannotFetch = func() error {
 		return Errorf("vald metadata cannot fetch")
 	}
