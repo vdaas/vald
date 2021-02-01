@@ -25,7 +25,7 @@ var (
 	// ErrFailedInitDialer represents an error that the initialization of the dialer failed.
 	ErrFailedInitDialer = New("failed to init dialer")
 
-	// ErrInvalidDNSConfig represents a function to generate an error that the configuration of DNS is invalid.
+	// ErrInvalidDNSConfig represents a function to generate an error that the configuration of the DNS is invalid.
 	ErrInvalidDNSConfig = func(dnsRefreshDur, dnsCacheExp time.Duration) error {
 		return Errorf("dnsRefreshDuration  > dnsCacheExp, %s, %s", dnsRefreshDur, dnsCacheExp)
 	}
