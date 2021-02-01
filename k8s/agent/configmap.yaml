@@ -1,6 +1,6 @@
 ---
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,10 +20,10 @@ metadata:
   name: vald-agent-ngt-config
   labels:
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v0.0.62
+    helm.sh/chart: vald-v0.0.66
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v0.0.62
+    app.kubernetes.io/version: v0.0.66
     app.kubernetes.io/component: agent
 data:
   config.yaml: |
@@ -45,7 +45,8 @@ data:
             header_table_size: 0
             initial_conn_window_size: 0
             initial_window_size: 0
-            interceptors: []
+            interceptors:
+            - RecoverInterceptor
             keepalive:
               max_conn_age: ""
               max_conn_age_grace: ""
@@ -170,6 +171,7 @@ data:
           instance: ""
           zone: ""
     ngt:
+      auto_create_index_pool_size: 10000
       auto_index_check_duration: 30m
       auto_index_duration_limit: 24h
       auto_index_length: 100

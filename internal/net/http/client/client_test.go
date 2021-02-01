@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,9 +18,11 @@ package client
 
 import (
 	"context"
+	"crypto/tls"
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"reflect"
 	"sync"
 	"sync/atomic"
@@ -28,8 +30,11 @@ import (
 
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
+	htr "github.com/vdaas/vald/internal/net/http/transport"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"go.uber.org/goleak"
+	"golang.org/x/net/http2"
 )
 
 var (
@@ -41,7 +46,13 @@ var (
 	transportComparator = []comparator.Option{
 		comparator.AllowUnexported(transport{}),
 		comparator.AllowUnexported(http.Transport{}),
-		comparator.IgnoreFields(http.Transport{}, "idleLRU"),
+		comparator.IgnoreFields(http.Transport{}, "idleLRU", "altProto", "TLSNextProto"),
+		comparator.Exporter(func(t reflect.Type) bool {
+			if t.Name() == "ert" || t.Name() == "backoff" {
+				return true
+			}
+			return false
+		}),
 
 		comparator.Comparer(func(x, y backoff.Option) bool {
 			return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
@@ -61,8 +72,26 @@ var (
 		comparator.Comparer(func(x, y sync.Once) bool {
 			return reflect.DeepEqual(x, y)
 		}),
+		comparator.Comparer(func(x, y *tls.Config) bool {
+			return reflect.DeepEqual(x, y)
+		}),
+		comparator.Comparer(func(x, y sync.WaitGroup) bool {
+			return reflect.DeepEqual(x, y)
+		}),
 	}
+
+	clientComparator = append(transportComparator,
+		comparator.AllowUnexported(http.Client{}),
+		comparator.FilterPath(func(p comparator.Path) bool {
+			return p.String() == "Transport.bo.jittedInitialDuration"
+		}, comparator.Ignore()),
+	)
 )
+
+func TestMain(m *testing.M) {
+	log.Init()
+	os.Exit(m.Run())
+}
 
 func TestNew(t *testing.T) {
 	type args struct {
@@ -84,36 +113,73 @@ func TestNew(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		if diff := comparator.Diff(got, w.want, clientComparator...); diff != "" {
+			return errors.New(diff)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           opts: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           opts: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "initialize success with no option",
+			args: args{
+				opts: nil,
+			},
+			want: want{
+				want: &http.Client{
+					Transport: htr.NewExpBackoff(
+						htr.WithRoundTripper(func() *http.Transport {
+							t := new(http.Transport)
+							t.Proxy = http.ProxyFromEnvironment
+							_ = http2.ConfigureTransport(t)
+
+							return t
+						}()),
+						htr.WithBackoff(
+							backoff.New(),
+						),
+					),
+				},
+			},
+		},
+		{
+			name: "fails and log invalid option error",
+			args: args{
+				opts: []Option{
+					func(*transport) error {
+						return errors.NewErrInvalidOption("dum", 1)
+					},
+				},
+			},
+			want: want{
+				want: &http.Client{
+					Transport: htr.NewExpBackoff(
+						htr.WithRoundTripper(func() *http.Transport {
+							t := new(http.Transport)
+							t.Proxy = http.ProxyFromEnvironment
+							_ = http2.ConfigureTransport(t)
+
+							return t
+						}()),
+						htr.WithBackoff(
+							backoff.New(),
+						),
+					),
+				},
+			},
+		},
+		{
+			name: "fails with critical option error",
+			args: args{
+				opts: []Option{
+					func(*transport) error {
+						return errors.NewErrCriticalOption("dum", 1)
+					},
+				},
+			},
+			want: want{
+				err: errors.NewErrCriticalOption("dum", 1),
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -133,7 +199,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

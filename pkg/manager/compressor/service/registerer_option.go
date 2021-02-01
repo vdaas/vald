@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,19 +18,17 @@
 package service
 
 import (
-	client "github.com/vdaas/vald/internal/client/compressor"
+	client "github.com/vdaas/vald/internal/client/v1/client/compressor"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/worker"
 )
 
 type RegistererOption func(r *registerer) error
 
-var (
-	defaultRegistererOpts = []RegistererOption{
-		WithRegistererWorker(),
-		WithRegistererErrGroup(errgroup.Get()),
-	}
-)
+var defaultRegistererOpts = []RegistererOption{
+	WithRegistererWorker(),
+	WithRegistererErrGroup(errgroup.Get()),
+}
 
 func WithRegistererWorker(opts ...worker.WorkerOption) RegistererOption {
 	return func(r *registerer) error {

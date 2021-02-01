@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/vdaas/vald/internal/backoff"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/reader"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/writer"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/unit"
 )
@@ -27,11 +29,9 @@ import (
 // Option represents the functional option for client.
 type Option func(c *client) error
 
-var (
-	defaultOpts = []Option{
-		WithErrGroup(errgroup.Get()),
-	}
-)
+var defaultOptions = []Option{
+	WithErrGroup(errgroup.Get()),
+}
 
 // WithErrGroup returns the option to set the eg.
 func WithErrGroup(eg errgroup.Group) Option {
@@ -58,6 +58,26 @@ func WithBucket(bucket string) Option {
 	return func(c *client) error {
 		if len(bucket) != 0 {
 			c.bucket = bucket
+		}
+		return nil
+	}
+}
+
+// WithReader returns the option to set the reader.
+func WithReader(r reader.Reader) Option {
+	return func(c *client) error {
+		if r != nil {
+			c.reader = r
+		}
+		return nil
+	}
+}
+
+// WithWriter returns the option to set the reader.
+func WithWriter(w writer.Writer) Option {
+	return func(c *client) error {
+		if w != nil {
+			c.writer = w
 		}
 		return nil
 	}

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,21 +25,19 @@ import (
 // Option represents the functional option for session.
 type Option func(s *sess) error
 
-var (
-	defaultOpts = []Option{
-		WithMaxRetries(-1),
-		WithForcePathStyle(false),
-		WithUseAccelerate(false),
-		WithUseARNRegion(false),
-		WithUseDualStack(false),
-		WithEnableSSL(true),
-		WithEnableParamValidation(true),
-		WithEnable100Continue(true),
-		WithEnableContentMD5Validation(true),
-		WithEnableEndpointDiscovery(false),
-		WithEnableEndpointHostPrefix(true),
-	}
-)
+var defaultOptions = []Option{
+	WithMaxRetries(-1),
+	WithForcePathStyle(false),
+	WithUseAccelerate(false),
+	WithUseARNRegion(false),
+	WithUseDualStack(false),
+	WithEnableSSL(true),
+	WithEnableParamValidation(true),
+	WithEnable100Continue(true),
+	WithEnableContentMD5Validation(true),
+	WithEnableEndpointDiscovery(false),
+	WithEnableEndpointHostPrefix(true),
+}
 
 // WithEndpoint returns the option to set the endpoint.
 func WithEndpoint(ep string) Option {

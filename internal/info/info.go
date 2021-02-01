@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -138,10 +138,12 @@ func (d Detail) String() string {
 		info[tag] = value
 	}
 
-	infoFormat := fmt.Sprintf("%%-%ds -> %%s", maxlen)
+	infoFormat := fmt.Sprintf("%%-%ds ->\t%%s", maxlen)
 	strs := make([]string, 0, rt.NumField())
 	for tag, value := range info {
-		strs = append(strs, fmt.Sprintf(infoFormat, tag, value))
+		if len(tag) != 0 && len(value) != 0 {
+			strs = append(strs, fmt.Sprintf(infoFormat, tag, value))
+		}
 	}
 	sort.Strings(strs)
 	return "\n" + strings.Join(strs, "\n")
@@ -243,4 +245,8 @@ func Init(name string) {
 		}
 		detail.prepare()
 	})
+}
+
+func (s StackTrace) String() string {
+	return fmt.Sprintf("URL: %s\tFile: %s\tLine: #%d\tFuncName: %s", s.URL, s.File, s.Line, s.FuncName)
 }

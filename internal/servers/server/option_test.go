@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,8 +25,7 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net"
-	"google.golang.org/grpc"
-
+	"github.com/vdaas/vald/internal/net/grpc"
 	"go.uber.org/goleak"
 )
 
@@ -2254,6 +2253,90 @@ func TestWithGRPCInterceptors(t *testing.T) {
 				return nil
 			},
 		},
+		{
+			name:  "Add RecoverInterceptor using 'RecoverInterceptor'",
+			names: []string{"RecoverInterceptor"},
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if len(got.grpc.opts) != 2 {
+					return errors.Errorf("Expecting two elements in got.grpc.opts: got = %#v", got)
+				}
+
+				return nil
+			},
+		},
+		{
+			name:  "Add RecoverInterceptor using 'Recover'",
+			names: []string{"Recover"},
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if len(got.grpc.opts) != 2 {
+					return errors.Errorf("Expecting two elements in got.grpc.opts: got = %#v", got)
+				}
+
+				return nil
+			},
+		},
+		{
+			name:  "Add AccessLogInterceptor using 'AccessLogInterceptor'",
+			names: []string{"AccessLogInterceptor"},
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if len(got.grpc.opts) != 2 {
+					return errors.Errorf("Expecting two elements in got.grpc.opts: got = %#v", got)
+				}
+
+				return nil
+			},
+		},
+		{
+			name:  "Add AccessLogInterceptor using 'AccessLog'",
+			names: []string{"AccessLog"},
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if len(got.grpc.opts) != 2 {
+					return errors.Errorf("Expecting two elements in got.grpc.opts: got = %#v", got)
+				}
+
+				return nil
+			},
+		},
+		{
+			name:  "Add TracePayloadInterceptor using 'TracePayloadInterceptor'",
+			names: []string{"TracePayloadInterceptor"},
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if len(got.grpc.opts) != 2 {
+					return errors.Errorf("Expecting two elements in got.grpc.opts: got = %#v", got)
+				}
+
+				return nil
+			},
+		},
+		{
+			name:  "Add TracePayloadInterceptor using 'TracePayload'",
+			names: []string{"TracePayload"},
+			checkFunc: func(opt Option) error {
+				got := new(server)
+				opt(got)
+
+				if len(got.grpc.opts) != 2 {
+					return errors.Errorf("Expecting two elements in got.grpc.opts: got = %#v", got)
+				}
+
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -2301,7 +2384,7 @@ func TestDefaultOption(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.checkFunc(defaultOpts); err != nil {
+			if err := tt.checkFunc(defaultOptions); err != nil {
 				t.Error(err)
 			}
 		})

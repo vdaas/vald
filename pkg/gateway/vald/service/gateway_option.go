@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,17 +18,15 @@
 package service
 
 import (
-	"github.com/vdaas/vald/internal/client/discoverer"
+	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	"github.com/vdaas/vald/internal/errgroup"
 )
 
 type GWOption func(g *gateway) error
 
-var (
-	defaultGWOpts = []GWOption{
-		WithErrGroup(errgroup.Get()),
-	}
-)
+var defaultGWOpts = []GWOption{
+	WithErrGroup(errgroup.Get()),
+}
 
 func WithDiscoverer(c discoverer.Client) GWOption {
 	return func(g *gateway) error {

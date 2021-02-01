@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +14,12 @@
 # limitations under the License.
 #
 ARG GO_VERSION=latest
+ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
 FROM golang:${GO_VERSION} AS golang
 
 FROM ubuntu:devel AS builder
+LABEL maintainer "${MAINTAINER}"
 
 ENV GO111MODULE on
 ENV DEBIAN_FRONTEND noninteractive
@@ -48,5 +50,4 @@ WORKDIR ${GOPATH}/src/github.com/vdaas/vald
 COPY go.mod .
 COPY go.sum .
 
-RUN go mod tidy \
-    && go mod download
+RUN go mod download

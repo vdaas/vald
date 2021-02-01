@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import (
 	"context"
 
 	"github.com/vdaas/vald/apis/grpc/gateway/vald"
-	"github.com/vdaas/vald/internal/client/discoverer"
+	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -63,41 +63,45 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, errors.ErrInvalidBackupConfig
 	}
 
-	backupClientOptions := append(
+	bopts := append(
 		cfg.Gateway.BackupManager.Client.Opts(),
 		grpc.WithErrGroup(eg),
 	)
 
-	discovererClientOptions := append(
+	dopts := append(
 		cfg.Gateway.Discoverer.Client.Opts(),
 		grpc.WithErrGroup(eg),
 	)
 
-	metadataClientOptions := append(
+	mopts := append(
 		cfg.Gateway.Meta.Client.Opts(),
+		grpc.WithErrGroup(eg),
+	)
+	aopts := append(
+		cfg.Gateway.Discoverer.AgentClientOptions.Opts(),
 		grpc.WithErrGroup(eg),
 	)
 
 	var obs observability.Observability
-	if cfg.Observability.Enabled {
+	if cfg.Observability != nil && cfg.Observability.Enabled {
 		obs, err = observability.NewWithConfig(cfg.Observability)
 		if err != nil {
 			return nil, err
 		}
-		backupClientOptions = append(
-			backupClientOptions,
+		bopts = append(
+			bopts,
 			grpc.WithDialOptions(
 				grpc.WithStatsHandler(metric.NewClientHandler()),
 			),
 		)
-		discovererClientOptions = append(
-			discovererClientOptions,
+		dopts = append(
+			dopts,
 			grpc.WithDialOptions(
 				grpc.WithStatsHandler(metric.NewClientHandler()),
 			),
 		)
-		metadataClientOptions = append(
-			metadataClientOptions,
+		mopts = append(
+			mopts,
 			grpc.WithDialOptions(
 				grpc.WithStatsHandler(metric.NewClientHandler()),
 			),
@@ -105,9 +109,8 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 
 	backup, err = service.NewBackup(
-		service.WithBackupAddr(cfg.Gateway.BackupManager.Client.Addrs[0]),
 		service.WithBackupClient(
-			grpc.New(backupClientOptions...),
+			grpc.New(bopts...),
 		),
 	)
 	if err != nil {
@@ -119,13 +122,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		discoverer.WithNamespace(cfg.Gateway.AgentNamespace),
 		discoverer.WithPort(cfg.Gateway.AgentPort),
 		discoverer.WithServiceDNSARecord(cfg.Gateway.AgentDNS),
-		discoverer.WithDiscovererClient(grpc.New(discovererClientOptions...)),
-		discoverer.WithDiscovererHostPort(
-			cfg.Gateway.Discoverer.Host,
-			cfg.Gateway.Discoverer.Port,
-		),
+		discoverer.WithDiscovererClient(grpc.New(dopts...)),
 		discoverer.WithDiscoverDuration(cfg.Gateway.Discoverer.Duration),
-		discoverer.WithOptions(cfg.Gateway.Discoverer.AgentClient.Opts()...),
+		discoverer.WithOptions(aopts...),
 		discoverer.WithNodeName(cfg.Gateway.NodeName),
 	)
 	if err != nil {
@@ -143,10 +142,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, errors.ErrInvalidMetaDataConfig
 	}
 	metadata, err = service.NewMeta(
-		service.WithMetaAddr(cfg.Gateway.Meta.Client.Addrs[0]),
-		service.WithMetaClient(
-			grpc.New(metadataClientOptions...),
-		),
+		service.WithMetaClient(grpc.New(mopts...)),
 		service.WithMetaCacheEnabled(cfg.Gateway.Meta.EnableCache),
 		service.WithMetaCacheExpireDuration(cfg.Gateway.Meta.CacheExpiration),
 		service.WithMetaCacheExpiredCheckDuration(cfg.Gateway.Meta.ExpiredCacheCheckDuration),
@@ -164,7 +160,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			ef.Client.Opts(),
 			grpc.WithErrGroup(eg),
 		)
-		if cfg.Observability.Enabled {
+		if cfg.Observability != nil && cfg.Observability.Enabled {
 			egressFilterClientOptions = append(
 				egressFilterClientOptions,
 				grpc.WithDialOptions(
@@ -177,6 +173,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 				grpc.New(egressFilterClientOptions...),
 			),
 		)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	v := handler.New(
@@ -193,17 +192,13 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
 			vald.RegisterValdServer(srv, v)
 		}),
-		server.WithGRPCOption(
-			grpc.ChainUnaryInterceptor(grpc.RecoverInterceptor()),
-			grpc.ChainStreamInterceptor(grpc.RecoverStreamInterceptor()),
-		),
 		server.WithPreStopFunction(func() error {
 			// TODO notify another gateway and scheduler
 			return nil
 		}),
 	}
 
-	if cfg.Observability.Enabled {
+	if cfg.Observability != nil && cfg.Observability.Enabled {
 		grpcServerOptions = append(
 			grpcServerOptions,
 			server.WithGRPCOption(

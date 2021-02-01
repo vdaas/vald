@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package usecase
 import (
 	"context"
 
-	"github.com/vdaas/vald/apis/grpc/discoverer"
+	"github.com/vdaas/vald/apis/grpc/v1/discoverer"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -65,10 +65,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
 			discoverer.RegisterDiscovererServer(srv, h)
 		}),
-		server.WithGRPCOption(
-			grpc.ChainUnaryInterceptor(grpc.RecoverInterceptor()),
-			grpc.ChainStreamInterceptor(grpc.RecoverStreamInterceptor()),
-		),
 		server.WithPreStartFunc(func() error {
 			// TODO check unbackupped upstream
 			return nil
@@ -114,7 +110,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		}),
 		// TODO add GraphQL handler
 	)
-
 	if err != nil {
 		return nil, err
 	}

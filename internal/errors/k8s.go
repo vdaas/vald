@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,6 +17,4 @@
 // Package errors provides error types and function
 package errors
 
-var (
-	ErrInvalidReconcilerConfig = New("invalid reconciler config")
-)
+var ErrInvalidReconcilerConfig = New("invalid reconciler config")

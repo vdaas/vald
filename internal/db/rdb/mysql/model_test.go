@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,18 +17,16 @@
 package mysql
 
 import (
-	"database/sql"
 	"reflect"
 	"testing"
 
-	dbr "github.com/gocraft/dbr/v2"
 	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
 )
 
-func Test_metaVector_GetUUID(t *testing.T) {
+func Test_vector_GetUUID(t *testing.T) {
 	type fields struct {
-		meta meta
+		data data
 	}
 	type want struct {
 		want string
@@ -49,9 +47,9 @@ func Test_metaVector_GetUUID(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns UUID when UUID of meta is not empty",
+			name: "returns UUID when UUID of vector is not empty",
 			fields: fields{
-				meta: meta{
+				data: data{
 					UUID: "vald-vector-01",
 				},
 			},
@@ -60,9 +58,9 @@ func Test_metaVector_GetUUID(t *testing.T) {
 			},
 		},
 		{
-			name: "returns UUID when UUID of meta is empty string",
+			name: "returns UUID when UUID of vector is empty string",
 			fields: fields{
-				meta: meta{
+				data: data{
 					UUID: "",
 				},
 			},
@@ -84,22 +82,21 @@ func Test_metaVector_GetUUID(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			m := &metaVector{
-				meta: test.fields.meta,
+			m := &vector{
+				data: test.fields.data,
 			}
 
 			got := m.GetUUID()
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
-func Test_metaVector_GetVector(t *testing.T) {
+func Test_vector_GetVector(t *testing.T) {
 	type fields struct {
-		meta meta
+		data data
 	}
 	type want struct {
 		want []byte
@@ -122,9 +119,9 @@ func Test_metaVector_GetVector(t *testing.T) {
 		func() test {
 			v := []byte("vdaas/vald")
 			return test{
-				name: "returns Vector when Vector of meta is not empty",
+				name: "returns Vector when Vector of vector is not empty",
 				fields: fields{
-					meta: meta{
+					data: data{
 						Vector: v,
 					},
 				},
@@ -135,7 +132,7 @@ func Test_metaVector_GetVector(t *testing.T) {
 		}(),
 		func() test {
 			return test{
-				name: "returns Vector when Vector of meta is empty",
+				name: "returns Vector when Vector of vector is empty",
 				want: want{
 					want: nil,
 				},
@@ -155,91 +152,19 @@ func Test_metaVector_GetVector(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			m := &metaVector{
-				meta: test.fields.meta,
+			m := &vector{
+				data: test.fields.data,
 			}
 
 			got := m.GetVector()
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
-func Test_metaVector_GetMeta(t *testing.T) {
-	type fields struct {
-		meta meta
-	}
-	type want struct {
-		want string
-	}
-	type test struct {
-		name       string
-		fields     fields
-		want       want
-		checkFunc  func(want, string) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, got string) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		{
-			name: "returns MetaString when MetaString is not empty",
-			fields: fields{
-				meta: meta{
-					Meta: dbr.NullString{
-						sql.NullString{
-							String: "vdaas/vald",
-							Valid:  false,
-						},
-					},
-				},
-			},
-			want: want{
-				want: "vdaas/vald",
-			},
-		},
-		{
-			name: "returns MetaString when MetaString is empty",
-			want: want{
-				want: "",
-			},
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			m := &metaVector{
-				meta: test.fields.meta,
-			}
-
-			got := m.GetMeta()
-			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_metaVector_GetIPs(t *testing.T) {
+func Test_vector_GetIPs(t *testing.T) {
 	type fields struct {
 		podIPs []podIP
 	}
@@ -302,7 +227,7 @@ func Test_metaVector_GetIPs(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			m := &metaVector{
+			m := &vector{
 				podIPs: test.fields.podIPs,
 			}
 
@@ -310,7 +235,6 @@ func Test_metaVector_GetIPs(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

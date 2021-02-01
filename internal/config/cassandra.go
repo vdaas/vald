@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -67,7 +67,7 @@ type Cassandra struct {
 	VKTable string `json:"vk_table" yaml:"vk_table"`
 
 	// backup manager
-	MetaTable string `json:"meta_table" yaml:"meta_table"`
+	VectorBackupTable string `json:"vector_backup_table" yaml:"vector_backup_table"`
 }
 
 type PoolConfig struct {
@@ -138,7 +138,7 @@ func (c *Cassandra) Bind() *Cassandra {
 	c.KVTable = GetActualValue(c.KVTable)
 	c.VKTable = GetActualValue(c.VKTable)
 
-	c.MetaTable = GetActualValue(c.MetaTable)
+	c.VectorBackupTable = GetActualValue(c.VectorBackupTable)
 
 	return c
 }

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,24 +24,22 @@ import (
 
 type Option func(*ngtdClient)
 
-var (
-	defaultOptions = []Option{
-		WithAddr("127.0.0.1:8200"),
-		WithGRPCClientOption(
-			(&config.GRPCClient{
-				Addrs: []string{
-					"127.0.0.1:8200",
-				},
-				CallOption: &config.CallOption{
-					MaxRecvMsgSize: 100000000000,
-				},
-				DialOption: &config.DialOption{
-					Insecure: true,
-				},
-			}).Bind().Opts()...,
-		),
-	}
-)
+var defaultOptions = []Option{
+	WithAddr("127.0.0.1:8200"),
+	WithGRPCClientOption(
+		(&config.GRPCClient{
+			Addrs: []string{
+				"127.0.0.1:8200",
+			},
+			CallOption: &config.CallOption{
+				MaxRecvMsgSize: 100000000000,
+			},
+			DialOption: &config.DialOption{
+				Insecure: true,
+			},
+		}).Bind().Opts()...,
+	),
+}
 
 func WithAddr(addr string) Option {
 	return func(c *ngtdClient) {

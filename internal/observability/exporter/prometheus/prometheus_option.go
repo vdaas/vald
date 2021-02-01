@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,17 +21,15 @@ import "github.com/vdaas/vald/internal/log"
 
 type PrometheusOption func(*prometheusOptions) error
 
-var (
-	prometheusDefaultOpts = []PrometheusOption{
-		WithEndpoint("/metrics"),
-		WithNamespace("vald"),
-		WithOnErrorFunc(func(err error) {
-			if err != nil {
-				log.Warnf("Failed to export to Prometheus: %v", err)
-			}
-		}),
-	}
-)
+var prometheusDefaultOpts = []PrometheusOption{
+	WithEndpoint("/metrics"),
+	WithNamespace("vald"),
+	WithOnErrorFunc(func(err error) {
+		if err != nil {
+			log.Warnf("Failed to export to Prometheus: %v", err)
+		}
+	}),
+}
 
 func WithEndpoint(ep string) PrometheusOption {
 	return func(po *prometheusOptions) error {

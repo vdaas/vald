@@ -3,7 +3,7 @@ Vald
 
 This is a Helm chart to install Vald components.
 
-Current chart version is `v0.0.62`
+Current chart version is `v0.0.66`
 
 Table of Contents
 ---
@@ -89,7 +89,7 @@ Configuration
 | agent.ngt.default_pool_size | int | `10000` | default create index batch pool size |
 | agent.ngt.default_radius | float | `-1` | default radius used for search |
 | agent.ngt.dimension | int | `4096` | vector dimension |
-| agent.ngt.distance_type | string | `"l2"` | distance type. it should be `l1`, `l2`, `angle`, `hamming`, `cosine`, `normalizedangle`, `normalizedcosine` or `jaccard`. for further details about NGT libraries supported distance is https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference and vald agent's supported NGT distance type is https://pkg.go.dev/github.com/vdaas/vald/internal/core/ngt#pkg-constants |
+| agent.ngt.distance_type | string | `"l2"` | distance type. it should be `l1`, `l2`, `angle`, `hamming`, `cosine`, `normalizedangle`, `normalizedcosine` or `jaccard`. for further details about NGT libraries supported distance is https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference and vald agent's supported NGT distance type is https://pkg.go.dev/github.com/vdaas/vald/internal/core/algorithm/ngt#pkg-constants |
 | agent.ngt.enable_in_memory_mode | bool | `true` | in-memory mode enabled |
 | agent.ngt.enable_proactive_gc | bool | `true` | enable proactive GC call for reducing heap memory allocation |
 | agent.ngt.index_path | string | `""` | path to index data |
@@ -235,7 +235,7 @@ Configuration
 | backupManager.cassandra.config.max_prepared_stmts | int | `1000` | maximum number of prepared statements |
 | backupManager.cassandra.config.max_routing_key_info | int | `1000` | maximum number of routing key info |
 | backupManager.cassandra.config.max_wait_schema_agreement | string | `"1m"` | maximum duration to wait for schema agreement |
-| backupManager.cassandra.config.meta_table | string | `"meta_vector"` | table name of backup |
+| backupManager.cassandra.config.vector_backup_table | string | `"backup_vector"` | table name of backup |
 | backupManager.cassandra.config.num_conns | int | `2` | number of connections per hosts |
 | backupManager.cassandra.config.page_size | int | `5000` | page size |
 | backupManager.cassandra.config.password | string | `"_CASSANDRA_PASSWORD_"` | cassandra password |
@@ -405,7 +405,7 @@ Configuration
 | defaults.grpc.client.dial_option.keep_alive.permit_without_stream | bool | `false` | gRPC client keep alive permit without stream |
 | defaults.grpc.client.dial_option.keep_alive.time | string | `""` | gRPC client keep alive time |
 | defaults.grpc.client.dial_option.keep_alive.timeout | string | `""` | gRPC client keep alive timeout |
-| defaults.grpc.client.dial_option.max_backoff_delay | string | `""` | gRPC client dial option max backoff delay |
+| defaults.grpc.client.dial_option.backoff_max_delay | string | `""` | gRPC client dial option max backoff delay |
 | defaults.grpc.client.dial_option.max_msg_size | int | `0` | gRPC client dial option max message size |
 | defaults.grpc.client.dial_option.read_buffer_size | int | `0` | gRPC client dial option read buffer size |
 | defaults.grpc.client.dial_option.tcp.dialer.dual_stack_enabled | bool | `true` | gRPC client TCP dialer dual stack enabled |
@@ -425,7 +425,7 @@ Configuration
 | defaults.grpc.client.tls.cert | string | `"/path/to/cert"` | gRPC client TLS cert path |
 | defaults.grpc.client.tls.enabled | bool | `false` | gRPC client TLS enabled |
 | defaults.grpc.client.tls.key | string | `"/path/to/key"` | gRPC client TLS key path |
-| defaults.image.tag | string | `"v0.0.62"` | docker image tag |
+| defaults.image.tag | string | `"v0.0.66"` | docker image tag |
 | defaults.logging.format | string | `"raw"` | logging format. logging format must be `raw` or `json` |
 | defaults.logging.level | string | `"debug"` | logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`. |
 | defaults.logging.logger | string | `"glg"` | logger name. currently logger must be `glg`. |
@@ -656,8 +656,8 @@ Configuration
 | gateway.filter.ingress | list | `[""]` | ingress filters |
 | gateway.gateway_config.agent_namespace | string | `"_MY_POD_NAMESPACE_"` | agent namespace |
 | gateway.gateway_config.backup.client | object | `{}` | gRPC client for backup (overrides defaults.grpc.client) |
-| gateway.gateway_config.discoverer.agent_client | object | `{}` | gRPC client for agents (overrides defaults.grpc.client) |
-| gateway.gateway_config.discoverer.discover_client | object | `{}` | gRPC client for discoverer (overrides defaults.grpc.client) |
+| gateway.gateway_config.discoverer.agent_client_options | object | `{}` | gRPC client for agents (overrides defaults.grpc.client) |
+| gateway.gateway_config.discoverer.client | object | `{}` | gRPC client for discoverer (overrides defaults.grpc.client) |
 | gateway.gateway_config.discoverer.duration | string | `"200ms"` | discoverer duration |
 | gateway.gateway_config.index_replica | int | `5` | number of index replica |
 | gateway.gateway_config.meta.cache_expiration | string | `"30m"` | meta cache expire duration |
@@ -722,8 +722,8 @@ Configuration
 | indexManager.indexer.auto_index_length | int | `100` | number of cache to trigger automatic indexing |
 | indexManager.indexer.concurrency | int | `1` | concurrency |
 | indexManager.indexer.creation_pool_size | int | `10000` | number of pool size of create index processing |
-| indexManager.indexer.discoverer.agent_client | object | `{"dial_option":{"tcp":{"dialer":{"keep_alive":"15m"}}}}` | gRPC client for agents (overrides defaults.grpc.client) |
-| indexManager.indexer.discoverer.discover_client | object | `{}` | gRPC client for discoverer (overrides defaults.grpc.client) |
+| indexManager.indexer.discoverer.agent_client_options | object | `{"dial_option":{"tcp":{"dialer":{"keep_alive":"15m"}}}}` | gRPC client for agents (overrides defaults.grpc.client) |
+| indexManager.indexer.discoverer.client | object | `{}` | gRPC client for discoverer (overrides defaults.grpc.client) |
 | indexManager.indexer.discoverer.duration | string | `"500ms"` | refresh duration to discover |
 | indexManager.indexer.node_name | string | `""` | node name |
 | indexManager.initContainers | list | `[{"image":"busybox","name":"wait-for-agent","sleepDuration":2,"target":"agent","type":"wait-for"},{"image":"busybox","name":"wait-for-discoverer","sleepDuration":2,"target":"discoverer","type":"wait-for"}]` | init containers |
@@ -755,7 +755,7 @@ Configuration
 | indexManager.volumeMounts | list | `[]` | volume mounts |
 | indexManager.volumes | list | `[]` | volumes |
 | initializer.cassandra.configmap.backup.enabled | bool | `true` | backup table enabled |
-| initializer.cassandra.configmap.backup.name | string | `"meta_vector"` | name of backup table |
+| initializer.cassandra.configmap.backup.name | string | `"backup_vector"` | name of backup table |
 | initializer.cassandra.configmap.enabled | bool | `false` | cassandra schema configmap will be created |
 | initializer.cassandra.configmap.filename | string | `"init.cql"` | cassandra schema filename |
 | initializer.cassandra.configmap.keyspace | string | `"vald"` | cassandra keyspace |
@@ -825,7 +825,7 @@ Configuration
 | meta.cassandra.config.max_prepared_stmts | int | `1000` | maximum number of prepared statements |
 | meta.cassandra.config.max_routing_key_info | int | `1000` | maximum number of routing key info |
 | meta.cassandra.config.max_wait_schema_agreement | string | `"1m"` | maximum duration to wait for schema agreement |
-| meta.cassandra.config.meta_table | string | `"meta_vector"` | table name of backup |
+| meta.cassandra.config.vector_backup_table | string | `"backup_vector"` | table name of backup |
 | meta.cassandra.config.num_conns | int | `2` | number of connections per hosts |
 | meta.cassandra.config.page_size | int | `5000` | page size |
 | meta.cassandra.config.password | string | `"_CASSANDRA_PASSWORD_"` | cassandra password |

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,11 +27,9 @@ import (
 	"go.uber.org/goleak"
 )
 
-var (
-	goleakIgnoreOptions = []goleak.Option{
-		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
-	}
-)
+var goleakIgnoreOptions = []goleak.Option{
+	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+}
 
 func TestWithErrGroup(t *testing.T) {
 	type T = writer
@@ -279,81 +277,6 @@ func TestWithBucket(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			got := WithBucket(test.args.bucket)
-			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func TestWithKey(t *testing.T) {
-	type T = writer
-	type args struct {
-		key string
-	}
-	type want struct {
-		obj *T
-		err error
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, *T, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-
-	defaultCheckFunc := func(w want, obj *T, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(obj, w.obj) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
-		}
-		return nil
-	}
-
-	tests := []test{
-		{
-			name: "set success when key is not empty",
-			args: args{
-				key: "key",
-			},
-			want: want{
-				obj: &T{
-					key: "key",
-				},
-			},
-		},
-
-		{
-			name: "returns error when key is empty",
-			args: args{
-				key: "",
-			},
-			want: want{
-				obj: new(T),
-				err: errors.NewErrInvalidOption("key", ""),
-			},
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			got := WithKey(test.args.key)
 			obj := new(T)
 			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)

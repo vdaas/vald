@@ -1,6 +1,6 @@
 ---
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,25 +25,68 @@ data:
       scrape_interval:     5s
       evaluation_interval: 5s
     scrape_configs:
-      - job_name: 'vald-service-endpoints'
+      - job_name: vald-service-pods
         kubernetes_sd_configs:
-        - role: endpoints
+          - role: pod
         relabel_configs:
-        - source_labels:
-          - __meta_kubernetes_namespace
-          regex: kube-system
-          action: drop
-        - source_labels:
-          - __meta_kubernetes_namespace
-          - __meta_kubernetes_pod_container_port_number
-          regex: default;6061
-          action: keep
-        - source_labels:
-          - __meta_kubernetes_pod_name
-          target_label: pod
-        - source_labels:
-          - __meta_kubernetes_service_name
-          target_label: job
-        - source_labels:
-          - __meta_kubernetes_pod_node_name
-          target_label: node
+          - source_labels:
+            - __meta_kubernetes_pod_label_name
+            target_label: __service__
+          - source_labels:
+            - __meta_kubernetes_pod_node_name
+            target_label: __host__
+          - action: keep
+            regex: vald
+            source_labels:
+              - __meta_kubernetes_pod_label_app_kubernetes_io_name
+          - action: labelmap
+            regex: __meta_kubernetes_pod_label_(.+)
+          - action: replace
+            replacement: $1
+            separator: /
+            source_labels:
+            - __meta_kubernetes_namespace
+            - __service__
+            target_label: job
+          - action: replace
+            source_labels:
+            - __meta_kubernetes_namespace
+            target_label: namespace
+          - action: replace
+            source_labels:
+            - __meta_kubernetes_pod_name
+            target_label: instance
+          - action: replace
+            source_labels:
+            - __meta_kubernetes_pod_container_name
+            target_label: container_name
+      - job_name: cAdvisor
+        kubernetes_sd_configs:
+          - role: node
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+          - target_label: __address__
+            replacement: kubernetes.default.svc:443
+          - source_labels: [__meta_kubernetes_node_name]
+            regex: (.+)
+            target_label: __metrics_path__
+            replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
+      - job_name: kubernetes-pods
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: (.+):(?:\d+);(\d+)
+            replacement: ${1}:${2}
+            target_label: __address__

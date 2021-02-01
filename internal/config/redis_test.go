@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,18 +21,22 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/vdaas/vald/internal/db/kvs/redis"
 	"github.com/vdaas/vald/internal/errors"
+	"go.uber.org/goleak"
 )
 
 func TestRedis_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		Addrs                []string
 		DB                   int
 		DialTimeout          string
 		IdleCheckFrequency   string
 		IdleTimeout          string
-		InitialPingTimeLimit string
 		InitialPingDuration  string
+		InitialPingTimeLimit string
+		KVPrefix             string
 		KeyPref              string
 		MaxConnAge           string
 		MaxRedirects         int
@@ -40,19 +44,20 @@ func TestRedis_Bind(t *testing.T) {
 		MaxRetryBackoff      string
 		MinIdleConns         int
 		MinRetryBackoff      string
+		Network              string
 		Password             string
 		PoolSize             int
 		PoolTimeout          string
+		PrefixDelimiter      string
 		ReadOnly             bool
 		ReadTimeout          string
 		RouteByLatency       bool
 		RouteRandomly        bool
-		TLS                  *TLS
 		TCP                  *TCP
-		WriteTimeout         string
-		KVPrefix             string
+		TLS                  *TLS
+		Username             string
 		VKPrefix             string
-		PrefixDelimiter      string
+		WriteTimeout         string
 	}
 	type want struct {
 		want *Redis
@@ -82,8 +87,9 @@ func TestRedis_Bind(t *testing.T) {
 		           DialTimeout: "",
 		           IdleCheckFrequency: "",
 		           IdleTimeout: "",
-		           InitialPingTimeLimit: "",
 		           InitialPingDuration: "",
+		           InitialPingTimeLimit: "",
+		           KVPrefix: "",
 		           KeyPref: "",
 		           MaxConnAge: "",
 		           MaxRedirects: 0,
@@ -91,19 +97,20 @@ func TestRedis_Bind(t *testing.T) {
 		           MaxRetryBackoff: "",
 		           MinIdleConns: 0,
 		           MinRetryBackoff: "",
+		           Network: "",
 		           Password: "",
 		           PoolSize: 0,
 		           PoolTimeout: "",
+		           PrefixDelimiter: "",
 		           ReadOnly: false,
 		           ReadTimeout: "",
 		           RouteByLatency: false,
 		           RouteRandomly: false,
-		           TLS: TLS{},
 		           TCP: TCP{},
-		           WriteTimeout: "",
-		           KVPrefix: "",
+		           TLS: TLS{},
+		           Username: "",
 		           VKPrefix: "",
-		           PrefixDelimiter: "",
+		           WriteTimeout: "",
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -121,8 +128,9 @@ func TestRedis_Bind(t *testing.T) {
 		           DialTimeout: "",
 		           IdleCheckFrequency: "",
 		           IdleTimeout: "",
-		           InitialPingTimeLimit: "",
 		           InitialPingDuration: "",
+		           InitialPingTimeLimit: "",
+		           KVPrefix: "",
 		           KeyPref: "",
 		           MaxConnAge: "",
 		           MaxRedirects: 0,
@@ -130,19 +138,20 @@ func TestRedis_Bind(t *testing.T) {
 		           MaxRetryBackoff: "",
 		           MinIdleConns: 0,
 		           MinRetryBackoff: "",
+		           Network: "",
 		           Password: "",
 		           PoolSize: 0,
 		           PoolTimeout: "",
+		           PrefixDelimiter: "",
 		           ReadOnly: false,
 		           ReadTimeout: "",
 		           RouteByLatency: false,
 		           RouteRandomly: false,
-		           TLS: TLS{},
 		           TCP: TCP{},
-		           WriteTimeout: "",
-		           KVPrefix: "",
+		           TLS: TLS{},
+		           Username: "",
 		           VKPrefix: "",
-		           PrefixDelimiter: "",
+		           WriteTimeout: "",
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -151,8 +160,11 @@ func TestRedis_Bind(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -168,8 +180,9 @@ func TestRedis_Bind(t *testing.T) {
 				DialTimeout:          test.fields.DialTimeout,
 				IdleCheckFrequency:   test.fields.IdleCheckFrequency,
 				IdleTimeout:          test.fields.IdleTimeout,
-				InitialPingTimeLimit: test.fields.InitialPingTimeLimit,
 				InitialPingDuration:  test.fields.InitialPingDuration,
+				InitialPingTimeLimit: test.fields.InitialPingTimeLimit,
+				KVPrefix:             test.fields.KVPrefix,
 				KeyPref:              test.fields.KeyPref,
 				MaxConnAge:           test.fields.MaxConnAge,
 				MaxRedirects:         test.fields.MaxRedirects,
@@ -177,26 +190,218 @@ func TestRedis_Bind(t *testing.T) {
 				MaxRetryBackoff:      test.fields.MaxRetryBackoff,
 				MinIdleConns:         test.fields.MinIdleConns,
 				MinRetryBackoff:      test.fields.MinRetryBackoff,
+				Network:              test.fields.Network,
 				Password:             test.fields.Password,
 				PoolSize:             test.fields.PoolSize,
 				PoolTimeout:          test.fields.PoolTimeout,
+				PrefixDelimiter:      test.fields.PrefixDelimiter,
 				ReadOnly:             test.fields.ReadOnly,
 				ReadTimeout:          test.fields.ReadTimeout,
 				RouteByLatency:       test.fields.RouteByLatency,
 				RouteRandomly:        test.fields.RouteRandomly,
-				TLS:                  test.fields.TLS,
 				TCP:                  test.fields.TCP,
-				WriteTimeout:         test.fields.WriteTimeout,
-				KVPrefix:             test.fields.KVPrefix,
+				TLS:                  test.fields.TLS,
+				Username:             test.fields.Username,
 				VKPrefix:             test.fields.VKPrefix,
-				PrefixDelimiter:      test.fields.PrefixDelimiter,
+				WriteTimeout:         test.fields.WriteTimeout,
 			}
 
 			got := r.Bind()
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+		})
+	}
+}
 
+func TestRedis_Opts(t *testing.T) {
+	t.Parallel()
+	type fields struct {
+		Addrs                []string
+		DB                   int
+		DialTimeout          string
+		IdleCheckFrequency   string
+		IdleTimeout          string
+		InitialPingDuration  string
+		InitialPingTimeLimit string
+		KVPrefix             string
+		KeyPref              string
+		MaxConnAge           string
+		MaxRedirects         int
+		MaxRetries           int
+		MaxRetryBackoff      string
+		MinIdleConns         int
+		MinRetryBackoff      string
+		Network              string
+		Password             string
+		PoolSize             int
+		PoolTimeout          string
+		PrefixDelimiter      string
+		ReadOnly             bool
+		ReadTimeout          string
+		RouteByLatency       bool
+		RouteRandomly        bool
+		TCP                  *TCP
+		TLS                  *TLS
+		Username             string
+		VKPrefix             string
+		WriteTimeout         string
+	}
+	type want struct {
+		wantOpts []redis.Option
+		err      error
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, []redis.Option, error) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, gotOpts []redis.Option, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotOpts, w.wantOpts) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOpts, w.wantOpts)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           Addrs: nil,
+		           DB: 0,
+		           DialTimeout: "",
+		           IdleCheckFrequency: "",
+		           IdleTimeout: "",
+		           InitialPingDuration: "",
+		           InitialPingTimeLimit: "",
+		           KVPrefix: "",
+		           KeyPref: "",
+		           MaxConnAge: "",
+		           MaxRedirects: 0,
+		           MaxRetries: 0,
+		           MaxRetryBackoff: "",
+		           MinIdleConns: 0,
+		           MinRetryBackoff: "",
+		           Network: "",
+		           Password: "",
+		           PoolSize: 0,
+		           PoolTimeout: "",
+		           PrefixDelimiter: "",
+		           ReadOnly: false,
+		           ReadTimeout: "",
+		           RouteByLatency: false,
+		           RouteRandomly: false,
+		           TCP: TCP{},
+		           TLS: TLS{},
+		           Username: "",
+		           VKPrefix: "",
+		           WriteTimeout: "",
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           Addrs: nil,
+		           DB: 0,
+		           DialTimeout: "",
+		           IdleCheckFrequency: "",
+		           IdleTimeout: "",
+		           InitialPingDuration: "",
+		           InitialPingTimeLimit: "",
+		           KVPrefix: "",
+		           KeyPref: "",
+		           MaxConnAge: "",
+		           MaxRedirects: 0,
+		           MaxRetries: 0,
+		           MaxRetryBackoff: "",
+		           MinIdleConns: 0,
+		           MinRetryBackoff: "",
+		           Network: "",
+		           Password: "",
+		           PoolSize: 0,
+		           PoolTimeout: "",
+		           PrefixDelimiter: "",
+		           ReadOnly: false,
+		           ReadTimeout: "",
+		           RouteByLatency: false,
+		           RouteRandomly: false,
+		           TCP: TCP{},
+		           TLS: TLS{},
+		           Username: "",
+		           VKPrefix: "",
+		           WriteTimeout: "",
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			r := &Redis{
+				Addrs:                test.fields.Addrs,
+				DB:                   test.fields.DB,
+				DialTimeout:          test.fields.DialTimeout,
+				IdleCheckFrequency:   test.fields.IdleCheckFrequency,
+				IdleTimeout:          test.fields.IdleTimeout,
+				InitialPingDuration:  test.fields.InitialPingDuration,
+				InitialPingTimeLimit: test.fields.InitialPingTimeLimit,
+				KVPrefix:             test.fields.KVPrefix,
+				KeyPref:              test.fields.KeyPref,
+				MaxConnAge:           test.fields.MaxConnAge,
+				MaxRedirects:         test.fields.MaxRedirects,
+				MaxRetries:           test.fields.MaxRetries,
+				MaxRetryBackoff:      test.fields.MaxRetryBackoff,
+				MinIdleConns:         test.fields.MinIdleConns,
+				MinRetryBackoff:      test.fields.MinRetryBackoff,
+				Network:              test.fields.Network,
+				Password:             test.fields.Password,
+				PoolSize:             test.fields.PoolSize,
+				PoolTimeout:          test.fields.PoolTimeout,
+				PrefixDelimiter:      test.fields.PrefixDelimiter,
+				ReadOnly:             test.fields.ReadOnly,
+				ReadTimeout:          test.fields.ReadTimeout,
+				RouteByLatency:       test.fields.RouteByLatency,
+				RouteRandomly:        test.fields.RouteRandomly,
+				TCP:                  test.fields.TCP,
+				TLS:                  test.fields.TLS,
+				Username:             test.fields.Username,
+				VKPrefix:             test.fields.VKPrefix,
+				WriteTimeout:         test.fields.WriteTimeout,
+			}
+
+			gotOpts, err := r.Opts()
+			if err := test.checkFunc(test.want, gotOpts, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
 		})
 	}
 }

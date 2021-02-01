@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@
 // Package config providers configuration type and load configuration logic
 package config
 
-import "fmt"
-
 type Discoverer struct {
 	Name              string `json:"name" yaml:"name"`
 	Namespace         string `json:"namespace" yaml:"namespace"`
@@ -33,28 +31,22 @@ func (d *Discoverer) Bind() *Discoverer {
 }
 
 type DiscovererClient struct {
-	Host        string      `json:"host" yaml:"host"`
-	Port        int         `json:"port" yaml:"port"`
-	Duration    string      `json:"duration" yaml:"duration"`
-	Client      *GRPCClient `json:"discover_client" yaml:"discover_client"`
-	AgentClient *GRPCClient `json:"agent_client" yaml:"agent_client"`
+	Duration           string      `json:"duration" yaml:"duration"`
+	Client             *GRPCClient `json:"client" yaml:"client"`
+	AgentClientOptions *GRPCClient `json:"agent_client_options" yaml:"agent_client_options"`
 }
 
 func (d *DiscovererClient) Bind() *DiscovererClient {
-	d.Host = GetActualValue(d.Host)
 	d.Duration = GetActualValue(d.Duration)
 	if d.Client != nil {
 		d.Client.Bind()
 	} else {
 		d.Client = newGRPCClientConfig()
 	}
-	if len(d.Host) != 0 {
-		d.Client.Addrs = append(d.Client.Addrs, fmt.Sprintf("%s:%d", d.Host, d.Port))
-	}
-	if d.AgentClient != nil {
-		d.AgentClient.Bind()
+	if d.AgentClientOptions != nil {
+		d.AgentClientOptions.Bind()
 	} else {
-		d.AgentClient = newGRPCClientConfig()
+		d.AgentClientOptions = newGRPCClientConfig()
 	}
 	return d
 }

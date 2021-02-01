@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 package transport
 
 import (
+	"context"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -32,10 +33,10 @@ type ert struct {
 	bo        backoff.Backoff
 }
 
-// NewExpBackoff returns the backoff roundtripper implementation
+// NewExpBackoff returns the backoff roundtripper implementation.
 func NewExpBackoff(opts ...Option) http.RoundTripper {
 	e := new(ert)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(e)
 	}
 
@@ -50,27 +51,16 @@ func (e *ert) RoundTrip(req *http.Request) (res *http.Response, err error) {
 	if e.bo == nil {
 		return e.roundTrip(req)
 	}
-
-	var rterr error
-	_, err = e.bo.Do(req.Context(), func() (interface{}, error) {
-		r, reqerr := e.roundTrip(req)
-		if reqerr != nil {
-			// if the error is retryable, return the error and let backoff to retry.
-			if errors.Is(reqerr, errors.ErrTransportRetryable) {
-				return nil, reqerr
-			}
-			// if the error is not retryable, return nil error to terminate the backoff execution
-			rterr = reqerr
-			return nil, nil
+	_, err = e.bo.Do(req.Context(), func(ctx context.Context) (interface{}, bool, error) {
+		r, err := e.roundTrip(req)
+		if err != nil {
+			return nil, errors.Is(err, errors.ErrTransportRetryable), err
 		}
 		res = r
-		return r, nil
+		return r, false, nil
 	})
 	if err != nil {
 		return nil, err
-	}
-	if rterr != nil {
-		return nil, rterr
 	}
 
 	return res, nil

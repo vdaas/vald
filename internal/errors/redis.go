@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package errors
 
 var (
 
-	// Redis
+	// Redis.
 	ErrRedisInvalidKVVKPrefix = func(kv, vk string) error {
 		return Errorf("kv index and vk prefix must be defferent.\t(kv: %s,\tvk: %s)", kv, vk)
 	}
@@ -33,6 +33,8 @@ var (
 	ErrRedisNotFound = func(key string) error {
 		return Wrapf(NewErrRedisNotFoundIdentity(), "error redis key '%s' not found", key)
 	}
+
+	ErrRedisInvalidOption = New("error redis invalid option")
 
 	ErrRedisGetOperationFailed = func(key string, err error) error {
 		return Wrapf(err, "Failed to fetch key (%s)", key)

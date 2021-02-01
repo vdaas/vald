@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,14 +24,13 @@ import (
 
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e"
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e/strategy"
-	"github.com/vdaas/vald/internal/client/gateway/vald/grpc"
-	"github.com/vdaas/vald/internal/client/gateway/vald/rest"
+	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/grpc"
 )
 
 var (
 	targets  []string
-	restAddr string
 	grpcAddr string
 	wait     time.Duration
 )
@@ -46,7 +45,6 @@ func init() {
 	)
 
 	flag.StringVar(&dataset, "dataset", "", "set dataset (choice with comma)")
-	flag.StringVar(&restAddr, "rest_address", "http://127.0.0.1:8080", "set vald gateway address for REST")
 	flag.StringVar(&grpcAddr, "grpc_address", "127.0.0.1:8081", "set vald gateway address for gRPC")
 	flag.UintVar(&waitSeconds, "wait", 30, "indexing wait time (secs)")
 	flag.Parse()
@@ -55,63 +53,26 @@ func init() {
 	wait = time.Duration(time.Duration(waitSeconds) * time.Second)
 }
 
-func BenchmarkValdGateway_REST_Sequential(b *testing.B) {
-	ctx := context.Background()
-
-	for _, name := range targets {
-		bench := e2e.New(
-			b,
-			e2e.WithName(name),
-			e2e.WithClient(
-				rest.New(
-					rest.WithAddr(
-						restAddr,
-					),
-				),
-			),
-			e2e.WithStrategy(
-				strategy.NewInsert(),
-				strategy.NewSearch(),
-			),
-		)
-		bench.Run(ctx, b)
-	}
-}
-
-func BenchmarkValdGateway_REST_Stream(b *testing.B) {
-	ctx := context.Background()
-
-	for _, name := range targets {
-		bench := e2e.New(
-			b,
-			e2e.WithName(name),
-			e2e.WithClient(
-				rest.New(
-					rest.WithAddr(
-						restAddr,
-					),
-				),
-			),
-			e2e.WithStrategy(
-				strategy.NewStreamInsert(),
-				strategy.NewStreamSearch(),
-			),
-		)
-		bench.Run(ctx, b)
-	}
-}
-
 func BenchmarkValdGateway_gRPC_Sequential(b *testing.B) {
-	ctx := context.Background()
-	client, err := grpc.New(ctx,
-		grpc.WithAddr(
+	client, err := vald.New(
+		vald.WithClient(grpc.New(
+			grpc.WithAddrs(grpcAddr),
+			grpc.WithInsecure(true),
+		)),
+		vald.WithAddrs(
 			grpcAddr,
 		),
 	)
 	if err != nil {
 		b.Fatal(err)
 	}
-
+	ctx, cancel := context.WithCancel(context.TODO())
+	_, err = client.Start(ctx)
+	if err != nil {
+		b.Fatal(err)
+	}
+	defer client.Stop(ctx)
+	defer cancel()
 	for _, name := range targets {
 		bench := e2e.New(
 			b,
@@ -127,16 +88,25 @@ func BenchmarkValdGateway_gRPC_Sequential(b *testing.B) {
 }
 
 func BenchmarkValdGateway_gRPC_Stream(b *testing.B) {
-	ctx := context.Background()
-	client, err := grpc.New(ctx,
-		grpc.WithAddr(
+	client, err := vald.New(
+		vald.WithClient(grpc.New(
+			grpc.WithAddrs(grpcAddr),
+			grpc.WithInsecure(true),
+		)),
+		vald.WithAddrs(
 			grpcAddr,
 		),
 	)
 	if err != nil {
 		b.Fatal(err)
 	}
-
+	ctx, cancel := context.WithCancel(context.TODO())
+	_, err = client.Start(ctx)
+	if err != nil {
+		b.Fatal(err)
+	}
+	defer client.Stop(ctx)
+	defer cancel()
 	for _, name := range targets {
 		bench := e2e.New(
 			b,

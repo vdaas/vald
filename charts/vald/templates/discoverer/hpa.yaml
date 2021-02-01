@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,11 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if .Values.discoverer.hpa.enabled }}
+{{- $discoverer := .Values.discoverer -}}
+{{- if $discoverer.hpa.enabled }}
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ .Values.discoverer.name }}
+  name: {{ $discoverer.name }}
   labels:
     app.kubernetes.io/name: {{ include "vald.name" . }}
     helm.sh/chart: {{ include "vald.chart" . }}
@@ -26,12 +27,12 @@ metadata:
     app.kubernetes.io/version: {{ .Chart.Version }}
     app.kubernetes.io/component: discoverer
 spec:
-  maxReplicas: {{ .Values.discoverer.maxReplicas }}
-  minReplicas: {{ .Values.discoverer.minReplicas }}
+  maxReplicas: {{ $discoverer.maxReplicas }}
+  minReplicas: {{ $discoverer.minReplicas }}
   scaleTargetRef:
     apiVersion: apps/v1
-    kind: {{ .Values.discoverer.kind }}
-    name: {{ .Values.discoverer.name }}
-  targetCPUUtilizationPercentage: {{ .Values.discoverer.hpa.targetCPUUtilizationPercentage }}
+    kind: {{ $discoverer.kind }}
+    name: {{ $discoverer.name }}
+  targetCPUUtilizationPercentage: {{ $discoverer.hpa.targetCPUUtilizationPercentage }}
 status:
 {{- end }}

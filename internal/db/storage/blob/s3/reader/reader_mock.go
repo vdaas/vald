@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -68,5 +68,27 @@ func (m *MockReadCloser) Read(p []byte) (n int, err error) {
 
 // Close calls CloseFunc.
 func (m *MockReadCloser) Close() error {
+	return m.CloseFunc()
+}
+
+// MockReader represents mock for Reader.
+type MockReader struct {
+	OpenFunc  func(ctx context.Context, key string) error
+	ReadFunc  func(p []byte) (n int, err error)
+	CloseFunc func() error
+}
+
+// Open calls OpenFunc.
+func (m *MockReader) Open(ctx context.Context, key string) error {
+	return m.OpenFunc(ctx, key)
+}
+
+// Read calls ReadFunc.
+func (m *MockReader) Read(p []byte) (n int, err error) {
+	return m.ReadFunc(p)
+}
+
+// Close calls CloseFunc.
+func (m *MockReader) Close() error {
 	return m.CloseFunc()
 }

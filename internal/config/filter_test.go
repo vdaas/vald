@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,11 +22,15 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
+	"go.uber.org/goleak"
 )
 
 func TestEgressFilter_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
-		Client *GRPCClient
+		Client          *GRPCClient
+		DistanceFilters []string
+		ObjectFilters   []string
 	}
 	type want struct {
 		want *EgressFilter
@@ -52,6 +56,8 @@ func TestEgressFilter_Bind(t *testing.T) {
 		       name: "test_case_1",
 		       fields: fields {
 		           Client: GRPCClient{},
+		           DistanceFilters: nil,
+		           ObjectFilters: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -65,6 +71,8 @@ func TestEgressFilter_Bind(t *testing.T) {
 		           name: "test_case_2",
 		           fields: fields {
 		           Client: GRPCClient{},
+		           DistanceFilters: nil,
+		           ObjectFilters: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -73,8 +81,11 @@ func TestEgressFilter_Bind(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -85,14 +96,111 @@ func TestEgressFilter_Bind(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			e := &EgressFilter{
-				Client: test.fields.Client,
+				Client:          test.fields.Client,
+				DistanceFilters: test.fields.DistanceFilters,
+				ObjectFilters:   test.fields.ObjectFilters,
 			}
 
 			got := e.Bind()
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+		})
+	}
+}
 
+func TestIngressFilter_Bind(t *testing.T) {
+	t.Parallel()
+	type fields struct {
+		Client        *GRPCClient
+		Vectorizer    string
+		SearchFilters []string
+		InsertFilters []string
+		UpdateFilters []string
+		UpsertFilters []string
+	}
+	type want struct {
+		want *IngressFilter
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, *IngressFilter) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got *IngressFilter) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           Client: GRPCClient{},
+		           Vectorizer: "",
+		           SearchFilters: nil,
+		           InsertFilters: nil,
+		           UpdateFilters: nil,
+		           UpsertFilters: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           Client: GRPCClient{},
+		           Vectorizer: "",
+		           SearchFilters: nil,
+		           InsertFilters: nil,
+		           UpdateFilters: nil,
+		           UpsertFilters: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			i := &IngressFilter{
+				Client:        test.fields.Client,
+				Vectorizer:    test.fields.Vectorizer,
+				SearchFilters: test.fields.SearchFilters,
+				InsertFilters: test.fields.InsertFilters,
+				UpdateFilters: test.fields.UpdateFilters,
+				UpsertFilters: test.fields.UpsertFilters,
+			}
+
+			got := i.Bind()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
 		})
 	}
 }

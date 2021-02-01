@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,15 +17,13 @@
 // Package rest provides rest api logic
 package rest
 
-import agent "github.com/vdaas/vald/apis/grpc/agent/core"
+import "github.com/vdaas/vald/pkg/agent/core/ngt/handler/grpc"
 
 type Option func(*handler)
 
-var (
-	defaultOpts = []Option{}
-)
+var defaultOptions = []Option{}
 
-func WithAgent(a agent.AgentServer) Option {
+func WithAgent(a grpc.Server) Option {
 	return func(h *handler) {
 		h.agent = a
 	}

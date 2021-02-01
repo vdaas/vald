@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,23 +20,21 @@ package service
 import (
 	"time"
 
-	"github.com/vdaas/vald/internal/client/discoverer"
+	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
 type Option func(i *index) error
 
-var (
-	defaultOpts = []Option{
-		WithErrGroup(errgroup.Get()),
-		WithIndexingConcurrency(1),
-		WithIndexingDuration("1m"),
-		WithIndexingDurationLimit("30m"),
-		WithMinUncommitted(100),
-		WithCreationPoolSize(10000),
-	}
-)
+var defaultOptions = []Option{
+	WithErrGroup(errgroup.Get()),
+	WithIndexingConcurrency(1),
+	WithIndexingDuration("1m"),
+	WithIndexingDurationLimit("30m"),
+	WithMinUncommitted(100),
+	WithCreationPoolSize(10000),
+}
 
 func WithIndexingConcurrency(c int) Option {
 	return func(idx *index) error {

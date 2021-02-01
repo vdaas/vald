@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,11 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if .Values.indexManager.enabled }}
+{{- $index := .Values.manager.index -}}
+{{- $discoverer := .Values.discoverer -}}
+{{- $agent := .Values.agent -}}
+{{- if $index.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Values.indexManager.name }}-config
+  name: {{ $index.name }}-config
   labels:
     app.kubernetes.io/name: {{ include "vald.name" . }}
     helm.sh/chart: {{ include "vald.chart" . }}
@@ -28,36 +31,41 @@ metadata:
 data:
   config.yaml: |
     ---
-    version: {{ .Values.indexManager.version }}
-    time_zone: {{ default .Values.defaults.time_zone .Values.indexManager.time_zone }}
+    version: {{ $index.version }}
+    time_zone: {{ default .Values.defaults.time_zone $index.time_zone }}
     logging:
-      {{- $logging := dict "Values" .Values.indexManager.logging "default" .Values.defaults.logging }}
+      {{- $logging := dict "Values" $index.logging "default" .Values.defaults.logging }}
       {{- include "vald.logging" $logging | nindent 6 }}
     server_config:
-      {{- $servers := dict "Values" .Values.indexManager.server_config "default" .Values.defaults.server_config }}
+      {{- $servers := dict "Values" $index.server_config "default" .Values.defaults.server_config }}
       {{- include "vald.servers" $servers | nindent 6 }}
     observability:
-      {{- $observability := dict "Values" .Values.indexManager.observability "default" .Values.defaults.observability }}
+      {{- $observability := dict "Values" $index.observability "default" .Values.defaults.observability }}
       {{- include "vald.observability" $observability | nindent 6 }}
     indexer:
-      agent_port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.agent.server_config.servers.grpc.port }}
-      agent_name: {{ .Values.agent.name | quote }}
-      agent_dns: {{ .Values.agent.name }}.{{ .Release.Namespace }}.svc.cluster.local
-      agent_namespace: {{ .Values.indexManager.indexer.agent_namespace | quote }}
-      node_name: {{ .Values.indexManager.indexer.node_name | quote }}
+      agent_port: {{ default .Values.defaults.server_config.servers.grpc.port $agent.server_config.servers.grpc.port }}
+      agent_name: {{ $agent.name | quote }}
+      agent_dns: {{ $agent.name }}.{{ .Release.Namespace }}.svc.cluster.local
+      agent_namespace: {{ $index.indexer.agent_namespace | quote }}
+      node_name: {{ $index.indexer.node_name | quote }}
       discoverer:
-        host: {{ .Values.discoverer.name }}.{{ .Release.Namespace }}.svc.cluster.local
-        port: {{ default .Values.defaults.server_config.servers.grpc.port .Values.discoverer.server_config.servers.grpc.port }}
-        duration: {{ .Values.indexManager.indexer.discoverer.duration }}
-        discover_client:
-          {{- $discoverClient := dict "Values" .Values.indexManager.indexer.discoverer.discover_client "default" .Values.defaults.grpc.client }}
-          {{- include "vald.grpc.client" $discoverClient | nindent 10 }}
-        agent_client:
-          {{- $agentClient := dict "Values" .Values.indexManager.indexer.discoverer.agent_client "default" .Values.defaults.grpc.client }}
-          {{- include "vald.grpc.client" $agentClient | nindent 10 }}
-      concurrency: {{ .Values.indexManager.indexer.concurrency }}
-      auto_index_duration_limit: {{ .Values.indexManager.indexer.auto_index_duration_limit }}
-      auto_index_check_duration: {{ .Values.indexManager.indexer.auto_index_check_duration }}
-      auto_index_length: {{ .Values.indexManager.indexer.auto_index_length }}
-      creation_pool_size: {{ .Values.indexManager.indexer.creation_pool_size }}
+        duration: {{ $index.indexer.discoverer.duration }}
+        client:
+          {{- $discovererClient := $index.indexer.discoverer.client }}
+          {{- $discovererServerPort := $discoverer.server_config.servers.grpc.port }}
+          {{- $defaultDiscovererHost := printf "%s.%s.svc.cluster.local" $discoverer.name .Release.Namespace }}
+          {{- $defaultDiscovererPort := default .Values.defaults.server_config.servers.grpc.port $discovererServerPort }}
+          {{- $defaultDiscovererAddr := (list (printf "%s:%d" $defaultDiscovererHost (int64 $defaultDiscovererPort))) }}
+          {{- $discovererAddrs := dict "Values" $discovererClient.addrs "default" $defaultDiscovererAddr }}
+          {{- include "vald.grpc.client.addrs" $discovererAddrs | nindent 10 }}
+          {{- $discovererGRPCclient := dict "Values" $discovererClient "default" .Values.defaults.grpc.client }}
+          {{- include "vald.grpc.client" $discovererGRPCclient | nindent 10 }}
+        agent_client_options:
+          {{- include "vald.grpc.client.addrs" (dict "Values" $index.indexer.discoverer.agent_client_options.addrs) | nindent 10 }}
+          {{- include "vald.grpc.client" (dict "Values" $index.indexer.discoverer.agent_client_options "default" .Values.defaults.grpc.client) | nindent 10 }}
+      concurrency: {{ $index.indexer.concurrency }}
+      auto_index_duration_limit: {{ $index.indexer.auto_index_duration_limit }}
+      auto_index_check_duration: {{ $index.indexer.auto_index_check_duration }}
+      auto_index_length: {{ $index.indexer.auto_index_length }}
+      creation_pool_size: {{ $index.indexer.creation_pool_size }}
 {{- end }}

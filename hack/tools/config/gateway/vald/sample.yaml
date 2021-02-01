@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -114,7 +114,7 @@ gateway:
     host: discoverer.default.svc.cluster.local
     port: 8080
     duration: "2s"
-    discover_client:
+    client:
       addrs: []
       health_check_duration: "1s"
       backoff:
@@ -136,7 +136,7 @@ gateway:
         initial_window_size: 0
         initial_connection_window_size: 0
         max_msg_size: 0
-        max_backoff_delay: ""
+        backoff_max_delay: ""
         enable_backoff: false
         insecure: true
         timeout: ""
@@ -163,7 +163,7 @@ gateway:
         cert: /path/to/cert
         key: /path/to/key
         ca: /path/to/ca
-    agent_client:
+    agent_client_options:
       addrs: []
       health_check_duration: "1s"
       backoff:
@@ -185,7 +185,7 @@ gateway:
         initial_window_size: 0
         initial_connection_window_size: 0
         max_msg_size: 0
-        max_backoff_delay: ""
+        backoff_max_delay: ""
         enable_backoff: false
         insecure: true
         timeout: ""
@@ -238,7 +238,7 @@ gateway:
         initial_window_size: 0
         initial_connection_window_size: 0
         max_msg_size: 0
-        max_backoff_delay: ""
+        backoff_max_delay: ""
         enable_backoff: false
         insecure: true
         timeout: ""
@@ -291,7 +291,7 @@ gateway:
         initial_window_size: 0
         initial_connection_window_size: 0
         max_msg_size: 0
-        max_backoff_delay: ""
+        backoff_max_delay: ""
         enable_backoff: false
         insecure: true
         timeout: ""

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -120,7 +120,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -128,13 +127,13 @@ func TestNew(t *testing.T) {
 func Test_reader_Open(t *testing.T) {
 	type args struct {
 		ctx context.Context
+		key string
 	}
 	type fields struct {
 		eg             errgroup.Group
 		backoffEnabled bool
 		service        s3iface.S3API
 		bucket         string
-		key            string
 		pr             io.ReadCloser
 		wg             *sync.WaitGroup
 		ctxio          ctxio.IO
@@ -170,6 +169,7 @@ func Test_reader_Open(t *testing.T) {
 				name: "returns nil when context is canceled",
 				args: args{
 					ctx: cctx,
+					key: "vald",
 				},
 				fields: fields{
 					eg: eg,
@@ -199,6 +199,7 @@ func Test_reader_Open(t *testing.T) {
 				name: "returns nil when backoff is enabled and s3 service returns an error",
 				args: args{
 					ctx: cctx,
+					key: "vald",
 				},
 				fields: fields{
 					eg: eg,
@@ -458,7 +459,6 @@ func Test_reader_Open(t *testing.T) {
 				eg:             test.fields.eg,
 				service:        test.fields.service,
 				bucket:         test.fields.bucket,
-				key:            test.fields.key,
 				pr:             test.fields.pr,
 				wg:             test.fields.wg,
 				ctxio:          test.fields.ctxio,
@@ -467,7 +467,7 @@ func Test_reader_Open(t *testing.T) {
 				maxChunkSize:   test.fields.maxChunkSize,
 			}
 
-			err := r.Open(test.args.ctx)
+			err := r.Open(test.args.ctx, test.args.key)
 			if test.hookFunc != nil {
 				test.hookFunc(r)
 			}
@@ -483,7 +483,6 @@ func Test_reader_Close(t *testing.T) {
 		eg      errgroup.Group
 		service *s3.S3
 		bucket  string
-		key     string
 		pr      io.ReadCloser
 		wg      *sync.WaitGroup
 	}
@@ -560,7 +559,6 @@ func Test_reader_Close(t *testing.T) {
 				eg:      test.fields.eg,
 				service: test.fields.service,
 				bucket:  test.fields.bucket,
-				key:     test.fields.key,
 				pr:      test.fields.pr,
 				wg:      test.fields.wg,
 			}
@@ -569,7 +567,6 @@ func Test_reader_Close(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -582,7 +579,6 @@ func Test_reader_Read(t *testing.T) {
 		eg      errgroup.Group
 		service *s3.S3
 		bucket  string
-		key     string
 		pr      io.ReadCloser
 		wg      *sync.WaitGroup
 	}
@@ -673,7 +669,6 @@ func Test_reader_Read(t *testing.T) {
 				eg:      test.fields.eg,
 				service: test.fields.service,
 				bucket:  test.fields.bucket,
-				key:     test.fields.key,
 				pr:      test.fields.pr,
 				wg:      test.fields.wg,
 			}
@@ -682,7 +677,6 @@ func Test_reader_Read(t *testing.T) {
 			if err := test.checkFunc(test.want, gotN, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -690,6 +684,7 @@ func Test_reader_Read(t *testing.T) {
 func Test_reader_getObjectWithBackoff(t *testing.T) {
 	type args struct {
 		ctx    context.Context
+		key    string
 		offset int64
 		length int64
 	}
@@ -697,7 +692,6 @@ func Test_reader_getObjectWithBackoff(t *testing.T) {
 		eg             errgroup.Group
 		service        s3iface.S3API
 		bucket         string
-		key            string
 		pr             io.ReadCloser
 		wg             *sync.WaitGroup
 		backoffEnabled bool
@@ -732,6 +726,7 @@ func Test_reader_getObjectWithBackoff(t *testing.T) {
 			name: "returns (Reader, nil) when no error occurs",
 			args: args{
 				ctx:    context.Background(),
+				key:    "vald",
 				offset: 1,
 				length: 10,
 			},
@@ -769,6 +764,7 @@ func Test_reader_getObjectWithBackoff(t *testing.T) {
 			name: "returns error when s3 service returns error and backoff fails",
 			args: args{
 				ctx:    context.Background(),
+				key:    "vald",
 				offset: 1,
 				length: 10,
 			},
@@ -805,7 +801,6 @@ func Test_reader_getObjectWithBackoff(t *testing.T) {
 				eg:             test.fields.eg,
 				service:        test.fields.service,
 				bucket:         test.fields.bucket,
-				key:            test.fields.key,
 				pr:             test.fields.pr,
 				wg:             test.fields.wg,
 				backoffEnabled: test.fields.backoffEnabled,
@@ -814,7 +809,7 @@ func Test_reader_getObjectWithBackoff(t *testing.T) {
 				ctxio:          test.fields.ctxio,
 			}
 
-			got, err := r.getObjectWithBackoff(test.args.ctx, test.args.offset, test.args.length)
+			got, err := r.getObjectWithBackoff(test.args.ctx, test.args.key, test.args.offset, test.args.length)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -825,6 +820,7 @@ func Test_reader_getObjectWithBackoff(t *testing.T) {
 func Test_reader_getObject(t *testing.T) {
 	type args struct {
 		ctx    context.Context
+		key    string
 		offset int64
 		length int64
 	}
@@ -832,7 +828,6 @@ func Test_reader_getObject(t *testing.T) {
 		eg             errgroup.Group
 		service        s3iface.S3API
 		bucket         string
-		key            string
 		pr             io.ReadCloser
 		wg             *sync.WaitGroup
 		backoffEnabled bool
@@ -867,6 +862,7 @@ func Test_reader_getObject(t *testing.T) {
 			name: "returns (Reader, nil) when no error occurs",
 			args: args{
 				ctx:    context.Background(),
+				key:    "vald",
 				offset: 2,
 				length: 10,
 			},
@@ -904,6 +900,7 @@ func Test_reader_getObject(t *testing.T) {
 			name: "returns (Reader, nil) when the reader close error occurs and output warning",
 			args: args{
 				ctx:    context.Background(),
+				key:    "vald",
 				offset: 2,
 				length: 10,
 			},
@@ -941,6 +938,7 @@ func Test_reader_getObject(t *testing.T) {
 			name: "returns nil when s3 service returns error and error code is ErrBlobNoSuchBucket",
 			args: args{
 				ctx:    context.Background(),
+				key:    "vald",
 				offset: 2,
 				length: 10,
 			},
@@ -962,6 +960,7 @@ func Test_reader_getObject(t *testing.T) {
 			name: "returns nil when s3 service returns error and error code is ErrCodeNoSuchKey",
 			args: args{
 				ctx:    context.Background(),
+				key:    "vald",
 				offset: 2,
 				length: 10,
 			},
@@ -971,7 +970,6 @@ func Test_reader_getObject(t *testing.T) {
 						return nil, awserr.New(s3.ErrCodeNoSuchKey, "", nil)
 					},
 				},
-				key: "vald",
 			},
 			want: want{
 				want: ioutil.NopCloser(bytes.NewReader(nil)),
@@ -983,6 +981,7 @@ func Test_reader_getObject(t *testing.T) {
 			name: "returns nil when s3 service returns error and error code is ErrCodeNoSuchKey",
 			args: args{
 				ctx:    context.Background(),
+				key:    "vald",
 				offset: 2,
 				length: 10,
 			},
@@ -1003,6 +1002,7 @@ func Test_reader_getObject(t *testing.T) {
 			name: "returns s3 error when s3 service returns error and error code is `Invalid`",
 			args: args{
 				ctx:    context.Background(),
+				key:    "vald",
 				offset: 2,
 				length: 10,
 			},
@@ -1023,6 +1023,7 @@ func Test_reader_getObject(t *testing.T) {
 			name: "returns error when reader creation fails",
 			args: args{
 				ctx:    context.Background(),
+				key:    "vald",
 				offset: 2,
 				length: 10,
 			},
@@ -1048,6 +1049,7 @@ func Test_reader_getObject(t *testing.T) {
 			name: "returns error when failed to copy to buffer",
 			args: args{
 				ctx:    context.Background(),
+				key:    "vald",
 				offset: 2,
 				length: 10,
 			},
@@ -1093,7 +1095,6 @@ func Test_reader_getObject(t *testing.T) {
 				eg:             test.fields.eg,
 				service:        test.fields.service,
 				bucket:         test.fields.bucket,
-				key:            test.fields.key,
 				pr:             test.fields.pr,
 				wg:             test.fields.wg,
 				backoffEnabled: test.fields.backoffEnabled,
@@ -1102,7 +1103,7 @@ func Test_reader_getObject(t *testing.T) {
 				ctxio:          test.fields.ctxio,
 			}
 
-			got, err := r.getObject(test.args.ctx, test.args.offset, test.args.length)
+			got, err := r.getObject(test.args.ctx, test.args.key, test.args.offset, test.args.length)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}

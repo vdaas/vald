@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,35 +29,32 @@ import (
 const (
 	uuidColumn   = "uuid"
 	vectorColumn = "vector"
-	metaColumn   = "meta"
 	ipsColumn    = "ips"
 )
 
-var (
-	metaColumns = []string{uuidColumn, vectorColumn, metaColumn, ipsColumn}
-)
+var columns = []string{uuidColumn, vectorColumn, ipsColumn}
 
 type Cassandra interface {
 	Connect(ctx context.Context) error
 	Close(ctx context.Context) error
-	GetMeta(ctx context.Context, uuid string) (*model.MetaVector, error)
+	GetVector(ctx context.Context, uuid string) (*model.Vector, error)
 	GetIPs(ctx context.Context, uuid string) ([]string, error)
-	SetMeta(ctx context.Context, meta *model.MetaVector) error
-	SetMetas(ctx context.Context, metas ...*model.MetaVector) error
-	DeleteMeta(ctx context.Context, uuid string) error
-	DeleteMetas(ctx context.Context, uuids ...string) error
+	SetVector(ctx context.Context, vec *model.Vector) error
+	SetVectors(ctx context.Context, vecs ...*model.Vector) error
+	DeleteVector(ctx context.Context, uuid string) error
+	DeleteVectors(ctx context.Context, uuids ...string) error
 	SetIPs(ctx context.Context, uuid string, ips ...string) error
 	RemoveIPs(ctx context.Context, ips ...string) error
 }
 
 type client struct {
 	db        cassandra.Cassandra
-	metaTable string
+	tableName string
 }
 
 func New(opts ...Option) (Cassandra, error) {
 	c := new(client)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(c); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
@@ -74,25 +71,25 @@ func (c *client) Close(ctx context.Context) error {
 	return c.db.Close(ctx)
 }
 
-func (c *client) getMetaVector(ctx context.Context, uuid string) (*model.MetaVector, error) {
-	var metaVector model.MetaVector
-	if err := c.db.Query(cassandra.Select(c.metaTable,
-		metaColumns,
+func (c *client) getVector(ctx context.Context, uuid string) (*model.Vector, error) {
+	var vector model.Vector
+	if err := c.db.Query(cassandra.Select(c.tableName,
+		columns,
 		cassandra.Eq(uuidColumn))).
 		BindMap(map[string]interface{}{
 			uuidColumn: uuid,
-		}).GetRelease(&metaVector); err != nil {
+		}).GetRelease(&vector); err != nil {
 		return nil, cassandra.WrapErrorWithKeys(err, uuid)
 	}
-	return &metaVector, nil
+	return &vector, nil
 }
 
-func (c *client) GetMeta(ctx context.Context, uuid string) (*model.MetaVector, error) {
-	return c.getMetaVector(ctx, uuid)
+func (c *client) GetVector(ctx context.Context, uuid string) (*model.Vector, error) {
+	return c.getVector(ctx, uuid)
 }
 
 func (c *client) GetIPs(ctx context.Context, uuid string) ([]string, error) {
-	mv, err := c.getMetaVector(ctx, uuid)
+	mv, err := c.getVector(ctx, uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -100,37 +97,36 @@ func (c *client) GetIPs(ctx context.Context, uuid string) ([]string, error) {
 	return mv.IPs, nil
 }
 
-func (c *client) SetMeta(ctx context.Context, meta *model.MetaVector) error {
-	stmt, names := cassandra.Insert(c.metaTable, metaColumns...).ToCql()
-	return c.db.Query(stmt, names).BindStruct(meta).ExecRelease()
+func (c *client) SetVector(ctx context.Context, vec *model.Vector) error {
+	stmt, names := cassandra.Insert(c.tableName, columns...).ToCql()
+	return c.db.Query(stmt, names).BindStruct(vec).ExecRelease()
 }
 
-func (c *client) SetMetas(ctx context.Context, metas ...*model.MetaVector) error {
-	ib := cassandra.Insert(c.metaTable, metaColumns...)
+func (c *client) SetVectors(ctx context.Context, vecs ...*model.Vector) error {
+	ib := cassandra.Insert(c.tableName, columns...)
 	bt := cassandra.Batch()
 
-	entities := make(map[string]interface{}, len(metas)*4)
-	for i, mv := range metas {
+	entities := make(map[string]interface{}, len(vecs)*3)
+	for i, mv := range vecs {
 		prefix := "p" + strconv.Itoa(i)
 		bt = bt.AddWithPrefix(prefix, ib)
 		entities[prefix+"."+uuidColumn] = mv.UUID
 		entities[prefix+"."+vectorColumn] = mv.Vector
-		entities[prefix+"."+metaColumn] = mv.Meta
 		entities[prefix+"."+ipsColumn] = mv.IPs
 	}
 
 	return c.db.Query(bt.ToCql()).BindMap(entities).ExecRelease()
 }
 
-func (c *client) DeleteMeta(ctx context.Context, uuid string) error {
-	return c.db.Query(cassandra.Delete(c.metaTable,
+func (c *client) DeleteVector(ctx context.Context, uuid string) error {
+	return c.db.Query(cassandra.Delete(c.tableName,
 		cassandra.Eq(uuidColumn)).ToCql()).
 		BindMap(map[string]interface{}{uuidColumn: uuid}).
 		ExecRelease()
 }
 
-func (c *client) DeleteMetas(ctx context.Context, uuids ...string) error {
-	deleteBuilder := cassandra.Delete(c.metaTable, cassandra.Eq(uuidColumn))
+func (c *client) DeleteVectors(ctx context.Context, uuids ...string) error {
+	deleteBuilder := cassandra.Delete(c.tableName, cassandra.Eq(uuidColumn))
 	bt := cassandra.Batch()
 	bindUUIDs := make(map[string]interface{}, len(uuids))
 	for i, uuid := range uuids {
@@ -143,7 +139,7 @@ func (c *client) DeleteMetas(ctx context.Context, uuids ...string) error {
 }
 
 func (c *client) SetIPs(ctx context.Context, uuid string, ips ...string) error {
-	return c.db.Query(cassandra.Update(c.metaTable).
+	return c.db.Query(cassandra.Update(c.tableName).
 		AddNamed(ipsColumn, ipsColumn).
 		Where(cassandra.Eq(uuidColumn)).ToCql()).
 		BindMap(map[string]interface{}{
@@ -153,19 +149,19 @@ func (c *client) SetIPs(ctx context.Context, uuid string, ips ...string) error {
 }
 
 func (c *client) RemoveIPs(ctx context.Context, ips ...string) error {
-	var metaVectors []model.MetaVector
+	var vectors []model.Vector
 
 	for _, ip := range ips {
-		err := c.db.Query(cassandra.Select(c.metaTable,
+		err := c.db.Query(cassandra.Select(c.tableName,
 			[]string{uuidColumn, ipsColumn},
 			cassandra.Contains(ipsColumn))).
 			BindMap(map[string]interface{}{ipsColumn: ip}).
-			SelectRelease(&metaVectors)
+			SelectRelease(&vectors)
 		if err != nil {
 			return err
 		}
 
-		for _, mv := range metaVectors {
+		for _, mv := range vectors {
 			currentIPs := mv.IPs
 			newIPs := make([]string, 0, len(currentIPs)-1)
 			for i, cIP := range currentIPs {
@@ -178,7 +174,7 @@ func (c *client) RemoveIPs(ctx context.Context, ips ...string) error {
 				newIPs = append(newIPs, cIP)
 			}
 
-			err = c.db.Query(cassandra.Update(c.metaTable).Set(ipsColumn).
+			err = c.db.Query(cassandra.Update(c.tableName).Set(ipsColumn).
 				Where(cassandra.Eq(uuidColumn)).ToCql()).
 				BindMap(map[string]interface{}{
 					uuidColumn: mv.UUID,

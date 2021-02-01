@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
-	"github.com/vdaas/vald/hack/benchmark/internal/core"
+	"github.com/vdaas/vald/hack/benchmark/internal/core/algorithm"
 )
 
 // Strategy is an interface for benchmark.
@@ -30,5 +30,5 @@ type Strategy interface {
 	Run(context.Context, *testing.B, assets.Dataset, []uint)
 	Init(context.Context, *testing.B, assets.Dataset) error
 	PreProp(context.Context, *testing.B, assets.Dataset) ([]uint, error)
-	core.Closer
+	algorithm.Closer
 }

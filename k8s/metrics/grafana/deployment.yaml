@@ -1,6 +1,6 @@
 ---
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -38,8 +38,20 @@ spec:
               mountPath: /etc/grafana/provisioning/datasources
             - name: grafana-dashboard-provider
               mountPath: /etc/grafana/provisioning/dashboards
-            - name: grafana-dashboards
-              mountPath: /var/lib/grafana/dashboards
+            - name: grafana-dashboards-vald-cluster-overview
+              mountPath: /var/lib/grafana/dashboards-vald/00
+            - name: grafana-dashboards-vald-agent
+              mountPath: /var/lib/grafana/dashboards-vald/01
+            - name: grafana-dashboards-vald-discoverer
+              mountPath: /var/lib/grafana/dashboards-vald/02
+            - name: grafana-dashboards-vald-backup-manager
+              mountPath: /var/lib/grafana/dashboards-vald/03
+            - name: grafana-dashboards-vald-compressor
+              mountPath: /var/lib/grafana/dashboards-vald/04
+            - name: grafana-dashboards-vald-index-manager
+              mountPath: /var/lib/grafana/dashboards-vald/05
+            - name: grafana-dashboards-vald-meta
+              mountPath: /var/lib/grafana/dashboards-vald/06
       volumes:
         - name: grafana-datasource-provider
           configMap:
@@ -49,7 +61,31 @@ spec:
           configMap:
             defaultMode: 420
             name: grafana-dashboard-provider
-        - name: grafana-dashboards
+        - name: grafana-dashboards-vald-cluster-overview
           configMap:
             defaultMode: 420
-            name: grafana-dashboards
+            name: grafana-dashboards-vald-cluster-overview
+        - name: grafana-dashboards-vald-agent
+          configMap:
+            defaultMode: 420
+            name: grafana-dashboards-vald-agent
+        - name: grafana-dashboards-vald-discoverer
+          configMap:
+            defaultMode: 420
+            name: grafana-dashboards-vald-discoverer
+        - name: grafana-dashboards-vald-backup-manager
+          configMap:
+            defaultMode: 420
+            name: grafana-dashboards-vald-backup-manager
+        - name: grafana-dashboards-vald-compressor
+          configMap:
+            defaultMode: 420
+            name: grafana-dashboards-vald-compressor
+        - name: grafana-dashboards-vald-index-manager
+          configMap:
+            defaultMode: 420
+            name: grafana-dashboards-vald-index-manager
+        - name: grafana-dashboards-vald-meta
+          configMap:
+            defaultMode: 420
+            name: grafana-dashboards-vald-meta

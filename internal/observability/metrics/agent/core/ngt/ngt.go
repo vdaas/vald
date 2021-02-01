@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -40,35 +40,35 @@ func New(n service.NGT) metrics.Metric {
 	return &ngtMetrics{
 		ngt: n,
 		indexCount: *metrics.Int64(
-			metrics.ValdOrg+"/ngt/index_count",
-			"NGT index count",
+			metrics.ValdOrg+"/agent/core/ngt/index_count",
+			"Agent NGT index count",
 			metrics.UnitDimensionless),
 		uncommittedIndexCount: *metrics.Int64(
-			metrics.ValdOrg+"/ngt/uncommitted_index_count",
-			"NGT uncommitted index count",
+			metrics.ValdOrg+"/agent/core/ngt/uncommitted_index_count",
+			"Agent NGT uncommitted index count",
 			metrics.UnitDimensionless),
 		insertVCacheCount: *metrics.Int64(
-			metrics.ValdOrg+"/ngt/insert_vcache_count",
-			"NGT insert vcache count",
+			metrics.ValdOrg+"/agent/core/ngt/insert_vcache_count",
+			"Agent NGT insert vcache count",
 			metrics.UnitDimensionless),
 		deleteVCacheCount: *metrics.Int64(
-			metrics.ValdOrg+"/ngt/delete_vcache_count",
-			"NGT delete vcache count",
+			metrics.ValdOrg+"/agent/core/ngt/delete_vcache_count",
+			"Agent NGT delete vcache count",
 			metrics.UnitDimensionless),
 		completedCreateIndexTotal: *metrics.Int64(
-			metrics.ValdOrg+"/ngt/completed_create_index_total",
+			metrics.ValdOrg+"/agent/core/ngt/completed_create_index_total",
 			"the cumulative count of completed create index execution",
 			metrics.UnitDimensionless),
 		executedProactiveGCTotal: *metrics.Int64(
-			metrics.ValdOrg+"/ngt/executed_proactive_gc_total",
+			metrics.ValdOrg+"/agent/core/ngt/executed_proactive_gc_total",
 			"the cumulative count of proactive GC execution",
 			metrics.UnitDimensionless),
 		isIndexing: *metrics.Int64(
-			metrics.ValdOrg+"/ngt/is_indexing",
+			metrics.ValdOrg+"/agent/core/ngt/is_indexing",
 			"currently indexing or not",
 			metrics.UnitDimensionless),
 		isSaving: *metrics.Int64(
-			metrics.ValdOrg+"/ngt/is_saving",
+			metrics.ValdOrg+"/agent/core/ngt/is_saving",
 			"currently saving or not",
 			metrics.UnitDimensionless),
 	}
@@ -103,50 +103,50 @@ func (n *ngtMetrics) MeasurementWithTags(ctx context.Context) ([]metrics.Measure
 
 func (n *ngtMetrics) View() []*metrics.View {
 	return []*metrics.View{
-		&metrics.View{
-			Name:        "ngt_index_count",
+		{
+			Name:        "agent_core_ngt_index_count",
 			Description: n.indexCount.Description(),
 			Measure:     &n.indexCount,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
-			Name:        "ngt_uncommitted_index_count",
+		{
+			Name:        "agent_core_ngt_uncommitted_index_count",
 			Description: n.uncommittedIndexCount.Description(),
 			Measure:     &n.uncommittedIndexCount,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
-			Name:        "ngt_insert_vcache_count",
+		{
+			Name:        "agent_core_ngt_insert_vcache_count",
 			Description: n.insertVCacheCount.Description(),
 			Measure:     &n.insertVCacheCount,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
-			Name:        "ngt_delete_vcache_count",
+		{
+			Name:        "agent_core_ngt_delete_vcache_count",
 			Description: n.deleteVCacheCount.Description(),
 			Measure:     &n.deleteVCacheCount,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
-			Name:        "ngt_completed_create_index_total",
+		{
+			Name:        "agent_core_ngt_completed_create_index_total",
 			Description: n.completedCreateIndexTotal.Description(),
 			Measure:     &n.completedCreateIndexTotal,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
-			Name:        "ngt_executed_proactive_gc_total",
+		{
+			Name:        "agent_core_ngt_executed_proactive_gc_total",
 			Description: n.executedProactiveGCTotal.Description(),
 			Measure:     &n.executedProactiveGCTotal,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
-			Name:        "ngt_is_indexing",
+		{
+			Name:        "agent_core_ngt_is_indexing",
 			Description: n.isIndexing.Description(),
 			Measure:     &n.isIndexing,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
-			Name:        "ngt_is_saving",
+		{
+			Name:        "agent_core_ngt_is_saving",
 			Description: n.isSaving.Description(),
 			Measure:     &n.isSaving,
 			Aggregation: metrics.LastValue(),

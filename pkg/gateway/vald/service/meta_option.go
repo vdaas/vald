@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@
 package service
 
 import (
-	"fmt"
-
 	"github.com/vdaas/vald/internal/cache"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/timeutil"
@@ -27,26 +25,10 @@ import (
 
 type MetaOption func(m *meta) error
 
-var (
-	defaultMetaOpts = []MetaOption{
-		WithMetaCacheEnabled(true),
-		WithMetaCacheExpireDuration("30m"),
-		WithMetaCacheExpiredCheckDuration("2m"),
-	}
-)
-
-func WithMetaAddr(addr string) MetaOption {
-	return func(m *meta) error {
-		m.addr = addr
-		return nil
-	}
-}
-
-func WithMetaHostPort(host string, port int) MetaOption {
-	return func(m *meta) error {
-		m.addr = fmt.Sprintf("%s:%d", host, port)
-		return nil
-	}
+var defaultMetaOpts = []MetaOption{
+	WithMetaCacheEnabled(true),
+	WithMetaCacheExpireDuration("30m"),
+	WithMetaCacheExpiredCheckDuration("2m"),
 }
 
 func WithMetaClient(client grpc.Client) MetaOption {

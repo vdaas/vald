@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,9 +37,9 @@ endif
 .PHONY: valdcli/xpanes/insert
 ## insert randomized vectors using valdcli and xpanes
 valdcli/xpanes/insert:
-	xpanes -c "valdcli rand-vecs -n $(NUMBER) -d $(DIMENSION) --with-ids | valdcli -h $(HOST) -p $(PORT) stream-insert --elapsed-time" $$(seq 1 $(NUMPANES))
+	xpanes -c "valdcli rand-vecs -n $(NUMBER) -d $(DIMENSION) --gaussian --gaussian-mean $(MEAN) --gaussian-stddev $(STDDEV) --with-ids | valdcli -h $(HOST) -p $(PORT) stream-insert --elapsed-time" $$(seq 1 $(NUMPANES))
 
 .PHONY: valdcli/xpanes/search
 ## search randomized vectors using valdcli and xpanes
 valdcli/xpanes/search:
-	xpanes -c "valdcli rand-vecs -n $(NUMBER) -d $(DIMENSION) | valdcli -h $(HOST) -p $(PORT) stream-search --elapsed-time" $$(seq 1 $(NUMPANES))
+	xpanes -c "valdcli rand-vecs -n $(NUMBER) -d $(DIMENSION) --gaussian --gaussian-mean $(MEAN) --gaussian-stddev $(STDDEV) | valdcli -h $(HOST) -p $(PORT) stream-search --elapsed-time" $$(seq 1 $(NUMPANES))

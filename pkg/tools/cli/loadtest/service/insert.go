@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,13 +20,11 @@ import (
 	"sync/atomic"
 
 	"github.com/kpango/fuid"
-	"github.com/vdaas/vald/apis/grpc/agent/core"
-	"github.com/vdaas/vald/apis/grpc/gateway/vald"
-	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
-	"github.com/vdaas/vald/pkg/tools/cli/loadtest/config"
 )
 
 func insertRequestProvider(dataset assets.Dataset, batchSize int) (f func() interface{}, size int, err error) {
@@ -53,9 +51,11 @@ func objectVectorProvider(dataset assets.Dataset) (func() interface{}, int) {
 			if err != nil {
 				return nil
 			}
-			ret = &payload.Object_Vector{
-				Id:     fuid.String(),
-				Vector: v.([]float32),
+			ret = &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     fuid.String(),
+					Vector: v.([]float32),
+				},
 			}
 		}
 		return ret
@@ -69,67 +69,32 @@ func objectVectorsProvider(dataset assets.Dataset, n int) (func() interface{}, i
 		size = size + 1
 	}
 	return func() (ret interface{}) {
-		v := make([]*payload.Object_Vector, 0, n)
+		r := make([]*payload.Insert_Request, 0, n)
 		for i := 0; i < n; i++ {
 			d := provider()
 			if d == nil {
 				break
 			}
-			v = append(v, d.(*payload.Object_Vector))
+			r = append(r, d.(*payload.Insert_Request))
 		}
-		if len(v) == 0 {
+		if len(r) == 0 {
 			return nil
 		}
-		return &payload.Object_Vectors{
-			Vectors: v,
+		return &payload.Insert_MultiRequest{
+			Requests: r,
 		}
 	}, size
-}
-
-type inserter interface {
-	Insert(context.Context, *payload.Object_Vector, ...grpc.CallOption) (*payload.Empty, error)
-	MultiInsert(context.Context, *payload.Object_Vectors, ...grpc.CallOption) (*payload.Empty, error)
-}
-
-func agent(conn *grpc.ClientConn) inserter {
-	return core.NewAgentClient(conn)
-}
-
-func gateway(conn *grpc.ClientConn) inserter {
-	return vald.NewValdClient(conn)
-}
-
-func insert(c func(*grpc.ClientConn) inserter) loadFunc {
-	return func(ctx context.Context, conn *grpc.ClientConn, i interface{}, copts ...grpc.CallOption) (interface{}, error) {
-		return c(conn).Insert(ctx, i.(*payload.Object_Vector), copts...)
-	}
-}
-
-func bulkInsert(c func(*grpc.ClientConn) inserter) loadFunc {
-	return func(ctx context.Context, conn *grpc.ClientConn, i interface{}, copts ...grpc.CallOption) (interface{}, error) {
-		return c(conn).MultiInsert(ctx, i.(*payload.Object_Vectors), copts...)
-	}
 }
 
 func (l *loader) newInsert() (f loadFunc, err error) {
 	switch {
 	case l.batchSize == 1:
-		switch l.service {
-		case config.Agent:
-			f = insert(agent)
-		case config.Gateway:
-			f = insert(gateway)
-		default:
-			err = errors.Errorf("undefined service: %s", l.service.String())
+		f = func(ctx context.Context, conn *grpc.ClientConn, i interface{}, copts ...grpc.CallOption) (interface{}, error) {
+			return vald.NewInsertClient(conn).Insert(ctx, i.(*payload.Insert_Request), copts...)
 		}
 	case l.batchSize >= 2:
-		switch l.service {
-		case config.Agent:
-			f = bulkInsert(agent)
-		case config.Gateway:
-			f = bulkInsert(gateway)
-		default:
-			err = errors.Errorf("undefined service: %s", l.service.String())
+		f = func(ctx context.Context, conn *grpc.ClientConn, i interface{}, copts ...grpc.CallOption) (interface{}, error) {
+			return vald.NewInsertClient(conn).MultiInsert(ctx, i.(*payload.Insert_MultiRequest), copts...)
 		}
 	default:
 		err = errors.New("batch size must be natural number.")
@@ -142,20 +107,7 @@ func (l *loader) newInsert() (f loadFunc, err error) {
 
 func (l *loader) newStreamInsert() (f loadFunc, err error) {
 	l.batchSize = 1
-	switch l.service {
-	case config.Agent:
-		f = func(ctx context.Context, conn *grpc.ClientConn, i interface{}, copts ...grpc.CallOption) (interface{}, error) {
-			return core.NewAgentClient(conn).StreamInsert(ctx, copts...)
-		}
-	case config.Gateway:
-		f = func(ctx context.Context, conn *grpc.ClientConn, i interface{}, copts ...grpc.CallOption) (interface{}, error) {
-			return vald.NewValdClient(conn).StreamInsert(ctx, copts...)
-		}
-	default:
-		err = errors.Errorf("undefined service: %s", l.service.String())
-	}
-	if err != nil {
-		return nil, err
-	}
-	return f, nil
+	return func(ctx context.Context, conn *grpc.ClientConn, i interface{}, copts ...grpc.CallOption) (interface{}, error) {
+		return vald.NewValdClient(conn).StreamInsert(ctx, copts...)
+	}, nil
 }

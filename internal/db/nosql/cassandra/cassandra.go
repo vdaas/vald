@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,60 +30,60 @@ import (
 )
 
 var (
-	// ErrNotFound is a alias of gocql.ErrNotFound
+	// ErrNotFound is a alias of gocql.ErrNotFound.
 	ErrNotFound = gocql.ErrNotFound
-	// ErrUnavailable is a alias of gocql.ErrUnavailable
+	// ErrUnavailable is a alias of gocql.ErrUnavailable.
 	ErrUnavailable = gocql.ErrUnavailable
-	// ErrUnsupported is a alias of gocql.ErrUnsupported
+	// ErrUnsupported is a alias of gocql.ErrUnsupported.
 	ErrUnsupported = gocql.ErrUnsupported
-	// ErrTooManyStmts is a alias of gocql.ErrTooManyStmts
+	// ErrTooManyStmts is a alias of gocql.ErrTooManyStmts.
 	ErrTooManyStmts = gocql.ErrTooManyStmts
-	// ErrUseStmt is a alias of gocql.ErrUseStmt
+	// ErrUseStmt is a alias of gocql.ErrUseStmt.
 	ErrUseStmt = gocql.ErrUseStmt
-	// ErrSessionClosed is a alias of gocql.ErrSessionClosed
+	// ErrSessionClosed is a alias of gocql.ErrSessionClosed.
 	ErrSessionClosed = gocql.ErrSessionClosed
-	// ErrNoConnections is a alias of gocql.ErrNoConnections
+	// ErrNoConnections is a alias of gocql.ErrNoConnections.
 	ErrNoConnections = gocql.ErrNoConnections
-	// ErrNoKeyspace is a alias of gocql.ErrNoKeyspace
+	// ErrNoKeyspace is a alias of gocql.ErrNoKeyspace.
 	ErrNoKeyspace = gocql.ErrNoKeyspace
-	// ErrKeyspaceDoesNotExist is a alias of gocql.ErrKeyspaceDoesNotExist
+	// ErrKeyspaceDoesNotExist is a alias of gocql.ErrKeyspaceDoesNotExist.
 	ErrKeyspaceDoesNotExist = gocql.ErrKeyspaceDoesNotExist
-	// ErrNoMetadata is a alias of gocql.ErrNoMetadata
+	// ErrNoMetadata is a alias of gocql.ErrNoMetadata.
 	ErrNoMetadata = gocql.ErrNoMetadata
-	// ErrNoHosts is a alias of gocql.ErrNoHosts
+	// ErrNoHosts is a alias of gocql.ErrNoHosts.
 	ErrNoHosts = gocql.ErrNoHosts
-	// ErrNoConnectionsStarted is a alias of gocql.ErrNoConnectionsStarted
+	// ErrNoConnectionsStarted is a alias of gocql.ErrNoConnectionsStarted.
 	ErrNoConnectionsStarted = gocql.ErrNoConnectionsStarted
-	// ErrHostQueryFailed is a alias of gocql.ErrHostQueryFailed
+	// ErrHostQueryFailed is a alias of gocql.ErrHostQueryFailed.
 	ErrHostQueryFailed = gocql.ErrHostQueryFailed
 )
 
-// Cassandra represent an interface to query on cassandra
+// Cassandra represent an interface to query on cassandra.
 type Cassandra interface {
 	Open(ctx context.Context) error
 	Close(ctx context.Context) error
 	Query(stmt string, names []string) *Queryx
 }
 
-// ClusterConfig represent an interface of cassandra cluster configuation
+// ClusterConfig represent an interface of cassandra cluster configuation.
 type ClusterConfig interface {
 	CreateSession() (*gocql.Session, error)
 }
 
 type (
-	// Session is a alias of gocql.Session
+	// Session is a alias of gocql.Session.
 	Session = gocql.Session
-	// Cmp is a alias of qb.Cmp
+	// Cmp is a alias of qb.Cmp.
 	Cmp = qb.Cmp
-	// BatchBuilder is a alias of qb.BatchBuilder
+	// BatchBuilder is a alias of qb.BatchBuilder.
 	BatchBuilder = qb.BatchBuilder
-	// InsertBuilder is a alias of qb.InsertBuilder
+	// InsertBuilder is a alias of qb.InsertBuilder.
 	InsertBuilder = qb.InsertBuilder
-	// DeleteBuilder is a alias of qb.DeleteBuilder
+	// DeleteBuilder is a alias of qb.DeleteBuilder.
 	DeleteBuilder = qb.DeleteBuilder
-	// UpdateBuilder is a alias of qb.UpdateBuilder
+	// UpdateBuilder is a alias of qb.UpdateBuilder.
 	UpdateBuilder = qb.UpdateBuilder
-	// Queryx is a alias of gocqlx.Queryx
+	// Queryx is a alias of gocqlx.Queryx.
 	Queryx = gocqlx.Queryx
 )
 
@@ -167,7 +167,7 @@ type (
 // New initialize and return the cassandra client, or any error occurred.
 func New(opts ...Option) (Cassandra, error) {
 	c := new(client)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(c); err != nil {
 			werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 
@@ -299,26 +299,27 @@ func New(opts ...Option) (Cassandra, error) {
 	return c, nil
 }
 
-// Open creates a session to cassandra and return any error occurred
+// Open creates a session to cassandra and return any error occurred.
 func (c *client) Open(ctx context.Context) (err error) {
 	if c.session, err = c.cluster.CreateSession(); err != nil {
-		return err
+		log.Debugf("failed to create session %#v", c)
+		return errors.ErrCassandraFailedToCreateSession(err, c.hosts, c.port, c.cqlVersion)
 	}
 	return nil
 }
 
-// Close closes the session to cassandra
+// Close closes the session to cassandra.
 func (c *client) Close(ctx context.Context) error {
 	c.session.Close()
 	return nil
 }
 
-// Query creates an query that can be executed on cassandra
+// Query creates an query that can be executed on cassandra.
 func (c *client) Query(stmt string, names []string) *Queryx {
 	return gocqlx.Query(c.session.Query(stmt), names)
 }
 
-// Select build and returns the cql string and the named args
+// Select build and returns the cql string and the named args.
 func Select(table string, columns []string, cmps ...Cmp) (stmt string, names []string) {
 	sb := qb.Select(table).Columns(columns...)
 	for _, cmp := range cmps {
@@ -327,7 +328,7 @@ func Select(table string, columns []string, cmps ...Cmp) (stmt string, names []s
 	return sb.ToCql()
 }
 
-// Delete returns the delete builder
+// Delete returns the delete builder.
 func Delete(table string, cmps ...Cmp) *DeleteBuilder {
 	db := qb.Delete(table)
 	for _, cmp := range cmps {
@@ -336,37 +337,37 @@ func Delete(table string, cmps ...Cmp) *DeleteBuilder {
 	return db
 }
 
-// Insert returns the insert builder
+// Insert returns the insert builder.
 func Insert(table string, columns ...string) *InsertBuilder {
 	return qb.Insert(table).Columns(columns...)
 }
 
-// Update returns the update builder
+// Update returns the update builder.
 func Update(table string) *UpdateBuilder {
 	return qb.Update(table)
 }
 
-// Batch returns the batch builder
+// Batch returns the batch builder.
 func Batch() *BatchBuilder {
 	return qb.Batch()
 }
 
-// Eq returns the equal comparator
+// Eq returns the equal comparator.
 func Eq(column string) Cmp {
 	return qb.Eq(column)
 }
 
-// In returns the in comparator
+// In returns the in comparator.
 func In(column string) Cmp {
 	return qb.In(column)
 }
 
-// Contains return the contains comparator
+// Contains return the contains comparator.
 func Contains(column string) Cmp {
 	return qb.Contains(column)
 }
 
-// WrapErrorWithKeys wraps the cassandra error to Vald internal error
+// WrapErrorWithKeys wraps the cassandra error to Vald internal error.
 func WrapErrorWithKeys(err error, keys ...string) error {
 	switch err {
 	case ErrNotFound:

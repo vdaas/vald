@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import (
 	"context"
 	"crypto/tls"
 	"strconv"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -49,8 +50,16 @@ type dialer struct {
 	dialerTimeout         time.Duration
 	dialerKeepAlive       time.Duration
 	dialerDualStack       bool
+	addrs                 sync.Map
 	der                   *net.Dialer
 	dialer                func(ctx context.Context, network, addr string) (net.Conn, error)
+}
+
+type addrInfo struct {
+	addr string
+	host string
+	port uint16
+	isIP bool
 }
 
 type dialerCache struct {
@@ -68,12 +77,12 @@ func (d *dialerCache) IP() string {
 	return d.ips[atomic.AddUint32(&d.cnt, 1)%d.Len()]
 }
 
-// Len returns the length of cached IP addresses
+// Len returns the length of cached IP addresses.
 func (d *dialerCache) Len() uint32 {
 	return uint32(len(d.ips))
 }
 
-// NewDialer initialize and return the dialer instance
+// NewDialer initialize and return the dialer instance.
 func NewDialer(opts ...DialerOption) (der Dialer, err error) {
 	d := new(dialer)
 	for _, opt := range append(defaultDialerOptions, opts...) {
@@ -93,7 +102,6 @@ func NewDialer(opts ...DialerOption) (der Dialer, err error) {
 		if d.dnsRefreshDuration > d.dnsCacheExpiration {
 			return nil, errors.ErrInvalidDNSConfig(d.dnsRefreshDuration, d.dnsCacheExpiration)
 		}
-
 		if d.cache == nil {
 			if d.cache, err = cache.New(
 				cache.WithExpireDuration(d.dnsCacheExpirationStr),
@@ -103,7 +111,6 @@ func NewDialer(opts ...DialerOption) (der Dialer, err error) {
 				return nil, err
 			}
 		}
-
 		d.dialer = d.cachedDialer
 	}
 
@@ -115,7 +122,7 @@ func NewDialer(opts ...DialerOption) (der Dialer, err error) {
 	return d, nil
 }
 
-// GetDialer returns a function to return the connection
+// GetDialer returns a function to return the connection.
 func (d *dialer) GetDialer() func(ctx context.Context, network, addr string) (net.Conn, error) {
 	return d.dialer
 }
@@ -142,7 +149,7 @@ func (d *dialer) lookup(ctx context.Context, host string) (*dialerCache, error) 
 	return dc, nil
 }
 
-// StartDialerCache starts the dialer cache to expire the cache automatically
+// StartDialerCache starts the dialer cache to expire the cache automatically.
 func (d *dialer) StartDialerCache(ctx context.Context) {
 	if d.dnsCache && d.cache != nil {
 		d.cache.Start(ctx)
@@ -157,9 +164,31 @@ func (d *dialer) DialContext(ctx context.Context, network, address string) (net.
 }
 
 func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (conn net.Conn, err error) {
-	host, port, isIP, err := net.Parse(addr)
-	if err != nil {
-		return nil, err
+	var (
+		host string
+		port uint16
+		isIP bool
+	)
+	ai, ok := d.addrs.Load(addr)
+	if !ok {
+		host, port, isIP, err = net.Parse(addr)
+		if err != nil {
+			d.addrs.Delete(addr)
+			return nil, err
+		}
+		d.addrs.Store(addr, &addrInfo{
+			host: host,
+			port: port,
+			addr: addr,
+			isIP: isIP,
+		})
+	} else {
+		info, ok := ai.(*addrInfo)
+		if ok {
+			host = info.host
+			port = info.port
+			isIP = info.isIP
+		}
 	}
 
 	if d.dnsCache && !isIP {
@@ -176,12 +205,16 @@ func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (conn 
 	return d.dial(dctx, network, addr)
 }
 
-func (d *dialer) dial(ctx context.Context, network, addr string) (net.Conn, error) {
-	conn, err := d.der.DialContext(ctx, network, addr)
+func (d *dialer) dial(ctx context.Context, network, addr string) (conn net.Conn, err error) {
+	conn, err = d.der.DialContext(ctx, network, addr)
 	if err != nil {
 		defer func(conn net.Conn) {
 			if conn != nil {
-				conn.Close()
+				if err != nil {
+					err = errors.Wrap(conn.Close(), err.Error())
+					return
+				}
+				err = conn.Close()
 			}
 		}(conn)
 		return nil, err

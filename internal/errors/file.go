@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,11 +18,14 @@
 package errors
 
 var (
+	// ErrWatchDirNotFound represents an error that the watch directory is not found.
 	ErrWatchDirNotFound = New("fs watcher watch dir not found")
 
+	// ErrFileAlreadyExists represents a function to generate an error that the file already exists.
 	ErrFileAlreadyExists = func(path string) error {
 		return Errorf("file already exists: %s", path)
 	}
 
+	// ErrPathNotSpecified represents an error that the path is not specified.
 	ErrPathNotSpecified = New("the path is not specified")
 )

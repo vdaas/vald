@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/config"
-	core "github.com/vdaas/vald/internal/core/ngt"
+	core "github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
@@ -124,7 +124,7 @@ const (
 func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 	n := new(ngt)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(n); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
@@ -166,8 +166,20 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 }
 
 func (n *ngt) initNGT(opts ...core.Option) (err error) {
-	if _, err = os.Stat(n.path); os.IsNotExist(err) || n.inMem {
+	if n.inMem {
+		log.Debug("vald agent starts with in-memory mode")
 		n.core, err = core.New(opts...)
+		return err
+	}
+
+	_, err = os.Stat(n.path)
+	if os.IsNotExist(err) {
+		log.Debugf("index file not exists,\tpath: %s,\terr: %v", n.path, err)
+		n.core, err = core.New(opts...)
+		return err
+	}
+	if os.IsPermission(err) {
+		log.Debugf("no permission for index path,\tpath: %s,\terr: %v", n.path, err)
 		return err
 	}
 
@@ -176,6 +188,20 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 	agentMetadata, err := metadata.Load(filepath.Join(n.path, metadata.AgentMetadataFileName))
 	if err != nil {
 		log.Warnf("cannot read metadata from %s: %s", metadata.AgentMetadataFileName, err)
+	}
+	if os.IsNotExist(err) || agentMetadata == nil || agentMetadata.NGT == nil || agentMetadata.NGT.IndexCount == 0 {
+		log.Warnf("cannot read metadata from %s: %v", metadata.AgentMetadataFileName, err)
+
+		if fi, err := os.Stat(filepath.Join(n.path, kvsFileName)); os.IsNotExist(err) || fi.Size() == 0 {
+			log.Warn("kvsdb file is not exist")
+			n.core, err = core.New(opts...)
+			return err
+		}
+
+		if os.IsPermission(err) {
+			log.Debugf("no permission for kvsdb file,\tpath: %s,\terr: %v", filepath.Join(n.path, kvsFileName), err)
+			return err
+		}
 	}
 
 	var timeout time.Duration
@@ -191,7 +217,7 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 			),
 		)
 	} else {
-		log.Debugf("cannot inspect the backup index size. starting to load.")
+		log.Debugf("cannot inspect the backup index size. starting to load default value.")
 		timeout = time.Duration(math.Min(float64(n.minLit), float64(n.maxLit)))
 	}
 
@@ -212,7 +238,6 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 	// it should exit this function and leave this goroutine running.
 	go func() {
 		defer close(ech)
-
 		err = safety.RecoverFunc(func() (err error) {
 			err = eg.Wait()
 			if err != nil {
@@ -270,6 +295,7 @@ func (n *ngt) loadKVS() error {
 	m := make(map[string]uint32)
 	err = gob.NewDecoder(f).Decode(&m)
 	if err != nil {
+		log.Errorf("error decoding kvsdb file,\terr: %v", err)
 		return err
 	}
 
@@ -314,7 +340,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 			select {
 			case <-ctx.Done():
 				err = n.CreateIndex(ctx, n.poolSize)
-				if err != nil {
+				if err != nil && !errors.Is(err, errors.ErrUncommittedIndexNotFound) {
 					ech <- err
 					return errors.Wrap(ctx.Err(), err.Error())
 				}
@@ -426,6 +452,9 @@ func (n *ngt) InsertMultiple(vecs map[string][]float32) (err error) {
 
 func (n *ngt) Update(uuid string, vec []float32) (err error) {
 	now := time.Now().UnixNano()
+	if !n.readyForUpdate(uuid, vec) {
+		return nil
+	}
 	err = n.delete(uuid, now)
 	if err != nil {
 		return err
@@ -436,8 +465,12 @@ func (n *ngt) Update(uuid string, vec []float32) (err error) {
 
 func (n *ngt) UpdateMultiple(vecs map[string][]float32) (err error) {
 	uuids := make([]string, 0, len(vecs))
-	for uuid := range vecs {
-		uuids = append(uuids, uuid)
+	for uuid, vec := range vecs {
+		if n.readyForUpdate(uuid, vec) {
+			uuids = append(uuids, uuid)
+		} else {
+			delete(vecs, uuid)
+		}
 	}
 	err = n.DeleteMultiple(uuids...)
 	if err != nil {
@@ -724,7 +757,7 @@ func (n *ngt) CreateAndSaveIndex(ctx context.Context, poolSize uint32) (err erro
 	}()
 
 	err = n.CreateIndex(ctx, poolSize)
-	if err != nil && err != errors.ErrUncommittedIndexNotFound {
+	if err != nil {
 		return err
 	}
 	return n.SaveIndex(ctx)
@@ -736,6 +769,25 @@ func (n *ngt) Exists(uuid string) (oid uint32, ok bool) {
 		_, ok = n.insertCache(uuid)
 	}
 	return oid, ok
+}
+
+func (n *ngt) readyForUpdate(uuid string, vec []float32) (ready bool) {
+	if len(uuid) == 0 || len(vec) == 0 {
+		return false
+	}
+	ovec, err := n.GetObject(uuid)
+	if err != nil || len(vec) != len(ovec) {
+		// if error (GetObject cannot find vector) or vector length is not equal let's try update
+		return true
+	}
+	for i, v := range vec {
+		if v != ovec[i] {
+			// if difference exists return true for update
+			return true
+		}
+	}
+	// if no difference exists (same vector already exists) return false for skip update
+	return false
 }
 
 func (n *ngt) insertCache(uuid string) (*vcache, bool) {

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,26 +18,29 @@
 package errors
 
 var (
-
-	// Cassandra
+	// ErrCassandraInvalidConsistencyType represents a function to generate an error of consistency type not defined.
 	ErrCassandraInvalidConsistencyType = func(consistency string) error {
 		return Errorf("consistetncy type %q is not defined", consistency)
 	}
 
+	// NewErrCassandraNotFoundIdentity represents a function to generate an error of cassandra entry not found.
 	NewErrCassandraNotFoundIdentity = func() error {
 		return &ErrCassandraNotFoundIdentity{
 			err: New("cassandra entry not found"),
 		}
 	}
 
+	// NewErrCassandraUnavailableIdentity represents a function to generate an error of cassandra unavailable.
 	NewErrCassandraUnavailableIdentity = func() error {
 		return &ErrCassandraUnavailableIdentity{
 			err: New("cassandra unavailable"),
 		}
 	}
 
+	// ErrCassandraUnavailable represents NewErrCassandraUnavailableIdentity.
 	ErrCassandraUnavailable = NewErrCassandraUnavailableIdentity
 
+	// ErrCassandraNotFound represents a function to generate an error of cassandra keys not found.
 	ErrCassandraNotFound = func(keys ...string) error {
 		switch {
 		case len(keys) == 1:
@@ -49,52 +52,67 @@ var (
 		}
 	}
 
+	// ErrCassandraGetOperationFailed represents a function to generate an error of fetch key failed.
 	ErrCassandraGetOperationFailed = func(key string, err error) error {
 		return Wrapf(err, "error failed to fetch key (%s)", key)
 	}
 
+	// ErrCassandraSetOperationFailed represents a function to generate an error of set key failed.
 	ErrCassandraSetOperationFailed = func(key string, err error) error {
 		return Wrapf(err, "error failed to set key (%s)", key)
 	}
 
+	// ErrCassandraDeleteOperationFailed represents a function to generate an error of delete key failed.
 	ErrCassandraDeleteOperationFailed = func(key string, err error) error {
 		return Wrapf(err, "error failed to delete key (%s)", key)
 	}
 
+	// ErrCassandraHostDownDetected represents a function to generate an error of cassandra host down detected.
 	ErrCassandraHostDownDetected = func(err error, nodeInfo string) error {
 		return Wrapf(err, "error cassandra host down detected\t%s", nodeInfo)
 	}
+	ErrCassandraFailedToCreateSession = func(err error, hosts []string, port int, cqlVersion string) error {
+		return Wrapf(err, "error cassandra client failed to create session to hosts: %v\tport: %d\tcql_version: %s ", hosts, port, cqlVersion)
+	}
 )
 
+// ErrCassandraNotFoundIdentity represents custom error for cassandra not found.
 type ErrCassandraNotFoundIdentity struct {
 	err error
 }
 
+// Error returns string of internal error.
 func (e *ErrCassandraNotFoundIdentity) Error() string {
 	return e.err.Error()
 }
 
+// Unwrap returns an internal error.
 func (e *ErrCassandraNotFoundIdentity) Unwrap() error {
 	return e.err
 }
 
+// IsErrCassandraNotFound reports whether any error in err's chain matches ErrCassandraNotFound.
 func IsErrCassandraNotFound(err error) bool {
 	target := new(ErrCassandraNotFoundIdentity)
 	return As(err, &target)
 }
 
+// ErrCassandraUnavailableIdentity represents custom error for cassandra unavailable.
 type ErrCassandraUnavailableIdentity struct {
 	err error
 }
 
+// Error returns string of internal error.
 func (e *ErrCassandraUnavailableIdentity) Error() string {
 	return e.err.Error()
 }
 
+// Unwrap returns internal error.
 func (e *ErrCassandraUnavailableIdentity) Unwrap() error {
 	return e.err
 }
 
+// IsErrCassandraUnavailable reports whether any error in err's chain matches ErrCassandraUnavailableIdentity.
 func IsErrCassandraUnavailable(err error) bool {
 	target := new(ErrCassandraUnavailableIdentity)
 	return As(err, &target)

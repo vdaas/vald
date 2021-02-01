@@ -3,7 +3,7 @@ vald-helm-operator
 
 This is a Helm chart to install vald-helm-operator.
 
-Current chart version is `v0.0.62`
+Current chart version is `v0.0.66`
 
 Table of Contents
 ---
@@ -35,7 +35,7 @@ This is a custom resource that represents values of the Vald Helm chart.
 Example:
 
 ```yaml
-apiVersion: vald.vdaas.org/v1alpha1
+apiVersion: vald.vdaas.org/v1
 kind: ValdRelease
 metadata:
   name: vald-cluster
@@ -50,7 +50,7 @@ This is a custom resource that represents values of the vald-helm-operator Helm 
 Example:
 
 ```yaml
-apiVersion: vald.vdaas.org/v1alpha1
+apiVersion: vald.vdaas.org/v1
 kind: ValdHelmOperatorRelease
 metadata:
   name: vald-helm-operator-release
@@ -69,7 +69,7 @@ Configuration
 | enableMetrics | bool | `true` | enable metrics endpoint |
 | image.pullPolicy | string | `"Always"` | image pull policy |
 | image.repository | string | `"vdaas/vald-helm-operator"` | image repository |
-| image.tag | string | `"v0.0.62"` | image tag |
+| image.tag | string | `"v0.0.66"` | image tag |
 | leaderElectionID | string | `"vald-helm-operator"` | name of the configmap that is used for holding the leader lock. |
 | logging.format | string | `"console"` | logging format of operator (console or json) |
 | logging.level | string | `"info"` | logging level of operator (debug, info, or error) |

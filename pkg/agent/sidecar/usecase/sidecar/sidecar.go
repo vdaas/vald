@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package sidecar
 import (
 	"context"
 
-	"github.com/vdaas/vald/apis/grpc/agent/sidecar"
+	"github.com/vdaas/vald/apis/grpc/v1/agent/sidecar"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/db/storage/blob/cloudstorage"
 	"github.com/vdaas/vald/internal/db/storage/blob/cloudstorage/urlopener"
@@ -172,10 +172,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
 			sidecar.RegisterSidecarServer(srv, g)
 		}),
-		server.WithGRPCOption(
-			grpc.ChainUnaryInterceptor(grpc.RecoverInterceptor()),
-			grpc.ChainStreamInterceptor(grpc.RecoverStreamInterceptor()),
-		),
 		server.WithPreStopFunction(func() error {
 			// TODO notify another gateway and scheduler
 			return nil

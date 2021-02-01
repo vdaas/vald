@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,13 +28,13 @@ type rand struct {
 	x *uint32
 }
 
-var (
-	pool = sync.Pool{
-		New: func() interface{} {
-			return new(rand).init()
-		},
-	}
-)
+var pool = sync.Pool{
+	New: func() interface{} {
+		return (&rand{
+			x: new(uint32),
+		}).init()
+	},
+}
 
 func Uint32() (x uint32) {
 	r := pool.Get().(*rand)
@@ -60,8 +60,10 @@ func (r *rand) Uint32() (x uint32) {
 }
 
 func (r *rand) init() *rand {
+	if r.x == nil {
+		r.x = new(uint32)
+	}
 	x := fastime.UnixNanoNow()
-	r.x = new(uint32)
 	atomic.StoreUint32(r.x, uint32((x>>32)^x))
 	return r
 }

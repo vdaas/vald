@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 package errors
 
 var (
-	//NGT
+	// NGT.
 
 	ErrCreateProperty = func(err error) error {
 		return Wrap(err, "failed to create property")
@@ -37,6 +37,10 @@ var (
 
 	ErrDimensionLimitExceed = func(current, limit int) error {
 		return Errorf("supported dimension limit exceed:\trequired = %d,\tlimit = %d", current, limit)
+	}
+
+	ErrIncompatibleDimensionSize = func(req, dim int) error {
+		return Errorf("incompatible dimension size detected\trequested: %d,\tconfigured: %d", req, dim)
 	}
 
 	ErrUnsupportedObjectType = New("unsupported ObjectType")
@@ -69,7 +73,7 @@ var (
 
 	ErrUncommittedIndexNotFound = New("uncommitted indexes are not found")
 
-	// ErrCAPINotImplemented raises using not implemented function in C API
+	// ErrCAPINotImplemented raises using not implemented function in C API.
 	ErrCAPINotImplemented = New("not implemented in C API")
 
 	ErrUUIDAlreadyExists = func(uuid string, oid uint) error {

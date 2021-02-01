@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,62 +30,59 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/test/comparator"
-
 	"go.uber.org/goleak"
 )
 
-var (
-	// default comparator option for client
-	clientComparatorOpts = []comparator.Option{
-		comparator.AllowUnexported(client{}),
-		comparator.AllowUnexported(gocql.ClusterConfig{}),
-		comparator.Comparer(func(x, y retryPolicy) bool {
-			return reflect.DeepEqual(x, y)
-		}),
-		comparator.Comparer(func(x, y reconnectionPolicy) bool {
-			return reflect.DeepEqual(x, y)
-		}),
-		comparator.Comparer(func(x, y poolConfig) bool {
-			return reflect.DeepEqual(x, y)
-		}),
-		comparator.Comparer(func(x, y hostFilter) bool {
-			return reflect.DeepEqual(x, y)
-		}),
-		comparator.Comparer(func(x, y gocql.PoolConfig) bool {
-			return reflect.DeepEqual(x, y)
-		}),
-		comparator.Comparer(func(x, y gocql.HostSelectionPolicy) bool {
-			return reflect.DeepEqual(x, y)
-		}),
-		comparator.Comparer(func(x, y func(h *gocql.HostInfo) (gocql.Authenticator, error)) bool {
-			if (x == nil && y != nil) || (x != nil && y == nil) {
-				return false
-			}
-			if x == nil && y == nil {
-				return true
-			}
-			return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
-		}),
-		comparator.Comparer(func(x, y gocql.HostFilter) bool {
-			if (x == nil && y != nil) || (x != nil && y == nil) {
-				return false
-			}
-			if x == nil && y == nil {
-				return true
-			}
+// default comparator option for client.
+var clientComparatorOpts = []comparator.Option{
+	comparator.AllowUnexported(client{}),
+	comparator.AllowUnexported(gocql.ClusterConfig{}),
+	comparator.Comparer(func(x, y retryPolicy) bool {
+		return reflect.DeepEqual(x, y)
+	}),
+	comparator.Comparer(func(x, y reconnectionPolicy) bool {
+		return reflect.DeepEqual(x, y)
+	}),
+	comparator.Comparer(func(x, y poolConfig) bool {
+		return reflect.DeepEqual(x, y)
+	}),
+	comparator.Comparer(func(x, y hostFilter) bool {
+		return reflect.DeepEqual(x, y)
+	}),
+	comparator.Comparer(func(x, y gocql.PoolConfig) bool {
+		return reflect.DeepEqual(x, y)
+	}),
+	comparator.Comparer(func(x, y gocql.HostSelectionPolicy) bool {
+		return reflect.DeepEqual(x, y)
+	}),
+	comparator.Comparer(func(x, y func(h *gocql.HostInfo) (gocql.Authenticator, error)) bool {
+		if (x == nil && y != nil) || (x != nil && y == nil) {
+			return false
+		}
+		if x == nil && y == nil {
+			return true
+		}
+		return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
+	}),
+	comparator.Comparer(func(x, y gocql.HostFilter) bool {
+		if (x == nil && y != nil) || (x != nil && y == nil) {
+			return false
+		}
+		if x == nil && y == nil {
+			return true
+		}
 
-			switch x.(type) {
-			case gocql.HostFilterFunc:
-				return true
-			}
-			return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
-		}),
+		switch x.(type) {
+		case gocql.HostFilterFunc:
+			return true
+		}
+		return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
+	}),
 
-		comparator.Comparer(func(x, y tls.Config) bool {
-			return reflect.DeepEqual(x, y)
-		}),
-	}
-)
+	comparator.Comparer(func(x, y tls.Config) bool {
+		return reflect.DeepEqual(x, y)
+	}),
+}
 
 func TestMain(m *testing.M) {
 	log.Init()
@@ -1149,7 +1146,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1343,7 +1339,6 @@ func Test_client_Open(t *testing.T) {
 			if err := test.checkFunc(c, test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1503,7 +1498,6 @@ func Test_client_Close(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1680,7 +1674,6 @@ func Test_client_Query(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1762,7 +1755,6 @@ func TestSelect(t *testing.T) {
 			if err := test.checkFunc(test.want, gotStmt, gotNames); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1834,7 +1826,6 @@ func TestDelete(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1891,7 +1882,6 @@ func TestInsert(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1946,7 +1936,6 @@ func TestUpdate(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1994,7 +1983,6 @@ func TestBatch(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -2049,7 +2037,6 @@ func TestEq(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -2104,7 +2091,6 @@ func TestIn(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -2159,7 +2145,6 @@ func TestContains(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -2333,7 +2318,6 @@ func TestWrapErrorWithKeys(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

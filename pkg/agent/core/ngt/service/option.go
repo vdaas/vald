@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import (
 	"strings"
 	"time"
 
-	core "github.com/vdaas/vald/internal/core/ngt"
+	core "github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/rand"
 	"github.com/vdaas/vald/internal/timeutil"
@@ -29,23 +29,21 @@ import (
 
 type Option func(n *ngt) error
 
-var (
-	defaultOpts = []Option{
-		WithErrGroup(errgroup.Get()),
-		WithAutoIndexCheckDuration("30m"),
-		WithAutoIndexDurationLimit("24h"),
-		WithAutoSaveIndexDuration("35m"),
-		WithAutoIndexLength(100),
-		WithInitialDelayMaxDuration("3m"),
-		WithMinLoadIndexTimeout("3m"),
-		WithMaxLoadIndexTimeout("10m"),
-		WithLoadIndexTimeoutFactor("1ms"),
-		WithDefaultPoolSize(core.DefaultPoolSize),
-		WithDefaultRadius(core.DefaultRadius),
-		WithDefaultEpsilon(core.DefaultEpsilon),
-		WithProactiveGC(true),
-	}
-)
+var defaultOptions = []Option{
+	WithErrGroup(errgroup.Get()),
+	WithAutoIndexCheckDuration("30m"),
+	WithAutoIndexDurationLimit("24h"),
+	WithAutoSaveIndexDuration("35m"),
+	WithAutoIndexLength(100),
+	WithInitialDelayMaxDuration("3m"),
+	WithMinLoadIndexTimeout("3m"),
+	WithMaxLoadIndexTimeout("10m"),
+	WithLoadIndexTimeoutFactor("1ms"),
+	WithDefaultPoolSize(core.DefaultPoolSize),
+	WithDefaultRadius(core.DefaultRadius),
+	WithDefaultEpsilon(core.DefaultEpsilon),
+	WithProactiveGC(true),
+}
 
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(n *ngt) error {

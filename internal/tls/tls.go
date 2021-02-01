@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,10 +20,10 @@ package tls
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"io/ioutil"
 	"reflect"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/io/ioutil"
 )
 
 type Config = tls.Config
@@ -102,9 +102,11 @@ func NewClientConfig(opts ...Option) (*Config, error) {
 
 // NewX509CertPool returns *x509.CertPool struct or error.
 // The CertPool will read the certificate from the path, and append the content to the system certificate pool, and return.
-func NewX509CertPool(path string) (*x509.CertPool, error) {
-	var pool *x509.CertPool
+func NewX509CertPool(path string) (pool *x509.CertPool, err error) {
 	c, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
 	if err == nil && c != nil {
 		pool, err = x509.SystemCertPool()
 		if err != nil || pool == nil {
