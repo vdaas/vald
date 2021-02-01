@@ -34,6 +34,7 @@ import (
 type Gateway interface {
 	Start(ctx context.Context) (<-chan error, error)
 	GetAgentCount(ctx context.Context) int
+	Addrs(ctx context.Context) []string
 	DoMulti(ctx context.Context, num int,
 		f func(ctx context.Context, tgt string, ac vald.Client, copts ...grpc.CallOption) error) error
 	BroadCast(ctx context.Context,
@@ -116,5 +117,9 @@ func (g *gateway) DoMulti(ctx context.Context, num int,
 }
 
 func (g *gateway) GetAgentCount(ctx context.Context) int {
-	return len(g.client.GetAddrs(ctx))
+	return len(g.Addrs(ctx))
+}
+
+func (g *gateway) Addrs(ctx context.Context) []string {
+	return g.client.GetAddrs(ctx)
 }

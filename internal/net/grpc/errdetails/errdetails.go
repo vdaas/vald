@@ -18,7 +18,10 @@
 package errdetails
 
 import (
+	"fmt"
+
 	errdetails "github.com/gogo/googleapis/google/rpc"
+	"github.com/vdaas/vald/internal/encoding/json"
 )
 
 type (
@@ -37,3 +40,16 @@ type (
 	ResourceInfo                 = errdetails.ResourceInfo
 	RetryInfo                    = errdetails.RetryInfo
 )
+
+const (
+	ValdResourceOwner          = "vdaas.org vald team <vald@vdaas.org>"
+	ValdGRPCResourceTypePrefix = "github.com/vdaas/vald/apis/grpc/v1"
+)
+
+func Serialize(obj interface{}) string {
+	b, err := json.Marshal(obj)
+	if err != nil {
+		return fmt.Sprintf("serialization error : %v,\tpayload: %#v", err, obj)
+	}
+	return string(b)
+}
