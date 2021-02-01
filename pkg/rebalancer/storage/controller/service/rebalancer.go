@@ -158,16 +158,21 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 				if ok {
 					log.Debugf("[reconcile StatefulSet] StatefulSet[%s]: desired replica: %d, current replica: %d", r.agentName, *sss[0].Spec.Replicas, sss[0].Status.Replicas)
 					if len(sss) == 1 {
-						if *sss[0].Spec.Replicas != sss[0].Status.Replicas {
-							log.Debug("[test] skip store")
-							return
-						}
-
 						pss, ok := r.statefulSets.Load().(statefulset.StatefulSet)
 						if ok && *sss[0].Spec.Replicas < *pss.Spec.Replicas {
-							mu.Lock()
-							desiredAgentReplicas = append(desiredAgentReplicas, *sss[0].Spec.Replicas)
-							mu.Unlock()
+							jobTpl, err := r.genJobTpl()
+							if err != nil {
+								log.Errorf("[recovery] error generating job template: %s", err.Error())
+							} else {
+								for i := int(*pss.Spec.Replicas); i > int(*sss[0].Spec.Replicas); i-- {
+									name := r.agentName + "-" + strconv.Itoa(i-1)
+									log.Debugf("[recovery] creating job for pod %s", name)
+									ctx := context.TODO()
+									if err := r.createJob(ctx, *jobTpl, config.RECOVERY, name, r.agentNamespace, 1); err != nil {
+										log.Errorf("[recovery] failed to create job: %s", err)
+									}
+								}
+							}
 						}
 						r.statefulSets.Store(sss[0])
 					} else {
