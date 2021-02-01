@@ -22,7 +22,6 @@ import (
 	"math"
 	"reflect"
 	"strconv"
-	"sync"
 	"sync/atomic"
 	"time"
 
@@ -141,8 +140,6 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 		return nil, err
 	}
 
-	var mu sync.Mutex
-	desiredAgentReplicas := make([]int32, 0)
 	var rc k8s.ResourceController
 	switch r.agentResourceType {
 	case config.STATEFULSET:
@@ -211,51 +208,7 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 				log.Debugf("[reconcile pod] length podList[%s]: %d", r.agentName, len(podList[r.agentName]))
 				pods, ok := podList[r.agentName]
 				if ok {
-					mu.Lock()
-					dar := make([]int32, len(desiredAgentReplicas))
-					_ = copy(dar, desiredAgentReplicas)
-					log.Debugf("[test] before creating job: desiredAgentReplicas: %v", dar)
-					mu.Unlock()
-
-					// var muPod sync.Mutex
-					// muPod.Lock()
-					// defer muPod.Unlock()
-					if len(dar) > 0 {
-						ppod, ok := r.pods.Load().([]pod.Pod)
-						log.Debugf("[test] len(pod): %d, len(prev pod): %d", len(pods), len(ppod))
-						if ok && len(pods) < len(ppod) && len(pods) == int(dar[0]) {
-							decreasedPodNames := getDecreasedPodNames(ppod, pods, r.agentNamespace)
-							jobTpl, err := r.genJobTpl()
-							if err != nil {
-								log.Infof("[recovery] error generating job template: %s", err.Error())
-								return
-							}
-							// create jobs
-							for _, name := range decreasedPodNames {
-								log.Debugf("[recovery] creating job for pod %s", name)
-								ctx := context.TODO()
-								if err := r.createJob(ctx, *jobTpl, config.RECOVERY, name, r.agentNamespace, 1); err != nil {
-									log.Errorf("[recovery] failed to create job: %s", err)
-									continue
-								}
-							}
-							mu.Lock()
-							desiredAgentReplicas = desiredAgentReplicas[1:]
-							log.Debugf("[test] after creating job: desiredAgentReplicas: %v", desiredAgentReplicas)
-							mu.Unlock()
-
-							log.Debug("[test] Store pods when len(dar) > 0")
-							r.pods.Store(pods)
-						}
-					} else {
-						ss, ok := r.statefulSets.Load().(statefulset.StatefulSet)
-						if !ok || *ss.Spec.Replicas != int32(len(pods)) {
-							log.Debugf("[test] Skip store pods, ss.Spec.Replica: %d\tlen(pods): %d", *ss.Spec.Replicas != int32(len(pods)))
-							return
-						}
-						log.Debug("[test] Store pods when len(dar) = 0")
-						r.pods.Store(pods)
-					}
+					r.pods.Store(pods)
 				} else {
 					log.Infof("pod not found: %s", r.agentName)
 				}
