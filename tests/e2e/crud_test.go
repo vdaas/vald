@@ -111,7 +111,7 @@ func init() {
 		}
 	}
 
-	fmt.Printf("loading dataset: %s", *datasetName)
+	fmt.Printf("loading dataset: %s ", *datasetName)
 	ds, err = hdf5ToDataset(*datasetName)
 	if err != nil {
 		panic(err)

@@ -89,6 +89,7 @@ k8s/vald/deploy: \
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/backup
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/meta
 	rm -rf $(TEMP_DIR)
+	kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr " " "\n"
 
 .PHONY: k8s/vald/delete
 ## delete vald sample cluster from k8s
@@ -129,6 +130,7 @@ k8s/vald/deploy/cassandra: \
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/backup
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/meta
 	rm -rf $(TEMP_DIR)
+	kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr " " "\n"
 
 
 .PHONY: k8s/vald/delete/cassandra
@@ -175,6 +177,7 @@ k8s/vald/deploy/scylla: \
 	kubectl apply -f $(TEMP_DIR)/vald/templates/meta
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/meta
 	rm -rf $(TEMP_DIR)
+	kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr " " "\n"
 
 .PHONY: k8s/vald/delete/scylla
 ## delete vald sample cluster with scylla to k8s
