@@ -42,30 +42,31 @@ func newStatus(code codes.Code, msg string, err error, details ...interface{}) (
 	st = New(code, msg)
 
 	messages := make([]proto.Message, 0, 4)
-	if len(details) != 0 {
-		debugFunc := func(v *info.Detail) *errdetails.DebugInfo {
-			debug := &errdetails.DebugInfo{
-				Detail: fmt.Sprintf("Version: %s,Name: %s, GitCommit: %s, BuildTime: %s, NGT_Version: %s ,Go_Version: %s, GOARCH: %s, GOOS: %s, CGO_Enabled: %s, BuildCPUInfo: [%s]",
-					v.Version,
-					v.ServerName,
-					v.GitCommit,
-					v.BuildTime,
-					v.NGTVersion,
-					v.GoVersion,
-					v.GoArch,
-					v.GoOS,
-					v.CGOEnabled,
-					strings.Join(v.BuildCPUInfoFlags, ", "),
-				),
-			}
-			if debug.StackEntries == nil {
-				debug.StackEntries = make([]string, 0, len(v.StackTrace))
-			}
-			for i, stack := range v.StackTrace {
-				debug.StackEntries = append(debug.StackEntries, fmt.Sprintf("id: %d stack_trace: %s", i, stack.String()))
-			}
-			return debug
+	debugFunc := func(v *info.Detail) *errdetails.DebugInfo {
+		debug := &errdetails.DebugInfo{
+			Detail: fmt.Sprintf("Version: %s,Name: %s, GitCommit: %s, BuildTime: %s, NGT_Version: %s ,Go_Version: %s, GOARCH: %s, GOOS: %s, CGO_Enabled: %s, BuildCPUInfo: [%s]",
+				v.Version,
+				v.ServerName,
+				v.GitCommit,
+				v.BuildTime,
+				v.NGTVersion,
+				v.GoVersion,
+				v.GoArch,
+				v.GoOS,
+				v.CGOEnabled,
+				strings.Join(v.BuildCPUInfoFlags, ", "),
+			),
 		}
+		if debug.StackEntries == nil {
+			debug.StackEntries = make([]string, 0, len(v.StackTrace))
+		}
+		for i, stack := range v.StackTrace {
+			debug.StackEntries = append(debug.StackEntries, fmt.Sprintf("id: %d stack_trace: %s", i, stack.String()))
+		}
+		return debug
+	}
+	if len(details) != 0 {
+
 		for _, detail := range details {
 			switch v := detail.(type) {
 			case *info.Detail:
@@ -97,12 +98,20 @@ func newStatus(code codes.Code, msg string, err error, details ...interface{}) (
 	prevSt, ok := FromError(err)
 	if ok {
 		for _, detail := range prevSt.Details() {
-			dm, ok := detail.(proto.Message)
-			if ok {
-				messages = append(messages, dm)
+			switch v := detail.(type) {
+			case *info.Detail:
+				messages = append(messages, debugFunc(v))
+			case info.Detail:
+				messages = append(messages, debugFunc(&v))
+			case proto.Message:
+				messages = append(messages, v)
+			case *proto.Message:
+				messages = append(messages, *v)
 			}
 		}
 	}
+
+	log.Info(errdetails.Serialize(messages))
 
 	st, err = st.WithDetails(messages...)
 	if err != nil {
