@@ -111,8 +111,6 @@ func newStatus(code codes.Code, msg string, err error, details ...interface{}) (
 		}
 	}
 
-	log.Info(errdetails.Serialize(messages))
-
 	st, err = st.WithDetails(messages...)
 	if err != nil {
 		log.Warn("failed to set error details:", err)
