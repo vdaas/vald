@@ -48,12 +48,16 @@ spec:
         app.kubernetes.io/name: {{ include "vald.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: agent
-      {{- if $agent.podAnnotations }}
+      {{- if or $agent.podAnnotations $agent.sidecar.enabled }}
       annotations:
+        {{- if $agent.podAnnotations }}
         {{- toYaml $agent.podAnnotations | nindent 8 }}
+        {{- end }}
+        {{- if $agent.sidecar.enabled }}
+        checksum/configmap: {{ include (print $.Template.BasePath "/agent/configmap.yaml") . | sha256sum }}
+        checksum/sidecar-configmap: {{ include (print $.Template.BasePath "/agent/sidecar-configmap.yaml") . | sha256sum }}
+        {{- end }}
       {{- end }}
-      # annotations:
-      #   checksum/configmap: {{ include (print $.Template.BasePath "/agent/configmap.yaml") . | sha256sum }}
     spec:
       {{- if or $agent.initContainers $agent.sidecar.initContainerEnabled }}
       initContainers:
