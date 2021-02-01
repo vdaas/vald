@@ -117,6 +117,7 @@ k8s/vald/deploy/cassandra: \
 	    --set defaults.image.tag=$(VERSION) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
+	kubectl apply -f $(TEMP_DIR)/vald/templates/jobs/db/initialize/cassandra
 	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/backup
 	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/compressor
 	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/index
@@ -140,6 +141,7 @@ k8s/vald/delete/cassandra: \
 	    --set defaults.image.tag=$(VERSION) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
+	kubectl delete -f $(TEMP_DIR)/vald/templates/jobs/db/initialize/cassandra
 	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/backup
 	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/compressor
 	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/index
@@ -239,14 +241,20 @@ k8s/external/redis/initialize:
 .PHONY: k8s/external/cassandra/deploy
 ## deploy cassandra to k8s
 k8s/external/cassandra/deploy:
-	kubectl apply -f k8s/jobs/db/initialize/cassandra/configmap.yaml
+	kubectl apply -f https://raw.githubusercontent.com/datastax/cass-operator/master/docs/user/cass-operator-manifests-$(K8S_SERVER_VERSION).yaml
+	sleep 2
+	kubectl apply -n cass-operator -f k8s/jobs/db/initialize/cassandra/secret.yaml
+	kubectl wait -n cass-operator --for=condition=ready pod -l name=cass-operator --timeout=600s
 	kubectl apply -f k8s/external/cassandra
+	sleep 20
+	kubectl wait -n cass-operator --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=cluster0-dc0-default-sts-0 --timeout=600s
 
 .PHONY: k8s/external/cassandra/delete
 ## delete cassandra from k8s
 k8s/external/cassandra/delete:
+	kubectl delete -n cass-operator -f k8s/jobs/db/initialize/cassandra/secret.yaml
 	kubectl delete -f k8s/external/cassandra
-	kubectl delete configmap cassandra-initdb
+	kubectl delete -f https://raw.githubusercontent.com/datastax/cass-operator/master/docs/user/cass-operator-manifests-$(K8S_SERVER_VERSION).yaml
 
 .PHONY: k8s/external/cassandra/initialize
 ## initialize cassandra on k8s
