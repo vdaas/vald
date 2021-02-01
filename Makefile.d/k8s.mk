@@ -242,7 +242,7 @@ k8s/external/redis/initialize:
 ## deploy cassandra to k8s
 k8s/external/cassandra/deploy:
 	kubectl apply -f https://raw.githubusercontent.com/datastax/cass-operator/master/docs/user/cass-operator-manifests-$(K8S_SERVER_VERSION).yaml
-	sleep 2
+	sleep $(K8S_SLEEP_DURATION_FOR_WAIT_COMMAND)
 	kubectl apply -n cass-operator -f k8s/jobs/db/initialize/cassandra/secret.yaml
 	kubectl wait -n cass-operator --for=condition=ready pod -l name=cass-operator --timeout=600s
 	kubectl apply -f k8s/external/cassandra

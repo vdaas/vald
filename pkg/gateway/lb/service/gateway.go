@@ -26,7 +26,6 @@ import (
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability/trace"
 )
@@ -76,7 +75,6 @@ func (g *gateway) BroadCast(ctx context.Context,
 		default:
 			err = f(ictx, addr, vald.NewValdClient(conn), copts...)
 			if err != nil {
-				log.Debug(addr, err)
 				return err
 			}
 		}
@@ -95,7 +93,6 @@ func (g *gateway) DoMulti(ctx context.Context, num int,
 	var cur uint32 = 0
 	limit := uint32(num)
 	addrs := g.client.GetAddrs(sctx)
-	log.Debug("DoMulti", addrs)
 	err = g.client.GetClient().OrderedRange(sctx, addrs, func(ictx context.Context,
 		addr string,
 		conn *grpc.ClientConn,
@@ -103,7 +100,6 @@ func (g *gateway) DoMulti(ctx context.Context, num int,
 		if atomic.LoadUint32(&cur) < limit {
 			err = f(ictx, addr, vald.NewValdClient(conn), copts...)
 			if err != nil {
-				log.Debug(addr, err)
 				return err
 			}
 			atomic.AddUint32(&cur, 1)

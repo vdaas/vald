@@ -98,17 +98,15 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 			}
 			return nil
 		}
-		if oid != nil && oid.Id != "" {
+		if oid != nil && oid.GetId() != "" {
 			once.Do(func() {
-				id = &payload.Object_ID{
-					Id: oid.Id,
-				}
+				id = oid
 				cancel()
 			})
 		}
 		return nil
 	})
-	if err != nil || id == nil || id.Id == "" {
+	if err != nil || id == nil || id.GetId() == "" {
 		err = status.WrapWithNotFound(fmt.Sprintf("Exists API meta %s's uuid not found", meta.GetId()), err,
 			&errdetails.RequestInfo{
 				RequestId:   meta.GetId(),
@@ -783,7 +781,8 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInternal(err.Error()))
 			}
-			if err == errors.ErrRPCCallFailed(target, context.Canceled) {
+			rpcerr := errors.ErrRPCCallFailed(target, context.Canceled)
+			if err == rpcerr || errors.Is(err, rpcerr) {
 				return nil
 			}
 			return err
@@ -1570,7 +1569,6 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs 
 		}()
 		loc, err := vc.Remove(ctx, req, copts...)
 		if err != nil {
-			log.Debug(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInternal(err.Error()))
 			}
