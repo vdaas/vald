@@ -42,7 +42,7 @@ import (
 )
 
 const (
-	jobType = "rebalancer"
+	qualifiedName string = "app.kubernetes.io/rebalancer.vald.vdaas.org/"
 )
 
 // Rebalancer represents the rebalancer interface.
@@ -396,14 +396,17 @@ func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, reason confi
 	if jobTpl.Labels == nil {
 		jobTpl.Labels = make(map[string]string)
 	}
-	jobTpl.Labels["type"] = jobType
-	jobTpl.Labels["reason"] = reason.String()
-	jobTpl.Labels["target_agent_name"] = agentName
-	jobTpl.Labels["target_agent_namespace"] = agentNs
-	jobTpl.Labels["controller_name"] = r.podName
-	jobTpl.Labels["controller_namespace"] = r.podNamespace
+	jobTpl.Labels[qualifiedName+"reason"] = reason.String()
+	jobTpl.Labels[qualifiedName+"target_agent_name"] = agentName
+	jobTpl.Labels[qualifiedName+"target_agent_namespace"] = agentNs
+
+	if jobTpl.Annotations == nil {
+		jobTpl.Annotations = make(map[string]string)
+	}
+	jobTpl.Annotations[qualifiedName+"controller_name"] = r.podName
+	jobTpl.Annotations[qualifiedName+"controller_namespace"] = r.podNamespace
 	if rate > 0 {
-		jobTpl.Labels["rate"] = strconv.FormatFloat(rate, 'f', 4, 64)
+		jobTpl.Annotations[qualifiedName+"rate"] = strconv.FormatFloat(rate, 'f', 4, 64)
 	}
 
 	c := r.ctrl.GetManager().GetClient()
@@ -561,7 +564,7 @@ func calSigMemUsg(pm []*model.Pod, avgMemUsg float64) (sig float64) {
 func (r *rebalancer) isJobRunning(jobsmap map[string][]job.Job, ns string) bool {
 	for _, jobs := range jobsmap {
 		for _, job := range jobs {
-			if job.Labels["type"] == jobType && job.Status.Active != 0 && job.Labels["target_agent_namespace"] == ns {
+			if job.Labels[qualifiedName+"reason"] != config.MANUAL.String() && job.Status.Active != 0 && job.Labels[qualifiedName+"target_agent_namespace"] == ns {
 				return true
 			}
 		}
