@@ -1,5 +1,5 @@
 <div align="center">
-<img src="./assets/image/svg/logo.svg" width="50%">
+<img src="./assets/image/svg/logo.svg" width="50%" style="margin-bottom:40px; background:#ffffff; padding:15px;">
 </div>
 
 [![License: Apache 2.0](https://img.shields.io/github/license/vdaas/vald.svg?style=flat-square)](https://opensource.org/licenses/Apache-2.0)
