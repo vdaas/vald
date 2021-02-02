@@ -62,14 +62,37 @@ func TestString(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return valid string with no stacktrace initialized",
+			name: "return correct string with no stack trace initialized",
 			beforeFunc: func() {
-				infoProvider, _ = New(WithServerName(""), WithRuntimeCaller(func(skip int) (pc uintptr, file string, line int, ok bool) {
-					return uintptr(0), "", 0, false
-				}))
+				infoProvider, _ = New(WithServerName(""),
+					WithRuntimeCaller(func(skip int) (pc uintptr, file string, line int, ok bool) {
+						return uintptr(0), "", 0, false
+					}))
+			},
+			afterFunc: func() {
+				once = sync.Once{}
+				infoProvider = nil
 			},
 			want: want{
 				want: "\nbuild cpu info flags ->\t[]\ngit commit           ->\tmaster\ngo arch              ->\t" + runtime.GOARCH + "\ngo os                ->\t" + runtime.GOOS + "\ngo version           ->\t" + runtime.Version() + "\nvald version         ->\t\x1b[1mv0.0.1\x1b[22m",
+			},
+		},
+
+		{
+			name: "return correct string with no information initialized",
+			beforeFunc: func() {
+				infoProvider = &info{
+					rtCaller: func(skip int) (pc uintptr, file string, line int, ok bool) {
+						return uintptr(0), "", 0, false
+					},
+				}
+			},
+			afterFunc: func() {
+				once = sync.Once{}
+				infoProvider = nil
+			},
+			want: want{
+				want: "\nbuild cpu info flags ->\t[]\ngit commit           ->\tmaster\ngo arch              ->\t" + runtime.GOARCH + "\ngo os                ->\t" + runtime.GOOS + "\ngo version           ->\t" + runtime.Version() + "\nvald version         ->\t\x1b[1m\x1b[22m",
 			},
 		},
 	}
@@ -113,11 +136,15 @@ func TestGet(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return detail object",
+			name: "return detail with initialized runtime information",
 			beforeFunc: func() {
 				infoProvider, _ = New(WithServerName(""), WithRuntimeCaller(func(skip int) (pc uintptr, file string, line int, ok bool) {
 					return uintptr(0), "", 0, false
 				}))
+			},
+			afterFunc: func() {
+				once = sync.Once{}
+				infoProvider = nil
 			},
 			want: want{
 				want: Detail{
@@ -188,7 +215,7 @@ func TestInit(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "set success when all fields are empty",
+			name: "set success when the server name is not empty",
 			args: args{
 				name: "gateway",
 			},
@@ -197,6 +224,48 @@ func TestInit(t *testing.T) {
 					detail: Detail{
 						GitCommit:  "gitcommit",
 						ServerName: "gateway",
+						Version:    "gitcommit",
+						BuildTime:  "1s",
+						GoVersion:  runtime.Version(),
+						GoOS:       runtime.GOOS,
+						GoArch:     runtime.GOARCH,
+						CGOEnabled: "true",
+						NGTVersion: "v1.11.6",
+						BuildCPUInfoFlags: []string{
+							"avx512f", "avx512dq",
+						},
+					},
+					rtCaller:    runtime.Caller,
+					rtFuncForPC: runtime.FuncForPC,
+					prepOnce: func() (o sync.Once) {
+						o.Do(func() {})
+						return
+					}(),
+				},
+			},
+			beforeFunc: func(args) {
+				GitCommit = "gitcommit"
+				Version = ""
+				BuildTime = "1s"
+				CGOEnabled = "true"
+				NGTVersion = "v1.11.6"
+				BuildCPUInfoFlags = "\t\tavx512f avx512dq\t"
+			},
+			afterFunc: func(args) {
+				once = sync.Once{}
+				infoProvider = nil
+			},
+		},
+		{
+			name: "set success when the server name is an empty string",
+			args: args{
+				name: "",
+			},
+			want: want{
+				want: &info{
+					detail: Detail{
+						GitCommit:  "gitcommit",
+						ServerName: "",
 						Version:    "gitcommit",
 						BuildTime:  "1s",
 						GoVersion:  runtime.Version(),
@@ -290,7 +359,7 @@ func TestNew(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return default info when option is empty",
+			name: "return default info with no option set",
 			args: args{
 				opts: nil,
 			},
@@ -317,16 +386,16 @@ func TestNew(t *testing.T) {
 			},
 		},
 		{
-			name: "returns info when 1 option is set",
+			name: "return info when 1 option set",
 			args: args{
 				opts: []Option{
-					WithServerName("vald"),
+					WithServerName("gateway"),
 				},
 			},
 			want: want{
 				want: &info{
 					detail: Detail{
-						ServerName:        "vald",
+						ServerName:        "gateway",
 						Version:           GitCommit,
 						GitCommit:         GitCommit,
 						BuildTime:         BuildTime,
@@ -347,7 +416,7 @@ func TestNew(t *testing.T) {
 			},
 		},
 		{
-			name: "returns info when multiple options are set",
+			name: "return info when multiple options set",
 			args: args{
 				opts: []Option{
 					WithServerName("vald"),
@@ -381,7 +450,7 @@ func TestNew(t *testing.T) {
 			},
 		},
 		{
-			name: "log the error when invalid option is set",
+			name: "return info and log the error when an invalid option set",
 			args: args{
 				opts: []Option{
 					func(i *info) error {
@@ -412,7 +481,7 @@ func TestNew(t *testing.T) {
 			},
 		},
 		{
-			name: "return error when criical error occurred",
+			name: "return an error when a critical error occurred",
 			args: args{
 				opts: []Option{
 					func(i *info) error {
@@ -474,7 +543,7 @@ func Test_info_String(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return string when stacktrace is initialized",
+			name: "return string with stack trace initialized",
 			fields: fields{
 				detail: Detail{
 					Version:           "1.0",
@@ -488,7 +557,7 @@ func Test_info_String(t *testing.T) {
 					NGTVersion:        "1.2",
 					BuildCPUInfoFlags: nil,
 					StackTrace: []StackTrace{
-						StackTrace{
+						{
 							URL:      "url",
 							FuncName: "func",
 							File:     "file",
@@ -502,7 +571,7 @@ func Test_info_String(t *testing.T) {
 			},
 		},
 		{
-			name: "return string when no stacktrace initialized",
+			name: "return string with no stack trace initialized",
 			fields: fields{
 				detail: Detail{
 					Version:           "1.0",
@@ -587,7 +656,7 @@ func TestDetail_String(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return string when stacktrace is initialized",
+			name: "return string with stack trace initialized",
 			fields: fields{
 				Version:           "1.0",
 				ServerName:        "srv",
@@ -600,7 +669,7 @@ func TestDetail_String(t *testing.T) {
 				NGTVersion:        "1.2",
 				BuildCPUInfoFlags: nil,
 				StackTrace: []StackTrace{
-					StackTrace{
+					{
 						URL:      "url",
 						FuncName: "func",
 						File:     "file",
@@ -613,7 +682,7 @@ func TestDetail_String(t *testing.T) {
 			},
 		},
 		{
-			name: "return string when no stacktrace initialized",
+			name: "return string with no stack trace initialized",
 			fields: fields{
 				Version:           "1.0",
 				ServerName:        "srv",
@@ -663,7 +732,6 @@ func TestDetail_String(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -694,7 +762,7 @@ func Test_info_Get(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return detail object",
+			name: "return detail object with no stack trace",
 			fields: fields{
 				rtCaller: func(skip int) (pc uintptr, file string, line int, ok bool) {
 					return uintptr(0), "", 0, false
@@ -716,7 +784,7 @@ func Test_info_Get(t *testing.T) {
 			},
 		},
 		{
-			name: "return detail object when stacktrace is initialized",
+			name: "return detail object with stack trace initialized",
 			fields: func() fields {
 				i := 0
 				return fields{
@@ -741,7 +809,7 @@ func Test_info_Get(t *testing.T) {
 					GoArch:     runtime.GOARCH,
 					CGOEnabled: CGOEnabled,
 					StackTrace: []StackTrace{
-						StackTrace{
+						{
 							URL:      "https://github.com/vdaas/vald/tree/master",
 							FuncName: "github.com/vdaas/vald/internal/info.Test_info_Get",
 							File:     "info_test.go",
@@ -755,7 +823,7 @@ func Test_info_Get(t *testing.T) {
 			},
 		},
 		{
-			name: "return detail object when file name has goroot prefix",
+			name: "return detail object with the file name has goroot prefix",
 			fields: func() fields {
 				i := 0
 				return fields{
@@ -780,7 +848,7 @@ func Test_info_Get(t *testing.T) {
 					GoArch:     runtime.GOARCH,
 					CGOEnabled: CGOEnabled,
 					StackTrace: []StackTrace{
-						StackTrace{
+						{
 							URL:      "https://github.com/golang/go/blob/" + runtime.Version() + "/src/info_test.go#L100",
 							FuncName: "github.com/vdaas/vald/internal/info.Test_info_Get",
 							File:     runtime.GOROOT() + "/src/info_test.go",
@@ -794,7 +862,7 @@ func Test_info_Get(t *testing.T) {
 			},
 		},
 		{
-			name: "return detail object when go mod path is set",
+			name: "return detail object with the go mod path set",
 			fields: func() fields {
 				i := 0
 				return fields{
@@ -819,7 +887,7 @@ func Test_info_Get(t *testing.T) {
 					GoArch:     runtime.GOARCH,
 					CGOEnabled: CGOEnabled,
 					StackTrace: []StackTrace{
-						StackTrace{
+						{
 							URL:      "https://github.com/vdaas/vald/internal/info_test.go#L100",
 							FuncName: "github.com/vdaas/vald/internal/info.Test_info_Get",
 							File:     "/tmp/go/pkg/mod/github.com/vdaas/vald/internal/info_test.go",
@@ -833,7 +901,7 @@ func Test_info_Get(t *testing.T) {
 			},
 		},
 		{
-			name: "return detail object when go mod path with version is set",
+			name: "return detail object with the go mod path with version set",
 			fields: func() fields {
 				i := 0
 				return fields{
@@ -858,7 +926,7 @@ func Test_info_Get(t *testing.T) {
 					GoArch:     runtime.GOARCH,
 					CGOEnabled: CGOEnabled,
 					StackTrace: []StackTrace{
-						StackTrace{
+						{
 							URL:      "https://github.com/vdaas/blob/v0.0.0-20171023180738-a3a6125de932/vald/internal/info_test.go#L100",
 							FuncName: "github.com/vdaas/vald/internal/info.Test_info_Get",
 							File:     "/tmp/go/pkg/mod/github.com/vdaas@v0.0.0-20171023180738-a3a6125de932/vald/internal/info_test.go",
@@ -872,7 +940,7 @@ func Test_info_Get(t *testing.T) {
 			},
 		},
 		{
-			name: "return detail object when go mod path contains pseudo version",
+			name: "return detail object with the go mod path contains pseudo version",
 			fields: func() fields {
 				i := 0
 				return fields{
@@ -897,7 +965,7 @@ func Test_info_Get(t *testing.T) {
 					GoArch:     runtime.GOARCH,
 					CGOEnabled: CGOEnabled,
 					StackTrace: []StackTrace{
-						StackTrace{
+						{
 							URL:      "https://github.com/vdaas/blob/master/vald/internal/info_test.go#L100",
 							FuncName: "github.com/vdaas/vald/internal/info.Test_info_Get",
 							File:     "/tmp/go/pkg/mod/github.com/vdaas@v0.0.0-20171023180738-a3a6125de932-a843423387/vald/internal/info_test.go",
@@ -911,7 +979,7 @@ func Test_info_Get(t *testing.T) {
 			},
 		},
 		{
-			name: "return detail object when go src path is set",
+			name: "return detail object with the go src path set",
 			fields: func() fields {
 				i := 0
 				return fields{
@@ -936,7 +1004,7 @@ func Test_info_Get(t *testing.T) {
 					GoArch:     runtime.GOARCH,
 					CGOEnabled: CGOEnabled,
 					StackTrace: []StackTrace{
-						StackTrace{
+						{
 							URL:      "https://github.com/vdaas/vald/blob/master/internal/info_test.go#L100",
 							FuncName: "github.com/vdaas/vald/internal/info.Test_info_Get",
 							File:     "/tmp/go/src/github.com/vdaas/vald/internal/info_test.go",
@@ -1016,7 +1084,7 @@ func Test_info_prepare(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "set success when all fields are empty",
+			name: "set success with all fields are empty",
 			want: want{
 				want: info{
 					detail: Detail{
@@ -1036,7 +1104,7 @@ func Test_info_prepare(t *testing.T) {
 			},
 		},
 		{
-			name: "GitCommit field is not overwritten when GitCommit field is `internal`",
+			name: "set success with GitCommit set",
 			fields: fields{
 				detail: Detail{
 					GitCommit: "internal",
@@ -1061,17 +1129,17 @@ func Test_info_prepare(t *testing.T) {
 			},
 		},
 		{
-			name: "Version field is not overwritten when GitCommit field is `v1.0.0`",
+			name: "set success with Version set",
 			fields: fields{
 				detail: Detail{
-					GitCommit: "v1.0.0",
+					Version: "v1.0.0",
 				},
 			},
 			want: want{
 				want: info{
 					detail: Detail{
-						GitCommit:  "v1.0.0",
-						Version:    "gitcommit",
+						GitCommit:  "master",
+						Version:    "v1.0.0",
 						BuildTime:  "1s",
 						GoVersion:  runtime.Version(),
 						GoOS:       runtime.GOOS,
@@ -1085,9 +1153,8 @@ func Test_info_prepare(t *testing.T) {
 				},
 			},
 		},
-
 		{
-			name: "BuildTime field is not overwritten when BuildTime field is `10`",
+			name: "set success with BuildTime set",
 			fields: fields{
 				detail: Detail{
 					BuildTime: "10s",
@@ -1111,9 +1178,8 @@ func Test_info_prepare(t *testing.T) {
 				},
 			},
 		},
-
 		{
-			name: "GoVersion field is not overwritten when GoVersion field is `1.14`",
+			name: "set success with GoVersion set",
 			fields: fields{
 				detail: Detail{
 					GoVersion: "1.14",
@@ -1137,9 +1203,8 @@ func Test_info_prepare(t *testing.T) {
 				},
 			},
 		},
-
 		{
-			name: "GoOS field is not overwritten when GoOS field is `linux`",
+			name: "set success with GoOS set",
 			fields: fields{
 				detail: Detail{
 					GoOS: "linux",
@@ -1163,9 +1228,8 @@ func Test_info_prepare(t *testing.T) {
 				},
 			},
 		},
-
 		{
-			name: "GoArch fields is not overwritten when GoArch field is `amd`",
+			name: "set success with GoArch set",
 			fields: fields{
 				detail: Detail{
 					GoArch: "amd",
@@ -1189,9 +1253,8 @@ func Test_info_prepare(t *testing.T) {
 				},
 			},
 		},
-
 		{
-			name: "CGOEnabled field is not overwritten when CGOEnabled field is `1`",
+			name: "set success with CGOEnabled set",
 			fields: fields{
 				detail: Detail{
 					CGOEnabled: "1",
@@ -1215,9 +1278,8 @@ func Test_info_prepare(t *testing.T) {
 				},
 			},
 		},
-
 		{
-			name: "NGTVersion field is not overwritten when NGTVersion field is `v1.11.5`",
+			name: "set success with NGTVersion set",
 			fields: fields{
 				detail: Detail{
 					NGTVersion: "v1.11.5",
@@ -1241,12 +1303,11 @@ func Test_info_prepare(t *testing.T) {
 				},
 			},
 		},
-
 		{
-			name: "BuildCPUInfoFlags is not overwritten when BuildCPUInfoFlags field is `test`",
+			name: "set success with BuildCPUInfoFlags set",
 			fields: fields{
 				detail: Detail{
-					BuildCPUInfoFlags: []string{"test"},
+					BuildCPUInfoFlags: []string{"avx512f"},
 				},
 			},
 			want: want{
@@ -1261,7 +1322,7 @@ func Test_info_prepare(t *testing.T) {
 						CGOEnabled: "true",
 						NGTVersion: "v1.11.6",
 						BuildCPUInfoFlags: []string{
-							"test",
+							"avx512f",
 						},
 					},
 				},
@@ -1322,7 +1383,7 @@ func TestStackTrace_String(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return stacktrace string",
+			name: "return stack trace string",
 			fields: fields{
 				URL:      "https://github.com/golang/go/blob/v1.0.0/internal/info/info_test.go#L40",
 				FuncName: "TestStackTrace_String",
