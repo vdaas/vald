@@ -222,7 +222,6 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 	if c.dscClient == nil || (c.autoconn && c.client == nil) {
 		return errors.ErrGRPCClientNotFound
 	}
-	log.Debug("starting discoverer discovery")
 	connected := make([]string, 0, len(c.GetAddrs(ctx)))
 	var cur sync.Map
 	if _, err = c.dscClient.RoundRobin(ctx, func(ictx context.Context,
@@ -337,7 +336,5 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 			return err
 		}
 	}
-
-	log.Debug("finished discoverer discovery")
 	return nil
 }
