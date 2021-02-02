@@ -291,7 +291,6 @@ func TestE2EInsert(t *testing.T) {
 			} else if err != nil {
 				st, serr := status.FromError(err)
 				t.Fatalf("error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s", err, serr, st.Code().String(), errdetails.Serialize(st.Details()), st.Message(), st.Err().Error(), errdetails.Serialize(st.Proto()))
-
 			}
 
 			loc := res.GetLocation()
