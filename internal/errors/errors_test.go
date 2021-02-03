@@ -199,13 +199,13 @@ func TestErrOptionFailed(t *testing.T) {
 			}
 		}(),
 		func() test {
-			wantErr := errors.New("failed to setup option :\tfmt.Println")
+			wantErr := errors.New("failed to setup option :\t")
 			return test{
-				name: "return an ErrOptionFailed error when err is empty and ref is not empty.",
+				name: "return an ErrOptionFailed error when err is empty and ref is zero value.",
 				args: args{
 					ref: func() reflect.Value {
-						var i interface{} = fmt.Println
-						return reflect.ValueOf(i)
+						var i int
+						return reflect.ValueOf(&i)
 					}(),
 				},
 				want: want{
@@ -216,9 +216,21 @@ func TestErrOptionFailed(t *testing.T) {
 		func() test {
 			wantErr := errors.New("failed to setup option :\t: option failed error")
 			return test{
-				name: "return an ErrOptionFailed error when err is not empty and ref is empty.",
+				name: "return an ErrOptionFailed error when err is not empty and ref is nil.",
 				args: args{
 					err: errors.New("option failed error"),
+				},
+				want: want{
+					wantErr,
+				},
+			}
+		}(),
+		func() test {
+			wantErr := errors.New("failed to setup option :\t")
+			return test{
+				name: "return an ErrOptionFailed error when err is empty and ref is <invalid reflect.Value>.",
+				args: args{
+					ref: reflect.Value{},
 				},
 				want: want{
 					wantErr,
