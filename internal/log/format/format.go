@@ -24,7 +24,7 @@ const (
 	Unknown Format = iota
 	RAW
 	JSON
-	LTSV
+	// LTSV
 )
 
 func (f Format) String() string {
@@ -33,8 +33,8 @@ func (f Format) String() string {
 		return "raw"
 	case JSON:
 		return "json"
-	case LTSV:
-		return "ltsv"
+		// case LTSV:
+		// 	return "ltsv"
 	}
 	return "unknown"
 }
@@ -45,8 +45,8 @@ func Atof(str string) Format {
 		return RAW
 	case "json":
 		return JSON
-	case "ltsv":
-		return LTSV
+		// case "ltsv":
+		// 	return LTSV
 	}
 	return Unknown
 }

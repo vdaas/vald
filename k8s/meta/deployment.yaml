@@ -21,10 +21,10 @@ metadata:
   labels:
     app: vald-meta
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v0.0.66
+    helm.sh/chart: vald-v1.0.0
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v0.0.66
+    app.kubernetes.io/version: v1.0.0
     app.kubernetes.io/component: meta
 spec:
   progressDeadlineSeconds: 600
@@ -46,7 +46,7 @@ spec:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/component: meta
       annotations:
-        checksum/configmap: 4fa8023db018d3ce72cc5d7bdf566f03c6f964a7315416b4f5ad76d7b1b06292
+        checksum/configmap: cc6d14101c8101ce48b88331bc3e7e9e6fa05b77f4450ed675984cfe9d7b5f27
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-meta
@@ -128,6 +128,16 @@ spec:
               memory: 30Mi
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 2002
+            runAsNonRoot: true
+            runAsUser: 1002
           env:
             - name: REDIS_PASSWORD
               valueFrom:
@@ -140,7 +150,12 @@ spec:
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
-      securityContext: {}
+      securityContext:
+        fsGroup: 3002
+        fsGroupChangePolicy: OnRootMismatch
+        runAsGroup: 2002
+        runAsNonRoot: true
+        runAsUser: 1002
       terminationGracePeriodSeconds: 30
       volumes:
         - name: vald-meta-config

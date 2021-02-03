@@ -21,10 +21,10 @@ metadata:
   labels:
     app: vald-agent-ngt
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v0.0.66
+    helm.sh/chart: vald-v1.0.0
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v0.0.66
+    app.kubernetes.io/version: v1.0.0
     app.kubernetes.io/component: agent
 spec:
   serviceName: vald-agent-ngt
@@ -50,8 +50,6 @@ spec:
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-agent-ngt
-      # annotations:
-      #   checksum/configmap: a2ed5ad4495fb073b77cb9bcdb606c899c0288abf9330bc52f07aa316758ecfb
     spec:
       affinity:
         nodeAffinity:
@@ -101,13 +99,28 @@ spec:
               memory: 50Mi
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            readOnlyRootFilesystem: false
+            runAsGroup: 2002
+            runAsNonRoot: true
+            runAsUser: 1002
           volumeMounts:
             - name: vald-agent-ngt-config
               mountPath: /etc/server/
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
-      securityContext: {}
+      securityContext:
+        fsGroup: 3002
+        fsGroupChangePolicy: OnRootMismatch
+        runAsGroup: 2002
+        runAsNonRoot: true
+        runAsUser: 1002
       terminationGracePeriodSeconds: 120
       volumes:
         - name: vald-agent-ngt-config

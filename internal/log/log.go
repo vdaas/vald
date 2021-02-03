@@ -21,6 +21,7 @@ import (
 
 	"github.com/vdaas/vald/internal/log/glg"
 	logger "github.com/vdaas/vald/internal/log/logger"
+	"github.com/vdaas/vald/internal/log/zap"
 )
 
 var (
@@ -38,8 +39,23 @@ func Init(opts ...Option) {
 	})
 }
 
+func Close() error {
+	return l.Close()
+}
+
 func getLogger(o *option) logger.Logger {
 	switch o.logType {
+	case logger.ZAP:
+		z, err := zap.New(
+			zap.WithLevel(o.level.String()),
+			zap.WithFormat(o.format.String()),
+		)
+		if err == nil {
+			return z
+		}
+
+		// fallback
+		fallthrough
 	case logger.GLG:
 		fallthrough
 	default:
@@ -63,12 +79,20 @@ func Debugf(format string, vals ...interface{}) {
 	l.Debugf(format, vals...)
 }
 
+func Debugd(msg string, details ...interface{}) {
+	l.Debugd(msg, details...)
+}
+
 func Info(vals ...interface{}) {
 	l.Info(vals...)
 }
 
 func Infof(format string, vals ...interface{}) {
 	l.Infof(format, vals...)
+}
+
+func Infod(msg string, details ...interface{}) {
+	l.Infod(msg, details...)
 }
 
 func Warn(vals ...interface{}) {
@@ -79,6 +103,10 @@ func Warnf(format string, vals ...interface{}) {
 	l.Warnf(format, vals...)
 }
 
+func Warnd(msg string, details ...interface{}) {
+	l.Warnd(msg, details...)
+}
+
 func Error(vals ...interface{}) {
 	l.Error(vals...)
 }
@@ -87,10 +115,18 @@ func Errorf(format string, vals ...interface{}) {
 	l.Errorf(format, vals...)
 }
 
+func Errord(msg string, details ...interface{}) {
+	l.Errord(msg, details...)
+}
+
 func Fatal(vals ...interface{}) {
 	l.Fatal(vals...)
 }
 
 func Fatalf(format string, vals ...interface{}) {
 	l.Fatalf(format, vals...)
+}
+
+func Fatald(msg string, details ...interface{}) {
+	l.Fatald(msg, details...)
 }

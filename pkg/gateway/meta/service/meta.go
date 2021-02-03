@@ -44,6 +44,7 @@ type Meta interface {
 	DeleteMetas(context.Context, ...string) ([]string, error)
 	DeleteUUID(context.Context, string) (string, error)
 	DeleteUUIDs(context.Context, ...string) ([]string, error)
+	GRPCClient() grpc.Client
 }
 
 type meta struct {
@@ -247,6 +248,10 @@ func (m *meta) GetUUID(ctx context.Context, meta string) (k string, err error) {
 	}
 
 	k = key.(string)
+	if k == "" {
+		return "", errors.ErrMetaDataCannotFetch()
+	}
+
 	if m.enableCache {
 		m.cache.Set(uuidCacheKeyPref+meta, k)
 		m.cache.Set(metaCacheKeyPref+k, meta)
@@ -489,4 +494,8 @@ func (m *meta) DeleteUUIDs(ctx context.Context, metas ...string) ([]string, erro
 		return nil, err
 	}
 	return keys.([]string), nil
+}
+
+func (m *meta) GRPCClient() grpc.Client {
+	return m.client
 }

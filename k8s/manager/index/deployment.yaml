@@ -21,10 +21,10 @@ metadata:
   labels:
     app: vald-manager-index
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v0.0.66
+    helm.sh/chart: vald-v1.0.0
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v0.0.66
+    app.kubernetes.io/version: v1.0.0
     app.kubernetes.io/component: manager-index
 spec:
   progressDeadlineSeconds: 600
@@ -47,7 +47,7 @@ spec:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/component: manager-index
       annotations:
-        checksum/configmap: 8563415acaa6608d1a4930d608f63ace43bf918be11b74af79ece4c3949e644f
+        checksum/configmap: 98bb29b479e533ca5376bf4d65ef1448cbd727d02ac272b1bf7e5653678753c2
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-manager-index
@@ -130,6 +130,16 @@ spec:
               memory: 30Mi
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 2002
+            runAsNonRoot: true
+            runAsUser: 1002
           env:
             - name: MY_POD_NAMESPACE
               valueFrom:
@@ -141,7 +151,12 @@ spec:
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
-      securityContext: {}
+      securityContext:
+        fsGroup: 3002
+        fsGroupChangePolicy: OnRootMismatch
+        runAsGroup: 2002
+        runAsNonRoot: true
+        runAsUser: 1002
       terminationGracePeriodSeconds: 30
       volumes:
         - configMap:

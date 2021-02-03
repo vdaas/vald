@@ -49,11 +49,11 @@ data:
       uuid   text,
       vector blob,
       meta   text,
-      ips    list<text>,
+      ips    frozen<list<text>>,
       PRIMARY KEY (uuid)
     );
 
     DROP INDEX IF EXISTS {{ .Values.initializer.cassandra.configmap.keyspace }}.{{ .Values.initializer.cassandra.configmap.backup.name }};
-    CREATE INDEX ON {{ .Values.initializer.cassandra.configmap.keyspace }}.{{ .Values.initializer.cassandra.configmap.backup.name }} (ips);
+    CREATE INDEX ON {{ .Values.initializer.cassandra.configmap.keyspace }}.{{ .Values.initializer.cassandra.configmap.backup.name }} (full(ips));
     {{- end }}
 {{- end }}

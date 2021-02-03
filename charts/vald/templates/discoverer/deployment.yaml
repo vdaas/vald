@@ -80,6 +80,10 @@ spec:
             {{- toYaml $discoverer.resources | nindent 12 }}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
+          {{- if $discoverer.securityContext }}
+          securityContext:
+            {{- toYaml $discoverer.securityContext | nindent 12 }}
+          {{- end }}
           {{- if $discoverer.env }}
           env:
             {{- toYaml $discoverer.env | nindent 12 }}
@@ -93,11 +97,10 @@ spec:
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
-      serviceAccount: {{ $discoverer.serviceAccount.name }}
       serviceAccountName: {{ $discoverer.serviceAccount.name }}
-      {{- if $discoverer.securityContext }}
+      {{- if $discoverer.podSecurityContext }}
       securityContext:
-        {{- toYaml $discoverer.securityContext | nindent 8 }}
+        {{- toYaml $discoverer.podSecurityContext | nindent 8 }}
       {{- end }}
       terminationGracePeriodSeconds: {{ $discoverer.terminationGracePeriodSeconds }}
       volumes:

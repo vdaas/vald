@@ -51,14 +51,27 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	var indexer service.Indexer
 
-	discovererClientOptions := append(
+	dopts := append(
 		cfg.Indexer.Discoverer.Client.Opts(),
-		grpc.WithErrGroup(eg),
-	)
+		grpc.WithErrGroup(eg))
+	aopts := append(
+		cfg.Indexer.Discoverer.AgentClientOptions.Opts(),
+		grpc.WithErrGroup(eg))
 
+	var obs observability.Observability
 	if cfg.Observability.Enabled {
-		discovererClientOptions = append(
-			discovererClientOptions,
+		obs, err = observability.NewWithConfig(cfg.Observability)
+		if err != nil {
+			return nil, err
+		}
+		aopts = append(
+			aopts,
+			grpc.WithDialOptions(
+				grpc.WithStatsHandler(metric.NewClientHandler()),
+			),
+		)
+		dopts = append(
+			dopts,
 			grpc.WithDialOptions(
 				grpc.WithStatsHandler(metric.NewClientHandler()),
 			),
@@ -71,9 +84,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		discoverer.WithNamespace(cfg.Indexer.AgentNamespace),
 		discoverer.WithPort(cfg.Indexer.AgentPort),
 		discoverer.WithServiceDNSARecord(cfg.Indexer.AgentDNS),
-		discoverer.WithDiscovererClient(grpc.New(discovererClientOptions...)),
+		discoverer.WithDiscovererClient(grpc.New(dopts...)),
 		discoverer.WithDiscoverDuration(cfg.Indexer.Discoverer.Duration),
-		discoverer.WithOptions(cfg.Indexer.Discoverer.AgentClientOptions.Opts()...),
+		discoverer.WithOptions(aopts...),
 		discoverer.WithNodeName(cfg.Indexer.NodeName),
 		discoverer.WithOnDiscoverFunc(func(ctx context.Context, c discoverer.Client, addrs []string) error {
 			last := len(addrs) - 1
@@ -99,7 +112,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 
-	var obs observability.Observability
 	if cfg.Observability.Enabled {
 		obs, err = observability.NewWithConfig(
 			cfg.Observability,

@@ -24,6 +24,7 @@ binary/build: \
 	cmd/gateway/lb/lb \
 	cmd/gateway/meta/meta \
 	cmd/gateway/backup/backup \
+	cmd/gateway/filter/filter \
 	cmd/meta/redis/meta \
 	cmd/meta/cassandra/meta \
 	cmd/manager/backup/mysql/backup \
@@ -47,7 +48,7 @@ cmd/agent/core/ngt/ngt: \
 	GOPRIVATE=$(GOPRIVATE) \
 	go build \
 		--ldflags "-s -w -linkmode 'external' \
-		-extldflags '-static -fPIC -pthread -fopenmp -std=gnu++20 -lstdc++ -lm $(EXTLDFLAGS)' \
+		-extldflags '-static -fPIC -pthread -fopenmp -std=gnu++20 -lstdc++ -lm -z relro -z now $(EXTLDFLAGS)' \
 		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
 		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
 		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
@@ -58,6 +59,8 @@ cmd/agent/core/ngt/ngt: \
 		-X '$(GOPKG)/internal/info.NGTVersion=$(NGT_VERSION)' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
 		-a \
 		-tags "cgo osusergo netgo static_build" \
 		-trimpath \
@@ -83,6 +86,8 @@ cmd/agent/sidecar/sidecar: \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -108,6 +113,8 @@ cmd/discoverer/k8s/discoverer: \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -133,6 +140,8 @@ cmd/gateway/vald/vald: \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -158,6 +167,8 @@ cmd/gateway/lb/lb: \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -183,6 +194,8 @@ cmd/gateway/meta/meta: \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -208,6 +221,35 @@ cmd/gateway/backup/backup: \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
+		-a \
+		-tags "osusergo netgo static_build" \
+		-trimpath \
+		-o $@ \
+		$(dir $@)main.go
+
+cmd/gateway/filter/filter: \
+	$(GO_SOURCES_INTERNAL) \
+	$(PBGOS) \
+	$(shell find ./cmd/gateway/filter -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find ./pkg/gateway/filter -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	CGO_ENABLED=0 \
+	GO111MODULE=on \
+	GOPRIVATE=$(GOPRIVATE) \
+	go build \
+		--ldflags "-s -w -extldflags=-static \
+		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
+		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
+		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
+		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
+		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
+		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
+		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
+		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -233,6 +275,8 @@ cmd/meta/redis/meta: \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -258,6 +302,8 @@ cmd/meta/cassandra/meta: \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -283,6 +329,8 @@ cmd/manager/backup/mysql/backup: \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -308,6 +356,8 @@ cmd/manager/backup/cassandra/backup: \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -333,6 +383,8 @@ cmd/manager/compressor/compressor: \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -358,6 +410,8 @@ cmd/manager/index/index: \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -383,6 +437,8 @@ cmd/manager/replication/agent/agent: \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -408,6 +464,8 @@ cmd/manager/replication/controller/controller: \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
 		-a \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
@@ -481,6 +539,10 @@ artifacts/vald-meta-gateway-$(GOOS)-$(GOARCH).zip: cmd/gateway/meta/meta
 	zip --junk-paths $@ $<
 
 artifacts/vald-backup-gateway-$(GOOS)-$(GOARCH).zip: cmd/gateway/backup/backup
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+
+artifacts/vald-filter-gateway-$(GOOS)-$(GOARCH).zip: cmd/gateway/filter/filter
 	$(call mkdir, $(dir $@))
 	zip --junk-paths $@ $<
 

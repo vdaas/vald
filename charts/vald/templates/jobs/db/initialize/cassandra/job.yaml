@@ -17,7 +17,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: cassandra-init
+  name: {{ .Values.initializer.cassandra.name }}
 spec:
   template:
     spec:
@@ -29,9 +29,23 @@ spec:
             - /bin/sh
             - -c
             - |
-              cqlsh -u${CASSANDRA_USER} -p${CASSANDRA_PASSWORD} ${CASSANDRA_HOST} < /initdb/{{ .Values.initializer.cassandra.configmap.filename }}
+              cqlsh ${CASSANDRA_HOST} \
+                {{- if .Values.initializer.cassandra.configmap.user }}
+                -u{{ .Values.initializer.cassandra.configmap.user }} \
+                {{- end }}
+                {{- if .Values.initializer.cassandra.secret.enabled }}
+                -p${CASSANDRA_PASSWORD} \
+                {{- end }}
+                < /initdb/{{ .Values.initializer.cassandra.configmap.filename }}
           env:
             {{- toYaml .Values.initializer.cassandra.env | nindent 12 }}
+            {{- if .Values.initializer.cassandra.secret.enabled }}
+            - name: CASSANDRA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.initializer.cassandra.secret.name }}
+                  key: {{ index (keys .Values.initializer.cassandra.secret.data) 0 }}
+            {{- end }}
           volumeMounts:
             - name: {{ .Values.initializer.cassandra.configmap.name }}
               mountPath: /initdb
