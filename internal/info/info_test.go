@@ -148,11 +148,15 @@ func TestGet(t *testing.T) {
 			},
 			want: want{
 				want: Detail{
+					ServerName:        "",
 					Version:           "v0.0.1",
+					BuildTime:         "",
 					GitCommit:         "master",
 					GoVersion:         runtime.Version(),
 					GoOS:              runtime.GOOS,
 					GoArch:            runtime.GOARCH,
+					CGOEnabled:        "",
+					NGTVersion:        "",
 					BuildCPUInfoFlags: []string{""},
 					StackTrace:        make([]StackTrace, 0, 10),
 				},
@@ -234,6 +238,7 @@ func TestInit(t *testing.T) {
 						BuildCPUInfoFlags: []string{
 							"avx512f", "avx512dq",
 						},
+						StackTrace: nil,
 					},
 					rtCaller:    runtime.Caller,
 					rtFuncForPC: runtime.FuncForPC,
@@ -276,6 +281,7 @@ func TestInit(t *testing.T) {
 						BuildCPUInfoFlags: []string{
 							"avx512f", "avx512dq",
 						},
+						StackTrace: nil,
 					},
 					rtCaller:    runtime.Caller,
 					rtFuncForPC: runtime.FuncForPC,
@@ -366,6 +372,7 @@ func TestNew(t *testing.T) {
 			want: want{
 				want: &info{
 					detail: Detail{
+						ServerName:        "",
 						Version:           GitCommit,
 						GitCommit:         GitCommit,
 						BuildTime:         BuildTime,
@@ -375,6 +382,7 @@ func TestNew(t *testing.T) {
 						CGOEnabled:        CGOEnabled,
 						NGTVersion:        NGTVersion,
 						BuildCPUInfoFlags: strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " "),
+						StackTrace:        nil,
 					},
 					prepOnce: func() (o sync.Once) {
 						o.Do(func() {})
@@ -439,6 +447,7 @@ func TestNew(t *testing.T) {
 						CGOEnabled:        CGOEnabled,
 						NGTVersion:        NGTVersion,
 						BuildCPUInfoFlags: strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " "),
+						StackTrace:        nil,
 					},
 					prepOnce: func() (o sync.Once) {
 						o.Do(func() {})
@@ -461,6 +470,7 @@ func TestNew(t *testing.T) {
 			want: want{
 				want: &info{
 					detail: Detail{
+						ServerName:        "",
 						Version:           GitCommit,
 						GitCommit:         GitCommit,
 						BuildTime:         BuildTime,
@@ -470,6 +480,7 @@ func TestNew(t *testing.T) {
 						CGOEnabled:        CGOEnabled,
 						NGTVersion:        NGTVersion,
 						BuildCPUInfoFlags: strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " "),
+						StackTrace:        nil,
 					},
 					prepOnce: func() (o sync.Once) {
 						o.Do(func() {})
@@ -770,6 +781,7 @@ func Test_info_Get(t *testing.T) {
 			},
 			want: want{
 				want: Detail{
+					ServerName:        "",
 					Version:           GitCommit,
 					GitCommit:         "master",
 					GoVersion:         runtime.Version(),
@@ -802,6 +814,7 @@ func Test_info_Get(t *testing.T) {
 			}(),
 			want: want{
 				want: Detail{
+					ServerName: "",
 					Version:    GitCommit,
 					GitCommit:  "master",
 					GoVersion:  runtime.Version(),
@@ -841,6 +854,7 @@ func Test_info_Get(t *testing.T) {
 			}(),
 			want: want{
 				want: Detail{
+					ServerName: "",
 					Version:    GitCommit,
 					GitCommit:  "master",
 					GoVersion:  runtime.Version(),
