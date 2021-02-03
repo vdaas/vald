@@ -102,7 +102,7 @@ func TestErrInvalidDNSConfig(t *testing.T) {
 			},
 		},
 		{
-			name: "return an ErrInvalidDNSConfig when dnsRefreshDur is 5m0s and dnsCacheExp is empty",
+			name: "return an ErrInvalidDNSConfig when dnsRefreshDur is 5 minute and dnsCacheExp is empty",
 			args: args{
 				dnsRefreshDur: 5 * time.Minute,
 			},
