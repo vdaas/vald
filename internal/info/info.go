@@ -70,18 +70,30 @@ type StackTrace struct {
 
 var (
 	// injected from build script
-	Version           = "v0.0.1"
-	GitCommit         = "master"
-	BuildTime         = ""
-	GoVersion         string
-	GoOS              string
-	GoArch            string
-	CGOEnabled        string
-	NGTVersion        string
+
+	// Version represent Vald version.
+	Version = "v0.0.1"
+	// GitCommit represent the Vald GitCommit
+	GitCommit = "master"
+	// BuildTime represent the Vald Build time.
+	BuildTime = ""
+	// GoVersion represent the golang version to build Vald.
+	GoVersion string
+	// GoOS represent the OS version of golang to build Vald.
+	GoOS string
+	// GoArch represent the architecture target to build Vald.
+	GoArch string
+	// CGOEnabled represent the cgo is enable or not to build Vald.
+	CGOEnabled string
+	// NGTVersion represent the NGT version in Vald.
+	NGTVersion string
+	// BuildCPUInfoFlags represent the CPU info flags to build Vald.
 	BuildCPUInfoFlags string
 
+	// Organization represent the organization of Vald.
 	Organization = "vdaas"
-	Repository   = "vald"
+	// Repository represent the repoistory of Vald.
+	Repository = "vald"
 
 	reps = strings.NewReplacer("_", " ", ",omitempty", "")
 
@@ -105,6 +117,7 @@ func Init(name string) {
 func New(opts ...Option) (Info, error) {
 	i := &info{
 		detail: Detail{
+			ServerName:        "",
 			Version:           Version,
 			GitCommit:         GitCommit,
 			BuildTime:         BuildTime,
@@ -114,6 +127,7 @@ func New(opts ...Option) (Info, error) {
 			CGOEnabled:        CGOEnabled,
 			NGTVersion:        NGTVersion,
 			BuildCPUInfoFlags: strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " "),
+			StackTrace:        nil,
 		},
 	}
 
