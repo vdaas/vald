@@ -162,7 +162,6 @@ func TestErrOptionFailed(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
-			fmt.Println(got)
 			return fmt.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
@@ -489,14 +488,14 @@ func TestErrLoggingRetry(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			wantErr := errors.New("failed to output  logs, retrying...: logging retry")
+			wantErr := errors.New("failed to output fmt.Println logs, retrying...: logging retry")
 			return test{
 				name: "return an ErrLoggingRetry error when err and ref are not empty.",
 				args: args{
 					err: errors.New("logging retry"),
 					ref: func() reflect.Value {
-						var i int
-						return reflect.ValueOf(&i)
+						var i interface{} = fmt.Println
+						return reflect.ValueOf(i)
 					}(),
 				},
 				want: want{
@@ -507,7 +506,7 @@ func TestErrLoggingRetry(t *testing.T) {
 		func() test {
 			wantErr := errors.New("failed to output  logs, retrying...: logging retry")
 			return test{
-				name: "return an ErrLoggingRetry error when err is not empty and ref is empty.",
+				name: "return an ErrLoggingRetry error when err is not empty and ref is nil.",
 				args: args{
 					err: errors.New("logging retry"),
 				},
@@ -518,14 +517,25 @@ func TestErrLoggingRetry(t *testing.T) {
 		}(),
 		func() test {
 			wantErr := errors.New("failed to output  logs, retrying...")
-
 			return test{
-				name: "return an ErrLoggingRetry error when err is empty and ref is not empty.",
+				name: "return an ErrLoggingRetry error when err is empty and ref is zero value.",
 				args: args{
 					ref: func() reflect.Value {
 						var i int
 						return reflect.ValueOf(&i)
 					}(),
+				},
+				want: want{
+					wantErr,
+				},
+			}
+		}(),
+		func() test {
+			wantErr := errors.New("failed to output  logs, retrying...")
+			return test{
+				name: "return an ErrLoggingRetry error when err is empty and ref is <invalid reflect.Value>.",
+				args: args{
+					ref: reflect.Value{},
 				},
 				want: want{
 					wantErr,
@@ -578,14 +588,14 @@ func TestErrLoggingFailed(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			wantErr := errors.New("failed to output  logs: logging retry")
+			wantErr := errors.New("failed to output fmt.Println logs: logging retry")
 			return test{
 				name: "return an ErrLoggingFailed error when err and ref are not empty.",
 				args: args{
 					err: errors.New("logging retry"),
 					ref: func() reflect.Value {
-						var i int
-						return reflect.ValueOf(&i)
+						var i interface{} = fmt.Println
+						return reflect.ValueOf(i)
 					}(),
 				},
 				want: want{
@@ -596,7 +606,7 @@ func TestErrLoggingFailed(t *testing.T) {
 		func() test {
 			wantErr := errors.New("failed to output  logs: logging retry")
 			return test{
-				name: "return an ErrLoggingFailed error when err is not empty and ref is empty.",
+				name: "return an ErrLoggingFailed error when err is not empty and ref is nil.",
 				args: args{
 					err: errors.New("logging retry"),
 				},
@@ -608,12 +618,24 @@ func TestErrLoggingFailed(t *testing.T) {
 		func() test {
 			wantErr := errors.New("failed to output  logs")
 			return test{
-				name: "return an ErrLoggingFailed error when err is empty and ref is not empty.",
+				name: "return an ErrLoggingFailed error when err is empty and ref is zero value.",
 				args: args{
 					ref: func() reflect.Value {
 						var i int
 						return reflect.ValueOf(&i)
 					}(),
+				},
+				want: want{
+					wantErr,
+				},
+			}
+		}(),
+		func() test {
+			wantErr := errors.New("failed to output  logs")
+			return test{
+				name: "return an ErrLoggingFailed error when err is empty and ref is <invalid reflect,Value>.",
+				args: args{
+					ref: reflect.Value{},
 				},
 				want: want{
 					wantErr,
