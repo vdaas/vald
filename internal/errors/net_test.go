@@ -86,13 +86,28 @@ func TestErrInvalidDNSConfig(t *testing.T) {
 			},
 		},
 		{
-			name: "return an ErrInvalidDNSConfig when dnsRefreshDur is 0, dnsCacheExp is 0",
-			args: args{
-				dnsRefreshDur: 0,
-				dnsCacheExp:   0,
-			},
+			name: "return an ErrInvalidDNSConfig when all of input values are empty",
+			args: args{},
 			want: want{
 				want: New("dnsRefreshDuration  > dnsCacheExp, 0s, 0s"),
+			},
+		},
+		{
+			name: "return an ErrInvalidDNSConfig when dnsRefreshDur is empty and dnsCacheExp is 4 minute",
+			args: args{
+				dnsCacheExp: 4 * time.Minute,
+			},
+			want: want{
+				want: New("dnsRefreshDuration  > dnsCacheExp, 0s, 4m0s"),
+			},
+		},
+		{
+			name: "return an ErrInvalidDNSConfig when dnsRefreshDur is 5m0s and dnsCacheExp is empty",
+			args: args{
+				dnsRefreshDur: 5 * time.Minute,
+			},
+			want: want{
+				want: New("dnsRefreshDuration  > dnsCacheExp, 5m0s, 0s"),
 			},
 		},
 		{
@@ -173,12 +188,8 @@ func TestErrNoPortAvailable(t *testing.T) {
 			},
 		},
 		{
-			name: "return an ErrNoPortAvailable when host is empty and start is 0 and end is 0",
-			args: args{
-				host:  "",
-				start: 0,
-				end:   0,
-			},
+			name: "return an ErrNoPortAvailable when  all of the input values are empty",
+			args: args{},
 			want: want{
 				want: New("no port available for Host: \tbetween 0 ~ 0"),
 			},
@@ -186,7 +197,6 @@ func TestErrNoPortAvailable(t *testing.T) {
 		{
 			name: "return an ErrNoPortAvailable when host is empty and start is 65534 and end is 65535",
 			args: args{
-				host:  "",
 				start: 65534,
 				end:   65535,
 			},
@@ -195,22 +205,20 @@ func TestErrNoPortAvailable(t *testing.T) {
 			},
 		},
 		{
-			name: "return an ErrNoPortAvailable when host is localhost and start is 0 and end is 65535",
+			name: "return an ErrNoPortAvailable when host is localhost and start is empty and end is 65535",
 			args: args{
-				host:  "localhost",
-				start: 0,
-				end:   65535,
+				host: "localhost",
+				end:  65535,
 			},
 			want: want{
 				want: New("no port available for Host: localhost\tbetween 0 ~ 65535"),
 			},
 		},
 		{
-			name: "return an ErrNoPortAvailable when host is localhost and start is 65534 and end is 0",
+			name: "return an ErrNoPortAvailable when host is localhost and start is 65534 and end is empty",
 			args: args{
 				host:  "localhost",
 				start: 65534,
-				end:   0,
 			},
 			want: want{
 				want: New("no port available for Host: localhost\tbetween 65534 ~ 0"),
