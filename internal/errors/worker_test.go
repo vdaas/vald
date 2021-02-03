@@ -47,7 +47,7 @@ func TestErrWorkerIsNotRunning(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return ErrWorkerIsNotRunning error when name is index",
+			name: "return an ErrWorkerIsNotRunning error when name is index",
 			args: args{
 				name: "index",
 			},
@@ -56,7 +56,7 @@ func TestErrWorkerIsNotRunning(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrWorkerIsNotRunning error when name is empty",
+			name: "return an ErrWorkerIsNotRunning error when name is empty",
 			args: args{
 				name: "",
 			},
@@ -113,7 +113,7 @@ func TestErrWorkerIsAlreadyRunning(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return ErrWorkerIsAlreadyRunning error when name is index",
+			name: "return an ErrWorkerIsAlreadyRunning error when name is index",
 			args: args{
 				name: "index",
 			},
@@ -122,7 +122,7 @@ func TestErrWorkerIsAlreadyRunning(t *testing.T) {
 			},
 		},
 		{
-			name: "return ErrWorkerIsAlreadyRunning error when name is empty",
+			name: "return an ErrWorkerIsAlreadyRunning error when name is empty",
 			args: args{
 				name: "",
 			},
@@ -175,7 +175,7 @@ func TestErrQueueIsNotRunning(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return ErrQueueIsNotRunning error",
+			name: "return an ErrQueueIsNotRunning error",
 			want: want{
 				err: New("queue is not running"),
 			},
@@ -225,7 +225,7 @@ func TestErrQueueIsAlreadyRunning(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return ErrQueueIsAlreadyRunning error",
+			name: "return an ErrQueueIsAlreadyRunning error",
 			want: want{
 				err: New("queue is already running"),
 			},
@@ -275,7 +275,7 @@ func TestErrJobFuncIsNil(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return ErrJobFuncIsNil error",
+			name: "return an ErrJobFuncIsNil error",
 			want: want{
 				err: New("JobFunc is nil"),
 			},
