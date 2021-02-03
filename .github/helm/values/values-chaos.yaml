@@ -19,6 +19,16 @@ defaults:
     client:
       dial_option:
         enable_backoff: true
+  server_config:
+    healths:
+      liveness:
+        livenessProbe:
+          timeoutSeconds: 10
+          failureThreshold: 5
+      readiness:
+        readinessProbe:
+          timeoutSeconds: 10
+          failureThreshold: 5
 
 gateway:
   vald:
