@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -50,7 +51,7 @@ type server struct {
 	streamConcurrency int
 }
 
-const apiName = "vald/gateway-lb"
+const apiName = "vald/gateway/lb"
 
 func New(opts ...Option) vald.Server {
 	s := new(server)
@@ -80,26 +81,51 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 		}()
 		oid, err := vc.Exists(ctx, meta, copts...)
 		if err != nil {
+			err = status.WrapWithNotFound(fmt.Sprintf("Exists API meta %s's uuid not found in %s", meta.GetId(), target), err,
+				&errdetails.RequestInfo{
+					RequestId:   meta.GetId(),
+					ServingData: errdetails.Serialize(meta),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Exists",
+					ResourceName: target,
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				})
+			log.Debug(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
 			return nil
 		}
-		if oid != nil && oid.Id != "" {
+		if oid != nil && oid.GetId() != "" {
 			once.Do(func() {
-				id = &payload.Object_ID{
-					Id: oid.Id,
-				}
+				id = oid
 				cancel()
 			})
 		}
 		return nil
 	})
-	if err != nil || id == nil || id.Id == "" {
+	if err != nil || id == nil || id.GetId() == "" {
+		if err == nil {
+			err = errors.ErrObjectIDNotFound(id.GetId())
+		}
+		err = status.WrapWithNotFound(fmt.Sprintf("Exists API meta %s's uuid not found", meta.GetId()), err,
+			&errdetails.RequestInfo{
+				RequestId:   meta.GetId(),
+				ServingData: errdetails.Serialize(meta),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Exists",
+				ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
+			}, info.Get())
+		log.Warn(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
-		return nil, status.WrapWithNotFound(fmt.Sprintf("Exists API meta %s's uuid not found", meta.GetId()), err, meta.GetId(), info.Get())
+		return nil, err
 	}
 	return id, nil
 }
@@ -114,27 +140,47 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 	vl := len(req.GetVector())
 	if vl < algorithm.MinimumVectorDimensionSize {
 		err = errors.ErrInvalidDimensionSize(vl, 0)
+		err = status.WrapWithInvalidArgument("Search API invalid vector argument", err,
+			&errdetails.RequestInfo{
+				RequestId:   req.GetConfig().GetRequestId(),
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "vector dimension size",
+						Description: err.Error(),
+					},
+				},
+			}, info.Get())
+		log.Warn(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 		}
-		return nil, status.WrapWithInvalidArgument("Search API invalid vector argument", err, req, &errdetails.BadRequest{
-			FieldViolations: []*errdetails.BadRequestFieldViolation{
-				{
-					Field:       "vector dimension size",
-					Description: err.Error(),
-				},
-			},
-		}, info.Get())
+		return nil, err
 	}
 	res, err = s.search(ctx, req.GetConfig(),
 		func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
 			return vc.Search(ctx, req, copts...)
 		})
+
 	if err != nil {
+		err = status.WrapWithInternal("Search API failed to process search request", err,
+			&errdetails.RequestInfo{
+				RequestId:   req.GetConfig().GetRequestId(),
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Search",
+				ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
+			}, info.Get())
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal("Search API failed to process search request", err, req, info.Get())
+		return nil, err
 	}
 	return res, nil
 }
@@ -149,36 +195,113 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 	}()
 	if len(req.GetId()) == 0 {
 		err = errors.ErrInvalidMetaDataConfig
+		err = status.WrapWithInvalidArgument("SearchByID API invalid uuid", err,
+			&errdetails.RequestInfo{
+				RequestId:   req.GetConfig().GetRequestId(),
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "invalid id",
+						Description: err.Error(),
+					},
+				},
+			}, info.Get())
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 		}
-		return nil, status.WrapWithInvalidArgument("SearchByID API invalid uuid", err, req, &errdetails.BadRequest{
-			FieldViolations: []*errdetails.BadRequestFieldViolation{
-				{
-					Field:       "invalid id",
-					Description: err.Error(),
-				},
-			},
-		}, info.Get())
+		return nil, err
 	}
-	vec, err := s.GetObject(ctx, &payload.Object_ID{
-		Id: req.GetId(),
+	vec, err := s.GetObject(ctx, &payload.Object_VectorRequest{
+		Id: &payload.Object_ID{
+			Id: req.GetId(),
+		},
+		Filters: req.GetConfig().GetEgressFilters(),
 	})
 	if err != nil {
+		err = status.WrapWithNotFound(fmt.Sprintf("SearchByID API uuid %s's object not found", req.GetId()), err,
+			&errdetails.RequestInfo{
+				RequestId:   req.GetConfig().GetRequestId(),
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.SearchByID",
+				ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
+			},
+			info.Get())
+		log.Error(err)
+		var serr error
+		res, serr = s.search(ctx, req.GetConfig(),
+			func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+				return vc.SearchByID(ctx, req, copts...)
+			})
+
+		if serr == nil {
+			return res, nil
+		}
+		err = errors.Wrap(err, status.WrapWithInternal("SearchByID API failed to process search request", err,
+			&errdetails.RequestInfo{
+				RequestId:   req.GetConfig().GetRequestId(),
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.SearchByID",
+				ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
+			}).Error())
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
-		return nil, status.WrapWithNotFound(fmt.Sprintf("SearchByID API uuid %s's object not found", req.GetId()), err, info.Get())
+		return nil, err
 	}
 	res, err = s.Search(ctx, &payload.Search_Request{
 		Vector: vec.GetVector(),
 		Config: req.GetConfig(),
 	})
 	if err != nil {
+		err = status.WrapWithInternal("SearchByID API failed to process search request", err,
+			&errdetails.RequestInfo{
+				RequestId:   req.GetConfig().GetRequestId(),
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.SearchByID",
+				ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
+			}, info.Get())
+		log.Error(err)
+		var serr error
+		res, serr = s.search(ctx, req.GetConfig(),
+			func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+				return vc.SearchByID(ctx, req, copts...)
+			})
+
+		if serr == nil {
+			return res, nil
+		}
+		err = errors.Wrap(err, status.WrapWithInternal("SearchByID API failed to process search request", err,
+			&errdetails.RequestInfo{
+				RequestId:   req.GetConfig().GetRequestId(),
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.SearchByID",
+				ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
+			}).Error())
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal("SearchByID API failed to process search request", err, req, info.Get())
+		return nil, err
 	}
 	return res, nil
 }
@@ -221,7 +344,16 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 			}()
 			r, err := f(ctx, vc, copts...)
 			if err != nil {
-				log.Debug(err)
+				if !errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded) {
+					err = status.WrapWithInternal("failed to process search request", err,
+						&errdetails.ResourceInfo{
+							ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Search",
+							ResourceName: target,
+							Owner:        errdetails.ValdResourceOwner,
+							Description:  err.Error(),
+						})
+					log.Warn(err)
+				}
 				if span != nil {
 					span.SetStatus(trace.StatusCodeInternal(err.Error()))
 				}
@@ -229,6 +361,13 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 			}
 			if r == nil || len(r.GetResults()) == 0 {
 				err = errors.ErrIndexNotFound
+				err = status.WrapWithNotFound("failed to process search request", err,
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Search",
+						ResourceName: target,
+						Owner:        errdetails.ValdResourceOwner,
+						Description:  err.Error(),
+					})
 				log.Debug(err)
 				if span != nil {
 					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
@@ -263,6 +402,19 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 			close(dch)
 			if num != 0 && len(res.GetResults()) > num {
 				res.Results = res.Results[:num]
+			}
+			if len(res.Results) == 0 {
+				err = status.WrapWithNotFound("search result not found", err,
+					&errdetails.RequestInfo{
+						RequestId:   cfg.GetRequestId(),
+						ServingData: errdetails.Serialize(cfg),
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: "vald agent server Search API",
+						ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
+					}, info.Get())
+				log.Warn(err)
+				return nil, err
 			}
 			return res, nil
 		case dist := <-dch:
@@ -310,14 +462,14 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 	}
 }
 
-func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) error {
+func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error) {
 	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamSearch")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
+	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Search_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			res, err := s.Search(ctx, data.(*payload.Search_Request))
@@ -339,24 +491,43 @@ func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) error {
 				},
 			}, nil
 		})
+
+	if err != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
+		log.Error(err)
+		return err
+	}
+	return nil
 }
 
-func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) error {
+func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (err error) {
 	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamSearchByID")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
+	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Search_IDRequest) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			res, err := s.SearchByID(ctx, data.(*payload.Search_IDRequest))
+			req := data.(*payload.Search_IDRequest)
+			ctx, sspan := trace.StartSpan(ctx, apiName+".StreamSearchByID/id-"+req.GetId())
+			defer func() {
+				if sspan != nil {
+					sspan.End()
+				}
+			}()
+			res, err := s.SearchByID(ctx, req)
 			if err != nil {
 				st, ok := status.FromError(err)
 				if !ok {
 					st = status.New(codes.Internal, errors.Wrap(err, "failed to parse grpc status from error").Error())
 					err = errors.Wrap(st.Err(), err.Error())
+				}
+				if sspan != nil {
+					sspan.SetStatus(trace.StatusCodeInternal(err.Error()))
 				}
 				return &payload.Search_StreamResponse{
 					Payload: &payload.Search_StreamResponse_Status{
@@ -370,6 +541,15 @@ func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) err
 				},
 			}, nil
 		})
+
+	if err != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
+		log.Error(err)
+		return err
+	}
+	return nil
 }
 
 func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequest) (res *payload.Search_Responses, errs error) {
@@ -385,10 +565,40 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 	}
 	var wg sync.WaitGroup
 	var mu sync.Mutex
+	rids := make([]string, 0, len(reqs.GetRequests()))
 	for i, req := range reqs.Requests {
 		idx, query := i, req
+		rids = append(rids, req.GetConfig().GetRequestId())
+		vl := len(req.GetVector())
+		if vl < algorithm.MinimumVectorDimensionSize {
+			err := errors.ErrInvalidDimensionSize(vl, 0)
+			err = status.WrapWithInvalidArgument("MultiSearch API invalid vector argument", err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetConfig().GetRequestId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.BadRequest{
+					FieldViolations: []*errdetails.BadRequestFieldViolation{
+						{
+							Field:       "vector dimension size",
+							Description: err.Error(),
+						},
+					},
+				}, info.Get())
+			log.Warn(err)
+			if span != nil {
+				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+			}
+			return nil, err
+		}
 		wg.Add(1)
 		s.eg.Go(func() error {
+			ctx, span := trace.StartSpan(ctx, fmt.Sprintf("%s.MultiSearch/goroutine/id-%d", apiName, idx))
+			defer func() {
+				if span != nil {
+					span.End()
+				}
+			}()
 			defer wg.Done()
 			r, err := s.Search(ctx, query)
 			if err != nil {
@@ -397,14 +607,9 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 				}
 				mu.Lock()
 				if errs == nil {
-					errs = status.WrapWithNotFound(
-						fmt.Sprintf("MultiSearch API vector %v's search request result not found",
-							query.GetVector()), err, info.Get())
+					errs = err
 				} else {
-					errs = errors.Wrap(errs,
-						status.WrapWithNotFound(
-							fmt.Sprintf("MultiSearch API vector %v's search request result not found",
-								query.GetVector()), err, info.Get()).Error())
+					errs = errors.Wrap(errs, err.Error())
 				}
 				mu.Unlock()
 				return nil
@@ -414,7 +619,26 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 		})
 	}
 	wg.Wait()
-	return res, errs
+	if errs != nil {
+		err := errs
+		err = status.WrapWithInternal("MultiSearch API failed to search", err,
+			&errdetails.RequestInfo{
+				RequestId:   strings.Join(rids, ","),
+				ServingData: errdetails.Serialize(reqs),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Search",
+				ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
+			}, info.Get())
+		log.Error(err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
+		return nil, err
+	}
+	return res, nil
 }
 
 func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_MultiIDRequest) (res *payload.Search_Responses, errs error) {
@@ -430,10 +654,18 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 	}
 	var wg sync.WaitGroup
 	var mu sync.Mutex
+	rids := make([]string, 0, len(reqs.GetRequests()))
 	for i, req := range reqs.Requests {
 		idx, query := i, req
+		rids = append(rids, req.GetConfig().GetRequestId())
 		wg.Add(1)
 		s.eg.Go(func() error {
+			ctx, span := trace.StartSpan(ctx, fmt.Sprintf("%s.MultiSearchByID/goroutine/id-%d", apiName, idx))
+			defer func() {
+				if span != nil {
+					span.End()
+				}
+			}()
 			defer wg.Done()
 			r, err := s.SearchByID(ctx, query)
 			if err != nil {
@@ -442,14 +674,9 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 				}
 				mu.Lock()
 				if errs == nil {
-					errs = status.WrapWithNotFound(
-						fmt.Sprintf("MultiSearchByID API uuid %v's search by id request result not found",
-							query.GetId()), err, info.Get())
+					errs = err
 				} else {
-					errs = errors.Wrap(errs,
-						status.WrapWithNotFound(
-							fmt.Sprintf("MultiSearchByID API uuid %v's search by id request result not found",
-								query.GetId()), err, info.Get()).Error())
+					errs = errors.Wrap(errs, err.Error())
 				}
 				mu.Unlock()
 				return nil
@@ -459,7 +686,26 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 		})
 	}
 	wg.Wait()
-	return res, errs
+	if errs != nil {
+		err := errs
+		err = status.WrapWithInternal("MultiSearchByID API failed to search", err,
+			&errdetails.RequestInfo{
+				RequestId:   strings.Join(rids, ","),
+				ServingData: errdetails.Serialize(reqs),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.SearchByID",
+				ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
+			}, info.Get())
+		log.Error(err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
+		return nil, err
+	}
+	return res, nil
 }
 
 func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *payload.Object_Location, err error) {
@@ -474,17 +720,24 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 	vl := len(vec)
 	if vl < algorithm.MinimumVectorDimensionSize {
 		err = errors.ErrInvalidDimensionSize(vl, 0)
+		err = status.WrapWithInvalidArgument("Insert API invalid vector argument", err,
+			&errdetails.RequestInfo{
+				RequestId:   uuid,
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "vector dimension size",
+						Description: err.Error(),
+					},
+				},
+			}, info.Get())
+		log.Warn(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 		}
-		return nil, status.WrapWithInvalidArgument("Search API invalid vector argument", err, req, &errdetails.BadRequest{
-			FieldViolations: []*errdetails.BadRequestFieldViolation{
-				{
-					Field:       "vector dimension size",
-					Description: err.Error(),
-				},
-			},
-		}, info.Get())
+		return nil, err
 	}
 	if !req.GetConfig().GetSkipStrictExistCheck() {
 		id, err := s.Exists(ctx, &payload.Object_ID{
@@ -492,13 +745,24 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 		})
 		if err == nil && id != nil && len(id.GetId()) != 0 {
 			err = errors.ErrMetaDataAlreadyExists(uuid)
+			err = status.WrapWithAlreadyExists(fmt.Sprintf("Insert API ID = %v already exists", uuid), err,
+				&errdetails.RequestInfo{
+					RequestId:   uuid,
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Exists",
+					ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				}, info.Get())
 			log.Error(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeAlreadyExists(err.Error()))
 			}
-			return nil, status.WrapWithAlreadyExists(
-				fmt.Sprintf("Insert API ID = %v already exists", uuid), err, info.Get())
+			return nil, err
 		}
+		req.Config.SkipStrictExistCheck = true
 	}
 
 	mu := new(sync.Mutex)
@@ -518,7 +782,8 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInternal(err.Error()))
 			}
-			if err == errors.ErrRPCCallFailed(target, context.Canceled) {
+			rpcerr := errors.ErrRPCCallFailed(target, context.Canceled)
+			if err == rpcerr || errors.Is(err, rpcerr) {
 				return nil
 			}
 			return err
@@ -530,33 +795,53 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 		return nil
 	})
 	if err != nil {
-		err = errors.Wrapf(err, "Insert API (do multiple) failed to Insert uuid = %s\t info = %#v", uuid, info.Get())
+		err = status.WrapWithInternal("Insert API failed to Execute DoMulti", err,
+			&errdetails.RequestInfo{
+				RequestId:   uuid,
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Insert.DoMulti",
+				ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
+			}, info.Get())
 		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("Insert API failed to Execute DoMulti error = %s", err.Error()), err, info.Get())
+		return nil, err
 	}
 	log.Debugf("Insert API insert succeeded to %#v", ce)
 	return ce, nil
 }
 
-func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) error {
+func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error) {
 	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamInsert")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
+	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Insert_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			res, err := s.Insert(ctx, data.(*payload.Insert_Request))
+			req := data.(*payload.Insert_Request)
+			ctx, sspan := trace.StartSpan(ctx, apiName+".StreamInsert/id-"+req.GetVector().GetId())
+			defer func() {
+				if sspan != nil {
+					sspan.End()
+				}
+			}()
+			res, err := s.Insert(ctx, req)
 			if err != nil {
 				st, ok := status.FromError(err)
 				if !ok {
 					st = status.New(codes.Internal, errors.Wrap(err, "failed to parse grpc status from error").Error())
 					err = errors.Wrap(st.Err(), err.Error())
+				}
+				if sspan != nil {
+					sspan.SetStatus(trace.StatusCodeInternal(err.Error()))
 				}
 				return &payload.Object_StreamLocation{
 					Payload: &payload.Object_StreamLocation_Status{
@@ -570,6 +855,15 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) error {
 				},
 			}, nil
 		})
+
+	if err != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
+		log.Error(err)
+		return err
+	}
+	return nil
 }
 
 func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequest) (locs *payload.Object_Locations, err error) {
@@ -581,21 +875,55 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 	}()
 	vecs := reqs.GetRequests()
 	ids := make([]string, 0, len(vecs))
-	for _, vec := range vecs {
+	for i, vec := range vecs {
 		uuid := vec.GetVector().GetId()
+		vector := vec.GetVector().GetVector()
+		vl := len(vector)
+		if vl < algorithm.MinimumVectorDimensionSize {
+			err = errors.ErrInvalidDimensionSize(vl, 0)
+			err = status.WrapWithInvalidArgument("MultiInsert API invalid vector argument", err,
+				&errdetails.RequestInfo{
+					RequestId:   uuid,
+					ServingData: errdetails.Serialize(reqs),
+				},
+				&errdetails.BadRequest{
+					FieldViolations: []*errdetails.BadRequestFieldViolation{
+						{
+							Field:       fmt.Sprintf("vector dimension size for id: %s", uuid),
+							Description: err.Error(),
+						},
+					},
+				}, info.Get())
+			log.Warn(err)
+			if span != nil {
+				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+			}
+			return nil, err
+		}
 		if !vec.GetConfig().GetSkipStrictExistCheck() {
 			id, err := s.Exists(ctx, &payload.Object_ID{
 				Id: uuid,
 			})
 			if err == nil && id != nil && len(id.GetId()) != 0 {
 				err = errors.ErrMetaDataAlreadyExists(uuid)
+				err = status.WrapWithAlreadyExists(fmt.Sprintf("MultiInsert API ID = %v already exists", uuid), err,
+					&errdetails.RequestInfo{
+						RequestId:   uuid,
+						ServingData: errdetails.Serialize(reqs),
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Exists",
+						ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
+						Owner:        errdetails.ValdResourceOwner,
+						Description:  err.Error(),
+					}, info.Get())
 				log.Error(err)
 				if span != nil {
 					span.SetStatus(trace.StatusCodeAlreadyExists(err.Error()))
 				}
-				return nil, status.WrapWithAlreadyExists(
-					fmt.Sprintf("MultiInsert API ID = %v already exists", uuid), err, info.Get())
+				return nil, err
 			}
+			reqs.Requests[i].Config.SkipStrictExistCheck = true
 		}
 		ids = append(ids, uuid)
 	}
@@ -613,6 +941,18 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 		}()
 		loc, err := vc.MultiInsert(ctx, reqs, copts...)
 		if err != nil {
+			err = status.WrapWithInternal("MultiInsert API failed to insert", err,
+				&errdetails.RequestInfo{
+					RequestId:   strings.Join(ids, ","),
+					ServingData: errdetails.Serialize(reqs),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.MultiInsert",
+					ResourceName: target,
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				})
+			log.Debug(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInternal(err.Error()))
 			}
@@ -624,10 +964,22 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 		return nil
 	})
 	if err != nil {
+		err = status.WrapWithInternal("MultiInsert API failed to Execute DoMulti", err,
+			&errdetails.RequestInfo{
+				RequestId:   strings.Join(ids, ","),
+				ServingData: errdetails.Serialize(reqs),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.MultiInsert.DoMulti",
+				ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
+			}, info.Get())
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("MultiInsert API failed request %#v", vecs), err, info.Get())
+		return nil, err
 	}
 	return location.ReStructure(ids, locs), nil
 }
@@ -639,18 +991,82 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 			span.End()
 		}
 	}()
+	vec := req.GetVector().GetVector()
+	uuid := req.GetVector().GetId()
+	vl := len(vec)
+	if vl < algorithm.MinimumVectorDimensionSize {
+		err = errors.ErrInvalidDimensionSize(vl, 0)
+		err = status.WrapWithInvalidArgument("Update API invalid vector argument", err,
+			&errdetails.RequestInfo{
+				RequestId:   uuid,
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "vector dimension size",
+						Description: err.Error(),
+					},
+				},
+			}, info.Get())
+		log.Warn(err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+		}
+		return nil, err
+	}
+
+	if !req.GetConfig().GetSkipStrictExistCheck() {
+		id, err := s.Exists(ctx, &payload.Object_ID{
+			Id: uuid,
+		})
+		if err != nil || id == nil || len(id.GetId()) == 0 {
+			if err == nil {
+				err = errors.ErrObjectIDNotFound(uuid)
+			}
+			err = status.WrapWithNotFound(fmt.Sprintf("Update API ID = %v not found", uuid), err,
+				&errdetails.RequestInfo{
+					RequestId:   uuid,
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Exists",
+					ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				}, info.Get())
+			log.Error(err)
+			if span != nil {
+				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+			}
+			return nil, err
+		}
+		req.Config.SkipStrictExistCheck = true
+	}
 
 	res, err = s.Remove(ctx, &payload.Remove_Request{
 		Id: &payload.Object_ID{
-			Id: req.GetVector().GetId(),
+			Id: uuid,
 		},
 		Config: &payload.Remove_Config{
-			SkipStrictExistCheck: req.GetConfig().GetSkipStrictExistCheck(),
+			SkipStrictExistCheck: true,
 		},
 	})
 	if err != nil {
+		err = status.WrapWithInternal("Update API failed to Remove for Insert", err,
+			&errdetails.RequestInfo{
+				RequestId:   uuid,
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Remove",
+				ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
+			}, info.Get())
+		log.Error(err)
 		if span != nil {
-			span.SetStatus(trace.StatusCodeAlreadyExists(err.Error()))
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
 		return nil, err
 	}
@@ -659,34 +1075,56 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 		Vector: req.GetVector(),
 		Config: &payload.Insert_Config{
 			SkipStrictExistCheck: true,
-			Filters:              req.GetConfig().Filters,
+			Filters:              req.GetConfig().GetFilters(),
 		},
 	})
 	if err != nil {
+		err = status.WrapWithInternal("Update API failed to Insert for Update", err,
+			&errdetails.RequestInfo{
+				RequestId:   uuid,
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Insert",
+				ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
+			}, info.Get())
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("Update API failed to remove exsisting data for update %#v", req), err, info.Get())
+		return nil, err
 	}
 	return res, nil
 }
 
-func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) error {
+func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) (err error) {
 	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamUpdate")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
+	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Update_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			res, err := s.Update(ctx, data.(*payload.Update_Request))
+			req := data.(*payload.Update_Request)
+			ctx, sspan := trace.StartSpan(ctx, apiName+".StreamUpdate/id-"+req.GetVector().GetId())
+			defer func() {
+				if sspan != nil {
+					sspan.End()
+				}
+			}()
+			res, err := s.Update(ctx, req)
 			if err != nil {
 				st, ok := status.FromError(err)
 				if !ok {
 					st = status.New(codes.Internal, errors.Wrap(err, "failed to parse grpc status from error").Error())
 					err = errors.Wrap(st.Err(), err.Error())
+				}
+				if sspan != nil {
+					sspan.SetStatus(trace.StatusCodeInternal(err.Error()))
 				}
 				return &payload.Object_StreamLocation{
 					Payload: &payload.Object_StreamLocation_Status{
@@ -700,6 +1138,15 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) error {
 				},
 			}, nil
 		})
+
+	if err != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
+		log.Error(err)
+		return err
+	}
+	return nil
 }
 
 func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequest) (res *payload.Object_Locations, err error) {
@@ -714,6 +1161,56 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 	ireqs := make([]*payload.Insert_Request, 0, len(vecs))
 	rreqs := make([]*payload.Remove_Request, 0, len(vecs))
 	for _, vec := range vecs {
+		vl := len(vec.GetVector().GetVector())
+		if vl < algorithm.MinimumVectorDimensionSize {
+			err = errors.ErrInvalidDimensionSize(vl, 0)
+			err = status.WrapWithInvalidArgument("MultiUpdate API invalid vector argument", err,
+				&errdetails.RequestInfo{
+					RequestId:   vec.GetVector().GetId(),
+					ServingData: errdetails.Serialize(reqs),
+				},
+				&errdetails.BadRequest{
+					FieldViolations: []*errdetails.BadRequestFieldViolation{
+						{
+							Field:       "vector dimension size",
+							Description: err.Error(),
+						},
+					},
+				}, info.Get())
+			log.Warn(err)
+			if span != nil {
+				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+			}
+			return nil, err
+		}
+		uuid := vec.GetVector().GetId()
+		if !vec.GetConfig().GetSkipStrictExistCheck() {
+			id, err := s.Exists(ctx, &payload.Object_ID{
+				Id: uuid,
+			})
+			if err != nil || id == nil || len(id.GetId()) == 0 {
+				if err == nil {
+					err = errors.ErrObjectIDNotFound(uuid)
+				}
+				err = status.WrapWithNotFound(fmt.Sprintf("MultiUpdate API ID = %v not found", uuid), err,
+					&errdetails.RequestInfo{
+						RequestId:   uuid,
+						ServingData: errdetails.Serialize(reqs),
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Exists",
+						ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
+						Owner:        errdetails.ValdResourceOwner,
+						Description:  err.Error(),
+					}, info.Get())
+				log.Error(err)
+				if span != nil {
+					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+				}
+				return nil, err
+			}
+			vec.Config.SkipStrictExistCheck = true
+		}
 		ids = append(ids, vec.GetVector().GetId())
 		ireqs = append(ireqs, &payload.Insert_Request{
 			Vector: vec.GetVector(),
@@ -727,7 +1224,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 				Id: vec.GetVector().GetId(),
 			},
 			Config: &payload.Remove_Config{
-				SkipStrictExistCheck: vec.GetConfig().GetSkipStrictExistCheck(),
+				SkipStrictExistCheck: true,
 			},
 		})
 	}
@@ -735,20 +1232,44 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 		Requests: rreqs,
 	})
 	if err != nil {
+		err = status.WrapWithInternal("MultiUpdate API failed to Execute MultiRemove for update", err,
+			&errdetails.RequestInfo{
+				RequestId:   strings.Join(ids, ","),
+				ServingData: errdetails.Serialize(reqs),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.MultiRemove",
+				ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
+			}, info.Get())
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("MultiUpdate API failed Remove request %#v", ids), err, info.Get())
+		return nil, err
 	}
 	log.Debugf("uuids %v were removed from %v for MultiUpdate it will execute MultiInsert soon, see detailt %#v", ids, locs.GetLocations(), locs)
 	locs, err = s.MultiInsert(ctx, &payload.Insert_MultiRequest{
 		Requests: ireqs,
 	})
 	if err != nil {
+		err = status.WrapWithInternal("MultiUpdate API failed to Execute MultiInsert for update", err,
+			&errdetails.RequestInfo{
+				RequestId:   strings.Join(ids, ","),
+				ServingData: errdetails.Serialize(reqs),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.MultiInsert",
+				ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
+			}, info.Get())
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("MultiUpdate API failed Insert request %#v", vecs), err, info.Get())
+		return nil, err
 	}
 	return locs, nil
 }
@@ -763,12 +1284,33 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 
 	vec := req.GetVector()
 	uuid := vec.GetId()
+	vl := len(vec.GetVector())
+	if vl < algorithm.MinimumVectorDimensionSize {
+		err = errors.ErrInvalidDimensionSize(vl, 0)
+		err = status.WrapWithInvalidArgument("Upsert API invalid vector argument", err,
+			&errdetails.RequestInfo{
+				RequestId:   uuid,
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "vector dimension size",
+						Description: err.Error(),
+					},
+				},
+			}, info.Get())
+		log.Warn(err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+		}
+		return nil, err
+	}
 	filters := req.GetConfig().GetFilters()
-	_, err = s.Exists(ctx, &payload.Object_ID{
+	id, err := s.Exists(ctx, &payload.Object_ID{
 		Id: uuid,
 	})
-	if err != nil {
-		log.Debugf("Upsert API metadata exists check to Agent error:\t%s", err.Error())
+	if err != nil || id == nil || len(id.GetId()) == 0 {
 		loc, err = s.Insert(ctx, &payload.Insert_Request{
 			Vector: vec,
 			Config: &payload.Insert_Config{
@@ -787,31 +1329,52 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 	}
 
 	if err != nil {
-		log.Debugf("Upsert API failed to process request uuid:\t%s\terror:\t%s", uuid, err.Error())
+		err = status.WrapWithInternal("Upsert API failed to upsert", err,
+			&errdetails.RequestInfo{
+				RequestId:   uuid,
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Upsert",
+				ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
+			}, info.Get())
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("Upsert API failed to process request %s", uuid), err, info.Get())
+		return nil, err
 	}
 	return loc, nil
 }
 
-func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) error {
+func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error) {
 	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamUpsert")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
+	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Upsert_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			res, err := s.Upsert(ctx, data.(*payload.Upsert_Request))
+			req := data.(*payload.Upsert_Request)
+			ctx, sspan := trace.StartSpan(ctx, apiName+".StreamUpsert/id-"+req.GetVector().GetId())
+			defer func() {
+				if sspan != nil {
+					sspan.End()
+				}
+			}()
+			res, err := s.Upsert(ctx, req)
 			if err != nil {
 				st, ok := status.FromError(err)
 				if !ok {
 					st = status.New(codes.Internal, errors.Wrap(err, "failed to parse grpc status from error").Error())
 					err = errors.Wrap(st.Err(), err.Error())
+				}
+				if sspan != nil {
+					sspan.SetStatus(trace.StatusCodeInternal(err.Error()))
 				}
 				return &payload.Object_StreamLocation{
 					Payload: &payload.Object_StreamLocation_Status{
@@ -825,6 +1388,15 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) error {
 				},
 			}, nil
 		})
+
+	if err != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
+		log.Error(err)
+		return err
+	}
+	return nil
 }
 
 func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequest) (locs *payload.Object_Locations, err error) {
@@ -842,6 +1414,28 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 	for _, req := range reqs.GetRequests() {
 		vec := req.GetVector()
 		uuid := vec.GetId()
+		vl := len(vec.GetVector())
+		if vl < algorithm.MinimumVectorDimensionSize {
+			err = errors.ErrInvalidDimensionSize(vl, 0)
+			err = status.WrapWithInvalidArgument("MultiUpsert API invalid vector argument", err,
+				&errdetails.RequestInfo{
+					RequestId:   uuid,
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.BadRequest{
+					FieldViolations: []*errdetails.BadRequestFieldViolation{
+						{
+							Field:       "vector dimension size",
+							Description: err.Error(),
+						},
+					},
+				}, info.Get())
+			log.Warn(err)
+			if span != nil {
+				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+			}
+			return nil, err
+		}
 		ids = append(ids, uuid)
 		_, err = s.Exists(ctx, &payload.Object_ID{
 			Id: uuid,
@@ -913,13 +1507,23 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 
 	err = eg.Wait()
 	if err != nil {
-		log.Debugf("MultiUpsert API failed to process request uuids:\t%s\terror:\t%s", ids, err.Error())
+		err = status.WrapWithInternal("MultiUpsert API failed to upsert", err,
+			&errdetails.RequestInfo{
+				RequestId:   strings.Join(ids, ","),
+				ServingData: errdetails.Serialize(reqs),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Upsert",
+				ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
+			}, info.Get())
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("MultiUpsert API failed to process request %v", ids), err, info.Get())
+		return nil, err
 	}
-
 	return location.ReStructure(ids, &payload.Object_Locations{
 		Locations: append(insertLocs, updateLocs...),
 	}), nil
@@ -935,16 +1539,29 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs 
 
 	id := req.GetId()
 	if !req.GetConfig().GetSkipStrictExistCheck() {
-		sid, err := s.Exists(ctx, id)
-		if err != nil || sid == nil || len(sid.GetId()) == 0 {
-			err = errors.ErrObjectNotFound(err, id.GetId())
+		id, err := s.Exists(ctx, id)
+		if err != nil || id == nil || len(id.GetId()) == 0 {
+			if err == nil {
+				err = errors.ErrObjectIDNotFound(id.GetId())
+			}
+			err = status.WrapWithNotFound(fmt.Sprintf("Remove API ID = %v not found", id.GetId()), err,
+				&errdetails.RequestInfo{
+					RequestId:   id.GetId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Exists",
+					ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				}, info.Get())
 			log.Error(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
-			return nil, status.WrapWithNotFound(
-				fmt.Sprintf("Remove API ID = %v not found", id), err, info.Get())
+			return nil, err
 		}
+		req.Config.SkipStrictExistCheck = true
 	}
 	var mu sync.Mutex
 	locs = &payload.Object_Location{
@@ -959,7 +1576,6 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs 
 		}()
 		loc, err := vc.Remove(ctx, req, copts...)
 		if err != nil {
-			log.Debug(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInternal(err.Error()))
 			}
@@ -972,31 +1588,52 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs 
 		return nil
 	})
 	if err != nil {
-		log.Debugf("Remove API failed to remove uuid:\t%s\terror:\t%s", id.GetId(), err.Error())
+		err = status.WrapWithInternal("Remove API failed to remove request", err,
+			&errdetails.RequestInfo{
+				RequestId:   id.GetId(),
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Remove",
+				ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
+			}, info.Get())
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("Remove API failed request uuid %s", id.GetId()), err, info.Get())
+		return nil, err
 	}
 	return locs, nil
 }
 
-func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) error {
+func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error) {
 	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamRemove")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
+	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Remove_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			res, err := s.Remove(ctx, data.(*payload.Remove_Request))
+			req := data.(*payload.Remove_Request)
+			ctx, sspan := trace.StartSpan(ctx, apiName+".StreamRemove/id-"+req.GetId().GetId())
+			defer func() {
+				if sspan != nil {
+					sspan.End()
+				}
+			}()
+			res, err := s.Remove(ctx, req)
 			if err != nil {
 				st, ok := status.FromError(err)
 				if !ok {
 					st = status.New(codes.Internal, errors.Wrap(err, "failed to parse grpc status from error").Error())
 					err = errors.Wrap(st.Err(), err.Error())
+				}
+				if sspan != nil {
+					sspan.SetStatus(trace.StatusCodeInternal(err.Error()))
 				}
 				return &payload.Object_StreamLocation{
 					Payload: &payload.Object_StreamLocation_Status{
@@ -1010,6 +1647,15 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) error {
 				},
 			}, nil
 		})
+
+	if err != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
+		log.Error(err)
+		return err
+	}
+	return nil
 }
 
 func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequest) (locs *payload.Object_Locations, err error) {
@@ -1026,13 +1672,25 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 		if !req.GetConfig().GetSkipStrictExistCheck() {
 			sid, err := s.Exists(ctx, id)
 			if err != nil || sid == nil || len(sid.GetId()) == 0 {
-				err = errors.ErrObjectNotFound(err, id.GetId())
+				if err == nil {
+					err = errors.ErrObjectIDNotFound(id.GetId())
+				}
+				err = status.WrapWithNotFound(fmt.Sprintf("MultiRemove API ID = %v not found", id.GetId()), err,
+					&errdetails.RequestInfo{
+						RequestId:   id.GetId(),
+						ServingData: errdetails.Serialize(reqs),
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Exists",
+						ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
+						Owner:        errdetails.ValdResourceOwner,
+						Description:  err.Error(),
+					}, info.Get())
 				log.Error(err)
 				if span != nil {
 					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 				}
-				return nil, status.WrapWithNotFound(
-					fmt.Sprintf("MultiRemove API ID = %v not found", id.GetId()), err, info.Get())
+				return nil, err
 			}
 		}
 	}
@@ -1061,15 +1719,27 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 		return nil
 	})
 	if err != nil {
+		err = status.WrapWithInternal("MultiRemove API failed to remove", err,
+			&errdetails.RequestInfo{
+				RequestId:   strings.Join(ids, ","),
+				ServingData: errdetails.Serialize(reqs),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.MultiRemove",
+				ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
+			}, info.Get())
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("MultiRemove API failed to request uuids %v ", ids), err, info.Get())
+		return nil, err
 	}
 	return location.ReStructure(ids, locs), nil
 }
 
-func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (vec *payload.Object_Vector, err error) {
+func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorRequest) (vec *payload.Object_Vector, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".GetObject")
 	defer func() {
 		if span != nil {
@@ -1086,7 +1756,7 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (vec *pay
 				span.End()
 			}
 		}()
-		ovec, err := vc.GetObject(ctx, id, copts...)
+		ovec, err := vc.GetObject(ctx, req, copts...)
 		if err != nil {
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
@@ -1102,31 +1772,53 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_ID) (vec *pay
 		return nil
 	})
 	if err != nil || vec == nil || vec.GetId() == "" || vec.GetVector() == nil {
-		err = errors.ErrObjectNotFound(err, id.GetId())
+		err = errors.ErrObjectNotFound(err, req.GetId().GetId())
+		err = status.WrapWithNotFound("GetObject API failed to remove request", err,
+			&errdetails.RequestInfo{
+				RequestId:   req.GetId().GetId(),
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.GetObject",
+				ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
+			}, info.Get())
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
-		return nil, status.WrapWithNotFound(fmt.Sprintf("GetObject API uuid %s's object not found", vec.GetId()), err, info.Get())
+		return nil, err
 	}
 	return vec, nil
 }
 
-func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) error {
+func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err error) {
 	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamGetObject")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
+	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Object_ID) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
-			res, err := s.GetObject(ctx, data.(*payload.Object_ID))
+			req := data.(*payload.Object_VectorRequest)
+			ctx, sspan := trace.StartSpan(ctx, apiName+".StreamGetObject/id-"+req.GetId().GetId())
+			defer func() {
+				if sspan != nil {
+					sspan.End()
+				}
+			}()
+			res, err := s.GetObject(ctx, req)
 			if err != nil {
 				st, ok := status.FromError(err)
 				if !ok {
 					st = status.New(codes.Internal, errors.Wrap(err, "failed to parse grpc status from error").Error())
 					err = errors.Wrap(st.Err(), err.Error())
+				}
+				if sspan != nil {
+					sspan.SetStatus(trace.StatusCodeInternal(err.Error()))
 				}
 				return &payload.Object_StreamVector{
 					Payload: &payload.Object_StreamVector_Status{
@@ -1140,4 +1832,13 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) error
 				},
 			}, nil
 		})
+
+	if err != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
+		log.Error(err)
+		return err
+	}
+	return nil
 }

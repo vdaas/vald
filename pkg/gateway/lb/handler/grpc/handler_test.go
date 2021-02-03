@@ -2250,7 +2250,7 @@ func Test_server_GetObject(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx context.Context
-		id  *payload.Object_ID
+		req *payload.Object_VectorRequest
 	}
 	type fields struct {
 		eg                errgroup.Group
@@ -2288,7 +2288,7 @@ func Test_server_GetObject(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
-		           id: nil,
+		           req: nil,
 		       },
 		       fields: fields {
 		           eg: nil,
@@ -2309,7 +2309,7 @@ func Test_server_GetObject(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
-		           id: nil,
+		           req: nil,
 		           },
 		           fields: fields {
 		           eg: nil,
@@ -2347,7 +2347,7 @@ func Test_server_GetObject(t *testing.T) {
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
-			gotVec, err := s.GetObject(test.args.ctx, test.args.id)
+			gotVec, err := s.GetObject(test.args.ctx, test.args.req)
 			if err := test.checkFunc(test.want, gotVec, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}

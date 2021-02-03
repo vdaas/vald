@@ -26,7 +26,6 @@ import (
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability/trace"
 )
@@ -34,6 +33,7 @@ import (
 type Gateway interface {
 	Start(ctx context.Context) (<-chan error, error)
 	GetAgentCount(ctx context.Context) int
+	Addrs(ctx context.Context) []string
 	DoMulti(ctx context.Context, num int,
 		f func(ctx context.Context, tgt string, ac vald.Client, copts ...grpc.CallOption) error) error
 	BroadCast(ctx context.Context,
@@ -75,7 +75,6 @@ func (g *gateway) BroadCast(ctx context.Context,
 		default:
 			err = f(ictx, addr, vald.NewValdClient(conn), copts...)
 			if err != nil {
-				log.Debug(addr, err)
 				return err
 			}
 		}
@@ -94,7 +93,6 @@ func (g *gateway) DoMulti(ctx context.Context, num int,
 	var cur uint32 = 0
 	limit := uint32(num)
 	addrs := g.client.GetAddrs(sctx)
-	log.Debug("DoMulti", addrs)
 	err = g.client.GetClient().OrderedRange(sctx, addrs, func(ictx context.Context,
 		addr string,
 		conn *grpc.ClientConn,
@@ -102,7 +100,6 @@ func (g *gateway) DoMulti(ctx context.Context, num int,
 		if atomic.LoadUint32(&cur) < limit {
 			err = f(ictx, addr, vald.NewValdClient(conn), copts...)
 			if err != nil {
-				log.Debug(addr, err)
 				return err
 			}
 			atomic.AddUint32(&cur, 1)
@@ -116,5 +113,9 @@ func (g *gateway) DoMulti(ctx context.Context, num int,
 }
 
 func (g *gateway) GetAgentCount(ctx context.Context) int {
-	return len(g.client.GetAddrs(ctx))
+	return len(g.Addrs(ctx))
+}
+
+func (g *gateway) Addrs(ctx context.Context) []string {
+	return g.client.GetAddrs(ctx)
 }

@@ -22,16 +22,17 @@ import "time"
 var (
 	// tcp.
 
-	// ErrFailedInitDialer defines the init dialer error.
+	// ErrFailedInitDialer represents an error that the initialization of the dialer failed.
 	ErrFailedInitDialer = New("failed to init dialer")
-	// ErrInvalidDNSConfig defines the invalid DNS config error.
+
+	// ErrInvalidDNSConfig represents a function to generate an error that the configuration of the DNS is invalid.
 	ErrInvalidDNSConfig = func(dnsRefreshDur, dnsCacheExp time.Duration) error {
 		return Errorf("dnsRefreshDuration  > dnsCacheExp, %s, %s", dnsRefreshDur, dnsCacheExp)
 	}
 
 	// net.
 
-	// ErrNoPortAvailiable defines no port available error.
+	// ErrNoPortAvailable represents a function to generate an error that the port of the host is unavailable.
 	ErrNoPortAvailable = func(host string, start, end uint16) error {
 		return Errorf("no port available for Host: %s\tbetween %d ~ %d", host, start, end)
 	}

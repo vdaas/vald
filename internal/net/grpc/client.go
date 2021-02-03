@@ -46,6 +46,7 @@ type (
 type Client interface {
 	StartConnectionMonitor(ctx context.Context) (<-chan error, error)
 	Connect(ctx context.Context, addr string, dopts ...DialOption) (pool.Conn, error)
+	IsConnected(ctx context.Context, addr string) bool
 	Disconnect(ctx context.Context, addr string) error
 	Range(ctx context.Context,
 		f func(ctx context.Context,
@@ -105,7 +106,7 @@ type gRPCClient struct {
 	crl                 sync.Map // connection request list
 }
 
-const apiName = "vald/internal/net/grpc/"
+const apiName = "vald/internal/net/grpc"
 
 func New(opts ...Option) (c Client) {
 	g := &gRPCClient{
@@ -281,14 +282,14 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 
 func (g *gRPCClient) Range(ctx context.Context,
 	f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) (rerr error) {
-	sctx, span := trace.StartSpan(ctx, apiName+"Client.Range")
+	sctx, span := trace.StartSpan(ctx, apiName+"/Client.Range")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
 	g.conns.Range(func(addr string, p pool.Conn) bool {
-		ssctx, sspan := trace.StartSpan(sctx, apiName+"Client.Range/"+addr)
+		ssctx, sspan := trace.StartSpan(sctx, apiName+"/Client.Range/"+addr)
 		defer func() {
 			if sspan != nil {
 				sspan.End()
@@ -313,7 +314,7 @@ func (g *gRPCClient) Range(ctx context.Context,
 
 func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 	concurrency int, f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) error {
-	sctx, span := trace.StartSpan(ctx, apiName+"Client.RangeConcurrent")
+	sctx, span := trace.StartSpan(ctx, apiName+"/Client.RangeConcurrent")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -323,7 +324,7 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 	eg.Limitation(concurrency)
 	g.conns.Range(func(addr string, p pool.Conn) bool {
 		eg.Go(safety.RecoverFunc(func() (err error) {
-			ssctx, sspan := trace.StartSpan(sctx, apiName+"Client.RangeConcurrent/"+addr)
+			ssctx, sspan := trace.StartSpan(sctx, apiName+"/Client.RangeConcurrent/"+addr)
 			defer func() {
 				if sspan != nil {
 					sspan.End()
@@ -347,7 +348,7 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 
 func (g *gRPCClient) OrderedRange(ctx context.Context,
 	orders []string, f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) (rerr error) {
-	sctx, span := trace.StartSpan(ctx, apiName+"Client.OrderedRange")
+	sctx, span := trace.StartSpan(ctx, apiName+"/Client.OrderedRange")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -368,7 +369,7 @@ func (g *gRPCClient) OrderedRange(ctx context.Context,
 				log.Warn(errors.ErrGRPCClientConnNotFound(addr))
 				continue
 			}
-			ssctx, span := trace.StartSpan(sctx, apiName+"Client.OrderedRange/"+addr)
+			ssctx, span := trace.StartSpan(sctx, apiName+"/Client.OrderedRange/"+addr)
 			defer func() {
 				if span != nil {
 					span.End()
@@ -388,7 +389,7 @@ func (g *gRPCClient) OrderedRange(ctx context.Context,
 
 func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
 	orders []string, concurrency int, f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) (err error) {
-	sctx, span := trace.StartSpan(ctx, apiName+"Client.OrderedRangeConcurrent")
+	sctx, span := trace.StartSpan(ctx, apiName+"/Client.OrderedRangeConcurrent")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -409,7 +410,7 @@ func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
 				log.Warn(errors.ErrGRPCClientConnNotFound(addr))
 				return nil
 			}
-			ssctx, sspan := trace.StartSpan(sctx, apiName+"Client.OrderedRangeConcurrent/"+addr)
+			ssctx, sspan := trace.StartSpan(sctx, apiName+"/Client.OrderedRangeConcurrent/"+addr)
 			defer func() {
 				if sspan != nil {
 					sspan.End()
@@ -432,7 +433,7 @@ func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
 
 func (g *gRPCClient) RoundRobin(ctx context.Context, f func(ctx context.Context,
 	conn *ClientConn, copts ...CallOption) (interface{}, error)) (data interface{}, err error) {
-	sctx, span := trace.StartSpan(ctx, apiName+"Client.RoundRobin")
+	sctx, span := trace.StartSpan(ctx, apiName+"/Client.RoundRobin")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -444,7 +445,7 @@ func (g *gRPCClient) RoundRobin(ctx context.Context, f func(ctx context.Context,
 			if !ok {
 				return nil, false, errors.ErrGRPCClientNotFound
 			}
-			ictx, span := trace.StartSpan(ictx, apiName+"Client.RoundRobin/"+addr)
+			ictx, span := trace.StartSpan(ictx, apiName+"/Client.RoundRobin/"+addr)
 			defer func() {
 				if span != nil {
 					span.End()
@@ -474,7 +475,7 @@ func (g *gRPCClient) RoundRobin(ctx context.Context, f func(ctx context.Context,
 func (g *gRPCClient) Do(ctx context.Context, addr string,
 	f func(ctx context.Context,
 		conn *ClientConn, copts ...CallOption) (interface{}, error)) (data interface{}, err error) {
-	sctx, span := trace.StartSpan(ctx, apiName+"Client.Do/"+addr)
+	sctx, span := trace.StartSpan(ctx, apiName+"/Client.Do/"+addr)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -499,7 +500,7 @@ func (g *gRPCClient) do(ctx context.Context, p pool.Conn, addr string, enableBac
 		log.Warn(err)
 		return nil, err
 	}
-	sctx, span := trace.StartSpan(ctx, apiName+"Client.do/"+addr)
+	sctx, span := trace.StartSpan(ctx, apiName+"/Client.do/"+addr)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -546,7 +547,7 @@ func (g *gRPCClient) GetCallOption() []CallOption {
 }
 
 func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOption) (conn pool.Conn, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+"Client.Connect/"+addr)
+	ctx, span := trace.StartSpan(ctx, apiName+"/Client.Connect/"+addr)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -607,7 +608,7 @@ func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOpti
 			}
 			return nil, err
 		}
-		if conn == nil {
+		if conn == nil || !conn.IsHealthy(ctx) {
 			return nil, errors.ErrGRPCClientConnNotFound(addr)
 		}
 		atomic.AddUint64(&g.clientCount, 1)
@@ -621,8 +622,16 @@ func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOpti
 	return conn, nil
 }
 
+func (g *gRPCClient) IsConnected(ctx context.Context, addr string) bool {
+	p, ok := g.conns.Load(addr)
+	if !ok || p == nil {
+		return false
+	}
+	return p.IsHealthy(ctx)
+}
+
 func (g *gRPCClient) Disconnect(ctx context.Context, addr string) error {
-	ctx, span := trace.StartSpan(ctx, apiName+"Client.Disconnect/"+addr)
+	ctx, span := trace.StartSpan(ctx, apiName+"/Client.Disconnect/"+addr)
 	defer func() {
 		if span != nil {
 			span.End()

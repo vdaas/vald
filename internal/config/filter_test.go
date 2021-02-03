@@ -26,8 +26,11 @@ import (
 )
 
 func TestEgressFilter_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
-		Client *GRPCClient
+		Client          *GRPCClient
+		DistanceFilters []string
+		ObjectFilters   []string
 	}
 	type want struct {
 		want *EgressFilter
@@ -53,6 +56,8 @@ func TestEgressFilter_Bind(t *testing.T) {
 		       name: "test_case_1",
 		       fields: fields {
 		           Client: GRPCClient{},
+		           DistanceFilters: nil,
+		           ObjectFilters: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -66,6 +71,8 @@ func TestEgressFilter_Bind(t *testing.T) {
 		           name: "test_case_2",
 		           fields: fields {
 		           Client: GRPCClient{},
+		           DistanceFilters: nil,
+		           ObjectFilters: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -74,8 +81,11 @@ func TestEgressFilter_Bind(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -86,7 +96,9 @@ func TestEgressFilter_Bind(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			e := &EgressFilter{
-				Client: test.fields.Client,
+				Client:          test.fields.Client,
+				DistanceFilters: test.fields.DistanceFilters,
+				ObjectFilters:   test.fields.ObjectFilters,
 			}
 
 			got := e.Bind()
@@ -98,12 +110,14 @@ func TestEgressFilter_Bind(t *testing.T) {
 }
 
 func TestIngressFilter_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
-		Client *GRPCClient
-		Search []string
-		Insert []string
-		Update []string
-		Upsert []string
+		Client        *GRPCClient
+		Vectorizer    string
+		SearchFilters []string
+		InsertFilters []string
+		UpdateFilters []string
+		UpsertFilters []string
 	}
 	type want struct {
 		want *IngressFilter
@@ -118,7 +132,7 @@ func TestIngressFilter_Bind(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *IngressFilter) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got = %v, want %v", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -129,10 +143,11 @@ func TestIngressFilter_Bind(t *testing.T) {
 		       name: "test_case_1",
 		       fields: fields {
 		           Client: GRPCClient{},
-		           Search: nil,
-		           Insert: nil,
-		           Update: nil,
-		           Upsert: nil,
+		           Vectorizer: "",
+		           SearchFilters: nil,
+		           InsertFilters: nil,
+		           UpdateFilters: nil,
+		           UpsertFilters: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -146,10 +161,11 @@ func TestIngressFilter_Bind(t *testing.T) {
 		           name: "test_case_2",
 		           fields: fields {
 		           Client: GRPCClient{},
-		           Search: nil,
-		           Insert: nil,
-		           Update: nil,
-		           Upsert: nil,
+		           Vectorizer: "",
+		           SearchFilters: nil,
+		           InsertFilters: nil,
+		           UpdateFilters: nil,
+		           UpsertFilters: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -158,9 +174,11 @@ func TestIngressFilter_Bind(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -171,11 +189,12 @@ func TestIngressFilter_Bind(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			i := &IngressFilter{
-				Client: test.fields.Client,
-				Search: test.fields.Search,
-				Insert: test.fields.Insert,
-				Update: test.fields.Update,
-				Upsert: test.fields.Upsert,
+				Client:        test.fields.Client,
+				Vectorizer:    test.fields.Vectorizer,
+				SearchFilters: test.fields.SearchFilters,
+				InsertFilters: test.fields.InsertFilters,
+				UpdateFilters: test.fields.UpdateFilters,
+				UpsertFilters: test.fields.UpsertFilters,
 			}
 
 			got := i.Bind()

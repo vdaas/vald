@@ -51,10 +51,8 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	var metadata service.Meta
 
-	metadataClientOptions := append(
-		cfg.Meta.Client.Opts(),
-		grpc.WithErrGroup(eg),
-	)
+	mopts := cfg.Meta.Client.Opts()
+	copts := cfg.Client.Opts()
 
 	var obs observability.Observability
 	if cfg.Observability.Enabled {
@@ -62,8 +60,14 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		if err != nil {
 			return nil, err
 		}
-		metadataClientOptions = append(
-			metadataClientOptions,
+		copts = append(
+			copts,
+			grpc.WithDialOptions(
+				grpc.WithStatsHandler(metric.NewClientHandler()),
+			),
+		)
+		mopts = append(
+			mopts,
 			grpc.WithDialOptions(
 				grpc.WithStatsHandler(metric.NewClientHandler()),
 			),
@@ -75,7 +79,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 	metadata, err = service.New(
 		service.WithMetaClient(
-			grpc.New(metadataClientOptions...),
+			grpc.New(mopts...),
 		),
 		service.WithMetaCacheEnabled(cfg.Meta.EnableCache),
 		service.WithMetaCacheExpireDuration(cfg.Meta.CacheExpiration),
@@ -91,7 +95,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	c, err := client.New(
 		client.WithAddrs(cfg.Client.Addrs...),
-		client.WithClient(grpc.New(cfg.Client.Opts()...)),
+		client.WithClient(grpc.New(copts...)),
 	)
 	if err != nil {
 		return nil, err
@@ -141,7 +145,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		starter.WithGRPC(func(sc *config.Server) []server.Option {
 			return grpcServerOptions
 		}),
-		// TODO add GraphQL handler
 	)
 	if err != nil {
 		return nil, err

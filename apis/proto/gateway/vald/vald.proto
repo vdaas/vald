@@ -24,7 +24,7 @@ option java_package = "org.vdaas.vald.gateway.vald";
 option java_outer_classname = "ValdApi";
 
 import "apis/proto/payload/payload.proto";
-import "google/api/annotations.proto";
+import "github.com/googleapis/googleapis/google/api/annotations.proto";
 
 service Vald {
   rpc Exists(payload.Object.ID) returns (payload.Object.ID) {

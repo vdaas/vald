@@ -21,10 +21,10 @@ metadata:
   labels:
     app: vald-discoverer
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v0.0.66
+    helm.sh/chart: vald-v1.0.0
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v0.0.66
+    app.kubernetes.io/version: v1.0.0
     app.kubernetes.io/component: discoverer
 spec:
   progressDeadlineSeconds: 600
@@ -47,7 +47,7 @@ spec:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/component: discoverer
       annotations:
-        checksum/configmap: f8221b17e94929be80537b2b69733bbc3b8351ebb0cab426f2deb02595fe34c5
+        checksum/configmap: a4b08f98216b5ad968864176d861c65165595bd731d1887adeeb3fa30af2539e
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-discoverer
@@ -116,6 +116,16 @@ spec:
               memory: 50Mi
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 2002
+            runAsNonRoot: true
+            runAsUser: 1002
           env:
             - name: MY_POD_NAMESPACE
               valueFrom:
@@ -127,9 +137,13 @@ spec:
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
-      serviceAccount: vald
       serviceAccountName: vald
-      securityContext: {}
+      securityContext:
+        fsGroup: 3002
+        fsGroupChangePolicy: OnRootMismatch
+        runAsGroup: 2002
+        runAsNonRoot: true
+        runAsUser: 1002
       terminationGracePeriodSeconds: 30
       volumes:
         - name: vald-discoverer-config

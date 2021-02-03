@@ -171,7 +171,9 @@ func load(path string) (ids []string, train, test [][]float32, err error) {
 		row, dim := int(dims[0]), int(dims[1])
 
 		// Gets the stored vector. All are represented as one-dimensional arrays.
-		vec := make([]float64, sp.SimpleExtentNPoints())
+		// The type of the slice depends on your dataset.
+		// For fashion-mnist-784-euclidean.hdf5, the datatype is float32.
+		vec := make([]float32, sp.SimpleExtentNPoints())
 		if err := d.Read(&vec); err != nil {
 			return nil, err
 		}

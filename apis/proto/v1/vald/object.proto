@@ -39,9 +39,9 @@ service Object {
   rpc Exists(payload.v1.Object.ID) returns (payload.v1.Object.ID) {
     option (google.api.http).get = "/exists/{id}";
   }
-  rpc GetObject(payload.v1.Object.ID) returns (payload.v1.Object.Vector) {
-    option (google.api.http).get = "/object/{id}";
+  rpc GetObject(payload.v1.Object.VectorRequest) returns (payload.v1.Object.Vector) {
+    option (google.api.http).get = "/object/{id.id}";
   }
-  rpc StreamGetObject(stream payload.v1.Object.ID)
+  rpc StreamGetObject(stream payload.v1.Object.VectorRequest)
       returns (stream payload.v1.Object.StreamVector) {}
 }

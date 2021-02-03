@@ -27,6 +27,10 @@ spec:
     metadata:
       labels:
         name: promtail
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "80"
     spec:
       containers:
         - args:
@@ -134,6 +138,8 @@ data:
                 grpcKind: details.grpc.kind
                 grpcService: details.grpc.service
                 grpcMethod: details.grpc.method
+                startTime: details.startTime
+                EndTime: details.endTime
                 latency: details.latency
                 traceID: details.traceID
           - labels:
@@ -145,10 +151,10 @@ data:
           - metrics:
               grpc_latency:
                 type: Histogram
-                description: "gRPC latency"
+                description: "gRPC latency (ns)"
                 source: latency
                 config:
-                  buckets: [0,0.01,0.02,0.03,0.05,0.08,0.1,0.5,1,10,100,1000,10000]
+                  buckets: [0,10000000,20000000,30000000,50000000,80000000,100000000,500000000,1000000000,10000000000,100000000000,1000000000000]
         relabel_configs:
           - source_labels:
             - __meta_kubernetes_pod_label_name

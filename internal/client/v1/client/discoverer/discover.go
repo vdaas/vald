@@ -32,7 +32,6 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
-	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/safety"
 )
 
@@ -91,9 +90,6 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 				c.opts,
 				grpc.WithAddrs(addrs...),
 				grpc.WithErrGroup(c.eg),
-				grpc.WithDialOptions(
-					grpc.WithStatsHandler(metric.NewClientHandler()),
-				),
 			)...,
 		)
 		if c.client != nil {
@@ -226,7 +222,6 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 	if c.dscClient == nil || (c.autoconn && c.client == nil) {
 		return errors.ErrGRPCClientNotFound
 	}
-	log.Debug("starting discoverer discovery")
 	connected := make([]string, 0, len(c.GetAddrs(ctx)))
 	var cur sync.Map
 	if _, err = c.dscClient.RoundRobin(ctx, func(ictx context.Context,
@@ -341,7 +336,5 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 			return err
 		}
 	}
-
-	log.Debug("finished discoverer discovery")
 	return nil
 }

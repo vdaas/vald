@@ -21,10 +21,10 @@ metadata:
   labels:
     app: vald-meta-gateway
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v0.0.62
+    helm.sh/chart: vald-v1.0.0
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v0.0.62
+    app.kubernetes.io/version: v1.0.0
     app.kubernetes.io/component: gateway
 spec:
   progressDeadlineSeconds: 600
@@ -46,7 +46,7 @@ spec:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/component: gateway
       annotations:
-        checksum/configmap: c3f09585a4920380c6d23df27c7450b5b4f06ff8e02b974311cdc7c720f83567
+        checksum/configmap: a0d91e238a93f995dc280dcef2df6afb367ddc007120f3c1e8a193ed2c676e6c
     spec:
       initContainers:
         - name: wait-for-meta
@@ -135,13 +135,28 @@ spec:
               memory: 150Mi
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 2002
+            runAsNonRoot: true
+            runAsUser: 1002
           volumeMounts:
             - name: vald-meta-gateway-config
               mountPath: /etc/server/
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
-      securityContext: {}
+      securityContext:
+        fsGroup: 3002
+        fsGroupChangePolicy: OnRootMismatch
+        runAsGroup: 2002
+        runAsNonRoot: true
+        runAsUser: 1002
       terminationGracePeriodSeconds: 30
       volumes:
         - name: vald-meta-gateway-config

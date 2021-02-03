@@ -53,10 +53,8 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, errors.ErrInvalidBackupConfig
 	}
 
-	backupClientOptions := append(
-		cfg.Backup.Opts(),
-		grpc.WithErrGroup(eg),
-	)
+	bopts := cfg.Backup.Opts()
+	copts := cfg.Client.Opts()
 
 	var obs observability.Observability
 	if cfg.Observability.Enabled {
@@ -64,15 +62,21 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		if err != nil {
 			return nil, err
 		}
-		backupClientOptions = append(
-			backupClientOptions,
+		bopts = append(
+			bopts,
+			grpc.WithDialOptions(
+				grpc.WithStatsHandler(metric.NewClientHandler()),
+			),
+		)
+		copts = append(
+			copts,
 			grpc.WithDialOptions(
 				grpc.WithStatsHandler(metric.NewClientHandler()),
 			),
 		)
 	}
 
-	backup, err := compressor.New(compressor.WithClient(grpc.New(backupClientOptions...)))
+	backup, err := compressor.New(compressor.WithClient(grpc.New(bopts...)))
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +87,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	c, err := client.New(
 		client.WithAddrs(cfg.Client.Addrs...),
-		client.WithClient(grpc.New(cfg.Client.Opts()...)),
+		client.WithClient(grpc.New(copts...)),
 	)
 	if err != nil {
 		return nil, err
