@@ -591,7 +591,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				}
 				return nil, err
 			}
-			if reqs.Requests[i] != nil {
+			if reqs.Requests[i].GetConfig() != nil {
 				reqs.Requests[i].Config.SkipStrictExistCheck = true
 			} else {
 				reqs.Requests[i].Config = &payload.Insert_Config{SkipStrictExistCheck: true}
@@ -1374,7 +1374,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 		}
 	}()
 	ids := make([]string, 0, len(reqs.GetRequests()))
-	for _, req := range reqs.GetRequests() {
+	for i, req := range reqs.GetRequests() {
 		id := req.GetId()
 		ids = append(ids, id.GetId())
 		if !req.GetConfig().GetSkipStrictExistCheck() {
@@ -1399,6 +1399,11 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 				}
 				return nil, err
+			}
+			if reqs.Requests[i].GetConfig() != nil {
+				reqs.Requests[i].Config.SkipStrictExistCheck = true
+			} else {
+				reqs.Requests[i].Config = &payload.Remove_Config{SkipStrictExistCheck: true}
 			}
 		}
 	}
