@@ -275,7 +275,7 @@ k8s/external/scylla/deploy: \
 	kubectl wait -n scylla-operator-system --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=scylla-operator-controller-manager-0 --timeout=600s
 	kubectl -n scylla-operator-system get pod
 	kubectl apply -f $(K8S_EXTERNAL_SCYLLA_MANIFEST)
-	sleep 2
+	sleep $(K8S_SLEEP_DURATION_FOR_WAIT_COMMAND)
 	kubectl -n scylla get ScyllaCluster
 	kubectl -n scylla get pods
 	sleep 1
