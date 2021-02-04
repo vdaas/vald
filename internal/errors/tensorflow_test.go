@@ -19,9 +19,12 @@ package errors
 import (
 	"math"
 	"testing"
+
+	"go.uber.org/goleak"
 )
 
 func TestErrFailedToCastTF(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		v interface{}
 	}
@@ -179,8 +182,11 @@ func TestErrFailedToCastTF(t *testing.T) {
 			},
 		},
 	}
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -200,6 +206,7 @@ func TestErrFailedToCastTF(t *testing.T) {
 }
 
 func TestErrInputLength(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		iLength int
 		fLength int
@@ -260,8 +267,11 @@ func TestErrInputLength(t *testing.T) {
 			},
 		},
 	}
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -281,6 +291,7 @@ func TestErrInputLength(t *testing.T) {
 }
 
 func TestErrNilTensorTF(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		v interface{}
 	}
@@ -438,8 +449,11 @@ func TestErrNilTensorTF(t *testing.T) {
 			},
 		},
 	}
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -459,6 +473,7 @@ func TestErrNilTensorTF(t *testing.T) {
 }
 
 func TestErrNilTensorValueTF(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		v interface{}
 	}
@@ -616,8 +631,11 @@ func TestErrNilTensorValueTF(t *testing.T) {
 			},
 		},
 	}
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
