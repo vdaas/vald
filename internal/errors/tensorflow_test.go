@@ -253,8 +253,7 @@ func TestErrInputLength(t *testing.T) {
 		},
 		{
 			name: "return an ErrInputLength error when i and f is zero value",
-			args: args{
-			},
+			args: args{},
 			want: want{
 				want: Errorf("inputs length %d does not match feeds length %d", 0, 0),
 			},
@@ -279,7 +278,7 @@ func TestErrInputLength(t *testing.T) {
 		})
 	}
 }
-func TestErrNilTensorTF(t *testing.T)      {
+func TestErrNilTensorTF(t *testing.T) {
 	type args struct {
 		v interface{}
 	}
