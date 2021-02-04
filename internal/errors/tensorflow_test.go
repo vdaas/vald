@@ -198,6 +198,7 @@ func TestErrFailedToCastTF(t *testing.T) {
 		})
 	}
 }
+
 func TestErrInputLength(t *testing.T) {
 	type args struct {
 		iLength int
@@ -278,6 +279,7 @@ func TestErrInputLength(t *testing.T) {
 		})
 	}
 }
+
 func TestErrNilTensorTF(t *testing.T) {
 	type args struct {
 		v interface{}
@@ -455,6 +457,7 @@ func TestErrNilTensorTF(t *testing.T) {
 		})
 	}
 }
+
 func TestErrNilTensorValueTF(t *testing.T) {
 	type args struct {
 		v interface{}
