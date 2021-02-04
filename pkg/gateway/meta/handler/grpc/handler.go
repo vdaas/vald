@@ -567,7 +567,11 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 			}
 			return nil, err
 		}
-		req.Config.SkipStrictExistCheck = true
+		if req.GetConfig() != nil {
+			req.Config.SkipStrictExistCheck = true
+		} else {
+			req.Config = &payload.Insert_Config{SkipStrictExistCheck: true}
+		}
 	}
 	uuid := fuid.String()
 	req.Vector.Id = uuid
@@ -756,7 +760,11 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				}
 				return nil, err
 			}
-			reqs.Requests[i].Config.SkipStrictExistCheck = true
+			if reqs.Requests[i] != nil {
+				reqs.Requests[i].Config.SkipStrictExistCheck = true
+			} else {
+				reqs.Requests[i].Config = &payload.Insert_Config{SkipStrictExistCheck: true}
+			}
 		}
 
 		uuid := fuid.String()
@@ -1326,7 +1334,11 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 		return nil, err
 	}
 
-	req.Id.Id = uuid
+	if req.GetId() != nil {
+		req.Id.Id = uuid
+	} else {
+		req.Id = &payload.Object_ID{Id: uuid}
+	}
 	loc, err = s.gateway.Remove(ctx, req, s.copts...)
 	if err != nil {
 		err = status.WrapWithInternal("Remove API failed to remove request", err,
@@ -1449,7 +1461,11 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 		return nil, err
 	}
 	for i, id := range uuids {
-		reqs.Requests[i].Id.Id = id
+		if reqs.Requests[i].GetId() != nil {
+			reqs.Requests[i].Id.Id = id
+		} else {
+			reqs.Requests[i].Id = &payload.Object_ID{Id: id}
+		}
 	}
 	locs, err = s.gateway.MultiRemove(ctx, reqs, s.copts...)
 	if err != nil {
@@ -1519,7 +1535,11 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 		}
 		return nil, err
 	}
-	req.Id.Id = uuid
+	if req.GetId() != nil {
+		req.Id.Id = uuid
+	} else {
+		req.Id = &payload.Object_ID{Id: uuid}
+	}
 	vec, err = s.gateway.GetObject(ctx, req, s.copts...)
 	if err != nil {
 		err = status.WrapWithNotFound("GetObject API failed to get Object", err,
