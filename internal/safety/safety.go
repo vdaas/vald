@@ -44,7 +44,7 @@ func recoverFunc(fn func() error, withPanic bool) func() error {
 				case runtime.Error:
 					err = errors.ErrRuntimeError(err, x)
 					if withPanic {
-						log.Errorf("recovered but this thread going to panic: the reason is runtimer.Error\nerror: %v\ninfo:\n%s\nstacktrace:\n%s", err, info.Get().String(), stack)
+						log.Errorf("recovered but this thread is going to panic: the reason is runtimer.Error\nerror: %v\ninfo:\n%s\nstacktrace:\n%s", err, info.Get().String(), stack)
 
 						panic(err)
 					}
