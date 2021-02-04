@@ -94,6 +94,107 @@
 - [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob//charts/vald-helm-operator/README.md)
 
 ### Changes
+- bugfix lb-gateway's Insert rpc nil pointer panic ([#980](https://github.com/vdaas/vald/pull/980))
+- Implement internal/errors/worker test ([#952](https://github.com/vdaas/vald/pull/952))
+- create test for internal/errors/errors.go ([#929](https://github.com/vdaas/vald/pull/929))
+- Add test case for internal/errors/net.go ([#969](https://github.com/vdaas/vald/pull/969))
+- :robot: Automatically update k8s manifests ([#975](https://github.com/vdaas/vald/pull/975))
+
+
+## 
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverer k8s</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateway</td>
+    <td>
+      <code>docker pull vdaas/vald-gateway:</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-gateway:</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Backup manager MySQL</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-backup-mysql:</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-backup-mysql:</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Backup manager Cassandra</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-backup-cassandra:</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-backup-cassandra:</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Compressor</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-compressor:</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-compressor:</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Meta Redis</td>
+    <td>
+      <code>docker pull vdaas/vald-meta-redis:</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-redis:</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Meta Cassandra</td>
+    <td>
+      <code>docker pull vdaas/vald-meta-cassandra:</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-cassandra:</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob//charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob//charts/vald-helm-operator/README.md)
+
+### Changes
 - v1.0.0 Release ([#974](https://github.com/vdaas/vald/pull/974))
 - Bug fix for gateway ([#963](https://github.com/vdaas/vald/pull/963))
 - Add test case for internal/errors/ngt.go ([#936](https://github.com/vdaas/vald/pull/936))
