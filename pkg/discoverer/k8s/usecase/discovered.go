@@ -22,6 +22,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/discoverer"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/net/tcp"
@@ -51,6 +52,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
 	der, err := tcp.NewDialer(cfg.Discoverer.TCP.Opts()...)
 	if err != nil {
+		log.Error(err)
 		return nil, err
 	}
 	dsc, err := service.New(
@@ -135,7 +137,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 }
 
 func (r *run) PreStart(ctx context.Context) error {
-	r.der.StartDialerCache(ctx)
+	if r.der != nil {
+		r.der.StartDialerCache(ctx)
+	}
 	if r.observability != nil {
 		return r.observability.PreStart(ctx)
 	}

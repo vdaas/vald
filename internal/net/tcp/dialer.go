@@ -150,6 +150,7 @@ func (d *dialer) lookup(ctx context.Context, host string) (*dialerCache, error) 
 		dc.ips = append(dc.ips, ip.String())
 	}
 
+	log.Infof("lookup succeed %v", dc.ips)
 	d.cache.Set(host, dc)
 	return dc, nil
 }
@@ -235,7 +236,11 @@ func (d *dialer) dial(ctx context.Context, network, addr string) (conn net.Conn,
 	if d.tlsConfig != nil {
 		return d.tlsHandshake(ctx, conn, addr)
 	}
-
+	log.Infof("connected to addr %s succeed from %s://%s to %s://%s",
+		addr,
+		conn.LocalAddr().Network(), conn.LocalAddr().String(),
+		conn.RemoteAddr().Network(), conn.RemoteAddr().String(),
+	)
 	return conn, nil
 }
 
@@ -292,7 +297,7 @@ func (d *dialer) tlsHandshake(ctx context.Context, conn net.Conn, addr string) (
 		}(conn)
 		return nil, err
 	}
-	log.Debugf("tls handshake addr %s succeed from %s://%s to %s://%s,\tconnectionstate: [ Version:%s, ServerName: %s, HandshakeComplete: %v, DidResume: %v, NegotiatedProtocol: %s ]",
+	log.Infof("tls handshake addr %s succeed from %s://%s to %s://%s,\tconnectionstate: [ Version:%s, ServerName: %s, HandshakeComplete: %v, DidResume: %v, NegotiatedProtocol: %s ]",
 		addr,
 		tconn.LocalAddr().Network(), tconn.LocalAddr().String(),
 		tconn.RemoteAddr().Network(), tconn.RemoteAddr().String(),

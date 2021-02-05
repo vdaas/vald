@@ -74,6 +74,7 @@ func New(opts ...Option) (dsc Discoverer, err error) {
 	d.podsByName.Store(make(map[string][]*payload.Info_Pod))
 	d.nodeByName.Store(make(map[string]*payload.Info_Node))
 	d.ctrl, err = k8s.New(
+		k8s.WithDialer(d.der),
 		k8s.WithControllerName("vald k8s agent discoverer"),
 		k8s.WithDisableLeaderElection(),
 		k8s.WithResourceController(mnode.New(
