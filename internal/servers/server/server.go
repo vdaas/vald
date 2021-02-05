@@ -298,6 +298,7 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 		ech := make(chan error, 1)
 		s.wg.Add(1)
 		s.eg.Go(safety.RecoverFunc(func() (err error) {
+			defer close(ech)
 			log.Infof("server %s executing preStopFunc", s.name)
 			err = s.preStopFunc()
 			if err != nil {
@@ -306,7 +307,6 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 				case ech <- nil:
 				}
 			}
-			close(ech)
 			s.wg.Done()
 			select {
 			case <-ctx.Done():
