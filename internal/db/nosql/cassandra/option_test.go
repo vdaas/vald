@@ -182,7 +182,8 @@ func TestWithDialer(t *testing.T) {
 				},
 				want: want{
 					obj: &T{
-						dialer: dm,
+						dialer:    dm,
+						rawDialer: dm,
 					},
 				},
 			}

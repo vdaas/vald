@@ -19,7 +19,6 @@ package tcp
 
 import (
 	"context"
-	"crypto/tls"
 	stderrors "errors"
 	"fmt"
 	"io/ioutil"
@@ -38,9 +37,11 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/vdaas/vald/internal/cache"
 	"github.com/vdaas/vald/internal/cache/gache"
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/tls"
 	"go.uber.org/goleak"
 )
 
@@ -263,7 +264,7 @@ func TestNewDialer(t *testing.T) {
 		got := gotDer.(*dialer)
 		opts := []cmp.Option{
 			cmp.AllowUnexported(*want),
-			cmpopts.IgnoreFields(*want, "dialer", "der", "addrs"),
+			cmpopts.IgnoreFields(*want, "dialer", "der", "addrs", "eg"),
 			cmp.Comparer(func(x, y cache.Cache) bool {
 				if x == nil && y == nil {
 					return true
@@ -289,10 +290,11 @@ func TestNewDialer(t *testing.T) {
 	tests := []test{
 		func() test {
 			d := &net.Dialer{
-				Timeout:   time.Second * 30,
-				KeepAlive: time.Second * 30,
-				DualStack: true,
-				Control:   Control,
+				Timeout:       0,
+				KeepAlive:     time.Second * 30,
+				FallbackDelay: time.Millisecond * 300,
+				DualStack:     true,
+				Control:       Control,
 			}
 			d.Resolver = &net.Resolver{
 				PreferGo: false,
@@ -303,11 +305,13 @@ func TestNewDialer(t *testing.T) {
 				name: "returns dialer when option is empty",
 				want: want{
 					wantDer: &dialer{
-						dialerKeepAlive: time.Second * 30,
-						dialerTimeout:   time.Second * 30,
-						dialerDualStack: true,
-						der:             d,
-						dialer:          d.DialContext,
+						dialerKeepAlive:     time.Second * 30,
+						dialerTimeout:       0,
+						dialerFallbackDelay: time.Millisecond * 300,
+						dialerDualStack:     true,
+						der:                 d,
+						dialer:              d.DialContext,
+						eg:                  errgroup.Get(),
 					},
 				},
 			}
@@ -339,7 +343,8 @@ func TestNewDialer(t *testing.T) {
 				want: want{
 					wantDer: &dialer{
 						dialerKeepAlive:       time.Second * 30,
-						dialerTimeout:         time.Second * 30,
+						dialerTimeout:         0,
+						dialerFallbackDelay:   time.Millisecond * 300,
 						dnsRefreshDuration:    time.Second * 5,
 						dnsCacheExpiration:    time.Second * 10,
 						dnsRefreshDurationStr: "5s",
@@ -974,7 +979,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 			args: args{
 				dctx:    context.Background(),
 				network: "tcp",
-				addr:    "google.com:80",
+				addr:    "google.com:443",
 			},
 			fields: fields{
 				der: &net.Dialer{
@@ -1075,25 +1080,27 @@ func Test_dialer_cachedDialer(t *testing.T) {
 			srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(200)
 			}))
-
 			host, port, _ := net.SplitHostPort(srv.URL[len("https://"):])
 
-			addr := "invalid_ip"
-
+			addr := host + ":" + strconv.FormatUint(uint64(port), 10)
 			// set the hostname 'invalid_ip' to the host name of the cache with the test server ip address
-			cache, _ := cache.New()
+			cache, err := cache.New()
+			if err != nil {
+				t.Error(err)
+			}
 			cache.Set(addr, &dialerCache{
 				ips: []string{
 					host,
 				},
 			})
+			tcfg, _ := tls.NewClientConfig(tls.WithInsecureSkipVerify(true))
 
 			return test{
 				name: "return cached ip tls connection",
 				args: args{
 					dctx:    context.Background(),
 					network: "tcp",
-					addr:    addr + ":" + strconv.FormatUint(uint64(port), 10),
+					addr:    addr,
 				},
 				fields: fields{
 					der: &net.Dialer{
@@ -1101,13 +1108,14 @@ func Test_dialer_cachedDialer(t *testing.T) {
 							PreferGo: false,
 						},
 					},
-					cache:     cache,
-					dnsCache:  true,
-					tlsConfig: new(tls.Config),
+					cache:    cache,
+					dnsCache: true,
+					// tlsConfig: srv.Config.TLSConfig,
+					tlsConfig: tcfg,
 				},
 				checkFunc: func(d *dialer, w want, gotConn net.Conn, err error) error {
 					if err != nil {
-						return errors.New("err is not nil")
+						return errors.Wrap(err, "err is not nil")
 					}
 					if gotConn == nil {
 						return errors.New("conn is nil")
@@ -1396,6 +1404,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 				dialerDualStack:       test.fields.dialerDualStack,
 				der:                   test.fields.der,
 				dialer:                test.fields.dialer,
+				eg:                    errgroup.Get(),
 			}
 
 			gotConn, gotErr := d.cachedDialer(test.args.dctx, test.args.network, test.args.addr)
@@ -1460,7 +1469,7 @@ func Test_dialer_dial(t *testing.T) {
 			args: args{
 				ctx:     context.Background(),
 				network: "tcp",
-				addr:    "google.com:80",
+				addr:    "google.com:443",
 			},
 			fields: fields{
 				tlsConfig: new(tls.Config),
@@ -1600,6 +1609,7 @@ func Test_dialer_dial(t *testing.T) {
 			d := &dialer{
 				tlsConfig: test.fields.tlsConfig,
 				der:       test.fields.der,
+				eg:        errgroup.Get(),
 			}
 
 			got, err := d.dial(test.args.ctx, test.args.network, test.args.addr)
