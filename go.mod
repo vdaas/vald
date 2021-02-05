@@ -5,7 +5,7 @@ go 1.15
 replace (
 	cloud.google.com/go => cloud.google.com/go v0.76.0
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0+incompatible
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.37.3
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.37.5
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
@@ -45,7 +45,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.1
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/fsnotify/fsnotify v1.4.9
-	github.com/go-redis/redis/v8 v8.4.11
+	github.com/go-redis/redis/v8 v8.5.0
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gocql/gocql v0.0.0-20200131111108-92af2e088537
 	github.com/gocraft/dbr/v2 v2.7.1
@@ -78,8 +78,8 @@ require (
 	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/plot v0.8.1
-	google.golang.org/api v0.38.0
-	google.golang.org/genproto v0.0.0-20210203152818-3206188e46ba
+	google.golang.org/api v0.39.0
+	google.golang.org/genproto v0.0.0-20210204154452-deb828366460
 	google.golang.org/grpc v1.35.0
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.20.2

@@ -248,6 +248,7 @@ func (d *dialer) tlsHandshake(ctx context.Context, conn net.Conn, addr string) (
 	tconn = tls.Client(conn, d.tlsConfig)
 	ech := make(chan error)
 	d.eg.Go(safety.RecoverFunc(func() error {
+		defer close(ech)
 		select {
 		case <-tctx.Done():
 		case ech <- tconn.Handshake(): // wait for tls handshake connection
@@ -256,7 +257,7 @@ func (d *dialer) tlsHandshake(ctx context.Context, conn net.Conn, addr string) (
 	}))
 	select {
 	case <-tctx.Done():
-		err = tctx.Err()
+		err = tctx.Err() // if Handshake timeout we should cancel rawconnection
 	case err = <-ech:
 		if err != nil {
 			terr := tctx.Err()
