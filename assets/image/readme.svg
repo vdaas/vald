@@ -8,13 +8,6 @@
 	.st2{fill:url(#SVGID_2_);}
 	.st3{fill:url(#SVGID_3_);}
 	.st4{fill:url(#SVGID_4_);}
-	@media (prefers-color-scheme: dark) {
-	.st0{fill:#ffffff;}
-	.st1{fill:#ffffff;}
-	.st2{fill:#ffffff;}
-	.st3{fill:#ffffff;}
-	.st4{fill:#ffffff;}
-}
 </style>
 <g>
 	<g>
