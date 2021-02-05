@@ -22,9 +22,9 @@ defaults:
   time_zone: UTC
   # @schema {"name": "defaults.logging", "type": "object", "anchor": "logging"}
   logging:
-    # @schema {"name": "defaults.logging.logger", "type": "string", "enum": ["glg"]}
+    # @schema {"name": "defaults.logging.logger", "type": "string", "enum": ["glg", "zap"]}
     # defaults.logging.logger -- logger name.
-    # currently logger must be `glg`.
+    # currently logger must be `glg` or `zap`.
     logger: glg
     # @schema {"name": "defaults.logging.level", "type": "string", "enum": ["debug", "info", "warn", "error", "fatal"]}
     # defaults.logging.level -- logging level.
