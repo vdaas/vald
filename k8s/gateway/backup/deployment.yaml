@@ -46,7 +46,7 @@ spec:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/component: gateway
       annotations:
-        checksum/configmap: fcdaf1f2c5cab57482f5c0d718ce6d037a997cac8beeb264fbeb70285edd098f
+        checksum/configmap: e0880baa51c21ac7efd4419d339170d94082b5b7b7ed8f43f4845175a3963c72
     spec:
       initContainers:
         - name: wait-for-manager-compressor

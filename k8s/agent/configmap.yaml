@@ -96,6 +96,7 @@ data:
         ca: /path/to/ca
         cert: /path/to/cert
         enabled: false
+        insecure_skip_verify: false
         key: /path/to/key
     observability:
       enabled: false

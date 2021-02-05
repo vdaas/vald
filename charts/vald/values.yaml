@@ -2912,6 +2912,39 @@ discoverer:
     # @schema {"name": "discoverer.discoverer.discovery_duration", "type": "string"}
     # discoverer.discoverer.discovery_duration -- duration to discovery
     discovery_duration: 3s
+    # @schema {"name": "discoverer.discoverer.tls", "alias": "tcp"}
+    tcp:
+      dns:
+        # discoverer.discoverer.tcp.dns.cache_enabled -- TCP DNS cache enabled
+        cache_enabled: true
+        # discoverer.discoverer.tcp.dns.refresh_duration -- TCP DNS cache refresh duration
+        refresh_duration: 5m
+        # discoverer.discoverer.tcp.dns.cache_expiration -- TCP DNS cache expiration
+        cache_expiration: 24h
+      dialer:
+        # discoverer.discoverer.tcp.dialer.timeout -- TCP dialer timeout
+        timeout: 30s
+        # discoverer.discoverer.tcp.dialer.keep_alive -- TCP dialer keep alive
+        keep_alive: 10m
+        # discoverer.discoverer.tcp.dialer.dual_stack_enabled -- TCP dialer dual stack enabled
+        dual_stack_enabled: false
+      # @schema {"name": "discoverer.discoverer.tcp.tls", "alias": "tls"}
+      tls:
+        # @schema {"name": "discoverer.discoverer.tcp.tls.enabled", "type": "boolean"}
+        # discoverer.discoverer.tcp.tls.enabled -- TLS enabled
+        enabled: false
+        # @schema {"name": "discoverer.discoverer.tcp.tls.cert", "type": "string"}
+        # discoverer.discoverer.tcp.tls.cert -- TLS cert path
+        cert: /path/to/cert
+        # @schema {"name": "discoverer.discoverer.tcp.tls.key", "type": "string"}
+        # discoverer.discoverer.tcp.tls.key -- TLS key path
+        key: /path/to/key
+        # @schema {"name": "discoverer.discoverer.tcp.tls.ca", "type": "string"}
+        # discoverer.discoverer.tcp.tls.ca -- TLS ca path
+        ca: /path/to/ca
+        # @schema {"name": "discoverer.discoverer.tcp.tls.insecure_skip_verify", "type": "boolean"}
+        # discoverer.discoverer.tcp.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+        insecure_skip_verify: false
   # @schema {"name": "discoverer.clusterRole", "type": "object"}
   clusterRole:
     # @schema {"name": "discoverer.clusterRole.enabled", "type": "boolean"}

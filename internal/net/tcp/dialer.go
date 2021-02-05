@@ -43,6 +43,7 @@ type Dialer interface {
 type dialer struct {
 	cache                 cache.Cache
 	dnsCache              bool
+	dnsCachedOnce         sync.Once
 	tlsConfig             *tls.Config
 	dnsRefreshDurationStr string
 	dnsCacheExpirationStr string
@@ -156,7 +157,9 @@ func (d *dialer) lookup(ctx context.Context, host string) (*dialerCache, error) 
 // StartDialerCache starts the dialer cache to expire the cache automatically.
 func (d *dialer) StartDialerCache(ctx context.Context) {
 	if d.dnsCache && d.cache != nil {
-		d.cache.Start(ctx)
+		d.dnsCachedOnce.Do(func() {
+			d.cache.Start(ctx)
+		})
 	}
 }
 

@@ -34,6 +34,7 @@ import (
 	"github.com/vdaas/vald/internal/k8s/node"
 	"github.com/vdaas/vald/internal/k8s/pod"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/safety"
 )
 
@@ -57,6 +58,7 @@ type discoverer struct {
 	namespace       string
 	name            string
 	csd             time.Duration
+	der             tcp.Dialer
 	eg              errgroup.Group
 }
 
@@ -170,6 +172,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 2)
 	d.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
+		d.der.StartDialerCache(ctx)
 		dt := time.NewTicker(d.csd)
 		defer dt.Stop()
 		for {

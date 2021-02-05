@@ -109,6 +109,7 @@ data:
         ca: /path/to/ca
         cert: /path/to/cert
         enabled: false
+        insecure_skip_verify: false
         key: /path/to/key
     observability:
       enabled: false
@@ -235,6 +236,7 @@ data:
             ca: /path/to/ca
             cert: /path/to/cert
             enabled: false
+            insecure_skip_verify: false
             key: /path/to/key
         timeout: ""
         write_buffer_size: 0
@@ -242,6 +244,7 @@ data:
         ca: /path/to/ca
         cert: /path/to/cert
         enabled: false
+        insecure_skip_verify: false
         key: /path/to/key
     backup:
       addrs:
@@ -295,6 +298,7 @@ data:
             ca: /path/to/ca
             cert: /path/to/cert
             enabled: false
+            insecure_skip_verify: false
             key: /path/to/key
         timeout: ""
         write_buffer_size: 0
@@ -302,4 +306,5 @@ data:
         ca: /path/to/ca
         cert: /path/to/cert
         enabled: false
+        insecure_skip_verify: false
         key: /path/to/key

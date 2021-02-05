@@ -23,20 +23,18 @@ import (
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/safety"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
-
-	"k8s.io/client-go/rest"
-
-	"sigs.k8s.io/controller-runtime/pkg/cache"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type Controller interface {
@@ -58,6 +56,7 @@ type controller struct {
 	leaderElection bool
 	mgr            manager.Manager
 	rcs            []ResourceController
+	der            tcp.Dialer
 }
 
 func New(opts ...Option) (cl Controller, err error) {
@@ -78,7 +77,15 @@ func New(opts ...Option) (cl Controller, err error) {
 			return nil, errors.ErrInvalidReconcilerConfig
 		}
 		cb := manager.NewClientBuilder()
-		rc := &rest.Config{}
+		if c.der == nil {
+			c.der, err = tcp.NewDialer()
+			if err != nil {
+				return nil, err
+			}
+		}
+		rc := &rest.Config{
+			Dial: c.der.GetDialer(),
+		}
 		cc, err := cache.New(rc, cache.Options{})
 		if err != nil {
 			return nil, err
@@ -90,6 +97,7 @@ func New(opts ...Option) (cl Controller, err error) {
 				Scheme:             runtime.NewScheme(),
 				LeaderElection:     c.leaderElection,
 				MetricsBindAddress: c.merticsAddr,
+				ClientBuilder:      cb,
 			},
 		)
 		if err != nil {
@@ -126,6 +134,7 @@ func New(opts ...Option) (cl Controller, err error) {
 }
 
 func (c *controller) Start(ctx context.Context) (<-chan error, error) {
+	c.der.StartDialerCache(ctx)
 	ech := make(chan error, 1)
 	c.eg.Go(safety.RecoverFunc(func() error {
 		defer close(ech)

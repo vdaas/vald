@@ -24,6 +24,7 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/metric"
+	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/observability"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
@@ -43,13 +44,21 @@ type run struct {
 	h             handler.DiscovererServer
 	server        starter.Server
 	observability observability.Observability
+	der           tcp.Dialer
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
+	der, err := tcp.NewDialer(cfg.Discoverer.TCP.Opts()...)
+	if err != nil {
+		return nil, err
+	}
 	dsc, err := service.New(
 		service.WithDiscoverDuration(cfg.Discoverer.DiscoveryDuration),
 		service.WithErrGroup(eg),
+		service.WithName(cfg.Discoverer.Name),
+		service.WithNamespace(cfg.Discoverer.Namespace),
+		service.WithDialer(der),
 	)
 	if err != nil {
 		return nil, err
@@ -115,6 +124,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 
 	return &run{
+		der:           der,
 		eg:            eg,
 		cfg:           cfg,
 		dsc:           dsc,
@@ -125,6 +135,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 }
 
 func (r *run) PreStart(ctx context.Context) error {
+	r.der.StartDialerCache(ctx)
 	if r.observability != nil {
 		return r.observability.PreStart(ctx)
 	}
