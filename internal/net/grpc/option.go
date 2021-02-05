@@ -322,6 +322,7 @@ func WithKeepaliveParams(t, to string, permitWithoutStream bool) Option {
 func WithDialer(der tcp.Dialer) Option {
 	return func(g *gRPCClient) {
 		if der != nil {
+			g.dialer = der
 			g.dopts = append(g.dopts,
 				grpc.WithContextDialer(func(ctx context.Context, addr string) (net.Conn, error) {
 					return der.GetDialer()(ctx, "tcp", addr)

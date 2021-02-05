@@ -32,6 +32,7 @@ type TCP struct {
 type Dialer struct {
 	Timeout          string `yaml:"timeout" json:"timeout"`
 	KeepAlive        string `yaml:"keep_alive" json:"keep_alive"`
+	FallbackDelay    string `yaml:"fallback_delay" json:"fallback_delay"`
 	DualStackEnabled bool   `yaml:"dual_stack_enabled" json:"dual_stack_enabled"`
 }
 
@@ -50,6 +51,7 @@ func (d *DNS) Bind() *DNS {
 func (d *Dialer) Bind() *Dialer {
 	d.Timeout = GetActualValue(d.Timeout)
 	d.KeepAlive = GetActualValue(d.KeepAlive)
+	d.FallbackDelay = GetActualValue(d.FallbackDelay)
 	return d
 }
 
@@ -84,6 +86,7 @@ func (t *TCP) Opts() []tcp.DialerOption {
 		opts = append(opts,
 			tcp.WithDialerKeepAlive(t.Dialer.KeepAlive),
 			tcp.WithDialerTimeout(t.Dialer.Timeout),
+			tcp.WithDialerFallbackDelay(t.Dialer.FallbackDelay),
 		)
 		if t.Dialer.DualStackEnabled {
 			opts = append(opts,

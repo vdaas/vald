@@ -20,8 +20,8 @@ package server
 import (
 	"context"
 	"crypto/tls"
-	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -228,7 +228,7 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 			}
 		}
 
-		l, err := s.lc.Listen(ctx, "tcp", fmt.Sprintf("%s:%d", s.host, s.port))
+		l, err := s.lc.Listen(ctx, "tcp", net.JoinHostPort(s.host, strconv.FormatUint(uint64(s.port), 10)))
 		if err != nil {
 			return err
 		}
@@ -251,7 +251,7 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 					s.mu.Unlock()
 				}
 
-				log.Infof("%s server %s starting on %s:%d", s.mode.String(), s.name, s.host, s.port)
+				log.Infof("%s server %s starting on %s://%s", s.mode.String(), s.name, l.Addr().Network(), l.Addr().String())
 
 				switch s.mode {
 				case REST, GQL:
@@ -301,19 +301,29 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 			log.Infof("server %s executing preStopFunc", s.name)
 			err = s.preStopFunc()
 			if err != nil {
-				ech <- err
+				select {
+				case <-ctx.Done():
+				case ech <- nil:
+				}
 			}
 			close(ech)
 			s.wg.Done()
-			return err
+			select {
+			case <-ctx.Done():
+			case ech <- nil:
+			}
+			return nil
 		}))
 		tctx, cancel := context.WithTimeout(ctx, s.pwt)
 		defer cancel()
-		<-tctx.Done()
-		err := <-ech
-		if err != nil {
-			rerr = err
+		select {
+		case <-tctx.Done():
+		case err := <-ech:
+			if err != nil {
+				rerr = err
+			}
 		}
+
 	} else {
 		tctx, cancel := context.WithTimeout(ctx, s.pwt)
 		defer cancel()

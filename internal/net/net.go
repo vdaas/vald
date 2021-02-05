@@ -19,7 +19,6 @@ package net
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"strconv"
 	"strings"
@@ -29,6 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/safety"
 )
 
 const (
@@ -97,6 +97,11 @@ func IsIPv4(addr string) bool {
 	return net.ParseIP(addr) != nil && strings.Count(addr, ":") < 2
 }
 
+// JoinHostPort joins the host/IP address and the port number,
+func JoinHostPort(host, port string) string {
+	return net.JoinHostPort(host, port)
+}
+
 // SplitHostPort splits the address, and return the host/IP address and the port number,
 // and any error occurred.
 // If it is the loopback address, it will return the loopback address and corresponding port number.
@@ -136,14 +141,15 @@ func ScanPorts(ctx context.Context, start, end uint16, host string) (ports []uin
 
 	var mu sync.Mutex
 
+	var der net.Dialer
 	for i := start; i >= start && i <= end; i++ {
 		port := i
-		eg.Go(func() error {
+		eg.Go(safety.RecoverFunc(func() error {
 			select {
 			case <-egctx.Done():
 				return egctx.Err()
 			default:
-				conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", host, port))
+				conn, err := der.DialContext(ctx, "tcp", JoinHostPort(host, strconv.FormatInt(int64(port), 10)))
 				if err != nil {
 					log.Warn(err)
 					return nil
@@ -158,7 +164,7 @@ func ScanPorts(ctx context.Context, start, end uint16, host string) (ports []uin
 				}
 				return nil
 			}
-		})
+		}))
 	}
 
 	if err = eg.Wait(); err != nil {

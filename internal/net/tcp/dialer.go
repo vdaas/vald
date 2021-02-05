@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/cache"
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
@@ -49,16 +50,18 @@ type dialer struct {
 	dnsCacheExpiration    time.Duration
 	dialerTimeout         time.Duration
 	dialerKeepAlive       time.Duration
+	dialerFallbackDelay   time.Duration
 	dialerDualStack       bool
 	addrs                 sync.Map
 	der                   *net.Dialer
 	dialer                func(ctx context.Context, network, addr string) (net.Conn, error)
+	eg                    errgroup.Group
 }
 
 type addrInfo struct {
 	addr string
 	host string
-	port uint16
+	port string
 	isIP bool
 }
 
@@ -90,10 +93,11 @@ func NewDialer(opts ...DialerOption) (der Dialer, err error) {
 	}
 
 	d.der = &net.Dialer{
-		Timeout:   d.dialerTimeout,
-		KeepAlive: d.dialerKeepAlive,
-		DualStack: d.dialerDualStack,
-		Control:   Control,
+		Timeout:       d.dialerTimeout,
+		KeepAlive:     d.dialerKeepAlive,
+		DualStack:     d.dialerDualStack,
+		FallbackDelay: d.dialerFallbackDelay,
+		Control:       Control,
 	}
 
 	d.dialer = d.dial
@@ -166,16 +170,18 @@ func (d *dialer) DialContext(ctx context.Context, network, address string) (net.
 func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (conn net.Conn, err error) {
 	var (
 		host string
-		port uint16
+		port string
 		isIP bool
 	)
 	ai, ok := d.addrs.Load(addr)
 	if !ok {
-		host, port, isIP, err = net.Parse(addr)
+		var nport uint16
+		host, nport, isIP, err = net.Parse(addr)
 		if err != nil {
 			d.addrs.Delete(addr)
 			return nil, err
 		}
+		port = strconv.FormatUint(uint64(nport), 10)
 		d.addrs.Store(addr, &addrInfo{
 			host: host,
 			port: port,
@@ -194,10 +200,11 @@ func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (conn 
 	if d.dnsCache && !isIP {
 		if dc, err := d.lookup(dctx, host); err == nil {
 			for i := uint32(0); i < dc.Len(); i++ {
-				hostIP := dc.IP() + ":" + strconv.FormatUint(uint64(port), 10)
+				hostIP := net.JoinHostPort(dc.IP(), port)
 				if conn, err := d.dial(dctx, network, hostIP); err == nil {
 					return conn, nil
 				}
+				log.Debugf("failed to dial connection to %s\terror: %v", hostIP, err)
 			}
 			d.cache.Delete(host)
 		}
@@ -206,6 +213,7 @@ func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (conn 
 }
 
 func (d *dialer) dial(ctx context.Context, network, addr string) (conn net.Conn, err error) {
+	log.Debugf("%s connection dialing to addr %s", network, addr)
 	conn, err = d.der.DialContext(ctx, network, addr)
 	if err != nil {
 		defer func(conn net.Conn) {
@@ -221,9 +229,55 @@ func (d *dialer) dial(ctx context.Context, network, addr string) (conn net.Conn,
 	}
 
 	if d.tlsConfig != nil {
-		return tls.Client(conn, d.tlsConfig), nil
+		return d.tlsHandshake(ctx, conn, addr)
 	}
+
 	return conn, nil
+}
+
+func (d *dialer) tlsHandshake(ctx context.Context, conn net.Conn, addr string) (tconn *tls.Conn, err error) {
+	tctx, cancel := context.WithTimeout(ctx, d.der.Timeout)
+	defer cancel()
+	if d.tlsConfig.ServerName == "" {
+		var host string
+		host, _, err = net.SplitHostPort(addr)
+		if err != nil {
+			d.tlsConfig.ServerName = host
+		}
+	}
+	tconn = tls.Client(conn, d.tlsConfig)
+	ech := make(chan error)
+	d.eg.Go(safety.RecoverFunc(func() error {
+		select {
+		case <-tctx.Done():
+		case ech <- tconn.Handshake(): // wait for tls handshake connection
+		}
+		return nil
+	}))
+	select {
+	case <-tctx.Done():
+		err = tctx.Err()
+	case err = <-ech:
+		if err != nil {
+			terr := tctx.Err()
+			if terr != nil {
+				err = terr
+			}
+		}
+	}
+	if err != nil {
+		defer func(conn net.Conn) {
+			if conn != nil {
+				if err != nil {
+					err = errors.Wrap(conn.Close(), err.Error())
+					return
+				}
+				err = conn.Close()
+			}
+		}(conn)
+		return nil, err
+	}
+	return tconn, nil
 }
 
 func (d *dialer) cacheExpireHook(ctx context.Context, addr string) {
@@ -231,6 +285,6 @@ func (d *dialer) cacheExpireHook(ctx context.Context, addr string) {
 		_, err = d.lookup(ctx, addr)
 		return
 	})(); err != nil {
-		log.Errorf("DNS cacheExpireHook error occurred: %v", err)
+		log.Errorf("DNS cacheExpireHook error occurred: %v\taddr:\t%s", err, addr)
 	}
 }
