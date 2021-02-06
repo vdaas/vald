@@ -561,10 +561,10 @@ func TestE2EGetObject(t *testing.T) {
 					t.Errorf("an error returned:\terror: %v\tcode: %d\tmessage: %s\tdetails: %s", err, err.GetCode(), err.GetMessage(), errdetails.Serialize(err.GetDetails()))
 				}
 			} else {
-				if !reflect.DeepEqual(res.GetVector(), ds.train[resp.GetId()]) {
+				if !reflect.DeepEqual(res.GetVector().GetVector(), ds.train[resp.GetId()]) {
 					t.Errorf(
 						"result: %#v, expected: %#v",
-						res.GetVector(),
+						res.GetVector().GetVector(),
 						ds.train[resp.GetId()],
 					)
 				}
