@@ -37,7 +37,7 @@ var (
 		return Errorf("no port available for Host: %s\tbetween %d ~ %d", host, start, end)
 	}
 
-	ErrLookupIPAddrNotFound = func(host string)error{
+	ErrLookupIPAddrNotFound = func(host string) error {
 		return Errorf("failed to lookup ip addrs for host: %s", host)
 	}
 )
