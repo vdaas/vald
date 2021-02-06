@@ -142,6 +142,9 @@ func (d *dialer) lookup(ctx context.Context, host string) (*dialerCache, error) 
 	if err != nil {
 		return nil, err
 	}
+	if len(r) == 0{
+		return nil, errors.ErrLookupIPAddrNotFound(host)
+	}
 
 	dc := &dialerCache{
 		ips: make([]string, 0, len(r)),
@@ -150,7 +153,6 @@ func (d *dialer) lookup(ctx context.Context, host string) (*dialerCache, error) 
 		dc.ips = append(dc.ips, ip.String())
 	}
 
-	log.Infof("lookup succeed %v", dc.ips)
 	d.cache.Set(host, dc)
 	return dc, nil
 }
