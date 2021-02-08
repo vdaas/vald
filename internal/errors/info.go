@@ -20,4 +20,9 @@ var (
 	ErrFailedToInitInfo = func(err error) error {
 		return Wrap(err, "failed to init info")
 	}
+
+	// ErrRuntimeFuncNil represents an error that the runtime function is nil.
+	ErrRuntimeFuncNil = func() error {
+		return New("runtime function is nil")
+	}
 )
