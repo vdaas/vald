@@ -1061,7 +1061,7 @@ func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndex
 						},
 					},
 				}, info.Get())
-			log.Error(err)
+			log.Warn(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeFailedPrecondition(err.Error()))
 			}
