@@ -41,7 +41,7 @@ import (
 )
 
 const (
-	qualifiedName string = "app.kubernetes.io/rebalancer.vald.vdaas.org/"
+	qualifiedName string = "app.kubernetes.io/rebalancer-"
 )
 
 // Rebalancer represents the rebalancer interface.
