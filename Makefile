@@ -224,10 +224,30 @@ DISTROLESS_IMAGE      ?= gcr.io/distroless/static
 DISTROLESS_IMAGE_TAG  ?= nonroot
 UPX_OPTIONS           ?= -9
 
-K8S_EXTERNAL_SCYLLA_MANIFEST ?= k8s/external/scylla/scyllacluster.yaml
+K8S_EXTERNAL_SCYLLA_MANIFEST        ?= k8s/external/scylla/scyllacluster.yaml
+K8S_SLEEP_DURATION_FOR_WAIT_COMMAND ?= 5
+
+K8S_KUBECTL_VERSION ?= $(eval K8S_KUBECTL_VERSION := $(shell kubectl version --short))$(K8S_KUBECTL_VERSION)
+K8S_SERVER_VERSION ?= $(eval K8S_SERVER_VERSION := $(shell echo "$(K8S_KUBECTL_VERSION)" | sed -e "s/.*Server.*\(v[0-9]\.[0-9]*\)\..*/\1/g"))$(K8S_SERVER_VERSION)
 
 COMMA := ,
 SHELL = bash
+
+E2E_BIND_HOST                      ?= 127.0.0.1
+E2E_BIND_PORT                      ?= 8082
+E2E_TIMEOUT                        ?= 15m
+E2E_DATASET_NAME                   ?= fashion-mnist-784-euclidean
+E2E_INSERT_COUNT                   ?= 1000
+E2E_SEARCH_COUNT                   ?= 1000
+E2E_SEARCH_BY_ID_COUNT             ?= 10
+E2E_GET_OBJECT_COUNT               ?= 10
+E2E_UPDATE_COUNT                   ?= 3
+E2E_REMOVE_COUNT                   ?= 3
+E2E_WAIT_FOR_CREATE_INDEX_DURATION ?= 3m
+E2E_TARGET_NAME                    ?= vald-meta-gateway
+E2E_TARGET_POD_NAME                ?= $(eval E2E_TARGET_POD_NAME := $(shell kubectl get pods --selector=app=$(E2E_TARGET_NAME) | tail -1 | cut -f1 -d " "))$(E2E_TARGET_POD_NAME)
+E2E_TARGET_NAMESPACE               ?= default
+E2E_TARGET_PORT                    ?= 8081
 
 include Makefile.d/functions.mk
 
@@ -466,3 +486,4 @@ include Makefile.d/kind.mk
 include Makefile.d/client.mk
 include Makefile.d/ml.mk
 include Makefile.d/test.mk
+include Makefile.d/e2e.mk

@@ -13,16 +13,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-apiVersion: v1
-kind: Service
-metadata:
-  name: cassandra
-  labels:
-    app: cassandra
-spec:
-  ports:
-    - port: 9042
-      targetPort: 9042
-  selector:
-    app: cassandra
-  clusterIP: None
+
+.PHONY: e2e
+## run e2e
+e2e:
+	$(call run-e2e-test)
+
+.PHONY: e2e/insert
+## run insert e2e
+e2e/insert:
+	$(call run-e2e-test,-run TestE2EInsert)
+
+
+.PHONY: e2e/update
+## run update e2e
+e2e/update:
+	$(call run-e2e-test,-run TestE2EUpdate)
+
+.PHONY: e2e/search
+## run search e2e
+e2e/search:
+	$(call run-e2e-test,-run TestE2ESearch)
+
+.PHONY: e2e/remove
+## run remove e2e
+e2e/remove:
+	$(call run-e2e-test,-run TestE2ERemove)

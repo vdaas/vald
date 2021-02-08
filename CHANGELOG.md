@@ -1,5 +1,244 @@
 # CHANGELOG
 
+## 
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverer k8s</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateway</td>
+    <td>
+      <code>docker pull vdaas/vald-gateway:</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-gateway:</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Backup manager MySQL</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-backup-mysql:</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-backup-mysql:</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Backup manager Cassandra</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-backup-cassandra:</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-backup-cassandra:</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Compressor</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-compressor:</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-compressor:</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Meta Redis</td>
+    <td>
+      <code>docker pull vdaas/vald-meta-redis:</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-redis:</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Meta Cassandra</td>
+    <td>
+      <code>docker pull vdaas/vald-meta-cassandra:</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-cassandra:</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob//charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob//charts/vald-helm-operator/README.md)
+
+### Changes
+- bugfix lb-gateway's Insert rpc nil pointer panic ([#980](https://github.com/vdaas/vald/pull/980))
+- Implement internal/errors/worker test ([#952](https://github.com/vdaas/vald/pull/952))
+- create test for internal/errors/errors.go ([#929](https://github.com/vdaas/vald/pull/929))
+- Add test case for internal/errors/net.go ([#969](https://github.com/vdaas/vald/pull/969))
+- :robot: Automatically update k8s manifests ([#975](https://github.com/vdaas/vald/pull/975))
+
+
+## 
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverer k8s</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateway</td>
+    <td>
+      <code>docker pull vdaas/vald-gateway:</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-gateway:</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Backup manager MySQL</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-backup-mysql:</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-backup-mysql:</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Backup manager Cassandra</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-backup-cassandra:</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-backup-cassandra:</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Compressor</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-compressor:</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-compressor:</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Meta Redis</td>
+    <td>
+      <code>docker pull vdaas/vald-meta-redis:</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-redis:</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Meta Cassandra</td>
+    <td>
+      <code>docker pull vdaas/vald-meta-cassandra:</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-cassandra:</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob//charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob//charts/vald-helm-operator/README.md)
+
+### Changes
+- v1.0.0 Release ([#974](https://github.com/vdaas/vald/pull/974))
+- Bug fix for gateway ([#963](https://github.com/vdaas/vald/pull/963))
+- Add test case for internal/errors/ngt.go ([#936](https://github.com/vdaas/vald/pull/936))
+- create new test and refactor for errors/option ([#950](https://github.com/vdaas/vald/pull/950))
+- Use checksum of configmap for sidecar-enabled Agents. ([#970](https://github.com/vdaas/vald/pull/970))
+- :wrench: Use cass-operator to deploy cassandra for dev cluster ([#968](https://github.com/vdaas/vald/pull/968))
+- add test for internal/errors/vald ([#958](https://github.com/vdaas/vald/pull/958))
+- Remove actions/cache to improve workflow speed / Refactoring docker-build workflows ([#957](https://github.com/vdaas/vald/pull/957))
+- add filter gateway ([#948](https://github.com/vdaas/vald/pull/948))
+- :robot: Update license headers / Format Go codes and YAML files ([#954](https://github.com/vdaas/vald/pull/954))
+- Add Zap logger and access log interceptor ([#944](https://github.com/vdaas/vald/pull/944))
+- Add test case for internal/errors/mysql.go ([#918](https://github.com/vdaas/vald/pull/918))
+- Fix invalid data loading code in example ([#949](https://github.com/vdaas/vald/pull/949))
+- Add option to use networking.k8s.io/v1beta1 ingresses ([#945](https://github.com/vdaas/vald/pull/945))
+- bugfix gateway-lb nil pointer panic due to nil filter configuration ([#943](https://github.com/vdaas/vald/pull/943))
+- update rbac.authorization.k8s.io v1beta1 to v1 ([#942](https://github.com/vdaas/vald/pull/942))
+- Update Grafana dashboards ([#940](https://github.com/vdaas/vald/pull/940))
+- Add a gRPC interceptor for embedding payloads into trace spans ([#900](https://github.com/vdaas/vald/pull/900))
+- add goleak.IgnoreCurrent option for Parallel testing ([#941](https://github.com/vdaas/vald/pull/941))
+- update go modules ([#939](https://github.com/vdaas/vald/pull/939))
+- :robot: Automatically update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE ([#937](https://github.com/vdaas/vald/pull/937))
+- :zap: Revise build command for multiplatforms ([#890](https://github.com/vdaas/vald/pull/890))
+- update dependencies ([#935](https://github.com/vdaas/vald/pull/935))
+- E2E deploy test: rewrite in go tests ([#814](https://github.com/vdaas/vald/pull/814))
+- create unit test guideline ([#869](https://github.com/vdaas/vald/pull/869))
+- feature/apis/change grpc error object ([#934](https://github.com/vdaas/vald/pull/934))
+- Add test case for internal/errors/http.go ([#908](https://github.com/vdaas/vald/pull/908))
+- :robot: Update license headers / Format Go codes and YAML files ([#933](https://github.com/vdaas/vald/pull/933))
+- revise kubelinter config / Add securityContext section to Helm chart ([#833](https://github.com/vdaas/vald/pull/833))
+- :robot: Update license headers / Format Go codes and YAML files ([#932](https://github.com/vdaas/vald/pull/932))
+- :robot: Automatically update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE ([#931](https://github.com/vdaas/vald/pull/931))
+- os.free nil pointer failure in ngt cgo due to create index hang up ([#930](https://github.com/vdaas/vald/pull/930))
+- change grpc bidi-stream error handling and change grpc API interface ([#928](https://github.com/vdaas/vald/pull/928))
+- fix unclosed string literal in Dockerfile's ARG MAINTAINER ([#923](https://github.com/vdaas/vald/pull/923))
+- Revise building workflow of ci and dev containers ([#922](https://github.com/vdaas/vald/pull/922))
+- bugfix add nil check for grpc connection pool objects in grpc/client.go ([#921](https://github.com/vdaas/vald/pull/921))
+- remove unneccessary pr-tag definition from chart ([#920](https://github.com/vdaas/vald/pull/920))
+- :pencil: Fix typo in gateway-vald configmap template ([#919](https://github.com/vdaas/vald/pull/919))
+- change docker base image PRIMARY_TAG name from nightly to latest ([#917](https://github.com/vdaas/vald/pull/917))
+- :green_heart: Use vdaas-ci token for making commits ([#895](https://github.com/vdaas/vald/pull/895))
+- Vald V1 New Design APIs ([#826](https://github.com/vdaas/vald/pull/826))
+- :robot: Automatically update k8s manifests ([#914](https://github.com/vdaas/vald/pull/914))
+
+
 ## v0.0.66
 
 ### Docker images

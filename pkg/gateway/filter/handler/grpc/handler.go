@@ -795,7 +795,11 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 			}
 			return nil, status.WrapWithAlreadyExists(fmt.Sprintf("Insert API ID %s already exists", vec.GetId()), err, info.Get())
 		}
-		req.Config.SkipStrictExistCheck = true
+		if req.GetConfig() != nil {
+			req.Config.SkipStrictExistCheck = true
+		} else {
+			req.Config = &payload.Insert_Config{SkipStrictExistCheck: true}
+		}
 	}
 	targets := req.GetConfig().GetFilters().GetTargets()
 	if len(targets) == 0 && len(s.InsertFilters) == 0 {
@@ -932,7 +936,11 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 			}
 			return nil, status.WrapWithAlreadyExists(fmt.Sprintf("Update API ID %s already exists", vec.GetId()), err, info.Get())
 		}
-		req.Config.SkipStrictExistCheck = true
+		if req.GetConfig() != nil {
+			req.Config.SkipStrictExistCheck = true
+		} else {
+			req.Config = &payload.Update_Config{SkipStrictExistCheck: true}
+		}
 	}
 	targets := req.GetConfig().GetFilters().GetTargets()
 	if len(targets) == 0 && len(s.UpdateFilters) == 0 {
@@ -1069,7 +1077,11 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 			}
 			return nil, status.WrapWithAlreadyExists(fmt.Sprintf("Upsert API ID %s already exists", vec.GetId()), err, info.Get())
 		}
-		req.Config.SkipStrictExistCheck = true
+		if req.GetConfig() != nil {
+			req.Config.SkipStrictExistCheck = true
+		} else {
+			req.Config = &payload.Upsert_Config{SkipStrictExistCheck: true}
+		}
 	}
 	targets := req.GetConfig().GetFilters().GetTargets()
 	if len(targets) == 0 && len(s.UpsertFilters) == 0 {

@@ -30,9 +30,7 @@ manager:
         image: cassandra:latest
         cassandra:
           hosts:
-            - cassandra-0.default.svc.cluster.local
-            - cassandra-1.default.svc.cluster.local
-            - cassandra-2.default.svc.cluster.local
+            - cluster0-dc0-service.cass-operator.svc.cluster.local
           options:
             - "-uroot"
             - "-p${CASSANDRA_PASSWORD}"
@@ -55,9 +53,7 @@ manager:
       enabled: true
       config:
         hosts:
-          - cassandra-0.cassandra.default.svc.cluster.local
-          - cassandra-1.cassandra.default.svc.cluster.local
-          - cassandra-2.cassandra.default.svc.cluster.local
+          - cluster0-dc0-service.cass-operator.svc.cluster.local
 
 meta:
   image:
@@ -68,9 +64,7 @@ meta:
       image: cassandra:latest
       cassandra:
         hosts:
-          - cassandra-0.default.svc.cluster.local
-          - cassandra-1.default.svc.cluster.local
-          - cassandra-2.default.svc.cluster.local
+          - cluster0-dc0-service.cass-operator.svc.cluster.local
         options:
           - "-uroot"
           - "-p${CASSANDRA_PASSWORD}"
@@ -93,6 +87,18 @@ meta:
     enabled: true
     config:
       hosts:
-        - cassandra-0.cassandra.default.svc.cluster.local
-        - cassandra-1.cassandra.default.svc.cluster.local
-        - cassandra-2.cassandra.default.svc.cluster.local
+        - cluster0-dc0-service.cass-operator.svc.cluster.local
+
+initializer:
+  cassandra:
+    enabled: true
+    env:
+      - name: CASSANDRA_HOST
+        value: cluster0-dc0-service.cass-operator.svc.cluster.local
+    configmap:
+      enabled: true
+    secret:
+      enabled: true
+      data:
+        username: cm9vdA==
+        password: cGFzc3dvcmQ=

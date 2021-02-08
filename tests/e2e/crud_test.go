@@ -34,6 +34,8 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
+	"github.com/vdaas/vald/internal/net/grpc/errdetails"
+	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/tests/e2e/portforward"
 
 	"gonum.org/v1/hdf5"
@@ -109,7 +111,7 @@ func init() {
 		}
 	}
 
-	fmt.Printf("loading dataset: %s", *datasetName)
+	fmt.Printf("loading dataset: %s ", *datasetName)
 	ds, err = hdf5ToDataset(*datasetName)
 	if err != nil {
 		panic(err)
@@ -287,14 +289,15 @@ func TestE2EInsert(t *testing.T) {
 				t.Logf("%d items inserted.", count)
 				return
 			} else if err != nil {
-				t.Fatal(err)
+				st, serr := status.FromError(err)
+				t.Fatalf("error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s", err, serr, st.Code().String(), errdetails.Serialize(st.Details()), st.Message(), st.Err().Error(), errdetails.Serialize(st.Proto()))
 			}
 
 			loc := res.GetLocation()
 			if loc == nil {
 				err := res.GetStatus()
 				if err != nil {
-					t.Errorf("an error returned: %s", err.GetMessage())
+					t.Errorf("an error returned:\terror: %v\tcode: %d\tmessage: %s\tdetails: %s", err, err.GetCode(), err.GetMessage(), errdetails.Serialize(err.GetDetails()))
 				}
 			} else {
 				t.Logf("returned: %s", loc)
@@ -368,14 +371,15 @@ func TestE2ESearch(t *testing.T) {
 				t.Logf("%d items searched.", k)
 				return
 			} else if err != nil {
-				t.Fatal(err)
+				st, serr := status.FromError(err)
+				t.Fatalf("error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s", err, serr, st.Code().String(), errdetails.Serialize(st.Details()), st.Message(), st.Err().Error(), errdetails.Serialize(st.Proto()))
 			}
 
 			resp := res.GetResponse()
 			if resp == nil {
 				err := res.GetStatus()
 				if err != nil {
-					t.Errorf("an error returned: %s", err.GetMessage())
+					t.Errorf("an error returned:\terror: %v\tcode: %d\tmessage: %s\tdetails: %s", err, err.GetCode(), err.GetMessage(), errdetails.Serialize(err.GetDetails()))
 				}
 			} else {
 				topKIDs := make([]string, len(resp.GetResults()))
@@ -459,14 +463,15 @@ func TestE2ESearchByID(t *testing.T) {
 				t.Logf("%d items searched.", count)
 				return
 			} else if err != nil {
-				t.Fatal(err)
+				st, serr := status.FromError(err)
+				t.Fatalf("error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s", err, serr, st.Code().String(), errdetails.Serialize(st.Details()), st.Message(), st.Err().Error(), errdetails.Serialize(st.Proto()))
 			}
 
 			resp := res.GetResponse()
 			if resp == nil {
 				err := res.GetStatus()
 				if err != nil {
-					t.Errorf("an error returned: %s", err.GetMessage())
+					t.Errorf("an error returned:\terror: %v\tcode: %d\tmessage: %s\tdetails: %s", err, err.GetCode(), err.GetMessage(), errdetails.Serialize(err.GetDetails()))
 				}
 			} else {
 				topKIDs := make([]string, len(resp.GetResults()))
@@ -545,14 +550,15 @@ func TestE2EGetObject(t *testing.T) {
 				t.Logf("%d items got.", count)
 				return
 			} else if err != nil {
-				t.Fatal(err)
+				st, serr := status.FromError(err)
+				t.Fatalf("error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s", err, serr, st.Code().String(), errdetails.Serialize(st.Details()), st.Message(), st.Err().Error(), errdetails.Serialize(st.Proto()))
 			}
 
 			resp := res.GetVector()
 			if resp == nil {
 				err := res.GetStatus()
 				if err != nil {
-					t.Errorf("an error returned: %s", err.GetMessage())
+					t.Errorf("an error returned:\terror: %v\tcode: %d\tmessage: %s\tdetails: %s", err, err.GetCode(), err.GetMessage(), errdetails.Serialize(err.GetDetails()))
 				}
 			} else {
 				if !reflect.DeepEqual(res.GetVector(), ds.train[resp.GetId()]) {
@@ -575,8 +581,10 @@ func TestE2EGetObject(t *testing.T) {
 	t.Log("get object start")
 	for i := getObjectFrom; i < len(ds.train); i++ {
 		id := strconv.Itoa(i)
-		err := sc.Send(&payload.Object_ID{
-			Id: id,
+		err := sc.Send(&payload.Object_VectorRequest{
+			Id: &payload.Object_ID{
+				Id: id,
+			},
 		})
 		if err != nil {
 			t.Fatal(err)
@@ -624,14 +632,15 @@ func TestE2EUpdate(t *testing.T) {
 				t.Logf("%d items updated.", count)
 				return
 			} else if err != nil {
-				t.Fatal(err)
+				st, serr := status.FromError(err)
+				t.Fatalf("error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s", err, serr, st.Code().String(), errdetails.Serialize(st.Details()), st.Message(), st.Err().Error(), errdetails.Serialize(st.Proto()))
 			}
 
 			loc := res.GetLocation()
 			if loc == nil {
 				err := res.GetStatus()
 				if err != nil {
-					t.Errorf("an error returned: %s", err.GetMessage())
+					t.Errorf("an error returned:\terror: %v\tcode: %d\tmessage: %s\tdetails: %s", err, err.GetCode(), err.GetMessage(), errdetails.Serialize(err.GetDetails()))
 				}
 			} else {
 				t.Logf("returned: %s", loc)
@@ -704,14 +713,15 @@ func TestE2ERemove(t *testing.T) {
 				t.Logf("%d items removed.", count)
 				return
 			} else if err != nil {
-				t.Fatal(err)
+				st, serr := status.FromError(err)
+				t.Fatalf("error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s", err, serr, st.Code().String(), errdetails.Serialize(st.Details()), st.Message(), st.Err().Error(), errdetails.Serialize(st.Proto()))
 			}
 
 			loc := res.GetLocation()
 			if loc == nil {
 				err := res.GetStatus()
 				if err != nil {
-					t.Errorf("an error returned: %s", err.GetMessage())
+					t.Errorf("an error returned:\terror: %v\tcode: %d\tmessage: %s\tdetails: %s", err, err.GetCode(), err.GetMessage(), errdetails.Serialize(err.GetDetails()))
 				}
 			} else {
 				t.Logf("returned: %s", loc)

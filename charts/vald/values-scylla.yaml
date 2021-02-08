@@ -22,6 +22,8 @@ defaults:
     tag: nightly
 agent:
   minReplicas: 5
+  ngt:
+    dimension: 784
 manager:
   backup:
     image:
@@ -41,8 +43,14 @@ manager:
     cassandra:
       enabled: true
       config:
+        consistency: one
         hosts:
           - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
+
+gateway:
+  lb:
+    gateway_config:
+      index_replica: 2
 
 meta:
   image:
@@ -62,6 +70,7 @@ meta:
   cassandra:
     enabled: true
     config:
+      consistency: one
       hosts:
         - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
 
