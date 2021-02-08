@@ -354,7 +354,7 @@ func TestErrRuntimeError(t *testing.T) {
 	}
 	defaultErr := New("runtime panic string error")
 	defaultRuntimeErr := &runtimeErr{
-		err: New("runtime error is occured"),
+		err: New("runtime error is occurred"),
 	}
 	tests := []test{
 		func() test {
