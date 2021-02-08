@@ -167,7 +167,7 @@ func TestErrPanicRecovered(t *testing.T) {
 		func() test {
 			r := &defaultErr
 			return test{
-				name: "return an error when err is not empty and rec is boolean",
+				name: "return an error when err is not empty and rec is pointer",
 				args: args{
 					err: defaultErr,
 					rec: r,
