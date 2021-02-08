@@ -25,7 +25,7 @@ var (
 		return Wrap(err, Errorf("panic recovered: %v", rec).Error())
 	}
 
-	// ErrPanicString represents a function to generate an error that panic recovered with string message.
+	// ErrPanicString represents a function to generate an error that the panic recovered with a string message.
 	ErrPanicString = func(err error, msg string) error {
 		return Wrap(err, Errorf("panic recovered: %v", msg).Error())
 	}
