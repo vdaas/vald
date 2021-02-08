@@ -30,7 +30,7 @@ var (
 		return Wrap(err, Errorf("panic recovered: %v", msg).Error())
 	}
 
-	// ErrRuntimeError represents a function to generate an error that panic caused by runtime error.
+	// ErrRuntimeError represents a function to generate an error that the panic caused by runtime error.
 	ErrRuntimeError = func(err error, r runtime.Error) error {
 		return Wrap(err, Errorf("system panicked caused by runtime error: %v", r).Error())
 	}
