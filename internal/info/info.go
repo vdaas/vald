@@ -103,12 +103,12 @@ var (
 
 // Init initializes Detail object only once.
 func Init(name string) {
-	i, err := New(WithServerName(name))
-	if err != nil {
-		log.Init()
-		log.Fatal(errors.ErrFailedToInitInfo(err))
-	}
 	once.Do(func() {
+		i, err := New(WithServerName(name))
+		if err != nil {
+			log.Init()
+			log.Fatal(errors.ErrFailedToInitInfo(err))
+		}
 		infoProvider = i
 	})
 }
@@ -142,6 +142,10 @@ func New(opts ...Option) (Info, error) {
 			}
 			log.Warn(werr)
 		}
+	}
+
+	if i.rtCaller == nil || i.rtFuncForPC == nil {
+		return nil, errors.ErrRuntimeFuncNil()
 	}
 
 	i.prepare()
