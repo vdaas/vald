@@ -17,7 +17,6 @@
 package errors
 
 import (
-	"fmt"
 	"math"
 	"runtime"
 	"testing"
@@ -285,12 +284,21 @@ func TestErrPanicString(t *testing.T) {
 		}(),
 		func() test {
 			return test{
-				name: "return an error when err not nil and msg is not empty",
+				name: "return an error when err is nil and msg is not empty",
 				args: args{
 					msg: defaultMsg,
 				},
 				want: want{
 					want: Wrap(nil, Errorf("panic recovered: %v", defaultMsg).Error()),
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return an error when err is nil and msg is empty",
+				args: args{},
+				want: want{
+					want: Wrap(nil, New("panic recovered: ").Error()),
 				},
 			}
 		}(),
@@ -317,8 +325,6 @@ func TestErrPanicString(t *testing.T) {
 		})
 	}
 }
-
-type runtimeError runtime.Error
 
 type runtimeErr struct {
 	err error
@@ -391,6 +397,15 @@ func TestErrRuntimeError(t *testing.T) {
 				},
 			}
 		}(),
+		func() test {
+			return test{
+				name: "return an error when err is nil and msg is nil",
+				args: args{},
+				want: want{
+					want: Wrap(nil, Errorf("system panicked caused by runtime error: %v", nil).Error()),
+				},
+			}
+		}(),
 	}
 	for _, tc := range tests {
 		test := tc
@@ -406,7 +421,7 @@ func TestErrRuntimeError(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			fmt.Println(test.args.r)
+
 			got := ErrRuntimeError(test.args.err, test.args.r)
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
