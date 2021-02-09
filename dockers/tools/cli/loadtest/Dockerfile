@@ -36,7 +36,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN mkdir -p $GOPATH/src
 
-WORKDIR ${GOPATH}/src/github.com/vdaas/vald
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 
 COPY go.mod .
 COPY go.sum .

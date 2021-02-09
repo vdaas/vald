@@ -55,7 +55,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=golang /usr/local/go $GOROOT
 RUN mkdir $GOPATH
 
-WORKDIR ${GOPATH}/src/github.com/vdaas/vald
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 
 COPY go.mod .
 COPY go.sum .
