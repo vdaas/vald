@@ -234,15 +234,15 @@ SHELL = bash
 
 E2E_BIND_HOST                      ?= 127.0.0.1
 E2E_BIND_PORT                      ?= 8082
-E2E_TIMEOUT                        ?= 15m
+E2E_TIMEOUT                        ?= 30m
 E2E_DATASET_NAME                   ?= fashion-mnist-784-euclidean
-E2E_INSERT_COUNT                   ?= 1000
+E2E_INSERT_COUNT                   ?= 10000
 E2E_SEARCH_COUNT                   ?= 1000
-E2E_SEARCH_BY_ID_COUNT             ?= 10
+E2E_SEARCH_BY_ID_COUNT             ?= 100
 E2E_GET_OBJECT_COUNT               ?= 10
-E2E_UPDATE_COUNT                   ?= 3
+E2E_UPDATE_COUNT                   ?= 10
 E2E_REMOVE_COUNT                   ?= 3
-E2E_WAIT_FOR_CREATE_INDEX_DURATION ?= 3m
+E2E_WAIT_FOR_CREATE_INDEX_DURATION ?= 8m
 E2E_TARGET_NAME                    ?= vald-meta-gateway
 E2E_TARGET_POD_NAME                ?= $(eval E2E_TARGET_POD_NAME := $(shell kubectl get pods --selector=app=$(E2E_TARGET_NAME) | tail -1 | cut -f1 -d " "))$(E2E_TARGET_POD_NAME)
 E2E_TARGET_NAMESPACE               ?= default
