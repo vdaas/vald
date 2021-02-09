@@ -27,8 +27,10 @@ import (
 	"github.com/vdaas/vald/internal/io/ioutil"
 )
 
-type Conn = tls.Conn
-type Config = tls.Config
+type (
+	Conn   = tls.Conn
+	Config = tls.Config
+)
 
 type credentials struct {
 	cfg      *tls.Config
@@ -126,6 +128,6 @@ func newCredential(opts ...Option) (c *credentials, err error) {
 	return c, nil
 }
 
-func Client(conn net.Conn, config *Config)*Conn{
+func Client(conn net.Conn, config *Config) *Conn {
 	return tls.Client(conn, config)
 }
