@@ -20,7 +20,6 @@ GOPKG                           = github.com/$(ORG)/$(NAME)
 GOPRIVATE                       = $(GOPKG),$(GOPKG)/apis
 DATETIME                        = $(eval DATETIME := $(shell date -u +%Y/%m/%d_%H:%M:%S%z))$(DATETIME)
 TAG                            ?= latest
-BASE_IMAGE                      = $(NAME)-base
 AGENT_IMAGE                     = $(NAME)-agent-ngt
 AGENT_SIDECAR_IMAGE             = $(NAME)-agent-sidecar
 BACKUP_GATEWAY_IMAGE            = $(NAME)-backup-gateway

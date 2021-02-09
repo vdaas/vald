@@ -32,7 +32,6 @@ on:
       - "apis/grpc/**"
       - "pkg/discoverer/k8s/**"
       - "cmd/discoverer/k8s/**"
-      - "dockers/base/Dockerfile"
       - "dockers/discoverer/k8s/Dockerfile"
       - "versions/GO_VERSION"
   pull_request:
@@ -45,7 +44,6 @@ on:
       - "apis/grpc/**"
       - "pkg/discoverer/k8s/**"
       - "cmd/discoverer/k8s/**"
-      - "dockers/base/Dockerfile"
       - "dockers/discoverer/k8s/Dockerfile"
       - "versions/GO_VERSION"
 
