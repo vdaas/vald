@@ -23,6 +23,7 @@ ARG REVIEWDOG_VERSION=v0.11.0
 ARG YQ_VERSION=4.5.0
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
     curl \
     unzip \
     && apt-get clean \
