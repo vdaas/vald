@@ -27,6 +27,7 @@ import (
 	"github.com/scylladb/gocqlx/qb"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/tcp"
 )
 
 var (
@@ -156,6 +157,7 @@ type (
 		connectObserver          ConnectObserver
 		frameHeaderObserver      FrameHeaderObserver
 		defaultIdempotence       bool
+		rawDialer                tcp.Dialer
 		dialer                   gocql.Dialer
 		writeCoalesceWaitTime    time.Duration
 
@@ -304,6 +306,9 @@ func (c *client) Open(ctx context.Context) (err error) {
 	if c.session, err = c.cluster.CreateSession(); err != nil {
 		log.Debugf("failed to create session %#v", c)
 		return errors.ErrCassandraFailedToCreateSession(err, c.hosts, c.port, c.cqlVersion)
+	}
+	if c.rawDialer != nil {
+		c.rawDialer.StartDialerCache(ctx)
 	}
 	return nil
 }

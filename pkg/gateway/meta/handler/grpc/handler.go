@@ -169,7 +169,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-		log.Error("SearchByID API failed to process request uuids:\t%v\terror:\t%s", meta, err.Error())
+		log.Errorf("SearchByID API failed to process request uuids:\t%v\terror:\t%s", meta, err.Error())
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
@@ -1571,7 +1571,7 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 		}
 	}()
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Object_ID) },
+		func() interface{} { return new(payload.Object_VectorRequest) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			req := data.(*payload.Object_VectorRequest)
 			ctx, sspan := trace.StartSpan(ctx, apiName+".StreamGetObject/id-"+req.GetId().GetId())

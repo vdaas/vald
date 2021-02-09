@@ -13,55 +13,38 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-package cassandra
+
+// Package types provides alias of protobuf library types
+package types
 
 import (
-	"context"
-	"net"
-	"reflect"
 	"testing"
 
-	"github.com/gocql/gocql"
+	"github.com/gogo/protobuf/proto"
 	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
 )
 
-type DialerMock struct {
-	DialContextFunc func(ctx context.Context, network, addr string) (net.Conn, error)
-}
-
-func (dm *DialerMock) DialContext(ctx context.Context, network, addr string) (net.Conn, error) {
-	return dm.DialContextFunc(ctx, network, addr)
-}
-
-func (dm *DialerMock) GetDialer() func(ctx context.Context, network, addr string) (net.Conn, error) {
-	return dm.DialContextFunc
-}
-func (dm *DialerMock) StartDialerCache(ctx context.Context) {}
-
-func TestMockClusterConfig_CreateSession(t *testing.T) {
+func TestUnmarshalAny(t *testing.T) {
 	t.Parallel()
-	type fields struct {
-		CreateSessionFunc func() (*gocql.Session, error)
+	type args struct {
+		any *Any
+		pb  proto.Message
 	}
 	type want struct {
-		want *gocql.Session
-		err  error
+		err error
 	}
 	type test struct {
 		name       string
-		fields     fields
+		args       args
 		want       want
-		checkFunc  func(want, *gocql.Session, error) error
-		beforeFunc func()
-		afterFunc  func()
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *gocql.Session, err error) error {
+	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -70,8 +53,9 @@ func TestMockClusterConfig_CreateSession(t *testing.T) {
 		/*
 		   {
 		       name: "test_case_1",
-		       fields: fields {
-		           CreateSessionFunc: nil,
+		       args: args {
+		           any: nil,
+		           pb: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -83,8 +67,9 @@ func TestMockClusterConfig_CreateSession(t *testing.T) {
 		   func() test {
 		       return test {
 		           name: "test_case_2",
-		           fields: fields {
-		           CreateSessionFunc: nil,
+		           args: args {
+		           any: nil,
+		           pb: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -97,22 +82,19 @@ func TestMockClusterConfig_CreateSession(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			m := &MockClusterConfig{
-				CreateSessionFunc: test.fields.CreateSessionFunc,
-			}
 
-			got, err := m.CreateSession()
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			err := UnmarshalAny(test.args.any, test.args.pb)
+			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

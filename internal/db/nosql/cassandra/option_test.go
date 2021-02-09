@@ -26,6 +26,7 @@ import (
 
 	"github.com/gocql/gocql"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"go.uber.org/goleak"
 )
@@ -147,7 +148,7 @@ func TestWithHosts(t *testing.T) {
 func TestWithDialer(t *testing.T) {
 	type T = client
 	type args struct {
-		der gocql.Dialer
+		der tcp.Dialer
 	}
 	type want struct {
 		obj *T
@@ -181,7 +182,8 @@ func TestWithDialer(t *testing.T) {
 				},
 				want: want{
 					obj: &T{
-						dialer: dm,
+						dialer:    dm,
+						rawDialer: dm,
 					},
 				},
 			}

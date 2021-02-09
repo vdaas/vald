@@ -408,6 +408,9 @@ defaults:
       # @schema {"name": "defaults.server_config.tls.ca", "type": "string"}
       # defaults.server_config.tls.ca -- TLS ca path
       ca: /path/to/ca
+      # @schema {"name": "defaults.server_config.tls.insecure_skip_verify", "type": "boolean"}
+      # defaults.server_config.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+      insecure_skip_verify: false
   # @schema {"name": "defaults.grpc", "type": "object"}
   grpc:
     # @schema {"name": "defaults.grpc.client", "type": "object", "anchor": "grpc.client"}
@@ -539,14 +542,16 @@ defaults:
             dual_stack_enabled: true
           # @schema {"name": "defaults.grpc.client.dial_option.tcp.tls", "alias": "tls"}
           tls:
-            # defaults.grpc.client.dial_option.tcp.tls.enabled -- gRPC client TCP TLS enabled
+            # defaults.grpc.client.dial_option.tcp.tls.enabled -- TLS enabled
             enabled: false
-            # defaults.grpc.client.dial_option.tcp.tls.cert -- gRPC client TCP TLS cert path
+            # defaults.grpc.client.dial_option.tcp.tls.cert -- TLS cert path
             cert: /path/to/cert
-            # defaults.grpc.client.dial_option.tcp.tls.key -- gRPC client TCP TLS key path
+            # defaults.grpc.client.dial_option.tcp.tls.key -- TLS key path
             key: /path/to/key
-            # defaults.grpc.client.dial_option.tcp.tls.ca -- gRPC client TCP TLS ca path
+            # defaults.grpc.client.dial_option.tcp.tls.ca -- TLS ca path
             ca: /path/to/ca
+            # defaults.grpc.client.dial_option.tcp.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+            insecure_skip_verify: false
         # @schema {"name": "defaults.grpc.client.dial_option.keep_alive", "type": "object"}
         keep_alive:
           # @schema {"name": "defaults.grpc.client.dial_option.keep_alive.time", "type": "string"}
@@ -560,14 +565,16 @@ defaults:
           permit_without_stream: false
       # @schema {"name": "defaults.grpc.client.tls", "alias": "tls"}
       tls:
-        # defaults.grpc.client.tls.enabled -- gRPC client TLS enabled
+        # defaults.grpc.client.tls.enabled -- TLS enabled
         enabled: false
-        # defaults.grpc.client.tls.cert -- gRPC client TLS cert path
+        # defaults.grpc.client.tls.cert -- TLS cert path
         cert: /path/to/cert
-        # defaults.grpc.client.tls.key -- gRPC client TLS key path
+        # defaults.grpc.client.tls.key -- TLS key path
         key: /path/to/key
-        # defaults.grpc.client.tls.ca -- gRPC client TLS ca path
+        # defaults.grpc.client.tls.ca -- TLS ca path
         ca: /path/to/ca
+        # defaults.grpc.client.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+        insecure_skip_verify: false
   # @schema {"name": "defaults.observability", "type": "object", "anchor": "observability"}
   observability:
     # @schema {"name": "defaults.observability.enabled", "type": "boolean"}
@@ -2608,14 +2615,16 @@ agent:
             # agent.sidecar.config.client.tcp.dialer.dual_stack_enabled -- HTTP client TCP dialer dual stack enabled
             dual_stack_enabled: false
           tls:
-            # agent.sidecar.config.client.tcp.tls.enabled -- HTTP client TCP TLS enabled
+            # agent.sidecar.config.client.tcp.tls.enabled -- TLS enabled
             enabled: false
-            # agent.sidecar.config.client.tcp.tls.cert -- HTTP client TCP TLS cert path
+            # agent.sidecar.config.client.tcp.tls.cert -- TLS cert path
             cert: /path/to/cert
-            # agent.sidecar.config.client.tcp.tls.key -- HTTP client TCP TLS key path
+            # agent.sidecar.config.client.tcp.tls.key -- TLS key path
             key: /path/to/key
-            # agent.sidecar.config.client.tcp.tls.ca -- HTTP client TCP TLS ca path
+            # agent.sidecar.config.client.tcp.tls.ca -- TLS ca path
             ca: /path/to/ca
+            # agent.sidecar.config.client.tcp.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+            insecure_skip_verify: false
         # @schema {"name": "agent.sidecar.config.client.transport", "type": "object"}
         transport:
           # @schema {"name": "agent.sidecar.config.client.transport.round_tripper", "type": "object"}
@@ -2887,6 +2896,33 @@ discoverer:
     # @schema {"name": "discoverer.discoverer.discovery_duration", "type": "string"}
     # discoverer.discoverer.discovery_duration -- duration to discovery
     discovery_duration: 3s
+    # @schema {"name": "discoverer.discoverer.tcp", "alias": "tcp"}
+    tcp:
+      dns:
+        # discoverer.discoverer.tcp.dns.cache_enabled -- TCP DNS cache enabled
+        cache_enabled: true
+        # discoverer.discoverer.tcp.dns.refresh_duration -- TCP DNS cache refresh duration
+        refresh_duration: 5m
+        # discoverer.discoverer.tcp.dns.cache_expiration -- TCP DNS cache expiration
+        cache_expiration: 24h
+      dialer:
+        # discoverer.discoverer.tcp.dialer.timeout -- TCP dialer timeout
+        timeout: 30s
+        # discoverer.discoverer.tcp.dialer.keep_alive -- TCP dialer keep alive
+        keep_alive: 10m
+        # discoverer.discoverer.tcp.dialer.dual_stack_enabled -- TCP dialer dual stack enabled
+        dual_stack_enabled: false
+      tls:
+        # discoverer.discoverer.tcp.tls.enabled -- TLS enabled
+        enabled: false
+        # discoverer.discoverer.tcp.tls.cert -- TLS cert path
+        cert: /path/to/cert
+        # discoverer.discoverer.tcp.tls.key -- TLS key path
+        key: /path/to/key
+        # discoverer.discoverer.tcp.tls.ca -- TLS ca path
+        ca: /path/to/ca
+        # discoverer.discoverer.tcp.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+        insecure_skip_verify: false
   # @schema {"name": "discoverer.clusterRole", "type": "object"}
   clusterRole:
     # @schema {"name": "discoverer.clusterRole.enabled", "type": "boolean"}
@@ -3407,13 +3443,15 @@ manager:
         tls:
           # manager.backup.mysql.config.tls.enabled -- TLS enabled
           enabled: false
-          # manager.backup.mysql.config.tls.cert -- path to TLS cert
+          # manager.backup.mysql.config.tls.cert -- TLS cert path
           cert: /path/to/cert
-          # manager.backup.mysql.config.tls.key -- path to TLS key
+          # manager.backup.mysql.config.tls.key -- TLS key path
           key: /path/to/key
-          # manager.backup.mysql.config.tls.ca -- path to TLS ca
+          # manager.backup.mysql.config.tls.ca -- TLS ca path
           ca: /path/to/ca
-        # @schema {"name": "manager.backup.mysql.config.tls", "alias": "tcp"}
+          # manager.backup.mysql.config.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+          insecure_skip_verify: false
+        # @schema {"name": "manager.backup.mysql.config.tcp", "alias": "tcp"}
         tcp:
           dns:
             # manager.backup.mysql.config.tcp.dns.cache_enabled -- TCP DNS cache enabled
@@ -3430,14 +3468,16 @@ manager:
             # manager.backup.mysql.config.tcp.dialer.dual_stack_enabled -- TCP dialer dual stack enabled
             dual_stack_enabled: false
           tls:
-            # manager.backup.mysql.config.tcp.tls.enabled -- TCP TLS enabled
+            # manager.backup.mysql.config.tcp.tls.enabled -- TLS enabled
             enabled: false
-            # manager.backup.mysql.config.tcp.tls.cert -- path to TCP TLS cert
+            # manager.backup.mysql.config.tcp.tls.cert -- TLS cert path
             cert: /path/to/cert
-            # manager.backup.mysql.config.tcp.tls.key -- path to TCP TLS key
+            # manager.backup.mysql.config.tcp.tls.key -- TLS key path
             key: /path/to/key
-            # manager.backup.mysql.config.tcp.tls.ca -- path to TCP TLS ca
+            # manager.backup.mysql.config.tcp.tls.ca -- TLS ca path
             ca: /path/to/ca
+            # manager.backup.mysql.config.tcp.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+            insecure_skip_verify: false
     # @schema {"name": "manager.backup.cassandra", "type": "object", "anchor": "cassandra"}
     cassandra:
       # @schema {"name": "manager.backup.cassandra.enabled", "type": "boolean"}
@@ -3522,12 +3562,14 @@ manager:
         tls:
           # manager.backup.cassandra.config.tls.enabled -- TLS enabled
           enabled: false
-          # manager.backup.cassandra.config.tls.cert -- path to TLS cert
+          # manager.backup.cassandra.config.tls.cert -- TLS cert path
           cert: /path/to/cert
-          # manager.backup.cassandra.config.tls.key -- path to TLS key
+          # manager.backup.cassandra.config.tls.key -- TLS key path
           key: /path/to/key
-          # manager.backup.cassandra.config.tls.ca -- path to TLS ca
+          # manager.backup.cassandra.config.tls.ca -- TLS ca path
           ca: /path/to/ca
+          # manager.backup.cassandra.config.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+          insecure_skip_verify: false
         # @schema {"name": "manager.backup.cassandra.config.tcp", "alias": "tcp"}
         tcp:
           dns:
@@ -3544,6 +3586,17 @@ manager:
             keep_alive: 10m
             # manager.backup.cassandra.config.tcp.dialer.dual_stack_enabled -- TCP dialer dual stack enabled
             dual_stack_enabled: false
+          tls:
+            # manager.backup.cassandra.config.tcp.tls.enabled -- TLS enabled
+            enabled: false
+            # manager.backup.cassandra.config.tcp.tls.cert -- TLS cert path
+            cert: /path/to/cert
+            # manager.backup.cassandra.config.tcp.tls.key -- TLS key path
+            key: /path/to/key
+            # manager.backup.cassandra.config.tcp.tls.ca -- TLS ca path
+            ca: /path/to/ca
+            # manager.backup.cassandra.config.tcp.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+            insecure_skip_verify: false
         # @schema {"name": "manager.backup.cassandra.config.enable_host_verification", "type": "boolean"}
         # manager.backup.cassandra.config.enable_host_verification -- host verification enabled
         enable_host_verification: false
@@ -4139,12 +4192,14 @@ meta:
       tls:
         # meta.redis.config.tls.enabled -- TLS enabled
         enabled: false
-        # meta.redis.config.tls.cert -- path to TLS cert
+        # meta.redis.config.tls.cert -- TLS cert path
         cert: /path/to/cert
-        # meta.redis.config.tls.key -- path to TLS key
+        # meta.redis.config.tls.key -- TLS key path
         key: /path/to/key
-        # meta.redis.config.tls.ca -- path to TLS ca
+        # meta.redis.config.tls.ca -- TLS ca path
         ca: /path/to/ca
+        # meta.redis.config.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+        insecure_skip_verify: false
       # @schema {"name": "meta.redis.config.tcp", "alias": "tcp"}
       tcp:
         dns:
@@ -4162,14 +4217,16 @@ meta:
           # meta.redis.config.tcp.dialer.dual_stack_enabled -- TCP dialer dual stack enabled
           dual_stack_enabled: false
         tls:
-          # meta.redis.config.tcp.tls.enabled -- TCP TLS enabled
+          # meta.redis.config.tcp.tls.enabled -- TLS enabled
           enabled: false
-          # meta.redis.config.tcp.tls.cert -- path to TCP TLS cert
+          # meta.redis.config.tcp.tls.cert -- TLS cert path
           cert: /path/to/cert
-          # meta.redis.config.tcp.tls.key -- path to TCP TLS key
+          # meta.redis.config.tcp.tls.key -- TLS key path
           key: /path/to/key
-          # meta.redis.config.tcp.tls.ca -- path to TCP TLS ca
+          # meta.redis.config.tcp.tls.ca -- TLS ca path
           ca: /path/to/ca
+          # meta.redis.config.tcp.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+          insecure_skip_verify: false
       # @schema {"name": "meta.redis.config.kv_prefix", "type": "string"}
       # meta.redis.config.kv_prefix -- KV prefix
       kv_prefix: ""
@@ -4234,15 +4291,19 @@ meta:
       max_routing_key_info: 1000
       # meta.cassandra.config.page_size -- page size
       page_size: 5000
+      # @schema {"name": "meta.cassandra.config.tls", "alias": "tls"}
       tls:
         # meta.cassandra.config.tls.enabled -- TLS enabled
         enabled: false
-        # meta.cassandra.config.tls.cert -- path to TLS cert
+        # meta.cassandra.config.tls.cert -- TLS cert path
         cert: /path/to/cert
-        # meta.cassandra.config.tls.key -- path to TLS key
+        # meta.cassandra.config.tls.key -- TLS key path
         key: /path/to/key
-        # meta.cassandra.config.tls.ca -- path to TLS ca
+        # meta.cassandra.config.tls.ca -- TLS ca path
         ca: /path/to/ca
+        # meta.cassandra.config.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+        insecure_skip_verify: false
+      # @schema {"name": "meta.cassandra.config.tcp", "alias": "tcp"}
       tcp:
         dns:
           # meta.cassandra.config.tcp.dns.cache_enabled -- TCP DNS cache enabled
@@ -4258,6 +4319,17 @@ meta:
           keep_alive: 10m
           # meta.cassandra.config.tcp.dialer.dual_stack_enabled -- TCP dialer dual stack enabled
           dual_stack_enabled: false
+        tls:
+          # meta.cassandra.config.tcp.tls.enabled -- TLS enabled
+          enabled: false
+          # meta.cassandra.config.tcp.tls.cert -- TLS cert path
+          cert: /path/to/cert
+          # meta.cassandra.config.tcp.tls.key -- TLS key path
+          key: /path/to/key
+          # meta.cassandra.config.tcp.tls.ca -- TLS ca path
+          ca: /path/to/ca
+          # meta.cassandra.config.tcp.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+          insecure_skip_verify: false
       # meta.cassandra.config.enable_host_verification -- host verification enabled
       enable_host_verification: false
       # meta.cassandra.config.default_timestamp -- default timestamp enabled

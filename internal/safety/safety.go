@@ -39,7 +39,7 @@ func recoverFunc(fn func() error, withPanic bool) func() error {
 		defer func() {
 			if r := recover(); r != nil {
 				stack := string(debug.Stack())
-				log.Warn("recovered: %+v\nstacktrace:\n%s", r, stack)
+				log.Warnf("recovered: %+v\nstacktrace:\n%s", r, stack)
 				switch x := r.(type) {
 				case runtime.Error:
 					err = errors.ErrRuntimeError(err, x)

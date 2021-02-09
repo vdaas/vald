@@ -46,7 +46,7 @@ spec:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/component: gateway
       annotations:
-        checksum/configmap: c43e69b614c58ccb41d743c57293cbc08cf2bac8ce586b5942ba06a4e714964c
+        checksum/configmap: 13b81813ae4eed5cae1f646c230f12d76cd66fdda2d0f3aa4a8b98537382719e
     spec:
       initContainers:
         - name: wait-for-meta
