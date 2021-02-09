@@ -77,9 +77,11 @@ func TestWithCert(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, append(goleakIgnoreOptions, goleak.IgnoreCurrent())...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -152,9 +154,11 @@ func TestWithKey(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, append(goleakIgnoreOptions, goleak.IgnoreCurrent())...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -227,9 +231,11 @@ func TestWithCa(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, append(goleakIgnoreOptions, goleak.IgnoreCurrent())...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -303,9 +309,11 @@ func TestWithTLSConfig(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, append(goleakIgnoreOptions, goleak.IgnoreCurrent())...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -380,11 +388,9 @@ func TestWithInsecureSkipVerify(t *testing.T) {
 
 	for _, tc := range tests {
 		test := tc
-		t.Run(tt, func() {
-			tt.Parallel()
-		})
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, append(goleakIgnoreOptions, goleak.IgnoreCurrent())...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
