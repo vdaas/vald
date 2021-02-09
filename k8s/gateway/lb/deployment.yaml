@@ -21,10 +21,10 @@ metadata:
   labels:
     app: vald-lb-gateway
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.0.1
+    helm.sh/chart: vald-v1.0.2
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v1.0.1
+    app.kubernetes.io/version: v1.0.2
     app.kubernetes.io/component: gateway-lb
 spec:
   progressDeadlineSeconds: 600
@@ -46,7 +46,7 @@ spec:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/component: gateway
       annotations:
-        checksum/configmap: 85d524cf7a34e9d425a1ea355ee84cdf750e0617f4597ccb82460d0a3a785fbb
+        checksum/configmap: 1463173816bb667cfa700164bae693b03a853af0b9921cbd604d7e6669822b5b
     spec:
       initContainers:
         - name: wait-for-discoverer
@@ -168,5 +168,5 @@ spec:
           configMap:
             defaultMode: 420
             name: vald-lb-gateway-config
-      priorityClassName: vald-lb-gateway-priority
+      priorityClassName: default-vald-lb-gateway-priority
 status:
