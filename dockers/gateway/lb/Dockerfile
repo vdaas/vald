@@ -15,23 +15,36 @@
 #
 
 ARG GO_VERSION=latest
-ARG BASE_TAG=latest
 ARG DISTROLESS_IMAGE=gcr.io/distroless/static
 ARG DISTROLESS_IMAGE_TAG=nonroot
 ARG UPX_OPTIONS=-9
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
-FROM golang:${GO_VERSION} AS golang
+FROM golang:${GO_VERSION} AS builder
 
-FROM vdaas/vald-base:${BASE_TAG} AS builder
 ARG UPX_OPTIONS
 
+ENV GO111MODULE on
+ENV LANG en_US.UTF-8
 ENV ORG vdaas
 ENV REPO vald
 ENV PKG gateway/lb
 ENV APP_NAME lb
 
-COPY --from=golang /usr/local/go $GOROOT
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    upx \
+    git \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p $GOPATH/src
+
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
+
+COPY go.mod .
+COPY go.sum .
+
+RUN go mod download
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal
 COPY internal .

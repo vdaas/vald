@@ -33,7 +33,6 @@ on:
       - "apis/grpc/**"
       - "pkg/manager/compressor/**"
       - "cmd/manager/compressor/**"
-      - "dockers/base/Dockerfile"
       - "dockers/manager/compressor/Dockerfile"
       - "versions/GO_VERSION"
   pull_request:
@@ -47,7 +46,6 @@ on:
       - "apis/grpc/**"
       - "pkg/manager/compressor/**"
       - "cmd/manager/compressor/**"
-      - "dockers/base/Dockerfile"
       - "dockers/manager/compressor/Dockerfile"
       - "versions/GO_VERSION"
 
