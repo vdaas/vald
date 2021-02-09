@@ -35,7 +35,6 @@ on:
       - "pkg/gateway/meta/**"
       - "cmd/gateway/meta/**"
       - "pkg/gateway/internal/**"
-      - "dockers/base/Dockerfile"
       - "dockers/gateway/meta/Dockerfile"
       - "versions/GO_VERSION"
   pull_request:
@@ -51,7 +50,6 @@ on:
       - "pkg/gateway/meta/**"
       - "cmd/gateway/meta/**"
       - "pkg/gateway/internal/**"
-      - "dockers/base/Dockerfile"
       - "dockers/gateway/meta/Dockerfile"
       - "versions/GO_VERSION"
 

@@ -33,7 +33,6 @@ on:
       - "apis/grpc/**"
       - "pkg/gateway/vald/**"
       - "cmd/gateway/vald/**"
-      - "dockers/base/Dockerfile"
       - "dockers/gateway/vald/Dockerfile"
       - "versions/GO_VERSION"
   pull_request:
@@ -47,7 +46,6 @@ on:
       - "apis/grpc/**"
       - "pkg/gateway/vald/**"
       - "cmd/gateway/vald/**"
-      - "dockers/base/Dockerfile"
       - "dockers/gateway/vald/Dockerfile"
       - "versions/GO_VERSION"
 
