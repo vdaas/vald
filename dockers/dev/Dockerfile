@@ -14,14 +14,19 @@
 # limitations under the License.
 #
 
-ARG BASE_TAG=latest
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
-FROM vdaas/vald-base:${BASE_TAG} AS builder
+FROM ubuntu:devel AS builder
 ARG PROTOBUF_VERSION=3.14.0
-ARG GOLANGCI_LINT_VERSION=v1.35.2
+ARG GOLANGCI_LINT_VERSION=v1.36.0
 ARG REVIEWDOG_VERSION=v0.11.0
-ARG YQ_VERSION=4.3.2
+ARG YQ_VERSION=4.5.0
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    unzip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /tmp
 
