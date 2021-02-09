@@ -67,6 +67,8 @@ RUN curl -OL "https://github.com/google/protobuf/releases/download/v${PROTOBUF_V
 
 WORKDIR ${GOPATH}/src/github.com/vdaas/vald
 
+COPY go.mod .
+COPY go.sum .
 COPY Makefile .
 COPY Makefile.d Makefile.d
 COPY apis/proto apis/proto
