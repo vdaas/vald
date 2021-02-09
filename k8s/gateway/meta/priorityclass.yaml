@@ -17,7 +17,7 @@
 apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass
 metadata:
-  name: vald-meta-gateway-priority
+  name: default-vald-meta-gateway-priority
   labels:
     app.kubernetes.io/name: vald
     helm.sh/chart: vald-v1.0.1

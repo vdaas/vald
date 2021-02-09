@@ -19,6 +19,7 @@ package tcp
 
 import (
 	"context"
+	"crypto/tls"
 	stderrors "errors"
 	"fmt"
 	"io/ioutil"
@@ -30,6 +31,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -1726,6 +1728,162 @@ func Test_dialer_cacheExpireHook(t *testing.T) {
 
 			d.cacheExpireHook(test.args.ctx, test.args.addr)
 			if err := test.checkFunc(d); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_dialer_tlsHandshake(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ctx  context.Context
+		conn net.Conn
+		addr string
+	}
+	type fields struct {
+		cache                 cache.Cache
+		dnsCache              bool
+		dnsCachedOnce         sync.Once
+		tlsConfig             *tls.Config
+		dnsRefreshDurationStr string
+		dnsCacheExpirationStr string
+		dnsRefreshDuration    time.Duration
+		dnsCacheExpiration    time.Duration
+		dialerTimeout         time.Duration
+		dialerKeepAlive       time.Duration
+		dialerFallbackDelay   time.Duration
+		dialerDualStack       bool
+		addrs                 sync.Map
+		der                   *net.Dialer
+		dialer                func(ctx context.Context, network, addr string) (net.Conn, error)
+		eg                    errgroup.Group
+	}
+	type want struct {
+		want *tls.Conn
+		err  error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *tls.Conn, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got *tls.Conn, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           conn: nil,
+		           addr: "",
+		       },
+		       fields: fields {
+		           cache: nil,
+		           dnsCache: false,
+		           dnsCachedOnce: sync.Once{},
+		           tlsConfig: nil,
+		           dnsRefreshDurationStr: "",
+		           dnsCacheExpirationStr: "",
+		           dnsRefreshDuration: nil,
+		           dnsCacheExpiration: nil,
+		           dialerTimeout: nil,
+		           dialerKeepAlive: nil,
+		           dialerFallbackDelay: nil,
+		           dialerDualStack: false,
+		           addrs: sync.Map{},
+		           der: nil,
+		           dialer: nil,
+		           eg: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           conn: nil,
+		           addr: "",
+		           },
+		           fields: fields {
+		           cache: nil,
+		           dnsCache: false,
+		           dnsCachedOnce: sync.Once{},
+		           tlsConfig: nil,
+		           dnsRefreshDurationStr: "",
+		           dnsCacheExpirationStr: "",
+		           dnsRefreshDuration: nil,
+		           dnsCacheExpiration: nil,
+		           dialerTimeout: nil,
+		           dialerKeepAlive: nil,
+		           dialerFallbackDelay: nil,
+		           dialerDualStack: false,
+		           addrs: sync.Map{},
+		           der: nil,
+		           dialer: nil,
+		           eg: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			d := &dialer{
+				cache:                 test.fields.cache,
+				dnsCache:              test.fields.dnsCache,
+				dnsCachedOnce:         test.fields.dnsCachedOnce,
+				tlsConfig:             test.fields.tlsConfig,
+				dnsRefreshDurationStr: test.fields.dnsRefreshDurationStr,
+				dnsCacheExpirationStr: test.fields.dnsCacheExpirationStr,
+				dnsRefreshDuration:    test.fields.dnsRefreshDuration,
+				dnsCacheExpiration:    test.fields.dnsCacheExpiration,
+				dialerTimeout:         test.fields.dialerTimeout,
+				dialerKeepAlive:       test.fields.dialerKeepAlive,
+				dialerFallbackDelay:   test.fields.dialerFallbackDelay,
+				dialerDualStack:       test.fields.dialerDualStack,
+				addrs:                 test.fields.addrs,
+				der:                   test.fields.der,
+				dialer:                test.fields.dialer,
+				eg:                    test.fields.eg,
+			}
+
+			got, err := d.tlsHandshake(test.args.ctx, test.args.conn, test.args.addr)
+			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
