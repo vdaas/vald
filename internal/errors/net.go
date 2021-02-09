@@ -37,6 +37,7 @@ var (
 		return Errorf("no port available for Host: %s\tbetween %d ~ %d", host, start, end)
 	}
 
+	// ErrLookupIPAddrNotFound represents a function to generate an error that the host's ip address could not discovererd from DNS.
 	ErrLookupIPAddrNotFound = func(host string) error {
 		return Errorf("failed to lookup ip addrs for host: %s", host)
 	}

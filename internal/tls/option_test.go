@@ -355,7 +355,7 @@ func TestWithInsecureSkipVerify(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "InsecureSkipVerify is true",
+			name: "success InsecureSkipVerify when insecure is true",
 			args: args{
 				insecure: true,
 			},
@@ -366,7 +366,7 @@ func TestWithInsecureSkipVerify(t *testing.T) {
 			},
 		},
 		{
-			name: "InsecureSkipVerify is false",
+			name: "success InsecureSkipVerify when insecure is false",
 			args: args{
 				insecure: false,
 			},
