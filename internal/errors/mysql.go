@@ -50,6 +50,11 @@ var (
 	ErrRequiredMemberNotFilled = func(member string) error {
 		return Wrapf(NewErrMySQLInvalidArgumentIdentity(), "error required member not filled (member: %s)", member)
 	}
+
+	// ErrMySQLSessionNil represents a function to generate an error that the MySQL session is nil.
+	ErrMySQLSessionNil = func() error {
+		return New("error MySQL session is nil")
+	}
 )
 
 // ErrMySQLNotFoundIdentity represents a custom error type that the element is not found.
