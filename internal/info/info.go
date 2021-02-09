@@ -92,7 +92,7 @@ var (
 
 	// Organization represent the organization of Vald.
 	Organization = "vdaas"
-	// Repository represent the repoistory of Vald.
+	// Repository represent the repository of Vald.
 	Repository = "vald"
 
 	reps = strings.NewReplacer("_", " ", ",omitempty", "")
