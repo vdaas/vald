@@ -2615,15 +2615,15 @@ agent:
             # agent.sidecar.config.client.tcp.dialer.dual_stack_enabled -- HTTP client TCP dialer dual stack enabled
             dual_stack_enabled: false
           tls:
-            # agent.sidecar.config.client.tls.enabled -- TLS enabled
+            # agent.sidecar.config.client.tcp.tls.enabled -- TLS enabled
             enabled: false
-            # agent.sidecar.config.client.tls.cert -- TLS cert path
+            # agent.sidecar.config.client.tcp.tls.cert -- TLS cert path
             cert: /path/to/cert
-            # agent.sidecar.config.client.tls.key -- TLS key path
+            # agent.sidecar.config.client.tcp.tls.key -- TLS key path
             key: /path/to/key
-            # agent.sidecar.config.client.tls.ca -- TLS ca path
+            # agent.sidecar.config.client.tcp.tls.ca -- TLS ca path
             ca: /path/to/ca
-            # agent.sidecar.config.client.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+            # agent.sidecar.config.client.tcp.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
             insecure_skip_verify: false
         # @schema {"name": "agent.sidecar.config.client.transport", "type": "object"}
         transport:
