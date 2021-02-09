@@ -20,12 +20,14 @@ package tls
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"net"
 	"reflect"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/io/ioutil"
 )
 
+type Conn = tls.Conn
 type Config = tls.Config
 
 type credentials struct {
@@ -122,4 +124,8 @@ func newCredential(opts ...Option) (c *credentials, err error) {
 	}
 	c.cfg.InsecureSkipVerify = c.insecure
 	return c, nil
+}
+
+func Client(conn net.Conn, config *Config)*Conn{
+	return tls.Client(conn, config)
 }

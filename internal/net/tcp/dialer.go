@@ -19,7 +19,6 @@ package tcp
 
 import (
 	"context"
-	"crypto/tls"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -31,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/tls"
 )
 
 // Dialer is an interface to get the dialer instance to connect to an address.

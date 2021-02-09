@@ -19,7 +19,6 @@ package tcp
 
 import (
 	"context"
-	"crypto/tls"
 	stderrors "errors"
 	"fmt"
 	"io/ioutil"
