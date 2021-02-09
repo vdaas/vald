@@ -136,7 +136,9 @@ func (m *mySQLClient) Open(ctx context.Context) (err error) {
 	conn.SetMaxIdleConns(m.maxIdleConns)
 	conn.SetMaxOpenConns(m.maxOpenConns)
 
-	m.session = dbr.NewSession(conn, nil)
+	if m.session == nil {
+		m.session = dbr.NewSession(conn, m.eventReceiver)
+	}
 	m.connected.Store(true)
 
 	return m.Ping(ctx)
@@ -145,6 +147,11 @@ func (m *mySQLClient) Open(ctx context.Context) (err error) {
 // Ping check the connection of MySQL database.
 // If the connection is closed, it returns error.
 func (m *mySQLClient) Ping(ctx context.Context) (err error) {
+	if m.session == nil {
+		err = errors.ErrMySQLSessionNil()
+		log.Error(err)
+		return err
+	}
 	pctx, cancel := context.WithTimeout(ctx, m.initialPingTimeLimit)
 	defer cancel()
 	tick := time.NewTicker(m.initialPingDuration)
@@ -174,6 +181,12 @@ func (m *mySQLClient) Ping(ctx context.Context) (err error) {
 // Close closes the connection of MySQL database.
 // If the connection is already closed or closing conncection is failed, it returns error.
 func (m *mySQLClient) Close(ctx context.Context) (err error) {
+	if m.session == nil {
+		err = errors.ErrMySQLSessionNil()
+		log.Error(err)
+		return err
+	}
+
 	if m.connected.Load().(bool) {
 		err = m.session.Close()
 		if err == nil {
@@ -198,6 +211,12 @@ func (m *mySQLClient) GetVector(ctx context.Context, uuid string) (Vector, error
 		return nil, errors.ErrRequiredElementNotFoundByUUID(uuid)
 	}
 
+	if m.session == nil {
+		err = errors.ErrMySQLSessionNil()
+		log.Error(err)
+		return nil, err
+	}
+
 	var podIPs []podIP
 	_, err = m.session.Select(asterisk).From(podIPTableName).Where(m.dbr.Eq(idColumnName, data.ID)).LoadContext(ctx, &podIPs)
 	if err != nil {
@@ -214,6 +233,12 @@ func (m *mySQLClient) GetVector(ctx context.Context, uuid string) (Vector, error
 func (m *mySQLClient) GetIPs(ctx context.Context, uuid string) ([]string, error) {
 	if !m.connected.Load().(bool) {
 		return nil, errors.ErrMySQLConnectionClosed
+	}
+
+	if m.session == nil {
+		err := errors.ErrMySQLSessionNil()
+		log.Error(err)
+		return nil, err
 	}
 
 	var id int64
@@ -304,6 +329,12 @@ func (m *mySQLClient) SetVectors(ctx context.Context, vecs ...Vector) error {
 		return errors.ErrMySQLConnectionClosed
 	}
 
+	if m.session == nil {
+		err := errors.ErrMySQLSessionNil()
+		log.Error(err)
+		return err
+	}
+
 	tx, err := m.session.Begin()
 	if err != nil {
 		return err
@@ -356,6 +387,12 @@ func (m *mySQLClient) SetVectors(ctx context.Context, vecs ...Vector) error {
 func (m *mySQLClient) deleteVector(ctx context.Context, val string) error {
 	if !m.connected.Load().(bool) {
 		return errors.ErrMySQLConnectionClosed
+	}
+
+	if m.session == nil {
+		err := errors.ErrMySQLSessionNil()
+		log.Error(err)
+		return err
 	}
 
 	tx, err := m.session.Begin()
@@ -411,6 +448,12 @@ func (m *mySQLClient) SetIPs(ctx context.Context, uuid string, ips ...string) er
 		return errors.ErrMySQLConnectionClosed
 	}
 
+	if m.session == nil {
+		err := errors.ErrMySQLSessionNil()
+		log.Error(err)
+		return err
+	}
+
 	tx, err := m.session.Begin()
 	if err != nil {
 		return err
@@ -442,6 +485,12 @@ func (m *mySQLClient) SetIPs(ctx context.Context, uuid string, ips ...string) er
 func (m *mySQLClient) RemoveIPs(ctx context.Context, ips ...string) error {
 	if !m.connected.Load().(bool) {
 		return errors.ErrMySQLConnectionClosed
+	}
+
+	if m.session == nil {
+		err := errors.ErrMySQLSessionNil()
+		log.Error(err)
+		return err
 	}
 
 	tx, err := m.session.Begin()
