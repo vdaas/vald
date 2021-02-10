@@ -20,10 +20,10 @@ metadata:
   name: vald-meta
   labels:
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.0.1
+    helm.sh/chart: vald-v1.0.2
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v1.0.1
+    app.kubernetes.io/version: v1.0.2
     app.kubernetes.io/component: meta
 spec:
   maxUnavailable: 50%
