@@ -1088,14 +1088,6 @@ func Test_info_prepare(t *testing.T) {
 		}
 		return nil
 	}
-	defaultBeforeFunc := func() {
-		Version = ""
-		GitCommit = "gitcommit"
-		BuildTime = "1s"
-		CGOEnabled = "true"
-		NGTVersion = "v1.11.6"
-		BuildCPUInfoFlags = "\t\tavx512f avx512dq\t"
-	}
 	tests := []test{
 		{
 			name: "set success with all fields are empty",

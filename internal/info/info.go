@@ -312,16 +312,6 @@ func (i *info) prepare() {
 	})
 }
 
-// String calls String method of global detail object.
-func String() string {
-	return detail.String()
-}
-
-// Get calls Get method of global detail object.
-func Get() Detail {
-	return detail.Get()
-}
-
 func (s StackTrace) String() string {
 	return fmt.Sprintf("URL: %s\tFile: %s\tLine: #%d\tFuncName: %s", s.URL, s.File, s.Line, s.FuncName)
 }
