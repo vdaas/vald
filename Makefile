@@ -40,7 +40,7 @@ META_GATEWAY_IMAGE              = $(NAME)-meta-gateway
 META_REDIS_IMAGE                = $(NAME)-meta-redis
 MAINTAINER                      = "$(ORG).org $(NAME) team <$(NAME)@$(ORG).org>"
 
-VERSION ?= $(eval VALD_VERSION := $(shell cat versions/VALD_VERSION))$(VALD_VERSION)
+VERSION ?= $(eval VERSION := $(shell cat versions/VALD_VERSION))$(VERSION)
 
 NGT_VERSION := $(eval NGT_VERSION := $(shell cat versions/NGT_VERSION))$(NGT_VERSION)
 NGT_REPO = github.com/yahoojapan/NGT
@@ -270,11 +270,6 @@ help:
 	{ lastLine = $$0 }' $(MAKELISTS) | sort -u
 	@printf "\n"
 
-.PHONY: version
-## print vald version
-version:
-	@echo $(VERSION)
-
 .PHONY: all
 ## execute clean and deps
 all: clean deps
@@ -391,10 +386,15 @@ goimports/install:
 prettier/install:
 	type prettier || npm install -g prettier
 
+.PHONY: version
+## print vald version
+version: \
+	version/vald
+
 .PHONY: version/vald
 ## print vald version
 version/vald:
-	@echo $(VALD_VERSION)
+	@echo $(VERSION)
 
 .PHONY: version/go
 ## print go version
@@ -469,7 +469,7 @@ changelog/update:
 ## print next changelog entry
 changelog/next/print:
 	@cat hack/CHANGELOG.template.md | \
-	    sed -e 's/{{ version }}/$(VALD_VERSION)/g'
+	    sed -e 's/{{ version }}/$(VERSION)/g'
 	@echo "$$BODY"
 
 include Makefile.d/bench.mk
