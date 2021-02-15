@@ -58,12 +58,6 @@ After getting the metrics, we can ask ourself the following questions about the 
 	- Try few important packages first to test if the template is working
 - Without template
 
-### Schedule
-
-(If we use the template)
-- Test the template with difficult packages (1-2weeks)
-- Prioritize the order to implementing bench code
-
 ### Questions/Concerns
 
 1. Missing code benchmark coverage in golang
@@ -89,6 +83,12 @@ Benchmark_Uint32/test_rand-4         	17290003	        82.3 ns/op	       0 B/op	
 
 Reference: https://golang.org/pkg/testing/#BenchmarkResult
 
+In the following example, it test the single thread performance of the function.
+
+We also need to perform a multi thread performance of the function to find if there is any performance problem in paralle execution.
+
+Reference: https://qiita.com/marnie_ms4/items/8706f43591fb23dd4e64
+
 ### How to write bench code?
 
 Create / generate a file called `[filename]_bench_test.go`.
@@ -98,13 +98,10 @@ For example if we want to test the `internal/rand/rand.go` file, you need to cre
 To execute the benchmarking, use the `go test -bench . -benchmem` command.
 
 We implement benchmark code for each function we want to test.
+
 We should follow this template to write the benchmark code.
 
 ```golang
-package rand
-
-import "testing"
-
 func Benchmark_Uint32(b *testing.B) {
 	type args struct {
 	}
@@ -134,5 +131,41 @@ func Benchmark_Uint32(b *testing.B) {
 			}
 		})
 	}
-}
+	b.ResetTimer()
+
+	type paralleTest struct {
+		name       string
+		args       args
+		paralle    []int
+		beforeFunc func()
+		afterFunc  func()
+	}
+	ptests := []paralleTest{
+		{
+			name:    "test rand",
+			paralle: []int{1, 2, 4, 6, 8, 16},
+		},
+	}
+	for _, ptest := range ptests {
+		test := ptest
+		for _, p := range test.paralle {
+			name := test.name + "-" + strconv.Itoa(p)
+			b.Run(name, func(b *testing.B) {
+				b.SetParallelism(p)
+				b.ResetTimer()
+
+				if test.beforeFunc != nil {
+					test.beforeFunc()
+				}
+				if test.afterFunc != nil {
+					defer test.afterFunc()
+				}
+				b.RunParallel(func(pb *testing.PB) {
+					for pb.Next() {
+						Uint32()
+					}
+				})
+			})
+		}
+	}
 ```
