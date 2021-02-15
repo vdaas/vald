@@ -44,10 +44,14 @@ func (r *RebalanceController) Bind() *RebalanceController {
 type RebalanceJob struct {
 	// BlobStorage represent blob storage configurations.
 	BlobStorage *Blob `yaml:"blob_storage" json:"blob_storage"`
-	// BackupFilePath represent kvsdb file path.
-	BackupFilePath string `yaml:"backup_file_path" json:"backup_file_path"`
-	// RebalanceRate represent rate to rebalance data.
-	RebalanceRate int `yaml:"rebalance_rate" json:"rebalance_rate"`
+	// Compress represent compression configurations
+	Compress *CompressCore `yaml:"compress" json:"compress"`
+	// FilenameSuffix represent suffix of backup filename
+	FilenameSuffix string `yaml:"filename_suffix" json:"filename_suffix"`
+	// TargetAgentName represent the target agent name
+	TargetAgentName string `yaml:"target_agent_name" json:"target_agent_name"`
+	// Rate represent rate of rebalance data.
+	Rate string `yaml:"rate" json:"rate"`
 	// GatewayHost represent gateway host name.
 	GatewayHost string `json:"gateway_host" yaml:"gateway_host"`
 	// GatewayPort represent gateway port.
@@ -58,12 +62,18 @@ type RebalanceJob struct {
 
 // Bind binds rebalance job configuration.
 func (r *RebalanceJob) Bind() *RebalanceJob {
-	r.BackupFilePath = GetActualValue(r.BackupFilePath)
-	r.GatewayHost = GetActualValue(r.GatewayHost)
-
 	if r.BlobStorage != nil {
 		r.BlobStorage = r.BlobStorage.Bind()
 	}
+
+	if r.Compress != nil {
+		r.Compress = r.Compress.Bind()
+	}
+
+	r.FilenameSuffix = GetActualValue(r.FilenameSuffix)
+	r.TargetAgentName = GetActualValue(r.TargetAgentName)
+	r.Rate = GetActualValue(r.Rate)
+	r.GatewayHost = GetActualValue(r.GatewayHost)
 
 	if r.GatewayClient != nil {
 		r.GatewayClient = r.GatewayClient.Bind()

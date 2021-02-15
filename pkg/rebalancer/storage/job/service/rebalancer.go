@@ -28,7 +28,13 @@ type Rebalancer interface {
 	Start(context.Context) (<-chan error, error)
 }
 
-type rebalancer struct{}
+type rebalancer struct {
+	filenameSuffix  string
+	targetAgentName string
+	rate            float64
+	gatewayHost     string
+	gatewayPort     int
+}
 
 func New(opts ...Option) (dsc Rebalancer, err error) {
 	r := new(rebalancer)

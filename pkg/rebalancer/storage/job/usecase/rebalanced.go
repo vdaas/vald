@@ -48,7 +48,7 @@ type run struct {
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
 	rb, err := service.New(
-	// TODO set service option from config
+	//service.WithXXX(cfg.Rebalancer.TargetAgentName),
 	)
 	if err != nil {
 		return nil, err

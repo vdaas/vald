@@ -139,14 +139,22 @@ func NewConfig(path string) (cfg *Data, err error) {
 // 				CA:      "/path/to/ca",
 // 			},
 // 		},
-// 		NGT: &config.NGT{
-// 			IndexPath:           "/path/to/index",
-// 			Dimension:           4096,
-// 			BulkInsertChunkSize: 10,
-// 			DistanceType:        "l2",
-// 			ObjectType:          "float",
-// 			CreationEdgeSize:    20,
-// 			SearchEdgeSize:      10,
+// 		Rebalancer: &config.RebalanceJob{
+// 			BlobStorage: &config.Blob{
+// 				StorageType: "s3",
+// 				Bucket:      "vald",
+// 				S3:          &config.S3Config{},
+// 			},
+// 			Compress: &config.CompressCore{
+// 				CompressAlgorithm: "",
+// 				CompressionLevel:  0,
+// 			},
+// 			FilenameSuffix:  ".tar.gz",
+// 			TargetAgentName: "_TARGET_AGENT_NAME_",
+// 			Rate:            "_RATE_",
+// 			GatewayHost:     "http://localhost",
+// 			GatewayPort:     8080,
+// 			GatewayClient:   &config.GRPCClient{},
 // 		},
 // 	}
 // 	fmt.Println(config.ToRawYaml(d))
