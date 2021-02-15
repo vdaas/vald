@@ -66,7 +66,6 @@ After getting the metrics, we can ask ourself the following questions about the 
 
 
 
-
 ## Code bench
 
 Code bench is the lowest level of benchmarking in above. It performs the benchmark testing on functions and it provide useful statistic for investigation.
