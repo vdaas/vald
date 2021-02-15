@@ -17,6 +17,50 @@
 // Package service
 package service
 
+import (
+	"strconv"
+
+	"github.com/vdaas/vald/internal/errors"
+)
+
 type Option func(r *rebalancer) error
 
 var defaultOpts = []Option{}
+
+func WithFilenameSuffix(suffix string) Option {
+	return func(r *rebalancer) error {
+		r.filenameSuffix = suffix
+		return nil
+	}
+}
+
+func WithTargetAgentName(name string) Option {
+	return func(r *rebalancer) error {
+		r.targetAgentName = name
+		return nil
+	}
+}
+
+func WithRate(rate string) Option {
+	return func(r *rebalancer) (err error) {
+		r.rate, err = strconv.ParseFloat(rate, 64)
+		if err != nil {
+			return errors.NewErrInvalidOption("rate", rate)
+		}
+		return nil
+	}
+}
+
+func WithGatewayHost(host string) Option {
+	return func(r *rebalancer) error {
+		r.gatewayHost = host
+		return nil
+	}
+}
+
+func WithGatewayPort(port int) Option {
+	return func(r *rebalancer) error {
+		r.gatewayPort = port
+		return nil
+	}
+}
