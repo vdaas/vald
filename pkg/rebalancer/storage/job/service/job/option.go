@@ -15,21 +15,22 @@
 //
 
 // Package service
-package service
+package job
 
 import (
 	"strconv"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/pkg/rebalancer/storage/job/service/storage"
 )
 
 type Option func(r *rebalancer) error
 
 var defaultOpts = []Option{}
 
-func WithFilenameSuffix(suffix string) Option {
+func WithStorage(st storage.Storage) Option {
 	return func(r *rebalancer) error {
-		r.filenameSuffix = suffix
+		r.storage = st
 		return nil
 	}
 }

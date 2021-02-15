@@ -15,13 +15,14 @@
 //
 
 // Package service manages the main logic of server.
-package service
+package job
 
 import (
 	"context"
 	"reflect"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/pkg/rebalancer/storage/job/service/storage"
 )
 
 type Rebalancer interface {
@@ -29,11 +30,11 @@ type Rebalancer interface {
 }
 
 type rebalancer struct {
-	filenameSuffix  string
 	targetAgentName string
 	rate            float64
 	gatewayHost     string
 	gatewayPort     int
+	storage         storage.Storage
 }
 
 func New(opts ...Option) (dsc Rebalancer, err error) {
