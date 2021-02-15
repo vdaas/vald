@@ -2068,8 +2068,8 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 
 func Test_mySQLClient_SetVectors(t *testing.T) {
 	type args struct {
-		ctx   context.Context
-		datas []Vector
+		ctx  context.Context
+		data []Vector
 	}
 	type fields struct {
 		session   dbr.Session
@@ -2100,8 +2100,8 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 			return test{
 				name: "return error when mysql connection is closed",
 				args: args{
-					ctx:   context.Background(),
-					datas: m,
+					ctx:  context.Background(),
+					data: m,
 				},
 				fields: fields{
 					connected: func() (v atomic.Value) {
@@ -2116,12 +2116,31 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 		}(),
 		func() test {
 			var m []Vector
+			return test{
+				name: "return error when mysql session is nil",
+				args: args{
+					ctx:  context.Background(),
+					data: m,
+				},
+				fields: fields{
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+				},
+				want: want{
+					err: errors.ErrMySQLSessionNil,
+				},
+			}
+		}(),
+		func() test {
+			var m []Vector
 			err := errors.New("session.Begin error")
 			return test{
 				name: "return error when session.Begin fails",
 				args: args{
-					ctx:   context.Background(),
-					datas: m,
+					ctx:  context.Background(),
+					data: m,
 				},
 				fields: fields{
 					session: &dbr.MockSession{
@@ -2145,8 +2164,8 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 			return test{
 				name: "return error when data vector is invalid",
 				args: args{
-					ctx:   context.Background(),
-					datas: m,
+					ctx:  context.Background(),
+					data: m,
 				},
 				fields: fields{
 					session: &dbr.MockSession{
@@ -2178,8 +2197,8 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 			return test{
 				name: "return error when insertbysql ExecContext returns error",
 				args: args{
-					ctx:   context.Background(),
-					datas: m,
+					ctx:  context.Background(),
+					data: m,
 				},
 				fields: fields{
 					session: &dbr.MockSession{
@@ -2218,8 +2237,8 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 			return test{
 				name: "return error when select loadcontext returns error",
 				args: args{
-					ctx:   context.Background(),
-					datas: m,
+					ctx:  context.Background(),
+					data: m,
 				},
 				fields: fields{
 					session: &dbr.MockSession{
@@ -2278,8 +2297,8 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 			return test{
 				name: "return error when elem not found by uuid",
 				args: args{
-					ctx:   context.Background(),
-					datas: m,
+					ctx:  context.Background(),
+					data: m,
 				},
 				fields: fields{
 					session: &dbr.MockSession{
@@ -2352,8 +2371,8 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 			return test{
 				name: "return error when delete ExecContext returns error",
 				args: args{
-					ctx:   context.Background(),
-					datas: m,
+					ctx:  context.Background(),
+					data: m,
 				},
 				fields: fields{
 					session: &dbr.MockSession{
@@ -2436,8 +2455,8 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 			return test{
 				name: "return error when insert ExecContext returns error",
 				args: args{
-					ctx:   context.Background(),
-					datas: m,
+					ctx:  context.Background(),
+					data: m,
 				},
 				fields: fields{
 					session: &dbr.MockSession{
@@ -2533,8 +2552,8 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 			return test{
 				name: "return error when tx.Commit returns error",
 				args: args{
-					ctx:   context.Background(),
-					datas: m,
+					ctx:  context.Background(),
+					data: m,
 				},
 				fields: fields{
 					session: &dbr.MockSession{
@@ -2632,8 +2651,8 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 			return test{
 				name: "return nil when setVector ends with success",
 				args: args{
-					ctx:   context.Background(),
-					datas: m,
+					ctx:  context.Background(),
+					data: m,
 				},
 				fields: fields{
 					session: &dbr.MockSession{
@@ -2735,7 +2754,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 				dbr:       test.fields.dbr,
 			}
 
-			err := m.SetVectors(test.args.ctx, test.args.datas...)
+			err := m.SetVectors(test.args.ctx, test.args.data...)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -2788,6 +2807,24 @@ func Test_mySQLClient_deleteVector(t *testing.T) {
 				},
 				want: want{
 					err: err,
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return error when MySQL session is nil",
+				args: args{
+					ctx: context.Background(),
+					val: "vald-01",
+				},
+				fields: fields{
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+				},
+				want: want{
+					err: errors.ErrMySQLSessionNil,
 				},
 			}
 		}(),
