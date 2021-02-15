@@ -1,5 +1,5 @@
 - :ok_woman: `/approve` - approve
-- :love_letter: `/changelog` - add changelog comment
+- :love_letter: `/changelog` - replace the PR body by changelog details
 - :bento: `/format` - format codes and add licenses
 - :white_check_mark: `/gen-test` - generate test codes
 - :label: `/label` - add labels
