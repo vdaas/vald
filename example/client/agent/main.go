@@ -25,9 +25,9 @@ import (
 	"github.com/kpango/glg"
 	"google.golang.org/grpc"
 
-	"github.com/vdaas/vald-client-go/v1/vald"
-	// agent "github.com/vdaas/vald-client-go/v1/agent/core"
+	agent "github.com/vdaas/vald-client-go/v1/agent/core"
 	"github.com/vdaas/vald-client-go/v1/payload"
+	"github.com/vdaas/vald-client-go/v1/vald"
 
 	"gonum.org/v1/hdf5"
 )
@@ -80,7 +80,7 @@ func main() {
 	// Insert 400 example vectors into Vald cluster
 	for i := range ids[:insertCount] {
 		if i%10 == 0 {
-			glg.Infof("Inserted: %d", i)
+			glg.Infof("Inserted: %d", i+10)
 		}
 		// Calls `Insert` function of Vald Agent client.
 		// Sends set of vector and id to server via gRPC.
@@ -101,14 +101,14 @@ func main() {
 	Option: Run Indexing instead of Auto Indexing
 	If you run client.CreateIndex, it costs less time for search
 	**/
-	// glg.Info("Start Indexing dataset.")
-	// _, err = agent.NewAgentClient(conn).CreateIndex(ctx, &payload.Control_CreateIndexRequest{
-	// 	PoolSize: uint32(insertCount),
-	// })
-	// if err != nil {
-	// 	glg.Fatal(err)
-	// }
-	// glg.Info("Finish Indexing dataset. \n\n")
+	glg.Info("Start Indexing dataset.")
+	_, err = agent.NewAgentClient(conn).CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+		PoolSize: uint32(insertCount),
+	})
+	if err != nil {
+		glg.Fatal(err)
+	}
+	glg.Info("Finish Indexing dataset. \n\n")
 
 	// Vald Agent starts indexing automatically after insert. It needs to wait until the indexing is completed before a search action is performed.
 	wt := time.Duration(indexingWaitSeconds) * time.Second

@@ -39,6 +39,13 @@ This chapter will use NGT for the core engine of Vald Agent.
     git clone https://github.com/vdaas/vald.git
     ```
 
+1. Create directory for setting deploy vald-agent-ngt
+
+    ```bash
+    cd vald
+    mkdir -p tutorial && cd tutorial
+    ```
+
 1. Create `config.yaml`
 
     The configuration of Vald agent for docker is set using `config.yaml`<br>
@@ -78,6 +85,8 @@ This chapter will use NGT for the core engine of Vald Agent.
         # key: /path/to/key
         # ca: /path/to/ca
     ngt:
+      # path to index data
+      index_path: "/etc/server/backup"
       # vector dimension
       dimension: 784
       # bulk insert chunk size
@@ -90,25 +99,39 @@ This chapter will use NGT for the core engine of Vald Agent.
       creation_edge_size: 20
       # search edge size
       search_edge_size: 10
-      # in-memory mode enabled
-      enable_in_memory_mode: true
       # The limit duration of automatic indexing
-      # auto_index_duration_limit should be 30m-6h for producation use. Below setting is a just example
+      # auto_index_duration_limit should be 30m-6h for production use. Below setting is a just example
       auto_index_duration_limit: 1m
       # Check duration of automatic indexing.
-      # auto_index_check_duration be 10m-1h for producation use. Below setting is a just example
+      # auto_index_check_duration be 10m-1h for production use. Below setting is a just example
       auto_index_check_duration: 10s
       # The number of cache to trigger automatic indexing
       auto_index_length: 100
+      # The limit duration of auto saving indexing
+      # auto_save_index_duration should be 30m-60m for production use. Below setting is a just example.
+      auto_save_index_duration: 90s
+      # The maximum limit duration for initial delay
+      # initial_delay_max_duration should be 3m-5m for production use. Below setting is a just example.
+      initial_delay_max_duration: 60s
     EOF
+    ```
+
+1. Create backup directory
+
+    To avoid removing the indexing data due to any trouble after finishing indexing, we should prepare the path for auto backup.
+
+    ```bash
+    mkdir -p backup
     ```
 
 1. Deploy Vald Agent on Docker
 
     To deploy Vald agent on docker with `config.yaml`, you can run below command.
+    Note: 
+      - Please check whether there are `config.yaml` and `backup` directory in your current directory.
 
     ```bash
-    docker run -v $(pwd)/config.yaml:/etc/server/config.yaml -p 8081:8081 --rm -it vdaas/vald-agent-ngt
+    docker run -v $(pwd)/:/etc/server -p 8081:8081 --rm -it vdaas/vald-agent-ngt
     ```
 
 1. Verify
@@ -118,7 +141,8 @@ This chapter will use NGT for the core engine of Vald Agent.
     ```bash
     2020-07-01 03:02:41	[INFO]:	maxprocs: Leaving GOMAXPROCS=4: CPU quota undefined
     2020-07-01 03:02:41	[INFO]:	service agent ngt v0.0.0 starting...
-    2020-07-01 03:02:41	[INFO]:	daemon start
+    2020-07-01 03:02:41	[INFO]:	executing daemon pre-start function
+    2020-07-01 03:02:41	[INFO]:	executing daemon start function
     2020-07-01 03:02:41	[INFO]:	server agent-grpc executing preStartFunc
     2020-07-01 12:02:41	[INFO]:	gRPC server agent-grpc starting on 0.0.0.0:8081
     ```
@@ -152,6 +176,7 @@ This chapter will use NGT for the core engine of Vald Agent.
     ```
     Note:
       - We recommend you to run `CreateIndex()` after `Insert()` without waiting auto indexing.
+      - When finish indexing completely, the backup files (metadata.json and ngt-meta.kvsdb) can be confirmed in your mount directory.
 
 1. Clean Up
 
