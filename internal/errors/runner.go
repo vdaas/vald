@@ -18,30 +18,37 @@
 package errors
 
 var (
+	// ErrDaemonStartFailed represents a function to generate an error that failed to start daemon.
 	ErrDaemonStartFailed = func(err error) error {
 		return Wrap(err, "failed to start daemon")
 	}
 
+	// ErrDaemonStopFailed represents a function to generate an error that failed to stop daemon.
 	ErrDaemonStopFailed = func(err error) error {
 		return Wrap(err, "failed to stop daemon")
 	}
 
+	// ErrStartFunc represents a function to generate an error that occurred in the start function.
 	ErrStartFunc = func(name string, err error) error {
 		return Wrapf(err, "error occurred in runner.Start at %s", name)
 	}
 
+	// ErrPreStopFunc represents a function to generate an error that occurred in the pre-stop function.
 	ErrPreStopFunc = func(name string, err error) error {
 		return Wrapf(err, "error occurred in runner.PreStop at %s", name)
 	}
 
+	// ErrStopFunc represents a function to generate an error that occurred in the stop function.
 	ErrStopFunc = func(name string, err error) error {
 		return Wrapf(err, "error occurred in runner.Stop at %s", name)
 	}
 
+	// ErrPostStopFunc represents a function to generate an error that occurred in the post-stop function.
 	ErrPostStopFunc = func(name string, err error) error {
 		return Wrapf(err, "error occurred in runner.PostStop at %s", name)
 	}
 
+	// ErrRunnerWait represents a function to generate an error during runner.Wait.
 	ErrRunnerWait = func(name string, err error) error {
 		return Wrapf(err, "error occurred in runner.Wait at %s", name)
 	}
