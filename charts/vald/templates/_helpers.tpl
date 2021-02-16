@@ -528,36 +528,50 @@ dial_option:
   enable_backoff: {{ default .default.dial_option.enable_backoff .Values.dial_option.enable_backoff }}
   insecure: {{ default .default.dial_option.insecure .Values.dial_option.insecure }}
   timeout: {{ default .default.dial_option.timeout .Values.dial_option.timeout | quote }}
-  tcp:
-    {{- if .Values.dial_option.tcp }}
+  net:
+    {{- if .Values.dial_option.net }}
     dns:
-      {{- if .Values.dial_option.tcp.dns }}
-      cache_enabled: {{ default .default.dial_option.tcp.dns.cache_enabled .Values.dial_option.tcp.dns.cache_enabled }}
-      refresh_duration: {{ default .default.dial_option.tcp.dns.refresh_duration .Values.dial_option.tcp.dns.refresh_duration | quote }}
-      cache_expiration: {{ default .default.dial_option.tcp.dns.cache_expiration .Values.dial_option.tcp.dns.cache_expiration | quote }}
+      {{- if .Values.dial_option.net.dns }}
+      cache_enabled: {{ default .default.dial_option.net.dns.cache_enabled .Values.dial_option.net.dns.cache_enabled }}
+      refresh_duration: {{ default .default.dial_option.net.dns.refresh_duration .Values.dial_option.net.dns.refresh_duration | quote }}
+      cache_expiration: {{ default .default.dial_option.net.dns.cache_expiration .Values.dial_option.net.dns.cache_expiration | quote }}
       {{- else }}
-      {{- toYaml .default.dial_option.tcp.dns | nindent 6 }}
+      {{- toYaml .default.dial_option.net.dns | nindent 6 }}
       {{- end }}
     dialer:
-      {{- if .Values.dial_option.tcp.dialer }}
-      timeout: {{ default .default.dial_option.tcp.dialer.timeout .Values.dial_option.tcp.dialer.timeout | quote }}
-      keep_alive: {{ default .default.dial_option.tcp.dialer.keep_alive .Values.dial_option.tcp.dialer.keep_alive | quote }}
-      dual_stack_enabled: {{ default .default.dial_option.tcp.dialer.dual_stack_enabled .Values.dial_option.tcp.dialer.dual_stack_enabled }}
+      {{- if .Values.dial_option.net.dialer }}
+      timeout: {{ default .default.dial_option.net.dialer.timeout .Values.dial_option.net.dialer.timeout | quote }}
+      keep_alive: {{ default .default.dial_option.net.dialer.keep_alive .Values.dial_option.net.dialer.keep_alive | quote }}
+      dual_stack_enabled: {{ default .default.dial_option.net.dialer.dual_stack_enabled .Values.dial_option.net.dialer.dual_stack_enabled }}
       {{- else }}
-      {{- toYaml .default.dial_option.tcp.dialer | nindent 6 }}
+      {{- toYaml .default.dial_option.net.dialer | nindent 6 }}
       {{- end }}
     tls:
-      {{- if .Values.dial_option.tcp.tls }}
-      enabled: {{ default .default.dial_option.tcp.tls.enabled .Values.dial_option.tcp.tls.enabled }}
-      cert: {{ default .default.dial_option.tcp.tls.cert .Values.dial_option.tcp.tls.cert | quote }}
-      key: {{ default .default.dial_option.tcp.tls.key .Values.dial_option.tcp.tls.key | quote }}
-      ca: {{ default .default.dial_option.tcp.tls.ca .Values.dial_option.tcp.tls.ca | quote }}
-      insecure_skip_verify: {{ default .default.dial_option.tcp.tls.insecure_skip_verify .Values.dial_option.tcp.tls.insecure_skip_verify }}
+      {{- if .Values.dial_option.net.tls }}
+      enabled: {{ default .default.dial_option.net.tls.enabled .Values.dial_option.net.tls.enabled }}
+      cert: {{ default .default.dial_option.net.tls.cert .Values.dial_option.net.tls.cert | quote }}
+      key: {{ default .default.dial_option.net.tls.key .Values.dial_option.net.tls.key | quote }}
+      ca: {{ default .default.dial_option.net.tls.ca .Values.dial_option.net.tls.ca | quote }}
+      insecure_skip_verify: {{ default .default.dial_option.net.tls.insecure_skip_verify .Values.dial_option.net.tls.insecure_skip_verify }}
       {{- else }}
-      {{- toYaml .default.dial_option.tcp.tls | nindent 6 }}
+      {{- toYaml .default.dial_option.net.tls | nindent 6 }}
+      {{- end }}
+    socket_option:
+      {{- if .Values.dial_option.net.socket_option }}
+      reuse_port: {{ default .default.dial_option.net.socket_option.reuse_port .Values.dial_option.net.socket_option.reuse_port }}
+      reuse_addr: {{ default .default.dial_option.net.socket_option.reuse_addr .Values.dial_option.net.socket_option.reuse_addr }}
+      tcp_fast_open: {{ default .default.dial_option.net.socket_option.tcp_fast_open .Values.dial_option.net.socket_option.tcp_fast_open }}
+      tcp_no_delay: {{ default .default.dial_option.net.socket_option.tcp_no_delay .Values.dial_option.net.socket_option.tcp_no_delay }}
+      tcp_cork: {{ default .default.dial_option.net.socket_option.tcp_cork .Values.dial_option.net.socket_option.tcp_cork }}
+      tcp_quick_ack: {{ default .default.dial_option.net.socket_option.tcp_quick_ack .Values.dial_option.net.socket_option.tcp_quick_ack }}
+      tcp_defer_accept: {{ default .default.dial_option.net.socket_option.tcp_defer_accept .Values.dial_option.net.socket_option.tcp_defer_accept }}
+      ip_transparent: {{ default .default.dial_option.net.socket_option.ip_transparent .Values.dial_option.net.socket_option.ip_transparent }}
+      ip_recover_destination_addr: {{ default .default.dial_option.net.socket_option.ip_recover_destination_addr .Values.dial_option.net.socket_option.ip_recover_destination_addr }}
+      {{- else }}
+      {{- toYaml .default.dial_option.net.tls | nindent 6 }}
       {{- end }}
     {{- else }}
-    {{- toYaml .default.dial_option.tcp | nindent 4 }}
+    {{- toYaml .default.dial_option.net | nindent 4 }}
     {{- end }}
   keep_alive:
     {{- if .Values.dial_option.keep_alive }}

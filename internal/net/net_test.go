@@ -39,75 +39,12 @@ import (
 var goleakIgnoreOptions = []goleak.Option{
 	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
 	goleak.IgnoreTopFunction("internal/poll.runtime_pollWait"),
+	goleak.IgnoreTopFunction("net._C2func_getaddrinfo"),
 }
 
 func TestMain(m *testing.M) {
 	log.Init()
 	os.Exit(m.Run())
-}
-
-func TestListen(t *testing.T) {
-	type args struct {
-		network string
-		address string
-	}
-	type want struct {
-		want Listener
-		err  error
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, Listener, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got Listener, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		{
-			name: "listener is created successfully",
-			args: args{
-				network: "tcp",
-				address: ":0",
-			},
-			checkFunc: func(w want, got Listener, err error) error {
-				if !errors.Is(err, w.err) {
-					return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-				}
-
-				return got.Close()
-			},
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-
-			got, err := Listen(test.args.network, test.args.address)
-			if err := test.checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
 }
 
 func TestIsLocal(t *testing.T) {
@@ -200,8 +137,9 @@ func TestIsLocal(t *testing.T) {
 	}
 }
 
-func TestDial(t *testing.T) {
+func TestDialContext(t *testing.T) {
 	type args struct {
+		ctx     context.Context
 		network string
 		addr    string
 	}
@@ -238,7 +176,8 @@ func TestDial(t *testing.T) {
 			return test{
 				name: "dial return server content",
 				args: args{
-					network: "tcp",
+					ctx:     context.Background(),
+					network: TCP.String(),
 					addr:    testSrv.URL[len("http://"):],
 				},
 				checkFunc: func(w want, gotConn Conn, err error) error {
@@ -277,7 +216,7 @@ func TestDial(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			gotConn, err := Dial(test.args.network, test.args.addr)
+			gotConn, err := DialContext(test.args.ctx, test.args.network, test.args.addr)
 			if err := test.checkFunc(test.want, gotConn, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -285,268 +224,268 @@ func TestDial(t *testing.T) {
 	}
 }
 
-func TestParse(t *testing.T) {
-	type args struct {
-		addr string
-	}
-	type want struct {
-		wantHost string
-		wantPort uint16
-		wantIsIP bool
-		err      error
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, string, uint16, bool, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, gotHost string, gotPort uint16, gotIsIP bool, err error) error {
-		if (w.err == nil && err != nil) || (w.err != nil && err == nil) || (err != nil && err.Error() != w.err.Error()) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotHost, w.wantHost) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotHost, w.wantHost)
-		}
-		if !reflect.DeepEqual(gotPort, w.wantPort) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotPort, w.wantPort)
-		}
-		if !reflect.DeepEqual(gotIsIP, w.wantIsIP) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotIsIP, w.wantIsIP)
-		}
-		return nil
-	}
-	tests := []test{
-		{
-			name: "parse success with IPv4 address",
-			args: args{
-				addr: "192.168.1.1:8080",
-			},
-			want: want{
-				wantHost: "192.168.1.1",
-				wantPort: uint16(8080),
-				wantIsIP: true,
-			},
-		},
-		{
-			name: "parse success with IPv6 address",
-			args: args{
-				addr: "[2001:db8::1]:8080",
-			},
-			want: want{
-				wantHost: "2001:db8::1",
-				wantPort: uint16(8080),
-				wantIsIP: true,
-			},
-		},
-		{
-			name: "parse success with hostname",
-			args: args{
-				addr: "google.com:8080",
-			},
-			want: want{
-				wantHost: "google.com",
-				wantPort: uint16(8080),
-				wantIsIP: false,
-			},
-		},
-		{
-			name: "return default port when parse failed if it is not an address",
-			args: args{
-				addr: "dummy",
-			},
-			want: want{
-				wantHost: "dummy",
-				wantPort: uint16(80),
-				err: &strconv.NumError{
-					Func: "Atoi",
-					Num:  "",
-					Err:  strconv.ErrSyntax,
-				},
-			},
-		},
-		{
-			name: "return default port when parse failed if port number missing in IPv4 address",
-			args: args{
-				addr: "192.168.1.1",
-			},
-			want: want{
-				wantHost: "192.168.1.1",
-				wantPort: uint16(80),
-				wantIsIP: true,
-				err: &strconv.NumError{
-					Func: "Atoi",
-					Num:  "",
-					Err:  strconv.ErrSyntax,
-				},
-			},
-		},
-		{
-			name: "return default port when parse failed if port number missing in IPv6 address",
-			args: args{
-				addr: "2001:db8::1",
-			},
-			want: want{
-				wantHost: "2001:db8::1",
-				wantPort: uint16(80),
-				wantIsIP: true,
-				err: &strconv.NumError{
-					Func: "Atoi",
-					Num:  "",
-					Err:  strconv.ErrSyntax,
-				},
-			},
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-
-			gotHost, gotPort, gotIsIP, err := Parse(test.args.addr)
-			if err := test.checkFunc(test.want, gotHost, gotPort, gotIsIP, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func TestIsIPv6(t *testing.T) {
-	type args struct {
-		addr string
-	}
-	type want struct {
-		want bool
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, bool) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got bool) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		{
-			name: "return true if it is IPv6 address",
-			args: args{
-				addr: "2001:db8::1",
-			},
-			want: want{
-				want: true,
-			},
-		},
-		{
-			name: "return false if it is not IPv6 address",
-			args: args{
-				addr: "localhost",
-			},
-			want: want{
-				want: false,
-			},
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-
-			got := IsIPv6(test.args.addr)
-			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func TestIsIPv4(t *testing.T) {
-	type args struct {
-		addr string
-	}
-	type want struct {
-		want bool
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, bool) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got bool) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		{
-			name: "return true if it is IPv4 address",
-			args: args{
-				addr: "192.168.1.1",
-			},
-			want: want{
-				want: true,
-			},
-		},
-		{
-			name: "return false if it is not IPv4 address",
-			args: args{
-				addr: "localhost",
-			},
-			want: want{
-				want: false,
-			},
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-
-			got := IsIPv4(test.args.addr)
-			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
+// func TestParse(t *testing.T) {
+// 	type args struct {
+// 		addr string
+// 	}
+// 	type want struct {
+// 		wantHost string
+// 		wantPort uint16
+// 		wantId bool
+// 		err      error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, string, uint16, bool, bool, bool, error) error
+// 		beforeFunc func(args)
+// 		afterFunc  func(args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotHost string, gotPort uint16, gotIsIP bool, err error) error {
+// 		if (w.err == nil && err != nil) || (w.err != nil && err == nil) || (err != nil && err.Error() != w.err.Error()) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotHost, w.wantHost) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotHost, w.wantHost)
+// 		}
+// 		if !reflect.DeepEqual(gotPort, w.wantPort) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotPort, w.wantPort)
+// 		}
+// 		if !reflect.DeepEqual(gotIsIP, w.wantIsIP) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotIsIP, w.wantIsIP)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		{
+// 			name: "parse success with IPv4 address",
+// 			args: args{
+// 				addr: "192.168.1.1:8080",
+// 			},
+// 			want: want{
+// 				wantHost: "192.168.1.1",
+// 				wantPort: uint16(8080),
+// 				wantIsIP: true,
+// 			},
+// 		},
+// 		{
+// 			name: "parse success with IPv6 address",
+// 			args: args{
+// 				addr: "[2001:db8::1]:8080",
+// 			},
+// 			want: want{
+// 				wantHost: "2001:db8::1",
+// 				wantPort: uint16(8080),
+// 				wantIsIP: true,
+// 			},
+// 		},
+// 		{
+// 			name: "parse success with hostname",
+// 			args: args{
+// 				addr: "google.com:8080",
+// 			},
+// 			want: want{
+// 				wantHost: "google.com",
+// 				wantPort: uint16(8080),
+// 				wantIsIP: false,
+// 			},
+// 		},
+// 		{
+// 			name: "return default port when parse failed if it is not an address",
+// 			args: args{
+// 				addr: "dummy",
+// 			},
+// 			want: want{
+// 				wantHost: "dummy",
+// 				wantPort: uint16(80),
+// 				err: &strconv.NumError{
+// 					Func: "Atoi",
+// 					Num:  "",
+// 					Err:  strconv.ErrSyntax,
+// 				},
+// 			},
+// 		},
+// 		{
+// 			name: "return default port when parse failed if port number missing in IPv4 address",
+// 			args: args{
+// 				addr: "192.168.1.1",
+// 			},
+// 			want: want{
+// 				wantHost: "192.168.1.1",
+// 				wantPort: uint16(80),
+// 				wantIsIP: true,
+// 				err: &strconv.NumError{
+// 					Func: "Atoi",
+// 					Num:  "",
+// 					Err:  strconv.ErrSyntax,
+// 				},
+// 			},
+// 		},
+// 		{
+// 			name: "return default port when parse failed if port number missing in IPv6 address",
+// 			args: args{
+// 				addr: "2001:db8::1",
+// 			},
+// 			want: want{
+// 				wantHost: "2001:db8::1",
+// 				wantPort: uint16(80),
+// 				wantIsIP: true,
+// 				err: &strconv.NumError{
+// 					Func: "Atoi",
+// 					Num:  "",
+// 					Err:  strconv.ErrSyntax,
+// 				},
+// 			},
+// 		},
+// 	}
+//
+// 	for _, test := range tests {
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(test.args)
+// 			}
+// 			if test.checkFunc == nil {
+// 				test.checkFunc = defaultCheckFunc
+// 			}
+//
+// 			gotHost, gotPort, gotIsIP, err := Parse(test.args.addr)
+// 			if err := test.checkFunc(test.want, gotHost, gotPort, gotIsIP, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func TestIsIPv6(t *testing.T) {
+// 	type args struct {
+// 		addr string
+// 	}
+// 	type want struct {
+// 		want bool
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, bool) error
+// 		beforeFunc func(args)
+// 		afterFunc  func(args)
+// 	}
+// 	defaultCheckFunc := func(w want, got bool) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		{
+// 			name: "return true if it is IPv6 address",
+// 			args: args{
+// 				addr: "2001:db8::1",
+// 			},
+// 			want: want{
+// 				want: true,
+// 			},
+// 		},
+// 		{
+// 			name: "return false if it is not IPv6 address",
+// 			args: args{
+// 				addr: "localhost",
+// 			},
+// 			want: want{
+// 				want: false,
+// 			},
+// 		},
+// 	}
+//
+// 	for _, test := range tests {
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(test.args)
+// 			}
+// 			if test.checkFunc == nil {
+// 				test.checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got := IsIPv6(test.args.addr)
+// 			if err := test.checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func TestIsIPv4(t *testing.T) {
+// 	type args struct {
+// 		addr string
+// 	}
+// 	type want struct {
+// 		want bool
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, bool) error
+// 		beforeFunc func(args)
+// 		afterFunc  func(args)
+// 	}
+// 	defaultCheckFunc := func(w want, got bool) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		{
+// 			name: "return true if it is IPv4 address",
+// 			args: args{
+// 				addr: "192.168.1.1",
+// 			},
+// 			want: want{
+// 				want: true,
+// 			},
+// 		},
+// 		{
+// 			name: "return false if it is not IPv4 address",
+// 			args: args{
+// 				addr: "localhost",
+// 			},
+// 			want: want{
+// 				want: false,
+// 			},
+// 		},
+// 	}
+//
+// 	for _, test := range tests {
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(test.args)
+// 			}
+// 			if test.checkFunc == nil {
+// 				test.checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got := IsIPv4(test.args.addr)
+// 			if err := test.checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
 
 func TestSplitHostPort(t *testing.T) {
 	type args struct {
@@ -944,11 +883,241 @@ func TestLoadLocalIP(t *testing.T) {
 	}
 }
 
+func TestNetworkTypeFromString(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		str string
+	}
+	type want struct {
+		want NetworkType
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, NetworkType) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got NetworkType) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           str: "",
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           str: "",
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := NetworkTypeFromString(test.args.str)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestNetworkType_String(t *testing.T) {
+	t.Parallel()
+	type want struct {
+		want string
+	}
+	type test struct {
+		name       string
+		n          NetworkType
+		want       want
+		checkFunc  func(want, string) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got string) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := test.n.String()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestParse(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		addr string
+	}
+	type want struct {
+		wantHost    string
+		wantPort    uint16
+		wantIsLocal bool
+		wantIsIPv4  bool
+		wantIsIPv6  bool
+		err         error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, string, uint16, bool, bool, bool, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotHost string, gotPort uint16, gotIsLocal bool, gotIsIPv4 bool, gotIsIPv6 bool, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotHost, w.wantHost) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotHost, w.wantHost)
+		}
+		if !reflect.DeepEqual(gotPort, w.wantPort) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotPort, w.wantPort)
+		}
+		if !reflect.DeepEqual(gotIsLocal, w.wantIsLocal) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotIsLocal, w.wantIsLocal)
+		}
+		if !reflect.DeepEqual(gotIsIPv4, w.wantIsIPv4) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotIsIPv4, w.wantIsIPv4)
+		}
+		if !reflect.DeepEqual(gotIsIPv6, w.wantIsIPv6) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotIsIPv6, w.wantIsIPv6)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           addr: "",
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           addr: "",
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			gotHost, gotPort, gotIsLocal, gotIsIPv4, gotIsIPv6, err := Parse(test.args.addr)
+			if err := test.checkFunc(test.want, gotHost, gotPort, gotIsLocal, gotIsIPv4, gotIsIPv6, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
 func TestJoinHostPort(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		host string
-		port string
+		port uint16
 	}
 	type want struct {
 		want string
@@ -974,7 +1143,7 @@ func TestJoinHostPort(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           host: "",
-		           port: "",
+		           port: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -988,7 +1157,7 @@ func TestJoinHostPort(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           host: "",
-		           port: "",
+		           port: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,

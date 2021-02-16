@@ -21,19 +21,21 @@ import (
 	"context"
 	"crypto/tls"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/net/control"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/credentials"
 	"github.com/vdaas/vald/internal/net/grpc/keepalive"
-	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/safety"
 )
 
@@ -101,7 +103,11 @@ type server struct {
 	rt            time.Duration // ReadTimeout
 	wt            time.Duration // WriteTimeout
 	it            time.Duration // IdleTimeout
-	port          uint
+	ctrl          control.SocketController
+	sockFlg       control.SocketFlag
+	network       net.NetworkType
+	socketPath    string
+	port          uint16
 	host          string
 	enableRestart bool
 	shuttingDown  bool
@@ -132,12 +138,7 @@ func New(opts ...Option) (Server, error) {
 		srv.eg = errgroup.Get()
 	}
 
-	if srv.lc == nil {
-		srv.lc = &net.ListenConfig{
-			Control: tcp.Control,
-		}
-	}
-
+	var keepAlive int
 	switch srv.mode {
 	case REST, GQL:
 		if srv.http.h == nil {
@@ -170,7 +171,6 @@ func New(opts ...Option) (Server, error) {
 		}
 		srv.http.srv.SetKeepAlivesEnabled(true)
 	case GRPC:
-
 		if srv.grpc.reg == nil {
 			return nil, errors.ErrInvalidAPIConfig
 		}
@@ -185,6 +185,7 @@ func New(opts ...Option) (Server, error) {
 					Timeout:               srv.grpc.keepAlive.timeout,
 				}),
 			)
+			keepAlive = int(srv.grpc.keepAlive.timeout)
 		}
 
 		if srv.tcfg != nil {
@@ -199,6 +200,19 @@ func New(opts ...Option) (Server, error) {
 			)
 		}
 		srv.grpc.reg(srv.grpc.srv)
+	}
+
+	if srv.lc == nil {
+		srv.ctrl = control.New(srv.sockFlg, keepAlive)
+		srv.lc = &net.ListenConfig{
+			Control: func(network, addr string, c syscall.RawConn) (err error) {
+				if srv.ctrl != nil {
+					return srv.ctrl.GetControl()(network, addr, c)
+				}
+				log.Warn("socket controller is nil")
+				return nil
+			},
+		}
 	}
 
 	return srv, nil
@@ -228,7 +242,20 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 			}
 		}
 
-		l, err := s.lc.Listen(ctx, "tcp", net.JoinHostPort(s.host, strconv.FormatUint(uint64(s.port), 10)))
+		l, err := s.lc.Listen(ctx, func() string {
+			if s.network == net.Unknown {
+				return net.TCP.String()
+			}
+			return s.network.String()
+		}(), func() string {
+			if s.network == net.UNIX {
+				if len(s.socketPath) == 0 {
+					s.socketPath = os.TempDir() + "/" + s.name + "." + strconv.Itoa(os.Getpid()) + ".sock"
+				}
+				return s.socketPath
+			}
+			return net.JoinHostPort(s.host, s.port)
+		}())
 		if err != nil {
 			return err
 		}
@@ -328,6 +355,15 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 		tctx, cancel := context.WithTimeout(ctx, s.pwt)
 		defer cancel()
 		<-tctx.Done()
+	}
+
+	if len(s.socketPath) != 0 {
+		defer func() {
+			err := os.RemoveAll(s.socketPath)
+			if err != nil {
+				rerr = errors.Wrap(rerr, err.Error())
+			}
+		}()
 	}
 
 	log.Warnf("%s server %s is now shutting down", s.mode.String(), s.name)

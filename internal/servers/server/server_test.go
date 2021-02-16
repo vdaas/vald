@@ -30,7 +30,6 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
-	"github.com/vdaas/vald/internal/net/tcp"
 	"go.uber.org/goleak"
 )
 
@@ -442,9 +441,7 @@ func TestListenAndServe(t *testing.T) {
 					httpSrvStarter: srv.Serve,
 					host:           "vald",
 					port:           8081,
-					lc: &net.ListenConfig{
-						Control: tcp.Control,
-					},
+					lc:             &net.ListenConfig{},
 					preStartFunc: func() error {
 						return nil
 					},
@@ -466,9 +463,7 @@ func TestListenAndServe(t *testing.T) {
 					grpcSrv:        srv,
 					host:           "vald",
 					port:           8082,
-					lc: &net.ListenConfig{
-						Control: tcp.Control,
-					},
+					lc:             &net.ListenConfig{},
 					preStartFunc: func() error {
 						return nil
 					},

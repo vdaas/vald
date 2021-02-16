@@ -29,7 +29,6 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
-	"github.com/vdaas/vald/internal/net/tcp"
 )
 
 const (
@@ -52,8 +51,10 @@ type MySQL interface {
 
 type mySQLClient struct {
 	db                   string
+	network              string
+	socketPath           string
 	host                 string
-	port                 int
+	port                 uint16
 	user                 string
 	pass                 string
 	name                 string
@@ -62,7 +63,7 @@ type mySQLClient struct {
 	initialPingTimeLimit time.Duration
 	initialPingDuration  time.Duration
 	connMaxLifeTime      time.Duration
-	dialer               tcp.Dialer
+	dialer               net.Dialer
 	dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
 	tlsConfig            *tls.Config
 	maxOpenConns         int
@@ -97,12 +98,9 @@ func (m *mySQLClient) Open(ctx context.Context) (err error) {
 	}
 
 	var addParam string
-
-	network := "tcp"
-
 	if m.dialerFunc != nil {
-		mysql.RegisterDialContext(network, func(ctx context.Context, addr string) (net.Conn, error) {
-			return m.dialerFunc(ctx, network, addr)
+		mysql.RegisterDialContext(m.network, func(ctx context.Context, addr string) (net.Conn, error) {
+			return m.dialerFunc(ctx, m.network, addr)
 		})
 	}
 
@@ -118,8 +116,18 @@ func (m *mySQLClient) Open(ctx context.Context) (err error) {
 	conn, err := m.dbr.Open(
 		m.db,
 		fmt.Sprintf(
-			"%s:%s@%s(%s:%d)/%s?charset=%s&parseTime=true&loc=%s%s",
-			m.user, m.pass, network, m.host, m.port, m.name,
+			"%s:%s@%s(%s)/%s?charset=%s&parseTime=true&loc=%s%s",
+			m.user, m.pass, m.network,
+			func() string {
+				switch net.NetworkTypeFromString(m.network) {
+				case net.UNIX, net.UNIXGRAM, net.UNIXPACKET:
+					if len(m.socketPath) != 0 {
+						return m.socketPath
+					}
+				}
+				return net.JoinHostPort(m.host, m.port)
+			}(),
+			m.name,
 			m.charset, m.timezone, addParam,
 		),
 		m.eventReceiver,

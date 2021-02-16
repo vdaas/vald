@@ -22,7 +22,7 @@ import (
 
 	"github.com/vdaas/vald/internal/db/kvs/redis"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/net/tcp"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/tls"
 )
 
@@ -53,7 +53,7 @@ type Redis struct {
 	RouteRandomly        bool     `json:"route_randomly,omitempty" yaml:"route_randomly"`
 	SentinelPassword     string   `json:"sentinel_password,omitempty"`
 	SentinelMasterName   string   `json:"sentinel_master_name,omitempty"`
-	TCP                  *TCP     `json:"tcp,omitempty" yaml:"tcp"`
+	Net                  *Net     `json:"tcp,omitempty" yaml:"net"`
 	TLS                  *TLS     `json:"tls,omitempty" yaml:"tls"`
 	Username             string   `json:"username,omitempty" yaml:"username"`
 	VKPrefix             string   `json:"vk_prefix,omitempty" yaml:"vk_prefix"`
@@ -66,10 +66,10 @@ func (r *Redis) Bind() *Redis {
 	} else {
 		r.TLS = new(TLS)
 	}
-	if r.TCP != nil {
-		r.TCP.Bind()
+	if r.Net != nil {
+		r.Net.Bind()
 	} else {
-		r.TCP = new(TCP)
+		r.Net = new(Net)
 	}
 
 	r.Addrs = GetActualValues(r.Addrs)
@@ -98,6 +98,11 @@ func (r *Redis) Bind() *Redis {
 }
 
 func (r *Redis) Opts() (opts []redis.Option, err error) {
+	nt := net.NetworkTypeFromString(r.Network)
+	if nt == net.Unknown {
+		nt = net.TCP
+	}
+	r.Network = nt.String()
 	opts = []redis.Option{
 		redis.WithAddrs(r.Addrs...),
 		redis.WithDialTimeout(r.DialTimeout),
@@ -137,8 +142,8 @@ func (r *Redis) Opts() (opts []redis.Option, err error) {
 		opts = append(opts, redis.WithTLSConfig(tls))
 	}
 
-	if r.TCP != nil {
-		dialer, err := tcp.NewDialer(r.TCP.Opts()...)
+	if r.Net != nil {
+		dialer, err := net.NewDialer(r.Net.Opts()...)
 		if err != nil {
 			return nil, err
 		}

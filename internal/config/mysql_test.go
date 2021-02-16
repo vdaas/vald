@@ -31,7 +31,7 @@ func TestMySQL_Bind(t *testing.T) {
 	type fields struct {
 		DB                   string
 		Host                 string
-		Port                 int
+		Port                 uint16
 		User                 string
 		Pass                 string
 		Name                 string
@@ -43,7 +43,7 @@ func TestMySQL_Bind(t *testing.T) {
 		MaxOpenConns         int
 		MaxIdleConns         int
 		TLS                  *TLS
-		TCP                  *TCP
+		Net                  *Net
 	}
 	type want struct {
 		want *MySQL
@@ -96,7 +96,7 @@ func TestMySQL_Bind(t *testing.T) {
 					MaxOpenConns:         10,
 					MaxIdleConns:         100,
 					TLS:                  new(TLS),
-					TCP:                  new(TCP),
+					Net:                  new(Net),
 				},
 			},
 		},
@@ -120,7 +120,7 @@ func TestMySQL_Bind(t *testing.T) {
 				TLS: &TLS{
 					Enabled: true,
 				},
-				TCP: &TCP{
+				Net: &Net{
 					DNS: new(DNS),
 				},
 			},
@@ -142,7 +142,7 @@ func TestMySQL_Bind(t *testing.T) {
 					TLS: &TLS{
 						Enabled: true,
 					},
-					TCP: &TCP{
+					Net: &Net{
 						DNS: new(DNS),
 					},
 				},
@@ -166,7 +166,7 @@ func TestMySQL_Bind(t *testing.T) {
 				MaxOpenConns:         10,
 				MaxIdleConns:         100,
 				TLS:                  new(TLS),
-				TCP:                  new(TCP),
+				Net:                  new(Net),
 			},
 			want: want{
 				want: &MySQL{
@@ -184,7 +184,7 @@ func TestMySQL_Bind(t *testing.T) {
 					MaxOpenConns:         10,
 					MaxIdleConns:         100,
 					TLS:                  new(TLS),
-					TCP:                  new(TCP),
+					Net:                  new(Net),
 				},
 			},
 			beforeFunc: func() {
@@ -240,7 +240,7 @@ func TestMySQL_Bind(t *testing.T) {
 				MaxOpenConns:         test.fields.MaxOpenConns,
 				MaxIdleConns:         test.fields.MaxIdleConns,
 				TLS:                  test.fields.TLS,
-				TCP:                  test.fields.TCP,
+				Net:                  test.fields.Net,
 			}
 
 			got := m.Bind()
@@ -256,7 +256,7 @@ func TestMySQL_Opts(t *testing.T) {
 	type fields struct {
 		DB                   string
 		Host                 string
-		Port                 int
+		Port                 uint16
 		User                 string
 		Pass                 string
 		Name                 string
@@ -268,7 +268,7 @@ func TestMySQL_Opts(t *testing.T) {
 		MaxOpenConns         int
 		MaxIdleConns         int
 		TLS                  *TLS
-		TCP                  *TCP
+		Net                  *Net
 	}
 	type want struct {
 		want []mysql.Option
@@ -311,7 +311,7 @@ func TestMySQL_Opts(t *testing.T) {
 		           MaxOpenConns: 0,
 		           MaxIdleConns: 0,
 		           TLS: TLS{},
-		           TCP: TCP{},
+		           Net: Net{},
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -338,7 +338,7 @@ func TestMySQL_Opts(t *testing.T) {
 		           MaxOpenConns: 0,
 		           MaxIdleConns: 0,
 		           TLS: TLS{},
-		           TCP: TCP{},
+		           Net: Net{},
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -375,7 +375,7 @@ func TestMySQL_Opts(t *testing.T) {
 				MaxOpenConns:         test.fields.MaxOpenConns,
 				MaxIdleConns:         test.fields.MaxIdleConns,
 				TLS:                  test.fields.TLS,
-				TCP:                  test.fields.TCP,
+				Net:                  test.fields.Net,
 			}
 
 			got, err := m.Opts()

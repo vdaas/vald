@@ -28,6 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/net/control"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/logging"
 	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/recover"
@@ -41,10 +42,11 @@ type Option func(*server)
 var (
 	defaultOptions = []Option{
 		WithDisableRestart(),
+		WithNetwork(net.TCP.String()),
 		WithServerMode(REST),
 		WithErrorGroup(errgroup.Get()),
 	}
-	HealthServerOpts = func(name, host, path string, port uint) []Option {
+	HealthServerOpts = func(name, host, path string, port uint16) []Option {
 		return []Option{
 			WithName(name),
 			WithErrorGroup(errgroup.Get()),
@@ -64,6 +66,7 @@ var (
 			}()),
 			WithHost(host),
 			WithIdleTimeout("3s"),
+			WithNetwork(net.TCP.String()),
 			WithPort(port),
 			WithProbeWaitTime("2s"),
 			WithReadHeaderTimeout("3s"),
@@ -75,6 +78,26 @@ var (
 	}
 )
 
+func WithNetwork(network string) Option {
+	return func(s *server) {
+		if network != "" {
+			nt := net.NetworkTypeFromString(network)
+			if nt == net.Unknown {
+				nt = net.TCP
+			}
+			s.network = nt
+		}
+	}
+}
+
+func WithSocketPath(path string) Option {
+	return func(s *server) {
+		if path != "" {
+			s.socketPath = path
+		}
+	}
+}
+
 func WithHost(host string) Option {
 	return func(s *server) {
 		if host != "" {
@@ -83,11 +106,17 @@ func WithHost(host string) Option {
 	}
 }
 
-func WithPort(port uint) Option {
+func WithPort(port uint16) Option {
 	return func(s *server) {
 		if port != 0 {
 			s.port = port
 		}
+	}
+}
+
+func WithSocketFlag(flg control.SocketFlag) Option {
+	return func(s *server) {
+		s.sockFlg = flg
 	}
 }
 

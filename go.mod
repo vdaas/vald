@@ -3,9 +3,9 @@ module github.com/vdaas/vald
 go 1.15
 
 replace (
-	cloud.google.com/go => cloud.google.com/go v0.76.0
+	cloud.google.com/go => cloud.google.com/go v0.77.0
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0+incompatible
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.37.7
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.37.13
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
@@ -61,8 +61,8 @@ require (
 	github.com/klauspost/compress v0.0.0-00010101000000-000000000000
 	github.com/kpango/fastime v1.0.16
 	github.com/kpango/fuid v0.0.0-20200823100533-287aa95e0641
-	github.com/kpango/gache v1.2.4
-	github.com/kpango/glg v1.5.1
+	github.com/kpango/gache v1.2.5
+	github.com/kpango/glg v1.5.4
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/pierrec/lz4/v3 v3.3.2
 	github.com/scylladb/gocqlx v1.5.0
@@ -75,11 +75,11 @@ require (
 	go.uber.org/zap v1.16.0
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777
 	golang.org/x/sync v0.0.0-20201207232520-09787c993a3a
-	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c
+	golang.org/x/sys v0.0.0-20210217105451-b926d437f341
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/plot v0.8.1
-	google.golang.org/api v0.39.0
-	google.golang.org/genproto v0.0.0-20210207032614-bba0dbe2a9ea
+	google.golang.org/api v0.40.0
+	google.golang.org/genproto v0.0.0-20210217220511-c18582744cc2
 	google.golang.org/grpc v1.35.0
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.20.2

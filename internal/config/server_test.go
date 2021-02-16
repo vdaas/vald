@@ -517,7 +517,7 @@ func TestServer_Bind(t *testing.T) {
 	type fields struct {
 		Name          string
 		Host          string
-		Port          uint
+		Port          uint16
 		Mode          string
 		ProbeWaitTime string
 		HTTP          *HTTP
@@ -617,7 +617,7 @@ func TestServer_Opts(t *testing.T) {
 	type fields struct {
 		Name          string
 		Host          string
-		Port          uint
+		Port          uint16
 		Mode          string
 		ProbeWaitTime string
 		HTTP          *HTTP

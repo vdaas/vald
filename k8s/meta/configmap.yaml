@@ -61,6 +61,16 @@ data:
           mode: GRPC
           probe_wait_time: 3s
           restart: true
+          socket_option:
+            ip_recover_destination_addr: false
+            ip_transparent: false
+            reuse_addr: true
+            reuse_port: true
+            tcp_cork: false
+            tcp_defer_accept: true
+            tcp_fast_open: true
+            tcp_no_delay: true
+            tcp_quick_ack: true
       health_check_servers:
         - name: liveness
           host: 0.0.0.0
@@ -74,6 +84,16 @@ data:
             write_timeout: ""
           mode: ""
           probe_wait_time: 3s
+          socket_option:
+            ip_recover_destination_addr: false
+            ip_transparent: false
+            reuse_addr: true
+            reuse_port: true
+            tcp_cork: false
+            tcp_defer_accept: true
+            tcp_fast_open: true
+            tcp_no_delay: true
+            tcp_quick_ack: true
         - name: readiness
           host: 0.0.0.0
           port: 3001
@@ -86,6 +106,16 @@ data:
             write_timeout: ""
           mode: ""
           probe_wait_time: 3s
+          socket_option:
+            ip_recover_destination_addr: false
+            ip_transparent: false
+            reuse_addr: true
+            reuse_port: true
+            tcp_cork: false
+            tcp_defer_accept: true
+            tcp_fast_open: true
+            tcp_no_delay: true
+            tcp_quick_ack: true
       metrics_servers:
         - name: pprof
           host: 0.0.0.0
@@ -99,6 +129,16 @@ data:
             write_timeout: 1s
           mode: REST
           probe_wait_time: 3s
+          socket_option:
+            ip_recover_destination_addr: false
+            ip_transparent: false
+            reuse_addr: true
+            reuse_port: true
+            tcp_cork: false
+            tcp_defer_accept: true
+            tcp_fast_open: true
+            tcp_no_delay: true
+            tcp_quick_ack: true
       startup_strategy:
         - liveness
         - pprof
@@ -199,6 +239,31 @@ data:
       max_retry_backoff: 512ms
       min_idle_conns: 0
       min_retry_backoff: 8ms
+      net:
+        dialer:
+          dual_stack_enabled: false
+          keep_alive: 5m
+          timeout: 5s
+        dns:
+          cache_enabled: true
+          cache_expiration: 24h
+          refresh_duration: 1h
+        socket_option:
+          ip_recover_destination_addr: false
+          ip_transparent: false
+          reuse_addr: true
+          reuse_port: true
+          tcp_cork: false
+          tcp_defer_accept: true
+          tcp_fast_open: true
+          tcp_no_delay: true
+          tcp_quick_ack: true
+        tls:
+          ca: /path/to/ca
+          cert: /path/to/cert
+          enabled: false
+          insecure_skip_verify: false
+          key: /path/to/key
       network: tcp
       password: _REDIS_PASSWORD_
       pool_size: 10
@@ -210,21 +275,6 @@ data:
       route_randomly: true
       sentinel_master_name: ""
       sentinel_password: ""
-      tcp:
-        dialer:
-          dual_stack_enabled: false
-          keep_alive: 5m
-          timeout: 5s
-        dns:
-          cache_enabled: true
-          cache_expiration: 24h
-          refresh_duration: 1h
-        tls:
-          ca: /path/to/ca
-          cert: /path/to/cert
-          enabled: false
-          insecure_skip_verify: false
-          key: /path/to/key
       tls:
         ca: /path/to/ca
         cert: /path/to/cert

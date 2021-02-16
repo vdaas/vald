@@ -30,7 +30,6 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
-	"github.com/vdaas/vald/internal/net/tcp"
 	"go.uber.org/goleak"
 )
 
@@ -142,7 +141,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 	type fields struct {
 		db                   string
 		host                 string
-		port                 int
+		port                 uint16
 		user                 string
 		pass                 string
 		name                 string
@@ -151,7 +150,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 		initialPingTimeLimit time.Duration
 		initialPingDuration  time.Duration
 		connMaxLifeTime      time.Duration
-		dialer               tcp.Dialer
+		dialer               net.Dialer
 		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
 		tlsConfig            *tls.Config
 		maxOpenConns         int
@@ -231,7 +230,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 			}
 		}(),
 		func() test {
-			dialer, _ := tcp.NewDialer()
+			dialer, _ := net.NewDialer()
 			dialerFunc := dialer.GetDialer()
 			return test{
 				name: "Open success with dialer when no error occurs",
@@ -650,7 +649,7 @@ func Test_mySQLClient_GetVector(t *testing.T) {
 		initialPingTimeLimit time.Duration
 		initialPingDuration  time.Duration
 		connMaxLifeTime      time.Duration
-		dialer               tcp.Dialer
+		dialer               net.Dialer
 		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
 		tlsConfig            *tls.Config
 		maxOpenConns         int

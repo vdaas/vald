@@ -16,13 +16,29 @@
 // limitations under the License.
 //
 
-// Package tcp provides tcp option
-package tcp
+// Package control provides network socket option
+package control
 
-import (
-	"syscall"
-)
-
-func Control(network, address string, c syscall.RawConn) error {
+var SetsockoptInt = func(fd, level, opt int, value int) (err error) {
 	return nil
 }
+
+const (
+	SOL_SOCKET           = 0
+	IPPROTO_TCP          = 0
+	SOL_IP               = 0
+	SOL_IPV6             = 0
+	SO_REUSEADDR         = 0
+	SO_REUSEPORT         = 0
+	SO_KEEPALIVE         = 0
+	TCP_NODELAY          = 0
+	TCP_CORK             = 0
+	TCP_QUICKACK         = 0
+	TCP_DEFER_ACCEPT     = 0
+	TCP_KEEPINTVL        = 0
+	TCP_KEEPIDLE         = 0
+	IP_TRANSPARENT       = 0
+	IPV6_TRANSPARENT     = 0
+	IP_RECVORIGDSTADDR   = 0
+	IPV6_RECVORIGDSTADDR = 0
+)
