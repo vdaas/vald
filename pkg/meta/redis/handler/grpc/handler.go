@@ -24,8 +24,8 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/meta"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/pkg/meta/redis/service"
@@ -55,16 +55,38 @@ func (s *server) GetMeta(ctx context.Context, key *payload.Meta_Key) (*payload.M
 	if err != nil {
 		if errors.IsErrRedisNotFound(err) {
 			log.Warnf("[GetMeta]\tnot found\t%v\t%s", key.GetKey(), err.Error())
+			err = status.WrapWithNotFound(fmt.Sprintf("GetMeta API: not found: key %s", key.GetKey()), err,
+				&errdetails.RequestInfo{
+					RequestId:   key.GetKey(),
+					ServingData: errdetails.Serialize(key),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.GetMeta",
+					// ResourceName: ,
+					Owner:       errdetails.ValdResourceOwner,
+					Description: err.Error(),
+				})
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
-			return nil, status.WrapWithNotFound(fmt.Sprintf("GetMeta API key %s not found", key.GetKey()), err, info.Get())
+			return nil, err
 		}
 		log.Errorf("[GetMeta]\tunknown error\t%+v", err)
+		err = status.WrapWithUnknown(fmt.Sprintf("GetMeta API: unknown error occurred: key %s", key.GetKey()), err,
+			&errdetails.RequestInfo{
+				RequestId:   key.GetKey(),
+				ServingData: errdetails.Serialize(key),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.GetMeta",
+				// ResourceName: ,
+				Owner:       errdetails.ValdResourceOwner,
+				Description: err.Error(),
+			})
 		if span != nil {
 			span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 		}
-		return nil, status.WrapWithUnknown(fmt.Sprintf("GetMeta API unknown error occurred key %s", key.GetKey()), err, info.Get())
+		return nil, err
 	}
 	return &payload.Meta_Val{
 		Val: val,
@@ -83,16 +105,38 @@ func (s *server) GetMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *pay
 	if err != nil {
 		if errors.IsErrRedisNotFound(err) {
 			log.Warnf("[GetMetas]\tnot found\t%v\t%s", keys.GetKeys(), err.Error())
+			err = status.WrapWithNotFound(fmt.Sprintf("GetMetas API: not found: keys %#v", keys.GetKeys()), err,
+				&errdetails.RequestInfo{
+					// RequestId:   keys.GetKeys(),
+					ServingData: errdetails.Serialize(keys),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.GetMetas",
+					// ResourceName: ,
+					Owner:       errdetails.ValdResourceOwner,
+					Description: err.Error(),
+				})
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
-			return mv, status.WrapWithNotFound(fmt.Sprintf("GetMetas API Redis entry keys %#v not found", keys.GetKeys()), err, info.Get())
+			return mv, err
 		}
 		log.Errorf("[GetMetas]\tunknown error\t%+v", err)
+		err = status.WrapWithUnknown(fmt.Sprintf("GetMetas API: unknown error occurred: keys %#v", keys.GetKeys()), err,
+			&errdetails.RequestInfo{
+				// RequestId:   keys.GetKeys(),
+				ServingData: errdetails.Serialize(keys),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.GetMetas",
+				// ResourceName: ,
+				Owner:       errdetails.ValdResourceOwner,
+				Description: err.Error(),
+			})
 		if span != nil {
 			span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 		}
-		return mv, status.WrapWithUnknown(fmt.Sprintf("GetMetas API Redis entry keys %#v unknown error occurred", keys.GetKeys()), err, info.Get())
+		return mv, err
 	}
 	return mv, nil
 }
@@ -108,16 +152,38 @@ func (s *server) GetMetaInverse(ctx context.Context, val *payload.Meta_Val) (*pa
 	if err != nil {
 		if errors.IsErrRedisNotFound(err) {
 			log.Warnf("[GetMetaInverse]\tnot found\t%v\t%s", val.GetVal(), err.Error())
+			err = status.WrapWithNotFound(fmt.Sprintf("GetMetaInverse API: not found: val %s", val.GetVal()), err,
+				&errdetails.RequestInfo{
+					RequestId:   val.GetVal(),
+					ServingData: errdetails.Serialize(val),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.GetMetaInverse",
+					// ResourceName: ,
+					Owner:       errdetails.ValdResourceOwner,
+					Description: err.Error(),
+				})
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
-			return nil, status.WrapWithNotFound(fmt.Sprintf("GetMetaInverse API val %s not found", val.GetVal()), err, info.Get())
+			return nil, err
 		}
 		log.Errorf("[GetMetaInverse]\tunknown error\t%+v", err)
+		err = status.WrapWithUnknown(fmt.Sprintf("GetMetaInverse API: unknown error occurred: val %s", val.GetVal()), err,
+			&errdetails.RequestInfo{
+				RequestId:   val.GetVal(),
+				ServingData: errdetails.Serialize(val),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.GetMetaInverse",
+				// ResourceName: ,
+				Owner:       errdetails.ValdResourceOwner,
+				Description: err.Error(),
+			})
 		if span != nil {
 			span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 		}
-		return nil, status.WrapWithUnknown(fmt.Sprintf("GetMetaInverse API val %s unknown error occurred", val.GetVal()), err, info.Get())
+		return nil, err
 	}
 	return &payload.Meta_Key{
 		Key: key,
@@ -136,16 +202,38 @@ func (s *server) GetMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (
 	if err != nil {
 		if errors.IsErrRedisNotFound(err) {
 			log.Warnf("[GetMetasInverse]\tnot found\t%v\t%s", vals.GetVals(), err.Error())
+			err = status.WrapWithNotFound(fmt.Sprintf("GetMetasInverse API: not found: vals %#v", vals.GetVals()), err,
+				&errdetails.RequestInfo{
+					// RequestId:   keys.GetKeys(),
+					ServingData: errdetails.Serialize(vals),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.GetMetasInverse",
+					// ResourceName: ,
+					Owner:       errdetails.ValdResourceOwner,
+					Description: err.Error(),
+				})
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
-			return mk, status.WrapWithNotFound(fmt.Sprintf("GetMetasInverse API vals %#v not found", vals.GetVals()), err, info.Get())
+			return mk, err
 		}
 		log.Errorf("[GetMetasInverse]\tunknown error\t%+v", err)
+		err = status.WrapWithUnknown(fmt.Sprintf("GetMetasInverse API: unknown error occurred: vals %#v", vals.GetVals()), err,
+			&errdetails.RequestInfo{
+				// RequestId:   keys.GetKeys(),
+				ServingData: errdetails.Serialize(vals),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.GetMetasInverse",
+				// ResourceName: ,
+				Owner:       errdetails.ValdResourceOwner,
+				Description: err.Error(),
+			})
 		if span != nil {
 			span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 		}
-		return mk, status.WrapWithUnknown(fmt.Sprintf("GetMetasInverse API vals %#v unknown error occurred", vals.GetVals()), err, info.Get())
+		return mk, err
 	}
 	return mk, nil
 }
@@ -160,10 +248,21 @@ func (s *server) SetMeta(ctx context.Context, kv *payload.Meta_KeyVal) (_ *paylo
 	err = s.redis.Set(ctx, kv.GetKey(), kv.GetVal())
 	if err != nil {
 		log.Errorf("[SetMeta]\tunknown error\t%+v", err)
+		err = status.WrapWithInternal(fmt.Sprintf("SetMeta API: failed to store: key %s val %s", kv.GetKey(), kv.GetVal()), err,
+			&errdetails.RequestInfo{
+				RequestId:   kv.GetKey(),
+				ServingData: errdetails.Serialize(kv),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.SetMeta",
+				// ResourceName: ,
+				Owner:       errdetails.ValdResourceOwner,
+				Description: err.Error(),
+			})
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("SetMeta API key %s val %s failed to store", kv.GetKey(), kv.GetVal()), err, info.Get())
+		return nil, err
 	}
 	return new(payload.Empty), nil
 }
@@ -182,10 +281,21 @@ func (s *server) SetMetas(ctx context.Context, kvs *payload.Meta_KeyVals) (_ *pa
 	err = s.redis.SetMultiple(ctx, query)
 	if err != nil {
 		log.Errorf("[SetMetas]\tunknown error\t%+v", err)
+		err = status.WrapWithInternal(fmt.Sprintf("SetMetas API: failed to store: %#v", query), err,
+			&errdetails.RequestInfo{
+				// RequestId:   query,
+				ServingData: errdetails.Serialize(kvs),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.SetMetas",
+				// ResourceName: ,
+				Owner:       errdetails.ValdResourceOwner,
+				Description: err.Error(),
+			})
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("SetMetas API failed to store %#v", query), err, info.Get())
+		return nil, err
 	}
 	return new(payload.Empty), nil
 }
@@ -201,16 +311,38 @@ func (s *server) DeleteMeta(ctx context.Context, key *payload.Meta_Key) (*payloa
 	if err != nil {
 		if errors.IsErrRedisNotFound(err) {
 			log.Warnf("[DeleteMeta]\tnot found\t%v\t%s", key.GetKey(), err.Error())
+			err = status.WrapWithNotFound(fmt.Sprintf("DeleteMeta API: not found: key %s", key.GetKey()), err,
+				&errdetails.RequestInfo{
+					RequestId:   key.GetKey(),
+					ServingData: errdetails.Serialize(key),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.DeleteMeta",
+					// ResourceName: ,
+					Owner:       errdetails.ValdResourceOwner,
+					Description: err.Error(),
+				})
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
-			return nil, status.WrapWithNotFound(fmt.Sprintf("DeleteMeta API key %s not found", key.GetKey()), err, info.Get())
+			return nil, err
 		}
 		log.Errorf("[DeleteMeta]\tunknown error\t%+v", err)
+		err = status.WrapWithUnknown(fmt.Sprintf("DeleteMeta API: unknown error occurred: key %s", key.GetKey()), err,
+			&errdetails.RequestInfo{
+				RequestId:   key.GetKey(),
+				ServingData: errdetails.Serialize(key),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.DeleteMeta",
+				// ResourceName: ,
+				Owner:       errdetails.ValdResourceOwner,
+				Description: err.Error(),
+			})
 		if span != nil {
 			span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 		}
-		return nil, status.WrapWithUnknown(fmt.Sprintf("DeleteMeta API unknown error occurred key %s", key.GetKey()), err, info.Get())
+		return nil, err
 	}
 	return &payload.Meta_Val{
 		Val: val,
@@ -229,16 +361,38 @@ func (s *server) DeleteMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *
 	if err != nil {
 		if errors.IsErrRedisNotFound(err) {
 			log.Warnf("[DeleteMetas]\tnot found\t%v\t%s", keys.GetKeys(), err.Error())
+			err = status.WrapWithNotFound(fmt.Sprintf("DeleteMetas API: not found: keys %#v", keys.GetKeys()), err,
+				&errdetails.RequestInfo{
+					// RequestId:   keys.GetKeys(),
+					ServingData: errdetails.Serialize(keys),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.DeleteMetas",
+					// ResourceName: ,
+					Owner:       errdetails.ValdResourceOwner,
+					Description: err.Error(),
+				})
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
-			return mv, status.WrapWithNotFound(fmt.Sprintf("DeleteMetas API Redis entry keys %#v not found", keys.GetKeys()), err, info.Get())
+			return mv, err
 		}
 		log.Errorf("[DeleteMetas]\tunknown error\t%+v", err)
+		err = status.WrapWithUnknown(fmt.Sprintf("DeleteMetas API: unknown error occurred: keys %#v", keys.GetKeys()), err,
+			&errdetails.RequestInfo{
+				// RequestId:   keys.GetKeys(),
+				ServingData: errdetails.Serialize(keys),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.DeleteMetas",
+				// ResourceName: ,
+				Owner:       errdetails.ValdResourceOwner,
+				Description: err.Error(),
+			})
 		if span != nil {
 			span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 		}
-		return mv, status.WrapWithUnknown(fmt.Sprintf("DeleteMetas API Redis entry keys %#v unknown error occurred", keys.GetKeys()), err, info.Get())
+		return mv, err
 	}
 	return mv, nil
 }
@@ -254,16 +408,38 @@ func (s *server) DeleteMetaInverse(ctx context.Context, val *payload.Meta_Val) (
 	if err != nil {
 		if errors.IsErrRedisNotFound(err) {
 			log.Warnf("[DeleteMetaInverse]\tnot found\t%v\t%s", val.GetVal(), err.Error())
+			err = status.WrapWithNotFound(fmt.Sprintf("DeleteMetaInverse API: not found: val %s", val.GetVal()), err,
+				&errdetails.RequestInfo{
+					RequestId:   val.GetVal(),
+					ServingData: errdetails.Serialize(val),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.DeleteMetaInverse",
+					// ResourceName: ,
+					Owner:       errdetails.ValdResourceOwner,
+					Description: err.Error(),
+				})
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
-			return nil, status.WrapWithNotFound(fmt.Sprintf("DeleteMetaInverse API val %s not found", val.GetVal()), err, info.Get())
+			return nil, err
 		}
 		log.Errorf("[DeleteMetaInverse]\tunknown error\t%+v", err)
+		err = status.WrapWithUnknown(fmt.Sprintf("DeleteMetaInverse API: unknown error occurred: val %s", val.GetVal()), err,
+			&errdetails.RequestInfo{
+				RequestId:   val.GetVal(),
+				ServingData: errdetails.Serialize(val),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.DeleteMetaInverse",
+				// ResourceName: ,
+				Owner:       errdetails.ValdResourceOwner,
+				Description: err.Error(),
+			})
 		if span != nil {
 			span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 		}
-		return nil, status.WrapWithUnknown(fmt.Sprintf("DeleteMetaInverse API val %s unknown error occurred", val.GetVal()), err, info.Get())
+		return nil, err
 	}
 	return &payload.Meta_Key{
 		Key: key,
@@ -282,16 +458,38 @@ func (s *server) DeleteMetasInverse(ctx context.Context, vals *payload.Meta_Vals
 	if err != nil {
 		if errors.IsErrRedisNotFound(err) {
 			log.Warnf("[DeleteMetasInverse]\tnot found\t%v\t%s", vals.GetVals(), err.Error())
+			err = status.WrapWithNotFound(fmt.Sprintf("DeleteMetasInverse API: not found: vals %#v", vals.GetVals()), err,
+				&errdetails.RequestInfo{
+					// RequestId:   keys.GetKeys(),
+					ServingData: errdetails.Serialize(vals),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.DeleteMetasInverse",
+					// ResourceName: ,
+					Owner:       errdetails.ValdResourceOwner,
+					Description: err.Error(),
+				})
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
-			return mk, status.WrapWithNotFound(fmt.Sprintf("DeleteMetasInverse API vals %#v not found", vals.GetVals()), err, info.Get())
+			return mk, err
 		}
 		log.Errorf("[DeleteMetasInverse]\tunknown error\t%+v", err)
+		err = status.WrapWithUnknown(fmt.Sprintf("DeleteMetasInverse API: unknown error occurred: vals %#v", vals.GetVals()), err,
+			&errdetails.RequestInfo{
+				// RequestId:   keys.GetKeys(),
+				ServingData: errdetails.Serialize(vals),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.DeleteMetasInverse",
+				// ResourceName: ,
+				Owner:       errdetails.ValdResourceOwner,
+				Description: err.Error(),
+			})
 		if span != nil {
 			span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 		}
-		return mk, status.WrapWithUnknown(fmt.Sprintf("DeleteMetasInverse API vals %#v unknown error occurred", vals.GetVals()), err, info.Get())
+		return mk, err
 	}
 	return mk, nil
 }
