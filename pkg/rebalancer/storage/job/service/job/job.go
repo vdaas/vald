@@ -26,6 +26,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	ctxio "github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
@@ -43,10 +44,11 @@ type rebalancer struct {
 	gatewayHost     string
 	gatewayPort     int
 	storage         storage.Storage
-
-	// TODO: do we need this?
-	kvsDBName string
 }
+
+const (
+	kvsFileName = "ngt-meta.kvsdb"
+)
 
 func New(opts ...Option) (dsc Rebalancer, err error) {
 	r := new(rebalancer)
@@ -103,7 +105,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 			return nil
 		}))
 
-		// Unpacka tar file
+		// Unpack tar.gz file and Decode kvsdb file to get the vector ids
 		idm, err := r.loadKVS(ctx, pr)
 		if err != nil {
 			// TODO: should we return here?
@@ -115,11 +117,25 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 			}
 		}
 
-		// Decode kvsdb file to get vector ids
-
 		// Calculate to process data from the above data
+		amntData := r.rate * float64(len(idm))
 
 		// Rebalance
+		data := map[string][]float64
+		// TODO: get gateway address and set option
+		// e.g. https://github.com/vdaas/vald/blob/master/charts/vald/templates/gateway/backup/configmap.yaml#L54
+		client, err := vald.New()
+		if err != nil {
+			return err
+		}
+		for i, id := range idm {
+			// get vecotr by id
+			// apppned data
+			if amntData - 1 == i {
+				break
+			}
+		}
+		// request multi update using v1 client
 
 		return nil
 	})
@@ -127,7 +143,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-func (r *rebalancer) loadKVS(ctx context.Context, reader io.Reader) (idm map[string]uint32, err error) {
+func (r *rebalancer) loadKVS(ctx context.Context, reader io.Reader) (map[string]uint32, error) {
 	tr := tar.NewReader(reader)
 
 	for {
@@ -138,7 +154,7 @@ func (r *rebalancer) loadKVS(ctx context.Context, reader io.Reader) (idm map[str
 		}
 
 		var header *tar.Header
-		header, err = tr.Next()
+		header, err := tr.Next()
 		// TODO: error handling
 		if err != nil {
 			if err == io.EOF {
@@ -150,8 +166,7 @@ func (r *rebalancer) loadKVS(ctx context.Context, reader io.Reader) (idm map[str
 
 		switch header.Typeflag {
 		case tar.TypeReg:
-			// TODO: header.Nameにファイル名が含まれているので、対象となるkvsDB（ngt-meta.kvsdb）のファイル名ならば処理を継続、そうでないならContinue
-			if header.Name != r.kvsDBName {
+			if header.Name != kvsFileName {
 				continue
 			}
 
@@ -163,16 +178,14 @@ func (r *rebalancer) loadKVS(ctx context.Context, reader io.Reader) (idm map[str
 				return nil, err
 			}
 
-			// デコードデーtを早期に返す
 			return idm, nil
-
 		default:
 			// TODO: define in errors package
 			return nil, errors.New("invalid file type")
-
 		}
 
 	}
 
-	//return nil, errors.New("invalid file type")
+	// TODO; define in errors package
+	return nil, errors.New("kvsdb file not found")
 }
