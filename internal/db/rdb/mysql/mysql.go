@@ -149,9 +149,9 @@ func (m *mySQLClient) Open(ctx context.Context) (err error) {
 func (m *mySQLClient) Ping(ctx context.Context) (err error) {
 	if m.session == nil {
 		err = errors.ErrMySQLSessionNil
-		log.Debugf(
-			"err: %s, { db: %s, host: %s, port: %d, user: %s, pass: %s, name: %s, charset: %s } ",
-			err.Error(), m.db, m.host, m.port, m.user, m.pass, m.name, m.charset,
+		log.Errorf(
+			"err: %s, { db: %s, host: %s, port: %d, user: %s, name: %s, charset: %s } ",
+			err.Error(), m.db, m.host, m.port, m.user, m.name, m.charset,
 		)
 		return err
 	}
@@ -186,9 +186,9 @@ func (m *mySQLClient) Ping(ctx context.Context) (err error) {
 func (m *mySQLClient) Close(ctx context.Context) (err error) {
 	if m.session == nil {
 		err = errors.ErrMySQLSessionNil
-		log.Debugf(
-			"err: %s, { db: %s, host: %s, port: %d, user: %s, pass: %s, name: %s, charset: %s } ",
-			err.Error(), m.db, m.host, m.port, m.user, m.pass, m.name, m.charset,
+		log.Errorf(
+			"err: %s, { db: %s, host: %s, port: %d, user: %s, name: %s, charset: %s } ",
+			err.Error(), m.db, m.host, m.port, m.user, m.name, m.charset,
 		)
 		return err
 	}
@@ -210,9 +210,9 @@ func (m *mySQLClient) GetVector(ctx context.Context, uuid string) (Vector, error
 
 	if m.session == nil {
 		err := errors.ErrMySQLSessionNil
-		log.Debugf(
-			"err: %s, { db: %s, host: %s, port: %d, user: %s, pass: %s, name: %s, charset: %s } ",
-			err.Error(), m.db, m.host, m.port, m.user, m.pass, m.name, m.charset,
+		log.Errorf(
+			"err: %s, { db: %s, host: %s, port: %d, user: %s, name: %s, charset: %s } ",
+			err.Error(), m.db, m.host, m.port, m.user, m.name, m.charset,
 		)
 		return nil, err
 	}
@@ -246,9 +246,9 @@ func (m *mySQLClient) GetIPs(ctx context.Context, uuid string) ([]string, error)
 
 	if m.session == nil {
 		err := errors.ErrMySQLSessionNil
-		log.Debugf(
-			"err: %s, { db: %s, host: %s, port: %d, user: %s, pass: %s, name: %s, charset: %s } ",
-			err.Error(), m.db, m.host, m.port, m.user, m.pass, m.name, m.charset,
+		log.Errorf(
+			"err: %s, { db: %s, host: %s, port: %d, user: %s, name: %s, charset: %s } ",
+			err.Error(), m.db, m.host, m.port, m.user, m.name, m.charset,
 		)
 		return nil, err
 	}
@@ -288,6 +288,15 @@ func validateVector(vec Vector) error {
 func (m *mySQLClient) SetVector(ctx context.Context, vec Vector) error {
 	if !m.connected.Load().(bool) {
 		return errors.ErrMySQLConnectionClosed
+	}
+
+	if m.session == nil {
+		err := errors.ErrMySQLSessionNil
+		log.Errorf(
+			"err: %s, { db: %s, host: %s, port: %d, user: %s, name: %s, charset: %s } ",
+			err.Error(), m.db, m.host, m.port, m.user, m.name, m.charset,
+		)
+		return err
 	}
 
 	tx, err := m.session.Begin()
@@ -343,9 +352,9 @@ func (m *mySQLClient) SetVectors(ctx context.Context, vecs ...Vector) error {
 
 	if m.session == nil {
 		err := errors.ErrMySQLSessionNil
-		log.Debugf(
-			"err: %s, { db: %s, host: %s, port: %d, user: %s, pass: %s, name: %s, charset: %s } ",
-			err.Error(), m.db, m.host, m.port, m.user, m.pass, m.name, m.charset,
+		log.Errorf(
+			"err: %s, { db: %s, host: %s, port: %d, user: %s, name: %s, charset: %s } ",
+			err.Error(), m.db, m.host, m.port, m.user, m.name, m.charset,
 		)
 		return err
 	}
@@ -406,9 +415,9 @@ func (m *mySQLClient) deleteVector(ctx context.Context, val string) error {
 
 	if m.session == nil {
 		err := errors.ErrMySQLSessionNil
-		log.Debugf(
-			"err: %s, { db: %s, host: %s, port: %d, user: %s, pass: %s, name: %s, charset: %s } ",
-			err.Error(), m.db, m.host, m.port, m.user, m.pass, m.name, m.charset,
+		log.Errorf(
+			"err: %s, { db: %s, host: %s, port: %d, user: %s, name: %s, charset: %s } ",
+			err.Error(), m.db, m.host, m.port, m.user, m.name, m.charset,
 		)
 		return err
 	}
@@ -468,9 +477,9 @@ func (m *mySQLClient) SetIPs(ctx context.Context, uuid string, ips ...string) er
 
 	if m.session == nil {
 		err := errors.ErrMySQLSessionNil
-		log.Debugf(
-			"err: %s, { db: %s, host: %s, port: %d, user: %s, pass: %s, name: %s, charset: %s } ",
-			err.Error(), m.db, m.host, m.port, m.user, m.pass, m.name, m.charset,
+		log.Errorf(
+			"err: %s, { db: %s, host: %s, port: %d, user: %s, name: %s, charset: %s } ",
+			err.Error(), m.db, m.host, m.port, m.user, m.name, m.charset,
 		)
 		return err
 	}
@@ -510,9 +519,9 @@ func (m *mySQLClient) RemoveIPs(ctx context.Context, ips ...string) error {
 
 	if m.session == nil {
 		err := errors.ErrMySQLSessionNil
-		log.Debugf(
-			"err: %s, { db: %s, host: %s, port: %d, user: %s, pass: %s, name: %s, charset: %s } ",
-			err.Error(), m.db, m.host, m.port, m.user, m.pass, m.name, m.charset,
+		log.Errorf(
+			"err: %s, { db: %s, host: %s, port: %d, user: %s, name: %s, charset: %s } ",
+			err.Error(), m.db, m.host, m.port, m.user, m.name, m.charset,
 		)
 		return err
 	}

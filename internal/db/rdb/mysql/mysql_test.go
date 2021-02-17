@@ -1460,6 +1460,25 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 		}(),
 		func() test {
 			m := new(vector)
+			return test{
+				name: "return error when mysql session is nil",
+				args: args{
+					ctx: context.Background(),
+					mv:  m,
+				},
+				fields: fields{
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+				},
+				want: want{
+					err: errors.ErrMySQLSessionNil,
+				},
+			}
+		}(),
+		func() test {
+			m := new(vector)
 			err := errors.New("session.Begin error")
 			return test{
 				name: "return error when session.Begin fails",
