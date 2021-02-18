@@ -83,7 +83,7 @@ require (
 	google.golang.org/grpc v1.35.0
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.20.2
-	k8s.io/apimachinery v0.20.2
+	k8s.io/apimachinery v0.20.3
 	k8s.io/cli-runtime v0.0.0-00010101000000-000000000000
 	k8s.io/client-go v0.20.2
 	k8s.io/metrics v0.0.0-00010101000000-000000000000
