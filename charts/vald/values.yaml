@@ -65,7 +65,7 @@ defaults:
           # @schema {"name": "defaults.server_config.servers.rest.server.probe_wait_time", "type": "string"}
           # defaults.server_config.servers.rest.server.probe_wait_time -- REST server probe wait time
           probe_wait_time: 3s
-          # @schema {"name": "defaults.server_config.servers.rest.server.network", "type": "string", "enum": ["tcp", "unix"]}
+          # @schema {"name": "defaults.server_config.servers.rest.server.network", "type": "string", "enum": ["tcp", "tcp4", "tcp6", "udp", "udp4", "udp6", "unix", "unixgram", "unixpacket"]}
           # defaults.server_config.servers.rest.server.network -- mysql network
           network: tcp
           # @schema {"name": "defaults.server_config.servers.rest.server.socket_path", "type": "string"}
@@ -142,7 +142,7 @@ defaults:
           # @schema {"name": "defaults.server_config.servers.grpc.server.probe_wait_time", "type": "string"}
           # defaults.server_config.servers.grpc.server.probe_wait_time -- gRPC server probe wait time
           probe_wait_time: "3s"
-          # @schema {"name": "defaults.server_config.servers.grpc.server.network", "type": "string", "enum": ["tcp", "unix"]}
+          # @schema {"name": "defaults.server_config.servers.grpc.server.network", "type": "string", "enum": ["tcp", "tcp4", "tcp6", "udp", "udp4", "udp6", "unix", "unixgram", "unixpacket"]}
           # defaults.server_config.servers.grpc.server.network -- mysql network
           network: tcp
           # @schema {"name": "defaults.server_config.servers.grpc.server.socket_path", "type": "string"}
@@ -276,7 +276,7 @@ defaults:
           # @schema {"name": "defaults.server_config.healths.liveness.server.probe_wait_time", "type": "string"}
           # defaults.server_config.healths.liveness.server.probe_wait_time -- liveness server probe wait time
           probe_wait_time: "3s"
-          # @schema {"name": "defaults.server_config.healths.liveness.server.network", "type": "string", "enum": ["tcp", "unix"]}
+          # @schema {"name": "defaults.server_config.healths.liveness.server.network", "type": "string", "enum": ["tcp", "tcp4", "tcp6", "udp", "udp4", "udp6", "unix", "unixgram", "unixpacket"]}
           # defaults.server_config.healths.liveness.server.network -- mysql network
           network: tcp
           # @schema {"name": "defaults.server_config.healths.liveness.server.socket_path", "type": "string"}
@@ -372,7 +372,7 @@ defaults:
           # @schema {"name": "defaults.server_config.healths.readiness.server.probe_wait_time", "type": "string"}
           # defaults.server_config.healths.readiness.server.probe_wait_time -- readiness server probe wait time
           probe_wait_time: "3s"
-          # @schema {"name": "defaults.server_config.healths.readiness.server.network", "type": "string", "enum": ["tcp", "unix"]}
+          # @schema {"name": "defaults.server_config.healths.readiness.server.network", "type": "string", "enum": ["tcp", "tcp4", "tcp6", "udp", "udp4", "udp6", "unix", "unixgram", "unixpacket"]}
           # defaults.server_config.healths.readiness.server.network -- mysql network
           network: tcp
           # @schema {"name": "defaults.server_config.healths.readiness.server.socket_path", "type": "string"}
@@ -442,7 +442,7 @@ defaults:
           # @schema {"name": "defaults.server_config.metrics.pprof.server.probe_wait_time", "type": "string"}
           # defaults.server_config.metrics.pprof.server.probe_wait_time -- pprof server probe wait time
           probe_wait_time: 3s
-          # @schema {"name": "defaults.server_config.metrics.pprof.server.network", "type": "string", "enum": ["tcp", "unix"]}
+          # @schema {"name": "defaults.server_config.metrics.pprof.server.network", "type": "string", "enum": ["tcp", "tcp4", "tcp6", "udp", "udp4", "udp6", "unix", "unixgram", "unixpacket"]}
           # defaults.server_config.metrics.pprof.server.network -- mysql network
           network: tcp
           # @schema {"name": "defaults.server_config.metrics.pprof.server.socket_path", "type": "string"}
@@ -510,7 +510,7 @@ defaults:
           # @schema {"name": "defaults.server_config.metrics.prometheus.server.probe_wait_time", "type": "string"}
           # defaults.server_config.metrics.prometheus.server.probe_wait_time -- prometheus server probe wait time
           probe_wait_time: 3s
-          # @schema {"name": "defaults.server_config.metrics.prometheus.server.network", "type": "string", "enum": ["tcp", "unix"]}
+          # @schema {"name": "defaults.server_config.metrics.prometheus.server.network", "type": "string", "enum": ["tcp", "tcp4", "tcp6", "udp", "udp4", "udp6", "unix", "unixgram", "unixpacket"]}
           # defaults.server_config.metrics.prometheus.server.network -- mysql network
           network: tcp
           # @schema {"name": "defaults.server_config.metrics.prometheus.server.socket_path", "type": "string"}
@@ -3639,7 +3639,7 @@ manager:
         # @schema {"name": "manager.backup.mysql.config.db", "type": "string", "enum": ["mysql", "postgres", "sqlite3"]}
         # manager.backup.mysql.config.db -- mysql db: mysql, postgres or sqlite3
         db: mysql
-        # @schema {"name": "manager.backup.mysql.config.network", "type": "string", "enum": ["tcp", "unix"]}
+        # @schema {"name": "manager.backup.mysql.config.network", "type": "string", "enum": ["tcp", "tcp4", "tcp6", "udp", "udp4", "udp6", "unix", "unixgram", "unixpacket"]}
         # manager.backup.mysql.config.network -- mysql network
         network: tcp
         # @schema {"name": "manager.backup.mysql.config.socket_path", "type": "string"}
@@ -4395,7 +4395,7 @@ meta:
       # @schema {"name": "meta.redis.config.db", "type": "integer"}
       # meta.redis.config.db -- database to be selected
       db: 0
-      # @schema {"name": "meta.redis.config.network", "type": "string", "enum": ["tcp", "unix"]}
+      # @schema {"name": "meta.redis.config.network", "type": "string", "enum": ["tcp", "tcp4", "tcp6", "udp", "udp4", "udp6", "unix", "unixgram", "unixpacket"]}
       # meta.redis.config.network -- connection network type
       network: tcp
       # @schema {"name": "meta.redis.config.dial_timeout", "type": "string"}

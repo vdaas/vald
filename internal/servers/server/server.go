@@ -138,7 +138,7 @@ func New(opts ...Option) (Server, error) {
 		srv.eg = errgroup.Get()
 	}
 
-	var keepAlive int
+	var keepAlive time.Duration
 	switch srv.mode {
 	case REST, GQL:
 		if srv.http.h == nil {
@@ -163,7 +163,10 @@ func New(opts ...Option) (Server, error) {
 			srv.http.srv.Handler = srv.http.h
 		}
 		srv.http.starter = srv.http.srv.Serve
-		if srv.tcfg != nil {
+		if srv.tcfg != nil &&
+			(len(srv.tcfg.Certificates) != 0 ||
+				srv.tcfg.GetCertificate != nil ||
+				srv.tcfg.GetConfigForClient != nil) {
 			srv.http.srv.TLSConfig = srv.tcfg
 			srv.http.starter = func(l net.Listener) error {
 				return srv.http.srv.ServeTLS(l, "", "")
@@ -185,10 +188,13 @@ func New(opts ...Option) (Server, error) {
 					Timeout:               srv.grpc.keepAlive.timeout,
 				}),
 			)
-			keepAlive = int(srv.grpc.keepAlive.timeout)
+			keepAlive = srv.grpc.keepAlive.timeout
 		}
 
-		if srv.tcfg != nil {
+		if srv.tcfg != nil &&
+			(len(srv.tcfg.Certificates) != 0 ||
+				srv.tcfg.GetCertificate != nil ||
+				srv.tcfg.GetConfigForClient != nil) {
 			srv.grpc.opts = append(srv.grpc.opts,
 				grpc.Creds(credentials.NewTLS(srv.tcfg)),
 			)
@@ -203,8 +209,9 @@ func New(opts ...Option) (Server, error) {
 	}
 
 	if srv.lc == nil {
-		srv.ctrl = control.New(srv.sockFlg, keepAlive)
+		srv.ctrl = control.New(srv.sockFlg, int(keepAlive))
 		srv.lc = &net.ListenConfig{
+			KeepAlive: keepAlive,
 			Control: func(network, addr string, c syscall.RawConn) (err error) {
 				if srv.ctrl != nil {
 					return srv.ctrl.GetControl()(network, addr, c)
@@ -261,7 +268,10 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 			return err
 		}
 
-		if s.tcfg != nil {
+		if s.tcfg != nil &&
+			(len(s.tcfg.Certificates) != 0 ||
+				s.tcfg.GetCertificate != nil ||
+				s.tcfg.GetConfigForClient != nil) {
 			l = tls.NewListener(l, s.tcfg)
 		}
 
@@ -278,7 +288,6 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 					s.running = true
 					s.mu.Unlock()
 				}
-
 				log.Infof("%s server %s starting on %s://%s", s.mode.String(), s.name, l.Addr().Network(), l.Addr().String())
 
 				switch s.mode {

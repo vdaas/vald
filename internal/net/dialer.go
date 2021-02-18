@@ -30,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/observability/trace"
 
 	"github.com/vdaas/vald/internal/net/control"
 	"github.com/vdaas/vald/internal/safety"
@@ -75,6 +76,8 @@ type dialerCache struct {
 	ips []string
 	cnt uint32
 }
+
+const apiName = "vald/internal/net"
 
 // IP returns the next cached IP address in round robin order.
 // It starts getting the index 1 cache instead of index 0 cache.
@@ -148,6 +151,12 @@ func (d *dialer) lookup(ctx context.Context, host string) (*dialerCache, error) 
 	if ok {
 		return cache.(*dialerCache), nil
 	}
+	ctx, span := trace.StartSpan(ctx, apiName+"/Dialer.lookup")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 
 	r, err := d.der.Resolver.LookupIPAddr(ctx, host)
 	if err != nil {
@@ -238,6 +247,12 @@ func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (conn 
 }
 
 func (d *dialer) dial(ctx context.Context, network, addr string) (conn Conn, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/Dialer.dial")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	log.Debugf("%s connection dialing to addr %s", network, addr)
 	conn, err = d.der.DialContext(ctx, network, addr)
 	if err != nil {
@@ -267,6 +282,12 @@ func (d *dialer) dial(ctx context.Context, network, addr string) (conn Conn, err
 }
 
 func (d *dialer) tlsHandshake(ctx context.Context, conn Conn, addr string) (*tls.Conn, error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/Dialer.tlsHandshake")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	var err error
 	if d.tlsConfig.ServerName == "" {
 		var host string
