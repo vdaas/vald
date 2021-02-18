@@ -15,28 +15,45 @@
 #
 
 ARG GO_VERSION=latest
-ARG BASE_TAG=latest
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
 FROM golang:${GO_VERSION} AS golang
 
-FROM vdaas/vald-base:${BASE_TAG} AS builder
+FROM ubuntu:devel AS builder
 ARG PROTOBUF_VERSION=3.14.0
-ARG GOLANGCI_LINT_VERSION=v1.35.2
+ARG GOLANGCI_LINT_VERSION=v1.36.0
 ARG REVIEWDOG_VERSION=v0.11.0
-ARG YQ_VERSION=4.3.2
+ARG YQ_VERSION=4.5.0
+
 LABEL maintainer "${MAINTAINER}"
 
+ENV GO111MODULE on
+ENV DEBIAN_FRONTEND noninteractive
+ENV INITRD No
+ENV LANG en_US.UTF-8
+ENV GOROOT /opt/go
+ENV GOPATH /go
+ENV PATH ${PATH}:${GOROOT}/bin:${GOPATH}/bin
+
 COPY --from=golang /usr/local/go $GOROOT
+RUN mkdir -p $GOPATH/src
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libhdf5-dev \
-    graphviz \
+    build-essential \
+    ca-certificates \
+    cmake \
+    curl \
+    g++ \
     gawk \
+    gcc \
+    git \
+    graphviz \
+    jq \
+    libhdf5-dev \
     nodejs \
     npm \
-    jq \
     sed \
+    unzip \
     zip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -50,6 +67,8 @@ RUN curl -OL "https://github.com/google/protobuf/releases/download/v${PROTOBUF_V
 
 WORKDIR ${GOPATH}/src/github.com/vdaas/vald
 
+COPY go.mod .
+COPY go.sum .
 COPY Makefile .
 COPY Makefile.d Makefile.d
 COPY apis/proto apis/proto

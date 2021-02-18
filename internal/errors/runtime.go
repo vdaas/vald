@@ -20,16 +20,17 @@ package errors
 import "runtime"
 
 var (
-	// Runtime.
-
+	// ErrPanicRecovered represents a function to generate an error that the panic recovered.
 	ErrPanicRecovered = func(err error, rec interface{}) error {
 		return Wrap(err, Errorf("panic recovered: %v", rec).Error())
 	}
 
+	// ErrPanicString represents a function to generate an error that the panic recovered with a string message.
 	ErrPanicString = func(err error, msg string) error {
 		return Wrap(err, Errorf("panic recovered: %v", msg).Error())
 	}
 
+	// ErrRuntimeError represents a function to generate an error that the panic caused by runtime error.
 	ErrRuntimeError = func(err error, r runtime.Error) error {
 		return Wrap(err, Errorf("system panicked caused by runtime error: %v", r).Error())
 	}

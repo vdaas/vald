@@ -17,6 +17,7 @@
 // Package errors provides error types and function
 package errors
 
+// ErrParseUnitFailed represents a function to generate an error that failed to parse unit.
 var ErrParseUnitFailed = func(s string) error {
 	return Errorf("failed to parse: '%s'", s)
 }

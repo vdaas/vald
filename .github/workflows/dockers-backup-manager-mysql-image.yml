@@ -34,7 +34,6 @@ on:
       - "apis/grpc/**"
       - "pkg/manager/backup/mysql/**"
       - "cmd/manager/backup/mysql/**"
-      - "dockers/base/Dockerfile"
       - "dockers/manager/backup/mysql/Dockerfile"
       - "versions/GO_VERSION"
   pull_request:
@@ -49,7 +48,6 @@ on:
       - "apis/grpc/**"
       - "pkg/manager/backup/mysql/**"
       - "cmd/manager/backup/mysql/**"
-      - "dockers/base/Dockerfile"
       - "dockers/manager/backup/mysql/Dockerfile"
       - "versions/GO_VERSION"
 

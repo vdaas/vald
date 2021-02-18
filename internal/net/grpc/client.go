@@ -30,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/pool"
+	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/singleflight"
@@ -93,6 +94,7 @@ type gRPCClient struct {
 	conns               grpcConns
 	hcDur               time.Duration
 	prDur               time.Duration
+	dialer              tcp.Dialer
 	enablePoolRebalance bool
 	resolveDNS          bool
 	dopts               []DialOption
@@ -136,6 +138,10 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 	addrs, ok := g.atomicAddrs.GetAll()
 	if !ok {
 		return nil, errors.ErrGRPCTargetAddrNotFound
+	}
+
+	if g.dialer != nil {
+		g.dialer.StartDialerCache(ctx)
 	}
 
 	ech := make(chan error, len(addrs))

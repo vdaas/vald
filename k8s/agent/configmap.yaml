@@ -20,10 +20,10 @@ metadata:
   name: vald-agent-ngt-config
   labels:
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.0.0
+    helm.sh/chart: vald-v1.0.2
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v1.0.0
+    app.kubernetes.io/version: v1.0.2
     app.kubernetes.io/component: agent
 data:
   config.yaml: |
@@ -96,6 +96,7 @@ data:
         ca: /path/to/ca
         cert: /path/to/cert
         enabled: false
+        insecure_skip_verify: false
         key: /path/to/key
     observability:
       enabled: false

@@ -133,7 +133,7 @@ jobs:
           go test \
             -v tests/e2e/crud_test.go \
             -tags "e2e" \
-            -timeout 15m \
+            -timeout 30m \
             -host=localhost \
             -port=8081 \
             -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
@@ -143,7 +143,7 @@ jobs:
             -get-object-num=5 \
             -update-num=2 \
             -remove-num=2 \
-            -wait-after-insert=3m \
+            -wait-after-insert=10m \
             -portforward \
             -portforward-ns=default \
             -portforward-pod-name=${podname} \
@@ -255,7 +255,7 @@ jobs:
           go test \
             -v tests/e2e/crud_test.go \
             -tags "e2e" \
-            -timeout 15m \
+            -timeout 30m \
             -host=localhost \
             -port=8081 \
             -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
@@ -265,7 +265,7 @@ jobs:
             -get-object-num=10 \
             -update-num=3 \
             -remove-num=2 \
-            -wait-after-insert=3m \
+            -wait-after-insert=10m \
             -portforward \
             -portforward-ns=default \
             -portforward-pod-name=${podname} \

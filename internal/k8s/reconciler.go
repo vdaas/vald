@@ -23,6 +23,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/safety"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
@@ -55,8 +56,9 @@ type controller struct {
 	merticsAddr      string
 	leaderElection   bool
 	leaderElectionID string
-	mgr              Manager
+	mgr              manager.Manager
 	rcs              []ResourceController
+	der              tcp.Dialer
 }
 
 func New(opts ...Option) (cl Controller, err error) {
@@ -75,6 +77,9 @@ func New(opts ...Option) (cl Controller, err error) {
 		}
 		if cfg == nil {
 			return nil, errors.ErrInvalidReconcilerConfig
+		}
+		if c.der != nil {
+			cfg.Dial = c.der.GetDialer()
 		}
 		c.mgr, err = manager.New(
 			cfg,
@@ -119,6 +124,9 @@ func New(opts ...Option) (cl Controller, err error) {
 }
 
 func (c *controller) Start(ctx context.Context) (<-chan error, error) {
+	if c.der != nil {
+		c.der.StartDialerCache(ctx)
+	}
 	ech := make(chan error, 1)
 	c.eg.Go(safety.RecoverFunc(func() error {
 		defer close(ech)
