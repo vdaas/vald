@@ -8,8 +8,8 @@ Fashion-mnist is used as an example of a dataset.
 
 ## Requirements
 
-- kubernetes: v1.17 ~
-- go: v1.14 ~
+- kubernetes: v1.19 ~
+- go: v1.15 ~
 - helm: v3 ~
 - libhdf5 (_only required for this tutorial._)
 

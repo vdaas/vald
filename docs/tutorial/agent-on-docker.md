@@ -9,7 +9,7 @@ Fashion-mnist is used as an example dataset, same as [Get Started](../tutorial/g
 ## Requirements
 
 - docker: v19.0 ~
-- go: v1.14 ~
+- go: v1.15 ~
 - libhdf5 (_only required for this tutorial._)
 
 
