@@ -118,7 +118,7 @@ spec:
       {{- end }}
       {{- if $gateway.podPriority }}
       {{- if $gateway.podPriority.enabled }}
-      priorityClassName: {{ $gateway.name }}-priority
+      priorityClassName: {{ .Release.Namespace }}-{{ $gateway.name }}-priority
       {{- end }}
       {{- end }}
 status:

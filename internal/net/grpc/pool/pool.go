@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -97,7 +98,7 @@ func New(ctx context.Context, opts ...Option) (c Conn, err error) {
 		if err != nil {
 			return nil, err
 		}
-		p.addr = fmt.Sprintf("%s:%d", p.host, p.port)
+		p.addr = net.JoinHostPort(p.host, strconv.FormatInt(int64(p.port), 10))
 	}
 
 	conn, err := grpc.DialContext(ctx, p.addr, p.dopts...)
@@ -107,7 +108,7 @@ func New(ctx context.Context, opts ...Option) (c Conn, err error) {
 		if err != nil {
 			return nil, err
 		}
-		p.addr = fmt.Sprintf("%s:%d", p.host, p.port)
+		p.addr = net.JoinHostPort(p.host, strconv.FormatInt(int64(p.port), 10))
 	}
 	if conn != nil {
 		err = conn.Close()
@@ -144,7 +145,7 @@ func (p *pool) Connect(ctx context.Context) (c Conn, err error) {
 		default:
 			var (
 				conn   *ClientConn
-				addr   = fmt.Sprintf("%s:%d", ips[i%len(ips)], p.port)
+				addr   = net.JoinHostPort(ips[i%len(ips)], strconv.FormatInt(int64(p.port), 10))
 				pc, ok = p.load(i)
 			)
 			if ok && pc != nil && pc.addr == addr && isHealthy(pc.conn) {
@@ -387,7 +388,7 @@ func (p *pool) lookupIPAddr(ctx context.Context) (ips []string, err error) {
 			ipStr = fmt.Sprintf("[%s]", ipStr)
 		}
 		var conn net.Conn
-		addr := fmt.Sprintf("%s:%d", ipStr, p.port)
+		addr := net.JoinHostPort(ipStr, strconv.FormatInt(int64(p.port), 10))
 		if net.DefaultResolver.Dial != nil {
 			ctx, cancel := context.WithTimeout(ctx, time.Millisecond*10)
 			conn, err = net.DefaultResolver.Dial(ctx, network, addr)
@@ -470,7 +471,8 @@ func (p *pool) scanGRPCPort(ctx context.Context) (err error) {
 func isGRPCPort(ctx context.Context, host string, port uint16) bool {
 	ctx, cancel := context.WithTimeout(ctx, time.Millisecond*5)
 	defer cancel()
-	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", host, port),
+	conn, err := grpc.DialContext(ctx,
+		net.JoinHostPort(host, strconv.FormatInt(int64(port), 10)),
 		grpc.WithInsecure(),
 		grpc.WithBlock(),
 	)

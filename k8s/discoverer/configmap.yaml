@@ -20,10 +20,10 @@ metadata:
   name: vald-discoverer-config
   labels:
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v0.0.66
+    helm.sh/chart: vald-v1.0.2
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v0.0.66
+    app.kubernetes.io/version: v1.0.2
     app.kubernetes.io/component: discoverer
 data:
   config.yaml: |
@@ -109,6 +109,7 @@ data:
         ca: /path/to/ca
         cert: /path/to/cert
         enabled: false
+        insecure_skip_verify: false
         key: /path/to/key
     observability:
       enabled: false
@@ -187,3 +188,18 @@ data:
       discovery_duration: 3s
       name: ""
       namespace: _MY_POD_NAMESPACE_
+      tcp:
+        dialer:
+          dual_stack_enabled: false
+          keep_alive: 10m
+          timeout: 30s
+        dns:
+          cache_enabled: true
+          cache_expiration: 24h
+          refresh_duration: 5m
+        tls:
+          ca: /path/to/ca
+          cert: /path/to/cert
+          enabled: false
+          insecure_skip_verify: false
+          key: /path/to/key

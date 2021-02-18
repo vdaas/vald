@@ -18,22 +18,28 @@
 package errors
 
 var (
+
+	// ErrWorkerIsNotRunning represents a function to generate worker is not running error.
 	ErrWorkerIsNotRunning = func(name string) error {
 		return Errorf("worker %s is not running", name)
 	}
 
+	// ErrWorkerIsAlreadyRunning represents a function to generate worker is already running error.
 	ErrWorkerIsAlreadyRunning = func(name string) error {
 		return Errorf("worker %s is already running", name)
 	}
 
+	// ErrQueueIsNotRunning represents a function to generate the queue is not running error.
 	ErrQueueIsNotRunning = func() error {
 		return New("queue is not running")
 	}
 
+	// ErrQueueIsAlreadyRunning represents a function to generate the queue is already running error.
 	ErrQueueIsAlreadyRunning = func() error {
 		return New("queue is already running")
 	}
 
+	// ErrJobFuncIsNil represents a function to generate job function is nil error.
 	ErrJobFuncIsNil = func() error {
 		return New("JobFunc is nil")
 	}

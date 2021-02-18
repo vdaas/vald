@@ -39,6 +39,7 @@ type Client interface {
 	RemoveMultiple(ctx context.Context, uuids ...string) error
 	RegisterIPs(ctx context.Context, ips []string) error
 	RemoveIPs(ctx context.Context, ips []string) error
+	GRPCClient() grpc.Client
 }
 
 type client struct {
@@ -219,4 +220,8 @@ func (c *client) RemoveIPs(ctx context.Context, ips []string) (err error) {
 		return
 	})
 	return
+}
+
+func (c *client) GRPCClient() grpc.Client {
+	return c.client
 }

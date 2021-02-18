@@ -13,26 +13,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
----
 version: v0.0.0
 time_zone: JST
 logging:
   format: raw
-  level: debug
+  level: info
   logger: glg
 server_config:
   servers:
     - name: grpc
       host: 0.0.0.0
-      port: 8081
+      port: 8082
       grpc:
         bidirectional_stream_concurrency: 20
         connection_timeout: ""
         header_table_size: 0
         initial_conn_window_size: 0
         initial_window_size: 0
-        interceptors: []
+        interceptors:
+          - RecoverInterceptor
         keepalive:
           max_conn_age: ""
           max_conn_age_grace: ""
@@ -82,6 +81,7 @@ server_config:
     ca: /path/to/ca
     cert: /path/to/cert
     enabled: false
+    insecure_skip_verify: false
     key: /path/to/key
 observability:
   enabled: false
@@ -160,3 +160,18 @@ discoverer:
   discovery_duration: 3s
   name: ""
   namespace: _MY_POD_NAMESPACE_
+  tcp:
+    dialer:
+      dual_stack_enabled: false
+      keep_alive: 10m
+      timeout: 30s
+    dns:
+      cache_enabled: true
+      cache_expiration: 24h
+      refresh_duration: 5m
+    tls:
+      enabled: false
+      ca: /path/to/ca
+      cert: /path/to/cert
+      key: /path/to/key
+      insecure_skip_verify: false

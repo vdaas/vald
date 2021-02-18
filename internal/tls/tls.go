@@ -20,19 +20,24 @@ package tls
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"net"
 	"reflect"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/io/ioutil"
 )
 
-type Config = tls.Config
+type (
+	Conn   = tls.Conn
+	Config = tls.Config
+)
 
 type credentials struct {
-	cfg  *tls.Config
-	cert string
-	key  string
-	ca   string
+	cfg      *tls.Config
+	cert     string
+	key      string
+	ca       string
+	insecure bool
 }
 
 // NewTLSConfig returns a *tls.Config struct or error
@@ -40,13 +45,9 @@ type credentials struct {
 // This function initialize TLS configuration, for example the CA certificate and key to start TLS server.
 // Server and CA Certificate, and private key will read from a file from the file path definied in environment variable.
 func New(opts ...Option) (*Config, error) {
-	var err error
-	c := new(credentials)
-
-	for _, opt := range append(defaultOptions(), opts...) {
-		if err := opt(c); err != nil {
-			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
-		}
+	c, err := newCredential(opts...)
+	if err != nil {
+		return nil, err
 	}
 
 	if c.cert == "" || c.key == "" {
@@ -72,13 +73,9 @@ func New(opts ...Option) (*Config, error) {
 }
 
 func NewClientConfig(opts ...Option) (*Config, error) {
-	var err error
-	c := new(credentials)
-
-	for _, opt := range append(defaultOptions(), opts...) {
-		if err := opt(c); err != nil {
-			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
-		}
+	c, err := newCredential(opts...)
+	if err != nil {
+		return nil, err
 	}
 
 	if c.ca != "" {
@@ -117,4 +114,20 @@ func NewX509CertPool(path string) (pool *x509.CertPool, err error) {
 		}
 	}
 	return pool, err
+}
+
+func newCredential(opts ...Option) (c *credentials, err error) {
+	c = new(credentials)
+
+	for _, opt := range append(defaultOptions(), opts...) {
+		if err := opt(c); err != nil {
+			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+		}
+	}
+	c.cfg.InsecureSkipVerify = c.insecure
+	return c, nil
+}
+
+func Client(conn net.Conn, config *Config) *Conn {
+	return tls.Client(conn, config)
 }

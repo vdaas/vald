@@ -21,10 +21,10 @@ metadata:
   labels:
     app: vald-backup-gateway
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v0.0.66
+    helm.sh/chart: vald-v1.0.2
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v0.0.66
+    app.kubernetes.io/version: v1.0.2
     app.kubernetes.io/component: gateway-backup
 spec:
   progressDeadlineSeconds: 600
@@ -46,7 +46,7 @@ spec:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/component: gateway
       annotations:
-        checksum/configmap: 6fc5e11d293bbfda54c1af82fc24a2fac806a83ed5bda298b9442a40cab8c0bd
+        checksum/configmap: 3ee083635fcebc2d204a9f32c8516f62cabbc73af8fd3d167534ad9a46d66c8d
     spec:
       initContainers:
         - name: wait-for-manager-compressor
@@ -163,5 +163,5 @@ spec:
           configMap:
             defaultMode: 420
             name: vald-backup-gateway-config
-      priorityClassName: vald-backup-gateway-priority
+      priorityClassName: default-vald-backup-gateway-priority
 status:

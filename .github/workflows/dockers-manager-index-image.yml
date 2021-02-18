@@ -33,7 +33,6 @@ on:
       - "apis/grpc/**"
       - "pkg/manager/index/**"
       - "cmd/manager/index/**"
-      - "dockers/base/Dockerfile"
       - "dockers/manager/index/Dockerfile"
       - "versions/GO_VERSION"
   pull_request:
@@ -47,7 +46,6 @@ on:
       - "apis/grpc/**"
       - "pkg/manager/index/**"
       - "cmd/manager/index/**"
-      - "dockers/base/Dockerfile"
       - "dockers/manager/index/Dockerfile"
       - "versions/GO_VERSION"
 

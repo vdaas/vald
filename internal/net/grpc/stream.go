@@ -19,15 +19,18 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"runtime"
 	"sync"
+	"sync/atomic"
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"google.golang.org/grpc"
 )
@@ -42,6 +45,12 @@ func BidirectionalStream(ctx context.Context, stream ServerStream,
 	concurrency int,
 	newData func() interface{},
 	f func(context.Context, interface{}) (interface{}, error)) (err error) {
+	ctx, span := trace.StartSpan(stream.Context(), apiName+"/BidirectionalStream")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	eg, ctx := errgroup.New(ctx)
 	if concurrency > 0 {
 		eg.Limitation(concurrency)
@@ -73,9 +82,14 @@ func BidirectionalStream(ctx context.Context, stream ServerStream,
 		if !ok {
 			return status.New(codes.Unknown, errs.Error()).Err()
 		}
-		return st.Err()
+		err = st.Err()
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
+		return err
 	}
 
+	var cnt uint64
 	for {
 		select {
 		case <-ctx.Done():
@@ -84,19 +98,29 @@ func BidirectionalStream(ctx context.Context, stream ServerStream,
 			data := newData()
 			err = stream.RecvMsg(data)
 			if err != nil {
-				if err == io.EOF || errors.Is(err, io.EOF) {
-					return finalize()
+				if err != io.EOF && !errors.Is(err, io.EOF) {
+					log.Errorf("failed to receive stream message %v", err)
+					errMap.Store(err.Error(), err)
 				}
-				log.Errorf("failed to receive stream message %v", err)
-				return errors.Wrap(finalize(), err.Error())
+				return finalize()
+
 			}
 			if data != nil {
 				eg.Go(safety.RecoverWithoutPanicFunc(func() (err error) {
+					ctx, sspan := trace.StartSpan(ctx, fmt.Sprintf("%s/BidirectionalStream/stream-%020d", apiName, atomic.AddUint64(&cnt, 1)))
+					defer func() {
+						if sspan != nil {
+							sspan.End()
+						}
+					}()
 					var res interface{}
 					res, err = f(ctx, data)
 					if err != nil {
 						runtime.Gosched()
 						errMap.Store(err.Error(), err)
+						if sspan != nil {
+							sspan.SetStatus(trace.StatusCodeInternal(err.Error()))
+						}
 					}
 					if res != nil {
 						mu.Lock()
@@ -104,6 +128,9 @@ func BidirectionalStream(ctx context.Context, stream ServerStream,
 						mu.Unlock()
 						if err != nil {
 							runtime.Gosched()
+							if sspan != nil {
+								sspan.SetStatus(trace.StatusCodeInternal(err.Error()))
+							}
 							return err
 						}
 					}

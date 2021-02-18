@@ -34,7 +34,6 @@ on:
       - "apis/grpc/**"
       - "pkg/agent/sidecar/**"
       - "cmd/agent/sidecar/**"
-      - "dockers/base/Dockerfile"
       - "dockers/agent/sidecar/Dockerfile"
       - "versions/GO_VERSION"
   pull_request:
@@ -49,7 +48,6 @@ on:
       - "apis/grpc/**"
       - "pkg/agent/sidecar/**"
       - "cmd/agent/sidecar/**"
-      - "dockers/base/Dockerfile"
       - "dockers/agent/sidecar/Dockerfile"
       - "versions/GO_VERSION"
 

@@ -65,3 +65,26 @@ define telepresence
 	    ## https://github.com/telepresenceio/telepresence/commit/bb7473fbf19ed4f61796a5e32747e23de6ab03da
 	    ## --deployment-type "$(SWAP_DEPLOYMENT_TYPE)"
 endef
+
+
+define run-e2e-test
+	go test \
+	    $1 \
+	    -v $(ROOTDIR)/tests/e2e/crud_test.go \
+	    -tags "e2e" \
+	    -timeout $(E2E_TIMEOUT) \
+	    -host=$(E2E_BIND_HOST) \
+	    -port=$(E2E_BIND_PORT) \
+	    -dataset=$(ROOTDIR)/hack/benchmark/assets/dataset/$(E2E_DATASET_NAME).hdf5 \
+	    -insert-num=$(E2E_INSERT_COUNT) \
+	    -search-num=$(E2E_SEARCH_COUNT) \
+	    -search-by-id-num=$(E2E_SEARCH_BY_ID_COUNT) \
+	    -get-object-num=$(E2E_GET_OBJECT_COUNT) \
+	    -update-num=$(E2E_UPDATE_COUNT) \
+	    -remove-num=$(E2E_REMOVE_COUNT) \
+	    -wait-after-insert=$(E2E_WAIT_FOR_CREATE_INDEX_DURATION) \
+	    -portforward-ns=$(E2E_TARGET_NAMESPACE) \
+	    -portforward-pod-name=$(E2E_TARGET_POD_NAME) \
+	    -portforward-pod-port=$(E2E_TARGET_PORT) \
+	    -portforward
+endef

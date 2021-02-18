@@ -139,26 +139,26 @@
     - [Upsert.ObjectRequest](#payload.v1.Upsert.ObjectRequest)
     - [Upsert.Request](#payload.v1.Upsert.Request)
   
+- [apis/proto/v1/vald/filter.proto](#apis/proto/v1/vald/filter.proto)
+    - [Filter](#vald.v1.Filter)
+  
 - [apis/proto/v1/vald/insert.proto](#apis/proto/v1/vald/insert.proto)
     - [Insert](#vald.v1.Insert)
   
+- [apis/proto/v1/vald/object.proto](#apis/proto/v1/vald/object.proto)
+    - [Object](#vald.v1.Object)
+  
 - [apis/proto/v1/vald/remove.proto](#apis/proto/v1/vald/remove.proto)
     - [Remove](#vald.v1.Remove)
+  
+- [apis/proto/v1/vald/search.proto](#apis/proto/v1/vald/search.proto)
+    - [Search](#vald.v1.Search)
   
 - [apis/proto/v1/vald/update.proto](#apis/proto/v1/vald/update.proto)
     - [Update](#vald.v1.Update)
   
 - [apis/proto/v1/vald/upsert.proto](#apis/proto/v1/vald/upsert.proto)
     - [Upsert](#vald.v1.Upsert)
-  
-- [apis/proto/v1/vald/filter.proto](#apis/proto/v1/vald/filter.proto)
-    - [Filter](#vald.v1.Filter)
-  
-- [apis/proto/v1/vald/object.proto](#apis/proto/v1/vald/object.proto)
-    - [Object](#vald.v1.Object)
-  
-- [apis/proto/v1/vald/search.proto](#apis/proto/v1/vald/search.proto)
-    - [Search](#vald.v1.Search)
   
 - [Scalar Value Types](#scalar-value-types)
 
@@ -1959,6 +1959,43 @@
 
 
 
+<a name="apis/proto/v1/vald/filter.proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## apis/proto/v1/vald/filter.proto
+
+
+ 
+
+ 
+
+ 
+
+
+<a name="vald.v1.Filter"></a>
+
+### Filter
+
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ------------|
+| SearchObject | [.payload.v1.Search.ObjectRequest](#payload.v1.Search.ObjectRequest) | [.payload.v1.Search.Response](#payload.v1.Search.Response) |  |
+| MultiSearchObject | [.payload.v1.Search.MultiObjectRequest](#payload.v1.Search.MultiObjectRequest) | [.payload.v1.Search.Responses](#payload.v1.Search.Responses) |  |
+| StreamSearchObject | [.payload.v1.Search.ObjectRequest](#payload.v1.Search.ObjectRequest) stream | [.payload.v1.Search.StreamResponse](#payload.v1.Search.StreamResponse) stream |  |
+| InsertObject | [.payload.v1.Insert.ObjectRequest](#payload.v1.Insert.ObjectRequest) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
+| StreamInsertObject | [.payload.v1.Insert.ObjectRequest](#payload.v1.Insert.ObjectRequest) stream | [.payload.v1.Object.StreamLocation](#payload.v1.Object.StreamLocation) stream |  |
+| MultiInsertObject | [.payload.v1.Insert.MultiObjectRequest](#payload.v1.Insert.MultiObjectRequest) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
+| UpdateObject | [.payload.v1.Update.ObjectRequest](#payload.v1.Update.ObjectRequest) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
+| StreamUpdateObject | [.payload.v1.Update.ObjectRequest](#payload.v1.Update.ObjectRequest) stream | [.payload.v1.Object.StreamLocation](#payload.v1.Object.StreamLocation) stream |  |
+| MultiUpdateObject | [.payload.v1.Update.MultiObjectRequest](#payload.v1.Update.MultiObjectRequest) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
+| UpsertObject | [.payload.v1.Upsert.ObjectRequest](#payload.v1.Upsert.ObjectRequest) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
+| StreamUpsertObject | [.payload.v1.Upsert.ObjectRequest](#payload.v1.Upsert.ObjectRequest) stream | [.payload.v1.Object.StreamLocation](#payload.v1.Object.StreamLocation) stream |  |
+| MultiUpsertObject | [.payload.v1.Upsert.MultiObjectRequest](#payload.v1.Upsert.MultiObjectRequest) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
+
+ 
+
+
+
 <a name="apis/proto/v1/vald/insert.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
@@ -1987,6 +2024,34 @@
 
 
 
+<a name="apis/proto/v1/vald/object.proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## apis/proto/v1/vald/object.proto
+
+
+ 
+
+ 
+
+ 
+
+
+<a name="vald.v1.Object"></a>
+
+### Object
+
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ------------|
+| Exists | [.payload.v1.Object.ID](#payload.v1.Object.ID) | [.payload.v1.Object.ID](#payload.v1.Object.ID) |  |
+| GetObject | [.payload.v1.Object.VectorRequest](#payload.v1.Object.VectorRequest) | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) |  |
+| StreamGetObject | [.payload.v1.Object.VectorRequest](#payload.v1.Object.VectorRequest) stream | [.payload.v1.Object.StreamVector](#payload.v1.Object.StreamVector) stream |  |
+
+ 
+
+
+
 <a name="apis/proto/v1/vald/remove.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
@@ -2010,6 +2075,37 @@
 | Remove | [.payload.v1.Remove.Request](#payload.v1.Remove.Request) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
 | StreamRemove | [.payload.v1.Remove.Request](#payload.v1.Remove.Request) stream | [.payload.v1.Object.StreamLocation](#payload.v1.Object.StreamLocation) stream |  |
 | MultiRemove | [.payload.v1.Remove.MultiRequest](#payload.v1.Remove.MultiRequest) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
+
+ 
+
+
+
+<a name="apis/proto/v1/vald/search.proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## apis/proto/v1/vald/search.proto
+
+
+ 
+
+ 
+
+ 
+
+
+<a name="vald.v1.Search"></a>
+
+### Search
+
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ------------|
+| Search | [.payload.v1.Search.Request](#payload.v1.Search.Request) | [.payload.v1.Search.Response](#payload.v1.Search.Response) |  |
+| SearchByID | [.payload.v1.Search.IDRequest](#payload.v1.Search.IDRequest) | [.payload.v1.Search.Response](#payload.v1.Search.Response) |  |
+| StreamSearch | [.payload.v1.Search.Request](#payload.v1.Search.Request) stream | [.payload.v1.Search.StreamResponse](#payload.v1.Search.StreamResponse) stream |  |
+| StreamSearchByID | [.payload.v1.Search.IDRequest](#payload.v1.Search.IDRequest) stream | [.payload.v1.Search.StreamResponse](#payload.v1.Search.StreamResponse) stream |  |
+| MultiSearch | [.payload.v1.Search.MultiRequest](#payload.v1.Search.MultiRequest) | [.payload.v1.Search.Responses](#payload.v1.Search.Responses) |  |
+| MultiSearchByID | [.payload.v1.Search.MultiIDRequest](#payload.v1.Search.MultiIDRequest) | [.payload.v1.Search.Responses](#payload.v1.Search.Responses) |  |
 
  
 
@@ -2066,102 +2162,6 @@
 | Upsert | [.payload.v1.Upsert.Request](#payload.v1.Upsert.Request) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
 | StreamUpsert | [.payload.v1.Upsert.Request](#payload.v1.Upsert.Request) stream | [.payload.v1.Object.StreamLocation](#payload.v1.Object.StreamLocation) stream |  |
 | MultiUpsert | [.payload.v1.Upsert.MultiRequest](#payload.v1.Upsert.MultiRequest) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
-
- 
-
-
-
-<a name="apis/proto/v1/vald/filter.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## apis/proto/v1/vald/filter.proto
-
-
- 
-
- 
-
- 
-
-
-<a name="vald.v1.Filter"></a>
-
-### Filter
-
-
-| Method Name | Request Type | Response Type | Description |
-| ----------- | ------------ | ------------- | ------------|
-| SearchObject | [.payload.v1.Search.ObjectRequest](#payload.v1.Search.ObjectRequest) | [.payload.v1.Search.Response](#payload.v1.Search.Response) |  |
-| MultiSearchObject | [.payload.v1.Search.MultiObjectRequest](#payload.v1.Search.MultiObjectRequest) | [.payload.v1.Search.Responses](#payload.v1.Search.Responses) |  |
-| StreamSearchObject | [.payload.v1.Search.ObjectRequest](#payload.v1.Search.ObjectRequest) stream | [.payload.v1.Search.StreamResponse](#payload.v1.Search.StreamResponse) stream |  |
-| InsertObject | [.payload.v1.Insert.ObjectRequest](#payload.v1.Insert.ObjectRequest) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
-| StreamInsertObject | [.payload.v1.Insert.ObjectRequest](#payload.v1.Insert.ObjectRequest) stream | [.payload.v1.Object.StreamLocation](#payload.v1.Object.StreamLocation) stream |  |
-| MultiInsertObject | [.payload.v1.Insert.MultiObjectRequest](#payload.v1.Insert.MultiObjectRequest) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
-| UpdateObject | [.payload.v1.Update.ObjectRequest](#payload.v1.Update.ObjectRequest) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
-| StreamUpdateObject | [.payload.v1.Update.ObjectRequest](#payload.v1.Update.ObjectRequest) stream | [.payload.v1.Object.StreamLocation](#payload.v1.Object.StreamLocation) stream |  |
-| MultiUpdateObject | [.payload.v1.Update.MultiObjectRequest](#payload.v1.Update.MultiObjectRequest) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
-| UpsertObject | [.payload.v1.Upsert.ObjectRequest](#payload.v1.Upsert.ObjectRequest) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
-| StreamUpsertObject | [.payload.v1.Upsert.ObjectRequest](#payload.v1.Upsert.ObjectRequest) stream | [.payload.v1.Object.StreamLocation](#payload.v1.Object.StreamLocation) stream |  |
-| MultiUpsertObject | [.payload.v1.Upsert.MultiObjectRequest](#payload.v1.Upsert.MultiObjectRequest) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
-
- 
-
-
-
-<a name="apis/proto/v1/vald/object.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## apis/proto/v1/vald/object.proto
-
-
- 
-
- 
-
- 
-
-
-<a name="vald.v1.Object"></a>
-
-### Object
-
-
-| Method Name | Request Type | Response Type | Description |
-| ----------- | ------------ | ------------- | ------------|
-| Exists | [.payload.v1.Object.ID](#payload.v1.Object.ID) | [.payload.v1.Object.ID](#payload.v1.Object.ID) |  |
-| GetObject | [.payload.v1.Object.VectorRequest](#payload.v1.Object.VectorRequest) | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) |  |
-| StreamGetObject | [.payload.v1.Object.VectorRequest](#payload.v1.Object.VectorRequest) stream | [.payload.v1.Object.StreamVector](#payload.v1.Object.StreamVector) stream |  |
-
- 
-
-
-
-<a name="apis/proto/v1/vald/search.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## apis/proto/v1/vald/search.proto
-
-
- 
-
- 
-
- 
-
-
-<a name="vald.v1.Search"></a>
-
-### Search
-
-
-| Method Name | Request Type | Response Type | Description |
-| ----------- | ------------ | ------------- | ------------|
-| Search | [.payload.v1.Search.Request](#payload.v1.Search.Request) | [.payload.v1.Search.Response](#payload.v1.Search.Response) |  |
-| SearchByID | [.payload.v1.Search.IDRequest](#payload.v1.Search.IDRequest) | [.payload.v1.Search.Response](#payload.v1.Search.Response) |  |
-| StreamSearch | [.payload.v1.Search.Request](#payload.v1.Search.Request) stream | [.payload.v1.Search.StreamResponse](#payload.v1.Search.StreamResponse) stream |  |
-| StreamSearchByID | [.payload.v1.Search.IDRequest](#payload.v1.Search.IDRequest) stream | [.payload.v1.Search.StreamResponse](#payload.v1.Search.StreamResponse) stream |  |
-| MultiSearch | [.payload.v1.Search.MultiRequest](#payload.v1.Search.MultiRequest) | [.payload.v1.Search.Responses](#payload.v1.Search.Responses) |  |
-| MultiSearchByID | [.payload.v1.Search.MultiIDRequest](#payload.v1.Search.MultiIDRequest) | [.payload.v1.Search.Responses](#payload.v1.Search.Responses) |  |
 
  
 
