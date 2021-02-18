@@ -59,6 +59,7 @@ data:
             read_buffer_size: 0
             write_buffer_size: 0
           mode: GRPC
+          network: tcp
           probe_wait_time: 3s
           restart: true
           socket_option:
@@ -71,6 +72,7 @@ data:
             tcp_fast_open: true
             tcp_no_delay: true
             tcp_quick_ack: true
+          socket_path: ""
       health_check_servers:
         - name: readiness
           host: 0.0.0.0
@@ -83,6 +85,7 @@ data:
             shutdown_duration: 0s
             write_timeout: ""
           mode: ""
+          network: tcp
           probe_wait_time: 3s
           socket_option:
             ip_recover_destination_addr: false
@@ -94,6 +97,7 @@ data:
             tcp_fast_open: true
             tcp_no_delay: true
             tcp_quick_ack: true
+          socket_path: ""
       metrics_servers:
         - name: pprof
           host: 0.0.0.0
@@ -106,6 +110,7 @@ data:
             shutdown_duration: 5s
             write_timeout: 1s
           mode: REST
+          network: tcp
           probe_wait_time: 3s
           socket_option:
             ip_recover_destination_addr: false
@@ -117,6 +122,7 @@ data:
             tcp_fast_open: true
             tcp_no_delay: true
             tcp_quick_ack: true
+          socket_path: ""
       startup_strategy:
         - pprof
         - grpc

@@ -46,7 +46,7 @@ spec:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/component: gateway
       annotations:
-        checksum/configmap: 12819e95ccde8d9588c3952e348eb163dd382b46485e9dfe5b5ce3a69fa7e3e3
+        checksum/configmap: 21e93e82839fc69f612279da3b561aa86b98327ace971b9cf166f4537eb645a9
     spec:
       initContainers:
         - name: wait-for-discoverer

@@ -46,7 +46,7 @@ spec:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/component: meta
       annotations:
-        checksum/configmap: 3db79719b70abd5d73ea7fb90f29b761b07b18c89ee2eccbb378cf4f924e09e9
+        checksum/configmap: cd51877c4c57c3b23babc6eeaa5c8f8c906364212ad17dfc6e67e635e7127b81
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-meta

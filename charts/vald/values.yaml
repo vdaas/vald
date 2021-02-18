@@ -65,6 +65,12 @@ defaults:
           # @schema {"name": "defaults.server_config.servers.rest.server.probe_wait_time", "type": "string"}
           # defaults.server_config.servers.rest.server.probe_wait_time -- REST server probe wait time
           probe_wait_time: 3s
+          # @schema {"name": "defaults.server_config.servers.rest.server.network", "type": "string", "enum": ["tcp", "unix"]}
+          # defaults.server_config.servers.rest.server.network -- mysql network
+          network: tcp
+          # @schema {"name": "defaults.server_config.servers.rest.server.socket_path", "type": "string"}
+          # defaults.server_config.servers.rest.server.socket_path -- mysql socket_path
+          socket_path: ""
           # @schema {"name": "defaults.server_config.servers.rest.server.http", "type": "object"}
           http:
             # @schema {"name": "defaults.server_config.servers.rest.server.http.shutdown_duration", "type": "string"}
@@ -136,6 +142,12 @@ defaults:
           # @schema {"name": "defaults.server_config.servers.grpc.server.probe_wait_time", "type": "string"}
           # defaults.server_config.servers.grpc.server.probe_wait_time -- gRPC server probe wait time
           probe_wait_time: "3s"
+          # @schema {"name": "defaults.server_config.servers.grpc.server.network", "type": "string", "enum": ["tcp", "unix"]}
+          # defaults.server_config.servers.grpc.server.network -- mysql network
+          network: tcp
+          # @schema {"name": "defaults.server_config.servers.grpc.server.socket_path", "type": "string"}
+          # defaults.server_config.servers.grpc.server.socket_path -- mysql socket_path
+          socket_path: ""
           # @schema {"name": "defaults.server_config.servers.grpc.server.grpc", "type": "object"}
           grpc:
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.bidirectional_stream_concurrency", "type": "integer"}
@@ -264,6 +276,12 @@ defaults:
           # @schema {"name": "defaults.server_config.healths.liveness.server.probe_wait_time", "type": "string"}
           # defaults.server_config.healths.liveness.server.probe_wait_time -- liveness server probe wait time
           probe_wait_time: "3s"
+          # @schema {"name": "defaults.server_config.healths.liveness.server.network", "type": "string", "enum": ["tcp", "unix"]}
+          # defaults.server_config.healths.liveness.server.network -- mysql network
+          network: tcp
+          # @schema {"name": "defaults.server_config.healths.liveness.server.socket_path", "type": "string"}
+          # defaults.server_config.healths.liveness.server.socket_path -- mysql socket_path
+          socket_path: ""
           # @schema {"name": "defaults.server_config.healths.liveness.server.http", "type": "object"}
           http:
             # @schema {"name": "defaults.server_config.healths.liveness.server.http.shutdown_duration", "type": "string"}
@@ -354,6 +372,12 @@ defaults:
           # @schema {"name": "defaults.server_config.healths.readiness.server.probe_wait_time", "type": "string"}
           # defaults.server_config.healths.readiness.server.probe_wait_time -- readiness server probe wait time
           probe_wait_time: "3s"
+          # @schema {"name": "defaults.server_config.healths.readiness.server.network", "type": "string", "enum": ["tcp", "unix"]}
+          # defaults.server_config.healths.readiness.server.network -- mysql network
+          network: tcp
+          # @schema {"name": "defaults.server_config.healths.readiness.server.socket_path", "type": "string"}
+          # defaults.server_config.healths.readiness.server.socket_path -- mysql socket_path
+          socket_path: ""
           # @schema {"name": "defaults.server_config.healths.readiness.server.http", "type": "object"}
           http:
             # @schema {"name": "defaults.server_config.healths.readiness.server.http.shutdown_duration", "type": "string"}
@@ -418,6 +442,12 @@ defaults:
           # @schema {"name": "defaults.server_config.metrics.pprof.server.probe_wait_time", "type": "string"}
           # defaults.server_config.metrics.pprof.server.probe_wait_time -- pprof server probe wait time
           probe_wait_time: 3s
+          # @schema {"name": "defaults.server_config.metrics.pprof.server.network", "type": "string", "enum": ["tcp", "unix"]}
+          # defaults.server_config.metrics.pprof.server.network -- mysql network
+          network: tcp
+          # @schema {"name": "defaults.server_config.metrics.pprof.server.socket_path", "type": "string"}
+          # defaults.server_config.metrics.pprof.server.socket_path -- mysql socket_path
+          socket_path: ""
           # @schema {"name": "defaults.server_config.metrics.pprof.server.http", "type": "object"}
           http:
             # @schema {"name": "defaults.server_config.metrics.pprof.server.http.shutdown_duration", "type": "string"}
@@ -480,6 +510,12 @@ defaults:
           # @schema {"name": "defaults.server_config.metrics.prometheus.server.probe_wait_time", "type": "string"}
           # defaults.server_config.metrics.prometheus.server.probe_wait_time -- prometheus server probe wait time
           probe_wait_time: 3s
+          # @schema {"name": "defaults.server_config.metrics.prometheus.server.network", "type": "string", "enum": ["tcp", "unix"]}
+          # defaults.server_config.metrics.prometheus.server.network -- mysql network
+          network: tcp
+          # @schema {"name": "defaults.server_config.metrics.prometheus.server.socket_path", "type": "string"}
+          # defaults.server_config.metrics.prometheus.server.socket_path -- mysql socket_path
+          socket_path: ""
           # @schema {"name": "defaults.server_config.metrics.prometheus.server.http", "type": "object"}
           http:
             # @schema {"name": "defaults.server_config.metrics.prometheus.server.http.shutdown_duration", "type": "string"}
@@ -3603,6 +3639,12 @@ manager:
         # @schema {"name": "manager.backup.mysql.config.db", "type": "string", "enum": ["mysql", "postgres", "sqlite3"]}
         # manager.backup.mysql.config.db -- mysql db: mysql, postgres or sqlite3
         db: mysql
+        # @schema {"name": "manager.backup.mysql.config.network", "type": "string", "enum": ["tcp", "unix"]}
+        # manager.backup.mysql.config.network -- mysql network
+        network: tcp
+        # @schema {"name": "manager.backup.mysql.config.socket_path", "type": "string"}
+        # manager.backup.mysql.config.socket_path -- mysql socket_path
+        socket_path: ""
         # @schema {"name": "manager.backup.mysql.config.host", "type": "string"}
         # manager.backup.mysql.config.host -- mysql hostname
         host: mysql.default.svc.cluster.local

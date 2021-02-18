@@ -46,7 +46,7 @@ spec:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/component: manager-backup
       annotations:
-        checksum/configmap: d6e6cbd777e18153d2cd76df7fdf33a6fc2176e36e9d681471e7f1a2e4b348d1
+        checksum/configmap: be2179afbb18416f382d224b30c763fca4521538c31375452008793456f4e8f1
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-manager-backup

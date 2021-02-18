@@ -260,6 +260,8 @@ servers:
     {{- if .Values.servers.rest.server }}
     mode: {{ default .default.servers.rest.server.mode .Values.servers.rest.server.mode }}
     probe_wait_time: {{ default .default.servers.rest.server.probe_wait_time .Values.servers.rest.server.probe_wait_time }}
+    network: {{ default .default.servers.rest.server.network .Values.servers.rest.server.network | quote }}
+    socket_path: {{ default .default.servers.rest.server.socket_path .Values.servers.rest.server.socket_path | quote }}
     http:
       {{- if .Values.servers.rest.server.http }}
       shutdown_duration: {{ default .default.servers.rest.server.http.shutdown_duration .Values.servers.rest.server.http.shutdown_duration }}
@@ -286,6 +288,8 @@ servers:
     {{- if .Values.servers.grpc.server }}
     mode: {{ default .default.servers.grpc.server.mode .Values.servers.grpc.server.mode }}
     probe_wait_time: {{ default .default.servers.grpc.server.probe_wait_time .Values.servers.grpc.server.probe_wait_time | quote }}
+    network: {{ default .default.servers.grpc.server.network .Values.servers.grpc.server.network | quote }}
+    socket_path: {{ default .default.servers.grpc.server.socket_path .Values.servers.grpc.server.socket_path | quote }}
     grpc:
       {{- if .Values.servers.grpc.server.grpc }}
       max_receive_message_size: {{ default .default.servers.grpc.server.grpc.max_receive_message_size .Values.servers.grpc.server.grpc.max_receive_message_size }}
@@ -336,6 +340,8 @@ health_check_servers:
     {{- if .Values.healths.liveness.server }}
     mode: {{ default .default.healths.liveness.server.mode .Values.healths.liveness.server.mode | quote }}
     probe_wait_time: {{ default .default.healths.liveness.server.probe_wait_time .Values.healths.liveness.server.probe_wait_time | quote }}
+    network: {{ default .default.healths.liveness.server.network .Values.healths.liveness.server.network | quote }}
+    socket_path: {{ default .default.healths.liveness.server.socket_path .Values.healths.liveness.server.socket_path | quote }}
     http:
       {{- if .Values.healths.liveness.server.http }}
       shutdown_duration: {{ default .default.healths.liveness.server.http.shutdown_duration .Values.healths.liveness.server.http.shutdown_duration | quote }}
@@ -362,6 +368,8 @@ health_check_servers:
     {{- if .Values.healths.readiness.server }}
     mode: {{ default .default.healths.readiness.server.mode .Values.healths.readiness.server.mode | quote }}
     probe_wait_time: {{ default .default.healths.readiness.server.probe_wait_time .Values.healths.readiness.server.probe_wait_time | quote }}
+    network: {{ default .default.healths.readiness.server.network .Values.healths.readiness.server.network | quote }}
+    socket_path: {{ default .default.healths.readiness.server.socket_path .Values.healths.readiness.server.socket_path | quote }}
     http:
       {{- if .Values.healths.readiness.server.http }}
       shutdown_duration: {{ default .default.healths.readiness.server.http.shutdown_duration .Values.healths.readiness.server.http.shutdown_duration | quote }}
@@ -389,6 +397,8 @@ metrics_servers:
     {{- if .Values.metrics.pprof.server }}
     mode: {{ default .default.metrics.pprof.server.mode .Values.metrics.pprof.server.mode }}
     probe_wait_time: {{ default .default.metrics.pprof.server.probe_wait_time .Values.metrics.pprof.server.probe_wait_time }}
+    network: {{ default .default.metrics.pprof.server.network .Values.metrics.pprof.server.network | quote }}
+    socket_path: {{ default .default.metrics.pprof.server.socket_path .Values.metrics.pprof.server.socket_path | quote }}
     http:
       {{- if .Values.metrics.pprof.server.http }}
       shutdown_duration: {{ default .default.metrics.pprof.server.http.shutdown_duration .Values.metrics.pprof.server.http.shutdown_duration }}
@@ -415,6 +425,8 @@ metrics_servers:
     {{- if .Values.metrics.prometheus.server }}
     mode: {{ default .default.metrics.prometheus.server.mode .Values.metrics.prometheus.server.mode }}
     probe_wait_time: {{ default .default.metrics.prometheus.server.probe_wait_time .Values.metrics.prometheus.server.probe_wait_time }}
+    network: {{ default .default.metrics.prometheus.server.network .Values.metrics.prometheus.server.network | quote }}
+    socket_path: {{ default .default.metrics.prometheus.server.socket_path .Values.metrics.prometheus.server.socket_path | quote }}
     http:
       {{- if .Values.metrics.prometheus.server.http }}
       shutdown_duration: {{ default .default.metrics.prometheus.server.http.shutdown_duration .Values.metrics.prometheus.server.http.shutdown_duration }}
