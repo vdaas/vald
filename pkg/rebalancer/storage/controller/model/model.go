@@ -1,21 +1,5 @@
 package model
 
-import "time"
-
-// Job -
-type Job struct {
-	Name                 string
-	Namespace            string
-	Active               int32
-	StartTime            time.Time
-	Type                 string
-	Reason               string
-	TargetAgentNamespace string
-	TargetAgentName      string
-	ControllerNamespace  string
-	ControllerName       string
-}
-
 // Pod & PodMetrics
 type Pod struct {
 	Name        string

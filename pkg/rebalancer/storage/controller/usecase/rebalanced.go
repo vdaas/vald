@@ -55,7 +55,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithJobNamespace(cfg.Rebalancer.RebalanceJobNamespace),
 		service.WithJobTemplateKey(cfg.Rebalancer.RebalanceJobTemplateKey),
 		service.WithJobConfigMapName(cfg.Rebalancer.JobConfigMapName),
-		service.WithJobConfigMapNamespace(cfg.Rebalancer.JobConfigMapNamespace),
 		service.WithAgentName(cfg.Rebalancer.AgentName),
 		service.WithAgentNamespace(cfg.Rebalancer.AgentNamespace),
 		service.WithAgentResourceType(cfg.Rebalancer.AgentResourceType),

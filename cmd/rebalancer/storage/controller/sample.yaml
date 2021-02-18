@@ -22,7 +22,7 @@ logging:
   format: raw
 rebalancer:
   rebalance_job_name: agent-rebalance-job
-  rebalance_job_namespance: vald
+  rebalance_job_namespace: vald
   rebalance_job_template_key: job.tpl
   rebalance_job_image: agent-rebalance-job-image
   config_map_name: agent-rebalance-job-template

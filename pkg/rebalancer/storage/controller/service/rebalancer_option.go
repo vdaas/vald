@@ -80,13 +80,6 @@ func WithJobConfigMapName(n string) RebalancerOption {
 	}
 }
 
-func WithJobConfigMapNamespace(ns string) RebalancerOption {
-	return func(r *rebalancer) error {
-		r.jobConfigmapNamespace = ns
-		return nil
-	}
-}
-
 func WithReconcileCheckDuration(t string) RebalancerOption {
 	return func(r *rebalancer) error {
 		rcd, err := time.ParseDuration(t)

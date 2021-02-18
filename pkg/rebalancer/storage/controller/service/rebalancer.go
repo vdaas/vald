@@ -41,7 +41,7 @@ import (
 )
 
 const (
-	qualifiedName string = "app.kubernetes.io/rebalancer-"
+	qualifiedNamePrefix string = "rebalancer.vald.vdaas.org/"
 )
 
 // Rebalancer represents the rebalancer interface.
@@ -65,8 +65,7 @@ type rebalancer struct {
 	pods              atomic.Value
 	podMetrics        atomic.Value
 
-	jobConfigmapName      string
-	jobConfigmapNamespace string
+	jobConfigmapName string
 
 	statefulSets atomic.Value
 
@@ -114,12 +113,12 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 
 	cm, err := configmap.New(
 		configmap.WithControllerName("configmap rebalancer"),
-		configmap.WithNamespaces(r.jobConfigmapNamespace),
+		configmap.WithNamespaces(r.jobNamespace),
 		configmap.WithOnErrorFunc(func(err error) {
 			log.Error(err)
 		}),
 		configmap.WithOnReconcileFunc(func(configmapList map[string][]configmap.ConfigMap) {
-			configmaps, ok := configmapList[r.jobConfigmapNamespace]
+			configmaps, ok := configmapList[r.jobNamespace]
 			if ok {
 				for _, cm := range configmaps {
 					if cm.Name == r.jobConfigmapName {
@@ -354,17 +353,17 @@ func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, reason confi
 	if jobTpl.Labels == nil {
 		jobTpl.Labels = make(map[string]string)
 	}
-	jobTpl.Labels[qualifiedName+"reason"] = reason.String()
-	jobTpl.Labels[qualifiedName+"target_agent_name"] = agentName
-	jobTpl.Labels[qualifiedName+"target_agent_namespace"] = agentNs
+	jobTpl.Labels[qualifiedNamePrefix+"reason"] = reason.String()
+	jobTpl.Labels[qualifiedNamePrefix+"target_agent_name"] = agentName
+	jobTpl.Labels[qualifiedNamePrefix+"target_agent_namespace"] = agentNs
 
 	if jobTpl.Annotations == nil {
 		jobTpl.Annotations = make(map[string]string)
 	}
-	jobTpl.Annotations[qualifiedName+"controller_name"] = r.podName
-	jobTpl.Annotations[qualifiedName+"controller_namespace"] = r.podNamespace
+	jobTpl.Annotations[qualifiedNamePrefix+"controller_name"] = r.podName
+	jobTpl.Annotations[qualifiedNamePrefix+"controller_namespace"] = r.podNamespace
 	if rate > 0 {
-		jobTpl.Annotations[qualifiedName+"rate"] = strconv.FormatFloat(rate, 'f', 4, 64)
+		jobTpl.Annotations[qualifiedNamePrefix+"rate"] = strconv.FormatFloat(rate, 'f', 4, 64)
 	}
 
 	c := r.ctrl.GetManager().GetClient()
@@ -522,7 +521,7 @@ func calSigMemUsg(pm []*model.Pod, avgMemUsg float64) (sig float64) {
 func (r *rebalancer) isJobRunning(jobsmap map[string][]job.Job, ns string) bool {
 	for _, jobs := range jobsmap {
 		for _, job := range jobs {
-			if job.Labels[qualifiedName+"reason"] != config.MANUAL.String() && job.Status.Active != 0 && job.Labels[qualifiedName+"target_agent_namespace"] == ns {
+			if job.Labels[qualifiedNamePrefix+"reason"] != config.MANUAL.String() && job.Status.Active != 0 && job.Labels[qualifiedNamePrefix+"target_agent_namespace"] == ns {
 				return true
 			}
 		}
