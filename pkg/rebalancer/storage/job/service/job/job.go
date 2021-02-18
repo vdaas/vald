@@ -23,10 +23,12 @@ import (
 	"encoding/gob"
 	"io"
 	"reflect"
+	"strconv"
 
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	ctxio "github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
@@ -118,20 +120,44 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 		}
 
 		// Calculate to process data from the above data
-		amntData := r.rate * float64(len(idm))
+		amntData := int(r.rate * float64(len(idm)))
 
 		// Rebalance
-		data := map[string][]float64
-		// TODO: get gateway address and set option
 		// e.g. https://github.com/vdaas/vald/blob/master/charts/vald/templates/gateway/backup/configmap.yaml#L54
-		client, err := vald.New()
+
+		client, err := vald.New(vald.WithAddrs(
+			r.gatewayHost + ":" + strconv.Itoa(r.gatewayPort),
+		))
 		if err != nil {
 			return err
 		}
-		for i, id := range idm {
+
+		for id, _ := range idm {
 			// get vecotr by id
-			// apppned data
-			if amntData - 1 == i {
+			vec, err := client.GetObject(ctx, &payload.Object_VectorRequest{
+				Id: &payload.Object_ID{
+					Id: id,
+				},
+			})
+			if err != nil {
+				return err
+			}
+
+			// update data
+			// TODO: use stream?
+			loc, err := client.Update(ctx, &payload.Update_Request{
+				Vector: &payload.Object_Vector{
+					Id:     vec.GetId(),
+					Vector: vec.GetVector(),
+				},
+			})
+			if err != nil {
+				return err
+			}
+
+			log.Debugf("%v", loc)
+
+			if amntData--; amntData == 0 {
 				break
 			}
 		}
