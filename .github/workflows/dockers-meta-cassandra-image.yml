@@ -34,7 +34,6 @@ on:
       - "apis/grpc/**"
       - "pkg/meta/cassandra/**"
       - "cmd/meta/cassandra/**"
-      - "dockers/base/Dockerfile"
       - "dockers/meta/cassandra/Dockerfile"
       - "versions/GO_VERSION"
   pull_request:
@@ -49,7 +48,6 @@ on:
       - "apis/grpc/**"
       - "pkg/meta/cassandra/**"
       - "cmd/meta/cassandra/**"
-      - "dockers/base/Dockerfile"
       - "dockers/meta/cassandra/Dockerfile"
       - "versions/GO_VERSION"
 

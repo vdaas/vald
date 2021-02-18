@@ -33,7 +33,6 @@ on:
       - "apis/grpc/**"
       - "pkg/tools/cli/loadtest/**"
       - "cmd/tools/cli/loadtest/**"
-      - "dockers/base/Dockerfile"
       - "dockers/tools/cli/loadtest/Dockerfile"
       - "versions/GO_VERSION"
   pull_request:
@@ -47,7 +46,6 @@ on:
       - "apis/grpc/**"
       - "pkg/tools/cli/loadtest/**"
       - "cmd/tools/cli/loadtest/**"
-      - "dockers/base/Dockerfile"
       - "dockers/tools/cli/loadtest/Dockerfile"
       - "versions/GO_VERSION"
 

@@ -37,5 +37,5 @@ func (c *convictionPolicy) AddFailure(err error, host *gocql.HostInfo) bool {
 
 // Reset clears the conviction state.
 func (c *convictionPolicy) Reset(host *gocql.HostInfo) {
-	log.Info("cassandra host %s reset detected\t%s", host.HostnameAndPort(), host.String())
+	log.Infof("cassandra host %s reset detected\t%s", host.HostnameAndPort(), host.String())
 }

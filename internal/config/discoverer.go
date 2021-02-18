@@ -21,12 +21,18 @@ type Discoverer struct {
 	Name              string `json:"name" yaml:"name"`
 	Namespace         string `json:"namespace" yaml:"namespace"`
 	DiscoveryDuration string `json:"discovery_duration" yaml:"discovery_duration"`
+	TCP               *TCP   `json:"tcp" yaml:"tcp"`
 }
 
 func (d *Discoverer) Bind() *Discoverer {
 	d.Name = GetActualValue(d.Name)
 	d.Namespace = GetActualValue(d.Namespace)
 	d.DiscoveryDuration = GetActualValue(d.DiscoveryDuration)
+	if d.TCP != nil {
+		d.TCP.Bind()
+	} else {
+		d.TCP = new(TCP)
+	}
 	return d
 }
 

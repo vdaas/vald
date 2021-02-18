@@ -13,15 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+ARG GO_VERSION=latest
 ARG OPERATOR_SDK_VERSION
 ARG VERSION="v1"
 ARG GROUP="vald.vdaas.org"
 ARG VALD_KIND="ValdRelease"
 ARG VALD_HELM_OPERATOR_KIND="ValdHelmOperatorRelease"
-ARG BASE_TAG=latest
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
-FROM vdaas/vald-base:${BASE_TAG} AS builder
+FROM golang:${GO_VERSION} AS builder
 ARG OPERATOR_SDK_VERSION
 ARG VERSION
 ARG GROUP
@@ -43,6 +43,10 @@ RUN { \
         echo "  chart: helm-charts/vald-helm-operator"; \
     } > /tmp/watches.yaml
 
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
+COPY go.mod .
+COPY go.sum .
+
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal/errors
 COPY internal/errors .
 
@@ -63,7 +67,6 @@ COPY Makefile.d .
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 COPY Makefile .
-COPY .git .
 
 RUN make helm/schema/vald
 RUN make helm/schema/vald-helm-operator

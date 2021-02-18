@@ -3,7 +3,7 @@ Vald
 
 This is a Helm chart to install Vald components.
 
-Current chart version is `v1.0.0`
+Current chart version is `v1.0.2`
 
 Table of Contents
 ---
@@ -151,10 +151,11 @@ Configuration
 | agent.sidecar.config.client.tcp.dns.cache_enabled | bool | `true` | HTTP client TCP DNS cache enabled |
 | agent.sidecar.config.client.tcp.dns.cache_expiration | string | `"24h"` |  |
 | agent.sidecar.config.client.tcp.dns.refresh_duration | string | `"1h"` | HTTP client TCP DNS cache expiration |
-| agent.sidecar.config.client.tcp.tls.ca | string | `"/path/to/ca"` | HTTP client TCP TLS ca path |
-| agent.sidecar.config.client.tcp.tls.cert | string | `"/path/to/cert"` | HTTP client TCP TLS cert path |
-| agent.sidecar.config.client.tcp.tls.enabled | bool | `false` | HTTP client TCP TLS enabled |
-| agent.sidecar.config.client.tcp.tls.key | string | `"/path/to/key"` | HTTP client TCP TLS key path |
+| agent.sidecar.config.client.tcp.tls.ca | string | `"/path/to/ca"` | TLS ca path |
+| agent.sidecar.config.client.tcp.tls.cert | string | `"/path/to/cert"` | TLS cert path |
+| agent.sidecar.config.client.tcp.tls.enabled | bool | `false` | TLS enabled |
+| agent.sidecar.config.client.tcp.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
+| agent.sidecar.config.client.tcp.tls.key | string | `"/path/to/key"` | TLS key path |
 | agent.sidecar.config.client.transport.backoff.backoff_factor | float | `1.1` | backoff backoff factor |
 | agent.sidecar.config.client.transport.backoff.backoff_time_limit | string | `"5s"` | backoff time limit |
 | agent.sidecar.config.client.transport.backoff.enable_error_log | bool | `true` | backoff error log enabled |
@@ -249,22 +250,24 @@ Configuration
 | defaults.grpc.client.dial_option.tcp.dns.cache_enabled | bool | `true` | gRPC client TCP DNS cache enabled |
 | defaults.grpc.client.dial_option.tcp.dns.cache_expiration | string | `"1h"` | gRPC client TCP DNS cache expiration |
 | defaults.grpc.client.dial_option.tcp.dns.refresh_duration | string | `"30m"` | gRPC client TCP DNS cache refresh duration |
-| defaults.grpc.client.dial_option.tcp.tls.ca | string | `"/path/to/ca"` | gRPC client TCP TLS ca path |
-| defaults.grpc.client.dial_option.tcp.tls.cert | string | `"/path/to/cert"` | gRPC client TCP TLS cert path |
-| defaults.grpc.client.dial_option.tcp.tls.enabled | bool | `false` | gRPC client TCP TLS enabled |
-| defaults.grpc.client.dial_option.tcp.tls.key | string | `"/path/to/key"` | gRPC client TCP TLS key path |
+| defaults.grpc.client.dial_option.tcp.tls.ca | string | `"/path/to/ca"` | TLS ca path |
+| defaults.grpc.client.dial_option.tcp.tls.cert | string | `"/path/to/cert"` | TLS cert path |
+| defaults.grpc.client.dial_option.tcp.tls.enabled | bool | `false` | TLS enabled |
+| defaults.grpc.client.dial_option.tcp.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
+| defaults.grpc.client.dial_option.tcp.tls.key | string | `"/path/to/key"` | TLS key path |
 | defaults.grpc.client.dial_option.timeout | string | `""` | gRPC client dial option timeout |
 | defaults.grpc.client.dial_option.write_buffer_size | int | `0` | gRPC client dial option write buffer size |
 | defaults.grpc.client.health_check_duration | string | `"1s"` | gRPC client health check duration |
-| defaults.grpc.client.tls.ca | string | `"/path/to/ca"` | gRPC client TLS ca path |
-| defaults.grpc.client.tls.cert | string | `"/path/to/cert"` | gRPC client TLS cert path |
-| defaults.grpc.client.tls.enabled | bool | `false` | gRPC client TLS enabled |
-| defaults.grpc.client.tls.key | string | `"/path/to/key"` | gRPC client TLS key path |
-| defaults.image.tag | string | `"v1.0.0"` | docker image tag |
+| defaults.grpc.client.tls.ca | string | `"/path/to/ca"` | TLS ca path |
+| defaults.grpc.client.tls.cert | string | `"/path/to/cert"` | TLS cert path |
+| defaults.grpc.client.tls.enabled | bool | `false` | TLS enabled |
+| defaults.grpc.client.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
+| defaults.grpc.client.tls.key | string | `"/path/to/key"` | TLS key path |
+| defaults.image.tag | string | `"v1.0.2"` | docker image tag |
 | defaults.ingress.usev1beta1 | bool | `false` | use networking.k8s.io/v1beta1 instead of v1 for ingresses. This option will be removed once k8s 1.22 is released. |
 | defaults.logging.format | string | `"raw"` | logging format. logging format must be `raw` or `json` |
 | defaults.logging.level | string | `"debug"` | logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`. |
-| defaults.logging.logger | string | `"glg"` | logger name. currently logger must be `glg`. |
+| defaults.logging.logger | string | `"glg"` | logger name. currently logger must be `glg` or `zap`. |
 | defaults.observability.collector.duration | string | `"5s"` | metrics collect duration. if it is set as 5s, enabled metrics are collected every 5 seconds. |
 | defaults.observability.collector.metrics.enable_cgo | bool | `true` | CGO metrics enabled |
 | defaults.observability.collector.metrics.enable_goroutine | bool | `true` | goroutine metrics enabled |
@@ -423,6 +426,7 @@ Configuration
 | defaults.server_config.tls.ca | string | `"/path/to/ca"` | TLS ca path |
 | defaults.server_config.tls.cert | string | `"/path/to/cert"` | TLS cert path |
 | defaults.server_config.tls.enabled | bool | `false` | TLS enabled |
+| defaults.server_config.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
 | defaults.server_config.tls.key | string | `"/path/to/key"` | TLS key path |
 | defaults.time_zone | string | `"UTC"` | Time zone |
 | discoverer.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[]` | node affinity preferred scheduling terms |
@@ -439,6 +443,17 @@ Configuration
 | discoverer.discoverer.discovery_duration | string | `"3s"` | duration to discovery |
 | discoverer.discoverer.name | string | `""` | name to discovery |
 | discoverer.discoverer.namespace | string | `"_MY_POD_NAMESPACE_"` | namespace to discovery |
+| discoverer.discoverer.tcp.dialer.dual_stack_enabled | bool | `false` | TCP dialer dual stack enabled |
+| discoverer.discoverer.tcp.dialer.keep_alive | string | `"10m"` | TCP dialer keep alive |
+| discoverer.discoverer.tcp.dialer.timeout | string | `"30s"` | TCP dialer timeout |
+| discoverer.discoverer.tcp.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
+| discoverer.discoverer.tcp.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
+| discoverer.discoverer.tcp.dns.refresh_duration | string | `"5m"` | TCP DNS cache refresh duration |
+| discoverer.discoverer.tcp.tls.ca | string | `"/path/to/ca"` | TLS ca path |
+| discoverer.discoverer.tcp.tls.cert | string | `"/path/to/cert"` | TLS cert path |
+| discoverer.discoverer.tcp.tls.enabled | bool | `false` | TLS enabled |
+| discoverer.discoverer.tcp.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
+| discoverer.discoverer.tcp.tls.key | string | `"/path/to/key"` | TLS key path |
 | discoverer.enabled | bool | `true` | discoverer enabled |
 | discoverer.env | list | `[{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]` | environment variables |
 | discoverer.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
@@ -868,11 +883,17 @@ Configuration
 | manager.backup.cassandra.config.tcp.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
 | manager.backup.cassandra.config.tcp.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
 | manager.backup.cassandra.config.tcp.dns.refresh_duration | string | `"5m"` | TCP DNS cache refresh duration |
+| manager.backup.cassandra.config.tcp.tls.ca | string | `"/path/to/ca"` | TLS ca path |
+| manager.backup.cassandra.config.tcp.tls.cert | string | `"/path/to/cert"` | TLS cert path |
+| manager.backup.cassandra.config.tcp.tls.enabled | bool | `false` | TLS enabled |
+| manager.backup.cassandra.config.tcp.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
+| manager.backup.cassandra.config.tcp.tls.key | string | `"/path/to/key"` | TLS key path |
 | manager.backup.cassandra.config.timeout | string | `"600ms"` | timeout |
-| manager.backup.cassandra.config.tls.ca | string | `"/path/to/ca"` | path to TLS ca |
-| manager.backup.cassandra.config.tls.cert | string | `"/path/to/cert"` | path to TLS cert |
+| manager.backup.cassandra.config.tls.ca | string | `"/path/to/ca"` | TLS ca path |
+| manager.backup.cassandra.config.tls.cert | string | `"/path/to/cert"` | TLS cert path |
 | manager.backup.cassandra.config.tls.enabled | bool | `false` | TLS enabled |
-| manager.backup.cassandra.config.tls.key | string | `"/path/to/key"` | path to TLS key |
+| manager.backup.cassandra.config.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
+| manager.backup.cassandra.config.tls.key | string | `"/path/to/key"` | TLS key path |
 | manager.backup.cassandra.config.username | string | `"root"` | cassandra username |
 | manager.backup.cassandra.config.vector_backup_table | string | `"backup_vector"` | table name of backup |
 | manager.backup.cassandra.config.write_coalesce_wait_time | string | `"200µs"` | write coalesce wait time |
@@ -905,14 +926,16 @@ Configuration
 | manager.backup.mysql.config.tcp.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
 | manager.backup.mysql.config.tcp.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
 | manager.backup.mysql.config.tcp.dns.refresh_duration | string | `"1h"` | TCP DNS cache refresh duration |
-| manager.backup.mysql.config.tcp.tls.ca | string | `"/path/to/ca"` | path to TCP TLS ca |
-| manager.backup.mysql.config.tcp.tls.cert | string | `"/path/to/cert"` | path to TCP TLS cert |
-| manager.backup.mysql.config.tcp.tls.enabled | bool | `false` | TCP TLS enabled |
-| manager.backup.mysql.config.tcp.tls.key | string | `"/path/to/key"` | path to TCP TLS key |
-| manager.backup.mysql.config.tls.ca | string | `"/path/to/ca"` | path to TLS ca |
-| manager.backup.mysql.config.tls.cert | string | `"/path/to/cert"` | path to TLS cert |
+| manager.backup.mysql.config.tcp.tls.ca | string | `"/path/to/ca"` | TLS ca path |
+| manager.backup.mysql.config.tcp.tls.cert | string | `"/path/to/cert"` | TLS cert path |
+| manager.backup.mysql.config.tcp.tls.enabled | bool | `false` | TLS enabled |
+| manager.backup.mysql.config.tcp.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
+| manager.backup.mysql.config.tcp.tls.key | string | `"/path/to/key"` | TLS key path |
+| manager.backup.mysql.config.tls.ca | string | `"/path/to/ca"` | TLS ca path |
+| manager.backup.mysql.config.tls.cert | string | `"/path/to/cert"` | TLS cert path |
 | manager.backup.mysql.config.tls.enabled | bool | `false` | TLS enabled |
-| manager.backup.mysql.config.tls.key | string | `"/path/to/key"` | path to TLS key |
+| manager.backup.mysql.config.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
+| manager.backup.mysql.config.tls.key | string | `"/path/to/key"` | TLS key path |
 | manager.backup.mysql.config.user | string | `"root"` | mysql username |
 | manager.backup.mysql.enabled | bool | `true` | mysql config enabled |
 | manager.backup.name | string | `"vald-manager-backup"` | name of backup manager deployment |
@@ -1097,11 +1120,17 @@ Configuration
 | meta.cassandra.config.tcp.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
 | meta.cassandra.config.tcp.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
 | meta.cassandra.config.tcp.dns.refresh_duration | string | `"5m"` | TCP DNS cache refresh duration |
+| meta.cassandra.config.tcp.tls.ca | string | `"/path/to/ca"` | TLS ca path |
+| meta.cassandra.config.tcp.tls.cert | string | `"/path/to/cert"` | TLS cert path |
+| meta.cassandra.config.tcp.tls.enabled | bool | `false` | TLS enabled |
+| meta.cassandra.config.tcp.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
+| meta.cassandra.config.tcp.tls.key | string | `"/path/to/key"` | TLS key path |
 | meta.cassandra.config.timeout | string | `"600ms"` | timeout |
-| meta.cassandra.config.tls.ca | string | `"/path/to/ca"` | path to TLS ca |
-| meta.cassandra.config.tls.cert | string | `"/path/to/cert"` | path to TLS cert |
+| meta.cassandra.config.tls.ca | string | `"/path/to/ca"` | TLS ca path |
+| meta.cassandra.config.tls.cert | string | `"/path/to/cert"` | TLS cert path |
 | meta.cassandra.config.tls.enabled | bool | `false` | TLS enabled |
-| meta.cassandra.config.tls.key | string | `"/path/to/key"` | path to TLS key |
+| meta.cassandra.config.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
+| meta.cassandra.config.tls.key | string | `"/path/to/key"` | TLS key path |
 | meta.cassandra.config.username | string | `"root"` | cassandra username |
 | meta.cassandra.config.vector_backup_table | string | `"backup_vector"` | table name of backup |
 | meta.cassandra.config.write_coalesce_wait_time | string | `"200µs"` | write coalesce wait time |
@@ -1159,14 +1188,16 @@ Configuration
 | meta.redis.config.tcp.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
 | meta.redis.config.tcp.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
 | meta.redis.config.tcp.dns.refresh_duration | string | `"1h"` | TCP DNS cache refresh duration |
-| meta.redis.config.tcp.tls.ca | string | `"/path/to/ca"` | path to TCP TLS ca |
-| meta.redis.config.tcp.tls.cert | string | `"/path/to/cert"` | path to TCP TLS cert |
-| meta.redis.config.tcp.tls.enabled | bool | `false` | TCP TLS enabled |
-| meta.redis.config.tcp.tls.key | string | `"/path/to/key"` | path to TCP TLS key |
-| meta.redis.config.tls.ca | string | `"/path/to/ca"` | path to TLS ca |
-| meta.redis.config.tls.cert | string | `"/path/to/cert"` | path to TLS cert |
+| meta.redis.config.tcp.tls.ca | string | `"/path/to/ca"` | TLS ca path |
+| meta.redis.config.tcp.tls.cert | string | `"/path/to/cert"` | TLS cert path |
+| meta.redis.config.tcp.tls.enabled | bool | `false` | TLS enabled |
+| meta.redis.config.tcp.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
+| meta.redis.config.tcp.tls.key | string | `"/path/to/key"` | TLS key path |
+| meta.redis.config.tls.ca | string | `"/path/to/ca"` | TLS ca path |
+| meta.redis.config.tls.cert | string | `"/path/to/cert"` | TLS cert path |
 | meta.redis.config.tls.enabled | bool | `false` | TLS enabled |
-| meta.redis.config.tls.key | string | `"/path/to/key"` | path to TLS key |
+| meta.redis.config.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
+| meta.redis.config.tls.key | string | `"/path/to/key"` | TLS key path |
 | meta.redis.config.vk_prefix | string | `""` | VK prefix |
 | meta.redis.config.write_timeout | string | `"3s"` | write timeout |
 | meta.redis.enabled | bool | `true` | redis config enabled |

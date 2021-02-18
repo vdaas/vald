@@ -17,7 +17,11 @@
 // Package config providers configuration type and load configuration logic
 package config
 
-import "fmt"
+import (
+	"strconv"
+
+	"github.com/vdaas/vald/internal/net"
+)
 
 type Meta struct {
 	Host                      string      `json:"host" yaml:"host"`
@@ -39,7 +43,7 @@ func (m *Meta) Bind() *Meta {
 		m.Client = newGRPCClientConfig()
 	}
 	if len(m.Host) != 0 {
-		m.Client.Addrs = append(m.Client.Addrs, fmt.Sprintf("%s:%d", m.Host, m.Port))
+		m.Client.Addrs = append(m.Client.Addrs, net.JoinHostPort(m.Host, strconv.FormatInt(int64(m.Port), 10)))
 	}
 	return m
 }

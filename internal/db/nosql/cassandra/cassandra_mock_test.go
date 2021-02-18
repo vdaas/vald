@@ -34,6 +34,11 @@ func (dm *DialerMock) DialContext(ctx context.Context, network, addr string) (ne
 	return dm.DialContextFunc(ctx, network, addr)
 }
 
+func (dm *DialerMock) GetDialer() func(ctx context.Context, network, addr string) (net.Conn, error) {
+	return dm.DialContextFunc
+}
+func (dm *DialerMock) StartDialerCache(ctx context.Context) {}
+
 func TestMockClusterConfig_CreateSession(t *testing.T) {
 	t.Parallel()
 	type fields struct {

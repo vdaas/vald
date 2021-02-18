@@ -1404,3 +1404,95 @@ func Test_meta_DeleteUUIDs(t *testing.T) {
 		})
 	}
 }
+
+func Test_meta_GRPCClient(t *testing.T) {
+	t.Parallel()
+	type fields struct {
+		client              grpc.Client
+		cache               cache.Cache
+		enableCache         bool
+		expireCheckDuration string
+		expireDuration      string
+	}
+	type want struct {
+		want grpc.Client
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, grpc.Client) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got grpc.Client) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           client: nil,
+		           cache: nil,
+		           enableCache: false,
+		           expireCheckDuration: "",
+		           expireDuration: "",
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           client: nil,
+		           cache: nil,
+		           enableCache: false,
+		           expireCheckDuration: "",
+		           expireDuration: "",
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			m := &meta{
+				client:              test.fields.client,
+				cache:               test.fields.cache,
+				enableCache:         test.fields.enableCache,
+				expireCheckDuration: test.fields.expireCheckDuration,
+				expireDuration:      test.fields.expireDuration,
+			}
+
+			got := m.GRPCClient()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}

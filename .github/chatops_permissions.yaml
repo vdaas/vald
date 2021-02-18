@@ -97,5 +97,6 @@ users:
       - sig-core
   kevindiu:
     role:
+      - sig-lead
       - contributor
       - sig-set

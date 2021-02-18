@@ -32,6 +32,9 @@ type TLS struct {
 
 	// CA represent the CA certificate environment variable key used to start server.
 	CA string `yaml:"ca" json:"ca"`
+
+	// InsecureSkipVerify represent enable/disable skip SSL certificate verification
+	InsecureSkipVerify bool `yaml:"insecure_skip_verify" json:"insecure_skip_verify"`
 }
 
 // Bind returns TLS object whose every value except Enabled is field value of environment value.
@@ -48,5 +51,6 @@ func (t *TLS) Opts() []tls.Option {
 		tls.WithCa(t.CA),
 		tls.WithCert(t.Cert),
 		tls.WithKey(t.Key),
+		tls.WithInsecureSkipVerify(t.InsecureSkipVerify),
 	}
 }

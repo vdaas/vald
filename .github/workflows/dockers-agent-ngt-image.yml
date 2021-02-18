@@ -33,7 +33,6 @@ on:
       - "apis/grpc/**"
       - "pkg/agent/core/ngt/**"
       - "cmd/agent/core/ngt/**"
-      - "dockers/base/Dockerfile"
       - "dockers/agent/core/ngt/Dockerfile"
       - "versions/GO_VERSION"
       - "versions/NGT_VERSION"
@@ -48,8 +47,6 @@ on:
       - "apis/grpc/**"
       - "pkg/agent/core/ngt/**"
       - "cmd/agent/core/ngt/**"
-      - "dockers/base/Dockerfile"
-      - "dockers/agent/core/ngt/Dockerfile"
       - "versions/GO_VERSION"
       - "versions/NGT_VERSION"
 

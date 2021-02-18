@@ -77,9 +77,11 @@ func TestWithCert(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, append(goleakIgnoreOptions, goleak.IgnoreCurrent())...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -152,9 +154,11 @@ func TestWithKey(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, append(goleakIgnoreOptions, goleak.IgnoreCurrent())...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -227,9 +231,11 @@ func TestWithCa(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, append(goleakIgnoreOptions, goleak.IgnoreCurrent())...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -303,9 +309,11 @@ func TestWithTLSConfig(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, append(goleakIgnoreOptions, goleak.IgnoreCurrent())...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -318,6 +326,83 @@ func TestWithTLSConfig(t *testing.T) {
 			}
 
 			got := WithTLSConfig(test.args.cfg)
+			obj := new(T)
+			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestWithInsecureSkipVerify(t *testing.T) {
+	type T = credentials
+	type args struct {
+		insecure bool
+	}
+	type want struct {
+		obj *T
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+
+	defaultCheckFunc := func(w want, obj *T, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "success InsecureSkipVerify when insecure is true",
+			args: args{
+				insecure: true,
+			},
+			want: want{
+				obj: &T{
+					insecure: true,
+				},
+			},
+		},
+		{
+			name: "success InsecureSkipVerify when insecure is false",
+			args: args{
+				insecure: false,
+			},
+			want: want{
+				obj: &T{
+					insecure: false,
+				},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, append(goleakIgnoreOptions, goleak.IgnoreCurrent())...)
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := WithInsecureSkipVerify(test.args.insecure)
 			obj := new(T)
 			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)

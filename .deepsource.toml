@@ -37,7 +37,6 @@ enabled = true
 
   [analyzers.meta]
   dockerfile_paths = [
-    "dockers/base/Dockerfile",
     "dockers/agent/ngt/Dockerfile",
     "dockers/discoverer/k8s/Dockerfile",
     "dockers/gateway/vald/Dockerfile",

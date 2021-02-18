@@ -34,7 +34,6 @@ on:
       - "apis/grpc/**"
       - "pkg/meta/redis/**"
       - "cmd/meta/redis/**"
-      - "dockers/base/Dockerfile"
       - "dockers/meta/redis/Dockerfile"
       - "versions/GO_VERSION"
   pull_request:
@@ -49,7 +48,6 @@ on:
       - "apis/grpc/**"
       - "pkg/meta/redis/**"
       - "cmd/meta/redis/**"
-      - "dockers/base/Dockerfile"
       - "dockers/meta/redis/Dockerfile"
       - "versions/GO_VERSION"
 
