@@ -20,6 +20,7 @@ import (
 	"context"
 	"crypto/tls"
 	"reflect"
+	"strings"
 	"time"
 
 	redis "github.com/go-redis/redis/v8"
@@ -163,7 +164,7 @@ func (rc *redisClient) newClient(ctx context.Context) (c *redis.Client, err erro
 			Addr: rc.addrs[0],
 			Network: func() string {
 				nt := net.NetworkTypeFromString(rc.network)
-				if nt == net.Unknown {
+				if nt == 0 || nt == net.Unknown || strings.EqualFold(nt.String(), net.Unknown.String()) {
 					return net.TCP.String()
 				}
 				return nt.String()

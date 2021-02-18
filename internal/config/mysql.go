@@ -18,6 +18,8 @@
 package config
 
 import (
+	"strings"
+
 	"github.com/vdaas/vald/internal/db/rdb/mysql"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/tls"
@@ -73,7 +75,7 @@ func (m *MySQL) Bind() *MySQL {
 
 func (m *MySQL) Opts() ([]mysql.Option, error) {
 	nt := net.NetworkTypeFromString(m.Network)
-	if nt == net.Unknown {
+	if nt == 0 || nt == net.Unknown || strings.EqualFold(nt.String(), net.Unknown.String()) {
 		m.Network = net.TCP.String()
 	} else {
 		m.Network = nt.String()

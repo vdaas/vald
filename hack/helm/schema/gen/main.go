@@ -125,7 +125,7 @@ func genJSONSchema(path string) error {
 			var l VSchema
 			err = json.Unmarshal([]byte(strings.TrimPrefix(tx, prefix)), &l)
 			if err != nil {
-				log.Errorf("error occured line %d, data %s, error %v", line, tx, err)
+				log.Errorf("error occurred line %d, data %s, error %v", line, tx, err)
 			}
 			ls = append(ls, l)
 		}

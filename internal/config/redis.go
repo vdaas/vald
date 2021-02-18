@@ -19,6 +19,7 @@ package config
 
 import (
 	"context"
+	"strings"
 
 	"github.com/vdaas/vald/internal/db/kvs/redis"
 	"github.com/vdaas/vald/internal/log"
@@ -99,7 +100,7 @@ func (r *Redis) Bind() *Redis {
 
 func (r *Redis) Opts() (opts []redis.Option, err error) {
 	nt := net.NetworkTypeFromString(r.Network)
-	if nt == net.Unknown {
+	if nt == 0 || nt == net.Unknown || strings.EqualFold(nt.String(), net.Unknown.String()) {
 		nt = net.TCP
 	}
 	r.Network = nt.String()

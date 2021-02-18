@@ -243,7 +243,7 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 		}
 
 		l, err := s.lc.Listen(ctx, func() string {
-			if s.network == net.Unknown {
+			if s.network == 0 || s.network == net.Unknown || strings.EqualFold(s.network.String(), net.Unknown.String()) {
 				return net.TCP.String()
 			}
 			return s.network.String()
@@ -257,6 +257,7 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 			return net.JoinHostPort(s.host, s.port)
 		}())
 		if err != nil {
+			log.Errorf("failed to listen socket %v", err)
 			return err
 		}
 

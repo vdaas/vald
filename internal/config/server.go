@@ -18,6 +18,8 @@
 package config
 
 import (
+	"strings"
+
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/servers/server"
 )
@@ -202,11 +204,10 @@ func (s *Server) Bind() *Server {
 func (s *Server) Opts() []server.Option {
 	opts := make([]server.Option, 0, 10)
 	nt := net.NetworkTypeFromString(s.Network)
-	if nt == net.Unknown {
-		s.Network = net.TCP.String()
-	} else {
-		s.Network = nt.String()
+	if nt == 0 || nt == net.Unknown || strings.EqualFold(nt.String(), net.Unknown.String()) {
+		nt = net.TCP
 	}
+	s.Network = nt.String()
 	opts = append(opts,
 		server.WithNetwork(s.Network),
 		server.WithSocketPath(s.SocketPath),

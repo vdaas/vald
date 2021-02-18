@@ -81,7 +81,7 @@ func TestWithHost(t *testing.T) {
 func TestWithPort(t *testing.T) {
 	type test struct {
 		name      string
-		port      uint
+		port      uint16
 		checkFunc func(opt Option) error
 	}
 
@@ -2397,7 +2397,7 @@ func TestDefaultHealthServerOption(t *testing.T) {
 		name string
 		host string
 		path string
-		port uint
+		port uint16
 	}
 
 	type test struct {

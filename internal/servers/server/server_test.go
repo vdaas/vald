@@ -748,7 +748,7 @@ func Test_server_IsRunning(t *testing.T) {
 		rt            time.Duration
 		wt            time.Duration
 		it            time.Duration
-		port          uint
+		port          uint16
 		host          string
 		enableRestart bool
 		shuttingDown  bool
@@ -914,7 +914,7 @@ func Test_server_Name(t *testing.T) {
 		rt            time.Duration
 		wt            time.Duration
 		it            time.Duration
-		port          uint
+		port          uint16
 		host          string
 		enableRestart bool
 		shuttingDown  bool
@@ -1084,7 +1084,7 @@ func Test_server_ListenAndServe(t *testing.T) {
 		rt            time.Duration
 		wt            time.Duration
 		it            time.Duration
-		port          uint
+		port          uint16
 		host          string
 		enableRestart bool
 		shuttingDown  bool
@@ -1262,7 +1262,7 @@ func Test_server_Shutdown(t *testing.T) {
 		rt            time.Duration
 		wt            time.Duration
 		it            time.Duration
-		port          uint
+		port          uint16
 		host          string
 		enableRestart bool
 		shuttingDown  bool
