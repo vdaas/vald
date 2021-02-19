@@ -151,7 +151,7 @@ If you want to learn about Scylla, please refer to [the official website](https:
    vald-manager-compressor-78bf64459f-27ckg   1/1     Running     0          6m56s
    vald-manager-compressor-78bf64459f-9kl9b   1/1     Running     0          7m12s
    vald-manager-compressor-78bf64459f-dkx24   1/1     Running     0          6m56s
-   vald-manager-index-74c7b5ddd6-jrnlw        1/1     Running     1          7m12s
+   vald-manager-index-74c7b5ddd6-jrnlw        1/1     Running     0          7m12s
    vald-meta-747f757bbb-9v5xz                 1/1     Running     0          7m12s
    vald-meta-747f757bbb-mpwqp                 1/1     Running     0          6m56s
    vald-meta-gateway-8c5f55dd-8fsch           1/1     Running     0          6m56s
