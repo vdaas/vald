@@ -59,6 +59,8 @@ If you want to learn about Scylla, please refer to [the official website](https:
    kubectl cluster-info
    ```
 
+   In the sense of trying to "Get-Started", [k3d](https://k3d.io/) or [kind](https://kind.sigs.k8s.io/) are easy kubernetes tools to use.
+
 1. Prepare Scylla DB and kubernetes metrics-server
 
    Deploy Scylla as a backup database.
@@ -390,6 +392,8 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
    kubectl cluster-info
    ```
 
+   In the sense of trying to "Get-Started", [k3d](https://k3d.io/) or [kind](https://kind.sigs.k8s.io/) are easy kubernetes tools to use.
+
 1. Deploy Vald Agent using helm
 
    There is the [values.yaml](https://github.com/vdaas/vald/blob/master/example/helm/values-standalone-agent-ngt.yaml) to deploy standalone Vald Agent.
@@ -586,11 +590,11 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
 
       - [Optional] Indexing manually instead of waiting for auto indexing
         You can set Agent NGT configuration `auto_index_duration_limit` and `auto_index_check_duration` for auto indexing.
-        In this example, you can create index manually using `CreateIndex()` mthod in the client library.
+        In this example, you can create index manually using `CreateAndSaveIndex()` mthod in the client library.
         <detail><summary>example code</summary><br>
 
         ```go
-        _, err = client.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+        _, err = client.CreateAndSaveIndex(ctx, &payload.Control_CreateIndexRequest{
         	PoolSize: uint32(insertCount),
         })
         if err != nil {

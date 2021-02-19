@@ -99,7 +99,7 @@ func main() {
 	}
 	/**
 	Option: Run Indexing instead of Auto Indexing
-	If you run client.CreateIndex, it costs less time for search
+	If you run client.CreateAndSaveIndex, it costs less time for search
 	**/
 	glg.Info("Start Indexing dataset.")
 	_, err = agent.NewAgentClient(conn).CreateAndSaveIndex(ctx, &payload.Control_CreateIndexRequest{

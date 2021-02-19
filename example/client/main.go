@@ -79,7 +79,7 @@ func main() {
 	// Insert 400 example vectors into Vald cluster
 	for i := range ids[:insertCount] {
 		if i%10 == 0 {
-			glg.Infof("Inserted: %d", i)
+			glg.Infof("Inserted: %d", i+10)
 		}
 		// Calls `Insert` function of Vald client.
 		// Sends set of vector and id to server via gRPC.
