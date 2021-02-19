@@ -1,5 +1,114 @@
 # CHANGELOG
 
+## v1.0.3
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.0.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.0.3</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.0.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.0.3</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.0.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.0.3</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-gateway:v1.0.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-gateway:v1.0.3</code><br/>
+
+      <code>docker pull vdaas/vald-backup-gateway:v1.0.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-backup-gateway:v1.0.3</code><br/>
+
+      <code>docker pull vdaas/vald-lb-gateway:v1.0.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.0.3</code><br/>
+
+      <code>docker pull vdaas/vald-meta-gateway:v1.0.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-gateway:v1.0.3</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Backup managers</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-backup-mysql:v1.0.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-backup-mysql:v1.0.3</code><br/>
+      <code>docker pull vdaas/vald-manager-backup-cassandra:v1.0.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-backup-cassandra:v1.0.3</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Compressor</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-compressor:v1.0.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-compressor:v1.0.3</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Metas</td>
+    <td>
+      <code>docker pull vdaas/vald-meta-redis:v1.0.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-redis:v1.0.3</code><br/>
+      <code>docker pull vdaas/vald-meta-cassandra:v1.0.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-cassandra:v1.0.3</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.0.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.0.3</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.0.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.0.3</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.0.3)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.0.3/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.0.3/charts/vald-helm-operator/README.md)
+
+### Changes
+## Vald v1.0.3 Release
+
+
+### Changelog
+- fix MySQL panic test ([#996](https://github.com/vdaas/vald/pull/996))
+- Update tutorial to support v1 ([#1009](https://github.com/vdaas/vald/pull/1009))
+- remove not supported control flag on darwin ([#1025](https://github.com/vdaas/vald/pull/1025))
+- Add strategy section to Docker build workflows ([#1024](https://github.com/vdaas/vald/pull/1024))(https://github.com/vdaas/vald/pull/1019))
+- move internal/net/tcp package to internal/net package and support unix domain socket ([#1010](https://github.com/vdaas/vald/pull/1010))
+- Implement internal/info/info test ([#862](https://github.com/vdaas/vald/pull/862))
+- add test for internal/errors/runner ([#1007](https://github.com/vdaas/vald/pull/1007))
+- add logo guideline ([#973](https://github.com/vdaas/vald/pull/973))
+- Fix invalid changelogs / update changelog workflows ([#1002](https://github.com/vdaas/vald/pull/1002))
+- Add test case for internal/errors/observability.go ([#993](https://github.com/vdaas/vald/pull/993))
+
+
 ## v1.0.2
 
 ### Docker images
