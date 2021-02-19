@@ -29,8 +29,8 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc/pool"
-	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/singleflight"
@@ -94,7 +94,7 @@ type gRPCClient struct {
 	conns               grpcConns
 	hcDur               time.Duration
 	prDur               time.Duration
-	dialer              tcp.Dialer
+	dialer              net.Dialer
 	enablePoolRebalance bool
 	resolveDNS          bool
 	dopts               []DialOption

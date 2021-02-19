@@ -1,5 +1,3 @@
-// +build windows
-
 //
 // Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
@@ -15,18 +13,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+package errors
 
-// Package tcp provides tcp option
-package tcp
+var (
+	// ErrFailedToInitInfo represents an error to initialize info.
+	ErrFailedToInitInfo = func(err error) error {
+		return Wrap(err, "failed to init info")
+	}
 
-import (
-	"syscall"
-
-	"golang.org/x/sys/windows"
+	// ErrRuntimeFuncNil represents an error that the runtime function is nil.
+	ErrRuntimeFuncNil = func() error {
+		return New("runtime function is nil")
+	}
 )
-
-func Control(network, address string, c syscall.RawConn) (err error) {
-	return c.Control(func(fd uintptr) {
-		err = windows.SetsockoptInt(windows.Handle(fd), windows.SOL_SOCKET, windows.SO_REUSEADDR, 1)
-	})
-}

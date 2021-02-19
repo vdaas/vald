@@ -26,7 +26,7 @@ import (
 
 func TestClient_Bind(t *testing.T) {
 	type fields struct {
-		TCP       *TCP
+		Net       *Net
 		Transport *Transport
 	}
 	type want struct {
@@ -52,7 +52,7 @@ func TestClient_Bind(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
-		           TCP: TCP{},
+		           Net: Net{},
 		           Transport: Transport{},
 		       },
 		       want: want{},
@@ -66,7 +66,7 @@ func TestClient_Bind(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
-		           TCP: TCP{},
+		           Net: Net{},
 		           Transport: Transport{},
 		           },
 		           want: want{},
@@ -88,7 +88,7 @@ func TestClient_Bind(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &Client{
-				TCP:       test.fields.TCP,
+				Net:       test.fields.Net,
 				Transport: test.fields.Transport,
 			}
 

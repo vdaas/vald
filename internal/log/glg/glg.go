@@ -42,8 +42,7 @@ func New(opts ...Option) log.Logger {
 		opt(l)
 	}
 
-	return l.
-		setLevelMode(l.level).
+	return l.setLevelMode(l.level).
 		setLogFormat(l.format)
 }
 

@@ -18,14 +18,12 @@
 package config
 
 import (
-	"strconv"
-
 	"github.com/vdaas/vald/internal/net"
 )
 
 type Meta struct {
 	Host                      string      `json:"host" yaml:"host"`
-	Port                      int         `json:"port" yaml:"port"`
+	Port                      uint16      `json:"port" yaml:"port"`
 	Client                    *GRPCClient `json:"client" yaml:"client"`
 	EnableCache               bool        `json:"enable_cache" yaml:"enable_cache"`
 	CacheExpiration           string      `json:"cache_expiration" yaml:"cache_expiration"`
@@ -43,7 +41,7 @@ func (m *Meta) Bind() *Meta {
 		m.Client = newGRPCClientConfig()
 	}
 	if len(m.Host) != 0 {
-		m.Client.Addrs = append(m.Client.Addrs, net.JoinHostPort(m.Host, strconv.FormatInt(int64(m.Port), 10)))
+		m.Client.Addrs = append(m.Client.Addrs, net.JoinHostPort(m.Host, m.Port))
 	}
 	return m
 }

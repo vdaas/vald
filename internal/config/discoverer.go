@@ -21,17 +21,17 @@ type Discoverer struct {
 	Name              string `json:"name" yaml:"name"`
 	Namespace         string `json:"namespace" yaml:"namespace"`
 	DiscoveryDuration string `json:"discovery_duration" yaml:"discovery_duration"`
-	TCP               *TCP   `json:"tcp" yaml:"tcp"`
+	Net               *Net   `json:"net" yaml:"net"`
 }
 
 func (d *Discoverer) Bind() *Discoverer {
 	d.Name = GetActualValue(d.Name)
 	d.Namespace = GetActualValue(d.Namespace)
 	d.DiscoveryDuration = GetActualValue(d.DiscoveryDuration)
-	if d.TCP != nil {
-		d.TCP.Bind()
+	if d.Net != nil {
+		d.Net.Bind()
 	} else {
-		d.TCP = new(TCP)
+		d.Net = new(Net)
 	}
 	return d
 }

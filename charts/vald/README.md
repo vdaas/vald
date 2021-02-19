@@ -145,17 +145,17 @@ Configuration
 | agent.sidecar.config.blob_storage.s3.use_arn_region | bool | `false` | s3 service client to use the region specified in the ARN |
 | agent.sidecar.config.blob_storage.s3.use_dual_stack | bool | `false` | use dual stack |
 | agent.sidecar.config.blob_storage.storage_type | string | `"s3"` | storage type |
-| agent.sidecar.config.client.tcp.dialer.dual_stack_enabled | bool | `false` | HTTP client TCP dialer dual stack enabled |
-| agent.sidecar.config.client.tcp.dialer.keep_alive | string | `"5m"` | HTTP client TCP dialer keep alive |
-| agent.sidecar.config.client.tcp.dialer.timeout | string | `"5s"` | HTTP client TCP dialer connect timeout |
-| agent.sidecar.config.client.tcp.dns.cache_enabled | bool | `true` | HTTP client TCP DNS cache enabled |
-| agent.sidecar.config.client.tcp.dns.cache_expiration | string | `"24h"` |  |
-| agent.sidecar.config.client.tcp.dns.refresh_duration | string | `"1h"` | HTTP client TCP DNS cache expiration |
-| agent.sidecar.config.client.tcp.tls.ca | string | `"/path/to/ca"` | TLS ca path |
-| agent.sidecar.config.client.tcp.tls.cert | string | `"/path/to/cert"` | TLS cert path |
-| agent.sidecar.config.client.tcp.tls.enabled | bool | `false` | TLS enabled |
-| agent.sidecar.config.client.tcp.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
-| agent.sidecar.config.client.tcp.tls.key | string | `"/path/to/key"` | TLS key path |
+| agent.sidecar.config.client.net.dialer.dual_stack_enabled | bool | `false` | HTTP client TCP dialer dual stack enabled |
+| agent.sidecar.config.client.net.dialer.keep_alive | string | `"5m"` | HTTP client TCP dialer keep alive |
+| agent.sidecar.config.client.net.dialer.timeout | string | `"5s"` | HTTP client TCP dialer connect timeout |
+| agent.sidecar.config.client.net.dns.cache_enabled | bool | `true` | HTTP client TCP DNS cache enabled |
+| agent.sidecar.config.client.net.dns.cache_expiration | string | `"24h"` |  |
+| agent.sidecar.config.client.net.dns.refresh_duration | string | `"1h"` | HTTP client TCP DNS cache expiration |
+| agent.sidecar.config.client.net.tls.ca | string | `"/path/to/ca"` | TLS ca path |
+| agent.sidecar.config.client.net.tls.cert | string | `"/path/to/cert"` | TLS cert path |
+| agent.sidecar.config.client.net.tls.enabled | bool | `false` | TLS enabled |
+| agent.sidecar.config.client.net.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
+| agent.sidecar.config.client.net.tls.key | string | `"/path/to/key"` | TLS key path |
 | agent.sidecar.config.client.transport.backoff.backoff_factor | float | `1.1` | backoff backoff factor |
 | agent.sidecar.config.client.transport.backoff.backoff_time_limit | string | `"5s"` | backoff time limit |
 | agent.sidecar.config.client.transport.backoff.enable_error_log | bool | `true` | backoff error log enabled |
@@ -244,17 +244,17 @@ Configuration
 | defaults.grpc.client.dial_option.max_msg_size | int | `0` | gRPC client dial option max message size |
 | defaults.grpc.client.dial_option.min_connection_timeout | string | `"20s"` | gRPC client dial option minimum connection timeout |
 | defaults.grpc.client.dial_option.read_buffer_size | int | `0` | gRPC client dial option read buffer size |
-| defaults.grpc.client.dial_option.tcp.dialer.dual_stack_enabled | bool | `true` | gRPC client TCP dialer dual stack enabled |
-| defaults.grpc.client.dial_option.tcp.dialer.keep_alive | string | `""` | gRPC client TCP dialer keep alive |
-| defaults.grpc.client.dial_option.tcp.dialer.timeout | string | `""` | gRPC client TCP dialer timeout |
-| defaults.grpc.client.dial_option.tcp.dns.cache_enabled | bool | `true` | gRPC client TCP DNS cache enabled |
-| defaults.grpc.client.dial_option.tcp.dns.cache_expiration | string | `"1h"` | gRPC client TCP DNS cache expiration |
-| defaults.grpc.client.dial_option.tcp.dns.refresh_duration | string | `"30m"` | gRPC client TCP DNS cache refresh duration |
-| defaults.grpc.client.dial_option.tcp.tls.ca | string | `"/path/to/ca"` | TLS ca path |
-| defaults.grpc.client.dial_option.tcp.tls.cert | string | `"/path/to/cert"` | TLS cert path |
-| defaults.grpc.client.dial_option.tcp.tls.enabled | bool | `false` | TLS enabled |
-| defaults.grpc.client.dial_option.tcp.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
-| defaults.grpc.client.dial_option.tcp.tls.key | string | `"/path/to/key"` | TLS key path |
+| defaults.grpc.client.dial_option.net.dialer.dual_stack_enabled | bool | `true` | gRPC client TCP dialer dual stack enabled |
+| defaults.grpc.client.dial_option.net.dialer.keep_alive | string | `""` | gRPC client TCP dialer keep alive |
+| defaults.grpc.client.dial_option.net.dialer.timeout | string | `""` | gRPC client TCP dialer timeout |
+| defaults.grpc.client.dial_option.net.dns.cache_enabled | bool | `true` | gRPC client TCP DNS cache enabled |
+| defaults.grpc.client.dial_option.net.dns.cache_expiration | string | `"1h"` | gRPC client TCP DNS cache expiration |
+| defaults.grpc.client.dial_option.net.dns.refresh_duration | string | `"30m"` | gRPC client TCP DNS cache refresh duration |
+| defaults.grpc.client.dial_option.net.tls.ca | string | `"/path/to/ca"` | TLS ca path |
+| defaults.grpc.client.dial_option.net.tls.cert | string | `"/path/to/cert"` | TLS cert path |
+| defaults.grpc.client.dial_option.net.tls.enabled | bool | `false` | TLS enabled |
+| defaults.grpc.client.dial_option.net.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
+| defaults.grpc.client.dial_option.net.tls.key | string | `"/path/to/key"` | TLS key path |
 | defaults.grpc.client.dial_option.timeout | string | `""` | gRPC client dial option timeout |
 | defaults.grpc.client.dial_option.write_buffer_size | int | `0` | gRPC client dial option write buffer size |
 | defaults.grpc.client.health_check_duration | string | `"1s"` | gRPC client health check duration |
@@ -443,17 +443,17 @@ Configuration
 | discoverer.discoverer.discovery_duration | string | `"3s"` | duration to discovery |
 | discoverer.discoverer.name | string | `""` | name to discovery |
 | discoverer.discoverer.namespace | string | `"_MY_POD_NAMESPACE_"` | namespace to discovery |
-| discoverer.discoverer.tcp.dialer.dual_stack_enabled | bool | `false` | TCP dialer dual stack enabled |
-| discoverer.discoverer.tcp.dialer.keep_alive | string | `"10m"` | TCP dialer keep alive |
-| discoverer.discoverer.tcp.dialer.timeout | string | `"30s"` | TCP dialer timeout |
-| discoverer.discoverer.tcp.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
-| discoverer.discoverer.tcp.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
-| discoverer.discoverer.tcp.dns.refresh_duration | string | `"5m"` | TCP DNS cache refresh duration |
-| discoverer.discoverer.tcp.tls.ca | string | `"/path/to/ca"` | TLS ca path |
-| discoverer.discoverer.tcp.tls.cert | string | `"/path/to/cert"` | TLS cert path |
-| discoverer.discoverer.tcp.tls.enabled | bool | `false` | TLS enabled |
-| discoverer.discoverer.tcp.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
-| discoverer.discoverer.tcp.tls.key | string | `"/path/to/key"` | TLS key path |
+| discoverer.discoverer.net.dialer.dual_stack_enabled | bool | `false` | TCP dialer dual stack enabled |
+| discoverer.discoverer.net.dialer.keep_alive | string | `"10m"` | TCP dialer keep alive |
+| discoverer.discoverer.net.dialer.timeout | string | `"30s"` | TCP dialer timeout |
+| discoverer.discoverer.net.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
+| discoverer.discoverer.net.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
+| discoverer.discoverer.net.dns.refresh_duration | string | `"5m"` | TCP DNS cache refresh duration |
+| discoverer.discoverer.net.tls.ca | string | `"/path/to/ca"` | TLS ca path |
+| discoverer.discoverer.net.tls.cert | string | `"/path/to/cert"` | TLS cert path |
+| discoverer.discoverer.net.tls.enabled | bool | `false` | TLS enabled |
+| discoverer.discoverer.net.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
+| discoverer.discoverer.net.tls.key | string | `"/path/to/key"` | TLS key path |
 | discoverer.enabled | bool | `true` | discoverer enabled |
 | discoverer.env | list | `[{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]` | environment variables |
 | discoverer.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
@@ -877,17 +877,17 @@ Configuration
 | manager.backup.cassandra.config.retry_policy.num_retries | int | `3` | number of retries |
 | manager.backup.cassandra.config.serial_consistency | string | `"localserial"` | read consistency type |
 | manager.backup.cassandra.config.socket_keepalive | string | `"0s"` | socket keep alive time |
-| manager.backup.cassandra.config.tcp.dialer.dual_stack_enabled | bool | `false` | TCP dialer dual stack enabled |
-| manager.backup.cassandra.config.tcp.dialer.keep_alive | string | `"10m"` | TCP dialer keep alive |
-| manager.backup.cassandra.config.tcp.dialer.timeout | string | `"30s"` | TCP dialer timeout |
-| manager.backup.cassandra.config.tcp.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
-| manager.backup.cassandra.config.tcp.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
-| manager.backup.cassandra.config.tcp.dns.refresh_duration | string | `"5m"` | TCP DNS cache refresh duration |
-| manager.backup.cassandra.config.tcp.tls.ca | string | `"/path/to/ca"` | TLS ca path |
-| manager.backup.cassandra.config.tcp.tls.cert | string | `"/path/to/cert"` | TLS cert path |
-| manager.backup.cassandra.config.tcp.tls.enabled | bool | `false` | TLS enabled |
-| manager.backup.cassandra.config.tcp.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
-| manager.backup.cassandra.config.tcp.tls.key | string | `"/path/to/key"` | TLS key path |
+| manager.backup.cassandra.config.net.dialer.dual_stack_enabled | bool | `false` | TCP dialer dual stack enabled |
+| manager.backup.cassandra.config.net.dialer.keep_alive | string | `"10m"` | TCP dialer keep alive |
+| manager.backup.cassandra.config.net.dialer.timeout | string | `"30s"` | TCP dialer timeout |
+| manager.backup.cassandra.config.net.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
+| manager.backup.cassandra.config.net.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
+| manager.backup.cassandra.config.net.dns.refresh_duration | string | `"5m"` | TCP DNS cache refresh duration |
+| manager.backup.cassandra.config.net.tls.ca | string | `"/path/to/ca"` | TLS ca path |
+| manager.backup.cassandra.config.net.tls.cert | string | `"/path/to/cert"` | TLS cert path |
+| manager.backup.cassandra.config.net.tls.enabled | bool | `false` | TLS enabled |
+| manager.backup.cassandra.config.net.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
+| manager.backup.cassandra.config.net.tls.key | string | `"/path/to/key"` | TLS key path |
 | manager.backup.cassandra.config.timeout | string | `"600ms"` | timeout |
 | manager.backup.cassandra.config.tls.ca | string | `"/path/to/ca"` | TLS ca path |
 | manager.backup.cassandra.config.tls.cert | string | `"/path/to/cert"` | TLS cert path |
@@ -920,17 +920,17 @@ Configuration
 | manager.backup.mysql.config.name | string | `"vald"` | mysql db name |
 | manager.backup.mysql.config.pass | string | `"_MYSQL_PASSWORD_"` | mysql password |
 | manager.backup.mysql.config.port | int | `3306` | mysql port |
-| manager.backup.mysql.config.tcp.dialer.dual_stack_enabled | bool | `false` | TCP dialer dual stack enabled |
-| manager.backup.mysql.config.tcp.dialer.keep_alive | string | `"5m"` | TCP dialer keep alive |
-| manager.backup.mysql.config.tcp.dialer.timeout | string | `"5s"` | TCP dialer timeout |
-| manager.backup.mysql.config.tcp.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
-| manager.backup.mysql.config.tcp.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
-| manager.backup.mysql.config.tcp.dns.refresh_duration | string | `"1h"` | TCP DNS cache refresh duration |
-| manager.backup.mysql.config.tcp.tls.ca | string | `"/path/to/ca"` | TLS ca path |
-| manager.backup.mysql.config.tcp.tls.cert | string | `"/path/to/cert"` | TLS cert path |
-| manager.backup.mysql.config.tcp.tls.enabled | bool | `false` | TLS enabled |
-| manager.backup.mysql.config.tcp.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
-| manager.backup.mysql.config.tcp.tls.key | string | `"/path/to/key"` | TLS key path |
+| manager.backup.mysql.config.net.dialer.dual_stack_enabled | bool | `false` | TCP dialer dual stack enabled |
+| manager.backup.mysql.config.net.dialer.keep_alive | string | `"5m"` | TCP dialer keep alive |
+| manager.backup.mysql.config.net.dialer.timeout | string | `"5s"` | TCP dialer timeout |
+| manager.backup.mysql.config.net.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
+| manager.backup.mysql.config.net.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
+| manager.backup.mysql.config.net.dns.refresh_duration | string | `"1h"` | TCP DNS cache refresh duration |
+| manager.backup.mysql.config.net.tls.ca | string | `"/path/to/ca"` | TLS ca path |
+| manager.backup.mysql.config.net.tls.cert | string | `"/path/to/cert"` | TLS cert path |
+| manager.backup.mysql.config.net.tls.enabled | bool | `false` | TLS enabled |
+| manager.backup.mysql.config.net.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
+| manager.backup.mysql.config.net.tls.key | string | `"/path/to/key"` | TLS key path |
 | manager.backup.mysql.config.tls.ca | string | `"/path/to/ca"` | TLS ca path |
 | manager.backup.mysql.config.tls.cert | string | `"/path/to/cert"` | TLS cert path |
 | manager.backup.mysql.config.tls.enabled | bool | `false` | TLS enabled |
@@ -1036,7 +1036,7 @@ Configuration
 | manager.index.indexer.auto_index_length | int | `100` | number of cache to trigger automatic indexing |
 | manager.index.indexer.concurrency | int | `1` | concurrency |
 | manager.index.indexer.creation_pool_size | int | `10000` | number of pool size of create index processing |
-| manager.index.indexer.discoverer.agent_client_options | object | `{"dial_option":{"tcp":{"dialer":{"keep_alive":"15m"}}}}` | gRPC client options for agents (overrides defaults.grpc.client) |
+| manager.index.indexer.discoverer.agent_client_options | object | `{"dial_option":{"net":{"dialer":{"keep_alive":"15m"}}}}` | gRPC client options for agents (overrides defaults.grpc.client) |
 | manager.index.indexer.discoverer.client | object | `{}` | gRPC client for discoverer (overrides defaults.grpc.client) |
 | manager.index.indexer.discoverer.duration | string | `"500ms"` | refresh duration to discover |
 | manager.index.indexer.node_name | string | `""` | node name |
@@ -1114,17 +1114,17 @@ Configuration
 | meta.cassandra.config.retry_policy.num_retries | int | `3` | number of retries |
 | meta.cassandra.config.serial_consistency | string | `"localserial"` | read consistency type |
 | meta.cassandra.config.socket_keepalive | string | `"0s"` | socket keep alive time |
-| meta.cassandra.config.tcp.dialer.dual_stack_enabled | bool | `false` | TCP dialer dual stack enabled |
-| meta.cassandra.config.tcp.dialer.keep_alive | string | `"10m"` | TCP dialer keep alive |
-| meta.cassandra.config.tcp.dialer.timeout | string | `"30s"` | TCP dialer timeout |
-| meta.cassandra.config.tcp.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
-| meta.cassandra.config.tcp.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
-| meta.cassandra.config.tcp.dns.refresh_duration | string | `"5m"` | TCP DNS cache refresh duration |
-| meta.cassandra.config.tcp.tls.ca | string | `"/path/to/ca"` | TLS ca path |
-| meta.cassandra.config.tcp.tls.cert | string | `"/path/to/cert"` | TLS cert path |
-| meta.cassandra.config.tcp.tls.enabled | bool | `false` | TLS enabled |
-| meta.cassandra.config.tcp.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
-| meta.cassandra.config.tcp.tls.key | string | `"/path/to/key"` | TLS key path |
+| meta.cassandra.config.net.dialer.dual_stack_enabled | bool | `false` | TCP dialer dual stack enabled |
+| meta.cassandra.config.net.dialer.keep_alive | string | `"10m"` | TCP dialer keep alive |
+| meta.cassandra.config.net.dialer.timeout | string | `"30s"` | TCP dialer timeout |
+| meta.cassandra.config.net.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
+| meta.cassandra.config.net.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
+| meta.cassandra.config.net.dns.refresh_duration | string | `"5m"` | TCP DNS cache refresh duration |
+| meta.cassandra.config.net.tls.ca | string | `"/path/to/ca"` | TLS ca path |
+| meta.cassandra.config.net.tls.cert | string | `"/path/to/cert"` | TLS cert path |
+| meta.cassandra.config.net.tls.enabled | bool | `false` | TLS enabled |
+| meta.cassandra.config.net.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
+| meta.cassandra.config.net.tls.key | string | `"/path/to/key"` | TLS key path |
 | meta.cassandra.config.timeout | string | `"600ms"` | timeout |
 | meta.cassandra.config.tls.ca | string | `"/path/to/ca"` | TLS ca path |
 | meta.cassandra.config.tls.cert | string | `"/path/to/cert"` | TLS cert path |
@@ -1171,7 +1171,7 @@ Configuration
 | meta.redis.config.max_retry_backoff | string | `"512ms"` | max retry backoff |
 | meta.redis.config.min_idle_conns | int | `0` | min idle connections |
 | meta.redis.config.min_retry_backoff | string | `"8ms"` | min retry backoff |
-| meta.redis.config.network | string | `"tcp"` | connection network type |
+| meta.redis.config.network | string | `"net"` | connection network type |
 | meta.redis.config.password | string | `"_REDIS_PASSWORD_"` | redis password |
 | meta.redis.config.pool_size | int | `10` | pool size |
 | meta.redis.config.pool_timeout | string | `"4s"` | pool timeout |
@@ -1182,17 +1182,17 @@ Configuration
 | meta.redis.config.route_randomly | bool | `true` | random routing enabled |
 | meta.redis.config.sentinel_master_name | string | `""` | redis sentinel master name |
 | meta.redis.config.sentinel_password | string | `""` | redis sentinel password |
-| meta.redis.config.tcp.dialer.dual_stack_enabled | bool | `false` | TCP dialer dual stack enabled |
-| meta.redis.config.tcp.dialer.keep_alive | string | `"5m"` | TCP dialer keep alive |
-| meta.redis.config.tcp.dialer.timeout | string | `"5s"` | TCP dialer timeout |
-| meta.redis.config.tcp.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
-| meta.redis.config.tcp.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
-| meta.redis.config.tcp.dns.refresh_duration | string | `"1h"` | TCP DNS cache refresh duration |
-| meta.redis.config.tcp.tls.ca | string | `"/path/to/ca"` | TLS ca path |
-| meta.redis.config.tcp.tls.cert | string | `"/path/to/cert"` | TLS cert path |
-| meta.redis.config.tcp.tls.enabled | bool | `false` | TLS enabled |
-| meta.redis.config.tcp.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
-| meta.redis.config.tcp.tls.key | string | `"/path/to/key"` | TLS key path |
+| meta.redis.config.net.dialer.dual_stack_enabled | bool | `false` | TCP dialer dual stack enabled |
+| meta.redis.config.net.dialer.keep_alive | string | `"5m"` | TCP dialer keep alive |
+| meta.redis.config.net.dialer.timeout | string | `"5s"` | TCP dialer timeout |
+| meta.redis.config.net.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
+| meta.redis.config.net.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
+| meta.redis.config.net.dns.refresh_duration | string | `"1h"` | TCP DNS cache refresh duration |
+| meta.redis.config.net.tls.ca | string | `"/path/to/ca"` | TLS ca path |
+| meta.redis.config.net.tls.cert | string | `"/path/to/cert"` | TLS cert path |
+| meta.redis.config.net.tls.enabled | bool | `false` | TLS enabled |
+| meta.redis.config.net.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
+| meta.redis.config.net.tls.key | string | `"/path/to/key"` | TLS key path |
 | meta.redis.config.tls.ca | string | `"/path/to/ca"` | TLS ca path |
 | meta.redis.config.tls.cert | string | `"/path/to/cert"` | TLS cert path |
 | meta.redis.config.tls.enabled | bool | `false` | TLS enabled |

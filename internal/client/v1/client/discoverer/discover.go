@@ -257,8 +257,12 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 							addr := fmt.Sprintf("%s:%d", pods[i].GetIp(), c.port)
 							if err = c.connect(ctx, addr); err != nil {
 								err = errors.ErrAddrCouldNotDiscover(err, addr)
-								log.Debugf("could not discover %s: %s", addr, err)
-								ech <- err
+								log.Debugf("could not discover %s: %v", addr, err)
+								select {
+								case <-ictx.Done():
+									return nil, ictx.Err()
+								case ech <- err:
+								}
 								err = nil
 							} else {
 								if c.autoconn {
@@ -326,14 +330,22 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 			if !ok {
 				err = c.disconnect(ctx, addr)
 				if err != nil {
-					ech <- err
+					select {
+					case <-ctx.Done():
+						return errors.Wrap(ctx.Err(), err.Error())
+					case ech <- err:
+						return err
+					}
 				}
-				return err
 			}
 			return nil
 		}); err != nil {
-			ech <- err
-			return err
+			select {
+			case <-ctx.Done():
+				return errors.Wrap(ctx.Err(), err.Error())
+			case ech <- err:
+				return err
+			}
 		}
 	}
 	return nil

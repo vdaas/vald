@@ -40,7 +40,7 @@ META_GATEWAY_IMAGE              = $(NAME)-meta-gateway
 META_REDIS_IMAGE                = $(NAME)-meta-redis
 MAINTAINER                      = "$(ORG).org $(NAME) team <$(NAME)@$(ORG).org>"
 
-VERSION ?= $(eval VALD_VERSION := $(shell cat versions/VALD_VERSION))$(VALD_VERSION)
+VERSION ?= $(eval VERSION := $(shell cat versions/VALD_VERSION))$(VERSION)
 
 NGT_VERSION := $(eval NGT_VERSION := $(shell cat versions/NGT_VERSION))$(NGT_VERSION)
 NGT_REPO = github.com/yahoojapan/NGT
@@ -58,11 +58,11 @@ TENSORFLOW_C_VERSION := $(eval TENSORFLOW_C_VERSION := $(shell cat versions/TENS
 
 OPERATOR_SDK_VERSION := $(eval OPERATOR_SDK_VERSION := $(shell cat versions/OPERATOR_SDK_VERSION))$(OPERATOR_SDK_VERSION)
 
-KIND_VERSION         ?= v0.9.0
-HELM_VERSION         ?= v3.5.0
+KIND_VERSION         ?= v0.10.0
+HELM_VERSION         ?= v3.5.2
 HELM_DOCS_VERSION    ?= 1.5.0
-VALDCLI_VERSION      ?= v0.0.66
-TELEPRESENCE_VERSION ?= 0.108
+VALDCLI_VERSION      ?= v1.0.2
+TELEPRESENCE_VERSION ?= 0.109
 KUBELINTER_VERSION   ?= 0.1.6
 
 SWAP_DEPLOYMENT_TYPE ?= deployment
@@ -270,11 +270,6 @@ help:
 	{ lastLine = $$0 }' $(MAKELISTS) | sort -u
 	@printf "\n"
 
-.PHONY: version
-## print vald version
-version:
-	@echo $(VERSION)
-
 .PHONY: all
 ## execute clean and deps
 all: clean deps
@@ -282,6 +277,7 @@ all: clean deps
 .PHONY: clean
 ## clean
 clean:
+	rm -rf vendor
 	go clean -cache -modcache -testcache -i -r
 	mv ./apis/grpc/v1/vald/vald.go $(TEMP_DIR)/vald.go
 	rm -rf \
@@ -391,10 +387,15 @@ goimports/install:
 prettier/install:
 	type prettier || npm install -g prettier
 
+.PHONY: version
+## print vald version
+version: \
+	version/vald
+
 .PHONY: version/vald
 ## print vald version
 version/vald:
-	@echo $(VALD_VERSION)
+	@echo $(VERSION)
 
 .PHONY: version/go
 ## print go version
@@ -469,7 +470,7 @@ changelog/update:
 ## print next changelog entry
 changelog/next/print:
 	@cat hack/CHANGELOG.template.md | \
-	    sed -e 's/{{ version }}/$(VALD_VERSION)/g'
+	    sed -e 's/{{ version }}/$(VERSION)/g'
 	@echo "$$BODY"
 
 include Makefile.d/bench.mk

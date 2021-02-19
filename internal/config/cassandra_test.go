@@ -50,7 +50,7 @@ func TestCassandra_Bind(t *testing.T) {
 		MaxRoutingKeyInfo        int
 		PageSize                 int
 		TLS                      *TLS
-		TCP                      *TCP
+		Net                      *Net
 		EnableHostVerification   bool
 		DefaultTimestamp         bool
 		ReconnectInterval        string
@@ -111,7 +111,7 @@ func TestCassandra_Bind(t *testing.T) {
 		           MaxRoutingKeyInfo: 0,
 		           PageSize: 0,
 		           TLS: TLS{},
-		           TCP: TCP{},
+		           Net: Net{},
 		           EnableHostVerification: false,
 		           DefaultTimestamp: false,
 		           ReconnectInterval: "",
@@ -160,7 +160,7 @@ func TestCassandra_Bind(t *testing.T) {
 		           MaxRoutingKeyInfo: 0,
 		           PageSize: 0,
 		           TLS: TLS{},
-		           TCP: TCP{},
+		           Net: Net{},
 		           EnableHostVerification: false,
 		           DefaultTimestamp: false,
 		           ReconnectInterval: "",
@@ -220,7 +220,7 @@ func TestCassandra_Bind(t *testing.T) {
 				MaxRoutingKeyInfo:        test.fields.MaxRoutingKeyInfo,
 				PageSize:                 test.fields.PageSize,
 				TLS:                      test.fields.TLS,
-				TCP:                      test.fields.TCP,
+				Net:                      test.fields.Net,
 				EnableHostVerification:   test.fields.EnableHostVerification,
 				DefaultTimestamp:         test.fields.DefaultTimestamp,
 				ReconnectInterval:        test.fields.ReconnectInterval,
@@ -270,7 +270,7 @@ func TestCassandra_Opts(t *testing.T) {
 		MaxRoutingKeyInfo        int
 		PageSize                 int
 		TLS                      *TLS
-		TCP                      *TCP
+		Net                      *Net
 		EnableHostVerification   bool
 		DefaultTimestamp         bool
 		ReconnectInterval        string
@@ -335,7 +335,7 @@ func TestCassandra_Opts(t *testing.T) {
 		           MaxRoutingKeyInfo: 0,
 		           PageSize: 0,
 		           TLS: TLS{},
-		           TCP: TCP{},
+		           Net: Net{},
 		           EnableHostVerification: false,
 		           DefaultTimestamp: false,
 		           ReconnectInterval: "",
@@ -384,7 +384,7 @@ func TestCassandra_Opts(t *testing.T) {
 		           MaxRoutingKeyInfo: 0,
 		           PageSize: 0,
 		           TLS: TLS{},
-		           TCP: TCP{},
+		           Net: Net{},
 		           EnableHostVerification: false,
 		           DefaultTimestamp: false,
 		           ReconnectInterval: "",
@@ -444,7 +444,7 @@ func TestCassandra_Opts(t *testing.T) {
 				MaxRoutingKeyInfo:        test.fields.MaxRoutingKeyInfo,
 				PageSize:                 test.fields.PageSize,
 				TLS:                      test.fields.TLS,
-				TCP:                      test.fields.TCP,
+				Net:                      test.fields.Net,
 				EnableHostVerification:   test.fields.EnableHostVerification,
 				DefaultTimestamp:         test.fields.DefaultTimestamp,
 				ReconnectInterval:        test.fields.ReconnectInterval,

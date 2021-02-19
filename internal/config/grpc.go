@@ -19,8 +19,8 @@ package config
 
 import (
 	"github.com/vdaas/vald/internal/backoff"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
-	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/tls"
 )
 
@@ -55,7 +55,7 @@ type DialOption struct {
 	EnableBackoff               bool                 `json:"enable_backoff" yaml:"enable_backoff"`
 	Insecure                    bool                 `json:"insecure" yaml:"insecure"`
 	Timeout                     string               `json:"timeout" yaml:"timeout"`
-	TCP                         *TCP                 `json:"tcp" yaml:"tcp"`
+	Net                         *Net                 `json:"net" yaml:"net"`
 	KeepAlive                   *GRPCClientKeepalive `json:"keep_alive" yaml:"keep_alive"`
 }
 
@@ -188,14 +188,14 @@ func (g *GRPCClient) Opts() []grpc.Option {
 			grpc.WithDialTimeout(g.DialOption.Timeout),
 		)
 
-		if g.DialOption.TCP != nil &&
-			len(g.DialOption.TCP.Dialer.Timeout) != 0 {
-			if g.DialOption.TCP.TLS != nil && g.DialOption.TCP.TLS.Enabled {
+		if g.DialOption.Net != nil &&
+			len(g.DialOption.Net.Dialer.Timeout) != 0 {
+			if g.DialOption.Net.TLS != nil && g.DialOption.Net.TLS.Enabled {
 				opts = append(opts,
 					grpc.WithInsecure(false),
 				)
 			}
-			der, err := tcp.NewDialer(g.DialOption.TCP.Opts()...)
+			der, err := net.NewDialer(g.DialOption.Net.Opts()...)
 			if err == nil {
 				opts = append(opts,
 					grpc.WithDialer(der),

@@ -22,6 +22,7 @@ import (
 	"crypto/x509"
 	stderrs "errors"
 	"fmt"
+	"net"
 	"reflect"
 	"testing"
 
@@ -505,6 +506,82 @@ func Test_newCredential(t *testing.T) {
 
 			gotC, err := newCredential(test.args.opts...)
 			if err := test.checkFunc(test.want, gotC, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestClient(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		conn   net.Conn
+		config *Config
+	}
+	type want struct {
+		want *Conn
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *Conn) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got *Conn) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           conn: nil,
+		           config: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           conn: nil,
+		           config: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := Client(test.args.conn, test.args.config)
+			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

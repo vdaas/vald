@@ -30,7 +30,6 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
-	"github.com/vdaas/vald/internal/net/tcp"
 	"go.uber.org/goleak"
 )
 
@@ -142,7 +141,9 @@ func Test_mySQLClient_Open(t *testing.T) {
 	type fields struct {
 		db                   string
 		host                 string
-		port                 int
+		port                 uint16
+		network              string
+		socketPath           string
 		user                 string
 		pass                 string
 		name                 string
@@ -151,7 +152,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 		initialPingTimeLimit time.Duration
 		initialPingDuration  time.Duration
 		connMaxLifeTime      time.Duration
-		dialer               tcp.Dialer
+		dialer               net.Dialer
 		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
 		tlsConfig            *tls.Config
 		maxOpenConns         int
@@ -231,7 +232,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 			}
 		}(),
 		func() test {
-			dialer, _ := tcp.NewDialer()
+			dialer, _ := net.NewDialer()
 			dialerFunc := dialer.GetDialer()
 			return test{
 				name: "Open success with dialer when no error occurs",
@@ -292,6 +293,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 				},
 				fields: fields{
 					db:                   "vdaas",
+					network:              "unixgram",
 					host:                 "vald.com",
 					port:                 3306,
 					user:                 "vdaas",
@@ -328,8 +330,10 @@ func Test_mySQLClient_Open(t *testing.T) {
 				},
 				fields: fields{
 					db:                   "vdaas",
-					host:                 "vald.com",
-					port:                 3306,
+					network:              "unix",
+					socketPath:           "/tmp/mysql.sock",
+					host:                 "",
+					port:                 0,
 					user:                 "vdaas",
 					pass:                 "vald",
 					name:                 "vald-user",
@@ -389,6 +393,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 			}
 			m := &mySQLClient{
 				db:                   test.fields.db,
+				network:              test.fields.network,
 				host:                 test.fields.host,
 				port:                 test.fields.port,
 				user:                 test.fields.user,
@@ -650,7 +655,7 @@ func Test_mySQLClient_GetVector(t *testing.T) {
 		initialPingTimeLimit time.Duration
 		initialPingDuration  time.Duration
 		connMaxLifeTime      time.Duration
-		dialer               tcp.Dialer
+		dialer               net.Dialer
 		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
 		tlsConfig            *tls.Config
 		maxOpenConns         int

@@ -19,6 +19,7 @@ package pool
 
 import (
 	"context"
+	"net"
 	"sync"
 	"testing"
 
@@ -26,7 +27,6 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/level"
-	"github.com/vdaas/vald/internal/net"
 	"google.golang.org/grpc"
 )
 
