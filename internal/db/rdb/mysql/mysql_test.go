@@ -142,6 +142,8 @@ func Test_mySQLClient_Open(t *testing.T) {
 		db                   string
 		host                 string
 		port                 uint16
+		network              string
+		socketPath           string
 		user                 string
 		pass                 string
 		name                 string
@@ -291,6 +293,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 				},
 				fields: fields{
 					db:                   "vdaas",
+					network:              "unixgram",
 					host:                 "vald.com",
 					port:                 3306,
 					user:                 "vdaas",
@@ -327,8 +330,10 @@ func Test_mySQLClient_Open(t *testing.T) {
 				},
 				fields: fields{
 					db:                   "vdaas",
-					host:                 "vald.com",
-					port:                 3306,
+					network:              "unix",
+					socketPath:           "/tmp/mysql.sock",
+					host:                 "",
+					port:                 0,
 					user:                 "vdaas",
 					pass:                 "vald",
 					name:                 "vald-user",
@@ -388,6 +393,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 			}
 			m := &mySQLClient{
 				db:                   test.fields.db,
+				network:              test.fields.network,
 				host:                 test.fields.host,
 				port:                 test.fields.port,
 				user:                 test.fields.user,

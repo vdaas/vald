@@ -113,25 +113,21 @@ func (m *mySQLClient) Open(ctx context.Context) (err error) {
 		addParam += "&tls=" + tlsConfName
 	}
 
-	conn, err := m.dbr.Open(
-		m.db,
-		fmt.Sprintf(
-			"%s:%s@%s(%s)/%s?charset=%s&parseTime=true&loc=%s%s",
-			m.user, m.pass, m.network,
-			func() string {
-				switch net.NetworkTypeFromString(m.network) {
-				case net.UNIX, net.UNIXGRAM, net.UNIXPACKET:
-					if len(m.socketPath) != 0 {
-						return m.socketPath
-					}
-				}
-				return net.JoinHostPort(m.host, m.port)
-			}(),
-			m.name,
-			m.charset, m.timezone, addParam,
-		),
-		m.eventReceiver,
-	)
+	var addr, network string
+	nt := net.NetworkTypeFromString(m.network)
+	if len(m.socketPath) != 0 && (nt == net.UNIX ||
+		nt == net.UNIXGRAM ||
+		nt == net.UNIXPACKET) {
+		network = net.UNIX.String()
+		addr = m.socketPath
+	} else {
+		network = net.TCP.String()
+		addr = net.JoinHostPort(m.host, m.port)
+	}
+	conn, err := m.dbr.Open(m.db, fmt.Sprintf(
+		"%s:%s@%s(%s)/%s?charset=%s&parseTime=true&loc=%s%s",
+		m.user, m.pass, network, addr, m.name, m.charset, m.timezone, addParam),
+		m.eventReceiver)
 	if err != nil {
 		return err
 	}
