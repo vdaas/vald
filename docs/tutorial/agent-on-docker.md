@@ -111,7 +111,7 @@ This chapter will use NGT for the core engine of Vald Agent.
       # auto_save_index_duration should be 30m-60m for production use. The below setting is a just example.
       auto_save_index_duration: 90s
       # The maximum limit duration for an initial delay
-      # initial_delay_max_duration should be 3m-5m for production use. Below setting is a just example.
+      # initial_delay_max_duration should be 3m-5m for production use. The below setting is a just example.
       initial_delay_max_duration: 60s
     EOF
     ```
