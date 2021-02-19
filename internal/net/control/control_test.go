@@ -14,35 +14,36 @@
 // limitations under the License.
 //
 
-// Package config providers configuration type and load configuration logic
-package config
+// Package control provides network socket option
+package control
 
 import (
 	"reflect"
+	"syscall"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/net/tcp"
+	"go.uber.org/goleak"
 )
 
-func TestDNS_Bind(t *testing.T) {
-	type fields struct {
-		CacheEnabled    bool
-		RefreshDuration string
-		CacheExpiration string
+func TestNew(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		flag      SocketFlag
+		keepAlive int
 	}
 	type want struct {
-		want *DNS
+		want SocketController
 	}
 	type test struct {
 		name       string
-		fields     fields
+		args       args
 		want       want
-		checkFunc  func(want, *DNS) error
-		beforeFunc func()
-		afterFunc  func()
+		checkFunc  func(want, SocketController) error
+		beforeFunc func(args)
+		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *DNS) error {
+	defaultCheckFunc := func(w want, got SocketController) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -53,10 +54,9 @@ func TestDNS_Bind(t *testing.T) {
 		/*
 		   {
 		       name: "test_case_1",
-		       fields: fields {
-		           CacheEnabled: false,
-		           RefreshDuration: "",
-		           CacheExpiration: "",
+		       args: args {
+		           flag: nil,
+		           keepAlive: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -68,10 +68,9 @@ func TestDNS_Bind(t *testing.T) {
 		   func() test {
 		       return test {
 		           name: "test_case_2",
-		           fields: fields {
-		           CacheEnabled: false,
-		           RefreshDuration: "",
-		           CacheExpiration: "",
+		           args: args {
+		           flag: nil,
+		           keepAlive: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -80,24 +79,22 @@ func TestDNS_Bind(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			d := &DNS{
-				CacheEnabled:    test.fields.CacheEnabled,
-				RefreshDuration: test.fields.RefreshDuration,
-				CacheExpiration: test.fields.CacheExpiration,
-			}
 
-			got := d.Bind()
+			got := New(test.args.flag, test.args.keepAlive)
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -105,24 +102,23 @@ func TestDNS_Bind(t *testing.T) {
 	}
 }
 
-func TestDialer_Bind(t *testing.T) {
-	type fields struct {
-		Timeout          string
-		KeepAlive        string
-		DualStackEnabled bool
+func Test_boolint(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		b bool
 	}
 	type want struct {
-		want *Dialer
+		want int
 	}
 	type test struct {
 		name       string
-		fields     fields
+		args       args
 		want       want
-		checkFunc  func(want, *Dialer) error
-		beforeFunc func()
-		afterFunc  func()
+		checkFunc  func(want, int) error
+		beforeFunc func(args)
+		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *Dialer) error {
+	defaultCheckFunc := func(w want, got int) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -133,10 +129,8 @@ func TestDialer_Bind(t *testing.T) {
 		/*
 		   {
 		       name: "test_case_1",
-		       fields: fields {
-		           Timeout: "",
-		           KeepAlive: "",
-		           DualStackEnabled: false,
+		       args: args {
+		           b: false,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -148,10 +142,8 @@ func TestDialer_Bind(t *testing.T) {
 		   func() test {
 		       return test {
 		           name: "test_case_2",
-		           fields: fields {
-		           Timeout: "",
-		           KeepAlive: "",
-		           DualStackEnabled: false,
+		           args: args {
+		           b: false,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -160,24 +152,22 @@ func TestDialer_Bind(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			d := &Dialer{
-				Timeout:          test.fields.Timeout,
-				KeepAlive:        test.fields.KeepAlive,
-				DualStackEnabled: test.fields.DualStackEnabled,
-			}
 
-			got := d.Bind()
+			got := boolint(test.args.b)
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -185,24 +175,23 @@ func TestDialer_Bind(t *testing.T) {
 	}
 }
 
-func TestTCP_Bind(t *testing.T) {
-	type fields struct {
-		DNS    *DNS
-		Dialer *Dialer
-		TLS    *TLS
+func Test_isTCP(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		network string
 	}
 	type want struct {
-		want *TCP
+		want bool
 	}
 	type test struct {
 		name       string
-		fields     fields
+		args       args
 		want       want
-		checkFunc  func(want, *TCP) error
-		beforeFunc func()
-		afterFunc  func()
+		checkFunc  func(want, bool) error
+		beforeFunc func(args)
+		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *TCP) error {
+	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -213,10 +202,8 @@ func TestTCP_Bind(t *testing.T) {
 		/*
 		   {
 		       name: "test_case_1",
-		       fields: fields {
-		           DNS: DNS{},
-		           Dialer: Dialer{},
-		           TLS: TLS{},
+		       args: args {
+		           network: "",
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -228,10 +215,8 @@ func TestTCP_Bind(t *testing.T) {
 		   func() test {
 		       return test {
 		           name: "test_case_2",
-		           fields: fields {
-		           DNS: DNS{},
-		           Dialer: Dialer{},
-		           TLS: TLS{},
+		           args: args {
+		           network: "",
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -240,24 +225,22 @@ func TestTCP_Bind(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			t := &TCP{
-				DNS:    test.fields.DNS,
-				Dialer: test.fields.Dialer,
-				TLS:    test.fields.TLS,
-			}
 
-			got := t.Bind()
+			got := isTCP(test.args.network)
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -265,24 +248,32 @@ func TestTCP_Bind(t *testing.T) {
 	}
 }
 
-func TestTCP_Opts(t *testing.T) {
+func Test_control_GetControl(t *testing.T) {
+	t.Parallel()
 	type fields struct {
-		DNS    *DNS
-		Dialer *Dialer
-		TLS    *TLS
+		reusePort                bool
+		reuseAddr                bool
+		tcpFastOpen              bool
+		tcpNoDelay               bool
+		tcpCork                  bool
+		tcpQuickAck              bool
+		tcpDeferAccept           bool
+		ipTransparent            bool
+		ipRecoverDestinationAddr bool
+		keepAlive                int
 	}
 	type want struct {
-		want []tcp.DialerOption
+		want func(network, addr string, c syscall.RawConn) (err error)
 	}
 	type test struct {
 		name       string
 		fields     fields
 		want       want
-		checkFunc  func(want, []tcp.DialerOption) error
+		checkFunc  func(want, func(network, addr string, c syscall.RawConn) (err error)) error
 		beforeFunc func()
 		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want, got []tcp.DialerOption) error {
+	defaultCheckFunc := func(w want, got func(network, addr string, c syscall.RawConn) (err error)) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -294,9 +285,16 @@ func TestTCP_Opts(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
-		           DNS: DNS{},
-		           Dialer: Dialer{},
-		           TLS: TLS{},
+		           reusePort: false,
+		           reuseAddr: false,
+		           tcpFastOpen: false,
+		           tcpNoDelay: false,
+		           tcpCork: false,
+		           tcpQuickAck: false,
+		           tcpDeferAccept: false,
+		           ipTransparent: false,
+		           ipRecoverDestinationAddr: false,
+		           keepAlive: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -309,9 +307,16 @@ func TestTCP_Opts(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
-		           DNS: DNS{},
-		           Dialer: Dialer{},
-		           TLS: TLS{},
+		           reusePort: false,
+		           reuseAddr: false,
+		           tcpFastOpen: false,
+		           tcpNoDelay: false,
+		           tcpCork: false,
+		           tcpQuickAck: false,
+		           tcpDeferAccept: false,
+		           ipTransparent: false,
+		           ipRecoverDestinationAddr: false,
+		           keepAlive: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -320,8 +325,11 @@ func TestTCP_Opts(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -331,13 +339,20 @@ func TestTCP_Opts(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			t := &TCP{
-				DNS:    test.fields.DNS,
-				Dialer: test.fields.Dialer,
-				TLS:    test.fields.TLS,
+			ctrl := &control{
+				reusePort:                test.fields.reusePort,
+				reuseAddr:                test.fields.reuseAddr,
+				tcpFastOpen:              test.fields.tcpFastOpen,
+				tcpNoDelay:               test.fields.tcpNoDelay,
+				tcpCork:                  test.fields.tcpCork,
+				tcpQuickAck:              test.fields.tcpQuickAck,
+				tcpDeferAccept:           test.fields.tcpDeferAccept,
+				ipTransparent:            test.fields.ipTransparent,
+				ipRecoverDestinationAddr: test.fields.ipRecoverDestinationAddr,
+				keepAlive:                test.fields.keepAlive,
 			}
 
-			got := t.Opts()
+			got := ctrl.GetControl()
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}

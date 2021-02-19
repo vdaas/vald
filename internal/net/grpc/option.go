@@ -24,8 +24,8 @@ import (
 
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
-	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/timeutil"
 	"google.golang.org/grpc"
 	gbackoff "google.golang.org/grpc/backoff"
@@ -319,13 +319,15 @@ func WithKeepaliveParams(t, to string, permitWithoutStream bool) Option {
 	}
 }
 
-func WithDialer(der tcp.Dialer) Option {
+func WithDialer(der net.Dialer) Option {
 	return func(g *gRPCClient) {
 		if der != nil {
 			g.dialer = der
 			g.dopts = append(g.dopts,
 				grpc.WithContextDialer(func(ctx context.Context, addr string) (net.Conn, error) {
-					return der.GetDialer()(ctx, "tcp", addr)
+					// TODO we need change network type dynamically
+					log.Debugf("grpc Context Dialer addr is %s", addr)
+					return der.GetDialer()(ctx, net.TCP.String(), addr)
 				}),
 			)
 		}

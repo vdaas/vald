@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-// Package tcp provides tcp option
-package tcp
+// Package net provides net functionality for vald's network connection
+package net
 
 import (
 	"context"
@@ -23,10 +23,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math"
-	stdnet "net"
+	"net"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"reflect"
 	"strconv"
 	"strings"
@@ -41,22 +40,9 @@ import (
 	"github.com/vdaas/vald/internal/cache/gache"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/tls"
 	"go.uber.org/goleak"
 )
-
-var goleakIgnoreOptions = []goleak.Option{
-	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
-	goleak.IgnoreTopFunction("internal/poll.runtime_pollWait"),
-	goleak.IgnoreTopFunction("net._C2func_getaddrinfo"),
-}
-
-func TestMain(m *testing.M) {
-	log.Init()
-	os.Exit(m.Run())
-}
 
 func Test_dialerCache_IP(t *testing.T) {
 	type fields struct {
@@ -271,7 +257,7 @@ func TestNewDialer(t *testing.T) {
 		got := gotDer.(*dialer)
 		opts := []cmp.Option{
 			cmp.AllowUnexported(*want),
-			cmpopts.IgnoreFields(*want, "dialer", "der", "addrs", "eg", "dnsCachedOnce"),
+			cmpopts.IgnoreFields(*want, "dialer", "der", "addrs", "eg", "dnsCachedOnce", "ctrl"),
 			cmp.Comparer(func(x, y cache.Cache) bool {
 				if x == nil && y == nil {
 					return true
@@ -301,9 +287,8 @@ func TestNewDialer(t *testing.T) {
 				KeepAlive:     time.Second * 30,
 				FallbackDelay: time.Millisecond * 300,
 				DualStack:     true,
-				Control:       Control,
 			}
-			d.Resolver = &net.Resolver{
+			d.Resolver = &Resolver{
 				PreferGo: false,
 				Dial:     d.DialContext,
 			}
@@ -328,9 +313,8 @@ func TestNewDialer(t *testing.T) {
 				Timeout:   time.Second * 30,
 				KeepAlive: time.Second * 30,
 				DualStack: true,
-				Control:   Control,
 			}
-			d.Resolver = &net.Resolver{
+			d.Resolver = &Resolver{
 				PreferGo: false,
 				Dial:     d.DialContext,
 			}
@@ -371,9 +355,8 @@ func TestNewDialer(t *testing.T) {
 				Timeout:   time.Second * 30,
 				KeepAlive: time.Second * 30,
 				DualStack: true,
-				Control:   Control,
 			}
-			d.Resolver = &net.Resolver{
+			d.Resolver = &Resolver{
 				PreferGo: false,
 				Dial:     d.DialContext,
 			}
@@ -419,20 +402,20 @@ func TestNewDialer(t *testing.T) {
 
 func Test_dialer_GetDialer(t *testing.T) {
 	type fields struct {
-		dialer func(ctx context.Context, network, addr string) (net.Conn, error)
+		dialer func(ctx context.Context, network, addr string) (Conn, error)
 	}
 	type want struct {
-		want func(ctx context.Context, network, addr string) (net.Conn, error)
+		want func(ctx context.Context, network, addr string) (Conn, error)
 	}
 	type test struct {
 		name       string
 		fields     fields
 		want       want
-		checkFunc  func(want, func(ctx context.Context, network, addr string) (net.Conn, error)) error
+		checkFunc  func(want, func(ctx context.Context, network, addr string) (Conn, error)) error
 		beforeFunc func()
 		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want, got func(ctx context.Context, network, addr string) (net.Conn, error)) error {
+	defaultCheckFunc := func(w want, got func(ctx context.Context, network, addr string) (Conn, error)) error {
 		if reflect.ValueOf(w.want).Pointer() != reflect.ValueOf(got).Pointer() {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -440,7 +423,7 @@ func Test_dialer_GetDialer(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			fn := func(ctx context.Context, network, addr string) (net.Conn, error) {
+			fn := func(ctx context.Context, network, addr string) (Conn, error) {
 				return nil, nil
 			}
 			return test{
@@ -496,7 +479,7 @@ func Test_dialer_lookup(t *testing.T) {
 		dialerKeepAlive       time.Duration
 		dialerDualStack       bool
 		der                   *net.Dialer
-		dialer                func(ctx context.Context, network, addr string) (net.Conn, error)
+		dialer                func(ctx context.Context, network, addr string) (Conn, error)
 	}
 	type want struct {
 		want *dialerCache
@@ -530,7 +513,7 @@ func Test_dialer_lookup(t *testing.T) {
 			fields: fields{
 				cache: gache.New(),
 				der: &net.Dialer{
-					Resolver: &net.Resolver{
+					Resolver: &Resolver{
 						PreferGo: false,
 					},
 				},
@@ -555,7 +538,7 @@ func Test_dialer_lookup(t *testing.T) {
 			fields: fields{
 				cache: gache.New(),
 				der: &net.Dialer{
-					Resolver: &net.Resolver{
+					Resolver: &Resolver{
 						PreferGo: false,
 					},
 				},
@@ -606,7 +589,7 @@ func Test_dialer_lookup(t *testing.T) {
 					return g
 				}(),
 				der: &net.Dialer{
-					Resolver: &net.Resolver{
+					Resolver: &Resolver{
 						PreferGo: false,
 					},
 				},
@@ -670,7 +653,7 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 		dialerKeepAlive       time.Duration
 		dialerDualStack       bool
 		der                   *net.Dialer
-		dialer                func(ctx context.Context, network, addr string) (net.Conn, error)
+		dialer                func(ctx context.Context, network, addr string) (Conn, error)
 	}
 	type want struct{}
 	type test struct {
@@ -710,8 +693,7 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 						Timeout:   time.Minute,
 						KeepAlive: time.Minute,
 						DualStack: d.dialerDualStack,
-						Control:   Control,
-						Resolver: &net.Resolver{
+						Resolver: &Resolver{
 							PreferGo: false,
 							Dial:     d.dialer,
 						},
@@ -769,8 +751,7 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 						Timeout:   time.Minute,
 						KeepAlive: time.Minute,
 						DualStack: d.dialerDualStack,
-						Control:   Control,
-						Resolver: &net.Resolver{
+						Resolver: &Resolver{
 							PreferGo: false,
 							Dial:     d.dialer,
 						},
@@ -845,10 +826,10 @@ func Test_dialer_DialContext(t *testing.T) {
 		address string
 	}
 	type fields struct {
-		dialer func(ctx context.Context, network, addr string) (net.Conn, error)
+		dialer func(ctx context.Context, network, addr string) (Conn, error)
 	}
 	type want struct {
-		want net.Conn
+		want Conn
 		err  error
 	}
 	type test struct {
@@ -856,11 +837,11 @@ func Test_dialer_DialContext(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, net.Conn, error) error
+		checkFunc  func(want, Conn, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got net.Conn, err error) error {
+	defaultCheckFunc := func(w want, got Conn, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -878,7 +859,7 @@ func Test_dialer_DialContext(t *testing.T) {
 				address: "dummyAddress",
 			},
 			fields: fields{
-				dialer: func(ctx context.Context, network, addr string) (net.Conn, error) {
+				dialer: func(ctx context.Context, network, addr string) (Conn, error) {
 					if network == "dummyNetwork" && addr == "dummyAddress" {
 						return nil, nil
 					}
@@ -930,10 +911,10 @@ func Test_dialer_cachedDialer(t *testing.T) {
 		dialerKeepAlive       time.Duration
 		dialerDualStack       bool
 		der                   *net.Dialer
-		dialer                func(ctx context.Context, network, addr string) (net.Conn, error)
+		dialer                func(ctx context.Context, network, addr string) (Conn, error)
 	}
 	type want struct {
-		wantConn net.Conn
+		wantConn Conn
 		err      error
 	}
 	type test struct {
@@ -941,11 +922,11 @@ func Test_dialer_cachedDialer(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(*dialer, want, net.Conn, error) error
+		checkFunc  func(*dialer, want, Conn, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(d *dialer, w want, gotConn net.Conn, err error) error {
+	defaultCheckFunc := func(d *dialer, w want, gotConn Conn, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -959,17 +940,17 @@ func Test_dialer_cachedDialer(t *testing.T) {
 			name: "return conn",
 			args: args{
 				dctx:    context.Background(),
-				network: "tcp",
+				network: TCP.String(),
 				addr:    "google.com:80",
 			},
 			fields: fields{
 				der: &net.Dialer{
-					Resolver: &net.Resolver{
+					Resolver: &Resolver{
 						PreferGo: false,
 					},
 				},
 			},
-			checkFunc: func(d *dialer, w want, gotConn net.Conn, err error) error {
+			checkFunc: func(d *dialer, w want, gotConn Conn, err error) error {
 				if err != nil {
 					return errors.Errorf("err is not nil: %v", err)
 				}
@@ -984,18 +965,18 @@ func Test_dialer_cachedDialer(t *testing.T) {
 			name: "return tls conn",
 			args: args{
 				dctx:    context.Background(),
-				network: "tcp",
+				network: TCP.String(),
 				addr:    "google.com:443",
 			},
 			fields: fields{
 				der: &net.Dialer{
-					Resolver: &net.Resolver{
+					Resolver: &Resolver{
 						PreferGo: false,
 					},
 				},
 				tlsConfig: new(tls.Config),
 			},
-			checkFunc: func(d *dialer, w want, gotConn net.Conn, err error) error {
+			checkFunc: func(d *dialer, w want, gotConn Conn, err error) error {
 				if err != nil {
 					return errors.Errorf("err is not nil: %v", err)
 				}
@@ -1010,17 +991,17 @@ func Test_dialer_cachedDialer(t *testing.T) {
 			name: "returns error when missing port in address",
 			args: args{
 				dctx:    context.Background(),
-				network: "tcp",
+				network: TCP.String(),
 				addr:    "addr",
 			},
 			fields: fields{
 				der: &net.Dialer{
-					Resolver: &net.Resolver{
+					Resolver: &Resolver{
 						PreferGo: false,
 					},
 				},
 			},
-			checkFunc: func(d *dialer, w want, gotConn net.Conn, err error) error {
+			checkFunc: func(d *dialer, w want, gotConn Conn, err error) error {
 				if err == nil {
 					return errors.New("err is nil")
 				}
@@ -1036,7 +1017,8 @@ func Test_dialer_cachedDialer(t *testing.T) {
 			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(200)
 			}))
-			host, port, _ := net.SplitHostPort(srv.URL[len("http://"):])
+
+			host, port, _ := SplitHostPort(strings.TrimPrefix(strings.TrimPrefix(srv.URL, "https://"), "http://"))
 
 			addr := "invalid_ip"
 
@@ -1052,19 +1034,19 @@ func Test_dialer_cachedDialer(t *testing.T) {
 				name: "return cached ip connection",
 				args: args{
 					dctx:    context.Background(),
-					network: "tcp",
+					network: TCP.String(),
 					addr:    addr + ":" + strconv.FormatUint(uint64(port), 10),
 				},
 				fields: fields{
 					der: &net.Dialer{
-						Resolver: &net.Resolver{
+						Resolver: &Resolver{
 							PreferGo: false,
 						},
 					},
 					cache:    cache,
 					dnsCache: true,
 				},
-				checkFunc: func(d *dialer, w want, gotConn net.Conn, err error) error {
+				checkFunc: func(d *dialer, w want, gotConn Conn, err error) error {
 					if err != nil {
 						return errors.New("err is not nil")
 					}
@@ -1086,7 +1068,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 			srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(200)
 			}))
-			host, port, _ := net.SplitHostPort(srv.URL[len("https://"):])
+			host, port, _ := SplitHostPort(strings.TrimPrefix(strings.TrimPrefix(srv.URL, "https://"), "http://"))
 
 			addr := host + ":" + strconv.FormatUint(uint64(port), 10)
 			// set the hostname 'invalid_ip' to the host name of the cache with the test server ip address
@@ -1105,12 +1087,12 @@ func Test_dialer_cachedDialer(t *testing.T) {
 				name: "return cached ip tls connection",
 				args: args{
 					dctx:    context.Background(),
-					network: "tcp",
+					network: TCP.String(),
 					addr:    addr,
 				},
 				fields: fields{
 					der: &net.Dialer{
-						Resolver: &net.Resolver{
+						Resolver: &Resolver{
 							PreferGo: false,
 						},
 					},
@@ -1119,7 +1101,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 					// tlsConfig: srv.Config.TLSConfig,
 					tlsConfig: tcfg,
 				},
-				checkFunc: func(d *dialer, w want, gotConn net.Conn, err error) error {
+				checkFunc: func(d *dialer, w want, gotConn Conn, err error) error {
 					if err != nil {
 						return errors.Wrap(err, "err is not nil")
 					}
@@ -1151,19 +1133,19 @@ func Test_dialer_cachedDialer(t *testing.T) {
 				name: "remove cache when dial failed",
 				args: args{
 					dctx:    context.Background(),
-					network: "tcp",
+					network: TCP.String(),
 					addr:    addr + ":80",
 				},
 				fields: fields{
 					der: &net.Dialer{
-						Resolver: &net.Resolver{
+						Resolver: &Resolver{
 							PreferGo: false,
 						},
 					},
 					cache:    cache,
 					dnsCache: true,
 				},
-				checkFunc: func(d *dialer, w want, gotConn net.Conn, err error) error {
+				checkFunc: func(d *dialer, w want, gotConn Conn, err error) error {
 					if err == nil {
 						return errors.New("err is nil")
 					}
@@ -1192,19 +1174,19 @@ func Test_dialer_cachedDialer(t *testing.T) {
 				name: "retry when cache invalid and cache will be deleted",
 				args: args{
 					dctx:    context.Background(),
-					network: "tcp",
+					network: TCP.String(),
 					addr:    addr + ":80",
 				},
 				fields: fields{
 					der: &net.Dialer{
-						Resolver: &net.Resolver{
+						Resolver: &Resolver{
 							PreferGo: false,
 						},
 					},
 					cache:    cache,
 					dnsCache: true,
 				},
-				checkFunc: func(d *dialer, w want, gotConn net.Conn, err error) error {
+				checkFunc: func(d *dialer, w want, gotConn Conn, err error) error {
 					if err != nil {
 						return errors.Errorf("err is not nil: %v", err)
 					}
@@ -1233,7 +1215,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 					w.WriteHeader(200)
 				})
 				srvs = append(srvs, httptest.NewServer(hf))
-				h, p, _ := net.SplitHostPort(srvs[i].URL[len("http://"):])
+				h, p, _ := SplitHostPort(strings.TrimPrefix(strings.TrimPrefix(srvs[i].URL, "https://"), "http://"))
 				hosts = append(hosts, h)
 				ports = append(ports, fmt.Sprint(p))
 			}
@@ -1249,23 +1231,23 @@ func Test_dialer_cachedDialer(t *testing.T) {
 				name: "return cached ip connection in round robin order",
 				args: args{
 					dctx:    context.Background(),
-					network: "tcp",
-					addr:    addr + ":" + ports[0],
+					network: TCP.String(),
+					addr:    net.JoinHostPort(addr, ports[0]),
 				},
 				fields: fields{
 					der: &net.Dialer{
-						Resolver: &net.Resolver{
+						Resolver: &Resolver{
 							PreferGo: false,
 						},
 					},
 					cache:    cache,
 					dnsCache: true,
 				},
-				checkFunc: func(d *dialer, w want, gotConn net.Conn, err error) error {
+				checkFunc: func(d *dialer, w want, gotConn Conn, err error) error {
 					c, _ := d.cache.Get(addr)
 					dc := c.(*dialerCache)
 
-					check := func(gotConn net.Conn, gotErr error, cnt int, port string, srvContent string) error {
+					check := func(gotConn Conn, gotErr error, cnt int, port string, srvContent string) error {
 						defer func() {
 							_ = gotConn.Close()
 						}()
@@ -1304,7 +1286,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 
 					// check all the connection
 					for i := 1; i < srvNums; i++ {
-						c, e := d.cachedDialer(context.Background(), "tcp", addr+":"+ports[i])
+						c, e := d.cachedDialer(context.Background(), TCP.String(), net.JoinHostPort(addr, ports[i]))
 						srvContent := fmt.Sprint(i)
 						if err := check(c, e, i+1, ports[i], srvContent); err != nil {
 							return err
@@ -1314,7 +1296,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 					// check all the connections again and it should start with index 0,
 					// and the count should not be reset
 					for i := 0; i < srvNums; i++ {
-						c, e := d.cachedDialer(context.Background(), "tcp", addr+":"+ports[i])
+						c, e := d.cachedDialer(context.Background(), TCP.String(), net.JoinHostPort(addr, ports[i]))
 						cnt := srvNums + i + 1
 						srvContent := fmt.Sprint(i)
 						if err := check(c, e, cnt, ports[i], srvContent); err != nil {
@@ -1351,19 +1333,19 @@ func Test_dialer_cachedDialer(t *testing.T) {
 				name: "reset cache count when it is  overflow",
 				args: args{
 					dctx:    context.Background(),
-					network: "tcp",
+					network: TCP.String(),
 					addr:    addr + ":" + fmt.Sprint(port),
 				},
 				fields: fields{
 					der: &net.Dialer{
-						Resolver: &net.Resolver{
+						Resolver: &Resolver{
 							PreferGo: false,
 						},
 					},
 					cache:    cache,
 					dnsCache: true,
 				},
-				checkFunc: func(d *dialer, w want, gotConn net.Conn, err error) error {
+				checkFunc: func(d *dialer, w want, gotConn Conn, err error) error {
 					if err != nil {
 						return errors.Errorf("err is not nil: %v", err)
 					}
@@ -1432,7 +1414,7 @@ func Test_dialer_dial(t *testing.T) {
 		der       *net.Dialer
 	}
 	type want struct {
-		want net.Conn
+		want Conn
 		err  error
 	}
 	type test struct {
@@ -1440,11 +1422,11 @@ func Test_dialer_dial(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, net.Conn, error) error
+		checkFunc  func(want, Conn, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got net.Conn, err error) error {
+	defaultCheckFunc := func(w want, got Conn, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -1458,7 +1440,7 @@ func Test_dialer_dial(t *testing.T) {
 			name: "return conn",
 			args: args{
 				ctx:     context.Background(),
-				network: "tcp",
+				network: TCP.String(),
 				addr:    "google.com:80",
 			},
 			fields: fields{
@@ -1474,7 +1456,7 @@ func Test_dialer_dial(t *testing.T) {
 			name: "return tls conn",
 			args: args{
 				ctx:     context.Background(),
-				network: "tcp",
+				network: TCP.String(),
 				addr:    "google.com:443",
 			},
 			fields: fields{
@@ -1490,7 +1472,7 @@ func Test_dialer_dial(t *testing.T) {
 			name: "return error if invalid address",
 			args: args{
 				ctx:     context.Background(),
-				network: "tcp",
+				network: TCP.String(),
 				addr:    "invalid_address",
 			},
 			fields: fields{
@@ -1501,7 +1483,7 @@ func Test_dialer_dial(t *testing.T) {
 					DualStack: true,
 				},
 			},
-			checkFunc: func(w want, got net.Conn, err error) error {
+			checkFunc: func(w want, got Conn, err error) error {
 				if !errors.Is(err, w.err) {
 					return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 				}
@@ -1512,14 +1494,14 @@ func Test_dialer_dial(t *testing.T) {
 				return nil
 			},
 			want: want{
-				err: &stdnet.AddrError{Err: "missing port in address", Addr: "invalid_address"},
+				err: &net.AddrError{Err: "missing port in address", Addr: "invalid_address"},
 			},
 		},
 		{
 			name: "return error if empty address",
 			args: args{
 				ctx:     context.Background(),
-				network: "tcp",
+				network: TCP.String(),
 			},
 			fields: fields{
 				tlsConfig: nil,
@@ -1529,7 +1511,7 @@ func Test_dialer_dial(t *testing.T) {
 					DualStack: true,
 				},
 			},
-			checkFunc: func(w want, got net.Conn, err error) error {
+			checkFunc: func(w want, got Conn, err error) error {
 				if !errors.Is(err, w.err) {
 					return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 				}
@@ -1557,7 +1539,7 @@ func Test_dialer_dial(t *testing.T) {
 					DualStack: true,
 				},
 			},
-			checkFunc: func(w want, got net.Conn, err error) error {
+			checkFunc: func(w want, got Conn, err error) error {
 				if !errors.Is(err, w.err) {
 					return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 				}
@@ -1568,7 +1550,7 @@ func Test_dialer_dial(t *testing.T) {
 				return nil
 			},
 			want: want{
-				err: stdnet.UnknownNetworkError("invalid"),
+				err: net.UnknownNetworkError("invalid"),
 			},
 		},
 		{
@@ -1584,7 +1566,7 @@ func Test_dialer_dial(t *testing.T) {
 					DualStack: true,
 				},
 			},
-			checkFunc: func(w want, got net.Conn, err error) error {
+			checkFunc: func(w want, got Conn, err error) error {
 				if !errors.Is(err, w.err) {
 					return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 				}
@@ -1595,7 +1577,7 @@ func Test_dialer_dial(t *testing.T) {
 				return nil
 			},
 			want: want{
-				err: stdnet.UnknownNetworkError(""),
+				err: net.UnknownNetworkError(""),
 			},
 		},
 	}
@@ -1643,7 +1625,7 @@ func Test_dialer_cacheExpireHook(t *testing.T) {
 		dialerKeepAlive       time.Duration
 		dialerDualStack       bool
 		der                   *net.Dialer
-		dialer                func(ctx context.Context, network, addr string) (net.Conn, error)
+		dialer                func(ctx context.Context, network, addr string) (Conn, error)
 	}
 	type want struct{}
 	type test struct {
@@ -1679,8 +1661,7 @@ func Test_dialer_cacheExpireHook(t *testing.T) {
 						Timeout:   time.Minute,
 						KeepAlive: time.Minute,
 						DualStack: d.dialerDualStack,
-						Control:   Control,
-						Resolver: &net.Resolver{
+						Resolver: &Resolver{
 							PreferGo: false,
 							Dial:     d.dialer,
 						},
@@ -1737,7 +1718,7 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx  context.Context
-		conn net.Conn
+		conn Conn
 		addr string
 	}
 	type fields struct {
@@ -1755,7 +1736,7 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 		dialerDualStack       bool
 		addrs                 sync.Map
 		der                   *net.Dialer
-		dialer                func(ctx context.Context, network, addr string) (net.Conn, error)
+		dialer                func(ctx context.Context, network, addr string) (Conn, error)
 		eg                    errgroup.Group
 	}
 	type want struct {

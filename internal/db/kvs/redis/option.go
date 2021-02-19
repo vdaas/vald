@@ -24,7 +24,6 @@ import (
 
 	redis "github.com/go-redis/redis/v8"
 	"github.com/vdaas/vald/internal/net"
-	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
@@ -34,7 +33,7 @@ type Option func(*redisClient) error
 var defaultOptions = []Option{
 	WithInitialPingDuration("30ms"),
 	WithInitialPingTimeLimit("5m"),
-	WithNetwork("tcp"),
+	WithNetwork(net.TCP.String()),
 }
 
 // WithNetwork returns the option to set the network like tcp or unix.
@@ -48,7 +47,7 @@ func WithNetwork(network string) Option {
 }
 
 // WithDialer returns the option to set the dialer.
-func WithDialer(der tcp.Dialer) Option {
+func WithDialer(der net.Dialer) Option {
 	return func(r *redisClient) error {
 		if der != nil {
 			r.dialer = der

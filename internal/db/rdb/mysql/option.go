@@ -22,7 +22,6 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/net"
-	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
@@ -69,6 +68,26 @@ func WithDB(db string) Option {
 	}
 }
 
+// WithNetwork returns the option to set the network type (tcp, unix).
+func WithNetwork(network string) Option {
+	return func(m *mySQLClient) error {
+		if network != "" {
+			m.network = network
+		}
+		return nil
+	}
+}
+
+// WithSocketPath returns the option to set the socketPath for unix domain socket connection.
+func WithSocketPath(socketPath string) Option {
+	return func(m *mySQLClient) error {
+		if socketPath != "" {
+			m.socketPath = socketPath
+		}
+		return nil
+	}
+}
+
 // WithHost returns the option to set the host.
 func WithHost(host string) Option {
 	return func(m *mySQLClient) error {
@@ -80,7 +99,7 @@ func WithHost(host string) Option {
 }
 
 // WithPort returns the option to set the port.
-func WithPort(port int) Option {
+func WithPort(port uint16) Option {
 	return func(m *mySQLClient) error {
 		m.port = port
 		return nil
@@ -197,7 +216,7 @@ func WithTLSConfig(cfg *tls.Config) Option {
 }
 
 // WithDialer returns the option to set the dialer.
-func WithDialer(der tcp.Dialer) Option {
+func WithDialer(der net.Dialer) Option {
 	return func(m *mySQLClient) error {
 		if der != nil {
 			m.dialer = der

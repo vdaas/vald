@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// Package net provides net functionality for grpc
+// Package net provides net functionality for vald's network connection
 package net
 
 import (
@@ -31,19 +31,9 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 )
 
-const (
-	localIPv4   = "127.0.0.1"
-	localIPv6   = "::1"
-	localHost   = "localhost"
-	defaultPort = 80
-)
-
 type (
 	// Conn is an alias of net.Conn.
 	Conn = net.Conn
-
-	// Dialer is an alias of net.Dialer.
-	Dialer = net.Dialer
 
 	// ListenConfig is an alias of net.ListenConfig.
 	ListenConfig = net.ListenConfig
@@ -55,12 +45,90 @@ type (
 	Resolver = net.Resolver
 )
 
+type NetworkType uint
+
+const (
+	localIPv4   = "127.0.0.1"
+	localIPv6   = "::1"
+	localHost   = "localhost"
+	defaultPort = 80
+
+	Unknown NetworkType = iota
+	UNIX
+	UNIXGRAM
+	UNIXPACKET
+	ICMP
+	ICMP6
+	IGMP
+	TCP
+	TCP4
+	TCP6
+	UDP
+	UDP4
+	UDP6
+)
+
 // DefaultResolver is an alias of net.DefaultResolver.
 var DefaultResolver = net.DefaultResolver
 
-// Listen is a wrapper function of the net.Listen function.
-func Listen(network, address string) (Listener, error) {
-	return net.Listen(network, address)
+func NetworkTypeFromString(str string) NetworkType {
+	switch strings.ToLower(str) {
+	case UNIX.String():
+		return UNIX
+	case UNIXGRAM.String():
+		return UNIXGRAM
+	case UNIXPACKET.String():
+		return UNIXPACKET
+	case TCP.String():
+		return TCP
+	case TCP4.String():
+		return TCP4
+	case TCP6.String():
+		return TCP6
+	case UDP.String():
+		return UDP
+	case UDP4.String():
+		return UDP4
+	case UDP6.String():
+		return UDP6
+	case ICMP.String():
+		return ICMP
+	case ICMP6.String():
+		return ICMP6
+	case IGMP.String():
+		return IGMP
+	}
+	return Unknown
+}
+
+func (n NetworkType) String() string {
+	switch n {
+	case UNIX:
+		return "unix"
+	case UNIXGRAM:
+		return "unixgram"
+	case UNIXPACKET:
+		return "unixpacket"
+	case TCP:
+		return "tcp"
+	case TCP4:
+		return "tcp4"
+	case TCP6:
+		return "tcp6"
+	case UDP:
+		return "udp"
+	case UDP4:
+		return "udp4"
+	case UDP6:
+		return "udp6"
+	case ICMP:
+		return "icmp"
+	case IGMP:
+		return "igmp"
+	case ICMP6:
+		return "ipv6-icmp"
+	}
+	return "unknown"
 }
 
 // IsLocal returns if the host is the localhost address.
@@ -70,36 +138,42 @@ func IsLocal(host string) bool {
 		host == localIPv6
 }
 
-// Dial is a wrapper function of the net.Dial function.
-func Dial(network, addr string) (conn Conn, err error) {
-	return net.Dial(network, addr)
-}
-
 // Parse parses the hostname, IPv4 or IPv6 address and return the hostname/IP, port number,
-// whether the address is IP, and any parsing error occurred.
+// whether the address is local IP and IPv4 or IPv6, and any parsing error occurred.
 // The address should contains the port number, otherwise an error will return.
-func Parse(addr string) (host string, port uint16, isIP bool, err error) {
+func Parse(addr string) (host string, port uint16, isLocal, isIPv4, isIPv6 bool, err error) {
 	host, port, err = SplitHostPort(addr)
-	isIP = IsIPv6(host) || IsIPv4(host)
 	if err != nil {
-		return host, defaultPort, isIP, err
+		log.Warnf("failed to parse addr %s\terror: %v", addr, err)
+		host = addr
 	}
-	return host, port, isIP, err
+	isIP := net.ParseIP(host) != nil
+	ic := strings.Count(host, ":")
+	// return host and port and flags
+	return host, port,
+		// check is local ip or not
+		host == localHost ||
+			host == localIPv4 ||
+			host == localIPv6,
+		// check is IPv4 or not
+		isIP && ic < 2,
+		// check is IPv6 or not
+		isIP && ic >= 2,
+		// Split error
+		err
 }
 
-// IsIPv6 returns weather the address is IPv6 address.
-func IsIPv6(addr string) bool {
-	return net.ParseIP(addr) != nil && strings.Count(addr, ":") >= 2
-}
-
-// IsIPv4 returns weather the address is IPv4 address.
-func IsIPv4(addr string) bool {
-	return net.ParseIP(addr) != nil && strings.Count(addr, ":") < 2
+// Dial is a wrapper function of the net.Dial function.
+func DialContext(ctx context.Context, network, addr string) (conn Conn, err error) {
+	if DefaultResolver.Dial == nil {
+		return net.Dial(network, addr)
+	}
+	return DefaultResolver.Dial(ctx, network, addr)
 }
 
 // JoinHostPort joins the host/IP address and the port number,
-func JoinHostPort(host, port string) string {
-	return net.JoinHostPort(host, port)
+func JoinHostPort(host string, port uint16) string {
+	return net.JoinHostPort(host, strconv.FormatUint(uint64(port), 10))
 }
 
 // SplitHostPort splits the address, and return the host/IP address and the port number,
@@ -149,9 +223,9 @@ func ScanPorts(ctx context.Context, start, end uint16, host string) (ports []uin
 			case <-egctx.Done():
 				return egctx.Err()
 			default:
-				conn, err := der.DialContext(ctx, "tcp", JoinHostPort(host, strconv.FormatInt(int64(port), 10)))
+				addr := JoinHostPort(host, port)
+				conn, err := der.DialContext(ctx, TCP.String(), addr)
 				if err != nil {
-					log.Warn(err)
 					return nil
 				}
 
@@ -160,7 +234,7 @@ func ScanPorts(ctx context.Context, start, end uint16, host string) (ports []uin
 				mu.Unlock()
 
 				if err = conn.Close(); err != nil {
-					log.Warn(err)
+					log.Warnf("failed to close scan connection for %s, error: %v", addr, err)
 				}
 				return nil
 			}
@@ -178,6 +252,7 @@ func ScanPorts(ctx context.Context, start, end uint16, host string) (ports []uin
 	return ports, nil
 }
 
+// LoadLocalIP returns local ip address
 func LoadLocalIP() string {
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {

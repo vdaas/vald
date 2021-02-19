@@ -23,7 +23,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/net/tcp"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/safety"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
@@ -54,7 +54,7 @@ type controller struct {
 	leaderElection bool
 	mgr            manager.Manager
 	rcs            []ResourceController
-	der            tcp.Dialer
+	der            net.Dialer
 }
 
 func New(opts ...Option) (cl Controller, err error) {
