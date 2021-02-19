@@ -69,7 +69,7 @@ manager:
       # This trigger the force indexing on each Vald Agent.
       auto_index_duration_limit: 1m
       # The check duration of automatic indexing.
-      # This trigger the indexing on each Vald Agnet if uncommitted index exceed limit.
+      # This trigger the indexing on each Vald Agnet if the uncommitted index exceeds the limit.
       auto_index_check_duration: 40s
   backup:
     image:
