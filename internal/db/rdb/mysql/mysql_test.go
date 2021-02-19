@@ -181,14 +181,17 @@ func Test_mySQLClient_Open(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
 			return test{
 				name: "Open success with tls config when no error occurs",
 				args: args{
-					ctx: context.Background(),
+					ctx: ctx,
 				},
 				fields: fields{
 					db:                   "vdaas",
 					host:                 "vald.com",
+					network:              "tcp",
+					socketPath:           "",
 					port:                 3306,
 					user:                 "vdaas",
 					pass:                 "vald",
@@ -228,21 +231,27 @@ func Test_mySQLClient_Open(t *testing.T) {
 						},
 					},
 				},
+				afterFunc: func(args) {
+					cancel()
+				},
 				want: want{},
 			}
 		}(),
 		func() test {
 			dialer, _ := net.NewDialer()
 			dialerFunc := dialer.GetDialer()
+			ctx, cancel := context.WithCancel(context.Background())
 			return test{
 				name: "Open success with dialer when no error occurs",
 				args: args{
-					ctx: context.Background(),
+					ctx: ctx,
 				},
 				fields: fields{
 					db:                   "vdaas",
 					host:                 "vald.com",
 					port:                 3306,
+					network:              "tcp",
+					socketPath:           "",
 					user:                 "vdaas",
 					pass:                 "vald",
 					name:                 "vald-user",
@@ -282,20 +291,25 @@ func Test_mySQLClient_Open(t *testing.T) {
 						},
 					},
 				},
+				afterFunc: func(args) {
+					cancel()
+				},
 				want: want{},
 			}
 		}(),
 		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
 			return test{
 				name: "returns error when dbr.Open returns error",
 				args: args{
-					ctx: context.Background(),
+					ctx: ctx,
 				},
 				fields: fields{
 					db:                   "vdaas",
-					network:              "unixgram",
 					host:                 "vald.com",
 					port:                 3306,
+					network:              "unixgram",
+					socketPath:           "/var/run/vald.sock",
 					user:                 "vdaas",
 					pass:                 "vald",
 					name:                 "vald-user",
@@ -316,17 +330,21 @@ func Test_mySQLClient_Open(t *testing.T) {
 						},
 					},
 				},
+				afterFunc: func(args) {
+					cancel()
+				},
 				want: want{
 					err: errors.ErrMySQLConnectionClosed,
 				},
 			}
 		}(),
 		func() test {
-			err := errors.ErrMySQLConnectionPingFailed
+			err := errors.New("PingContextFunc is failed")
+			ctx, cancel := context.WithCancel(context.Background())
 			return test{
 				name: "returns error when Ping fails",
 				args: args{
-					ctx: context.Background(),
+					ctx: ctx,
 				},
 				fields: fields{
 					db:                   "vdaas",
@@ -339,8 +357,8 @@ func Test_mySQLClient_Open(t *testing.T) {
 					name:                 "vald-user",
 					charset:              "utf8bm4j",
 					timezone:             "Local",
-					initialPingTimeLimit: 1 * time.Microsecond,
-					initialPingDuration:  10 * time.Microsecond,
+					initialPingTimeLimit: 1 * time.Millisecond,
+					initialPingDuration:  1 * time.Microsecond,
 					connMaxLifeTime:      1 * time.Microsecond,
 					tlsConfig:            new(tls.Config),
 					maxOpenConns:         100,
@@ -372,8 +390,11 @@ func Test_mySQLClient_Open(t *testing.T) {
 						},
 					},
 				},
+				afterFunc: func(args) {
+					cancel()
+				},
 				want: want{
-					err: err,
+					err: errors.Wrap(errors.ErrMySQLConnectionPingFailed, err.Error()),
 				},
 			}
 		}(),
@@ -461,12 +482,40 @@ func Test_mySQLClient_Ping(t *testing.T) {
 					initialPingTimeLimit: 1 * time.Second,
 					initialPingDuration:  1 * time.Microsecond,
 					session: &dbr.MockSession{
+						SelectFunc: func(column ...string) dbr.SelectStmt {
+							return nil
+						},
 						PingContextFunc: func(ctx context.Context) error {
+							return nil
+						},
+						BeginFunc: func() (dbr.Tx, error) {
+							return nil, nil
+						},
+						CloseFunc: func() error {
 							return nil
 						},
 					},
 				},
 				want: want{},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "returns error when session is nil",
+				args: args{
+					ctx: ctx,
+				},
+				fields: fields{
+					initialPingTimeLimit: 30 * time.Millisecond,
+					initialPingDuration:  2 * time.Millisecond,
+				},
+				want: want{
+					err: errors.ErrMySQLSessionNil,
+				},
 				afterFunc: func(args) {
 					cancel()
 				},
@@ -573,7 +622,7 @@ func Test_mySQLClient_Close(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if m.connected.Load().(bool) {
+		if m.session != nil && m.connected.Load().(bool) {
 			return errors.Errorf("Close failed")
 		}
 		return nil
@@ -610,6 +659,21 @@ func Test_mySQLClient_Close(t *testing.T) {
 				}(),
 			},
 			want: want{},
+		},
+		{
+			name: "return an error when session is nil",
+			args: args{
+				ctx: context.Background(),
+			},
+			fields: fields{
+				connected: func() (v atomic.Value) {
+					v.Store(true)
+					return
+				}(),
+			},
+			want: want{
+				err: errors.ErrMySQLSessionNil,
+			},
 		},
 	}
 
@@ -703,6 +767,24 @@ func Test_mySQLClient_GetVector(t *testing.T) {
 				},
 				want: want{
 					err: errors.ErrMySQLConnectionClosed,
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return (nil, error) when MySQL session is nil",
+				args: args{
+					ctx:  context.Background(),
+					uuid: "",
+				},
+				fields: fields{
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+				},
+				want: want{
+					err: errors.ErrMySQLSessionNil,
 				},
 			}
 		}(),
@@ -986,12 +1068,6 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 					uuid: uuid,
 				},
 				fields: fields{
-					session: &dbr.MockSession{
-						SelectFunc: func(column ...string) dbr.SelectStmt {
-							s := new(dbr.MockSelect)
-							return s
-						},
-					},
 					connected: func() (v atomic.Value) {
 						v.Store(false)
 						return
@@ -999,6 +1075,25 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 				},
 				want: want{
 					err: errors.ErrMySQLConnectionClosed,
+				},
+			}
+		}(),
+		func() test {
+			uuid := "vdaas-01"
+			return test{
+				name: "return (nil, error) when MySQL session is nil",
+				args: args{
+					ctx:  context.Background(),
+					uuid: uuid,
+				},
+				fields: fields{
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+				},
+				want: want{
+					err: errors.ErrMySQLSessionNil,
 				},
 			}
 		}(),
@@ -1365,6 +1460,25 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 				},
 				want: want{
 					err: errors.ErrMySQLConnectionClosed,
+				},
+			}
+		}(),
+		func() test {
+			m := new(vector)
+			return test{
+				name: "return error when mysql session is nil",
+				args: args{
+					ctx: context.Background(),
+					mv:  m,
+				},
+				fields: fields{
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+				},
+				want: want{
+					err: errors.ErrMySQLSessionNil,
 				},
 			}
 		}(),
@@ -1983,8 +2097,8 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 
 func Test_mySQLClient_SetVectors(t *testing.T) {
 	type args struct {
-		ctx   context.Context
-		datas []Vector
+		ctx  context.Context
+		data []Vector
 	}
 	type fields struct {
 		session   dbr.Session
@@ -2015,8 +2129,8 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 			return test{
 				name: "return error when mysql connection is closed",
 				args: args{
-					ctx:   context.Background(),
-					datas: m,
+					ctx:  context.Background(),
+					data: m,
 				},
 				fields: fields{
 					connected: func() (v atomic.Value) {
@@ -2031,12 +2145,31 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 		}(),
 		func() test {
 			var m []Vector
+			return test{
+				name: "return error when mysql session is nil",
+				args: args{
+					ctx:  context.Background(),
+					data: m,
+				},
+				fields: fields{
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+				},
+				want: want{
+					err: errors.ErrMySQLSessionNil,
+				},
+			}
+		}(),
+		func() test {
+			var m []Vector
 			err := errors.New("session.Begin error")
 			return test{
 				name: "return error when session.Begin fails",
 				args: args{
-					ctx:   context.Background(),
-					datas: m,
+					ctx:  context.Background(),
+					data: m,
 				},
 				fields: fields{
 					session: &dbr.MockSession{
@@ -2060,8 +2193,8 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 			return test{
 				name: "return error when data vector is invalid",
 				args: args{
-					ctx:   context.Background(),
-					datas: m,
+					ctx:  context.Background(),
+					data: m,
 				},
 				fields: fields{
 					session: &dbr.MockSession{
@@ -2093,8 +2226,8 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 			return test{
 				name: "return error when insertbysql ExecContext returns error",
 				args: args{
-					ctx:   context.Background(),
-					datas: m,
+					ctx:  context.Background(),
+					data: m,
 				},
 				fields: fields{
 					session: &dbr.MockSession{
@@ -2133,8 +2266,8 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 			return test{
 				name: "return error when select loadcontext returns error",
 				args: args{
-					ctx:   context.Background(),
-					datas: m,
+					ctx:  context.Background(),
+					data: m,
 				},
 				fields: fields{
 					session: &dbr.MockSession{
@@ -2193,8 +2326,8 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 			return test{
 				name: "return error when elem not found by uuid",
 				args: args{
-					ctx:   context.Background(),
-					datas: m,
+					ctx:  context.Background(),
+					data: m,
 				},
 				fields: fields{
 					session: &dbr.MockSession{
@@ -2267,8 +2400,8 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 			return test{
 				name: "return error when delete ExecContext returns error",
 				args: args{
-					ctx:   context.Background(),
-					datas: m,
+					ctx:  context.Background(),
+					data: m,
 				},
 				fields: fields{
 					session: &dbr.MockSession{
@@ -2351,8 +2484,8 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 			return test{
 				name: "return error when insert ExecContext returns error",
 				args: args{
-					ctx:   context.Background(),
-					datas: m,
+					ctx:  context.Background(),
+					data: m,
 				},
 				fields: fields{
 					session: &dbr.MockSession{
@@ -2448,8 +2581,8 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 			return test{
 				name: "return error when tx.Commit returns error",
 				args: args{
-					ctx:   context.Background(),
-					datas: m,
+					ctx:  context.Background(),
+					data: m,
 				},
 				fields: fields{
 					session: &dbr.MockSession{
@@ -2547,8 +2680,8 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 			return test{
 				name: "return nil when setVector ends with success",
 				args: args{
-					ctx:   context.Background(),
-					datas: m,
+					ctx:  context.Background(),
+					data: m,
 				},
 				fields: fields{
 					session: &dbr.MockSession{
@@ -2650,7 +2783,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 				dbr:       test.fields.dbr,
 			}
 
-			err := m.SetVectors(test.args.ctx, test.args.datas...)
+			err := m.SetVectors(test.args.ctx, test.args.data...)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -2703,6 +2836,24 @@ func Test_mySQLClient_deleteVector(t *testing.T) {
 				},
 				want: want{
 					err: err,
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return error when MySQL session is nil",
+				args: args{
+					ctx: context.Background(),
+					val: "vald-01",
+				},
+				fields: fields{
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+				},
+				want: want{
+					err: errors.ErrMySQLSessionNil,
 				},
 			}
 		}(),
@@ -3516,6 +3667,28 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 			}
 		}(),
 		func() test {
+			return test{
+				name: "return error when MySQL session is nil",
+				args: args{
+					ctx:  context.Background(),
+					uuid: "vald-01",
+					ips: []string{
+						"192.168.1.1",
+						"192.168.1.2",
+					},
+				},
+				fields: fields{
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+				},
+				want: want{
+					err: errors.ErrMySQLSessionNil,
+				},
+			}
+		}(),
+		func() test {
 			err := errors.New("session.Begin error")
 			return test{
 				name: "return error when session.Begin returns error",
@@ -3880,6 +4053,27 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 				},
 				want: want{
 					err: err,
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return error when MySQL session is nil",
+				args: args{
+					ctx: context.Background(),
+					ips: []string{
+						"192.168.1.1",
+						"192.168.1.2",
+					},
+				},
+				fields: fields{
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+				},
+				want: want{
+					err: errors.ErrMySQLSessionNil,
 				},
 			}
 		}(),
