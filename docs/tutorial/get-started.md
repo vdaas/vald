@@ -170,7 +170,7 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
 1. Port Forward
 
    ```bash
-   kubectl port-forward deployment/vald-lb-gateway 8081:8081
+   kubectl port-forward deployment/vald-meta-gateway 8081:8081
    ```
 
 1. Download dataset
