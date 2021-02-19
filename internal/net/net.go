@@ -152,9 +152,9 @@ func Parse(addr string) (host string, port uint16, isLocal, isIPv4, isIPv6 bool,
 	// return host and port and flags
 	return host, port,
 		// check is local ip or not
-		strings.Contains(host, localHost) ||
-			strings.Contains(host, localIPv4) ||
-			strings.Contains(host, localIPv6),
+		host == localHost ||
+			host == localIPv4 ||
+			host == localIPv6,
 		// check is IPv4 or not
 		isIP && ic < 2,
 		// check is IPv6 or not
