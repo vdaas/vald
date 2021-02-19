@@ -102,7 +102,7 @@ func main() {
 	If you run client.CreateIndex, it costs less time for search
 	**/
 	glg.Info("Start Indexing dataset.")
-	_, err = agent.NewAgentClient(conn).CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+	_, err = agent.NewAgentClient(conn).CreateAndSaveIndex(ctx, &payload.Control_CreateIndexRequest{
 		PoolSize: uint32(insertCount),
 	})
 	if err != nil {
