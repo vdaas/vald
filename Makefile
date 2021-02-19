@@ -277,6 +277,7 @@ all: clean deps
 .PHONY: clean
 ## clean
 clean:
+	rm -rf vendor
 	go clean -cache -modcache -testcache -i -r
 	mv ./apis/grpc/v1/vald/vald.go $(TEMP_DIR)/vald.go
 	rm -rf \

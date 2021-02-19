@@ -24,12 +24,10 @@ import (
 // Option represent the functional option for info.
 type Option func(i *info) error
 
-var (
-	defaultOpts = []Option{
-		WithRuntimeCaller(runtime.Caller),
-		WithRuntimeFuncForPC(runtime.FuncForPC),
-	}
-)
+var defaultOpts = []Option{
+	WithRuntimeCaller(runtime.Caller),
+	WithRuntimeFuncForPC(runtime.FuncForPC),
+}
 
 // WithServerName returns the option to set the server name.
 func WithServerName(s string) Option {
