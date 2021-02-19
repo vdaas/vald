@@ -53,10 +53,6 @@ const (
 	TCPDeferAccept
 	IPTransparent
 	IPRecoverDestinationAddr
-
-	// from linux/include/uapi/linux/tcp.h
-	TCP_FASTOPEN         int = 0x17
-	TCP_FASTOPEN_CONNECT int = 0x1e
 )
 
 func New(flag SocketFlag, keepAlive int) SocketController {
@@ -99,38 +95,54 @@ func (ctrl *control) GetControl() func(network, addr string, c syscall.RawConn) 
 			log.Debugf("controlling socket for %s://%s, config %#v", network, address, ctrl)
 			f := int(fd)
 			var ierr error
-			ierr = SetsockoptInt(f, SOL_SOCKET, SO_REUSEPORT, boolint(ctrl.reusePort))
-			if ierr != nil {
-				err = errors.Wrap(err, ierr.Error())
+			if SO_REUSEPORT != 0 {
+				ierr = SetsockoptInt(f, SOL_SOCKET, SO_REUSEPORT, boolint(ctrl.reusePort))
+				if ierr != nil {
+					err = errors.Wrap(err, ierr.Error())
+				}
 			}
-			ierr = SetsockoptInt(f, SOL_SOCKET, SO_REUSEADDR, boolint(ctrl.reuseAddr))
-			if ierr != nil {
-				err = errors.Wrap(err, ierr.Error())
+			if SO_REUSEADDR != 0 {
+				ierr = SetsockoptInt(f, SOL_SOCKET, SO_REUSEADDR, boolint(ctrl.reuseAddr))
+				if ierr != nil {
+					err = errors.Wrap(err, ierr.Error())
+				}
 			}
 			if isTCP(network) {
-				ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_FASTOPEN, boolint(ctrl.tcpFastOpen))
-				if ierr != nil {
-					err = errors.Wrap(err, ierr.Error())
+				if TCP_FASTOPEN != 0 {
+					ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_FASTOPEN, boolint(ctrl.tcpFastOpen))
+					if ierr != nil {
+						err = errors.Wrap(err, ierr.Error())
+					}
 				}
-				ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_FASTOPEN_CONNECT, boolint(ctrl.tcpFastOpen))
-				if ierr != nil {
-					err = errors.Wrap(err, ierr.Error())
+				if TCP_FASTOPEN_CONNECT != 0 {
+					ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_FASTOPEN_CONNECT, boolint(ctrl.tcpFastOpen))
+					if ierr != nil {
+						err = errors.Wrap(err, ierr.Error())
+					}
 				}
-				ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_NODELAY, boolint(ctrl.tcpNoDelay))
-				if ierr != nil {
-					err = errors.Wrap(err, ierr.Error())
+				if TCP_NODELAY != 0 {
+					ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_NODELAY, boolint(ctrl.tcpNoDelay))
+					if ierr != nil {
+						err = errors.Wrap(err, ierr.Error())
+					}
 				}
-				ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_CORK, boolint(ctrl.tcpCork))
-				if ierr != nil {
-					err = errors.Wrap(err, ierr.Error())
+				if TCP_CORK != 0 {
+					ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_CORK, boolint(ctrl.tcpCork))
+					if ierr != nil {
+						err = errors.Wrap(err, ierr.Error())
+					}
 				}
-				ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_QUICKACK, boolint(ctrl.tcpQuickAck))
-				if ierr != nil {
-					err = errors.Wrap(err, ierr.Error())
+				if TCP_QUICKACK != 0 {
+					ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_QUICKACK, boolint(ctrl.tcpQuickAck))
+					if ierr != nil {
+						err = errors.Wrap(err, ierr.Error())
+					}
 				}
-				ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_DEFER_ACCEPT, boolint(ctrl.tcpDeferAccept))
-				if ierr != nil {
-					err = errors.Wrap(err, ierr.Error())
+				if TCP_DEFER_ACCEPT != 0 {
+					ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_DEFER_ACCEPT, boolint(ctrl.tcpDeferAccept))
+					if ierr != nil {
+						err = errors.Wrap(err, ierr.Error())
+					}
 				}
 			}
 			var sol, trans, rda int
@@ -153,18 +165,24 @@ func (ctrl *control) GetControl() func(network, addr string, c syscall.RawConn) 
 				}
 			}
 
-			ierr = SetsockoptInt(f, SOL_SOCKET, SO_KEEPALIVE, boolint(ctrl.keepAlive > 0))
-			if ierr != nil {
-				err = errors.Wrap(err, ierr.Error())
-			}
-			if ctrl.keepAlive > 0 && isTCP(network) {
-				ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_KEEPINTVL, ctrl.keepAlive)
+			if SO_KEEPALIVE != 0 {
+				ierr = SetsockoptInt(f, SOL_SOCKET, SO_KEEPALIVE, boolint(ctrl.keepAlive > 0))
 				if ierr != nil {
 					err = errors.Wrap(err, ierr.Error())
 				}
-				ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_KEEPIDLE, ctrl.keepAlive)
-				if ierr != nil {
-					err = errors.Wrap(err, ierr.Error())
+			}
+			if ctrl.keepAlive > 0 && isTCP(network) {
+				if TCP_KEEPINTVL != 0 {
+					ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_KEEPINTVL, ctrl.keepAlive)
+					if ierr != nil {
+						err = errors.Wrap(err, ierr.Error())
+					}
+				}
+				if TCP_KEEPIDLE != 0 {
+					ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_KEEPIDLE, ctrl.keepAlive)
+					if ierr != nil {
+						err = errors.Wrap(err, ierr.Error())
+					}
 				}
 			}
 		})

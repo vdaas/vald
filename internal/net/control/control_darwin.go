@@ -21,30 +21,34 @@ package control
 
 import (
 	"syscall"
+
+	"golang.org/x/sys/unix"
 )
 
-var SetsockoptInt = syscall.SetsockoptInt
+var SetsockoptInt = unix.SetsockoptInt
 
 const (
 	SOL_SOCKET  = syscall.SOL_SOCKET
 	IPPROTO_TCP = syscall.IPPROTO_TCP
-	SOL_IP      = syscall.SOL_IP
-	SOL_IPV6    = syscall.SOL_IPV6
+	SOL_IP      = 0
+	SOL_IPV6    = 0
 
-	SO_REUSEADDR = syscall.SO_REUSEADDR
-	SO_REUSEPORT = syscall.SO_REUSEPORT
-	SO_KEEPALIVE = syscall.SO_KEEPALIVE
+	SO_REUSEADDR = unix.SO_REUSEADDR
+	SO_REUSEPORT = unix.SO_REUSEPORT
+	SO_KEEPALIVE = unix.SO_KEEPALIVE
 
-	TCP_NODELAY      = syscall.TCP_NODELAY
-	TCP_CORK         = syscall.TCP_CORK
-	TCP_QUICKACK     = syscall.TCP_QUICKACK
-	TCP_DEFER_ACCEPT = syscall.TCP_DEFER_ACCEPT
-	TCP_KEEPINTVL    = syscall.TCP_KEEPINTVL
-	TCP_KEEPIDLE     = syscall.TCP_KEEPIDLE
+	TCP_NODELAY          = unix.TCP_NODELAY
+	TCP_CORK             = 0
+	TCP_QUICKACK         = 0
+	TCP_DEFER_ACCEPT     = 0
+	TCP_KEEPINTVL        = unix.TCP_KEEPINTVL
+	TCP_KEEPIDLE         = 0
+	TCP_FASTOPEN         = unix.TCP_FASTOPEN
+	TCP_FASTOPEN_CONNECT = 0
 
-	IP_TRANSPARENT   = syscall.IP_TRANSPARENT
-	IPV6_TRANSPARENT = syscall.IPV6_TRANSPARENT
+	IP_TRANSPARENT   = 0
+	IPV6_TRANSPARENT = 0
 
-	IP_RECVORIGDSTADDR   = syscall.IP_RECVORIGDSTADDR
-	IPV6_RECVORIGDSTADDR = syscall.IPV6_RECVORIGDSTADDR
+	IP_RECVORIGDSTADDR   = 0
+	IPV6_RECVORIGDSTADDR = 0
 )
