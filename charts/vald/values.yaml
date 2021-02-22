@@ -4703,11 +4703,15 @@ rebalancer:
   # @schema {"name": "rebalancer.kind", "type": "string", "enum": ["Deployment", "DaemonSet"]}
   # rebalancer.kind -- deployment kind: Deployment or DaemonSet
   kind: "Deployment"
-  # @schema {"name": "rebalancer.image", "alias": "image"}
+  # @schema {"name": "rebalancer.serviceType", "type": "string", "enum": ["ClusterIP", "LoadBalancer", "NodePort"]}
+  # rebalancer.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
   serviceType: ClusterIP
   # @schema {"name": "rebalancer.externalTrafficPolicy", "type": "string"}
   # rebalancer.externalTrafficPolicy -- external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
   externalTrafficPolicy: ""
+  # @schema {"name": "rebalancer.progressDeadlineSeconds", "type": "integer"}
+  # rebalancer.progressDeadlineSeconds -- progress deadline seconds
+  progressDeadlineSeconds: 600
   # @schema {"name": "rebalancer.minReplicas", "type": "integer", "minimum": 0}
   # rebalancer.minReplicas -- minimum number of replicas.
   # if HPA is disabled, the replicas will be set to this value
@@ -4722,6 +4726,28 @@ rebalancer:
   # @schema {"name": "rebalancer.revisionHistoryLimit", "type": "integer", "minimum": 0}
   # rebalancer.revisionHistoryLimit -- number of old history to retain to allow rollback
   revisionHistoryLimit: 2
+  # @schema {"name": "rebalancer.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
+  # rebalancer.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
+  terminationGracePeriodSeconds: 30
+  # @schema {"name": "rebalancer.podPriority", "alias": "podPriority"}
+  podPriority:
+    # rebalancer.podPriority.enabled -- rebalancer pod PriorityClass enabled
+    enabled: true
+    # rebalancer.podPriority.value -- rebalancer pod PriorityClass value
+    value: 1000000
+  # @schema {"name": "rebalancer.podAnnotations", "type": "object"}
+  # rebalancer.podAnnotations -- pod annotations
+  podAnnotations: {}
+  # @schema {"name": "rebalancer.service", "alias": "service"}
+  service:
+    # rebalancer.service.annotations -- service annotations
+    annotations: {}
+    # rebalancer.service.labels -- service labels
+    labels: {}
+  # @schema {"name": "rebalancer.image", "alias": "image"}
+  image:
+    # rebalancer.image.repository -- image repository
+    repository: vdaas/vald-rebalancer-storage-controller
   # @schema {"name": "rebalancer.rollingUpdate", "type": "object", "anchor": "rollingUpdate"}
   rollingUpdate:
     # @schema {"name": "rebalancer.rollingUpdate.maxSurge", "type": "string"}
@@ -4738,31 +4764,17 @@ rebalancer:
       target: agent
       image: busybox
       sleepDuration: 2
-  # @schema {"name": "rebalancer.progressDeadlineSeconds", "type": "integer"}
-  # rebalancer.progressDeadlineSeconds -- progress deadline seconds
-  progressDeadlineSeconds: 600
-  # @schema {"name": "meta.hpa", "alias": "hpa"}
-  hpa:
-    # rebalancer.hpa.enabled -- HPA enabled
-    enabled: false
-    # rebalancer.hpa.targetCPUUtilizationPercentage -- HPA CPU utilization percentage
-    targetCPUUtilizationPercentage: 80
-  image:
-    # rebalancer.image.repository -- image repository
-    repository: vdaas/vald-rebalancer-storage-controller
-    # rebalancer.image.tag -- image tag (overrides defaults.image.tag)
-    tag: ""
-    # rebalancer.image.pullPolicy -- image pull policy
-    pullPolicy: Always
-  # @schema {"name": "rebalancer.resources", "alias": "resources"}
-  # rebalancer.resources -- compute resources.
-  resources:
-    requests:
-      cpu: 200m
-      memory: 65Mi
-    limits:
-      cpu: 600m
-      memory: 200Mi
+  # @schema {"name": "rebalancer.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
+  # rebalancer.env -- environment variables
+  env:
+    - name: MY_POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
+    - name: MY_POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
   # @schema {"name": "rebalancer.volumeMounts", "alias": "volumeMounts"}
   # rebalancer.volumeMounts -- volume mounts
   volumeMounts: []
@@ -4778,11 +4790,36 @@ rebalancer:
   # @schema {"name": "rebalancer.tolerations", "alias": "tolerations"}
   # rebalancer.tolerations -- tolerations
   tolerations: []
-  # @schema {"name": "rebalancer.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
-  # rebalancer.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
-  terminationGracePeriodSeconds: 30
-  # @schema {"name": "rebalancer.serviceType", "type": "string", "enum": ["ClusterIP", "LoadBalancer", "NodePort"]}
-  # rebalancer.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
+  # @schema {"name": "rebalancer.affinity", "alias": "affinity"}
+  affinity:
+    nodeAffinity:
+      # rebalancer.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      requiredDuringSchedulingIgnoredDuringExecution:
+        # rebalancer.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
+        nodeSelectorTerms: []
+    podAffinity:
+      # rebalancer.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      # rebalancer.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
+    podAntiAffinity:
+      # rebalancer.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            topologyKey: kubernetes.io/hostname
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - vald-rebalancer-storage-controller
+      # rebalancer.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
+  # @schema {"name": "rebalancer.topologySpreadConstraints", "alias": "topologySpreadConstraints"}
+  # rebalancer.topologySpreadConstraints -- topology spread constraints for rebalancer pods
+  topologySpreadConstraints: []
   # @schema {"name": "rebalancer.server_config", "alias": "server_config"}
   # rebalancer.server_config -- server config (overrides defaults.server_config)
   server_config:
@@ -4803,6 +4840,25 @@ rebalancer:
     stackdriver:
       profiler:
         service: vald-rebalancer-storage-controller
+  # @schema {"name": "meta.hpa", "alias": "hpa"}
+  hpa:
+    # rebalancer.hpa.enabled -- HPA enabled
+    enabled: false
+    # rebalancer.hpa.targetCPUUtilizationPercentage -- HPA CPU utilization percentage
+    targetCPUUtilizationPercentage: 80
+    # rebalancer.image.tag -- image tag (overrides defaults.image.tag)
+    tag: ""
+    # rebalancer.image.pullPolicy -- image pull policy
+    pullPolicy: Always
+  # @schema {"name": "rebalancer.resources", "alias": "resources"}
+  # rebalancer.resources -- compute resources.
+  resources:
+    requests:
+      cpu: 200m
+      memory: 65Mi
+    limits:
+      cpu: 600m
+      memory: 200Mi
   # @schema {"name": "rebalancer.clusterRole", "type": "object"}
   clusterRole:
     # @schema {"name": "rebalancer.clusterRole.enabled", "type": "boolean"}
@@ -4871,62 +4927,6 @@ rebalancer:
     # @schema {"name": "rebalancer.rebalancer.leader_election_id", "type": "string"}
     # rebalancer.rebalancer.leader_election_id -- leader_election_id for rebalancer controller
     leader_election_id: "vald-rebalancer-storage-controller"
-  # @schema {"name": "rebalancer.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
-  # rebalancer.env -- environment variables
-  env:
-    - name: MY_POD_NAMESPACE
-      valueFrom:
-        fieldRef:
-          fieldPath: metadata.namespace
-    - name: MY_POD_NAME
-      valueFrom:
-        fieldRef:
-          fieldPath: metadata.name
-  # @schema {"name": "rebalancer.affinity", "alias": "affinity"}
-  affinity:
-    nodeAffinity:
-      # rebalancer.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
-      preferredDuringSchedulingIgnoredDuringExecution: []
-      requiredDuringSchedulingIgnoredDuringExecution:
-        # rebalancer.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
-        nodeSelectorTerms: []
-    podAffinity:
-      # rebalancer.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
-      preferredDuringSchedulingIgnoredDuringExecution: []
-      # rebalancer.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
-      requiredDuringSchedulingIgnoredDuringExecution: []
-    podAntiAffinity:
-      # rebalancer.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
-      preferredDuringSchedulingIgnoredDuringExecution:
-        - weight: 100
-          podAffinityTerm:
-            topologyKey: kubernetes.io/hostname
-            labelSelector:
-              matchExpressions:
-                - key: app
-                  operator: In
-                  values:
-                    - vald-rebalancer-storage-controller
-      # rebalancer.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
-      requiredDuringSchedulingIgnoredDuringExecution: []
-  # @schema {"name": "rebalancer.topologySpreadConstraints", "alias": "topologySpreadConstraints"}
-  # rebalancer.topologySpreadConstraints -- topology spread constraints for rebalancer pods
-  topologySpreadConstraints: []
-  # @schema {"name": "rebalancer.podPriority", "alias": "podPriority"}
-  podPriority:
-    # rebalancer.podPriority.enabled -- rebalancer pod PriorityClass enabled
-    enabled: true
-    # rebalancer.podPriority.value -- rebalancer pod PriorityClass value
-    value: 1000000
-  # @schema {"name": "rebalancer.podAnnotations", "type": "object"}
-  # rebalancer.podAnnotations -- pod annotations
-  podAnnotations: {}
-  # @schema {"name": "rebalancer.service", "alias": "service"}
-  service:
-    # rebalancer.service.annotations -- service annotations
-    annotations: {}
-    # rebalancer.service.labels -- service labels
-    labels: {}
 
 initializer:
   mysql:
