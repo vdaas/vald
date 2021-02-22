@@ -21,7 +21,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/errgroup"
-	"github.com/vdaas/vald/internal/net/tcp"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
@@ -32,7 +32,7 @@ var defaultOptions = []Option{
 	WithErrGroup(errgroup.Get()),
 }
 
-func WithDialer(der tcp.Dialer) Option {
+func WithDialer(der net.Dialer) Option {
 	return func(d *discoverer) error {
 		if der != nil {
 			d.der = der

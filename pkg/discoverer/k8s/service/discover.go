@@ -34,7 +34,7 @@ import (
 	"github.com/vdaas/vald/internal/k8s/node"
 	"github.com/vdaas/vald/internal/k8s/pod"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/net/tcp"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/safety"
 )
 
@@ -58,7 +58,7 @@ type discoverer struct {
 	namespace       string
 	name            string
 	csd             time.Duration
-	der             tcp.Dialer
+	der             net.Dialer
 	eg              errgroup.Group
 }
 

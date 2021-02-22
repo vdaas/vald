@@ -41,55 +41,60 @@ agent:
     auto_index_duration_limit: 1m
     # The limit duration of automatic indexing.
     auto_index_duration_limit: 20s
+    # The batch process pool size of automatic create index operation
+    auto_create_index_pool_size: 100
+    # The default create index batch pool size
+    default_pool_size: 100
 
 discoverer:
   resources:
     requests:
       cpu: 100m
       memory: 50Mi
+
 compressor:
   resources:
     requests:
       cpu: 100m
       memory: 50Mi
 
-indexManager:
-  resources:
-    requests:
-      cpu: 100m
-      memory: 30Mi
-  indexer:
-    # The limit duration of automatic indexing.
-    # This trigger the force indexing on each Vald Agent.
-    auto_index_duration_limit: 1m
-    # The check duration of automatic indexing.
-    # This trigger the indexing on each Vald Agnet if uncommitted index exceed limit.
-    auto_index_check_duration: 40s
-
-backupManager:
-  image:
-    repository: vdaas/vald-manager-backup-cassandra
-  initContainers:
-    - type: wait-for-cassandra
-      name: wait-for-scylla
-      image: cassandra:latest
-      cassandra:
+manager:
+  index:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 30Mi
+    indexer:
+      # The limit duration of automatic indexing.
+      # This trigger the force indexing on each Vald Agent.
+      auto_index_duration_limit: 1m
+      # The check duration of automatic indexing.
+      # This trigger the indexing on each Vald Agnet if the uncommitted index exceeds the limit.
+      auto_index_check_duration: 40s
+  backup:
+    image:
+      repository: vdaas/vald-manager-backup-cassandra
+    initContainers:
+      - type: wait-for-cassandra
+        name: wait-for-scylla
+        image: cassandra:latest
+        cassandra:
+          hosts:
+            - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
+        sleepDuration: 2
+    env: []
+    resources:
+      requests:
+        cpu: 100m
+        memory: 30Mi
+    mysql:
+      enabled: false
+    cassandra:
+      enabled: true
+      config:
         hosts:
           - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
-      sleepDuration: 2
-  env: []
-  resources:
-    requests:
-      cpu: 100m
-      memory: 30Mi
-  mysql:
-    enabled: false
-  cassandra:
-    enabled: true
-    config:
-      hosts:
-        - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
-      consistency: one
+        consistency: one
 
 meta:
   image:
@@ -115,3 +120,17 @@ meta:
       hosts:
         - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
       consistency: one
+
+initializer:
+  cassandra:
+    enabled: true
+    name: scylla-init
+    env:
+      - name: CASSANDRA_HOST
+        value: vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
+    configmap:
+      enabled: true
+      name: scylla-initdb
+      user: ""
+    secret:
+      enabled: false

@@ -377,7 +377,7 @@ func TestDialOption_Bind(t *testing.T) {
 		EnableBackoff               bool
 		Insecure                    bool
 		Timeout                     string
-		TCP                         *TCP
+		Net                         *Net
 		KeepAlive                   *GRPCClientKeepalive
 	}
 	type want struct {
@@ -416,7 +416,7 @@ func TestDialOption_Bind(t *testing.T) {
 		           EnableBackoff: false,
 		           Insecure: false,
 		           Timeout: "",
-		           TCP: TCP{},
+		           Net: Net{},
 		           KeepAlive: GRPCClientKeepalive{},
 		       },
 		       want: want{},
@@ -443,7 +443,7 @@ func TestDialOption_Bind(t *testing.T) {
 		           EnableBackoff: false,
 		           Insecure: false,
 		           Timeout: "",
-		           TCP: TCP{},
+		           Net: Net{},
 		           KeepAlive: GRPCClientKeepalive{},
 		           },
 		           want: want{},
@@ -481,7 +481,7 @@ func TestDialOption_Bind(t *testing.T) {
 				EnableBackoff:               test.fields.EnableBackoff,
 				Insecure:                    test.fields.Insecure,
 				Timeout:                     test.fields.Timeout,
-				TCP:                         test.fields.TCP,
+				Net:                         test.fields.Net,
 				KeepAlive:                   test.fields.KeepAlive,
 			}
 

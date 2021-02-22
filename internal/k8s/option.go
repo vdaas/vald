@@ -19,7 +19,7 @@ package k8s
 
 import (
 	"github.com/vdaas/vald/internal/errgroup"
-	"github.com/vdaas/vald/internal/net/tcp"
+	"github.com/vdaas/vald/internal/net"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
@@ -90,7 +90,7 @@ func WithLeaderElectionID(id string) Option {
 	}
 }
 
-func WithDialer(der tcp.Dialer) Option {
+func WithDialer(der net.Dialer) Option {
 	return func(c *controller) error {
 		if der != nil {
 			c.der = der

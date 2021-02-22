@@ -16,10 +16,12 @@
 package safety
 
 import (
+	"os"
 	"reflect"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"go.uber.org/goleak"
 )
@@ -29,8 +31,10 @@ var goleakIgnoreOptions = []goleak.Option{
 	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
 }
 
-func init() {
+func TestMain(m *testing.M) {
 	log.Init()
+	info.Init("")
+	os.Exit(m.Run())
 }
 
 func TestRecoverFunc(t *testing.T) {

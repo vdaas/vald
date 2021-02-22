@@ -53,7 +53,7 @@ func TestRedis_Bind(t *testing.T) {
 		ReadTimeout          string
 		RouteByLatency       bool
 		RouteRandomly        bool
-		TCP                  *TCP
+		Net                  *Net
 		TLS                  *TLS
 		Username             string
 		VKPrefix             string
@@ -106,7 +106,7 @@ func TestRedis_Bind(t *testing.T) {
 		           ReadTimeout: "",
 		           RouteByLatency: false,
 		           RouteRandomly: false,
-		           TCP: TCP{},
+		           Net: Net{},
 		           TLS: TLS{},
 		           Username: "",
 		           VKPrefix: "",
@@ -147,7 +147,7 @@ func TestRedis_Bind(t *testing.T) {
 		           ReadTimeout: "",
 		           RouteByLatency: false,
 		           RouteRandomly: false,
-		           TCP: TCP{},
+		           Net: Net{},
 		           TLS: TLS{},
 		           Username: "",
 		           VKPrefix: "",
@@ -199,7 +199,7 @@ func TestRedis_Bind(t *testing.T) {
 				ReadTimeout:          test.fields.ReadTimeout,
 				RouteByLatency:       test.fields.RouteByLatency,
 				RouteRandomly:        test.fields.RouteRandomly,
-				TCP:                  test.fields.TCP,
+				Net:                  test.fields.Net,
 				TLS:                  test.fields.TLS,
 				Username:             test.fields.Username,
 				VKPrefix:             test.fields.VKPrefix,
@@ -241,7 +241,7 @@ func TestRedis_Opts(t *testing.T) {
 		ReadTimeout          string
 		RouteByLatency       bool
 		RouteRandomly        bool
-		TCP                  *TCP
+		Net                  *Net
 		TLS                  *TLS
 		Username             string
 		VKPrefix             string
@@ -298,7 +298,7 @@ func TestRedis_Opts(t *testing.T) {
 		           ReadTimeout: "",
 		           RouteByLatency: false,
 		           RouteRandomly: false,
-		           TCP: TCP{},
+		           Net: Net{},
 		           TLS: TLS{},
 		           Username: "",
 		           VKPrefix: "",
@@ -339,7 +339,7 @@ func TestRedis_Opts(t *testing.T) {
 		           ReadTimeout: "",
 		           RouteByLatency: false,
 		           RouteRandomly: false,
-		           TCP: TCP{},
+		           Net: Net{},
 		           TLS: TLS{},
 		           Username: "",
 		           VKPrefix: "",
@@ -391,7 +391,7 @@ func TestRedis_Opts(t *testing.T) {
 				ReadTimeout:          test.fields.ReadTimeout,
 				RouteByLatency:       test.fields.RouteByLatency,
 				RouteRandomly:        test.fields.RouteRandomly,
-				TCP:                  test.fields.TCP,
+				Net:                  test.fields.Net,
 				TLS:                  test.fields.TLS,
 				Username:             test.fields.Username,
 				VKPrefix:             test.fields.VKPrefix,

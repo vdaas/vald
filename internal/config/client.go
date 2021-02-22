@@ -18,13 +18,13 @@
 package config
 
 type Client struct {
-	TCP       *TCP       `json:"tcp" yaml:"tcp"`
+	Net       *Net       `json:"net" yaml:"net"`
 	Transport *Transport `json:"transport" yaml:"transport"`
 }
 
 func (c *Client) Bind() *Client {
-	if c.TCP != nil {
-		c.TCP.Bind()
+	if c.Net != nil {
+		c.Net.Bind()
 	}
 
 	if c.Transport != nil {
