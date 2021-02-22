@@ -14,30 +14,34 @@
 // limitations under the License.
 //
 
-// Package tcp provides tcp option
-package tcp
+// Package net provides net functionality for vald's network connection
+package net
 
 import (
 	"context"
+	"net"
 	"strconv"
 	"sync"
 	"sync/atomic"
+	"syscall"
 	"time"
 
 	"github.com/vdaas/vald/internal/cache"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/observability/trace"
+
+	"github.com/vdaas/vald/internal/net/control"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/tls"
 )
 
 // Dialer is an interface to get the dialer instance to connect to an address.
 type Dialer interface {
-	GetDialer() func(ctx context.Context, network, addr string) (net.Conn, error)
+	GetDialer() func(ctx context.Context, network, addr string) (Conn, error)
 	StartDialerCache(ctx context.Context)
-	DialContext(ctx context.Context, network, address string) (net.Conn, error)
+	DialContext(ctx context.Context, network, address string) (Conn, error)
 }
 
 type dialer struct {
@@ -52,10 +56,12 @@ type dialer struct {
 	dialerTimeout         time.Duration
 	dialerKeepAlive       time.Duration
 	dialerFallbackDelay   time.Duration
+	ctrl                  control.SocketController
+	sockFlg               control.SocketFlag
 	dialerDualStack       bool
 	addrs                 sync.Map
 	der                   *net.Dialer
-	dialer                func(ctx context.Context, network, addr string) (net.Conn, error)
+	dialer                func(ctx context.Context, network, addr string) (Conn, error)
 	eg                    errgroup.Group
 }
 
@@ -70,6 +76,8 @@ type dialerCache struct {
 	ips []string
 	cnt uint32
 }
+
+const apiName = "vald/internal/net"
 
 // IP returns the next cached IP address in round robin order.
 // It starts getting the index 1 cache instead of index 0 cache.
@@ -92,13 +100,19 @@ func NewDialer(opts ...DialerOption) (der Dialer, err error) {
 	for _, opt := range append(defaultDialerOptions, opts...) {
 		opt(d)
 	}
+	d.ctrl = control.New(d.sockFlg, int(d.dialerKeepAlive))
 
 	d.der = &net.Dialer{
 		Timeout:       d.dialerTimeout,
 		KeepAlive:     d.dialerKeepAlive,
 		DualStack:     d.dialerDualStack,
 		FallbackDelay: d.dialerFallbackDelay,
-		Control:       Control,
+		Control: func(network, addr string, c syscall.RawConn) (err error) {
+			if d.ctrl != nil {
+				return d.ctrl.GetControl()(network, addr, c)
+			}
+			return nil
+		},
 	}
 
 	d.dialer = d.dial
@@ -119,7 +133,7 @@ func NewDialer(opts ...DialerOption) (der Dialer, err error) {
 		d.dialer = d.cachedDialer
 	}
 
-	d.der.Resolver = &net.Resolver{
+	d.der.Resolver = &Resolver{
 		PreferGo: false,
 		Dial:     d.dialer,
 	}
@@ -128,7 +142,7 @@ func NewDialer(opts ...DialerOption) (der Dialer, err error) {
 }
 
 // GetDialer returns a function to return the connection.
-func (d *dialer) GetDialer() func(ctx context.Context, network, addr string) (net.Conn, error) {
+func (d *dialer) GetDialer() func(ctx context.Context, network, addr string) (Conn, error) {
 	return d.dialer
 }
 
@@ -137,6 +151,12 @@ func (d *dialer) lookup(ctx context.Context, host string) (*dialerCache, error) 
 	if ok {
 		return cache.(*dialerCache), nil
 	}
+	ctx, span := trace.StartSpan(ctx, apiName+"/Dialer.lookup")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 
 	r, err := d.der.Resolver.LookupIPAddr(ctx, host)
 	if err != nil {
@@ -155,8 +175,10 @@ func (d *dialer) lookup(ctx context.Context, host string) (*dialerCache, error) 
 		dc.ips = append(dc.ips, ip.String())
 	}
 
-	log.Infof("lookup succeed %v", dc.ips)
-	d.cache.Set(host, dc)
+	if dc != nil && len(dc.ips) != 0 {
+		log.Infof("lookup succeed %v", dc.ips)
+		d.cache.Set(host, dc)
+	}
 	return dc, nil
 }
 
@@ -172,11 +194,11 @@ func (d *dialer) StartDialerCache(ctx context.Context) {
 // DialContext returns the connection or error base on the input.
 // If the DNS cache is enabled, it will lookup the DNS cache in round robin order and return a connection of it.
 // Also if TLS is enabled, it will create a TLS connection for it.
-func (d *dialer) DialContext(ctx context.Context, network, address string) (net.Conn, error) {
+func (d *dialer) DialContext(ctx context.Context, network, address string) (Conn, error) {
 	return d.GetDialer()(ctx, network, address)
 }
 
-func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (conn net.Conn, err error) {
+func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (conn Conn, err error) {
 	var (
 		host string
 		port string
@@ -185,7 +207,8 @@ func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (conn 
 	ai, ok := d.addrs.Load(addr)
 	if !ok {
 		var nport uint16
-		host, nport, isIP, err = net.Parse(addr)
+		var isV4, isV6 bool
+		host, nport, _, isV4, isV6, err = Parse(addr)
 		if err != nil {
 			d.addrs.Delete(addr)
 			return nil, err
@@ -195,7 +218,7 @@ func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (conn 
 			host: host,
 			port: port,
 			addr: addr,
-			isIP: isIP,
+			isIP: isV4 || isV6,
 		})
 	} else {
 		info, ok := ai.(*addrInfo)
@@ -209,12 +232,13 @@ func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (conn 
 	if d.dnsCache && !isIP {
 		if dc, err := d.lookup(dctx, host); err == nil {
 			for i := uint32(0); i < dc.Len(); i++ {
-				hostIP := net.JoinHostPort(dc.IP(), port)
-				conn, err := d.dial(dctx, network, hostIP)
+				// in this line we use golang's standard net packages net.JoinHostPort cuz port is string type
+				target := net.JoinHostPort(dc.IP(), port)
+				conn, err := d.dial(dctx, network, target)
 				if err == nil && conn != nil {
 					return conn, nil
 				}
-				log.Debugf("failed to dial connection to %s\terror: %v", hostIP, err)
+				log.Debugf("failed to dial connection to %s\terror: %v", target, err)
 			}
 			d.cache.Delete(host)
 		}
@@ -222,11 +246,17 @@ func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (conn 
 	return d.dial(dctx, network, addr)
 }
 
-func (d *dialer) dial(ctx context.Context, network, addr string) (conn net.Conn, err error) {
+func (d *dialer) dial(ctx context.Context, network, addr string) (conn Conn, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/Dialer.dial")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	log.Debugf("%s connection dialing to addr %s", network, addr)
 	conn, err = d.der.DialContext(ctx, network, addr)
 	if err != nil {
-		defer func(conn net.Conn) {
+		defer func(conn Conn) {
 			if conn != nil {
 				if err != nil {
 					err = errors.Wrap(conn.Close(), err.Error())
@@ -241,19 +271,27 @@ func (d *dialer) dial(ctx context.Context, network, addr string) (conn net.Conn,
 	if d.tlsConfig != nil {
 		return d.tlsHandshake(ctx, conn, addr)
 	}
-	log.Infof("connected to addr %s succeed from %s://%s to %s://%s",
-		addr,
-		conn.LocalAddr().Network(), conn.LocalAddr().String(),
-		conn.RemoteAddr().Network(), conn.RemoteAddr().String(),
-	)
+	if conn != nil {
+		log.Infof("connected to addr %s succeed from %s://%s to %s://%s",
+			addr,
+			conn.LocalAddr().Network(), conn.LocalAddr().String(),
+			conn.RemoteAddr().Network(), conn.RemoteAddr().String(),
+		)
+	}
 	return conn, nil
 }
 
-func (d *dialer) tlsHandshake(ctx context.Context, conn net.Conn, addr string) (*tls.Conn, error) {
+func (d *dialer) tlsHandshake(ctx context.Context, conn Conn, addr string) (*tls.Conn, error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/Dialer.tlsHandshake")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	var err error
 	if d.tlsConfig.ServerName == "" {
 		var host string
-		host, _, err = net.SplitHostPort(addr)
+		host, _, err = SplitHostPort(addr)
 		if err == nil {
 			d.tlsConfig.ServerName = host
 		}
@@ -291,7 +329,7 @@ func (d *dialer) tlsHandshake(ctx context.Context, conn net.Conn, addr string) (
 		}
 	}
 	if err != nil {
-		defer func(conn net.Conn) {
+		defer func(conn Conn) {
 			if conn != nil {
 				if err != nil {
 					err = errors.Wrap(conn.Close(), err.Error())
@@ -302,16 +340,18 @@ func (d *dialer) tlsHandshake(ctx context.Context, conn net.Conn, addr string) (
 		}(conn)
 		return nil, err
 	}
-	log.Infof("tls handshake addr %s succeed from %s://%s to %s://%s,\tconnectionstate: [ Version:%s, ServerName: %s, HandshakeComplete: %v, DidResume: %v, NegotiatedProtocol: %s ]",
-		addr,
-		tconn.LocalAddr().Network(), tconn.LocalAddr().String(),
-		tconn.RemoteAddr().Network(), tconn.RemoteAddr().String(),
-		tconn.ConnectionState().Version,
-		tconn.ConnectionState().ServerName,
-		tconn.ConnectionState().HandshakeComplete,
-		tconn.ConnectionState().DidResume,
-		tconn.ConnectionState().NegotiatedProtocol,
-	)
+	if tconn != nil {
+		log.Infof("tls handshake addr %s succeed from %s://%s to %s://%s,\tconnectionstate: [ Version:%d, ServerName: %s, HandshakeComplete: %v, DidResume: %v, NegotiatedProtocol: %s ]",
+			addr,
+			tconn.LocalAddr().Network(), tconn.LocalAddr().String(),
+			tconn.RemoteAddr().Network(), tconn.RemoteAddr().String(),
+			tconn.ConnectionState().Version,
+			tconn.ConnectionState().ServerName,
+			tconn.ConnectionState().HandshakeComplete,
+			tconn.ConnectionState().DidResume,
+			tconn.ConnectionState().NegotiatedProtocol,
+		)
+	}
 	return tconn, nil
 }
 

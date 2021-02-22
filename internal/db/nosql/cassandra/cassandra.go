@@ -27,7 +27,7 @@ import (
 	"github.com/scylladb/gocqlx/qb"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/net/tcp"
+	"github.com/vdaas/vald/internal/net"
 )
 
 var (
@@ -157,7 +157,7 @@ type (
 		connectObserver          ConnectObserver
 		frameHeaderObserver      FrameHeaderObserver
 		defaultIdempotence       bool
-		rawDialer                tcp.Dialer
+		rawDialer                net.Dialer
 		dialer                   gocql.Dialer
 		writeCoalesceWaitTime    time.Duration
 

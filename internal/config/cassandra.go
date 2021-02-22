@@ -19,7 +19,7 @@ package config
 
 import (
 	"github.com/vdaas/vald/internal/db/nosql/cassandra"
-	"github.com/vdaas/vald/internal/net/tcp"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/tls"
 )
 
@@ -48,7 +48,7 @@ type Cassandra struct {
 	MaxRoutingKeyInfo        int    `json:"max_routing_key_info" yaml:"max_routing_key_info"`
 	PageSize                 int    `json:"page_size" yaml:"page_size"`
 	TLS                      *TLS   `json:"tls" yaml:"tls"`
-	TCP                      *TCP   `json:"tcp" yaml:"tcp"`
+	Net                      *Net   `json:"net" yaml:"net"`
 	EnableHostVerification   bool   `json:"enable_host_verification" yaml:"enable_host_verification"`
 	DefaultTimestamp         bool   `json:"default_timestamp" yaml:"default_timestamp"`
 	ReconnectInterval        string `json:"reconnect_interval" yaml:"reconnect_interval"`
@@ -126,10 +126,10 @@ func (c *Cassandra) Bind() *Cassandra {
 	} else {
 		c.TLS = new(TLS)
 	}
-	if c.TCP != nil {
-		c.TCP.Bind()
+	if c.Net != nil {
+		c.Net.Bind()
 	} else {
-		c.TCP = new(TCP)
+		c.Net = new(Net)
 	}
 	c.ReconnectInterval = GetActualValue(c.ReconnectInterval)
 	c.MaxWaitSchemaAgreement = GetActualValue(c.MaxWaitSchemaAgreement)
@@ -207,8 +207,8 @@ func (cfg *Cassandra) Opts() (opts []cassandra.Option, err error) {
 		)
 	}
 
-	if cfg.TCP != nil {
-		der, err := tcp.NewDialer(cfg.TCP.Opts()...)
+	if cfg.Net != nil {
+		der, err := net.NewDialer(cfg.Net.Opts()...)
 		if err == nil {
 			opts = append(opts,
 				cassandra.WithDialer(

@@ -20,13 +20,13 @@ import (
 	"context"
 	"crypto/tls"
 	"reflect"
+	"strings"
 	"time"
 
 	redis "github.com/go-redis/redis/v8"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
-	"github.com/vdaas/vald/internal/net/tcp"
 )
 
 // Nil is a type alias of redis.Nil.
@@ -65,7 +65,7 @@ type redisClient struct {
 	db                   int
 	dialTimeout          time.Duration
 	network              string
-	dialer               tcp.Dialer
+	dialer               net.Dialer
 	dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
 	idleCheckFrequency   time.Duration
 	idleTimeout          time.Duration
@@ -161,8 +161,14 @@ func (rc *redisClient) newClient(ctx context.Context) (c *redis.Client, err erro
 		}).WithContext(ctx)
 	} else {
 		c = redis.NewClient(&redis.Options{
-			Addr:               rc.addrs[0],
-			Network:            rc.network,
+			Addr: rc.addrs[0],
+			Network: func() string {
+				nt := net.NetworkTypeFromString(rc.network)
+				if nt == 0 || nt == net.Unknown || strings.EqualFold(nt.String(), net.Unknown.String()) {
+					return net.TCP.String()
+				}
+				return nt.String()
+			}(),
 			Username:           rc.username,
 			Password:           rc.password,
 			Dialer:             rc.dialerFunc,

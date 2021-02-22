@@ -100,10 +100,12 @@ func retryableStatusCode(status int) bool {
 }
 
 func closeBody(rc io.ReadCloser) {
-	if _, err := io.Copy(ioutil.Discard, rc); err != nil {
-		log.Error(err)
-	}
-	if err := rc.Close(); err != nil {
-		log.Error(err)
+	if rc != nil {
+		if _, err := io.Copy(ioutil.Discard, rc); err != nil {
+			log.Error(err)
+		}
+		if err := rc.Close(); err != nil {
+			log.Error(err)
+		}
 	}
 }

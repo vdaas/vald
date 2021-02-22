@@ -15,7 +15,7 @@
 //
 
 // Package tcp provides tcp option
-package tcp
+package net
 
 import (
 	"crypto/tls"
@@ -23,6 +23,7 @@ import (
 
 	"github.com/vdaas/vald/internal/cache"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/net/control"
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
@@ -42,6 +43,13 @@ var defaultDialerOptions = []DialerOption{
 func WithCache(c cache.Cache) DialerOption {
 	return func(d *dialer) {
 		d.cache = c
+	}
+}
+
+// WithSocketFlag returns the functional option to set the socket options.
+func WithSocketFlag(flg control.SocketFlag) DialerOption {
+	return func(d *dialer) {
+		d.sockFlg = flg
 	}
 }
 
