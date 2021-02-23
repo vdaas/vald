@@ -21,10 +21,10 @@ metadata:
   labels:
     app: vald-meta
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.0.2
+    helm.sh/chart: vald-v1.0.3
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v1.0.2
+    app.kubernetes.io/version: v1.0.3
     app.kubernetes.io/component: meta
 spec:
   progressDeadlineSeconds: 600
@@ -46,7 +46,7 @@ spec:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/component: meta
       annotations:
-        checksum/configmap: cd51877c4c57c3b23babc6eeaa5c8f8c906364212ad17dfc6e67e635e7127b81
+        checksum/configmap: 16ddee10e301c77e6f8e9ca0a21f8da07c2559d0f9f91cf51b33e2f82550f14d
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-meta

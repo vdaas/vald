@@ -21,10 +21,10 @@ metadata:
   labels:
     app: vald-backup-gateway
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.0.2
+    helm.sh/chart: vald-v1.0.3
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v1.0.2
+    app.kubernetes.io/version: v1.0.3
     app.kubernetes.io/component: gateway-backup
 spec:
   progressDeadlineSeconds: 600
@@ -46,7 +46,7 @@ spec:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/component: gateway
       annotations:
-        checksum/configmap: 29f5f9f040c55841057dc21f60b572e3e1ff65f741cfcd8349cd2314c4f1e48e
+        checksum/configmap: 5fba7e94a17d98442c7aa149209e7f881173ab70f45adc5acea68dfdd9174a26
     spec:
       initContainers:
         - name: wait-for-manager-compressor
