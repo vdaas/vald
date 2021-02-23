@@ -36,7 +36,7 @@ replace (
 )
 
 require (
-	cloud.google.com/go v0.74.0
+	cloud.google.com/go v0.78.0
 	code.cloudfoundry.org/bytefmt v0.0.0-20200131002437-cf55d5288a48
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
 	contrib.go.opencensus.io/exporter/prometheus v0.2.0
