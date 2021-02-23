@@ -203,4 +203,4 @@ Summarize Vald unit test guideline:
 
 ## Coding Style
 
-Please refer [here](../coding-style.md#Test)
+Please refer [here](../../contributing/coding-style.md#Test)
