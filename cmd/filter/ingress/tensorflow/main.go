@@ -32,7 +32,7 @@ import (
 const (
 	maxVersion = "v0.0.10"
 	minVersion = "v0.0.0"
-	name       = "agent ngt"
+	name       = "tensorflow ingress filter"
 )
 
 func main() {

@@ -28,7 +28,7 @@ import (
 func TestTensorflow_Bind(t *testing.T) {
 	t.Parallel()
 	type fields struct {
-		SessiontOption        *SessionOption
+		SessionOption         *SessionOption
 		ExportPath            string
 		Tags                  []string
 		Feeds                 []*OutputSpec
@@ -61,7 +61,7 @@ func TestTensorflow_Bind(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
-		           SessiontOption: SessionOption{},
+		           SessionOption: SessionOption{},
 		           ExportPath: "",
 		           Tags: nil,
 		           Feeds: nil,
@@ -82,7 +82,7 @@ func TestTensorflow_Bind(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
-		           SessiontOption: SessionOption{},
+		           SessionOption: SessionOption{},
 		           ExportPath: "",
 		           Tags: nil,
 		           Feeds: nil,
@@ -114,7 +114,7 @@ func TestTensorflow_Bind(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			tf := &Tensorflow{
-				SessiontOption:        test.fields.SessiontOption,
+				SessionOption:         test.fields.SessionOption,
 				ExportPath:            test.fields.ExportPath,
 				Tags:                  test.fields.Tags,
 				Feeds:                 test.fields.Feeds,

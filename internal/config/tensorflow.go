@@ -21,7 +21,7 @@ import "encoding/base64"
 
 // Tensorflow represent the Tensorflow converter core configuration for server.
 type Tensorflow struct {
-	SessiontOption        *SessionOption `json:"sessiont_option,omitempty" yaml:"sessiont_option"`
+	SessionOption         *SessionOption `json:"session_option,omitempty" yaml:"session_option"`
 	ExportPath            string         `json:"export_path,omitempty" yaml:"export_path"`
 	Tags                  []string       `json:"tags,omitempty" yaml:"tags"`
 	Feeds                 []*OutputSpec  `json:"feeds,omitempty" yaml:"feeds"`
@@ -45,7 +45,9 @@ type OutputSpec struct {
 
 // Bind returns Tensorflow object whose some string value is filed value or environment value.
 func (tf *Tensorflow) Bind() *Tensorflow {
-	tf.SessiontOption = tf.SessiontOption.Bind()
+	tf.FeedsMap = make(map[string]int, len(tf.Feeds))
+	tf.FetchesMap = make(map[string]int, len(tf.Fetches))
+	tf.SessionOption = tf.SessionOption.Bind()
 	for i, spec := range tf.Feeds {
 		tf.Feeds[i] = spec.Bind()
 		tf.FeedsMap[tf.Feeds[i].OperationName] = tf.Feeds[i].OutputIndex

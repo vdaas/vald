@@ -46,8 +46,8 @@ type run struct {
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	tf, err := tensorflow.New(
 		tensorflow.WithExportPath(cfg.Tensorflow.ExportPath),
-		tensorflow.WithSessionConfig(cfg.Tensorflow.SessiontOption.Config),
-		tensorflow.WithSessionTarget(cfg.Tensorflow.SessiontOption.Target),
+		tensorflow.WithSessionConfig(cfg.Tensorflow.SessionOption.Config),
+		tensorflow.WithSessionTarget(cfg.Tensorflow.SessionOption.Target),
 		tensorflow.WithFeeds(cfg.Tensorflow.FeedsMap),
 		tensorflow.WithFetches(cfg.Tensorflow.FetchesMap),
 		tensorflow.WithTags(cfg.Tensorflow.Tags...),

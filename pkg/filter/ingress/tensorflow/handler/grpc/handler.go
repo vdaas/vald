@@ -61,10 +61,10 @@ func (s *server) GenVector(ctx context.Context, req *payload.Object_Blob) (vec *
 	}
 
 	vec = &payload.Object_Vector{
-		Vector: make([]float32, 0, len(f64vec)),
+		Vector: make([]float32, len(f64vec)),
 	}
 	for i, d := range f64vec {
 		vec.Vector[i] = float32(d)
 	}
-	return nil, nil
+	return vec, nil
 }

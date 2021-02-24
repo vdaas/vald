@@ -307,7 +307,6 @@ docker/build/filter-ingress-tensorflow:
 	    -f dockers/filter/ingress/tensorflow/Dockerfile \
 	    -t $(ORG)/$(FILTER_INGRESS_TF_IMAGE):$(TAG) . \
 	    --build-arg GO_VERSION=$(GO_VERSION) \
-	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg MAINTAINER=$(MAINTAINER) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)

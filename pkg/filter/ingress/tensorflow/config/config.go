@@ -34,7 +34,7 @@ type Data struct {
 	// Observability represent observability configurations
 	Observability *config.Observability `json:"observability" yaml:"observability"`
 
-	// MySQL represent MySQL configurations
+	// Tensorflow represent Tensorflow configurations
 	Tensorflow *config.Tensorflow `json:"tensorflow" yaml:"tensorflow"`
 }
 
