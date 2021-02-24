@@ -19,10 +19,14 @@ on:
     branches:
       - master
     paths:
+      - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/dockers-dev-container-image.yml"
       - "dockers/ci/**"
       - "dockers/dev/**"
   pull_request:
     paths:
+      - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/dockers-dev-container-image.yml"
       - "dockers/ci/**"
       - "dockers/dev/**"
   schedule:

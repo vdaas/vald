@@ -19,11 +19,15 @@ on:
     branches:
       - master
     paths:
+      - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/dockers-ci-container-image.yml"
       - "dockers/ci/**"
       - "versions/GO_VERSION"
       - "versions/NGT_VERSION"
   pull_request:
     paths:
+      - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/dockers-ci-container-image.yml"
       - "dockers/ci/**"
       - "versions/GO_VERSION"
       - "versions/NGT_VERSION"
