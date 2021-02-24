@@ -24,6 +24,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/meta"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
@@ -65,7 +66,7 @@ func (s *server) GetMeta(ctx context.Context, key *payload.Meta_Key) (*payload.M
 					// ResourceName: ,
 					Owner:       errdetails.ValdResourceOwner,
 					Description: err.Error(),
-				})
+				}, info.Get())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
@@ -82,7 +83,7 @@ func (s *server) GetMeta(ctx context.Context, key *payload.Meta_Key) (*payload.M
 				// ResourceName: ,
 				Owner:       errdetails.ValdResourceOwner,
 				Description: err.Error(),
-			})
+			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 		}
@@ -115,7 +116,7 @@ func (s *server) GetMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *pay
 					// ResourceName: ,
 					Owner:       errdetails.ValdResourceOwner,
 					Description: err.Error(),
-				})
+				}, info.Get())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
@@ -132,7 +133,7 @@ func (s *server) GetMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *pay
 				// ResourceName: ,
 				Owner:       errdetails.ValdResourceOwner,
 				Description: err.Error(),
-			})
+			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 		}
@@ -162,7 +163,7 @@ func (s *server) GetMetaInverse(ctx context.Context, val *payload.Meta_Val) (*pa
 					// ResourceName: ,
 					Owner:       errdetails.ValdResourceOwner,
 					Description: err.Error(),
-				})
+				}, info.Get())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
@@ -179,7 +180,7 @@ func (s *server) GetMetaInverse(ctx context.Context, val *payload.Meta_Val) (*pa
 				// ResourceName: ,
 				Owner:       errdetails.ValdResourceOwner,
 				Description: err.Error(),
-			})
+			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 		}
@@ -212,7 +213,7 @@ func (s *server) GetMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (
 					// ResourceName: ,
 					Owner:       errdetails.ValdResourceOwner,
 					Description: err.Error(),
-				})
+				}, info.Get())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
@@ -229,7 +230,7 @@ func (s *server) GetMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (
 				// ResourceName: ,
 				Owner:       errdetails.ValdResourceOwner,
 				Description: err.Error(),
-			})
+			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 		}
@@ -258,7 +259,7 @@ func (s *server) SetMeta(ctx context.Context, kv *payload.Meta_KeyVal) (_ *paylo
 				// ResourceName: ,
 				Owner:       errdetails.ValdResourceOwner,
 				Description: err.Error(),
-			})
+			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -291,7 +292,7 @@ func (s *server) SetMetas(ctx context.Context, kvs *payload.Meta_KeyVals) (_ *pa
 				// ResourceName: ,
 				Owner:       errdetails.ValdResourceOwner,
 				Description: err.Error(),
-			})
+			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -321,7 +322,7 @@ func (s *server) DeleteMeta(ctx context.Context, key *payload.Meta_Key) (*payloa
 					// ResourceName: ,
 					Owner:       errdetails.ValdResourceOwner,
 					Description: err.Error(),
-				})
+				}, info.Get())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
@@ -338,7 +339,7 @@ func (s *server) DeleteMeta(ctx context.Context, key *payload.Meta_Key) (*payloa
 				// ResourceName: ,
 				Owner:       errdetails.ValdResourceOwner,
 				Description: err.Error(),
-			})
+			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 		}
@@ -371,7 +372,7 @@ func (s *server) DeleteMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *
 					// ResourceName: ,
 					Owner:       errdetails.ValdResourceOwner,
 					Description: err.Error(),
-				})
+				}, info.Get())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
@@ -388,7 +389,7 @@ func (s *server) DeleteMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *
 				// ResourceName: ,
 				Owner:       errdetails.ValdResourceOwner,
 				Description: err.Error(),
-			})
+			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 		}
@@ -418,7 +419,7 @@ func (s *server) DeleteMetaInverse(ctx context.Context, val *payload.Meta_Val) (
 					// ResourceName: ,
 					Owner:       errdetails.ValdResourceOwner,
 					Description: err.Error(),
-				})
+				}, info.Get())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
@@ -435,7 +436,7 @@ func (s *server) DeleteMetaInverse(ctx context.Context, val *payload.Meta_Val) (
 				// ResourceName: ,
 				Owner:       errdetails.ValdResourceOwner,
 				Description: err.Error(),
-			})
+			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 		}
@@ -468,7 +469,7 @@ func (s *server) DeleteMetasInverse(ctx context.Context, vals *payload.Meta_Vals
 					// ResourceName: ,
 					Owner:       errdetails.ValdResourceOwner,
 					Description: err.Error(),
-				})
+				}, info.Get())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
@@ -485,7 +486,7 @@ func (s *server) DeleteMetasInverse(ctx context.Context, vals *payload.Meta_Vals
 				// ResourceName: ,
 				Owner:       errdetails.ValdResourceOwner,
 				Description: err.Error(),
-			})
+			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 		}
