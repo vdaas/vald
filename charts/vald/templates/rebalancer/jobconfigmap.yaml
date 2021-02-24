@@ -61,4 +61,7 @@ data:
                       name: aws-secret
                       key: secret-access-key
           restartPolicy: Never
+  config.yaml: |
+    ---
+    version: v0.0.1
 {{- end }}
