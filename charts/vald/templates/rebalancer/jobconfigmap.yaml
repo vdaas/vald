@@ -49,5 +49,16 @@ data:
                 - -c
                 - |
                   sleep 300s;echo 'Hello world'
+              env:
+                - name: AWS_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: aws-secret
+                      key: access-key
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: aws-secret
+                      key: secret-access-key
           restartPolicy: Never
 {{- end }}
