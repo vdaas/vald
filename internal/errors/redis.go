@@ -23,7 +23,7 @@ var (
 	ErrRedisInvalidKVVKPrefix = func(kv, vk string) error {
 		return Errorf("kv index and vk prefix must be defferent.\t(kv: %s,\tvk: %s)", kv, vk)
 	}
-	
+
 	// NewErrRedisNotFoundIdentity represents a function to generate an ErrRedisNotFoundIdentity error.
 	NewErrRedisNotFoundIdentity = func() error {
 		return &ErrRedisNotFoundIdentity{
@@ -31,12 +31,12 @@ var (
 		}
 	}
 
-	// ErrRedisNotFound represents a function to wrap redis key not found error and err.
+	// ErrRedisNotFound represents a function to wrap Redis key not found error and err.
 	ErrRedisNotFound = func(key string) error {
 		return Wrapf(NewErrRedisNotFoundIdentity(), "error redis key '%s' not found", key)
 	}
 
-	// ErrRedisInvalidOption generates a new error of redis invalid option.
+	// ErrRedisInvalidOption generates a new error of Redis invalid option.
 	ErrRedisInvalidOption = New("error redis invalid option")
 
 	// ErrRedisGetOperationFailed represents a function to wrap failed to fetch key error and err.
@@ -62,10 +62,11 @@ var (
 	// ErrRedisAddrsNotFound generates a new error of address not found.
 	ErrRedisAddrsNotFound = New("error redis addrs not found")
 
-	// ErrRedisConnectionPingFailed generates a new error of redis connection ping failed.
+	// ErrRedisConnectionPingFailed generates a new error of Redis connection ping failed.
 	ErrRedisConnectionPingFailed = New("error redis connection ping failed")
 )
 
+// ErrRedisNotFoundIdentity represents a struct that includes err and has method for Redis error handling.
 type ErrRedisNotFoundIdentity struct {
 	err error
 }

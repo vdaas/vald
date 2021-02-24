@@ -600,9 +600,8 @@ func TestErrInvalidConfigVersion(t *testing.T) {
 		}(),
 		func() test {
 			return test{
-				name: "return an config invalid error when cur and con are empty",
-				fields: fields{
-				},
+				name:   "return an config invalid error when cur and con are empty",
+				fields: fields{},
 				want: want{
 					want: New("invalid config version  not satisfies version constraints "),
 				},
@@ -621,7 +620,7 @@ func TestErrInvalidConfigVersion(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			
+
 			got := ErrInvalidConfigVersion(test.fields.cur, test.fields.con)
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
