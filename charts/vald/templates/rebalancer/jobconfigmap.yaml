@@ -63,5 +63,41 @@ data:
           restartPolicy: Never
   config.yaml: |
     ---
-    version: v0.0.1
+    version: {{ .Values.rebalancer.version }}
+    time_zone: {{ default .Values.defaults.time_zone .Values.rebalancer.time_zone }}
+    logging:
+      {{- $logging := dict "Values" .Values.rebalancer.logging "default" .Values.defaults.logging }}
+      {{- include "vald.logging" $logging | nindent 6 }}
+    server_config:
+      {{- $servers := dict "Values" .Values.rebalancer.server_config "default" .Values.defaults.server_config }}
+      {{- include "vald.servers" $servers | nindent 6 }}
+    observability:
+      {{- $observability := dict "Values" .Values.rebalancer.observability "default" .Values.defaults.observability }}
+      {{- include "vald.observability" $observability | nindent 6 }}
+    rebalancer:
+      {{- $sidecar := .Values.sidecar.config }}
+      blob_storage:
+        {{- if $sidecar.blob_storage }}
+        {{- toYaml $sidecar.blob_storage | ninident 8 }}
+        {{- end }}
+      compress:
+        {{- if $sidecar.compress }}
+        {{- toYaml $sidecar.compress | ninident 8 }}
+        {{- end }}
+      filename_suffix:
+        {{- if $sidecar.filename_suffix }}
+        {{- toYaml $sidecar.filename_suffix | ninident 8 }}
+        {{- end }}
+      target_agent_name: _TARGET_AGENT_NAME_
+      rate: _RATE
+      {{- if .Values.gateway.meta.enabled }}
+      {{- $gateway_ingress := .Values.gateway.meta.ingress }}
+      {{- else if .Values.gateway.backup.enabled }}
+      {{- $gateway_ingress := .Values.gateway.backup.ingress }}
+      {{- else }}
+      {{- $gateway_ingress := .Values.gateway.lb.ingress }}
+      {{- end }}
+      gateway_host: {{- $gateway_ingress.host}}
+      gateway_port: ""
+      gateway_client: ""
 {{- end }}
