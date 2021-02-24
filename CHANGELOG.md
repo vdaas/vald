@@ -90,10 +90,7 @@
 - [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.0.3/charts/vald-helm-operator/README.md)
 
 ### Changes
-## Vald v1.0.3 Release
 
-
-### Changelog
 - fix MySQL panic test ([#996](https://github.com/vdaas/vald/pull/996))
 - Update tutorial to support v1 ([#1009](https://github.com/vdaas/vald/pull/1009))
 - remove not supported control flag on darwin ([#1025](https://github.com/vdaas/vald/pull/1025))
