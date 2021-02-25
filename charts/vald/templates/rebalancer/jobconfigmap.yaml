@@ -60,7 +60,15 @@ data:
                     secretKeyRef:
                       name: aws-secret
                       key: secret-access-key
+              volumeMounts:
+                - name: {{ .Values.rebalancer.rebalancer.configmap_name }}
+                  mountPath: /etc/server/
           restartPolicy: Never
+          volume:
+            - name: {{ .Values.rebalancer.rebalancer.configmap_name }}
+              configMap:
+                defaultMode: 420
+                name: {{ .Values.rebalancer.rebalancer.configmap_name }}
   config.yaml: |
     ---
     version: {{ .Values.rebalancer.version }}
