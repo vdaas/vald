@@ -18,12 +18,19 @@
 package config
 
 import (
+	"os"
 	"reflect"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"go.uber.org/goleak"
 )
+
+func TestMain(m *testing.M) {
+	log.Init()
+	os.Exit(m.Run())
+}
 
 func TestGlobalConfig_Bind(t *testing.T) {
 	type fields struct {
@@ -49,35 +56,87 @@ func TestGlobalConfig_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           Version: "",
-		           TZ: "",
-		           Logging: Logging{},
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           Version: "",
-		           TZ: "",
-		           Logging: Logging{},
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return GlobalConfig when all fields are embedded",
+			fields: fields{
+				Version: "v1.0.0",
+				TZ:      "UTC",
+				Logging: &Logging{
+					Logger: "glg",
+					Level:  "warn",
+					Format: "json",
+				},
+			},
+			want: want{
+				want: &GlobalConfig{
+					Version: "v1.0.0",
+					TZ:      "UTC",
+					Logging: &Logging{
+						Logger: "glg",
+						Level:  "warn",
+						Format: "json",
+					},
+				},
+			},
+		},
+		{
+			name: "return GlobalConfig when version and time_zone are embedded but logging is nil",
+			fields: fields{
+				Version: "v1.0.0",
+				TZ:      "UTC",
+			},
+			want: want{
+				want: &GlobalConfig{
+					Version: "v1.0.0",
+					TZ:      "UTC",
+				},
+			},
+		},
+		{
+			name: "return GlobalConfig when all fields are read from environment variable",
+			fields: fields{
+				Version: "_VERSION_",
+				TZ:      "_TZ_",
+				Logging: &Logging{
+					Logger: "_LOGGER_",
+					Level:  "_LEVEL_",
+					Format: "_FORMAT_",
+				},
+			},
+			want: want{
+				want: &GlobalConfig{
+					Version: "v1.0.0",
+					TZ:      "UTC",
+					Logging: &Logging{
+						Logger: "glg",
+						Level:  "warn",
+						Format: "json",
+					},
+				},
+			},
+			beforeFunc: func() {
+				for key, val := range map[string]string{
+					"_VERSION_": "v1.0.0",
+					"_TZ_":      "UTC",
+					"_LOGGER_":  "glg",
+					"_LEVEL_":   "warn",
+					"_FORMAT_":  "json",
+				} {
+					os.Setenv(key, val)
+				}
+			},
+			afterFunc: func() {
+				for _, key := range []string{
+					"_VERSION_",
+					"_TZ_",
+					"_LOGGER_",
+					"_LEVEL_",
+					"_FORMAT_",
+				} {
+					os.Unsetenv(key)
+				}
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -116,59 +175,244 @@ func TestGlobalConfig_UnmarshalJSON(t *testing.T) {
 		Logging *Logging
 	}
 	type want struct {
-		err error
+		want *GlobalConfig
+		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, error) error
+		checkFunc  func(want, *GlobalConfig, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
+	defaultCheckFunc := func(w want, got *GlobalConfig, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           data: nil,
-		       },
-		       fields: fields {
-		           Version: "",
-		           TZ: "",
-		           Logging: Logging{},
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           data: nil,
-		           },
-		           fields: fields {
-		           Version: "",
-		           TZ: "",
-		           Logging: Logging{},
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			data := []byte(`
+			{
+				"version": "v1.0.0",
+				"time_zone": "UTC",
+				"logging": {
+					"logger": "glg",
+					"level": "warn",
+					"format": "json"
+				}
+			}`)
+			return test{
+				name: "return nil when json unmarshal successes",
+				args: args{
+					data: data,
+				},
+				fields: fields{},
+				want: want{
+					want: &GlobalConfig{
+						Version: "v1.0.0",
+						TZ:      "UTC",
+						Logging: &Logging{
+							Logger: "glg",
+							Level:  "warn",
+							Format: "json",
+						},
+					},
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			data := []byte(`
+			{
+				"time_zone": "UTC",
+				"logging": {
+					"logger": "glg",
+					"level": "warn",
+					"format": "json"
+				}
+			}`)
+			return test{
+				name: "return nil when version key is empty and json unmarshal successes",
+				args: args{
+					data: data,
+				},
+				fields: fields{},
+				want: want{
+					want: &GlobalConfig{
+						TZ: "UTC",
+						Logging: &Logging{
+							Logger: "glg",
+							Level:  "warn",
+							Format: "json",
+						},
+					},
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			data := []byte(`
+			{
+				"version": "v1.0.0",
+				"logging": {
+					"logger": "glg",
+					"level": "warn",
+					"format": "json"
+				}
+			}`)
+			return test{
+				name: "return nil when time_zone key is empty and json unmarshal successes",
+				args: args{
+					data: data,
+				},
+				fields: fields{},
+				want: want{
+					want: &GlobalConfig{
+						Version: "v1.0.0",
+						Logging: &Logging{
+							Logger: "glg",
+							Level:  "warn",
+							Format: "json",
+						},
+					},
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			data := []byte(`
+			{
+				"version": "v1.0.0",
+				"time_zone": "UTC"
+			}`)
+			return test{
+				name: "return nil when logging key is empty and json unmarshal successes",
+				args: args{
+					data: data,
+				},
+				fields: fields{},
+				want: want{
+					want: &GlobalConfig{
+						Version: "v1.0.0",
+						TZ:      "UTC",
+					},
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			data := []byte(`
+			{
+				"version": "v1.0.0",
+				"time_zone": "UTC"
+				"logging": {
+					"level": "warn",
+					"format": "json"
+				}
+			}`)
+			return test{
+				name: "return nil when logging.logger key is empty and json unmarshal successes",
+				args: args{
+					data: data,
+				},
+				fields: fields{},
+				want: want{
+					want: &GlobalConfig{
+						Version: "v1.0.0",
+						TZ:      "UTC",
+						Logging: &Logging{
+							Level:  "warn",
+							Format: "json",
+						},
+					},
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			data := []byte(`
+			{
+				"version": "v1.0.0",
+				"time_zone": "UTC"
+				"logging": {
+					"logger": "glg",
+					"format": "json"
+				}
+			}`)
+			return test{
+				name: "return nil when logging.level key is empty and json unmarshal successes",
+				args: args{
+					data: data,
+				},
+				fields: fields{},
+				want: want{
+					want: &GlobalConfig{
+						Version: "v1.0.0",
+						TZ:      "UTC",
+						Logging: &Logging{
+							Logger: "glg",
+							Format: "json",
+						},
+					},
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			data := []byte(`
+			{
+				"version": "v1.0.0",
+				"time_zone": "UTC"
+				"logging": {
+					"logger": "glg",
+					"level": "warn",
+				}
+			}`)
+			return test{
+				name: "return nil when logging.format key is empty and json unmarshal successes",
+				args: args{
+					data: data,
+				},
+				fields: fields{},
+				want: want{
+					want: &GlobalConfig{
+						Version: "v1.0.0",
+						TZ:      "UTC",
+						Logging: &Logging{
+							Logger: "glg",
+							Level:  "warn",
+						},
+					},
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			data := []byte(`{vdaas}`)
+			return test{
+				name: "return unmarshal error when json data is invalid",
+				args: args{
+					data: data,
+				},
+				fields: fields{},
+				want: want{
+					want: &GlobalConfig{
+						Version: "v1.0.0",
+						TZ:      "UTC",
+						Logging: &Logging{
+							Logger: "glg",
+							Level:  "warn",
+							Format: "json",
+						},
+					},
+					err: nil,
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
@@ -190,7 +434,7 @@ func TestGlobalConfig_UnmarshalJSON(t *testing.T) {
 			}
 
 			err := c.UnmarshalJSON(test.args.data)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := test.checkFunc(test.want, c, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -434,35 +678,83 @@ func Test_checkPrefixAndSuffix(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           str: "",
-		           pref: "",
-		           suf: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           str: "",
-		           pref: "",
-		           suf: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return true when prefix and suffix are _ and str is _POD_NAME_",
+			args: args{
+				str:  "_POD_NAME_",
+				pref: "_",
+				suf:  "_",
+			},
+			want: want{
+				want: true,
+			},
+		},
+		{
+			name: "return true when prefix is $ and suffix is & and str is $POD_NAME&",
+			args: args{
+				str:  "$POD_NAME&",
+				pref: "$",
+				suf:  "&",
+			},
+			want: want{
+				want: true,
+			},
+		},
+		{
+			name: "return false when prefix is _ and suffix is empty and str is _POD_NAME_",
+			args: args{
+				str:  "_POD_NAME_",
+				pref: "_",
+				suf:  "",
+			},
+			want: want{
+				want: false,
+			},
+		},
+		{
+			name: "return false when prefix is empty and suffix is _ and str is _POD_NAME_",
+			args: args{
+				str:  "_POD_NAME_",
+				pref: "",
+				suf:  "_",
+			},
+			want: want{
+				want: false,
+			},
+		},
+		{
+			name: "return false when prefix and suffix are _ and str is empty",
+			args: args{
+				str:  "",
+				pref: "_",
+				suf:  "_",
+			},
+			want: want{
+				want: false,
+			},
+		},
+		{
+			name: "return false when prefix and suffix are _ and str is _POD_NAME",
+			args: args{
+				str:  "_POD_NAME",
+				pref: "_",
+				suf:  "_",
+			},
+			want: want{
+				want: false,
+			},
+		},
+		{
+			name: "return false when prefix and suffix are _ and str is POD_NAME_",
+			args: args{
+				str:  "POD_NAME_",
+				pref: "_",
+				suf:  "_",
+			},
+			want: want{
+				want: false,
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -508,31 +800,15 @@ func TestToRawYaml(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           data: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           data: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		/**
+		{
+			name: "test_case_1",
+			args: args{
+				data: nil,
+			},
+			want: want{},
+		},
+		**/
 	}
 
 	for _, test := range tests {
