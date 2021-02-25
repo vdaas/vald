@@ -18,12 +18,37 @@
 package ioutil
 
 import (
+	"bytes"
+	"encoding/gob"
+	"os"
 	"reflect"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"go.uber.org/goleak"
 )
+
+func genStr() []string {
+	str := make([]string, 0)
+	for i := 0; i < 100; i++ {
+		str = append(str, "vdaas.vald.org\n")
+	}
+	return str
+
+}
+
+func genNonPermittedFile(path string) {
+	fp, err := os.Create(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer fp.Close()
+	err = fp.Chmod(0333)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
 
 func TestReadFile(t *testing.T) {
 	t.Parallel()
@@ -52,38 +77,120 @@ func TestReadFile(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           path: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           path: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			fName := "empty_ioutil_test.txt"
+			return test{
+				name: "return ([]byte, nil error) when path is exist file name and file is empty",
+				args: args{
+					path: fName,
+				},
+				want: want{
+					want: []byte{},
+				},
+				beforeFunc: func(args) {
+					fp, err := os.Create(fName)
+					if err != nil {
+						log.Error(err)
+					}
+					defer fp.Close()
+				},
+				afterFunc: func(args) {
+					if err := os.Remove(fName); err != nil {
+						log.Error(err)
+					}
+				},
+			}
+		}(),
+		func() test {
+			fName := "ioutil_test.txt"
+			return test{
+				name: "return ([]byte, nil error) when path is exist file name and file is not empty",
+				args: args{
+					path: fName,
+				},
+				want: want{
+					want: func() []byte {
+						strs := genStr()
+						buf := &bytes.Buffer{}
+						gob.NewEncoder(buf).Encode(strs)
+						return buf.Bytes()
+					}(),
+				},
+				beforeFunc: func(args) {
+					fp, err := os.Create(fName)
+					if err != nil {
+						log.Error(err)
+					}
+					defer fp.Close()
+					strs := genStr()
+					buf := &bytes.Buffer{}
+					gob.NewEncoder(buf).Encode(strs)
+					_, err = fp.Write(buf.Bytes())
+					if err != nil {
+						log.Error(err)
+					}
+				},
+				afterFunc: func(args) {
+					if err := os.Remove(fName); err != nil {
+						log.Error(err)
+					}
+				},
+			}
+		}(),
+		func() test {
+			fName := "cannot_read_ioutil_test.txt"
+			genNonPermittedFile(fName)
+			return test{
+				name: "return (nil, error) when path is exist file cannot be opend due to permission",
+				args: args{
+					path: fName,
+				},
+				want: want{
+					err: func() error {
+						_, err := os.OpenFile(fName, os.O_RDONLY, os.ModePerm)
+						return err
+					}(),
+				},
+				afterFunc: func(args) {
+					if err := os.Remove(fName); err != nil {
+						log.Error(err)
+					}
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return (nil, error) when path is empty",
+				args: args{},
+				want: want{
+					err: func() error {
+						_, err := os.OpenFile("", os.O_RDONLY, os.ModePerm)
+						return err
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return an error when path is not exist file name",
+				args: args{
+					path: "notexist.txt",
+				},
+				want: want{
+					err: func() error {
+						_, err := os.OpenFile("notexist.txt", os.O_RDONLY, os.ModePerm)
+						return err
+					}(),
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

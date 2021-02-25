@@ -24,6 +24,7 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 )
 
+// ReadFile reads the file and returns the number of bytes read and any error encountered.
 func ReadFile(path string) ([]byte, error) {
 	f, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
 	if err != nil {
@@ -39,7 +40,6 @@ func ReadFile(path string) ([]byte, error) {
 	}
 
 	buf := bytes.NewBuffer(make([]byte, 0, n))
-
 	err = safety.RecoverFunc(func() (err error) {
 		_, err = buf.ReadFrom(f)
 		return err
