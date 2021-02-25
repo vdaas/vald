@@ -64,7 +64,7 @@ data:
                 - name: {{ .Values.rebalancer.rebalancer.configmap_name }}
                   mountPath: /etc/server/
           restartPolicy: Never
-          volume:
+          volumes:
             - name: {{ .Values.rebalancer.rebalancer.configmap_name }}
               configMap:
                 defaultMode: 420
