@@ -66,7 +66,7 @@ var (
 	ErrRedisConnectionPingFailed = New("error redis connection ping failed")
 )
 
-// ErrRedisNotFoundIdentity represents a struct that includes err and has method for Redis error handling.
+// ErrRedisNotFoundIdentity represents a struct that includes err and has a method for Redis error handling.
 type ErrRedisNotFoundIdentity struct {
 	err error
 }
