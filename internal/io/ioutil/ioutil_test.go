@@ -35,19 +35,18 @@ func genStr() []string {
 		str = append(str, "vdaas.vald.org\n")
 	}
 	return str
-
 }
 
 func genNonPermittedFile(path string) {
 	fp, err := os.Create(path)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
-	defer fp.Close()
 	err = fp.Chmod(0333)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
+	defer fp.Close()
 }
 
 func TestReadFile(t *testing.T) {
@@ -112,7 +111,10 @@ func TestReadFile(t *testing.T) {
 					want: func() []byte {
 						strs := genStr()
 						buf := &bytes.Buffer{}
-						gob.New().NewEncoder(buf).Encode(strs)
+						if err := gob.New().NewEncoder(buf).Encode(strs); err != nil {
+							log.Error(err)
+							return []byte{}
+						}
 						return buf.Bytes()
 					}(),
 				},
@@ -121,14 +123,15 @@ func TestReadFile(t *testing.T) {
 					if err != nil {
 						log.Error(err)
 					}
-					defer fp.Close()
 					strs := genStr()
 					buf := &bytes.Buffer{}
-					gob.New().NewEncoder(buf).Encode(strs)
-					_, err = fp.Write(buf.Bytes())
-					if err != nil {
+					if err = gob.New().NewEncoder(buf).Encode(strs); err != nil {
 						log.Error(err)
 					}
+					if _, err = fp.Write(buf.Bytes()); err != nil {
+						log.Error(err)
+					}
+					defer fp.Close()
 				},
 				afterFunc: func(args) {
 					if err := os.Remove(fName); err != nil {
