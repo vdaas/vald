@@ -19,11 +19,11 @@ package ioutil
 
 import (
 	"bytes"
-	"encoding/gob"
 	"os"
 	"reflect"
 	"testing"
 
+	"github.com/vdaas/vald/internal/compress/gob"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"go.uber.org/goleak"
@@ -112,7 +112,7 @@ func TestReadFile(t *testing.T) {
 					want: func() []byte {
 						strs := genStr()
 						buf := &bytes.Buffer{}
-						gob.NewEncoder(buf).Encode(strs)
+						gob.New().NewEncoder(buf).Encode(strs)
 						return buf.Bytes()
 					}(),
 				},
@@ -124,7 +124,7 @@ func TestReadFile(t *testing.T) {
 					defer fp.Close()
 					strs := genStr()
 					buf := &bytes.Buffer{}
-					gob.NewEncoder(buf).Encode(strs)
+					gob.New().NewEncoder(buf).Encode(strs)
 					_, err = fp.Write(buf.Bytes())
 					if err != nil {
 						log.Error(err)
