@@ -46,7 +46,7 @@ NGT_VERSION := $(eval NGT_VERSION := $(shell cat versions/NGT_VERSION))$(NGT_VER
 NGT_REPO = github.com/yahoojapan/NGT
 
 GOPROXY=direct
-GO_VERSION := $(eval GO_VERSION := $(shell cat versions/GO_VERSION))$(GO_VERSION)
+GO_VERSION := $(shell cat versions/GO_VERSION)
 GOOS := $(eval GOOS := $(shell go env GOOS))$(GOOS)
 GOARCH := $(eval GOARCH := $(shell go env GOARCH))$(GOARCH)
 GOPATH := $(eval GOPATH := $(shell go env GOPATH))$(GOPATH)
