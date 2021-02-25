@@ -111,7 +111,11 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 		if err != nil {
 			select {
 			case <-ctx.Done():
-				ech <- errors.Wrap(err, ctx.Err().Error())
+				if err != context.Canceled {
+					ech <- errors.Wrap(err, ctx.Err().Error())
+				} else {
+					ech <- err
+				}
 			case ech <- err:
 			}
 			return err
@@ -130,6 +134,9 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 			return err
 		}
 
+		cnt := 0
+
+		var errs error
 		for id, _ := range idm {
 			// get vecotr by id
 			vec, err := client.GetObject(ctx, &payload.Object_VectorRequest{
@@ -138,7 +145,8 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 				},
 			})
 			if err != nil {
-				return err
+				errs = errors.Wrap(errs, err.Error())
+				continue
 			}
 
 			// update data
@@ -150,16 +158,22 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 				},
 			})
 			if err != nil {
-				return err
+				errs = errors.Wrap(errs, err.Error())
+				continue
 			}
 
 			log.Debugf("%v", loc)
 
+			cnt++
 			if amntData--; amntData == 0 {
 				break
 			}
 		}
+		if errs != nil {
+			return err
+		}
 		// request multi update using v1 client
+		// TODO: log amount data & data count
 
 		return nil
 	})
@@ -179,12 +193,11 @@ func (r *rebalancer) loadKVS(ctx context.Context, reader io.Reader) (map[string]
 
 		var header *tar.Header
 		header, err := tr.Next()
-		// TODO: error handling
 		if err != nil {
 			if err == io.EOF {
-				return nil, nil
+				// TODO; define in errors package
+				return nil, errors.New("kvsdb file not found")
 			}
-
 			return nil, err
 		}
 
@@ -203,13 +216,6 @@ func (r *rebalancer) loadKVS(ctx context.Context, reader io.Reader) (map[string]
 			}
 
 			return idm, nil
-		default:
-			// TODO: define in errors package
-			return nil, errors.New("invalid file type")
 		}
-
 	}
-
-	// TODO; define in errors package
-	return nil, errors.New("kvsdb file not found")
 }
