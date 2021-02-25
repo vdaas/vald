@@ -73,7 +73,6 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 		r.eg.Go(safety.RecoverFunc(func() (err error) {
 			defer pw.Close()
 
-			// TODO consider the error handling (why we need channel?)
 			defer func() {
 				if err != nil {
 					select {
@@ -110,13 +109,12 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 		// Unpack tar.gz file and Decode kvsdb file to get the vector ids
 		idm, err := r.loadKVS(ctx, pr)
 		if err != nil {
-			// TODO: should we return here?
 			select {
 			case <-ctx.Done():
-				// loadKVSでcontext.Errが返ってきたら重複してwrapされるので別途考えた方がいいかもしれない
 				ech <- errors.Wrap(err, ctx.Err().Error())
 			case ech <- err:
 			}
+			return err
 		}
 
 		// Calculate to process data from the above data
