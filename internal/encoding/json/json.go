@@ -22,6 +22,8 @@ import (
 	json "github.com/goccy/go-json"
 )
 
+type UnsupportedTypeError = json.UnsupportedTypeError
+
 func Encode(w io.Writer, data interface{}) (err error) {
 	return json.NewEncoder(w).Encode(data)
 }

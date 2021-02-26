@@ -27,6 +27,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/http/rest"
@@ -595,7 +596,9 @@ func TestEncodeRequest(t *testing.T) {
 					data: val,
 				},
 				want: want{
-					err: errors.New("complex128 is unsupported type"),
+					err: &json.UnsupportedTypeError{
+						Type: reflect.ValueOf(val).Type(),
+					},
 				},
 			}
 		}(),
@@ -714,17 +717,20 @@ func TestRequest(t *testing.T) {
 			}
 		}(),
 		func() test {
+			val := 1 + 3i
 			return test{
 				name: "returns json encode error when the request json encoding fails",
 				args: args{
 					ctx:     context.Background(),
 					method:  "POST",
 					url:     "/",
-					payloyd: 1 + 3i,
+					payloyd: val,
 					data:    new(interface{}),
 				},
 				want: want{
-					err: errors.New("complex128 is unsupported type"),
+					err: &json.UnsupportedTypeError{
+						Type: reflect.ValueOf(val).Type(),
+					},
 				},
 			}
 		}(),
