@@ -42,7 +42,7 @@ require (
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
 	contrib.go.opencensus.io/exporter/prometheus v0.2.0
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.5
-	github.com/aws/aws-sdk-go v1.23.20
+	github.com/aws/aws-sdk-go v1.36.1
 	github.com/cespare/xxhash/v2 v2.1.1
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/fsnotify/fsnotify v1.4.9
@@ -76,7 +76,7 @@ require (
 	go.uber.org/zap v1.16.0
 	gocloud.dev v0.21.0
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777
-	golang.org/x/oauth2 v0.0.0-20201208152858-08078c50e5b5
+	golang.org/x/oauth2 v0.0.0-20210113205817-d3ed898aa8a3
 	golang.org/x/sync v0.0.0-20201207232520-09787c993a3a
 	golang.org/x/sys v0.0.0-20210218155724-8ebf48af031b
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
