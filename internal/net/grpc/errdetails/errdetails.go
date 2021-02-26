@@ -200,7 +200,19 @@ func DecodeErrorDetails(objs ...interface{}) (es []*ErrorDetails) {
 
 func Serialize(objs ...interface{}) string {
 	ed := DecodeErrorDetails(objs...)
-	b, err := json.Marshal(ed)
+	var (
+		b   []byte
+		err error
+	)
+
+	switch len(ed) {
+	case 0:
+		return fmt.Sprint(objs...)
+	case 1:
+		b, err = json.Marshal(ed[0])
+	default:
+		b, err = json.Marshal(ed)
+	}
 	if err != nil {
 		msgs := make([]string, 0, len(ed))
 		for _, e := range ed {
