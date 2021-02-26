@@ -20,10 +20,10 @@ metadata:
   name: vald-lb-gateway-config
   labels:
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v0.0.66
+    helm.sh/chart: vald-v1.0.3
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v0.0.66
+    app.kubernetes.io/version: v1.0.3
     app.kubernetes.io/component: gateway-lb
 data:
   config.yaml: |
@@ -59,8 +59,20 @@ data:
             read_buffer_size: 0
             write_buffer_size: 0
           mode: GRPC
+          network: tcp
           probe_wait_time: 3s
           restart: true
+          socket_option:
+            ip_recover_destination_addr: false
+            ip_transparent: false
+            reuse_addr: true
+            reuse_port: true
+            tcp_cork: false
+            tcp_defer_accept: true
+            tcp_fast_open: true
+            tcp_no_delay: true
+            tcp_quick_ack: true
+          socket_path: ""
       health_check_servers:
         - name: liveness
           host: 0.0.0.0
@@ -73,7 +85,19 @@ data:
             shutdown_duration: 5s
             write_timeout: ""
           mode: ""
+          network: tcp
           probe_wait_time: 3s
+          socket_option:
+            ip_recover_destination_addr: false
+            ip_transparent: false
+            reuse_addr: true
+            reuse_port: true
+            tcp_cork: false
+            tcp_defer_accept: true
+            tcp_fast_open: true
+            tcp_no_delay: true
+            tcp_quick_ack: true
+          socket_path: ""
         - name: readiness
           host: 0.0.0.0
           port: 3001
@@ -85,7 +109,19 @@ data:
             shutdown_duration: 0s
             write_timeout: ""
           mode: ""
+          network: tcp
           probe_wait_time: 3s
+          socket_option:
+            ip_recover_destination_addr: false
+            ip_transparent: false
+            reuse_addr: true
+            reuse_port: true
+            tcp_cork: false
+            tcp_defer_accept: true
+            tcp_fast_open: true
+            tcp_no_delay: true
+            tcp_quick_ack: true
+          socket_path: ""
       metrics_servers:
         - name: pprof
           host: 0.0.0.0
@@ -98,7 +134,19 @@ data:
             shutdown_duration: 5s
             write_timeout: 1s
           mode: REST
+          network: tcp
           probe_wait_time: 3s
+          socket_option:
+            ip_recover_destination_addr: false
+            ip_transparent: false
+            reuse_addr: true
+            reuse_port: true
+            tcp_cork: false
+            tcp_defer_accept: true
+            tcp_fast_open: true
+            tcp_no_delay: true
+            tcp_quick_ack: true
+          socket_path: ""
       startup_strategy:
         - liveness
         - pprof
@@ -109,6 +157,7 @@ data:
         ca: /path/to/ca
         cert: /path/to/cert
         enabled: false
+        insecure_skip_verify: false
         key: /path/to/key
     observability:
       enabled: false
@@ -230,8 +279,7 @@ data:
               timeout: ""
             max_msg_size: 0
             min_connection_timeout: 20s
-            read_buffer_size: 0
-            tcp:
+            net:
               dialer:
                 dual_stack_enabled: true
                 keep_alive: ""
@@ -240,17 +288,30 @@ data:
                 cache_enabled: true
                 cache_expiration: 1h
                 refresh_duration: 30m
+              socket_option:
+                ip_recover_destination_addr: false
+                ip_transparent: false
+                reuse_addr: true
+                reuse_port: true
+                tcp_cork: false
+                tcp_defer_accept: true
+                tcp_fast_open: true
+                tcp_no_delay: true
+                tcp_quick_ack: true
               tls:
                 ca: /path/to/ca
                 cert: /path/to/cert
                 enabled: false
+                insecure_skip_verify: false
                 key: /path/to/key
+            read_buffer_size: 0
             timeout: ""
             write_buffer_size: 0
           tls:
             ca: /path/to/ca
             cert: /path/to/cert
             enabled: false
+            insecure_skip_verify: false
             key: /path/to/key
         agent_client_options:
           addrs: []
@@ -289,8 +350,7 @@ data:
               timeout: ""
             max_msg_size: 0
             min_connection_timeout: 20s
-            read_buffer_size: 0
-            tcp:
+            net:
               dialer:
                 dual_stack_enabled: true
                 keep_alive: ""
@@ -299,15 +359,28 @@ data:
                 cache_enabled: true
                 cache_expiration: 1h
                 refresh_duration: 30m
+              socket_option:
+                ip_recover_destination_addr: false
+                ip_transparent: false
+                reuse_addr: true
+                reuse_port: true
+                tcp_cork: false
+                tcp_defer_accept: true
+                tcp_fast_open: true
+                tcp_no_delay: true
+                tcp_quick_ack: true
               tls:
                 ca: /path/to/ca
                 cert: /path/to/cert
                 enabled: false
+                insecure_skip_verify: false
                 key: /path/to/key
+            read_buffer_size: 0
             timeout: ""
             write_buffer_size: 0
           tls:
             ca: /path/to/ca
             cert: /path/to/cert
             enabled: false
+            insecure_skip_verify: false
             key: /path/to/key

@@ -25,6 +25,7 @@ import (
 
 	"github.com/gocql/gocql"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
@@ -79,11 +80,12 @@ func WithHosts(hosts ...string) Option {
 }
 
 // WithDialer returns the option to set the dialer.
-func WithDialer(der gocql.Dialer) Option {
+func WithDialer(der net.Dialer) Option {
 	return func(c *client) error {
 		if der == nil {
 			return errors.NewErrInvalidOption("dialer", der)
 		}
+		c.rawDialer = der
 		c.dialer = der
 		return nil
 	}

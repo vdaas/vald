@@ -14,18 +14,37 @@
 # limitations under the License.
 #
 
+ARG GO_VERSION=latest
 ARG DISTROLESS_IMAGE=gcr.io/distroless/static
 ARG DISTROLESS_IMAGE_TAG=nonroot
 ARG UPX_OPTIONS=-9
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
-FROM vdaas/vald-base:latest AS builder
+FROM golang:${GO_VERSION} AS builder
+
 ARG UPX_OPTIONS
 
+ENV GO111MODULE on
+ENV LANG en_US.UTF-8
 ENV ORG vdaas
 ENV REPO vald
 ENV PKG manager/replication/controller
 ENV APP_NAME controller
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    upx \
+    git \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p $GOPATH/src
+
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
+
+COPY go.mod .
+COPY go.sum .
+
+RUN go mod download
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal
 COPY internal .

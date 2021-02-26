@@ -27,7 +27,7 @@ import (
 func TestMeta_Bind(t *testing.T) {
 	type fields struct {
 		Host                      string
-		Port                      int
+		Port                      uint16
 		Client                    *GRPCClient
 		EnableCache               bool
 		CacheExpiration           string

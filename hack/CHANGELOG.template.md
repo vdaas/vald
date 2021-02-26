@@ -22,29 +22,30 @@
     </td>
   </tr>
   <tr>
-    <td>Discoverer k8s</td>
+    <td>Discoverers</td>
     <td>
       <code>docker pull vdaas/vald-discoverer-k8s:{{ version }}</code><br/>
       <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:{{ version }}</code>
     </td>
   </tr>
   <tr>
-    <td>Gateway</td>
+    <td>Gateways</td>
     <td>
       <code>docker pull vdaas/vald-gateway:{{ version }}</code><br/>
-      <code>docker pull ghcr.io/vdaas/vald/vald-gateway:{{ version }}</code>
+      <code>docker pull ghcr.io/vdaas/vald/vald-gateway:{{ version }}</code><br/>
+      <code>docker pull vdaas/vald-backup-gateway:{{ version }}</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-backup-gateway:{{ version }}</code><br/>
+      <code>docker pull vdaas/vald-lb-gateway:{{ version }}</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:{{ version }}</code><br/>
+      <code>docker pull vdaas/vald-meta-gateway:{{ version }}</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-gateway:{{ version }}</code>
     </td>
   </tr>
   <tr>
-    <td>Backup manager MySQL</td>
+    <td>Backup managers</td>
     <td>
       <code>docker pull vdaas/vald-manager-backup-mysql:{{ version }}</code><br/>
-      <code>docker pull ghcr.io/vdaas/vald/vald-manager-backup-mysql:{{ version }}</code>
-    </td>
-  </tr>
-  <tr>
-    <td>Backup manager Cassandra</td>
-    <td>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-backup-mysql:{{ version }}</code><br/>
       <code>docker pull vdaas/vald-manager-backup-cassandra:{{ version }}</code><br/>
       <code>docker pull ghcr.io/vdaas/vald/vald-manager-backup-cassandra:{{ version }}</code>
     </td>
@@ -57,15 +58,10 @@
     </td>
   </tr>
   <tr>
-    <td>Meta Redis</td>
+    <td>Metas</td>
     <td>
       <code>docker pull vdaas/vald-meta-redis:{{ version }}</code><br/>
-      <code>docker pull ghcr.io/vdaas/vald/vald-meta-redis:{{ version }}</code>
-    </td>
-  </tr>
-  <tr>
-    <td>Meta Cassandra</td>
-    <td>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-redis:{{ version }}</code><br/>
       <code>docker pull vdaas/vald-meta-cassandra:{{ version }}</code><br/>
       <code>docker pull ghcr.io/vdaas/vald/vald-meta-cassandra:{{ version }}</code>
     </td>

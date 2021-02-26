@@ -34,6 +34,7 @@ import (
 	"github.com/vdaas/vald/internal/k8s/node"
 	"github.com/vdaas/vald/internal/k8s/pod"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/safety"
 )
 
@@ -57,6 +58,7 @@ type discoverer struct {
 	namespace       string
 	name            string
 	csd             time.Duration
+	der             net.Dialer
 	eg              errgroup.Group
 }
 
@@ -72,6 +74,7 @@ func New(opts ...Option) (dsc Discoverer, err error) {
 	d.podsByName.Store(make(map[string][]*payload.Info_Pod))
 	d.nodeByName.Store(make(map[string]*payload.Info_Node))
 	d.ctrl, err = k8s.New(
+		k8s.WithDialer(d.der),
 		k8s.WithControllerName("vald k8s agent discoverer"),
 		k8s.WithDisableLeaderElection(),
 		k8s.WithResourceController(mnode.New(
@@ -170,6 +173,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 2)
 	d.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
+		d.der.StartDialerCache(ctx)
 		dt := time.NewTicker(d.csd)
 		defer dt.Stop()
 		for {

@@ -24,6 +24,8 @@ on:
       - "*.*.*-*"
       - "v*.*.*-*"
     paths:
+      - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/dockers-agent-ngt-image.yml"
       - "go.mod"
       - "go.sum"
       - "internal/**"
@@ -33,12 +35,13 @@ on:
       - "apis/grpc/**"
       - "pkg/agent/core/ngt/**"
       - "cmd/agent/core/ngt/**"
-      - "dockers/base/Dockerfile"
       - "dockers/agent/core/ngt/Dockerfile"
       - "versions/GO_VERSION"
       - "versions/NGT_VERSION"
   pull_request:
     paths:
+      - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/dockers-agent-ngt-image.yml"
       - "go.mod"
       - "go.sum"
       - "internal/**"
@@ -48,13 +51,13 @@ on:
       - "apis/grpc/**"
       - "pkg/agent/core/ngt/**"
       - "cmd/agent/core/ngt/**"
-      - "dockers/base/Dockerfile"
-      - "dockers/agent/core/ngt/Dockerfile"
       - "versions/GO_VERSION"
       - "versions/NGT_VERSION"
 
 jobs:
   build:
+    strategy:
+      max-parallel: 4
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

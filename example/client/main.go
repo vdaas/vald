@@ -23,8 +23,9 @@ import (
 
 	"github.com/kpango/fuid"
 	"github.com/kpango/glg"
-	"github.com/vdaas/vald-client-go/gateway/vald"
-	"github.com/vdaas/vald-client-go/payload"
+
+	"github.com/vdaas/vald-client-go/v1/payload"
+	"github.com/vdaas/vald-client-go/v1/vald"
 
 	"gonum.org/v1/hdf5"
 	"google.golang.org/grpc"
@@ -78,13 +79,18 @@ func main() {
 	// Insert 400 example vectors into Vald cluster
 	for i := range ids[:insertCount] {
 		if i%10 == 0 {
-			glg.Infof("Inserted: %d", i)
+			glg.Infof("Inserted: %d", i+10)
 		}
 		// Calls `Insert` function of Vald client.
 		// Sends set of vector and id to server via gRPC.
-		_, err := client.Insert(ctx, &payload.Object_Vector{
-			Id:     ids[i],
-			Vector: train[i],
+		_, err := client.Insert(ctx, &payload.Insert_Request{
+			Vector: &payload.Object_Vector{
+				Id:     ids[i],
+				Vector: train[i],
+			},
+			Config: &payload.Insert_Config{
+				SkipStrictExistCheck: true,
+			},
 		})
 		if err != nil {
 			glg.Fatal(err)

@@ -27,10 +27,10 @@ import (
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/session"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/net/http/client"
-	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/observability"
 	metrics "github.com/vdaas/vald/internal/observability/metrics/agent/sidecar"
 	"github.com/vdaas/vald/internal/runner"
@@ -63,7 +63,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		bs storage.Storage
 	)
 
-	dialer, err := tcp.NewDialer(cfg.AgentSidecar.Client.TCP.Opts()...)
+	dialer, err := net.NewDialer(cfg.AgentSidecar.Client.Net.Opts()...)
 	if err != nil {
 		return nil, err
 	}
@@ -81,6 +81,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		client.WithWriteBufferSize(cfg.AgentSidecar.Client.Transport.RoundTripper.WriteBufferSize),
 		client.WithReadBufferSize(cfg.AgentSidecar.Client.Transport.RoundTripper.ReadBufferSize),
 		client.WithForceAttemptHTTP2(cfg.AgentSidecar.Client.Transport.RoundTripper.ForceAttemptHTTP2),
+		client.WithBackoffOpts(cfg.AgentSidecar.Client.Transport.Backoff.Opts()...),
 	)
 	if err != nil {
 		return nil, err

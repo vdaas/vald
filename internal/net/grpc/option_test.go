@@ -23,7 +23,7 @@ import (
 
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errgroup"
-	"github.com/vdaas/vald/internal/net/tcp"
+	"github.com/vdaas/vald/internal/net"
 	"go.uber.org/goleak"
 	"google.golang.org/grpc"
 )
@@ -3198,7 +3198,7 @@ func TestWithDialer(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		der tcp.Dialer
+		der net.Dialer
 	}
 	type want struct {
 		obj *T

@@ -22,9 +22,9 @@ defaults:
   time_zone: UTC
   # @schema {"name": "defaults.logging", "type": "object", "anchor": "logging"}
   logging:
-    # @schema {"name": "defaults.logging.logger", "type": "string", "enum": ["glg"]}
+    # @schema {"name": "defaults.logging.logger", "type": "string", "enum": ["glg", "zap"]}
     # defaults.logging.logger -- logger name.
-    # currently logger must be `glg`.
+    # currently logger must be `glg` or `zap`.
     logger: glg
     # @schema {"name": "defaults.logging.level", "type": "string", "enum": ["debug", "info", "warn", "error", "fatal"]}
     # defaults.logging.level -- logging level.
@@ -38,7 +38,7 @@ defaults:
   image:
     # @schema {"name": "defaults.image.tag", "type": "string"}
     # defaults.image.tag -- docker image tag
-    tag: v0.0.66
+    tag: v1.0.3
   # @schema {"name": "defaults.server_config", "type": "object", "anchor": "server_config"}
   server_config:
     # @schema {"name": "defaults.server_config.servers", "type": "object"}
@@ -65,26 +65,61 @@ defaults:
           # @schema {"name": "defaults.server_config.servers.rest.server.probe_wait_time", "type": "string"}
           # defaults.server_config.servers.rest.server.probe_wait_time -- REST server probe wait time
           probe_wait_time: 3s
+          # @schema {"name": "defaults.server_config.servers.rest.server.network", "type": "string", "enum": ["tcp", "tcp4", "tcp6", "udp", "udp4", "udp6", "unix", "unixgram", "unixpacket"]}
+          # defaults.server_config.servers.rest.server.network -- mysql network
+          network: tcp
+          # @schema {"name": "defaults.server_config.servers.rest.server.socket_path", "type": "string"}
+          # defaults.server_config.servers.rest.server.socket_path -- mysql socket_path
+          socket_path: ""
           # @schema {"name": "defaults.server_config.servers.rest.server.http", "type": "object"}
           http:
-            # @schema {"name": "defaults.server_config.servers.rest.server.shutdown_duration", "type": "string"}
+            # @schema {"name": "defaults.server_config.servers.rest.server.http.shutdown_duration", "type": "string"}
             # defaults.server_config.servers.rest.server.http.shutdown_duration -- REST server shutdown duration
             shutdown_duration: 5s
-            # @schema {"name": "defaults.server_config.servers.rest.server.handler_timeout", "type": "string"}
+            # @schema {"name": "defaults.server_config.servers.rest.server.http.handler_timeout", "type": "string"}
             # defaults.server_config.servers.rest.server.http.handler_timeout -- REST server handler timeout
             handler_timeout: 5s
-            # @schema {"name": "defaults.server_config.servers.rest.server.idle_timeout", "type": "string"}
+            # @schema {"name": "defaults.server_config.servers.rest.server.http.idle_timeout", "type": "string"}
             # defaults.server_config.servers.rest.server.http.idle_timeout -- REST server idle timeout
             idle_timeout: 2s
-            # @schema {"name": "defaults.server_config.servers.rest.server.read_header_timeout", "type": "string"}
+            # @schema {"name": "defaults.server_config.servers.rest.server.http.read_header_timeout", "type": "string"}
             # defaults.server_config.servers.rest.server.http.read_header_timeout -- REST server read header timeout
             read_header_timeout: 1s
-            # @schema {"name": "defaults.server_config.servers.rest.server.read_timeout", "type": "string"}
+            # @schema {"name": "defaults.server_config.servers.rest.server.http.read_timeout", "type": "string"}
             # defaults.server_config.servers.rest.server.http.read_timeout -- REST server read timeout
             read_timeout: 1s
-            # @schema {"name": "defaults.server_config.servers.rest.server.write_timeout", "type": "string"}
+            # @schema {"name": "defaults.server_config.servers.rest.server.http.write_timeout", "type": "string"}
             # defaults.server_config.servers.rest.server.http.write_timeout -- REST server write timeout
             write_timeout: 1s
+          # @schema {"name": "defaults.server_config.servers.rest.server.socket_option", "type": "object", "anchor": "socket_option"}
+          socket_option:
+            # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.reuse_port", "type": "boolean"}
+            # defaults.server_config.servers.rest.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
+            reuse_port: true
+            # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.reuse_addr", "type": "boolean"}
+            # defaults.server_config.servers.rest.server.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
+            reuse_addr: true
+            # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.net_fast_open", "type": "boolean"}
+            # defaults.server_config.servers.rest.server.socket_option.reuse_port -- server listen socket option for tcp_fast_open functionality
+            tcp_fast_open: true
+            # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.net_no_delay", "type": "boolean"}
+            # defaults.server_config.servers.rest.server.socket_option.reuse_port -- server listen socket option for tcp_no_delay functionality
+            tcp_no_delay: true
+            # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.net_cork", "type": "boolean"}
+            # defaults.server_config.servers.rest.server.socket_option.reuse_port -- server listen socket option for tcp_cork functionality
+            tcp_cork: false
+            # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.net_quick_ack", "type": "boolean"}
+            # defaults.server_config.servers.rest.server.socket_option.reuse_port -- server listen socket option for tcp_quick_ack functionality
+            tcp_quick_ack: true
+            # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.net_defer_accept", "type": "boolean"}
+            # defaults.server_config.servers.rest.server.socket_option.reuse_port -- server listen socket option for tcp_defer_accept functionality
+            tcp_defer_accept: true
+            # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.ip_transparent", "type": "boolean"}
+            # defaults.server_config.servers.rest.server.socket_option.reuse_port -- server listen socket option for ip_transparent functionality
+            ip_transparent: false
+            # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.ip_recover_destination_addr", "type": "boolean"}
+            # defaults.server_config.servers.rest.server.socket_option.reuse_port -- server listen socket option for ip_recover_destination_addr functionality
+            ip_recover_destination_addr: false
       # @schema {"name": "defaults.server_config.servers.grpc", "type": "object"}
       grpc:
         # @schema {"name": "defaults.server_config.servers.grpc.enabled", "type": "boolean"}
@@ -107,6 +142,12 @@ defaults:
           # @schema {"name": "defaults.server_config.servers.grpc.server.probe_wait_time", "type": "string"}
           # defaults.server_config.servers.grpc.server.probe_wait_time -- gRPC server probe wait time
           probe_wait_time: "3s"
+          # @schema {"name": "defaults.server_config.servers.grpc.server.network", "type": "string", "enum": ["tcp", "tcp4", "tcp6", "udp", "udp4", "udp6", "unix", "unixgram", "unixpacket"]}
+          # defaults.server_config.servers.grpc.server.network -- mysql network
+          network: tcp
+          # @schema {"name": "defaults.server_config.servers.grpc.server.socket_path", "type": "string"}
+          # defaults.server_config.servers.grpc.server.socket_path -- mysql socket_path
+          socket_path: ""
           # @schema {"name": "defaults.server_config.servers.grpc.server.grpc", "type": "object"}
           grpc:
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.bidirectional_stream_concurrency", "type": "integer"}
@@ -160,6 +201,26 @@ defaults:
             # defaults.server_config.servers.grpc.server.grpc.interceptors -- gRPC server interceptors
             interceptors:
               - "RecoverInterceptor"
+          # @schema {"name": "defaults.server_config.servers.grpc.server.socket_option", "alias": "socket_option"}
+          socket_option:
+            # defaults.server_config.servers.grpc.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
+            reuse_port: true
+            # defaults.server_config.servers.grpc.server.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
+            reuse_addr: true
+            # defaults.server_config.servers.grpc.server.socket_option.reuse_port -- server listen socket option for tcp_fast_open functionality
+            tcp_fast_open: true
+            # defaults.server_config.servers.grpc.server.socket_option.reuse_port -- server listen socket option for tcp_no_delay functionality
+            tcp_no_delay: true
+            # defaults.server_config.servers.grpc.server.socket_option.reuse_port -- server listen socket option for tcp_cork functionality
+            tcp_cork: false
+            # defaults.server_config.servers.grpc.server.socket_option.reuse_port -- server listen socket option for tcp_quick_ack functionality
+            tcp_quick_ack: true
+            # defaults.server_config.servers.grpc.server.socket_option.reuse_port -- server listen socket option for tcp_defer_accept functionality
+            tcp_defer_accept: true
+            # defaults.server_config.servers.grpc.server.socket_option.reuse_port -- server listen socket option for ip_transparent functionality
+            ip_transparent: false
+            # defaults.server_config.servers.grpc.server.socket_option.reuse_port -- server listen socket option for ip_recover_destination_addr functionality
+            ip_recover_destination_addr: false
           # @schema {"name": "defaults.server_config.servers.grpc.server.restart", "type": "boolean"}
           # defaults.server_config.servers.grpc.server.restart -- gRPC server restart
           restart: true
@@ -215,6 +276,12 @@ defaults:
           # @schema {"name": "defaults.server_config.healths.liveness.server.probe_wait_time", "type": "string"}
           # defaults.server_config.healths.liveness.server.probe_wait_time -- liveness server probe wait time
           probe_wait_time: "3s"
+          # @schema {"name": "defaults.server_config.healths.liveness.server.network", "type": "string", "enum": ["tcp", "tcp4", "tcp6", "udp", "udp4", "udp6", "unix", "unixgram", "unixpacket"]}
+          # defaults.server_config.healths.liveness.server.network -- mysql network
+          network: tcp
+          # @schema {"name": "defaults.server_config.healths.liveness.server.socket_path", "type": "string"}
+          # defaults.server_config.healths.liveness.server.socket_path -- mysql socket_path
+          socket_path: ""
           # @schema {"name": "defaults.server_config.healths.liveness.server.http", "type": "object"}
           http:
             # @schema {"name": "defaults.server_config.healths.liveness.server.http.shutdown_duration", "type": "string"}
@@ -235,6 +302,26 @@ defaults:
             # @schema {"name": "defaults.server_config.healths.liveness.server.http.write_timeout", "type": "string"}
             # defaults.server_config.healths.liveness.server.http.write_timeout -- liveness server write timeout
             write_timeout: ""
+          # @schema {"name": "defaults.server_config.healths.liveness.server.socket_option", "alias": "socket_option"}
+          socket_option:
+            # defaults.server_config.healths.liveness.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
+            reuse_port: true
+            # defaults.server_config.healths.liveness.server.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
+            reuse_addr: true
+            # defaults.server_config.healths.liveness.server.socket_option.reuse_port -- server listen socket option for tcp_fast_open functionality
+            tcp_fast_open: true
+            # defaults.server_config.healths.liveness.server.socket_option.reuse_port -- server listen socket option for tcp_no_delay functionality
+            tcp_no_delay: true
+            # defaults.server_config.healths.liveness.server.socket_option.reuse_port -- server listen socket option for tcp_cork functionality
+            tcp_cork: false
+            # defaults.server_config.healths.liveness.server.socket_option.reuse_port -- server listen socket option for tcp_quick_ack functionality
+            tcp_quick_ack: true
+            # defaults.server_config.healths.liveness.server.socket_option.reuse_port -- server listen socket option for tcp_defer_accept functionality
+            tcp_defer_accept: true
+            # defaults.server_config.healths.liveness.server.socket_option.reuse_port -- server listen socket option for ip_transparent functionality
+            ip_transparent: false
+            # defaults.server_config.healths.liveness.server.socket_option.reuse_port -- server listen socket option for ip_recover_destination_addr functionality
+            ip_recover_destination_addr: false
       # @schema {"name": "defaults.server_config.healths.readiness", "type": "object"}
       readiness:
         # @schema {"name": "defaults.server_config.healths.readiness.enabled", "type": "boolean"}
@@ -285,6 +372,12 @@ defaults:
           # @schema {"name": "defaults.server_config.healths.readiness.server.probe_wait_time", "type": "string"}
           # defaults.server_config.healths.readiness.server.probe_wait_time -- readiness server probe wait time
           probe_wait_time: "3s"
+          # @schema {"name": "defaults.server_config.healths.readiness.server.network", "type": "string", "enum": ["tcp", "tcp4", "tcp6", "udp", "udp4", "udp6", "unix", "unixgram", "unixpacket"]}
+          # defaults.server_config.healths.readiness.server.network -- mysql network
+          network: tcp
+          # @schema {"name": "defaults.server_config.healths.readiness.server.socket_path", "type": "string"}
+          # defaults.server_config.healths.readiness.server.socket_path -- mysql socket_path
+          socket_path: ""
           # @schema {"name": "defaults.server_config.healths.readiness.server.http", "type": "object"}
           http:
             # @schema {"name": "defaults.server_config.healths.readiness.server.http.shutdown_duration", "type": "string"}
@@ -305,6 +398,26 @@ defaults:
             # @schema {"name": "defaults.server_config.healths.readiness.server.http.write_timeout", "type": "string"}
             # defaults.server_config.healths.readiness.server.http.write_timeout -- readiness server write timeout
             write_timeout: ""
+          # @schema {"name": "defaults.server_config.healths.readiness.server.socket_option", "alias": "socket_option"}
+          socket_option:
+            # defaults.server_config.healths.readiness.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
+            reuse_port: true
+            # defaults.server_config.healths.readiness.server.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
+            reuse_addr: true
+            # defaults.server_config.healths.readiness.server.socket_option.reuse_port -- server listen socket option for tcp_fast_open functionality
+            tcp_fast_open: true
+            # defaults.server_config.healths.readiness.server.socket_option.reuse_port -- server listen socket option for tcp_no_delay functionality
+            tcp_no_delay: true
+            # defaults.server_config.healths.readiness.server.socket_option.reuse_port -- server listen socket option for tcp_cork functionality
+            tcp_cork: false
+            # defaults.server_config.healths.readiness.server.socket_option.reuse_port -- server listen socket option for tcp_quick_ack functionality
+            tcp_quick_ack: true
+            # defaults.server_config.healths.readiness.server.socket_option.reuse_port -- server listen socket option for tcp_defer_accept functionality
+            tcp_defer_accept: true
+            # defaults.server_config.healths.readiness.server.socket_option.reuse_port -- server listen socket option for ip_transparent functionality
+            ip_transparent: false
+            # defaults.server_config.healths.readiness.server.socket_option.reuse_port -- server listen socket option for ip_recover_destination_addr functionality
+            ip_recover_destination_addr: false
     # @schema {"name": "defaults.server_config.metrics", "type": "object"}
     metrics:
       # @schema {"name": "defaults.server_config.metrics.pprof", "type": "object"}
@@ -329,6 +442,12 @@ defaults:
           # @schema {"name": "defaults.server_config.metrics.pprof.server.probe_wait_time", "type": "string"}
           # defaults.server_config.metrics.pprof.server.probe_wait_time -- pprof server probe wait time
           probe_wait_time: 3s
+          # @schema {"name": "defaults.server_config.metrics.pprof.server.network", "type": "string", "enum": ["tcp", "tcp4", "tcp6", "udp", "udp4", "udp6", "unix", "unixgram", "unixpacket"]}
+          # defaults.server_config.metrics.pprof.server.network -- mysql network
+          network: tcp
+          # @schema {"name": "defaults.server_config.metrics.pprof.server.socket_path", "type": "string"}
+          # defaults.server_config.metrics.pprof.server.socket_path -- mysql socket_path
+          socket_path: ""
           # @schema {"name": "defaults.server_config.metrics.pprof.server.http", "type": "object"}
           http:
             # @schema {"name": "defaults.server_config.metrics.pprof.server.http.shutdown_duration", "type": "string"}
@@ -349,6 +468,26 @@ defaults:
             # @schema {"name": "defaults.server_config.metrics.pprof.server.http.write_timeout", "type": "string"}
             # defaults.server_config.metrics.pprof.server.http.write_timeout -- pprof server write timeout
             write_timeout: 1s
+          # @schema {"name": "defaults.server_config.metrics.pprof.server.socket_option", "alias": "socket_option"}
+          socket_option:
+            # defaults.server_config.metrics.pprof.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
+            reuse_port: true
+            # defaults.server_config.metrics.pprof.server.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
+            reuse_addr: true
+            # defaults.server_config.metrics.pprof.server.socket_option.reuse_port -- server listen socket option for tcp_fast_open functionality
+            tcp_fast_open: true
+            # defaults.server_config.metrics.pprof.server.socket_option.reuse_port -- server listen socket option for tcp_no_delay functionality
+            tcp_no_delay: true
+            # defaults.server_config.metrics.pprof.server.socket_option.reuse_port -- server listen socket option for tcp_cork functionality
+            tcp_cork: false
+            # defaults.server_config.metrics.pprof.server.socket_option.reuse_port -- server listen socket option for tcp_quick_ack functionality
+            tcp_quick_ack: true
+            # defaults.server_config.metrics.pprof.server.socket_option.reuse_port -- server listen socket option for tcp_defer_accept functionality
+            tcp_defer_accept: true
+            # defaults.server_config.metrics.pprof.server.socket_option.reuse_port -- server listen socket option for ip_transparent functionality
+            ip_transparent: false
+            # defaults.server_config.metrics.pprof.server.socket_option.reuse_port -- server listen socket option for ip_recover_destination_addr functionality
+            ip_recover_destination_addr: false
       # @schema {"name": "defaults.server_config.metrics.prometheus", "type": "object"}
       prometheus:
         # @schema {"name": "defaults.server_config.metrics.prometheus.enabled", "type": "boolean"}
@@ -371,6 +510,12 @@ defaults:
           # @schema {"name": "defaults.server_config.metrics.prometheus.server.probe_wait_time", "type": "string"}
           # defaults.server_config.metrics.prometheus.server.probe_wait_time -- prometheus server probe wait time
           probe_wait_time: 3s
+          # @schema {"name": "defaults.server_config.metrics.prometheus.server.network", "type": "string", "enum": ["tcp", "tcp4", "tcp6", "udp", "udp4", "udp6", "unix", "unixgram", "unixpacket"]}
+          # defaults.server_config.metrics.prometheus.server.network -- mysql network
+          network: tcp
+          # @schema {"name": "defaults.server_config.metrics.prometheus.server.socket_path", "type": "string"}
+          # defaults.server_config.metrics.prometheus.server.socket_path -- mysql socket_path
+          socket_path: ""
           # @schema {"name": "defaults.server_config.metrics.prometheus.server.http", "type": "object"}
           http:
             # @schema {"name": "defaults.server_config.metrics.prometheus.server.http.shutdown_duration", "type": "string"}
@@ -391,6 +536,26 @@ defaults:
             # @schema {"name": "defaults.server_config.metrics.prometheus.server.http.write_timeout", "type": "string"}
             # defaults.server_config.metrics.prometheus.server.http.write_timeout -- prometheus server write timeout
             write_timeout: 1s
+          # @schema {"name": "defaults.server_config.metrics.prometheus.server.socket_option", "alias": "socket_option"}
+          socket_option:
+            # defaults.server_config.metrics.prometheus.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
+            reuse_port: true
+            # defaults.server_config.metrics.prometheus.server.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
+            reuse_addr: true
+            # defaults.server_config.metrics.prometheus.server.socket_option.reuse_port -- server listen socket option for tcp_fast_open functionality
+            tcp_fast_open: true
+            # defaults.server_config.metrics.prometheus.server.socket_option.reuse_port -- server listen socket option for tcp_no_delay functionality
+            tcp_no_delay: true
+            # defaults.server_config.metrics.prometheus.server.socket_option.reuse_port -- server listen socket option for tcp_cork functionality
+            tcp_cork: false
+            # defaults.server_config.metrics.prometheus.server.socket_option.reuse_port -- server listen socket option for tcp_quick_ack functionality
+            tcp_quick_ack: true
+            # defaults.server_config.metrics.prometheus.server.socket_option.reuse_port -- server listen socket option for tcp_defer_accept functionality
+            tcp_defer_accept: true
+            # defaults.server_config.metrics.prometheus.server.socket_option.reuse_port -- server listen socket option for ip_transparent functionality
+            ip_transparent: false
+            # defaults.server_config.metrics.prometheus.server.socket_option.reuse_port -- server listen socket option for ip_recover_destination_addr functionality
+            ip_recover_destination_addr: false
     # @schema {"name": "defaults.server_config.full_shutdown_duration", "type": "string"}
     # defaults.server_config.full_shutdown_duration -- server full shutdown duration
     full_shutdown_duration: 600s
@@ -408,6 +573,9 @@ defaults:
       # @schema {"name": "defaults.server_config.tls.ca", "type": "string"}
       # defaults.server_config.tls.ca -- TLS ca path
       ca: /path/to/ca
+      # @schema {"name": "defaults.server_config.tls.insecure_skip_verify", "type": "boolean"}
+      # defaults.server_config.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+      insecure_skip_verify: false
   # @schema {"name": "defaults.grpc", "type": "object"}
   grpc:
     # @schema {"name": "defaults.grpc.client", "type": "object", "anchor": "grpc.client"}
@@ -513,40 +681,62 @@ defaults:
         # @schema {"name": "defaults.grpc.client.dial_option.timeout", "type": "string"}
         # defaults.grpc.client.dial_option.timeout -- gRPC client dial option timeout
         timeout: ""
-        # @schema {"name": "defaults.grpc.client.dial_option.tcp", "type": "object", "anchor": "tcp"}
-        tcp:
-          # @schema {"name": "defaults.grpc.client.dial_option.tcp.dns", "type": "object"}
+        # @schema {"name": "defaults.grpc.client.dial_option.net", "type": "object", "anchor": "net"}
+        net:
+          # @schema {"name": "defaults.grpc.client.dial_option.net.dns", "type": "object"}
           dns:
-            # @schema {"name": "defaults.grpc.client.dial_option.tcp.dns.cache_enabled", "type": "boolean"}
-            # defaults.grpc.client.dial_option.tcp.dns.cache_enabled -- gRPC client TCP DNS cache enabled
+            # @schema {"name": "defaults.grpc.client.dial_option.net.dns.cache_enabled", "type": "boolean"}
+            # defaults.grpc.client.dial_option.net.dns.cache_enabled -- gRPC client TCP DNS cache enabled
             cache_enabled: true
-            # @schema {"name": "defaults.grpc.client.dial_option.tcp.dns.refresh_duration", "type": "string"}
-            # defaults.grpc.client.dial_option.tcp.dns.refresh_duration -- gRPC client TCP DNS cache refresh duration
+            # @schema {"name": "defaults.grpc.client.dial_option.net.dns.refresh_duration", "type": "string"}
+            # defaults.grpc.client.dial_option.net.dns.refresh_duration -- gRPC client TCP DNS cache refresh duration
             refresh_duration: 30m
-            # @schema {"name": "defaults.grpc.client.dial_option.tcp.dns.cache_expiration", "type": "string"}
-            # defaults.grpc.client.dial_option.tcp.dns.cache_expiration -- gRPC client TCP DNS cache expiration
+            # @schema {"name": "defaults.grpc.client.dial_option.net.dns.cache_expiration", "type": "string"}
+            # defaults.grpc.client.dial_option.net.dns.cache_expiration -- gRPC client TCP DNS cache expiration
             cache_expiration: 1h
-          # @schema {"name": "defaults.grpc.client.dial_option.tcp.dialer", "type": "object"}
+          # @schema {"name": "defaults.grpc.client.dial_option.net.dialer", "type": "object"}
           dialer:
-            # @schema {"name": "defaults.grpc.client.dial_option.tcp.dialer.timeout", "type": "string"}
-            # defaults.grpc.client.dial_option.tcp.dialer.timeout -- gRPC client TCP dialer timeout
+            # @schema {"name": "defaults.grpc.client.dial_option.net.dialer.timeout", "type": "string"}
+            # defaults.grpc.client.dial_option.net.dialer.timeout -- gRPC client TCP dialer timeout
             timeout: ""
-            # @schema {"name": "defaults.grpc.client.dial_option.tcp.dialer.keep_alive", "type": "string"}
-            # defaults.grpc.client.dial_option.tcp.dialer.keep_alive -- gRPC client TCP dialer keep alive
+            # @schema {"name": "defaults.grpc.client.dial_option.net.dialer.keep_alive", "type": "string"}
+            # defaults.grpc.client.dial_option.net.dialer.keep_alive -- gRPC client TCP dialer keep alive
             keep_alive: ""
-            # @schema {"name": "defaults.grpc.client.dial_option.tcp.dialer.dual_stack_enabled", "type": "boolean"}
-            # defaults.grpc.client.dial_option.tcp.dialer.dual_stack_enabled -- gRPC client TCP dialer dual stack enabled
+            # @schema {"name": "defaults.grpc.client.dial_option.net.dialer.dual_stack_enabled", "type": "boolean"}
+            # defaults.grpc.client.dial_option.net.dialer.dual_stack_enabled -- gRPC client TCP dialer dual stack enabled
             dual_stack_enabled: true
-          # @schema {"name": "defaults.grpc.client.dial_option.tcp.tls", "alias": "tls"}
+          # @schema {"name": "defaults.grpc.client.dial_option.net.tls", "alias": "tls"}
           tls:
-            # defaults.grpc.client.dial_option.tcp.tls.enabled -- gRPC client TCP TLS enabled
+            # defaults.grpc.client.dial_option.net.tls.enabled -- TLS enabled
             enabled: false
-            # defaults.grpc.client.dial_option.tcp.tls.cert -- gRPC client TCP TLS cert path
+            # defaults.grpc.client.dial_option.net.tls.cert -- TLS cert path
             cert: /path/to/cert
-            # defaults.grpc.client.dial_option.tcp.tls.key -- gRPC client TCP TLS key path
+            # defaults.grpc.client.dial_option.net.tls.key -- TLS key path
             key: /path/to/key
-            # defaults.grpc.client.dial_option.tcp.tls.ca -- gRPC client TCP TLS ca path
+            # defaults.grpc.client.dial_option.net.tls.ca -- TLS ca path
             ca: /path/to/ca
+            # defaults.grpc.client.dial_option.net.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+            insecure_skip_verify: false
+          # @schema {"name": "defaults.grpc.client.dial_option.net.socket_option", "alias": "socket_option"}
+          socket_option:
+            # defaults.grpc.client.dial_option.net.socket_option.reuse_port -- server listen socket option for reuse_port functionality
+            reuse_port: true
+            # defaults.grpc.client.dial_option.net.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
+            reuse_addr: true
+            # defaults.grpc.client.dial_option.net.socket_option.reuse_port -- server listen socket option for tcp_fast_open functionality
+            tcp_fast_open: true
+            # defaults.grpc.client.dial_option.net.socket_option.reuse_port -- server listen socket option for tcp_no_delay functionality
+            tcp_no_delay: true
+            # defaults.grpc.client.dial_option.net.socket_option.reuse_port -- server listen socket option for tcp_cork functionality
+            tcp_cork: false
+            # defaults.grpc.client.dial_option.net.socket_option.reuse_port -- server listen socket option for tcp_quick_ack functionality
+            tcp_quick_ack: true
+            # defaults.grpc.client.dial_option.net.socket_option.reuse_port -- server listen socket option for tcp_defer_accept functionality
+            tcp_defer_accept: true
+            # defaults.grpc.client.dial_option.net.socket_option.reuse_port -- server listen socket option for ip_transparent functionality
+            ip_transparent: false
+            # defaults.grpc.client.dial_option.net.socket_option.reuse_port -- server listen socket option for ip_recover_destination_addr functionality
+            ip_recover_destination_addr: false
         # @schema {"name": "defaults.grpc.client.dial_option.keep_alive", "type": "object"}
         keep_alive:
           # @schema {"name": "defaults.grpc.client.dial_option.keep_alive.time", "type": "string"}
@@ -560,14 +750,16 @@ defaults:
           permit_without_stream: false
       # @schema {"name": "defaults.grpc.client.tls", "alias": "tls"}
       tls:
-        # defaults.grpc.client.tls.enabled -- gRPC client TLS enabled
+        # defaults.grpc.client.tls.enabled -- TLS enabled
         enabled: false
-        # defaults.grpc.client.tls.cert -- gRPC client TLS cert path
+        # defaults.grpc.client.tls.cert -- TLS cert path
         cert: /path/to/cert
-        # defaults.grpc.client.tls.key -- gRPC client TLS key path
+        # defaults.grpc.client.tls.key -- TLS key path
         key: /path/to/key
-        # defaults.grpc.client.tls.ca -- gRPC client TLS ca path
+        # defaults.grpc.client.tls.ca -- TLS ca path
         ca: /path/to/ca
+        # defaults.grpc.client.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+        insecure_skip_verify: false
   # @schema {"name": "defaults.observability", "type": "object", "anchor": "observability"}
   observability:
     # @schema {"name": "defaults.observability.enabled", "type": "boolean"}
@@ -2077,7 +2269,7 @@ gateway:
       gateway_client: {}
       # @schema {"name": "gateway.filter.gateway_config.ingress_filter", "type": "object"}
       # gateway.filter.gateway_config.ingress_filter -- gRPC client config for ingress filter
-      ingress_filter: 
+      ingress_filter:
         # @schema {"name": "gateway.filter.gateway_config.ingress_filter.client", "alias": "grpc.client"}
         # gateway.filter.gateway_config.ingress_filter.client -- gRPC client for ingress filter (overrides defaults.grpc.client)
         client: {}
@@ -2108,7 +2300,6 @@ gateway:
         # @schema {"name": "gateway.filter.gateway_config.egress_filter.distance_filters", "type": "array", "items": {"type": "string"}}
         # gateway.filter.gateway_config.egress_filter.distance_filters -- distance egress vector filter targets
         distance_filters: []
-
 
 # @schema {"name": "agent", "type": "object"}
 agent:
@@ -2622,31 +2813,53 @@ agent:
         compression_level: -1
       # @schema {"name": "agent.sidecar.config.client", "type": "object"}
       client:
-        # @schema {"name": "agent.sidecar.config.client.tcp", "alias": "tcp"}
-        tcp:
+        # @schema {"name": "agent.sidecar.config.client.net", "alias": "net"}
+        net:
           dns:
-            # agent.sidecar.config.client.tcp.dns.cache_enabled -- HTTP client TCP DNS cache enabled
+            # agent.sidecar.config.client.net.dns.cache_enabled -- HTTP client TCP DNS cache enabled
             cache_enabled: true
-            # agent.sidecar.config.client.tcp.dns.refresh_duration -- HTTP client TCP DNS cache refresh duration
+            # agent.sidecar.config.client.net.dns.refresh_duration -- HTTP client TCP DNS cache refresh duration
             refresh_duration: 1h
-            # agent.sidecar.config.client.tcp.dns.refresh_duration -- HTTP client TCP DNS cache expiration
+            # agent.sidecar.config.client.net.dns.refresh_duration -- HTTP client TCP DNS cache expiration
             cache_expiration: 24h
           dialer:
-            # agent.sidecar.config.client.tcp.dialer.timeout -- HTTP client TCP dialer connect timeout
+            # agent.sidecar.config.client.net.dialer.timeout -- HTTP client TCP dialer connect timeout
             timeout: 5s
-            # agent.sidecar.config.client.tcp.dialer.keep_alive -- HTTP client TCP dialer keep alive
+            # agent.sidecar.config.client.net.dialer.keep_alive -- HTTP client TCP dialer keep alive
             keep_alive: 5m
-            # agent.sidecar.config.client.tcp.dialer.dual_stack_enabled -- HTTP client TCP dialer dual stack enabled
+            # agent.sidecar.config.client.net.dialer.dual_stack_enabled -- HTTP client TCP dialer dual stack enabled
             dual_stack_enabled: false
           tls:
-            # agent.sidecar.config.client.tcp.tls.enabled -- HTTP client TCP TLS enabled
+            # agent.sidecar.config.client.net.tls.enabled -- TLS enabled
             enabled: false
-            # agent.sidecar.config.client.tcp.tls.cert -- HTTP client TCP TLS cert path
+            # agent.sidecar.config.client.net.tls.cert -- TLS cert path
             cert: /path/to/cert
-            # agent.sidecar.config.client.tcp.tls.key -- HTTP client TCP TLS key path
+            # agent.sidecar.config.client.net.tls.key -- TLS key path
             key: /path/to/key
-            # agent.sidecar.config.client.tcp.tls.ca -- HTTP client TCP TLS ca path
+            # agent.sidecar.config.client.net.tls.ca -- TLS ca path
             ca: /path/to/ca
+            # agent.sidecar.config.client.net.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+            insecure_skip_verify: false
+          # @schema {"name": "agent.sidecar.config.client.net.socket_option", "alias": "socket_option"}
+          socket_option:
+            # agent.sidecar.config.client.net.socket_option.reuse_port -- server listen socket option for reuse_port functionality
+            reuse_port: true
+            # agent.sidecar.config.client.net.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
+            reuse_addr: true
+            # agent.sidecar.config.client.net.socket_option.reuse_port -- server listen socket option for tcp_fast_open functionality
+            tcp_fast_open: true
+            # agent.sidecar.config.client.net.socket_option.reuse_port -- server listen socket option for tcp_no_delay functionality
+            tcp_no_delay: true
+            # agent.sidecar.config.client.net.socket_option.reuse_port -- server listen socket option for tcp_cork functionality
+            tcp_cork: false
+            # agent.sidecar.config.client.net.socket_option.reuse_port -- server listen socket option for tcp_quick_ack functionality
+            tcp_quick_ack: true
+            # agent.sidecar.config.client.net.socket_option.reuse_port -- server listen socket option for tcp_defer_accept functionality
+            tcp_defer_accept: true
+            # agent.sidecar.config.client.net.socket_option.reuse_port -- server listen socket option for ip_transparent functionality
+            ip_transparent: false
+            # agent.sidecar.config.client.net.socket_option.reuse_port -- server listen socket option for ip_recover_destination_addr functionality
+            ip_recover_destination_addr: false
         # @schema {"name": "agent.sidecar.config.client.transport", "type": "object"}
         transport:
           # @schema {"name": "agent.sidecar.config.client.transport.round_tripper", "type": "object"}
@@ -2918,6 +3131,53 @@ discoverer:
     # @schema {"name": "discoverer.discoverer.discovery_duration", "type": "string"}
     # discoverer.discoverer.discovery_duration -- duration to discovery
     discovery_duration: 3s
+    # @schema {"name": "discoverer.discoverer.net", "alias": "net"}
+    net:
+      dns:
+        # discoverer.discoverer.net.dns.cache_enabled -- TCP DNS cache enabled
+        cache_enabled: true
+        # discoverer.discoverer.net.dns.refresh_duration -- TCP DNS cache refresh duration
+        refresh_duration: 5m
+        # discoverer.discoverer.net.dns.cache_expiration -- TCP DNS cache expiration
+        cache_expiration: 24h
+      dialer:
+        # discoverer.discoverer.net.dialer.timeout -- TCP dialer timeout
+        timeout: 30s
+        # discoverer.discoverer.net.dialer.keep_alive -- TCP dialer keep alive
+        keep_alive: 10m
+        # discoverer.discoverer.net.dialer.dual_stack_enabled -- TCP dialer dual stack enabled
+        dual_stack_enabled: false
+      tls:
+        # discoverer.discoverer.net.tls.enabled -- TLS enabled
+        enabled: false
+        # discoverer.discoverer.net.tls.cert -- TLS cert path
+        cert: /path/to/cert
+        # discoverer.discoverer.net.tls.key -- TLS key path
+        key: /path/to/key
+        # discoverer.discoverer.net.tls.ca -- TLS ca path
+        ca: /path/to/ca
+        # discoverer.discoverer.net.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+        insecure_skip_verify: false
+      # @schema {"name": "discoverer.discoverer.net.socket_option", "alias": "socket_option"}
+      socket_option:
+        # discoverer.discoverer.net.socket_option.reuse_port -- server listen socket option for reuse_port functionality
+        reuse_port: true
+        # discoverer.discoverer.net.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
+        reuse_addr: true
+        # discoverer.discoverer.net.socket_option.reuse_port -- server listen socket option for tcp_fast_open functionality
+        tcp_fast_open: true
+        # discoverer.discoverer.net.socket_option.reuse_port -- server listen socket option for tcp_no_delay functionality
+        tcp_no_delay: true
+        # discoverer.discoverer.net.socket_option.reuse_port -- server listen socket option for tcp_cork functionality
+        tcp_cork: false
+        # discoverer.discoverer.net.socket_option.reuse_port -- server listen socket option for tcp_quick_ack functionality
+        tcp_quick_ack: true
+        # discoverer.discoverer.net.socket_option.reuse_port -- server listen socket option for tcp_defer_accept functionality
+        tcp_defer_accept: true
+        # discoverer.discoverer.net.socket_option.reuse_port -- server listen socket option for ip_transparent functionality
+        ip_transparent: false
+        # discoverer.discoverer.net.socket_option.reuse_port -- server listen socket option for ip_recover_destination_addr functionality
+        ip_recover_destination_addr: false
   # @schema {"name": "discoverer.clusterRole", "type": "object"}
   clusterRole:
     # @schema {"name": "discoverer.clusterRole.enabled", "type": "boolean"}
@@ -3410,6 +3670,12 @@ manager:
         # @schema {"name": "manager.backup.mysql.config.db", "type": "string", "enum": ["mysql", "postgres", "sqlite3"]}
         # manager.backup.mysql.config.db -- mysql db: mysql, postgres or sqlite3
         db: mysql
+        # @schema {"name": "manager.backup.mysql.config.network", "type": "string", "enum": ["tcp", "tcp4", "tcp6", "udp", "udp4", "udp6", "unix", "unixgram", "unixpacket"]}
+        # manager.backup.mysql.config.network -- mysql network
+        network: tcp
+        # @schema {"name": "manager.backup.mysql.config.socket_path", "type": "string"}
+        # manager.backup.mysql.config.socket_path -- mysql socket_path
+        socket_path: ""
         # @schema {"name": "manager.backup.mysql.config.host", "type": "string"}
         # manager.backup.mysql.config.host -- mysql hostname
         host: mysql.default.svc.cluster.local
@@ -3438,37 +3704,61 @@ manager:
         tls:
           # manager.backup.mysql.config.tls.enabled -- TLS enabled
           enabled: false
-          # manager.backup.mysql.config.tls.cert -- path to TLS cert
+          # manager.backup.mysql.config.tls.cert -- TLS cert path
           cert: /path/to/cert
-          # manager.backup.mysql.config.tls.key -- path to TLS key
+          # manager.backup.mysql.config.tls.key -- TLS key path
           key: /path/to/key
-          # manager.backup.mysql.config.tls.ca -- path to TLS ca
+          # manager.backup.mysql.config.tls.ca -- TLS ca path
           ca: /path/to/ca
-        # @schema {"name": "manager.backup.mysql.config.tls", "alias": "tcp"}
-        tcp:
+          # manager.backup.mysql.config.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+          insecure_skip_verify: false
+        # @schema {"name": "manager.backup.mysql.config.net", "alias": "net"}
+        net:
           dns:
-            # manager.backup.mysql.config.tcp.dns.cache_enabled -- TCP DNS cache enabled
+            # manager.backup.mysql.config.net.dns.cache_enabled -- TCP DNS cache enabled
             cache_enabled: true
-            # manager.backup.mysql.config.tcp.dns.refresh_duration -- TCP DNS cache refresh duration
+            # manager.backup.mysql.config.net.dns.refresh_duration -- TCP DNS cache refresh duration
             refresh_duration: 1h
-            # manager.backup.mysql.config.tcp.dns.cache_expiration -- TCP DNS cache expiration
+            # manager.backup.mysql.config.net.dns.cache_expiration -- TCP DNS cache expiration
             cache_expiration: 24h
           dialer:
-            # manager.backup.mysql.config.tcp.dialer.timeout -- TCP dialer timeout
+            # manager.backup.mysql.config.net.dialer.timeout -- TCP dialer timeout
             timeout: 5s
-            # manager.backup.mysql.config.tcp.dialer.keep_alive -- TCP dialer keep alive
+            # manager.backup.mysql.config.net.dialer.keep_alive -- TCP dialer keep alive
             keep_alive: 5m
-            # manager.backup.mysql.config.tcp.dialer.dual_stack_enabled -- TCP dialer dual stack enabled
+            # manager.backup.mysql.config.net.dialer.dual_stack_enabled -- TCP dialer dual stack enabled
             dual_stack_enabled: false
           tls:
-            # manager.backup.mysql.config.tcp.tls.enabled -- TCP TLS enabled
+            # manager.backup.mysql.config.net.tls.enabled -- TLS enabled
             enabled: false
-            # manager.backup.mysql.config.tcp.tls.cert -- path to TCP TLS cert
+            # manager.backup.mysql.config.net.tls.cert -- TLS cert path
             cert: /path/to/cert
-            # manager.backup.mysql.config.tcp.tls.key -- path to TCP TLS key
+            # manager.backup.mysql.config.net.tls.key -- TLS key path
             key: /path/to/key
-            # manager.backup.mysql.config.tcp.tls.ca -- path to TCP TLS ca
+            # manager.backup.mysql.config.net.tls.ca -- TLS ca path
             ca: /path/to/ca
+            # manager.backup.mysql.config.net.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+            insecure_skip_verify: false
+          # @schema {"name": "manager.backup.mysql.config.net.socket_option", "alias": "socket_option"}
+          socket_option:
+            # manager.backup.mysql.config.net.socket_option.reuse_port -- server listen socket option for reuse_port functionality
+            reuse_port: true
+            # manager.backup.mysql.config.net.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
+            reuse_addr: true
+            # manager.backup.mysql.config.net.socket_option.reuse_port -- server listen socket option for tcp_fast_open functionality
+            tcp_fast_open: true
+            # manager.backup.mysql.config.net.socket_option.reuse_port -- server listen socket option for tcp_no_delay functionality
+            tcp_no_delay: true
+            # manager.backup.mysql.config.net.socket_option.reuse_port -- server listen socket option for tcp_cork functionality
+            tcp_cork: false
+            # manager.backup.mysql.config.net.socket_option.reuse_port -- server listen socket option for tcp_quick_ack functionality
+            tcp_quick_ack: true
+            # manager.backup.mysql.config.net.socket_option.reuse_port -- server listen socket option for tcp_defer_accept functionality
+            tcp_defer_accept: true
+            # manager.backup.mysql.config.net.socket_option.reuse_port -- server listen socket option for ip_transparent functionality
+            ip_transparent: false
+            # manager.backup.mysql.config.net.socket_option.reuse_port -- server listen socket option for ip_recover_destination_addr functionality
+            ip_recover_destination_addr: false
     # @schema {"name": "manager.backup.cassandra", "type": "object", "anchor": "cassandra"}
     cassandra:
       # @schema {"name": "manager.backup.cassandra.enabled", "type": "boolean"}
@@ -3553,28 +3843,61 @@ manager:
         tls:
           # manager.backup.cassandra.config.tls.enabled -- TLS enabled
           enabled: false
-          # manager.backup.cassandra.config.tls.cert -- path to TLS cert
+          # manager.backup.cassandra.config.tls.cert -- TLS cert path
           cert: /path/to/cert
-          # manager.backup.cassandra.config.tls.key -- path to TLS key
+          # manager.backup.cassandra.config.tls.key -- TLS key path
           key: /path/to/key
-          # manager.backup.cassandra.config.tls.ca -- path to TLS ca
+          # manager.backup.cassandra.config.tls.ca -- TLS ca path
           ca: /path/to/ca
-        # @schema {"name": "manager.backup.cassandra.config.tcp", "alias": "tcp"}
-        tcp:
+          # manager.backup.cassandra.config.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+          insecure_skip_verify: false
+        # @schema {"name": "manager.backup.cassandra.config.net", "alias": "net"}
+        net:
           dns:
-            # manager.backup.cassandra.config.tcp.dns.cache_enabled -- TCP DNS cache enabled
+            # manager.backup.cassandra.config.net.dns.cache_enabled -- TCP DNS cache enabled
             cache_enabled: true
-            # manager.backup.cassandra.config.tcp.dns.refresh_duration -- TCP DNS cache refresh duration
+            # manager.backup.cassandra.config.net.dns.refresh_duration -- TCP DNS cache refresh duration
             refresh_duration: 5m
-            # manager.backup.cassandra.config.tcp.dns.cache_expiration -- TCP DNS cache expiration
+            # manager.backup.cassandra.config.net.dns.cache_expiration -- TCP DNS cache expiration
             cache_expiration: 24h
           dialer:
-            # manager.backup.cassandra.config.tcp.dialer.timeout -- TCP dialer timeout
+            # manager.backup.cassandra.config.net.dialer.timeout -- TCP dialer timeout
             timeout: 30s
-            # manager.backup.cassandra.config.tcp.dialer.keep_alive -- TCP dialer keep alive
+            # manager.backup.cassandra.config.net.dialer.keep_alive -- TCP dialer keep alive
             keep_alive: 10m
-            # manager.backup.cassandra.config.tcp.dialer.dual_stack_enabled -- TCP dialer dual stack enabled
+            # manager.backup.cassandra.config.net.dialer.dual_stack_enabled -- TCP dialer dual stack enabled
             dual_stack_enabled: false
+          tls:
+            # manager.backup.cassandra.config.net.tls.enabled -- TLS enabled
+            enabled: false
+            # manager.backup.cassandra.config.net.tls.cert -- TLS cert path
+            cert: /path/to/cert
+            # manager.backup.cassandra.config.net.tls.key -- TLS key path
+            key: /path/to/key
+            # manager.backup.cassandra.config.net.tls.ca -- TLS ca path
+            ca: /path/to/ca
+            # manager.backup.cassandra.config.net.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+            insecure_skip_verify: false
+          # @schema {"name": "manager.backup.cassandra.config.net.socket_option", "alias": "socket_option"}
+          socket_option:
+            # manager.backup.cassandra.config.net.socket_option.reuse_port -- server listen socket option for reuse_port functionality
+            reuse_port: true
+            # manager.backup.cassandra.config.net.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
+            reuse_addr: true
+            # manager.backup.cassandra.config.net.socket_option.reuse_port -- server listen socket option for tcp_fast_open functionality
+            tcp_fast_open: true
+            # manager.backup.cassandra.config.net.socket_option.reuse_port -- server listen socket option for tcp_no_delay functionality
+            tcp_no_delay: true
+            # manager.backup.cassandra.config.net.socket_option.reuse_port -- server listen socket option for tcp_cork functionality
+            tcp_cork: false
+            # manager.backup.cassandra.config.net.socket_option.reuse_port -- server listen socket option for tcp_quick_ack functionality
+            tcp_quick_ack: true
+            # manager.backup.cassandra.config.net.socket_option.reuse_port -- server listen socket option for tcp_defer_accept functionality
+            tcp_defer_accept: true
+            # manager.backup.cassandra.config.net.socket_option.reuse_port -- server listen socket option for ip_transparent functionality
+            ip_transparent: false
+            # manager.backup.cassandra.config.net.socket_option.reuse_port -- server listen socket option for ip_recover_destination_addr functionality
+            ip_recover_destination_addr: false
         # @schema {"name": "manager.backup.cassandra.config.enable_host_verification", "type": "boolean"}
         # manager.backup.cassandra.config.enable_host_verification -- host verification enabled
         enable_host_verification: false
@@ -3857,7 +4180,7 @@ manager:
         # manager.index.indexer.discoverer.agent_client_options -- gRPC client options for agents (overrides defaults.grpc.client)
         agent_client_options:
           dial_option:
-            tcp:
+            net:
               dialer:
                 keep_alive: 15m #indexer fetches uncommitted index length, which includes huge payload so we need to set keep_alive longer than usual
 
@@ -4103,7 +4426,7 @@ meta:
       # @schema {"name": "meta.redis.config.db", "type": "integer"}
       # meta.redis.config.db -- database to be selected
       db: 0
-      # @schema {"name": "meta.redis.config.network", "type": "string"}
+      # @schema {"name": "meta.redis.config.network", "type": "string", "enum": ["tcp", "tcp4", "tcp6", "udp", "udp4", "udp6", "unix", "unixgram", "unixpacket"]}
       # meta.redis.config.network -- connection network type
       network: tcp
       # @schema {"name": "meta.redis.config.dial_timeout", "type": "string"}
@@ -4170,37 +4493,61 @@ meta:
       tls:
         # meta.redis.config.tls.enabled -- TLS enabled
         enabled: false
-        # meta.redis.config.tls.cert -- path to TLS cert
+        # meta.redis.config.tls.cert -- TLS cert path
         cert: /path/to/cert
-        # meta.redis.config.tls.key -- path to TLS key
+        # meta.redis.config.tls.key -- TLS key path
         key: /path/to/key
-        # meta.redis.config.tls.ca -- path to TLS ca
+        # meta.redis.config.tls.ca -- TLS ca path
         ca: /path/to/ca
-      # @schema {"name": "meta.redis.config.tcp", "alias": "tcp"}
-      tcp:
+        # meta.redis.config.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+        insecure_skip_verify: false
+      # @schema {"name": "meta.redis.config.net", "alias": "net"}
+      net:
         dns:
-          # meta.redis.config.tcp.dns.cache_enabled -- TCP DNS cache enabled
+          # meta.redis.config.net.dns.cache_enabled -- TCP DNS cache enabled
           cache_enabled: true
-          # meta.redis.config.tcp.dns.refresh_duration -- TCP DNS cache refresh duration
+          # meta.redis.config.net.dns.refresh_duration -- TCP DNS cache refresh duration
           refresh_duration: 1h
-          # meta.redis.config.tcp.dns.cache_expiration -- TCP DNS cache expiration
+          # meta.redis.config.net.dns.cache_expiration -- TCP DNS cache expiration
           cache_expiration: 24h
         dialer:
-          # meta.redis.config.tcp.dialer.timeout -- TCP dialer timeout
+          # meta.redis.config.net.dialer.timeout -- TCP dialer timeout
           timeout: 5s
-          # meta.redis.config.tcp.dialer.keep_alive -- TCP dialer keep alive
+          # meta.redis.config.net.dialer.keep_alive -- TCP dialer keep alive
           keep_alive: 5m
-          # meta.redis.config.tcp.dialer.dual_stack_enabled -- TCP dialer dual stack enabled
+          # meta.redis.config.net.dialer.dual_stack_enabled -- TCP dialer dual stack enabled
           dual_stack_enabled: false
         tls:
-          # meta.redis.config.tcp.tls.enabled -- TCP TLS enabled
+          # meta.redis.config.net.tls.enabled -- TLS enabled
           enabled: false
-          # meta.redis.config.tcp.tls.cert -- path to TCP TLS cert
+          # meta.redis.config.net.tls.cert -- TLS cert path
           cert: /path/to/cert
-          # meta.redis.config.tcp.tls.key -- path to TCP TLS key
+          # meta.redis.config.net.tls.key -- TLS key path
           key: /path/to/key
-          # meta.redis.config.tcp.tls.ca -- path to TCP TLS ca
+          # meta.redis.config.net.tls.ca -- TLS ca path
           ca: /path/to/ca
+          # meta.redis.config.net.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+          insecure_skip_verify: false
+        # @schema {"name": "meta.redis.config.net.socket_option", "alias": "socket_option"}
+        socket_option:
+          # meta.redis.config.net.socket_option.reuse_port -- server listen socket option for reuse_port functionality
+          reuse_port: true
+          # meta.redis.config.net.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
+          reuse_addr: true
+          # meta.redis.config.net.socket_option.reuse_port -- server listen socket option for tcp_fast_open functionality
+          tcp_fast_open: true
+          # meta.redis.config.net.socket_option.reuse_port -- server listen socket option for tcp_no_delay functionality
+          tcp_no_delay: true
+          # meta.redis.config.net.socket_option.reuse_port -- server listen socket option for tcp_cork functionality
+          tcp_cork: false
+          # meta.redis.config.net.socket_option.reuse_port -- server listen socket option for tcp_quick_ack functionality
+          tcp_quick_ack: true
+          # meta.redis.config.net.socket_option.reuse_port -- server listen socket option for tcp_defer_accept functionality
+          tcp_defer_accept: true
+          # meta.redis.config.net.socket_option.reuse_port -- server listen socket option for ip_transparent functionality
+          ip_transparent: false
+          # meta.redis.config.net.socket_option.reuse_port -- server listen socket option for ip_recover_destination_addr functionality
+          ip_recover_destination_addr: false
       # @schema {"name": "meta.redis.config.kv_prefix", "type": "string"}
       # meta.redis.config.kv_prefix -- KV prefix
       kv_prefix: ""
@@ -4265,30 +4612,65 @@ meta:
       max_routing_key_info: 1000
       # meta.cassandra.config.page_size -- page size
       page_size: 5000
+      # @schema {"name": "meta.cassandra.config.tls", "alias": "tls"}
       tls:
         # meta.cassandra.config.tls.enabled -- TLS enabled
         enabled: false
-        # meta.cassandra.config.tls.cert -- path to TLS cert
+        # meta.cassandra.config.tls.cert -- TLS cert path
         cert: /path/to/cert
-        # meta.cassandra.config.tls.key -- path to TLS key
+        # meta.cassandra.config.tls.key -- TLS key path
         key: /path/to/key
-        # meta.cassandra.config.tls.ca -- path to TLS ca
+        # meta.cassandra.config.tls.ca -- TLS ca path
         ca: /path/to/ca
-      tcp:
+        # meta.cassandra.config.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+        insecure_skip_verify: false
+      # @schema {"name": "meta.cassandra.config.net", "alias": "net"}
+      net:
         dns:
-          # meta.cassandra.config.tcp.dns.cache_enabled -- TCP DNS cache enabled
+          # meta.cassandra.config.net.dns.cache_enabled -- TCP DNS cache enabled
           cache_enabled: true
-          # meta.cassandra.config.tcp.dns.refresh_duration -- TCP DNS cache refresh duration
+          # meta.cassandra.config.net.dns.refresh_duration -- TCP DNS cache refresh duration
           refresh_duration: 5m
-          # meta.cassandra.config.tcp.dns.cache_expiration -- TCP DNS cache expiration
+          # meta.cassandra.config.net.dns.cache_expiration -- TCP DNS cache expiration
           cache_expiration: 24h
         dialer:
-          # meta.cassandra.config.tcp.dialer.timeout -- TCP dialer timeout
+          # meta.cassandra.config.net.dialer.timeout -- TCP dialer timeout
           timeout: 30s
-          # meta.cassandra.config.tcp.dialer.keep_alive -- TCP dialer keep alive
+          # meta.cassandra.config.net.dialer.keep_alive -- TCP dialer keep alive
           keep_alive: 10m
-          # meta.cassandra.config.tcp.dialer.dual_stack_enabled -- TCP dialer dual stack enabled
+          # meta.cassandra.config.net.dialer.dual_stack_enabled -- TCP dialer dual stack enabled
           dual_stack_enabled: false
+        tls:
+          # meta.cassandra.config.net.tls.enabled -- TLS enabled
+          enabled: false
+          # meta.cassandra.config.net.tls.cert -- TLS cert path
+          cert: /path/to/cert
+          # meta.cassandra.config.net.tls.key -- TLS key path
+          key: /path/to/key
+          # meta.cassandra.config.net.tls.ca -- TLS ca path
+          ca: /path/to/ca
+          # meta.cassandra.config.net.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+          insecure_skip_verify: false
+        # @schema {"name": "meta.cassandra.config.net.socket_option", "alias": "socket_option"}
+        socket_option:
+          # meta.cassandra.config.net.socket_option.reuse_port -- server listen socket option for reuse_port functionality
+          reuse_port: true
+          # meta.cassandra.config.net.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
+          reuse_addr: true
+          # meta.cassandra.config.net.socket_option.reuse_port -- server listen socket option for tcp_fast_open functionality
+          tcp_fast_open: true
+          # meta.cassandra.config.net.socket_option.reuse_port -- server listen socket option for tcp_no_delay functionality
+          tcp_no_delay: true
+          # meta.cassandra.config.net.socket_option.reuse_port -- server listen socket option for tcp_cork functionality
+          tcp_cork: false
+          # meta.cassandra.config.net.socket_option.reuse_port -- server listen socket option for tcp_quick_ack functionality
+          tcp_quick_ack: true
+          # meta.cassandra.config.net.socket_option.reuse_port -- server listen socket option for tcp_defer_accept functionality
+          tcp_defer_accept: true
+          # meta.cassandra.config.net.socket_option.reuse_port -- server listen socket option for ip_transparent functionality
+          ip_transparent: false
+          # meta.cassandra.config.net.socket_option.reuse_port -- server listen socket option for ip_recover_destination_addr functionality
+          ip_recover_destination_addr: false
       # meta.cassandra.config.enable_host_verification -- host verification enabled
       enable_host_verification: false
       # meta.cassandra.config.default_timestamp -- default timestamp enabled
@@ -4432,7 +4814,7 @@ initializer:
       # initializer.cassandra.configmap.filename -- cassandra schema filename
       filename: init.cql
       # initializer.cassandra.configmap.user -- cassandra user
-      user: root 
+      user: root
       # initializer.cassandra.configmap.keyspace -- cassandra keyspace
       keyspace: vald
       # initializer.cassandra.configmap.replication_class -- cassandra replication class

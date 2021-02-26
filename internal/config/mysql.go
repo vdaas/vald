@@ -18,16 +18,20 @@
 package config
 
 import (
+	"strings"
+
 	"github.com/vdaas/vald/internal/db/rdb/mysql"
-	"github.com/vdaas/vald/internal/net/tcp"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/tls"
 )
 
 // MySQL represent the mysql configuration.
 type MySQL struct {
 	DB                   string `json:"db" yaml:"db"`
+	Network              string `json:"network" yaml:"network"`
+	SocketPath           string `json:"socket_path" yaml:"socket_path"`
 	Host                 string `json:"host" yaml:"host"`
-	Port                 int    `json:"port" yaml:"port"`
+	Port                 uint16 `json:"port" yaml:"port"`
 	User                 string `json:"user" yaml:"user"`
 	Pass                 string `json:"pass" yaml:"pass"`
 	Name                 string `json:"name" yaml:"name"`
@@ -39,7 +43,7 @@ type MySQL struct {
 	MaxOpenConns         int    `json:"max_open_conns" yaml:"max_open_conns"`
 	MaxIdleConns         int    `json:"max_idle_conns" yaml:"max_idle_conns"`
 	TLS                  *TLS   `json:"tls" yaml:"tls"`
-	TCP                  *TCP   `json:"tcp" yaml:"tcp"`
+	Net                  *Net   `json:"net" yaml:"net"`
 }
 
 // Bind returns MySQL object whose some string value is filed value or environment value.
@@ -49,12 +53,14 @@ func (m *MySQL) Bind() *MySQL {
 	} else {
 		m.TLS = new(TLS)
 	}
-	if m.TCP != nil {
-		m.TCP.Bind()
+	if m.Net != nil {
+		m.Net.Bind()
 	} else {
-		m.TCP = new(TCP)
+		m.Net = new(Net)
 	}
 	m.DB = GetActualValue(m.DB)
+	m.Network = GetActualValue(m.Network)
+	m.SocketPath = GetActualValue(m.SocketPath)
 	m.Host = GetActualValue(m.Host)
 	m.User = GetActualValue(m.User)
 	m.Pass = GetActualValue(m.Pass)
@@ -68,8 +74,16 @@ func (m *MySQL) Bind() *MySQL {
 }
 
 func (m *MySQL) Opts() ([]mysql.Option, error) {
+	nt := net.NetworkTypeFromString(m.Network)
+	if nt == 0 || nt == net.Unknown || strings.EqualFold(nt.String(), net.Unknown.String()) {
+		m.Network = net.TCP.String()
+	} else {
+		m.Network = nt.String()
+	}
 	opts := []mysql.Option{
 		mysql.WithDB(m.DB),
+		mysql.WithNetwork(m.Network),
+		mysql.WithSocketPath(m.SocketPath),
 		mysql.WithHost(m.Host),
 		mysql.WithPort(m.Port),
 		mysql.WithUser(m.User),
@@ -92,8 +106,8 @@ func (m *MySQL) Opts() ([]mysql.Option, error) {
 		opts = append(opts, mysql.WithTLSConfig(tls))
 	}
 
-	if m.TCP != nil {
-		dialer, err := tcp.NewDialer(m.TCP.Opts()...)
+	if m.Net != nil {
+		dialer, err := net.NewDialer(m.Net.Opts()...)
 		if err != nil {
 			return nil, err
 		}

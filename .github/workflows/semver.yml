@@ -81,9 +81,7 @@ jobs:
 
           BODY=""
           if [ ! -z "${PR_NUM}" ]; then
-            PR_COMMENTS=`curl https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${PR_NUM}/comments?per_page=10000`
-            BODY=`echo -E $PR_COMMENTS | jq 'last(.[] | select(.user.login == "vdaas-ci") | select(.body | test("^\\\\*\\\\*\\\\[CHANGELOG")))' -r | jq '.body'`
-            BODY=`echo -e $BODY | tail -n +2`
+            BODY=`curl -s "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${PR_NUM}" | jq -r '.body'`
           fi
 
           if [ -z "$BODY" ]; then

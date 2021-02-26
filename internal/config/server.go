@@ -18,6 +18,9 @@
 package config
 
 import (
+	"strings"
+
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/servers/server"
 )
 
@@ -44,14 +47,17 @@ type Servers struct {
 }
 
 type Server struct {
-	Name          string `json:"name" yaml:"name"`
-	Host          string `json:"host" yaml:"host"`
-	Port          uint   `json:"port" yaml:"port"`
-	Mode          string `json:"mode" yaml:"mode"` // gRPC, REST, GraphQL
-	ProbeWaitTime string `json:"probe_wait_time" yaml:"probe_wait_time"`
-	HTTP          *HTTP  `json:"http" yaml:"http"`
-	GRPC          *GRPC  `json:"grpc" yaml:"grpc"`
-	Restart       bool   `json:"restart" yaml:"restart"`
+	Name          string        `json:"name,omitempty" yaml:"name"`
+	Network       string        `json:"network,omitempty" yaml:"network"`
+	Host          string        `json:"host,omitempty" yaml:"host"`
+	Port          uint16        `json:"port,omitempty" yaml:"port"`
+	SocketPath    string        `json:"socket_path,omitempty" yaml:"socket_path"`
+	Mode          string        `json:"mode,omitempty" yaml:"mode"` // gRPC, REST, GraphQL
+	ProbeWaitTime string        `json:"probe_wait_time,omitempty" yaml:"probe_wait_time"`
+	HTTP          *HTTP         `json:"http,omitempty" yaml:"http"`
+	GRPC          *GRPC         `json:"grpc,omitempty" yaml:"grpc"`
+	SocketOption  *SocketOption `json:"socket_option,omitempty" yaml:"socket_option"`
+	Restart       bool          `json:"restart,omitempty" yaml:"restart"`
 }
 
 type HTTP struct {
@@ -175,6 +181,8 @@ func (k *GRPCKeepalive) Bind() *GRPCKeepalive {
 
 func (s *Server) Bind() *Server {
 	s.Name = GetActualValue(s.Name)
+	s.Network = GetActualValue(s.Network)
+	s.SocketPath = GetActualValue(s.SocketPath)
 	s.Host = GetActualValue(s.Host)
 	s.Mode = GetActualValue(s.Mode)
 	s.ProbeWaitTime = GetActualValue(s.ProbeWaitTime)
@@ -186,17 +194,32 @@ func (s *Server) Bind() *Server {
 	if s.GRPC != nil {
 		s.GRPC.Bind()
 	}
+
+	if s.SocketOption != nil {
+		s.SocketOption.Bind()
+	}
 	return s
 }
 
 func (s *Server) Opts() []server.Option {
 	opts := make([]server.Option, 0, 10)
+	nt := net.NetworkTypeFromString(s.Network)
+	if nt == 0 || nt == net.Unknown || strings.EqualFold(nt.String(), net.Unknown.String()) {
+		nt = net.TCP
+	}
+	s.Network = nt.String()
 	opts = append(opts,
+		server.WithNetwork(s.Network),
+		server.WithSocketPath(s.SocketPath),
 		server.WithName(s.Name),
 		server.WithHost(s.Host),
 		server.WithPort(s.Port),
 		server.WithProbeWaitTime(s.ProbeWaitTime),
 	)
+
+	if s.SocketOption != nil {
+		opts = append(opts, server.WithSocketFlag(s.SocketOption.ToSocketFlag()))
+	}
 
 	switch mode := server.Mode(s.Mode); mode {
 	case server.REST, server.GQL:

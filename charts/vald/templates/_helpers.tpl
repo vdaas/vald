@@ -260,6 +260,8 @@ servers:
     {{- if .Values.servers.rest.server }}
     mode: {{ default .default.servers.rest.server.mode .Values.servers.rest.server.mode }}
     probe_wait_time: {{ default .default.servers.rest.server.probe_wait_time .Values.servers.rest.server.probe_wait_time }}
+    network: {{ default .default.servers.rest.server.network .Values.servers.rest.server.network | quote }}
+    socket_path: {{ default .default.servers.rest.server.socket_path .Values.servers.rest.server.socket_path | quote }}
     http:
       {{- if .Values.servers.rest.server.http }}
       shutdown_duration: {{ default .default.servers.rest.server.http.shutdown_duration .Values.servers.rest.server.http.shutdown_duration }}
@@ -286,6 +288,8 @@ servers:
     {{- if .Values.servers.grpc.server }}
     mode: {{ default .default.servers.grpc.server.mode .Values.servers.grpc.server.mode }}
     probe_wait_time: {{ default .default.servers.grpc.server.probe_wait_time .Values.servers.grpc.server.probe_wait_time | quote }}
+    network: {{ default .default.servers.grpc.server.network .Values.servers.grpc.server.network | quote }}
+    socket_path: {{ default .default.servers.grpc.server.socket_path .Values.servers.grpc.server.socket_path | quote }}
     grpc:
       {{- if .Values.servers.grpc.server.grpc }}
       max_receive_message_size: {{ default .default.servers.grpc.server.grpc.max_receive_message_size .Values.servers.grpc.server.grpc.max_receive_message_size }}
@@ -336,6 +340,8 @@ health_check_servers:
     {{- if .Values.healths.liveness.server }}
     mode: {{ default .default.healths.liveness.server.mode .Values.healths.liveness.server.mode | quote }}
     probe_wait_time: {{ default .default.healths.liveness.server.probe_wait_time .Values.healths.liveness.server.probe_wait_time | quote }}
+    network: {{ default .default.healths.liveness.server.network .Values.healths.liveness.server.network | quote }}
+    socket_path: {{ default .default.healths.liveness.server.socket_path .Values.healths.liveness.server.socket_path | quote }}
     http:
       {{- if .Values.healths.liveness.server.http }}
       shutdown_duration: {{ default .default.healths.liveness.server.http.shutdown_duration .Values.healths.liveness.server.http.shutdown_duration | quote }}
@@ -362,6 +368,8 @@ health_check_servers:
     {{- if .Values.healths.readiness.server }}
     mode: {{ default .default.healths.readiness.server.mode .Values.healths.readiness.server.mode | quote }}
     probe_wait_time: {{ default .default.healths.readiness.server.probe_wait_time .Values.healths.readiness.server.probe_wait_time | quote }}
+    network: {{ default .default.healths.readiness.server.network .Values.healths.readiness.server.network | quote }}
+    socket_path: {{ default .default.healths.readiness.server.socket_path .Values.healths.readiness.server.socket_path | quote }}
     http:
       {{- if .Values.healths.readiness.server.http }}
       shutdown_duration: {{ default .default.healths.readiness.server.http.shutdown_duration .Values.healths.readiness.server.http.shutdown_duration | quote }}
@@ -389,6 +397,8 @@ metrics_servers:
     {{- if .Values.metrics.pprof.server }}
     mode: {{ default .default.metrics.pprof.server.mode .Values.metrics.pprof.server.mode }}
     probe_wait_time: {{ default .default.metrics.pprof.server.probe_wait_time .Values.metrics.pprof.server.probe_wait_time }}
+    network: {{ default .default.metrics.pprof.server.network .Values.metrics.pprof.server.network | quote }}
+    socket_path: {{ default .default.metrics.pprof.server.socket_path .Values.metrics.pprof.server.socket_path | quote }}
     http:
       {{- if .Values.metrics.pprof.server.http }}
       shutdown_duration: {{ default .default.metrics.pprof.server.http.shutdown_duration .Values.metrics.pprof.server.http.shutdown_duration }}
@@ -415,6 +425,8 @@ metrics_servers:
     {{- if .Values.metrics.prometheus.server }}
     mode: {{ default .default.metrics.prometheus.server.mode .Values.metrics.prometheus.server.mode }}
     probe_wait_time: {{ default .default.metrics.prometheus.server.probe_wait_time .Values.metrics.prometheus.server.probe_wait_time }}
+    network: {{ default .default.metrics.prometheus.server.network .Values.metrics.prometheus.server.network | quote }}
+    socket_path: {{ default .default.metrics.prometheus.server.socket_path .Values.metrics.prometheus.server.socket_path | quote }}
     http:
       {{- if .Values.metrics.prometheus.server.http }}
       shutdown_duration: {{ default .default.metrics.prometheus.server.http.shutdown_duration .Values.metrics.prometheus.server.http.shutdown_duration }}
@@ -456,6 +468,7 @@ tls:
   cert: {{ default .default.tls.cert .Values.tls.cert | quote }}
   key: {{ default .default.tls.key .Values.tls.key | quote }}
   ca: {{ default .default.tls.ca .Values.tls.ca | quote }}
+  insecure_skip_verify: {{ default .default.tls.insecure_skip_verify .Values.tls.insecure_skip_verify }}
   {{- else }}
   {{- toYaml .default.tls | nindent 2 }}
   {{- end }}
@@ -527,35 +540,50 @@ dial_option:
   enable_backoff: {{ default .default.dial_option.enable_backoff .Values.dial_option.enable_backoff }}
   insecure: {{ default .default.dial_option.insecure .Values.dial_option.insecure }}
   timeout: {{ default .default.dial_option.timeout .Values.dial_option.timeout | quote }}
-  tcp:
-    {{- if .Values.dial_option.tcp }}
+  net:
+    {{- if .Values.dial_option.net }}
     dns:
-      {{- if .Values.dial_option.tcp.dns }}
-      cache_enabled: {{ default .default.dial_option.tcp.dns.cache_enabled .Values.dial_option.tcp.dns.cache_enabled }}
-      refresh_duration: {{ default .default.dial_option.tcp.dns.refresh_duration .Values.dial_option.tcp.dns.refresh_duration | quote }}
-      cache_expiration: {{ default .default.dial_option.tcp.dns.cache_expiration .Values.dial_option.tcp.dns.cache_expiration | quote }}
+      {{- if .Values.dial_option.net.dns }}
+      cache_enabled: {{ default .default.dial_option.net.dns.cache_enabled .Values.dial_option.net.dns.cache_enabled }}
+      refresh_duration: {{ default .default.dial_option.net.dns.refresh_duration .Values.dial_option.net.dns.refresh_duration | quote }}
+      cache_expiration: {{ default .default.dial_option.net.dns.cache_expiration .Values.dial_option.net.dns.cache_expiration | quote }}
       {{- else }}
-      {{- toYaml .default.dial_option.tcp.dns | nindent 6 }}
+      {{- toYaml .default.dial_option.net.dns | nindent 6 }}
       {{- end }}
     dialer:
-      {{- if .Values.dial_option.tcp.dialer }}
-      timeout: {{ default .default.dial_option.tcp.dialer.timeout .Values.dial_option.tcp.dialer.timeout | quote }}
-      keep_alive: {{ default .default.dial_option.tcp.dialer.keep_alive .Values.dial_option.tcp.dialer.keep_alive | quote }}
-      dual_stack_enabled: {{ default .default.dial_option.tcp.dialer.dual_stack_enabled .Values.dial_option.tcp.dialer.dual_stack_enabled }}
+      {{- if .Values.dial_option.net.dialer }}
+      timeout: {{ default .default.dial_option.net.dialer.timeout .Values.dial_option.net.dialer.timeout | quote }}
+      keep_alive: {{ default .default.dial_option.net.dialer.keep_alive .Values.dial_option.net.dialer.keep_alive | quote }}
+      dual_stack_enabled: {{ default .default.dial_option.net.dialer.dual_stack_enabled .Values.dial_option.net.dialer.dual_stack_enabled }}
       {{- else }}
-      {{- toYaml .default.dial_option.tcp.dialer | nindent 6 }}
+      {{- toYaml .default.dial_option.net.dialer | nindent 6 }}
       {{- end }}
     tls:
-      {{- if .Values.dial_option.tcp.tls }}
-      enabled: {{ default .default.dial_option.tcp.tls.enabled .Values.dial_option.tcp.tls.enabled }}
-      cert: {{ default .default.dial_option.tcp.tls.cert .Values.dial_option.tcp.tls.cert | quote }}
-      key: {{ default .default.dial_option.tcp.tls.key .Values.dial_option.tcp.tls.key | quote }}
-      ca: {{ default .default.dial_option.tcp.tls.ca .Values.dial_option.tcp.tls.ca | quote }}
+      {{- if .Values.dial_option.net.tls }}
+      enabled: {{ default .default.dial_option.net.tls.enabled .Values.dial_option.net.tls.enabled }}
+      cert: {{ default .default.dial_option.net.tls.cert .Values.dial_option.net.tls.cert | quote }}
+      key: {{ default .default.dial_option.net.tls.key .Values.dial_option.net.tls.key | quote }}
+      ca: {{ default .default.dial_option.net.tls.ca .Values.dial_option.net.tls.ca | quote }}
+      insecure_skip_verify: {{ default .default.dial_option.net.tls.insecure_skip_verify .Values.dial_option.net.tls.insecure_skip_verify }}
       {{- else }}
-      {{- toYaml .default.dial_option.tcp.tls | nindent 6 }}
+      {{- toYaml .default.dial_option.net.tls | nindent 6 }}
+      {{- end }}
+    socket_option:
+      {{- if .Values.dial_option.net.socket_option }}
+      reuse_port: {{ default .default.dial_option.net.socket_option.reuse_port .Values.dial_option.net.socket_option.reuse_port }}
+      reuse_addr: {{ default .default.dial_option.net.socket_option.reuse_addr .Values.dial_option.net.socket_option.reuse_addr }}
+      tcp_fast_open: {{ default .default.dial_option.net.socket_option.tcp_fast_open .Values.dial_option.net.socket_option.tcp_fast_open }}
+      tcp_no_delay: {{ default .default.dial_option.net.socket_option.tcp_no_delay .Values.dial_option.net.socket_option.tcp_no_delay }}
+      tcp_cork: {{ default .default.dial_option.net.socket_option.tcp_cork .Values.dial_option.net.socket_option.tcp_cork }}
+      tcp_quick_ack: {{ default .default.dial_option.net.socket_option.tcp_quick_ack .Values.dial_option.net.socket_option.tcp_quick_ack }}
+      tcp_defer_accept: {{ default .default.dial_option.net.socket_option.tcp_defer_accept .Values.dial_option.net.socket_option.tcp_defer_accept }}
+      ip_transparent: {{ default .default.dial_option.net.socket_option.ip_transparent .Values.dial_option.net.socket_option.ip_transparent }}
+      ip_recover_destination_addr: {{ default .default.dial_option.net.socket_option.ip_recover_destination_addr .Values.dial_option.net.socket_option.ip_recover_destination_addr }}
+      {{- else }}
+      {{- toYaml .default.dial_option.net.tls | nindent 6 }}
       {{- end }}
     {{- else }}
-    {{- toYaml .default.dial_option.tcp | nindent 4 }}
+    {{- toYaml .default.dial_option.net | nindent 4 }}
     {{- end }}
   keep_alive:
     {{- if .Values.dial_option.keep_alive }}
@@ -574,6 +602,7 @@ tls:
   cert: {{ default .default.tls.cert .Values.tls.cert | quote }}
   key: {{ default .default.tls.key .Values.tls.key | quote }}
   ca: {{ default .default.tls.ca .Values.tls.ca | quote }}
+  insecure_skip_verify: {{ default .default.tls.insecure_skip_verify .Values.tls.insecure_skip_verify }}
   {{- else }}
   {{- toYaml .default.tls | nindent 2 }}
   {{- end }}

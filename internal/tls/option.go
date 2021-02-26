@@ -23,6 +23,7 @@ type Option func(*credentials) error
 
 var defaultOptions = func() []Option {
 	return []Option{
+		WithInsecureSkipVerify(false),
 		WithTLSConfig(&tls.Config{
 			MinVersion: tls.VersionTLS12,
 			NextProtos: []string{
@@ -93,6 +94,13 @@ func WithTLSConfig(cfg *tls.Config) Option {
 		if cfg != nil {
 			c.cfg = cfg
 		}
+		return nil
+	}
+}
+
+func WithInsecureSkipVerify(insecure bool) Option {
+	return func(c *credentials) error {
+		c.insecure = insecure
 		return nil
 	}
 }

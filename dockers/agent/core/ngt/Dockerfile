@@ -15,7 +15,6 @@
 #
 
 ARG GO_VERSION=latest
-ARG BASE_TAG=latest
 ARG DISTROLESS_IMAGE=gcr.io/distroless/static
 ARG DISTROLESS_IMAGE_TAG=nonroot
 ARG UPX_OPTIONS=-9
@@ -23,16 +22,45 @@ ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
 FROM golang:${GO_VERSION} AS golang
 
-FROM vdaas/vald-base:${BASE_TAG} AS builder
+FROM ubuntu:devel AS builder
+
 ARG UPX_OPTIONS
 
+ENV GO111MODULE on
+ENV DEBIAN_FRONTEND noninteractive
+ENV INITRD No
+ENV LANG en_US.UTF-8
+ENV GOROOT /opt/go
+ENV GOPATH /go
+ENV PATH ${PATH}:${GOROOT}/bin:${GOPATH}/bin
 ENV ORG vdaas
 ENV REPO vald
 ENV PKG agent/core/ngt
 ENV PKG_INTERNAL agent/internal
 ENV APP_NAME ngt
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    build-essential \
+    cmake \
+    upx \
+    curl \
+    unzip \
+    git \
+    gcc \
+    g++ \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY --from=golang /usr/local/go $GOROOT
+RUN mkdir $GOPATH
+
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
+
+COPY go.mod .
+COPY go.sum .
+
+RUN go mod download
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal
 COPY internal .

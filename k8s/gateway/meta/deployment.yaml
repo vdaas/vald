@@ -21,10 +21,10 @@ metadata:
   labels:
     app: vald-meta-gateway
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v0.0.66
+    helm.sh/chart: vald-v1.0.3
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v0.0.66
+    app.kubernetes.io/version: v1.0.3
     app.kubernetes.io/component: gateway
 spec:
   progressDeadlineSeconds: 600
@@ -46,7 +46,7 @@ spec:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/component: gateway
       annotations:
-        checksum/configmap: f8840e833cb2820441e3508aec34165312def8215b2aeccb57e990b50b4d998f
+        checksum/configmap: c607aadc72762ddf7cbedc92c3f2ce576c47cad7798550b9ac96b388ac6f8088
     spec:
       initContainers:
         - name: wait-for-meta
@@ -163,5 +163,5 @@ spec:
           configMap:
             defaultMode: 420
             name: vald-meta-gateway-config
-      priorityClassName: vald-meta-gateway-priority
+      priorityClassName: default-vald-meta-gateway-priority
 status:

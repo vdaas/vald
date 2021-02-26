@@ -16,7 +16,6 @@
 .PHONY: docker/build
 ## build all docker images
 docker/build: \
-	docker/build/base \
 	docker/build/agent-ngt \
 	docker/build/agent-sidecar \
 	docker/build/discoverer-k8s \
@@ -44,20 +43,6 @@ docker/name/org/alter:
 .PHONY: docker/platforms
 docker/platforms:
 	@echo "linux/amd64,linux/arm64"
-
-.PHONY: docker/name/base
-docker/name/base:
-	@echo "$(ORG)/$(BASE_IMAGE)"
-
-.PHONY: docker/build/base
-## build base image
-docker/build/base:
-	$(DOCKER) build \
-	    $(DOCKER_OPTS) \
-	    -f dockers/base/Dockerfile \
-	    -t $(ORG)/$(BASE_IMAGE):$(TAG) . \
-	    --build-arg MAINTAINER=$(MAINTAINER) \
-	    --build-arg GO_VERSION=$(GO_VERSION)
 
 .PHONY: docker/name/agent-ngt
 docker/name/agent-ngt:
@@ -333,6 +318,7 @@ docker/build/operator/helm:
 	    $(DOCKER_OPTS) \
 	    -f dockers/operator/helm/Dockerfile \
 	    -t $(ORG)/$(HELM_OPERATOR_IMAGE):$(TAG) . \
+	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg MAINTAINER=$(MAINTAINER) \
 	    --build-arg OPERATOR_SDK_VERSION=$(OPERATOR_SDK_VERSION)
 

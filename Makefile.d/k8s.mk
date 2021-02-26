@@ -89,6 +89,7 @@ k8s/vald/deploy: \
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/backup
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/meta
 	rm -rf $(TEMP_DIR)
+	kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr " " "\n"
 
 .PHONY: k8s/vald/delete
 ## delete vald sample cluster from k8s
@@ -117,6 +118,7 @@ k8s/vald/deploy/cassandra: \
 	    --set defaults.image.tag=$(VERSION) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
+	kubectl apply -f $(TEMP_DIR)/vald/templates/jobs/db/initialize/cassandra
 	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/backup
 	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/compressor
 	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/index
@@ -128,6 +130,7 @@ k8s/vald/deploy/cassandra: \
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/backup
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/meta
 	rm -rf $(TEMP_DIR)
+	kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr " " "\n"
 
 
 .PHONY: k8s/vald/delete/cassandra
@@ -140,6 +143,7 @@ k8s/vald/delete/cassandra: \
 	    --set defaults.image.tag=$(VERSION) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
+	kubectl delete -f $(TEMP_DIR)/vald/templates/jobs/db/initialize/cassandra
 	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/backup
 	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/compressor
 	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/index
@@ -173,6 +177,7 @@ k8s/vald/deploy/scylla: \
 	kubectl apply -f $(TEMP_DIR)/vald/templates/meta
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/meta
 	rm -rf $(TEMP_DIR)
+	kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr " " "\n"
 
 .PHONY: k8s/vald/delete/scylla
 ## delete vald sample cluster with scylla to k8s
@@ -201,6 +206,7 @@ k8s/vald/delete/scylla: \
 k8s/external/mysql/deploy:
 	kubectl apply -f k8s/jobs/db/initialize/mysql/configmap.yaml
 	kubectl apply -f k8s/external/mysql
+	sleep $(K8S_SLEEP_DURATION_FOR_WAIT_COMMAND)
 	kubectl wait --for=condition=ready pod -l app=mysql --timeout=600s
 
 .PHONY: k8s/external/mysql/delete
@@ -220,6 +226,7 @@ k8s/external/mysql/initialize:
 ## deploy redis to k8s
 k8s/external/redis/deploy:
 	kubectl apply -f k8s/external/redis
+	sleep $(K8S_SLEEP_DURATION_FOR_WAIT_COMMAND)
 	kubectl wait --for=condition=ready pod -l app=redis --timeout=600s
 
 .PHONY: k8s/external/redis/delete
@@ -237,14 +244,20 @@ k8s/external/redis/initialize:
 .PHONY: k8s/external/cassandra/deploy
 ## deploy cassandra to k8s
 k8s/external/cassandra/deploy:
-	kubectl apply -f k8s/jobs/db/initialize/cassandra/configmap.yaml
+	kubectl apply -f https://raw.githubusercontent.com/datastax/cass-operator/master/docs/user/cass-operator-manifests-$(K8S_SERVER_VERSION).yaml
+	sleep $(K8S_SLEEP_DURATION_FOR_WAIT_COMMAND)
+	kubectl apply -n cass-operator -f k8s/jobs/db/initialize/cassandra/secret.yaml
+	kubectl wait -n cass-operator --for=condition=ready pod -l name=cass-operator --timeout=600s
 	kubectl apply -f k8s/external/cassandra
+	sleep 20
+	kubectl wait -n cass-operator --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=cluster0-dc0-default-sts-0 --timeout=600s
 
 .PHONY: k8s/external/cassandra/delete
 ## delete cassandra from k8s
 k8s/external/cassandra/delete:
+	kubectl delete -n cass-operator -f k8s/jobs/db/initialize/cassandra/secret.yaml
 	kubectl delete -f k8s/external/cassandra
-	kubectl delete configmap cassandra-initdb
+	kubectl delete -f https://raw.githubusercontent.com/datastax/cass-operator/master/docs/user/cass-operator-manifests-$(K8S_SERVER_VERSION).yaml
 
 .PHONY: k8s/external/cassandra/initialize
 ## initialize cassandra on k8s
@@ -258,12 +271,14 @@ k8s/external/cassandra/initialize:
 k8s/external/scylla/deploy: \
 	k8s/external/cert-manager/deploy
 	kubectl apply -f https://raw.githubusercontent.com/scylladb/scylla-operator/master/examples/common/operator.yaml
-	sleep 2
+	sleep $(K8S_SLEEP_DURATION_FOR_WAIT_COMMAND)
 	kubectl wait -n scylla-operator-system --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=scylla-operator-controller-manager-0 --timeout=600s
 	kubectl -n scylla-operator-system get pod
 	kubectl apply -f $(K8S_EXTERNAL_SCYLLA_MANIFEST)
+	sleep $(K8S_SLEEP_DURATION_FOR_WAIT_COMMAND)
 	kubectl -n scylla get ScyllaCluster
 	kubectl -n scylla get pods
+	sleep 1
 	kubectl wait -n scylla --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=vald-scylla-cluster-dc0-rack0-0 --timeout=600s
 	kubectl -n scylla get ScyllaCluster
 	kubectl -n scylla get pods
@@ -279,7 +294,7 @@ k8s/external/scylla/delete: \
 ## deploy cert-manager
 k8s/external/cert-manager/deploy:
 	kubectl apply -f https://github.com/jetstack/cert-manager/releases/latest/download/cert-manager.yaml
-	sleep 2
+	sleep $(K8S_SLEEP_DURATION_FOR_WAIT_COMMAND)
 	kubectl wait -n cert-manager --for=condition=ready pod -l app=cert-manager --timeout=60s
 	kubectl wait -n cert-manager --for=condition=ready pod -l app=cainjector --timeout=60s
 	kubectl wait -n cert-manager --for=condition=ready pod -l app=webhook --timeout=60s
@@ -295,6 +310,7 @@ k8s/external/cert-manager/delete:
 ## deploy minio
 k8s/external/minio/deploy:
 	kubectl apply -f k8s/external/minio
+	sleep $(K8S_SLEEP_DURATION_FOR_WAIT_COMMAND)
 	kubectl wait --for=condition=ready pod -l app=minio --timeout=600s
 
 .PHONY: k8s/external/minio/delete
@@ -306,6 +322,7 @@ k8s/external/minio/delete:
 ## deploy metrics-serrver
 k8s/metrics/metrics-server/deploy:
 	kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+	sleep $(K8S_SLEEP_DURATION_FOR_WAIT_COMMAND)
 	kubectl wait -n kube-system --for=condition=ready pod -l k8s-app=metrics-server --timeout=600s
 
 .PHONY: k8s/metrics/metrics-server/delete
