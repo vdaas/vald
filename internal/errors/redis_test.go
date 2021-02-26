@@ -872,7 +872,7 @@ func TestIsErrRedisNotFound(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return false when err is nil",
+			name: "return false when err is not ErrRedisNotFoundIdentity ",
 			args: args{
 				err: New("err: Redis not found identity"),
 			},
