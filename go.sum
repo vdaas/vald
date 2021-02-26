@@ -171,6 +171,7 @@ github.com/go-sql-driver/mysql v1.5.0/go.mod h1:DCzpHaOWr8IXmIStZouvnhqoel9Qv2LB
 github.com/go-stack/stack v1.8.0/go.mod h1:v0f6uXyyMGvRgIKkXu+yp6POWl0qKG85gN/melR3HDY=
 github.com/goccy/go-json v0.4.4 h1:j8SeR5WhAtKKA+IAn78Rszv/WgZMhb3RqM3W8uXgjXk=
 github.com/goccy/go-json v0.4.4/go.mod h1:6MelG93GURQebXPDq3khkgXZkazVtN9CRI+MGFi0w8I=
+github.com/goccy/go-json v0.4.7/go.mod h1:6MelG93GURQebXPDq3khkgXZkazVtN9CRI+MGFi0w8I=
 github.com/gocql/gocql v0.0.0-20210129204804-4364a4b9cfdd h1:j0VZcDIpU6sLBMNFUEvuwP4FdmEXbmaEq6qufApwbbo=
 github.com/gocql/gocql v0.0.0-20210129204804-4364a4b9cfdd/go.mod h1:DL0ekTmBSTdlNF25Orwt/JMzqIq3EJ4MVa/J/uK64OY=
 github.com/gocraft/dbr/v2 v2.7.1 h1:v/bqxEBTlzj9sDbFCmtO2K1M3foDnYtQn097VoMALCw=
@@ -313,6 +314,7 @@ github.com/kpango/glg v1.3.0/go.mod h1:7zzaAoMqvngad+sagWLjr00EQMJaqyGONdg0WYBAO
 github.com/kpango/glg v1.4.1/go.mod h1:YM6wQXx2ktVPw7qf5UQUg2y29lub0KZ46L3zI3O1IiA=
 github.com/kpango/glg v1.5.4 h1:MzvbQIEtPw806JLufo/d14NHcMdoywO00AVyw9rM3QU=
 github.com/kpango/glg v1.5.4/go.mod h1:v3UAG/l3y+UcIlYVht+Ptr1C6hZeY8JDdahfVWl8pAE=
+github.com/kpango/glg v1.5.5/go.mod h1:5vHRpuHKuGCJXfUEwkNUuPRXuQLivUDRwZ+Ka0DKDSo=
 github.com/kr/fs v0.1.0/go.mod h1:FFnZGqtBN9Gxj7eW1uZ42v5BccTP0vu6NEaFoC2HwRg=
 github.com/kr/logfmt v0.0.0-20140226030751-b84e30acd515/go.mod h1:+0opPa2QZZtGFBFZlji/RkVcI2GknAs/DXo4wKdlNEc=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=

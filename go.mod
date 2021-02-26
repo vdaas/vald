@@ -62,7 +62,7 @@ require (
 	github.com/kpango/fastime v1.0.16
 	github.com/kpango/fuid v0.0.0-20200823100533-287aa95e0641
 	github.com/kpango/gache v1.2.5
-	github.com/kpango/glg v1.5.4
+	github.com/kpango/glg v1.5.5
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/pierrec/lz4/v3 v3.3.2
 	github.com/scylladb/gocqlx v1.5.0
