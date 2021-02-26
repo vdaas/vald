@@ -41,7 +41,7 @@ require (
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
 	contrib.go.opencensus.io/exporter/prometheus v0.2.0
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.5
-	github.com/aws/aws-sdk-go v1.23.20
+	github.com/aws/aws-sdk-go v1.37.19
 	github.com/cespare/xxhash/v2 v2.1.1
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/fsnotify/fsnotify v1.4.9
