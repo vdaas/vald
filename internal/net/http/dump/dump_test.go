@@ -16,11 +16,11 @@
 package dump
 
 import (
-	"encoding/json"
 	"net/http"
 	"net/url"
 	"testing"
 
+	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/errors"
 )
 
