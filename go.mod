@@ -5,23 +5,23 @@ go 1.16
 replace (
 	cloud.google.com/go => cloud.google.com/go v0.78.0
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0+incompatible
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.37.19
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.37.20
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
-	github.com/docker/docker => github.com/moby/moby v20.10.3+incompatible
+	github.com/docker/docker => github.com/moby/moby v20.10.4+incompatible
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.4.1
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.5.0
 	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20210129204804-4364a4b9cfdd
 	github.com/gogo/googleapis => github.com/gogo/googleapis v1.4.0
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 	github.com/google/go-cmp => github.com/google/go-cmp v0.5.4
-	github.com/google/pprof => github.com/google/pprof v0.0.0-20210226032038-c5db671c31d6
+	github.com/google/pprof => github.com/google/pprof v0.0.0-20210226084205-cbba55b83ad5
 	github.com/googleapis/gnostic => github.com/googleapis/gnostic v0.5.4
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.16.0
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.2
 	github.com/hailocab/go-hostpool => github.com/monzo/go-hostpool v0.0.0-20200724120130-287edbb29340
-	github.com/klauspost/compress => github.com/klauspost/compress v1.11.8
+	github.com/klauspost/compress => github.com/klauspost/compress v1.11.9-0.20210226154345-6381575b273f
 	github.com/kpango/glg => github.com/kpango/glg v1.5.1
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.2+incompatible
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
@@ -74,13 +74,13 @@ require (
 	go.uber.org/automaxprocs v1.4.0
 	go.uber.org/goleak v1.1.10
 	go.uber.org/zap v1.16.0
-	golang.org/x/net v0.0.0-20210224082022-3d97a244fca7
+	golang.org/x/net v0.0.0-20210226172049-e18ecbb05110
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys v0.0.0-20210225134936-a50acf3fe073
+	golang.org/x/sys v0.0.0-20210227040730-b0d1d43c014d
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/plot v0.8.1
 	google.golang.org/api v0.40.0
-	google.golang.org/genproto v0.0.0-20210225212918-ad91960f0274
+	google.golang.org/genproto v0.0.0-20210226172003-ab064af71705
 	google.golang.org/grpc v1.35.0
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.20.4
