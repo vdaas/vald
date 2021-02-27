@@ -30,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/model"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service/kvs"
+	"github.com/vdaas/vald/pkg/agent/core/ngt/service/vqueue"
 	"go.uber.org/goleak"
 )
 
@@ -122,12 +123,10 @@ func Test_ngt_initNGT(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		ivc               *vcaches
-		dvc               *vcaches
+		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
 		lastNoice         uint64
-		ic                uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -176,12 +175,10 @@ func Test_ngt_initNGT(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -217,12 +214,10 @@ func Test_ngt_initNGT(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -266,12 +261,10 @@ func Test_ngt_initNGT(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				ivc:               test.fields.ivc,
-				dvc:               test.fields.dvc,
+				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				lastNoice:         test.fields.lastNoice,
-				ic:                test.fields.ic,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -305,12 +298,10 @@ func Test_ngt_loadKVS(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		ivc               *vcaches
-		dvc               *vcaches
+		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
 		lastNoice         uint64
-		ic                uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -355,12 +346,10 @@ func Test_ngt_loadKVS(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -393,12 +382,10 @@ func Test_ngt_loadKVS(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -442,12 +429,10 @@ func Test_ngt_loadKVS(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				ivc:               test.fields.ivc,
-				dvc:               test.fields.dvc,
+				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				lastNoice:         test.fields.lastNoice,
-				ic:                test.fields.ic,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -484,12 +469,10 @@ func Test_ngt_Start(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		ivc               *vcaches
-		dvc               *vcaches
+		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
 		lastNoice         uint64
-		ic                uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -538,12 +521,10 @@ func Test_ngt_Start(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -579,12 +560,10 @@ func Test_ngt_Start(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -628,12 +607,10 @@ func Test_ngt_Start(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				ivc:               test.fields.ivc,
-				dvc:               test.fields.dvc,
+				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				lastNoice:         test.fields.lastNoice,
-				ic:                test.fields.ic,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -673,12 +650,10 @@ func Test_ngt_Search(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		ivc               *vcaches
-		dvc               *vcaches
+		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
 		lastNoice         uint64
-		ic                uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -734,12 +709,10 @@ func Test_ngt_Search(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -778,12 +751,10 @@ func Test_ngt_Search(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -827,12 +798,10 @@ func Test_ngt_Search(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				ivc:               test.fields.ivc,
-				dvc:               test.fields.dvc,
+				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				lastNoice:         test.fields.lastNoice,
-				ic:                test.fields.ic,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -872,12 +841,10 @@ func Test_ngt_SearchByID(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		ivc               *vcaches
-		dvc               *vcaches
+		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
 		lastNoice         uint64
-		ic                uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -933,12 +900,10 @@ func Test_ngt_SearchByID(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -977,12 +942,10 @@ func Test_ngt_SearchByID(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -1026,12 +989,10 @@ func Test_ngt_SearchByID(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				ivc:               test.fields.ivc,
-				dvc:               test.fields.dvc,
+				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				lastNoice:         test.fields.lastNoice,
-				ic:                test.fields.ic,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -1069,12 +1030,10 @@ func Test_ngt_Insert(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		ivc               *vcaches
-		dvc               *vcaches
+		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
 		lastNoice         uint64
-		ic                uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -1124,12 +1083,10 @@ func Test_ngt_Insert(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -1166,12 +1123,10 @@ func Test_ngt_Insert(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -1215,12 +1170,10 @@ func Test_ngt_Insert(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				ivc:               test.fields.ivc,
-				dvc:               test.fields.dvc,
+				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				lastNoice:         test.fields.lastNoice,
-				ic:                test.fields.ic,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -1260,12 +1213,10 @@ func Test_ngt_insert(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		ivc               *vcaches
-		dvc               *vcaches
+		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
 		lastNoice         uint64
-		ic                uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -1317,12 +1268,10 @@ func Test_ngt_insert(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -1361,12 +1310,10 @@ func Test_ngt_insert(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -1410,12 +1357,10 @@ func Test_ngt_insert(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				ivc:               test.fields.ivc,
-				dvc:               test.fields.dvc,
+				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				lastNoice:         test.fields.lastNoice,
-				ic:                test.fields.ic,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -1452,12 +1397,10 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		ivc               *vcaches
-		dvc               *vcaches
+		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
 		lastNoice         uint64
-		ic                uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -1506,12 +1449,10 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -1547,12 +1488,10 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -1596,12 +1535,10 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				ivc:               test.fields.ivc,
-				dvc:               test.fields.dvc,
+				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				lastNoice:         test.fields.lastNoice,
-				ic:                test.fields.ic,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -1639,12 +1576,10 @@ func Test_ngt_Update(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		ivc               *vcaches
-		dvc               *vcaches
+		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
 		lastNoice         uint64
-		ic                uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -1694,12 +1629,10 @@ func Test_ngt_Update(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -1736,12 +1669,10 @@ func Test_ngt_Update(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -1785,12 +1716,10 @@ func Test_ngt_Update(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				ivc:               test.fields.ivc,
-				dvc:               test.fields.dvc,
+				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				lastNoice:         test.fields.lastNoice,
-				ic:                test.fields.ic,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -1827,12 +1756,10 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		ivc               *vcaches
-		dvc               *vcaches
+		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
 		lastNoice         uint64
-		ic                uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -1881,12 +1808,10 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -1922,12 +1847,10 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -1971,12 +1894,10 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				ivc:               test.fields.ivc,
-				dvc:               test.fields.dvc,
+				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				lastNoice:         test.fields.lastNoice,
-				ic:                test.fields.ic,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -2013,12 +1934,10 @@ func Test_ngt_Delete(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		ivc               *vcaches
-		dvc               *vcaches
+		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
 		lastNoice         uint64
-		ic                uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -2067,12 +1986,10 @@ func Test_ngt_Delete(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -2108,12 +2025,10 @@ func Test_ngt_Delete(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -2157,12 +2072,10 @@ func Test_ngt_Delete(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				ivc:               test.fields.ivc,
-				dvc:               test.fields.dvc,
+				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				lastNoice:         test.fields.lastNoice,
-				ic:                test.fields.ic,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -2200,12 +2113,10 @@ func Test_ngt_delete(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		ivc               *vcaches
-		dvc               *vcaches
+		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
 		lastNoice         uint64
-		ic                uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -2255,12 +2166,10 @@ func Test_ngt_delete(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -2297,12 +2206,10 @@ func Test_ngt_delete(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -2346,12 +2253,10 @@ func Test_ngt_delete(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				ivc:               test.fields.ivc,
-				dvc:               test.fields.dvc,
+				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				lastNoice:         test.fields.lastNoice,
-				ic:                test.fields.ic,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -2388,12 +2293,10 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		ivc               *vcaches
-		dvc               *vcaches
+		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
 		lastNoice         uint64
-		ic                uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -2442,12 +2345,10 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -2483,12 +2384,10 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -2532,12 +2431,10 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				ivc:               test.fields.ivc,
-				dvc:               test.fields.dvc,
+				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				lastNoice:         test.fields.lastNoice,
-				ic:                test.fields.ic,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -2574,12 +2471,10 @@ func Test_ngt_GetObject(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		ivc               *vcaches
-		dvc               *vcaches
+		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
 		lastNoice         uint64
-		ic                uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -2632,12 +2527,10 @@ func Test_ngt_GetObject(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -2673,12 +2566,10 @@ func Test_ngt_GetObject(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -2722,12 +2613,10 @@ func Test_ngt_GetObject(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				ivc:               test.fields.ivc,
-				dvc:               test.fields.dvc,
+				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				lastNoice:         test.fields.lastNoice,
-				ic:                test.fields.ic,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -2765,12 +2654,10 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		ivc               *vcaches
-		dvc               *vcaches
+		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
 		lastNoice         uint64
-		ic                uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -2820,12 +2707,10 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -2862,12 +2747,10 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -2911,12 +2794,10 @@ func Test_ngt_CreateIndex(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				ivc:               test.fields.ivc,
-				dvc:               test.fields.dvc,
+				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				lastNoice:         test.fields.lastNoice,
-				ic:                test.fields.ic,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -2953,12 +2834,10 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		ivc               *vcaches
-		dvc               *vcaches
+		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
 		lastNoice         uint64
-		ic                uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -3007,12 +2886,10 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -3048,12 +2925,10 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -3097,12 +2972,10 @@ func Test_ngt_SaveIndex(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				ivc:               test.fields.ivc,
-				dvc:               test.fields.dvc,
+				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				lastNoice:         test.fields.lastNoice,
-				ic:                test.fields.ic,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -3139,12 +3012,10 @@ func Test_ngt_saveIndex(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		ivc               *vcaches
-		dvc               *vcaches
+		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
 		lastNoice         uint64
-		ic                uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -3193,12 +3064,10 @@ func Test_ngt_saveIndex(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -3234,12 +3103,10 @@ func Test_ngt_saveIndex(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -3283,12 +3150,10 @@ func Test_ngt_saveIndex(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				ivc:               test.fields.ivc,
-				dvc:               test.fields.dvc,
+				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				lastNoice:         test.fields.lastNoice,
-				ic:                test.fields.ic,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -3326,12 +3191,10 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		ivc               *vcaches
-		dvc               *vcaches
+		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
 		lastNoice         uint64
-		ic                uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -3381,12 +3244,10 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -3423,12 +3284,10 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -3472,12 +3331,10 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				ivc:               test.fields.ivc,
-				dvc:               test.fields.dvc,
+				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				lastNoice:         test.fields.lastNoice,
-				ic:                test.fields.ic,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -3514,12 +3371,10 @@ func Test_ngt_Exists(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		ivc               *vcaches
-		dvc               *vcaches
+		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
 		lastNoice         uint64
-		ic                uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -3572,12 +3427,10 @@ func Test_ngt_Exists(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -3613,12 +3466,10 @@ func Test_ngt_Exists(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -3662,12 +3513,10 @@ func Test_ngt_Exists(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				ivc:               test.fields.ivc,
-				dvc:               test.fields.dvc,
+				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				lastNoice:         test.fields.lastNoice,
-				ic:                test.fields.ic,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -3705,12 +3554,10 @@ func Test_ngt_readyForUpdate(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		ivc               *vcaches
-		dvc               *vcaches
+		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
 		lastNoice         uint64
-		ic                uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -3760,12 +3607,10 @@ func Test_ngt_readyForUpdate(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -3802,12 +3647,10 @@ func Test_ngt_readyForUpdate(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -3851,12 +3694,10 @@ func Test_ngt_readyForUpdate(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				ivc:               test.fields.ivc,
-				dvc:               test.fields.dvc,
+				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				lastNoice:         test.fields.lastNoice,
-				ic:                test.fields.ic,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -3884,208 +3725,16 @@ func Test_ngt_readyForUpdate(t *testing.T) {
 	}
 }
 
-func Test_ngt_insertCache(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		uuid string
-	}
-	type fields struct {
-		core              core.NGT
-		eg                errgroup.Group
-		kvs               kvs.BidiMap
-		ivc               *vcaches
-		dvc               *vcaches
-		indexing          atomic.Value
-		saving            atomic.Value
-		lastNoice         uint64
-		ic                uint64
-		nocie             uint64
-		nogce             uint64
-		inMem             bool
-		alen              int
-		lim               time.Duration
-		dur               time.Duration
-		sdur              time.Duration
-		minLit            time.Duration
-		maxLit            time.Duration
-		litFactor         time.Duration
-		enableProactiveGC bool
-		path              string
-		poolSize          uint32
-		radius            float32
-		epsilon           float32
-		idelay            time.Duration
-		dcd               bool
-	}
-	type want struct {
-		want  *vcache
-		want1 bool
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *vcache, bool) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got *vcache, got1 bool) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		if !reflect.DeepEqual(got1, w.want1) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got1, w.want1)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           uuid: "",
-		       },
-		       fields: fields {
-		           core: nil,
-		           eg: nil,
-		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
-		           indexing: nil,
-		           saving: nil,
-		           lastNoice: 0,
-		           ic: 0,
-		           nocie: 0,
-		           nogce: 0,
-		           inMem: false,
-		           alen: 0,
-		           lim: nil,
-		           dur: nil,
-		           sdur: nil,
-		           minLit: nil,
-		           maxLit: nil,
-		           litFactor: nil,
-		           enableProactiveGC: false,
-		           path: "",
-		           poolSize: 0,
-		           radius: 0,
-		           epsilon: 0,
-		           idelay: nil,
-		           dcd: false,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           uuid: "",
-		           },
-		           fields: fields {
-		           core: nil,
-		           eg: nil,
-		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
-		           indexing: nil,
-		           saving: nil,
-		           lastNoice: 0,
-		           ic: 0,
-		           nocie: 0,
-		           nogce: 0,
-		           inMem: false,
-		           alen: 0,
-		           lim: nil,
-		           dur: nil,
-		           sdur: nil,
-		           minLit: nil,
-		           maxLit: nil,
-		           litFactor: nil,
-		           enableProactiveGC: false,
-		           path: "",
-		           poolSize: 0,
-		           radius: 0,
-		           epsilon: 0,
-		           idelay: nil,
-		           dcd: false,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			n := &ngt{
-				core:              test.fields.core,
-				eg:                test.fields.eg,
-				kvs:               test.fields.kvs,
-				ivc:               test.fields.ivc,
-				dvc:               test.fields.dvc,
-				indexing:          test.fields.indexing,
-				saving:            test.fields.saving,
-				lastNoice:         test.fields.lastNoice,
-				ic:                test.fields.ic,
-				nocie:             test.fields.nocie,
-				nogce:             test.fields.nogce,
-				inMem:             test.fields.inMem,
-				alen:              test.fields.alen,
-				lim:               test.fields.lim,
-				dur:               test.fields.dur,
-				sdur:              test.fields.sdur,
-				minLit:            test.fields.minLit,
-				maxLit:            test.fields.maxLit,
-				litFactor:         test.fields.litFactor,
-				enableProactiveGC: test.fields.enableProactiveGC,
-				path:              test.fields.path,
-				poolSize:          test.fields.poolSize,
-				radius:            test.fields.radius,
-				epsilon:           test.fields.epsilon,
-				idelay:            test.fields.idelay,
-				dcd:               test.fields.dcd,
-			}
-
-			got, got1 := n.insertCache(test.args.uuid)
-			if err := test.checkFunc(test.want, got, got1); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
 func Test_ngt_IsSaving(t *testing.T) {
 	t.Parallel()
 	type fields struct {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		ivc               *vcaches
-		dvc               *vcaches
+		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
 		lastNoice         uint64
-		ic                uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -4130,12 +3779,10 @@ func Test_ngt_IsSaving(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -4168,12 +3815,10 @@ func Test_ngt_IsSaving(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -4217,12 +3862,10 @@ func Test_ngt_IsSaving(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				ivc:               test.fields.ivc,
-				dvc:               test.fields.dvc,
+				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				lastNoice:         test.fields.lastNoice,
-				ic:                test.fields.ic,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -4256,12 +3899,10 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		ivc               *vcaches
-		dvc               *vcaches
+		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
 		lastNoice         uint64
-		ic                uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -4306,12 +3947,10 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -4344,12 +3983,10 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -4393,12 +4030,10 @@ func Test_ngt_IsIndexing(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				ivc:               test.fields.ivc,
-				dvc:               test.fields.dvc,
+				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				lastNoice:         test.fields.lastNoice,
-				ic:                test.fields.ic,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -4435,12 +4070,10 @@ func Test_ngt_UUIDs(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		ivc               *vcaches
-		dvc               *vcaches
+		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
 		lastNoice         uint64
-		ic                uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -4489,12 +4122,10 @@ func Test_ngt_UUIDs(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -4530,12 +4161,10 @@ func Test_ngt_UUIDs(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -4579,12 +4208,10 @@ func Test_ngt_UUIDs(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				ivc:               test.fields.ivc,
-				dvc:               test.fields.dvc,
+				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				lastNoice:         test.fields.lastNoice,
-				ic:                test.fields.ic,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -4612,194 +4239,16 @@ func Test_ngt_UUIDs(t *testing.T) {
 	}
 }
 
-func Test_ngt_UncommittedUUIDs(t *testing.T) {
-	t.Parallel()
-	type fields struct {
-		core              core.NGT
-		eg                errgroup.Group
-		kvs               kvs.BidiMap
-		ivc               *vcaches
-		dvc               *vcaches
-		indexing          atomic.Value
-		saving            atomic.Value
-		lastNoice         uint64
-		ic                uint64
-		nocie             uint64
-		nogce             uint64
-		inMem             bool
-		alen              int
-		lim               time.Duration
-		dur               time.Duration
-		sdur              time.Duration
-		minLit            time.Duration
-		maxLit            time.Duration
-		litFactor         time.Duration
-		enableProactiveGC bool
-		path              string
-		poolSize          uint32
-		radius            float32
-		epsilon           float32
-		idelay            time.Duration
-		dcd               bool
-	}
-	type want struct {
-		wantUuids []string
-	}
-	type test struct {
-		name       string
-		fields     fields
-		want       want
-		checkFunc  func(want, []string) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, gotUuids []string) error {
-		if !reflect.DeepEqual(gotUuids, w.wantUuids) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotUuids, w.wantUuids)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           core: nil,
-		           eg: nil,
-		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
-		           indexing: nil,
-		           saving: nil,
-		           lastNoice: 0,
-		           ic: 0,
-		           nocie: 0,
-		           nogce: 0,
-		           inMem: false,
-		           alen: 0,
-		           lim: nil,
-		           dur: nil,
-		           sdur: nil,
-		           minLit: nil,
-		           maxLit: nil,
-		           litFactor: nil,
-		           enableProactiveGC: false,
-		           path: "",
-		           poolSize: 0,
-		           radius: 0,
-		           epsilon: 0,
-		           idelay: nil,
-		           dcd: false,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           core: nil,
-		           eg: nil,
-		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
-		           indexing: nil,
-		           saving: nil,
-		           lastNoice: 0,
-		           ic: 0,
-		           nocie: 0,
-		           nogce: 0,
-		           inMem: false,
-		           alen: 0,
-		           lim: nil,
-		           dur: nil,
-		           sdur: nil,
-		           minLit: nil,
-		           maxLit: nil,
-		           litFactor: nil,
-		           enableProactiveGC: false,
-		           path: "",
-		           poolSize: 0,
-		           radius: 0,
-		           epsilon: 0,
-		           idelay: nil,
-		           dcd: false,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			n := &ngt{
-				core:              test.fields.core,
-				eg:                test.fields.eg,
-				kvs:               test.fields.kvs,
-				ivc:               test.fields.ivc,
-				dvc:               test.fields.dvc,
-				indexing:          test.fields.indexing,
-				saving:            test.fields.saving,
-				lastNoice:         test.fields.lastNoice,
-				ic:                test.fields.ic,
-				nocie:             test.fields.nocie,
-				nogce:             test.fields.nogce,
-				inMem:             test.fields.inMem,
-				alen:              test.fields.alen,
-				lim:               test.fields.lim,
-				dur:               test.fields.dur,
-				sdur:              test.fields.sdur,
-				minLit:            test.fields.minLit,
-				maxLit:            test.fields.maxLit,
-				litFactor:         test.fields.litFactor,
-				enableProactiveGC: test.fields.enableProactiveGC,
-				path:              test.fields.path,
-				poolSize:          test.fields.poolSize,
-				radius:            test.fields.radius,
-				epsilon:           test.fields.epsilon,
-				idelay:            test.fields.idelay,
-				dcd:               test.fields.dcd,
-			}
-
-			gotUuids := n.UncommittedUUIDs()
-			if err := test.checkFunc(test.want, gotUuids); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
 func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 	t.Parallel()
 	type fields struct {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		ivc               *vcaches
-		dvc               *vcaches
+		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
 		lastNoice         uint64
-		ic                uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -4844,12 +4293,10 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -4882,12 +4329,10 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -4931,12 +4376,10 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				ivc:               test.fields.ivc,
-				dvc:               test.fields.dvc,
+				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				lastNoice:         test.fields.lastNoice,
-				ic:                test.fields.ic,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -4970,12 +4413,10 @@ func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		ivc               *vcaches
-		dvc               *vcaches
+		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
 		lastNoice         uint64
-		ic                uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -5020,12 +4461,10 @@ func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -5058,12 +4497,10 @@ func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -5107,12 +4544,10 @@ func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				ivc:               test.fields.ivc,
-				dvc:               test.fields.dvc,
+				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				lastNoice:         test.fields.lastNoice,
-				ic:                test.fields.ic,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -5146,12 +4581,10 @@ func Test_ngt_gc(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		ivc               *vcaches
-		dvc               *vcaches
+		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
 		lastNoice         uint64
-		ic                uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -5191,12 +4624,10 @@ func Test_ngt_gc(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -5229,12 +4660,10 @@ func Test_ngt_gc(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -5278,12 +4707,10 @@ func Test_ngt_gc(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				ivc:               test.fields.ivc,
-				dvc:               test.fields.dvc,
+				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				lastNoice:         test.fields.lastNoice,
-				ic:                test.fields.ic,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -5317,12 +4744,10 @@ func Test_ngt_Len(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		ivc               *vcaches
-		dvc               *vcaches
+		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
 		lastNoice         uint64
-		ic                uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -5367,12 +4792,10 @@ func Test_ngt_Len(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -5405,12 +4828,10 @@ func Test_ngt_Len(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -5454,12 +4875,10 @@ func Test_ngt_Len(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				ivc:               test.fields.ivc,
-				dvc:               test.fields.dvc,
+				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				lastNoice:         test.fields.lastNoice,
-				ic:                test.fields.ic,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -5493,12 +4912,10 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		ivc               *vcaches
-		dvc               *vcaches
+		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
 		lastNoice         uint64
-		ic                uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -5543,12 +4960,10 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -5581,12 +4996,10 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -5630,12 +5043,10 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				ivc:               test.fields.ivc,
-				dvc:               test.fields.dvc,
+				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				lastNoice:         test.fields.lastNoice,
-				ic:                test.fields.ic,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -5669,12 +5080,10 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		ivc               *vcaches
-		dvc               *vcaches
+		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
 		lastNoice         uint64
-		ic                uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -5719,12 +5128,10 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -5757,12 +5164,10 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -5806,12 +5211,10 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				ivc:               test.fields.ivc,
-				dvc:               test.fields.dvc,
+				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				lastNoice:         test.fields.lastNoice,
-				ic:                test.fields.ic,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -5848,12 +5251,10 @@ func Test_ngt_Close(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		ivc               *vcaches
-		dvc               *vcaches
+		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
 		lastNoice         uint64
-		ic                uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -5902,12 +5303,10 @@ func Test_ngt_Close(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -5943,12 +5342,10 @@ func Test_ngt_Close(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           ivc: vcaches{},
-		           dvc: vcaches{},
+		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
 		           lastNoice: 0,
-		           ic: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -5992,12 +5389,10 @@ func Test_ngt_Close(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				ivc:               test.fields.ivc,
-				dvc:               test.fields.dvc,
+				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				lastNoice:         test.fields.lastNoice,
-				ic:                test.fields.ic,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,

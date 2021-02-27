@@ -39,6 +39,7 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/model"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service/kvs"
+	"github.com/vdaas/vald/pkg/agent/core/ngt/service/vqueue"
 	"github.com/vdaas/vald/pkg/agent/internal/metadata"
 )
 
@@ -63,7 +64,6 @@ type NGT interface {
 	NumberOfCreateIndexExecution() uint64
 	NumberOfProactiveGCExecution() uint64
 	UUIDs(context.Context) (uuids []string)
-	UncommittedUUIDs() (uuids []string)
 	DeleteVCacheLen() uint64
 	InsertVCacheLen() uint64
 	Close(ctx context.Context) error
@@ -74,8 +74,7 @@ type ngt struct {
 	core core.NGT
 	eg   errgroup.Group
 	kvs  kvs.BidiMap
-	ivc  *vcaches // insertion vector cache
-	dvc  *vcaches // deletion vector cache
+	vq   vqueue.Queue
 
 	// statuses
 	indexing  atomic.Value
@@ -83,7 +82,6 @@ type ngt struct {
 	lastNoice uint64 // last number of create index execution this value prevent unnecessary saveindex.
 
 	// counters
-	ic    uint64 // insert count
 	nocie uint64 // number of create index execution
 	nogce uint64 // number of proactive GC execution
 
@@ -110,11 +108,6 @@ type ngt struct {
 
 	idelay time.Duration // initial delay duration
 	dcd    bool          // disable commit daemon
-}
-
-type vcache struct {
-	vector []float32
-	date   int64
 }
 
 const (
@@ -152,11 +145,8 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 	if n.dur == 0 || n.alen == 0 {
 		n.dcd = true
 	}
-	if n.ivc == nil {
-		n.ivc = new(vcaches)
-	}
-	if n.dvc == nil {
-		n.dvc = new(vcaches)
+	if n.vq == nil {
+		n.vq = vqueue.New(n.eg)
 	}
 
 	n.indexing.Store(false)
@@ -312,6 +302,10 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 	}
 	ech := make(chan error, 2)
 	n.eg.Go(safety.RecoverFunc(func() (err error) {
+		vqech, err := n.vq.Start(ctx)
+		if err != nil {
+			return err
+		}
 		if n.sdur == 0 {
 			n.sdur = n.dur + time.Second
 		}
@@ -346,13 +340,18 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 				}
 				return ctx.Err()
 			case <-tick.C:
-				if int(atomic.LoadUint64(&n.ic)) >= n.alen {
+				if n.vq.IVQLen() >= n.alen {
 					err = n.CreateIndex(ctx, n.poolSize)
 				}
 			case <-limit.C:
 				err = n.CreateAndSaveIndex(ctx, n.poolSize)
 			case <-sTick.C:
 				err = n.SaveIndex(ctx)
+			case err := <-vqech:
+				if err != nil {
+					ech <- err
+					err = nil
+				}
 			}
 			if err != nil && err != errors.ErrUncommittedIndexNotFound {
 				ech <- err
@@ -361,7 +360,6 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 			}
 		}
 	}))
-
 	return ech
 }
 
@@ -386,6 +384,8 @@ func (n *ngt) Search(vec []float32, size uint32, epsilon, radius float32) ([]mod
 				ID:       key,
 				Distance: d.Distance,
 			})
+		} else {
+			log.Warn("not found", d.ID, d.Distance)
 		}
 	}
 
@@ -421,18 +421,8 @@ func (n *ngt) insert(uuid string, vec []float32, t int64, validation bool) (err 
 			err = errors.ErrUUIDAlreadyExists(uuid, uint(id))
 			return err
 		}
-		_, ok = n.insertCache(uuid)
-		if ok {
-			err = errors.ErrUUIDAlreadyExists(uuid, uint(id))
-			return err
-		}
 	}
-	n.ivc.Store(uuid, vcache{
-		vector: vec,
-		date:   t,
-	})
-	atomic.AddUint64(&n.ic, 1)
-	return nil
+	return n.vq.PushInsert(uuid, vec, t)
 }
 
 func (n *ngt) InsertMultiple(vecs map[string][]float32) (err error) {
@@ -474,26 +464,9 @@ func (n *ngt) UpdateMultiple(vecs map[string][]float32) (err error) {
 	}
 	err = n.DeleteMultiple(uuids...)
 	if err != nil {
-		for _, uuid := range uuids {
-			n.dvc.Delete(uuid)
-		}
 		return err
 	}
-	t := time.Now().UnixNano()
-	for uuid, vec := range vecs {
-		ierr := n.insert(uuid, vec, t, false)
-		if ierr != nil {
-			n.dvc.Delete(uuid)
-			n.ivc.Delete(uuid)
-			atomic.AddUint64(&n.ic, ^uint64(0))
-			if err != nil {
-				err = errors.Wrap(ierr, err.Error())
-			} else {
-				err = ierr
-			}
-		}
-	}
-	return err
+	return n.InsertMultiple(vecs)
 }
 
 func (n *ngt) Delete(uuid string) (err error) {
@@ -507,20 +480,9 @@ func (n *ngt) delete(uuid string, t int64) (err error) {
 	}
 	_, ok := n.kvs.Get(uuid)
 	if !ok {
-		_, ok := n.insertCache(uuid)
-		if !ok {
-			err = errors.ErrObjectIDNotFound(uuid)
-			return err
-		}
+		return errors.ErrObjectIDNotFound(uuid)
 	}
-	if vc, ok := n.ivc.Load(uuid); ok && vc.date < t {
-		n.ivc.Delete(uuid)
-		atomic.AddUint64(&n.ic, ^uint64(0))
-	}
-	n.dvc.Store(uuid, vcache{
-		date: t,
-	})
-	return nil
+	return n.vq.PushDelete(uuid, t)
 }
 
 func (n *ngt) DeleteMultiple(uuids ...string) (err error) {
@@ -541,13 +503,13 @@ func (n *ngt) DeleteMultiple(uuids ...string) (err error) {
 func (n *ngt) GetObject(uuid string) (vec []float32, err error) {
 	oid, ok := n.kvs.Get(uuid)
 	if !ok {
-		log.Debugf("GetObject\tuuid: %s's kvs data not found, trying to read from vcache", uuid)
-		ivc, ok := n.insertCache(uuid)
+		log.Debugf("GetObject\tuuid: %s's kvs data not found, trying to read from vqueue", uuid)
+		vec, ok := n.vq.GetVector(uuid)
 		if !ok {
 			log.Debugf("GetObject\tuuid: %s's vcache data not found", uuid)
 			return nil, errors.ErrObjectIDNotFound(uuid)
 		}
-		return ivc.vector, nil
+		return vec, nil
 	}
 	log.Debugf("GetObject\tGetVector oid: %d", oid)
 	vec, err = n.core.GetVector(uint(oid))
@@ -569,89 +531,46 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	if n.IsIndexing() || n.IsSaving() {
 		return nil
 	}
-	ic := atomic.LoadUint64(&n.ic)
+	ic := n.vq.IVQLen() + n.vq.DVQLen()
 	if ic == 0 {
 		return errors.ErrUncommittedIndexNotFound
 	}
 	n.indexing.Store(true)
-	atomic.StoreUint64(&n.ic, 0)
-	t := time.Now().UnixNano()
 	defer n.indexing.Store(false)
 	defer n.gc()
 
 	log.Infof("create index operation started, uncommitted indexes = %d", ic)
-	delList := make([]string, 0, ic)
-	n.dvc.Range(func(uuid string, dvc vcache) bool {
-		if dvc.date > t {
-			return true
-		}
-		if ivc, ok := n.ivc.Load(uuid); ok && ivc.date < t && ivc.date < dvc.date {
-			n.ivc.Delete(uuid)
-		}
-		delList = append(delList, uuid)
-		return true
-	})
-	log.Info("create index delete kvs phase started")
-	log.Debugf("deleting kvs: %#v", delList)
-	doids := make([]uint, 0, ic)
-	for _, duuid := range delList {
-		n.dvc.Delete(duuid)
-		id, ok := n.kvs.Delete(duuid)
-		if !ok {
-			log.Error(errors.ErrObjectIDNotFound(duuid).Error())
-			err = errors.Wrap(err, errors.ErrObjectIDNotFound(duuid).Error())
+	log.Info("create index delete phase started")
+	n.vq.RangePopDelete(ctx, func(uuid string) bool {
+		var ierr error
+		oid, ok := n.kvs.Delete(uuid)
+		if ok {
+			ierr = n.core.Remove(uint(oid))
+			if ierr != nil {
+				log.Error(ierr)
+				err = errors.Wrap(err, ierr.Error())
+			}
 		} else {
-			doids = append(doids, uint(id))
-		}
-	}
-	log.Info("create index delete kvs phase finished")
-
-	log.Info("create index delete index phase started")
-	log.Debugf("deleting index: %#v", doids)
-	brerr := n.core.BulkRemove(doids...)
-	log.Info("create index delete index phase finished")
-	if brerr != nil {
-		log.Error("an error occurred on deleting index phase:", brerr)
-		err = errors.Wrap(err, brerr.Error())
-	}
-	uuids := make([]string, 0, ic)
-	vecs := make([][]float32, 0, ic)
-	n.ivc.Range(func(uuid string, ivc vcache) bool {
-		if ivc.date <= t {
-			uuids = append(uuids, uuid)
-			vecs = append(vecs, ivc.vector)
+			ierr = errors.ErrObjectIDNotFound(uuid)
+			log.Error(ierr)
+			err = errors.Wrap(err, ierr.Error())
 		}
 		return true
 	})
-	for _, uuid := range uuids {
-		n.ivc.Delete(uuid)
-	}
+	log.Info("create index delete phase finished")
 	n.gc()
-	log.Info("create index insert index phase started")
-	log.Debugf("inserting index: %#v", vecs)
-	oids, errs := n.core.BulkInsert(vecs)
-	log.Info("create index insert index phase finished")
-	if errs != nil && len(errs) != 0 {
-		for _, bierr := range errs {
-			if bierr != nil {
-				log.Error("an error occurred on inserting index phase:", bierr)
-				err = errors.Wrap(err, bierr.Error())
-			}
+	log.Info("create index insert phase started")
+	n.vq.RangePopInsert(ctx, func(uuid string, vector []float32) bool {
+		oid, ierr := n.core.Insert(vector)
+		if ierr != nil {
+			log.Error(ierr)
+			err = errors.Wrap(err, ierr.Error())
+		} else {
+			n.kvs.Set(uuid, uint32(oid))
 		}
-	}
-
-	log.Info("create index insert kvs phase started")
-	log.Debugf("uuids = %#v\t\toids = %#v", uuids, oids)
-	for i, uuid := range uuids {
-		if len(oids) > i {
-			oid := uint32(oids[i])
-			if oid != 0 {
-				n.kvs.Set(uuid, oid)
-			}
-		}
-	}
-	log.Info("create index insert kvs phase finished")
-
+		return true
+	})
+	log.Info("create index insert phase finished")
 	log.Info("create graph and tree phase started")
 	log.Debugf("pool size = %d", poolSize)
 	cierr := n.core.CreateIndex(poolSize)
@@ -766,7 +685,7 @@ func (n *ngt) CreateAndSaveIndex(ctx context.Context, poolSize uint32) (err erro
 func (n *ngt) Exists(uuid string) (oid uint32, ok bool) {
 	oid, ok = n.kvs.Get(uuid)
 	if !ok {
-		_, ok = n.insertCache(uuid)
+		_, ok = n.vq.GetVector(uuid)
 	}
 	return oid, ok
 }
@@ -790,22 +709,6 @@ func (n *ngt) readyForUpdate(uuid string, vec []float32) (ready bool) {
 	return false
 }
 
-func (n *ngt) insertCache(uuid string) (*vcache, bool) {
-	iv, ok := n.ivc.Load(uuid)
-	if ok {
-		dv, ok := n.dvc.Load(uuid)
-		if !ok {
-			return &iv, true
-		}
-		if ok && dv.date <= iv.date {
-			return &iv, true
-		}
-		n.ivc.Delete(uuid)
-		atomic.AddUint64(&n.ic, ^uint64(0))
-	}
-	return nil, false
-}
-
 func (n *ngt) IsSaving() bool {
 	s, ok := n.saving.Load().(bool)
 	return s && ok
@@ -820,18 +723,6 @@ func (n *ngt) UUIDs(ctx context.Context) (uuids []string) {
 	uuids = make([]string, 0, n.kvs.Len())
 	n.kvs.Range(ctx, func(uuid string, oid uint32) bool {
 		uuids = append(uuids, uuid)
-		return true
-	})
-	return uuids
-}
-
-func (n *ngt) UncommittedUUIDs() (uuids []string) {
-	var mu sync.Mutex
-	uuids = make([]string, 0, atomic.LoadUint64(&n.ic))
-	n.ivc.Range(func(uuid string, vc vcache) bool {
-		mu.Lock()
-		uuids = append(uuids, uuid)
-		mu.Unlock()
 		return true
 	})
 	return uuids
@@ -857,11 +748,11 @@ func (n *ngt) Len() uint64 {
 }
 
 func (n *ngt) InsertVCacheLen() uint64 {
-	return n.ivc.Len()
+	return uint64(n.vq.IVQLen())
 }
 
 func (n *ngt) DeleteVCacheLen() uint64 {
-	return n.dvc.Len()
+	return uint64(n.vq.DVQLen())
 }
 
 func (n *ngt) Close(ctx context.Context) (err error) {
