@@ -122,7 +122,7 @@ func (r *restorer) startRestore(ctx context.Context) (<-chan error, error) {
 	restore := func(ctx context.Context) (interface{}, bool, error) {
 		err := r.restore(ctx)
 		if err != nil {
-			log.Errorf("restoring failed: %s", err)
+// 			 log.Errorf("restoring failed: %s", err)
 			return nil, true, err
 		}
 
@@ -139,7 +139,7 @@ func (r *restorer) startRestore(ctx context.Context) (<-chan error, error) {
 		}
 
 		if err != nil {
-			log.Errorf("couldn't restore: %s", err)
+// 			 log.Errorf("couldn't restore: %s", err)
 		}
 
 		return p.Signal(syscall.SIGTERM) // TODO: #403
@@ -177,7 +177,7 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 		defer func() {
 			e := sr.Close()
 			if e != nil {
-				log.Errorf("error on closing blob-storage reader: %s", e)
+// 				 log.Errorf("error on closing blob-storage reader: %s", e)
 			}
 		}()
 

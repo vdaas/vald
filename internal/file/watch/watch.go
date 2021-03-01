@@ -109,7 +109,7 @@ func (w *watch) Start(ctx context.Context) (<-chan error, error) {
 			ok    bool
 		)
 		handleErr := func(ctx context.Context, err error) {
-			log.Error(err)
+// 			 log.Error(err)
 			select {
 			case <-ctx.Done():
 			case ech <- err:

@@ -149,7 +149,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 		if len(addr) != 0 {
 			_, err := g.Connect(ctx, addr, grpc.WithBlock())
 			if err != nil {
-				log.Error(err)
+// 				 log.Error(err)
 				ech <- err
 			}
 		}
@@ -198,7 +198,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 						// for rebalancing connection we don't need to check connection health
 						p, err = p.Reconnect(ctx, true)
 						if err != nil {
-							log.Error(err)
+// 							 log.Error(err)
 							ech <- err
 						}
 						// if rebalanced connection pool is nil even error is nil we should disconnect and delete it
@@ -230,7 +230,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 					// if not healthy we should try reconnect
 					p, err = p.Reconnect(ctx, false)
 					if err != nil {
-						log.Error(err)
+// 						 log.Error(err)
 						ech <- err
 					}
 					// if rebalanced connection pool is nil even error is nil we should disconnect and delete it
@@ -276,7 +276,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 			for _, addr := range disconnectTargets {
 				err = g.Disconnect(ctx, addr)
 				if err != nil {
-					log.Error(err)
+// 					 log.Error(err)
 					ech <- err
 				}
 			}

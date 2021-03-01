@@ -171,7 +171,7 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 			cancel()
 		case err = <-ech:
 			if err != nil {
-				log.Error(errors.ErrStartFunc(name, err))
+// 				 log.Error(errors.ErrStartFunc(name, err))
 				if _, ok := emap[err.Error()]; !ok {
 					errs = append(errs, err)
 				}
@@ -183,7 +183,7 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 				return run.PreStop(ctx)
 			})()
 			if err != nil {
-				log.Error(errors.ErrPreStopFunc(name, err))
+// 				 log.Error(errors.ErrPreStopFunc(name, err))
 				if _, ok := emap[err.Error()]; !ok {
 					errs = append(errs, err)
 				}
@@ -195,7 +195,7 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 				return run.Stop(ctx)
 			})()
 			if err != nil {
-				log.Error(errors.ErrStopFunc(name, err))
+// 				 log.Error(errors.ErrStopFunc(name, err))
 				if _, ok := emap[err.Error()]; !ok {
 					errs = append(errs, err)
 				}
@@ -207,7 +207,7 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 				return run.PostStop(ctx)
 			})()
 			if err != nil {
-				log.Error(errors.ErrPostStopFunc(name, err))
+// 				 log.Error(errors.ErrPostStopFunc(name, err))
 				if _, ok := emap[err.Error()]; !ok {
 					errs = append(errs, err)
 				}
@@ -216,7 +216,7 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 
 			err = errgroup.Wait()
 			if err != nil && !errors.Is(err, context.Canceled) {
-				log.Error(errors.ErrRunnerWait(name, err))
+// 				 log.Error(errors.ErrRunnerWait(name, err))
 				if _, ok := emap[err.Error()]; !ok {
 					errs = append(errs, err)
 				}

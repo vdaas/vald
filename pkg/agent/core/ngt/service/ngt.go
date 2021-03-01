@@ -257,7 +257,7 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 		return err
 	case <-ctx.Done():
 		if ctx.Err() == context.DeadlineExceeded {
-			log.Errorf("cannot load index backup data within the timeout %s. the process is going to be killed.", timeout)
+// 			 log.Errorf("cannot load index backup data within the timeout %s. the process is going to be killed.", timeout)
 
 			err := metadata.Store(
 				filepath.Join(n.path, metadata.AgentMetadataFileName),
@@ -296,7 +296,7 @@ func (n *ngt) loadKVS() error {
 	m := make(map[string]uint32)
 	err = gob.NewDecoder(f).Decode(&m)
 	if err != nil {
-		log.Errorf("error decoding kvsdb file,\terr: %v", err)
+// 		 log.Errorf("error decoding kvsdb file,\terr: %v", err)
 		return err
 	}
 

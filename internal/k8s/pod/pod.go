@@ -79,7 +79,7 @@ func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res 
 			RequeueAfter: time.Millisecond * 100,
 		}
 		if errors.IsNotFound(err) {
-			log.Error("not found", err)
+// 			 log.Error("not found", err)
 			return reconcile.Result{
 				Requeue:      true,
 				RequeueAfter: time.Second,

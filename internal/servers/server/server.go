@@ -266,7 +266,7 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 			return net.JoinHostPort(s.host, s.port)
 		}())
 		if err != nil {
-			log.Errorf("failed to listen socket %v", err)
+// 			 log.Errorf("failed to listen socket %v", err)
 			return err
 		}
 

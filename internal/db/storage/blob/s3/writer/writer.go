@@ -123,7 +123,7 @@ func (w *writer) upload(ctx context.Context, key string, body io.Reader) (err er
 
 	res, err := client.UploadWithContext(ctx, input)
 	if err != nil {
-		log.Error("upload failed with error: ", err)
+// 		 log.Error("upload failed with error: ", err)
 		return err
 	}
 

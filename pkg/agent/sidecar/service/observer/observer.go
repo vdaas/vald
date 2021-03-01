@@ -201,7 +201,7 @@ func (o *observer) PostStop(ctx context.Context) (err error) {
 	defer func() {
 		e := o.w.Stop(wctx)
 		if e != nil {
-			log.Error("an error occurred when watcher stopped:", e)
+// 			 log.Error("an error occurred when watcher stopped:", e)
 		}
 	}()
 
@@ -263,12 +263,12 @@ func (o *observer) startTicker(ctx context.Context) (<-chan error, error) {
 				err = o.requestBackup(ctx)
 				if err != nil {
 					ech <- err
-					log.Error("failed to request backup:", err)
+// 					 log.Error("failed to request backup:", err)
 					err = nil
 				}
 			}
 			if err != nil {
-				log.Error("an error occurred on observer loop:", err)
+// 				 log.Error("an error occurred on observer loop:", err)
 				select {
 				case <-ctx.Done():
 					return finalize()
@@ -304,7 +304,7 @@ func (o *observer) startBackupLoop(ctx context.Context) (<-chan error, error) {
 				err = o.backup(ctx)
 				if err != nil {
 					ech <- err
-					log.Error("an error occurred during backup:", err)
+// 					 log.Error("an error occurred during backup:", err)
 					err = nil
 				}
 			}
@@ -374,7 +374,7 @@ func (o *observer) isValidMetadata() (bool, error) {
 }
 
 func (o *observer) terminate() error {
-	log.Error("the process will be terminated because the files are invalid")
+// 	 log.Error("the process will be terminated because the files are invalid")
 
 	p, err := os.FindProcess(os.Getpid())
 	if err != nil {
@@ -428,7 +428,7 @@ func (o *observer) backup(ctx context.Context) (err error) {
 	defer func() {
 		e := pr.Close()
 		if e != nil {
-			log.Errorf("error on closing pipe reader: %s", e)
+// 			 log.Errorf("error on closing pipe reader: %s", e)
 		}
 	}()
 
@@ -439,7 +439,7 @@ func (o *observer) backup(ctx context.Context) (err error) {
 	defer func() {
 		e := sw.Close()
 		if e != nil {
-			log.Errorf("error on closing blob-storage writer: %s", e)
+// 			 log.Errorf("error on closing blob-storage writer: %s", e)
 		}
 	}()
 
@@ -451,7 +451,7 @@ func (o *observer) backup(ctx context.Context) (err error) {
 		defer func() {
 			e := pw.Close()
 			if e != nil {
-				log.Errorf("error on closing pipe writer: %s", e)
+// 				 log.Errorf("error on closing pipe writer: %s", e)
 			}
 		}()
 
@@ -459,7 +459,7 @@ func (o *observer) backup(ctx context.Context) (err error) {
 		defer func() {
 			e := tw.Close()
 			if e != nil {
-				log.Errorf("error on closing tar writer: %s", e)
+// 				 log.Errorf("error on closing tar writer: %s", e)
 			}
 		}()
 
@@ -504,7 +504,7 @@ func (o *observer) backup(ctx context.Context) (err error) {
 			defer func() {
 				e := data.Close()
 				if e != nil {
-					log.Errorf("failed to close %s: %s", file, e)
+// 					 log.Errorf("failed to close %s: %s", file, e)
 				}
 			}()
 

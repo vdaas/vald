@@ -114,7 +114,7 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 				return res, nil
 			}
 			if b.errLog {
-				log.Error(err)
+// 				 log.Error(err)
 			}
 			timer.Reset(time.Duration(jdur))
 			select {

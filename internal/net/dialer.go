@@ -360,6 +360,6 @@ func (d *dialer) cacheExpireHook(ctx context.Context, addr string) {
 		_, err = d.lookup(ctx, addr)
 		return
 	})(); err != nil {
-		log.Errorf("dns cacheExpireHook error occurred: %v\taddr:\t%s", err, addr)
+// 		 log.Errorf("dns cacheExpireHook error occurred: %v\taddr:\t%s", err, addr)
 	}
 }

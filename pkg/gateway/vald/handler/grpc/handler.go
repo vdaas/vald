@@ -127,7 +127,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		Id: req.GetId(),
 	})
 	if err != nil {
-		log.Errorf("error at SearchByID\t%v", err)
+// 		 log.Errorf("error at SearchByID\t%v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
@@ -192,7 +192,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 		case <-ectx.Done():
 			err = eg.Wait()
 			if err != nil {
-				log.Error("an error occurred while searching:", err)
+// 				 log.Error("an error occurred while searching:", err)
 			}
 			close(dch)
 			if len(res.GetResults()) > num && num != 0 {
@@ -205,7 +205,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 			if s.metadata != nil {
 				metas, merr := s.metadata.GetMetas(ctx, uuids...)
 				if merr != nil {
-					log.Error("an error occurred during calling meta GetMetas:", merr)
+// 					 log.Error("an error occurred during calling meta GetMetas:", merr)
 					err = errors.Wrap(err, merr.Error())
 				}
 				for i, k := range metas {
@@ -317,7 +317,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 	meta := vec.GetId()
 	exists, err := s.metadata.Exists(ctx, meta)
 	if err != nil {
-		log.Error("an error occurred while calling meta Exists:", err)
+// 		 log.Error("an error occurred while calling meta Exists:", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -335,7 +335,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 	uuid := fuid.String()
 	err = s.metadata.SetUUIDandMeta(ctx, uuid, meta)
 	if err != nil {
-		log.Error("an error occurred during calling meta SetUUIDandMeta:", err)
+// 		 log.Error("an error occurred during calling meta SetUUIDandMeta:", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -365,7 +365,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 	})
 	if err != nil {
 		err = errors.Wrapf(err, "Insert API (do multiple) failed to Insert uuid = %s\tmeta = %s\t info = %#v", uuid, meta, info.Get())
-		log.Error(err)
+// 		 log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -382,7 +382,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 		err = s.backup.Register(ctx, vecs)
 		if err != nil {
 			err = errors.Wrapf(err, "Insert API (backup.Register) failed to Backup Vectors = %#v\t info = %#v", vecs, info.Get())
-			log.Error(err)
+// 			 log.Error(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInternal(err.Error()))
 			}
@@ -440,7 +440,7 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 	for _, meta := range metas {
 		exists, err := s.metadata.Exists(ctx, meta)
 		if err != nil {
-			log.Error("an error occurred during calling meta Exists:", err)
+// 			 log.Error("an error occurred during calling meta Exists:", err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInternal(err.Error()))
 			}
@@ -649,7 +649,7 @@ func (s *server) Upsert(ctx context.Context, vec *payload.Object_Vector) (*paylo
 	meta := vec.GetId()
 	exists, errs := s.metadata.Exists(ctx, meta)
 	if errs != nil {
-		log.Error("an error occurred during calling meta Exists:", errs)
+// 		 log.Error("an error occurred during calling meta Exists:", errs)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(errs.Error()))
 		}
@@ -706,7 +706,7 @@ func (s *server) MultiUpsert(ctx context.Context, vecs *payload.Object_Vectors) 
 		}
 		exists, err := s.metadata.Exists(ctx, vec.GetId())
 		if err != nil {
-			log.Error("an error occurred during calling meta Exists:", err)
+// 			 log.Error("an error occurred during calling meta Exists:", err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInternal(err.Error()))
 			}

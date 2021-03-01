@@ -69,7 +69,7 @@ func (s *server) GetMeta(ctx context.Context, key *payload.Meta_Key) (*payload.M
 			return nil, status.WrapWithUnavailable("GetMeta API Cassandra unavailable", err, info.Get())
 
 		default:
-			log.Errorf("[GetMeta]\tunknown error\t%+v", err)
+// 			 log.Errorf("[GetMeta]\tunknown error\t%+v", err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 			}
@@ -107,7 +107,7 @@ func (s *server) GetMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *pay
 			return mv, status.WrapWithUnavailable("GetMetas API Cassandra unavailable", err, info.Get())
 
 		default:
-			log.Errorf("[GetMetas]\tunknown error\t%+v", err)
+// 			 log.Errorf("[GetMetas]\tunknown error\t%+v", err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 			}
@@ -142,7 +142,7 @@ func (s *server) GetMetaInverse(ctx context.Context, val *payload.Meta_Val) (*pa
 			return nil, status.WrapWithUnavailable("GetMetaInverse API Cassandra unavailable", err, info.Get())
 
 		default:
-			log.Errorf("[GetMetaInverse]\tunknown error\t%+v", err)
+// 			 log.Errorf("[GetMetaInverse]\tunknown error\t%+v", err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 			}
@@ -180,7 +180,7 @@ func (s *server) GetMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (
 			return mk, status.WrapWithUnavailable("GetMetasInverse API Cassandra unavailable", err, info.Get())
 
 		default:
-			log.Errorf("[GetMetasInverse]\tunknown error\t%+v", err)
+// 			 log.Errorf("[GetMetasInverse]\tunknown error\t%+v", err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 			}
@@ -199,7 +199,7 @@ func (s *server) SetMeta(ctx context.Context, kv *payload.Meta_KeyVal) (_ *paylo
 	}()
 	err = s.cassandra.Set(kv.GetKey(), kv.GetVal())
 	if err != nil {
-		log.Errorf("[SetMeta]\tunknown error\t%+v", err)
+// 		 log.Errorf("[SetMeta]\tunknown error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -221,7 +221,7 @@ func (s *server) SetMetas(ctx context.Context, kvs *payload.Meta_KeyVals) (_ *pa
 	}
 	err = s.cassandra.SetMultiple(query)
 	if err != nil {
-		log.Errorf("[SetMetas]\tunknown error\t%+v", err)
+// 		 log.Errorf("[SetMetas]\tunknown error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -255,7 +255,7 @@ func (s *server) DeleteMeta(ctx context.Context, key *payload.Meta_Key) (*payloa
 			return nil, status.WrapWithUnavailable("DeleteMeta API Cassandra unavailable", err, info.Get())
 
 		default:
-			log.Errorf("[DeleteMeta]\tunknown error\t%+v", err)
+// 			 log.Errorf("[DeleteMeta]\tunknown error\t%+v", err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 			}
@@ -293,7 +293,7 @@ func (s *server) DeleteMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *
 			return nil, status.WrapWithUnavailable("DeleteMetas API Cassandra unavailable", err, info.Get())
 
 		default:
-			log.Errorf("[DeleteMetas]\tunknown error\t%+v", err)
+// 			 log.Errorf("[DeleteMetas]\tunknown error\t%+v", err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 			}
@@ -328,7 +328,7 @@ func (s *server) DeleteMetaInverse(ctx context.Context, val *payload.Meta_Val) (
 			return nil, status.WrapWithUnavailable("DeleteMetaInverse API Cassandra unavailable", err, info.Get())
 
 		default:
-			log.Errorf("[DeleteMetaInverse]\tunknown error\t%+v", err)
+// 			 log.Errorf("[DeleteMetaInverse]\tunknown error\t%+v", err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 			}
@@ -366,7 +366,7 @@ func (s *server) DeleteMetasInverse(ctx context.Context, vals *payload.Meta_Vals
 			return nil, status.WrapWithUnavailable("DeleteMetasInverse API Cassandra unavailable", err, info.Get())
 
 		default:
-			log.Errorf("[DeleteMetasInverse]\tunknown error\t%+v", err)
+// 			 log.Errorf("[DeleteMetasInverse]\tunknown error\t%+v", err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 			}

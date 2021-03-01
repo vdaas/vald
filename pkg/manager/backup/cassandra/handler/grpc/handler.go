@@ -72,7 +72,7 @@ func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Re
 			return nil, status.WrapWithUnavailable("GetVector API Cassandra unavailable", err, info.Get())
 
 		default:
-			log.Errorf("[GetVector]\tunknown error\t%+v", err)
+// 			 log.Errorf("[GetVector]\tunknown error\t%+v", err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 			}
@@ -93,7 +93,7 @@ func (s *server) Locations(ctx context.Context, req *payload.Backup_Locations_Re
 	uuid := req.GetUuid()
 	ips, err := s.cassandra.GetIPs(ctx, uuid)
 	if err != nil {
-		log.Errorf("[Locations]\tnot found\t%s", err.Error())
+// 		 log.Errorf("[Locations]\tnot found\t%s", err.Error())
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
@@ -115,7 +115,7 @@ func (s *server) Register(ctx context.Context, vector *payload.Backup_Compressed
 	uuid := vector.GetUuid()
 	m, err := toModelVector(vector)
 	if err != nil {
-		log.Errorf("[Register]\tunknown error\t%+v", err)
+// 		 log.Errorf("[Register]\tunknown error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -124,7 +124,7 @@ func (s *server) Register(ctx context.Context, vector *payload.Backup_Compressed
 
 	err = s.cassandra.SetVector(ctx, m)
 	if err != nil {
-		log.Errorf("[Register]\tunknown error\t%+v", err)
+// 		 log.Errorf("[Register]\tunknown error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -146,7 +146,7 @@ func (s *server) RegisterMulti(ctx context.Context, vectors *payload.Backup_Comp
 		var m *model.Vector
 		m, err = toModelVector(vector)
 		if err != nil {
-			log.Errorf("[RegisterMulti]\tunknown error\t%+v", err)
+// 			 log.Errorf("[RegisterMulti]\tunknown error\t%+v", err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInternal(err.Error()))
 			}
@@ -157,7 +157,7 @@ func (s *server) RegisterMulti(ctx context.Context, vectors *payload.Backup_Comp
 
 	err = s.cassandra.SetVectors(ctx, ms...)
 	if err != nil {
-		log.Errorf("[RegisterMulti]\tunknown error\t%+v", err)
+// 		 log.Errorf("[RegisterMulti]\tunknown error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -177,7 +177,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Backup_Remove_Request)
 	uuid := req.GetUuid()
 	err = s.cassandra.DeleteVector(ctx, uuid)
 	if err != nil {
-		log.Errorf("[Remove]\tunknown error\t%+v", err)
+// 		 log.Errorf("[Remove]\tunknown error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -197,7 +197,7 @@ func (s *server) RemoveMulti(ctx context.Context, req *payload.Backup_Remove_Req
 	uuids := req.GetUuids()
 	err = s.cassandra.DeleteVectors(ctx, uuids...)
 	if err != nil {
-		log.Errorf("[RemoveMulti]\tunknown error\t%+v", err)
+// 		 log.Errorf("[RemoveMulti]\tunknown error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -217,7 +217,7 @@ func (s *server) RegisterIPs(ctx context.Context, req *payload.Backup_IP_Registe
 	uuid := req.GetUuid()
 	err = s.cassandra.SetIPs(ctx, uuid, req.Ips...)
 	if err != nil {
-		log.Errorf("[RegisterIPs]\tunknown error\t%+v", err)
+// 		 log.Errorf("[RegisterIPs]\tunknown error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -237,7 +237,7 @@ func (s *server) RemoveIPs(ctx context.Context, req *payload.Backup_IP_Remove_Re
 	ips := req.GetIps()
 	err = s.cassandra.RemoveIPs(ctx, ips...)
 	if err != nil {
-		log.Errorf("[RemoveIPs]\tunknown error\t%+v", err)
+// 		 log.Errorf("[RemoveIPs]\tunknown error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}

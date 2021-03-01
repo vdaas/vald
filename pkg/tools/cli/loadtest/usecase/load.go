@@ -103,7 +103,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			case err = <-lech:
 			}
 			if err != nil {
-				log.Error(err)
+// 				 log.Error(err)
 				select {
 				case <-ctx.Done():
 					return finalize()

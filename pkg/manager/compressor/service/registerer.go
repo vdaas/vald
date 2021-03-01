@@ -103,7 +103,7 @@ func (r *registerer) PostStop(ctx context.Context) (err error) {
 				return cctx.Err()
 			case err := <-ech:
 				if err != nil {
-					log.Error(err)
+// 					 log.Error(err)
 				}
 			}
 		}
@@ -111,7 +111,7 @@ func (r *registerer) PostStop(ctx context.Context) (err error) {
 
 	err = r.forwardMetas(ctx)
 	if err != nil {
-		log.Errorf("compressor registerer service poststop failed: %v", err)
+// 		 log.Errorf("compressor registerer service poststop failed: %v", err)
 		return err
 	}
 
@@ -232,7 +232,7 @@ func (r *registerer) forwardMetas(ctx context.Context) (errs error) {
 
 		err = r.client.Register(ctx, vec)
 		if err != nil {
-			log.Errorf("compressor registerer failed to backup uuid %s: %v", uuid, err)
+// 			 log.Errorf("compressor registerer failed to backup uuid %s: %v", uuid, err)
 			errs = errors.Wrap(errs, err.Error())
 		}
 	}

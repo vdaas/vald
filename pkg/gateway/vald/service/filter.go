@@ -64,7 +64,7 @@ func (f *filter) FilterSearch(ctx context.Context, res *payload.Search_Response)
 			return nil
 		})
 	if err != nil {
-		log.Error(err)
+// 		 log.Error(err)
 	}
 
 	return res, rerr

@@ -100,19 +100,19 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 				err = idx.execute(ctx, true)
 				if err != nil {
 					ech <- err
-					log.Error("an error occurred during indexing", err)
+// 					 log.Error("an error occurred during indexing", err)
 					err = nil
 				}
 			case <-itl.C:
 				err = idx.execute(ctx, false)
 				if err != nil {
 					ech <- err
-					log.Error("an error occurred during indexing", err)
+// 					 log.Error("an error occurred during indexing", err)
 					err = nil
 				}
 			}
 			if err != nil {
-				log.Error(err)
+// 				 log.Error(err)
 				select {
 				case <-ctx.Done():
 					return finalize()

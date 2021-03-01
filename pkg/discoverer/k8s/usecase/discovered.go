@@ -52,7 +52,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
 	der, err := net.NewDialer(cfg.Discoverer.Net.Opts()...)
 	if err != nil {
-		log.Error(err)
+// 		 log.Error(err)
 		return nil, err
 	}
 	dsc, err := service.New(

@@ -162,10 +162,10 @@ func (r *reader) getObject(ctx context.Context, key string, offset, length int64
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case s3.ErrCodeNoSuchBucket:
-				log.Error(errors.NewErrBlobNoSuchBucket(err, r.bucket))
+// 				 log.Error(errors.NewErrBlobNoSuchBucket(err, r.bucket))
 				return ioutil.NopCloser(bytes.NewReader(nil)), nil
 			case s3.ErrCodeNoSuchKey:
-				log.Error(errors.NewErrBlobNoSuchKey(err, key))
+// 				 log.Error(errors.NewErrBlobNoSuchKey(err, key))
 				return ioutil.NopCloser(bytes.NewReader(nil)), nil
 			case "InvalidRange":
 				return ioutil.NopCloser(bytes.NewReader(nil)), nil

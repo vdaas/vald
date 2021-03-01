@@ -53,22 +53,22 @@ func main() {
 
 	in, err := os.OpenFile(*input, os.O_RDONLY, os.ModeDevice)
 	if err != nil {
-		log.Error(err)
+// 		 log.Error(err)
 	}
 	defer func() {
 		if err := in.Close(); err != nil {
-			log.Error(err)
+// 			 log.Error(err)
 		}
 	}()
 
 	var ms []metrics.Metrics
 	if err := gob.NewDecoder(in).Decode(&ms); err != nil {
-		log.Error(err)
+// 		 log.Error(err)
 	}
 
 	p, err := plot.New()
 	if err != nil {
-		log.Error(err)
+// 		 log.Error(err)
 	}
 	p.Title.Text = *title
 	p.X.Label.Text = *xLabel
@@ -98,7 +98,7 @@ func main() {
 		}
 		points, _, err := plotter.NewLinePoints(xys)
 		if err != nil {
-			log.Error(err)
+// 			 log.Error(err)
 		}
 		r, g, b := colorful.Hcl((max-min)*float64(i)*step+min, 0.6, 0.8).RGB255()
 		points.Color = color.RGBA{R: r, G: g, B: b, A: 255}
@@ -110,16 +110,16 @@ func main() {
 	p.Draw(draw.New(canvas))
 	out, err := os.OpenFile(*output, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, os.ModePerm)
 	if err != nil {
-		log.Error(err)
+// 		 log.Error(err)
 	}
 	defer func() {
 		err := out.Close()
 		if err != nil {
-			log.Error(err)
+// 			 log.Error(err)
 		}
 	}()
 	_, err = canvas.WriteTo(out)
 	if err != nil {
-		log.Error(err)
+// 		 log.Error(err)
 	}
 }

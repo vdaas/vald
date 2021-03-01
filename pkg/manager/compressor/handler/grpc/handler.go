@@ -57,7 +57,7 @@ func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Re
 	uuid := req.GetUuid()
 	r, err := s.backup.GetObject(ctx, uuid)
 	if err != nil {
-		log.Errorf("[GetVector]\tnot found\t%s", err.Error())
+// 		 log.Errorf("[GetVector]\tnot found\t%s", err.Error())
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
@@ -66,7 +66,7 @@ func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Re
 
 	vector, err := s.compressor.Decompress(ctx, r.GetVector())
 	if err != nil {
-		log.Errorf("[GetVector]\tunknown error\t%+v", err)
+// 		 log.Errorf("[GetVector]\tunknown error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -90,7 +90,7 @@ func (s *server) Locations(ctx context.Context, req *payload.Backup_Locations_Re
 	uuid := req.GetUuid()
 	r, err := s.backup.GetLocation(ctx, uuid)
 	if err != nil {
-		log.Errorf("[Locations]\tnot found\t%s", err.Error())
+// 		 log.Errorf("[Locations]\tnot found\t%s", err.Error())
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
@@ -112,7 +112,7 @@ func (s *server) Register(ctx context.Context, vec *payload.Backup_Vector) (res 
 
 	err = s.registerer.Register(ctx, vec)
 	if err != nil {
-		log.Errorf("[Register]\tregisterer returns error\t%+v", err)
+// 		 log.Errorf("[Register]\tregisterer returns error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -133,7 +133,7 @@ func (s *server) RegisterMulti(ctx context.Context, vecs *payload.Backup_Vectors
 
 	err = s.registerer.RegisterMulti(ctx, vecs)
 	if err != nil {
-		log.Errorf("[RegisterMulti]\tregisterer returns error\t%+v", err)
+// 		 log.Errorf("[RegisterMulti]\tregisterer returns error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -153,7 +153,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Backup_Remove_Request)
 	uuid := req.GetUuid()
 	err = s.backup.Remove(ctx, uuid)
 	if err != nil {
-		log.Errorf("[Remove]\tunknown error\t%+v", err)
+// 		 log.Errorf("[Remove]\tunknown error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -173,7 +173,7 @@ func (s *server) RemoveMulti(ctx context.Context, req *payload.Backup_Remove_Req
 	uuids := req.GetUuids()
 	err = s.backup.RemoveMultiple(ctx, uuids...)
 	if err != nil {
-		log.Errorf("[RemoveMulti]\tunknown error\t%+v", err)
+// 		 log.Errorf("[RemoveMulti]\tunknown error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -194,7 +194,7 @@ func (s *server) RegisterIPs(ctx context.Context, req *payload.Backup_IP_Registe
 	ips := req.GetIps()
 	err = s.backup.RegisterIPs(ctx, uuid, ips)
 	if err != nil {
-		log.Errorf("[RegisterIPs]\tunknown error\t%+v", err)
+// 		 log.Errorf("[RegisterIPs]\tunknown error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -214,7 +214,7 @@ func (s *server) RemoveIPs(ctx context.Context, req *payload.Backup_IP_Remove_Re
 	ips := req.GetIps()
 	err = s.backup.RemoveIPs(ctx, ips)
 	if err != nil {
-		log.Errorf("[RemoveIPs]\tunknown error\t%+v", err)
+// 		 log.Errorf("[RemoveIPs]\tunknown error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}

@@ -138,7 +138,7 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 				err = c.discover(ctx, ech)
 			}
 			if err != nil {
-				log.Warn(err)
+				// log.Error(err)
 				select {
 				case <-ctx.Done():
 					return finalize()

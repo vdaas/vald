@@ -79,7 +79,7 @@ func (rt *router) routing(
 							code,
 							err)
 						if err != nil {
-							log.Error(err)
+// 							 log.Error(err)
 						}
 					}
 					return
@@ -91,7 +91,7 @@ func (rt *router) routing(
 				http.StatusMethodNotAllowed,
 				errors.ErrInvalidRequest)
 			if err != nil {
-				log.Error(err)
+// 				 log.Error(err)
 			}
 		})
 }

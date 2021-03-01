@@ -137,7 +137,7 @@ func New(opts ...Option) (Info, error) {
 
 			e := new(errors.ErrCriticalOption)
 			if errors.As(err, &e) {
-				log.Error(werr)
+// 				 log.Error(werr)
 				return nil, werr
 			}
 // 			 log.Warn(werr)

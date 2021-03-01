@@ -653,7 +653,7 @@ func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		log.Error(err)
+// 		 log.Error(err)
 		return err
 	}
 	return nil
@@ -702,7 +702,7 @@ func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (er
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		log.Error(err)
+// 		 log.Error(err)
 		return err
 	}
 	return nil
@@ -906,7 +906,7 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		log.Error(err)
+// 		 log.Error(err)
 		return err
 	}
 	return nil
@@ -1066,7 +1066,7 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) (err error)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		log.Error(err)
+// 		 log.Error(err)
 		return err
 	}
 	return nil
@@ -1226,7 +1226,7 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		log.Error(err)
+// 		 log.Error(err)
 		return err
 	}
 	return nil
@@ -1330,7 +1330,7 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		log.Error(err)
+// 		 log.Error(err)
 		return err
 	}
 	return nil
@@ -1457,7 +1457,7 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		log.Error(err)
+// 		 log.Error(err)
 		return err
 	}
 	return nil
