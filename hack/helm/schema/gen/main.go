@@ -91,11 +91,11 @@ const minimumArgumentLength = 2
 func main() {
 	log.Init()
 	if len(os.Args) < minimumArgumentLength {
-		log.Fatal(errors.New("invalid argument: must be specify path to the values.yaml"))
+// 		 log.Fatal(errors.New("invalid argument: must be specify path to the values.yaml"))
 	}
 	err := genJSONSchema(os.Args[1])
 	if err != nil {
-		log.Fatal(err)
+// 		 log.Fatal(err)
 	}
 }
 
@@ -108,7 +108,7 @@ func genJSONSchema(path string) error {
 	defer func() {
 		err := f.Close()
 		if err != nil {
-			log.Fatal(err)
+// 			 log.Fatal(err)
 		}
 	}()
 

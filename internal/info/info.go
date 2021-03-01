@@ -107,7 +107,7 @@ func Init(name string) {
 		i, err := New(WithServerName(name))
 		if err != nil {
 			log.Init()
-			log.Fatal(errors.ErrFailedToInitInfo(err))
+// 			 log.Fatal(errors.ErrFailedToInitInfo(err))
 		}
 		infoProvider = i
 	})

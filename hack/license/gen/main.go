@@ -67,13 +67,13 @@ const (
 
 func main() {
 	if len(os.Args) < minimumArgumentLength {
-		log.Fatal(errors.New("invalid argument"))
+// 		 log.Fatal(errors.New("invalid argument"))
 	}
 	for _, path := range dirwalk(os.Args[1]) {
 		fmt.Println(path)
 		err := readAndRewrite(path)
 		if err != nil {
-			log.Fatal(err)
+// 			 log.Fatal(err)
 		}
 	}
 }
@@ -145,7 +145,7 @@ func dirwalk(dir string) []string {
 			default:
 				path, err := filepath.Abs(filepath.Join(dir, file.Name()))
 				if err != nil {
-					log.Fatal("error")
+// 					 log.Fatal("error")
 				}
 				paths = append(paths, path)
 			}
@@ -163,7 +163,7 @@ func readAndRewrite(path string) error {
 	if err != nil {
 		err = f.Close()
 		if err != nil {
-			log.Fatal("error")
+// 			 log.Fatal("error")
 		}
 		return errors.Errorf("filepath %s, could not open", path)
 	}
@@ -180,7 +180,7 @@ func readAndRewrite(path string) error {
 	if fi.Name() == "LICENSE" {
 		err = license.Execute(buf, d)
 		if err != nil {
-			log.Fatal("error")
+// 			 log.Fatal("error")
 		}
 	} else {
 		switch filepath.Ext(path) {
@@ -198,26 +198,26 @@ func readAndRewrite(path string) error {
 				bf = true
 				_, err = buf.WriteString(line)
 				if err != nil {
-					log.Fatal("error")
+// 					 log.Fatal("error")
 				}
 				_, err = buf.WriteString("\n")
 				if err != nil {
-					log.Fatal("error")
+// 					 log.Fatal("error")
 				}
 				_, err = buf.WriteString("\n")
 				if err != nil {
-					log.Fatal("error")
+// 					 log.Fatal("error")
 				}
 				continue
 			}
 			if (filepath.Ext(path) == ".yaml" || filepath.Ext(path) == ".yml") && strings.HasPrefix(line, "---") {
 				_, err = buf.WriteString(line)
 				if err != nil {
-					log.Fatal("error")
+// 					 log.Fatal("error")
 				}
 				_, err = buf.WriteString("\n")
 				if err != nil {
-					log.Fatal("error")
+// 					 log.Fatal("error")
 				}
 				continue
 			}
@@ -227,7 +227,7 @@ func readAndRewrite(path string) error {
 				once.Do(func() {
 					err = apache.Execute(buf, d)
 					if err != nil {
-						log.Fatal("error")
+// 						 log.Fatal("error")
 					}
 				})
 				lf = false
@@ -235,11 +235,11 @@ func readAndRewrite(path string) error {
 			if !lf {
 				_, err = buf.WriteString(line)
 				if err != nil {
-					log.Fatal("error")
+// 					 log.Fatal("error")
 				}
 				_, err = buf.WriteString("\n")
 				if err != nil {
-					log.Fatal("error")
+// 					 log.Fatal("error")
 				}
 			}
 			bf = false
@@ -257,17 +257,17 @@ func readAndRewrite(path string) error {
 	if err != nil {
 		err = f.Close()
 		if err != nil {
-			log.Fatal("error")
+// 			 log.Fatal("error")
 		}
 		return errors.Errorf("filepath %s, could not open", path)
 	}
 	_, err = f.WriteString(strings.ReplaceAll(buf.String(), d.Escape+"\n\n\n", d.Escape+"\n\n"))
 	if err != nil {
-		log.Fatal("error")
+// 		 log.Fatal("error")
 	}
 	err = f.Close()
 	if err != nil {
-		log.Fatal("error")
+// 		 log.Fatal("error")
 	}
 	return nil
 }
