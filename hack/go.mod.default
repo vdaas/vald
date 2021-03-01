@@ -12,6 +12,7 @@ replace (
 	github.com/docker/docker => github.com/moby/moby latest
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate latest
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql latest
+	github.com/kpango/glg => github.com/kpango/glg v1.5.1
 	github.com/gocql/gocql => github.com/gocql/gocql latest
 	github.com/gogo/googleapis => github.com/gogo/googleapis latest
 	github.com/gogo/protobuf => github.com/gogo/protobuf latest
@@ -27,7 +28,6 @@ replace (
 	google.golang.org/grpc => google.golang.org/grpc latest
 	google.golang.org/protobuf => google.golang.org/protobuf latest
 	k8s.io/api => k8s.io/api v0.20.4
-	k8s.io/client-go => k8s.io/client-go v0.20.4
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.20.4
 	k8s.io/apimachinery => k8s.io/apimachinery v0.20.4
 	k8s.io/cli-runtime => k8s.io/cli-runtime v0.20.4

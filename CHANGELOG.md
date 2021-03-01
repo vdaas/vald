@@ -35,13 +35,10 @@
     <td>
       <code>docker pull vdaas/vald-gateway:v1.0.3</code><br/>
       <code>docker pull ghcr.io/vdaas/vald/vald-gateway:v1.0.3</code><br/>
-
       <code>docker pull vdaas/vald-backup-gateway:v1.0.3</code><br/>
       <code>docker pull ghcr.io/vdaas/vald/vald-backup-gateway:v1.0.3</code><br/>
-
       <code>docker pull vdaas/vald-lb-gateway:v1.0.3</code><br/>
       <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.0.3</code><br/>
-
       <code>docker pull vdaas/vald-meta-gateway:v1.0.3</code><br/>
       <code>docker pull ghcr.io/vdaas/vald/vald-meta-gateway:v1.0.3</code>
     </td>
@@ -93,14 +90,11 @@
 - [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.0.3/charts/vald-helm-operator/README.md)
 
 ### Changes
-## Vald v1.0.3 Release
 
-
-### Changelog
 - fix MySQL panic test ([#996](https://github.com/vdaas/vald/pull/996))
 - Update tutorial to support v1 ([#1009](https://github.com/vdaas/vald/pull/1009))
 - remove not supported control flag on darwin ([#1025](https://github.com/vdaas/vald/pull/1025))
-- Add strategy section to Docker build workflows ([#1024](https://github.com/vdaas/vald/pull/1024))(https://github.com/vdaas/vald/pull/1019))
+- Add strategy section to Docker build workflows ([#1024](https://github.com/vdaas/vald/pull/1024), [#1019](https://github.com/vdaas/vald/pull/1019))
 - move internal/net/tcp package to internal/net package and support unix domain socket ([#1010](https://github.com/vdaas/vald/pull/1010))
 - Implement internal/info/info test ([#862](https://github.com/vdaas/vald/pull/862))
 - add test for internal/errors/runner ([#1007](https://github.com/vdaas/vald/pull/1007))

@@ -24,6 +24,8 @@ on:
       - "*.*.*-*"
       - "v*.*.*-*"
     paths:
+      - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/dockers-agent-ngt-image.yml"
       - "go.mod"
       - "go.sum"
       - "internal/**"
@@ -38,6 +40,8 @@ on:
       - "versions/NGT_VERSION"
   pull_request:
     paths:
+      - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/dockers-agent-ngt-image.yml"
       - "go.mod"
       - "go.sum"
       - "internal/**"

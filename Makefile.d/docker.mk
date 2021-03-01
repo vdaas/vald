@@ -317,6 +317,7 @@ docker/build/operator/helm:
 	    $(DOCKER_OPTS) \
 	    -f dockers/operator/helm/Dockerfile \
 	    -t $(ORG)/$(HELM_OPERATOR_IMAGE):$(TAG) . \
+	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg MAINTAINER=$(MAINTAINER) \
 	    --build-arg OPERATOR_SDK_VERSION=$(OPERATOR_SDK_VERSION)
 

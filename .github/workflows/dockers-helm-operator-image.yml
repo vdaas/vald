@@ -24,6 +24,8 @@ on:
       - "*.*.*-*"
       - "v*.*.*-*"
     paths:
+      - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/dockers-helm-operator-image.yml"
       - "dockers/operator/helm/Dockerfile"
       - "charts/vald/Chart.yaml"
       - "charts/vald/values.yaml"
@@ -34,6 +36,8 @@ on:
       - "versions/OPERATOR_SDK_VERSION"
   pull_request:
     paths:
+      - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/dockers-helm-operator-image.yml"
       - "dockers/operator/helm/Dockerfile"
       - "charts/vald/Chart.yaml"
       - "charts/vald/values.yaml"
