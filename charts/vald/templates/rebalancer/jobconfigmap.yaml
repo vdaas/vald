@@ -82,7 +82,7 @@ data:
     observability:
       {{- $observability := dict "Values" .Values.rebalancer.observability "default" .Values.defaults.observability }}
       {{- include "vald.observability" $observability | nindent 6 }}
-    rebalancer:
+    rebalancer_job:
       {{- $sidecar := .Values.sidecar.config }}
       blob_storage:
         {{- if $sidecar.blob_storage }}
