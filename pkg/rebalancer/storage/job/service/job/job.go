@@ -184,7 +184,7 @@ func (r *rebalancer) loadKVS(ctx context.Context, reader io.Reader) (map[string]
 		header, err := tr.Next()
 		if err != nil {
 			if err == io.EOF {
-				// TODO; define in errors package
+				// TODO; define in errors package (after controller PR merged)
 				return nil, errors.New("kvsdb file not found")
 			}
 			return nil, err

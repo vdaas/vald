@@ -35,7 +35,7 @@ type Data struct {
 	Observability *config.Observability `json:"observability" yaml:"observability"`
 
 	// Rebalancer represents rebalance job configurations
-	Rebalancer *config.RebalanceJob
+	Rebalancer *config.RebalanceJob `json:"rebalancer_job" yaml:"rebalancer_job"`
 }
 
 func NewConfig(path string) (cfg *Data, err error) {

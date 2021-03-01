@@ -54,6 +54,8 @@ type RebalanceJob struct {
 	Rate string `yaml:"rate" json:"rate"`
 	// GatewayClient represent gRPC client configuration.
 	GatewayClient *GRPCClient `json:"gateway_client" yaml:"gateway_client"`
+	// Client represent HTTP client configurations
+	Client *Client `yaml:"client" json:"client"`
 }
 
 // Bind binds rebalance job configuration.
@@ -72,6 +74,9 @@ func (r *RebalanceJob) Bind() *RebalanceJob {
 
 	if r.GatewayClient != nil {
 		r.GatewayClient = r.GatewayClient.Bind()
+	}
+	if r.Client != nil {
+		r.Client = r.Client.Bind()
 	}
 
 	return r

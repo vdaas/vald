@@ -27,6 +27,8 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/recover"
 	"github.com/vdaas/vald/internal/net/grpc/metric"
+	"github.com/vdaas/vald/internal/net/http/client"
+	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/observability"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
@@ -51,12 +53,35 @@ type run struct {
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
+
+	dialer, err := tcp.NewDialer(cfg.Rebalancer.Client.TCP.Opts()...)
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := client.New(
+		client.WithDialContext(dialer.DialContext),
+		client.WithTLSHandshakeTimeout(cfg.Rebalancer.Client.Transport.RoundTripper.TLSHandshakeTimeout),
+		client.WithMaxIdleConns(cfg.Rebalancer.Client.Transport.RoundTripper.MaxIdleConns),
+		client.WithMaxIdleConnsPerHost(cfg.Rebalancer.Client.Transport.RoundTripper.MaxIdleConnsPerHost),
+		client.WithMaxConnsPerHost(cfg.Rebalancer.Client.Transport.RoundTripper.MaxConnsPerHost),
+		client.WithIdleConnTimeout(cfg.Rebalancer.Client.Transport.RoundTripper.IdleConnTimeout),
+		client.WithResponseHeaderTimeout(cfg.Rebalancer.Client.Transport.RoundTripper.ResponseHeaderTimeout),
+		client.WithExpectContinueTimeout(cfg.Rebalancer.Client.Transport.RoundTripper.ExpectContinueTimeout),
+		client.WithMaxResponseHeaderBytes(cfg.Rebalancer.Client.Transport.RoundTripper.MaxResponseHeaderSize),
+		client.WithWriteBufferSize(cfg.Rebalancer.Client.Transport.RoundTripper.WriteBufferSize),
+		client.WithReadBufferSize(cfg.Rebalancer.Client.Transport.RoundTripper.ReadBufferSize),
+		client.WithForceAttemptHTTP2(cfg.Rebalancer.Client.Transport.RoundTripper.ForceAttemptHTTP2),
+	)
+	if err != nil {
+		return nil, err
+	}
+
 	st, err := storage.New(
 		storage.WithErrGroup(eg),
 		storage.WithType(cfg.Rebalancer.BlobStorage.StorageType),
 		storage.WithBucketName(cfg.Rebalancer.BlobStorage.Bucket),
-		// TODO: define filename
-		// storage.WithFilename(cfg.Rebalancer.Filename),
+		storage.WithFilename(cfg.Rebalancer.TargetAgentName),
 		storage.WithFilenameSuffix(cfg.Rebalancer.FilenameSuffix),
 		storage.WithS3SessionOpts(
 			session.WithEndpoint(cfg.Rebalancer.BlobStorage.S3.Endpoint),
@@ -75,15 +100,14 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			session.WithEnableContentMD5Validation(cfg.Rebalancer.BlobStorage.S3.EnableContentMD5Validation),
 			session.WithEnableEndpointDiscovery(cfg.Rebalancer.BlobStorage.S3.EnableEndpointDiscovery),
 			session.WithEnableEndpointHostPrefix(cfg.Rebalancer.BlobStorage.S3.EnableEndpointHostPrefix),
-			// TODO: set client
-			// session.WithHTTPClient(client),
+			session.WithHTTPClient(client),
 		),
 		storage.WithS3Opts(
 			s3.WithMaxPartSize(cfg.Rebalancer.BlobStorage.S3.MaxPartSize),
 			s3.WithMaxChunkSize(cfg.Rebalancer.BlobStorage.S3.MaxChunkSize),
 			// TODO: backoff opts
-			// s3.WithReaderBackoff(cfg.AgentSidecar.RestoreBackoffEnabled),
-			// s3.WithReaderBackoffOpts(cfg.AgentSidecar.RestoreBackoff.Opts()...),
+			// s3.WithReaderBackoff(cfg.Rebalancer.RestoreBackoffEnabled),
+			// s3.WithReaderBackoffOpts(cfg.Rebalancer.RestoreBackoff.Opts()...),
 		),
 		storage.WithCompressAlgorithm(cfg.Rebalancer.Compress.CompressAlgorithm),
 		storage.WithCompressionLevel(cfg.Rebalancer.Compress.CompressionLevel),
