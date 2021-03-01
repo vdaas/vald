@@ -33,13 +33,10 @@
     <td>
       <code>docker pull vdaas/vald-gateway:{{ version }}</code><br/>
       <code>docker pull ghcr.io/vdaas/vald/vald-gateway:{{ version }}</code><br/>
-
       <code>docker pull vdaas/vald-backup-gateway:{{ version }}</code><br/>
       <code>docker pull ghcr.io/vdaas/vald/vald-backup-gateway:{{ version }}</code><br/>
-
       <code>docker pull vdaas/vald-lb-gateway:{{ version }}</code><br/>
       <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:{{ version }}</code><br/>
-
       <code>docker pull vdaas/vald-meta-gateway:{{ version }}</code><br/>
       <code>docker pull ghcr.io/vdaas/vald/vald-meta-gateway:{{ version }}</code>
     </td>

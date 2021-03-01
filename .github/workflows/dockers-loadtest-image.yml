@@ -24,6 +24,8 @@ on:
       - "*.*.*-*"
       - "v*.*.*-*"
     paths:
+      - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/dockers-loadtest-image.yml"
       - "go.mod"
       - "go.sum"
       - "internal/**"
@@ -37,6 +39,8 @@ on:
       - "versions/GO_VERSION"
   pull_request:
     paths:
+      - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/dockers-loadtest-image.yml"
       - "go.mod"
       - "go.sum"
       - "internal/**"
