@@ -50,7 +50,7 @@ func init() {
 	Wait option specifies indexing wait time (in seconds). Default value is  `60`.
 	**/
 	flag.StringVar(&datasetPath, "path", "fashion-mnist-784-euclidean.hdf5", "dataset path")
-	flag.StringVar(&grpcServerAddr, "addr", "127.0.0.1:8081", "gRPC server address")
+	flag.StringVar(&grpcServerAddr, "addr", "127.0.0.1:4000", "gRPC server address")
 	flag.UintVar(&indexingWaitSeconds, "wait", 60, "indexing wait seconds")
 	flag.Parse()
 }
@@ -97,6 +97,7 @@ func main() {
 			glg.Fatal(err)
 		}
 	}
+	glg.Infof("Finish Inserting %d training vector to Vald Agent", insertCount)
 	/**
 	Option: Run Indexing instead of Auto Indexing
 	If you run client.CreateAndSaveIndex, it costs less time for search
@@ -140,6 +141,36 @@ func main() {
 		glg.Infof("%d - Results : %s\n\n", i+1, string(b))
 		time.Sleep(1 * time.Second)
 	}
+
+	glg.Info("Start removing vector")
+	// Remove indexed 400 vectors from vald cluster.
+	for i := range ids[:insertCount] {
+		if i%10 == 0 {
+			glg.Infof("Removed: %d", i+10)
+		}
+		// Call `Remove` function of Vald client.
+		// Sends id to server via gRPC.
+		_, err := client.Remove(ctx, &payload.Remove_Request{
+			// Conditions for removing the vector.
+			Id: &payload.Object_ID{
+				Id: ids[i],
+			},
+		})
+		if err != nil {
+			glg.Fatal(err)
+		}
+	}
+	glg.Info("Finish removing vector")
+	glg.Info("Start removing indexed vector from backup")
+	/**
+	Option: Run Indexing instead of Auto Indexing
+	If you run client.SaveIndex, the backup of indexed vector will be removed.
+	**/
+	_, err = agent.NewAgentClient(conn).SaveIndex(ctx, &payload.Empty{})
+	if err != nil {
+		glg.Fatal(err)
+	}
+	glg.Info("Finish removing indexed vector from backup")
 }
 
 // load function loads training and test vector from hdf file. The size of ids is same to the number of training data.

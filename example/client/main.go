@@ -63,7 +63,6 @@ func main() {
 	if err != nil {
 		glg.Fatal(err)
 	}
-
 	ctx := context.Background()
 
 	// Create a Vald client for connecting to the Vald cluster.
@@ -128,6 +127,26 @@ func main() {
 		glg.Infof("%d - Results : %s\n\n", i+1, string(b))
 		time.Sleep(1 * time.Second)
 	}
+	glg.Infof("Finish searching %d times", testCount)
+
+	glg.Info("Start removing vector")
+	// Remove indexed 400 vectors from vald cluster.
+	for i := range ids[:insertCount] {
+		if i%10 == 0 {
+			glg.Infof("Removed: %d", i+10)
+		}
+		// Call `Remove` function of Vald client.
+		// Sends id to server via gRPC.
+		_, err := client.Remove(ctx, &payload.Remove_Request{
+			Id: &payload.Object_ID{
+				Id: ids[i],
+			},
+		})
+		if err != nil {
+			glg.Fatal(err)
+		}
+	}
+	glg.Info("Finish removing vector")
 }
 
 // load function loads training and test vector from hdf file. The size of ids is same to the number of training data.
