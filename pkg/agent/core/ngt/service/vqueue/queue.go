@@ -40,7 +40,9 @@ type Queue interface {
 	RangePopInsert(ctx context.Context, f func(uuid string, vector []float32) bool)
 	RangePopDelete(ctx context.Context, f func(uuid string) bool)
 	IVQLen() int
+	IVCLen() int
 	DVQLen() int
+	DVCLen() int
 }
 
 type vqueue struct {
@@ -338,4 +340,12 @@ func (v *vqueue) DVQLen() (l int) {
 	l = len(v.udk)
 	v.dmu.Unlock()
 	return l
+}
+
+func (v *vqueue) IVCLen() int {
+	return len(v.ich)
+}
+
+func (v *vqueue) DVCLen() int {
+	return len(v.dch)
 }

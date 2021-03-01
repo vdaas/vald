@@ -2240,3 +2240,259 @@ func Test_vqueue_DVQLen(t *testing.T) {
 		})
 	}
 }
+
+func Test_vqueue_IVCLen(t *testing.T) {
+	t.Parallel()
+	type fields struct {
+		ich        chan index
+		uii        []index
+		imu        sync.Mutex
+		uiim       map[string][]float32
+		dch        chan key
+		udk        []key
+		dmu        sync.Mutex
+		eg         errgroup.Group
+		finalizing atomic.Value
+		closed     atomic.Value
+		ichSize    int
+		dchSize    int
+		iBufSize   int
+		dBufSize   int
+	}
+	type want struct {
+		want int
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, int) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got int) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           ich: nil,
+		           uii: nil,
+		           imu: sync.Mutex{},
+		           uiim: nil,
+		           dch: nil,
+		           udk: nil,
+		           dmu: sync.Mutex{},
+		           eg: nil,
+		           finalizing: nil,
+		           closed: nil,
+		           ichSize: 0,
+		           dchSize: 0,
+		           iBufSize: 0,
+		           dBufSize: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           ich: nil,
+		           uii: nil,
+		           imu: sync.Mutex{},
+		           uiim: nil,
+		           dch: nil,
+		           udk: nil,
+		           dmu: sync.Mutex{},
+		           eg: nil,
+		           finalizing: nil,
+		           closed: nil,
+		           ichSize: 0,
+		           dchSize: 0,
+		           iBufSize: 0,
+		           dBufSize: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			v := &vqueue{
+				ich:        test.fields.ich,
+				uii:        test.fields.uii,
+				imu:        test.fields.imu,
+				uiim:       test.fields.uiim,
+				dch:        test.fields.dch,
+				udk:        test.fields.udk,
+				dmu:        test.fields.dmu,
+				eg:         test.fields.eg,
+				finalizing: test.fields.finalizing,
+				closed:     test.fields.closed,
+				ichSize:    test.fields.ichSize,
+				dchSize:    test.fields.dchSize,
+				iBufSize:   test.fields.iBufSize,
+				dBufSize:   test.fields.dBufSize,
+			}
+
+			got := v.IVCLen()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_vqueue_DVCLen(t *testing.T) {
+	t.Parallel()
+	type fields struct {
+		ich        chan index
+		uii        []index
+		imu        sync.Mutex
+		uiim       map[string][]float32
+		dch        chan key
+		udk        []key
+		dmu        sync.Mutex
+		eg         errgroup.Group
+		finalizing atomic.Value
+		closed     atomic.Value
+		ichSize    int
+		dchSize    int
+		iBufSize   int
+		dBufSize   int
+	}
+	type want struct {
+		want int
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, int) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got int) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           ich: nil,
+		           uii: nil,
+		           imu: sync.Mutex{},
+		           uiim: nil,
+		           dch: nil,
+		           udk: nil,
+		           dmu: sync.Mutex{},
+		           eg: nil,
+		           finalizing: nil,
+		           closed: nil,
+		           ichSize: 0,
+		           dchSize: 0,
+		           iBufSize: 0,
+		           dBufSize: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           ich: nil,
+		           uii: nil,
+		           imu: sync.Mutex{},
+		           uiim: nil,
+		           dch: nil,
+		           udk: nil,
+		           dmu: sync.Mutex{},
+		           eg: nil,
+		           finalizing: nil,
+		           closed: nil,
+		           ichSize: 0,
+		           dchSize: 0,
+		           iBufSize: 0,
+		           dBufSize: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			v := &vqueue{
+				ich:        test.fields.ich,
+				uii:        test.fields.uii,
+				imu:        test.fields.imu,
+				uiim:       test.fields.uiim,
+				dch:        test.fields.dch,
+				udk:        test.fields.udk,
+				dmu:        test.fields.dmu,
+				eg:         test.fields.eg,
+				finalizing: test.fields.finalizing,
+				closed:     test.fields.closed,
+				ichSize:    test.fields.ichSize,
+				dchSize:    test.fields.dchSize,
+				iBufSize:   test.fields.iBufSize,
+				dBufSize:   test.fields.dBufSize,
+			}
+
+			got := v.DVCLen()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}

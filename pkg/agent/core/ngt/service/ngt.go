@@ -64,8 +64,10 @@ type NGT interface {
 	NumberOfCreateIndexExecution() uint64
 	NumberOfProactiveGCExecution() uint64
 	UUIDs(context.Context) (uuids []string)
-	DeleteVQueueLen() uint64
-	InsertVQueueLen() uint64
+	DeleteVQueueBufferLen() uint64
+	InsertVQueueBufferLen() uint64
+	DeleteVQueueChannelLen() uint64
+	InsertVQueueChannelLen() uint64
 	Close(ctx context.Context) error
 }
 
@@ -756,12 +758,20 @@ func (n *ngt) Len() uint64 {
 	return n.kvs.Len()
 }
 
-func (n *ngt) InsertVQueueLen() uint64 {
+func (n *ngt) InsertVQueueBufferLen() uint64 {
 	return uint64(n.vq.IVQLen())
 }
 
-func (n *ngt) DeleteVQueueLen() uint64 {
+func (n *ngt) DeleteVQueueBufferLen() uint64 {
 	return uint64(n.vq.DVQLen())
+}
+
+func (n *ngt) InsertVQueueChannelLen() uint64 {
+	return uint64(n.vq.IVCLen())
+}
+
+func (n *ngt) DeleteVQueueChannelLen() uint64 {
+	return uint64(n.vq.DVCLen())
 }
 
 func (n *ngt) Close(ctx context.Context) (err error) {

@@ -21,7 +21,7 @@ replace (
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.16.0
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.2
 	github.com/hailocab/go-hostpool => github.com/monzo/go-hostpool v0.0.0-20200724120130-287edbb29340
-	github.com/klauspost/compress => github.com/klauspost/compress v1.11.9-0.20210226154345-6381575b273f
+	github.com/klauspost/compress => github.com/klauspost/compress v1.11.9
 	github.com/kpango/glg => github.com/kpango/glg v1.5.1
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.2+incompatible
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
@@ -76,7 +76,7 @@ require (
 	go.uber.org/zap v1.16.0
 	golang.org/x/net v0.0.0-20210226172049-e18ecbb05110
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys v0.0.0-20210228012217-479acdf4ea46
+	golang.org/x/sys v0.0.0-20210301091718-77cc2087c03b
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/plot v0.8.1
 	google.golang.org/api v0.40.0
