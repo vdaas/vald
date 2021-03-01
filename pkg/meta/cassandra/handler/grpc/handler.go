@@ -458,7 +458,7 @@ func (s *server) DeleteMetaInverse(ctx context.Context, val *payload.Meta_Val) (
 			return nil, err
 		case errors.IsErrCassandraUnavailable(err):
 			log.Warnf("[DeleteMetaInverse]\tunavailable\t%+v", err)
-			err = status.WrapWithUnavailable(fmt.Sprintf("DeleteMetaInverse API: Cassandra unavailable:", val.GetVal()), err,
+			err = status.WrapWithUnavailable(fmt.Sprintf("DeleteMetaInverse API: Cassandra unavailable: val %s", val.GetVal()), err,
 				&errdetails.ResourceInfo{
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.DeleteMetaInverse",
 					ResourceName: val.GetVal(),
