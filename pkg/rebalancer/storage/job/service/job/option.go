@@ -20,6 +20,7 @@ package job
 import (
 	"strconv"
 
+	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/pkg/rebalancer/storage/job/service/storage"
 )
@@ -52,16 +53,9 @@ func WithRate(rate string) Option {
 	}
 }
 
-func WithGatewayHost(host string) Option {
+func WithValdClient(c vald.Client) Option {
 	return func(r *rebalancer) error {
-		r.gatewayHost = host
-		return nil
-	}
-}
-
-func WithGatewayPort(port int) Option {
-	return func(r *rebalancer) error {
-		r.gatewayPort = port
+		r.client = c
 		return nil
 	}
 }

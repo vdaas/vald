@@ -23,7 +23,6 @@ import (
 	"encoding/gob"
 	"io"
 	"reflect"
-	"strconv"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
@@ -43,9 +42,8 @@ type rebalancer struct {
 	eg              errgroup.Group
 	targetAgentName string
 	rate            float64
-	gatewayHost     string
-	gatewayPort     int
 	storage         storage.Storage
+	client          vald.Client
 }
 
 const (
@@ -123,23 +121,13 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 
 		// Calculate to process data from the above data
 		amntData := int(r.rate * float64(len(idm)))
-
-		// Rebalance
-		// e.g. https://github.com/vdaas/vald/blob/master/charts/vald/templates/gateway/backup/configmap.yaml#L54
-
-		client, err := vald.New(vald.WithAddrs(
-			r.gatewayHost + ":" + strconv.Itoa(r.gatewayPort),
-		))
-		if err != nil {
-			return err
-		}
-
 		cnt := 0
 
+		log.Infof("Start rebalance data: %d", amntData)
 		var errs error
 		for id, _ := range idm {
 			// get vecotr by id
-			vec, err := client.GetObject(ctx, &payload.Object_VectorRequest{
+			vec, err := r.client.GetObject(ctx, &payload.Object_VectorRequest{
 				Id: &payload.Object_ID{
 					Id: id,
 				},
@@ -150,8 +138,8 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 			}
 
 			// update data
-			// TODO: use stream?
-			loc, err := client.Update(ctx, &payload.Update_Request{
+			// TODO: use stream or upsert?
+			loc, err := r.client.Update(ctx, &payload.Update_Request{
 				Vector: &payload.Object_Vector{
 					Id:     vec.GetId(),
 					Vector: vec.GetVector(),
@@ -162,7 +150,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 				continue
 			}
 
-			log.Debugf("%v", loc)
+			log.Debugf("location: %v", loc)
 
 			cnt++
 			if amntData--; amntData == 0 {
@@ -170,10 +158,11 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 			}
 		}
 		if errs != nil {
-			return err
+			log.Errorf("failed to rebalance data: %s", errs.Error())
+			return errs
 		}
 		// request multi update using v1 client
-		// TODO: log amount data & data count
+		log.Infof("Finish rebalance data: %d, remaining data: %d", cnt, amntData)
 
 		return nil
 	})

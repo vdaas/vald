@@ -52,10 +52,6 @@ type RebalanceJob struct {
 	TargetAgentName string `yaml:"target_agent_name" json:"target_agent_name"`
 	// Rate represent rate of rebalance data.
 	Rate string `yaml:"rate" json:"rate"`
-	// GatewayHost represent gateway host name.
-	GatewayHost string `json:"gateway_host" yaml:"gateway_host"`
-	// GatewayPort represent gateway port.
-	GatewayPort int `json:"gateway_port" yaml:"gateway_port"`
 	// GatewayClient represent gRPC client configuration.
 	GatewayClient *GRPCClient `json:"gateway_client" yaml:"gateway_client"`
 }
@@ -73,7 +69,6 @@ func (r *RebalanceJob) Bind() *RebalanceJob {
 	r.FilenameSuffix = GetActualValue(r.FilenameSuffix)
 	r.TargetAgentName = GetActualValue(r.TargetAgentName)
 	r.Rate = GetActualValue(r.Rate)
-	r.GatewayHost = GetActualValue(r.GatewayHost)
 
 	if r.GatewayClient != nil {
 		r.GatewayClient = r.GatewayClient.Bind()

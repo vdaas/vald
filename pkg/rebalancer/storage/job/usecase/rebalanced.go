@@ -19,6 +19,7 @@ package usecase
 import (
 	"context"
 
+	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/session"
@@ -90,12 +91,22 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
+
+	c, err := vald.New(vald.WithAddrs(
+		cfg.Rebalancer.GatewayClient.Addrs...,
+	))
+	if err != nil {
+		return nil, err
+	}
+
 	rb, err := job.New(
 		job.WithStorage(st),
+		job.WithValdClient(c),
 	)
 	if err != nil {
 		return nil, err
 	}
+
 	h, err := handler.New(
 		handler.WithDiscoverer(rb),
 	)
