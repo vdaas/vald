@@ -231,7 +231,7 @@ func (n *ngt) loadOptions(opts ...Option) (err error) {
 
 func (n *ngt) create() (err error) {
 	if fileExists(n.idxPath) {
-		log.Infof("index path exists, will remove the directory. path: %s", n.idxPath)
+// 		 log.Infof("index path exists, will remove the directory. path: %s", n.idxPath)
 		if err = os.RemoveAll(n.idxPath); err != nil {
 			return err
 		}
@@ -393,7 +393,7 @@ func (n *ngt) BulkInsert(vecs [][]float32) ([]uint, []error) {
 	ids := make([]uint, 0, len(vecs))
 	errs := make([]error, 0, len(vecs))
 
-	log.Infof("started to bulk insert %d of vectors", len(vecs))
+// 	 log.Infof("started to bulk insert %d of vectors", len(vecs))
 	for i, vec := range vecs {
 		id, err := n.Insert(vec)
 		if err != nil {

@@ -52,7 +52,7 @@ type run struct {
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
-	log.Info("Initialized in sidecar mode")
+// 	 log.Info("Initialized in sidecar mode")
 
 	eg := errgroup.Get()
 

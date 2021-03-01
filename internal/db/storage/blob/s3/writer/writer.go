@@ -127,7 +127,7 @@ func (w *writer) upload(ctx context.Context, key string, body io.Reader) (err er
 		return err
 	}
 
-	log.Infof("s3 upload completed: %s", res.Location)
+// 	 log.Infof("s3 upload completed: %s", res.Location)
 
 	return nil
 }

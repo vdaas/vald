@@ -244,7 +244,7 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 		s.mu.Unlock()
 
 		if s.preStartFunc != nil {
-			log.Infof("server %s executing preStartFunc", s.name)
+// 			 log.Infof("server %s executing preStartFunc", s.name)
 			err = s.preStartFunc()
 			if err != nil {
 				return err
@@ -290,7 +290,7 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 					s.running = true
 					s.mu.Unlock()
 				}
-				log.Infof("%s server %s starting on %s://%s", s.mode.String(), s.name, l.Addr().Network(), l.Addr().String())
+// 				 log.Infof("%s server %s starting on %s://%s", s.mode.String(), s.name, l.Addr().Network(), l.Addr().String())
 
 				switch s.mode {
 				case REST, GQL:
@@ -315,7 +315,7 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 					return
 				}
 				s.mu.RUnlock()
-				log.Infof("%s server %s stopped", s.mode.String(), s.name)
+// 				 log.Infof("%s server %s stopped", s.mode.String(), s.name)
 			}
 			return nil
 		}))
@@ -338,7 +338,7 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 		s.wg.Add(1)
 		s.eg.Go(safety.RecoverFunc(func() (err error) {
 			defer close(ech)
-			log.Infof("server %s executing preStopFunc", s.name)
+// 			 log.Infof("server %s executing preStopFunc", s.name)
 			err = s.preStopFunc()
 			if err != nil {
 				select {

@@ -134,7 +134,7 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 		return float64(count) / t2.Sub(t1).Seconds()
 	}
 	progress := func() {
-		log.Infof("progress %d requests, %f[vps], error: %d", pgCnt, vps(int(pgCnt)*l.batchSize, start, time.Now()), errCnt)
+// 		 log.Infof("progress %d requests, %f[vps], error: %d", pgCnt, vps(int(pgCnt)*l.batchSize, start, time.Now()), errCnt)
 	}
 
 	f := func(i interface{}, err error) {
@@ -164,7 +164,7 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 	}))
 
 	l.eg.Go(safety.RecoverFunc(func() error {
-		log.Infof("start load test(%s)", l.operation.String())
+// 		 log.Infof("start load test(%s)", l.operation.String())
 		defer close(ech)
 		defer ticker.Stop()
 		start = time.Now()
@@ -178,7 +178,7 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 			finalize(ctx, err)
 			return p.Signal(syscall.SIGKILL) // TODO: #403
 		}
-		log.Infof("result:%d\t%d\t%f", l.concurrency, l.batchSize, vps(int(pgCnt)*l.batchSize, start, end))
+// 		 log.Infof("result:%d\t%d\t%f", l.concurrency, l.batchSize, vps(int(pgCnt)*l.batchSize, start, end))
 
 		return p.Signal(syscall.SIGTERM) // TODO: #403
 	}))

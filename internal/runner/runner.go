@@ -77,7 +77,7 @@ func Do(ctx context.Context, opts ...Option) error {
 	if p.ShowVersion() {
 		log.Init(log.WithLevel(level.INFO.String()))
 		defer log.Close()
-		log.Info(info.String())
+// 		 log.Info(info.String())
 		return nil
 	}
 
@@ -121,7 +121,7 @@ func Do(ctx context.Context, opts ...Option) error {
 		return err
 	}
 
-	mfunc, err := maxprocs.Set(maxprocs.Logger(log.Infof))
+// 	mfunc, err := maxprocs.Set(maxprocs.Logger( log.Infof))
 	if err != nil {
 		mfunc()
 		return err
@@ -132,7 +132,7 @@ func Do(ctx context.Context, opts ...Option) error {
 		return err
 	}
 
-	log.Infof("service %s %s starting...", r.name, ccfg.Version)
+// 	 log.Infof("service %s %s starting...", r.name, ccfg.Version)
 
 	// reset timelocation to override external libs & running logging
 	location.Set(ccfg.TZ)
@@ -149,13 +149,13 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 
 	rctx = errgroup.Init(rctx)
 
-	log.Info("executing daemon pre-start function")
+// 	 log.Info("executing daemon pre-start function")
 	err = run.PreStart(rctx)
 	if err != nil {
 		return err
 	}
 
-	log.Info("executing daemon start function")
+// 	 log.Info("executing daemon start function")
 	ech, err := run.Start(rctx)
 	if err != nil {
 		return errors.ErrDaemonStartFailed(err)
@@ -178,7 +178,7 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 				emap[err.Error()]++
 			}
 		case <-rctx.Done():
-			log.Info("executing daemon pre-stop function")
+// 			 log.Info("executing daemon pre-stop function")
 			err = safety.RecoverFunc(func() error {
 				return run.PreStop(ctx)
 			})()
@@ -190,7 +190,7 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 				emap[err.Error()]++
 			}
 
-			log.Info("executing daemon stop function")
+// 			 log.Info("executing daemon stop function")
 			err = safety.RecoverFunc(func() error {
 				return run.Stop(ctx)
 			})()
@@ -202,7 +202,7 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 				emap[err.Error()]++
 			}
 
-			log.Info("executing daemon post-stop function")
+// 			 log.Info("executing daemon post-stop function")
 			err = safety.RecoverFunc(func() error {
 				return run.PostStop(ctx)
 			})()

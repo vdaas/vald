@@ -76,7 +76,7 @@ func (r *registerer) Start(ctx context.Context) (<-chan error, error) {
 }
 
 func (r *registerer) PostStop(ctx context.Context) (err error) {
-	log.Info("compressor registerer service poststop processing...")
+// 	 log.Info("compressor registerer service poststop processing...")
 
 	r.worker.Pause()
 
@@ -115,7 +115,7 @@ func (r *registerer) PostStop(ctx context.Context) (err error) {
 		return err
 	}
 
-	log.Info("compressor registerer service poststop completed")
+// 	 log.Info("compressor registerer service poststop completed")
 
 	return nil
 }
