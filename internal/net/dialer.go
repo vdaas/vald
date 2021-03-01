@@ -238,7 +238,7 @@ func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (conn 
 				if err == nil && conn != nil {
 					return conn, nil
 				}
-				log.Debugf("failed to dial connection to %s\terror: %v", target, err)
+// 				 log.Debugf("failed to dial connection to %s\terror: %v", target, err)
 			}
 			d.cache.Delete(host)
 		}
@@ -253,7 +253,7 @@ func (d *dialer) dial(ctx context.Context, network, addr string) (conn Conn, err
 			span.End()
 		}
 	}()
-	log.Debugf("%s connection dialing to addr %s", network, addr)
+// 	 log.Debugf("%s connection dialing to addr %s", network, addr)
 	conn, err = d.der.DialContext(ctx, network, addr)
 	if err != nil {
 		defer func(conn Conn) {

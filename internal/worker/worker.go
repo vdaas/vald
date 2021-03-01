@@ -162,7 +162,7 @@ func (w *worker) startJobLoop(ctx context.Context) <-chan error {
 				eg.Go(safety.RecoverFunc(func() (err error) {
 					defer atomic.AddUint64(&w.completedCount, 1)
 					if err = job(ctx); err != nil {
-						log.Debugf("an error occurred while executing a job: %s", err)
+// 						 log.Debugf("an error occurred while executing a job: %s", err)
 						ech <- err
 					}
 					select {

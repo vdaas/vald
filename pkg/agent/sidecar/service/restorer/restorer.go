@@ -209,7 +209,7 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 
 		target := filepath.Join(r.dir, header.Name)
 
-		log.Debug("restoring: ", target)
+// 		 log.Debug("restoring: ", target)
 
 		switch header.Typeflag {
 		case tar.TypeDir:

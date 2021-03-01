@@ -92,7 +92,7 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				})
-			log.Debug(err)
+// 			 log.Debug(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
@@ -368,7 +368,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 						Owner:        errdetails.ValdResourceOwner,
 						Description:  err.Error(),
 					})
-				log.Debug(err)
+// 				 log.Debug(err)
 				if span != nil {
 					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 				}
@@ -816,7 +816,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 		}
 		return nil, err
 	}
-	log.Debugf("Insert API insert succeeded to %#v", ce)
+// 	 log.Debugf("Insert API insert succeeded to %#v", ce)
 	return ce, nil
 }
 
@@ -960,7 +960,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				})
-			log.Debug(err)
+// 			 log.Debug(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInternal(err.Error()))
 			}
@@ -1265,7 +1265,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 		}
 		return nil, err
 	}
-	log.Debugf("uuids %v were removed from %v for MultiUpdate it will execute MultiInsert soon, see detailt %#v", ids, locs.GetLocations(), locs)
+// 	 log.Debugf("uuids %v were removed from %v for MultiUpdate it will execute MultiInsert soon, see detailt %#v", ids, locs.GetLocations(), locs)
 	locs, err = s.MultiInsert(ctx, &payload.Insert_MultiRequest{
 		Requests: ireqs,
 	})
@@ -1733,7 +1733,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 		}()
 		loc, err := vc.MultiRemove(ctx, reqs, copts...)
 		if err != nil {
-			log.Debug(err)
+// 			 log.Debug(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInternal(err.Error()))
 			}

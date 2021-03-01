@@ -1080,7 +1080,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 	filters := req.GetConfig().GetFilters()
 	exists, err := s.metadata.Exists(ctx, meta)
 	if err != nil {
-		log.Debugf("Upsert API metadata exists check error:\t%s", err.Error())
+// 		 log.Debugf("Upsert API metadata exists check error:\t%s", err.Error())
 	}
 	var operation string
 	if err != nil || !exists {

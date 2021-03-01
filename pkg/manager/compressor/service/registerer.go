@@ -225,10 +225,10 @@ func (r *registerer) forwardMetas(ctx context.Context) (errs error) {
 	r.vecsMu.Lock()
 	defer r.vecsMu.Unlock()
 
-	log.Debugf("compressor registerer queued vec-vector count: %d", len(r.vecs))
+// 	 log.Debugf("compressor registerer queued vec-vector count: %d", len(r.vecs))
 
 	for uuid, vec := range r.vecs {
-		log.Debugf("forwarding uuid %s", uuid)
+// 		 log.Debugf("forwarding uuid %s", uuid)
 
 		err = r.client.Register(ctx, vec)
 		if err != nil {

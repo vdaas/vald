@@ -120,7 +120,7 @@ func (r *reader) Open(ctx context.Context, key string) (err error) {
 			}
 
 			if chunk < r.maxChunkSize {
-				log.Debugf("read %d bytes.", offset+chunk)
+// 				 log.Debugf("read %d bytes.", offset+chunk)
 				return nil
 			}
 
@@ -146,7 +146,7 @@ func (r *reader) getObjectWithBackoff(ctx context.Context, key string, offset, l
 }
 
 func (r *reader) getObject(ctx context.Context, key string, offset, length int64) (io.Reader, error) {
-	log.Debugf("reading %d-%d bytes...", offset, offset+length-1)
+// 	 log.Debugf("reading %d-%d bytes...", offset, offset+length-1)
 	resp, err := r.service.GetObjectWithContext(
 		ctx,
 		&s3.GetObjectInput{

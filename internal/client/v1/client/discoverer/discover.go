@@ -256,7 +256,7 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 							addr := net.JoinHostPort(pods[i].GetIp(), uint16(c.port))
 							if err = c.connect(ctx, addr); err != nil {
 								err = errors.ErrAddrCouldNotDiscover(err, addr)
-								log.Debugf("could not discover addr:%s\terror: %v", addr, err)
+								// log.Debugf("could not discover addr:%s\terror: %v", addr, err)
 								select {
 								case <-ictx.Done():
 									return nil, ictx.Err()

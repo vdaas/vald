@@ -83,7 +83,7 @@ func New(opts ...Option) (dsc Discoverer, err error) {
 				log.Error("failed to reconcile:", err)
 			}),
 			mnode.WithOnReconcileFunc(func(nodes map[string]mnode.Node) {
-				log.Debugf("node metrics reconciled\t%#v", nodes)
+// 				 log.Debugf("node metrics reconciled\t%#v", nodes)
 				for name, metrics := range nodes {
 					d.nodeMetrics.Store(name, metrics)
 				}
@@ -102,7 +102,7 @@ func New(opts ...Option) (dsc Discoverer, err error) {
 				log.Error("failed to reconcile:", err)
 			}),
 			mpod.WithOnReconcileFunc(func(podList map[string]mpod.Pod) {
-				log.Debugf("pod metrics reconciled\t%#v", podList)
+// 				 log.Debugf("pod metrics reconciled\t%#v", podList)
 				for name, pods := range podList {
 					d.podMetrics.Store(name, pods)
 				}
@@ -121,7 +121,7 @@ func New(opts ...Option) (dsc Discoverer, err error) {
 				log.Error("failed to reconcile:", err)
 			}),
 			pod.WithOnReconcileFunc(func(podList map[string][]pod.Pod) {
-				log.Debugf("pod resource reconciled\t%#v", podList)
+// 				 log.Debugf("pod resource reconciled\t%#v", podList)
 				for name, pods := range podList {
 					if len(pods) > d.maxPods {
 						d.maxPods = len(pods)
@@ -143,7 +143,7 @@ func New(opts ...Option) (dsc Discoverer, err error) {
 				log.Error("failed to reconcile:", err)
 			}),
 			node.WithOnReconcileFunc(func(nodes []node.Node) {
-				log.Debugf("node resource reconciled\t%#v", nodes)
+// 				 log.Debugf("node resource reconciled\t%#v", nodes)
 				nm := make(map[string]struct{}, len(nodes))
 				for _, n := range nodes {
 					nm[n.Name] = struct{}{}

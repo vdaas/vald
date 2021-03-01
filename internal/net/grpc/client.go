@@ -566,7 +566,7 @@ func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOpti
 				g.atomicAddrs.Add(addr)
 				return conn, nil
 			}
-			log.Debugf("connecting unhealthy pool addr= %s", addr)
+// 			 log.Debugf("connecting unhealthy pool addr= %s", addr)
 			conn, err = conn.Connect(ctx)
 			if err == nil && conn != nil && conn.IsHealthy(ctx) {
 				g.conns.Store(addr, conn)
@@ -652,7 +652,7 @@ func (g *gRPCClient) Disconnect(ctx context.Context, addr string) error {
 		g.atomicAddrs.Delete(addr)
 		atomic.AddUint64(&g.clientCount, ^uint64(0))
 		if p != nil {
-			log.Debugf("disconnecting grpc client conn pool addr= %s", addr)
+// 			 log.Debugf("disconnecting grpc client conn pool addr= %s", addr)
 			return nil, p.Disconnect()
 		}
 		return nil, nil

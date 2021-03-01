@@ -157,7 +157,7 @@ func (idx *index) execute(ctx context.Context, enableLowIndexSkip bool) (err err
 				}, copts...)
 				if err != nil {
 					if status.Code(err) == codes.FailedPrecondition {
-						log.Debugf("CreateIndex of %s skipped: %s", addr, err)
+// 						 log.Debugf("CreateIndex of %s skipped: %s", addr, err)
 						return nil
 					}
 					log.Warnf("an error occurred while calling CreateIndex of %s: %s", addr, err)

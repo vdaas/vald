@@ -388,7 +388,7 @@ func (o *observer) requestBackup(ctx context.Context) error {
 	select {
 	case o.ch <- struct{}{}:
 	default:
-		log.Debug("cannot request backup: channel is full")
+// 		 log.Debug("cannot request backup: channel is full")
 	}
 
 	return nil
@@ -491,7 +491,7 @@ func (o *observer) backup(ctx context.Context) (err error) {
 				return err
 			}
 
-			log.Debug("writing: ", file)
+// 			 log.Debug("writing: ", file)
 
 			if fi.IsDir() {
 				return nil

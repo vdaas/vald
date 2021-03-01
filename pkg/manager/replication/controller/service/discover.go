@@ -103,7 +103,7 @@ func New(opts ...Option) (rp Replicator, err error) {
 					}
 				}
 
-				log.Debugf("pod resource reconciled\t%#v", podList)
+// 				 log.Debugf("pod resource reconciled\t%#v", podList)
 			}),
 		)),
 	)

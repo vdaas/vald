@@ -170,7 +170,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 		return s.gateway.BroadCast(ectx, func(ctx context.Context, target string, vc valdv1.Client, copts ...grpc.CallOption) error {
 			r, err := f(ctx, vc, copts...)
 			if err != nil {
-				log.Debug("ignoring error:", err)
+// 				 log.Debug("ignoring error:", err)
 				return nil
 			}
 			for _, dist := range r.GetResults() {
@@ -389,7 +389,7 @@ func (s *server) Insert(ctx context.Context, vec *payload.Object_Vector) (ce *pa
 			return nil, status.WrapWithInternal(err.Error(), err)
 		}
 	}
-	log.Debugf("Insert API insert succeeded to %v", targets)
+// 	 log.Debugf("Insert API insert succeeded to %v", targets)
 	return new(payload.Object_Location), nil
 }
 

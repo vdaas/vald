@@ -92,7 +92,7 @@ func (ctrl *control) GetControl() func(network, addr string, c syscall.RawConn) 
 	}
 	return func(network, address string, c syscall.RawConn) (err error) {
 		return c.Control(func(fd uintptr) {
-			log.Debugf("controlling socket for %s://%s, config %#v", network, address, ctrl)
+// 			 log.Debugf("controlling socket for %s://%s, config %#v", network, address, ctrl)
 			f := int(fd)
 			var ierr error
 			if SO_REUSEPORT != 0 {

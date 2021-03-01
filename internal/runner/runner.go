@@ -98,7 +98,7 @@ func Do(ctx context.Context, opts ...Option) error {
 	}
 	defer log.Close()
 
-	log.Debugf("version info:\t\t%s\n\nconfiguration:\t\t%s\n\n",
+// 	 log.Debugf("version info:\t\t%s\n\nconfiguration:\t\t%s\n\n",
 		func() string {
 			b, err := json.Marshal(info.Get())
 			if err != nil {

@@ -77,7 +77,7 @@ func (w *watch) init() (*watch, error) {
 	}
 	w.mu.RUnlock()
 	for _, dir := range dirs {
-		log.Debug("Adding watcher target: ", dir)
+// 		 log.Debug("Adding watcher target: ", dir)
 
 		err = watcher.Add(dir)
 		if err != nil {
@@ -123,7 +123,7 @@ func (w *watch) Start(ctx context.Context) (<-chan error, error) {
 				return ctx.Err()
 			case event, ok = <-w.w.Events:
 				if ok {
-					log.Debug("change detected for file: ", event.Name)
+// 					 log.Debug("change detected for file: ", event.Name)
 					if w.onChange != nil {
 						err = w.onChange(ctx, event.Name)
 						if err != nil {
@@ -133,19 +133,19 @@ func (w *watch) Start(ctx context.Context) (<-chan error, error) {
 					}
 					switch {
 					case event.Op&fsnotify.Write == fsnotify.Write && w.onWrite != nil:
-						log.Debug("Modified file: ", event.Name)
+// 						 log.Debug("Modified file: ", event.Name)
 						err = w.onWrite(ctx, event.Name)
 					case event.Op&fsnotify.Create == fsnotify.Create && w.onCreate != nil:
-						log.Debug("Created file: ", event.Name)
+// 						 log.Debug("Created file: ", event.Name)
 						err = w.onCreate(ctx, event.Name)
 					case event.Op&fsnotify.Remove == fsnotify.Remove && w.onDelete != nil:
-						log.Debug("Removed file: ", event.Name)
+// 						 log.Debug("Removed file: ", event.Name)
 						err = w.onDelete(ctx, event.Name)
 					case event.Op&fsnotify.Rename == fsnotify.Rename && w.onRename != nil:
-						log.Debug("Renamed file: ", event.Name)
+// 						 log.Debug("Renamed file: ", event.Name)
 						err = w.onRename(ctx, event.Name)
 					case event.Op&fsnotify.Chmod == fsnotify.Chmod && w.onChmod != nil:
-						log.Debug("Changed permission: ", event.Name)
+// 						 log.Debug("Changed permission: ", event.Name)
 						err = w.onChmod(ctx, event.Name)
 					}
 				}
