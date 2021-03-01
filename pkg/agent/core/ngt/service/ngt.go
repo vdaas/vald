@@ -64,8 +64,8 @@ type NGT interface {
 	NumberOfCreateIndexExecution() uint64
 	NumberOfProactiveGCExecution() uint64
 	UUIDs(context.Context) (uuids []string)
-	DeleteVCacheLen() uint64
-	InsertVCacheLen() uint64
+	DeleteVQueueLen() uint64
+	InsertVQueueLen() uint64
 	Close(ctx context.Context) error
 }
 
@@ -515,7 +515,7 @@ func (n *ngt) GetObject(uuid string) (vec []float32, err error) {
 		log.Debugf("GetObject\tuuid: %s's kvs data not found, trying to read from vqueue", uuid)
 		vec, ok := n.vq.GetVector(uuid)
 		if !ok {
-			log.Debugf("GetObject\tuuid: %s's vcache data not found", uuid)
+			log.Debugf("GetObject\tuuid: %s's vqueue data not found", uuid)
 			return nil, errors.ErrObjectIDNotFound(uuid)
 		}
 		return vec, nil
@@ -756,11 +756,11 @@ func (n *ngt) Len() uint64 {
 	return n.kvs.Len()
 }
 
-func (n *ngt) InsertVCacheLen() uint64 {
+func (n *ngt) InsertVQueueLen() uint64 {
 	return uint64(n.vq.IVQLen())
 }
 
-func (n *ngt) DeleteVCacheLen() uint64 {
+func (n *ngt) DeleteVQueueLen() uint64 {
 	return uint64(n.vq.DVQLen())
 }
 

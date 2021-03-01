@@ -4906,7 +4906,7 @@ func Test_ngt_Len(t *testing.T) {
 	}
 }
 
-func Test_ngt_InsertVCacheLen(t *testing.T) {
+func Test_ngt_InsertVQueueLen(t *testing.T) {
 	t.Parallel()
 	type fields struct {
 		core              core.NGT
@@ -5066,7 +5066,7 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 				dcd:               test.fields.dcd,
 			}
 
-			got := n.InsertVCacheLen()
+			got := n.InsertVQueueLen()
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -5074,7 +5074,7 @@ func Test_ngt_InsertVCacheLen(t *testing.T) {
 	}
 }
 
-func Test_ngt_DeleteVCacheLen(t *testing.T) {
+func Test_ngt_DeleteVQueueLen(t *testing.T) {
 	t.Parallel()
 	type fields struct {
 		core              core.NGT
@@ -5234,7 +5234,7 @@ func Test_ngt_DeleteVCacheLen(t *testing.T) {
 				dcd:               test.fields.dcd,
 			}
 
-			got := n.DeleteVCacheLen()
+			got := n.DeleteVQueueLen()
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}

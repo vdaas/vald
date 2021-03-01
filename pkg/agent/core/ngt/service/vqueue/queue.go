@@ -300,7 +300,7 @@ func (v *vqueue) flushAndLoadDelete() (udk []key) {
 	dl = dl[:0]
 
 	// In the CreateIndex operation of the NGT Service, the Delete Queue is processed first, and then the Insert Queue is processed,
-	// so the Insert Queue still contains the old Insert Operation older than the Delete Queue, 
+	// so the Insert Queue still contains the old Insert Operation older than the Delete Queue,
 	// and it is possible that data that was intended to be deleted is registered again.
 	// For this reason, the data is deleted from the Insert Queue only when retrieving data from the Delete Queue.
 	// we should check insert vqueue if insert vqueue exists and delete operation date is newer than insert operation date then we should remove insert vqueue's data.
