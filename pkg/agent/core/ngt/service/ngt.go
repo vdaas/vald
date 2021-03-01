@@ -146,7 +146,16 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 		n.dcd = true
 	}
 	if n.vq == nil {
-		n.vq = vqueue.New(n.eg)
+		n.vq, err = vqueue.New(
+			vqueue.WithErrGroup(n.eg),
+			vqueue.WithInsertBufferSize(cfg.VQueue.InsertBufferSize),
+			vqueue.WithDeleteBufferSize(cfg.VQueue.DeleteBufferSize),
+			vqueue.WithInsertBufferPoolSize(cfg.VQueue.InsertBufferPoolSize),
+			vqueue.WithDeleteBufferPoolSize(cfg.VQueue.DeleteBufferPoolSize),
+		)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	n.indexing.Store(false)

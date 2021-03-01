@@ -19,6 +19,7 @@ package vqueue
 
 import (
 	"context"
+	"reflect"
 	"sort"
 	"sync"
 	"sync/atomic"
@@ -43,16 +44,22 @@ type Queue interface {
 }
 
 type vqueue struct {
-	ich        chan index
-	uii        []index // un inserted index
-	imu        sync.Mutex
-	uiil       map[string][]float32
-	dch        chan key
-	udk        []key // un deleted key
-	dmu        sync.Mutex
+	ich        chan index           // ich is insert channel
+	uii        []index              // uii is un inserted index
+	imu        sync.Mutex           // insert mutex
+	uiim       map[string][]float32 // uiim is un inserted index map (this value is used for GetVector operation to return queued vector cache data)
+	dch        chan key             // dch is delete channel
+	udk        []key                // udk is un deleted key
+	dmu        sync.Mutex           // delete mutex
 	eg         errgroup.Group
 	finalizing atomic.Value
 	closed     atomic.Value
+
+	// buffer config
+	ichSize  int
+	dchSize  int
+	iBufSize int
+	dBufSize int
 }
 
 type index struct {
@@ -67,18 +74,21 @@ type key struct {
 	date   int64
 }
 
-func New(eg errgroup.Group) Queue {
-	vq := &vqueue{
-		ich:  make(chan index, 1000),
-		uii:  make([]index, 0, 10000),
-		uiil: make(map[string][]float32, 100),
-		dch:  make(chan key, 1000),
-		udk:  make([]key, 0, 10000),
-		eg:   eg,
+func New(opts ...Option) (Queue, error) {
+	vq := new(vqueue)
+	for _, opt := range append(defaultOptions, opts...) {
+		if err := opt(vq); err != nil {
+			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+		}
 	}
+	vq.ich = make(chan index, vq.ichSize)
+	vq.uii = make([]index, 0, vq.iBufSize)
+	vq.uiim = make(map[string][]float32, vq.iBufSize)
+	vq.dch = make(chan key, vq.dchSize)
+	vq.udk = make([]key, 0, vq.dBufSize)
 	vq.finalizing.Store(false)
 	vq.closed.Store(true)
-	return vq
+	return vq, nil
 }
 
 func (v *vqueue) Start(ctx context.Context) (<-chan error, error) {
@@ -191,7 +201,7 @@ func (v *vqueue) RangePopDelete(ctx context.Context, f func(uuid string) bool) {
 
 func (v *vqueue) GetVector(uuid string) ([]float32, bool) {
 	v.imu.Lock()
-	vec, ok := v.uiil[uuid]
+	vec, ok := v.uiim[uuid]
 	v.imu.Unlock()
 	return vec, ok
 }
@@ -199,7 +209,7 @@ func (v *vqueue) GetVector(uuid string) ([]float32, bool) {
 func (v *vqueue) addInsert(i index) {
 	v.imu.Lock()
 	v.uii = append(v.uii, i)
-	v.uiil[i.uuid] = i.vector
+	v.uiim[i.uuid] = i.vector
 	v.imu.Unlock()
 }
 
@@ -213,7 +223,7 @@ func (v *vqueue) popInsert() (i index) {
 	v.imu.Lock()
 	i = v.uii[0]
 	v.uii = v.uii[1:]
-	delete(v.uiil, i.uuid)
+	delete(v.uiim, i.uuid)
 	v.imu.Unlock()
 	return i
 }
@@ -239,7 +249,7 @@ func (v *vqueue) flushAndLoadInsert() (uii []index) {
 	dl := make([]int, 0, len(uii)/2)
 	for i, idx := range uii {
 		v.imu.Lock()
-		delete(v.uiil, idx.uuid)
+		delete(v.uiim, idx.uuid)
 		v.imu.Unlock()
 		if dup[idx.uuid] {
 			dl = append(dl, i)
@@ -305,7 +315,7 @@ func (v *vqueue) flushAndLoadDelete() (udk []key) {
 		// remove unnecessary insert vector queue data
 		v.uii = append(v.uii[:i], v.uii[i+1:]...)
 		// remove from existing map
-		delete(v.uiil, v.uii[i].uuid)
+		delete(v.uiim, v.uii[i].uuid)
 		v.imu.Unlock()
 	}
 	return udk
