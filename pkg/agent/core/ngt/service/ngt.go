@@ -188,13 +188,13 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 
 	agentMetadata, err := metadata.Load(filepath.Join(n.path, metadata.AgentMetadataFileName))
 	if err != nil {
-		log.Warnf("cannot read metadata from %s: %s", metadata.AgentMetadataFileName, err)
+// 		 log.Warnf("cannot read metadata from %s: %s", metadata.AgentMetadataFileName, err)
 	}
 	if os.IsNotExist(err) || agentMetadata == nil || agentMetadata.NGT == nil || agentMetadata.NGT.IndexCount == 0 {
-		log.Warnf("cannot read metadata from %s: %v", metadata.AgentMetadataFileName, err)
+// 		 log.Warnf("cannot read metadata from %s: %v", metadata.AgentMetadataFileName, err)
 
 		if fi, err := os.Stat(filepath.Join(n.path, kvsFileName)); os.IsNotExist(err) || fi.Size() == 0 {
-			log.Warn("kvsdb file is not exist")
+// 			 log.Warn("kvsdb file is not exist")
 			n.core, err = core.New(opts...)
 			return err
 		}

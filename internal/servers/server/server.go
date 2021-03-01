@@ -134,7 +134,7 @@ func New(opts ...Option) (Server, error) {
 		opt(srv)
 	}
 	if srv.eg == nil {
-		log.Warnf("errgroup not found for %s, getting new errgroup.", srv.name)
+// 		 log.Warnf("errgroup not found for %s, getting new errgroup.", srv.name)
 		srv.eg = errgroup.Get()
 	}
 
@@ -218,7 +218,7 @@ func New(opts ...Option) (Server, error) {
 				if srv.ctrl != nil {
 					return srv.ctrl.GetControl()(network, addr, c)
 				}
-				log.Warn("socket controller is nil")
+// 				 log.Warn("socket controller is nil")
 				return nil
 			},
 		}
@@ -332,7 +332,7 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 	s.shuttingDown = true
 	s.mu.Unlock()
 
-	log.Warnf("%s server %s shutdown process starting", s.mode.String(), s.name)
+// 	 log.Warnf("%s server %s shutdown process starting", s.mode.String(), s.name)
 	if s.preStopFunc != nil {
 		ech := make(chan error, 1)
 		s.wg.Add(1)
@@ -378,7 +378,7 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 		}()
 	}
 
-	log.Warnf("%s server %s is now shutting down", s.mode.String(), s.name)
+// 	 log.Warnf("%s server %s is now shutting down", s.mode.String(), s.name)
 	switch s.mode {
 	case REST, GQL:
 		sctx, scancel := context.WithTimeout(ctx, s.sddur)

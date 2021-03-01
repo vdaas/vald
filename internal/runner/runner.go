@@ -167,7 +167,7 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 	for {
 		select {
 		case sig := <-sigCh:
-			log.Warnf("%s signal received daemon will stopping soon...", sig)
+// 			 log.Warnf("%s signal received daemon will stopping soon...", sig)
 			cancel()
 		case err = <-ech:
 			if err != nil {
@@ -238,7 +238,7 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 				err = errors.ErrDaemonStopFailed(err)
 			}
 
-			log.Warn("daemon stopped")
+// 			 log.Warn("daemon stopped")
 
 			return err
 		}

@@ -31,7 +31,7 @@ type Option func(e *exp) error
 var defaultOptions = []Option{
 	WithOnErrorFunc(func(err error) {
 		if err != nil {
-			log.Warnf("Error when uploading stats or spans to Stackdriver: %v", err)
+// 			 log.Warnf("Error when uploading stats or spans to Stackdriver: %v", err)
 		}
 	}),
 	WithMonitoredResource(monitoredresource.Autodetect()),

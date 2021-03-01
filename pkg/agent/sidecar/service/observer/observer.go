@@ -155,12 +155,12 @@ func (o *observer) PostStop(ctx context.Context) (err error) {
 	backup := func() error {
 		metadata, err := metadata.Load(o.metadataPath)
 		if err != nil {
-			log.Warn("cannot read metadata of the backup files:", err)
+// 			 log.Warn("cannot read metadata of the backup files:", err)
 			return err
 		}
 
 		if metadata.IsInvalid {
-			log.Warn("backup skipped because the files are invalid")
+// 			 log.Warn("backup skipped because the files are invalid")
 			return nil
 		}
 
@@ -250,13 +250,13 @@ func (o *observer) startTicker(ctx context.Context) (<-chan error, error) {
 			case <-ct.C:
 				metadata, err := metadata.Load(o.metadataPath)
 				if err != nil {
-					log.Warn("cannot read metadata of the backup files:", err)
+// 					 log.Warn("cannot read metadata of the backup files:", err)
 					ech <- err
 					continue
 				}
 
 				if metadata.IsInvalid {
-					log.Warn("backup skipped because the files are invalid")
+// 					 log.Warn("backup skipped because the files are invalid")
 					continue
 				}
 
@@ -328,7 +328,7 @@ func (o *observer) onWrite(ctx context.Context, name string) error {
 
 	ok, err := o.isValidMetadata()
 	if err != nil {
-		log.Warn("cannot read metadata of the backup files:", err)
+// 		 log.Warn("cannot read metadata of the backup files:", err)
 		return err
 	}
 
@@ -353,7 +353,7 @@ func (o *observer) onCreate(ctx context.Context, name string) error {
 
 	ok, err := o.isValidMetadata()
 	if err != nil {
-		log.Warn("cannot read metadata of the backup files:", err)
+// 		 log.Warn("cannot read metadata of the backup files:", err)
 		return err
 	}
 

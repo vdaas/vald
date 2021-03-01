@@ -59,13 +59,13 @@ func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Re
 	if err != nil {
 		switch {
 		case errors.IsErrCassandraNotFound(err):
-			log.Warnf("[GetVector]\tnot found\t%v\t%s", req.Uuid, err.Error())
+// 			 log.Warnf("[GetVector]\tnot found\t%v\t%s", req.Uuid, err.Error())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
 			return nil, status.WrapWithNotFound(fmt.Sprintf("GetVector API cassandra uuid %s's object not found", uuid), err, info.Get())
 		case errors.IsErrCassandraUnavailable(err):
-			log.Warnf("[GetVector]\tunavailable\t%+v", err)
+// 			 log.Warnf("[GetVector]\tunavailable\t%+v", err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
 			}

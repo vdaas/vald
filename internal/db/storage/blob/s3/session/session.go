@@ -59,7 +59,7 @@ func New(opts ...Option) Session {
 	s := new(sess)
 	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(s); err != nil {
-			log.Warn(errors.ErrOptionFailed(err, reflect.ValueOf(opt)))
+// 			 log.Warn(errors.ErrOptionFailed(err, reflect.ValueOf(opt)))
 		}
 	}
 

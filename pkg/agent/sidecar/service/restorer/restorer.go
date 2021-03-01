@@ -222,7 +222,7 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 			}
 		case tar.TypeReg:
 			if _, err := os.Stat(target); err == nil {
-				log.Warn(errors.ErrFileAlreadyExists(target))
+// 				 log.Warn(errors.ErrFileAlreadyExists(target))
 				return nil
 			} else if !os.IsNotExist(err) {
 				return err

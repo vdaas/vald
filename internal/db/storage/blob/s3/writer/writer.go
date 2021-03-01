@@ -57,7 +57,7 @@ func New(opts ...Option) Writer {
 	}
 	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(w); err != nil {
-			log.Warn(errors.ErrOptionFailed(err, reflect.ValueOf(opt)))
+// 			 log.Warn(errors.ErrOptionFailed(err, reflect.ValueOf(opt)))
 		}
 	}
 

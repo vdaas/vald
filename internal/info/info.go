@@ -140,7 +140,7 @@ func New(opts ...Option) (Info, error) {
 				log.Error(werr)
 				return nil, werr
 			}
-			log.Warn(werr)
+// 			 log.Warn(werr)
 		}
 	}
 

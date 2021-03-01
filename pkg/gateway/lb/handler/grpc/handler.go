@@ -121,7 +121,7 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-		log.Warn(err)
+// 		 log.Warn(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
@@ -153,7 +153,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 					},
 				},
 			}, info.Get())
-		log.Warn(err)
+// 		 log.Warn(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 		}
@@ -352,7 +352,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 							Owner:        errdetails.ValdResourceOwner,
 							Description:  err.Error(),
 						})
-					log.Warn(err)
+// 					 log.Warn(err)
 				}
 				if span != nil {
 					span.SetStatus(trace.StatusCodeInternal(err.Error()))
@@ -413,7 +413,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 						ResourceType: "vald agent server Search API",
 						ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
 					}, info.Get())
-				log.Warn(err)
+// 				 log.Warn(err)
 				return nil, err
 			}
 			return res, nil
@@ -585,7 +585,7 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 						},
 					},
 				}, info.Get())
-			log.Warn(err)
+// 			 log.Warn(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 			}
@@ -733,7 +733,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 					},
 				},
 			}, info.Get())
-		log.Warn(err)
+// 		 log.Warn(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 		}
@@ -898,7 +898,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 						},
 					},
 				}, info.Get())
-			log.Warn(err)
+// 			 log.Warn(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 			}
@@ -1017,7 +1017,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 					},
 				},
 			}, info.Get())
-		log.Warn(err)
+// 		 log.Warn(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 		}
@@ -1189,7 +1189,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 						},
 					},
 				}, info.Get())
-			log.Warn(err)
+// 			 log.Warn(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 			}
@@ -1316,7 +1316,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 					},
 				},
 			}, info.Get())
-		log.Warn(err)
+// 		 log.Warn(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 		}
@@ -1446,7 +1446,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 						},
 					},
 				}, info.Get())
-			log.Warn(err)
+// 			 log.Warn(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 			}

@@ -298,7 +298,7 @@ func (rc *redisClient) ping(ctx context.Context) (r Redis, err error) {
 			if err == nil {
 				return rc.client, nil
 			}
-			log.Warn(err)
+// 			 log.Warn(err)
 		}
 	}
 }

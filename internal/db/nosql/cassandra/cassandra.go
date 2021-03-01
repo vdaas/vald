@@ -178,7 +178,7 @@ func New(opts ...Option) (Cassandra, error) {
 				log.Error(werr)
 				return nil, werr
 			}
-			log.Warn(werr)
+// 			 log.Warn(werr)
 		}
 	}
 

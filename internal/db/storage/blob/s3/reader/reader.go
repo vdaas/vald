@@ -185,7 +185,7 @@ func (r *reader) getObject(ctx context.Context, key string, offset, length int64
 	defer func() {
 		e := res.Close()
 		if e != nil {
-			log.Warn(e)
+// 			 log.Warn(e)
 		}
 	}()
 

@@ -45,7 +45,7 @@ func New(opts ...Option) (*http.Client, error) {
 				log.Error(werr)
 				return nil, werr
 			}
-			log.Warn(werr)
+// 			 log.Warn(werr)
 		}
 	}
 

@@ -172,7 +172,7 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 		end = time.Now()
 
 		if errCnt > 0 {
-			log.Warnf("Error ratio: %.2f%%", float64(errCnt)/float64(pgCnt)*100)
+// 			 log.Warnf("Error ratio: %.2f%%", float64(errCnt)/float64(pgCnt)*100)
 		}
 		if err != nil {
 			finalize(ctx, err)

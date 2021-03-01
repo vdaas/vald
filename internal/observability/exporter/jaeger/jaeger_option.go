@@ -28,7 +28,7 @@ var jaegerDefaultOpts = []JaegerOption{
 	WithServiceName("vald"),
 	WithOnErrorFunc(func(err error) {
 		if err != nil {
-			log.Warnf("Error when uploading spans to Jaeger: %v", err)
+// 			 log.Warnf("Error when uploading spans to Jaeger: %v", err)
 		}
 	}),
 }

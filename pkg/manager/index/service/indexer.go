@@ -160,12 +160,12 @@ func (idx *index) execute(ctx context.Context, enableLowIndexSkip bool) (err err
 // 						 log.Debugf("CreateIndex of %s skipped: %s", addr, err)
 						return nil
 					}
-					log.Warnf("an error occurred while calling CreateIndex of %s: %s", addr, err)
+// 					 log.Warnf("an error occurred while calling CreateIndex of %s: %s", addr, err)
 					return err
 				}
 				_, err = ac.SaveIndex(ctx, &payload.Empty{}, copts...)
 				if err != nil {
-					log.Warnf("an error occurred while calling SaveIndex of %s: %s", addr, err)
+// 					 log.Warnf("an error occurred while calling SaveIndex of %s: %s", addr, err)
 					return err
 				}
 			}
@@ -196,7 +196,7 @@ func (idx *index) loadInfos(ctx context.Context) (err error) {
 			default:
 				info, err := agent.NewAgentClient(conn).IndexInfo(ctx, new(payload.Empty), copts...)
 				if err != nil {
-					log.Warnf("an error occurred while calling IndexInfo of %s: %s", addr, err)
+// 					 log.Warnf("an error occurred while calling IndexInfo of %s: %s", addr, err)
 					return nil
 				}
 				infoMap.Store(addr, info)

@@ -90,7 +90,7 @@ func New(ctx context.Context, opts ...Option) (c Conn, err error) {
 	p.host, p.port, _, isIPv4, isIPv6, err = net.Parse(p.addr)
 	p.isIP = isIPv4 || isIPv6
 	if err != nil {
-		log.Warnf("failed to parse addr %s: %s", p.addr, err)
+// 		 log.Warnf("failed to parse addr %s: %s", p.addr, err)
 		if p.host == "" {
 			p.host = strings.SplitN(p.addr, ":", 2)[0]
 		}
@@ -103,7 +103,7 @@ func New(ctx context.Context, opts ...Option) (c Conn, err error) {
 
 	conn, err := grpc.DialContext(ctx, p.addr, p.dopts...)
 	if err != nil {
-		log.Warn(err)
+// 		 log.Warn(err)
 		err = p.scanGRPCPort(ctx)
 		if err != nil {
 			return nil, err
@@ -319,7 +319,7 @@ func (p *pool) IsHealthy(ctx context.Context) bool {
 			})
 			err = pc.conn.Close()
 			if err != nil {
-				log.Warnf("failed to close old connection for %s,\terr: %v", pc.addr, err)
+// 				 log.Warnf("failed to close old connection for %s,\terr: %v", pc.addr, err)
 			}
 		}
 	}
@@ -340,7 +340,7 @@ func (p *pool) Get() (*ClientConn, bool) {
 
 func (p *pool) get(retry uint64) (*ClientConn, bool) {
 	if retry <= 0 || p.Len() <= 0 {
-		log.Warnf("failed to find grpc pool connection for %s", p.addr)
+// 		 log.Warnf("failed to find grpc pool connection for %s", p.addr)
 		if p.isIP {
 // 			 log.Debugf("failure connection is IP connection trying to disconnect grpc connection for %s", p.addr)
 			if err := p.Disconnect(); err != nil {
@@ -388,13 +388,13 @@ func (p *pool) lookupIPAddr(ctx context.Context) (ips []string, err error) {
 		conn, err := net.DialContext(ctx, net.TCP.String(), addr)
 		cancel()
 		if err != nil {
-			log.Warnf("failed to initialize ping addr: %s,\terr: %s", addr, err.Error())
+// 			 log.Warnf("failed to initialize ping addr: %s,\terr: %s", addr, err.Error())
 			continue
 		}
 		if conn != nil {
 			err = conn.Close()
 			if err != nil {
-				log.Warn("failed to close connection:", err)
+// 				 log.Warn("failed to close connection:", err)
 			}
 		}
 		ips = append(ips, ipStr)

@@ -55,14 +55,14 @@ func (s *server) GetMeta(ctx context.Context, key *payload.Meta_Key) (*payload.M
 	if err != nil {
 		switch {
 		case errors.IsErrCassandraNotFound(err):
-			log.Warnf("[GetMeta]\tnot found\t%v\t%s", key.GetKey(), err.Error())
+// 			 log.Warnf("[GetMeta]\tnot found\t%v\t%s", key.GetKey(), err.Error())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
 			return nil, status.WrapWithNotFound(fmt.Sprintf("GetMeta API Cassandra key %s not found", key.GetKey()), err, info.Get())
 
 		case errors.IsErrCassandraUnavailable(err):
-			log.Warnf("[GetMeta]\tunavailable\t%+v", err)
+// 			 log.Warnf("[GetMeta]\tunavailable\t%+v", err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
 			}
@@ -93,14 +93,14 @@ func (s *server) GetMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *pay
 	if err != nil {
 		switch {
 		case errors.IsErrCassandraNotFound(err):
-			log.Warnf("[GetMetas]\tnot found\t%v\t%s", keys.GetKeys(), err.Error())
+// 			 log.Warnf("[GetMetas]\tnot found\t%v\t%s", keys.GetKeys(), err.Error())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
 			return mv, status.WrapWithNotFound(fmt.Sprintf("GetMetas API Cassandra entry keys %#v not found", keys.GetKeys()), err, info.Get())
 
 		case errors.IsErrCassandraUnavailable(err):
-			log.Warnf("[GetMetas]\tunavailable\t%+v", err)
+// 			 log.Warnf("[GetMetas]\tunavailable\t%+v", err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
 			}
@@ -128,14 +128,14 @@ func (s *server) GetMetaInverse(ctx context.Context, val *payload.Meta_Val) (*pa
 	if err != nil {
 		switch {
 		case errors.IsErrCassandraNotFound(err):
-			log.Warnf("[GetMetaInverse]\tnot found\t%v\t%s", val.GetVal(), err.Error())
+// 			 log.Warnf("[GetMetaInverse]\tnot found\t%v\t%s", val.GetVal(), err.Error())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
 			return nil, status.WrapWithNotFound(fmt.Sprintf("GetMetaInverse API Cassandra val %s not found", val.GetVal()), err, info.Get())
 
 		case errors.IsErrCassandraUnavailable(err):
-			log.Warnf("[GetMetaInverse]\tunavailable\t%+v", err)
+// 			 log.Warnf("[GetMetaInverse]\tunavailable\t%+v", err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
 			}
@@ -166,14 +166,14 @@ func (s *server) GetMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (
 	if err != nil {
 		switch {
 		case errors.IsErrCassandraNotFound(err):
-			log.Warnf("[GetMetasInverse]\tnot found\t%v\t%s", vals.GetVals(), err.Error())
+// 			 log.Warnf("[GetMetasInverse]\tnot found\t%v\t%s", vals.GetVals(), err.Error())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
 			return mk, status.WrapWithNotFound(fmt.Sprintf("GetMetasInverse API Cassandra vals %#v not found", vals.GetVals()), err, info.Get())
 
 		case errors.IsErrCassandraUnavailable(err):
-			log.Warnf("[GetMetasInverse]\tunavailable\t%+v", err)
+// 			 log.Warnf("[GetMetasInverse]\tunavailable\t%+v", err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
 			}
@@ -241,14 +241,14 @@ func (s *server) DeleteMeta(ctx context.Context, key *payload.Meta_Key) (*payloa
 	if err != nil {
 		switch {
 		case errors.IsErrCassandraNotFound(err):
-			log.Warnf("[DeleteMeta]\tnot found\t%v\t%s", key.GetKey(), err.Error())
+// 			 log.Warnf("[DeleteMeta]\tnot found\t%v\t%s", key.GetKey(), err.Error())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
 			return nil, status.WrapWithNotFound(fmt.Sprintf("DeleteMeta API Cassandra key %s not found", key.GetKey()), err, info.Get())
 
 		case errors.IsErrCassandraUnavailable(err):
-			log.Warnf("[DeleteMeta]\tunavailable\t%+v", err)
+// 			 log.Warnf("[DeleteMeta]\tunavailable\t%+v", err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
 			}
@@ -279,14 +279,14 @@ func (s *server) DeleteMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *
 	if err != nil {
 		switch {
 		case errors.IsErrCassandraNotFound(err):
-			log.Warnf("[DeleteMetas]\tnot found\t%v\t%s", keys.GetKeys(), err.Error())
+// 			 log.Warnf("[DeleteMetas]\tnot found\t%v\t%s", keys.GetKeys(), err.Error())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
 			return mv, status.WrapWithNotFound(fmt.Sprintf("DeleteMetas API Cassandra entry keys %#v not found", keys.GetKeys()), err, info.Get())
 
 		case errors.IsErrCassandraUnavailable(err):
-			log.Warnf("[DeleteMetas]\tunavailable\t%+v", err)
+// 			 log.Warnf("[DeleteMetas]\tunavailable\t%+v", err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
 			}
@@ -314,14 +314,14 @@ func (s *server) DeleteMetaInverse(ctx context.Context, val *payload.Meta_Val) (
 	if err != nil {
 		switch {
 		case errors.IsErrCassandraNotFound(err):
-			log.Warnf("[DeleteMetaInverse]\tnot found\t%v\t%s", val.GetVal(), err.Error())
+// 			 log.Warnf("[DeleteMetaInverse]\tnot found\t%v\t%s", val.GetVal(), err.Error())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
 			return nil, status.WrapWithNotFound(fmt.Sprintf("DeleteMetaInverse API Cassandra val %s not found", val.GetVal()), err, info.Get())
 
 		case errors.IsErrCassandraUnavailable(err):
-			log.Warnf("[DeleteMetaInverse]\tunavailable\t%+v", err)
+// 			 log.Warnf("[DeleteMetaInverse]\tunavailable\t%+v", err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
 			}
@@ -352,14 +352,14 @@ func (s *server) DeleteMetasInverse(ctx context.Context, vals *payload.Meta_Vals
 	if err != nil {
 		switch {
 		case errors.IsErrCassandraNotFound(err):
-			log.Warnf("[DeleteMetasInverse]\tnot found\t%v\t%s", vals.GetVals(), err.Error())
+// 			 log.Warnf("[DeleteMetasInverse]\tnot found\t%v\t%s", vals.GetVals(), err.Error())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
 			return mk, status.WrapWithNotFound(fmt.Sprintf("DeleteMetasInverse API Cassandra vals %#v not found", vals.GetVals()), err, info.Get())
 
 		case errors.IsErrCassandraUnavailable(err):
-			log.Warnf("[DeleteMetasInverse]\tunavailable\t%+v", err)
+// 			 log.Warnf("[DeleteMetasInverse]\tunavailable\t%+v", err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
 			}
