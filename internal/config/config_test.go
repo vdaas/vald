@@ -18,8 +18,10 @@
 package config
 
 import (
+	"io/fs"
 	"os"
 	"reflect"
+	"syscall"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -482,21 +484,20 @@ func TestGlobalConfig_UnmarshalJSON(t *testing.T) {
 				},
 			}
 		}(),
-		// TODO: Add error pattern
-		// func() test {
-		// 	data := []byte(`{vdaas}`)
-		// 	return test{
-		// 		name: "return unmarshal error when json data is invalid",
-		// 		args: args{
-		// 			data: data,
-		// 		},
-		// 		fields: fields{},
-		// 		want: want{
-		// 			want: &GlobalConfig{},
-		// 			err:  errors.New(""),
-		// 		},
-		// 	}
-		// }(),
+		func() test {
+			data := []byte(`{time_zone}`)
+			return test{
+				name: "return unmarshal error when json data is invalid",
+				args: args{
+					data: data,
+				},
+				fields: fields{},
+				want: want{
+					want: &GlobalConfig{},
+					err:  errors.New("readFieldHash: expect \", but found t, error found in #2 byte of ...|{time_zone}|..., bigger context ...|{time_zone}|..."),
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
@@ -531,67 +532,214 @@ func TestRead(t *testing.T) {
 		cfg  interface{}
 	}
 	type want struct {
-		err error
+		want *GlobalConfig
+		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		checkFunc  func(want, interface{}, error) error
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
+	defaultCheckFunc := func(w want, got interface{}, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(got.(*GlobalConfig), w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           path: "",
-		           cfg: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			path := "read_config_test.json"
+			data := `{
+				"version": "v1.0.0",
+				"time_zone": "UTC",
+				"logging": {
+					"logger": "glg",
+					"level": "warn",
+					"format": "json"
+				}}`
+			cfg := new(GlobalConfig)
+			return test{
+				name: "test_case_2",
+				args: args{
+					path: path,
+					cfg:  cfg,
+				},
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					f, err := os.Create(path)
+					if err != nil {
+						t.Fatal(err)
+					}
+					defer f.Close()
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           path: "",
-		           cfg: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+					f.WriteString(data)
+				},
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					if err := os.Remove(path); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					want: &GlobalConfig{
+						Version: "v1.0.0",
+						TZ:      "UTC",
+						Logging: &Logging{
+							Logger: "glg",
+							Level:  "warn",
+							Format: "json",
+						},
+					},
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			path := "read_test_config.yaml"
+			data := "time_zone: UTC\nversion: v1.0.0\nlogging:\n  format: json\n  level: warn\n  logger: glg"
+			cfg := new(GlobalConfig)
+			return test{
+				name: "test_case_2",
+				args: args{
+					path: path,
+					cfg:  cfg,
+				},
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					f, err := os.Create(path)
+					if err != nil {
+						t.Fatal(err)
+					}
+					defer f.Close()
+
+					f.WriteString(data)
+				},
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					if err := os.Remove(path); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					want: &GlobalConfig{
+						Version: "v1.0.0",
+						TZ:      "UTC",
+						Logging: &Logging{
+							Logger: "glg",
+							Level:  "warn",
+							Format: "json",
+						},
+					},
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			path := "read_test_config.yaml"
+			cfg := new(GlobalConfig)
+			return test{
+				name: "test_case_2",
+				args: args{
+					path: path,
+					cfg:  cfg,
+				},
+				want: want{
+					want: cfg,
+					err: &fs.PathError{
+						Op:   "open",
+						Path: "read_test_config.yaml",
+						Err:  syscall.ENOENT,
+					},
+				},
+			}
+		}(),
+		func() test {
+			path := "read_test_config.yaml"
+			data := "timezone\n:"
+			cfg := new(GlobalConfig)
+			return test{
+				name: "test_case_2",
+				args: args{
+					path: path,
+					cfg:  cfg,
+				},
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					f, err := os.Create(path)
+					if err != nil {
+						t.Fatal(err)
+					}
+					defer f.Close()
+
+					f.WriteString(data)
+				},
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					if err := os.Remove(path); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					want: cfg,
+					err:  errors.New("yaml: unmarshal errors:\n  line 1: cannot unmarshal !!str `timezone` into config.GlobalConfig"),
+				},
+			}
+		}(),
+		func() test {
+			path := "read_test_config.json"
+			data := "timezone\n:"
+			cfg := new(GlobalConfig)
+			return test{
+				name: "test_case_2",
+				args: args{
+					path: path,
+					cfg:  cfg,
+				},
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					f, err := os.Create(path)
+					if err != nil {
+						t.Fatal(err)
+					}
+					defer f.Close()
+
+					f.WriteString(data)
+				},
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					if err := os.Remove(path); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					want: cfg,
+					err:  errors.New("skipThreeBytes: expect rue, error found in #2 byte of ...|timezone\n:|..., bigger context ...|timezone\n:|..."),
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
 
 			err := Read(test.args.path, test.args.cfg)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := test.checkFunc(test.want, test.args.cfg, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
