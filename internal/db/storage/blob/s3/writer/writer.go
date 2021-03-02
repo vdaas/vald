@@ -57,7 +57,7 @@ func New(opts ...Option) Writer {
 	}
 	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(w); err != nil {
-// 			 log.Warn(errors.ErrOptionFailed(err, reflect.ValueOf(opt)))
+			log.Warn(errors.ErrOptionFailed(err, reflect.ValueOf(opt)))
 		}
 	}
 
@@ -123,11 +123,11 @@ func (w *writer) upload(ctx context.Context, key string, body io.Reader) (err er
 
 	res, err := client.UploadWithContext(ctx, input)
 	if err != nil {
-// 		 log.Error("upload failed with error: ", err)
+		log.Errorf("upload failed with error: %s", err)
 		return err
 	}
 
-// 	 log.Infof("s3 upload completed: %s", res.Location)
+	log.Infof("s3 upload completed: %s", res.Location)
 
 	return nil
 }

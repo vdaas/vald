@@ -116,7 +116,7 @@ func (r *Redis) Opts() (opts []redis.Option, err error) {
 		redis.WithMinimumIdleConnection(r.MinIdleConns),
 		redis.WithMinimumRetryBackoff(r.MinRetryBackoff),
 		redis.WithOnConnectFunction(func(ctx context.Context, conn *redis.Conn) error {
-// 			 log.Debugf("redis connection succeed to %s", conn.ClientGetName(ctx).String())
+			log.Infof("redis connection succeed to %s", conn.ClientGetName(ctx).String())
 			return nil
 		}),
 		redis.WithUsername(r.Username),

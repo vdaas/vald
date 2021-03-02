@@ -107,7 +107,7 @@ func Init(name string) {
 		i, err := New(WithServerName(name))
 		if err != nil {
 			log.Init()
-// 			 log.Fatal(errors.ErrFailedToInitInfo(err))
+			log.Fatal(errors.ErrFailedToInitInfo(err))
 		}
 		infoProvider = i
 	})
@@ -137,10 +137,10 @@ func New(opts ...Option) (Info, error) {
 
 			e := new(errors.ErrCriticalOption)
 			if errors.As(err, &e) {
-// 				 log.Error(werr)
+				log.Error(werr)
 				return nil, werr
 			}
-// 			 log.Warn(werr)
+			log.Warn(werr)
 		}
 	}
 

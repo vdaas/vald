@@ -133,7 +133,7 @@ func ToRawYaml(data interface{}) string {
 	buf := bytes.NewBuffer(nil)
 	err := yaml.NewEncoder(buf).Encode(data)
 	if err != nil {
-// 		 log.Error(err)
+		log.Error(err)
 	}
 	return buf.String()
 }

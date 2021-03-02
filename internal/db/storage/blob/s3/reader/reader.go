@@ -120,7 +120,6 @@ func (r *reader) Open(ctx context.Context, key string) (err error) {
 			}
 
 			if chunk < r.maxChunkSize {
-// 				 log.Debugf("read %d bytes.", offset+chunk)
 				return nil
 			}
 
@@ -146,7 +145,7 @@ func (r *reader) getObjectWithBackoff(ctx context.Context, key string, offset, l
 }
 
 func (r *reader) getObject(ctx context.Context, key string, offset, length int64) (io.Reader, error) {
-// 	 log.Debugf("reading %d-%d bytes...", offset, offset+length-1)
+	log.Debugf("reading %d-%d bytes...", offset, offset+length-1)
 	resp, err := r.service.GetObjectWithContext(
 		ctx,
 		&s3.GetObjectInput{
@@ -162,10 +161,10 @@ func (r *reader) getObject(ctx context.Context, key string, offset, length int64
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case s3.ErrCodeNoSuchBucket:
-// 				 log.Error(errors.NewErrBlobNoSuchBucket(err, r.bucket))
+				log.Error(errors.NewErrBlobNoSuchBucket(err, r.bucket))
 				return ioutil.NopCloser(bytes.NewReader(nil)), nil
 			case s3.ErrCodeNoSuchKey:
-// 				 log.Error(errors.NewErrBlobNoSuchKey(err, key))
+				log.Error(errors.NewErrBlobNoSuchKey(err, key))
 				return ioutil.NopCloser(bytes.NewReader(nil)), nil
 			case "InvalidRange":
 				return ioutil.NopCloser(bytes.NewReader(nil)), nil
@@ -185,7 +184,7 @@ func (r *reader) getObject(ctx context.Context, key string, offset, length int64
 	defer func() {
 		e := res.Close()
 		if e != nil {
-// 			 log.Warn(e)
+			log.Warn(e)
 		}
 	}()
 

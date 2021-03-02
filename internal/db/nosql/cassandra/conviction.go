@@ -31,11 +31,11 @@ func NewConvictionPolicy() gocql.ConvictionPolicy {
 
 // AddFailure implements gocql.ConvictionPolicy interface to handle failure and convicts all hosts.
 func (c *convictionPolicy) AddFailure(err error, host *gocql.HostInfo) bool {
-// 	 log.Warn(errors.ErrCassandraHostDownDetected(err, host.String()))
+	log.Warn(errors.ErrCassandraHostDownDetected(err, host.String()))
 	return true
 }
 
 // Reset clears the conviction state.
 func (c *convictionPolicy) Reset(host *gocql.HostInfo) {
-// 	 log.Infof("cassandra host %s reset detected\t%s", host.HostnameAndPort(), host.String())
+	log.Infof("cassandra host %s reset detected\t%s", host.HostnameAndPort(), host.String())
 }

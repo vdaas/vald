@@ -138,7 +138,7 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 				err = c.discover(ctx, ech)
 			}
 			if err != nil {
-				// log.Error(err)
+				log.Error(err)
 				select {
 				case <-ctx.Done():
 					return finalize()
@@ -256,7 +256,6 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 							addr := net.JoinHostPort(pods[i].GetIp(), uint16(c.port))
 							if err = c.connect(ctx, addr); err != nil {
 								err = errors.ErrAddrCouldNotDiscover(err, addr)
-								// log.Debugf("could not discover addr:%s\terror: %v", addr, err)
 								select {
 								case <-ictx.Done():
 									return nil, ictx.Err()
@@ -277,7 +276,7 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 		}
 		connected = addrs
 		if len(connected) == 0 {
-// 			 log.Warn("connected addr is zero")
+			log.Warn("connected addr is zero")
 			cur = sync.Map{}
 			return nil, errors.ErrAddrCouldNotDiscover(err, c.dns)
 		}
@@ -290,7 +289,7 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 		}
 		return nil, nil
 	}); err != nil {
-// 		 log.Warn("failed to discover addrs from discoverer API, trying to discover from dns...\t" + err.Error())
+		log.Warn("failed to discover addrs from discoverer API, trying to discover from dns...\t" + err.Error())
 		connected, err = c.dnsDiscovery(ctx, ech)
 		if err != nil {
 			return err

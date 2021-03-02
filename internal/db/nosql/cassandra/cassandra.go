@@ -175,10 +175,10 @@ func New(opts ...Option) (Cassandra, error) {
 
 			e := new(errors.ErrCriticalOption)
 			if errors.As(err, &e) {
-// 				 log.Error(werr)
+				log.Error(werr)
 				return nil, werr
 			}
-// 			 log.Warn(werr)
+			log.Warn(werr)
 		}
 	}
 
@@ -304,7 +304,7 @@ func New(opts ...Option) (Cassandra, error) {
 // Open creates a session to cassandra and return any error occurred.
 func (c *client) Open(ctx context.Context) (err error) {
 	if c.session, err = c.cluster.CreateSession(); err != nil {
-// 		 log.Debugf("failed to create session %#v", c)
+		log.Errorf("failed to create session %#v", c)
 		return errors.ErrCassandraFailedToCreateSession(err, c.hosts, c.port, c.cqlVersion)
 	}
 	if c.rawDialer != nil {
