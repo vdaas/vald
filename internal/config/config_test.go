@@ -816,7 +816,7 @@ func TestGetActualValue(t *testing.T) {
 		func() test {
 			fname := "version"
 			return test{
-				name: "return file body contents when val is file://env",
+				name: "return file contents when val is file://env",
 				args: args{
 					val: "file://" + fname,
 				},
@@ -841,7 +841,7 @@ func TestGetActualValue(t *testing.T) {
 		func() test {
 			fname := "version"
 			return test{
-				name: "return file body contents when val is file://env",
+				name: "return file contents when val is file://env",
 				args: args{
 					val: "file://" + fname,
 				},

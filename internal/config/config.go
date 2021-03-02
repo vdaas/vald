@@ -48,7 +48,7 @@ const (
 	envSymbol       = "_"
 )
 
-// Bind binds the actual data from receiver field.
+// Bind binds the actual data from the receiver field.
 func (c *GlobalConfig) Bind() *GlobalConfig {
 	c.Version = GetActualValue(c.Version)
 	c.TZ = GetActualValue(c.TZ)
@@ -76,7 +76,7 @@ func (c *GlobalConfig) UnmarshalJSON(data []byte) (err error) {
 	return nil
 }
 
-// Read returns config struct or error when decode the configuration file to actually *Config struct.
+// Read returns config struct or error when decoding the configuration file to actually *Config struct.
 func Read(path string, cfg interface{}) (err error) {
 	f, err := os.OpenFile(path, os.O_RDONLY, 0o600)
 	if err != nil {
