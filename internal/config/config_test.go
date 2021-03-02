@@ -565,7 +565,7 @@ func TestRead(t *testing.T) {
 				}}`
 			cfg := new(GlobalConfig)
 			return test{
-				name: "test_case_2",
+				name: "return nil when read json file and bind successes",
 				args: args{
 					path: path,
 					cfg:  cfg,
@@ -605,7 +605,7 @@ func TestRead(t *testing.T) {
 			data := "time_zone: UTC\nversion: v1.0.0\nlogging:\n  format: json\n  level: warn\n  logger: glg"
 			cfg := new(GlobalConfig)
 			return test{
-				name: "test_case_2",
+				name: "return nil when read yaml file and bind successes",
 				args: args{
 					path: path,
 					cfg:  cfg,
@@ -644,7 +644,7 @@ func TestRead(t *testing.T) {
 			path := "read_test_config.yaml"
 			cfg := new(GlobalConfig)
 			return test{
-				name: "test_case_2",
+				name: "return no entry error when the file open fails",
 				args: args{
 					path: path,
 					cfg:  cfg,
@@ -664,7 +664,7 @@ func TestRead(t *testing.T) {
 			data := "timezone\n:"
 			cfg := new(GlobalConfig)
 			return test{
-				name: "test_case_2",
+				name: "return yaml decode error when the contents of yaml is invalid",
 				args: args{
 					path: path,
 					cfg:  cfg,
@@ -696,7 +696,7 @@ func TestRead(t *testing.T) {
 			data := "timezone\n:"
 			cfg := new(GlobalConfig)
 			return test{
-				name: "test_case_2",
+				name: "return json decode error when the contents of json file is invalid",
 				args: args{
 					path: path,
 					cfg:  cfg,
