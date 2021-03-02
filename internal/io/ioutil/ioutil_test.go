@@ -90,13 +90,13 @@ func TestReadFile(t *testing.T) {
 				beforeFunc: func(args) {
 					fp, err := os.Create(fName)
 					if err != nil {
-						log.Error(err)
+						t.Fatal(err)
 					}
 					defer fp.Close()
 				},
 				afterFunc: func(args) {
 					if err := os.Remove(fName); err != nil {
-						log.Error(err)
+						t.Fatal(err)
 					}
 				},
 			}
@@ -122,28 +122,28 @@ func TestReadFile(t *testing.T) {
 				beforeFunc: func(args) {
 					fp, err := os.Create(fName)
 					if err != nil {
-						log.Error(err)
+						t.Fatal(err)
 					}
 					strs := genStr()
 					buf := &bytes.Buffer{}
 					if err = gob.New().NewEncoder(buf).Encode(strs); err != nil {
-						log.Error(err)
+						t.Fatal(err)
 					}
 					if _, err = fp.Write(buf.Bytes()); err != nil {
-						log.Error(err)
+						t.Fatal(err)
 					}
 					defer fp.Close()
 				},
 				afterFunc: func(args) {
 					if err := os.Remove(fName); err != nil {
-						log.Error(err)
+						t.Fatal(err)
 					}
 				},
 			}
 		}(),
 		func() test {
 			fName := "cannot_read_ioutil_test.txt"
-			genNonPermittedFile(fName)
+			genNonPermittedFile(t, fName)
 			return test{
 				name: "return (nil, error) when path is exist file cannot be opend due to permission",
 				args: args{
@@ -157,7 +157,7 @@ func TestReadFile(t *testing.T) {
 				},
 				afterFunc: func(args) {
 					if err := os.Remove(fName); err != nil {
-						log.Error(err)
+						t.Fatal(err)
 					}
 				},
 			}
