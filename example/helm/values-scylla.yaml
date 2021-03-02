@@ -17,7 +17,7 @@ defaults:
   logging:
     level: debug
   image:
-    tag: "pr-1028"
+    tag: "nightly"
 
 gateway:
   lb:
@@ -60,7 +60,7 @@ agent:
     # The type of fashion-mnist's feature vectors.
     object_type: float
     # Check duration of automatic indexing.
-    auto_index_duration_limit: 1m
+    auto_index_check_duration_limit: 1m
     # The limit duration of automatic indexing.
     auto_index_duration_limit: 20s
     # The batch process pool size of automatic create index operation
