@@ -573,12 +573,7 @@ func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOpti
 				g.atomicAddrs.Add(addr)
 				return conn, nil
 			}
-			log.Warnf("failed to reconnect unhealthy pool addr= %s\terror= %s\t trying to disconnect", addr, func() string {
-				if err != nil {
-					return err.Error()
-				}
-				return "connection response is nil or pool is nil"
-			}())
+			log.Warnf("failed to reconnect unhealthy pool addr= %s\tconn= %v\terror= %v\t trying to disconnect", addr, conn, err)
 			err = g.Disconnect(ctx, addr)
 			if err != nil {
 				log.Warnf("failed to disconnect unhealthy pool addr= %s\terror= %s", addr, err.Error())
