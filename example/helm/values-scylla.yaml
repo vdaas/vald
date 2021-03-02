@@ -60,9 +60,9 @@ agent:
     # The type of fashion-mnist's feature vectors.
     object_type: float
     # Check duration of automatic indexing.
-    auto_index_duration_liMit: 1m
-    # The liMit duration of automatic indexing.
-    auto_index_duration_liMit: 20s
+    auto_index_duration_limit: 1m
+    # The limit duration of automatic indexing.
+    auto_index_duration_limit: 20s
     # The batch process pool size of automatic create index operation
     auto_create_index_pool_size: 100
     # The default create index batch pool size
@@ -81,11 +81,11 @@ manager:
         cpu: 150m
         memory: 30Mi
     indexer:
-      # The liMit duration of automatic indexing.
+      # The limit duration of automatic indexing.
       # This trigger the force indexing on each Vald Agent.
-      auto_index_duration_liMit: 1m
+      auto_index_duration_limit: 1m
       # The check duration of automatic indexing.
-      # This trigger the indexing on each Vald Agnet if the uncomMitted index exceeds the liMit.
+      # This trigger the indexing on each Vald Agnet if the uncommitted index exceeds the limit.
       auto_index_check_duration: 40s
   backup:
     minReplicas: 3
