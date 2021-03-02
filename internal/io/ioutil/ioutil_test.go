@@ -37,14 +37,15 @@ func genStr() []string {
 	return str
 }
 
-func genNonPermittedFile(path string) {
+func genNonPermittedFile(t *testing.T, path string) {
+	t.Helper()
 	fp, err := os.Create(path)
 	if err != nil {
-		log.Error(err)
+		t.Fatal(err)
 	}
 	err = fp.Chmod(0333)
 	if err != nil {
-		log.Error(err)
+		t.Fatal(err)
 	}
 	defer fp.Close()
 }
