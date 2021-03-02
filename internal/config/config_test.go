@@ -27,6 +27,11 @@ import (
 	"go.uber.org/goleak"
 )
 
+// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
+var goleakIgnoreOptions = []goleak.Option{
+	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+}
+
 func TestMain(m *testing.M) {
 	log.Init()
 	os.Exit(m.Run())
@@ -56,19 +61,10 @@ func TestGlobalConfig_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		{
-			name: "return GlobalConfig when all fields are embedded",
-			fields: fields{
-				Version: "v1.0.0",
-				TZ:      "UTC",
-				Logging: &Logging{
-					Logger: "glg",
-					Level:  "warn",
-					Format: "json",
-				},
-			},
-			want: want{
-				want: &GlobalConfig{
+		func() test {
+			return test{
+				name: "return GlobalConfig when all fields are embedded",
+				fields: fields{
 					Version: "v1.0.0",
 					TZ:      "UTC",
 					Logging: &Logging{
@@ -77,71 +73,176 @@ func TestGlobalConfig_Bind(t *testing.T) {
 						Format: "json",
 					},
 				},
-			},
-		},
-		{
-			name: "return GlobalConfig when version and time_zone are embedded but logging is nil",
-			fields: fields{
-				Version: "v1.0.0",
-				TZ:      "UTC",
-			},
-			want: want{
-				want: &GlobalConfig{
+				want: want{
+					want: &GlobalConfig{
+						Version: "v1.0.0",
+						TZ:      "UTC",
+						Logging: &Logging{
+							Logger: "glg",
+							Level:  "warn",
+							Format: "json",
+						},
+					},
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return GlobalConfig when version and time_zone are embedded but logging is nil",
+				fields: fields{
 					Version: "v1.0.0",
 					TZ:      "UTC",
 				},
-			},
-		},
-		{
-			name: "return GlobalConfig when all fields are read from environment variable",
-			fields: fields{
-				Version: "_VERSION_",
-				TZ:      "_TZ_",
-				Logging: &Logging{
-					Logger: "_LOGGER_",
-					Level:  "_LEVEL_",
-					Format: "_FORMAT_",
+				want: want{
+					want: &GlobalConfig{
+						Version: "v1.0.0",
+						TZ:      "UTC",
+					},
 				},
-			},
-			want: want{
-				want: &GlobalConfig{
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return GlobalConfig when version is empty and time_zone is embedded but logging is nil",
+				fields: fields{
+					TZ: "UTC",
+				},
+				want: want{
+					want: &GlobalConfig{
+						TZ: "UTC",
+					},
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return GlobalConfig when version is embedded and time_zone is empty but logging is nil",
+				fields: fields{
+					Version: "v1.0.0",
+				},
+				want: want{
+					want: &GlobalConfig{
+						Version: "v1.0.0",
+					},
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return GlobalConfig when Logging.Logger is an empty",
+				fields: fields{
+					Version: "v1.0.0",
+					TZ:      "UTC",
+					Logging: &Logging{
+						Level:  "warn",
+						Format: "json",
+					},
+				},
+				want: want{
+					want: &GlobalConfig{
+						Version: "v1.0.0",
+						TZ:      "UTC",
+						Logging: &Logging{
+							Level:  "warn",
+							Format: "json",
+						},
+					},
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return GlobalConfig when Logging.Level is an empty",
+				fields: fields{
+					Version: "v1.0.0",
+					TZ:      "UTC",
+					Logging: &Logging{
+						Logger: "glg",
+						Format: "json",
+					},
+				},
+				want: want{
+					want: &GlobalConfig{
+						Version: "v1.0.0",
+						TZ:      "UTC",
+						Logging: &Logging{
+							Logger: "glg",
+							Format: "json",
+						},
+					},
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return GlobalConfig when Logging.Format is an empty",
+				fields: fields{
 					Version: "v1.0.0",
 					TZ:      "UTC",
 					Logging: &Logging{
 						Logger: "glg",
 						Level:  "warn",
-						Format: "json",
 					},
 				},
-			},
-			beforeFunc: func() {
-				for key, val := range map[string]string{
-					"_VERSION_": "v1.0.0",
-					"_TZ_":      "UTC",
-					"_LOGGER_":  "glg",
-					"_LEVEL_":   "warn",
-					"_FORMAT_":  "json",
-				} {
-					os.Setenv(key, val)
-				}
-			},
-			afterFunc: func() {
-				for _, key := range []string{
-					"_VERSION_",
-					"_TZ_",
-					"_LOGGER_",
-					"_LEVEL_",
-					"_FORMAT_",
-				} {
-					os.Unsetenv(key)
-				}
-			},
-		},
+				want: want{
+					want: &GlobalConfig{
+						Version: "v1.0.0",
+						TZ:      "UTC",
+						Logging: &Logging{
+							Logger: "glg",
+							Level:  "warn",
+						},
+					},
+				},
+			}
+		}(),
+		func() test {
+			env := map[string]string{
+				"VERSION": "v1.0.0",
+				"TZ":      "UTC",
+				"LOGGER":  "glg",
+				"LEVEL":   "warn",
+				"FORMAT":  "json",
+			}
+			return test{
+				name: "return GlobalConfig when all fields are read from environment variable",
+				fields: fields{
+					Version: "_VERSION_",
+					TZ:      "_TZ_",
+					Logging: &Logging{
+						Logger: "_LOGGER_",
+						Level:  "_LEVEL_",
+						Format: "_FORMAT_",
+					},
+				},
+				want: want{
+					want: &GlobalConfig{
+						Version: "v1.0.0",
+						TZ:      "UTC",
+						Logging: &Logging{
+							Logger: "glg",
+							Level:  "warn",
+							Format: "json",
+						},
+					},
+				},
+				beforeFunc: func() {
+					for key, val := range env {
+						os.Setenv(key, val)
+					}
+				},
+				afterFunc: func() {
+					for key := range env {
+						os.Unsetenv(key)
+					}
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -195,22 +296,19 @@ func TestGlobalConfig_UnmarshalJSON(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			data := []byte(`
-			{
+			data := []byte(`{
 				"version": "v1.0.0",
 				"time_zone": "UTC",
 				"logging": {
 					"logger": "glg",
 					"level": "warn",
 					"format": "json"
-				}
-			}`)
+				}}`)
 			return test{
 				name: "return nil when json unmarshal successes",
 				args: args{
 					data: data,
 				},
-				fields: fields{},
 				want: want{
 					want: &GlobalConfig{
 						Version: "v1.0.0",
@@ -226,8 +324,7 @@ func TestGlobalConfig_UnmarshalJSON(t *testing.T) {
 			}
 		}(),
 		func() test {
-			data := []byte(`
-			{
+			data := []byte(`{
 				"time_zone": "UTC",
 				"logging": {
 					"logger": "glg",
@@ -240,7 +337,6 @@ func TestGlobalConfig_UnmarshalJSON(t *testing.T) {
 				args: args{
 					data: data,
 				},
-				fields: fields{},
 				want: want{
 					want: &GlobalConfig{
 						TZ: "UTC",
@@ -255,8 +351,7 @@ func TestGlobalConfig_UnmarshalJSON(t *testing.T) {
 			}
 		}(),
 		func() test {
-			data := []byte(`
-			{
+			data := []byte(`{
 				"version": "v1.0.0",
 				"logging": {
 					"logger": "glg",
@@ -284,8 +379,7 @@ func TestGlobalConfig_UnmarshalJSON(t *testing.T) {
 			}
 		}(),
 		func() test {
-			data := []byte(`
-			{
+			data := []byte(`{
 				"version": "v1.0.0",
 				"time_zone": "UTC"
 			}`)
@@ -305,10 +399,9 @@ func TestGlobalConfig_UnmarshalJSON(t *testing.T) {
 			}
 		}(),
 		func() test {
-			data := []byte(`
-			{
+			data := []byte(`{
 				"version": "v1.0.0",
-				"time_zone": "UTC"
+				"time_zone": "UTC",
 				"logging": {
 					"level": "warn",
 					"format": "json"
@@ -334,10 +427,9 @@ func TestGlobalConfig_UnmarshalJSON(t *testing.T) {
 			}
 		}(),
 		func() test {
-			data := []byte(`
-			{
+			data := []byte(`{
 				"version": "v1.0.0",
-				"time_zone": "UTC"
+				"time_zone": "UTC",
 				"logging": {
 					"logger": "glg",
 					"format": "json"
@@ -363,13 +455,12 @@ func TestGlobalConfig_UnmarshalJSON(t *testing.T) {
 			}
 		}(),
 		func() test {
-			data := []byte(`
-			{
+			data := []byte(`{
 				"version": "v1.0.0",
-				"time_zone": "UTC"
+				"time_zone": "UTC",
 				"logging": {
 					"logger": "glg",
-					"level": "warn",
+					"level": "warn"
 				}
 			}`)
 			return test{
@@ -391,33 +482,26 @@ func TestGlobalConfig_UnmarshalJSON(t *testing.T) {
 				},
 			}
 		}(),
-		func() test {
-			data := []byte(`{vdaas}`)
-			return test{
-				name: "return unmarshal error when json data is invalid",
-				args: args{
-					data: data,
-				},
-				fields: fields{},
-				want: want{
-					want: &GlobalConfig{
-						Version: "v1.0.0",
-						TZ:      "UTC",
-						Logging: &Logging{
-							Logger: "glg",
-							Level:  "warn",
-							Format: "json",
-						},
-					},
-					err: nil,
-				},
-			}
-		}(),
+		// TODO: Add error pattern
+		// func() test {
+		// 	data := []byte(`{vdaas}`)
+		// 	return test{
+		// 		name: "return unmarshal error when json data is invalid",
+		// 		args: args{
+		// 			data: data,
+		// 		},
+		// 		fields: fields{},
+		// 		want: want{
+		// 			want: &GlobalConfig{},
+		// 			err:  errors.New(""),
+		// 		},
+		// 	}
+		// }(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -536,36 +620,93 @@ func TestGetActualValue(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           val: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           val: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			return test{
+				name: "return v1.0.0. when val is _VERSION_",
+				args: args{
+					val: "_VERSION_",
+				},
+				beforeFunc: func(args) {
+					os.Setenv("VERSION", "v1.0.0")
+				},
+				afterFunc: func(args) {
+					os.Unsetenv("VERSION")
+				},
+				want: want{
+					wantRes: "v1.0.0",
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return v1.0.0 when val is $VERSION",
+				args: args{
+					val: "$VERSION",
+				},
+				beforeFunc: func(args) {
+					os.Setenv("VERSION", "v1.0.0")
+				},
+				afterFunc: func(args) {
+					os.Unsetenv("VERSION")
+				},
+				want: want{
+					wantRes: "v1.0.0",
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return VERSION version when val is VERSION",
+				args: args{
+					val: "VERSION",
+				},
+				want: want{
+					wantRes: "VERSION",
+				},
+			}
+		}(),
+		func() test {
+			fname := "version"
+			return test{
+				name: "return file body contents when val is file://env",
+				args: args{
+					val: "file://" + fname,
+				},
+				beforeFunc: func(args) {
+					f, err := os.Create(fname)
+					if err != nil {
+						t.Fatal(err)
+					}
+					defer f.Close()
+					f.WriteString("v1.0.0")
+				},
+				afterFunc: func(args) {
+					if err := os.Remove(fname); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					wantRes: "v1.0.0",
+				},
+			}
+		}(),
+		func() test {
+			fname := "version"
+			return test{
+				name: "return file body contents when val is file://env",
+				args: args{
+					val: "file://" + fname,
+				},
+				want: want{
+					wantRes: "file://" + fname,
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -606,36 +747,76 @@ func TestGetActualValues(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           vals: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           vals: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			env := map[string]string{
+				"VERSION": "v1.0.0",
+				"LOGGER":  "glg",
+			}
+			return test{
+				name: "return v1.0.0 and glg when vals are _LOGGER_ and _VERSION_",
+				args: args{
+					vals: []string{
+						"_VERSION_",
+						"_LOGGER_",
+					},
+				},
+				beforeFunc: func(args) {
+					for key, val := range env {
+						os.Setenv(key, val)
+					}
+				},
+				afterFunc: func(args) {
+					for key := range env {
+						os.Unsetenv(key)
+					}
+				},
+				want: want{
+					want: []string{
+						"v1.0.0",
+						"glg",
+					},
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return v1.0.0 and LOGGER when vals are _VERSION_ and LOGGER",
+				args: args{
+					vals: []string{
+						"_VERSION_",
+						"LOGGER",
+					},
+				},
+				beforeFunc: func(args) {
+					os.Setenv("VERSION", "v1.0.0")
+				},
+				afterFunc: func(args) {
+					os.Unsetenv("VERSION")
+				},
+				want: want{
+					want: []string{
+						"v1.0.0",
+						"LOGGER",
+					},
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return empty when vals is empty",
+				args: args{
+					vals: []string{},
+				},
+				want: want{
+					want: []string{},
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -690,36 +871,69 @@ func Test_checkPrefixAndSuffix(t *testing.T) {
 			},
 		},
 		{
-			name: "return true when prefix is $ and suffix is & and str is $POD_NAME&",
+			name: "return true when prefix and suffix are _ and str is __POD_NAME__",
 			args: args{
-				str:  "$POD_NAME&",
-				pref: "$",
-				suf:  "&",
+				str:  "__POD_NAME__",
+				pref: "_",
+				suf:  "_",
 			},
 			want: want{
 				want: true,
 			},
 		},
 		{
-			name: "return false when prefix is _ and suffix is empty and str is _POD_NAME_",
+			name: "return true when prefix and suffix are __ and str is __POD_NAME__",
+			args: args{
+				str:  "__POD_NAME__",
+				pref: "__",
+				suf:  "__",
+			},
+			want: want{
+				want: true,
+			},
+		},
+		{
+			name: "return true when prefix is $ and suffix is # and str is $POD_NAME#",
+			args: args{
+				str:  "$POD_NAME#",
+				pref: "$",
+				suf:  "#",
+			},
+			want: want{
+				want: true,
+			},
+		},
+		{
+			name: "return true when prefix is $# and suffix is #$ and str is $#POD_NAME#$",
+			args: args{
+				str:  "$#POD_NAME#$",
+				pref: "$#",
+				suf:  "#$",
+			},
+			want: want{
+				want: true,
+			},
+		},
+		{
+			name: "return true when prefix is _ and suffix is empty and str is _POD_NAME_",
 			args: args{
 				str:  "_POD_NAME_",
 				pref: "_",
 				suf:  "",
 			},
 			want: want{
-				want: false,
+				want: true,
 			},
 		},
 		{
-			name: "return false when prefix is empty and suffix is _ and str is _POD_NAME_",
+			name: "return true when prefix is empty and suffix is _ and str is _POD_NAME_",
 			args: args{
 				str:  "_POD_NAME_",
 				pref: "",
 				suf:  "_",
 			},
 			want: want{
-				want: false,
+				want: true,
 			},
 		},
 		{
@@ -755,11 +969,22 @@ func Test_checkPrefixAndSuffix(t *testing.T) {
 				want: false,
 			},
 		},
+		{
+			name: "return false when prefix and suffix are _ and str is POD_NAME&",
+			args: args{
+				str:  "POD_NAME&",
+				pref: "_",
+				suf:  "_",
+			},
+			want: want{
+				want: false,
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -800,20 +1025,79 @@ func TestToRawYaml(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		/**
 		{
-			name: "test_case_1",
+			name: "return row string when data is an int type",
 			args: args{
-				data: nil,
+				data: 1,
 			},
-			want: want{},
+			want: want{
+				want: "1\n",
+			},
 		},
-		**/
+		{
+			name: "return row string when data is a string type",
+			args: args{
+				data: "vdaas.vald",
+			},
+			want: want{
+				want: "vdaas.vald\n",
+			},
+		},
+		{
+			name: "return row string when data is a map string type",
+			args: args{
+				data: map[string]string{
+					"time_zone": "UTC",
+				},
+			},
+			want: want{
+				want: "time_zone: UTC\n",
+			},
+		},
+		{
+			name: "return row string when data is a nested map type",
+			args: args{
+				data: map[string]interface{}{
+					"logging": map[string]interface{}{
+						"logger": "glg",
+					},
+				},
+			},
+			want: want{
+				want: "logging:\n  logger: glg\n",
+			},
+		},
+		{
+			name: "return row string when data is a empty string",
+			args: args{
+				data: "",
+			},
+			want: want{
+				want: "\"\"\n",
+			},
+		},
+		{
+			name: "return row string when data is a GlobalConfig type",
+			args: args{
+				data: GlobalConfig{
+					Version: "v1.0.0",
+					TZ:      "UTC",
+					Logging: &Logging{
+						Logger: "glg",
+						Level:  "warn",
+						Format: "json",
+					},
+				},
+			},
+			want: want{
+				want: "version: v1.0.0\ntime_zone: UTC\nlogging:\n  logger: glg\n  level: warn\n  format: json\n",
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
