@@ -48,6 +48,7 @@ const (
 	envSymbol       = "_"
 )
 
+// Bind binds the actual data from receiver field.
 func (c *GlobalConfig) Bind() *GlobalConfig {
 	c.Version = GetActualValue(c.Version)
 	c.TZ = GetActualValue(c.TZ)
@@ -58,6 +59,7 @@ func (c *GlobalConfig) Bind() *GlobalConfig {
 	return c
 }
 
+// UnmarshalJSON parses the JSON-encoded data and stores the result in the field of receiver.
 func (c *GlobalConfig) UnmarshalJSON(data []byte) (err error) {
 	ic := new(struct {
 		Ver     string   `json:"version"`
@@ -74,7 +76,7 @@ func (c *GlobalConfig) UnmarshalJSON(data []byte) (err error) {
 	return nil
 }
 
-// New returns config struct or error when decode the configuration file to actually *Config struct.
+// Read returns config struct or error when decode the configuration file to actually *Config struct.
 func Read(path string, cfg interface{}) (err error) {
 	f, err := os.OpenFile(path, os.O_RDONLY, 0o600)
 	if err != nil {
@@ -117,6 +119,9 @@ func GetActualValue(val string) (res string) {
 	return
 }
 
+// GetActualValues returns the environment variable values if the vals has string slice that has prefix and suffix "_",
+// if actual value start with file://{path} the return value will read from file
+// otherwise the val will directly return.
 func GetActualValues(vals []string) []string {
 	for i, val := range vals {
 		vals[i] = GetActualValue(val)
@@ -129,6 +134,7 @@ func checkPrefixAndSuffix(str, pref, suf string) bool {
 	return strings.HasPrefix(str, pref) && strings.HasSuffix(str, suf)
 }
 
+// ToRawYaml writes the YAML encoding of v to the stream and returns the string written to stream.
 func ToRawYaml(data interface{}) string {
 	buf := bytes.NewBuffer(nil)
 	err := yaml.NewEncoder(buf).Encode(data)
