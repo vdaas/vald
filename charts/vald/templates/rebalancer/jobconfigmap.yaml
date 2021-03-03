@@ -83,7 +83,7 @@ data:
       {{- $observability := dict "Values" .Values.rebalancer.observability "default" .Values.defaults.observability }}
       {{- include "vald.observability" $observability | nindent 6 }}
     rebalancer_job:
-      {{- $sidecar := .Values.sidecar.config }}
+      {{- $sidecar := .Values.agent.sidecar.config }}
       blob_storage:
         {{- if $sidecar.blob_storage }}
         {{- toYaml $sidecar.blob_storage | nindent 8 }}
@@ -107,6 +107,7 @@ data:
           {{- $defaultPort := default .Values.defaults.server_config.servers.grpc.port $serverPort }}
           {{- $defaultAddr := (list (printf "%s:%d" $defaultHost (int64 $defaultPort))) }}
           {{- $addrs := dict "Values" $client.addrs "default" $defaultAddr }}
+          {{- include "vald.grpc.client.addrs" $addrs | nindent 8 }}
         {{- else if .Values.gateway.backup.enabled }}
           {{- $gateway := .Values.gateway.backup -}}
           {{- $client := $gateway.gateway_config.backup.client }}
@@ -115,6 +116,7 @@ data:
           {{- $defaultPort := default .Values.defaults.server_config.servers.grpc.port $serverPort }}
           {{- $defaultAddr := (list (printf "%s:%d" $defaultHost (int64 $defaultPort))) }}
           {{- $addrs := dict "Values" $client.addrs "default" $defaultAddr }}
+          {{- include "vald.grpc.client.addrs" $addrs | nindent 8 }}
         {{- else }}
           {{- $gateway := .Values.gateway.lb -}}
           {{- $client := $gateway.gateway_config.lb.client }}
@@ -123,6 +125,6 @@ data:
           {{- $defaultPort := default .Values.defaults.server_config.servers.grpc.port $serverPort }}
           {{- $defaultAddr := (list (printf "%s:%d" $defaultHost (int64 $defaultPort))) }}
           {{- $addrs := dict "Values" $client.addrs "default" $defaultAddr }}
+          {{- include "vald.grpc.client.addrs" $addrs | nindent 8 }}
         {{- end }}
-        {{- include "vald.grpc.client.addrs" $addrs | nindent 8 }}
 {{- end }}
