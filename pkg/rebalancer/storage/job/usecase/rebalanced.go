@@ -24,11 +24,11 @@ import (
 	"github.com/vdaas/vald/internal/db/storage/blob/s3"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/session"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/recover"
 	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/net/http/client"
-	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/observability"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
@@ -53,8 +53,7 @@ type run struct {
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
-
-	dialer, err := net.NewDialer(cfg.Rebalancer.Client.TCP.Opts()...)
+	dialer, err := net.NewDialer(cfg.Rebalancer.Client.Net.Opts()...)
 	if err != nil {
 		return nil, err
 	}
