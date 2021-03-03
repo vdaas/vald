@@ -187,7 +187,7 @@ func TestDialer_Bind(t *testing.T) {
 	}
 }
 
-func TestTCP_Bind(t *testing.T) {
+func TestNet_Bind(t *testing.T) {
 	type fields struct {
 		DNS    *DNS
 		Dialer *Dialer
@@ -267,7 +267,7 @@ func TestTCP_Bind(t *testing.T) {
 	}
 }
 
-func TestTCP_Opts(t *testing.T) {
+func TestNet_Opts(t *testing.T) {
 	type fields struct {
 		DNS    *DNS
 		Dialer *Dialer

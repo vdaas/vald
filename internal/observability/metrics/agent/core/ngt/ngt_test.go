@@ -78,10 +78,11 @@ func TestNew(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -109,8 +110,8 @@ func Test_ngtMetrics_Measurement(t *testing.T) {
 		ngt                       service.NGT
 		indexCount                metrics.Int64Measure
 		uncommittedIndexCount     metrics.Int64Measure
-		insertVCacheCount         metrics.Int64Measure
-		deleteVCacheCount         metrics.Int64Measure
+		insertVQueueCount         metrics.Int64Measure
+		deleteVQueueCount         metrics.Int64Measure
 		completedCreateIndexTotal metrics.Int64Measure
 		executedProactiveGCTotal  metrics.Int64Measure
 		isIndexing                metrics.Int64Measure
@@ -150,8 +151,8 @@ func Test_ngtMetrics_Measurement(t *testing.T) {
 		           ngt: nil,
 		           indexCount: nil,
 		           uncommittedIndexCount: nil,
-		           insertVCacheCount: nil,
-		           deleteVCacheCount: nil,
+		           insertVQueueCount: nil,
+		           deleteVQueueCount: nil,
 		           completedCreateIndexTotal: nil,
 		           executedProactiveGCTotal: nil,
 		           isIndexing: nil,
@@ -174,8 +175,8 @@ func Test_ngtMetrics_Measurement(t *testing.T) {
 		           ngt: nil,
 		           indexCount: nil,
 		           uncommittedIndexCount: nil,
-		           insertVCacheCount: nil,
-		           deleteVCacheCount: nil,
+		           insertVQueueCount: nil,
+		           deleteVQueueCount: nil,
 		           completedCreateIndexTotal: nil,
 		           executedProactiveGCTotal: nil,
 		           isIndexing: nil,
@@ -188,10 +189,11 @@ func Test_ngtMetrics_Measurement(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -205,8 +207,8 @@ func Test_ngtMetrics_Measurement(t *testing.T) {
 				ngt:                       test.fields.ngt,
 				indexCount:                test.fields.indexCount,
 				uncommittedIndexCount:     test.fields.uncommittedIndexCount,
-				insertVCacheCount:         test.fields.insertVCacheCount,
-				deleteVCacheCount:         test.fields.deleteVCacheCount,
+				insertVQueueCount:         test.fields.insertVQueueCount,
+				deleteVQueueCount:         test.fields.deleteVQueueCount,
 				completedCreateIndexTotal: test.fields.completedCreateIndexTotal,
 				executedProactiveGCTotal:  test.fields.executedProactiveGCTotal,
 				isIndexing:                test.fields.isIndexing,
@@ -230,8 +232,8 @@ func Test_ngtMetrics_MeasurementWithTags(t *testing.T) {
 		ngt                       service.NGT
 		indexCount                metrics.Int64Measure
 		uncommittedIndexCount     metrics.Int64Measure
-		insertVCacheCount         metrics.Int64Measure
-		deleteVCacheCount         metrics.Int64Measure
+		insertVQueueCount         metrics.Int64Measure
+		deleteVQueueCount         metrics.Int64Measure
 		completedCreateIndexTotal metrics.Int64Measure
 		executedProactiveGCTotal  metrics.Int64Measure
 		isIndexing                metrics.Int64Measure
@@ -271,8 +273,8 @@ func Test_ngtMetrics_MeasurementWithTags(t *testing.T) {
 		           ngt: nil,
 		           indexCount: nil,
 		           uncommittedIndexCount: nil,
-		           insertVCacheCount: nil,
-		           deleteVCacheCount: nil,
+		           insertVQueueCount: nil,
+		           deleteVQueueCount: nil,
 		           completedCreateIndexTotal: nil,
 		           executedProactiveGCTotal: nil,
 		           isIndexing: nil,
@@ -295,8 +297,8 @@ func Test_ngtMetrics_MeasurementWithTags(t *testing.T) {
 		           ngt: nil,
 		           indexCount: nil,
 		           uncommittedIndexCount: nil,
-		           insertVCacheCount: nil,
-		           deleteVCacheCount: nil,
+		           insertVQueueCount: nil,
+		           deleteVQueueCount: nil,
 		           completedCreateIndexTotal: nil,
 		           executedProactiveGCTotal: nil,
 		           isIndexing: nil,
@@ -309,10 +311,11 @@ func Test_ngtMetrics_MeasurementWithTags(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -326,8 +329,8 @@ func Test_ngtMetrics_MeasurementWithTags(t *testing.T) {
 				ngt:                       test.fields.ngt,
 				indexCount:                test.fields.indexCount,
 				uncommittedIndexCount:     test.fields.uncommittedIndexCount,
-				insertVCacheCount:         test.fields.insertVCacheCount,
-				deleteVCacheCount:         test.fields.deleteVCacheCount,
+				insertVQueueCount:         test.fields.insertVQueueCount,
+				deleteVQueueCount:         test.fields.deleteVQueueCount,
 				completedCreateIndexTotal: test.fields.completedCreateIndexTotal,
 				executedProactiveGCTotal:  test.fields.executedProactiveGCTotal,
 				isIndexing:                test.fields.isIndexing,
@@ -348,8 +351,8 @@ func Test_ngtMetrics_View(t *testing.T) {
 		ngt                       service.NGT
 		indexCount                metrics.Int64Measure
 		uncommittedIndexCount     metrics.Int64Measure
-		insertVCacheCount         metrics.Int64Measure
-		deleteVCacheCount         metrics.Int64Measure
+		insertVQueueCount         metrics.Int64Measure
+		deleteVQueueCount         metrics.Int64Measure
 		completedCreateIndexTotal metrics.Int64Measure
 		executedProactiveGCTotal  metrics.Int64Measure
 		isIndexing                metrics.Int64Measure
@@ -381,8 +384,8 @@ func Test_ngtMetrics_View(t *testing.T) {
 		           ngt: nil,
 		           indexCount: nil,
 		           uncommittedIndexCount: nil,
-		           insertVCacheCount: nil,
-		           deleteVCacheCount: nil,
+		           insertVQueueCount: nil,
+		           deleteVQueueCount: nil,
 		           completedCreateIndexTotal: nil,
 		           executedProactiveGCTotal: nil,
 		           isIndexing: nil,
@@ -402,8 +405,8 @@ func Test_ngtMetrics_View(t *testing.T) {
 		           ngt: nil,
 		           indexCount: nil,
 		           uncommittedIndexCount: nil,
-		           insertVCacheCount: nil,
-		           deleteVCacheCount: nil,
+		           insertVQueueCount: nil,
+		           deleteVQueueCount: nil,
 		           completedCreateIndexTotal: nil,
 		           executedProactiveGCTotal: nil,
 		           isIndexing: nil,
@@ -416,10 +419,11 @@ func Test_ngtMetrics_View(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -433,8 +437,8 @@ func Test_ngtMetrics_View(t *testing.T) {
 				ngt:                       test.fields.ngt,
 				indexCount:                test.fields.indexCount,
 				uncommittedIndexCount:     test.fields.uncommittedIndexCount,
-				insertVCacheCount:         test.fields.insertVCacheCount,
-				deleteVCacheCount:         test.fields.deleteVCacheCount,
+				insertVQueueCount:         test.fields.insertVQueueCount,
+				deleteVQueueCount:         test.fields.deleteVQueueCount,
 				completedCreateIndexTotal: test.fields.completedCreateIndexTotal,
 				executedProactiveGCTotal:  test.fields.executedProactiveGCTotal,
 				isIndexing:                test.fields.isIndexing,

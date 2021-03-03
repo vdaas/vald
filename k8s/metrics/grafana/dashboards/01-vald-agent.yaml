@@ -855,7 +855,7 @@ data:
           "pluginVersion": "7.3.4",
           "targets": [
             {
-              "expr": "sum(vald_agent_core_ngt_insert_vcache_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
+              "expr": "sum(vald_agent_core_ngt_insert_vqueue_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
               "instant": true,
               "interval": "",
               "legendFormat": "",
@@ -864,7 +864,7 @@ data:
           ],
           "timeFrom": null,
           "timeShift": null,
-          "title": "insert vcache",
+          "title": "insert vqueue",
           "type": "stat"
         },
         {
@@ -931,7 +931,7 @@ data:
           "pluginVersion": "7.3.4",
           "targets": [
             {
-              "expr": "sum(vald_agent_core_ngt_delete_vcache_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
+              "expr": "sum(vald_agent_core_ngt_delete_vqueue_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
               "instant": true,
               "interval": "",
               "legendFormat": "",
@@ -940,7 +940,7 @@ data:
           ],
           "timeFrom": null,
           "timeShift": null,
-          "title": "delete vcache",
+          "title": "delete vqueue",
           "type": "stat"
         },
         {
@@ -1286,15 +1286,15 @@ data:
               "refId": "A"
             },
             {
-              "expr": " sum(vald_agent_core_ngt_insert_vcache_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
+              "expr": " sum(vald_agent_core_ngt_insert_vqueue_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
               "interval": "",
-              "legendFormat": "insert-vcache",
+              "legendFormat": "insert-vqueue",
               "refId": "B"
             },
             {
-              "expr": "sum(vald_agent_core_ngt_delete_vcache_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
+              "expr": "sum(vald_agent_core_ngt_delete_vqueue_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
               "interval": "",
-              "legendFormat": "delete-vcache",
+              "legendFormat": "delete-vqueue",
               "refId": "C"
             }
           ],
