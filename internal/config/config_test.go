@@ -758,8 +758,8 @@ func TestGetActualValue(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, string) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, gotRes string) error {
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
@@ -774,11 +774,17 @@ func TestGetActualValue(t *testing.T) {
 				args: args{
 					val: "_VERSION_",
 				},
-				beforeFunc: func(args) {
-					os.Setenv("VERSION", "v1.0.0")
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					if err := os.Setenv("VERSION", "v1.0.0"); err != nil {
+						t.Error(err)
+					}
 				},
-				afterFunc: func(args) {
-					os.Unsetenv("VERSION")
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					if err := os.Unsetenv("VERSION"); err != nil {
+						t.Error(err)
+					}
 				},
 				want: want{
 					wantRes: "v1.0.0",
@@ -791,11 +797,17 @@ func TestGetActualValue(t *testing.T) {
 				args: args{
 					val: "$VERSION",
 				},
-				beforeFunc: func(args) {
-					os.Setenv("VERSION", "v1.0.0")
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					if err := os.Setenv("VERSION", "v1.0.0"); err != nil {
+						t.Error(err)
+					}
 				},
-				afterFunc: func(args) {
-					os.Unsetenv("VERSION")
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					if err := os.Unsetenv("VERSION"); err != nil {
+						t.Error(err)
+					}
 				},
 				want: want{
 					wantRes: "v1.0.0",
@@ -820,17 +832,20 @@ func TestGetActualValue(t *testing.T) {
 				args: args{
 					val: "file://" + fname,
 				},
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					f, err := os.Create(fname)
 					if err != nil {
-						t.Fatal(err)
+						t.Error(err)
+						return
 					}
 					defer f.Close()
 					f.WriteString("v1.0.0")
 				},
-				afterFunc: func(args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					if err := os.Remove(fname); err != nil {
-						t.Fatal(err)
+						t.Error(err)
 					}
 				},
 				want: want{
@@ -856,10 +871,10 @@ func TestGetActualValue(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -885,8 +900,8 @@ func TestGetActualValues(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, []string) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got []string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -908,14 +923,20 @@ func TestGetActualValues(t *testing.T) {
 						"_LOGGER_",
 					},
 				},
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					for key, val := range env {
-						os.Setenv(key, val)
+						if err := os.Setenv(key, val); err != nil {
+							t.Error(err)
+						}
 					}
 				},
-				afterFunc: func(args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					for key := range env {
-						os.Unsetenv(key)
+						if err := os.Unsetenv(key); err != nil {
+							t.Error(err)
+						}
 					}
 				},
 				want: want{
@@ -935,11 +956,17 @@ func TestGetActualValues(t *testing.T) {
 						"LOGGER",
 					},
 				},
-				beforeFunc: func(args) {
-					os.Setenv("VERSION", "v1.0.0")
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					if err := os.Setenv("VERSION", "v1.0.0"); err != nil {
+						t.Error(err)
+					}
 				},
-				afterFunc: func(args) {
-					os.Unsetenv("VERSION")
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					if err := os.Unsetenv("VERSION"); err != nil {
+						t.Error(err)
+					}
 				},
 				want: want{
 					want: []string{
@@ -966,10 +993,10 @@ func TestGetActualValues(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
