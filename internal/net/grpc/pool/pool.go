@@ -121,7 +121,7 @@ func New(ctx context.Context, opts ...Option) (c Conn, err error) {
 }
 
 func (p *pool) Connect(ctx context.Context) (c Conn, err error) {
-	if p.closing.Load().(bool) {
+	if p == nil || p.closing.Load().(bool) {
 		return p, nil
 	}
 
