@@ -63,6 +63,44 @@ func isFailedPrecondition(err error) bool {
 		errors.As(err, &cassandra.ErrNoConnectionsStarted)
 }
 
+func getPreconditionFailureDetails(err error) (res []*errdetails.PreconditionFailureViolation) {
+	res = make([]*errdetails.PreconditionFailureViolation, 0)
+
+	if errors.As(err, &cassandra.ErrNoConnections) {
+		res = append(res, &errdetails.PreconditionFailureViolation{
+			Type:        "No connections",
+			Subject:     "Cassandra",
+			Description: cassandra.ErrNoConnections.Error(),
+		})
+	}
+
+	if errors.As(err, &cassandra.ErrKeyspaceDoesNotExist) {
+		res = append(res, &errdetails.PreconditionFailureViolation{
+			Type:        "Keyspace does not exist",
+			Subject:     "Cassandra",
+			Description: cassandra.ErrKeyspaceDoesNotExist.Error(),
+		})
+	}
+
+	if errors.As(err, &cassandra.ErrNoHosts) {
+		res = append(res, &errdetails.PreconditionFailureViolation{
+			Type:        "No hosts",
+			Subject:     "Cassandra",
+			Description: cassandra.ErrNoHosts.Error(),
+		})
+	}
+
+	if errors.As(err, &cassandra.ErrNoConnectionsStarted) {
+		res = append(res, &errdetails.PreconditionFailureViolation{
+			Type:        "No connections started",
+			Subject:     "Cassandra",
+			Description: cassandra.ErrNoConnectionsStarted.Error(),
+		})
+	}
+
+	return res
+}
+
 func (s *server) GetMeta(ctx context.Context, key *payload.Meta_Key) (*payload.Meta_Val, error) {
 	ctx, span := trace.StartSpan(ctx, "vald/meta-cassandra.GetMeta")
 	defer func() {
@@ -120,9 +158,12 @@ func (s *server) GetMeta(ctx context.Context, key *payload.Meta_Key) (*payload.M
 			return nil, err
 		case isFailedPrecondition(err):
 			log.Warnf("[GetMeta]\tfailed precondition\t%+v", err)
-			err = status.WrapWithInternal(fmt.Sprintf("GetMeta API: failed precondition: key %s", key.GetKey()), err,
+			err = status.WrapWithFailedPrecondition(fmt.Sprintf("GetMeta API: failed precondition: key %s", key.GetKey()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(key),
+				},
+				&errdetails.PreconditionFailure{
+					Violations: getPreconditionFailureDetails(err),
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.GetMeta",
@@ -213,9 +254,12 @@ func (s *server) GetMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *pay
 			return nil, err
 		case isFailedPrecondition(err):
 			log.Warnf("[GetMetas]\tfailed precondition\t%+v", err)
-			err = status.WrapWithInternal(fmt.Sprintf("GetMetas API: failed precondition: keys %#v", keys.GetKeys()), err,
+			err = status.WrapWithFailedPrecondition(fmt.Sprintf("GetMetas API: failed precondition: keys %#v", keys.GetKeys()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(keys),
+				},
+				&errdetails.PreconditionFailure{
+					Violations: getPreconditionFailureDetails(err),
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.GetMetas",
@@ -303,9 +347,12 @@ func (s *server) GetMetaInverse(ctx context.Context, val *payload.Meta_Val) (*pa
 			return nil, err
 		case isFailedPrecondition(err):
 			log.Warnf("[GetMetaInverse]\tfailed precondition\t%+v", err)
-			err = status.WrapWithInternal(fmt.Sprintf("GetMetaInverse API: failed precondition: val %s", val.GetVal()), err,
+			err = status.WrapWithFailedPrecondition(fmt.Sprintf("GetMetaInverse API: failed precondition: val %s", val.GetVal()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(val),
+				},
+				&errdetails.PreconditionFailure{
+					Violations: getPreconditionFailureDetails(err),
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.GetMetaInverse",
@@ -396,9 +443,12 @@ func (s *server) GetMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (
 			return nil, err
 		case isFailedPrecondition(err):
 			log.Warnf("[GetMetasInverse]\tfailed precondition\t%+v", err)
-			err = status.WrapWithInternal(fmt.Sprintf("GetMetasInverse API: failed precondition: vals %#v", vals.GetVals()), err,
+			err = status.WrapWithFailedPrecondition(fmt.Sprintf("GetMetasInverse API: failed precondition: vals %#v", vals.GetVals()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(vals),
+				},
+				&errdetails.PreconditionFailure{
+					Violations: getPreconditionFailureDetails(err),
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.GetMetasInverse",
@@ -471,9 +521,12 @@ func (s *server) SetMeta(ctx context.Context, kv *payload.Meta_KeyVal) (_ *paylo
 			return nil, err
 		case isFailedPrecondition(err):
 			log.Warnf("[SetMeta]\tfailed precondition\t%+v", err)
-			err = status.WrapWithInternal(fmt.Sprintf("SetMeta API: failed precondition: key %s val %s", kv.GetKey(), kv.GetVal()), err,
+			err = status.WrapWithFailedPrecondition(fmt.Sprintf("SetMeta API: failed precondition: key %s val %s", kv.GetKey(), kv.GetVal()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(kv),
+				},
+				&errdetails.PreconditionFailure{
+					Violations: getPreconditionFailureDetails(err),
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.SetMeta",
@@ -550,9 +603,12 @@ func (s *server) SetMetas(ctx context.Context, kvs *payload.Meta_KeyVals) (_ *pa
 			return nil, err
 		case isFailedPrecondition(err):
 			log.Warnf("[SetMetas]\tfailed precondition\t%+v", err)
-			err = status.WrapWithInternal(fmt.Sprintf("SetMetas API: failed precondition: kvs %#v", query), err,
+			err = status.WrapWithFailedPrecondition(fmt.Sprintf("SetMetas API: failed precondition: kvs %#v", query), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(kvs),
+				},
+				&errdetails.PreconditionFailure{
+					Violations: getPreconditionFailureDetails(err),
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.SetMetas",
@@ -640,9 +696,12 @@ func (s *server) DeleteMeta(ctx context.Context, key *payload.Meta_Key) (*payloa
 			return nil, err
 		case isFailedPrecondition(err):
 			log.Warnf("[DeleteMeta]\tfailed precondition\t%+v", err)
-			err = status.WrapWithInternal(fmt.Sprintf("DeleteMeta API: failed precondition: key %s", key.GetKey()), err,
+			err = status.WrapWithFailedPrecondition(fmt.Sprintf("DeleteMeta API: failed precondition: key %s", key.GetKey()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(key),
+				},
+				&errdetails.PreconditionFailure{
+					Violations: getPreconditionFailureDetails(err),
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.DeleteMeta",
@@ -733,9 +792,12 @@ func (s *server) DeleteMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *
 			return nil, err
 		case isFailedPrecondition(err):
 			log.Warnf("[DeleteMetas]\tfailed precondition\t%+v", err)
-			err = status.WrapWithInternal(fmt.Sprintf("DeleteMetas API: failed precondition: keys %#v", keys.GetKeys()), err,
+			err = status.WrapWithFailedPrecondition(fmt.Sprintf("DeleteMetas API: failed precondition: keys %#v", keys.GetKeys()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(keys),
+				},
+				&errdetails.PreconditionFailure{
+					Violations: getPreconditionFailureDetails(err),
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.DeleteMetas",
@@ -823,9 +885,12 @@ func (s *server) DeleteMetaInverse(ctx context.Context, val *payload.Meta_Val) (
 			return nil, err
 		case isFailedPrecondition(err):
 			log.Warnf("[DeleteMetaInverse]\tfailed precondition\t%+v", err)
-			err = status.WrapWithInternal(fmt.Sprintf("DeleteMetaInverse API: failed precondition: val %s", val.GetVal()), err,
+			err = status.WrapWithFailedPrecondition(fmt.Sprintf("DeleteMetaInverse API: failed precondition: val %s", val.GetVal()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(val),
+				},
+				&errdetails.PreconditionFailure{
+					Violations: getPreconditionFailureDetails(err),
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.DeleteMetaInverse",
@@ -916,9 +981,12 @@ func (s *server) DeleteMetasInverse(ctx context.Context, vals *payload.Meta_Vals
 			return nil, err
 		case isFailedPrecondition(err):
 			log.Warnf("[DeleteMetasInverse]\tfailed precondition\t%+v", err)
-			err = status.WrapWithInternal(fmt.Sprintf("DeleteMetasInverse API: failed precondition: vals %#v", vals.GetVals()), err,
+			err = status.WrapWithFailedPrecondition(fmt.Sprintf("DeleteMetasInverse API: failed precondition: vals %#v", vals.GetVals()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(vals),
+				},
+				&errdetails.PreconditionFailure{
+					Violations: getPreconditionFailureDetails(err),
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.DeleteMetasInverse",
