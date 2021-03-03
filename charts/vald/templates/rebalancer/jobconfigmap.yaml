@@ -17,7 +17,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Values.rebalancer.rebalancer.configmap_name }}
+  name: {{ .Values.rebalancer.rebalancer.rebalance_job_configmap_name }}
   labels:
     app.kubernetes.io/name: {{ include "vald.name" . }}
     helm.sh/chart: {{ include "vald.chart" . }}
