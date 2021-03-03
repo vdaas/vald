@@ -176,7 +176,7 @@ func (d *dialer) lookup(ctx context.Context, host string) (*dialerCache, error) 
 	}
 
 	if dc != nil && len(dc.ips) != 0 {
-// 		 log.Infof("lookup succeed %v", dc.ips)
+		log.Infof("lookup succeed %v", dc.ips)
 		d.cache.Set(host, dc)
 	}
 	return dc, nil
@@ -253,7 +253,7 @@ func (d *dialer) dial(ctx context.Context, network, addr string) (conn Conn, err
 			span.End()
 		}
 	}()
-// 	 log.Debugf("%s connection dialing to addr %s", network, addr)
+	log.Debugf("%s connection dialing to addr %s", network, addr)
 	conn, err = d.der.DialContext(ctx, network, addr)
 	if err != nil {
 		defer func(conn Conn) {
@@ -272,7 +272,7 @@ func (d *dialer) dial(ctx context.Context, network, addr string) (conn Conn, err
 		return d.tlsHandshake(ctx, conn, addr)
 	}
 	if conn != nil {
-// 		 log.Infof("connected to addr %s succeed from %s://%s to %s://%s",
+		log.Infof("connected to addr %s succeed from %s://%s to %s://%s",
 			addr,
 			conn.LocalAddr().Network(), conn.LocalAddr().String(),
 			conn.RemoteAddr().Network(), conn.RemoteAddr().String(),
@@ -341,7 +341,7 @@ func (d *dialer) tlsHandshake(ctx context.Context, conn Conn, addr string) (*tls
 		return nil, err
 	}
 	if tconn != nil {
-// 		 log.Infof("tls handshake addr %s succeed from %s://%s to %s://%s,\tconnectionstate: [ Version:%d, ServerName: %s, HandshakeComplete: %v, DidResume: %v, NegotiatedProtocol: %s ]",
+		log.Infof("tls handshake addr %s succeed from %s://%s to %s://%s,\tconnectionstate: [ Version:%d, ServerName: %s, HandshakeComplete: %v, DidResume: %v, NegotiatedProtocol: %s ]",
 			addr,
 			tconn.LocalAddr().Network(), tconn.LocalAddr().String(),
 			tconn.RemoteAddr().Network(), tconn.RemoteAddr().String(),
@@ -360,6 +360,6 @@ func (d *dialer) cacheExpireHook(ctx context.Context, addr string) {
 		_, err = d.lookup(ctx, addr)
 		return
 	})(); err != nil {
-// 		 log.Errorf("dns cacheExpireHook error occurred: %v\taddr:\t%s", err, addr)
+		log.Errorf("dns cacheExpireHook error occurred: %v\taddr:\t%s", err, addr)
 	}
 }
