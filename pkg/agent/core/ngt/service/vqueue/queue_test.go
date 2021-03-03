@@ -112,20 +112,21 @@ func Test_vqueue_Start(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		ich        chan index
-		uii        []index
-		imu        sync.Mutex
-		uiim       map[string][]float32
-		dch        chan key
-		udk        []key
-		dmu        sync.Mutex
-		eg         errgroup.Group
-		finalizing atomic.Value
-		closed     atomic.Value
-		ichSize    int
-		dchSize    int
-		iBufSize   int
-		dBufSize   int
+		ich              chan index
+		uii              []index
+		imu              sync.Mutex
+		uiim             map[string][]float32
+		dch              chan key
+		udk              []key
+		dmu              sync.Mutex
+		eg               errgroup.Group
+		finalizingInsert atomic.Value
+		finalizingDelete atomic.Value
+		closed           atomic.Value
+		ichSize          int
+		dchSize          int
+		iBufSize         int
+		dBufSize         int
 	}
 	type want struct {
 		want <-chan error
@@ -166,7 +167,8 @@ func Test_vqueue_Start(t *testing.T) {
 		           udk: nil,
 		           dmu: sync.Mutex{},
 		           eg: nil,
-		           finalizing: nil,
+		           finalizingInsert: nil,
+		           finalizingDelete: nil,
 		           closed: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -195,7 +197,8 @@ func Test_vqueue_Start(t *testing.T) {
 		           udk: nil,
 		           dmu: sync.Mutex{},
 		           eg: nil,
-		           finalizing: nil,
+		           finalizingInsert: nil,
+		           finalizingDelete: nil,
 		           closed: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -224,20 +227,21 @@ func Test_vqueue_Start(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				ich:        test.fields.ich,
-				uii:        test.fields.uii,
-				imu:        test.fields.imu,
-				uiim:       test.fields.uiim,
-				dch:        test.fields.dch,
-				udk:        test.fields.udk,
-				dmu:        test.fields.dmu,
-				eg:         test.fields.eg,
-				finalizing: test.fields.finalizing,
-				closed:     test.fields.closed,
-				ichSize:    test.fields.ichSize,
-				dchSize:    test.fields.dchSize,
-				iBufSize:   test.fields.iBufSize,
-				dBufSize:   test.fields.dBufSize,
+				ich:              test.fields.ich,
+				uii:              test.fields.uii,
+				imu:              test.fields.imu,
+				uiim:             test.fields.uiim,
+				dch:              test.fields.dch,
+				udk:              test.fields.udk,
+				dmu:              test.fields.dmu,
+				eg:               test.fields.eg,
+				finalizingInsert: test.fields.finalizingInsert,
+				finalizingDelete: test.fields.finalizingDelete,
+				closed:           test.fields.closed,
+				ichSize:          test.fields.ichSize,
+				dchSize:          test.fields.dchSize,
+				iBufSize:         test.fields.iBufSize,
+				dBufSize:         test.fields.dBufSize,
 			}
 
 			got, err := v.Start(test.args.ctx)
@@ -256,20 +260,21 @@ func Test_vqueue_PushInsert(t *testing.T) {
 		date   int64
 	}
 	type fields struct {
-		ich        chan index
-		uii        []index
-		imu        sync.Mutex
-		uiim       map[string][]float32
-		dch        chan key
-		udk        []key
-		dmu        sync.Mutex
-		eg         errgroup.Group
-		finalizing atomic.Value
-		closed     atomic.Value
-		ichSize    int
-		dchSize    int
-		iBufSize   int
-		dBufSize   int
+		ich              chan index
+		uii              []index
+		imu              sync.Mutex
+		uiim             map[string][]float32
+		dch              chan key
+		udk              []key
+		dmu              sync.Mutex
+		eg               errgroup.Group
+		finalizingInsert atomic.Value
+		finalizingDelete atomic.Value
+		closed           atomic.Value
+		ichSize          int
+		dchSize          int
+		iBufSize         int
+		dBufSize         int
 	}
 	type want struct {
 		err error
@@ -308,7 +313,8 @@ func Test_vqueue_PushInsert(t *testing.T) {
 		           udk: nil,
 		           dmu: sync.Mutex{},
 		           eg: nil,
-		           finalizing: nil,
+		           finalizingInsert: nil,
+		           finalizingDelete: nil,
 		           closed: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -339,7 +345,8 @@ func Test_vqueue_PushInsert(t *testing.T) {
 		           udk: nil,
 		           dmu: sync.Mutex{},
 		           eg: nil,
-		           finalizing: nil,
+		           finalizingInsert: nil,
+		           finalizingDelete: nil,
 		           closed: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -368,20 +375,21 @@ func Test_vqueue_PushInsert(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				ich:        test.fields.ich,
-				uii:        test.fields.uii,
-				imu:        test.fields.imu,
-				uiim:       test.fields.uiim,
-				dch:        test.fields.dch,
-				udk:        test.fields.udk,
-				dmu:        test.fields.dmu,
-				eg:         test.fields.eg,
-				finalizing: test.fields.finalizing,
-				closed:     test.fields.closed,
-				ichSize:    test.fields.ichSize,
-				dchSize:    test.fields.dchSize,
-				iBufSize:   test.fields.iBufSize,
-				dBufSize:   test.fields.dBufSize,
+				ich:              test.fields.ich,
+				uii:              test.fields.uii,
+				imu:              test.fields.imu,
+				uiim:             test.fields.uiim,
+				dch:              test.fields.dch,
+				udk:              test.fields.udk,
+				dmu:              test.fields.dmu,
+				eg:               test.fields.eg,
+				finalizingInsert: test.fields.finalizingInsert,
+				finalizingDelete: test.fields.finalizingDelete,
+				closed:           test.fields.closed,
+				ichSize:          test.fields.ichSize,
+				dchSize:          test.fields.dchSize,
+				iBufSize:         test.fields.iBufSize,
+				dBufSize:         test.fields.dBufSize,
 			}
 
 			err := v.PushInsert(test.args.uuid, test.args.vector, test.args.date)
@@ -399,20 +407,21 @@ func Test_vqueue_PushDelete(t *testing.T) {
 		date int64
 	}
 	type fields struct {
-		ich        chan index
-		uii        []index
-		imu        sync.Mutex
-		uiim       map[string][]float32
-		dch        chan key
-		udk        []key
-		dmu        sync.Mutex
-		eg         errgroup.Group
-		finalizing atomic.Value
-		closed     atomic.Value
-		ichSize    int
-		dchSize    int
-		iBufSize   int
-		dBufSize   int
+		ich              chan index
+		uii              []index
+		imu              sync.Mutex
+		uiim             map[string][]float32
+		dch              chan key
+		udk              []key
+		dmu              sync.Mutex
+		eg               errgroup.Group
+		finalizingInsert atomic.Value
+		finalizingDelete atomic.Value
+		closed           atomic.Value
+		ichSize          int
+		dchSize          int
+		iBufSize         int
+		dBufSize         int
 	}
 	type want struct {
 		err error
@@ -450,7 +459,8 @@ func Test_vqueue_PushDelete(t *testing.T) {
 		           udk: nil,
 		           dmu: sync.Mutex{},
 		           eg: nil,
-		           finalizing: nil,
+		           finalizingInsert: nil,
+		           finalizingDelete: nil,
 		           closed: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -480,7 +490,8 @@ func Test_vqueue_PushDelete(t *testing.T) {
 		           udk: nil,
 		           dmu: sync.Mutex{},
 		           eg: nil,
-		           finalizing: nil,
+		           finalizingInsert: nil,
+		           finalizingDelete: nil,
 		           closed: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -509,284 +520,25 @@ func Test_vqueue_PushDelete(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				ich:        test.fields.ich,
-				uii:        test.fields.uii,
-				imu:        test.fields.imu,
-				uiim:       test.fields.uiim,
-				dch:        test.fields.dch,
-				udk:        test.fields.udk,
-				dmu:        test.fields.dmu,
-				eg:         test.fields.eg,
-				finalizing: test.fields.finalizing,
-				closed:     test.fields.closed,
-				ichSize:    test.fields.ichSize,
-				dchSize:    test.fields.dchSize,
-				iBufSize:   test.fields.iBufSize,
-				dBufSize:   test.fields.dBufSize,
+				ich:              test.fields.ich,
+				uii:              test.fields.uii,
+				imu:              test.fields.imu,
+				uiim:             test.fields.uiim,
+				dch:              test.fields.dch,
+				udk:              test.fields.udk,
+				dmu:              test.fields.dmu,
+				eg:               test.fields.eg,
+				finalizingInsert: test.fields.finalizingInsert,
+				finalizingDelete: test.fields.finalizingDelete,
+				closed:           test.fields.closed,
+				ichSize:          test.fields.ichSize,
+				dchSize:          test.fields.dchSize,
+				iBufSize:         test.fields.iBufSize,
+				dBufSize:         test.fields.dBufSize,
 			}
 
 			err := v.PushDelete(test.args.uuid, test.args.date)
 			if err := test.checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_vqueue_PopInsert(t *testing.T) {
-	t.Parallel()
-	type fields struct {
-		ich        chan index
-		uii        []index
-		imu        sync.Mutex
-		uiim       map[string][]float32
-		dch        chan key
-		udk        []key
-		dmu        sync.Mutex
-		eg         errgroup.Group
-		finalizing atomic.Value
-		closed     atomic.Value
-		ichSize    int
-		dchSize    int
-		iBufSize   int
-		dBufSize   int
-	}
-	type want struct {
-		wantUuid   string
-		wantVector []float32
-	}
-	type test struct {
-		name       string
-		fields     fields
-		want       want
-		checkFunc  func(want, string, []float32) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, gotUuid string, gotVector []float32) error {
-		if !reflect.DeepEqual(gotUuid, w.wantUuid) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotUuid, w.wantUuid)
-		}
-		if !reflect.DeepEqual(gotVector, w.wantVector) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotVector, w.wantVector)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: nil,
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           eg: nil,
-		           finalizing: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: nil,
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           eg: nil,
-		           finalizing: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			v := &vqueue{
-				ich:        test.fields.ich,
-				uii:        test.fields.uii,
-				imu:        test.fields.imu,
-				uiim:       test.fields.uiim,
-				dch:        test.fields.dch,
-				udk:        test.fields.udk,
-				dmu:        test.fields.dmu,
-				eg:         test.fields.eg,
-				finalizing: test.fields.finalizing,
-				closed:     test.fields.closed,
-				ichSize:    test.fields.ichSize,
-				dchSize:    test.fields.dchSize,
-				iBufSize:   test.fields.iBufSize,
-				dBufSize:   test.fields.dBufSize,
-			}
-
-			gotUuid, gotVector := v.PopInsert()
-			if err := test.checkFunc(test.want, gotUuid, gotVector); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_vqueue_PopDelete(t *testing.T) {
-	t.Parallel()
-	type fields struct {
-		ich        chan index
-		uii        []index
-		imu        sync.Mutex
-		uiim       map[string][]float32
-		dch        chan key
-		udk        []key
-		dmu        sync.Mutex
-		eg         errgroup.Group
-		finalizing atomic.Value
-		closed     atomic.Value
-		ichSize    int
-		dchSize    int
-		iBufSize   int
-		dBufSize   int
-	}
-	type want struct {
-		wantUuid string
-	}
-	type test struct {
-		name       string
-		fields     fields
-		want       want
-		checkFunc  func(want, string) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, gotUuid string) error {
-		if !reflect.DeepEqual(gotUuid, w.wantUuid) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotUuid, w.wantUuid)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: nil,
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           eg: nil,
-		           finalizing: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: nil,
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           eg: nil,
-		           finalizing: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			v := &vqueue{
-				ich:        test.fields.ich,
-				uii:        test.fields.uii,
-				imu:        test.fields.imu,
-				uiim:       test.fields.uiim,
-				dch:        test.fields.dch,
-				udk:        test.fields.udk,
-				dmu:        test.fields.dmu,
-				eg:         test.fields.eg,
-				finalizing: test.fields.finalizing,
-				closed:     test.fields.closed,
-				ichSize:    test.fields.ichSize,
-				dchSize:    test.fields.dchSize,
-				iBufSize:   test.fields.iBufSize,
-				dBufSize:   test.fields.dBufSize,
-			}
-
-			gotUuid := v.PopDelete()
-			if err := test.checkFunc(test.want, gotUuid); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -800,20 +552,21 @@ func Test_vqueue_RangePopInsert(t *testing.T) {
 		f   func(uuid string, vector []float32) bool
 	}
 	type fields struct {
-		ich        chan index
-		uii        []index
-		imu        sync.Mutex
-		uiim       map[string][]float32
-		dch        chan key
-		udk        []key
-		dmu        sync.Mutex
-		eg         errgroup.Group
-		finalizing atomic.Value
-		closed     atomic.Value
-		ichSize    int
-		dchSize    int
-		iBufSize   int
-		dBufSize   int
+		ich              chan index
+		uii              []index
+		imu              sync.Mutex
+		uiim             map[string][]float32
+		dch              chan key
+		udk              []key
+		dmu              sync.Mutex
+		eg               errgroup.Group
+		finalizingInsert atomic.Value
+		finalizingDelete atomic.Value
+		closed           atomic.Value
+		ichSize          int
+		dchSize          int
+		iBufSize         int
+		dBufSize         int
 	}
 	type want struct{}
 	type test struct {
@@ -846,7 +599,8 @@ func Test_vqueue_RangePopInsert(t *testing.T) {
 		           udk: nil,
 		           dmu: sync.Mutex{},
 		           eg: nil,
-		           finalizing: nil,
+		           finalizingInsert: nil,
+		           finalizingDelete: nil,
 		           closed: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -876,7 +630,8 @@ func Test_vqueue_RangePopInsert(t *testing.T) {
 		           udk: nil,
 		           dmu: sync.Mutex{},
 		           eg: nil,
-		           finalizing: nil,
+		           finalizingInsert: nil,
+		           finalizingDelete: nil,
 		           closed: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -905,20 +660,21 @@ func Test_vqueue_RangePopInsert(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				ich:        test.fields.ich,
-				uii:        test.fields.uii,
-				imu:        test.fields.imu,
-				uiim:       test.fields.uiim,
-				dch:        test.fields.dch,
-				udk:        test.fields.udk,
-				dmu:        test.fields.dmu,
-				eg:         test.fields.eg,
-				finalizing: test.fields.finalizing,
-				closed:     test.fields.closed,
-				ichSize:    test.fields.ichSize,
-				dchSize:    test.fields.dchSize,
-				iBufSize:   test.fields.iBufSize,
-				dBufSize:   test.fields.dBufSize,
+				ich:              test.fields.ich,
+				uii:              test.fields.uii,
+				imu:              test.fields.imu,
+				uiim:             test.fields.uiim,
+				dch:              test.fields.dch,
+				udk:              test.fields.udk,
+				dmu:              test.fields.dmu,
+				eg:               test.fields.eg,
+				finalizingInsert: test.fields.finalizingInsert,
+				finalizingDelete: test.fields.finalizingDelete,
+				closed:           test.fields.closed,
+				ichSize:          test.fields.ichSize,
+				dchSize:          test.fields.dchSize,
+				iBufSize:         test.fields.iBufSize,
+				dBufSize:         test.fields.dBufSize,
 			}
 
 			v.RangePopInsert(test.args.ctx, test.args.f)
@@ -936,20 +692,21 @@ func Test_vqueue_RangePopDelete(t *testing.T) {
 		f   func(uuid string) bool
 	}
 	type fields struct {
-		ich        chan index
-		uii        []index
-		imu        sync.Mutex
-		uiim       map[string][]float32
-		dch        chan key
-		udk        []key
-		dmu        sync.Mutex
-		eg         errgroup.Group
-		finalizing atomic.Value
-		closed     atomic.Value
-		ichSize    int
-		dchSize    int
-		iBufSize   int
-		dBufSize   int
+		ich              chan index
+		uii              []index
+		imu              sync.Mutex
+		uiim             map[string][]float32
+		dch              chan key
+		udk              []key
+		dmu              sync.Mutex
+		eg               errgroup.Group
+		finalizingInsert atomic.Value
+		finalizingDelete atomic.Value
+		closed           atomic.Value
+		ichSize          int
+		dchSize          int
+		iBufSize         int
+		dBufSize         int
 	}
 	type want struct{}
 	type test struct {
@@ -982,7 +739,8 @@ func Test_vqueue_RangePopDelete(t *testing.T) {
 		           udk: nil,
 		           dmu: sync.Mutex{},
 		           eg: nil,
-		           finalizing: nil,
+		           finalizingInsert: nil,
+		           finalizingDelete: nil,
 		           closed: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -1012,7 +770,8 @@ func Test_vqueue_RangePopDelete(t *testing.T) {
 		           udk: nil,
 		           dmu: sync.Mutex{},
 		           eg: nil,
-		           finalizing: nil,
+		           finalizingInsert: nil,
+		           finalizingDelete: nil,
 		           closed: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -1041,20 +800,21 @@ func Test_vqueue_RangePopDelete(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				ich:        test.fields.ich,
-				uii:        test.fields.uii,
-				imu:        test.fields.imu,
-				uiim:       test.fields.uiim,
-				dch:        test.fields.dch,
-				udk:        test.fields.udk,
-				dmu:        test.fields.dmu,
-				eg:         test.fields.eg,
-				finalizing: test.fields.finalizing,
-				closed:     test.fields.closed,
-				ichSize:    test.fields.ichSize,
-				dchSize:    test.fields.dchSize,
-				iBufSize:   test.fields.iBufSize,
-				dBufSize:   test.fields.dBufSize,
+				ich:              test.fields.ich,
+				uii:              test.fields.uii,
+				imu:              test.fields.imu,
+				uiim:             test.fields.uiim,
+				dch:              test.fields.dch,
+				udk:              test.fields.udk,
+				dmu:              test.fields.dmu,
+				eg:               test.fields.eg,
+				finalizingInsert: test.fields.finalizingInsert,
+				finalizingDelete: test.fields.finalizingDelete,
+				closed:           test.fields.closed,
+				ichSize:          test.fields.ichSize,
+				dchSize:          test.fields.dchSize,
+				iBufSize:         test.fields.iBufSize,
+				dBufSize:         test.fields.dBufSize,
 			}
 
 			v.RangePopDelete(test.args.ctx, test.args.f)
@@ -1071,20 +831,21 @@ func Test_vqueue_GetVector(t *testing.T) {
 		uuid string
 	}
 	type fields struct {
-		ich        chan index
-		uii        []index
-		imu        sync.Mutex
-		uiim       map[string][]float32
-		dch        chan key
-		udk        []key
-		dmu        sync.Mutex
-		eg         errgroup.Group
-		finalizing atomic.Value
-		closed     atomic.Value
-		ichSize    int
-		dchSize    int
-		iBufSize   int
-		dBufSize   int
+		ich              chan index
+		uii              []index
+		imu              sync.Mutex
+		uiim             map[string][]float32
+		dch              chan key
+		udk              []key
+		dmu              sync.Mutex
+		eg               errgroup.Group
+		finalizingInsert atomic.Value
+		finalizingDelete atomic.Value
+		closed           atomic.Value
+		ichSize          int
+		dchSize          int
+		iBufSize         int
+		dBufSize         int
 	}
 	type want struct {
 		want  []float32
@@ -1125,7 +886,8 @@ func Test_vqueue_GetVector(t *testing.T) {
 		           udk: nil,
 		           dmu: sync.Mutex{},
 		           eg: nil,
-		           finalizing: nil,
+		           finalizingInsert: nil,
+		           finalizingDelete: nil,
 		           closed: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -1154,7 +916,8 @@ func Test_vqueue_GetVector(t *testing.T) {
 		           udk: nil,
 		           dmu: sync.Mutex{},
 		           eg: nil,
-		           finalizing: nil,
+		           finalizingInsert: nil,
+		           finalizingDelete: nil,
 		           closed: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -1183,20 +946,21 @@ func Test_vqueue_GetVector(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				ich:        test.fields.ich,
-				uii:        test.fields.uii,
-				imu:        test.fields.imu,
-				uiim:       test.fields.uiim,
-				dch:        test.fields.dch,
-				udk:        test.fields.udk,
-				dmu:        test.fields.dmu,
-				eg:         test.fields.eg,
-				finalizing: test.fields.finalizing,
-				closed:     test.fields.closed,
-				ichSize:    test.fields.ichSize,
-				dchSize:    test.fields.dchSize,
-				iBufSize:   test.fields.iBufSize,
-				dBufSize:   test.fields.dBufSize,
+				ich:              test.fields.ich,
+				uii:              test.fields.uii,
+				imu:              test.fields.imu,
+				uiim:             test.fields.uiim,
+				dch:              test.fields.dch,
+				udk:              test.fields.udk,
+				dmu:              test.fields.dmu,
+				eg:               test.fields.eg,
+				finalizingInsert: test.fields.finalizingInsert,
+				finalizingDelete: test.fields.finalizingDelete,
+				closed:           test.fields.closed,
+				ichSize:          test.fields.ichSize,
+				dchSize:          test.fields.dchSize,
+				iBufSize:         test.fields.iBufSize,
+				dBufSize:         test.fields.dBufSize,
 			}
 
 			got, got1 := v.GetVector(test.args.uuid)
@@ -1213,20 +977,21 @@ func Test_vqueue_addInsert(t *testing.T) {
 		i index
 	}
 	type fields struct {
-		ich        chan index
-		uii        []index
-		imu        sync.Mutex
-		uiim       map[string][]float32
-		dch        chan key
-		udk        []key
-		dmu        sync.Mutex
-		eg         errgroup.Group
-		finalizing atomic.Value
-		closed     atomic.Value
-		ichSize    int
-		dchSize    int
-		iBufSize   int
-		dBufSize   int
+		ich              chan index
+		uii              []index
+		imu              sync.Mutex
+		uiim             map[string][]float32
+		dch              chan key
+		udk              []key
+		dmu              sync.Mutex
+		eg               errgroup.Group
+		finalizingInsert atomic.Value
+		finalizingDelete atomic.Value
+		closed           atomic.Value
+		ichSize          int
+		dchSize          int
+		iBufSize         int
+		dBufSize         int
 	}
 	type want struct{}
 	type test struct {
@@ -1258,7 +1023,8 @@ func Test_vqueue_addInsert(t *testing.T) {
 		           udk: nil,
 		           dmu: sync.Mutex{},
 		           eg: nil,
-		           finalizing: nil,
+		           finalizingInsert: nil,
+		           finalizingDelete: nil,
 		           closed: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -1287,7 +1053,8 @@ func Test_vqueue_addInsert(t *testing.T) {
 		           udk: nil,
 		           dmu: sync.Mutex{},
 		           eg: nil,
-		           finalizing: nil,
+		           finalizingInsert: nil,
+		           finalizingDelete: nil,
 		           closed: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -1316,20 +1083,21 @@ func Test_vqueue_addInsert(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				ich:        test.fields.ich,
-				uii:        test.fields.uii,
-				imu:        test.fields.imu,
-				uiim:       test.fields.uiim,
-				dch:        test.fields.dch,
-				udk:        test.fields.udk,
-				dmu:        test.fields.dmu,
-				eg:         test.fields.eg,
-				finalizing: test.fields.finalizing,
-				closed:     test.fields.closed,
-				ichSize:    test.fields.ichSize,
-				dchSize:    test.fields.dchSize,
-				iBufSize:   test.fields.iBufSize,
-				dBufSize:   test.fields.dBufSize,
+				ich:              test.fields.ich,
+				uii:              test.fields.uii,
+				imu:              test.fields.imu,
+				uiim:             test.fields.uiim,
+				dch:              test.fields.dch,
+				udk:              test.fields.udk,
+				dmu:              test.fields.dmu,
+				eg:               test.fields.eg,
+				finalizingInsert: test.fields.finalizingInsert,
+				finalizingDelete: test.fields.finalizingDelete,
+				closed:           test.fields.closed,
+				ichSize:          test.fields.ichSize,
+				dchSize:          test.fields.dchSize,
+				iBufSize:         test.fields.iBufSize,
+				dBufSize:         test.fields.dBufSize,
 			}
 
 			v.addInsert(test.args.i)
@@ -1346,20 +1114,21 @@ func Test_vqueue_addDelete(t *testing.T) {
 		d key
 	}
 	type fields struct {
-		ich        chan index
-		uii        []index
-		imu        sync.Mutex
-		uiim       map[string][]float32
-		dch        chan key
-		udk        []key
-		dmu        sync.Mutex
-		eg         errgroup.Group
-		finalizing atomic.Value
-		closed     atomic.Value
-		ichSize    int
-		dchSize    int
-		iBufSize   int
-		dBufSize   int
+		ich              chan index
+		uii              []index
+		imu              sync.Mutex
+		uiim             map[string][]float32
+		dch              chan key
+		udk              []key
+		dmu              sync.Mutex
+		eg               errgroup.Group
+		finalizingInsert atomic.Value
+		finalizingDelete atomic.Value
+		closed           atomic.Value
+		ichSize          int
+		dchSize          int
+		iBufSize         int
+		dBufSize         int
 	}
 	type want struct{}
 	type test struct {
@@ -1391,7 +1160,8 @@ func Test_vqueue_addDelete(t *testing.T) {
 		           udk: nil,
 		           dmu: sync.Mutex{},
 		           eg: nil,
-		           finalizing: nil,
+		           finalizingInsert: nil,
+		           finalizingDelete: nil,
 		           closed: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -1420,7 +1190,8 @@ func Test_vqueue_addDelete(t *testing.T) {
 		           udk: nil,
 		           dmu: sync.Mutex{},
 		           eg: nil,
-		           finalizing: nil,
+		           finalizingInsert: nil,
+		           finalizingDelete: nil,
 		           closed: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -1449,20 +1220,21 @@ func Test_vqueue_addDelete(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				ich:        test.fields.ich,
-				uii:        test.fields.uii,
-				imu:        test.fields.imu,
-				uiim:       test.fields.uiim,
-				dch:        test.fields.dch,
-				udk:        test.fields.udk,
-				dmu:        test.fields.dmu,
-				eg:         test.fields.eg,
-				finalizing: test.fields.finalizing,
-				closed:     test.fields.closed,
-				ichSize:    test.fields.ichSize,
-				dchSize:    test.fields.dchSize,
-				iBufSize:   test.fields.iBufSize,
-				dBufSize:   test.fields.dBufSize,
+				ich:              test.fields.ich,
+				uii:              test.fields.uii,
+				imu:              test.fields.imu,
+				uiim:             test.fields.uiim,
+				dch:              test.fields.dch,
+				udk:              test.fields.udk,
+				dmu:              test.fields.dmu,
+				eg:               test.fields.eg,
+				finalizingInsert: test.fields.finalizingInsert,
+				finalizingDelete: test.fields.finalizingDelete,
+				closed:           test.fields.closed,
+				ichSize:          test.fields.ichSize,
+				dchSize:          test.fields.dchSize,
+				iBufSize:         test.fields.iBufSize,
+				dBufSize:         test.fields.dBufSize,
 			}
 
 			v.addDelete(test.args.d)
@@ -1473,279 +1245,24 @@ func Test_vqueue_addDelete(t *testing.T) {
 	}
 }
 
-func Test_vqueue_popInsert(t *testing.T) {
-	t.Parallel()
-	type fields struct {
-		ich        chan index
-		uii        []index
-		imu        sync.Mutex
-		uiim       map[string][]float32
-		dch        chan key
-		udk        []key
-		dmu        sync.Mutex
-		eg         errgroup.Group
-		finalizing atomic.Value
-		closed     atomic.Value
-		ichSize    int
-		dchSize    int
-		iBufSize   int
-		dBufSize   int
-	}
-	type want struct {
-		wantI index
-	}
-	type test struct {
-		name       string
-		fields     fields
-		want       want
-		checkFunc  func(want, index) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, gotI index) error {
-		if !reflect.DeepEqual(gotI, w.wantI) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotI, w.wantI)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: nil,
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           eg: nil,
-		           finalizing: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: nil,
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           eg: nil,
-		           finalizing: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			v := &vqueue{
-				ich:        test.fields.ich,
-				uii:        test.fields.uii,
-				imu:        test.fields.imu,
-				uiim:       test.fields.uiim,
-				dch:        test.fields.dch,
-				udk:        test.fields.udk,
-				dmu:        test.fields.dmu,
-				eg:         test.fields.eg,
-				finalizing: test.fields.finalizing,
-				closed:     test.fields.closed,
-				ichSize:    test.fields.ichSize,
-				dchSize:    test.fields.dchSize,
-				iBufSize:   test.fields.iBufSize,
-				dBufSize:   test.fields.dBufSize,
-			}
-
-			gotI := v.popInsert()
-			if err := test.checkFunc(test.want, gotI); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_vqueue_popDelete(t *testing.T) {
-	t.Parallel()
-	type fields struct {
-		ich        chan index
-		uii        []index
-		imu        sync.Mutex
-		uiim       map[string][]float32
-		dch        chan key
-		udk        []key
-		dmu        sync.Mutex
-		eg         errgroup.Group
-		finalizing atomic.Value
-		closed     atomic.Value
-		ichSize    int
-		dchSize    int
-		iBufSize   int
-		dBufSize   int
-	}
-	type want struct {
-		wantD key
-	}
-	type test struct {
-		name       string
-		fields     fields
-		want       want
-		checkFunc  func(want, key) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, gotD key) error {
-		if !reflect.DeepEqual(gotD, w.wantD) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotD, w.wantD)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: nil,
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           eg: nil,
-		           finalizing: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: nil,
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           eg: nil,
-		           finalizing: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			v := &vqueue{
-				ich:        test.fields.ich,
-				uii:        test.fields.uii,
-				imu:        test.fields.imu,
-				uiim:       test.fields.uiim,
-				dch:        test.fields.dch,
-				udk:        test.fields.udk,
-				dmu:        test.fields.dmu,
-				eg:         test.fields.eg,
-				finalizing: test.fields.finalizing,
-				closed:     test.fields.closed,
-				ichSize:    test.fields.ichSize,
-				dchSize:    test.fields.dchSize,
-				iBufSize:   test.fields.iBufSize,
-				dBufSize:   test.fields.dBufSize,
-			}
-
-			gotD := v.popDelete()
-			if err := test.checkFunc(test.want, gotD); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
 func Test_vqueue_flushAndLoadInsert(t *testing.T) {
 	t.Parallel()
 	type fields struct {
-		ich        chan index
-		uii        []index
-		imu        sync.Mutex
-		uiim       map[string][]float32
-		dch        chan key
-		udk        []key
-		dmu        sync.Mutex
-		eg         errgroup.Group
-		finalizing atomic.Value
-		closed     atomic.Value
-		ichSize    int
-		dchSize    int
-		iBufSize   int
-		dBufSize   int
+		ich              chan index
+		uii              []index
+		imu              sync.Mutex
+		uiim             map[string][]float32
+		dch              chan key
+		udk              []key
+		dmu              sync.Mutex
+		eg               errgroup.Group
+		finalizingInsert atomic.Value
+		finalizingDelete atomic.Value
+		closed           atomic.Value
+		ichSize          int
+		dchSize          int
+		iBufSize         int
+		dBufSize         int
 	}
 	type want struct {
 		wantUii []index
@@ -1778,7 +1295,8 @@ func Test_vqueue_flushAndLoadInsert(t *testing.T) {
 		           udk: nil,
 		           dmu: sync.Mutex{},
 		           eg: nil,
-		           finalizing: nil,
+		           finalizingInsert: nil,
+		           finalizingDelete: nil,
 		           closed: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -1804,7 +1322,8 @@ func Test_vqueue_flushAndLoadInsert(t *testing.T) {
 		           udk: nil,
 		           dmu: sync.Mutex{},
 		           eg: nil,
-		           finalizing: nil,
+		           finalizingInsert: nil,
+		           finalizingDelete: nil,
 		           closed: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -1833,20 +1352,21 @@ func Test_vqueue_flushAndLoadInsert(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				ich:        test.fields.ich,
-				uii:        test.fields.uii,
-				imu:        test.fields.imu,
-				uiim:       test.fields.uiim,
-				dch:        test.fields.dch,
-				udk:        test.fields.udk,
-				dmu:        test.fields.dmu,
-				eg:         test.fields.eg,
-				finalizing: test.fields.finalizing,
-				closed:     test.fields.closed,
-				ichSize:    test.fields.ichSize,
-				dchSize:    test.fields.dchSize,
-				iBufSize:   test.fields.iBufSize,
-				dBufSize:   test.fields.dBufSize,
+				ich:              test.fields.ich,
+				uii:              test.fields.uii,
+				imu:              test.fields.imu,
+				uiim:             test.fields.uiim,
+				dch:              test.fields.dch,
+				udk:              test.fields.udk,
+				dmu:              test.fields.dmu,
+				eg:               test.fields.eg,
+				finalizingInsert: test.fields.finalizingInsert,
+				finalizingDelete: test.fields.finalizingDelete,
+				closed:           test.fields.closed,
+				ichSize:          test.fields.ichSize,
+				dchSize:          test.fields.dchSize,
+				iBufSize:         test.fields.iBufSize,
+				dBufSize:         test.fields.dBufSize,
 			}
 
 			gotUii := v.flushAndLoadInsert()
@@ -1860,20 +1380,21 @@ func Test_vqueue_flushAndLoadInsert(t *testing.T) {
 func Test_vqueue_flushAndLoadDelete(t *testing.T) {
 	t.Parallel()
 	type fields struct {
-		ich        chan index
-		uii        []index
-		imu        sync.Mutex
-		uiim       map[string][]float32
-		dch        chan key
-		udk        []key
-		dmu        sync.Mutex
-		eg         errgroup.Group
-		finalizing atomic.Value
-		closed     atomic.Value
-		ichSize    int
-		dchSize    int
-		iBufSize   int
-		dBufSize   int
+		ich              chan index
+		uii              []index
+		imu              sync.Mutex
+		uiim             map[string][]float32
+		dch              chan key
+		udk              []key
+		dmu              sync.Mutex
+		eg               errgroup.Group
+		finalizingInsert atomic.Value
+		finalizingDelete atomic.Value
+		closed           atomic.Value
+		ichSize          int
+		dchSize          int
+		iBufSize         int
+		dBufSize         int
 	}
 	type want struct {
 		wantUdk []key
@@ -1906,7 +1427,8 @@ func Test_vqueue_flushAndLoadDelete(t *testing.T) {
 		           udk: nil,
 		           dmu: sync.Mutex{},
 		           eg: nil,
-		           finalizing: nil,
+		           finalizingInsert: nil,
+		           finalizingDelete: nil,
 		           closed: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -1932,7 +1454,8 @@ func Test_vqueue_flushAndLoadDelete(t *testing.T) {
 		           udk: nil,
 		           dmu: sync.Mutex{},
 		           eg: nil,
-		           finalizing: nil,
+		           finalizingInsert: nil,
+		           finalizingDelete: nil,
 		           closed: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -1961,20 +1484,21 @@ func Test_vqueue_flushAndLoadDelete(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				ich:        test.fields.ich,
-				uii:        test.fields.uii,
-				imu:        test.fields.imu,
-				uiim:       test.fields.uiim,
-				dch:        test.fields.dch,
-				udk:        test.fields.udk,
-				dmu:        test.fields.dmu,
-				eg:         test.fields.eg,
-				finalizing: test.fields.finalizing,
-				closed:     test.fields.closed,
-				ichSize:    test.fields.ichSize,
-				dchSize:    test.fields.dchSize,
-				iBufSize:   test.fields.iBufSize,
-				dBufSize:   test.fields.dBufSize,
+				ich:              test.fields.ich,
+				uii:              test.fields.uii,
+				imu:              test.fields.imu,
+				uiim:             test.fields.uiim,
+				dch:              test.fields.dch,
+				udk:              test.fields.udk,
+				dmu:              test.fields.dmu,
+				eg:               test.fields.eg,
+				finalizingInsert: test.fields.finalizingInsert,
+				finalizingDelete: test.fields.finalizingDelete,
+				closed:           test.fields.closed,
+				ichSize:          test.fields.ichSize,
+				dchSize:          test.fields.dchSize,
+				iBufSize:         test.fields.iBufSize,
+				dBufSize:         test.fields.dBufSize,
 			}
 
 			gotUdk := v.flushAndLoadDelete()
@@ -1988,20 +1512,21 @@ func Test_vqueue_flushAndLoadDelete(t *testing.T) {
 func Test_vqueue_IVQLen(t *testing.T) {
 	t.Parallel()
 	type fields struct {
-		ich        chan index
-		uii        []index
-		imu        sync.Mutex
-		uiim       map[string][]float32
-		dch        chan key
-		udk        []key
-		dmu        sync.Mutex
-		eg         errgroup.Group
-		finalizing atomic.Value
-		closed     atomic.Value
-		ichSize    int
-		dchSize    int
-		iBufSize   int
-		dBufSize   int
+		ich              chan index
+		uii              []index
+		imu              sync.Mutex
+		uiim             map[string][]float32
+		dch              chan key
+		udk              []key
+		dmu              sync.Mutex
+		eg               errgroup.Group
+		finalizingInsert atomic.Value
+		finalizingDelete atomic.Value
+		closed           atomic.Value
+		ichSize          int
+		dchSize          int
+		iBufSize         int
+		dBufSize         int
 	}
 	type want struct {
 		wantL int
@@ -2034,7 +1559,8 @@ func Test_vqueue_IVQLen(t *testing.T) {
 		           udk: nil,
 		           dmu: sync.Mutex{},
 		           eg: nil,
-		           finalizing: nil,
+		           finalizingInsert: nil,
+		           finalizingDelete: nil,
 		           closed: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -2060,7 +1586,8 @@ func Test_vqueue_IVQLen(t *testing.T) {
 		           udk: nil,
 		           dmu: sync.Mutex{},
 		           eg: nil,
-		           finalizing: nil,
+		           finalizingInsert: nil,
+		           finalizingDelete: nil,
 		           closed: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -2089,20 +1616,21 @@ func Test_vqueue_IVQLen(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				ich:        test.fields.ich,
-				uii:        test.fields.uii,
-				imu:        test.fields.imu,
-				uiim:       test.fields.uiim,
-				dch:        test.fields.dch,
-				udk:        test.fields.udk,
-				dmu:        test.fields.dmu,
-				eg:         test.fields.eg,
-				finalizing: test.fields.finalizing,
-				closed:     test.fields.closed,
-				ichSize:    test.fields.ichSize,
-				dchSize:    test.fields.dchSize,
-				iBufSize:   test.fields.iBufSize,
-				dBufSize:   test.fields.dBufSize,
+				ich:              test.fields.ich,
+				uii:              test.fields.uii,
+				imu:              test.fields.imu,
+				uiim:             test.fields.uiim,
+				dch:              test.fields.dch,
+				udk:              test.fields.udk,
+				dmu:              test.fields.dmu,
+				eg:               test.fields.eg,
+				finalizingInsert: test.fields.finalizingInsert,
+				finalizingDelete: test.fields.finalizingDelete,
+				closed:           test.fields.closed,
+				ichSize:          test.fields.ichSize,
+				dchSize:          test.fields.dchSize,
+				iBufSize:         test.fields.iBufSize,
+				dBufSize:         test.fields.dBufSize,
 			}
 
 			gotL := v.IVQLen()
@@ -2116,20 +1644,21 @@ func Test_vqueue_IVQLen(t *testing.T) {
 func Test_vqueue_DVQLen(t *testing.T) {
 	t.Parallel()
 	type fields struct {
-		ich        chan index
-		uii        []index
-		imu        sync.Mutex
-		uiim       map[string][]float32
-		dch        chan key
-		udk        []key
-		dmu        sync.Mutex
-		eg         errgroup.Group
-		finalizing atomic.Value
-		closed     atomic.Value
-		ichSize    int
-		dchSize    int
-		iBufSize   int
-		dBufSize   int
+		ich              chan index
+		uii              []index
+		imu              sync.Mutex
+		uiim             map[string][]float32
+		dch              chan key
+		udk              []key
+		dmu              sync.Mutex
+		eg               errgroup.Group
+		finalizingInsert atomic.Value
+		finalizingDelete atomic.Value
+		closed           atomic.Value
+		ichSize          int
+		dchSize          int
+		iBufSize         int
+		dBufSize         int
 	}
 	type want struct {
 		wantL int
@@ -2162,7 +1691,8 @@ func Test_vqueue_DVQLen(t *testing.T) {
 		           udk: nil,
 		           dmu: sync.Mutex{},
 		           eg: nil,
-		           finalizing: nil,
+		           finalizingInsert: nil,
+		           finalizingDelete: nil,
 		           closed: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -2188,7 +1718,8 @@ func Test_vqueue_DVQLen(t *testing.T) {
 		           udk: nil,
 		           dmu: sync.Mutex{},
 		           eg: nil,
-		           finalizing: nil,
+		           finalizingInsert: nil,
+		           finalizingDelete: nil,
 		           closed: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -2217,20 +1748,21 @@ func Test_vqueue_DVQLen(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				ich:        test.fields.ich,
-				uii:        test.fields.uii,
-				imu:        test.fields.imu,
-				uiim:       test.fields.uiim,
-				dch:        test.fields.dch,
-				udk:        test.fields.udk,
-				dmu:        test.fields.dmu,
-				eg:         test.fields.eg,
-				finalizing: test.fields.finalizing,
-				closed:     test.fields.closed,
-				ichSize:    test.fields.ichSize,
-				dchSize:    test.fields.dchSize,
-				iBufSize:   test.fields.iBufSize,
-				dBufSize:   test.fields.dBufSize,
+				ich:              test.fields.ich,
+				uii:              test.fields.uii,
+				imu:              test.fields.imu,
+				uiim:             test.fields.uiim,
+				dch:              test.fields.dch,
+				udk:              test.fields.udk,
+				dmu:              test.fields.dmu,
+				eg:               test.fields.eg,
+				finalizingInsert: test.fields.finalizingInsert,
+				finalizingDelete: test.fields.finalizingDelete,
+				closed:           test.fields.closed,
+				ichSize:          test.fields.ichSize,
+				dchSize:          test.fields.dchSize,
+				iBufSize:         test.fields.iBufSize,
+				dBufSize:         test.fields.dBufSize,
 			}
 
 			gotL := v.DVQLen()
@@ -2244,20 +1776,21 @@ func Test_vqueue_DVQLen(t *testing.T) {
 func Test_vqueue_IVCLen(t *testing.T) {
 	t.Parallel()
 	type fields struct {
-		ich        chan index
-		uii        []index
-		imu        sync.Mutex
-		uiim       map[string][]float32
-		dch        chan key
-		udk        []key
-		dmu        sync.Mutex
-		eg         errgroup.Group
-		finalizing atomic.Value
-		closed     atomic.Value
-		ichSize    int
-		dchSize    int
-		iBufSize   int
-		dBufSize   int
+		ich              chan index
+		uii              []index
+		imu              sync.Mutex
+		uiim             map[string][]float32
+		dch              chan key
+		udk              []key
+		dmu              sync.Mutex
+		eg               errgroup.Group
+		finalizingInsert atomic.Value
+		finalizingDelete atomic.Value
+		closed           atomic.Value
+		ichSize          int
+		dchSize          int
+		iBufSize         int
+		dBufSize         int
 	}
 	type want struct {
 		want int
@@ -2290,7 +1823,8 @@ func Test_vqueue_IVCLen(t *testing.T) {
 		           udk: nil,
 		           dmu: sync.Mutex{},
 		           eg: nil,
-		           finalizing: nil,
+		           finalizingInsert: nil,
+		           finalizingDelete: nil,
 		           closed: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -2316,7 +1850,8 @@ func Test_vqueue_IVCLen(t *testing.T) {
 		           udk: nil,
 		           dmu: sync.Mutex{},
 		           eg: nil,
-		           finalizing: nil,
+		           finalizingInsert: nil,
+		           finalizingDelete: nil,
 		           closed: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -2345,20 +1880,21 @@ func Test_vqueue_IVCLen(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				ich:        test.fields.ich,
-				uii:        test.fields.uii,
-				imu:        test.fields.imu,
-				uiim:       test.fields.uiim,
-				dch:        test.fields.dch,
-				udk:        test.fields.udk,
-				dmu:        test.fields.dmu,
-				eg:         test.fields.eg,
-				finalizing: test.fields.finalizing,
-				closed:     test.fields.closed,
-				ichSize:    test.fields.ichSize,
-				dchSize:    test.fields.dchSize,
-				iBufSize:   test.fields.iBufSize,
-				dBufSize:   test.fields.dBufSize,
+				ich:              test.fields.ich,
+				uii:              test.fields.uii,
+				imu:              test.fields.imu,
+				uiim:             test.fields.uiim,
+				dch:              test.fields.dch,
+				udk:              test.fields.udk,
+				dmu:              test.fields.dmu,
+				eg:               test.fields.eg,
+				finalizingInsert: test.fields.finalizingInsert,
+				finalizingDelete: test.fields.finalizingDelete,
+				closed:           test.fields.closed,
+				ichSize:          test.fields.ichSize,
+				dchSize:          test.fields.dchSize,
+				iBufSize:         test.fields.iBufSize,
+				dBufSize:         test.fields.dBufSize,
 			}
 
 			got := v.IVCLen()
@@ -2372,20 +1908,21 @@ func Test_vqueue_IVCLen(t *testing.T) {
 func Test_vqueue_DVCLen(t *testing.T) {
 	t.Parallel()
 	type fields struct {
-		ich        chan index
-		uii        []index
-		imu        sync.Mutex
-		uiim       map[string][]float32
-		dch        chan key
-		udk        []key
-		dmu        sync.Mutex
-		eg         errgroup.Group
-		finalizing atomic.Value
-		closed     atomic.Value
-		ichSize    int
-		dchSize    int
-		iBufSize   int
-		dBufSize   int
+		ich              chan index
+		uii              []index
+		imu              sync.Mutex
+		uiim             map[string][]float32
+		dch              chan key
+		udk              []key
+		dmu              sync.Mutex
+		eg               errgroup.Group
+		finalizingInsert atomic.Value
+		finalizingDelete atomic.Value
+		closed           atomic.Value
+		ichSize          int
+		dchSize          int
+		iBufSize         int
+		dBufSize         int
 	}
 	type want struct {
 		want int
@@ -2418,7 +1955,8 @@ func Test_vqueue_DVCLen(t *testing.T) {
 		           udk: nil,
 		           dmu: sync.Mutex{},
 		           eg: nil,
-		           finalizing: nil,
+		           finalizingInsert: nil,
+		           finalizingDelete: nil,
 		           closed: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -2444,7 +1982,8 @@ func Test_vqueue_DVCLen(t *testing.T) {
 		           udk: nil,
 		           dmu: sync.Mutex{},
 		           eg: nil,
-		           finalizing: nil,
+		           finalizingInsert: nil,
+		           finalizingDelete: nil,
 		           closed: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -2473,20 +2012,21 @@ func Test_vqueue_DVCLen(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				ich:        test.fields.ich,
-				uii:        test.fields.uii,
-				imu:        test.fields.imu,
-				uiim:       test.fields.uiim,
-				dch:        test.fields.dch,
-				udk:        test.fields.udk,
-				dmu:        test.fields.dmu,
-				eg:         test.fields.eg,
-				finalizing: test.fields.finalizing,
-				closed:     test.fields.closed,
-				ichSize:    test.fields.ichSize,
-				dchSize:    test.fields.dchSize,
-				iBufSize:   test.fields.iBufSize,
-				dBufSize:   test.fields.dBufSize,
+				ich:              test.fields.ich,
+				uii:              test.fields.uii,
+				imu:              test.fields.imu,
+				uiim:             test.fields.uiim,
+				dch:              test.fields.dch,
+				udk:              test.fields.udk,
+				dmu:              test.fields.dmu,
+				eg:               test.fields.eg,
+				finalizingInsert: test.fields.finalizingInsert,
+				finalizingDelete: test.fields.finalizingDelete,
+				closed:           test.fields.closed,
+				ichSize:          test.fields.ichSize,
+				dchSize:          test.fields.dchSize,
+				iBufSize:         test.fields.iBufSize,
+				dBufSize:         test.fields.dBufSize,
 			}
 
 			got := v.DVCLen()

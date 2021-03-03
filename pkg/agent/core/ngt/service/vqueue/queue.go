@@ -34,8 +34,6 @@ type Queue interface {
 	Start(ctx context.Context) (<-chan error, error)
 	PushInsert(uuid string, vector []float32, date int64) error
 	PushDelete(uuid string, date int64) error
-	PopInsert() (uuid string, vector []float32)
-	PopDelete() (uuid string)
 	GetVector(uuid string) ([]float32, bool)
 	RangePopInsert(ctx context.Context, f func(uuid string, vector []float32) bool)
 	RangePopDelete(ctx context.Context, f func(uuid string) bool)
@@ -46,16 +44,17 @@ type Queue interface {
 }
 
 type vqueue struct {
-	ich        chan index           // ich is insert channel
-	uii        []index              // uii is un inserted index
-	imu        sync.Mutex           // insert mutex
-	uiim       map[string][]float32 // uiim is un inserted index map (this value is used for GetVector operation to return queued vector cache data)
-	dch        chan key             // dch is delete channel
-	udk        []key                // udk is un deleted key
-	dmu        sync.Mutex           // delete mutex
-	eg         errgroup.Group
-	finalizing atomic.Value
-	closed     atomic.Value
+	ich              chan index           // ich is insert channel
+	uii              []index              // uii is un inserted index
+	imu              sync.Mutex           // insert mutex
+	uiim             map[string][]float32 // uiim is un inserted index map (this value is used for GetVector operation to return queued vector cache data)
+	dch              chan key             // dch is delete channel
+	udk              []key                // udk is un deleted key
+	dmu              sync.Mutex           // delete mutex
+	eg               errgroup.Group
+	finalizingInsert atomic.Value
+	finalizingDelete atomic.Value
+	closed           atomic.Value
 
 	// buffer config
 	ichSize  int
@@ -88,7 +87,8 @@ func New(opts ...Option) (Queue, error) {
 	vq.uiim = make(map[string][]float32, vq.iBufSize)
 	vq.dch = make(chan key, vq.dchSize)
 	vq.udk = make([]key, 0, vq.dBufSize)
-	vq.finalizing.Store(false)
+	vq.finalizingInsert.Store(false)
+	vq.finalizingDelete.Store(false)
 	vq.closed.Store(true)
 	return vq, nil
 }
@@ -102,19 +102,39 @@ func (v *vqueue) Start(ctx context.Context) (<-chan error, error) {
 		for {
 			select {
 			case <-ctx.Done():
-				v.finalizing.Store(true)
-				close(v.dch)
+				v.finalizingInsert.Store(true)
 				close(v.ich)
-				for d := range v.dch {
-					v.addDelete(d)
-				}
 				for i := range v.ich {
 					v.addInsert(i)
 				}
-				v.finalizing.Store(false)
-				return ctx.Err()
+				v.finalizingInsert.Store(false)
+				err := ctx.Err()
+				if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+					return nil
+				}
+				return err
 			case i := <-v.ich:
 				v.addInsert(i)
+			}
+		}
+	}))
+	v.eg.Go(safety.RecoverFunc(func() (err error) {
+		v.closed.Store(false)
+		defer v.closed.Store(true)
+		for {
+			select {
+			case <-ctx.Done():
+				v.finalizingDelete.Store(true)
+				close(v.dch)
+				for d := range v.dch {
+					v.addDelete(d)
+				}
+				v.finalizingDelete.Store(false)
+				err := ctx.Err()
+				if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+					return nil
+				}
+				return err
 			case d := <-v.dch:
 				v.addDelete(d)
 			}
@@ -125,7 +145,7 @@ func (v *vqueue) Start(ctx context.Context) (<-chan error, error) {
 
 func (v *vqueue) PushInsert(uuid string, vector []float32, date int64) error {
 	// we have to check this instance's channel bypass daemon is finalizing or not, if in finalizing process we should not send new index to channel
-	if v.finalizing.Load().(bool) || v.closed.Load().(bool) {
+	if v.finalizingInsert.Load().(bool) || v.closed.Load().(bool) {
 		return errors.ErrVQueueFinalizing
 	}
 	if date == 0 {
@@ -142,7 +162,7 @@ func (v *vqueue) PushInsert(uuid string, vector []float32, date int64) error {
 
 func (v *vqueue) PushDelete(uuid string, date int64) error {
 	// we have to check this instance's channel bypass daemon is finalizing or not, if in finalizing process we should not send new index to channel
-	if v.finalizing.Load().(bool) || v.closed.Load().(bool) {
+	if v.finalizingDelete.Load().(bool) || v.closed.Load().(bool) {
 		return errors.ErrVQueueFinalizing
 	}
 	if date == 0 {
@@ -155,20 +175,13 @@ func (v *vqueue) PushDelete(uuid string, date int64) error {
 	return nil
 }
 
-func (v *vqueue) PopInsert() (uuid string, vector []float32) {
-	i := v.popInsert()
-	return i.uuid, i.vector
-}
-
-func (v *vqueue) PopDelete() (uuid string) {
-	d := v.popDelete()
-	return d.uuid
-}
-
 func (v *vqueue) RangePopInsert(ctx context.Context, f func(uuid string, vector []float32) bool) {
-	if v.finalizing.Load().(bool) {
-		for !v.finalizing.Load().(bool) {
-			time.Sleep(time.Millisecond * 100)
+	// if finalizing, wait for all insert channel queue processed
+	for v.finalizingInsert.Load().(bool) {
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(time.Millisecond * 100):
 		}
 	}
 	for _, idx := range v.flushAndLoadInsert() {
@@ -184,9 +197,12 @@ func (v *vqueue) RangePopInsert(ctx context.Context, f func(uuid string, vector 
 }
 
 func (v *vqueue) RangePopDelete(ctx context.Context, f func(uuid string) bool) {
-	if v.finalizing.Load().(bool) {
-		for !v.finalizing.Load().(bool) {
-			time.Sleep(time.Millisecond * 100)
+	// if finalizing, wait for all insert & delete channel queue processed
+	for v.finalizingDelete.Load().(bool) || v.finalizingInsert.Load().(bool) {
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(time.Millisecond * 100):
 		}
 	}
 	for _, key := range v.flushAndLoadDelete() {
@@ -219,23 +235,6 @@ func (v *vqueue) addDelete(d key) {
 	v.dmu.Lock()
 	v.udk = append(v.udk, d)
 	v.dmu.Unlock()
-}
-
-func (v *vqueue) popInsert() (i index) {
-	v.imu.Lock()
-	i = v.uii[0]
-	v.uii = v.uii[1:]
-	delete(v.uiim, i.uuid)
-	v.imu.Unlock()
-	return i
-}
-
-func (v *vqueue) popDelete() (d key) {
-	v.dmu.Lock()
-	d = v.udk[0]
-	v.udk = v.udk[1:]
-	v.dmu.Unlock()
-	return d
 }
 
 func (v *vqueue) flushAndLoadInsert() (uii []index) {

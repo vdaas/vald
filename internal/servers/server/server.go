@@ -351,10 +351,9 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 			}
 			return nil
 		}))
-		tctx, cancel := context.WithTimeout(ctx, s.pwt)
-		defer cancel()
 		select {
-		case <-tctx.Done():
+		case <-ctx.Done():
+		case <-time.After(s.pwt):
 		case err := <-ech:
 			if err != nil {
 				rerr = err
@@ -362,9 +361,10 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 		}
 
 	} else {
-		tctx, cancel := context.WithTimeout(ctx, s.pwt)
-		defer cancel()
-		<-tctx.Done()
+		select {
+		case <-ctx.Done():
+		case <-time.After(s.pwt):
+		}
 	}
 
 	if len(s.socketPath) != 0 {
