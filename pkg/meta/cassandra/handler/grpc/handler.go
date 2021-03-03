@@ -23,6 +23,7 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/meta"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/internal/db/nosql/cassandra"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
@@ -43,6 +44,23 @@ func New(opts ...Option) meta.MetaServer {
 		opt(s)
 	}
 	return s
+}
+
+func isInternalError(err error) bool {
+	return errors.As(err, &cassandra.ErrUnsupported) ||
+		errors.As(err, &cassandra.ErrTooManyStmts) ||
+		errors.As(err, &cassandra.ErrUseStmt) ||
+		errors.As(err, &cassandra.ErrSessionClosed) ||
+		errors.As(err, &cassandra.ErrNoKeyspace) ||
+		errors.As(err, &cassandra.ErrNoMetadata) ||
+		errors.As(err, &cassandra.ErrHostQueryFailed)
+}
+
+func isFailedPrecondition(err error) bool {
+	return errors.As(err, &cassandra.ErrNoConnections) ||
+		errors.As(err, &cassandra.ErrKeyspaceDoesNotExist) ||
+		errors.As(err, &cassandra.ErrNoHosts) ||
+		errors.As(err, &cassandra.ErrNoConnectionsStarted)
 }
 
 func (s *server) GetMeta(ctx context.Context, key *payload.Meta_Key) (*payload.Meta_Val, error) {
@@ -83,6 +101,36 @@ func (s *server) GetMeta(ctx context.Context, key *payload.Meta_Key) (*payload.M
 				}, info.Get())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
+			}
+			return nil, err
+		case isInternalError(err):
+			log.Warnf("[GetMeta]\tinternal error\t%+v", err)
+			err = status.WrapWithInternal(fmt.Sprintf("GetMeta API: internal error occurred: key %s", key.GetKey()), err,
+				&errdetails.RequestInfo{
+					ServingData: errdetails.Serialize(key),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.GetMeta",
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				}, info.Get())
+			if span != nil {
+				span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			}
+			return nil, err
+		case isFailedPrecondition(err):
+			log.Warnf("[GetMeta]\tfailed precondition\t%+v", err)
+			err = status.WrapWithInternal(fmt.Sprintf("GetMeta API: failed precondition: key %s", key.GetKey()), err,
+				&errdetails.RequestInfo{
+					ServingData: errdetails.Serialize(key),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.GetMeta",
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				}, info.Get())
+			if span != nil {
+				span.SetStatus(trace.StatusCodeFailedPrecondition(err.Error()))
 			}
 			return nil, err
 		default:
@@ -148,7 +196,36 @@ func (s *server) GetMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *pay
 				span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
 			}
 			return mv, err
-
+		case isInternalError(err):
+			log.Warnf("[GetMetas]\tinternal error\t%+v", err)
+			err = status.WrapWithInternal(fmt.Sprintf("GetMetas API: internal error occurred: keys %#v", keys.GetKeys()), err,
+				&errdetails.RequestInfo{
+					ServingData: errdetails.Serialize(keys),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.GetMetas",
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				}, info.Get())
+			if span != nil {
+				span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			}
+			return nil, err
+		case isFailedPrecondition(err):
+			log.Warnf("[GetMetas]\tfailed precondition\t%+v", err)
+			err = status.WrapWithInternal(fmt.Sprintf("GetMetas API: failed precondition: keys %#v", keys.GetKeys()), err,
+				&errdetails.RequestInfo{
+					ServingData: errdetails.Serialize(keys),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.GetMetas",
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				}, info.Get())
+			if span != nil {
+				span.SetStatus(trace.StatusCodeFailedPrecondition(err.Error()))
+			}
+			return nil, err
 		default:
 			log.Errorf("[GetMetas]\tunknown error\t%+v", err)
 			err = status.WrapWithUnknown(fmt.Sprintf("GetMetas API: unknown error occurred: keys %#v", keys.GetKeys()), err,
@@ -207,6 +284,36 @@ func (s *server) GetMetaInverse(ctx context.Context, val *payload.Meta_Val) (*pa
 				}, info.Get())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
+			}
+			return nil, err
+		case isInternalError(err):
+			log.Warnf("[GetMetaInverse]\tinternal error\t%+v", err)
+			err = status.WrapWithInternal(fmt.Sprintf("GetMetaInverse API: internal error occurred: val %s", val.GetVal()), err,
+				&errdetails.RequestInfo{
+					ServingData: errdetails.Serialize(val),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.GetMetaInverse",
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				}, info.Get())
+			if span != nil {
+				span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			}
+			return nil, err
+		case isFailedPrecondition(err):
+			log.Warnf("[GetMetaInverse]\tfailed precondition\t%+v", err)
+			err = status.WrapWithInternal(fmt.Sprintf("GetMetaInverse API: failed precondition: val %s", val.GetVal()), err,
+				&errdetails.RequestInfo{
+					ServingData: errdetails.Serialize(val),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.GetMetaInverse",
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				}, info.Get())
+			if span != nil {
+				span.SetStatus(trace.StatusCodeFailedPrecondition(err.Error()))
 			}
 			return nil, err
 		default:
@@ -272,6 +379,36 @@ func (s *server) GetMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (
 				span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
 			}
 			return mk, err
+		case isInternalError(err):
+			log.Warnf("[GetMetasInverse]\tinternal error\t%+v", err)
+			err = status.WrapWithInternal(fmt.Sprintf("GetMetasInverse API: internal error occurred: vals %#v", vals.GetVals()), err,
+				&errdetails.RequestInfo{
+					ServingData: errdetails.Serialize(vals),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.GetMetasInverse",
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				}, info.Get())
+			if span != nil {
+				span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			}
+			return nil, err
+		case isFailedPrecondition(err):
+			log.Warnf("[GetMetasInverse]\tfailed precondition\t%+v", err)
+			err = status.WrapWithInternal(fmt.Sprintf("GetMetasInverse API: failed precondition: vals %#v", vals.GetVals()), err,
+				&errdetails.RequestInfo{
+					ServingData: errdetails.Serialize(vals),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.GetMetasInverse",
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				}, info.Get())
+			if span != nil {
+				span.SetStatus(trace.StatusCodeFailedPrecondition(err.Error()))
+			}
+			return nil, err
 		default:
 			log.Errorf("[GetMetasInverse]\tunknown error\t%+v", err)
 			err = status.WrapWithUnknown(fmt.Sprintf("GetMetasInverse API: unknown error occurred: vals %#v", vals.GetVals()), err,
@@ -301,20 +438,68 @@ func (s *server) SetMeta(ctx context.Context, kv *payload.Meta_KeyVal) (_ *paylo
 	}()
 	err = s.cassandra.Set(kv.GetKey(), kv.GetVal())
 	if err != nil {
-		log.Errorf("[SetMeta]\tunknown error\t%+v", err)
-		err = status.WrapWithInternal(fmt.Sprintf("SetMeta API: failed to store: key %s val %s", kv.GetKey(), kv.GetVal()), err,
-			&errdetails.RequestInfo{
-				ServingData: errdetails.Serialize(kv),
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.SetMeta",
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
-			}, info.Get())
-		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		switch {
+		case errors.IsErrCassandraUnavailable(err):
+			log.Warnf("[SetMeta]\tunavailable\t%+v", err)
+			err = status.WrapWithUnavailable(fmt.Sprintf("SetMeta API: Cassandra unavailable: key %s, val %s", kv.GetKey(), kv.GetVal()), err,
+				&errdetails.RequestInfo{
+					ServingData: errdetails.Serialize(kv),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.SetMeta",
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				}, info.Get())
+			if span != nil {
+				span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
+			}
+			return nil, err
+		case isInternalError(err):
+			log.Warnf("[SetMeta]\tinternal error\t%+v", err)
+			err = status.WrapWithInternal(fmt.Sprintf("SetMeta API: internal error occurred: key %s val %s", kv.GetKey(), kv.GetVal()), err,
+				&errdetails.RequestInfo{
+					ServingData: errdetails.Serialize(kv),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.SetMeta",
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				}, info.Get())
+			if span != nil {
+				span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			}
+			return nil, err
+		case isFailedPrecondition(err):
+			log.Warnf("[SetMeta]\tfailed precondition\t%+v", err)
+			err = status.WrapWithInternal(fmt.Sprintf("SetMeta API: failed precondition: key %s val %s", kv.GetKey(), kv.GetVal()), err,
+				&errdetails.RequestInfo{
+					ServingData: errdetails.Serialize(kv),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.SetMeta",
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				}, info.Get())
+			if span != nil {
+				span.SetStatus(trace.StatusCodeFailedPrecondition(err.Error()))
+			}
+			return nil, err
+		default:
+			log.Errorf("[SetMeta]\tunknown error\t%+v", err)
+			err = status.WrapWithInternal(fmt.Sprintf("SetMeta API: failed to store: key %s val %s", kv.GetKey(), kv.GetVal()), err,
+				&errdetails.RequestInfo{
+					ServingData: errdetails.Serialize(kv),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.SetMeta",
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				}, info.Get())
+			if span != nil {
+				span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			}
+			return nil, err
 		}
-		return nil, err
 	}
 	return new(payload.Empty), nil
 }
@@ -332,20 +517,68 @@ func (s *server) SetMetas(ctx context.Context, kvs *payload.Meta_KeyVals) (_ *pa
 	}
 	err = s.cassandra.SetMultiple(query)
 	if err != nil {
-		log.Errorf("[SetMetas]\tunknown error\t%+v", err)
-		err = status.WrapWithInternal(fmt.Sprintf("SetMetas API: failed to store %#v", query), err,
-			&errdetails.RequestInfo{
-				ServingData: errdetails.Serialize(kvs),
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.SetMetas",
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
-			}, info.Get())
-		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		switch {
+		case errors.IsErrCassandraUnavailable(err):
+			log.Warnf("[SetMetas]\tunavailable\t%+v", err)
+			err = status.WrapWithUnavailable(fmt.Sprintf("SetMetas API: Cassandra unavailable: kvs %#v", query), err,
+				&errdetails.RequestInfo{
+					ServingData: errdetails.Serialize(kvs),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.SetMetas",
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				}, info.Get())
+			if span != nil {
+				span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
+			}
+			return nil, err
+		case isInternalError(err):
+			log.Warnf("[SetMetas]\tinternal error\t%+v", err)
+			err = status.WrapWithInternal(fmt.Sprintf("SetMetas API: internal error occurred: kvs %#v", query), err,
+				&errdetails.RequestInfo{
+					ServingData: errdetails.Serialize(kvs),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.SetMetas",
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				}, info.Get())
+			if span != nil {
+				span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			}
+			return nil, err
+		case isFailedPrecondition(err):
+			log.Warnf("[SetMetas]\tfailed precondition\t%+v", err)
+			err = status.WrapWithInternal(fmt.Sprintf("SetMetas API: failed precondition: kvs %#v", query), err,
+				&errdetails.RequestInfo{
+					ServingData: errdetails.Serialize(kvs),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.SetMetas",
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				}, info.Get())
+			if span != nil {
+				span.SetStatus(trace.StatusCodeFailedPrecondition(err.Error()))
+			}
+			return nil, err
+		default:
+			log.Errorf("[SetMetas]\tunknown error\t%+v", err)
+			err = status.WrapWithInternal(fmt.Sprintf("SetMetas API: failed to store: kvs %#v", query), err,
+				&errdetails.RequestInfo{
+					ServingData: errdetails.Serialize(kvs),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.SetMetas",
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				}, info.Get())
+			if span != nil {
+				span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			}
+			return nil, err
 		}
-		return nil, err
 	}
 	return new(payload.Empty), nil
 }
@@ -388,6 +621,36 @@ func (s *server) DeleteMeta(ctx context.Context, key *payload.Meta_Key) (*payloa
 				}, info.Get())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
+			}
+			return nil, err
+		case isInternalError(err):
+			log.Warnf("[DeleteMeta]\tinternal error\t%+v", err)
+			err = status.WrapWithInternal(fmt.Sprintf("DeleteMeta API: internal error occurred: key %s", key.GetKey()), err,
+				&errdetails.RequestInfo{
+					ServingData: errdetails.Serialize(key),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.DeleteMeta",
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				}, info.Get())
+			if span != nil {
+				span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			}
+			return nil, err
+		case isFailedPrecondition(err):
+			log.Warnf("[DeleteMeta]\tfailed precondition\t%+v", err)
+			err = status.WrapWithInternal(fmt.Sprintf("DeleteMeta API: failed precondition: key %s", key.GetKey()), err,
+				&errdetails.RequestInfo{
+					ServingData: errdetails.Serialize(key),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.DeleteMeta",
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				}, info.Get())
+			if span != nil {
+				span.SetStatus(trace.StatusCodeFailedPrecondition(err.Error()))
 			}
 			return nil, err
 		default:
@@ -453,6 +716,36 @@ func (s *server) DeleteMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *
 				span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
 			}
 			return nil, err
+		case isInternalError(err):
+			log.Warnf("[DeleteMetas]\tinternal error\t%+v", err)
+			err = status.WrapWithInternal(fmt.Sprintf("DeleteMetas API: internal error occurred: keys %#v", keys.GetKeys()), err,
+				&errdetails.RequestInfo{
+					ServingData: errdetails.Serialize(keys),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.DeleteMetas",
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				}, info.Get())
+			if span != nil {
+				span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			}
+			return nil, err
+		case isFailedPrecondition(err):
+			log.Warnf("[DeleteMetas]\tfailed precondition\t%+v", err)
+			err = status.WrapWithInternal(fmt.Sprintf("DeleteMetas API: failed precondition: keys %#v", keys.GetKeys()), err,
+				&errdetails.RequestInfo{
+					ServingData: errdetails.Serialize(keys),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.DeleteMetas",
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				}, info.Get())
+			if span != nil {
+				span.SetStatus(trace.StatusCodeFailedPrecondition(err.Error()))
+			}
+			return nil, err
 		default:
 			log.Errorf("[DeleteMetas]\tunknown error\t%+v", err)
 			err = status.WrapWithUnknown(fmt.Sprintf("DeleteMetas API: unknown error occurred: keys %#v", keys.GetKeys()), err,
@@ -511,6 +804,36 @@ func (s *server) DeleteMetaInverse(ctx context.Context, val *payload.Meta_Val) (
 				}, info.Get())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
+			}
+			return nil, err
+		case isInternalError(err):
+			log.Warnf("[DeleteMetaInverse]\tinternal error\t%+v", err)
+			err = status.WrapWithInternal(fmt.Sprintf("DeleteMetaInverse API: internal error occurred: val %s", val.GetVal()), err,
+				&errdetails.RequestInfo{
+					ServingData: errdetails.Serialize(val),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.DeleteMetaInverse",
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				}, info.Get())
+			if span != nil {
+				span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			}
+			return nil, err
+		case isFailedPrecondition(err):
+			log.Warnf("[DeleteMetaInverse]\tfailed precondition\t%+v", err)
+			err = status.WrapWithInternal(fmt.Sprintf("DeleteMetaInverse API: failed precondition: val %s", val.GetVal()), err,
+				&errdetails.RequestInfo{
+					ServingData: errdetails.Serialize(val),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.DeleteMetaInverse",
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				}, info.Get())
+			if span != nil {
+				span.SetStatus(trace.StatusCodeFailedPrecondition(err.Error()))
 			}
 			return nil, err
 		default:
@@ -574,6 +897,36 @@ func (s *server) DeleteMetasInverse(ctx context.Context, vals *payload.Meta_Vals
 				}, info.Get())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
+			}
+			return nil, err
+		case isInternalError(err):
+			log.Warnf("[DeleteMetasInverse]\tinternal error\t%+v", err)
+			err = status.WrapWithInternal(fmt.Sprintf("DeleteMetasInverse API: internal error occurred: vals %#v", vals.GetVals()), err,
+				&errdetails.RequestInfo{
+					ServingData: errdetails.Serialize(vals),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.DeleteMetasInverse",
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				}, info.Get())
+			if span != nil {
+				span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			}
+			return nil, err
+		case isFailedPrecondition(err):
+			log.Warnf("[DeleteMetasInverse]\tfailed precondition\t%+v", err)
+			err = status.WrapWithInternal(fmt.Sprintf("DeleteMetasInverse API: failed precondition: vals %#v", vals.GetVals()), err,
+				&errdetails.RequestInfo{
+					ServingData: errdetails.Serialize(vals),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.DeleteMetasInverse",
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				}, info.Get())
+			if span != nil {
+				span.SetStatus(trace.StatusCodeFailedPrecondition(err.Error()))
 			}
 			return nil, err
 		default:
