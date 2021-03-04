@@ -498,6 +498,33 @@ func TestGlobalConfig_UnmarshalJSON(t *testing.T) {
 				},
 			}
 		}(),
+		func() test {
+			data := []byte(``)
+			return test{
+				name: "return unmarshal error when json data is empty",
+				args: args{
+					data: data,
+				},
+				fields: fields{},
+				want: want{
+					want: &GlobalConfig{},
+					err:  errors.New("readObjectStart: expect { or n, but found \x00, error found in #0 byte of ...||..., bigger context ...||..."),
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return unmarshal error when data is nil",
+				args: args{
+					data: nil,
+				},
+				fields: fields{},
+				want: want{
+					want: &GlobalConfig{},
+					err:  errors.New("readObjectStart: expect { or n, but found \x00, error found in #0 byte of ...||..., bigger context ...||..."),
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
@@ -1266,6 +1293,15 @@ func TestToRawYaml(t *testing.T) {
 			},
 			want: want{
 				want: "version: v1.0.0\ntime_zone: UTC\nlogging:\n  logger: glg\n  level: warn\n  format: json\n",
+			},
+		},
+		{
+			name: "return row string when data is a nil",
+			args: args{
+				data: nil,
+			},
+			want: want{
+				want: "null\n",
 			},
 		},
 	}
