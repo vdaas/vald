@@ -97,7 +97,7 @@ data:
         {{- toYaml $sidecar.filename_suffix | nindent 8 }}
         {{- end }}
       target_agent_name: _TARGET_AGENT_NAME_
-      rate: _RATE
+      rate: _RATE_
       client:
         {{- if .Values.gateway.meta.enabled }}
           {{- $gateway := .Values.gateway.meta -}}
