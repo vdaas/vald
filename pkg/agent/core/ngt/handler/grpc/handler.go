@@ -139,23 +139,41 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 			req.GetConfig().GetEpsilon(),
 			req.GetConfig().GetRadius()))
 	if err != nil {
-		err = status.WrapWithInternal("Search API failed to process search request", err,
-			&errdetails.RequestInfo{
-				RequestId:   req.GetConfig().GetRequestId(),
-				ServingData: errdetails.Serialize(req),
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: ngtResourceType + "/ngt.Search",
-				ResourceName: s.ip,
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
-			}, info.Get())
-		log.Error(err)
+		var stat trace.Status
+		if errors.Is(err, errors.ErrCreateIndexingIsInProgress) {
+			err = status.WrapWithResourceExhausted("Search API failed to process search request due to create indexing is in progress", err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetConfig().GetRequestId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.Search",
+					ResourceName: s.ip,
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				})
+			stat = trace.StatusCodeResourceExhausted(err.Error())
+		} else {
+			err = status.WrapWithInternal("Search API failed to process search request", err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetConfig().GetRequestId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.Search",
+					ResourceName: s.ip,
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				}, info.Get())
+			log.Error(err)
+			stat = trace.StatusCodeInternal(err.Error())
+		}
 		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			span.SetStatus(stat)
 		}
 		return nil, err
 	}
+	res.RequestId = req.GetConfig().GetRequestId()
 	return res, nil
 }
 
@@ -173,23 +191,41 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 			req.GetConfig().GetEpsilon(),
 			req.GetConfig().GetRadius()))
 	if err != nil {
-		err = status.WrapWithInternal("SearchByID API failed to process search request", err,
-			&errdetails.RequestInfo{
-				RequestId:   req.GetConfig().GetRequestId(),
-				ServingData: errdetails.Serialize(req),
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: ngtResourceType + "/ngt.SearchByID",
-				ResourceName: s.ip,
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
-			}, info.Get())
-		log.Error(err)
+		var stat trace.Status
+		if errors.Is(err, errors.ErrCreateIndexingIsInProgress) {
+			err = status.WrapWithResourceExhausted("SearchByID API failed to process search request due to create indexing is in progress", err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetConfig().GetRequestId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.SearchByID",
+					ResourceName: s.ip,
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				})
+			stat = trace.StatusCodeResourceExhausted(err.Error())
+		} else {
+			err = status.WrapWithInternal("SearchByID API failed to process search request", err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetConfig().GetRequestId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.SearchByID",
+					ResourceName: s.ip,
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				}, info.Get())
+			log.Error(err)
+			stat = trace.StatusCodeInternal(err.Error())
+		}
 		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			span.SetStatus(stat)
 		}
 		return nil, err
 	}
+	res.RequestId = req.GetConfig().GetRequestId()
 	return res, nil
 }
 
@@ -320,17 +356,21 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 		rids = append(rids, req.GetConfig().GetRequestId())
 		wg.Add(1)
 		s.eg.Go(func() error {
-			ctx, span := trace.StartSpan(ctx, fmt.Sprintf("%s.MultiSearch/goroutine/id-%d", apiName, idx))
+			defer wg.Done()
+			ctx, sspan := trace.StartSpan(ctx, fmt.Sprintf("%s.MultiSearch/goroutine/id-%d", apiName, idx))
 			defer func() {
-				if span != nil {
-					span.End()
+				if sspan != nil {
+					sspan.End()
 				}
 			}()
-			defer wg.Done()
 			r, err := s.Search(ctx, query)
 			if err != nil {
-				if span != nil {
-					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+				st, msg, err := status.ParseError(err, &errdetails.RequestInfo{
+					RequestId:   query.GetConfig().GetRequestId(),
+					ServingData: errdetails.Serialize(query),
+				})
+				if sspan != nil {
+					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 				}
 				mu.Lock()
 				if errs == nil {
@@ -347,21 +387,19 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 	}
 	wg.Wait()
 	if errs != nil {
-		err := errs
-		err = status.WrapWithInternal("MultiSearch API failed to search", err,
+		st, msg, err := status.ParseError(errs,
 			&errdetails.RequestInfo{
 				RequestId:   strings.Join(rids, ","),
 				ServingData: errdetails.Serialize(reqs),
 			},
 			&errdetails.ResourceInfo{
-				ResourceType: ngtResourceType + "/ngt.Search",
+				ResourceType: ngtResourceType + "/ngt.MultiSearch",
 				ResourceName: s.ip,
 				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
-			}, info.Get())
-		log.Error(err)
+				Description:  errs.Error(),
+			})
 		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 		}
 		return nil, err
 	}
@@ -387,17 +425,21 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 		rids = append(rids, req.GetConfig().GetRequestId())
 		wg.Add(1)
 		s.eg.Go(func() error {
-			ctx, span := trace.StartSpan(ctx, fmt.Sprintf("%s.MultiSearchByID/goroutine/id-%d", apiName, idx))
+			ctx, sspan := trace.StartSpan(ctx, fmt.Sprintf("%s.MultiSearchByID/goroutine/id-%d", apiName, idx))
 			defer func() {
-				if span != nil {
-					span.End()
+				if sspan != nil {
+					sspan.End()
 				}
 			}()
 			defer wg.Done()
 			r, err := s.SearchByID(ctx, query)
 			if err != nil {
-				if span != nil {
-					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+				st, msg, err := status.ParseError(err, &errdetails.RequestInfo{
+					RequestId:   query.GetConfig().GetRequestId(),
+					ServingData: errdetails.Serialize(query),
+				})
+				if sspan != nil {
+					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 				}
 				mu.Lock()
 				if errs == nil {

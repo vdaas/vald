@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/kpango/fuid"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -69,6 +70,7 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (*payload.
 			span.End()
 		}
 	}()
+
 	uuid, err := s.metadata.GetUUID(ctx, meta.GetId())
 	if err != nil {
 		err = status.WrapWithNotFound(fmt.Sprintf("Exists API meta %s's uuid not found", meta.GetId()), err,
@@ -87,6 +89,7 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (*payload.
 		}
 		return nil, err
 	}
+
 	return &payload.Object_ID{
 		Id: uuid,
 	}, nil
@@ -124,20 +127,19 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 		return vc.Search(ctx, req, copts...)
 	})
 	if err != nil {
-		err = status.WrapWithInternal("Search API failed to process search request", err,
+		st, msg, err := status.ParseError(err,
 			&errdetails.RequestInfo{
 				RequestId:   req.GetConfig().GetRequestId(),
 				ServingData: errdetails.Serialize(req),
 			},
 			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Search",
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.SearchByID",
 				ResourceName: strings.Join(s.gateway.GRPCClient().ConnectedAddrs(), ", "),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-		log.Error(err)
 		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 		}
 		return nil, err
 	}
@@ -176,6 +178,20 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		return vc.SearchByID(ctx, req, copts...)
 	})
 	if err != nil {
+		st, msg, err := status.ParseError(err,
+			&errdetails.RequestInfo{
+				RequestId:   req.GetConfig().GetRequestId(),
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.SearchByID",
+				ResourceName: strings.Join(s.gateway.GRPCClient().ConnectedAddrs(), ", "),
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
+			}, info.Get())
+		if span != nil {
+			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+		}
 		err = status.WrapWithInternal("SearchByID API failed to process search request", err,
 			&errdetails.RequestInfo{
 				RequestId:   req.GetConfig().GetRequestId(),
@@ -569,6 +585,16 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 	}
 	uuid := fuid.String()
 	req.Vector.Id = uuid
+	if req.GetConfig().GetTimestamp() == 0 {
+		now := time.Now().UnixNano()
+		if req.GetConfig() == nil {
+			req.Config = &payload.Insert_Config{
+				Timestamp: now,
+			}
+		} else {
+			req.Config.Timestamp = now
+		}
+	}
 	loc, err = s.gateway.Insert(ctx, req, s.copts...)
 	if err != nil {
 		err = status.WrapWithInternal("Insert API failed to insert next gateway", err,
@@ -690,6 +716,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 	vecs := reqs.GetRequests()
 	metaMap := make(map[string]string, len(vecs))
 	metas := make([]string, 0, len(vecs))
+	now := time.Now().UnixNano()
 	for i, req := range vecs {
 		vec := req.GetVector()
 		vl := len(vec.GetVector())
@@ -763,6 +790,15 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 		metaMap[uuid] = meta
 		metas = append(metas, meta)
 		reqs.Requests[i].Vector.Id = uuid
+		if reqs.Requests[i].GetConfig().GetTimestamp() == 0 {
+			if reqs.Requests[i].GetConfig() == nil {
+				reqs.Requests[i].Config = &payload.Insert_Config{
+					Timestamp: now,
+				}
+			} else {
+				reqs.Requests[i].Config.Timestamp = now
+			}
+		}
 	}
 
 	res, err = s.gateway.MultiInsert(ctx, reqs, s.copts...)
@@ -884,6 +920,16 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 		return nil, err
 	}
 	req.Vector.Id = uuid
+	if req.GetConfig().GetTimestamp() == 0 {
+		now := time.Now().UnixNano()
+		if req.GetConfig() == nil {
+			req.Config = &payload.Update_Config{
+				Timestamp: now,
+			}
+		} else {
+			req.Config.Timestamp = now
+		}
+	}
 	res, err = s.gateway.Update(ctx, req, s.copts...)
 	if err != nil {
 		err = status.WrapWithInternal("Update API failed to update next gateway", err,
@@ -988,6 +1034,8 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 		}
 		ids = append(ids, req.GetVector().GetId())
 	}
+
+	now := time.Now().UnixNano()
 	uuids, err := s.metadata.GetUUIDs(ctx, ids...)
 	if err != nil {
 		err = status.WrapWithNotFound(fmt.Sprintf("MultiUpdate API ID = %v not found", uuids), err,
@@ -1006,11 +1054,18 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 		}
 		return nil, err
 	}
-
 	for i, uuid := range uuids {
 		reqs.Requests[i].Vector.Id = uuid
+		if reqs.Requests[i].GetConfig().GetTimestamp() == 0 {
+			if reqs.GetRequests()[i].GetConfig() == nil {
+				reqs.Requests[i].Config = &payload.Update_Config{
+					Timestamp: now,
+				}
+			} else {
+				reqs.Requests[i].Config.Timestamp = now
+			}
+		}
 	}
-
 	res, err = s.gateway.MultiUpdate(ctx, reqs)
 	if err != nil {
 		err = status.WrapWithInternal("MultiUpdate API failed to update next gateway", err,
@@ -1064,6 +1119,13 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 		}
 		return nil, err
 	}
+
+	var now int64
+	if req.GetConfig().GetTimestamp() > 0 {
+		now = req.GetConfig().GetTimestamp()
+	} else {
+		now = time.Now().UnixNano()
+	}
 	filters := req.GetConfig().GetFilters()
 	exists, err := s.metadata.Exists(ctx, meta)
 	if err != nil {
@@ -1077,6 +1139,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 			Config: &payload.Insert_Config{
 				SkipStrictExistCheck: true,
 				Filters:              filters,
+				Timestamp:            now,
 			},
 		})
 	} else {
@@ -1086,6 +1149,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 			Config: &payload.Update_Config{
 				SkipStrictExistCheck: true,
 				Filters:              filters,
+				Timestamp:            now,
 			},
 		})
 	}
@@ -1172,6 +1236,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 	updateReqs := make([]*payload.Update_Request, 0, len(reqs.GetRequests()))
 
 	ids := make([]string, 0, len(reqs.GetRequests()))
+	now := time.Now().UnixNano()
 	for _, req := range reqs.GetRequests() {
 		vec := req.GetVector()
 		meta := vec.GetId()
@@ -1196,6 +1261,9 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 			}
 			return nil, err
 		}
+		if req.GetConfig().GetTimestamp() == 0 {
+			req.Config.Timestamp = now
+		}
 		ids = append(ids, meta)
 		filters := req.GetConfig().GetFilters()
 		exists, err := s.metadata.Exists(ctx, meta)
@@ -1205,6 +1273,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 				Config: &payload.Insert_Config{
 					SkipStrictExistCheck: true,
 					Filters:              filters,
+					Timestamp:            req.GetConfig().GetTimestamp(),
 				},
 			})
 		} else {
@@ -1213,6 +1282,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 				Config: &payload.Update_Config{
 					SkipStrictExistCheck: true,
 					Filters:              filters,
+					Timestamp:            req.GetConfig().GetTimestamp(),
 				},
 			})
 		}
@@ -1299,6 +1369,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 			span.End()
 		}
 	}()
+	now := time.Now().UnixNano()
 	meta := req.GetId().GetId()
 	uuid, err := s.metadata.GetUUID(ctx, meta)
 	if err != nil {
@@ -1319,10 +1390,19 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 		return nil, err
 	}
 
+	if req.GetConfig() != nil {
+		req.Config.SkipStrictExistCheck = true
+	} else {
+		req.Config = &payload.Remove_Config{SkipStrictExistCheck: true}
+	}
+
 	if req.GetId() != nil {
 		req.Id.Id = uuid
 	} else {
 		req.Id = &payload.Object_ID{Id: uuid}
+	}
+	if req.GetConfig().GetTimestamp() == 0 {
+		req.Config.Timestamp = now
 	}
 	loc, err = s.gateway.Remove(ctx, req, s.copts...)
 	if err != nil {
@@ -1426,6 +1506,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 	for _, req := range reqs.GetRequests() {
 		ids = append(ids, req.GetId().GetId())
 	}
+	now := time.Now().UnixNano()
 	uuids, err := s.metadata.GetUUIDs(ctx, ids...)
 	if err != nil {
 		err = status.WrapWithNotFound(fmt.Sprintf("MultiRemove API ID = %v not found", ids), err,
@@ -1449,6 +1530,21 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 			reqs.Requests[i].Id.Id = id
 		} else {
 			reqs.Requests[i].Id = &payload.Object_ID{Id: id}
+		}
+		req := reqs.Requests[i]
+		if req.GetConfig() != nil {
+			reqs.Requests[i].Config.SkipStrictExistCheck = true
+		} else {
+			reqs.Requests[i].Config = &payload.Remove_Config{SkipStrictExistCheck: true}
+		}
+
+		if req.GetId() != nil {
+			reqs.Requests[i].Id.Id = id
+		} else {
+			reqs.Requests[i].Id = &payload.Object_ID{Id: id}
+		}
+		if req.GetConfig().GetTimestamp() == 0 {
+			reqs.Requests[i].Config.Timestamp = now
 		}
 	}
 	locs, err = s.gateway.MultiRemove(ctx, reqs, s.copts...)

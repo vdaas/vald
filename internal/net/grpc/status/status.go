@@ -191,6 +191,11 @@ func Errorf(code codes.Code, format string, args ...interface{}) error {
 }
 
 func ParseError(err error, details ...interface{}) (st *status.Status, msg string, rerr error) {
+	if err == nil {
+		st = newStatus(codes.OK, "", nil, details...)
+		msg = st.Message()
+		return st, msg, nil
+	}
 	var ok bool
 	st, ok = FromError(err)
 	if !ok {
@@ -214,6 +219,13 @@ func ParseError(err error, details ...interface{}) (st *status.Status, msg strin
 			msg = st.Message()
 		} else {
 			msg = st.Err().Error()
+		}
+	}
+	if err != nil {
+		if st.Code() == codes.Internal {
+			log.Error(err)
+		} else {
+			log.Warn(err)
 		}
 	}
 	rerr = err
