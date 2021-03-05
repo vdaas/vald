@@ -559,7 +559,7 @@ func TestRead(t *testing.T) {
 		cfg  interface{}
 	}
 	type want struct {
-		want *GlobalConfig
+		want interface{}
 		err  error
 	}
 	type test struct {
@@ -574,7 +574,7 @@ func TestRead(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(got.(*GlobalConfig), w.want) {
+		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
@@ -624,6 +624,120 @@ func TestRead(t *testing.T) {
 						},
 					},
 					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			path := "read_config_test.json"
+			data := `{
+				"version": "v1.0.0",
+				"time_zone": "UTC"
+				}`
+			cfg := make(map[string]string)
+			return test{
+				name: "return nil when read json file successes and input data type is map",
+				args: args{
+					path: path,
+					cfg:  &cfg,
+				},
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					f, err := os.Create(path)
+					if err != nil {
+						t.Fatal(err)
+					}
+					defer f.Close()
+
+					f.WriteString(data)
+				},
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					if err := os.Remove(path); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					want: &map[string]string{
+						"version":   "v1.0.0",
+						"time_zone": "UTC",
+					},
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			path := "read_config_test.json"
+			data := `{
+				"version": "v1.0.0",
+				"time_zone": "UTC",
+				"logging": {
+					"logger": "glg"
+				}
+			}`
+			cfg := make(map[string]interface{})
+			return test{
+				name: "return nil when read json file successes and input data type is nested map",
+				args: args{
+					path: path,
+					cfg:  &cfg,
+				},
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					f, err := os.Create(path)
+					if err != nil {
+						t.Fatal(err)
+					}
+					defer f.Close()
+
+					f.WriteString(data)
+				},
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					if err := os.Remove(path); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					want: &map[string]interface{}{
+						"version":   "v1.0.0",
+						"time_zone": "UTC",
+						"logging": map[string]interface{}{
+							"logger": "glg",
+						},
+					},
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			path := "read_config_test.json"
+			data := `1`
+			var cfg int
+			return test{
+				name: "return nil when read json file successes and input data type is int",
+				args: args{
+					path: path,
+					cfg:  &cfg,
+				},
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					f, err := os.Create(path)
+					if err != nil {
+						t.Fatal(err)
+					}
+					defer f.Close()
+
+					f.WriteString(data)
+				},
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					if err := os.Remove(path); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					want: 1,
+					err:  nil,
 				},
 			}
 		}(),
