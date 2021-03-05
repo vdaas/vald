@@ -41,10 +41,14 @@ require (
 	cloud.google.com/go/storage v1.12.0
 	code.cloudfoundry.org/bytefmt v0.0.0-20200131002437-cf55d5288a48
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
+	contrib.go.opencensus.io/exporter/ocagent v0.4.12 // indirect
 	contrib.go.opencensus.io/exporter/prometheus v0.2.0
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.5
+	contrib.go.opencensus.io/resource v0.0.0-20190131005048-21591786a5e0 // indirect
+	github.com/Azure/azure-amqp-common-go v1.1.4 // indirect
 	github.com/aws/aws-sdk-go v1.36.1
 	github.com/cespare/xxhash/v2 v2.1.1
+	github.com/codahale/hdrhistogram v0.0.0-20161010025455-3a0bb77429bd // indirect
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/go-redis/redis/v8 v8.6.0
@@ -57,6 +61,7 @@ require (
 	github.com/golang/protobuf v1.4.3
 	github.com/google/go-cmp v0.5.4
 	github.com/google/gofuzz v1.2.0
+	github.com/googleapis/gax-go v2.0.2+incompatible // indirect
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/go-version v1.2.1
 	github.com/json-iterator/go v1.1.10
@@ -69,12 +74,19 @@ require (
 	github.com/pierrec/lz4/v3 v3.3.2
 	github.com/scylladb/gocqlx v1.5.0
 	github.com/tensorflow/tensorflow v0.0.0-00010101000000-000000000000
+	github.com/tidwall/pretty v0.0.0-20190325153808-1166b9ac2b65 // indirect
+	github.com/uber-go/atomic v1.3.2 // indirect
+	github.com/uber/jaeger-lib v1.5.0 // indirect
+	github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c // indirect
+	github.com/xdg/stringprep v1.0.0 // indirect
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
 	github.com/yahoojapan/ngtd v0.0.0-20200424071638-9872bbae3700
+	go.mongodb.org/mongo-driver v1.0.1 // indirect
 	go.opencensus.io v0.23.0
 	go.uber.org/automaxprocs v1.4.0
 	go.uber.org/goleak v1.1.10
 	go.uber.org/zap v1.16.0
+	gocloud.dev v0.22.0 // indirect
 	golang.org/x/net v0.0.0-20210226172049-e18ecbb05110
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/sys v0.0.0-20210303074136-134d130e1a04
@@ -89,5 +101,6 @@ require (
 	k8s.io/cli-runtime v0.0.0-00010101000000-000000000000
 	k8s.io/client-go v0.20.4
 	k8s.io/metrics v0.0.0-00010101000000-000000000000
+	pack.ag/amqp v0.11.0 // indirect
 	sigs.k8s.io/controller-runtime v0.0.0-00010101000000-000000000000
 )
