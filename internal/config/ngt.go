@@ -20,64 +20,82 @@ package config
 // NGT represent the ngt core configuration for server.
 type NGT struct {
 	// IndexPath represent the ngt index file path
-	IndexPath string `yaml:"index_path" json:"index_path"`
+	IndexPath string `yaml:"index_path" json:"index_path,omitempty"`
 
 	// Dimension represent the ngt index dimension
-	Dimension int `yaml:"dimension" json:"dimension"`
+	Dimension int `yaml:"dimension" json:"dimension,omitempty"`
 
 	// BulkInsertChunkSize represent the bulk insert chunk size
-	BulkInsertChunkSize int `yaml:"bulk_insert_chunk_size" json:"bulk_insert_chunk_size"`
+	BulkInsertChunkSize int `yaml:"bulk_insert_chunk_size" json:"bulk_insert_chunk_size,omitempty"`
 
 	// DistanceType represent the ngt index distance type
-	DistanceType string `yaml:"distance_type" json:"distance_type"`
+	DistanceType string `yaml:"distance_type" json:"distance_type,omitempty"`
 
 	// ObjectType represent the ngt index object type float or int
-	ObjectType string `yaml:"object_type" json:"object_type"`
+	ObjectType string `yaml:"object_type" json:"object_type,omitempty"`
 
 	// CreationEdgeSize represent the index edge count
-	CreationEdgeSize int `yaml:"creation_edge_size" json:"creation_edge_size"`
+	CreationEdgeSize int `yaml:"creation_edge_size" json:"creation_edge_size,omitempty"`
 
 	// SearchEdgeSize represent the search edge size
-	SearchEdgeSize int `yaml:"search_edge_size" json:"search_edge_size"`
+	SearchEdgeSize int `yaml:"search_edge_size" json:"search_edge_size,omitempty"`
 
 	// AutoIndexDurationLimit represents auto indexing duration limit
-	AutoIndexDurationLimit string `yaml:"auto_index_duration_limit" json:"auto_index_duration_limit"`
+	AutoIndexDurationLimit string `yaml:"auto_index_duration_limit" json:"auto_index_duration_limit,omitempty"`
 
 	// AutoIndexCheckDuration represent checking loop duration about auto indexing execution
-	AutoIndexCheckDuration string `yaml:"auto_index_check_duration" json:"auto_index_check_duration"`
+	AutoIndexCheckDuration string `yaml:"auto_index_check_duration" json:"auto_index_check_duration,omitempty"`
 
 	// AutoSaveIndexDuration represent checking loop duration about auto save index execution
-	AutoSaveIndexDuration string `yaml:"auto_save_index_duration" json:"auto_save_index_duration"`
+	AutoSaveIndexDuration string `yaml:"auto_save_index_duration" json:"auto_save_index_duration,omitempty"`
 
 	// AutoIndexLength represent auto index length limit
-	AutoIndexLength int `yaml:"auto_index_length" json:"auto_index_length"`
+	AutoIndexLength int `yaml:"auto_index_length" json:"auto_index_length,omitempty"`
 
 	// InitialDelayMaxDuration represent maximum duration for initial delay
-	InitialDelayMaxDuration string `yaml:"initial_delay_max_duration" json:"initial_delay_max_duration"`
+	InitialDelayMaxDuration string `yaml:"initial_delay_max_duration" json:"initial_delay_max_duration,omitempty"`
 
 	// EnableInMemoryMode enables on memory ngt indexing mode
-	EnableInMemoryMode bool `yaml:"enable_in_memory_mode" json:"enable_in_memory_mode"`
+	EnableInMemoryMode bool `yaml:"enable_in_memory_mode" json:"enable_in_memory_mode,omitempty"`
 
 	// DefaultPoolSize represent default create index batch pool size
-	DefaultPoolSize uint32 `yaml:"default_pool_size" json:"default_pool_size"`
+	DefaultPoolSize uint32 `yaml:"default_pool_size" json:"default_pool_size,omitempty"`
 
 	// DefaultRadius represent default radius used for search
-	DefaultRadius float32 `yaml:"default_radius" json:"default_radius"`
+	DefaultRadius float32 `yaml:"default_radius" json:"default_radius,omitempty"`
 
 	// DefaultEpsilon represent default epsilon used for search
-	DefaultEpsilon float32 `yaml:"default_epsilon" json:"default_epsilon"`
+	DefaultEpsilon float32 `yaml:"default_epsilon" json:"default_epsilon,omitempty"`
 
 	// MinLoadIndexTimeout represents minimum duration of load index timeout
-	MinLoadIndexTimeout string `yaml:"min_load_index_timeout" json:"min_load_index_timeout"`
+	MinLoadIndexTimeout string `yaml:"min_load_index_timeout" json:"min_load_index_timeout,omitempty"`
 
 	// MaxLoadIndexTimeout represents maximum duration of load index timeout
-	MaxLoadIndexTimeout string `yaml:"max_load_index_timeout" json:"max_load_index_timeout"`
+	MaxLoadIndexTimeout string `yaml:"max_load_index_timeout" json:"max_load_index_timeout,omitempty"`
 
 	// LoadIndexTimeoutFactor represents a factor of load index timeout
-	LoadIndexTimeoutFactor string `yaml:"load_index_timeout_factor" json:"load_index_timeout_factor"`
+	LoadIndexTimeoutFactor string `yaml:"load_index_timeout_factor" json:"load_index_timeout_factor,omitempty"`
 
 	// EnableProactiveGC enables more proactive GC call for reducing heap memory allocation
-	EnableProactiveGC bool `yaml:"enable_proactive_gc" json:"enable_proactive_gc"`
+	EnableProactiveGC bool `yaml:"enable_proactive_gc" json:"enable_proactive_gc,omitempty"`
+
+	// VQueue represent the ngt vector queue buffer size
+	VQueue *VQueue `json:"vqueue,omitempty" yaml:"vqueue"`
+}
+
+// VQueue represent the ngt vector queue buffer size
+type VQueue struct {
+	// InsertBufferSize represents insert channel buffer size
+	InsertBufferSize int `json:"insert_buffer_size,omitempty" yaml:"insert_buffer_size"`
+
+	// InsertBufferPoolSize represents insert time ordered slice buffer size
+	InsertBufferPoolSize int `json:"insert_buffer_pool_size,omitempty" yaml:"insert_buffer_pool_size"`
+
+	// DeleteBufferSize represents delete channel buffer size
+	DeleteBufferSize int `json:"delete_buffer_size,omitempty" yaml:"delete_buffer_size"`
+
+	// DeleteBufferPoolSize represents delete time ordered slice buffer size
+	DeleteBufferPoolSize int `json:"delete_buffer_pool_size,omitempty" yaml:"delete_buffer_pool_size"`
 }
 
 // Bind returns NGT object whose some string value is filed value or environment value.
@@ -92,5 +110,8 @@ func (n *NGT) Bind() *NGT {
 	n.MinLoadIndexTimeout = GetActualValue(n.MinLoadIndexTimeout)
 	n.MaxLoadIndexTimeout = GetActualValue(n.MaxLoadIndexTimeout)
 	n.LoadIndexTimeoutFactor = GetActualValue(n.LoadIndexTimeoutFactor)
+	if n.VQueue == nil {
+		n.VQueue = new(VQueue)
+	}
 	return n
 }

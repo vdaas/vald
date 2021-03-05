@@ -229,3 +229,8 @@ data:
       min_load_index_timeout: 3m
       object_type: float
       search_edge_size: 10
+      vqueue:
+        delete_buffer_pool_size: 5000
+        delete_buffer_size: 100
+        insert_buffer_pool_size: 10000
+        insert_buffer_size: 100
