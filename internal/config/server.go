@@ -21,6 +21,8 @@ import (
 	"strings"
 
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/reflection"
 	"github.com/vdaas/vald/internal/servers/server"
 )
 
@@ -70,18 +72,19 @@ type HTTP struct {
 }
 
 type GRPC struct {
-	BidirectionalStreamConcurrency int            `json:"bidirectional_stream_concurrency" yaml:"bidirectional_stream_concurrency"`
-	MaxReceiveMessageSize          int            `json:"max_receive_message_size" yaml:"max_receive_message_size"`
-	MaxSendMessageSize             int            `json:"max_send_message_size" yaml:"max_send_message_size"`
-	InitialWindowSize              int            `json:"initial_window_size" yaml:"initial_window_size"`
-	InitialConnWindowSize          int            `json:"initial_conn_window_size" yaml:"initial_conn_window_size"`
-	Keepalive                      *GRPCKeepalive `json:"keepalive" yaml:"keepalive"`
-	WriteBufferSize                int            `json:"write_buffer_size" yaml:"write_buffer_size"`
-	ReadBufferSize                 int            `json:"read_buffer_size" yaml:"read_buffer_size"`
-	ConnectionTimeout              string         `json:"connection_timeout" yaml:"connection_timeout"`
-	MaxHeaderListSize              int            `json:"max_header_list_size" yaml:"max_header_list_size"`
-	HeaderTableSize                int            `json:"header_table_size" yaml:"header_table_size"`
-	Interceptors                   []string       `json:"interceptors" yaml:"interceptors"`
+	BidirectionalStreamConcurrency int            `json:"bidirectional_stream_concurrency,omitempty" yaml:"bidirectional_stream_concurrency"`
+	MaxReceiveMessageSize          int            `json:"max_receive_message_size,omitempty" yaml:"max_receive_message_size"`
+	MaxSendMessageSize             int            `json:"max_send_message_size,omitempty" yaml:"max_send_message_size"`
+	InitialWindowSize              int            `json:"initial_window_size,omitempty" yaml:"initial_window_size"`
+	InitialConnWindowSize          int            `json:"initial_conn_window_size,omitempty" yaml:"initial_conn_window_size"`
+	Keepalive                      *GRPCKeepalive `json:"keepalive,omitempty" yaml:"keepalive"`
+	WriteBufferSize                int            `json:"write_buffer_size,omitempty" yaml:"write_buffer_size"`
+	ReadBufferSize                 int            `json:"read_buffer_size,omitempty" yaml:"read_buffer_size"`
+	ConnectionTimeout              string         `json:"connection_timeout,omitempty" yaml:"connection_timeout"`
+	MaxHeaderListSize              int            `json:"max_header_list_size,omitempty" yaml:"max_header_list_size"`
+	HeaderTableSize                int            `json:"header_table_size,omitempty" yaml:"header_table_size"`
+	Interceptors                   []string       `json:"interceptors,omitempty" yaml:"interceptors"`
+	EnableReflection               bool           `json:"enable_reflection,omitempty" yaml:"enable_reflection"`
 }
 
 type GRPCKeepalive struct {
@@ -253,6 +256,12 @@ func (s *Server) Opts() []server.Option {
 				server.WithGRPCHeaderTableSize(s.GRPC.HeaderTableSize),
 				server.WithGRPCInterceptors(s.GRPC.Interceptors...),
 			)
+			if s.GRPC.EnableReflection {
+				opts = append(opts,
+					server.WithGRPCRegistFunc(func(srv *grpc.Server) {
+						reflection.Register(srv)
+					}))
+			}
 			if s.GRPC.Keepalive != nil {
 				opts = append(opts,
 					server.WithGRPCKeepaliveMaxConnIdle(s.GRPC.Keepalive.MaxConnIdle),

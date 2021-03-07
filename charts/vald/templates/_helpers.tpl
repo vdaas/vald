@@ -320,6 +320,7 @@ servers:
       {{- else }}
       interceptors: []
       {{- end }}
+      enable_reflection: {{ default .default.servers.grpc.server.grpc.enable_reflection .Values.servers.grpc.server.grpc.enable_reflection }}
       {{- else }}
       {{- toYaml .default.servers.grpc.server.grpc | nindent 6 }}
       {{- end }}
@@ -580,7 +581,7 @@ dial_option:
       ip_transparent: {{ default .default.dial_option.net.socket_option.ip_transparent .Values.dial_option.net.socket_option.ip_transparent }}
       ip_recover_destination_addr: {{ default .default.dial_option.net.socket_option.ip_recover_destination_addr .Values.dial_option.net.socket_option.ip_recover_destination_addr }}
       {{- else }}
-      {{- toYaml .default.dial_option.net.tls | nindent 6 }}
+      {{- toYaml .default.dial_option.net.socket_option | nindent 6 }}
       {{- end }}
     {{- else }}
     {{- toYaml .default.dial_option.net | nindent 4 }}
