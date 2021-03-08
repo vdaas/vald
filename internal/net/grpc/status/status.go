@@ -87,7 +87,7 @@ func newStatus(code codes.Code, msg string, err error, details ...interface{}) (
 				var err error
 				hostname, err = os.Hostname()
 				if err != nil {
-// 					 log.Warn("failed to fetch hostname:", err)
+					log.Warn("failed to fetch hostname:", err)
 				}
 				return hostname
 			}(),
@@ -112,7 +112,7 @@ func newStatus(code codes.Code, msg string, err error, details ...interface{}) (
 
 	st, err = st.WithDetails(messages...)
 	if err != nil {
-// 		 log.Warn("failed to set error details:", err)
+		log.Warn("failed to set error details:", err)
 	}
 
 	return st

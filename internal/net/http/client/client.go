@@ -42,10 +42,10 @@ func New(opts ...Option) (*http.Client, error) {
 			werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 			e := new(errors.ErrCriticalOption)
 			if errors.As(err, &e) {
-// 				 log.Error(werr)
+				log.Error(werr)
 				return nil, werr
 			}
-// 			 log.Warn(werr)
+			log.Warn(werr)
 		}
 	}
 

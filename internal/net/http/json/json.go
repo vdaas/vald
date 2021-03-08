@@ -141,16 +141,16 @@ func ErrorHandler(w http.ResponseWriter, r *http.Request,
 	}
 	data.Instance, err = os.Hostname()
 	if err != nil {
-// 		 log.Error(err)
+		log.Error(err)
 	}
 	body := make(map[string]interface{})
 	err = json.Decode(r.Body, &body)
 	if err != nil {
-// 		 log.Error(err)
+		log.Error(err)
 	}
 	data.Detail, err = dump.Request(nil, body, r)
 	if err != nil {
-// 		 log.Error(err)
+		log.Error(err)
 	}
 
 	res, err := json.MarshalIndent(data, "", "    ")

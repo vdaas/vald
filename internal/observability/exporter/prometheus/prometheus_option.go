@@ -26,7 +26,7 @@ var prometheusDefaultOpts = []PrometheusOption{
 	WithNamespace("vald"),
 	WithOnErrorFunc(func(err error) {
 		if err != nil {
-// 			 log.Warnf("Failed to export to Prometheus: %v", err)
+			log.Warnf("Failed to export to Prometheus: %v", err)
 		}
 	}),
 }

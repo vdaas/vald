@@ -69,7 +69,7 @@ func (e *ert) RoundTrip(req *http.Request) (res *http.Response, err error) {
 func (e *ert) roundTrip(req *http.Request) (res *http.Response, err error) {
 	res, err = e.transport.RoundTrip(req)
 	if err != nil {
-// 		 log.Error(err)
+		log.Error(err)
 		if res != nil { // just in case we check the response as it depends on RoundTrip impl.
 			closeBody(res.Body)
 			if retryableStatusCode(res.StatusCode) {
@@ -102,10 +102,10 @@ func retryableStatusCode(status int) bool {
 func closeBody(rc io.ReadCloser) {
 	if rc != nil {
 		if _, err := io.Copy(ioutil.Discard, rc); err != nil {
-// 			 log.Error(err)
+			log.Error(err)
 		}
 		if err := rc.Close(); err != nil {
-// 			 log.Error(err)
+			log.Error(err)
 		}
 	}
 }

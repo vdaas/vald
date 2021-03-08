@@ -144,7 +144,7 @@ func IsLocal(host string) bool {
 func Parse(addr string) (host string, port uint16, isLocal, isIPv4, isIPv6 bool, err error) {
 	host, port, err = SplitHostPort(addr)
 	if err != nil {
-// 		 log.Warnf("failed to parse addr %s\terror: %v", addr, err)
+		log.Warnf("failed to parse addr %s\terror: %v", addr, err)
 		host = addr
 	}
 	isIP := net.ParseIP(host) != nil
@@ -234,7 +234,7 @@ func ScanPorts(ctx context.Context, start, end uint16, host string) (ports []uin
 				mu.Unlock()
 
 				if err = conn.Close(); err != nil {
-// 					 log.Warnf("failed to close scan connection for %s, error: %v", addr, err)
+					log.Warnf("failed to close scan connection for %s, error: %v", addr, err)
 				}
 				return nil
 			}
@@ -256,7 +256,7 @@ func ScanPorts(ctx context.Context, start, end uint16, host string) (ports []uin
 func LoadLocalIP() string {
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {
-// 		 log.Warn(err)
+		log.Warn(err)
 		return ""
 	}
 	for _, address := range addrs {
