@@ -79,9 +79,6 @@ func main() {
 	glg.Infof("Start Inserting %d training vector to Vald Agent", insertCount)
 	// Insert 400 example vectors into Vald cluster
 	for i := range ids[:insertCount] {
-		if i%10 == 0 {
-			glg.Infof("Inserted: %d", i+10)
-		}
 		// Calls `Insert` function of Vald Agent client.
 		// Sends set of vector and id to server via gRPC.
 		_, err := client.Insert(ctx, &payload.Insert_Request{
@@ -95,6 +92,9 @@ func main() {
 		})
 		if err != nil {
 			glg.Fatal(err)
+		}
+		if i%10 == 0 {
+			glg.Infof("Inserted: %d", i+10)
 		}
 	}
 	glg.Infof("Finish Inserting %d training vector to Vald Agent", insertCount)
@@ -145,9 +145,6 @@ func main() {
 	glg.Info("Start removing vector")
 	// Remove indexed 400 vectors from vald cluster.
 	for i := range ids[:insertCount] {
-		if i%10 == 0 {
-			glg.Infof("Removed: %d", i+10)
-		}
 		// Call `Remove` function of Vald client.
 		// Sends id to server via gRPC.
 		_, err := client.Remove(ctx, &payload.Remove_Request{
@@ -158,6 +155,9 @@ func main() {
 		})
 		if err != nil {
 			glg.Fatal(err)
+		}
+		if i%10 == 0 {
+			glg.Infof("Removed: %d", i+10)
 		}
 	}
 	glg.Info("Finish removing vector")
