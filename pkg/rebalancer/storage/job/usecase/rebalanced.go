@@ -123,6 +123,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 
 	rb, err := job.New(
+		job.WithErrGroup(eg),
 		job.WithStorage(st),
 		job.WithValdClient(c),
 	)

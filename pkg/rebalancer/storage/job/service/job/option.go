@@ -21,6 +21,7 @@ import (
 	"strconv"
 
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/pkg/rebalancer/storage/job/service/storage"
 )
@@ -56,6 +57,13 @@ func WithRate(rate string) Option {
 func WithValdClient(c vald.Client) Option {
 	return func(r *rebalancer) error {
 		r.client = c
+		return nil
+	}
+}
+
+func WithErrGroup(eg errgroup.Group) Option {
+	return func(r *rebalancer) error {
+		r.eg = eg
 		return nil
 	}
 }
