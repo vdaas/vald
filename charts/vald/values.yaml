@@ -4927,6 +4927,57 @@ rebalancer:
     # @schema {"name": "rebalancer.rebalancer.leader_election_id", "type": "string"}
     # rebalancer.rebalancer.leader_election_id -- leader_election_id for rebalancer controller
     leader_election_id: "vald-rebalancer-storage-controller"
+    # @schema {"name": "rebalancer.rebalancer.job", "type": "object"}
+    job:
+      # @schema {"name": "rebalancer.rebalancer.job.client", "type": "object"}
+      client:
+        # @schema {"name": "rebalancer.rebalancer.job.client.net", "alias": "net"}
+        net:
+          dns:
+            # rebalancer.rebalancer.job.client.net.dns.cache_enabled -- HTTP client TCP DNS cache enabled
+            cache_enabled: true
+            # rebalancer.rebalancer.job.client.net.dns.refresh_duration -- HTTP client TCP DNS cache refresh duration
+            refresh_duration: 1h
+            # rebalancer.rebalancer.job.client.net.dns.refresh_duration -- HTTP client TCP DNS cache expiration
+            cache_expiration: 24h
+          dialer:
+            # rebalancer.rebalancer.job.client.net.dialer.timeout -- HTTP client TCP dialer connect timeout
+            timeout: 5s
+            # rebalancer.rebalancer.job.client.net.dialer.keep_alive -- HTTP client TCP dialer keep alive
+            keep_alive: 5m
+            # rebalancer.rebalancer.job.client.net.dialer.dual_stack_enabled -- HTTP client TCP dialer dual stack enabled
+            dual_stack_enabled: false
+          tls:
+            # rebalancer.rebalancer.job.client.net.tls.enabled -- TLS enabled
+            enabled: false
+            # rebalancer.rebalancer.job.client.net.tls.cert -- TLS cert path
+            cert: /path/to/cert
+            # rebalancer.rebalancer.job.client.net.tls.key -- TLS key path
+            key: /path/to/key
+            # rebalancer.rebalancer.job.client.net.tls.ca -- TLS ca path
+            ca: /path/to/ca
+            # rebalancer.rebalancer.job.client.net.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+            insecure_skip_verify: false
+          # @schema {"name": "rebalancer.rebalancer.job.client.net.socket_option", "alias": "socket_option"}
+          socket_option:
+            # rebalancer.rebalancer.job.client.net.socket_option.reuse_port -- server listen socket option for reuse_port functionality
+            reuse_port: true
+            # rebalancer.rebalancer.job.client.net.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
+            reuse_addr: true
+            # rebalancer.rebalancer.job.client.net.socket_option.reuse_port -- server listen socket option for tcp_fast_open functionality
+            tcp_fast_open: true
+            # rebalancer.rebalancer.job.client.net.socket_option.reuse_port -- server listen socket option for tcp_no_delay functionality
+            tcp_no_delay: true
+            # rebalancer.rebalancer.job.client.net.socket_option.reuse_port -- server listen socket option for tcp_cork functionality
+            tcp_cork: false
+            # rebalancer.rebalancer.job.client.net.socket_option.reuse_port -- server listen socket option for tcp_quick_ack functionality
+            tcp_quick_ack: true
+            # rebalancer.rebalancer.job.client.net.socket_option.reuse_port -- server listen socket option for tcp_defer_accept functionality
+            tcp_defer_accept: true
+            # rebalancer.rebalancer.job.client.net.socket_option.reuse_port -- server listen socket option for ip_transparent functionality
+            ip_transparent: false
+            # rebalancer.rebalancer.job.client.net.socket_option.reuse_port -- server listen socket option for ip_recover_destination_addr functionality
+            ip_recover_destination_addr: false
 
 initializer:
   mysql:

@@ -122,4 +122,8 @@ data:
           {{- $addrs := dict "Values" $client.addrs "default" $defaultAddr }}
           {{- include "vald.grpc.client.addrs" $addrs | nindent 8 }}
         {{- end }}
+        net:
+          {{- if .Values.rebalancer.rebalancer.job.client.net }}
+          {{- toYaml .Values.rebalancer.rebalancer.job.client.net | nindent 10 }}
+          {{- end }}
 {{- end }}
