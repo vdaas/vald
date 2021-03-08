@@ -361,7 +361,7 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
 
    1. Remove
 
-      - Remove indexed 400 training datasets from the Vald agent.
+      - Remove 400 indexed training datasets from the Vald agent.
           <details><summary>example code</summary><br>
 
         ```go
