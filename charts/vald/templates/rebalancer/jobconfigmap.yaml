@@ -44,11 +44,6 @@ data:
             - name: vald-rebalancer-job
               image: {{ .Values.rebalancer.rebalancer.rebalance_job_image }}
               imagePullPolicy: Always
-              command:
-                - /bin/sh
-                - -c
-                - |
-                  sleep 300s;echo 'Hello world'
               env:
                 - name: AWS_ACCESS_KEY
                   valueFrom:
