@@ -205,7 +205,7 @@ func (p *pool) connect(ctx context.Context) (c Conn, err error) {
 			if ok && pc != nil && isHealthy(pc.conn) {
 				continue
 			}
-// 			 log.Debugf("establishing same connection to %s", p.addr)
+			log.Debugf("establishing same connection to %s", p.addr)
 			conn, err := p.dial(ctx, p.addr)
 			if err != nil {
 				failCnt++
