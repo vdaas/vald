@@ -206,6 +206,7 @@ func TestGlobalConfig_Bind(t *testing.T) {
 				"LEVEL":   "warn",
 				"FORMAT":  "json",
 			}
+
 			return test{
 				name: "return GlobalConfig when all fields are read from environment variable",
 				fields: fields{
@@ -306,6 +307,7 @@ func TestGlobalConfig_UnmarshalJSON(t *testing.T) {
 					"level": "warn",
 					"format": "json"
 				}}`)
+
 			return test{
 				name: "return nil when json unmarshal successes",
 				args: args{
@@ -334,6 +336,7 @@ func TestGlobalConfig_UnmarshalJSON(t *testing.T) {
 					"format": "json"
 				}
 			}`)
+
 			return test{
 				name: "return nil when version key is empty and json unmarshal successes",
 				args: args{
@@ -361,6 +364,7 @@ func TestGlobalConfig_UnmarshalJSON(t *testing.T) {
 					"format": "json"
 				}
 			}`)
+
 			return test{
 				name: "return nil when time_zone key is empty and json unmarshal successes",
 				args: args{
@@ -385,6 +389,7 @@ func TestGlobalConfig_UnmarshalJSON(t *testing.T) {
 				"version": "v1.0.0",
 				"time_zone": "UTC"
 			}`)
+
 			return test{
 				name: "return nil when logging key is empty and json unmarshal successes",
 				args: args{
@@ -409,6 +414,7 @@ func TestGlobalConfig_UnmarshalJSON(t *testing.T) {
 					"format": "json"
 				}
 			}`)
+
 			return test{
 				name: "return nil when logging.logger key is empty and json unmarshal successes",
 				args: args{
@@ -437,6 +443,7 @@ func TestGlobalConfig_UnmarshalJSON(t *testing.T) {
 					"format": "json"
 				}
 			}`)
+
 			return test{
 				name: "return nil when logging.level key is empty and json unmarshal successes",
 				args: args{
@@ -465,6 +472,7 @@ func TestGlobalConfig_UnmarshalJSON(t *testing.T) {
 					"level": "warn"
 				}
 			}`)
+
 			return test{
 				name: "return nil when logging.format key is empty and json unmarshal successes",
 				args: args{
@@ -486,6 +494,7 @@ func TestGlobalConfig_UnmarshalJSON(t *testing.T) {
 		}(),
 		func() test {
 			data := []byte(`{time_zone}`)
+
 			return test{
 				name: "return unmarshal error when json data is invalid",
 				args: args{
@@ -500,6 +509,7 @@ func TestGlobalConfig_UnmarshalJSON(t *testing.T) {
 		}(),
 		func() test {
 			data := []byte(``)
+
 			return test{
 				name: "return unmarshal error when json data is empty",
 				args: args{
@@ -591,6 +601,7 @@ func TestRead(t *testing.T) {
 					"format": "json"
 				}}`
 			cfg := new(GlobalConfig)
+
 			return test{
 				name: "return nil when read json file and input data type is struct",
 				args: args{
@@ -603,9 +614,15 @@ func TestRead(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					defer f.Close()
+					defer func() {
+						if err := f.Close(); err != nil {
+							t.Error(err)
+						}
+					}()
 
-					f.WriteString(data)
+					if _, err := f.WriteString(data); err != nil {
+						t.Error(err)
+					}
 				},
 				afterFunc: func(t *testing.T, _ args) {
 					t.Helper()
@@ -634,6 +651,7 @@ func TestRead(t *testing.T) {
 				"time_zone": "UTC"
 				}`
 			cfg := make(map[string]string)
+
 			return test{
 				name: "return nil when read json file successes and input data type is map",
 				args: args{
@@ -646,9 +664,15 @@ func TestRead(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					defer f.Close()
+					defer func() {
+						if err := f.Close(); err != nil {
+							t.Error(err)
+						}
+					}()
 
-					f.WriteString(data)
+					if _, err := f.WriteString(data); err != nil {
+						t.Error(err)
+					}
 				},
 				afterFunc: func(t *testing.T, _ args) {
 					t.Helper()
@@ -675,6 +699,7 @@ func TestRead(t *testing.T) {
 				}
 			}`
 			cfg := make(map[string]interface{})
+
 			return test{
 				name: "return nil when read json file successes and input data type is nested map",
 				args: args{
@@ -687,9 +712,15 @@ func TestRead(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					defer f.Close()
+					defer func() {
+						if err := f.Close(); err != nil {
+							t.Error(err)
+						}
+					}()
 
-					f.WriteString(data)
+					if _, err := f.WriteString(data); err != nil {
+						t.Error(err)
+					}
 				},
 				afterFunc: func(t *testing.T, _ args) {
 					t.Helper()
@@ -722,6 +753,7 @@ func TestRead(t *testing.T) {
 				}
 			]`
 			cfg := make([]map[string]interface{}, 0)
+
 			return test{
 				name: "return nil when read json file successes and input data type is map slice",
 				args: args{
@@ -734,9 +766,15 @@ func TestRead(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					defer f.Close()
+					defer func() {
+						if err := f.Close(); err != nil {
+							t.Error(err)
+						}
+					}()
 
-					f.WriteString(data)
+					if _, err := f.WriteString(data); err != nil {
+						t.Error(err)
+					}
 				},
 				afterFunc: func(t *testing.T, _ args) {
 					t.Helper()
@@ -763,6 +801,7 @@ func TestRead(t *testing.T) {
 			path := "read_config_test.json"
 			data := `"vdaas"`
 			var cfg string
+
 			return test{
 				name: "return nil when read json file successes and input data type is string",
 				args: args{
@@ -775,9 +814,15 @@ func TestRead(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					defer f.Close()
+					defer func() {
+						if err := f.Close(); err != nil {
+							t.Error(err)
+						}
+					}()
 
-					f.WriteString(data)
+					if _, err := f.WriteString(data); err != nil {
+						t.Error(err)
+					}
 				},
 				afterFunc: func(t *testing.T, _ args) {
 					t.Helper()
@@ -798,6 +843,7 @@ func TestRead(t *testing.T) {
 			path := "read_test_config.yaml"
 			data := "time_zone: UTC\nversion: v1.0.0\nlogging:\n  format: json\n  level: warn\n  logger: glg"
 			cfg := new(GlobalConfig)
+
 			return test{
 				name: "return nil when read yaml file and input data type is struct",
 				args: args{
@@ -810,9 +856,15 @@ func TestRead(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					defer f.Close()
+					defer func() {
+						if err := f.Close(); err != nil {
+							t.Error(err)
+						}
+					}()
 
-					f.WriteString(data)
+					if _, err := f.WriteString(data); err != nil {
+						t.Error(err)
+					}
 				},
 				afterFunc: func(t *testing.T, _ args) {
 					t.Helper()
@@ -839,6 +891,7 @@ func TestRead(t *testing.T) {
 			path := "read_config_test.yaml"
 			data := "version: v1.0.0\ntime_zone: UTC"
 			cfg := make(map[string]string)
+
 			return test{
 				name: "return nil when read yaml file successes and input data type is map",
 				args: args{
@@ -851,9 +904,15 @@ func TestRead(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					defer f.Close()
+					defer func() {
+						if err := f.Close(); err != nil {
+							t.Error(err)
+						}
+					}()
 
-					f.WriteString(data)
+					if _, err := f.WriteString(data); err != nil {
+						t.Error(err)
+					}
 				},
 				afterFunc: func(t *testing.T, _ args) {
 					t.Helper()
@@ -874,6 +933,7 @@ func TestRead(t *testing.T) {
 			path := "read_config_test.yaml"
 			data := "version: v1.0.0\ntime_zone: UTC\nlogging:\n  logger: glg"
 			cfg := make(map[string]interface{})
+
 			return test{
 				name: "return nil when read yaml file successes and input data type is nested map",
 				args: args{
@@ -886,9 +946,15 @@ func TestRead(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					defer f.Close()
+					defer func() {
+						if err := f.Close(); err != nil {
+							t.Error(err)
+						}
+					}()
 
-					f.WriteString(data)
+					if _, err := f.WriteString(data); err != nil {
+						t.Error(err)
+					}
 				},
 				afterFunc: func(t *testing.T, _ args) {
 					t.Helper()
@@ -912,6 +978,7 @@ func TestRead(t *testing.T) {
 			path := "read_config_test.yaml"
 			data := "- \n  addr: 0.0.0.0\n  port: \"8080\"\n- \n  addr: 0.0.0.0\n  port: \"3001\""
 			cfg := make([]map[string]interface{}, 0)
+
 			return test{
 				name: "return nil when read yaml file successes and input data type is map slice",
 				args: args{
@@ -924,9 +991,15 @@ func TestRead(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					defer f.Close()
+					defer func() {
+						if err := f.Close(); err != nil {
+							t.Error(err)
+						}
+					}()
 
-					f.WriteString(data)
+					if _, err := f.WriteString(data); err != nil {
+						t.Error(err)
+					}
 				},
 				afterFunc: func(t *testing.T, _ args) {
 					t.Helper()
@@ -953,6 +1026,7 @@ func TestRead(t *testing.T) {
 			path := "read_config_test.yaml"
 			data := `"vdaas"`
 			var cfg string
+
 			return test{
 				name: "return nil when read yaml file successes and input data type is string",
 				args: args{
@@ -965,9 +1039,15 @@ func TestRead(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					defer f.Close()
+					defer func() {
+						if err := f.Close(); err != nil {
+							t.Error(err)
+						}
+					}()
 
-					f.WriteString(data)
+					if _, err := f.WriteString(data); err != nil {
+						t.Error(err)
+					}
 				},
 				afterFunc: func(t *testing.T, _ args) {
 					t.Helper()
@@ -987,6 +1067,7 @@ func TestRead(t *testing.T) {
 		func() test {
 			path := "read_test_config.yaml"
 			cfg := new(GlobalConfig)
+
 			return test{
 				name: "return no entry error when the file open fails",
 				args: args{
@@ -1007,6 +1088,7 @@ func TestRead(t *testing.T) {
 			path := "read_test_config.yaml"
 			data := "timezone\n:"
 			cfg := new(GlobalConfig)
+
 			return test{
 				name: "return yaml decode error when the contents of yaml is invalid",
 				args: args{
@@ -1019,9 +1101,15 @@ func TestRead(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					defer f.Close()
+					defer func() {
+						if err := f.Close(); err != nil {
+							t.Error(err)
+						}
+					}()
 
-					f.WriteString(data)
+					if _, err := f.WriteString(data); err != nil {
+						t.Error(err)
+					}
 				},
 				afterFunc: func(t *testing.T, _ args) {
 					t.Helper()
@@ -1039,6 +1127,7 @@ func TestRead(t *testing.T) {
 			path := "read_test_config.json"
 			data := "timezone\n:"
 			cfg := new(GlobalConfig)
+
 			return test{
 				name: "return json decode error when the contents of json file is invalid",
 				args: args{
@@ -1051,9 +1140,15 @@ func TestRead(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					defer f.Close()
+					defer func() {
+						if err := f.Close(); err != nil {
+							t.Error(err)
+						}
+					}()
 
-					f.WriteString(data)
+					if _, err := f.WriteString(data); err != nil {
+						t.Error(err)
+					}
 				},
 				afterFunc: func(t *testing.T, _ args) {
 					t.Helper()
@@ -1171,6 +1266,7 @@ func TestGetActualValue(t *testing.T) {
 		}(),
 		func() test {
 			fname := "version"
+
 			return test{
 				name: "return file contents when val is file://env",
 				args: args{
@@ -1183,8 +1279,15 @@ func TestGetActualValue(t *testing.T) {
 						t.Error(err)
 						return
 					}
-					defer f.Close()
-					f.WriteString("v1.0.0")
+					defer func() {
+						if err := f.Close(); err != nil {
+							t.Error(err)
+						}
+					}()
+
+					if _, err := f.WriteString("v1.0.0"); err != nil {
+						t.Error(err)
+					}
 				},
 				afterFunc: func(t *testing.T, _ args) {
 					t.Helper()
@@ -1259,6 +1362,7 @@ func TestGetActualValues(t *testing.T) {
 				"VERSION": "v1.0.0",
 				"LOGGER":  "glg",
 			}
+
 			return test{
 				name: "return v1.0.0 and glg when vals are _LOGGER_ and _VERSION_",
 				args: args{
