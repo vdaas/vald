@@ -4978,6 +4978,59 @@ rebalancer:
             ip_transparent: false
             # rebalancer.rebalancer.job.client.net.socket_option.reuse_port -- server listen socket option for ip_recover_destination_addr functionality
             ip_recover_destination_addr: false
+        # @schema {"name": "rebalancer.rebalancer.job.client.transport", "type": "object"}
+        transport:
+          # @schema {"name": "rebalancer.rebalancer.job.client.transport.round_tripper", "type": "object"}
+          round_tripper:
+            # @schema {"name": "rebalancer.rebalancer.job.client.transport.round_tripper.tls_handshake_timeout", "type": "string"}
+            # rebalancer.rebalancer.job.client.transport.round_tripper.tls_handshake_timeout -- TLS handshake timeout
+            tls_handshake_timeout: 5s
+            # @schema {"name": "rebalancer.rebalancer.job.client.transport.round_tripper.max_idle_conns", "type": "integer"}
+            # rebalancer.rebalancer.job.client.transport.round_tripper.max_idle_conns -- maximum count of idle connections
+            max_idle_conns: 100
+            # @schema {"name": "rebalancer.rebalancer.job.client.transport.round_tripper.max_idle_conns_per_host", "type": "integer"}
+            # rebalancer.rebalancer.job.client.transport.round_tripper.max_idle_conns_per_host -- maximum count of idle connections per host
+            max_idle_conns_per_host: 10
+            # @schema {"name": "rebalancer.rebalancer.job.client.transport.round_tripper.max_conns_per_host", "type": "integer"}
+            # rebalancer.rebalancer.job.client.transport.round_tripper.max_conns_per_host -- maximum count of connections per host
+            max_conns_per_host: 10
+            # @schema {"name": "rebalancer.rebalancer.job.client.transport.round_tripper.idle_conn_timeout", "type": "string"}
+            # rebalancer.rebalancer.job.client.transport.round_tripper.idle_conn_timeout -- timeout for idle connections
+            idle_conn_timeout: 90s
+            # @schema {"name": "rebalancer.rebalancer.job.client.transport.round_tripper.response_header_timeout", "type": "string"}
+            # rebalancer.rebalancer.job.client.transport.round_tripper.response_header_timeout -- timeout for response header
+            response_header_timeout: 5s
+            # @schema {"name": "rebalancer.rebalancer.job.client.transport.round_tripper.expect_continue_timeout", "type": "string"}
+            # rebalancer.rebalancer.job.client.transport.round_tripper.expect_continue_timeout -- expect continue timeout
+            expect_continue_timeout: 5s
+            # @schema {"name": "rebalancer.rebalancer.job.client.transport.round_tripper.max_response_header_size", "type": "integer"}
+            # rebalancer.rebalancer.job.client.transport.round_tripper.max_response_header_size -- maximum response header size
+            max_response_header_size: 0
+            # @schema {"name": "rebalancer.rebalancer.job.client.transport.round_tripper.write_buffer_size", "type": "integer"}
+            # rebalancer.rebalancer.job.client.transport.round_tripper.write_buffer_size -- write buffer size
+            write_buffer_size: 0
+            # @schema {"name": "rebalancer.rebalancer.job.client.transport.round_tripper.read_buffer_size", "type": "integer"}
+            # rebalancer.rebalancer.job.client.transport.round_tripper.read_buffer_size -- read buffer size
+            read_buffer_size: 0
+            # @schema {"name": "rebalancer.rebalancer.job.client.transport.round_tripper.force_attempt_http_2", "type": "boolean"}
+            # rebalancer.rebalancer.job.client.transport.round_tripper.force_attempt_http_2 -- force attempt HTTP2
+            force_attempt_http_2: true
+          # @schema {"name": "rebalancer.rebalancer.job.client.transport.backoff", "alias": "backoff"}
+          backoff:
+            # rebalancer.rebalancer.job.client.transport.backoff.initial_duration -- backoff initial duration
+            initial_duration: 5ms
+            # rebalancer.rebalancer.job.client.transport.backoff.backoff_time_limit -- backoff time limit
+            backoff_time_limit: 5s
+            # rebalancer.rebalancer.job.client.transport.backoff.maximum_duration -- backoff maximum duration
+            maximum_duration: 5s
+            # rebalancer.rebalancer.job.client.transport.backoff.jitter_limit -- backoff jitter limit
+            jitter_limit: 100ms
+            # rebalancer.rebalancer.job.client.transport.backoff.backoff_factor -- backoff backoff factor
+            backoff_factor: 1.1
+            # rebalancer.rebalancer.job.client.transport.backoff.retry_count -- backoff retry count
+            retry_count: 100
+            # rebalancer.rebalancer.job.client.transport.backoff.enable_error_log -- backoff error log enabled
+            enable_error_log: true
 
 initializer:
   mysql:

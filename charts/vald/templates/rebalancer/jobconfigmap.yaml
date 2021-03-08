@@ -126,4 +126,8 @@ data:
           {{- if .Values.rebalancer.rebalancer.job.client.net }}
           {{- toYaml .Values.rebalancer.rebalancer.job.client.net | nindent 10 }}
           {{- end }}
+        transport:
+          {{- if .Values.rebalancer.rebalancer.job.client.transport }}
+          {{- toYaml .Values.rebalancer.rebalancer.job.client.transport | nindent 10 }}
+          {{- end }}
 {{- end }}
