@@ -5,23 +5,23 @@ go 1.16
 replace (
 	cloud.google.com/go => cloud.google.com/go v0.78.0
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0+incompatible
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.37.22
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.37.25
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
 	github.com/docker/docker => github.com/moby/moby v20.10.5+incompatible
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.4.1
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.5.0
-	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20210301062520-a04dba85ed25
+	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20210303210847-f18e0979d243
 	github.com/gogo/googleapis => github.com/gogo/googleapis v1.4.0
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
-	github.com/google/go-cmp => github.com/google/go-cmp v0.5.4
+	github.com/google/go-cmp => github.com/google/go-cmp v0.5.5
 	github.com/google/pprof => github.com/google/pprof v0.0.0-20210226084205-cbba55b83ad5
 	github.com/googleapis/gnostic => github.com/googleapis/gnostic v0.5.4
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.16.0
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.2
 	github.com/hailocab/go-hostpool => github.com/kpango/go-hostpool v0.0.0-20210303030322-aab80263dcd0
-	github.com/klauspost/compress => github.com/klauspost/compress v1.11.10-0.20210302113407-0d78ef07f573
+	github.com/klauspost/compress => github.com/klauspost/compress v1.11.13-0.20210305114438-5e8a147907d4
 	github.com/kpango/glg => github.com/kpango/glg v1.5.1
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.2+incompatible
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
@@ -46,7 +46,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.1
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/fsnotify/fsnotify v1.4.9
-	github.com/go-redis/redis/v8 v8.6.0
+	github.com/go-redis/redis/v8 v8.7.1
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gocql/gocql v0.0.0-20200131111108-92af2e088537
 	github.com/gocraft/dbr/v2 v2.7.1
@@ -76,11 +76,11 @@ require (
 	go.uber.org/zap v1.16.0
 	golang.org/x/net v0.0.0-20210226172049-e18ecbb05110
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys v0.0.0-20210303074136-134d130e1a04
+	golang.org/x/sys v0.0.0-20210305230114-8fe3ee5dd75b
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/plot v0.8.1
 	google.golang.org/api v0.40.0
-	google.golang.org/genproto v0.0.0-20210302174412-5ede27ff9881
+	google.golang.org/genproto v0.0.0-20210303154014-9728d6b83eeb
 	google.golang.org/grpc v1.35.0
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.20.4
