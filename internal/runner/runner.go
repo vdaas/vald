@@ -77,7 +77,7 @@ func Do(ctx context.Context, opts ...Option) error {
 	if p.ShowVersion() {
 		log.Init(log.WithLevel(level.INFO.String()))
 		defer log.Close()
-// 		 log.Info(info.String())
+		log.Info(info.String())
 		return nil
 	}
 
@@ -98,7 +98,7 @@ func Do(ctx context.Context, opts ...Option) error {
 	}
 	defer log.Close()
 
-// 	 log.Debugf("version info:\t\t%s\n\nconfiguration:\t\t%s\n\n",
+	log.Debugf("version info:\t\t%s\n\nconfiguration:\t\t%s\n\n",
 		func() string {
 			b, err := json.Marshal(info.Get())
 			if err != nil {
@@ -121,7 +121,7 @@ func Do(ctx context.Context, opts ...Option) error {
 		return err
 	}
 
-// 	mfunc, err := maxprocs.Set(maxprocs.Logger( log.Infof))
+	mfunc, err := maxprocs.Set(maxprocs.Logger(log.Infof))
 	if err != nil {
 		mfunc()
 		return err
@@ -132,7 +132,7 @@ func Do(ctx context.Context, opts ...Option) error {
 		return err
 	}
 
-// 	 log.Infof("service %s %s starting...", r.name, ccfg.Version)
+	log.Infof("service %s %s starting...", r.name, ccfg.Version)
 
 	// reset timelocation to override external libs & running logging
 	location.Set(ccfg.TZ)
@@ -149,13 +149,13 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 
 	rctx = errgroup.Init(rctx)
 
-// 	 log.Info("executing daemon pre-start function")
+	log.Info("executing daemon pre-start function")
 	err = run.PreStart(rctx)
 	if err != nil {
 		return err
 	}
 
-// 	 log.Info("executing daemon start function")
+	log.Info("executing daemon start function")
 	ech, err := run.Start(rctx)
 	if err != nil {
 		return errors.ErrDaemonStartFailed(err)
@@ -167,47 +167,47 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 	for {
 		select {
 		case sig := <-sigCh:
-// 			 log.Warnf("%s signal received daemon will stopping soon...", sig)
+			log.Warnf("%s signal received daemon will stopping soon...", sig)
 			cancel()
 		case err = <-ech:
 			if err != nil {
-// 				 log.Error(errors.ErrStartFunc(name, err))
+				log.Error(errors.ErrStartFunc(name, err))
 				if _, ok := emap[err.Error()]; !ok {
 					errs = append(errs, err)
 				}
 				emap[err.Error()]++
 			}
 		case <-rctx.Done():
-// 			 log.Info("executing daemon pre-stop function")
+			log.Info("executing daemon pre-stop function")
 			err = safety.RecoverFunc(func() error {
 				return run.PreStop(ctx)
 			})()
 			if err != nil {
-// 				 log.Error(errors.ErrPreStopFunc(name, err))
+				log.Error(errors.ErrPreStopFunc(name, err))
 				if _, ok := emap[err.Error()]; !ok {
 					errs = append(errs, err)
 				}
 				emap[err.Error()]++
 			}
 
-// 			 log.Info("executing daemon stop function")
+			log.Info("executing daemon stop function")
 			err = safety.RecoverFunc(func() error {
 				return run.Stop(ctx)
 			})()
 			if err != nil {
-// 				 log.Error(errors.ErrStopFunc(name, err))
+				log.Error(errors.ErrStopFunc(name, err))
 				if _, ok := emap[err.Error()]; !ok {
 					errs = append(errs, err)
 				}
 				emap[err.Error()]++
 			}
 
-// 			 log.Info("executing daemon post-stop function")
+			log.Info("executing daemon post-stop function")
 			err = safety.RecoverFunc(func() error {
 				return run.PostStop(ctx)
 			})()
 			if err != nil {
-// 				 log.Error(errors.ErrPostStopFunc(name, err))
+				log.Error(errors.ErrPostStopFunc(name, err))
 				if _, ok := emap[err.Error()]; !ok {
 					errs = append(errs, err)
 				}
@@ -216,7 +216,7 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 
 			err = errgroup.Wait()
 			if err != nil && !errors.Is(err, context.Canceled) {
-// 				 log.Error(errors.ErrRunnerWait(name, err))
+				log.Error(errors.ErrRunnerWait(name, err))
 				if _, ok := emap[err.Error()]; !ok {
 					errs = append(errs, err)
 				}
@@ -238,7 +238,7 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 				err = errors.ErrDaemonStopFailed(err)
 			}
 
-// 			 log.Warn("daemon stopped")
+			log.Warn("daemon stopped")
 
 			return err
 		}

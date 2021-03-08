@@ -58,7 +58,7 @@ var (
 						w.WriteHeader(http.StatusOK)
 						_, err := fmt.Fprint(w, http.StatusText(http.StatusOK))
 						if err != nil {
-// 							 log.Error(err, info.Get())
+							log.Error(err, info.Get())
 						}
 					}
 				})

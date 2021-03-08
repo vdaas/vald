@@ -134,7 +134,7 @@ func New(opts ...Option) (Server, error) {
 		opt(srv)
 	}
 	if srv.eg == nil {
-// 		 log.Warnf("errgroup not found for %s, getting new errgroup.", srv.name)
+		log.Warnf("errgroup not found for %s, getting new errgroup.", srv.name)
 		srv.eg = errgroup.Get()
 	}
 
@@ -218,7 +218,7 @@ func New(opts ...Option) (Server, error) {
 				if srv.ctrl != nil {
 					return srv.ctrl.GetControl()(network, addr, c)
 				}
-// 				 log.Warn("socket controller is nil")
+				log.Warn("socket controller is nil")
 				return nil
 			},
 		}
@@ -244,7 +244,7 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 		s.mu.Unlock()
 
 		if s.preStartFunc != nil {
-// 			 log.Infof("server %s executing preStartFunc", s.name)
+			log.Infof("server %s executing preStartFunc", s.name)
 			err = s.preStartFunc()
 			if err != nil {
 				return err
@@ -266,7 +266,7 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 			return net.JoinHostPort(s.host, s.port)
 		}())
 		if err != nil {
-// 			 log.Errorf("failed to listen socket %v", err)
+			log.Errorf("failed to listen socket %v", err)
 			return err
 		}
 
@@ -290,7 +290,7 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 					s.running = true
 					s.mu.Unlock()
 				}
-// 				 log.Infof("%s server %s starting on %s://%s", s.mode.String(), s.name, l.Addr().Network(), l.Addr().String())
+				log.Infof("%s server %s starting on %s://%s", s.mode.String(), s.name, l.Addr().Network(), l.Addr().String())
 
 				switch s.mode {
 				case REST, GQL:
@@ -315,7 +315,7 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 					return
 				}
 				s.mu.RUnlock()
-// 				 log.Infof("%s server %s stopped", s.mode.String(), s.name)
+				log.Infof("%s server %s stopped", s.mode.String(), s.name)
 			}
 			return nil
 		}))
@@ -332,13 +332,13 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 	s.shuttingDown = true
 	s.mu.Unlock()
 
-// 	 log.Warnf("%s server %s shutdown process starting", s.mode.String(), s.name)
+	log.Warnf("%s server %s shutdown process starting", s.mode.String(), s.name)
 	if s.preStopFunc != nil {
 		ech := make(chan error, 1)
 		s.wg.Add(1)
 		s.eg.Go(safety.RecoverFunc(func() (err error) {
 			defer close(ech)
-// 			 log.Infof("server %s executing preStopFunc", s.name)
+			log.Infof("server %s executing preStopFunc", s.name)
 			err = s.preStopFunc()
 			if err != nil {
 				select {
@@ -378,7 +378,7 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 		}()
 	}
 
-// 	 log.Warnf("%s server %s is now shutting down", s.mode.String(), s.name)
+	log.Warnf("%s server %s is now shutting down", s.mode.String(), s.name)
 	switch s.mode {
 	case REST, GQL:
 		sctx, scancel := context.WithTimeout(ctx, s.sddur)
