@@ -172,9 +172,6 @@ GO_SOURCES = $(eval GO_SOURCES := $(shell find \
 		-not -path './internal/compress/gzip/*' \
 		-not -path './internal/compress/lz4/*' \
 		-not -path './internal/compress/zstd/*' \
-		-not -path './internal/db/storage/blob/s3/writer/*' \
-		-not -path './internal/db/storage/blob/s3/reader/option.go' \
-		-not -path './internal/db/storage/blob/s3/reader/reader.go' \
 		-not -path './internal/db/storage/blob/s3/sdk/s3/*' \
 		-not -path './internal/db/rdb/mysql/dbr/*' \
 		-not -path './internal/test/comparator/*' \
@@ -204,9 +201,6 @@ GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell find \
 		-not -path './internal/compress/gzip/*' \
 		-not -path './internal/compress/lz4/*' \
 		-not -path './internal/compress/zstd/*' \
-		-not -path './internal/db/storage/blob/s3/writer/*' \
-		-not -path './internal/db/storage/blob/s3/reader/option.go' \
-		-not -path './internal/db/storage/blob/s3/reader/reader.go' \
 		-not -path './internal/db/storage/blob/s3/sdk/s3/*' \
 		-not -path './internal/db/rdb/mysql/dbr/*' \
 		-not -path './internal/test/comparator/*' \

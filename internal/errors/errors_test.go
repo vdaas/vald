@@ -1372,7 +1372,7 @@ func TestIs(t *testing.T) {
 		{
 			name: "return false when err is same comparable errors type and differ error as target.",
 			args: args{
-				err:    New(""),
+				err:    New("invalid parameter"),
 				target: New("err is occurred"),
 			},
 			want: want{},
@@ -1482,7 +1482,6 @@ func TestIs(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-
 			got := Is(test.args.err, test.args.target)
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
