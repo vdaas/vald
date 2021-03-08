@@ -416,7 +416,7 @@ func TestWithEnableErrorLog(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "set success when der is not nil",
+			name: "set success",
 			want: want{
 				obj: &T{
 					errLog: true,
