@@ -17,7 +17,7 @@ defaults:
   logging:
     level: debug
   image:
-    tag: "nightly"
+    tag: "latest"
 
 gateway:
   lb:
