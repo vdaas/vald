@@ -592,7 +592,7 @@ func TestRead(t *testing.T) {
 				}}`
 			cfg := new(GlobalConfig)
 			return test{
-				name: "return nil when read json file and bind successes",
+				name: "return nil when read json file and input data type is struct",
 				args: args{
 					path: path,
 					cfg:  cfg,
@@ -711,10 +711,19 @@ func TestRead(t *testing.T) {
 		}(),
 		func() test {
 			path := "read_config_test.json"
-			data := `1`
-			var cfg int
+			data := `[
+				{
+					"addr": "0.0.0.0",
+					"port": "8080"
+				},
+				{
+					"addr": "0.0.0.0",
+					"port": "3001"
+				}
+			]`
+			cfg := make([]map[string]interface{}, 0)
 			return test{
-				name: "return nil when read json file successes and input data type is int",
+				name: "return nil when read json file successes and input data type is map slice",
 				args: args{
 					path: path,
 					cfg:  &cfg,
@@ -736,8 +745,52 @@ func TestRead(t *testing.T) {
 					}
 				},
 				want: want{
-					want: 1,
-					err:  nil,
+					want: &[]map[string]interface{}{
+						{
+							"addr": "0.0.0.0",
+							"port": "8080",
+						},
+						{
+							"addr": "0.0.0.0",
+							"port": "3001",
+						},
+					},
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			path := "read_config_test.json"
+			data := `"vdaas"`
+			var cfg string
+			return test{
+				name: "return nil when read json file successes and input data type is string",
+				args: args{
+					path: path,
+					cfg:  &cfg,
+				},
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					f, err := os.Create(path)
+					if err != nil {
+						t.Fatal(err)
+					}
+					defer f.Close()
+
+					f.WriteString(data)
+				},
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					if err := os.Remove(path); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					want: func() (str *string) {
+						s := "vdaas"
+						return &s
+					}(),
+					err: nil,
 				},
 			}
 		}(),
@@ -746,7 +799,7 @@ func TestRead(t *testing.T) {
 			data := "time_zone: UTC\nversion: v1.0.0\nlogging:\n  format: json\n  level: warn\n  logger: glg"
 			cfg := new(GlobalConfig)
 			return test{
-				name: "return nil when read yaml file and bind successes",
+				name: "return nil when read yaml file and input data type is struct",
 				args: args{
 					path: path,
 					cfg:  cfg,
@@ -777,6 +830,156 @@ func TestRead(t *testing.T) {
 							Format: "json",
 						},
 					},
+					err: nil,
+				},
+			}
+		}(),
+
+		func() test {
+			path := "read_config_test.yaml"
+			data := "version: v1.0.0\ntime_zone: UTC"
+			cfg := make(map[string]string)
+			return test{
+				name: "return nil when read yaml file successes and input data type is map",
+				args: args{
+					path: path,
+					cfg:  &cfg,
+				},
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					f, err := os.Create(path)
+					if err != nil {
+						t.Fatal(err)
+					}
+					defer f.Close()
+
+					f.WriteString(data)
+				},
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					if err := os.Remove(path); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					want: &map[string]string{
+						"version":   "v1.0.0",
+						"time_zone": "UTC",
+					},
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			path := "read_config_test.yaml"
+			data := "version: v1.0.0\ntime_zone: UTC\nlogging:\n  logger: glg"
+			cfg := make(map[string]interface{})
+			return test{
+				name: "return nil when read yaml file successes and input data type is nested map",
+				args: args{
+					path: path,
+					cfg:  &cfg,
+				},
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					f, err := os.Create(path)
+					if err != nil {
+						t.Fatal(err)
+					}
+					defer f.Close()
+
+					f.WriteString(data)
+				},
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					if err := os.Remove(path); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					want: &map[string]interface{}{
+						"version":   "v1.0.0",
+						"time_zone": "UTC",
+						"logging": map[interface{}]interface{}{
+							"logger": "glg",
+						},
+					},
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			path := "read_config_test.yaml"
+			data := "- \n  addr: 0.0.0.0\n  port: \"8080\"\n- \n  addr: 0.0.0.0\n  port: \"3001\""
+			cfg := make([]map[string]interface{}, 0)
+			return test{
+				name: "return nil when read yaml file successes and input data type is map slice",
+				args: args{
+					path: path,
+					cfg:  &cfg,
+				},
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					f, err := os.Create(path)
+					if err != nil {
+						t.Fatal(err)
+					}
+					defer f.Close()
+
+					f.WriteString(data)
+				},
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					if err := os.Remove(path); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					want: &[]map[string]interface{}{
+						{
+							"addr": "0.0.0.0",
+							"port": "8080",
+						},
+						{
+							"addr": "0.0.0.0",
+							"port": "3001",
+						},
+					},
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			path := "read_config_test.yaml"
+			data := `"vdaas"`
+			var cfg string
+			return test{
+				name: "return nil when read yaml file successes and input data type is string",
+				args: args{
+					path: path,
+					cfg:  &cfg,
+				},
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					f, err := os.Create(path)
+					if err != nil {
+						t.Fatal(err)
+					}
+					defer f.Close()
+
+					f.WriteString(data)
+				},
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					if err := os.Remove(path); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					want: func() (str *string) {
+						s := "vdaas"
+						return &s
+					}(),
 					err: nil,
 				},
 			}
