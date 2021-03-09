@@ -52,6 +52,9 @@ func Test_fileExists(t *testing.T) {
 	const (
 		testDirPath  = "utiltest/index"
 		testFilePath = "utiltest-ngt-meta.kvsdb"
+
+		testFailsDirPath  = "utiltest-fails/index"
+		testFailsFilePath = "utiltest-ngt-meta-fails.kvsdb"
 	)
 
 	tests := []test{
@@ -106,7 +109,7 @@ func Test_fileExists(t *testing.T) {
 		{
 			name: "return false when the directory does not exist",
 			args: args{
-				path: "utiltest-fails/index",
+				path: testFailsDirPath,
 			},
 			want: want{
 				want: false,
@@ -115,7 +118,7 @@ func Test_fileExists(t *testing.T) {
 		{
 			name: "return false when the file exists",
 			args: args{
-				path: "utiltest-ngt-meta-fails.kvsdb",
+				path: testFailsFilePath,
 			},
 			want: want{
 				want: false,
