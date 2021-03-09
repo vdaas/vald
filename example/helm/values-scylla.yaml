@@ -17,7 +17,7 @@ defaults:
   logging:
     level: debug
   image:
-    tag: "nigthly"
+    tag: "latest"
 
 gateway:
   lb:

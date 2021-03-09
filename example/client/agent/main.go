@@ -163,8 +163,10 @@ func main() {
 	glg.Info("Finish removing vector")
 	glg.Info("Start removing indexed vector from backup")
 	/**
-	Option: Run Indexing instead of Auto Indexing
-	If you run client.SaveIndex, the backup of indexed vector will be removed.
+	Run Indexing instead of Auto Indexing.
+	Before running client.SaveIndex (or client.CreateAndSaveIndex), the vectors, which you call RemoveAPI before, exist in NGT graph yet.
+	It is that the neighbor vectors will be returned when running SearchByID API.
+	To delete removed vectors from NGT graph completely, client.SaveIndex will be used instead of waiting auto CreateIndex phase.
 	**/
 	_, err = agent.NewAgentClient(conn).SaveIndex(ctx, &payload.Empty{})
 	if err != nil {
