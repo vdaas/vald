@@ -55,6 +55,14 @@ data:
                     secretKeyRef:
                       name: aws-secret
                       key: secret-access-key
+                - name: RATE
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.annotations['rebalancer.vald.vdaas.org/rate']
+                - name: TARGET_AGENT_NAME
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.labels['rebalancer.vald.vdaas.org/target_agent_name']
               volumeMounts:
                 - name: {{ .Values.rebalancer.rebalancer.rebalance_job_configmap_name }}
                   mountPath: /etc/server/
