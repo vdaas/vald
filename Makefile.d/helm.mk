@@ -49,7 +49,9 @@ helm/package/vald:
 
 .PHONY: helm/package/vald-helm-operator
 ## packaging Helm chart for vald-helm-operator
-helm/package/vald-helm-operator:
+helm/package/vald-helm-operator: \
+	helm/schema/crd/vald \
+	helm/schema/crd/vald-helm-operator
 	helm package charts/vald-helm-operator
 
 .PHONY: helm/repo/add
@@ -96,3 +98,21 @@ charts/vald-helm-operator/values.schema.json: \
 	hack/helm/schema/gen/main.go
 	GOPRIVATE=$(GOPRIVATE) \
 	go run hack/helm/schema/gen/main.go charts/vald-helm-operator/values.yaml > charts/vald-helm-operator/values.schema.json
+
+.PHONY: helm/schema/crd/vald
+## generate OpenAPI v3 schema for ValdRelease
+helm/schema/crd/vald:
+	mv charts/vald-helm-operator/crds/valdrelease.yaml $(TEMP_DIR)/valdrelease.yaml
+	head -n 65 $(TEMP_DIR)/valdrelease.yaml > charts/vald-helm-operator/crds/valdrelease.yaml
+	GOPRIVATE=$(GOPRIVATE) \
+	go run hack/helm/schema/crd/main.go \
+	charts/vald/values.yaml 12 >> charts/vald-helm-operator/crds/valdrelease.yaml
+
+.PHONY: helm/schema/crd/vald-helm-operator
+## generate OpenAPI v3 schema for ValdHelmOperatorRelease
+helm/schema/crd/vald-helm-operator:
+	mv charts/vald-helm-operator/crds/valdhelmoperatorrelease.yaml $(TEMP_DIR)/valdhelmoperatorrelease.yaml
+	head -n 65 $(TEMP_DIR)/valdhelmoperatorrelease.yaml > charts/vald-helm-operator/crds/valdhelmoperatorrelease.yaml
+	GOPRIVATE=$(GOPRIVATE) \
+	go run hack/helm/schema/crd/main.go \
+	charts/vald-helm-operator/values.yaml 12 >> charts/vald-helm-operator/crds/valdhelmoperatorrelease.yaml
