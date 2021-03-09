@@ -682,8 +682,8 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
 
 
       - Remove manually instead of waiting for auto indexing.
-        The removed vectors are indexed in NGT graph yet before auto indexing even you call Remove API before.
-        If you run below code, the indexes will be removed completely from the Vald Agent NGT graph and the Backup file.
+        The removed vectors are indexed in NGT graph yet before auto indexing even you called Remove API before.
+        If you run the below code, the indexes will be removed completely from the Vald Agent NGT graph and the Backup file.
         <detail><summary>example code</summary><br>
 
         ```go
