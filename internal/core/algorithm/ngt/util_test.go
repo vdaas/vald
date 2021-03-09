@@ -65,7 +65,7 @@ func Test_fileExists(t *testing.T) {
 			},
 			beforeFunc: func(t *testing.T, args args) {
 				t.Helper()
-				if err := os.MkdirAll(args.path, 0777); err != nil {
+				if err := os.MkdirAll(args.path, 0750); err != nil {
 					t.Fatal(err)
 				}
 			},
