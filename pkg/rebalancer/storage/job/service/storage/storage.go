@@ -64,6 +64,9 @@ func New(opts ...Option) (Storage, error) {
 	if err != nil {
 		return nil, err
 	}
+	if err := b.initBucket(); err != nil {
+		return nil, err
+	}
 
 	return b, nil
 }
