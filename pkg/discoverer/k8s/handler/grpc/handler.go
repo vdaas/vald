@@ -78,7 +78,7 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 		return s.dsc.GetPods(req)
 	})
 	if err != nil {
-// 		 log.Error("an error occurred during GetPods", err)
+		log.Warn("Pods not found:", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
@@ -98,7 +98,7 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 		return s.dsc.GetNodes(req)
 	})
 	if err != nil {
-// 		 log.Error("an error occurred during GetNodes", err)
+		log.Warn("Nodes not found:", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
