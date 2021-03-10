@@ -366,8 +366,19 @@ func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, reason confi
 		jobTpl.Annotations[qualifiedNamePrefix+"rate"] = strconv.FormatFloat(rate, 'f', 4, 64)
 	}
 
-	jobTpl.Spec.Template.ObjectMeta.Labels = jobTpl.Labels
+	log.Debugf("jobTpl.Labels: %#v\n", jobTpl.Labels)
+	log.Debugf("jobTpl.Annotations: %#v\n", jobTpl.Annotations)
+
+	jobTpl.Spec.Template.Labels = jobTpl.Labels
 	jobTpl.Spec.Template.ObjectMeta.Annotations = jobTpl.Annotations
+
+	log.Debugf("jobTpl.Spec.Template.Labels: %#v\n", jobTpl.Spec.Template.Labels)
+	log.Debugf("jobTpl.Spec.Template.Annotations: %#v\n", jobTpl.Spec.Template.Annotations)
+
+	jobTpl.Spec.Template.ObjectMeta.Labels[qualifiedNamePrefix+"target_agent_name"] = agentName
+	if rate > 0 {
+		jobTpl.Spec.Template.ObjectMeta.Annotations[qualifiedNamePrefix+"rate"] = strconv.FormatFloat(rate, 'f', 4, 64)
+	}
 
 	c := r.ctrl.GetManager().GetClient()
 	if err := c.Create(ctx, &jobTpl); err != nil {
