@@ -4882,7 +4882,7 @@ rebalancer:
     enabled: true
     # @schema {"name": "rebalancer.serviceAccount.name", "type": "string"}
     # rebalancer.serviceAccount.name -- name of service account
-    name: vald
+    name: vald-rebalancer
   # @schema {"name": "rebalancer.rebalancer", "type": "object"}
   rebalancer:
     # @schema {"name": "rebalancer.rebalancer.pod_name", "type": "string"}
