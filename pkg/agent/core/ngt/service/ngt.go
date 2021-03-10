@@ -551,7 +551,7 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	defer n.gc()
 
 	log.Infof("create index operation started, uncommitted indexes = %d", ic)
-	// log.Debug("create index delete phase started")
+	log.Debug("create index delete phase started")
 	n.vq.RangePopDelete(ctx, func(uuid string) bool {
 		var ierr error
 		oid, ok := n.kvs.Delete(uuid)
