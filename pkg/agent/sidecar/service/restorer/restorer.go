@@ -122,7 +122,7 @@ func (r *restorer) startRestore(ctx context.Context) (<-chan error, error) {
 	restore := func(ctx context.Context) (interface{}, bool, error) {
 		err := r.restore(ctx)
 		if err != nil {
-// 			 log.Errorf("restoring failed: %s", err)
+			log.Errorf("restoring failed: %s", err)
 			return nil, true, err
 		}
 
@@ -139,7 +139,7 @@ func (r *restorer) startRestore(ctx context.Context) (<-chan error, error) {
 		}
 
 		if err != nil {
-// 			 log.Errorf("couldn't restore: %s", err)
+			log.Errorf("couldn't restore: %s", err)
 		}
 
 		return p.Signal(syscall.SIGTERM) // TODO: #403
@@ -156,8 +156,8 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 		}
 	}()
 
-// 	 log.Infof("restoring directory %s started", r.dir)
-// 	defer  log.Infof("restoring directory %s finished", r.dir)
+	log.Infof("started to restore directory %s", r.dir)
+	defer log.Infof("finished to restore directory %s finished", r.dir)
 
 	pr, pw := io.Pipe()
 	defer pr.Close()
@@ -177,7 +177,7 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 		defer func() {
 			e := sr.Close()
 			if e != nil {
-// 				 log.Errorf("error on closing blob-storage reader: %s", e)
+				log.Errorf("error on closing blob-storage reader: %s", e)
 			}
 		}()
 
@@ -209,7 +209,7 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 
 		target := filepath.Join(r.dir, header.Name)
 
-// 		 log.Debug("restoring: ", target)
+		log.Debug("restoring: ", target)
 
 		switch header.Typeflag {
 		case tar.TypeDir:
@@ -222,7 +222,7 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 			}
 		case tar.TypeReg:
 			if _, err := os.Stat(target); err == nil {
-// 				 log.Warn(errors.ErrFileAlreadyExists(target))
+				log.Warn(errors.ErrFileAlreadyExists(target))
 				return nil
 			} else if !os.IsNotExist(err) {
 				return err
