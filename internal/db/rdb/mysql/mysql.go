@@ -515,7 +515,7 @@ func (m *mySQLClient) RemoveIPs(ctx context.Context, ips ...string) error {
 }
 
 func (m *mySQLClient) outputLog(err error) {
- 	log.Errorf(
+	log.Errorf(
 		"err: %v, { host: %s, port: %d, user: %s, name: %s, db: %s, charset: %s, socketPath: %s, network: %s} ",
 		err, m.host, m.port, m.user, m.name, m.db, m.charset, m.socketPath, m.network,
 	)

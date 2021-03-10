@@ -168,46 +168,46 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 
 func (n *ngt) initNGT(opts ...core.Option) (err error) {
 	if n.inMem {
-// 		 log.Debug("vald agent starts with in-memory mode")
+		log.Debug("vald agent starts with in-memory mode")
 		n.core, err = core.New(opts...)
 		return err
 	}
 
 	_, err = os.Stat(n.path)
 	if os.IsNotExist(err) {
-// 		 log.Debugf("index file not exists,\tpath: %s,\terr: %v", n.path, err)
+		log.Debugf("index file not exists,\tpath: %s,\terr: %v", n.path, err)
 		n.core, err = core.New(opts...)
 		return err
 	}
 	if os.IsPermission(err) {
-// 		 log.Debugf("no permission for index path,\tpath: %s,\terr: %v", n.path, err)
+		log.Errorf("no permission for index path,\tpath: %s,\terr: %v", n.path, err)
 		return err
 	}
 
-// 	 log.Debugf("load index from %s", n.path)
+	log.Debugf("load index from %s", n.path)
 
 	agentMetadata, err := metadata.Load(filepath.Join(n.path, metadata.AgentMetadataFileName))
 	if err != nil {
-// 		 log.Warnf("cannot read metadata from %s: %s", metadata.AgentMetadataFileName, err)
+		log.Warnf("cannot read metadata from %s: %s", metadata.AgentMetadataFileName, err)
 	}
 	if os.IsNotExist(err) || agentMetadata == nil || agentMetadata.NGT == nil || agentMetadata.NGT.IndexCount == 0 {
-// 		 log.Warnf("cannot read metadata from %s: %v", metadata.AgentMetadataFileName, err)
+		log.Warnf("cannot read metadata from %s: %v", metadata.AgentMetadataFileName, err)
 
 		if fi, err := os.Stat(filepath.Join(n.path, kvsFileName)); os.IsNotExist(err) || fi.Size() == 0 {
-// 			 log.Warn("kvsdb file is not exist")
+			log.Warn("kvsdb file is not exist")
 			n.core, err = core.New(opts...)
 			return err
 		}
 
 		if os.IsPermission(err) {
-// 			 log.Debugf("no permission for kvsdb file,\tpath: %s,\terr: %v", filepath.Join(n.path, kvsFileName), err)
+			log.Errorf("no permission for kvsdb file,\tpath: %s,\terr: %v", filepath.Join(n.path, kvsFileName), err)
 			return err
 		}
 	}
 
 	var timeout time.Duration
 	if agentMetadata != nil && agentMetadata.NGT != nil {
-// 		 log.Debugf("the backup index size is %d. starting to load...", agentMetadata.NGT.IndexCount)
+		log.Debugf("the backup index size is %d. starting to load...", agentMetadata.NGT.IndexCount)
 		timeout = time.Duration(
 			math.Min(
 				math.Max(
@@ -218,7 +218,7 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 			),
 		)
 	} else {
-// 		 log.Debugf("cannot inspect the backup index size. starting to load default value.")
+		log.Debugf("cannot inspect the backup index size. starting to load default value.")
 		timeout = time.Duration(math.Min(float64(n.minLit), float64(n.maxLit)))
 	}
 
@@ -257,7 +257,7 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 		return err
 	case <-ctx.Done():
 		if ctx.Err() == context.DeadlineExceeded {
-// 			 log.Errorf("cannot load index backup data within the timeout %s. the process is going to be killed.", timeout)
+			log.Errorf("cannot load index backup data within the timeout %s. the process is going to be killed.", timeout)
 
 			err := metadata.Store(
 				filepath.Join(n.path, metadata.AgentMetadataFileName),
@@ -296,7 +296,7 @@ func (n *ngt) loadKVS() error {
 	m := make(map[string]uint32)
 	err = gob.NewDecoder(f).Decode(&m)
 	if err != nil {
-// 		 log.Errorf("error decoding kvsdb file,\terr: %v", err)
+		log.Errorf("error decoding kvsdb file,\terr: %v", err)
 		return err
 	}
 
@@ -405,13 +405,13 @@ func (n *ngt) Search(vec []float32, size uint32, epsilon, radius float32) ([]mod
 
 func (n *ngt) SearchByID(uuid string, size uint32, epsilon, radius float32) (dst []model.Distance, err error) {
 	if n.IsIndexing() {
-// 		 log.Debug("SearchByID\t now indexing...")
+		log.Debug("SearchByID\t now indexing...")
 		return make([]model.Distance, 0), nil
 	}
-// 	 log.Debugf("SearchByID\tuuid: %s size: %d epsilon: %f radius: %f", uuid, size, epsilon, radius)
+	log.Debugf("SearchByID\tuuid: %s size: %d epsilon: %f radius: %f", uuid, size, epsilon, radius)
 	vec, err := n.GetObject(uuid)
 	if err != nil {
-// 		 log.Debugf("SearchByID\tuuid: %s's vector not found", uuid)
+		log.Debugf("SearchByID\tuuid: %s's vector not found", uuid)
 		return nil, err
 	}
 	return n.Search(vec, size, epsilon, radius)
@@ -514,18 +514,18 @@ func (n *ngt) DeleteMultiple(uuids ...string) (err error) {
 func (n *ngt) GetObject(uuid string) (vec []float32, err error) {
 	oid, ok := n.kvs.Get(uuid)
 	if !ok {
-		// log.Debugf("GetObject\tuuid: %s's kvs data not found, trying to read from vqueue", uuid)
+		log.Debugf("GetObject\tuuid: %s's kvs data not found, trying to read from vqueue", uuid)
 		vec, ok := n.vq.GetVector(uuid)
 		if !ok {
-			// log.Debugf("GetObject\tuuid: %s's vqueue data not found", uuid)
+			log.Debugf("GetObject\tuuid: %s's vqueue data not found", uuid)
 			return nil, errors.ErrObjectIDNotFound(uuid)
 		}
 		return vec, nil
 	}
-// 	 log.Debugf("GetObject\tGetVector oid: %d", oid)
+	log.Debugf("GetObject\tGetVector oid: %d", oid)
 	vec, err = n.core.GetVector(uint(oid))
 	if err != nil {
-// 		 log.Debugf("GetObject\tuuid: %s oid: %d's vector not found", uuid, oid)
+		log.Debugf("GetObject\tuuid: %s oid: %d's vector not found", uuid, oid)
 		return nil, errors.ErrObjectNotFound(err, uuid)
 	}
 	return vec, nil
@@ -550,48 +550,48 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	defer n.indexing.Store(false)
 	defer n.gc()
 
-	// log.Infof("create index operation started, uncommitted indexes = %d", ic)
-	// log.Info("create index delete phase started")
+	log.Infof("create index operation started, uncommitted indexes = %d", ic)
+	// log.Debug("create index delete phase started")
 	n.vq.RangePopDelete(ctx, func(uuid string) bool {
 		var ierr error
 		oid, ok := n.kvs.Delete(uuid)
 		if ok {
 			ierr = n.core.Remove(uint(oid))
 			if ierr != nil {
-				// log.Error(ierr)
+				log.Error(ierr)
 				err = errors.Wrap(err, ierr.Error())
 			}
 		} else {
 			ierr = errors.ErrObjectIDNotFound(uuid)
-			// log.Error(ierr)
+			log.Error(ierr)
 			err = errors.Wrap(err, ierr.Error())
 		}
 		return true
 	})
-	// log.Info("create index delete phase finished")
+	log.Debug("create index delete phase finished")
 	n.gc()
-	// log.Info("create index insert phase started")
+	log.Debug("create index insert phase started")
 	n.vq.RangePopInsert(ctx, func(uuid string, vector []float32) bool {
 		oid, ierr := n.core.Insert(vector)
 		if ierr != nil {
-			// log.Error(ierr)
+			log.Error(ierr)
 			err = errors.Wrap(err, ierr.Error())
 		} else {
 			n.kvs.Set(uuid, uint32(oid))
 		}
 		return true
 	})
-	// log.Info("create index insert phase finished")
-	// log.Info("create graph and tree phase started")
-// 	 log.Debugf("pool size = %d", poolSize)
+	log.Debug("create index insert phase finished")
+	log.Debug("create graph and tree phase started")
+	log.Debugf("pool size = %d", poolSize)
 	cierr := n.core.CreateIndex(poolSize)
 	if cierr != nil {
-		// log.Error("an error occurred on creating graph and tree phase:", cierr)
+		log.Error("an error occurred on creating graph and tree phase:", cierr)
 		err = errors.Wrap(err, cierr.Error())
 	}
-	// log.Info("create graph and tree phase finished")
+	log.Debug("create graph and tree phase finished")
 
-	// log.Info("create index operation finished")
+	log.Info("create index operation finished")
 	atomic.AddUint64(&n.nocie, 1)
 	return err
 }

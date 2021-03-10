@@ -116,7 +116,6 @@ func (s *server) Exists(ctx context.Context, uid *payload.Object_ID) (res *paylo
 				Description:  err.Error(),
 			},
 			uid.GetId(), info.Get())
-// 		 log.Warn(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
@@ -152,7 +151,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -186,7 +185,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -244,7 +243,7 @@ func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-// 		 log.Error(err)
+		log.Error(err)
 		return err
 	}
 	return nil
@@ -293,7 +292,7 @@ func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (er
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-// 		 log.Error(err)
+		log.Error(err)
 		return err
 	}
 	return nil
@@ -357,7 +356,7 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -424,7 +423,7 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -454,7 +453,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (res *
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -507,7 +506,7 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-// 		 log.Error(err)
+		log.Error(err)
 		return err
 	}
 	return nil
@@ -540,7 +539,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -570,7 +569,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -623,7 +622,7 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) (err error)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-// 		 log.Error(err)
+		log.Error(err)
 		return err
 	}
 	return nil
@@ -658,7 +657,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -700,7 +699,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -753,7 +752,7 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-// 		 log.Error(err)
+		log.Error(err)
 		return err
 	}
 	return nil
@@ -821,7 +820,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -855,7 +854,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (res *
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -908,7 +907,7 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-// 		 log.Error(err)
+		log.Error(err)
 		return err
 	}
 	return nil
@@ -938,7 +937,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -969,7 +968,6 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_VectorRequest
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
@@ -1026,7 +1024,7 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-// 		 log.Error(err)
+		log.Error(err)
 		return err
 	}
 	return nil
@@ -1061,7 +1059,6 @@ func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndex
 						},
 					},
 				}, info.Get())
-// 			 log.Warn(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeFailedPrecondition(err.Error()))
 			}
@@ -1077,7 +1074,7 @@ func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndex
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -1103,7 +1100,7 @@ func (s *server) SaveIndex(ctx context.Context, _ *payload.Empty) (res *payload.
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -1141,7 +1138,6 @@ func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_Crea
 						},
 					},
 				}, info.Get())
-// 			 log.Error(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeFailedPrecondition(err.Error()))
 			}
@@ -1157,7 +1153,7 @@ func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_Crea
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
