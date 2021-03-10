@@ -4748,6 +4748,10 @@ rebalancer:
   image:
     # rebalancer.image.repository -- image repository
     repository: vdaas/vald-rebalancer-storage-controller
+    # rebalancer.image.tag -- image tag (overrides defaults.image.tag)
+    tag: ""
+    # rebalancer.image.pullPolicy -- image pull policy
+    pullPolicy: Always
   # @schema {"name": "rebalancer.rollingUpdate", "type": "object", "anchor": "rollingUpdate"}
   rollingUpdate:
     # @schema {"name": "rebalancer.rollingUpdate.maxSurge", "type": "string"}
@@ -4846,10 +4850,6 @@ rebalancer:
     enabled: false
     # rebalancer.hpa.targetCPUUtilizationPercentage -- HPA CPU utilization percentage
     targetCPUUtilizationPercentage: 80
-    # rebalancer.image.tag -- image tag (overrides defaults.image.tag)
-    tag: ""
-    # rebalancer.image.pullPolicy -- image pull policy
-    pullPolicy: Always
   # @schema {"name": "rebalancer.resources", "alias": "resources"}
   # rebalancer.resources -- compute resources.
   resources:
