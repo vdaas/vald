@@ -366,6 +366,9 @@ func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, reason confi
 		jobTpl.Annotations[qualifiedNamePrefix+"rate"] = strconv.FormatFloat(rate, 'f', 4, 64)
 	}
 
+	jobTpl.Spec.Template.ObjectMeta.Labels = jobTpl.Labels
+	jobTpl.Spec.Template.ObjectMeta.Annotations = jobTpl.Annotations
+
 	c := r.ctrl.GetManager().GetClient()
 	if err := c.Create(ctx, &jobTpl); err != nil {
 		return errors.ErrK8sFailedToCreateJob(err)
