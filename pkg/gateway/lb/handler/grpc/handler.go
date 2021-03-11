@@ -92,7 +92,6 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				})
-// 			 log.Debug(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
@@ -121,7 +120,6 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Warn(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
@@ -153,7 +151,6 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 					},
 				},
 			}, info.Get())
-// 		 log.Warn(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 		}
@@ -176,7 +173,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -208,7 +205,6 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 					},
 				},
 			}, info.Get())
-// 		 log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 		}
@@ -233,7 +229,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 				Description:  err.Error(),
 			},
 			info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		var serr error
 		res, serr = s.search(ctx, req.GetConfig(),
 			func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
@@ -254,7 +250,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}).Error())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
@@ -276,7 +272,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		var serr error
 		res, serr = s.search(ctx, req.GetConfig(),
 			func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
@@ -297,7 +293,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}).Error())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -352,7 +348,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 							Owner:        errdetails.ValdResourceOwner,
 							Description:  err.Error(),
 						})
-// 					 log.Warn(err)
+					log.Warn(err)
 				}
 				if span != nil {
 					span.SetStatus(trace.StatusCodeInternal(err.Error()))
@@ -368,7 +364,6 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 						Owner:        errdetails.ValdResourceOwner,
 						Description:  err.Error(),
 					})
-// 				 log.Debug(err)
 				if span != nil {
 					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 				}
@@ -397,7 +392,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 		case <-ectx.Done():
 			err = eg.Wait()
 			if err != nil {
-// 				 log.Error(err)
+				log.Error(err)
 			}
 			close(dch)
 			if num != 0 && len(res.GetResults()) > num {
@@ -413,7 +408,6 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 						ResourceType: "vald agent server Search API",
 						ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
 					}, info.Get())
-// 				 log.Warn(err)
 				return nil, err
 			}
 			return res, nil
@@ -496,7 +490,7 @@ func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-// 		 log.Error(err)
+		log.Error(err)
 		return err
 	}
 	return nil
@@ -546,7 +540,7 @@ func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (er
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-// 		 log.Error(err)
+		log.Error(err)
 		return err
 	}
 	return nil
@@ -585,7 +579,6 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 						},
 					},
 				}, info.Get())
-// 			 log.Warn(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 			}
@@ -632,7 +625,7 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -699,7 +692,7 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -733,7 +726,6 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 					},
 				},
 			}, info.Get())
-// 		 log.Warn(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 		}
@@ -756,7 +748,6 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				}, info.Get())
-// 			 log.Error(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeAlreadyExists(err.Error()))
 			}
@@ -810,13 +801,13 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
 		return nil, err
 	}
-// 	 log.Debugf("Insert API insert succeeded to %#v", ce)
+	log.Debugf("Insert API insert succeeded to %#v", ce)
 	return ce, nil
 }
 
@@ -864,7 +855,7 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-// 		 log.Error(err)
+		log.Error(err)
 		return err
 	}
 	return nil
