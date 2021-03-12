@@ -63,11 +63,13 @@ func New(opts ...Option) (dsc Rebalancer, err error) {
 func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 2)
 
+	log.Infof("[job debug] Start rebalance job service: %s", r.targetAgentName)
 	pr, pw := io.Pipe()
 	defer pr.Close()
 
 	r.eg.Go(func() error {
 		// Download tar gz file
+		log.Info("[job debug] download s3 backup file")
 		r.eg.Go(safety.RecoverFunc(func() (err error) {
 			defer pw.Close()
 
@@ -81,6 +83,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 				}
 			}()
 
+			log.Info("[job debug] read buffer from download s3 backup file")
 			sr, err := r.storage.Reader(ctx)
 			if err != nil {
 				return err
@@ -97,6 +100,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 				}
 			}()
 
+			log.Infof("[job debug] copy sr: %#v \nto pw: %#v", sr, pw)
 			_, err = io.Copy(pw, sr)
 			if err != nil {
 				return err
@@ -105,7 +109,9 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 		}))
 
 		// Unpack tar.gz file and Decode kvsdb file to get the vector ids
+		log.Info("[job debug] unpack tar.gs file and decode kvsdb file")
 		idm, err := r.loadKVS(ctx, pr)
+		log.Infof("[job debug] finish unpack: len kvs: %d, err: %#v ", len(idm), err)
 		if err != nil {
 			select {
 			case <-ctx.Done():
