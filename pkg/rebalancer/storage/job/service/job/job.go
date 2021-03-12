@@ -88,20 +88,23 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 			if err != nil {
 				return err
 			}
+			log.Debugf("[job debug] sr : %#v", sr)
 
-			sr, err = ctxio.NewReadCloserWithContext(ctx, sr)
+			csr, err := ctxio.NewReadCloserWithContext(ctx, sr)
 			if err != nil {
 				return err
 			}
 			defer func() {
-				err = sr.Close()
+				err = csr.Close()
 				if err != nil {
 					log.Errorf("error on closing blob-storage reader: %s", err)
 				}
 			}()
 
-			log.Infof("[job debug] copy sr: %#v \nto pw: %#v", sr, pw)
-			_, err = io.Copy(pw, sr)
+			log.Infof("[job debug] copy sr: %#v \nto pw: %#v", csr, pw)
+			n, err := io.Copy(pw, csr)
+			log.Infof("[job debug] finish pw: %#v, err: %s, bytes: %d", pw, err, n)
+
 			if err != nil {
 				return err
 			}
@@ -189,6 +192,7 @@ func (r *rebalancer) loadKVS(ctx context.Context, reader io.Reader) (map[string]
 		var header *tar.Header
 		header, err := tr.Next()
 		if err != nil {
+			log.Debugf("[job debug] err: %s", err)
 			if err == io.EOF {
 				// TODO; define in errors package (after controller PR merged)
 				return nil, errors.New("kvsdb file not found")
@@ -198,6 +202,7 @@ func (r *rebalancer) loadKVS(ctx context.Context, reader io.Reader) (map[string]
 
 		switch header.Typeflag {
 		case tar.TypeReg:
+			log.Infof("[job debug] header.Name: %s, kvsFileName: %s", header.Name, kvsFileName)
 			if header.Name != kvsFileName {
 				continue
 			}
@@ -206,6 +211,7 @@ func (r *rebalancer) loadKVS(ctx context.Context, reader io.Reader) (map[string]
 			idm := make(map[string]uint32)
 
 			err = gob.NewDecoder(tr).Decode(&idm)
+			log.Debugf("[job debug] idm: %#v, err: %s", idm, err)
 			if err != nil {
 				return nil, err
 			}
