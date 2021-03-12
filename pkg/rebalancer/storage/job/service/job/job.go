@@ -68,10 +68,11 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 	defer pr.Close()
 
 	r.eg.Go(func() error {
+		defer pw.Close()
+
 		// Download tar gz file
 		log.Info("[job debug] download s3 backup file")
 		r.eg.Go(safety.RecoverFunc(func() (err error) {
-			defer pw.Close()
 
 			defer func() {
 				if err != nil {
@@ -90,19 +91,19 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 			}
 			log.Debugf("[job debug] sr : %#v", sr)
 
-			csr, err := ctxio.NewReadCloserWithContext(ctx, sr)
+			sr, err = ctxio.NewReadCloserWithContext(ctx, sr)
 			if err != nil {
 				return err
 			}
 			defer func() {
-				err = csr.Close()
+				err = sr.Close()
 				if err != nil {
 					log.Errorf("error on closing blob-storage reader: %s", err)
 				}
 			}()
 
-			log.Infof("[job debug] copy sr: %#v \nto pw: %#v", csr, pw)
-			n, err := io.Copy(pw, csr)
+			log.Infof("[job debug] copy sr: %#v \nto pw: %#v", sr, pw)
+			n, err := io.Copy(pw, sr)
 			log.Infof("[job debug] finish pw: %#v, err: %s, bytes: %d", pw, err, n)
 
 			if err != nil {
