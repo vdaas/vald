@@ -29,6 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
+	"inet.af/netaddr"
 )
 
 type (
@@ -68,8 +69,16 @@ const (
 	UDP6
 )
 
-// DefaultResolver is an alias of net.DefaultResolver.
-var DefaultResolver = net.DefaultResolver
+var (
+	// DefaultResolver is an alias of net.DefaultResolver.
+	DefaultResolver = net.DefaultResolver
+
+	// Listen is an alias of net.Listen.
+	Listen = net.Listen
+
+	// IPv4 is an alias of net.IPv4.
+	IPv4 = net.IPv4
+)
 
 func NetworkTypeFromString(str string) NetworkType {
 	switch strings.ToLower(str) {
@@ -147,8 +156,9 @@ func Parse(addr string) (host string, port uint16, isLocal, isIPv4, isIPv6 bool,
 		log.Warnf("failed to parse addr %s\terror: %v", addr, err)
 		host = addr
 	}
-	isIP := net.ParseIP(host) != nil
+	isIP := netaddr.ParseIP(host) != nil
 	ic := strings.Count(host, ":")
+
 	// return host and port and flags
 	return host, port,
 		// check is local ip or not

@@ -20,7 +20,6 @@ package tls
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"net"
 	"reflect"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -39,6 +38,8 @@ type credentials struct {
 	ca       string
 	insecure bool
 }
+
+var Client = tls.Client
 
 // NewTLSConfig returns a *tls.Config struct or error
 // This function read TLS configuration and initialize *tls.Config struct.
@@ -126,8 +127,4 @@ func newCredential(opts ...Option) (c *credentials, err error) {
 	}
 	c.cfg.InsecureSkipVerify = c.insecure
 	return c, nil
-}
-
-func Client(conn net.Conn, config *Config) *Conn {
-	return tls.Client(conn, config)
 }

@@ -19,7 +19,6 @@ package client
 import (
 	"context"
 	"crypto/tls"
-	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -31,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net"
 	htr "github.com/vdaas/vald/internal/net/http/transport"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"go.uber.org/goleak"
