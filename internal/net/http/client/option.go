@@ -18,12 +18,12 @@ package client
 
 import (
 	"context"
-	"net"
 	"net/http"
 	"net/url"
 
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
