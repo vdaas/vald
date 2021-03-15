@@ -297,7 +297,7 @@ docker/build/manager-index:
 
 .PHONY: docker/name/filter-ingress-tensorflow
 docker/name/filter-ingress-tensorflow:
-	@echo "$(ORG)/$(MANAGER_INDEX_IMAGE)"
+	@echo "$(ORG)/$(FILTER_INGRESS_TF_IMAGE)"
 
 .PHONY: docker/build/filter-ingress-tensorflow
 ## build filter-ingress-tensorflow image
@@ -308,8 +308,7 @@ docker/build/filter-ingress-tensorflow:
 	    -t $(ORG)/$(FILTER_INGRESS_TF_IMAGE):$(TAG) . \
 	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
-	    --build-arg MAINTAINER=$(MAINTAINER) \
-	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
+	    --build-arg MAINTAINER=$(MAINTAINER)
 
 .PHONY: docker/name/ci-container
 docker/name/ci-container:

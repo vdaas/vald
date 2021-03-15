@@ -17,12 +17,9 @@
 ARG GO_VERSION=latest
 ARG DISTROLESS_IMAGE=gcr.io/distroless/cc
 ARG DISTROLESS_IMAGE_TAG=nonroot
-ARG UPX_OPTIONS=-9
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
 FROM golang:${GO_VERSION} AS builder
-
-ARG UPX_OPTIONS
 
 ENV GO111MODULE on
 ENV DEBIAN_FRONTEND noninteractive
@@ -78,8 +75,7 @@ COPY Makefile .
 COPY .git .
 
 RUN make REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
-    && cp "cmd/${PKG}/${APP_NAME}" "/usr/bin/${APP_NAME}" \
-    && make tensorflow/install
+    && cp "cmd/${PKG}/${APP_NAME}" "/usr/bin/${APP_NAME}"
 
 FROM ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
 LABEL maintainer "${MAINTAINER}"
@@ -89,7 +85,7 @@ ENV APP_NAME tensorflow
 COPY --from=builder /usr/bin/${APP_NAME} /go/bin/${APP_NAME}
 COPY --from=builder /usr/local/lib/libtensorflow* /usr/local/lib/
 
-ENV LD_LIBRARY_PATH=/usr/local/lib
+ENV LD_LIBRARY_PATH /usr/local/lib
 
 USER nonroot:nonroot
 

@@ -477,8 +477,8 @@ cmd/filter/ingress/tensorflow/tensorflow: \
 	tensorflow/install \
 	$(GO_SOURCES_INTERNAL) \
 	$(PBGOS) \
-	$(shell find ./cmd/agent/core/ngt -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
-	$(shell find ./pkg/agent/core/ngt ./pkg/agent/internal -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	$(shell find ./cmd/filter/ingress/tensorflow -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find ./pkg/filter/ingress/tensorflow -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	CFLAGS="$(CFLAGS)" \
 	CXXFLAGS="$(CXXFLAGS)" \
 	CGO_ENABLED=1 \
