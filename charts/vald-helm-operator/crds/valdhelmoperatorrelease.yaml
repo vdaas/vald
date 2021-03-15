@@ -63,10 +63,15 @@ spec:
             spec:
               type: object
               properties:
+            spec:
+              type: object
+              properties:
                 affinity:
                   type: object
+                  x-kubernetes-preserve-unknown-fields: true
                 annotations:
                   type: object
+                  x-kubernetes-preserve-unknown-fields: true
                 enableLeaderElection:
                   type: boolean
                 enableMetrics:
@@ -142,8 +147,10 @@ spec:
                   type: boolean
                 nodeSelector:
                   type: object
+                  x-kubernetes-preserve-unknown-fields: true
                 podAnnotations:
                   type: object
+                  x-kubernetes-preserve-unknown-fields: true
                 rbac:
                   type: object
                   properties:
@@ -181,17 +188,20 @@ spec:
                   type: integer
                 resources:
                   type: object
+                  x-kubernetes-preserve-unknown-fields: true
                 service:
                   type: object
                   properties:
                     annotations:
                       type: object
+                      x-kubernetes-preserve-unknown-fields: true
                     enabled:
                       type: boolean
                     externalTrafficPolicy:
                       type: string
                     labels:
                       type: object
+                      x-kubernetes-preserve-unknown-fields: true
                     type:
                       type: string
                       enum:
@@ -209,6 +219,7 @@ spec:
                   type: array
                   items:
                     type: object
+                    x-kubernetes-preserve-unknown-fields: true
                 watchNamespaces:
                   type: string
 

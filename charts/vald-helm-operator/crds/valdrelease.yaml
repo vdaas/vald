@@ -79,6 +79,7 @@ spec:
                               type: array
                               items:
                                 type: object
+                                x-kubernetes-preserve-unknown-fields: true
                             requiredDuringSchedulingIgnoredDuringExecution:
                               type: object
                               properties:
@@ -86,6 +87,7 @@ spec:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                         podAffinity:
                           type: object
                           properties:
@@ -93,10 +95,12 @@ spec:
                               type: array
                               items:
                                 type: object
+                                x-kubernetes-preserve-unknown-fields: true
                             requiredDuringSchedulingIgnoredDuringExecution:
                               type: array
                               items:
                                 type: object
+                                x-kubernetes-preserve-unknown-fields: true
                         podAntiAffinity:
                           type: object
                           properties:
@@ -104,18 +108,22 @@ spec:
                               type: array
                               items:
                                 type: object
+                                x-kubernetes-preserve-unknown-fields: true
                             requiredDuringSchedulingIgnoredDuringExecution:
                               type: array
                               items:
                                 type: object
+                                x-kubernetes-preserve-unknown-fields: true
                     annotations:
                       type: object
+                      x-kubernetes-preserve-unknown-fields: true
                     enabled:
                       type: boolean
                     env:
                       type: array
                       items:
                         type: object
+                        x-kubernetes-preserve-unknown-fields: true
                     externalTrafficPolicy:
                       type: string
                     hpa:
@@ -142,6 +150,7 @@ spec:
                       type: array
                       items:
                         type: object
+                        x-kubernetes-preserve-unknown-fields: true
                     kind:
                       type: string
                       enum:
@@ -253,6 +262,7 @@ spec:
                       type: string
                     nodeSelector:
                       type: object
+                      x-kubernetes-preserve-unknown-fields: true
                     observability:
                       type: object
                       properties:
@@ -423,6 +433,7 @@ spec:
                           type: string
                     podAnnotations:
                       type: object
+                      x-kubernetes-preserve-unknown-fields: true
                     podManagementPolicy:
                       type: string
                       enum:
@@ -437,6 +448,7 @@ spec:
                           type: integer
                     podSecurityContext:
                       type: object
+                      x-kubernetes-preserve-unknown-fields: true
                     progressDeadlineSeconds:
                       type: integer
                     resources:
@@ -444,8 +456,10 @@ spec:
                       properties:
                         limits:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         requests:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                     revisionHistoryLimit:
                       type: integer
                       minimum: 0
@@ -460,6 +474,7 @@ spec:
                           type: integer
                     securityContext:
                       type: object
+                      x-kubernetes-preserve-unknown-fields: true
                     server_config:
                       type: object
                       properties:
@@ -1001,8 +1016,10 @@ spec:
                       properties:
                         annotations:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         labels:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                     serviceType:
                       type: string
                       enum:
@@ -1215,6 +1232,7 @@ spec:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         image:
                           type: object
                           properties:
@@ -1415,8 +1433,10 @@ spec:
                           properties:
                             limits:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                             requests:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                         server_config:
                           type: object
                           properties:
@@ -1958,12 +1978,14 @@ spec:
                           properties:
                             annotations:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                             enabled:
                               type: boolean
                             externalTrafficPolicy:
                               type: string
                             labels:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                             type:
                               type: string
                               enum:
@@ -1984,10 +2006,12 @@ spec:
                       type: array
                       items:
                         type: object
+                        x-kubernetes-preserve-unknown-fields: true
                     topologySpreadConstraints:
                       type: array
                       items:
                         type: object
+                        x-kubernetes-preserve-unknown-fields: true
                     version:
                       type: string
                       pattern: ^v[0-9]+\.[0-9]+\.[0-9]$
@@ -1995,10 +2019,12 @@ spec:
                       type: array
                       items:
                         type: object
+                        x-kubernetes-preserve-unknown-fields: true
                     volumes:
                       type: array
                       items:
                         type: object
+                        x-kubernetes-preserve-unknown-fields: true
                 defaults:
                   type: object
                   properties:
@@ -2031,6 +2057,7 @@ spec:
                                   type: integer
                             call_option:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                             connection_pool:
                               type: object
                               properties:
@@ -2899,6 +2926,7 @@ spec:
                               type: array
                               items:
                                 type: object
+                                x-kubernetes-preserve-unknown-fields: true
                             requiredDuringSchedulingIgnoredDuringExecution:
                               type: object
                               properties:
@@ -2906,6 +2934,7 @@ spec:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                         podAffinity:
                           type: object
                           properties:
@@ -2913,10 +2942,12 @@ spec:
                               type: array
                               items:
                                 type: object
+                                x-kubernetes-preserve-unknown-fields: true
                             requiredDuringSchedulingIgnoredDuringExecution:
                               type: array
                               items:
                                 type: object
+                                x-kubernetes-preserve-unknown-fields: true
                         podAntiAffinity:
                           type: object
                           properties:
@@ -2924,12 +2955,15 @@ spec:
                               type: array
                               items:
                                 type: object
+                                x-kubernetes-preserve-unknown-fields: true
                             requiredDuringSchedulingIgnoredDuringExecution:
                               type: array
                               items:
                                 type: object
+                                x-kubernetes-preserve-unknown-fields: true
                     annotations:
                       type: object
+                      x-kubernetes-preserve-unknown-fields: true
                     clusterRole:
                       type: object
                       properties:
@@ -3014,6 +3048,7 @@ spec:
                       type: array
                       items:
                         type: object
+                        x-kubernetes-preserve-unknown-fields: true
                     externalTrafficPolicy:
                       type: string
                     hpa:
@@ -3040,6 +3075,7 @@ spec:
                       type: array
                       items:
                         type: object
+                        x-kubernetes-preserve-unknown-fields: true
                     kind:
                       type: string
                       enum:
@@ -3080,6 +3116,7 @@ spec:
                       type: string
                     nodeSelector:
                       type: object
+                      x-kubernetes-preserve-unknown-fields: true
                     observability:
                       type: object
                       properties:
@@ -3239,6 +3276,7 @@ spec:
                               type: number
                     podAnnotations:
                       type: object
+                      x-kubernetes-preserve-unknown-fields: true
                     podPriority:
                       type: object
                       properties:
@@ -3248,6 +3286,7 @@ spec:
                           type: integer
                     podSecurityContext:
                       type: object
+                      x-kubernetes-preserve-unknown-fields: true
                     progressDeadlineSeconds:
                       type: integer
                     resources:
@@ -3255,8 +3294,10 @@ spec:
                       properties:
                         limits:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         requests:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                     revisionHistoryLimit:
                       type: integer
                       minimum: 0
@@ -3269,6 +3310,7 @@ spec:
                           type: string
                     securityContext:
                       type: object
+                      x-kubernetes-preserve-unknown-fields: true
                     server_config:
                       type: object
                       properties:
@@ -3810,8 +3852,10 @@ spec:
                       properties:
                         annotations:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         labels:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                     serviceAccount:
                       type: object
                       properties:
@@ -3834,10 +3878,12 @@ spec:
                       type: array
                       items:
                         type: object
+                        x-kubernetes-preserve-unknown-fields: true
                     topologySpreadConstraints:
                       type: array
                       items:
                         type: object
+                        x-kubernetes-preserve-unknown-fields: true
                     version:
                       type: string
                       pattern: ^v[0-9]+\.[0-9]+\.[0-9]$
@@ -3845,10 +3891,12 @@ spec:
                       type: array
                       items:
                         type: object
+                        x-kubernetes-preserve-unknown-fields: true
                     volumes:
                       type: array
                       items:
                         type: object
+                        x-kubernetes-preserve-unknown-fields: true
                 gateway:
                   type: object
                   properties:
@@ -3865,6 +3913,7 @@ spec:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                                 requiredDuringSchedulingIgnoredDuringExecution:
                                   type: object
                                   properties:
@@ -3872,6 +3921,7 @@ spec:
                                       type: array
                                       items:
                                         type: object
+                                        x-kubernetes-preserve-unknown-fields: true
                             podAffinity:
                               type: object
                               properties:
@@ -3879,10 +3929,12 @@ spec:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                                 requiredDuringSchedulingIgnoredDuringExecution:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                             podAntiAffinity:
                               type: object
                               properties:
@@ -3890,18 +3942,22 @@ spec:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                                 requiredDuringSchedulingIgnoredDuringExecution:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                         annotations:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         enabled:
                           type: boolean
                         env:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         externalTrafficPolicy:
                           type: string
                         gateway_config:
@@ -3933,6 +3989,7 @@ spec:
                                       type: integer
                                 call_option:
                                   type: object
+                                  x-kubernetes-preserve-unknown-fields: true
                                 connection_pool:
                                   type: object
                                   properties:
@@ -4088,6 +4145,7 @@ spec:
                                       type: integer
                                 call_option:
                                   type: object
+                                  x-kubernetes-preserve-unknown-fields: true
                                 connection_pool:
                                   type: object
                                   properties:
@@ -4242,6 +4300,7 @@ spec:
                           properties:
                             annotations:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                             enabled:
                               type: boolean
                             host:
@@ -4254,6 +4313,7 @@ spec:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         kind:
                           type: string
                           enum:
@@ -4294,6 +4354,7 @@ spec:
                           type: string
                         nodeSelector:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         observability:
                           type: object
                           properties:
@@ -4453,6 +4514,7 @@ spec:
                                   type: number
                         podAnnotations:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         podPriority:
                           type: object
                           properties:
@@ -4462,6 +4524,7 @@ spec:
                               type: integer
                         podSecurityContext:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         progressDeadlineSeconds:
                           type: integer
                         resources:
@@ -4469,8 +4532,10 @@ spec:
                           properties:
                             limits:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                             requests:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                         revisionHistoryLimit:
                           type: integer
                           minimum: 0
@@ -4483,6 +4548,7 @@ spec:
                               type: string
                         securityContext:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         server_config:
                           type: object
                           properties:
@@ -5024,8 +5090,10 @@ spec:
                           properties:
                             annotations:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                             labels:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                         serviceType:
                           type: string
                           enum:
@@ -5041,10 +5109,12 @@ spec:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         topologySpreadConstraints:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         version:
                           type: string
                           pattern: ^v[0-9]+\.[0-9]+\.[0-9]$
@@ -5052,10 +5122,12 @@ spec:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         volumes:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                     filter:
                       type: object
                       properties:
@@ -5069,6 +5141,7 @@ spec:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                                 requiredDuringSchedulingIgnoredDuringExecution:
                                   type: object
                                   properties:
@@ -5076,6 +5149,7 @@ spec:
                                       type: array
                                       items:
                                         type: object
+                                        x-kubernetes-preserve-unknown-fields: true
                             podAffinity:
                               type: object
                               properties:
@@ -5083,10 +5157,12 @@ spec:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                                 requiredDuringSchedulingIgnoredDuringExecution:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                             podAntiAffinity:
                               type: object
                               properties:
@@ -5094,18 +5170,22 @@ spec:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                                 requiredDuringSchedulingIgnoredDuringExecution:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                         annotations:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         enabled:
                           type: boolean
                         env:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         externalTrafficPolicy:
                           type: string
                         gateway_config:
@@ -5140,6 +5220,7 @@ spec:
                                           type: integer
                                     call_option:
                                       type: object
+                                      x-kubernetes-preserve-unknown-fields: true
                                     connection_pool:
                                       type: object
                                       properties:
@@ -5303,6 +5384,7 @@ spec:
                                       type: integer
                                 call_option:
                                   type: object
+                                  x-kubernetes-preserve-unknown-fields: true
                                 connection_pool:
                                   type: object
                                   properties:
@@ -5461,6 +5543,7 @@ spec:
                                           type: integer
                                     call_option:
                                       type: object
+                                      x-kubernetes-preserve-unknown-fields: true
                                     connection_pool:
                                       type: object
                                       properties:
@@ -5633,6 +5716,7 @@ spec:
                           properties:
                             annotations:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                             enabled:
                               type: boolean
                             host:
@@ -5645,6 +5729,7 @@ spec:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         kind:
                           type: string
                           enum:
@@ -5685,6 +5770,7 @@ spec:
                           type: string
                         nodeSelector:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         observability:
                           type: object
                           properties:
@@ -5844,6 +5930,7 @@ spec:
                                   type: number
                         podAnnotations:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         podPriority:
                           type: object
                           properties:
@@ -5853,6 +5940,7 @@ spec:
                               type: integer
                         podSecurityContext:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         progressDeadlineSeconds:
                           type: integer
                         resources:
@@ -5860,8 +5948,10 @@ spec:
                           properties:
                             limits:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                             requests:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                         revisionHistoryLimit:
                           type: integer
                           minimum: 0
@@ -5874,6 +5964,7 @@ spec:
                               type: string
                         securityContext:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         server_config:
                           type: object
                           properties:
@@ -6415,8 +6506,10 @@ spec:
                           properties:
                             annotations:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                             labels:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                         serviceType:
                           type: string
                           enum:
@@ -6432,10 +6525,12 @@ spec:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         topologySpreadConstraints:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         version:
                           type: string
                           pattern: ^v[0-9]+\.[0-9]+\.[0-9]$
@@ -6443,10 +6538,12 @@ spec:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         volumes:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                     lb:
                       type: object
                       properties:
@@ -6460,6 +6557,7 @@ spec:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                                 requiredDuringSchedulingIgnoredDuringExecution:
                                   type: object
                                   properties:
@@ -6467,6 +6565,7 @@ spec:
                                       type: array
                                       items:
                                         type: object
+                                        x-kubernetes-preserve-unknown-fields: true
                             podAffinity:
                               type: object
                               properties:
@@ -6474,10 +6573,12 @@ spec:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                                 requiredDuringSchedulingIgnoredDuringExecution:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                             podAntiAffinity:
                               type: object
                               properties:
@@ -6485,18 +6586,22 @@ spec:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                                 requiredDuringSchedulingIgnoredDuringExecution:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                         annotations:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         enabled:
                           type: boolean
                         env:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         externalTrafficPolicy:
                           type: string
                         gateway_config:
@@ -6533,6 +6638,7 @@ spec:
                                           type: integer
                                     call_option:
                                       type: object
+                                      x-kubernetes-preserve-unknown-fields: true
                                     connection_pool:
                                       type: object
                                       properties:
@@ -6688,6 +6794,7 @@ spec:
                                           type: integer
                                     call_option:
                                       type: object
+                                      x-kubernetes-preserve-unknown-fields: true
                                     connection_pool:
                                       type: object
                                       properties:
@@ -6849,6 +6956,7 @@ spec:
                           properties:
                             annotations:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                             enabled:
                               type: boolean
                             host:
@@ -6861,6 +6969,7 @@ spec:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         kind:
                           type: string
                           enum:
@@ -6901,6 +7010,7 @@ spec:
                           type: string
                         nodeSelector:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         observability:
                           type: object
                           properties:
@@ -7060,6 +7170,7 @@ spec:
                                   type: number
                         podAnnotations:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         podPriority:
                           type: object
                           properties:
@@ -7069,6 +7180,7 @@ spec:
                               type: integer
                         podSecurityContext:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         progressDeadlineSeconds:
                           type: integer
                         resources:
@@ -7076,8 +7188,10 @@ spec:
                           properties:
                             limits:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                             requests:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                         revisionHistoryLimit:
                           type: integer
                           minimum: 0
@@ -7090,6 +7204,7 @@ spec:
                               type: string
                         securityContext:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         server_config:
                           type: object
                           properties:
@@ -7631,8 +7746,10 @@ spec:
                           properties:
                             annotations:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                             labels:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                         serviceType:
                           type: string
                           enum:
@@ -7648,10 +7765,12 @@ spec:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         topologySpreadConstraints:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         version:
                           type: string
                           pattern: ^v[0-9]+\.[0-9]+\.[0-9]$
@@ -7659,10 +7778,12 @@ spec:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         volumes:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                     meta:
                       type: object
                       properties:
@@ -7676,6 +7797,7 @@ spec:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                                 requiredDuringSchedulingIgnoredDuringExecution:
                                   type: object
                                   properties:
@@ -7683,6 +7805,7 @@ spec:
                                       type: array
                                       items:
                                         type: object
+                                        x-kubernetes-preserve-unknown-fields: true
                             podAffinity:
                               type: object
                               properties:
@@ -7690,10 +7813,12 @@ spec:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                                 requiredDuringSchedulingIgnoredDuringExecution:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                             podAntiAffinity:
                               type: object
                               properties:
@@ -7701,18 +7826,22 @@ spec:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                                 requiredDuringSchedulingIgnoredDuringExecution:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                         annotations:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         enabled:
                           type: boolean
                         env:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         externalTrafficPolicy:
                           type: string
                         gateway_config:
@@ -7744,6 +7873,7 @@ spec:
                                       type: integer
                                 call_option:
                                   type: object
+                                  x-kubernetes-preserve-unknown-fields: true
                                 connection_pool:
                                   type: object
                                   properties:
@@ -7904,6 +8034,7 @@ spec:
                                           type: integer
                                     call_option:
                                       type: object
+                                      x-kubernetes-preserve-unknown-fields: true
                                     connection_pool:
                                       type: object
                                       properties:
@@ -8062,6 +8193,7 @@ spec:
                           properties:
                             annotations:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                             enabled:
                               type: boolean
                             host:
@@ -8074,6 +8206,7 @@ spec:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         kind:
                           type: string
                           enum:
@@ -8114,6 +8247,7 @@ spec:
                           type: string
                         nodeSelector:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         observability:
                           type: object
                           properties:
@@ -8273,6 +8407,7 @@ spec:
                                   type: number
                         podAnnotations:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         podPriority:
                           type: object
                           properties:
@@ -8282,6 +8417,7 @@ spec:
                               type: integer
                         podSecurityContext:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         progressDeadlineSeconds:
                           type: integer
                         resources:
@@ -8289,8 +8425,10 @@ spec:
                           properties:
                             limits:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                             requests:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                         revisionHistoryLimit:
                           type: integer
                           minimum: 0
@@ -8303,6 +8441,7 @@ spec:
                               type: string
                         securityContext:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         server_config:
                           type: object
                           properties:
@@ -8844,8 +8983,10 @@ spec:
                           properties:
                             annotations:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                             labels:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                         serviceType:
                           type: string
                           enum:
@@ -8861,10 +9002,12 @@ spec:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         topologySpreadConstraints:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         version:
                           type: string
                           pattern: ^v[0-9]+\.[0-9]+\.[0-9]$
@@ -8872,10 +9015,12 @@ spec:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         volumes:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                     vald:
                       type: object
                       properties:
@@ -8889,6 +9034,7 @@ spec:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                                 requiredDuringSchedulingIgnoredDuringExecution:
                                   type: object
                                   properties:
@@ -8896,6 +9042,7 @@ spec:
                                       type: array
                                       items:
                                         type: object
+                                        x-kubernetes-preserve-unknown-fields: true
                             podAffinity:
                               type: object
                               properties:
@@ -8903,10 +9050,12 @@ spec:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                                 requiredDuringSchedulingIgnoredDuringExecution:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                             podAntiAffinity:
                               type: object
                               properties:
@@ -8914,18 +9063,22 @@ spec:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                                 requiredDuringSchedulingIgnoredDuringExecution:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                         annotations:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         enabled:
                           type: boolean
                         env:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         externalTrafficPolicy:
                           type: string
                         gateway_config:
@@ -8962,6 +9115,7 @@ spec:
                                           type: integer
                                     call_option:
                                       type: object
+                                      x-kubernetes-preserve-unknown-fields: true
                                     connection_pool:
                                       type: object
                                       properties:
@@ -9120,6 +9274,7 @@ spec:
                                           type: integer
                                     call_option:
                                       type: object
+                                      x-kubernetes-preserve-unknown-fields: true
                                     connection_pool:
                                       type: object
                                       properties:
@@ -9275,6 +9430,7 @@ spec:
                                           type: integer
                                     call_option:
                                       type: object
+                                      x-kubernetes-preserve-unknown-fields: true
                                     connection_pool:
                                       type: object
                                       properties:
@@ -9440,6 +9596,7 @@ spec:
                                           type: integer
                                     call_option:
                                       type: object
+                                      x-kubernetes-preserve-unknown-fields: true
                                     connection_pool:
                                       type: object
                                       properties:
@@ -9600,6 +9757,7 @@ spec:
                           properties:
                             annotations:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                             enabled:
                               type: boolean
                             host:
@@ -9612,6 +9770,7 @@ spec:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         kind:
                           type: string
                           enum:
@@ -9652,6 +9811,7 @@ spec:
                           type: string
                         nodeSelector:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         observability:
                           type: object
                           properties:
@@ -9811,6 +9971,7 @@ spec:
                                   type: number
                         podAnnotations:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         podPriority:
                           type: object
                           properties:
@@ -9820,6 +9981,7 @@ spec:
                               type: integer
                         podSecurityContext:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         progressDeadlineSeconds:
                           type: integer
                         resources:
@@ -9827,8 +9989,10 @@ spec:
                           properties:
                             limits:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                             requests:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                         revisionHistoryLimit:
                           type: integer
                           minimum: 0
@@ -9841,6 +10005,7 @@ spec:
                               type: string
                         securityContext:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         server_config:
                           type: object
                           properties:
@@ -10382,8 +10547,10 @@ spec:
                           properties:
                             annotations:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                             labels:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                         serviceType:
                           type: string
                           enum:
@@ -10399,10 +10566,12 @@ spec:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         topologySpreadConstraints:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         version:
                           type: string
                           pattern: ^v[0-9]+\.[0-9]+\.[0-9]$
@@ -10410,10 +10579,12 @@ spec:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         volumes:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                 manager:
                   type: object
                   properties:
@@ -10430,6 +10601,7 @@ spec:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                                 requiredDuringSchedulingIgnoredDuringExecution:
                                   type: object
                                   properties:
@@ -10437,6 +10609,7 @@ spec:
                                       type: array
                                       items:
                                         type: object
+                                        x-kubernetes-preserve-unknown-fields: true
                             podAffinity:
                               type: object
                               properties:
@@ -10444,10 +10617,12 @@ spec:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                                 requiredDuringSchedulingIgnoredDuringExecution:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                             podAntiAffinity:
                               type: object
                               properties:
@@ -10455,12 +10630,15 @@ spec:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                                 requiredDuringSchedulingIgnoredDuringExecution:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                         annotations:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         cassandra:
                           type: object
                           properties:
@@ -10654,6 +10832,7 @@ spec:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         externalTrafficPolicy:
                           type: string
                         hpa:
@@ -10680,6 +10859,7 @@ spec:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         kind:
                           type: string
                           enum:
@@ -10832,6 +11012,7 @@ spec:
                           type: string
                         nodeSelector:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         observability:
                           type: object
                           properties:
@@ -10991,6 +11172,7 @@ spec:
                                   type: number
                         podAnnotations:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         podPriority:
                           type: object
                           properties:
@@ -11000,6 +11182,7 @@ spec:
                               type: integer
                         podSecurityContext:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         progressDeadlineSeconds:
                           type: integer
                         resources:
@@ -11007,8 +11190,10 @@ spec:
                           properties:
                             limits:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                             requests:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                         revisionHistoryLimit:
                           type: integer
                           minimum: 0
@@ -11021,6 +11206,7 @@ spec:
                               type: string
                         securityContext:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         server_config:
                           type: object
                           properties:
@@ -11562,8 +11748,10 @@ spec:
                           properties:
                             annotations:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                             labels:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                         serviceType:
                           type: string
                           enum:
@@ -11579,10 +11767,12 @@ spec:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         topologySpreadConstraints:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         version:
                           type: string
                           pattern: ^v[0-9]+\.[0-9]+\.[0-9]$
@@ -11590,10 +11780,12 @@ spec:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         volumes:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                     compressor:
                       type: object
                       properties:
@@ -11607,6 +11799,7 @@ spec:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                                 requiredDuringSchedulingIgnoredDuringExecution:
                                   type: object
                                   properties:
@@ -11614,6 +11807,7 @@ spec:
                                       type: array
                                       items:
                                         type: object
+                                        x-kubernetes-preserve-unknown-fields: true
                             podAffinity:
                               type: object
                               properties:
@@ -11621,10 +11815,12 @@ spec:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                                 requiredDuringSchedulingIgnoredDuringExecution:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                             podAntiAffinity:
                               type: object
                               properties:
@@ -11632,12 +11828,15 @@ spec:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                                 requiredDuringSchedulingIgnoredDuringExecution:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                         annotations:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         backup:
                           type: object
                           properties:
@@ -11667,6 +11866,7 @@ spec:
                                       type: integer
                                 call_option:
                                   type: object
+                                  x-kubernetes-preserve-unknown-fields: true
                                 connection_pool:
                                   type: object
                                   properties:
@@ -11818,6 +12018,7 @@ spec:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         externalTrafficPolicy:
                           type: string
                         hpa:
@@ -11844,6 +12045,7 @@ spec:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         kind:
                           type: string
                           enum:
@@ -11884,6 +12086,7 @@ spec:
                           type: string
                         nodeSelector:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         observability:
                           type: object
                           properties:
@@ -12043,6 +12246,7 @@ spec:
                                   type: number
                         podAnnotations:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         podPriority:
                           type: object
                           properties:
@@ -12052,6 +12256,7 @@ spec:
                               type: integer
                         podSecurityContext:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         progressDeadlineSeconds:
                           type: integer
                         registerer:
@@ -12086,6 +12291,7 @@ spec:
                                           type: integer
                                     call_option:
                                       type: object
+                                      x-kubernetes-preserve-unknown-fields: true
                                     connection_pool:
                                       type: object
                                       properties:
@@ -12224,8 +12430,10 @@ spec:
                           properties:
                             limits:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                             requests:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                         revisionHistoryLimit:
                           type: integer
                           minimum: 0
@@ -12238,6 +12446,7 @@ spec:
                               type: string
                         securityContext:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         server_config:
                           type: object
                           properties:
@@ -12779,8 +12988,10 @@ spec:
                           properties:
                             annotations:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                             labels:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                         serviceType:
                           type: string
                           enum:
@@ -12796,10 +13007,12 @@ spec:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         topologySpreadConstraints:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         version:
                           type: string
                           pattern: ^v[0-9]+\.[0-9]+\.[0-9]$
@@ -12807,10 +13020,12 @@ spec:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         volumes:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                     index:
                       type: object
                       properties:
@@ -12824,6 +13039,7 @@ spec:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                                 requiredDuringSchedulingIgnoredDuringExecution:
                                   type: object
                                   properties:
@@ -12831,6 +13047,7 @@ spec:
                                       type: array
                                       items:
                                         type: object
+                                        x-kubernetes-preserve-unknown-fields: true
                             podAffinity:
                               type: object
                               properties:
@@ -12838,10 +13055,12 @@ spec:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                                 requiredDuringSchedulingIgnoredDuringExecution:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                             podAntiAffinity:
                               type: object
                               properties:
@@ -12849,18 +13068,22 @@ spec:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                                 requiredDuringSchedulingIgnoredDuringExecution:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                         annotations:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         enabled:
                           type: boolean
                         env:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         externalTrafficPolicy:
                           type: string
                         image:
@@ -12921,6 +13144,7 @@ spec:
                                           type: integer
                                     call_option:
                                       type: object
+                                      x-kubernetes-preserve-unknown-fields: true
                                     connection_pool:
                                       type: object
                                       properties:
@@ -13076,6 +13300,7 @@ spec:
                                           type: integer
                                     call_option:
                                       type: object
+                                      x-kubernetes-preserve-unknown-fields: true
                                     connection_pool:
                                       type: object
                                       properties:
@@ -13213,6 +13438,7 @@ spec:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         kind:
                           type: string
                           enum:
@@ -13247,6 +13473,7 @@ spec:
                           type: string
                         nodeSelector:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         observability:
                           type: object
                           properties:
@@ -13406,6 +13633,7 @@ spec:
                                   type: number
                         podAnnotations:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         podPriority:
                           type: object
                           properties:
@@ -13423,8 +13651,10 @@ spec:
                           properties:
                             limits:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                             requests:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                         revisionHistoryLimit:
                           type: integer
                           minimum: 0
@@ -13437,6 +13667,7 @@ spec:
                               type: string
                         securityContext:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         server_config:
                           type: object
                           properties:
@@ -13978,8 +14209,10 @@ spec:
                           properties:
                             annotations:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                             labels:
                               type: object
+                              x-kubernetes-preserve-unknown-fields: true
                         serviceType:
                           type: string
                           enum:
@@ -13995,10 +14228,12 @@ spec:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         topologySpreadConstraints:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         version:
                           type: string
                           pattern: ^v[0-9]+\.[0-9]+\.[0-9]$
@@ -14006,12 +14241,15 @@ spec:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         volumes:
                           type: array
                           items:
                             type: object
+                            x-kubernetes-preserve-unknown-fields: true
                 mangaer:
                   type: object
+                  x-kubernetes-preserve-unknown-fields: true
                 meta:
                   type: object
                   properties:
@@ -14025,6 +14263,7 @@ spec:
                               type: array
                               items:
                                 type: object
+                                x-kubernetes-preserve-unknown-fields: true
                             requiredDuringSchedulingIgnoredDuringExecution:
                               type: object
                               properties:
@@ -14032,6 +14271,7 @@ spec:
                                   type: array
                                   items:
                                     type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                         podAffinity:
                           type: object
                           properties:
@@ -14039,10 +14279,12 @@ spec:
                               type: array
                               items:
                                 type: object
+                                x-kubernetes-preserve-unknown-fields: true
                             requiredDuringSchedulingIgnoredDuringExecution:
                               type: array
                               items:
                                 type: object
+                                x-kubernetes-preserve-unknown-fields: true
                         podAntiAffinity:
                           type: object
                           properties:
@@ -14050,12 +14292,15 @@ spec:
                               type: array
                               items:
                                 type: object
+                                x-kubernetes-preserve-unknown-fields: true
                             requiredDuringSchedulingIgnoredDuringExecution:
                               type: array
                               items:
                                 type: object
+                                x-kubernetes-preserve-unknown-fields: true
                     annotations:
                       type: object
+                      x-kubernetes-preserve-unknown-fields: true
                     cassandra:
                       type: object
                       properties:
@@ -14249,6 +14494,7 @@ spec:
                       type: array
                       items:
                         type: object
+                        x-kubernetes-preserve-unknown-fields: true
                     externalTrafficPolicy:
                       type: string
                     hpa:
@@ -14275,6 +14521,7 @@ spec:
                       type: array
                       items:
                         type: object
+                        x-kubernetes-preserve-unknown-fields: true
                     kind:
                       type: string
                       enum:
@@ -14315,6 +14562,7 @@ spec:
                       type: string
                     nodeSelector:
                       type: object
+                      x-kubernetes-preserve-unknown-fields: true
                     observability:
                       type: object
                       properties:
@@ -14474,6 +14722,7 @@ spec:
                               type: number
                     podAnnotations:
                       type: object
+                      x-kubernetes-preserve-unknown-fields: true
                     podPriority:
                       type: object
                       properties:
@@ -14483,6 +14732,7 @@ spec:
                           type: integer
                     podSecurityContext:
                       type: object
+                      x-kubernetes-preserve-unknown-fields: true
                     progressDeadlineSeconds:
                       type: integer
                     redis:
@@ -14630,8 +14880,10 @@ spec:
                       properties:
                         limits:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         requests:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                     revisionHistoryLimit:
                       type: integer
                       minimum: 0
@@ -14644,6 +14896,7 @@ spec:
                           type: string
                     securityContext:
                       type: object
+                      x-kubernetes-preserve-unknown-fields: true
                     server_config:
                       type: object
                       properties:
@@ -15185,8 +15438,10 @@ spec:
                       properties:
                         annotations:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         labels:
                           type: object
+                          x-kubernetes-preserve-unknown-fields: true
                     serviceType:
                       type: string
                       enum:
@@ -15202,10 +15457,12 @@ spec:
                       type: array
                       items:
                         type: object
+                        x-kubernetes-preserve-unknown-fields: true
                     topologySpreadConstraints:
                       type: array
                       items:
                         type: object
+                        x-kubernetes-preserve-unknown-fields: true
                     version:
                       type: string
                       pattern: ^v[0-9]+\.[0-9]+\.[0-9]$
@@ -15213,7 +15470,10 @@ spec:
                       type: array
                       items:
                         type: object
+                        x-kubernetes-preserve-unknown-fields: true
                     volumes:
                       type: array
                       items:
                         type: object
+                        x-kubernetes-preserve-unknown-fields: true
+

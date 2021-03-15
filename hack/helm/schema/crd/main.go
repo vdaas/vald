@@ -32,6 +32,7 @@ import (
 
 const (
 	objectType = "object"
+	arrayType  = "array"
 
 	prefix = "# @schema"
 
@@ -71,6 +72,9 @@ type Schema struct {
 	ExclusiveMaximum bool   `json:"exclusiveMaximum,omitempty" yaml:"exclusiveMaximum,omitempty"`
 	Minimum          *int64 `json:"minimum,omitempty" yaml:"minimum,omitempty"`
 	ExclusiveMinimum bool   `json:"exclusiveMinimum,omitempty" yaml:"exclusiveMinimum,omitempty"`
+
+	// for Kubernetes unknown object type
+	KubernetesPreserveUnknownFields bool `json:"x-kubernetes-preserve-unknown-fields,omitempty" yaml:"x-kubernetes-preserve-unknown-fields,omitempty"`
 }
 
 type VSchema struct {
@@ -203,6 +207,7 @@ func genNode(ls []VSchema) (*Schema, error) {
 		schema = l.Schema
 		if len(ls) <= 1 {
 			schema.Type = objectType
+			schema.KubernetesPreserveUnknownFields = true
 			break
 		}
 
@@ -218,6 +223,12 @@ func genNode(ls []VSchema) (*Schema, error) {
 		}
 		schema.Type = objectType
 		schema.Properties = ps
+	case arrayType:
+		schema = l.Schema
+		schema.Type = l.Type
+		if schema.Items != nil && schema.Items.Type == objectType && schema.Items.Properties == nil {
+			schema.Items.KubernetesPreserveUnknownFields = true
+		}
 	default:
 		schema = l.Schema
 		schema.Type = l.Type
