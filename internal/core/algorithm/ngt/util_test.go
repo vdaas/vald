@@ -60,6 +60,7 @@ func Test_fileExists(t *testing.T) {
 	)
 
 	defaultAfterFunc := func(t *testing.T, args args) {
+		t.Helper()
 		if err := os.RemoveAll(baseDir); err != nil {
 			t.Error(err)
 		}
