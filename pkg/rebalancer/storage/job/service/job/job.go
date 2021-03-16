@@ -143,6 +143,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 				},
 			})
 			if err != nil {
+				log.Error(err)
 				errs = errors.Wrap(errs, err.Error())
 				continue
 			}
@@ -156,6 +157,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 				},
 			})
 			if err != nil {
+				log.Error(err)
 				errs = errors.Wrap(errs, err.Error())
 				continue
 			}
@@ -212,7 +214,6 @@ func (r *rebalancer) loadKVS(ctx context.Context, reader io.Reader) (map[string]
 			idm := make(map[string]uint32)
 
 			err = gob.NewDecoder(tr).Decode(&idm)
-			log.Debugf("[job debug] idm: %#v, err: %s", idm, err)
 			if err != nil {
 				return nil, err
 			}
