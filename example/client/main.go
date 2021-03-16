@@ -63,7 +63,6 @@ func main() {
 	if err != nil {
 		glg.Fatal(err)
 	}
-
 	ctx := context.Background()
 
 	// Create a Vald client for connecting to the Vald cluster.
@@ -78,9 +77,6 @@ func main() {
 	glg.Infof("Start Inserting %d training vector to Vald", insertCount)
 	// Insert 400 example vectors into Vald cluster
 	for i := range ids[:insertCount] {
-		if i%10 == 0 {
-			glg.Infof("Inserted: %d", i+10)
-		}
 		// Calls `Insert` function of Vald client.
 		// Sends set of vector and id to server via gRPC.
 		_, err := client.Insert(ctx, &payload.Insert_Request{
@@ -94,6 +90,9 @@ func main() {
 		})
 		if err != nil {
 			glg.Fatal(err)
+		}
+		if i%10 == 0 {
+			glg.Infof("Inserted: %d", i+10)
 		}
 	}
 	glg.Info("Finish Inserting dataset. \n\n")
@@ -128,6 +127,26 @@ func main() {
 		glg.Infof("%d - Results : %s\n\n", i+1, string(b))
 		time.Sleep(1 * time.Second)
 	}
+	glg.Infof("Finish searching %d times", testCount)
+
+	glg.Info("Start removing vector")
+	// Remove indexed 400 vectors from vald cluster.
+	for i := range ids[:insertCount] {
+		// Call `Remove` function of Vald client.
+		// Sends id to server via gRPC.
+		_, err := client.Remove(ctx, &payload.Remove_Request{
+			Id: &payload.Object_ID{
+				Id: ids[i],
+			},
+		})
+		if err != nil {
+			glg.Fatal(err)
+		}
+		if i%10 == 0 {
+			glg.Infof("Removed: %d", i+10)
+		}
+	}
+	glg.Info("Finish removing vector")
 }
 
 // load function loads training and test vector from hdf file. The size of ids is same to the number of training data.
