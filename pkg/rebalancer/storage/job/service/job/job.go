@@ -63,16 +63,16 @@ func New(opts ...Option) (dsc Rebalancer, err error) {
 func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 2)
 
-	log.Infof("[job debug] Start rebalance job service: %s", r.targetAgentName)
-	pr, pw := io.Pipe()
-	defer pr.Close()
-
 	r.eg.Go(func() error {
-		defer pw.Close()
+		log.Infof("[job debug] Start rebalance job service: %s", r.targetAgentName)
+
+		pr, pw := io.Pipe()
+		defer pr.Close()
 
 		// Download tar gz file
 		log.Info("[job debug] download s3 backup file")
 		r.eg.Go(safety.RecoverFunc(func() (err error) {
+			defer pw.Close()
 
 			defer func() {
 				if err != nil {
