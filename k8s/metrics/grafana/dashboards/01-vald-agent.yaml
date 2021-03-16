@@ -37,7 +37,7 @@ data:
       "editable": true,
       "gnetId": null,
       "graphTooltip": 0,
-      "iteration": 1606985105044,
+      "iteration": 1615338053004,
       "links": [],
       "panels": [
         {
@@ -55,7 +55,6 @@ data:
                   "value": "null"
                 }
               ],
-              "nullValueMode": "connected",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -95,9 +94,10 @@ data:
               "fields": "/^vald_version$/",
               "values": false
             },
+            "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "7.4.3",
           "targets": [
             {
               "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
@@ -128,7 +128,6 @@ data:
                   "value": "null"
                 }
               ],
-              "nullValueMode": "connected",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -168,9 +167,10 @@ data:
               "fields": "/^go_version$/",
               "values": false
             },
+            "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "7.4.3",
           "targets": [
             {
               "expr": "label_replace(vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}, \"go_version\", \"v$1\", \"go_version\", \"([^v].*)\")",
@@ -201,7 +201,6 @@ data:
                   "value": "null"
                 }
               ],
-              "nullValueMode": "connected",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -241,9 +240,10 @@ data:
               "fields": "/^ngt_version$/",
               "values": false
             },
+            "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "7.4.3",
           "targets": [
             {
               "expr": "label_replace(vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}, \"ngt_version\", \"v$1\", \"ngt_version\", \"([^v].*)\")",
@@ -274,7 +274,6 @@ data:
                   "value": "null"
                 }
               ],
-              "nullValueMode": "connected",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -318,9 +317,10 @@ data:
               "fields": "",
               "values": false
             },
+            "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "7.4.3",
           "targets": [
             {
               "expr": "count(up{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance!=\"\"})",
@@ -353,7 +353,6 @@ data:
                   "value": "null"
                 }
               ],
-              "nullValueMode": "connected",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -397,9 +396,10 @@ data:
               "fields": "",
               "values": false
             },
+            "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "7.4.3",
           "targets": [
             {
               "expr": "sum(container_memory_working_set_bytes{namespace=\"$Namespace\", container=\"$ReplicaSet\"})",
@@ -429,7 +429,6 @@ data:
                   "value": "null"
                 }
               ],
-              "nullValueMode": "connected",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -469,9 +468,10 @@ data:
               "fields": "/^git_commit$/",
               "values": false
             },
+            "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "7.4.3",
           "targets": [
             {
               "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
@@ -502,7 +502,6 @@ data:
                   "value": "null"
                 }
               ],
-              "nullValueMode": "connected",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -542,9 +541,10 @@ data:
               "fields": "/^build_time$/",
               "values": false
             },
+            "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "7.4.3",
           "targets": [
             {
               "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
@@ -575,7 +575,6 @@ data:
                   "value": "null"
                 }
               ],
-              "nullValueMode": "connected",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -619,9 +618,10 @@ data:
               "fields": "",
               "values": false
             },
+            "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "7.4.3",
           "targets": [
             {
               "expr": "sum(vald_agent_core_ngt_index_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
@@ -651,7 +651,6 @@ data:
                   "value": "null"
                 }
               ],
-              "nullValueMode": "connected",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -695,9 +694,10 @@ data:
               "fields": "",
               "values": false
             },
+            "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "7.4.3",
           "targets": [
             {
               "expr": "sum(vald_agent_core_ngt_is_indexing{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
@@ -728,7 +728,6 @@ data:
                   "value": "null"
                 }
               ],
-              "nullValueMode": "connected",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -772,9 +771,10 @@ data:
               "fields": "",
               "values": false
             },
+            "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "7.4.3",
           "repeat": null,
           "repeatDirection": "h",
           "targets": [
@@ -806,7 +806,6 @@ data:
                   "value": "null"
                 }
               ],
-              "nullValueMode": "connected",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -829,7 +828,7 @@ data:
             "overrides": []
           },
           "gridPos": {
-            "h": 6,
+            "h": 3,
             "w": 4,
             "x": 16,
             "y": 6
@@ -850,9 +849,10 @@ data:
               "fields": "",
               "values": false
             },
+            "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "7.4.3",
           "targets": [
             {
               "expr": "sum(vald_agent_core_ngt_insert_vqueue_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
@@ -882,7 +882,6 @@ data:
                   "value": "null"
                 }
               ],
-              "nullValueMode": "connected",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -905,7 +904,7 @@ data:
             "overrides": []
           },
           "gridPos": {
-            "h": 6,
+            "h": 3,
             "w": 4,
             "x": 20,
             "y": 6
@@ -926,9 +925,10 @@ data:
               "fields": "",
               "values": false
             },
+            "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "7.4.3",
           "targets": [
             {
               "expr": "sum(vald_agent_core_ngt_delete_vqueue_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
@@ -941,6 +941,158 @@ data:
           "timeFrom": null,
           "timeShift": null,
           "title": "delete vqueue",
+          "type": "stat"
+        },
+        {
+          "cacheTimeout": null,
+          "datasource": null,
+          "fieldConfig": {
+            "defaults": {
+              "custom": {},
+              "mappings": [
+                {
+                  "id": 0,
+                  "op": "=",
+                  "text": "N/A",
+                  "type": 1,
+                  "value": "null"
+                }
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "#299c46",
+                    "value": null
+                  },
+                  {
+                    "color": "rgba(237, 129, 40, 0.89)",
+                    "value": 100
+                  },
+                  {
+                    "color": "#d44a3a",
+                    "value": 1000
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 4,
+            "x": 16,
+            "y": 9
+          },
+          "id": 33,
+          "interval": null,
+          "links": [],
+          "maxDataPoints": 100,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "auto"
+          },
+          "pluginVersion": "7.4.3",
+          "targets": [
+            {
+              "expr": "sum(vald_agent_core_ngt_insert_vqueue_channel_buffer_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
+              "instant": true,
+              "interval": "",
+              "legendFormat": "",
+              "refId": "A"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "insert vqueue buffer",
+          "type": "stat"
+        },
+        {
+          "cacheTimeout": null,
+          "datasource": null,
+          "fieldConfig": {
+            "defaults": {
+              "custom": {},
+              "mappings": [
+                {
+                  "id": 0,
+                  "op": "=",
+                  "text": "N/A",
+                  "type": 1,
+                  "value": "null"
+                }
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "#299c46",
+                    "value": null
+                  },
+                  {
+                    "color": "rgba(237, 129, 40, 0.89)",
+                    "value": 100
+                  },
+                  {
+                    "color": "#d44a3a",
+                    "value": 1000
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 4,
+            "x": 20,
+            "y": 9
+          },
+          "id": 34,
+          "interval": null,
+          "links": [],
+          "maxDataPoints": 100,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "auto"
+          },
+          "pluginVersion": "7.4.3",
+          "targets": [
+            {
+              "expr": "sum(vald_agent_core_ngt_delete_vqueue_channel_buffer_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
+              "instant": true,
+              "interval": "",
+              "legendFormat": "",
+              "refId": "A"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "delete vqueue buffer",
           "type": "stat"
         },
         {
@@ -982,7 +1134,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "7.4.3",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1078,7 +1230,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "7.4.3",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1174,7 +1326,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "7.4.3",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1270,7 +1422,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "7.4.3",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1380,7 +1532,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "7.4.3",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1485,7 +1637,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "7.4.3",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1583,7 +1735,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "7.4.3",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1688,7 +1840,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "7.4.3",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1760,7 +1912,7 @@ data:
         }
       ],
       "refresh": "",
-      "schemaVersion": 26,
+      "schemaVersion": 27,
       "style": "dark",
       "tags": [],
       "templating": {
@@ -1774,6 +1926,7 @@ data:
             },
             "datasource": "Prometheus",
             "definition": "label_values(vald_app_version_info, namespace)",
+            "description": null,
             "error": null,
             "hide": 0,
             "includeAll": false,
@@ -1781,7 +1934,10 @@ data:
             "multi": false,
             "name": "Namespace",
             "options": [],
-            "query": "label_values(vald_app_version_info, namespace)",
+            "query": {
+              "query": "label_values(vald_app_version_info, namespace)",
+              "refId": "Prometheus-Namespace-Variable-Query"
+            },
             "refresh": 1,
             "regex": "",
             "skipUrlSync": false,
@@ -1801,6 +1957,7 @@ data:
             },
             "datasource": "Prometheus",
             "definition": "label_values(vald_agent_core_ngt_is_indexing{namespace=~\"$Namespace\"}, app)",
+            "description": null,
             "error": null,
             "hide": 0,
             "includeAll": false,
@@ -1808,7 +1965,10 @@ data:
             "multi": false,
             "name": "ReplicaSet",
             "options": [],
-            "query": "label_values(vald_agent_core_ngt_is_indexing{namespace=~\"$Namespace\"}, app)",
+            "query": {
+              "query": "label_values(vald_agent_core_ngt_is_indexing{namespace=~\"$Namespace\"}, app)",
+              "refId": "Prometheus-ReplicaSet-Variable-Query"
+            },
             "refresh": 1,
             "regex": "",
             "skipUrlSync": false,
@@ -1828,6 +1988,7 @@ data:
             },
             "datasource": "Prometheus",
             "definition": "label_values(vald_agent_core_ngt_is_indexing{namespace=~\"$Namespace\", app=~\"$ReplicaSet\"}, instance)",
+            "description": null,
             "error": null,
             "hide": 0,
             "includeAll": true,
@@ -1835,7 +1996,10 @@ data:
             "multi": false,
             "name": "PodName",
             "options": [],
-            "query": "label_values(vald_agent_core_ngt_is_indexing{namespace=~\"$Namespace\", app=~\"$ReplicaSet\"}, instance)",
+            "query": {
+              "query": "label_values(vald_agent_core_ngt_is_indexing{namespace=~\"$Namespace\", app=~\"$ReplicaSet\"}, instance)",
+              "refId": "Prometheus-PodName-Variable-Query"
+            },
             "refresh": 1,
             "regex": "",
             "skipUrlSync": false,
@@ -1851,10 +2015,11 @@ data:
             "auto_count": 30,
             "auto_min": "10s",
             "current": {
-              "selected": true,
+              "selected": false,
               "text": "5m",
               "value": "5m"
             },
+            "description": null,
             "error": null,
             "hide": 0,
             "label": "interval",
