@@ -82,7 +82,6 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (*payload.
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Warn(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
@@ -116,7 +115,6 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 					},
 				},
 			}, info.Get())
-// 		 log.Warn(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 		}
@@ -137,7 +135,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -169,7 +167,6 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Errorf("SearchByID API failed to process request uuids:\t%v\terror:\t%s", meta, err.Error())
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
@@ -190,7 +187,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -229,7 +226,7 @@ func (s *server) search(ctx context.Context,
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  merr.Error(),
 				}, info.Get())
-// 			 log.Warn(merr)
+			log.Warn(merr)
 			if err == nil {
 				err = merr
 			} else {
@@ -285,7 +282,7 @@ func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-// 		 log.Error(err)
+		log.Error(err)
 		return err
 	}
 	return nil
@@ -335,7 +332,7 @@ func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (er
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-// 		 log.Error(err)
+		log.Error(err)
 		return err
 	}
 	return nil
@@ -374,7 +371,6 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 						},
 					},
 				}, info.Get())
-// 			 log.Warn(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 			}
@@ -421,7 +417,7 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -488,7 +484,7 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -522,7 +518,6 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 					},
 				},
 			}, info.Get())
-// 		 log.Warn(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 		}
@@ -542,7 +537,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				}, info.Get())
-// 			 log.Error(err)
+			log.Error(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInternal(err.Error()))
 			}
@@ -561,7 +556,6 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				}, info.Get())
-// 			 log.Error(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeAlreadyExists(err.Error()))
 			}
@@ -588,7 +582,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -607,7 +601,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 
 		_, rerr := s.gateway.Remove(ctx, &payload.Remove_Request{
 			Id: &payload.Object_ID{
@@ -626,7 +620,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  rerr.Error(),
 				}, info.Get()).Error())
-// 			 log.Error(err)
+			log.Error(err)
 		}
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
@@ -680,7 +674,7 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-// 		 log.Error(err)
+		log.Error(err)
 		return err
 	}
 	return nil
@@ -715,7 +709,6 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 						},
 					},
 				}, info.Get())
-// 			 log.Warn(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 			}
@@ -735,7 +728,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 						Owner:        errdetails.ValdResourceOwner,
 						Description:  err.Error(),
 					}, info.Get())
-// 				 log.Error(err)
+				log.Error(err)
 				if span != nil {
 					span.SetStatus(trace.StatusCodeInternal(err.Error()))
 				}
@@ -754,7 +747,6 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 						Owner:        errdetails.ValdResourceOwner,
 						Description:  err.Error(),
 					}, info.Get())
-// 				 log.Error(err)
 				if span != nil {
 					span.SetStatus(trace.StatusCodeAlreadyExists(err.Error()))
 				}
@@ -786,7 +778,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -806,7 +798,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		rmr := &payload.Remove_MultiRequest{
 			Requests: make([]*payload.Remove_Request, 0, len(reqs.GetRequests())),
 		}
@@ -830,7 +822,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				}).Error())
-// 			 log.Error(err)
+			log.Error(err)
 
 		}
 		if span != nil {
@@ -865,7 +857,6 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 					},
 				},
 			}, info.Get())
-// 		 log.Warn(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 		}
@@ -887,7 +878,6 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
@@ -907,7 +897,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -960,7 +950,7 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) (err error)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-// 		 log.Error(err)
+		log.Error(err)
 		return err
 	}
 	return nil
@@ -991,7 +981,6 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 						},
 					},
 				}, info.Get())
-// 			 log.Warn(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 			}
@@ -1012,7 +1001,6 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
@@ -1036,7 +1024,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -1071,7 +1059,6 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 					},
 				},
 			}, info.Get())
-// 		 log.Warn(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 		}
@@ -1080,7 +1067,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 	filters := req.GetConfig().GetFilters()
 	exists, err := s.metadata.Exists(ctx, meta)
 	if err != nil {
-// 		 log.Debugf("Upsert API metadata exists check error:\t%s", err.Error())
+		log.Debugf("Upsert API metadata exists check error:\t%s", err.Error())
 	}
 	var operation string
 	if err != nil || !exists {
@@ -1114,7 +1101,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -1167,7 +1154,7 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-// 		 log.Error(err)
+		log.Error(err)
 		return err
 	}
 	return nil
@@ -1204,7 +1191,6 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 						},
 					},
 				}, info.Get())
-// 			 log.Warn(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 			}
@@ -1295,7 +1281,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -1327,7 +1313,6 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
@@ -1352,7 +1337,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -1371,7 +1356,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -1424,7 +1409,7 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-// 		 log.Error(err)
+		log.Error(err)
 		return err
 	}
 	return nil
@@ -1454,7 +1439,6 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
@@ -1480,7 +1464,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -1499,7 +1483,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -1529,7 +1513,6 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
@@ -1553,7 +1536,6 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-// 		 log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
@@ -1607,7 +1589,7 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-// 		 log.Error(err)
+		log.Error(err)
 		return err
 	}
 	return nil
