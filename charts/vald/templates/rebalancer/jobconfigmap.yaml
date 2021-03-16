@@ -132,7 +132,7 @@ data:
         {{- end }}
         {{- $nextGRPCClient := dict "Values" $nextGatewayClient "default" .Values.defaults.grpc.client }}
         {{- include "vald.grpc.client" $nextGRPCClient | nindent 8 }}
-      client: 
+      client:
         net:
           {{- if .Values.rebalancer.rebalancer.job.client.net }}
           {{- toYaml .Values.rebalancer.rebalancer.job.client.net | nindent 10 }}
