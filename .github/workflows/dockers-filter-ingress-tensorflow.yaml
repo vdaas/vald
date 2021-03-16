@@ -91,13 +91,13 @@ jobs:
         if: startsWith( github.ref, 'refs/tags/')
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: "${{ steps.image_name.outputs.IMAGE_NAME }}:${{ steps.determine_tag.outputs.TAG_NAME }}"
+          image-ref: "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}"
           format: "table"
       - name: Run vulnerability scanner (sarif)
         if: startsWith( github.ref, 'refs/tags/')
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: "${{ steps.image_name.outputs.IMAGE_NAME }}:${{ steps.determine_tag.outputs.TAG_NAME }}"
+          image-ref: "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}"
           format: "template"
           template: "@/contrib/sarif.tpl"
           output: "trivy-results.sarif"
