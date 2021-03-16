@@ -43,6 +43,7 @@ type backoff struct {
 	errLog                bool
 }
 
+// Backoff represents an interface to handle backoff operation.
 type Backoff interface {
 	Do(context.Context, func(ctx context.Context) (interface{}, bool, error)) (interface{}, error)
 	Close()
@@ -50,6 +51,7 @@ type Backoff interface {
 
 const traceTag = "vald/internal/backoff/Backoff.Do/retry"
 
+// New creates the new backoff with option.
 func New(opts ...Option) Backoff {
 	b := new(backoff)
 	for _, opt := range append(defaultOptions, opts...) {
@@ -64,6 +66,7 @@ func New(opts ...Option) Backoff {
 	return b
 }
 
+// Do tries to backoff using input function and returns the response and error.
 func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val interface{}, retryable bool, err error)) (res interface{}, err error) {
 	res, ret, err := f(ctx)
 	if err == nil || !ret {
@@ -146,6 +149,7 @@ func (b *backoff) addJitter(dur float64) float64 {
 	return dur + float64(rand.LimitedUint32(uint64(hd))) - hd
 }
 
+// Close closes the wait group.
 func (b *backoff) Close() {
 	b.wg.Wait()
 }
