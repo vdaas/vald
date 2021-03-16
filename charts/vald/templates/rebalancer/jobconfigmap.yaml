@@ -130,6 +130,8 @@ data:
           {{- $addrs := dict "Values" $client.addrs "default" $defaultAddr }}
           {{- include "vald.grpc.client.addrs" $addrs | nindent 8 }}
         {{- end }}
+        {{- $nextGRPCClient := dict "Values" $nextGatewayClient "default" .Values.defaults.grpc.client }}
+        {{- include "vald.grpc.client" $nextGRPCClient | nindent 8 }}
       client: 
         net:
           {{- if .Values.rebalancer.rebalancer.job.client.net }}
