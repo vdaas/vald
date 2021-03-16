@@ -50,12 +50,23 @@ func Test_fileExists(t *testing.T) {
 	}
 
 	const (
-		testDirPath  = "utiltest/index"
-		testFilePath = "utiltest-ngt-meta.kvsdb"
+		baseDir      = "./utiltest"
+		testDirPath  = baseDir + "/index"
+		testFilePath = baseDir + "/ngt-meta.kvsdb"
+		testSym      = "sym"
 
-		testFailsDirPath  = "utiltest-fails/index"
-		testFailsFilePath = "utiltest-ngt-meta-fails.kvsdb"
+		testFailsDirPath  = baseDir + "/fails-index"
+		testFailsFilePath = baseDir + "/ngt-meta-fails.kvsdb"
 	)
+
+	defaultAfterFunc := func(t *testing.T, args args) {
+		if err := os.RemoveAll(baseDir); err != nil {
+			t.Error(err)
+		}
+		if err := os.RemoveAll(args.path); err != nil {
+			t.Error(err)
+		}
+	}
 
 	tests := []test{
 		{
@@ -69,10 +80,22 @@ func Test_fileExists(t *testing.T) {
 					t.Fatal(err)
 				}
 			},
-			afterFunc: func(t *testing.T, args args) {
+			want: want{
+				want: true,
+			},
+		},
+		{
+			name: "return true when the directory exists and the type is symbolic link",
+			args: args{
+				path: testSym,
+			},
+			beforeFunc: func(t *testing.T, args args) {
 				t.Helper()
-				if err := os.RemoveAll(args.path); err != nil {
+				if err := os.MkdirAll(testDirPath, 0750); err != nil {
 					t.Fatal(err)
+				}
+				if err := os.Symlink(testDirPath, testSym); err != nil {
+					t.Error(err)
 				}
 			},
 			want: want{
@@ -86,6 +109,10 @@ func Test_fileExists(t *testing.T) {
 			},
 			beforeFunc: func(t *testing.T, args args) {
 				t.Helper()
+				if err := os.MkdirAll(baseDir, 0750); err != nil {
+					t.Fatal(err)
+				}
+
 				f, err := os.Create(args.path)
 				if err != nil {
 					t.Fatal(err)
@@ -96,10 +123,33 @@ func Test_fileExists(t *testing.T) {
 					}
 				}()
 			},
-			afterFunc: func(t *testing.T, args args) {
+			want: want{
+				want: true,
+			},
+		},
+		{
+			name: "return true when the file exists and the type is symbolic link",
+			args: args{
+				path: testSym,
+			},
+			beforeFunc: func(t *testing.T, args args) {
 				t.Helper()
-				if err := os.Remove(args.path); err != nil {
+				if err := os.MkdirAll(baseDir, 0750); err != nil {
 					t.Fatal(err)
+				}
+
+				f, err := os.Create(testFilePath)
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer func() {
+					if err := f.Close(); err != nil {
+						t.Error(err)
+					}
+				}()
+
+				if err := os.Symlink(testFilePath, testSym); err != nil {
+					t.Error(err)
 				}
 			},
 			want: want{
@@ -132,9 +182,11 @@ func Test_fileExists(t *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt, test.args)
 			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
+			if test.afterFunc == nil {
+				test.afterFunc = defaultAfterFunc
 			}
+			defer test.afterFunc(tt, test.args)
+
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
