@@ -111,6 +111,8 @@ data:
           {{- $defaultAddr := (list (printf "%s:%d" $defaultHost (int64 $defaultPort))) }}
           {{- $addrs := dict "Values" $client.addrs "default" $defaultAddr }}
           {{- include "vald.grpc.client.addrs" $addrs | nindent 8 }}
+          {{- $nextGRPCClient := dict "Values" $client "default" .Values.defaults.grpc.client }}
+          {{- include "vald.grpc.client" $nextGRPCClient | nindent 8 }}
         {{- else if .Values.gateway.backup.enabled }}
           {{- $gateway := .Values.gateway.backup -}}
           {{- $client := $gateway.gateway_config.backup.client }}
@@ -120,6 +122,8 @@ data:
           {{- $defaultAddr := (list (printf "%s:%d" $defaultHost (int64 $defaultPort))) }}
           {{- $addrs := dict "Values" $client.addrs "default" $defaultAddr }}
           {{- include "vald.grpc.client.addrs" $addrs | nindent 8 }}
+          {{- $nextGRPCClient := dict "Values" $client "default" .Values.defaults.grpc.client }}
+          {{- include "vald.grpc.client" $nextGRPCClient | nindent 8 }}
         {{- else }}
           {{- $gateway := .Values.gateway.lb -}}
           {{- $client := $gateway.gateway_config.lb.client }}
@@ -129,9 +133,9 @@ data:
           {{- $defaultAddr := (list (printf "%s:%d" $defaultHost (int64 $defaultPort))) }}
           {{- $addrs := dict "Values" $client.addrs "default" $defaultAddr }}
           {{- include "vald.grpc.client.addrs" $addrs | nindent 8 }}
+          {{- $nextGRPCClient := dict "Values" $client "default" .Values.defaults.grpc.client }}
+          {{- include "vald.grpc.client" $nextGRPCClient | nindent 8 }}
         {{- end }}
-        {{- $nextGRPCClient := dict "Values" $nextGatewayClient "default" .Values.defaults.grpc.client }}
-        {{- include "vald.grpc.client" $nextGRPCClient | nindent 8 }}
       client:
         net:
           {{- if .Values.rebalancer.rebalancer.job.client.net }}
