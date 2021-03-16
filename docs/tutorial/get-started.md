@@ -298,9 +298,6 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
 
         ```go
         for i := range ids [:insertCount] {
-            if i%10 == 0 {
-                glg.Infof("Inserted %d", i)
-            }
             _, err := client.Insert(ctx, &payload.Insert_Request{
                 Vector: &payload.Object_Vector{
                     Id: ids[i],
@@ -312,6 +309,9 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
             })
             if err != nil {
                 glg.Fatal(err)
+            }
+            if i%10 == 0 {
+                glg.Infof("Inserted %d", i)
             }
         }
         ```
@@ -354,6 +354,29 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
             b, _ := json.MarshalIndent(res.GetResults(), "", " ")
             glg.Infof("%d - Results : %s\n\n", i+1, string(b))
             time.Sleep(1 * time.Second)
+        }
+        ```
+
+          </details>
+
+   1. Remove
+
+      - Remove 400 indexed training datasets from the Vald agent.
+          <details><summary>example code</summary><br>
+
+        ```go
+        for i := range ids [:insertCount] {
+            _, err := client.Remove(ctx, &payload.Remove_Request{
+                Id: &payload.Object_ID{
+                    Id: ids[i],
+                },
+            })
+            if err != nil {
+                glg.Fatal(err)
+            }
+            if i%10 == 0 {
+                glg.Infof("Removed %d", i)
+            }
         }
         ```
 
@@ -633,6 +656,44 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
         ```
 
           </details>
+
+   1. Remove
+
+      - Remove indexed 400 training datasets from the Vald agent.
+          <details><summary>example code</summary><br>
+
+        ```go
+        for i := range ids [:insertCount] {
+            _, err := client.Remove(ctx, &payload.Remove_Request{
+                Id: &payload.Object_ID{
+                    Id: ids[i],
+                },
+            })
+            if err != nil {
+                glg.Fatal(err)
+            }
+            if i%10 == 0 {
+                glg.Infof("Removed %d", i)
+            }
+        }
+        ```
+
+          </details>
+
+
+      - Remove from the index manually instead of waiting for auto indexing.
+        The removed vectors are still exist in the NGT graph index before the SaveIndex (or CreateAndSaveIndex) API is called.
+        If you run the below code, the indexes will be removed completely from the Vald Agent NGT graph and the Backup file.
+        <detail><summary>example code</summary><br>
+
+        ```go
+        _, err = client.SaveIndex(ctx, &payload.Empty{})
+        if err != nil {
+            glg.Fatal(err)
+        }
+        ```
+
+          </detail>
 
    ```bash
    # run example

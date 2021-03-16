@@ -239,7 +239,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		if serr == nil {
 			return res, nil
 		}
-		err = errors.Wrap(err, status.WrapWithInternal("SearchByID API failed to process search request", err,
+		err = errors.Wrap(err, status.WrapWithInternal("SearchByID API failed to process search request", serr,
 			&errdetails.RequestInfo{
 				RequestId:   req.GetConfig().GetRequestId(),
 				ServingData: errdetails.Serialize(req),
@@ -248,11 +248,11 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.SearchByID",
 				ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
 				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
+				Description:  serr.Error(),
 			}).Error())
 		log.Error(err)
 		if span != nil {
-			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
 		return nil, err
 	}
