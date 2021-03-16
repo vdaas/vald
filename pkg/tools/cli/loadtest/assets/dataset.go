@@ -89,8 +89,8 @@ func findDir(path string) (string, error) {
 
 // Data loads specified dataset and returns it.
 func Data(name string) func() (Dataset, error) {
-// 	 log.Debugf("start loading: %s", name)
-// 	defer  log.Debugf("finish loading: %s", name)
+	log.Debugf("start loading: %s", name)
+	defer log.Debugf("finish loading: %s", name)
 	if strings.HasPrefix(name, "identity-") {
 		l := strings.Split(name, "-")
 		i, _ := strconv.Atoi(l[1])

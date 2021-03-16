@@ -76,7 +76,7 @@ func (r *registerer) Start(ctx context.Context) (<-chan error, error) {
 }
 
 func (r *registerer) PostStop(ctx context.Context) (err error) {
-// 	 log.Info("compressor registerer service poststop processing...")
+	log.Info("compressor registerer service poststop processing...")
 
 	r.worker.Pause()
 
@@ -103,7 +103,7 @@ func (r *registerer) PostStop(ctx context.Context) (err error) {
 				return cctx.Err()
 			case err := <-ech:
 				if err != nil {
-// 					 log.Error(err)
+					log.Error(err)
 				}
 			}
 		}
@@ -111,11 +111,11 @@ func (r *registerer) PostStop(ctx context.Context) (err error) {
 
 	err = r.forwardMetas(ctx)
 	if err != nil {
-// 		 log.Errorf("compressor registerer service poststop failed: %v", err)
+		log.Errorf("compressor registerer service poststop failed: %v", err)
 		return err
 	}
 
-// 	 log.Info("compressor registerer service poststop completed")
+	log.Info("compressor registerer service poststop completed")
 
 	return nil
 }
@@ -225,14 +225,14 @@ func (r *registerer) forwardMetas(ctx context.Context) (errs error) {
 	r.vecsMu.Lock()
 	defer r.vecsMu.Unlock()
 
-// 	 log.Debugf("compressor registerer queued vec-vector count: %d", len(r.vecs))
+	log.Debugf("compressor registerer queued vec-vector count: %d", len(r.vecs))
 
 	for uuid, vec := range r.vecs {
-// 		 log.Debugf("forwarding uuid %s", uuid)
+		log.Debugf("forwarding uuid %s", uuid)
 
 		err = r.client.Register(ctx, vec)
 		if err != nil {
-// 			 log.Errorf("compressor registerer failed to backup uuid %s: %v", uuid, err)
+			log.Errorf("compressor registerer failed to backup uuid %s: %v", uuid, err)
 			errs = errors.Wrap(errs, err.Error())
 		}
 	}
