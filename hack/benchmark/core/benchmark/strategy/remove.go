@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,30 +24,30 @@ import (
 
 	"github.com/vdaas/vald/hack/benchmark/core/benchmark"
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
-	"github.com/vdaas/vald/hack/benchmark/internal/core"
+	"github.com/vdaas/vald/hack/benchmark/internal/core/algorithm"
 )
 
 func NewRemove(opts ...StrategyOption) benchmark.Strategy {
 	return newStrategy(append([]StrategyOption{
 		WithPropName("Remove"),
 		WithPreProp32(
-			func(ctx context.Context, b *testing.B, c core.Core32, dataset assets.Dataset) (ids []uint, err error) {
+			func(ctx context.Context, b *testing.B, c algorithm.Bit32, dataset assets.Dataset) (ids []uint, err error) {
 				return insertAndCreateIndex32(ctx, c, dataset)
 			},
 		),
 		WithProp32(
-			func(ctx context.Context, b *testing.B, c core.Core32, dataset assets.Dataset, ids []uint, cnt *uint64) (obj interface{}, err error) {
+			func(ctx context.Context, b *testing.B, c algorithm.Bit32, dataset assets.Dataset, ids []uint, cnt *uint64) (obj interface{}, err error) {
 				err = c.Remove(ids[int(atomic.LoadUint64(cnt))%len(ids)])
 				return
 			},
 		),
 		WithPreProp64(
-			func(ctx context.Context, b *testing.B, c core.Core64, dataset assets.Dataset) (ids []uint, err error) {
+			func(ctx context.Context, b *testing.B, c algorithm.Bit64, dataset assets.Dataset) (ids []uint, err error) {
 				return insertAndCreateIndex64(ctx, c, dataset)
 			},
 		),
 		WithProp64(
-			func(ctx context.Context, b *testing.B, c core.Core64, dataset assets.Dataset, ids []uint, cnt *uint64) (obj interface{}, err error) {
+			func(ctx context.Context, b *testing.B, c algorithm.Bit64, dataset assets.Dataset, ids []uint, cnt *uint64) (obj interface{}, err error) {
 				err = c.Remove(ids[int(atomic.LoadUint64(cnt))%len(ids)])
 				return
 			},

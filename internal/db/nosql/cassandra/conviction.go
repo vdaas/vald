@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,8 +22,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 )
 
-type convictionPolicy struct {
-}
+type convictionPolicy struct{}
 
 // NewConvictionPolicy returns the implementation of gocql.ConvictionPolicy.
 func NewConvictionPolicy() gocql.ConvictionPolicy {
@@ -38,5 +37,5 @@ func (c *convictionPolicy) AddFailure(err error, host *gocql.HostInfo) bool {
 
 // Reset clears the conviction state.
 func (c *convictionPolicy) Reset(host *gocql.HostInfo) {
-	log.Info("cassandra host %s reset detected\t%s", host.HostnameAndPort(), host.String())
+	log.Infof("cassandra host %s reset detected\t%s", host.HostnameAndPort(), host.String())
 }

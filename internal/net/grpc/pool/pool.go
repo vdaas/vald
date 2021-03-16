@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,8 +19,6 @@ package pool
 
 import (
 	"context"
-	"fmt"
-	"math"
 	"sort"
 	"strings"
 	"sync/atomic"
@@ -34,8 +32,10 @@ import (
 	"google.golang.org/grpc/connectivity"
 )
 
-type ClientConn = grpc.ClientConn
-type DialOption = grpc.DialOption
+type (
+	ClientConn = grpc.ClientConn
+	DialOption = grpc.DialOption
+)
 
 type Conn interface {
 	Connect(context.Context) (Conn, error)
@@ -75,7 +75,7 @@ type pool struct {
 func New(ctx context.Context, opts ...Option) (c Conn, err error) {
 	p := new(pool)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(p)
 	}
 
@@ -86,7 +86,9 @@ func New(ctx context.Context, opts ...Option) (c Conn, err error) {
 	p.pool = make([]atomic.Value, p.size)
 	p.closing.Store(false)
 
-	p.host, p.port, p.isIP, err = net.Parse(p.addr)
+	var isIPv4, isIPv6 bool
+	p.host, p.port, _, isIPv4, isIPv6, err = net.Parse(p.addr)
+	p.isIP = isIPv4 || isIPv6
 	if err != nil {
 		log.Warnf("failed to parse addr %s: %s", p.addr, err)
 		if p.host == "" {
@@ -96,16 +98,17 @@ func New(ctx context.Context, opts ...Option) (c Conn, err error) {
 		if err != nil {
 			return nil, err
 		}
-		p.addr = fmt.Sprintf("%s:%d", p.host, p.port)
+		p.addr = net.JoinHostPort(p.host, p.port)
 	}
 
 	conn, err := grpc.DialContext(ctx, p.addr, p.dopts...)
 	if err != nil {
+		log.Warn(err)
 		err = p.scanGRPCPort(ctx)
 		if err != nil {
 			return nil, err
 		}
-		p.addr = fmt.Sprintf("%s:%d", p.host, p.port)
+		p.addr = net.JoinHostPort(p.host, p.port)
 	}
 	if conn != nil {
 		err = conn.Close()
@@ -118,7 +121,7 @@ func New(ctx context.Context, opts ...Option) (c Conn, err error) {
 }
 
 func (p *pool) Connect(ctx context.Context) (c Conn, err error) {
-	if p.closing.Load().(bool) {
+	if p == nil || p.closing.Load().(bool) {
 		return p, nil
 	}
 
@@ -142,16 +145,17 @@ func (p *pool) Connect(ctx context.Context) (c Conn, err error) {
 		default:
 			var (
 				conn   *ClientConn
-				addr   = fmt.Sprintf("%s:%d", ips[i%len(ips)], p.port)
+				addr   = net.JoinHostPort(ips[i%len(ips)], p.port)
 				pc, ok = p.load(i)
 			)
 			if ok && pc != nil && pc.addr == addr && isHealthy(pc.conn) {
-				// TODO maybe we should check neigbour pool slice if new addrs come.
+				// TODO maybe we should check neighbour pool slice if new addrs come.
 				continue
 			}
 			log.Debugf("establishing balanced connection to %s", addr)
 			conn, err := p.dial(ctx, addr)
 			if err != nil {
+				log.Debug(err)
 				continue
 			}
 			p.pool[i].Store(&poolConn{
@@ -252,7 +256,7 @@ func (p *pool) dial(ctx context.Context, addr string) (conn *ClientConn, err err
 	if p.bo != nil {
 		var res interface{}
 		retry := 0
-		res, err = p.bo.Do(ctx, func() (interface{}, error) {
+		res, err = p.bo.Do(ctx, func(ctx context.Context) (r interface{}, ret bool, err error) {
 			log.Debugf("dialing to %s with backoff, retry: %d", addr, retry)
 			ctx, cancel := context.WithTimeout(ctx, p.dialTimeout)
 			defer cancel()
@@ -260,20 +264,20 @@ func (p *pool) dial(ctx context.Context, addr string) (conn *ClientConn, err err
 			if err != nil {
 				if conn != nil {
 					err = errors.Wrap(conn.Close(), err.Error())
-					log.Debugf("failed to dial to %s: %s", addr, err)
 				}
+				log.Debugf("failed to dial grpc connection to %s: %s", addr, err)
 				retry++
-				return nil, err
+				return nil, err != nil, err
 			}
 			if !isHealthy(conn) {
 				if conn != nil {
 					err = errors.Wrap(conn.Close(), err.Error())
-					log.Debugf("connection for %s is unhealthy: %s", addr, err)
 				}
+				log.Debugf("connection for %s is unhealthy: %s", addr, err)
 				retry++
-				return nil, errors.ErrGRPCClientConnNotFound(addr)
+				return nil, true, errors.ErrGRPCClientConnNotFound(addr)
 			}
-			return conn, nil
+			return conn, false, nil
 		})
 		var ok bool
 		conn, ok = res.(*ClientConn)
@@ -345,9 +349,6 @@ func (p *pool) get(retry uint64) (*ClientConn, bool) {
 		}
 		return nil, false
 	}
-	if atomic.LoadUint64(&p.current) >= math.MaxUint64-2 {
-		atomic.StoreUint64(&p.current, 0)
-	}
 
 	if res := p.pool[atomic.AddUint64(&p.current, 1)%p.Len()].Load(); res != nil {
 		if pc, ok := res.(*poolConn); ok && pc != nil && isHealthy(pc.conn) {
@@ -377,24 +378,15 @@ func (p *pool) lookupIPAddr(ctx context.Context) (ips []string, err error) {
 	if len(addrs) == 0 {
 		return nil, errors.ErrGRPCLookupIPAddrNotFound(p.host)
 	}
-	ips = make([]string, 0, len(addrs))
 
-	const network = "tcp"
+	ips = make([]string, 0, len(addrs))
 	for _, ip := range addrs {
 		ipStr := ip.String()
-		if net.IsIPv6(ipStr) && !strings.Contains(ipStr, "[") {
-			ipStr = fmt.Sprintf("[%s]", ipStr)
-		}
 		var conn net.Conn
-		addr := fmt.Sprintf("%s:%d", ipStr, p.port)
-		if net.DefaultResolver.Dial != nil {
-			ctx, cancel := context.WithTimeout(ctx, time.Millisecond*10)
-			conn, err = net.DefaultResolver.Dial(ctx, network, addr)
-			cancel()
-		} else {
-			var d net.Dialer
-			conn, err = d.DialContext(ctx, network, addr)
-		}
+		addr := net.JoinHostPort(ipStr, p.port)
+		ctx, cancel := context.WithTimeout(ctx, time.Millisecond*10)
+		conn, err := net.DialContext(ctx, net.TCP.String(), addr)
+		cancel()
 		if err != nil {
 			log.Warnf("failed to initialize ping addr: %s,\terr: %s", addr, err.Error())
 			continue
@@ -411,18 +403,20 @@ func (p *pool) lookupIPAddr(ctx context.Context) (ips []string, err error) {
 	if len(ips) == 0 {
 		return nil, errors.ErrGRPCLookupIPAddrNotFound(p.host)
 	}
+
 	sort.Strings(ips)
 
 	return ips, nil
 }
 
 func (p *pool) Reconnect(ctx context.Context, force bool) (c Conn, err error) {
-	if p.isIP && p.reconnectHash != "" && !p.IsHealthy(ctx) {
+	healthy := p.IsHealthy(ctx)
+	if p.isIP && p.reconnectHash != "" && !healthy {
 		return nil, errors.ErrInvalidGRPCClientConn(p.addr)
 	}
 
 	if p.reconnectHash == "" {
-		log.Debugf("connection history for %s not found starting connection phase", p.addr)
+		log.Debugf("connection history for %s not found starting first connection phase", p.addr)
 		if p.isIP || !p.resolveDNS {
 			return p.connect(ctx)
 		}
@@ -431,7 +425,7 @@ func (p *pool) Reconnect(ctx context.Context, force bool) (c Conn, err error) {
 
 	ips, err := p.lookupIPAddr(ctx)
 	if err != nil || p.isIP {
-		if !p.IsHealthy(ctx) {
+		if !healthy {
 			if p.isIP {
 				return nil, errors.ErrInvalidGRPCClientConn(p.addr)
 			}
@@ -439,7 +433,7 @@ func (p *pool) Reconnect(ctx context.Context, force bool) (c Conn, err error) {
 		}
 		return p, nil
 	}
-	if !p.IsHealthy(ctx) || p.reconnectHash != strings.Join(ips, "-") || force {
+	if !healthy || p.reconnectHash != strings.Join(ips, "-") || force {
 		return p.Connect(ctx)
 	}
 	return p, nil
@@ -467,18 +461,15 @@ func (p *pool) scanGRPCPort(ctx context.Context) (err error) {
 func isGRPCPort(ctx context.Context, host string, port uint16) bool {
 	ctx, cancel := context.WithTimeout(ctx, time.Millisecond*5)
 	defer cancel()
-	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", host, port),
+	conn, err := grpc.DialContext(ctx,
+		net.JoinHostPort(host, port),
 		grpc.WithInsecure(),
 		grpc.WithBlock(),
 	)
 	if err != nil {
 		return false
 	}
-	err = conn.Close()
-	if err != nil {
-		return false
-	}
-	return true
+	return conn.Close() == nil
 }
 
 func isHealthy(conn *ClientConn) bool {

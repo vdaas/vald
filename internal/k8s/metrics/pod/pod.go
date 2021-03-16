@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,10 +22,10 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/k8s"
-
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime"
 	metrics "k8s.io/metrics/pkg/apis/metrics/v1beta1"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -35,7 +35,6 @@ import (
 type PodWatcher k8s.ResourceController
 
 type reconciler struct {
-	ctx         context.Context
 	mgr         manager.Manager
 	name        string
 	onError     func(err error)
@@ -52,17 +51,17 @@ type Pod struct {
 func New(opts ...Option) PodWatcher {
 	r := new(reconciler)
 
-	for _, opt := range opts {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(r)
 	}
 
 	return r
 }
 
-func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err error) {
+func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
 	m := &metrics.PodMetricsList{}
 
-	err = r.mgr.GetClient().List(r.ctx, m)
+	err = r.mgr.GetClient().List(ctx, m)
 
 	if err != nil {
 		if r.onError != nil {
@@ -118,10 +117,7 @@ func (r *reconciler) GetName() string {
 	return r.name
 }
 
-func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler {
-	if r.ctx == nil && ctx != nil {
-		r.ctx = ctx
-	}
+func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
 	if r.mgr == nil && mgr != nil {
 		r.mgr = mgr
 	}
@@ -129,18 +125,18 @@ func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) rec
 	return r
 }
 
-func (r *reconciler) For() runtime.Object {
+func (r *reconciler) For() (client.Object, []builder.ForOption) {
 	// WARN: metrics should be renew
 	// https://github.com/kubernetes/community/blob/master/contributors/design-proposals/instrumentation/resource-metrics-api.md#further-improvements
-	return new(metrics.PodMetrics)
+	return new(metrics.PodMetrics), nil
 }
 
-func (r *reconciler) Owns() runtime.Object {
+func (r *reconciler) Owns() (client.Object, []builder.OwnsOption) {
 	// return new(metrics.PodMetrics)
-	return nil
+	return nil, nil
 }
 
-func (r *reconciler) Watches() (*source.Kind, handler.EventHandler) {
+func (r *reconciler) Watches() (*source.Kind, handler.EventHandler, []builder.WatchesOption) {
 	// return &source.Kind{Type: new(metrics.PodMetrics)}, &handler.EnqueueRequestForObject{}
-	return nil, nil
+	return nil, nil, nil
 }

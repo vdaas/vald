@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,24 +19,38 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"runtime"
 	"sync"
+	"sync/atomic"
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"google.golang.org/grpc"
 )
 
-type ClientStream = grpc.ClientStream
+type (
+	ClientStream = grpc.ClientStream
+	ServerStream = grpc.ServerStream
+)
 
 // BidirectionalStream represents gRPC bidirectional stream server handler.
-func BidirectionalStream(ctx context.Context, stream grpc.ServerStream,
+func BidirectionalStream(ctx context.Context, stream ServerStream,
 	concurrency int,
 	newData func() interface{},
 	f func(context.Context, interface{}) (interface{}, error)) (err error) {
+	ctx, span := trace.StartSpan(stream.Context(), apiName+"/BidirectionalStream")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 	eg, ctx := errgroup.New(ctx)
 	if concurrency > 0 {
 		eg.Limitation(concurrency)
@@ -46,43 +60,67 @@ func BidirectionalStream(ctx context.Context, stream grpc.ServerStream,
 
 	errMap := sync.Map{}
 
+	finalize := func() error {
+		var errs error
+		err = eg.Wait()
+		errMap.Range(func(_, e interface{}) bool {
+			err, ok := e.(error)
+			if !ok || err == nil {
+				return true
+			}
+			if errs == nil {
+				errs = err
+			} else {
+				errs = errors.Wrap(err, errs.Error())
+			}
+			return true
+		})
+		if errs == nil {
+			return nil
+		}
+		st, ok := status.FromError(err)
+		if !ok {
+			return status.New(codes.Unknown, errs.Error()).Err()
+		}
+		err = st.Err()
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
+		return err
+	}
+
+	var cnt uint64
 	for {
 		select {
 		case <-ctx.Done():
-			err = eg.Wait()
-			if err != nil {
-				log.Error(err)
-				return err
-			}
-			return nil
+			return finalize()
 		default:
 			data := newData()
 			err = stream.RecvMsg(data)
 			if err != nil {
-				if err == io.EOF {
-					err = eg.Wait()
-					if err != nil {
-						log.Error(err)
-						return err
-					}
-					var errs error
-					errMap.Range(func(_, err interface{}) bool {
-						errs = errors.Wrap(errs, err.(error).Error())
-						return true
-					})
-					return errs
+				if err != io.EOF && !errors.Is(err, io.EOF) {
+					log.Errorf("failed to receive stream message %v", err)
+					errMap.Store(err.Error(), err)
 				}
-				log.Error(err)
-				return err
+				return finalize()
+
 			}
 			if data != nil {
 				eg.Go(safety.RecoverWithoutPanicFunc(func() (err error) {
+					ctx, sspan := trace.StartSpan(ctx, fmt.Sprintf("%s/BidirectionalStream/stream-%020d", apiName, atomic.AddUint64(&cnt, 1)))
+					defer func() {
+						if sspan != nil {
+							sspan.End()
+						}
+					}()
 					var res interface{}
 					res, err = f(ctx, data)
 					if err != nil {
 						runtime.Gosched()
 						errMap.Store(err.Error(), err)
-						return nil
+						if sspan != nil {
+							sspan.SetStatus(trace.StatusCodeInternal(err.Error()))
+						}
 					}
 					if res != nil {
 						mu.Lock()
@@ -90,6 +128,9 @@ func BidirectionalStream(ctx context.Context, stream grpc.ServerStream,
 						mu.Unlock()
 						if err != nil {
 							runtime.Gosched()
+							if sspan != nil {
+								sspan.SetStatus(trace.StatusCodeInternal(err.Error()))
+							}
 							return err
 						}
 					}
@@ -101,10 +142,13 @@ func BidirectionalStream(ctx context.Context, stream grpc.ServerStream,
 }
 
 // BidirectionalStreamClient is gRPC client stream.
-func BidirectionalStreamClient(stream grpc.ClientStream,
-	dataProvider func() interface{},
-	newData func() interface{},
+func BidirectionalStreamClient(stream ClientStream,
+	dataProvider, newData func() interface{},
 	f func(interface{}, error)) (err error) {
+	if stream == nil {
+		return errors.ErrGRPCClientStreamNotFound
+	}
+
 	ctx, cancel := context.WithCancel(stream.Context())
 	eg, ctx := errgroup.New(ctx)
 

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,23 +16,25 @@
 package safety
 
 import (
+	"os"
 	"reflect"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"go.uber.org/goleak"
 )
 
-var (
-	// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
-	goleakIgnoreOptions = []goleak.Option{
-		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
-	}
-)
+// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
+var goleakIgnoreOptions = []goleak.Option{
+	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+}
 
-func init() {
+func TestMain(m *testing.M) {
 	log.Init()
+	info.Init("")
+	os.Exit(m.Run())
 }
 
 func TestRecoverFunc(t *testing.T) {
@@ -70,7 +72,7 @@ func TestRecoverFunc(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns error when system paniced caused by runtime error",
+			name: "returns error when system panicked caused by runtime error",
 			args: args{
 				fn: func() error {
 					_ = []string{}[10]
@@ -79,12 +81,12 @@ func TestRecoverFunc(t *testing.T) {
 			},
 			want: want{
 				wantPanic: func() error {
-					return errors.New("system paniced caused by runtime error: runtime error: index out of range [10] with length 0")
+					return errors.New("system panicked caused by runtime error: runtime error: index out of range [10] with length 0")
 				},
 			},
 		},
 		{
-			name: "returns error when system paniced caused by panic with string value",
+			name: "returns error when system panicked caused by panic with string value",
 			args: args{
 				fn: func() error {
 					panic("panic")
@@ -97,7 +99,7 @@ func TestRecoverFunc(t *testing.T) {
 			},
 		},
 		{
-			name: "returns error when system paniced caused by panic with error",
+			name: "returns error when system panicked caused by panic with error",
 			args: args{
 				fn: func() error {
 					panic(errors.Errorf("error"))
@@ -110,7 +112,7 @@ func TestRecoverFunc(t *testing.T) {
 			},
 		},
 		{
-			name: "returns error when system paniced caused by panic with int value",
+			name: "returns error when system panicked caused by panic with int value",
 			args: args{
 				fn: func() error {
 					panic(10)
@@ -227,7 +229,6 @@ func TestRecoverWithoutPanicFunc(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -301,7 +302,6 @@ func Test_recoverFunc(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

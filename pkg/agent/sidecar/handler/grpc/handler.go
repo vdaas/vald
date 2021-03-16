@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 package grpc
 
 import (
-	"github.com/vdaas/vald/apis/grpc/agent/sidecar"
+	"github.com/vdaas/vald/apis/grpc/v1/agent/sidecar"
 	"github.com/vdaas/vald/pkg/agent/sidecar/service/observer"
 )
 
@@ -29,7 +29,7 @@ type server struct {
 func New(opts ...Option) sidecar.SidecarServer {
 	s := new(server)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(s)
 	}
 	return s

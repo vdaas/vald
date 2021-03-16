@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,12 +18,12 @@
 package errors
 
 var (
-	//TLS
+	// TLS.
 
-	// ErrTLSDisabled is error variable, it's replesents config error that tls is disabled by config
+	// ErrTLSDisabled is error variable, it's replesents config error that tls is disabled by config.
 	ErrTLSDisabled = New("tls feature is disabled")
 
-	// ErrTLSCertOrKeyNotFound is error variable, it's replesents tls cert or key not found error
+	// ErrTLSCertOrKeyNotFound is error variable, it's replesents tls cert or key not found error.
 	ErrTLSCertOrKeyNotFound = New("cert or key file path not found")
 
 	ErrCertificationFailed = New("certification failed")

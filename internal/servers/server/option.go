@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,26 +21,32 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/net/control"
+	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/logging"
+	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/recover"
+	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/trace"
 	"github.com/vdaas/vald/internal/net/http/rest"
 	"github.com/vdaas/vald/internal/timeutil"
-	"google.golang.org/grpc"
 )
 
 type Option func(*server)
 
 var (
-	defaultOpts = []Option{
+	defaultOptions = []Option{
 		WithDisableRestart(),
+		WithNetwork(net.TCP.String()),
 		WithServerMode(REST),
 		WithErrorGroup(errgroup.Get()),
 	}
-	HealthServerOpts = func(name, host, path string, port uint) []Option {
+	HealthServerOpts = func(name, host, path string, port uint16) []Option {
 		return []Option{
 			WithName(name),
 			WithErrorGroup(errgroup.Get()),
@@ -60,6 +66,7 @@ var (
 			}()),
 			WithHost(host),
 			WithIdleTimeout("3s"),
+			WithNetwork(net.TCP.String()),
 			WithPort(port),
 			WithProbeWaitTime("2s"),
 			WithReadHeaderTimeout("3s"),
@@ -71,6 +78,26 @@ var (
 	}
 )
 
+func WithNetwork(network string) Option {
+	return func(s *server) {
+		if network != "" {
+			nt := net.NetworkTypeFromString(network)
+			if nt == 0 || nt == net.Unknown || strings.EqualFold(nt.String(), net.Unknown.String()) {
+				nt = net.TCP
+			}
+			s.network = nt
+		}
+	}
+}
+
+func WithSocketPath(path string) Option {
+	return func(s *server) {
+		if path != "" {
+			s.socketPath = path
+		}
+	}
+}
+
 func WithHost(host string) Option {
 	return func(s *server) {
 		if host != "" {
@@ -79,11 +106,17 @@ func WithHost(host string) Option {
 	}
 }
 
-func WithPort(port uint) Option {
+func WithPort(port uint16) Option {
 	return func(s *server) {
 		if port != 0 {
 			s.port = port
 		}
+	}
+}
+
+func WithSocketFlag(flg control.SocketFlag) Option {
+	return func(s *server) {
+		s.sockFlg = flg
 	}
 }
 
@@ -246,7 +279,10 @@ func WithGRPCOption(opts ...grpc.ServerOption) Option {
 func WithGRPCRegistFunc(f func(*grpc.Server)) Option {
 	return func(s *server) {
 		if f != nil {
-			s.grpc.reg = f
+			if s.grpc.regs == nil {
+				s.grpc.regs = make([]func(*grpc.Server), 0, 2)
+			}
+			s.grpc.regs = append(s.grpc.regs, f)
 		}
 	}
 }
@@ -270,6 +306,7 @@ func WithGRPCMaxReceiveMessageSize(size int) Option {
 		}
 	}
 }
+
 func WithGRPCMaxSendMessageSize(size int) Option {
 	return func(s *server) {
 		if size > 0 || size == -1 {
@@ -277,6 +314,7 @@ func WithGRPCMaxSendMessageSize(size int) Option {
 		}
 	}
 }
+
 func WithGRPCInitialWindowSize(size int) Option {
 	return func(s *server) {
 		if size > 0 || size == -1 {
@@ -284,6 +322,7 @@ func WithGRPCInitialWindowSize(size int) Option {
 		}
 	}
 }
+
 func WithGRPCInitialConnWindowSize(size int) Option {
 	return func(s *server) {
 		if size > 0 || size == -1 {
@@ -307,6 +346,7 @@ func WithGRPCKeepaliveMaxConnIdle(max string) Option {
 		s.grpc.keepAlive.maxConnIdle = d
 	}
 }
+
 func WithGRPCKeepaliveMaxConnAge(max string) Option {
 	return func(s *server) {
 		if len(max) == 0 {
@@ -322,6 +362,7 @@ func WithGRPCKeepaliveMaxConnAge(max string) Option {
 		s.grpc.keepAlive.maxConnAge = d
 	}
 }
+
 func WithGRPCKeepaliveMaxConnAgeGrace(max string) Option {
 	return func(s *server) {
 		if len(max) == 0 {
@@ -337,6 +378,7 @@ func WithGRPCKeepaliveMaxConnAgeGrace(max string) Option {
 		s.grpc.keepAlive.maxConnAgeGrace = d
 	}
 }
+
 func WithGRPCKeepaliveTime(dur string) Option {
 	return func(s *server) {
 		if len(dur) == 0 {
@@ -352,6 +394,7 @@ func WithGRPCKeepaliveTime(dur string) Option {
 		s.grpc.keepAlive.t = d
 	}
 }
+
 func WithGRPCKeepaliveTimeout(dur string) Option {
 	return func(s *server) {
 		if len(dur) == 0 {
@@ -367,6 +410,7 @@ func WithGRPCKeepaliveTimeout(dur string) Option {
 		s.grpc.keepAlive.timeout = d
 	}
 }
+
 func WithGRPCWriteBufferSize(size int) Option {
 	return func(s *server) {
 		if size > 0 || size == -1 {
@@ -374,6 +418,7 @@ func WithGRPCWriteBufferSize(size int) Option {
 		}
 	}
 }
+
 func WithGRPCReadBufferSize(size int) Option {
 	return func(s *server) {
 		if size > 0 || size == -1 {
@@ -381,6 +426,7 @@ func WithGRPCReadBufferSize(size int) Option {
 		}
 	}
 }
+
 func WithGRPCConnectionTimeout(to string) Option {
 	return func(s *server) {
 		if len(to) == 0 {
@@ -393,6 +439,7 @@ func WithGRPCConnectionTimeout(to string) Option {
 		s.grpc.opts = append(s.grpc.opts, grpc.ConnectionTimeout(d))
 	}
 }
+
 func WithGRPCMaxHeaderListSize(size int) Option {
 	return func(s *server) {
 		if size > 0 {
@@ -400,6 +447,7 @@ func WithGRPCMaxHeaderListSize(size int) Option {
 		}
 	}
 }
+
 func WithGRPCHeaderTableSize(size int) Option {
 	return func(s *server) {
 		if size > 0 {
@@ -407,8 +455,31 @@ func WithGRPCHeaderTableSize(size int) Option {
 		}
 	}
 }
-func WithGRPCInterceptors(name ...string) Option {
+
+func WithGRPCInterceptors(names ...string) Option {
 	return func(s *server) {
-		// s.grpc.opts = append(s.grpc.opts, grpc.UnaryInterceptor(uint32(size)))
+		for _, name := range names {
+			switch strings.ToLower(name) {
+			case "recoverinterceptor", "recover":
+				s.grpc.opts = append(
+					s.grpc.opts,
+					grpc.ChainUnaryInterceptor(recover.RecoverInterceptor()),
+					grpc.ChainStreamInterceptor(recover.RecoverStreamInterceptor()),
+				)
+			case "accessloginterceptor", "accesslog":
+				s.grpc.opts = append(
+					s.grpc.opts,
+					grpc.ChainUnaryInterceptor(logging.AccessLogInterceptor()),
+					grpc.ChainStreamInterceptor(logging.AccessLogStreamInterceptor()),
+				)
+			case "tracepayloadinterceptor", "tracepayload":
+				s.grpc.opts = append(
+					s.grpc.opts,
+					grpc.ChainUnaryInterceptor(trace.TracePayloadInterceptor()),
+					grpc.ChainStreamInterceptor(trace.TracePayloadStreamInterceptor()),
+				)
+			default:
+			}
+		}
 	}
 }

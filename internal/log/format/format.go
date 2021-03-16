@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ const (
 	Unknown Format = iota
 	RAW
 	JSON
-	LTSV
+	// LTSV
 )
 
 func (f Format) String() string {
@@ -33,8 +33,8 @@ func (f Format) String() string {
 		return "raw"
 	case JSON:
 		return "json"
-	case LTSV:
-		return "ltsv"
+		// case LTSV:
+		// 	return "ltsv"
 	}
 	return "unknown"
 }
@@ -45,8 +45,8 @@ func Atof(str string) Format {
 		return RAW
 	case "json":
 		return JSON
-	case "ltsv":
-		return LTSV
+		// case "ltsv":
+		// 	return LTSV
 	}
 	return Unknown
 }

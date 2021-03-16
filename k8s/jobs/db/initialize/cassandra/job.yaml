@@ -1,6 +1,6 @@
 ---
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,17 +29,18 @@ spec:
             - /bin/sh
             - -c
             - |
-              cqlsh -u${CASSANDRA_USER} -p${CASSANDRA_PASSWORD} ${CASSANDRA_HOST} < /initdb/init.cql
+              cqlsh ${CASSANDRA_HOST} \
+                -uroot \
+                -p${CASSANDRA_PASSWORD} \
+                < /initdb/init.cql
           env:
             - name: CASSANDRA_HOST
               value: cassandra.default.svc.cluster.local
-            - name: CASSANDRA_USER
-              value: root
             - name: CASSANDRA_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  key: password
                   name: cassandra-secret
+                  key: password
           volumeMounts:
             - name: cassandra-initdb
               mountPath: /initdb

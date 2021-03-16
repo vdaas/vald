@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,11 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if .Values.discoverer.enabled }}
+{{- $discoverer := .Values.discoverer -}}
+{{- if $discoverer.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Values.discoverer.name }}-config
+  name: {{ $discoverer.name }}-config
   labels:
     app.kubernetes.io/name: {{ include "vald.name" . }}
     helm.sh/chart: {{ include "vald.chart" . }}
@@ -28,17 +29,17 @@ metadata:
 data:
   config.yaml: |
     ---
-    version: {{ .Values.discoverer.version }}
-    time_zone: {{ default .Values.defaults.time_zone .Values.discoverer.time_zone }}
+    version: {{ $discoverer.version }}
+    time_zone: {{ default .Values.defaults.time_zone $discoverer.time_zone }}
     logging:
-      {{- $logging := dict "Values" .Values.discoverer.logging "default" .Values.defaults.logging }}
+      {{- $logging := dict "Values" $discoverer.logging "default" .Values.defaults.logging }}
       {{- include "vald.logging" $logging | nindent 6 }}
     server_config:
-      {{- $servers := dict "Values" .Values.discoverer.server_config "default" .Values.defaults.server_config }}
+      {{- $servers := dict "Values" $discoverer.server_config "default" .Values.defaults.server_config }}
       {{- include "vald.servers" $servers | nindent 6 }}
     observability:
-      {{- $observability := dict "Values" .Values.discoverer.observability "default" .Values.defaults.observability }}
+      {{- $observability := dict "Values" $discoverer.observability "default" .Values.defaults.observability }}
       {{- include "vald.observability" $observability | nindent 6 }}
     discoverer:
-      {{- toYaml .Values.discoverer.discoverer | nindent 6 }}
+      {{- toYaml $discoverer.discoverer | nindent 6 }}
 {{- end }}

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,47 +14,56 @@
 # limitations under the License.
 #
 
-REPO                           ?= vdaas
+ORG                             ?= vdaas
 NAME                            = vald
-GOPKG                           = github.com/$(REPO)/$(NAME)
+GOPKG                           = github.com/$(ORG)/$(NAME)
+GOPRIVATE                       = $(GOPKG),$(GOPKG)/apis
 DATETIME                        = $(eval DATETIME := $(shell date -u +%Y/%m/%d_%H:%M:%S%z))$(DATETIME)
 TAG                            ?= latest
-BASE_IMAGE                      = $(NAME)-base
 AGENT_IMAGE                     = $(NAME)-agent-ngt
 AGENT_SIDECAR_IMAGE             = $(NAME)-agent-sidecar
-GATEWAY_IMAGE                   = $(NAME)-gateway
-DISCOVERER_IMAGE                = $(NAME)-discoverer-k8s
-META_REDIS_IMAGE                = $(NAME)-meta-redis
-META_CASSANDRA_IMAGE            = $(NAME)-meta-cassandra
-MANAGER_BACKUP_MYSQL_IMAGE      = $(NAME)-manager-backup-mysql
-MANAGER_BACKUP_CASSANDRA_IMAGE  = $(NAME)-manager-backup-cassandra
-MANAGER_COMPRESSOR_IMAGE        = $(NAME)-manager-compressor
-MANAGER_INDEX_IMAGE             = $(NAME)-manager-index
+BACKUP_GATEWAY_IMAGE            = $(NAME)-backup-gateway
 CI_CONTAINER_IMAGE              = $(NAME)-ci-container
 DEV_CONTAINER_IMAGE             = $(NAME)-dev-container
+DISCOVERER_IMAGE                = $(NAME)-discoverer-k8s
+FILTER_GATEWAY_IMAGE            = $(NAME)-filter-gateway
+GATEWAY_IMAGE                   = $(NAME)-gateway
 HELM_OPERATOR_IMAGE             = $(NAME)-helm-operator
+LB_GATEWAY_IMAGE                = $(NAME)-lb-gateway
 LOADTEST_IMAGE                  = $(NAME)-loadtest
+MANAGER_BACKUP_CASSANDRA_IMAGE  = $(NAME)-manager-backup-cassandra
+MANAGER_BACKUP_MYSQL_IMAGE      = $(NAME)-manager-backup-mysql
+MANAGER_COMPRESSOR_IMAGE        = $(NAME)-manager-compressor
+MANAGER_INDEX_IMAGE             = $(NAME)-manager-index
+META_CASSANDRA_IMAGE            = $(NAME)-meta-cassandra
+META_GATEWAY_IMAGE              = $(NAME)-meta-gateway
+META_REDIS_IMAGE                = $(NAME)-meta-redis
+MAINTAINER                      = "$(ORG).org $(NAME) team <$(NAME)@$(ORG).org>"
 
-VERSION := $(eval VALD_VERSION := $(shell cat versions/VALD_VERSION))$(VALD_VERSION)
+VERSION ?= $(eval VERSION := $(shell cat versions/VALD_VERSION))$(VERSION)
 
 NGT_VERSION := $(eval NGT_VERSION := $(shell cat versions/NGT_VERSION))$(NGT_VERSION)
 NGT_REPO = github.com/yahoojapan/NGT
 
+GOPROXY=direct
 GO_VERSION := $(eval GO_VERSION := $(shell cat versions/GO_VERSION))$(GO_VERSION)
 GOOS := $(eval GOOS := $(shell go env GOOS))$(GOOS)
 GOARCH := $(eval GOARCH := $(shell go env GOARCH))$(GOARCH)
 GOPATH := $(eval GOPATH := $(shell go env GOPATH))$(GOPATH)
 GOCACHE := $(eval GOCACHE := $(shell go env GOCACHE))$(GOCACHE)
 
+TEMP_DIR := $(eval TEMP_DIR := $(shell mktemp -d))$(TEMP_DIR)
+
 TENSORFLOW_C_VERSION := $(eval TENSORFLOW_C_VERSION := $(shell cat versions/TENSORFLOW_C_VERSION))$(TENSORFLOW_C_VERSION)
 
 OPERATOR_SDK_VERSION := $(eval OPERATOR_SDK_VERSION := $(shell cat versions/OPERATOR_SDK_VERSION))$(OPERATOR_SDK_VERSION)
 
-KIND_VERSION         ?= v0.9.0
-HELM_VERSION         ?= v3.4.1
-HELM_DOCS_VERSION    ?= 1.4.0
-VALDCLI_VERSION      ?= v0.0.62
-TELEPRESENCE_VERSION ?= 0.108
+KIND_VERSION         ?= v0.10.0
+HELM_VERSION         ?= v3.5.2
+HELM_DOCS_VERSION    ?= 1.5.0
+VALDCLI_VERSION      ?= v1.0.2
+TELEPRESENCE_VERSION ?= 0.109
+KUBELINTER_VERSION   ?= 0.1.6
 
 SWAP_DEPLOYMENT_TYPE ?= deployment
 SWAP_IMAGE           ?= ""
@@ -63,6 +72,7 @@ SWAP_TAG             ?= latest
 BINDIR ?= /usr/local/bin
 
 UNAME := $(eval UNAME := $(shell uname))$(UNAME)
+PWD := $(eval PWD := $(shell pwd))$(PWD)
 
 ifeq ($(UNAME),Linux)
 CPU_INFO_FLAGS := $(eval CPU_INFO_FLAGS := $(shell cat /proc/cpuinfo | grep flags | cut -d " " -f 2- | head -1))$(CPU_INFO_FLAGS)
@@ -83,9 +93,11 @@ BENCH_DATASET_MD5_DIR = $(BENCH_DATASET_BASE_DIR)/$(BENCH_DATASET_MD5_DIR_NAME)
 BENCH_DATASET_HDF5_DIR = $(BENCH_DATASET_BASE_DIR)/$(BENCH_DATASET_HDF5_DIR_NAME)
 
 PROTOS := $(eval PROTOS := $(shell find apis/proto -type f -regex ".*\.proto"))$(PROTOS)
+PROTOS_V0 := $(eval PROTOS_V0 := $(filter-out apis/proto/v%.proto,$(PROTOS)))$(PROTOS_V0)
+PROTOS_V1 := $(eval PROTOS_V1 := $(filter apis/proto/v1/%.proto,$(PROTOS)))$(PROTOS_V1)
 PBGOS = $(PROTOS:apis/proto/%.proto=apis/grpc/%.pb.go)
 SWAGGERS = $(PROTOS:apis/proto/%.proto=apis/swagger/%.swagger.json)
-PBDOCS = apis/docs/docs.md
+PBDOCS = apis/docs/v0/docs.md apis/docs/v1/docs.md
 
 ifeq ($(GOARCH),amd64)
 CFLAGS ?= -mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl
@@ -137,15 +149,17 @@ PORT      ?= 80
 NUMBER    ?= 10
 DIMENSION ?= 6
 NUMPANES  ?= 4
+MEAN      ?= 0.0
+STDDEV    ?= 1.0
 
 BODY = ""
 
 PROTO_PATHS = \
-	$(PROTODIRS:%=./apis/proto/%) \
-	$(GOPATH)/src/github.com/protocolbuffers/protobuf/src \
-	$(GOPATH)/src/github.com/gogo/protobuf/protobuf \
+	$(PWD) \
+	$(GOPATH)/src \
+	$(GOPATH)/src/$(GOPKG) \
 	$(GOPATH)/src/github.com/googleapis/googleapis \
-	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
+	$(GOPATH)/src/github.com/gogo/googleapis
 
 GO_SOURCES = $(eval GO_SOURCES := $(shell find \
 		./cmd \
@@ -153,7 +167,7 @@ GO_SOURCES = $(eval GO_SOURCES := $(shell find \
 		./internal \
 		./pkg \
 		-not -path './cmd/cli/*' \
-		-not -path './internal/core/ngt/*' \
+		-not -path './internal/core/algorithm/ngt/*' \
 		-not -path './internal/test/comparator/*' \
 		-not -path './internal/test/mock/*' \
 		-not -path './hack/benchmark/internal/client/ngtd/*' \
@@ -163,6 +177,7 @@ GO_SOURCES = $(eval GO_SOURCES := $(shell find \
 		-not -path './hack/license/*' \
 		-not -path './hack/swagger/*' \
 		-not -path './hack/tools/*' \
+		-not -path './tests/*' \
 		-type f \
 		-name '*.go' \
 		-not -regex '.*options?\.go' \
@@ -174,7 +189,7 @@ GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell find \
 		./internal \
 		./pkg \
 		-not -path './cmd/cli/*' \
-		-not -path './internal/core/ngt/*' \
+		-not -path './internal/core/algorithm/ngt/*' \
 		-not -path './internal/test/comparator/*' \
 		-not -path './internal/test/mock/*' \
 		-not -path './hack/benchmark/internal/client/ngtd/*' \
@@ -184,6 +199,7 @@ GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell find \
 		-not -path './hack/license/*' \
 		-not -path './hack/swagger/*' \
 		-not -path './hack/tools/*' \
+		-not -path './tests/*' \
 		-type f \
 		-regex '.*options?\.go' \
 		-not -name '*_test.go' \
@@ -206,10 +222,37 @@ DISTROLESS_IMAGE      ?= gcr.io/distroless/static
 DISTROLESS_IMAGE_TAG  ?= nonroot
 UPX_OPTIONS           ?= -9
 
+K8S_EXTERNAL_SCYLLA_MANIFEST        ?= k8s/external/scylla/scyllacluster.yaml
+K8S_SLEEP_DURATION_FOR_WAIT_COMMAND ?= 5
+
+K8S_KUBECTL_VERSION ?= $(eval K8S_KUBECTL_VERSION := $(shell kubectl version --short))$(K8S_KUBECTL_VERSION)
+K8S_SERVER_VERSION ?= $(eval K8S_SERVER_VERSION := $(shell echo "$(K8S_KUBECTL_VERSION)" | sed -e "s/.*Server.*\(v[0-9]\.[0-9]*\)\..*/\1/g"))$(K8S_SERVER_VERSION)
+
 COMMA := ,
 SHELL = bash
 
+E2E_BIND_HOST                      ?= 127.0.0.1
+E2E_BIND_PORT                      ?= 8082
+E2E_TIMEOUT                        ?= 30m
+E2E_DATASET_NAME                   ?= fashion-mnist-784-euclidean
+E2E_INSERT_COUNT                   ?= 10000
+E2E_SEARCH_COUNT                   ?= 1000
+E2E_SEARCH_BY_ID_COUNT             ?= 100
+E2E_GET_OBJECT_COUNT               ?= 10
+E2E_UPDATE_COUNT                   ?= 10
+E2E_REMOVE_COUNT                   ?= 3
+E2E_WAIT_FOR_CREATE_INDEX_DURATION ?= 8m
+E2E_TARGET_NAME                    ?= vald-meta-gateway
+E2E_TARGET_POD_NAME                ?= $(eval E2E_TARGET_POD_NAME := $(shell kubectl get pods --selector=app=$(E2E_TARGET_NAME) | tail -1 | cut -f1 -d " "))$(E2E_TARGET_POD_NAME)
+E2E_TARGET_NAMESPACE               ?= default
+E2E_TARGET_PORT                    ?= 8081
+
 include Makefile.d/functions.mk
+
+.PHONY: maintainer
+## print maintainer
+maintainer:
+	@echo $(MAINTAINER)
 
 .PHONY: help
 ## print all available commands
@@ -234,24 +277,31 @@ all: clean deps
 .PHONY: clean
 ## clean
 clean:
+	rm -rf vendor
 	go clean -cache -modcache -testcache -i -r
+	mv ./apis/grpc/v1/vald/vald.go $(TEMP_DIR)/vald.go
 	rm -rf \
 		/go/pkg \
 		./*.log \
 		./*.svg \
 		./apis/docs \
 		./apis/swagger \
+		./apis/grpc \
 		./bench \
 		./pprof \
 		./libs \
 		$(GOCACHE) \
 		./go.sum \
 		./go.mod
+	mkdir -p ./apis/grpc/v1/vald
+	mv $(TEMP_DIR)/vald.go ./apis/grpc/v1/vald/vald.go
 	cp ./hack/go.mod.default ./go.mod
 
 .PHONY: license
 ## add license to files
 license:
+	GOPRIVATE=$(GOPRIVATE) \
+	MAINTAINER=$(MAINTAINER) \
 	go run hack/license/gen/main.go ./
 
 .PHONY: init
@@ -275,8 +325,8 @@ tools/install: \
 ## update deps, license, and run goimports
 update: \
 	clean \
-	deps \
 	proto/all \
+	deps \
 	format \
 	go/deps
 
@@ -324,7 +374,8 @@ go/deps:
 		./go.sum \
 		./go.mod
 	cp ./hack/go.mod.default ./go.mod
-	go mod tidy
+	GOPRIVATE=$(GOPRIVATE) go mod tidy
+	go get -u all 2>/dev/null || true
 
 
 .PHONY: goimports/install
@@ -334,12 +385,17 @@ goimports/install:
 
 .PHONY: prettier/install
 prettier/install:
-	npm install -g npm prettier
+	type prettier || npm install -g prettier
+
+.PHONY: version
+## print vald version
+version: \
+	version/vald
 
 .PHONY: version/vald
 ## print vald version
 version/vald:
-	@echo $(VALD_VERSION)
+	@echo $(VERSION)
 
 .PHONY: version/go
 ## print go version
@@ -372,13 +428,13 @@ version/telepresence:
 ngt/install: /usr/local/include/NGT/Capi.h
 /usr/local/include/NGT/Capi.h:
 	curl -LO https://github.com/yahoojapan/NGT/archive/v$(NGT_VERSION).tar.gz
-	tar zxf v$(NGT_VERSION).tar.gz -C /tmp
-	cd /tmp/NGT-$(NGT_VERSION) && \
-	    cmake -DCMAKE_C_FLAGS="$(CFLAGS)" -DCMAKE_CXX_FLAGS="$(CXXFLAGS)" .
-	make -j -C /tmp/NGT-$(NGT_VERSION)
-	make install -C /tmp/NGT-$(NGT_VERSION)
+	tar zxf v$(NGT_VERSION).tar.gz -C $(TEMP_DIR)/
+	cd $(TEMP_DIR)/NGT-$(NGT_VERSION) && \
+		cmake -DCMAKE_C_FLAGS="$(CFLAGS)" -DCMAKE_CXX_FLAGS="$(CXXFLAGS)" .
+	make -j -C $(TEMP_DIR)/NGT-$(NGT_VERSION)
+	make install -C $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	rm -rf v$(NGT_VERSION).tar.gz
-	rm -rf /tmp/NGT-$(NGT_VERSION)
+	rm -rf $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	ldconfig
 
 .PHONY: tensorflow/install
@@ -403,18 +459,18 @@ lint:
 .PHONY: changelog/update
 ## update changelog
 changelog/update:
-	echo "# CHANGELOG" > /tmp/CHANGELOG.md
-	echo "" >> /tmp/CHANGELOG.md
-	$(MAKE) -s changelog/next/print >> /tmp/CHANGELOG.md
-	echo "" >> /tmp/CHANGELOG.md
-	tail -n +2 CHANGELOG.md >> /tmp/CHANGELOG.md
-	mv -f /tmp/CHANGELOG.md CHANGELOG.md
+	echo "# CHANGELOG" > $(TEMP_DIR)/CHANGELOG.md
+	echo "" >> $(TEMP_DIR)/CHANGELOG.md
+	$(MAKE) -s changelog/next/print >> $(TEMP_DIR)/CHANGELOG.md
+	echo "" >> $(TEMP_DIR)/CHANGELOG.md
+	tail -n +2 CHANGELOG.md >> $(TEMP_DIR)/CHANGELOG.md
+	mv -f $(TEMP_DIR)/CHANGELOG.md CHANGELOG.md
 
 .PHONY: changelog/next/print
 ## print next changelog entry
 changelog/next/print:
 	@cat hack/CHANGELOG.template.md | \
-	    sed -e 's/{{ version }}/$(VALD_VERSION)/g'
+	    sed -e 's/{{ version }}/$(VERSION)/g'
 	@echo "$$BODY"
 
 include Makefile.d/bench.mk
@@ -423,8 +479,10 @@ include Makefile.d/docker.mk
 include Makefile.d/git.mk
 include Makefile.d/helm.mk
 include Makefile.d/proto.mk
+include Makefile.d/k3d.mk
 include Makefile.d/k8s.mk
 include Makefile.d/kind.mk
 include Makefile.d/client.mk
 include Makefile.d/ml.mk
 include Makefile.d/test.mk
+include Makefile.d/e2e.mk

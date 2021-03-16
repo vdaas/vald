@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,11 +23,13 @@ import (
 
 	"github.com/kpango/fuid"
 	"github.com/kpango/glg"
-	agent "github.com/vdaas/vald-client-go/agent/core"
-	"github.com/vdaas/vald-client-go/payload"
+	"google.golang.org/grpc"
+
+	agent "github.com/vdaas/vald-client-go/v1/agent/core"
+	"github.com/vdaas/vald-client-go/v1/payload"
+	"github.com/vdaas/vald-client-go/v1/vald"
 
 	"gonum.org/v1/hdf5"
-	"google.golang.org/grpc"
 )
 
 const (
@@ -72,36 +74,42 @@ func main() {
 	}
 
 	// Creates Vald Agent client for gRPC.
-	client := agent.NewAgentClient(conn)
+	client := vald.NewValdClient(conn)
 
 	glg.Infof("Start Inserting %d training vector to Vald Agent", insertCount)
 	// Insert 400 example vectors into Vald cluster
 	for i := range ids[:insertCount] {
-		if i%10 == 0 {
-			glg.Infof("Inserted: %d", i)
-		}
 		// Calls `Insert` function of Vald Agent client.
 		// Sends set of vector and id to server via gRPC.
-		_, err := client.Insert(ctx, &payload.Object_Vector{
-			Id:     ids[i],
-			Vector: train[i],
+		_, err := client.Insert(ctx, &payload.Insert_Request{
+			Vector: &payload.Object_Vector{
+				Id:     ids[i],
+				Vector: train[i],
+			},
+			Config: &payload.Insert_Config{
+				SkipStrictExistCheck: true,
+			},
 		})
 		if err != nil {
 			glg.Fatal(err)
 		}
+		if i%10 == 0 {
+			glg.Infof("Inserted: %d", i+10)
+		}
 	}
+	glg.Infof("Finish Inserting %d training vector to Vald Agent", insertCount)
 	/**
 	Option: Run Indexing instead of Auto Indexing
-	If you run client.CreateIndex, it costs less time for search
+	If you run client.CreateAndSaveIndex, it costs less time for search
 	**/
-	// glg.Info("Start Indexing dataset.")
-	// _, err = client.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
-	// 	PoolSize: uint32(insertCount),
-	// })
-	// if err != nil {
-	// 	glg.Fatal(err)
-	// }
-	// glg.Info("Finish Indexing dataset. \n\n")
+	glg.Info("Start Indexing dataset.")
+	_, err = agent.NewAgentClient(conn).CreateAndSaveIndex(ctx, &payload.Control_CreateIndexRequest{
+		PoolSize: uint32(insertCount),
+	})
+	if err != nil {
+		glg.Fatal(err)
+	}
+	glg.Info("Finish Indexing dataset. \n\n")
 
 	// Vald Agent starts indexing automatically after insert. It needs to wait until the indexing is completed before a search action is performed.
 	wt := time.Duration(indexingWaitSeconds) * time.Second
@@ -133,6 +141,38 @@ func main() {
 		glg.Infof("%d - Results : %s\n\n", i+1, string(b))
 		time.Sleep(1 * time.Second)
 	}
+
+	glg.Info("Start removing vector")
+	// Remove indexed 400 vectors from vald cluster.
+	for i := range ids[:insertCount] {
+		// Call `Remove` function of Vald client.
+		// Sends id to server via gRPC.
+		_, err := client.Remove(ctx, &payload.Remove_Request{
+			// Conditions for removing the vector.
+			Id: &payload.Object_ID{
+				Id: ids[i],
+			},
+		})
+		if err != nil {
+			glg.Fatal(err)
+		}
+		if i%10 == 0 {
+			glg.Infof("Removed: %d", i+10)
+		}
+	}
+	glg.Info("Finish removing vector")
+	glg.Info("Start removing indexed vector from backup")
+	/**
+	Run Indexing instead of Auto Indexing.
+	Before calling the SaveIndex (or CreateAndSaveIndex) API, the vectors you inserted before still exist in the NGT graph index even the Remove API is called due to the design of NGT.
+	So at this moment, the neighbor vectors will be returned from the SearchByID API.
+	To remove the vectors from the NGT graph completely, the SaveIndex API will be used here instead of waiting auto CreateIndex phase.
+	**/
+	_, err = agent.NewAgentClient(conn).SaveIndex(ctx, &payload.Empty{})
+	if err != nil {
+		glg.Fatal(err)
+	}
+	glg.Info("Finish removing indexed vector from backup")
 }
 
 // load function loads training and test vector from hdf file. The size of ids is same to the number of training data.
@@ -164,7 +204,9 @@ func load(path string) (ids []string, train, test [][]float32, err error) {
 		row, dim := int(dims[0]), int(dims[1])
 
 		// Gets the stored vector. All are represented as one-dimensional arrays.
-		vec := make([]float64, sp.SimpleExtentNPoints())
+		// The type of the slice depends on your dataset.
+		// For fashion-mnist-784-euclidean.hdf5, the datatype is float32.
+		vec := make([]float32, sp.SimpleExtentNPoints())
 		if err := d.Read(&vec); err != nil {
 			return nil, err
 		}

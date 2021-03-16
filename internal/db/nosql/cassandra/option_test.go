@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import (
 
 	"github.com/gocql/gocql"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"go.uber.org/goleak"
 )
@@ -46,12 +47,10 @@ type frameHeaderObserverImpl struct{}
 
 func (frameHeaderObserverImpl) ObserveFrameHeader(context.Context, gocql.ObservedFrameHeader) {}
 
-var (
-	// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
-	goleakIgnoreOptions = []goleak.Option{
-		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
-	}
-)
+// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
+var goleakIgnoreOptions = []goleak.Option{
+	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+}
 
 func TestWithHosts(t *testing.T) {
 	type T = client
@@ -149,7 +148,7 @@ func TestWithHosts(t *testing.T) {
 func TestWithDialer(t *testing.T) {
 	type T = client
 	type args struct {
-		der gocql.Dialer
+		der net.Dialer
 	}
 	type want struct {
 		obj *T
@@ -183,7 +182,8 @@ func TestWithDialer(t *testing.T) {
 				},
 				want: want{
 					obj: &T{
-						dialer: dm,
+						dialer:    dm,
+						rawDialer: dm,
 					},
 				},
 			}
@@ -1062,6 +1062,7 @@ func TestWithSerialConsistency(t *testing.T) {
 		})
 	}
 }
+
 func TestWithCompressor(t *testing.T) {
 	type T = client
 	type args struct {
@@ -3609,6 +3610,7 @@ func TestWithConnectObserver(t *testing.T) {
 		})
 	}
 }
+
 func TestWithFrameHeaderObserver(t *testing.T) {
 	type T = client
 	type args struct {
@@ -3681,6 +3683,7 @@ func TestWithFrameHeaderObserver(t *testing.T) {
 		})
 	}
 }
+
 func TestWithDefaultIdempotence(t *testing.T) {
 	type T = client
 	type args struct {

@@ -1,7 +1,6 @@
 ---
----
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,14 +22,22 @@ data:
   providers.yaml: |
     apiVersion: 1
     providers:
-    - name: 'default'
-      orgId: 1
-      folder: ''
-      type: file
-      disableDeletion: false
-      editable: true
-      options:
-        path: /var/lib/grafana/dashboards
+      - name: 'default'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards
+      - name: dashboards-vald
+        orgId: 1
+        folder: Vald
+        type: file
+        disableDeletion: true
+        editable: false
+        options:
+          path: /var/lib/grafana/dashboards-vald
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -40,10 +47,47 @@ data:
   providers.yaml: |
     apiVersion: 1
     datasources:
-    - name: 'prometheus'
-      type: prometheus
-      access: proxy
-      orgId: 1
-      url: http://prometheus.default.svc.cluster.local:9090
-      isDefault: true
-      editable: false
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        orgId: 1
+        uid: vald_prometheus
+        url: http://prometheus:9090
+        isDefault: true
+        editable: false
+      - name: Jaeger
+        type: jaeger
+        access: proxy
+        orgId: 1
+        uid: vald_jaeger
+        url: http://jaeger-query:80
+        isDefault: false
+        editable: false
+      - name: Loki
+        type: loki
+        access: proxy
+        orgId: 1
+        uid: vald_loki
+        url: http://loki:3100
+        isDefault: false
+        editable: false
+        jsonData:
+          derivedFields:
+            - datasourceUid: vald_jaeger
+              matcherRegex: '"(?:traceID|trace_id)\":"(\w+)"'
+              name: TraceID
+              url: $${__value.raw}
+              internalLink: true
+            - datasourceUid: vald_tempo
+              matcherRegex: '"(?:traceID|trace_id)\":"(\w+)"'
+              name: TraceID
+              url: $${__value.raw}
+              internalLink: true
+      - name: Tempo
+        type: tempo
+        access: browser
+        orgId: 1
+        uid: vald_tempo
+        url: http://tempo:16686
+        isDefault: false
+        editable: false

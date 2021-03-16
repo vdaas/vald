@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,11 +19,9 @@ package trace
 
 type TraceOption func(*tracer)
 
-var (
-	traceDefaultOpts = []TraceOption{
-		WithSamplingRate(1.0),
-	}
-)
+var traceDefaultOpts = []TraceOption{
+	WithSamplingRate(1.0),
+}
 
 func WithSamplingRate(rate float64) TraceOption {
 	return func(t *tracer) {

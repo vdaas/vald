@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,9 +21,7 @@ import "github.com/vdaas/vald/pkg/agent/sidecar/service/observer"
 
 type Option func(*server)
 
-var (
-	defaultOpts = []Option{}
-)
+var defaultOptions = []Option{}
 
 func WithStorageObserver(so observer.StorageObserver) Option {
 	return func(s *server) {

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,24 +22,21 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/net"
-	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
 // Option represents the functional option for mySQLClient.
 type Option func(*mySQLClient) error
 
-var (
-	defaultOpts = []Option{
-		WithCharset("utf8mb4"),
-		WithTimezone("Local"),
-		WithInitialPingDuration("30ms"),
-		WithInitialPingTimeLimit("5m"),
-		// WithConnectionLifeTimeLimit("2m"),
-		// WithMaxOpenConns(40),
-		// WithMaxIdleConns(50),
-	}
-)
+var defaultOptions = []Option{
+	WithCharset("utf8mb4"),
+	WithTimezone("Local"),
+	WithInitialPingDuration("30ms"),
+	WithInitialPingTimeLimit("5m"),
+	// WithConnectionLifeTimeLimit("2m"),
+	// WithMaxOpenConns(40),
+	// WithMaxIdleConns(50),
+}
 
 // WithTimezone returns the option to set the timezone.
 func WithTimezone(tz string) Option {
@@ -71,6 +68,26 @@ func WithDB(db string) Option {
 	}
 }
 
+// WithNetwork returns the option to set the network type (tcp, unix).
+func WithNetwork(network string) Option {
+	return func(m *mySQLClient) error {
+		if network != "" {
+			m.network = network
+		}
+		return nil
+	}
+}
+
+// WithSocketPath returns the option to set the socketPath for unix domain socket connection.
+func WithSocketPath(socketPath string) Option {
+	return func(m *mySQLClient) error {
+		if socketPath != "" {
+			m.socketPath = socketPath
+		}
+		return nil
+	}
+}
+
 // WithHost returns the option to set the host.
 func WithHost(host string) Option {
 	return func(m *mySQLClient) error {
@@ -82,7 +99,7 @@ func WithHost(host string) Option {
 }
 
 // WithPort returns the option to set the port.
-func WithPort(port int) Option {
+func WithPort(port uint16) Option {
 	return func(m *mySQLClient) error {
 		m.port = port
 		return nil
@@ -199,7 +216,7 @@ func WithTLSConfig(cfg *tls.Config) Option {
 }
 
 // WithDialer returns the option to set the dialer.
-func WithDialer(der tcp.Dialer) Option {
+func WithDialer(der net.Dialer) Option {
 	return func(m *mySQLClient) error {
 		if der != nil {
 			m.dialer = der

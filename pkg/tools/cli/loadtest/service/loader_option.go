@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,14 +26,12 @@ import (
 // Option is load test configuration.
 type Option func(*loader) error
 
-var (
-	defaultOpts = []Option{
-		WithConcurrency(100),
-		WithBatchSize(1),
-		WithErrGroup(errgroup.Get()),
-		WithProgressDuration("5s"),
-	}
-)
+var defaultOptions = []Option{
+	WithConcurrency(100),
+	WithBatchSize(1),
+	WithErrGroup(errgroup.Get()),
+	WithProgressDuration("5s"),
+}
 
 // WithAddr sets load test server address.
 func WithAddr(a string) Option {
@@ -113,14 +111,6 @@ func WithProgressDuration(pd string) Option {
 func WithOperation(op string) Option {
 	return func(l *loader) error {
 		l.operation = config.OperationMethod(op)
-		return nil
-	}
-}
-
-// WithService sets service of load test.
-func WithService(s string) Option {
-	return func(l *loader) error {
-		l.service = config.ServiceMethod(s)
 		return nil
 	}
 }

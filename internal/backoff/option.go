@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,20 +23,20 @@ import (
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
+// Option represents the functional option for backoff.
 type Option func(*backoff)
 
-var (
-	defaultOpts = []Option{
-		WithInitialDuration("10ms"),
-		WithBackOffTimeLimit("5m"),
-		WithMaximumDuration("1h"),
-		WithJitterLimit("1m"),
-		WithBackOffFactor(1.5),
-		WithRetryCount(50),
-		WithEnableErrorLog(),
-	}
-)
+var defaultOptions = []Option{
+	WithInitialDuration("10ms"),
+	WithBackOffTimeLimit("5m"),
+	WithMaximumDuration("1h"),
+	WithJitterLimit("1m"),
+	WithBackOffFactor(1.5),
+	WithRetryCount(50),
+	WithEnableErrorLog(),
+}
 
+// WithInitialDuration returns the option to set the initial duration of backoff.
 func WithInitialDuration(dur string) Option {
 	return func(b *backoff) {
 		d, err := timeutil.Parse(dur)
@@ -47,6 +47,7 @@ func WithInitialDuration(dur string) Option {
 	}
 }
 
+// WithMaximumDuration returns the option to set the maximum duration of backoff.
 func WithMaximumDuration(dur string) Option {
 	return func(b *backoff) {
 		d, err := timeutil.Parse(dur)
@@ -57,6 +58,7 @@ func WithMaximumDuration(dur string) Option {
 	}
 }
 
+// WithJitterLimit returns the option to set the jitter limit duration of backoff.
 func WithJitterLimit(dur string) Option {
 	return func(b *backoff) {
 		d, err := timeutil.Parse(dur)
@@ -67,6 +69,7 @@ func WithJitterLimit(dur string) Option {
 	}
 }
 
+// WithBackOffFactor returns the option to set the factor of backoff.
 func WithBackOffFactor(f float64) Option {
 	return func(b *backoff) {
 		if f <= 0.0 {
@@ -76,6 +79,7 @@ func WithBackOffFactor(f float64) Option {
 	}
 }
 
+// WithRetryCount returns the option to set the retry count of backoff.
 func WithRetryCount(c int) Option {
 	return func(b *backoff) {
 		if c <= 0 {
@@ -85,6 +89,7 @@ func WithRetryCount(c int) Option {
 	}
 }
 
+// WithBackOffTimeLimit returns the option to set the limit of backoff.
 func WithBackOffTimeLimit(dur string) Option {
 	return func(b *backoff) {
 		d, err := timeutil.Parse(dur)
@@ -95,12 +100,14 @@ func WithBackOffTimeLimit(dur string) Option {
 	}
 }
 
+// WithEnableErrorLog returns the option to set the enable for error log.
 func WithEnableErrorLog() Option {
 	return func(b *backoff) {
 		b.errLog = true
 	}
 }
 
+// WithDisableErrorLog returns the option to set the disable for error log.
 func WithDisableErrorLog() Option {
 	return func(b *backoff) {
 		b.errLog = false

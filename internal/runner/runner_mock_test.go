@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -36,9 +36,11 @@ func (m *runnerMock) Start(ctx context.Context) (<-chan error, error) {
 func (m *runnerMock) PreStop(ctx context.Context) error {
 	return m.PreStopFunc(ctx)
 }
+
 func (m *runnerMock) Stop(ctx context.Context) error {
 	return m.StopFunc(ctx)
 }
+
 func (m *runnerMock) PostStop(ctx context.Context) error {
 	return m.PostStopFunc(ctx)
 }

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,13 +19,15 @@ package config
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"unsafe"
 
 	"github.com/vdaas/vald/internal/encoding/json"
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/io/ioutil"
+	"github.com/vdaas/vald/internal/log"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -46,6 +48,7 @@ const (
 	envSymbol       = "_"
 )
 
+// Bind binds the actual data from the receiver field.
 func (c *GlobalConfig) Bind() *GlobalConfig {
 	c.Version = GetActualValue(c.Version)
 	c.TZ = GetActualValue(c.TZ)
@@ -56,6 +59,7 @@ func (c *GlobalConfig) Bind() *GlobalConfig {
 	return c
 }
 
+// UnmarshalJSON parses the JSON-encoded data and stores the result in the field of receiver.
 func (c *GlobalConfig) UnmarshalJSON(data []byte) (err error) {
 	ic := new(struct {
 		Ver     string   `json:"version"`
@@ -72,13 +76,19 @@ func (c *GlobalConfig) UnmarshalJSON(data []byte) (err error) {
 	return nil
 }
 
-// New returns config struct or error when decode the configuration file to actually *Config struct.
-func Read(path string, cfg interface{}) error {
-	f, err := os.OpenFile(path, os.O_RDONLY, 0600)
+// Read returns config struct or error when decoding the configuration file to actually *Config struct.
+func Read(path string, cfg interface{}) (err error) {
+	f, err := os.OpenFile(path, os.O_RDONLY, 0o600)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() {
+		if err != nil {
+			err = errors.Wrap(f.Close(), err.Error())
+			return
+		}
+		err = f.Close()
+	}()
 	switch filepath.Ext(path) {
 	case ".yaml":
 		err = yaml.NewDecoder(f).Decode(cfg)
@@ -100,13 +110,7 @@ func GetActualValue(val string) (res string) {
 	}
 	res = os.ExpandEnv(val)
 	if strings.HasPrefix(res, fileValuePrefix) {
-		path := strings.TrimPrefix(res, fileValuePrefix)
-		file, err := os.OpenFile(path, os.O_RDONLY, 0600)
-		defer file.Close()
-		if err != nil {
-			return
-		}
-		body, err := ioutil.ReadAll(file)
+		body, err := ioutil.ReadFile(strings.TrimPrefix(res, fileValuePrefix))
 		if err != nil {
 			return
 		}
@@ -115,6 +119,9 @@ func GetActualValue(val string) (res string) {
 	return
 }
 
+// GetActualValues returns the environment variable values if the vals has string slice that has prefix and suffix "_",
+// if actual value start with file://{path} the return value will read from file
+// otherwise the val will directly return.
 func GetActualValues(vals []string) []string {
 	for i, val := range vals {
 		vals[i] = GetActualValue(val)
@@ -122,13 +129,17 @@ func GetActualValues(vals []string) []string {
 	return vals
 }
 
-// checkPrefixAndSuffix checks if the str has prefix and suffix
+// checkPrefixAndSuffix checks if the str has prefix and suffix.
 func checkPrefixAndSuffix(str, pref, suf string) bool {
 	return strings.HasPrefix(str, pref) && strings.HasSuffix(str, suf)
 }
 
+// ToRawYaml writes the YAML encoding of v to the stream and returns the string written to stream.
 func ToRawYaml(data interface{}) string {
 	buf := bytes.NewBuffer(nil)
-	yaml.NewEncoder(buf).Encode(data)
+	err := yaml.NewEncoder(buf).Encode(data)
+	if err != nil {
+		log.Error(err)
+	}
 	return buf.String()
 }

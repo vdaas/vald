@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,15 +17,45 @@
 // Package grpc provides grpc server logic
 package grpc
 
-import "github.com/vdaas/vald/pkg/agent/core/ngt/service"
+import (
+	"os"
+
+	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
+)
 
 type Option func(*server)
 
-var (
-	defaultOpts = []Option{
-		WithStreamConcurrency(20),
+var defaultOptions = []Option{
+	WithName(func() string {
+		name, err := os.Hostname()
+		if err != nil {
+			log.Warn(err)
+		}
+		return name
+	}()),
+	WithIP(net.LoadLocalIP()),
+	WithStreamConcurrency(20),
+	WithErrGroup(errgroup.Get()),
+}
+
+func WithIP(ip string) Option {
+	return func(s *server) {
+		if len(ip) != 0 {
+			s.ip = ip
+		}
 	}
-)
+}
+
+func WithName(name string) Option {
+	return func(s *server) {
+		if len(name) != 0 {
+			s.name = name
+		}
+	}
+}
 
 func WithNGT(n service.NGT) Option {
 	return func(s *server) {
@@ -37,6 +67,14 @@ func WithStreamConcurrency(c int) Option {
 	return func(s *server) {
 		if c != 0 {
 			s.streamConcurrency = c
+		}
+	}
+}
+
+func WithErrGroup(eg errgroup.Group) Option {
+	return func(s *server) {
+		if eg != nil {
+			s.eg = eg
 		}
 	}
 }

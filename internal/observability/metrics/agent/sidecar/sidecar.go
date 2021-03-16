@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -105,21 +105,21 @@ func (sm *sidecarMetrics) View() []*metrics.View {
 	}
 
 	return []*metrics.View{
-		&metrics.View{
+		{
 			Name:        "agent_sidecar_completed_upload_total",
 			Description: sm.uploadTotal.Description(),
 			TagKeys:     uploadKeys,
 			Measure:     &sm.uploadTotal,
 			Aggregation: metrics.Count(),
 		},
-		&metrics.View{
+		{
 			Name:        "agent_sidecar_upload_bytes",
 			Description: sm.uploadBytes.Description(),
 			TagKeys:     uploadKeys,
 			Measure:     &sm.uploadBytes,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "agent_sidecar_upload_latency",
 			Description: sm.uploadLatency.Description(),
 			TagKeys:     uploadKeys,

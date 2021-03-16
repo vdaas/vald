@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ package usecase
 import (
 	"context"
 
-	"github.com/vdaas/vald/apis/grpc/manager/index"
-	"github.com/vdaas/vald/internal/client/discoverer"
+	"github.com/vdaas/vald/apis/grpc/v1/manager/index"
+	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -49,18 +49,29 @@ type run struct {
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
 
-	var (
-		indexer service.Indexer
-	)
+	var indexer service.Indexer
 
-	discovererClientOptions := append(
+	dopts := append(
 		cfg.Indexer.Discoverer.Client.Opts(),
-		grpc.WithErrGroup(eg),
-	)
+		grpc.WithErrGroup(eg))
+	aopts := append(
+		cfg.Indexer.Discoverer.AgentClientOptions.Opts(),
+		grpc.WithErrGroup(eg))
 
+	var obs observability.Observability
 	if cfg.Observability.Enabled {
-		discovererClientOptions = append(
-			discovererClientOptions,
+		obs, err = observability.NewWithConfig(cfg.Observability)
+		if err != nil {
+			return nil, err
+		}
+		aopts = append(
+			aopts,
+			grpc.WithDialOptions(
+				grpc.WithStatsHandler(metric.NewClientHandler()),
+			),
+		)
+		dopts = append(
+			dopts,
 			grpc.WithDialOptions(
 				grpc.WithStatsHandler(metric.NewClientHandler()),
 			),
@@ -73,13 +84,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		discoverer.WithNamespace(cfg.Indexer.AgentNamespace),
 		discoverer.WithPort(cfg.Indexer.AgentPort),
 		discoverer.WithServiceDNSARecord(cfg.Indexer.AgentDNS),
-		discoverer.WithDiscovererClient(grpc.New(discovererClientOptions...)),
-		discoverer.WithDiscovererHostPort(
-			cfg.Indexer.Discoverer.Host,
-			cfg.Indexer.Discoverer.Port,
-		),
+		discoverer.WithDiscovererClient(grpc.New(dopts...)),
 		discoverer.WithDiscoverDuration(cfg.Indexer.Discoverer.Duration),
-		discoverer.WithOptions(cfg.Indexer.Discoverer.AgentClient.Opts()...),
+		discoverer.WithOptions(aopts...),
 		discoverer.WithNodeName(cfg.Indexer.NodeName),
 		discoverer.WithOnDiscoverFunc(func(ctx context.Context, c discoverer.Client, addrs []string) error {
 			last := len(addrs) - 1
@@ -105,7 +112,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 
-	var obs observability.Observability
 	if cfg.Observability.Enabled {
 		obs, err = observability.NewWithConfig(
 			cfg.Observability,
@@ -122,10 +128,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
 			index.RegisterIndexServer(srv, idx)
 		}),
-		server.WithGRPCOption(
-			grpc.ChainUnaryInterceptor(grpc.RecoverInterceptor()),
-			grpc.ChainStreamInterceptor(grpc.RecoverStreamInterceptor()),
-		),
 		server.WithPreStopFunction(func() error {
 			// TODO notify another gateway and scheduler
 			return nil

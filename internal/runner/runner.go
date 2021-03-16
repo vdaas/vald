@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import (
 	"syscall"
 
 	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
@@ -58,7 +59,7 @@ type runner struct {
 func Do(ctx context.Context, opts ...Option) error {
 	r := new(runner)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(r)
 	}
 
@@ -75,6 +76,7 @@ func Do(ctx context.Context, opts ...Option) error {
 
 	if p.ShowVersion() {
 		log.Init(log.WithLevel(level.INFO.String()))
+		defer log.Close()
 		log.Info(info.String())
 		return nil
 	}
@@ -94,6 +96,22 @@ func Do(ctx context.Context, opts ...Option) error {
 	} else {
 		log.Init()
 	}
+	defer log.Close()
+
+	log.Debugf("version info:\t\t%s\n\nconfiguration:\t\t%s\n\n",
+		func() string {
+			b, err := json.Marshal(info.Get())
+			if err != nil {
+				return "failed to serialize build information"
+			}
+			return string(b)
+		}(), func() string {
+			b, err := json.Marshal(cfg)
+			if err != nil {
+				return "failed to serialize configuration"
+			}
+			return string(b)
+		}())
 
 	// set location temporary for initialization logging
 	location.Set(ccfg.TZ)
@@ -197,7 +215,7 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 			}
 
 			err = errgroup.Wait()
-			if err != nil {
+			if err != nil && !errors.Is(err, context.Canceled) {
 				log.Error(errors.ErrRunnerWait(name, err))
 				if _, ok := emap[err.Error()]; !ok {
 					errs = append(errs, err)

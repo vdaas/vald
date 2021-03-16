@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -68,19 +68,19 @@ func (i *indexerMetrics) MeasurementWithTags(ctx context.Context) ([]metrics.Mea
 
 func (i *indexerMetrics) View() []*metrics.View {
 	return []*metrics.View{
-		&metrics.View{
+		{
 			Name:        "indexer_uuid_count",
 			Description: i.uuidCount.Description(),
 			Measure:     &i.uuidCount,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "indexer_uncommitted_uuid_count",
 			Description: i.uncommittedUUIDCount.Description(),
 			Measure:     &i.uncommittedUUIDCount,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "indexer_is_indexing",
 			Description: i.isIndexing.Description(),
 			Measure:     &i.isIndexing,

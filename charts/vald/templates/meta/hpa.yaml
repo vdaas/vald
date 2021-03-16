@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,11 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if and .Values.meta.enabled .Values.meta.hpa.enabled }}
+{{- $meta := .Values.meta -}}
+{{- if and $meta.enabled $meta.hpa.enabled }}
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ .Values.meta.name }}
+  name: {{ $meta.name }}
   labels:
     app.kubernetes.io/name: {{ include "vald.name" . }}
     helm.sh/chart: {{ include "vald.chart" . }}
@@ -26,12 +27,12 @@ metadata:
     app.kubernetes.io/version: {{ .Chart.Version }}
     app.kubernetes.io/component: meta
 spec:
-  maxReplicas: {{ .Values.meta.maxReplicas }}
-  minReplicas: {{ .Values.meta.minReplicas }}
+  maxReplicas: {{ $meta.maxReplicas }}
+  minReplicas: {{ $meta.minReplicas }}
   scaleTargetRef:
     apiVersion: apps/v1
-    kind: {{ .Values.meta.kind }}
-    name: {{ .Values.meta.name }}
-  targetCPUUtilizationPercentage: {{ .Values.meta.hpa.targetCPUUtilizationPercentage }}
+    kind: {{ $meta.kind }}
+    name: {{ $meta.name }}
+  targetCPUUtilizationPercentage: {{ $meta.hpa.targetCPUUtilizationPercentage }}
 status:
 {{- end }}

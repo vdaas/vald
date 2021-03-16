@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,20 +22,18 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
-	"github.com/vdaas/vald/internal/client"
+	"github.com/vdaas/vald/internal/client/v1/client"
 )
 
 type Option func(*e2e)
 
-var (
-	defaultOptions = []Option{
-		WithServerStarter(
-			func(context.Context, testing.TB, assets.Dataset) func() {
-				return func() {}
-			},
-		),
-	}
-)
+var defaultOptions = []Option{
+	WithServerStarter(
+		func(context.Context, testing.TB, assets.Dataset) func() {
+			return func() {}
+		},
+	),
+}
 
 func WithName(name string) Option {
 	return func(e *e2e) {

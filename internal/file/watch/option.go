@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,9 +24,7 @@ import (
 
 type Option func(w *watch) error
 
-var (
-	defaultOpts = []Option{}
-)
+var defaultOptions = []Option{}
 
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(w *watch) error {
@@ -98,6 +96,7 @@ func WithOnDelete(f func(ctx context.Context, name string) error) Option {
 		return nil
 	}
 }
+
 func WithOnWrite(f func(ctx context.Context, name string) error) Option {
 	return func(w *watch) error {
 		if f != nil {

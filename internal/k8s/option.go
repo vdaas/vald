@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,16 +19,15 @@ package k8s
 
 import (
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/net"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 type Option func(*controller) error
 
-var (
-	defaultOpts = []Option{
-		WithErrGroup(errgroup.Get()),
-	}
-)
+var defaultOptions = []Option{
+	WithErrGroup(errgroup.Get()),
+}
 
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(c *controller) error {
@@ -80,6 +79,15 @@ func WithEnableLeaderElection() Option {
 func WithDisableLeaderElection() Option {
 	return func(c *controller) error {
 		c.leaderElection = false
+		return nil
+	}
+}
+
+func WithDialer(der net.Dialer) Option {
+	return func(c *controller) error {
+		if der != nil {
+			c.der = der
+		}
 		return nil
 	}
 }

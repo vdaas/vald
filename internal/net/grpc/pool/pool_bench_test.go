@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,14 +19,14 @@ package pool
 
 import (
 	"context"
+	"net"
 	"sync"
 	"testing"
 
-	"github.com/vdaas/vald/apis/grpc/discoverer"
-	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/discoverer"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/level"
-	"github.com/vdaas/vald/internal/net"
 	"google.golang.org/grpc"
 )
 

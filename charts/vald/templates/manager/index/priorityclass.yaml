@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,11 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if and .Values.indexManager.enabled .Values.indexManager.podPriority.enabled }}
+{{- $index := .Values.manager.index -}}
+{{- if and $index.enabled $index.podPriority.enabled }}
 apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass
 metadata:
-  name: {{ .Values.indexManager.name }}-priority
+  name: {{ .Release.Namespace }}-{{ $index.name }}-priority
   labels:
     app.kubernetes.io/name: {{ include "vald.name" . }}
     helm.sh/chart: {{ include "vald.chart" . }}
@@ -25,7 +26,7 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/version: {{ .Chart.Version }}
     app.kubernetes.io/component: manager-index
-value: {{ .Values.indexManager.podPriority.value }}
+value: {{ $index.podPriority.value }}
 globalDefault: false
-description: "A priority class for Vald indexManager."
+description: "A priority class for Vald index manager."
 {{- end }}

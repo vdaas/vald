@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ type client struct {
 
 func New(opts ...Option) (Redis, error) {
 	c := new(client)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(c); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
@@ -96,8 +96,8 @@ func (c *client) appendPrefix(prefix, key string) string {
 
 func (c *client) get(ctx context.Context, prefix, key string) (val string, err error) {
 	pipe := c.db.TxPipeline()
-	res := pipe.Get(c.appendPrefix(prefix, key))
-	_, err = pipe.ExecContext(ctx)
+	res := pipe.Get(ctx, c.appendPrefix(prefix, key))
+	_, err = pipe.Exec(ctx)
 	if err != nil {
 		if err == redis.Nil {
 			return "", errors.ErrRedisNotFound(key)
@@ -118,9 +118,9 @@ func (c *client) getMulti(ctx context.Context, prefix string, keys ...string) (v
 	pipe := c.db.TxPipeline()
 	ress := make(map[string]*redis.StringCmd, len(keys))
 	for _, k := range keys {
-		ress[k] = pipe.Get(c.appendPrefix(prefix, k))
+		ress[k] = pipe.Get(ctx, c.appendPrefix(prefix, k))
 	}
-	if _, err = pipe.ExecContext(ctx); err != nil {
+	if _, err = pipe.Exec(ctx); err != nil {
 		for _, key := range keys {
 			err = errors.Wrap(errors.ErrRedisGetOperationFailed(key, err), err.Error())
 		}
@@ -148,16 +148,16 @@ func (c *client) Set(ctx context.Context, key, val string) (err error) {
 	kvKey := c.appendPrefix(c.kvPrefix, key)
 	vkKey := c.appendPrefix(c.vkPrefix, val)
 	pipe := c.db.TxPipeline()
-	kv := pipe.Set(kvKey, val, 0)
-	vk := pipe.Set(vkKey, key, 0)
-	_, err = pipe.ExecContext(ctx)
+	kv := pipe.Set(ctx, kvKey, val, 0)
+	vk := pipe.Set(ctx, vkKey, key, 0)
+	_, err = pipe.Exec(ctx)
 	if err != nil {
 		return err
 	}
 	err = kv.Err()
 	if err != nil {
 		err = errors.ErrRedisSetOperationFailed(kvKey, err)
-		dberr := c.db.Del(vkKey).Err()
+		dberr := c.db.Del(ctx, vkKey).Err()
 		if dberr != nil {
 			err = errors.Wrap(err, dberr.Error())
 		}
@@ -166,7 +166,7 @@ func (c *client) Set(ctx context.Context, key, val string) (err error) {
 	err = vk.Err()
 	if err != nil {
 		err = errors.ErrRedisSetOperationFailed(vkKey, err)
-		dberr := c.db.Del(kvKey).Err()
+		dberr := c.db.Del(ctx, kvKey).Err()
 		if dberr != nil {
 			err = errors.Wrap(err, dberr.Error())
 		}
@@ -187,16 +187,16 @@ func (c *client) SetMultiple(ctx context.Context, kvs map[string]string) (err er
 		vks[v] = k
 		kvKey := c.appendPrefix(c.kvPrefix, k)
 		vkKey := c.appendPrefix(c.vkPrefix, v)
-		kvress[vkKey] = pipe.Set(kvKey, v, 0)
-		vkress[kvKey] = pipe.Set(vkKey, k, 0)
+		kvress[vkKey] = pipe.Set(ctx, kvKey, v, 0)
+		vkress[kvKey] = pipe.Set(ctx, vkKey, k, 0)
 	}
-	if _, err = pipe.ExecContext(ctx); err != nil {
+	if _, err = pipe.Exec(ctx); err != nil {
 		return err
 	}
 	for vkKey, res := range kvress {
 		if err = res.Err(); err != nil {
 			err = errors.ErrRedisSetOperationFailed(vks[vkKey], err)
-			dberr := c.db.Del(vkKey).Err()
+			dberr := c.db.Del(ctx, vkKey).Err()
 			if dberr != nil {
 				err = errors.Wrap(err, dberr.Error())
 			}
@@ -205,7 +205,7 @@ func (c *client) SetMultiple(ctx context.Context, kvs map[string]string) (err er
 	for kvKey, res := range vkress {
 		if err = res.Err(); err != nil {
 			err = errors.ErrRedisSetOperationFailed(kvs[kvKey], err)
-			dberr := c.db.Del(kvKey).Err()
+			dberr := c.db.Del(ctx, kvKey).Err()
 			if dberr != nil {
 				err = errors.Wrap(err, dberr.Error())
 			}
@@ -236,9 +236,9 @@ func (c *client) delete(ctx context.Context, pfx, pfxInv, key string) (val strin
 		return "", err
 	}
 	pipe := c.db.TxPipeline()
-	k := pipe.Del(c.appendPrefix(pfx, key))
-	v := pipe.Del(c.appendPrefix(pfxInv, val))
-	if _, err = pipe.ExecContext(ctx); err != nil {
+	k := pipe.Del(ctx, c.appendPrefix(pfx, key))
+	v := pipe.Del(ctx, c.appendPrefix(pfxInv, val))
+	if _, err = pipe.Exec(ctx); err != nil {
 		return "", err
 	}
 	if err = k.Err(); err != nil {
@@ -252,7 +252,6 @@ func (c *client) delete(ctx context.Context, pfx, pfxInv, key string) (val strin
 			return "", errors.Wrap(c.Set(ctx, key, val), err.Error())
 		}
 		return "", errors.Wrap(c.Set(ctx, val, key), err.Error())
-
 	}
 	return val, nil
 }
@@ -266,13 +265,13 @@ func (c *client) deleteMulti(ctx context.Context, pfx, pfxInv string, keys ...st
 	ress := make(map[string]*redis.IntCmd, len(keys)*2)
 	for _, k := range keys {
 		key := c.appendPrefix(pfx, k)
-		ress[key] = pipe.Del(key)
+		ress[key] = pipe.Del(ctx, key)
 	}
 	for _, v := range vals {
 		key := c.appendPrefix(pfxInv, v)
-		ress[key] = pipe.Del(key)
+		ress[key] = pipe.Del(ctx, key)
 	}
-	if _, err = pipe.ExecContext(ctx); err != nil {
+	if _, err = pipe.Exec(ctx); err != nil {
 		return nil, err
 	}
 	var errs error

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,6 +18,11 @@
 package config
 
 import (
+	"strings"
+
+	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/reflection"
 	"github.com/vdaas/vald/internal/servers/server"
 )
 
@@ -44,14 +49,17 @@ type Servers struct {
 }
 
 type Server struct {
-	Name          string `json:"name" yaml:"name"`
-	Host          string `json:"host" yaml:"host"`
-	Port          uint   `json:"port" yaml:"port"`
-	Mode          string `json:"mode" yaml:"mode"` // gRPC, REST, GraphQL
-	ProbeWaitTime string `json:"probe_wait_time" yaml:"probe_wait_time"`
-	HTTP          *HTTP  `json:"http" yaml:"http"`
-	GRPC          *GRPC  `json:"grpc" yaml:"grpc"`
-	Restart       bool   `json:"restart" yaml:"restart"`
+	Name          string        `json:"name,omitempty" yaml:"name"`
+	Network       string        `json:"network,omitempty" yaml:"network"`
+	Host          string        `json:"host,omitempty" yaml:"host"`
+	Port          uint16        `json:"port,omitempty" yaml:"port"`
+	SocketPath    string        `json:"socket_path,omitempty" yaml:"socket_path"`
+	Mode          string        `json:"mode,omitempty" yaml:"mode"` // gRPC, REST, GraphQL
+	ProbeWaitTime string        `json:"probe_wait_time,omitempty" yaml:"probe_wait_time"`
+	HTTP          *HTTP         `json:"http,omitempty" yaml:"http"`
+	GRPC          *GRPC         `json:"grpc,omitempty" yaml:"grpc"`
+	SocketOption  *SocketOption `json:"socket_option,omitempty" yaml:"socket_option"`
+	Restart       bool          `json:"restart,omitempty" yaml:"restart"`
 }
 
 type HTTP struct {
@@ -64,18 +72,19 @@ type HTTP struct {
 }
 
 type GRPC struct {
-	BidirectionalStreamConcurrency int            `json:"bidirectional_stream_concurrency" yaml:"bidirectional_stream_concurrency"`
-	MaxReceiveMessageSize          int            `json:"max_receive_message_size" yaml:"max_receive_message_size"`
-	MaxSendMessageSize             int            `json:"max_send_message_size" yaml:"max_send_message_size"`
-	InitialWindowSize              int            `json:"initial_window_size" yaml:"initial_window_size"`
-	InitialConnWindowSize          int            `json:"initial_conn_window_size" yaml:"initial_conn_window_size"`
-	Keepalive                      *GRPCKeepalive `json:"keepalive" yaml:"keepalive"`
-	WriteBufferSize                int            `json:"write_buffer_size" yaml:"write_buffer_size"`
-	ReadBufferSize                 int            `json:"read_buffer_size" yaml:"read_buffer_size"`
-	ConnectionTimeout              string         `json:"connection_timeout" yaml:"connection_timeout"`
-	MaxHeaderListSize              int            `json:"max_header_list_size" yaml:"max_header_list_size"`
-	HeaderTableSize                int            `json:"header_table_size" yaml:"header_table_size"`
-	Interceptors                   []string       `json:"interceptors" yaml:"interceptors"`
+	BidirectionalStreamConcurrency int            `json:"bidirectional_stream_concurrency,omitempty" yaml:"bidirectional_stream_concurrency"`
+	MaxReceiveMessageSize          int            `json:"max_receive_message_size,omitempty" yaml:"max_receive_message_size"`
+	MaxSendMessageSize             int            `json:"max_send_message_size,omitempty" yaml:"max_send_message_size"`
+	InitialWindowSize              int            `json:"initial_window_size,omitempty" yaml:"initial_window_size"`
+	InitialConnWindowSize          int            `json:"initial_conn_window_size,omitempty" yaml:"initial_conn_window_size"`
+	Keepalive                      *GRPCKeepalive `json:"keepalive,omitempty" yaml:"keepalive"`
+	WriteBufferSize                int            `json:"write_buffer_size,omitempty" yaml:"write_buffer_size"`
+	ReadBufferSize                 int            `json:"read_buffer_size,omitempty" yaml:"read_buffer_size"`
+	ConnectionTimeout              string         `json:"connection_timeout,omitempty" yaml:"connection_timeout"`
+	MaxHeaderListSize              int            `json:"max_header_list_size,omitempty" yaml:"max_header_list_size"`
+	HeaderTableSize                int            `json:"header_table_size,omitempty" yaml:"header_table_size"`
+	Interceptors                   []string       `json:"interceptors,omitempty" yaml:"interceptors"`
+	EnableReflection               bool           `json:"enable_reflection,omitempty" yaml:"enable_reflection"`
 }
 
 type GRPCKeepalive struct {
@@ -175,6 +184,8 @@ func (k *GRPCKeepalive) Bind() *GRPCKeepalive {
 
 func (s *Server) Bind() *Server {
 	s.Name = GetActualValue(s.Name)
+	s.Network = GetActualValue(s.Network)
+	s.SocketPath = GetActualValue(s.SocketPath)
 	s.Host = GetActualValue(s.Host)
 	s.Mode = GetActualValue(s.Mode)
 	s.ProbeWaitTime = GetActualValue(s.ProbeWaitTime)
@@ -186,17 +197,32 @@ func (s *Server) Bind() *Server {
 	if s.GRPC != nil {
 		s.GRPC.Bind()
 	}
+
+	if s.SocketOption != nil {
+		s.SocketOption.Bind()
+	}
 	return s
 }
 
 func (s *Server) Opts() []server.Option {
 	opts := make([]server.Option, 0, 10)
+	nt := net.NetworkTypeFromString(s.Network)
+	if nt == 0 || nt == net.Unknown || strings.EqualFold(nt.String(), net.Unknown.String()) {
+		nt = net.TCP
+	}
+	s.Network = nt.String()
 	opts = append(opts,
+		server.WithNetwork(s.Network),
+		server.WithSocketPath(s.SocketPath),
 		server.WithName(s.Name),
 		server.WithHost(s.Host),
 		server.WithPort(s.Port),
 		server.WithProbeWaitTime(s.ProbeWaitTime),
 	)
+
+	if s.SocketOption != nil {
+		opts = append(opts, server.WithSocketFlag(s.SocketOption.ToSocketFlag()))
+	}
 
 	switch mode := server.Mode(s.Mode); mode {
 	case server.REST, server.GQL:
@@ -230,6 +256,12 @@ func (s *Server) Opts() []server.Option {
 				server.WithGRPCHeaderTableSize(s.GRPC.HeaderTableSize),
 				server.WithGRPCInterceptors(s.GRPC.Interceptors...),
 			)
+			if s.GRPC.EnableReflection {
+				opts = append(opts,
+					server.WithGRPCRegistFunc(func(srv *grpc.Server) {
+						reflection.Register(srv)
+					}))
+			}
 			if s.GRPC.Keepalive != nil {
 				opts = append(opts,
 					server.WithGRPCKeepaliveMaxConnIdle(s.GRPC.Keepalive.MaxConnIdle),

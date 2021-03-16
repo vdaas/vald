@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -63,17 +63,45 @@ spec:
             {{- if .Values.enableMetrics }}
             - "--metrics-addr=:{{ .Values.metricsPort }}"
             {{- end }}
+            - "--health-probe-bind-address=:{{ .Values.healthPort }}"
             - "--reconcile-period={{ .Values.reconcilePeriod }}"
             - "--max-concurrent-reconciles={{ .Values.maxConcurrentReconciles }}"
             - "--zap-encoder={{ .Values.logging.format }}"
             - "--zap-log-level={{ .Values.logging.level }}"
             - "--zap-stacktrace-level={{ .Values.logging.stacktraceLevel }}"
-          {{- if .Values.enableMetrics }}
+          {{- if .Values.livenessProbe.enabled }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.livenessProbe.httpGet.path }}
+              port: {{ .Values.livenessProbe.httpGet.port }}
+              scheme: {{ .Values.livenessProbe.httpGet.scheme }}
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+            successThreshold: {{ .Values.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+          {{- end }}
+          {{- if .Values.readinessProbe.enabled }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.readinessProbe.httpGet.path }}
+              port: {{ .Values.readinessProbe.httpGet.port }}
+              scheme: {{ .Values.readinessProbe.httpGet.scheme }}
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            successThreshold: {{ .Values.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+          {{- end }}
           ports:
+            - name: health
+              protocol: TCP
+              containerPort: {{ .Values.healthPort }}
+            {{- if .Values.enableMetrics }}
             - name: prometheus
               protocol: TCP
               containerPort: {{ .Values.metricsPort }}
-          {{- end }}
+            {{- end }}
           env:
             - name: POD_NAME
               valueFrom:

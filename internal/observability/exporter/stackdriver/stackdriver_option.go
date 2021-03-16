@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,20 +28,18 @@ import (
 
 type Option func(e *exp) error
 
-var (
-	defaultOpts = []Option{
-		WithOnErrorFunc(func(err error) {
-			if err != nil {
-				log.Warnf("Error when uploading stats or spans to Stackdriver: %v", err)
-			}
-		}),
-		WithMonitoredResource(monitoredresource.Autodetect()),
-		WithMetricPrefix("vald.vdaas.org/"),
-		WithTimeout("5s"),
-		WithReportingInterval("0"),
-		WithNumberOfWorkers(1),
-	}
-)
+var defaultOptions = []Option{
+	WithOnErrorFunc(func(err error) {
+		if err != nil {
+			log.Warnf("Error when uploading stats or spans to Stackdriver: %v", err)
+		}
+	}),
+	WithMonitoredResource(monitoredresource.Autodetect()),
+	WithMetricPrefix("vald.vdaas.org/"),
+	WithTimeout("5s"),
+	WithReportingInterval("0"),
+	WithNumberOfWorkers(1),
+}
 
 func WithMonitoring(enabled bool) Option {
 	return func(e *exp) error {

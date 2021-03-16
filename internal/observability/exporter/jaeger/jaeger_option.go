@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,16 +24,14 @@ import (
 
 type JaegerOption func(*jaegerOptions) error
 
-var (
-	jaegerDefaultOpts = []JaegerOption{
-		WithServiceName("vald"),
-		WithOnErrorFunc(func(err error) {
-			if err != nil {
-				log.Warnf("Error when uploading spans to Jaeger: %v", err)
-			}
-		}),
-	}
-)
+var jaegerDefaultOpts = []JaegerOption{
+	WithServiceName("vald"),
+	WithOnErrorFunc(func(err error) {
+		if err != nil {
+			log.Warnf("Error when uploading spans to Jaeger: %v", err)
+		}
+	}),
+}
 
 func WithCollectorEndpoint(cep string) JaegerOption {
 	return func(jo *jaegerOptions) error {

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,54 +19,72 @@ package errors
 
 var (
 
-	// Redis
+	// ErrRedisInvalidKVVKPrefix represents a function to generate an error that kv index and vk prefix are invalid.
 	ErrRedisInvalidKVVKPrefix = func(kv, vk string) error {
 		return Errorf("kv index and vk prefix must be defferent.\t(kv: %s,\tvk: %s)", kv, vk)
 	}
 
+	// NewErrRedisNotFoundIdentity represents a function to generate an ErrRedisNotFoundIdentity error.
 	NewErrRedisNotFoundIdentity = func() error {
 		return &ErrRedisNotFoundIdentity{
 			err: New("error redis entry not found"),
 		}
 	}
 
+	// ErrRedisNotFound represents a function to wrap Redis key not found error and err.
 	ErrRedisNotFound = func(key string) error {
 		return Wrapf(NewErrRedisNotFoundIdentity(), "error redis key '%s' not found", key)
 	}
 
+	// ErrRedisInvalidOption generates a new error of Redis invalid option.
+	ErrRedisInvalidOption = New("error redis invalid option")
+
+	// ErrRedisGetOperationFailed represents a function to wrap failed to fetch key error and err.
 	ErrRedisGetOperationFailed = func(key string, err error) error {
 		return Wrapf(err, "Failed to fetch key (%s)", key)
 	}
 
+	// ErrRedisSetOperationFailed represents a function to wrap failed to set key error and err.
 	ErrRedisSetOperationFailed = func(key string, err error) error {
 		return Wrapf(err, "Failed to set key (%s)", key)
 	}
 
+	// ErrRedisSetOperationFailed represents a function to wrap failed to delete key error and err.
 	ErrRedisDeleteOperationFailed = func(key string, err error) error {
 		return Wrapf(err, "Failed to delete key (%s)", key)
 	}
 
+	// ErrRedisSetOperationFailed represents a function to generate an error that invalid configuration version.
 	ErrInvalidConfigVersion = func(cur, con string) error {
 		return Errorf("invalid config version %s not satisfies version constraints %s", cur, con)
 	}
 
-	ErrRedisAddrsNotFound = New("addrs not found")
+	// ErrRedisAddrsNotFound generates a new error of address not found.
+	ErrRedisAddrsNotFound = New("error redis addrs not found")
 
-	ErrRedisConnectionPingFailed = New("error Redis connection ping failed")
+	// ErrRedisConnectionPingFailed generates a new error of Redis connection ping failed.
+	ErrRedisConnectionPingFailed = New("error redis connection ping failed")
 )
 
+// ErrRedisNotFoundIdentity represents a struct that includes err and has a method for Redis error handling.
 type ErrRedisNotFoundIdentity struct {
 	err error
 }
 
+// Error returns the string of ErrRedisNotFoundIdentity.error.
 func (e *ErrRedisNotFoundIdentity) Error() string {
-	return e.err.Error()
+	if e.err != nil {
+		return e.err.Error()
+	}
+	return ""
 }
 
+// Unwrap returns the error value of ErrRedisNotFoundIdentity.
 func (e *ErrRedisNotFoundIdentity) Unwrap() error {
 	return e.err
 }
 
+// IsErrRedisNotFound compares the input error and ErrRedisNotFoundIdentity.error and returns true or false that is the result of errors.As.
 func IsErrRedisNotFound(err error) bool {
 	target := new(ErrRedisNotFoundIdentity)
 	return As(err, &target)

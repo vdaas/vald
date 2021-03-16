@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package main
 import (
 	"context"
 
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/runner"
@@ -41,7 +42,7 @@ func main() {
 			runner.WithConfigLoader(func(path string) (interface{}, *config.GlobalConfig, error) {
 				cfg, err := config.NewConfig(path)
 				if err != nil {
-					return nil, nil, err
+					return nil, nil, errors.Wrap(err, "failed to load "+name+"'s configuration")
 				}
 				return cfg, &cfg.GlobalConfig, nil
 			}),

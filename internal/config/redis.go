@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,39 +18,47 @@
 package config
 
 import (
+	"context"
+	"strings"
+
 	"github.com/vdaas/vald/internal/db/kvs/redis"
-	"github.com/vdaas/vald/internal/net/tcp"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/tls"
 )
 
 type Redis struct {
-	Addrs                []string `json:"addrs" yaml:"addrs"`
-	DB                   int      `json:"db" yaml:"db"`
-	DialTimeout          string   `json:"dial_timeout" yaml:"dial_timeout"`
-	IdleCheckFrequency   string   `json:"idle_check_frequency" yaml:"idle_check_frequency"`
-	IdleTimeout          string   `json:"idle_timeout" yaml:"idle_timeout"`
-	InitialPingTimeLimit string   `json:"initial_ping_time_limit" yaml:"initial_ping_time_limit"`
-	InitialPingDuration  string   `json:"initial_ping_duration" yaml:"initial_ping_duration"`
-	KeyPref              string   `json:"key_pref" yaml:"key_pref"`
-	MaxConnAge           string   `json:"max_conn_age" yaml:"max_conn_age"`
-	MaxRedirects         int      `json:"max_redirects" yaml:"max_redirects"`
-	MaxRetries           int      `json:"max_retries" yaml:"max_retries"`
-	MaxRetryBackoff      string   `json:"max_retry_backoff" yaml:"max_retry_backoff"`
-	MinIdleConns         int      `json:"min_idle_conns" yaml:"min_idle_conns"`
-	MinRetryBackoff      string   `json:"min_retry_backoff" yaml:"min_retry_backoff"`
-	Password             string   `json:"password" yaml:"password"`
-	PoolSize             int      `json:"pool_size" yaml:"pool_size"`
-	PoolTimeout          string   `json:"pool_timeout" yaml:"pool_timeout"`
-	ReadOnly             bool     `json:"read_only" yaml:"read_only"`
-	ReadTimeout          string   `json:"read_timeout" yaml:"read_timeout"`
-	RouteByLatency       bool     `json:"route_by_latency" yaml:"route_by_latency"`
-	RouteRandomly        bool     `json:"route_randomly" yaml:"route_randomly"`
-	TLS                  *TLS     `json:"tls" yaml:"tls"`
-	TCP                  *TCP     `json:"tcp" yaml:"tcp"`
-	WriteTimeout         string   `json:"write_timeout" yaml:"write_timeout"`
-	KVPrefix             string   `json:"kv_prefix" yaml:"kv_prefix"`
-	VKPrefix             string   `json:"vk_prefix" yaml:"vk_prefix"`
-	PrefixDelimiter      string   `json:"prefix_delimiter" yaml:"prefix_delimiter"`
+	Addrs                []string `json:"addrs,omitempty" yaml:"addrs"`
+	DB                   int      `json:"db,omitempty" yaml:"db"`
+	DialTimeout          string   `json:"dial_timeout,omitempty" yaml:"dial_timeout"`
+	IdleCheckFrequency   string   `json:"idle_check_frequency,omitempty" yaml:"idle_check_frequency"`
+	IdleTimeout          string   `json:"idle_timeout,omitempty" yaml:"idle_timeout"`
+	InitialPingDuration  string   `json:"initial_ping_duration,omitempty" yaml:"initial_ping_duration"`
+	InitialPingTimeLimit string   `json:"initial_ping_time_limit,omitempty" yaml:"initial_ping_time_limit"`
+	KVPrefix             string   `json:"kv_prefix,omitempty" yaml:"kv_prefix"`
+	KeyPref              string   `json:"key_pref,omitempty" yaml:"key_pref"`
+	MaxConnAge           string   `json:"max_conn_age,omitempty" yaml:"max_conn_age"`
+	MaxRedirects         int      `json:"max_redirects,omitempty" yaml:"max_redirects"`
+	MaxRetries           int      `json:"max_retries,omitempty" yaml:"max_retries"`
+	MaxRetryBackoff      string   `json:"max_retry_backoff,omitempty" yaml:"max_retry_backoff"`
+	MinIdleConns         int      `json:"min_idle_conns,omitempty" yaml:"min_idle_conns"`
+	MinRetryBackoff      string   `json:"min_retry_backoff,omitempty" yaml:"min_retry_backoff"`
+	Network              string   `json:"network,omitempty" yaml:"network"`
+	Password             string   `json:"password,omitempty" yaml:"password"`
+	PoolSize             int      `json:"pool_size,omitempty" yaml:"pool_size"`
+	PoolTimeout          string   `json:"pool_timeout,omitempty" yaml:"pool_timeout"`
+	PrefixDelimiter      string   `json:"prefix_delimiter,omitempty" yaml:"prefix_delimiter"`
+	ReadOnly             bool     `json:"read_only,omitempty" yaml:"read_only"`
+	ReadTimeout          string   `json:"read_timeout,omitempty" yaml:"read_timeout"`
+	RouteByLatency       bool     `json:"route_by_latency,omitempty" yaml:"route_by_latency"`
+	RouteRandomly        bool     `json:"route_randomly,omitempty" yaml:"route_randomly"`
+	SentinelPassword     string   `json:"sentinel_password,omitempty"`
+	SentinelMasterName   string   `json:"sentinel_master_name,omitempty"`
+	Net                  *Net     `json:"tcp,omitempty" yaml:"net"`
+	TLS                  *TLS     `json:"tls,omitempty" yaml:"tls"`
+	Username             string   `json:"username,omitempty" yaml:"username"`
+	VKPrefix             string   `json:"vk_prefix,omitempty" yaml:"vk_prefix"`
+	WriteTimeout         string   `json:"write_timeout,omitempty" yaml:"write_timeout"`
 }
 
 func (r *Redis) Bind() *Redis {
@@ -59,10 +67,10 @@ func (r *Redis) Bind() *Redis {
 	} else {
 		r.TLS = new(TLS)
 	}
-	if r.TCP != nil {
-		r.TCP.Bind()
+	if r.Net != nil {
+		r.Net.Bind()
 	} else {
-		r.TCP = new(TCP)
+		r.Net = new(Net)
 	}
 
 	r.Addrs = GetActualValues(r.Addrs)
@@ -70,23 +78,32 @@ func (r *Redis) Bind() *Redis {
 	r.DialTimeout = GetActualValue(r.DialTimeout)
 	r.IdleCheckFrequency = GetActualValue(r.IdleCheckFrequency)
 	r.IdleTimeout = GetActualValue(r.IdleTimeout)
+	r.InitialPingDuration = GetActualValue(r.InitialPingDuration)
+	r.InitialPingTimeLimit = GetActualValue(r.InitialPingTimeLimit)
+	r.KVPrefix = GetActualValue(r.KVPrefix)
 	r.KeyPref = GetActualValue(r.KeyPref)
 	r.MaxConnAge = GetActualValue(r.MaxConnAge)
 	r.MaxRetryBackoff = GetActualValue(r.MaxRetryBackoff)
 	r.MinRetryBackoff = GetActualValue(r.MinRetryBackoff)
+	r.Network = GetActualValue(r.Network)
 	r.Password = GetActualValue(r.Password)
+	r.SentinelMasterName = GetActualValue(r.SentinelMasterName)
 	r.PoolTimeout = GetActualValue(r.PoolTimeout)
-	r.ReadTimeout = GetActualValue(r.ReadTimeout)
-	r.WriteTimeout = GetActualValue(r.WriteTimeout)
-	r.KVPrefix = GetActualValue(r.KVPrefix)
-	r.VKPrefix = GetActualValue(r.VKPrefix)
+	r.SentinelPassword = GetActualValue(r.SentinelPassword)
 	r.PrefixDelimiter = GetActualValue(r.PrefixDelimiter)
-	r.InitialPingTimeLimit = GetActualValue(r.InitialPingTimeLimit)
-	r.InitialPingDuration = GetActualValue(r.InitialPingDuration)
+	r.ReadTimeout = GetActualValue(r.ReadTimeout)
+	r.Username = GetActualValue(r.Username)
+	r.VKPrefix = GetActualValue(r.VKPrefix)
+	r.WriteTimeout = GetActualValue(r.WriteTimeout)
 	return r
 }
 
 func (r *Redis) Opts() (opts []redis.Option, err error) {
+	nt := net.NetworkTypeFromString(r.Network)
+	if nt == 0 || nt == net.Unknown || strings.EqualFold(nt.String(), net.Unknown.String()) {
+		nt = net.TCP
+	}
+	r.Network = nt.String()
 	opts = []redis.Option{
 		redis.WithAddrs(r.Addrs...),
 		redis.WithDialTimeout(r.DialTimeout),
@@ -98,20 +115,24 @@ func (r *Redis) Opts() (opts []redis.Option, err error) {
 		redis.WithMaximumRetryBackoff(r.MaxRetryBackoff),
 		redis.WithMinimumIdleConnection(r.MinIdleConns),
 		redis.WithMinimumRetryBackoff(r.MinRetryBackoff),
-		redis.WithOnConnectFunction(func(conn *redis.Conn) error {
+		redis.WithOnConnectFunction(func(ctx context.Context, conn *redis.Conn) error {
+			log.Debugf("redis connection succeed to %s", conn.ClientGetName(ctx).String())
 			return nil
 		}),
-		// redis.WithOnNewNodeFunction(f func(*redis.Client)) ,
+		redis.WithUsername(r.Username),
 		redis.WithPassword(r.Password),
 		redis.WithPoolSize(r.PoolSize),
 		redis.WithPoolTimeout(r.PoolTimeout),
 		// redis.WithReadOnlyFlag(readOnly bool) ,
+		redis.WithNetwork(r.Network),
 		redis.WithReadTimeout(r.ReadTimeout),
 		redis.WithRouteByLatencyFlag(r.RouteByLatency),
 		redis.WithRouteRandomlyFlag(r.RouteRandomly),
 		redis.WithWriteTimeout(r.WriteTimeout),
 		redis.WithInitialPingDuration(r.InitialPingDuration),
 		redis.WithInitialPingTimeLimit(r.InitialPingTimeLimit),
+		redis.WithSentinelPassword(r.SentinelPassword),
+		redis.WithSentinelMasterName(r.SentinelMasterName),
 	}
 
 	if r.TLS != nil && r.TLS.Enabled {
@@ -122,8 +143,8 @@ func (r *Redis) Opts() (opts []redis.Option, err error) {
 		opts = append(opts, redis.WithTLSConfig(tls))
 	}
 
-	if r.TCP != nil {
-		dialer, err := tcp.NewDialer(r.TCP.Opts()...)
+	if r.Net != nil {
+		dialer, err := net.NewDialer(r.Net.Opts()...)
 		if err != nil {
 			return nil, err
 		}

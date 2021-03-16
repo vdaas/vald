@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,17 +21,25 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
 type Option func(d *discoverer) error
 
-var (
-	defaultOpts = []Option{
-		WithDiscoverDuration("2s"),
-		WithErrGroup(errgroup.Get()),
+var defaultOptions = []Option{
+	WithDiscoverDuration("2s"),
+	WithErrGroup(errgroup.Get()),
+}
+
+func WithDialer(der net.Dialer) Option {
+	return func(d *discoverer) error {
+		if der != nil {
+			d.der = der
+		}
+		return nil
 	}
-)
+}
 
 func WithName(name string) Option {
 	return func(d *discoverer) error {

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import (
 	"context"
 
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
-	"github.com/vdaas/vald/hack/benchmark/internal/core"
+	"github.com/vdaas/vald/hack/benchmark/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/errors"
 )
 
@@ -42,7 +42,7 @@ func wrapErrors(errs []error) (wrapped error) {
 	return
 }
 
-func insertAndCreateIndex32(ctx context.Context, c core.Core32, dataset assets.Dataset) (ids []uint, err error) {
+func insertAndCreateIndex32(ctx context.Context, c algorithm.Bit32, dataset assets.Dataset) (ids []uint, err error) {
 	ids = make([]uint, 0, dataset.TrainSize()*bulkInsertCnt)
 
 	n := 0
@@ -72,7 +72,7 @@ func insertAndCreateIndex32(ctx context.Context, c core.Core32, dataset assets.D
 	return
 }
 
-func insertAndCreateIndex64(ctx context.Context, c core.Core64, dataset assets.Dataset) (ids []uint, err error) {
+func insertAndCreateIndex64(ctx context.Context, c algorithm.Bit64, dataset assets.Dataset) (ids []uint, err error) {
 	ids = make([]uint, 0, dataset.TrainSize()*bulkInsertCnt)
 
 	n := 0

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,20 +28,18 @@ import (
 	"go.uber.org/goleak"
 )
 
-var (
-	zstdCompressorComparatorOptions = []comparator.Option{
-		comparator.AllowUnexported(zstdCompressor{}),
-		comparator.Comparer(func(x, y gobCompressor) bool {
-			return reflect.DeepEqual(x, y)
-		}),
-		comparator.Comparer(func(x, y zstd.EOption) bool {
-			if (x == nil && y != nil) || (x != nil && y == nil) {
-				return false
-			}
-			return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
-		}),
-	}
-)
+var zstdCompressorComparatorOptions = []comparator.Option{
+	comparator.AllowUnexported(zstdCompressor{}),
+	comparator.Comparer(func(x, y gobCompressor) bool {
+		return reflect.DeepEqual(x, y)
+	}),
+	comparator.Comparer(func(x, y zstd.EOption) bool {
+		if (x == nil && y != nil) || (x != nil && y == nil) {
+			return false
+		}
+		return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
+	}),
+}
 
 func TestNewZstd(t *testing.T) {
 	type args struct {
@@ -140,7 +138,6 @@ func TestNewZstd(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -328,7 +325,6 @@ func Test_zstdCompressor_CompressVector(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -568,7 +564,6 @@ func Test_zstdCompressor_DecompressVector(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -676,7 +671,6 @@ func Test_zstdCompressor_Reader(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -741,7 +735,8 @@ func Test_zstdCompressor_Writer(t *testing.T) {
 					want: &zstdWriter{
 						dst: nil,
 						w:   e,
-					}},
+					},
+				},
 			}
 		}(),
 		{
@@ -784,7 +779,6 @@ func Test_zstdCompressor_Writer(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -876,7 +870,6 @@ func Test_zstdReader_Read(t *testing.T) {
 			if err := test.checkFunc(test.want, gotN, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -953,7 +946,6 @@ func Test_zstdReader_Close(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1045,7 +1037,6 @@ func Test_zstdWriter_Write(t *testing.T) {
 			if err := test.checkFunc(test.want, gotN, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1168,7 +1159,6 @@ func Test_zstdWriter_Close(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

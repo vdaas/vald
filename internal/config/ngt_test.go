@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ func TestNGT_Bind(t *testing.T) {
 		AutoIndexLength         int
 		InitialDelayMaxDuration string
 		EnableInMemoryMode      bool
+		VQueue                  *VQueue
 	}
 	type want struct {
 		want *NGT
@@ -75,6 +76,7 @@ func TestNGT_Bind(t *testing.T) {
 				AutoIndexLength:         100,
 				InitialDelayMaxDuration: "1h",
 				EnableInMemoryMode:      false,
+				VQueue:                  new(VQueue),
 			},
 			want: want{
 				want: &NGT{
@@ -91,6 +93,7 @@ func TestNGT_Bind(t *testing.T) {
 					AutoIndexLength:         100,
 					InitialDelayMaxDuration: "1h",
 					EnableInMemoryMode:      false,
+					VQueue:                  new(VQueue),
 				},
 			},
 		},
@@ -110,6 +113,7 @@ func TestNGT_Bind(t *testing.T) {
 				AutoIndexLength:         100,
 				InitialDelayMaxDuration: "_initialDelayMaxDuration_",
 				EnableInMemoryMode:      false,
+				VQueue:                  new(VQueue),
 			},
 			beforeFunc: func() {
 				_ = os.Setenv("indexPath", "config/ngt")
@@ -144,13 +148,16 @@ func TestNGT_Bind(t *testing.T) {
 					AutoIndexLength:         100,
 					InitialDelayMaxDuration: "1h",
 					EnableInMemoryMode:      false,
+					VQueue:                  new(VQueue),
 				},
 			},
 		},
 		{
 			name: "returns NGT when all fields are empty",
 			want: want{
-				want: new(NGT),
+				want: &NGT{
+					VQueue: new(VQueue),
+				},
 			},
 		},
 	}
@@ -186,7 +193,6 @@ func TestNGT_Bind(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

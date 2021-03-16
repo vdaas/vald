@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,13 +23,14 @@ import (
 	"sync/atomic"
 	"time"
 
-	agent "github.com/vdaas/vald/apis/grpc/agent/core"
-	"github.com/vdaas/vald/apis/grpc/payload"
-	"github.com/vdaas/vald/internal/client/discoverer"
+	agent "github.com/vdaas/vald/apis/grpc/v1/agent/core"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
@@ -58,7 +59,7 @@ type index struct {
 
 func New(opts ...Option) (idx Indexer, err error) {
 	i := new(index)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(i); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
@@ -155,7 +156,7 @@ func (idx *index) execute(ctx context.Context, enableLowIndexSkip bool) (err err
 					PoolSize: idx.creationPoolSize,
 				}, copts...)
 				if err != nil {
-					if status.Code(err) == status.FailedPrecondition {
+					if status.Code(err) == codes.FailedPrecondition {
 						log.Debugf("CreateIndex of %s skipped: %s", addr, err)
 						return nil
 					}
@@ -232,6 +233,7 @@ func (idx *index) IsIndexing() bool {
 func (idx *index) NumberOfUUIDs() uint32 {
 	return atomic.LoadUint32(&idx.uuidsCount)
 }
+
 func (idx *index) NumberOfUncommittedUUIDs() uint32 {
 	return atomic.LoadUint32(&idx.uncommittedUUIDsCount)
 }

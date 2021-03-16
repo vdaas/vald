@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -59,26 +59,36 @@ func (t *timeout) Wrap(h rest.Func) rest.Func {
 			var code int
 			code, err = h(w, r.WithContext(ctx))
 			if err != nil {
-				sch <- code
+				select {
+				case <-ctx.Done():
+				case sch <- code:
+				}
 				runtime.Gosched()
 			}
-			ech <- err
+			select {
+			case <-ctx.Done():
+			case ech <- err:
+			}
 			return nil
 		}))
 
 		select {
-		case err = <-ech:
-			// handler finished first, may have error returned
-			if err != nil {
-				code = <-sch
-				err = errors.ErrHandler(err)
-				return code, err
-			}
-			return http.StatusOK, nil
 		case <-ctx.Done():
 			// timeout passed or parent context canceled first,
 			// it is the responsibility for handler to response to the user
 			return http.StatusRequestTimeout, errors.ErrHandlerTimeout(ctx.Err(), time.Duration(fastime.UnixNanoNow()-start))
+		case err = <-ech:
+			// handler finished first, may have error returned
+			if err != nil {
+				select {
+				case <-ctx.Done():
+					return http.StatusRequestTimeout, errors.ErrHandlerTimeout(errors.Wrap(ctx.Err(), err.Error()), time.Duration(fastime.UnixNanoNow()-start))
+				case code = <-sch:
+				}
+				err = errors.ErrHandler(err)
+				return code, err
+			}
+			return http.StatusOK, nil
 		}
 	}
 }

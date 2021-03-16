@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,14 +27,12 @@ import (
 
 type Option func(*server)
 
-var (
-	defaultOpts = []Option{
-		WithErrGroup(errgroup.Get()),
-		WithReplicationCount(3),
-		WithStreamConcurrency(20),
-		WithTimeout("5s"),
-	}
-)
+var defaultOptions = []Option{
+	WithErrGroup(errgroup.Get()),
+	WithReplicationCount(3),
+	WithStreamConcurrency(20),
+	WithTimeout("5s"),
+}
 
 func WithGateway(g service.Gateway) Option {
 	return func(s *server) {
@@ -88,7 +86,7 @@ func WithTimeout(dur string) Option {
 
 func WithReplicationCount(rep int) Option {
 	return func(s *server) {
-		if rep > 1 {
+		if rep > 0 {
 			s.replica = rep
 		}
 	}

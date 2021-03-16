@@ -1,6 +1,6 @@
 ---
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,10 +20,10 @@ metadata:
   name: vald-meta-config
   labels:
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v0.0.62
+    helm.sh/chart: vald-v1.0.3
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v0.0.62
+    app.kubernetes.io/version: v1.0.3
     app.kubernetes.io/component: meta
 data:
   config.yaml: |
@@ -42,10 +42,12 @@ data:
           grpc:
             bidirectional_stream_concurrency: 20
             connection_timeout: ""
+            enable_reflection: true
             header_table_size: 0
             initial_conn_window_size: 0
             initial_window_size: 0
-            interceptors: []
+            interceptors:
+            - RecoverInterceptor
             keepalive:
               max_conn_age: ""
               max_conn_age_grace: ""
@@ -58,8 +60,20 @@ data:
             read_buffer_size: 0
             write_buffer_size: 0
           mode: GRPC
+          network: tcp
           probe_wait_time: 3s
           restart: true
+          socket_option:
+            ip_recover_destination_addr: false
+            ip_transparent: false
+            reuse_addr: true
+            reuse_port: true
+            tcp_cork: false
+            tcp_defer_accept: true
+            tcp_fast_open: true
+            tcp_no_delay: true
+            tcp_quick_ack: true
+          socket_path: ""
       health_check_servers:
         - name: liveness
           host: 0.0.0.0
@@ -72,7 +86,19 @@ data:
             shutdown_duration: 5s
             write_timeout: ""
           mode: ""
+          network: tcp
           probe_wait_time: 3s
+          socket_option:
+            ip_recover_destination_addr: false
+            ip_transparent: false
+            reuse_addr: true
+            reuse_port: true
+            tcp_cork: false
+            tcp_defer_accept: true
+            tcp_fast_open: true
+            tcp_no_delay: true
+            tcp_quick_ack: true
+          socket_path: ""
         - name: readiness
           host: 0.0.0.0
           port: 3001
@@ -84,7 +110,19 @@ data:
             shutdown_duration: 0s
             write_timeout: ""
           mode: ""
+          network: tcp
           probe_wait_time: 3s
+          socket_option:
+            ip_recover_destination_addr: false
+            ip_transparent: false
+            reuse_addr: true
+            reuse_port: true
+            tcp_cork: false
+            tcp_defer_accept: true
+            tcp_fast_open: true
+            tcp_no_delay: true
+            tcp_quick_ack: true
+          socket_path: ""
       metrics_servers:
         - name: pprof
           host: 0.0.0.0
@@ -97,7 +135,19 @@ data:
             shutdown_duration: 5s
             write_timeout: 1s
           mode: REST
+          network: tcp
           probe_wait_time: 3s
+          socket_option:
+            ip_recover_destination_addr: false
+            ip_transparent: false
+            reuse_addr: true
+            reuse_port: true
+            tcp_cork: false
+            tcp_defer_accept: true
+            tcp_fast_open: true
+            tcp_no_delay: true
+            tcp_quick_ack: true
+          socket_path: ""
       startup_strategy:
         - liveness
         - pprof
@@ -108,6 +158,7 @@ data:
         ca: /path/to/ca
         cert: /path/to/cert
         enabled: false
+        insecure_skip_verify: false
         key: /path/to/key
     observability:
       enabled: false
@@ -197,15 +248,7 @@ data:
       max_retry_backoff: 512ms
       min_idle_conns: 0
       min_retry_backoff: 8ms
-      password: _REDIS_PASSWORD_
-      pool_size: 10
-      pool_timeout: 4s
-      prefix_delimiter: ""
-      read_only: false
-      read_timeout: 3s
-      route_by_latency: false
-      route_randomly: true
-      tcp:
+      net:
         dialer:
           dual_stack_enabled: false
           keep_alive: 5m
@@ -214,15 +257,38 @@ data:
           cache_enabled: true
           cache_expiration: 24h
           refresh_duration: 1h
+        socket_option:
+          ip_recover_destination_addr: false
+          ip_transparent: false
+          reuse_addr: true
+          reuse_port: true
+          tcp_cork: false
+          tcp_defer_accept: true
+          tcp_fast_open: true
+          tcp_no_delay: true
+          tcp_quick_ack: true
         tls:
           ca: /path/to/ca
           cert: /path/to/cert
           enabled: false
+          insecure_skip_verify: false
           key: /path/to/key
+      network: tcp
+      password: _REDIS_PASSWORD_
+      pool_size: 10
+      pool_timeout: 4s
+      prefix_delimiter: ""
+      read_only: false
+      read_timeout: 3s
+      route_by_latency: false
+      route_randomly: true
+      sentinel_master_name: ""
+      sentinel_password: ""
       tls:
         ca: /path/to/ca
         cert: /path/to/cert
         enabled: false
+        insecure_skip_verify: false
         key: /path/to/key
       vk_prefix: ""
       write_timeout: 3s

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,15 +22,14 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
-	"google.golang.org/grpc"
-
 	"go.uber.org/goleak"
 )
 
 func TestBidirectionalStream(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx         context.Context
-		stream      grpc.ServerStream
+		stream      ServerStream
 		concurrency int
 		newData     func() interface{}
 		f           func(context.Context, interface{}) (interface{}, error)
@@ -88,9 +87,11 @@ func TestBidirectionalStream(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -105,14 +106,14 @@ func TestBidirectionalStream(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func TestBidirectionalStreamClient(t *testing.T) {
+	t.Parallel()
 	type args struct {
-		stream       grpc.ClientStream
+		stream       ClientStream
 		dataProvider func() interface{}
 		newData      func() interface{}
 		f            func(interface{}, error)
@@ -168,9 +169,11 @@ func TestBidirectionalStreamClient(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -185,7 +188,6 @@ func TestBidirectionalStreamClient(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

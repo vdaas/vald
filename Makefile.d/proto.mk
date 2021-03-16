@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 .PHONY: proto/all
 ## build protobufs
 proto/all: \
+	proto/deps \
 	pbgo \
 	pbdoc \
 	swagger
@@ -57,6 +58,8 @@ proto/deps: \
 	$(GOPATH)/src/google.golang.org/genproto \
 	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
 	$(GOPATH)/src/github.com/googleapis/googleapis \
+	$(GOPATH)/src/github.com/gogo/googleapis \
+	$(GOPATH)/src/github.com/gogo/protobuf \
 	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
 
 $(GOPATH)/src/github.com/protocolbuffers/protobuf:
@@ -71,6 +74,18 @@ $(GOPATH)/src/github.com/googleapis/googleapis:
 		https://github.com/googleapis/googleapis \
 		$(GOPATH)/src/github.com/googleapis/googleapis
 
+$(GOPATH)/src/github.com/gogo/googleapis:
+	git clone \
+		--depth 1 \
+		https://github.com/gogo/googleapis \
+		$(GOPATH)/src/github.com/gogo/googleapis
+
+$(GOPATH)/src/github.com/gogo/protobuf:
+	git clone \
+		--depth 1 \
+		https://github.com/gogo/protobuf \
+		$(GOPATH)/src/github.com/gogo/protobuf
+
 $(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate:
 	git clone \
 		--depth 1 \
@@ -81,7 +96,7 @@ $(GOPATH)/src/google.golang.org/genproto:
 	$(call go-get, google.golang.org/genproto/...)
 
 $(GOPATH)/bin/protoc-gen-go:
-	$(call go-get-no-mod, github.com/golang/protobuf/protoc-gen-go)
+	$(call go-get, github.com/golang/protobuf/protoc-gen-go)
 
 $(GOPATH)/bin/protoc-gen-gogo:
 	$(call go-get-no-mod, github.com/gogo/protobuf/protoc-gen-gogo)
@@ -132,10 +147,13 @@ $(PBGOS): \
 	$(GOPATH)/src/google.golang.org/genproto \
 	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
 	$(GOPATH)/src/github.com/googleapis/googleapis \
+	$(GOPATH)/src/github.com/gogo/googleapis \
 	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
 	@$(call green, "generating pb.go files...")
 	$(call mkdir, $(dir $@))
 	$(call protoc-gen, $(patsubst apis/grpc/%.pb.go,apis/proto/%.proto,$@), --gogofast_out=plugins=grpc:$(GOPATH)/src)
+	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs sed -i -E "s%google.golang.org/grpc/codes%github.com/vdaas/vald/internal/net/grpc/codes%g"
+	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs sed -i -E "s%google.golang.org/grpc/status%github.com/vdaas/vald/internal/net/grpc/status%g"
 	# we have to enable validate after https://github.com/envoyproxy/protoc-gen-validate/pull/257 is merged
 	# $(call protoc-gen, $(patsubst apis/grpc/%.pb.go,apis/proto/%.proto,$@), --gogofast_out=plugins=grpc:$(GOPATH)/src --validate_out=lang=gogo:$(GOPATH)/src)
 
@@ -155,6 +173,7 @@ $(SWAGGERS): \
 	$(GOPATH)/src/google.golang.org/genproto \
 	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
 	$(GOPATH)/src/github.com/googleapis/googleapis \
+	$(GOPATH)/src/github.com/gogo/googleapis \
 	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
 	@$(call green, "generating swagger.json files...")
 	$(call mkdir, $(dir $@))
@@ -176,7 +195,15 @@ $(PBDOCS): \
 	$(GOPATH)/src/google.golang.org/genproto \
 	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
 	$(GOPATH)/src/github.com/googleapis/googleapis \
+	$(GOPATH)/src/github.com/gogo/googleapis \
 	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
-	@$(call green, "generating documents...")
+
+apis/docs/v0/docs.md: $(PROTOS_V0)
+	@$(call green, "generating documents for API v0...")
 	$(call mkdir, $(dir $@))
-	$(call protoc-gen, $(PROTOS), --plugin=protoc-gen-doc=$(GOPATH)/bin/protoc-gen-doc --doc_opt=markdown$(COMMA)docs.md --doc_out=$(dir $@))
+	$(call protoc-gen, $(PROTOS_V0), --plugin=protoc-gen-doc=$(GOPATH)/bin/protoc-gen-doc --doc_opt=markdown$(COMMA)docs.md --doc_out=$(dir $@))
+
+apis/docs/v1/docs.md: $(PROTOS_V1)
+	@$(call green, "generating documents for API v1...")
+	$(call mkdir, $(dir $@))
+	$(call protoc-gen, $(PROTOS_V1), --plugin=protoc-gen-doc=$(GOPATH)/bin/protoc-gen-doc --doc_opt=markdown$(COMMA)docs.md --doc_out=$(dir $@))

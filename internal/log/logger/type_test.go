@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -59,29 +59,29 @@ func TestType_String(t *testing.T) {
 			},
 		},
 
-		{
-			name: "returns zerolog when m is ZEROLOG",
-			m:    ZEROLOG,
-			want: want{
-				want: "zerolog",
-			},
-		},
-
-		{
-			name: "returns logrus when m is LOGRUS",
-			m:    LOGRUS,
-			want: want{
-				want: "logrus",
-			},
-		},
-
-		{
-			name: "returns klog when m is KLOG",
-			m:    KLOG,
-			want: want{
-				want: "klog",
-			},
-		},
+		// {
+		// 	name: "returns zerolog when m is ZEROLOG",
+		// 	m:    ZEROLOG,
+		// 	want: want{
+		// 		want: "zerolog",
+		// 	},
+		// },
+		//
+		// {
+		// 	name: "returns logrus when m is LOGRUS",
+		// 	m:    LOGRUS,
+		// 	want: want{
+		// 		want: "logrus",
+		// 	},
+		// },
+		//
+		// {
+		// 	name: "returns klog when m is KLOG",
+		// 	m:    KLOG,
+		// 	want: want{
+		// 		want: "klog",
+		// 	},
+		// },
 
 		{
 			name: "returns unknown when m is unknown",
@@ -109,7 +109,6 @@ func TestType_String(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -176,65 +175,65 @@ func TestAtot(t *testing.T) {
 			},
 		},
 
-		{
-			name: "returns ZEROLOG when str is `zerolog`",
-			args: args{
-				str: "zerolog",
-			},
-			want: want{
-				want: ZEROLOG,
-			},
-		},
-
-		{
-			name: "returns ZEROLOG when str is `ZEROLOg`",
-			args: args{
-				str: "ZEROLOg",
-			},
-			want: want{
-				want: ZEROLOG,
-			},
-		},
-
-		{
-			name: "returns LOGRUS when str is `logrus`",
-			args: args{
-				str: "logrus",
-			},
-			want: want{
-				want: LOGRUS,
-			},
-		},
-
-		{
-			name: "returns LOGRUS when str is `LOGRUs`",
-			args: args{
-				str: "LOGRUs",
-			},
-			want: want{
-				want: LOGRUS,
-			},
-		},
-
-		{
-			name: "returns KLOG when str is `klog`",
-			args: args{
-				str: "klog",
-			},
-			want: want{
-				want: KLOG,
-			},
-		},
-
-		{
-			name: "returns KLOG when str is `KLOg`",
-			args: args{
-				str: "KLog",
-			},
-			want: want{
-				want: KLOG,
-			},
-		},
+		// {
+		// 	name: "returns ZEROLOG when str is `zerolog`",
+		// 	args: args{
+		// 		str: "zerolog",
+		// 	},
+		// 	want: want{
+		// 		want: ZEROLOG,
+		// 	},
+		// },
+		//
+		// {
+		// 	name: "returns ZEROLOG when str is `ZEROLOg`",
+		// 	args: args{
+		// 		str: "ZEROLOg",
+		// 	},
+		// 	want: want{
+		// 		want: ZEROLOG,
+		// 	},
+		// },
+		//
+		// {
+		// 	name: "returns LOGRUS when str is `logrus`",
+		// 	args: args{
+		// 		str: "logrus",
+		// 	},
+		// 	want: want{
+		// 		want: LOGRUS,
+		// 	},
+		// },
+		//
+		// {
+		// 	name: "returns LOGRUS when str is `LOGRUs`",
+		// 	args: args{
+		// 		str: "LOGRUs",
+		// 	},
+		// 	want: want{
+		// 		want: LOGRUS,
+		// 	},
+		// },
+		//
+		// {
+		// 	name: "returns KLOG when str is `klog`",
+		// 	args: args{
+		// 		str: "klog",
+		// 	},
+		// 	want: want{
+		// 		want: KLOG,
+		// 	},
+		// },
+		//
+		// {
+		// 	name: "returns KLOG when str is `KLOg`",
+		// 	args: args{
+		// 		str: "KLog",
+		// 	},
+		// 	want: want{
+		// 		want: KLOG,
+		// 	},
+		// },
 
 		{
 			name: "returns unknown when str is `Vald`",
@@ -264,7 +263,6 @@ func TestAtot(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

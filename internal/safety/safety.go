@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package safety
 
 import (
 	"runtime"
+	"runtime/debug"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
@@ -37,12 +38,14 @@ func recoverFunc(fn func() error, withPanic bool) func() error {
 	return func() (err error) {
 		defer func() {
 			if r := recover(); r != nil {
-				log.Warnf("recovered:\t%+v", r)
+				stack := string(debug.Stack())
+				log.Warnf("recovered: %+v\nstacktrace:\n%s", r, stack)
 				switch x := r.(type) {
 				case runtime.Error:
 					err = errors.ErrRuntimeError(err, x)
 					if withPanic {
-						log.Error(err, info.Get())
+						log.Errorf("recovered but this thread is going to panic: the reason is runtimer.Error\nerror: %v\ninfo:\n%s\nstacktrace:\n%s", err, info.Get().String(), stack)
+
 						panic(err)
 					}
 				case string:
@@ -53,7 +56,7 @@ func recoverFunc(fn func() error, withPanic bool) func() error {
 					err = errors.ErrPanicRecovered(err, x)
 				}
 				if err != nil {
-					log.Error(err, info.Get())
+					log.Errorf("recovered error: %v\ninfo:\n%s\nstacktrace:\n%s", err, info.Get().String(), stack)
 				}
 			}
 		}()

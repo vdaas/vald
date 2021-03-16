@@ -1,0 +1,52 @@
+---
+#
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: scylla-initdb
+data:
+  init.cql: |
+    // DROP KEYSPACE IF EXISTS vald;
+    CREATE KEYSPACE IF NOT EXISTS vald WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 3};
+    // meta
+
+    DROP TABLE IF EXISTS vald.kv;
+    CREATE TABLE vald.kv (
+      uuid   text,
+      meta   text,
+      PRIMARY KEY (uuid)
+    );
+
+    DROP TABLE IF EXISTS vald.vk;
+    CREATE TABLE vald.vk (
+      meta   text,
+      uuid   text,
+      PRIMARY KEY (meta)
+    );
+    // backup
+
+    DROP TABLE IF EXISTS vald.backup_vector;
+    CREATE TABLE vald.backup_vector (
+      uuid   text,
+      vector blob,
+      meta   text,
+      ips    frozen<list<text>>,
+      PRIMARY KEY (uuid)
+    );
+
+    DROP INDEX IF EXISTS vald.backup_vector;
+    CREATE INDEX ON vald.backup_vector (full(ips));

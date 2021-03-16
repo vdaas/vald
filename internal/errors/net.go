@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,17 +20,25 @@ package errors
 import "time"
 
 var (
-	// tcp
+	// tcp.
 
-	// ErrFailedInitDialer defines the init dialer error
+	// ErrFailedInitDialer represents an error that the initialization of the dialer failed.
 	ErrFailedInitDialer = New("failed to init dialer")
-	// ErrInvalidDNSConfig defines the invalid DNS config error
+
+	// ErrInvalidDNSConfig represents a function to generate an error that the configuration of the DNS is invalid.
 	ErrInvalidDNSConfig = func(dnsRefreshDur, dnsCacheExp time.Duration) error {
 		return Errorf("dnsRefreshDuration  > dnsCacheExp, %s, %s", dnsRefreshDur, dnsCacheExp)
 	}
 
-	// net
+	// net.
 
-	// ErrNoPortAvailiable defines no port available error
-	ErrNoPortAvailable = New("no port available")
+	// ErrNoPortAvailable represents a function to generate an error that the port of the host is unavailable.
+	ErrNoPortAvailable = func(host string, start, end uint16) error {
+		return Errorf("no port available for Host: %s\tbetween %d ~ %d", host, start, end)
+	}
+
+	// ErrLookupIPAddrNotFound represents a function to generate an error that the host's ip address could not discovererd from DNS.
+	ErrLookupIPAddrNotFound = func(host string) error {
+		return Errorf("failed to lookup ip addrs for host: %s", host)
+	}
 )

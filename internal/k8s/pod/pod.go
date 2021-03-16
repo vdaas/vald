@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,10 +24,10 @@ import (
 
 	"github.com/vdaas/vald/internal/k8s"
 	"github.com/vdaas/vald/internal/log"
-
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -37,7 +37,6 @@ import (
 type PodWatcher k8s.ResourceController
 
 type reconciler struct {
-	ctx         context.Context
 	mgr         manager.Manager
 	name        string
 	namespace   string
@@ -59,17 +58,17 @@ type Pod struct {
 func New(opts ...Option) PodWatcher {
 	r := new(reconciler)
 
-	for _, opt := range opts {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(r)
 	}
 
 	return r
 }
 
-func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err error) {
+func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
 	ps := &corev1.PodList{}
 
-	err = r.mgr.GetClient().List(r.ctx, ps)
+	err = r.mgr.GetClient().List(ctx, ps)
 
 	if err != nil {
 		if r.onError != nil {
@@ -98,6 +97,9 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 	)
 
 	for _, pod := range ps.Items {
+		if pod.GetObjectMeta().GetDeletionTimestamp() != nil {
+			continue
+		}
 		if pod.Status.Phase == corev1.PodRunning {
 			cpuLimit = 0.0
 			memLimit = 0.0
@@ -148,10 +150,7 @@ func (r *reconciler) GetName() string {
 	return r.name
 }
 
-func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler {
-	if r.ctx == nil && ctx != nil {
-		r.ctx = ctx
-	}
+func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
 	if r.mgr == nil && mgr != nil {
 		r.mgr = mgr
 	}
@@ -159,15 +158,15 @@ func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) rec
 	return r
 }
 
-func (r *reconciler) For() runtime.Object {
-	return new(corev1.Pod)
+func (r *reconciler) For() (client.Object, []builder.ForOption) {
+	return new(corev1.Pod), nil
 }
 
-func (r *reconciler) Owns() runtime.Object {
-	return nil
-}
-
-func (r *reconciler) Watches() (*source.Kind, handler.EventHandler) {
-	// return &source.Kind{Type: new(corev1.Pod)}, &handler.EnqueueRequestForObject{}
+func (r *reconciler) Owns() (client.Object, []builder.OwnsOption) {
 	return nil, nil
+}
+
+func (r *reconciler) Watches() (*source.Kind, handler.EventHandler, []builder.WatchesOption) {
+	// return &source.Kind{Type: new(corev1.Pod)}, &handler.EnqueueRequestForObject{}
+	return nil, nil, nil
 }

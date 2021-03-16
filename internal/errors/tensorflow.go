@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,15 +18,22 @@
 package errors
 
 var (
+	// ErrFailedToCastTF represents a function to generate an error that failed to something cast to tensorflow.
 	ErrFailedToCastTF = func(v interface{}) error {
 		return Errorf("failed to cast tensorflow result %+v", v)
 	}
+
+	// ErrInputLength represents a function to generate an error that input length is not equal to required.
 	ErrInputLength = func(i int, f int) error {
 		return Errorf("inputs length %d does not match feeds length %d", i, f)
 	}
+
+	// ErrNilTensorTF represents a function to generate an error that nil tensorflow tensor.
 	ErrNilTensorTF = func(v interface{}) error {
 		return Errorf("nil tensorflow tensor %+v", v)
 	}
+
+	// ErrNilTensorValueTF represents a function to generate an error that nil tensorflow value,
 	ErrNilTensorValueTF = func(v interface{}) error {
 		return Errorf("nil tensorflow tensor value %+v", v)
 	}

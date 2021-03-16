@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,9 +23,11 @@ import (
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/safety"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -39,10 +41,10 @@ type Controller interface {
 
 type ResourceController interface {
 	GetName() string
-	NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler
-	For() runtime.Object
-	Owns() runtime.Object
-	Watches() (*source.Kind, handler.EventHandler)
+	NewReconciler(mgr manager.Manager) reconcile.Reconciler
+	For() (client.Object, []builder.ForOption)
+	Owns() (client.Object, []builder.OwnsOption)
+	Watches() (*source.Kind, handler.EventHandler, []builder.WatchesOption)
 }
 
 type controller struct {
@@ -52,12 +54,13 @@ type controller struct {
 	leaderElection bool
 	mgr            manager.Manager
 	rcs            []ResourceController
+	der            net.Dialer
 }
 
 func New(opts ...Option) (cl Controller, err error) {
 	c := new(controller)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(c); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
@@ -70,6 +73,9 @@ func New(opts ...Option) (cl Controller, err error) {
 		}
 		if cfg == nil {
 			return nil, errors.ErrInvalidReconcilerConfig
+		}
+		if c.der != nil {
+			cfg.Dial = c.der.GetDialer()
 		}
 		c.mgr, err = manager.New(
 			cfg,
@@ -84,39 +90,42 @@ func New(opts ...Option) (cl Controller, err error) {
 		}
 	}
 
-	return c, nil
-}
-
-func (c *controller) Start(ctx context.Context) (<-chan error, error) {
-	var err error
 	for _, rc := range c.rcs {
 		if rc != nil {
 			bc := builder.ControllerManagedBy(c.mgr).Named(rc.GetName())
-			f := rc.For()
+			f, fopts := rc.For()
 			if f != nil {
-				bc = bc.For(f)
+				bc = bc.For(f, fopts...)
 			}
-			o := rc.Owns()
+			o, oopts := rc.Owns()
 			if o != nil {
-				bc = bc.Owns(o)
+				bc = bc.Owns(o, oopts...)
 			}
-			src, h := rc.Watches()
+			src, h, wopts := rc.Watches()
 			if src != nil {
 				if h == nil {
 					h = &handler.EnqueueRequestForObject{}
 				}
-				bc = bc.Watches(src, h)
+				bc = bc.Watches(src, h, wopts...)
 			}
-			_, err = bc.Build(rc.NewReconciler(ctx, c.mgr))
+			_, err = bc.Build(rc.NewReconciler(c.mgr))
 			if err != nil {
 				return nil, err
 			}
 		}
 	}
+
+	return c, nil
+}
+
+func (c *controller) Start(ctx context.Context) (<-chan error, error) {
+	if c.der != nil {
+		c.der.StartDialerCache(ctx)
+	}
 	ech := make(chan error, 1)
 	c.eg.Go(safety.RecoverFunc(func() error {
 		defer close(ech)
-		err := c.mgr.Start(ctx.Done())
+		err := c.mgr.Start(ctx)
 		if err != nil {
 			ech <- err
 		}

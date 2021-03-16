@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,14 +17,12 @@
 // Package grpc provides grpc server logic
 package model
 
-type MetaVector struct {
+type Vector struct {
 	UUID   string
 	Vector []byte
-	Meta   string
 	IPs    []string
 }
 
-func (m *MetaVector) GetUUID() string   { return m.UUID }
-func (m *MetaVector) GetVector() []byte { return m.Vector }
-func (m *MetaVector) GetMeta() string   { return m.Meta }
-func (m *MetaVector) GetIPs() []string  { return m.IPs }
+func (m *Vector) GetUUID() string   { return m.UUID }
+func (m *Vector) GetVector() []byte { return m.Vector }
+func (m *Vector) GetIPs() []string  { return m.IPs }

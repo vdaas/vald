@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,14 +22,16 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/vdaas/vald/internal/db/rdb/mysql"
 	"github.com/vdaas/vald/internal/errors"
+	"go.uber.org/goleak"
 )
 
 func TestMySQL_Bind(t *testing.T) {
 	type fields struct {
 		DB                   string
 		Host                 string
-		Port                 int
+		Port                 uint16
 		User                 string
 		Pass                 string
 		Name                 string
@@ -41,7 +43,7 @@ func TestMySQL_Bind(t *testing.T) {
 		MaxOpenConns         int
 		MaxIdleConns         int
 		TLS                  *TLS
-		TCP                  *TCP
+		Net                  *Net
 	}
 	type want struct {
 		want *MySQL
@@ -94,7 +96,7 @@ func TestMySQL_Bind(t *testing.T) {
 					MaxOpenConns:         10,
 					MaxIdleConns:         100,
 					TLS:                  new(TLS),
-					TCP:                  new(TCP),
+					Net:                  new(Net),
 				},
 			},
 		},
@@ -118,7 +120,7 @@ func TestMySQL_Bind(t *testing.T) {
 				TLS: &TLS{
 					Enabled: true,
 				},
-				TCP: &TCP{
+				Net: &Net{
 					DNS: new(DNS),
 				},
 			},
@@ -140,7 +142,7 @@ func TestMySQL_Bind(t *testing.T) {
 					TLS: &TLS{
 						Enabled: true,
 					},
-					TCP: &TCP{
+					Net: &Net{
 						DNS: new(DNS),
 					},
 				},
@@ -164,7 +166,7 @@ func TestMySQL_Bind(t *testing.T) {
 				MaxOpenConns:         10,
 				MaxIdleConns:         100,
 				TLS:                  new(TLS),
-				TCP:                  new(TCP),
+				Net:                  new(Net),
 			},
 			want: want{
 				want: &MySQL{
@@ -182,7 +184,7 @@ func TestMySQL_Bind(t *testing.T) {
 					MaxOpenConns:         10,
 					MaxIdleConns:         100,
 					TLS:                  new(TLS),
-					TCP:                  new(TCP),
+					Net:                  new(Net),
 				},
 			},
 			beforeFunc: func() {
@@ -238,11 +240,146 @@ func TestMySQL_Bind(t *testing.T) {
 				MaxOpenConns:         test.fields.MaxOpenConns,
 				MaxIdleConns:         test.fields.MaxIdleConns,
 				TLS:                  test.fields.TLS,
-				TCP:                  test.fields.TCP,
+				Net:                  test.fields.Net,
 			}
 
 			got := m.Bind()
 			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestMySQL_Opts(t *testing.T) {
+	t.Parallel()
+	type fields struct {
+		DB                   string
+		Host                 string
+		Port                 uint16
+		User                 string
+		Pass                 string
+		Name                 string
+		Charset              string
+		Timezone             string
+		InitialPingTimeLimit string
+		InitialPingDuration  string
+		ConnMaxLifeTime      string
+		MaxOpenConns         int
+		MaxIdleConns         int
+		TLS                  *TLS
+		Net                  *Net
+	}
+	type want struct {
+		want []mysql.Option
+		err  error
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, []mysql.Option, error) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got []mysql.Option, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           DB: "",
+		           Host: "",
+		           Port: 0,
+		           User: "",
+		           Pass: "",
+		           Name: "",
+		           Charset: "",
+		           Timezone: "",
+		           InitialPingTimeLimit: "",
+		           InitialPingDuration: "",
+		           ConnMaxLifeTime: "",
+		           MaxOpenConns: 0,
+		           MaxIdleConns: 0,
+		           TLS: TLS{},
+		           Net: Net{},
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           DB: "",
+		           Host: "",
+		           Port: 0,
+		           User: "",
+		           Pass: "",
+		           Name: "",
+		           Charset: "",
+		           Timezone: "",
+		           InitialPingTimeLimit: "",
+		           InitialPingDuration: "",
+		           ConnMaxLifeTime: "",
+		           MaxOpenConns: 0,
+		           MaxIdleConns: 0,
+		           TLS: TLS{},
+		           Net: Net{},
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			m := &MySQL{
+				DB:                   test.fields.DB,
+				Host:                 test.fields.Host,
+				Port:                 test.fields.Port,
+				User:                 test.fields.User,
+				Pass:                 test.fields.Pass,
+				Name:                 test.fields.Name,
+				Charset:              test.fields.Charset,
+				Timezone:             test.fields.Timezone,
+				InitialPingTimeLimit: test.fields.InitialPingTimeLimit,
+				InitialPingDuration:  test.fields.InitialPingDuration,
+				ConnMaxLifeTime:      test.fields.ConnMaxLifeTime,
+				MaxOpenConns:         test.fields.MaxOpenConns,
+				MaxIdleConns:         test.fields.MaxIdleConns,
+				TLS:                  test.fields.TLS,
+				Net:                  test.fields.Net,
+			}
+
+			got, err := m.Opts()
+			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

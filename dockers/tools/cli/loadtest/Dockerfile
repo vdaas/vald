@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,23 +15,33 @@
 #
 
 ARG GO_VERSION=latest
+ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
-FROM golang:${GO_VERSION} AS golang
+FROM golang:${GO_VERSION} AS builder
 
-FROM vdaas/vald-base:latest AS builder
-
+ENV GO111MODULE on
+ENV LANG en_US.UTF-8
 ENV ORG vdaas
 ENV REPO vald
 ENV APP_NAME loadtest
 ENV PKG tools/cli/${APP_NAME}
 
-COPY --from=golang /usr/local/go $GOROOT
-
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    upx \
+    git \
     libhdf5-dev \
     && ldconfig \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p $GOPATH/src
+
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
+
+COPY go.mod .
+COPY go.sum .
+
+RUN go mod download
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal
 COPY internal .
@@ -84,6 +94,7 @@ RUN GO_VERSION="$(cat GO_VERSION)" \
 FROM ubuntu:devel
 # Start From Alpine For Debug Environment
 # FROM alpine:latest
+LABEL maintainer "${MAINTAINER}"
 
 ENV APP_NAME loadtest
 

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,8 +23,9 @@ import (
 
 	"github.com/kpango/fuid"
 	"github.com/kpango/glg"
-	"github.com/vdaas/vald-client-go/gateway/vald"
-	"github.com/vdaas/vald-client-go/payload"
+
+	"github.com/vdaas/vald-client-go/v1/payload"
+	"github.com/vdaas/vald-client-go/v1/vald"
 
 	"gonum.org/v1/hdf5"
 	"google.golang.org/grpc"
@@ -62,7 +63,6 @@ func main() {
 	if err != nil {
 		glg.Fatal(err)
 	}
-
 	ctx := context.Background()
 
 	// Create a Vald client for connecting to the Vald cluster.
@@ -77,17 +77,22 @@ func main() {
 	glg.Infof("Start Inserting %d training vector to Vald", insertCount)
 	// Insert 400 example vectors into Vald cluster
 	for i := range ids[:insertCount] {
-		if i%10 == 0 {
-			glg.Infof("Inserted: %d", i)
-		}
 		// Calls `Insert` function of Vald client.
 		// Sends set of vector and id to server via gRPC.
-		_, err := client.Insert(ctx, &payload.Object_Vector{
-			Id:     ids[i],
-			Vector: train[i],
+		_, err := client.Insert(ctx, &payload.Insert_Request{
+			Vector: &payload.Object_Vector{
+				Id:     ids[i],
+				Vector: train[i],
+			},
+			Config: &payload.Insert_Config{
+				SkipStrictExistCheck: true,
+			},
 		})
 		if err != nil {
 			glg.Fatal(err)
+		}
+		if i%10 == 0 {
+			glg.Infof("Inserted: %d", i+10)
 		}
 	}
 	glg.Info("Finish Inserting dataset. \n\n")
@@ -122,6 +127,26 @@ func main() {
 		glg.Infof("%d - Results : %s\n\n", i+1, string(b))
 		time.Sleep(1 * time.Second)
 	}
+	glg.Infof("Finish searching %d times", testCount)
+
+	glg.Info("Start removing vector")
+	// Remove indexed 400 vectors from vald cluster.
+	for i := range ids[:insertCount] {
+		// Call `Remove` function of Vald client.
+		// Sends id to server via gRPC.
+		_, err := client.Remove(ctx, &payload.Remove_Request{
+			Id: &payload.Object_ID{
+				Id: ids[i],
+			},
+		})
+		if err != nil {
+			glg.Fatal(err)
+		}
+		if i%10 == 0 {
+			glg.Infof("Removed: %d", i+10)
+		}
+	}
+	glg.Info("Finish removing vector")
 }
 
 // load function loads training and test vector from hdf file. The size of ids is same to the number of training data.
@@ -153,7 +178,9 @@ func load(path string) (ids []string, train, test [][]float32, err error) {
 		row, dim := int(dims[0]), int(dims[1])
 
 		// Gets the stored vector. All are represented as one-dimensional arrays.
-		vec := make([]float64, sp.SimpleExtentNPoints())
+		// The type of the slice depends on your dataset.
+		// For fashion-mnist-784-euclidean.hdf5, the datatype is float32.
+		vec := make([]float32, sp.SimpleExtentNPoints())
 		if err := d.Read(&vec); err != nil {
 			return nil, err
 		}

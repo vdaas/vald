@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
-	"github.com/vdaas/vald/internal/net/tcp"
 	"go.uber.org/goleak"
 )
 
@@ -67,7 +66,7 @@ func TestNew(t *testing.T) {
 	tests := []test{
 		func() test {
 			m := new(mySQLClient)
-			for _, opt := range defaultOpts {
+			for _, opt := range defaultOptions {
 				_ = opt(m)
 			}
 			m.dbr = dbr.New()
@@ -80,7 +79,7 @@ func TestNew(t *testing.T) {
 		}(),
 		func() test {
 			m := new(mySQLClient)
-			for _, opt := range defaultOpts {
+			for _, opt := range defaultOptions {
 				_ = opt(m)
 			}
 			m.dbr = dbr.New()
@@ -93,7 +92,7 @@ func TestNew(t *testing.T) {
 		}(),
 		func() test {
 			m := new(mySQLClient)
-			for _, opt := range defaultOpts {
+			for _, opt := range defaultOptions {
 				_ = opt(m)
 			}
 			m.dbr = dbr.New()
@@ -131,7 +130,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -143,7 +141,9 @@ func Test_mySQLClient_Open(t *testing.T) {
 	type fields struct {
 		db                   string
 		host                 string
-		port                 int
+		port                 uint16
+		network              string
+		socketPath           string
 		user                 string
 		pass                 string
 		name                 string
@@ -152,7 +152,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 		initialPingTimeLimit time.Duration
 		initialPingDuration  time.Duration
 		connMaxLifeTime      time.Duration
-		dialer               tcp.Dialer
+		dialer               net.Dialer
 		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
 		tlsConfig            *tls.Config
 		maxOpenConns         int
@@ -181,14 +181,17 @@ func Test_mySQLClient_Open(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
 			return test{
 				name: "Open success with tls config when no error occurs",
 				args: args{
-					ctx: context.Background(),
+					ctx: ctx,
 				},
 				fields: fields{
 					db:                   "vdaas",
 					host:                 "vald.com",
+					network:              "tcp",
+					socketPath:           "",
 					port:                 3306,
 					user:                 "vdaas",
 					pass:                 "vald",
@@ -228,21 +231,27 @@ func Test_mySQLClient_Open(t *testing.T) {
 						},
 					},
 				},
+				afterFunc: func(args) {
+					cancel()
+				},
 				want: want{},
 			}
 		}(),
 		func() test {
-			dialer, _ := tcp.NewDialer()
+			dialer, _ := net.NewDialer()
 			dialerFunc := dialer.GetDialer()
+			ctx, cancel := context.WithCancel(context.Background())
 			return test{
 				name: "Open success with dialer when no error occurs",
 				args: args{
-					ctx: context.Background(),
+					ctx: ctx,
 				},
 				fields: fields{
 					db:                   "vdaas",
 					host:                 "vald.com",
 					port:                 3306,
+					network:              "tcp",
+					socketPath:           "",
 					user:                 "vdaas",
 					pass:                 "vald",
 					name:                 "vald-user",
@@ -282,19 +291,25 @@ func Test_mySQLClient_Open(t *testing.T) {
 						},
 					},
 				},
+				afterFunc: func(args) {
+					cancel()
+				},
 				want: want{},
 			}
 		}(),
 		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
 			return test{
 				name: "returns error when dbr.Open returns error",
 				args: args{
-					ctx: context.Background(),
+					ctx: ctx,
 				},
 				fields: fields{
 					db:                   "vdaas",
 					host:                 "vald.com",
 					port:                 3306,
+					network:              "unixgram",
+					socketPath:           "/var/run/vald.sock",
 					user:                 "vdaas",
 					pass:                 "vald",
 					name:                 "vald-user",
@@ -315,36 +330,42 @@ func Test_mySQLClient_Open(t *testing.T) {
 						},
 					},
 				},
+				afterFunc: func(args) {
+					cancel()
+				},
 				want: want{
 					err: errors.ErrMySQLConnectionClosed,
 				},
 			}
 		}(),
 		func() test {
-			err := errors.ErrMySQLConnectionPingFailed
+			err := errors.New("PingContextFunc is failed")
+			ctx, cancel := context.WithCancel(context.Background())
 			return test{
 				name: "returns error when Ping fails",
 				args: args{
-					ctx: context.Background(),
+					ctx: ctx,
 				},
 				fields: fields{
 					db:                   "vdaas",
-					host:                 "vald.com",
-					port:                 3306,
+					network:              "unix",
+					socketPath:           "/tmp/mysql.sock",
+					host:                 "",
+					port:                 0,
 					user:                 "vdaas",
 					pass:                 "vald",
 					name:                 "vald-user",
 					charset:              "utf8bm4j",
 					timezone:             "Local",
-					initialPingTimeLimit: 1 * time.Microsecond,
-					initialPingDuration:  10 * time.Microsecond,
+					initialPingTimeLimit: 1 * time.Millisecond,
+					initialPingDuration:  1 * time.Microsecond,
 					connMaxLifeTime:      1 * time.Microsecond,
 					tlsConfig:            new(tls.Config),
 					maxOpenConns:         100,
 					maxIdleConns:         100,
 					session: &dbr.MockSession{
 						PingContextFunc: func(ctx context.Context) error {
-							return nil
+							return err
 						},
 					},
 					connected: func() (v atomic.Value) {
@@ -369,8 +390,11 @@ func Test_mySQLClient_Open(t *testing.T) {
 						},
 					},
 				},
+				afterFunc: func(args) {
+					cancel()
+				},
 				want: want{
-					err: err,
+					err: errors.Wrap(errors.ErrMySQLConnectionPingFailed, err.Error()),
 				},
 			}
 		}(),
@@ -390,6 +414,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 			}
 			m := &mySQLClient{
 				db:                   test.fields.db,
+				network:              test.fields.network,
 				host:                 test.fields.host,
 				port:                 test.fields.port,
 				user:                 test.fields.user,
@@ -414,7 +439,6 @@ func Test_mySQLClient_Open(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -458,12 +482,40 @@ func Test_mySQLClient_Ping(t *testing.T) {
 					initialPingTimeLimit: 1 * time.Second,
 					initialPingDuration:  1 * time.Microsecond,
 					session: &dbr.MockSession{
+						SelectFunc: func(column ...string) dbr.SelectStmt {
+							return nil
+						},
 						PingContextFunc: func(ctx context.Context) error {
+							return nil
+						},
+						BeginFunc: func() (dbr.Tx, error) {
+							return nil, nil
+						},
+						CloseFunc: func() error {
 							return nil
 						},
 					},
 				},
 				want: want{},
+				afterFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "returns error when session is nil",
+				args: args{
+					ctx: ctx,
+				},
+				fields: fields{
+					initialPingTimeLimit: 30 * time.Millisecond,
+					initialPingDuration:  2 * time.Millisecond,
+				},
+				want: want{
+					err: errors.ErrMySQLSessionNil,
+				},
 				afterFunc: func(args) {
 					cancel()
 				},
@@ -570,7 +622,7 @@ func Test_mySQLClient_Close(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if reflect.DeepEqual(m.connected.Load().(bool), false) {
+		if m.session != nil && m.connected.Load().(bool) {
 			return errors.Errorf("Close failed")
 		}
 		return nil
@@ -608,6 +660,21 @@ func Test_mySQLClient_Close(t *testing.T) {
 			},
 			want: want{},
 		},
+		{
+			name: "return an error when session is nil",
+			args: args{
+				ctx: context.Background(),
+			},
+			fields: fields{
+				connected: func() (v atomic.Value) {
+					v.Store(true)
+					return
+				}(),
+			},
+			want: want{
+				err: errors.ErrMySQLSessionNil,
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -631,12 +698,11 @@ func Test_mySQLClient_Close(t *testing.T) {
 			if err := test.checkFunc(test.want, err, m); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
-func Test_mySQLClient_GetMeta(t *testing.T) {
+func Test_mySQLClient_GetVector(t *testing.T) {
 	type args struct {
 		ctx  context.Context
 		uuid string
@@ -653,7 +719,7 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 		initialPingTimeLimit time.Duration
 		initialPingDuration  time.Duration
 		connMaxLifeTime      time.Duration
-		dialer               tcp.Dialer
+		dialer               net.Dialer
 		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
 		tlsConfig            *tls.Config
 		maxOpenConns         int
@@ -664,7 +730,7 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 		dbr                  dbr.DBR
 	}
 	type want struct {
-		want MetaVector
+		want Vector
 		err  error
 	}
 	type test struct {
@@ -672,11 +738,11 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, MetaVector, error) error
+		checkFunc  func(want, Vector, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got MetaVector, err error) error {
+	defaultCheckFunc := func(w want, got Vector, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -701,6 +767,24 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 				},
 				want: want{
 					err: errors.ErrMySQLConnectionClosed,
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return (nil, error) when MySQL session is nil",
+				args: args{
+					ctx:  context.Background(),
+					uuid: "",
+				},
+				fields: fields{
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+				},
+				want: want{
+					err: errors.ErrMySQLSessionNil,
 				},
 			}
 		}(),
@@ -748,7 +832,7 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 		func() test {
 			uuid := "vdaas-01"
 			return test{
-				name: "return (nil, error) when meta is not found",
+				name: "return (nil, error) when vector is not found",
 				args: args{
 					ctx:  context.Background(),
 					uuid: "vdaas-01",
@@ -767,8 +851,8 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 								return s
 							}
 							s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
-								var mv *meta
-								if reflect.TypeOf(value) == reflect.TypeOf(&mv) {
+								var d *data
+								if reflect.TypeOf(value) == reflect.TypeOf(&d) {
 									return 1, nil
 								}
 								return 0, errors.New("not found")
@@ -793,7 +877,7 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 		}(),
 		func() test {
 			uuid := "vdaas-01"
-			m := &meta{
+			m := &data{
 				ID:     1,
 				UUID:   uuid,
 				Vector: []byte("0.1,0.2"),
@@ -818,7 +902,7 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 								return s
 							}
 							s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
-								var mv *meta
+								var mv *data
 								var pp []podIP
 								if reflect.TypeOf(value) == reflect.TypeOf(&mv) {
 									mv = m
@@ -849,7 +933,7 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 		}(),
 		func() test {
 			uuid := "vdaas-01"
-			m := &meta{
+			m := &data{
 				ID:     1,
 				UUID:   uuid,
 				Vector: []byte("0.1,0.2"),
@@ -861,7 +945,7 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 				},
 			}
 			return test{
-				name: "return (metaVector, nil) when select success",
+				name: "return (vector, nil) when select success",
 				args: args{
 					ctx:  context.Background(),
 					uuid: uuid,
@@ -880,7 +964,7 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 								return s
 							}
 							s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
-								var mv *meta
+								var mv *data
 								var pp []podIP
 								if reflect.TypeOf(value) == reflect.TypeOf(&mv) {
 									mv = m
@@ -907,8 +991,8 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 					},
 				},
 				want: want{
-					want: &metaVector{
-						meta:   *m,
+					want: &vector{
+						data:   *m,
 						podIPs: p,
 					},
 				},
@@ -934,11 +1018,10 @@ func Test_mySQLClient_GetMeta(t *testing.T) {
 				dbr:       test.fields.dbr,
 			}
 
-			got, err := m.GetMeta(test.args.ctx, test.args.uuid)
+			got, err := m.GetVector(test.args.ctx, test.args.uuid)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -985,12 +1068,6 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 					uuid: uuid,
 				},
 				fields: fields{
-					session: &dbr.MockSession{
-						SelectFunc: func(column ...string) dbr.SelectStmt {
-							s := new(dbr.MockSelect)
-							return s
-						},
-					},
 					connected: func() (v atomic.Value) {
 						v.Store(false)
 						return
@@ -998,6 +1075,25 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 				},
 				want: want{
 					err: errors.ErrMySQLConnectionClosed,
+				},
+			}
+		}(),
+		func() test {
+			uuid := "vdaas-01"
+			return test{
+				name: "return (nil, error) when MySQL session is nil",
+				args: args{
+					ctx:  context.Background(),
+					uuid: uuid,
+				},
+				fields: fields{
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+				},
+				want: want{
+					err: errors.ErrMySQLSessionNil,
 				},
 			}
 		}(),
@@ -1051,7 +1147,7 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 		func() test {
 			uuid := "vdaas-01"
 			return test{
-				name: "return (nil, error) when meta is not found",
+				name: "return (nil, error) when data is not found",
 				args: args{
 					ctx:  context.Background(),
 					uuid: uuid,
@@ -1247,14 +1343,13 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
-func Test_validateMeta(t *testing.T) {
+func Test_validateVector(t *testing.T) {
 	type args struct {
-		meta MetaVector
+		data Vector
 	}
 	type want struct {
 		err error
@@ -1275,22 +1370,22 @@ func Test_validateMeta(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			m := new(metaVector)
-			m.meta.Vector = []byte("0.1,0.2,0.9")
+			m := new(vector)
+			m.data.Vector = []byte("0.1,0.2,0.9")
 			return test{
-				name: "return nil when the len(MetaVector) > 0",
+				name: "return nil when the len(Vector) > 0",
 				args: args{
-					meta: m,
+					data: m,
 				},
 				want: want{},
 			}
 		}(),
 		func() test {
-			m := new(metaVector)
+			m := new(vector)
 			return test{
-				name: "return error when the len(MetaVector) is 0",
+				name: "return error when the len(Vector) is 0",
 				args: args{
-					meta: m,
+					data: m,
 				},
 				want: want{
 					err: errors.ErrRequiredMemberNotFilled("vector"),
@@ -1312,19 +1407,18 @@ func Test_validateMeta(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			err := validateMeta(test.args.meta)
+			err := validateVector(test.args.data)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
-func Test_mySQLClient_SetMeta(t *testing.T) {
+func Test_mySQLClient_SetVector(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		mv  MetaVector
+		mv  Vector
 	}
 	type fields struct {
 		session   dbr.Session
@@ -1351,7 +1445,7 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			m := new(metaVector)
+			m := new(vector)
 			return test{
 				name: "return error when mysql connection is closed",
 				args: args{
@@ -1370,7 +1464,26 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 			}
 		}(),
 		func() test {
-			m := new(metaVector)
+			m := new(vector)
+			return test{
+				name: "return error when mysql session is nil",
+				args: args{
+					ctx: context.Background(),
+					mv:  m,
+				},
+				fields: fields{
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+				},
+				want: want{
+					err: errors.ErrMySQLSessionNil,
+				},
+			}
+		}(),
+		func() test {
+			m := new(vector)
 			err := errors.New("session.Begin error")
 			return test{
 				name: "return error when session.Begin fails",
@@ -1395,9 +1508,9 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 			}
 		}(),
 		func() test {
-			m := new(metaVector)
+			m := new(vector)
 			return test{
-				name: "return error when meta vector is invalid",
+				name: "return error when data vector is invalid",
 				args: args{
 					ctx: context.Background(),
 					mv:  m,
@@ -1424,8 +1537,8 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 			}
 		}(),
 		func() test {
-			m := new(metaVector)
-			m.meta.Vector = []byte("0.1,0.2,0.9")
+			m := new(vector)
+			m.data.Vector = []byte("0.1,0.2,0.9")
 			err := errors.New("insertbysql ExecContext error")
 			return test{
 				name: "return error when insertbysql ExecContext returns error",
@@ -1462,8 +1575,8 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 			}
 		}(),
 		func() test {
-			m := new(metaVector)
-			m.meta.Vector = []byte("0.1,0.2,0.9")
+			m := new(vector)
+			m.data.Vector = []byte("0.1,0.2,0.9")
 			err := errors.New("loadcontext error")
 			return test{
 				name: "return error when select loadcontext returns error",
@@ -1521,8 +1634,8 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 			}
 		}(),
 		func() test {
-			m := new(metaVector)
-			m.meta.Vector = []byte("0.1,0.2,0.9")
+			m := new(vector)
+			m.data.Vector = []byte("0.1,0.2,0.9")
 			return test{
 				name: "return error when elem not found by uuid",
 				args: args{
@@ -1585,8 +1698,8 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 			}
 		}(),
 		func() test {
-			m := new(metaVector)
-			m.meta.Vector = []byte("0.1,0.2,0.9")
+			m := new(vector)
+			m.data.Vector = []byte("0.1,0.2,0.9")
 			m.podIPs = []podIP{
 				{
 					ID: 1,
@@ -1667,8 +1780,8 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 			}
 		}(),
 		func() test {
-			m := new(metaVector)
-			m.meta.Vector = []byte("0.1,0.2,0.9")
+			m := new(vector)
+			m.data.Vector = []byte("0.1,0.2,0.9")
 			m.podIPs = []podIP{
 				{
 					ID: 1,
@@ -1762,8 +1875,8 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 			}
 		}(),
 		func() test {
-			m := new(metaVector)
-			m.meta.Vector = []byte("0.1,0.2,0.9")
+			m := new(vector)
+			m.data.Vector = []byte("0.1,0.2,0.9")
 			m.podIPs = []podIP{
 				{
 					ID: 1,
@@ -1860,8 +1973,8 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 			}
 		}(),
 		func() test {
-			m := new(metaVector)
-			m.meta.Vector = []byte("0.1,0.2,0.9")
+			m := new(vector)
+			m.data.Vector = []byte("0.1,0.2,0.9")
 			m.podIPs = []podIP{
 				{
 					ID: 1,
@@ -1869,7 +1982,7 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 				},
 			}
 			return test{
-				name: "return nil when setMeta ends with success",
+				name: "return nil when setVector ends with success",
 				args: args{
 					ctx: context.Background(),
 					mv:  m,
@@ -1974,19 +2087,18 @@ func Test_mySQLClient_SetMeta(t *testing.T) {
 				dbr:       test.fields.dbr,
 			}
 
-			err := m.SetMeta(test.args.ctx, test.args.mv)
+			err := m.SetVector(test.args.ctx, test.args.mv)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
-func Test_mySQLClient_SetMetas(t *testing.T) {
+func Test_mySQLClient_SetVectors(t *testing.T) {
 	type args struct {
-		ctx   context.Context
-		metas []MetaVector
+		ctx  context.Context
+		data []Vector
 	}
 	type fields struct {
 		session   dbr.Session
@@ -2013,12 +2125,12 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			var m []MetaVector
+			var m []Vector
 			return test{
 				name: "return error when mysql connection is closed",
 				args: args{
-					ctx:   context.Background(),
-					metas: m,
+					ctx:  context.Background(),
+					data: m,
 				},
 				fields: fields{
 					connected: func() (v atomic.Value) {
@@ -2032,13 +2144,32 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 			}
 		}(),
 		func() test {
-			var m []MetaVector
+			var m []Vector
+			return test{
+				name: "return error when mysql session is nil",
+				args: args{
+					ctx:  context.Background(),
+					data: m,
+				},
+				fields: fields{
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+				},
+				want: want{
+					err: errors.ErrMySQLSessionNil,
+				},
+			}
+		}(),
+		func() test {
+			var m []Vector
 			err := errors.New("session.Begin error")
 			return test{
 				name: "return error when session.Begin fails",
 				args: args{
-					ctx:   context.Background(),
-					metas: m,
+					ctx:  context.Background(),
+					data: m,
 				},
 				fields: fields{
 					session: &dbr.MockSession{
@@ -2057,13 +2188,13 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 			}
 		}(),
 		func() test {
-			var m []MetaVector
-			m = append(m, new(metaVector))
+			var m []Vector
+			m = append(m, new(vector))
 			return test{
-				name: "return error when meta vector is invalid",
+				name: "return error when data vector is invalid",
 				args: args{
-					ctx:   context.Background(),
-					metas: m,
+					ctx:  context.Background(),
+					data: m,
 				},
 				fields: fields{
 					session: &dbr.MockSession{
@@ -2087,16 +2218,16 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 			}
 		}(),
 		func() test {
-			meta := new(metaVector)
-			meta.meta.Vector = []byte("0.1,0.2,0.9")
-			var m []MetaVector
-			m = append(m, meta)
+			data := new(vector)
+			data.data.Vector = []byte("0.1,0.2,0.9")
+			var m []Vector
+			m = append(m, data)
 			err := errors.New("insertbysql ExecContext error")
 			return test{
 				name: "return error when insertbysql ExecContext returns error",
 				args: args{
-					ctx:   context.Background(),
-					metas: m,
+					ctx:  context.Background(),
+					data: m,
 				},
 				fields: fields{
 					session: &dbr.MockSession{
@@ -2127,16 +2258,16 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 			}
 		}(),
 		func() test {
-			meta := new(metaVector)
-			meta.meta.Vector = []byte("0.1,0.2,0.9")
-			var m []MetaVector
-			m = append(m, meta)
+			data := new(vector)
+			data.data.Vector = []byte("0.1,0.2,0.9")
+			var m []Vector
+			m = append(m, data)
 			err := errors.New("loadcontext error")
 			return test{
 				name: "return error when select loadcontext returns error",
 				args: args{
-					ctx:   context.Background(),
-					metas: m,
+					ctx:  context.Background(),
+					data: m,
 				},
 				fields: fields{
 					session: &dbr.MockSession{
@@ -2188,15 +2319,15 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 			}
 		}(),
 		func() test {
-			meta := new(metaVector)
-			meta.meta.Vector = []byte("0.1,0.2,0.9")
-			var m []MetaVector
-			m = append(m, meta)
+			data := new(vector)
+			data.data.Vector = []byte("0.1,0.2,0.9")
+			var m []Vector
+			m = append(m, data)
 			return test{
 				name: "return error when elem not found by uuid",
 				args: args{
-					ctx:   context.Background(),
-					metas: m,
+					ctx:  context.Background(),
+					data: m,
 				},
 				fields: fields{
 					session: &dbr.MockSession{
@@ -2254,23 +2385,23 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 			}
 		}(),
 		func() test {
-			meta := new(metaVector)
-			meta.meta.Vector = []byte("0.1,0.2,0.9")
-			meta.podIPs = []podIP{
+			data := new(vector)
+			data.data.Vector = []byte("0.1,0.2,0.9")
+			data.podIPs = []podIP{
 				{
 					ID: 1,
 					IP: "192.168.1.12",
 				},
 			}
-			var m []MetaVector
-			m = append(m, meta)
+			var m []Vector
+			m = append(m, data)
 
 			err := errors.New("delete ExecContext error")
 			return test{
 				name: "return error when delete ExecContext returns error",
 				args: args{
-					ctx:   context.Background(),
-					metas: m,
+					ctx:  context.Background(),
+					data: m,
 				},
 				fields: fields{
 					session: &dbr.MockSession{
@@ -2339,22 +2470,22 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 			}
 		}(),
 		func() test {
-			meta := new(metaVector)
-			meta.meta.Vector = []byte("0.1,0.2,0.9")
-			meta.podIPs = []podIP{
+			data := new(vector)
+			data.data.Vector = []byte("0.1,0.2,0.9")
+			data.podIPs = []podIP{
 				{
 					ID: 1,
 					IP: "192.168.1.12",
 				},
 			}
-			var m []MetaVector
-			m = append(m, meta)
+			var m []Vector
+			m = append(m, data)
 			err := errors.New("insert ExecContext error")
 			return test{
 				name: "return error when insert ExecContext returns error",
 				args: args{
-					ctx:   context.Background(),
-					metas: m,
+					ctx:  context.Background(),
+					data: m,
 				},
 				fields: fields{
 					session: &dbr.MockSession{
@@ -2436,22 +2567,22 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 			}
 		}(),
 		func() test {
-			meta := new(metaVector)
-			meta.meta.Vector = []byte("0.1,0.2,0.9")
-			meta.podIPs = []podIP{
+			data := new(vector)
+			data.data.Vector = []byte("0.1,0.2,0.9")
+			data.podIPs = []podIP{
 				{
 					ID: 1,
 					IP: "192.168.1.12",
 				},
 			}
-			var m []MetaVector
-			m = append(m, meta)
+			var m []Vector
+			m = append(m, data)
 			err := errors.New("tx.Commit error")
 			return test{
 				name: "return error when tx.Commit returns error",
 				args: args{
-					ctx:   context.Background(),
-					metas: m,
+					ctx:  context.Background(),
+					data: m,
 				},
 				fields: fields{
 					session: &dbr.MockSession{
@@ -2536,21 +2667,21 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 			}
 		}(),
 		func() test {
-			meta := new(metaVector)
-			meta.meta.Vector = []byte("0.1,0.2,0.9")
-			meta.podIPs = []podIP{
+			data := new(vector)
+			data.data.Vector = []byte("0.1,0.2,0.9")
+			data.podIPs = []podIP{
 				{
 					ID: 1,
 					IP: "192.168.1.12",
 				},
 			}
-			var m []MetaVector
-			m = append(m, meta)
+			var m []Vector
+			m = append(m, data)
 			return test{
-				name: "return nil when setMeta ends with success",
+				name: "return nil when setVector ends with success",
 				args: args{
-					ctx:   context.Background(),
-					metas: m,
+					ctx:  context.Background(),
+					data: m,
 				},
 				fields: fields{
 					session: &dbr.MockSession{
@@ -2652,19 +2783,18 @@ func Test_mySQLClient_SetMetas(t *testing.T) {
 				dbr:       test.fields.dbr,
 			}
 
-			err := m.SetMetas(test.args.ctx, test.args.metas...)
+			err := m.SetVectors(test.args.ctx, test.args.data...)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
-func Test_mySQLClient_deleteMeta(t *testing.T) {
+func Test_mySQLClient_deleteVector(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		val interface{}
+		val string
 	}
 	type fields struct {
 		session   dbr.Session
@@ -2706,6 +2836,24 @@ func Test_mySQLClient_deleteMeta(t *testing.T) {
 				},
 				want: want{
 					err: err,
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return error when MySQL session is nil",
+				args: args{
+					ctx: context.Background(),
+					val: "vald-01",
+				},
+				fields: fields{
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+				},
+				want: want{
+					err: errors.ErrMySQLSessionNil,
 				},
 			}
 		}(),
@@ -2758,9 +2906,9 @@ func Test_mySQLClient_deleteMeta(t *testing.T) {
 			}
 		}(),
 		func() test {
-			err := errors.New("metaVectorTableName error")
+			err := errors.New("error returned from Select.From.Where.Limit.LoadContext")
 			return test{
-				name: "return error when DeleteFromFunc(metaVectorTableName) returns error",
+				name: "return error when Select(idColumnName) returns error",
 				args: args{
 					ctx: context.Background(),
 					val: "vald-01",
@@ -2773,10 +2921,136 @@ func Test_mySQLClient_deleteMeta(t *testing.T) {
 									return nil
 								},
 								RollbackUnlessCommittedFunc: func() {},
+								SelectFunc: func(column ...string) dbr.SelectStmt {
+									s := new(dbr.MockSelect)
+									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.LimitFunc = func(n uint64) dbr.SelectStmt {
+										return s
+									}
+									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+										return 0, err
+									}
+
+									return s
+								},
+							}, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					dbr: &dbr.MockDBR{
+						EqFunc: func(col string, val interface{}) dbr.Builder {
+							return dbr.New().Eq(col, val)
+						},
+					},
+				},
+				want: want{
+					err: err,
+				},
+			}
+		}(),
+		func() test {
+			uuid := "uuid"
+			err := errors.ErrRequiredElementNotFoundByUUID(uuid)
+			return test{
+				name: "return error when returned id = 0 from Select statement",
+				args: args{
+					ctx: context.Background(),
+					val: uuid,
+				},
+				fields: fields{
+					session: &dbr.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							return &dbr.MockTx{
+								CommitFunc: func() error {
+									return nil
+								},
+								RollbackUnlessCommittedFunc: func() {},
+								SelectFunc: func(column ...string) dbr.SelectStmt {
+									s := new(dbr.MockSelect)
+									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.LimitFunc = func(n uint64) dbr.SelectStmt {
+										return s
+									}
+									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+										return 0, nil
+									}
+
+									return s
+								},
+							}, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					dbr: &dbr.MockDBR{
+						EqFunc: func(col string, val interface{}) dbr.Builder {
+							return dbr.New().Eq(col, val)
+						},
+					},
+				},
+				want: want{
+					err: err,
+				},
+			}
+		}(),
+		func() test {
+			err := errors.New("vectorTableName error")
+			return test{
+				name: "return error when DeleteFromFunc(vectorTableName) returns error",
+				args: args{
+					ctx: context.Background(),
+					val: "vald-01",
+				},
+				fields: fields{
+					session: &dbr.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							return &dbr.MockTx{
+								CommitFunc: func() error {
+									return nil
+								},
+								RollbackUnlessCommittedFunc: func() {},
+								SelectFunc: func(column ...string) dbr.SelectStmt {
+									s := new(dbr.MockSelect)
+									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.LimitFunc = func(n uint64) dbr.SelectStmt {
+										return s
+									}
+									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+										var id int64
+										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
+											id := int64(1)
+											reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
+											return 1, nil
+										}
+										return 0, nil
+									}
+
+									return s
+								},
 								DeleteFromFunc: func(table string) dbr.DeleteStmt {
 									s := new(dbr.MockDelete)
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
-										if table == "meta_vector" {
+										if table == "backup_vector" {
 											return nil, err
 										}
 										return nil, nil
@@ -2820,6 +3094,29 @@ func Test_mySQLClient_deleteMeta(t *testing.T) {
 									return nil
 								},
 								RollbackUnlessCommittedFunc: func() {},
+								SelectFunc: func(column ...string) dbr.SelectStmt {
+									s := new(dbr.MockSelect)
+									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.LimitFunc = func(n uint64) dbr.SelectStmt {
+										return s
+									}
+									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+										var id int64
+										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
+											id := int64(1)
+											reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
+											return 1, nil
+										}
+										return 0, nil
+									}
+
+									return s
+								},
 								DeleteFromFunc: func(table string) dbr.DeleteStmt {
 									s := new(dbr.MockDelete)
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
@@ -2866,6 +3163,29 @@ func Test_mySQLClient_deleteMeta(t *testing.T) {
 									return nil
 								},
 								RollbackUnlessCommittedFunc: func() {},
+								SelectFunc: func(column ...string) dbr.SelectStmt {
+									s := new(dbr.MockSelect)
+									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.LimitFunc = func(n uint64) dbr.SelectStmt {
+										return s
+									}
+									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+										var id int64
+										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
+											id := int64(1)
+											reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
+											return 1, nil
+										}
+										return 0, nil
+									}
+
+									return s
+								},
 								DeleteFromFunc: func(table string) dbr.DeleteStmt {
 									s := new(dbr.MockDelete)
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
@@ -2912,16 +3232,15 @@ func Test_mySQLClient_deleteMeta(t *testing.T) {
 				dbr:       test.fields.dbr,
 			}
 
-			err := m.deleteMeta(test.args.ctx, test.args.val)
+			err := m.deleteVector(test.args.ctx, test.args.val)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
-func Test_mySQLClient_DeleteMeta(t *testing.T) {
+func Test_mySQLClient_DeleteVector(t *testing.T) {
 	type args struct {
 		ctx  context.Context
 		uuid string
@@ -2952,7 +3271,7 @@ func Test_mySQLClient_DeleteMeta(t *testing.T) {
 	tests := []test{
 		func() test {
 			return test{
-				name: "return nil when deleteMeta success with empty-uuid",
+				name: "return nil when deleteVector success with empty-uuid",
 				args: args{
 					ctx:  context.Background(),
 					uuid: "",
@@ -2965,6 +3284,29 @@ func Test_mySQLClient_DeleteMeta(t *testing.T) {
 									return nil
 								},
 								RollbackUnlessCommittedFunc: func() {},
+								SelectFunc: func(column ...string) dbr.SelectStmt {
+									s := new(dbr.MockSelect)
+									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.LimitFunc = func(n uint64) dbr.SelectStmt {
+										return s
+									}
+									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+										var id int64
+										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
+											id := int64(1)
+											reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
+											return 1, nil
+										}
+										return 0, nil
+									}
+
+									return s
+								},
 								DeleteFromFunc: func(table string) dbr.DeleteStmt {
 									s := new(dbr.MockDelete)
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
@@ -2993,7 +3335,7 @@ func Test_mySQLClient_DeleteMeta(t *testing.T) {
 		}(),
 		func() test {
 			return test{
-				name: "return nil when deleteMeta success with uuid",
+				name: "return nil when deleteVector success with uuid",
 				args: args{
 					ctx:  context.Background(),
 					uuid: "vald-01",
@@ -3006,6 +3348,29 @@ func Test_mySQLClient_DeleteMeta(t *testing.T) {
 									return nil
 								},
 								RollbackUnlessCommittedFunc: func() {},
+								SelectFunc: func(column ...string) dbr.SelectStmt {
+									s := new(dbr.MockSelect)
+									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.LimitFunc = func(n uint64) dbr.SelectStmt {
+										return s
+									}
+									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+										var id int64
+										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
+											id := int64(1)
+											reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
+											return 1, nil
+										}
+										return 0, nil
+									}
+
+									return s
+								},
 								DeleteFromFunc: func(table string) dbr.DeleteStmt {
 									s := new(dbr.MockDelete)
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
@@ -3052,16 +3417,15 @@ func Test_mySQLClient_DeleteMeta(t *testing.T) {
 				dbr:       test.fields.dbr,
 			}
 
-			err := m.DeleteMeta(test.args.ctx, test.args.uuid)
+			err := m.DeleteVector(test.args.ctx, test.args.uuid)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
-func Test_mySQLClient_DeleteMetas(t *testing.T) {
+func Test_mySQLClient_DeleteVectors(t *testing.T) {
 	type args struct {
 		ctx   context.Context
 		uuids []string
@@ -3092,7 +3456,7 @@ func Test_mySQLClient_DeleteMetas(t *testing.T) {
 	tests := []test{
 		func() test {
 			return test{
-				name: "return nil when deleteMetas success with empty uuids",
+				name: "return nil when deleteVectors success with empty uuids",
 				args: args{
 					ctx:   context.Background(),
 					uuids: []string{},
@@ -3105,6 +3469,29 @@ func Test_mySQLClient_DeleteMetas(t *testing.T) {
 									return nil
 								},
 								RollbackUnlessCommittedFunc: func() {},
+								SelectFunc: func(column ...string) dbr.SelectStmt {
+									s := new(dbr.MockSelect)
+									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.LimitFunc = func(n uint64) dbr.SelectStmt {
+										return s
+									}
+									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+										var id int64
+										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
+											id := int64(1)
+											reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
+											return 1, nil
+										}
+										return 0, nil
+									}
+
+									return s
+								},
 								DeleteFromFunc: func(table string) dbr.DeleteStmt {
 									s := new(dbr.MockDelete)
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
@@ -3133,7 +3520,7 @@ func Test_mySQLClient_DeleteMetas(t *testing.T) {
 		}(),
 		func() test {
 			return test{
-				name: "return nil when deleteMetas success with uuids",
+				name: "return nil when deleteVectors success with uuids",
 				args: args{
 					ctx: context.Background(),
 					uuids: []string{
@@ -3149,6 +3536,29 @@ func Test_mySQLClient_DeleteMetas(t *testing.T) {
 									return nil
 								},
 								RollbackUnlessCommittedFunc: func() {},
+								SelectFunc: func(column ...string) dbr.SelectStmt {
+									s := new(dbr.MockSelect)
+									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.LimitFunc = func(n uint64) dbr.SelectStmt {
+										return s
+									}
+									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+										var id int64
+										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
+											id := int64(1)
+											reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
+											return 1, nil
+										}
+										return 0, nil
+									}
+
+									return s
+								},
 								DeleteFromFunc: func(table string) dbr.DeleteStmt {
 									s := new(dbr.MockDelete)
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
@@ -3195,11 +3605,10 @@ func Test_mySQLClient_DeleteMetas(t *testing.T) {
 				dbr:       test.fields.dbr,
 			}
 
-			err := m.DeleteMetas(test.args.ctx, test.args.uuids...)
+			err := m.DeleteVectors(test.args.ctx, test.args.uuids...)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -3254,6 +3663,28 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 				},
 				want: want{
 					err: err,
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return error when MySQL session is nil",
+				args: args{
+					ctx:  context.Background(),
+					uuid: "vald-01",
+					ips: []string{
+						"192.168.1.1",
+						"192.168.1.2",
+					},
+				},
+				fields: fields{
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+				},
+				want: want{
+					err: errors.ErrMySQLSessionNil,
 				},
 			}
 		}(),
@@ -3570,7 +4001,6 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -3623,6 +4053,27 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 				},
 				want: want{
 					err: err,
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return error when MySQL session is nil",
+				args: args{
+					ctx: context.Background(),
+					ips: []string{
+						"192.168.1.1",
+						"192.168.1.2",
+					},
+				},
+				fields: fields{
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+				},
+				want: want{
+					err: errors.ErrMySQLSessionNil,
 				},
 			}
 		}(),
@@ -3768,7 +4219,6 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

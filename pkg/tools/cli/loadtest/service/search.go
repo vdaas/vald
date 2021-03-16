@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,13 +19,10 @@ import (
 	"context"
 	"sync/atomic"
 
-	"github.com/vdaas/vald/apis/grpc/agent/core"
-	"github.com/vdaas/vald/apis/grpc/gateway/vald"
-	"github.com/vdaas/vald/apis/grpc/payload"
-	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
-	"github.com/vdaas/vald/pkg/tools/cli/loadtest/config"
 )
 
 func searchRequestProvider(dataset assets.Dataset) (func() interface{}, int, error) {
@@ -46,31 +43,13 @@ func searchRequestProvider(dataset assets.Dataset) (func() interface{}, int, err
 }
 
 func (l *loader) newSearch() (loadFunc, error) {
-	switch l.service {
-	case config.Agent:
-		return func(ctx context.Context, conn *grpc.ClientConn, i interface{}, copts ...grpc.CallOption) (interface{}, error) {
-			return core.NewAgentClient(conn).Search(ctx, i.(*payload.Search_Request), copts...)
-		}, nil
-	case config.Gateway:
-		return func(ctx context.Context, conn *grpc.ClientConn, i interface{}, copts ...grpc.CallOption) (interface{}, error) {
-			return vald.NewValdClient(conn).Search(ctx, i.(*payload.Search_Request), copts...)
-		}, nil
-	default:
-		return nil, errors.Errorf("undefined service: %s", l.service.String())
-	}
+	return func(ctx context.Context, conn *grpc.ClientConn, i interface{}, copts ...grpc.CallOption) (interface{}, error) {
+		return vald.NewSearchClient(conn).Search(ctx, i.(*payload.Search_Request), copts...)
+	}, nil
 }
 
 func (l *loader) newStreamSearch() (loadFunc, error) {
-	switch l.service {
-	case config.Agent:
-		return func(ctx context.Context, conn *grpc.ClientConn, i interface{}, copts ...grpc.CallOption) (interface{}, error) {
-			return core.NewAgentClient(conn).StreamSearch(ctx, copts...)
-		}, nil
-	case config.Gateway:
-		return func(ctx context.Context, conn *grpc.ClientConn, i interface{}, copts ...grpc.CallOption) (interface{}, error) {
-			return vald.NewValdClient(conn).StreamSearch(ctx, copts...)
-		}, nil
-	default:
-		return nil, errors.Errorf("undefined service: %s", l.service.String())
-	}
+	return func(ctx context.Context, conn *grpc.ClientConn, i interface{}, copts ...grpc.CallOption) (interface{}, error) {
+		return vald.NewSearchClient(conn).StreamSearch(ctx, copts...)
+	}, nil
 }

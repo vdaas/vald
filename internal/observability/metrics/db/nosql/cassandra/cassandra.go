@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -135,21 +135,21 @@ func (cm *cassandraMetrics) View() []*metrics.View {
 	}
 
 	return []*metrics.View{
-		&metrics.View{
+		{
 			Name:        "db_nosql_cassandra_completed_query_total",
 			Description: cm.queryTotal.Description(),
 			TagKeys:     keys,
 			Measure:     &cm.queryTotal,
 			Aggregation: metrics.Count(),
 		},
-		&metrics.View{
+		{
 			Name:        "db_nosql_cassandra_query_attempts_total",
 			Description: cm.queryAttemptsTotal.Description(),
 			TagKeys:     keys,
 			Measure:     &cm.queryAttemptsTotal,
 			Aggregation: metrics.Count(),
 		},
-		&metrics.View{
+		{
 			Name:        "db_nosql_cassandra_query_latency",
 			Description: cm.queryLatency.Description(),
 			TagKeys:     keys,

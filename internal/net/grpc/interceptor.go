@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,14 +18,19 @@
 package grpc
 
 import (
-	"context"
-
-	"github.com/vdaas/vald/internal/safety"
 	"google.golang.org/grpc"
 )
 
-type UnaryServerInterceptor = grpc.UnaryServerInterceptor
-type StreamServerInterceptor = grpc.StreamServerInterceptor
+type (
+	UnaryServerInterceptor  = grpc.UnaryServerInterceptor
+	StreamServerInterceptor = grpc.StreamServerInterceptor
+
+	UnaryServerInfo = grpc.UnaryServerInfo
+	UnaryHandler    = grpc.UnaryHandler
+
+	StreamServerInfo = grpc.StreamServerInfo
+	StreamHandler    = grpc.StreamHandler
+)
 
 var (
 	UnaryInterceptor       = grpc.UnaryInterceptor
@@ -33,31 +38,3 @@ var (
 	StreamInterceptor      = grpc.StreamInterceptor
 	ChainStreamInterceptor = grpc.ChainStreamInterceptor
 )
-
-func RecoverInterceptor() UnaryServerInterceptor {
-	return func(
-		ctx context.Context,
-		req interface{},
-		info *grpc.UnaryServerInfo,
-		handler grpc.UnaryHandler,
-	) (resp interface{}, err error) {
-		err = safety.RecoverWithoutPanicFunc(func() (err error) {
-			resp, err = handler(ctx, req)
-			return err
-		})()
-		return resp, err
-	}
-}
-
-func RecoverStreamInterceptor() StreamServerInterceptor {
-	return func(
-		srv interface{},
-		ss grpc.ServerStream,
-		info *grpc.StreamServerInfo,
-		handler grpc.StreamHandler,
-	) error {
-		return safety.RecoverWithoutPanicFunc(func() (err error) {
-			return handler(srv, ss)
-		})()
-	}
-}

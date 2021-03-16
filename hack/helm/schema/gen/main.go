@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,9 +33,7 @@ const (
 	prefix = "# @schema"
 )
 
-var (
-	aliases map[string]Schema
-)
+var aliases map[string]Schema
 
 type SchemaBase struct {
 	// for object type
@@ -88,8 +86,11 @@ type Schema struct {
 	SchemaBase
 }
 
+const minimumArgumentLength = 2
+
 func main() {
-	if len(os.Args) < 2 {
+	log.Init()
+	if len(os.Args) < minimumArgumentLength {
 		log.Fatal(errors.New("invalid argument: must be specify path to the values.yaml"))
 	}
 	err := genJSONSchema(os.Args[1])
@@ -99,7 +100,7 @@ func main() {
 }
 
 func genJSONSchema(path string) error {
-	f, err := os.Open(path)
+	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_SYNC, os.ModePerm)
 	if err != nil {
 		return errors.Errorf("cannot open %s", path)
 	}
@@ -115,14 +116,16 @@ func genJSONSchema(path string) error {
 
 	ls := make([]VSchema, 0)
 
+	var line uint64
 	sc := bufio.NewScanner(f)
 	for sc.Scan() {
+		line++
 		tx := strings.TrimLeft(sc.Text(), " ")
 		if strings.HasPrefix(tx, prefix) {
 			var l VSchema
 			err = json.Unmarshal([]byte(strings.TrimPrefix(tx, prefix)), &l)
 			if err != nil {
-				log.Error(err)
+				log.Errorf("error occurred line %d, data %s, error %v", line, tx, err)
 			}
 			ls = append(ls, l)
 		}

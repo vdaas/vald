@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -46,31 +46,15 @@ func TestErrBlobNoSuchBucket_Error(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           err: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           err: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns error string",
+			fields: fields{
+				err: New("err: no such bucket"),
+			},
+			want: want{
+				want: "err: no such bucket",
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -93,7 +77,6 @@ func TestErrBlobNoSuchBucket_Error(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -120,31 +103,33 @@ func TestIsErrBlobNoSuchBucket(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           err: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           err: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns true when the error is ErrBlobNoSuchBucket",
+			args: args{
+				err: &ErrBlobNoSuchBucket{New("no such bucket err")},
+			},
+			want: want{
+				want: true,
+			},
+		},
+		{
+			name: "returns false when the error is not ErrBlobNoSuchBucket",
+			args: args{
+				err: &ErrBlobNoSuchKey{New("no such key err")},
+			},
+			want: want{
+				want: false,
+			},
+		},
+		{
+			name: "returns false when the error is nil",
+			args: args{
+				err: nil,
+			},
+			want: want{
+				want: false,
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -164,7 +149,6 @@ func TestIsErrBlobNoSuchBucket(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -191,31 +175,15 @@ func TestErrBlobNoSuchKey_Error(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           err: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           err: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns error string",
+			fields: fields{
+				err: New("err"),
+			},
+			want: want{
+				want: "err",
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -238,7 +206,6 @@ func TestErrBlobNoSuchKey_Error(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -265,31 +232,33 @@ func TestIsErrBlobNoSuchKey(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           err: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           err: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns true when the error is ErrBlobNoSuchKey",
+			args: args{
+				err: &ErrBlobNoSuchKey{New("no such key err")},
+			},
+			want: want{
+				want: true,
+			},
+		},
+		{
+			name: "returns false when the error is not ErrBlobNoSuchKey",
+			args: args{
+				err: &ErrBlobNoSuchBucket{New("no such bucket err")},
+			},
+			want: want{
+				want: false,
+			},
+		},
+		{
+			name: "returns false when the error is nil",
+			args: args{
+				err: nil,
+			},
+			want: want{
+				want: false,
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -309,7 +278,144 @@ func TestIsErrBlobNoSuchKey(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+		})
+	}
+}
 
+func TestErrBlobNoSuchBucket_Unwrap(t *testing.T) {
+	type fields struct {
+		err error
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !Is(err, w.err) {
+			return Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		func() test {
+			err := New("internal error")
+			return test{
+				name: "returns the unwrapped error",
+				fields: fields{
+					err: err,
+				},
+				want: want{
+					err: err,
+				},
+			}
+		}(),
+		{
+			name: "returns nil when getting the unwrapped nil error",
+			fields: fields{
+				err: nil,
+			},
+			want: want{
+				err: nil,
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			e := &ErrBlobNoSuchBucket{
+				err: test.fields.err,
+			}
+
+			err := e.Unwrap()
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestErrBlobNoSuchKey_Unwrap(t *testing.T) {
+	type fields struct {
+		err error
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !Is(err, w.err) {
+			return Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		func() test {
+			err := New("internal error")
+			return test{
+				name: "returns the unwrapped error",
+				fields: fields{
+					err: err,
+				},
+				want: want{
+					err: err,
+				},
+			}
+		}(),
+		{
+			name: "returns nil when getting the unwrapped nil error",
+			fields: fields{
+				err: nil,
+			},
+			want: want{
+				err: nil,
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			e := &ErrBlobNoSuchKey{
+				err: test.fields.err,
+			}
+
+			err := e.Unwrap()
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
 		})
 	}
 }

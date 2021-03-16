@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,16 +21,7 @@ import "github.com/vdaas/vald/internal/net/grpc"
 
 type BackupOption func(b *backup) error
 
-var (
-	defaultBackupOpts = []BackupOption{}
-)
-
-func WithBackupAddr(addr string) BackupOption {
-	return func(b *backup) error {
-		b.addr = addr
-		return nil
-	}
-}
+var defaultBackupOpts = []BackupOption{}
 
 func WithBackupClient(client grpc.Client) BackupOption {
 	return func(b *backup) error {

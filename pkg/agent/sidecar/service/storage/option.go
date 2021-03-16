@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,14 +25,12 @@ import (
 
 type Option func(b *bs) error
 
-var (
-	defaultOpts = []Option{
-		WithErrGroup(errgroup.Get()),
-		WithCompressAlgorithm("gzip"),
-		WithCompressionLevel(-1),
-		WithFilenameSuffix(".tar.gz"),
-	}
-)
+var defaultOptions = []Option{
+	WithErrGroup(errgroup.Get()),
+	WithCompressAlgorithm("gzip"),
+	WithCompressionLevel(-1),
+	WithFilenameSuffix(".tar.gz"),
+}
 
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(b *bs) error {

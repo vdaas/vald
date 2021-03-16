@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ func New(opts ...Option) (*http.Client, error) {
 	tr := new(transport)
 	tr.Transport = new(http.Transport)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(tr); err != nil {
 			werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 			e := new(errors.ErrCriticalOption)

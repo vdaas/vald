@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -58,13 +58,13 @@ func TestFormat_String(t *testing.T) {
 			},
 		},
 
-		{
-			name: "returns ltsv when f is LTSV",
-			f:    LTSV,
-			want: want{
-				want: "ltsv",
-			},
-		},
+		// {
+		// 	name: "returns ltsv when f is LTSV",
+		// 	f:    LTSV,
+		// 	want: want{
+		// 		want: "ltsv",
+		// 	},
+		// },
 
 		{
 			name: "returns unknown when f is 100",
@@ -92,7 +92,6 @@ func TestFormat_String(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -149,21 +148,21 @@ func TestAtof(t *testing.T) {
 			},
 		},
 
-		{
-			name: "returns LTSV when str is `ltsv`",
-			str:  "ltsv",
-			want: want{
-				want: LTSV,
-			},
-		},
-
-		{
-			name: "returns LTSV when str is `LTSv`",
-			str:  "LTSv",
-			want: want{
-				want: LTSV,
-			},
-		},
+		// {
+		// 	name: "returns LTSV when str is `ltsv`",
+		// 	str:  "ltsv",
+		// 	want: want{
+		// 		want: LTSV,
+		// 	},
+		// },
+		//
+		// {
+		// 	name: "returns LTSV when str is `LTSv`",
+		// 	str:  "LTSv",
+		// 	want: want{
+		// 		want: LTSV,
+		// 	},
+		// },
 
 		{
 			name: "returns Unknown when str is `Vald`",

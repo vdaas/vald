@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -33,7 +33,7 @@ import (
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/config"
 )
 
-// Loader is representation of load test
+// Loader is representation of load test.
 type Loader interface {
 	Prepare(context.Context) error
 	Do(context.Context) <-chan error
@@ -54,14 +54,13 @@ type loader struct {
 	loaderFunc       loadFunc
 	dataProvider     func() interface{}
 	dataSize         int
-	service          config.Service
 	operation        config.Operation
 }
 
 // NewLoader returns Loader implementation.
 func NewLoader(opts ...Option) (Loader, error) {
 	l := new(loader)
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(l); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
@@ -165,7 +164,7 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 	}))
 
 	l.eg.Go(safety.RecoverFunc(func() error {
-		log.Infof("start load test(%s, %s)", l.service.String(), l.operation.String())
+		log.Infof("start load test(%s)", l.operation.String())
 		defer close(ech)
 		defer ticker.Stop()
 		start = time.Now()
@@ -179,7 +178,7 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 			finalize(ctx, err)
 			return p.Signal(syscall.SIGKILL) // TODO: #403
 		}
-		log.Infof("result:%s\t%d\t%d\t%f", l.service.String(), l.concurrency, l.batchSize, vps(int(pgCnt)*l.batchSize, start, end))
+		log.Infof("result:%d\t%d\t%f", l.concurrency, l.batchSize, vps(int(pgCnt)*l.batchSize, start, end))
 
 		return p.Signal(syscall.SIGTERM) // TODO: #403
 	}))

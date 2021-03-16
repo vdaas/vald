@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import (
 
 func TestClient_Bind(t *testing.T) {
 	type fields struct {
-		TCP       *TCP
+		Net       *Net
 		Transport *Transport
 	}
 	type want struct {
@@ -52,7 +52,7 @@ func TestClient_Bind(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
-		           TCP: TCP{},
+		           Net: Net{},
 		           Transport: Transport{},
 		       },
 		       want: want{},
@@ -66,7 +66,7 @@ func TestClient_Bind(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
-		           TCP: TCP{},
+		           Net: Net{},
 		           Transport: Transport{},
 		           },
 		           want: want{},
@@ -88,7 +88,7 @@ func TestClient_Bind(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &Client{
-				TCP:       test.fields.TCP,
+				Net:       test.fields.Net,
 				Transport: test.fields.Transport,
 			}
 
@@ -96,7 +96,6 @@ func TestClient_Bind(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

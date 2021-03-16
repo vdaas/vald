@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,19 +20,24 @@ package tls
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"io/ioutil"
+	"net"
 	"reflect"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/io/ioutil"
 )
 
-type Config = tls.Config
+type (
+	Conn   = tls.Conn
+	Config = tls.Config
+)
 
 type credentials struct {
-	cfg  *tls.Config
-	cert string
-	key  string
-	ca   string
+	cfg      *tls.Config
+	cert     string
+	key      string
+	ca       string
+	insecure bool
 }
 
 // NewTLSConfig returns a *tls.Config struct or error
@@ -40,13 +45,9 @@ type credentials struct {
 // This function initialize TLS configuration, for example the CA certificate and key to start TLS server.
 // Server and CA Certificate, and private key will read from a file from the file path definied in environment variable.
 func New(opts ...Option) (*Config, error) {
-	var err error
-	c := new(credentials)
-
-	for _, opt := range append(defaultOptions(), opts...) {
-		if err := opt(c); err != nil {
-			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
-		}
+	c, err := newCredential(opts...)
+	if err != nil {
+		return nil, err
 	}
 
 	if c.cert == "" || c.key == "" {
@@ -72,13 +73,9 @@ func New(opts ...Option) (*Config, error) {
 }
 
 func NewClientConfig(opts ...Option) (*Config, error) {
-	var err error
-	c := new(credentials)
-
-	for _, opt := range append(defaultOptions(), opts...) {
-		if err := opt(c); err != nil {
-			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
-		}
+	c, err := newCredential(opts...)
+	if err != nil {
+		return nil, err
 	}
 
 	if c.ca != "" {
@@ -102,9 +99,11 @@ func NewClientConfig(opts ...Option) (*Config, error) {
 
 // NewX509CertPool returns *x509.CertPool struct or error.
 // The CertPool will read the certificate from the path, and append the content to the system certificate pool, and return.
-func NewX509CertPool(path string) (*x509.CertPool, error) {
-	var pool *x509.CertPool
+func NewX509CertPool(path string) (pool *x509.CertPool, err error) {
 	c, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
 	if err == nil && c != nil {
 		pool, err = x509.SystemCertPool()
 		if err != nil || pool == nil {
@@ -115,4 +114,20 @@ func NewX509CertPool(path string) (*x509.CertPool, error) {
 		}
 	}
 	return pool, err
+}
+
+func newCredential(opts ...Option) (c *credentials, err error) {
+	c = new(credentials)
+
+	for _, opt := range append(defaultOptions(), opts...) {
+		if err := opt(c); err != nil {
+			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+		}
+	}
+	c.cfg.InsecureSkipVerify = c.insecure
+	return c, nil
+}
+
+func Client(conn net.Conn, config *Config) *Conn {
+	return tls.Client(conn, config)
 }

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,15 +24,13 @@ import (
 
 type Option func(p *prof) error
 
-var (
-	defaultOpts = []Option{
-		WithCPUProfiling(true),
-		WithAllocProfiling(true),
-		WithHeapProfiling(true),
-		WithGoroutineProfiling(true),
-		WithServiceVersion(info.Version),
-	}
-)
+var defaultOptions = []Option{
+	WithCPUProfiling(true),
+	WithAllocProfiling(true),
+	WithHeapProfiling(true),
+	WithGoroutineProfiling(true),
+	WithServiceVersion(info.Version),
+}
 
 func WithProjectID(pid string) Option {
 	return func(p *prof) error {

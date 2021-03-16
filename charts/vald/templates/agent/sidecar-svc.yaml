@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,14 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- if and .Values.agent.enabled (and .Values.agent.sidecar.enabled .Values.agent.sidecar.service.enabled) }}
+{{- $agent := .Values.agent -}}
+{{- if and $agent.enabled (and $agent.sidecar.enabled $agent.sidecar.service.enabled) }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.agent.sidecar.name }}
-  {{- if .Values.agent.sidecar.service.annotations }}
+  name: {{ $agent.sidecar.name }}
+  {{- if $agent.sidecar.service.annotations }}
   annotations:
-    {{- toYaml .Values.agent.sidecar.service.annotations | nindent 4 }}
+    {{- toYaml $agent.sidecar.service.annotations | nindent 4 }}
   {{- end }}
   labels:
     app.kubernetes.io/name: {{ include "vald.name" . }}
@@ -29,20 +30,20 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/version: {{ .Chart.Version }}
     app.kubernetes.io/component: agent
-    {{- if .Values.agent.sidecar.service.labels }}
-    {{- toYaml .Values.agent.sidecar.service.labels | nindent 4 }}
+    {{- if $agent.sidecar.service.labels }}
+    {{- toYaml $agent.sidecar.service.labels | nindent 4 }}
     {{- end }}
 spec:
-  {{- $servers := dict "Values" .Values.agent.sidecar.server_config "default" .Values.defaults.server_config }}
+  {{- $servers := dict "Values" $agent.sidecar.server_config "default" .Values.defaults.server_config }}
   {{- include "vald.servicePorts" $servers | nindent 2 }}
   selector:
     app.kubernetes.io/name: {{ include "vald.name" . }}
     app.kubernetes.io/component: agent
-  {{- if eq .Values.agent.sidecar.service.type "ClusterIP" }}
+  {{- if eq $agent.sidecar.service.type "ClusterIP" }}
   clusterIP: None
   {{- end }}
-  type: {{ .Values.agent.sidecar.service.type }}
-  {{- if .Values.agent.sidecar.service.externalTrafficPolicy }}
-  externalTrafficPolicy: {{ .Values.agent.sidecar.service.externalTrafficPolicy }}
+  type: {{ $agent.sidecar.service.type }}
+  {{- if $agent.sidecar.service.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ $agent.sidecar.service.externalTrafficPolicy }}
   {{- end }}
 {{- end }}

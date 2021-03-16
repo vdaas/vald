@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,11 +29,11 @@ func (rm *roundTripMock) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 type backoffMock struct {
-	DoFunc    func(context.Context, func() (interface{}, error)) (interface{}, error)
+	DoFunc    func(context.Context, func(context.Context) (interface{}, bool, error)) (interface{}, error)
 	CloseFunc func()
 }
 
-func (bm *backoffMock) Do(ctx context.Context, fn func() (interface{}, error)) (interface{}, error) {
+func (bm *backoffMock) Do(ctx context.Context, fn func(context.Context) (interface{}, bool, error)) (interface{}, error) {
 	return bm.DoFunc(ctx, fn)
 }
 

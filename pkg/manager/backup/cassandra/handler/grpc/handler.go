@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/vdaas/vald/apis/grpc/manager/backup"
-	"github.com/vdaas/vald/apis/grpc/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/manager/backup"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
@@ -41,13 +41,13 @@ type server struct {
 func New(opts ...Option) Server {
 	s := new(server)
 
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(s)
 	}
 	return s
 }
 
-func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Request) (res *payload.Backup_Compressed_MetaVector, err error) {
+func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Request) (res *payload.Backup_Compressed_Vector, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-backup-cassandra.GetVector")
 	defer func() {
 		if span != nil {
@@ -55,7 +55,7 @@ func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Re
 		}
 	}()
 	uuid := req.GetUuid()
-	meta, err := s.cassandra.GetMeta(ctx, uuid)
+	vector, err := s.cassandra.GetVector(ctx, uuid)
 	if err != nil {
 		switch {
 		case errors.IsErrCassandraNotFound(err):
@@ -80,7 +80,7 @@ func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Re
 		}
 	}
 
-	return toBackupMetaVector(meta)
+	return toBackupVector(vector)
 }
 
 func (s *server) Locations(ctx context.Context, req *payload.Backup_Locations_Request) (res *payload.Info_IPs, err error) {
@@ -105,63 +105,63 @@ func (s *server) Locations(ctx context.Context, req *payload.Backup_Locations_Re
 	}, nil
 }
 
-func (s *server) Register(ctx context.Context, meta *payload.Backup_Compressed_MetaVector) (res *payload.Empty, err error) {
+func (s *server) Register(ctx context.Context, vector *payload.Backup_Compressed_Vector) (res *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-backup-cassandra.Register")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	uuid := meta.GetUuid()
-	m, err := toModelMetaVector(meta)
+	uuid := vector.GetUuid()
+	m, err := toModelVector(vector)
 	if err != nil {
 		log.Errorf("[Register]\tunknown error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("Register API uuid %s's could not convert vector to meta_vector", uuid), err, info.Get())
+		return nil, status.WrapWithInternal(fmt.Sprintf("Register API uuid %s's could not convert vector to backup format", uuid), err, info.Get())
 	}
 
-	err = s.cassandra.SetMeta(ctx, m)
+	err = s.cassandra.SetVector(ctx, m)
 	if err != nil {
 		log.Errorf("[Register]\tunknown error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("Register API uuid %s's failed to backup metadata", uuid), err, info.Get())
+		return nil, status.WrapWithInternal(fmt.Sprintf("Register API uuid %s's failed to backup vector", uuid), err, info.Get())
 	}
 
 	return new(payload.Empty), nil
 }
 
-func (s *server) RegisterMulti(ctx context.Context, metas *payload.Backup_Compressed_MetaVectors) (res *payload.Empty, err error) {
+func (s *server) RegisterMulti(ctx context.Context, vectors *payload.Backup_Compressed_Vectors) (res *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-backup-cassandra.RegisterMulti")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	ms := make([]*model.MetaVector, 0, len(metas.GetVectors()))
-	for _, meta := range metas.Vectors {
-		var m *model.MetaVector
-		m, err = toModelMetaVector(meta)
+	ms := make([]*model.Vector, 0, len(vectors.GetVectors()))
+	for _, vector := range vectors.Vectors {
+		var m *model.Vector
+		m, err = toModelVector(vector)
 		if err != nil {
 			log.Errorf("[RegisterMulti]\tunknown error\t%+v", err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInternal(err.Error()))
 			}
-			return nil, status.WrapWithInternal(fmt.Sprintf("RegisterMulti API uuids %s's could not convert vector to meta_vector", meta.GetUuid()), err, info.Get())
+			return nil, status.WrapWithInternal(fmt.Sprintf("RegisterMulti API uuids %s's could not convert vector to backup format", vector.GetUuid()), err, info.Get())
 		}
 		ms = append(ms, m)
 	}
 
-	err = s.cassandra.SetMetas(ctx, ms...)
+	err = s.cassandra.SetVectors(ctx, ms...)
 	if err != nil {
 		log.Errorf("[RegisterMulti]\tunknown error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("RegisterMulti API failed to backup metadatas %#v", ms), err, info.Get())
+		return nil, status.WrapWithInternal(fmt.Sprintf("RegisterMulti API failed to backup vectors %#v", ms), err, info.Get())
 	}
 
 	return new(payload.Empty), nil
@@ -175,13 +175,13 @@ func (s *server) Remove(ctx context.Context, req *payload.Backup_Remove_Request)
 		}
 	}()
 	uuid := req.GetUuid()
-	err = s.cassandra.DeleteMeta(ctx, uuid)
+	err = s.cassandra.DeleteVector(ctx, uuid)
 	if err != nil {
 		log.Errorf("[Remove]\tunknown error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("Remove API uuid %s's could not DeleteMeta", uuid), err, info.Get())
+		return nil, status.WrapWithInternal(fmt.Sprintf("Remove API uuid %s's could not DeleteVector", uuid), err, info.Get())
 	}
 
 	return new(payload.Empty), nil
@@ -195,13 +195,13 @@ func (s *server) RemoveMulti(ctx context.Context, req *payload.Backup_Remove_Req
 		}
 	}()
 	uuids := req.GetUuids()
-	err = s.cassandra.DeleteMetas(ctx, uuids...)
+	err = s.cassandra.DeleteVectors(ctx, uuids...)
 	if err != nil {
 		log.Errorf("[RemoveMulti]\tunknown error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("RemoveMulti API uuids %#v could not DeleteMetas", uuids), err, info.Get())
+		return nil, status.WrapWithInternal(fmt.Sprintf("RemoveMulti API uuids %#v could not DeleteVectors", uuids), err, info.Get())
 	}
 
 	return new(payload.Empty), nil
@@ -247,20 +247,18 @@ func (s *server) RemoveIPs(ctx context.Context, req *payload.Backup_IP_Remove_Re
 	return new(payload.Empty), nil
 }
 
-func toBackupMetaVector(meta *model.MetaVector) (res *payload.Backup_Compressed_MetaVector, err error) {
-	return &payload.Backup_Compressed_MetaVector{
-		Uuid:   meta.UUID,
-		Meta:   meta.Meta,
-		Vector: meta.Vector,
-		Ips:    meta.IPs,
+func toBackupVector(vector *model.Vector) (res *payload.Backup_Compressed_Vector, err error) {
+	return &payload.Backup_Compressed_Vector{
+		Uuid:   vector.UUID,
+		Vector: vector.Vector,
+		Ips:    vector.IPs,
 	}, nil
 }
 
-func toModelMetaVector(obj *payload.Backup_Compressed_MetaVector) (res *model.MetaVector, err error) {
-	return &model.MetaVector{
+func toModelVector(obj *payload.Backup_Compressed_Vector) (res *model.Vector, err error) {
+	return &model.Vector{
 		UUID:   obj.Uuid,
 		Vector: obj.Vector,
-		Meta:   obj.Meta,
 		IPs:    obj.Ips,
 	}, nil
 }

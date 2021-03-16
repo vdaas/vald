@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,19 +23,19 @@ type Level uint8
 const (
 	Unknown Level = iota
 
-	// DEBUG is debug log level
+	// DEBUG is debug log level.
 	DEBUG
 
-	// INFO is info log level
+	// INFO is info log level.
 	INFO
 
-	// WARN is warning log level
+	// WARN is warning log level.
 	WARN
 
-	// ERRO is error log level
+	// ERRO is error log level.
 	ERROR
 
-	// FATAL is fatal log level
+	// FATAL is fatal log level.
 	FATAL
 )
 

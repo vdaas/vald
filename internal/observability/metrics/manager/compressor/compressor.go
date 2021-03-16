@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -83,37 +83,37 @@ func (c *compressorMetrics) MeasurementWithTags(ctx context.Context) ([]metrics.
 
 func (c *compressorMetrics) View() []*metrics.View {
 	return []*metrics.View{
-		&metrics.View{
+		{
 			Name:        "compressor_compressor_buffer",
 			Description: c.compressorBuffer.Description(),
 			Measure:     &c.compressorBuffer,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "compressor_compressor_requested_jobs_total",
 			Description: c.compressorTotalRequestedJob.Description(),
 			Measure:     &c.compressorTotalRequestedJob,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "compressor_compressor_completed_jobs_total",
 			Description: c.compressorTotalCompletedJob.Description(),
 			Measure:     &c.compressorTotalCompletedJob,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "compressor_registerer_buffer",
 			Description: c.registererBuffer.Description(),
 			Measure:     &c.registererBuffer,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "compressor_registerer_requested_jobs_total",
 			Description: c.registererTotalRequestedJob.Description(),
 			Measure:     &c.registererTotalRequestedJob,
 			Aggregation: metrics.LastValue(),
 		},
-		&metrics.View{
+		{
 			Name:        "compressor_registerer_completed_jobs_total",
 			Description: c.registererTotalCompletedJob.Description(),
 			Measure:     &c.registererTotalCompletedJob,

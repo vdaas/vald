@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,9 +24,9 @@ const (
 	Unknown Type = iota
 	GLG
 	ZAP
-	ZEROLOG
-	LOGRUS
-	KLOG
+	// ZEROLOG
+	// LOGRUS
+	// KLOG
 )
 
 func (m Type) String() string {
@@ -35,12 +35,12 @@ func (m Type) String() string {
 		return "glg"
 	case ZAP:
 		return "zap"
-	case ZEROLOG:
-		return "zerolog"
-	case LOGRUS:
-		return "logrus"
-	case KLOG:
-		return "klog"
+		// case ZEROLOG:
+		// 	return "zerolog"
+		// case LOGRUS:
+		// 	return "logrus"
+		// case KLOG:
+		// 	return "klog"
 	}
 	return "unknown"
 }
@@ -51,12 +51,12 @@ func Atot(str string) Type {
 		return GLG
 	case "zap":
 		return ZAP
-	case "zerolog":
-		return ZEROLOG
-	case "logrus":
-		return LOGRUS
-	case "klog":
-		return KLOG
+		// case "zerolog":
+		// 	return ZEROLOG
+		// case "logrus":
+		// 	return LOGRUS
+		// case "klog":
+		// 	return KLOG
 	}
 	return Unknown
 }

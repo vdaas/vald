@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,22 +15,36 @@
 #
 
 ARG GO_VERSION=latest
-ARG BASE_TAG=latest
 ARG DISTROLESS_IMAGE=gcr.io/distroless/static
 ARG DISTROLESS_IMAGE_TAG=nonroot
 ARG UPX_OPTIONS=-9
+ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
-FROM golang:${GO_VERSION} AS golang
+FROM golang:${GO_VERSION} AS builder
 
-FROM vdaas/vald-base:${BASE_TAG} AS builder
 ARG UPX_OPTIONS
 
+ENV GO111MODULE on
+ENV LANG en_US.UTF-8
 ENV ORG vdaas
 ENV REPO vald
 ENV PKG manager/backup/mysql
 ENV APP_NAME backup
 
-COPY --from=golang /usr/local/go $GOROOT
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    upx \
+    git \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p $GOPATH/src
+
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
+
+COPY go.mod .
+COPY go.sum .
+
+RUN go mod download
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal
 COPY internal .
@@ -58,7 +72,7 @@ RUN make REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
     && upx ${UPX_OPTIONS} -o "/usr/bin/${APP_NAME}" "cmd/${PKG}/${APP_NAME}"
 
 FROM ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
-LABEL maintainer "Vald team <vald@vdaas.org>"
+LABEL maintainer "${MAINTAINER}"
 
 ENV APP_NAME backup
 

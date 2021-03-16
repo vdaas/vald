@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -32,6 +32,9 @@ type TLS struct {
 
 	// CA represent the CA certificate environment variable key used to start server.
 	CA string `yaml:"ca" json:"ca"`
+
+	// InsecureSkipVerify represent enable/disable skip SSL certificate verification
+	InsecureSkipVerify bool `yaml:"insecure_skip_verify" json:"insecure_skip_verify"`
 }
 
 // Bind returns TLS object whose every value except Enabled is field value of environment value.
@@ -48,5 +51,6 @@ func (t *TLS) Opts() []tls.Option {
 		tls.WithCa(t.CA),
 		tls.WithCert(t.Cert),
 		tls.WithKey(t.Key),
+		tls.WithInsecureSkipVerify(t.InsecureSkipVerify),
 	}
 }

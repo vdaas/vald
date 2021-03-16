@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
-	"github.com/vdaas/vald/hack/benchmark/internal/core"
+	"github.com/vdaas/vald/hack/benchmark/internal/core/algorithm"
 
 	"go.uber.org/goleak"
 )
@@ -30,7 +30,7 @@ import (
 func TestWithPreProp32(t *testing.T) {
 	type T = interface{}
 	type args struct {
-		fn func(context.Context, *testing.B, core.Core32, assets.Dataset) ([]uint, error)
+		fn func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset) ([]uint, error)
 	}
 	type want struct {
 		obj *T
@@ -143,7 +143,7 @@ func TestWithPreProp32(t *testing.T) {
 func TestWithProp32(t *testing.T) {
 	type T = interface{}
 	type args struct {
-		fn func(context.Context, *testing.B, core.Core32, assets.Dataset, []uint, *uint64) (interface{}, error)
+		fn func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset, []uint, *uint64) (interface{}, error)
 	}
 	type want struct {
 		obj *T
@@ -256,7 +256,7 @@ func TestWithProp32(t *testing.T) {
 func TestWithPreProp64(t *testing.T) {
 	type T = interface{}
 	type args struct {
-		fn func(context.Context, *testing.B, core.Core64, assets.Dataset) ([]uint, error)
+		fn func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset) ([]uint, error)
 	}
 	type want struct {
 		obj *T
@@ -369,7 +369,7 @@ func TestWithPreProp64(t *testing.T) {
 func TestWithProp64(t *testing.T) {
 	type T = interface{}
 	type args struct {
-		fn func(context.Context, *testing.B, core.Core64, assets.Dataset, []uint, *uint64) (interface{}, error)
+		fn func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset, []uint, *uint64) (interface{}, error)
 	}
 	type want struct {
 		obj *T
@@ -592,10 +592,10 @@ func TestWithPropName(t *testing.T) {
 	}
 }
 
-func TestWithCore32(t *testing.T) {
+func TestWithBit32(t *testing.T) {
 	type T = interface{}
 	type args struct {
-		fn func(context.Context, *testing.B, assets.Dataset) (core.Core32, core.Closer, error)
+		fn func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit32, algorithm.Closer, error)
 	}
 	type want struct {
 		obj *T
@@ -682,7 +682,7 @@ func TestWithCore32(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithCore32(test.args.fn)
+			   got := WithBit32(test.args.fn)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -694,7 +694,7 @@ func TestWithCore32(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithCore32(test.args.fn)
+			   got := WithBit32(test.args.fn)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(tt.want, obj); err != nil {
@@ -705,10 +705,10 @@ func TestWithCore32(t *testing.T) {
 	}
 }
 
-func TestWithCore64(t *testing.T) {
+func TestWithBit64(t *testing.T) {
 	type T = interface{}
 	type args struct {
-		fn func(context.Context, *testing.B, assets.Dataset) (core.Core64, core.Closer, error)
+		fn func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit64, algorithm.Closer, error)
 	}
 	type want struct {
 		obj *T
@@ -795,7 +795,7 @@ func TestWithCore64(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithCore64(test.args.fn)
+			   got := WithBit64(test.args.fn)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -807,7 +807,7 @@ func TestWithCore64(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithCore64(test.args.fn)
+			   got := WithBit64(test.args.fn)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(tt.want, obj); err != nil {

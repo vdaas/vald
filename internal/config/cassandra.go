@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package config
 
 import (
 	"github.com/vdaas/vald/internal/db/nosql/cassandra"
-	"github.com/vdaas/vald/internal/net/tcp"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/tls"
 )
 
@@ -48,7 +48,7 @@ type Cassandra struct {
 	MaxRoutingKeyInfo        int    `json:"max_routing_key_info" yaml:"max_routing_key_info"`
 	PageSize                 int    `json:"page_size" yaml:"page_size"`
 	TLS                      *TLS   `json:"tls" yaml:"tls"`
-	TCP                      *TCP   `json:"tcp" yaml:"tcp"`
+	Net                      *Net   `json:"net" yaml:"net"`
 	EnableHostVerification   bool   `json:"enable_host_verification" yaml:"enable_host_verification"`
 	DefaultTimestamp         bool   `json:"default_timestamp" yaml:"default_timestamp"`
 	ReconnectInterval        string `json:"reconnect_interval" yaml:"reconnect_interval"`
@@ -67,7 +67,7 @@ type Cassandra struct {
 	VKTable string `json:"vk_table" yaml:"vk_table"`
 
 	// backup manager
-	MetaTable string `json:"meta_table" yaml:"meta_table"`
+	VectorBackupTable string `json:"vector_backup_table" yaml:"vector_backup_table"`
 }
 
 type PoolConfig struct {
@@ -126,10 +126,10 @@ func (c *Cassandra) Bind() *Cassandra {
 	} else {
 		c.TLS = new(TLS)
 	}
-	if c.TCP != nil {
-		c.TCP.Bind()
+	if c.Net != nil {
+		c.Net.Bind()
 	} else {
-		c.TCP = new(TCP)
+		c.Net = new(Net)
 	}
 	c.ReconnectInterval = GetActualValue(c.ReconnectInterval)
 	c.MaxWaitSchemaAgreement = GetActualValue(c.MaxWaitSchemaAgreement)
@@ -138,7 +138,7 @@ func (c *Cassandra) Bind() *Cassandra {
 	c.KVTable = GetActualValue(c.KVTable)
 	c.VKTable = GetActualValue(c.VKTable)
 
-	c.MetaTable = GetActualValue(c.MetaTable)
+	c.VectorBackupTable = GetActualValue(c.VectorBackupTable)
 
 	return c
 }
@@ -207,8 +207,8 @@ func (cfg *Cassandra) Opts() (opts []cassandra.Option, err error) {
 		)
 	}
 
-	if cfg.TCP != nil {
-		der, err := tcp.NewDialer(cfg.TCP.Opts()...)
+	if cfg.Net != nil {
+		der, err := net.NewDialer(cfg.Net.Opts()...)
 		if err == nil {
 			opts = append(opts,
 				cassandra.WithDialer(

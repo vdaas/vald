@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,67 +24,48 @@ import (
 
 type Option func(*server)
 
-var (
-	defaultOptions = []Option{
-		WithConfig(&config.Data{
-			GlobalConfig: config.GlobalConfig{
-				Version: "v0.0.0",
-			},
-			Server: &iconfig.Servers{
-				Servers: []*iconfig.Server{
-					{
-						Name:          "agent-grpc",
-						Host:          "127.0.0.1",
-						Port:          8082,
-						Mode:          "GRPC",
-						ProbeWaitTime: "0s",
-						HTTP: &iconfig.HTTP{
-							ShutdownDuration: "0s",
-						},
-					},
-					{
-						Name:          "agent-rest",
-						Host:          "127.0.0.1",
-						Port:          8081,
-						Mode:          "REST",
-						ProbeWaitTime: "0s",
-						HTTP: &iconfig.HTTP{
-							ShutdownDuration:  "0s",
-							HandlerTimeout:    "60s",
-							IdleTimeout:       "60s",
-							ReadHeaderTimeout: "60s",
-							ReadTimeout:       "60s",
-							WriteTimeout:      "60s",
-						},
+var defaultOptions = []Option{
+	WithConfig(&config.Data{
+		GlobalConfig: config.GlobalConfig{
+			Version: "v0.0.0",
+		},
+		Server: &iconfig.Servers{
+			Servers: []*iconfig.Server{
+				{
+					Name:          "agent-grpc",
+					Host:          "127.0.0.1",
+					Port:          8081,
+					Mode:          "GRPC",
+					ProbeWaitTime: "0s",
+					HTTP: &iconfig.HTTP{
+						ShutdownDuration: "0s",
 					},
 				},
-				StartUpStrategy: []string{
-					"agent-grpc",
-					"agent-rest",
-				},
-				ShutdownStrategy: []string{
-					"agent-grpc",
-					"agent-rest",
-				},
-				FullShutdownDuration: "600s",
-				TLS: &iconfig.TLS{
-					Enabled: false,
-				},
 			},
-			Observability: &iconfig.Observability{
+			StartUpStrategy: []string{
+				"agent-grpc",
+			},
+			ShutdownStrategy: []string{
+				"agent-grpc",
+			},
+			FullShutdownDuration: "600s",
+			TLS: &iconfig.TLS{
 				Enabled: false,
 			},
-			NGT: &iconfig.NGT{
-				Dimension:          0,
-				DistanceType:       "unknown",
-				ObjectType:         "unknown",
-				CreationEdgeSize:   20,
-				SearchEdgeSize:     10,
-				EnableInMemoryMode: true,
-			},
-		}),
-	}
-)
+		},
+		Observability: &iconfig.Observability{
+			Enabled: false,
+		},
+		NGT: &iconfig.NGT{
+			Dimension:          0,
+			DistanceType:       "unknown",
+			ObjectType:         "unknown",
+			CreationEdgeSize:   20,
+			SearchEdgeSize:     10,
+			EnableInMemoryMode: true,
+		},
+	}),
+}
 
 func WithConfig(cfg *config.Data) Option {
 	return func(s *server) {
