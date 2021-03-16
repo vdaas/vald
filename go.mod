@@ -37,7 +37,7 @@ replace (
 )
 
 require (
-	cloud.google.com/go v0.74.0
+	cloud.google.com/go v0.79.0
 	code.cloudfoundry.org/bytefmt v0.0.0-20200131002437-cf55d5288a48
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
 	contrib.go.opencensus.io/exporter/prometheus v0.2.0
@@ -54,7 +54,7 @@ require (
 	github.com/gogo/protobuf v1.3.1
 	github.com/gogo/status v1.1.0
 	github.com/golang/protobuf v1.4.3
-	github.com/google/go-cmp v0.5.4
+	github.com/google/go-cmp v0.5.5
 	github.com/google/gofuzz v1.2.0
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/go-version v1.2.1
@@ -76,12 +76,12 @@ require (
 	go.uber.org/zap v1.16.0
 	golang.org/x/net v0.0.0-20210226172049-e18ecbb05110
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys v0.0.0-20210305230114-8fe3ee5dd75b
+	golang.org/x/sys v0.0.0-20210314195730-07df6a141424
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/plot v0.8.1
-	google.golang.org/api v0.40.0
-	google.golang.org/genproto v0.0.0-20210303154014-9728d6b83eeb
-	google.golang.org/grpc v1.35.0
+	google.golang.org/api v0.42.0
+	google.golang.org/genproto v0.0.0-20210312152112-fc591d9ea70f
+	google.golang.org/grpc v1.36.0
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.20.4
 	k8s.io/apimachinery v0.20.4
