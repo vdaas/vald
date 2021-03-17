@@ -115,9 +115,12 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 
-	c, err := vald.New(vald.WithAddrs(
-		cfg.Rebalancer.GatewayClient.Addrs...,
-	))
+	copts := cfg.Rebalancer.GatewayClient.Opts()
+
+	c, err := vald.New(
+		vald.WithAddrs(cfg.Rebalancer.GatewayClient.Addrs...),
+		vald.WithClient(grpc.New(copts...)),
+	)
 	if err != nil {
 		return nil, err
 	}
