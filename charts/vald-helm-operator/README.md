@@ -30,13 +30,13 @@ Upgrading the version
 
 Please upgrade the CRDs first.
 
-    $ kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/v1.0.3/charts/vald-helm-operator/crds/valdrelease.yaml
-    $ kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/v1.0.3/charts/vald-helm-operator/crds/valdhelmoperatorrelease.yaml
+    $ kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/v1.0.4/charts/vald-helm-operator/crds/valdrelease.yaml
+    $ kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/v1.0.4/charts/vald-helm-operator/crds/valdhelmoperatorrelease.yaml
 
 After upgrading CRDs, you can upgrade the operator.
 If you're using `valdhelmoperatorrelease` (or `vhor`) resource, please update the `spec.image.tag` field of it.
 
-    $ kubectl patch vhor vhor-release -p '{"spec":{"image":{"tag":"v1.0.3"}}}'
+    $ kubectl patch vhor vhor-release -p '{"spec":{"image":{"tag":"v1.0.4"}}}'
 
 On the other hand, please update the operator's deployment manually.
 

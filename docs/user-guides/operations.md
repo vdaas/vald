@@ -115,7 +115,7 @@ In case of using Helm and Vald's chart, please update `defaults.image.tag` field
 
 In case of using Vald-Helm-Operator, please upgrade the CRDs first.
 
-    $ VERSION=v1.0.3
+    $ VERSION=v1.0.4
     $ kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/${VERSION}/charts/vald-helm-operator/crds/valdrelease.yaml
     $ kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/${VERSION}/charts/vald-helm-operator/crds/valdhelmoperatorrelease.yaml
 
