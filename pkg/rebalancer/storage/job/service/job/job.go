@@ -62,7 +62,21 @@ func New(opts ...Option) (dsc Rebalancer, err error) {
 
 func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 2)
-
+	cech, err := r.client.Start(ctx)
+	if err != nil {
+		log.Errorf("[job debug] failed start connection monitor")
+		return nil, err
+	}
+	r.eg.Go(func() error {
+		for {
+			select {
+			case <-ctx.Done():
+				ech <- ctx.Err()
+				return nil
+			case ech <- <-cech:
+			}
+		}
+	})
 	r.eg.Go(func() error {
 		log.Infof("[job debug] Start rebalance job service: %s", r.targetAgentName)
 
