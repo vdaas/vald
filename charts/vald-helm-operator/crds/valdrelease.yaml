@@ -35,12 +35,14 @@ spec:
       subresources:
         status: {}
       additionalPrinterColumns:
-        - name: Ingress
+        - name: Condition
           type: string
-          jsonPath: .spec.gateway.ingress.host
+          jsonPath: .status.conditions[-1].type
+          priority: 0
         - name: Age
           type: date
           jsonPath: .metadata.creationTimestamp
+          priority: 0
       schema:
         openAPIV3Schema:
           description: ValdRelease is the Schema for the valdreleases API
