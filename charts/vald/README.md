@@ -3,7 +3,7 @@ Vald
 
 This is a Helm chart to install Vald components.
 
-Current chart version is `v1.0.3`
+Current chart version is `v1.0.4`
 
 Table of Contents
 ---
@@ -100,6 +100,10 @@ Configuration
 | agent.ngt.min_load_index_timeout | string | `"3m"` | minimum duration of load index timeout |
 | agent.ngt.object_type | string | `"float"` | object type. it should be `float` or `uint8`. for further details: https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference |
 | agent.ngt.search_edge_size | int | `10` | search edge size |
+| agent.ngt.vqueue.delete_buffer_pool_size | int | `5000` | delete slice pool buffer size |
+| agent.ngt.vqueue.delete_buffer_size | int | `100` | delete channel buffer size |
+| agent.ngt.vqueue.insert_buffer_pool_size | int | `10000` | insert slice pool buffer size |
+| agent.ngt.vqueue.insert_buffer_size | int | `100` | insert channel buffer size |
 | agent.nodeName | string | `""` | node name |
 | agent.nodeSelector | object | `{}` | node selector |
 | agent.observability | object | `{"jaeger":{"service_name":"vald-agent-ngt"},"stackdriver":{"profiler":{"service":"vald-agent-ngt"}}}` | observability config (overrides defaults.observability) |
@@ -281,7 +285,7 @@ Configuration
 | defaults.grpc.client.tls.enabled | bool | `false` | TLS enabled |
 | defaults.grpc.client.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
 | defaults.grpc.client.tls.key | string | `"/path/to/key"` | TLS key path |
-| defaults.image.tag | string | `"v1.0.3"` | docker image tag |
+| defaults.image.tag | string | `"v1.0.4"` | docker image tag |
 | defaults.ingress.usev1beta1 | bool | `false` | use networking.k8s.io/v1beta1 instead of v1 for ingresses. This option will be removed once k8s 1.22 is released. |
 | defaults.logging.format | string | `"raw"` | logging format. logging format must be `raw` or `json` |
 | defaults.logging.level | string | `"debug"` | logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`. |
@@ -455,6 +459,7 @@ Configuration
 | defaults.server_config.servers.grpc.port | int | `8081` | gRPC server port |
 | defaults.server_config.servers.grpc.server.grpc.bidirectional_stream_concurrency | int | `20` | gRPC server bidirectional stream concurrency |
 | defaults.server_config.servers.grpc.server.grpc.connection_timeout | string | `""` | gRPC server connection timeout |
+| defaults.server_config.servers.grpc.server.grpc.enable_reflection | bool | `true` | gRPC server reflection option |
 | defaults.server_config.servers.grpc.server.grpc.header_table_size | int | `0` | gRPC server header table size |
 | defaults.server_config.servers.grpc.server.grpc.initial_conn_window_size | int | `0` | gRPC server initial connection window size |
 | defaults.server_config.servers.grpc.server.grpc.initial_window_size | int | `0` | gRPC server initial window size |
