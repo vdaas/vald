@@ -126,6 +126,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		job.WithErrGroup(eg),
 		job.WithStorage(st),
 		job.WithValdClient(c),
+		job.WithRate(cfg.Rebalancer.Rate),
 	)
 	if err != nil {
 		return nil, err

@@ -89,7 +89,6 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 			if err != nil {
 				return err
 			}
-			log.Debugf("[job debug] sr : %#v", sr)
 
 			sr, err = ctxio.NewReadCloserWithContext(ctx, sr)
 			if err != nil {
@@ -102,10 +101,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 				}
 			}()
 
-			log.Infof("[job debug] copy sr: %#v \nto pw: %#v", sr, pw)
-			n, err := io.Copy(pw, sr)
-			log.Infof("[job debug] finish pw: %#v, err: %s, bytes: %d", pw, err, n)
-
+			_, err = io.Copy(pw, sr)
 			if err != nil {
 				return err
 			}
@@ -131,6 +127,10 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 
 		// Calculate to process data from the above data
 		amntData := int(r.rate * float64(len(idm)))
+		if amntData == 0 {
+			log.Info("[job] no data to rebalance")
+			return nil
+		}
 		cnt := 0
 
 		log.Infof("Start rebalance data: %d", amntData)
@@ -150,7 +150,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 
 			// update data
 			// TODO: use stream or upsert?
-			loc, err := r.client.Update(ctx, &payload.Update_Request{
+			_, err = r.client.Update(ctx, &payload.Update_Request{
 				Vector: &payload.Object_Vector{
 					Id:     vec.GetId(),
 					Vector: vec.GetVector(),
@@ -161,8 +161,6 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 				errs = errors.Wrap(errs, err.Error())
 				continue
 			}
-
-			log.Debugf("location: %v", loc)
 
 			cnt++
 			if amntData--; amntData == 0 {
