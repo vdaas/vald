@@ -161,6 +161,17 @@ PROTO_PATHS = \
 	$(GOPATH)/src/github.com/googleapis/googleapis \
 	$(GOPATH)/src/github.com/gogo/googleapis
 
+# [Warning]
+# The below directories have the no original implementation.
+# You should not add any features.
+# - internal/copress/gob
+# - internal/compress/gzip
+# - internal/compress/lz4
+# - internal/compress/zst
+# - internal/db/storage/blob/s3/sdk/s3
+# - internal/db/rdb/mysql/dbr
+# - internal/test/comparator
+# - internal/test/mock
 GO_SOURCES = $(eval GO_SOURCES := $(shell find \
 		./cmd \
 		./hack \
