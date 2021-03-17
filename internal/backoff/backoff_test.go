@@ -30,6 +30,8 @@ import (
 	"go.uber.org/goleak"
 )
 
+const str = "success"
+
 func TestMain(m *testing.M) {
 	log.Init()
 	os.Exit(m.Run())
@@ -336,7 +338,6 @@ func Test_backoff_Do(t *testing.T) {
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.New("erros is occurred")
-			str := "connected"
 			f := func(context.Context) (interface{}, bool, error) {
 				return str, true, err
 			}
@@ -371,7 +372,6 @@ func Test_backoff_Do(t *testing.T) {
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.New("erros is occurred")
-			str := "connected"
 			cnt := 0
 			f := func(context.Context) (interface{}, bool, error) {
 				cnt++
@@ -411,7 +411,6 @@ func Test_backoff_Do(t *testing.T) {
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.New("erros is occurred")
-			str := "connected"
 			cnt := 0
 			f := func(context.Context) (interface{}, bool, error) {
 				cnt++
@@ -450,7 +449,6 @@ func Test_backoff_Do(t *testing.T) {
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.New("erros is occurred")
-			str := "connected"
 			f := func(context.Context) (interface{}, bool, error) {
 				return str, true, err
 			}
@@ -485,7 +483,6 @@ func Test_backoff_Do(t *testing.T) {
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.New("erros is occurred")
-			str := "connected"
 			f := func(context.Context) (interface{}, bool, error) {
 				return str, true, err
 			}
@@ -519,7 +516,6 @@ func Test_backoff_Do(t *testing.T) {
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.New("erros is occurred")
-			str := "connected"
 			f := func(context.Context) (interface{}, bool, error) {
 				cancel()
 				return str, true, err
@@ -551,7 +547,6 @@ func Test_backoff_Do(t *testing.T) {
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.New("erros is occurred")
-			str := "connected"
 			cnt := 0
 			f := func(context.Context) (interface{}, bool, error) {
 				cnt++
@@ -587,7 +582,6 @@ func Test_backoff_Do(t *testing.T) {
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.New("erros is occurred")
-			str := "connected"
 			cnt := 0
 			f := func(context.Context) (interface{}, bool, error) {
 				cnt++
