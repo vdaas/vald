@@ -28,7 +28,7 @@ Run the following command to install the chart,
 Upgrading the version
 ---
 
-Please upgrade the CRDs first.
+Please upgrade the CRDs first because Helm doesn't have a support to upgrade CRDs.
 
     $ kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/v1.0.4/charts/vald-helm-operator/crds/valdrelease.yaml
     $ kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/v1.0.4/charts/vald-helm-operator/crds/valdhelmoperatorrelease.yaml
