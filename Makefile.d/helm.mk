@@ -103,7 +103,7 @@ charts/vald-helm-operator/values.schema.json: \
 ## generate OpenAPI v3 schema for ValdRelease
 helm/schema/crd/vald:
 	mv charts/vald-helm-operator/crds/valdrelease.yaml $(TEMP_DIR)/valdrelease.yaml
-	head -n 67 $(TEMP_DIR)/valdrelease.yaml > charts/vald-helm-operator/crds/valdrelease.yaml
+	head -n 79 $(TEMP_DIR)/valdrelease.yaml > charts/vald-helm-operator/crds/valdrelease.yaml
 	GOPRIVATE=$(GOPRIVATE) \
 	go run hack/helm/schema/crd/main.go \
 	charts/vald/values.yaml 12 >> charts/vald-helm-operator/crds/valdrelease.yaml

@@ -39,6 +39,18 @@ spec:
           type: string
           jsonPath: .status.conditions[-1].type
           priority: 0
+        - name: Meta GW Ingress
+          type: string
+          jsonPath: .spec.gateway.meta.ingress.host
+          priority: 1
+        - name: LB GW Ingress
+          type: string
+          jsonPath: .spec.gateway.lb.ingress.host
+          priority: 1
+        - name: Backup GW Ingress
+          type: string
+          jsonPath: .spec.gateway.backup.ingress.host
+          priority: 1
         - name: Age
           type: date
           jsonPath: .metadata.creationTimestamp
