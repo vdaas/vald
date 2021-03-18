@@ -66,7 +66,7 @@ func New(opts ...Option) Backoff {
 	return b
 }
 
-// Do tries to backoff using input function and returns the response and error.
+// Do tries to backoff using the input function and returns the response and error.
 func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val interface{}, retryable bool, err error)) (res interface{}, err error) {
 	res, ret, err := f(ctx)
 	if err == nil || !ret {
@@ -149,7 +149,7 @@ func (b *backoff) addJitter(dur float64) float64 {
 	return dur + float64(rand.LimitedUint32(uint64(hd))) - hd
 }
 
-// Close closes the wait group.
+// Close wait for the backoff process to complete.
 func (b *backoff) Close() {
 	b.wg.Wait()
 }

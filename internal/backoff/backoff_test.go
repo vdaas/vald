@@ -126,8 +126,7 @@ func Test_backoff_addJitter(t *testing.T) {
 				fields: fields{
 					jitterLimit: 100,
 				},
-				want:      want{},
-				checkFunc: defaultCheckFunc,
+				want: want{},
 			}
 		}(),
 	}
@@ -190,8 +189,7 @@ func Test_backoff_Close(t *testing.T) {
 			fields: fields{
 				wg: sync.WaitGroup{},
 			},
-			want:      want{},
-			checkFunc: defaultCheckFunc,
+			want: want{},
 		},
 	}
 
@@ -263,7 +261,7 @@ func Test_backoff_Do(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx := context.Background()
 			err := errors.New("error is occurred")
 			f := func(context.Context) (interface{}, bool, error) {
 				return nil, false, err
@@ -277,14 +275,10 @@ func Test_backoff_Do(t *testing.T) {
 				want: want{
 					err: err,
 				},
-				checkFunc: defaultCheckFunc,
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx := context.Background()
 			f := func(context.Context) (interface{}, bool, error) {
 				return nil, true, nil
 			}
@@ -294,15 +288,11 @@ func Test_backoff_Do(t *testing.T) {
 					ctx: ctx,
 					f:   f,
 				},
-				want:      want{},
-				checkFunc: defaultCheckFunc,
-				afterFunc: func(args) {
-					cancel()
-				},
+				want: want{},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx := context.Background()
 			err := errors.New("erros is occurred")
 			f := func(context.Context) (interface{}, bool, error) {
 				return nil, false, err
@@ -329,14 +319,10 @@ func Test_backoff_Do(t *testing.T) {
 					wantRes: nil,
 					err:     err,
 				},
-				checkFunc: defaultCheckFunc,
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx := context.Background()
 			err := errors.New("erros is occurred")
 			f := func(context.Context) (interface{}, bool, error) {
 				return str, true, err
@@ -363,14 +349,10 @@ func Test_backoff_Do(t *testing.T) {
 					wantRes: str,
 					err:     err,
 				},
-				checkFunc: defaultCheckFunc,
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx := context.Background()
 			err := errors.New("erros is occurred")
 			cnt := 0
 			f := func(context.Context) (interface{}, bool, error) {
@@ -402,14 +384,10 @@ func Test_backoff_Do(t *testing.T) {
 					wantRes: str,
 					err:     err,
 				},
-				checkFunc: defaultCheckFunc,
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx := context.Background()
 			err := errors.New("erros is occurred")
 			cnt := 0
 			f := func(context.Context) (interface{}, bool, error) {
@@ -440,14 +418,10 @@ func Test_backoff_Do(t *testing.T) {
 				want: want{
 					wantRes: str,
 				},
-				checkFunc: defaultCheckFunc,
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx := context.Background()
 			err := errors.New("erros is occurred")
 			f := func(context.Context) (interface{}, bool, error) {
 				return str, true, err
@@ -474,14 +448,10 @@ func Test_backoff_Do(t *testing.T) {
 					wantRes: str,
 					err:     err,
 				},
-				checkFunc: defaultCheckFunc,
-				afterFunc: func(args) {
-					cancel()
-				},
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx := context.Background()
 			err := errors.New("erros is occurred")
 			f := func(context.Context) (interface{}, bool, error) {
 				return str, true, err
@@ -506,10 +476,6 @@ func Test_backoff_Do(t *testing.T) {
 				},
 				want: want{
 					err: errors.ErrBackoffTimeout(err),
-				},
-				checkFunc: defaultCheckFunc,
-				afterFunc: func(args) {
-					cancel()
 				},
 			}
 		}(),
@@ -541,7 +507,6 @@ func Test_backoff_Do(t *testing.T) {
 				want: want{
 					err: err,
 				},
-				checkFunc: defaultCheckFunc,
 			}
 		}(),
 		func() test {
@@ -576,11 +541,10 @@ func Test_backoff_Do(t *testing.T) {
 				want: want{
 					err: err,
 				},
-				checkFunc: defaultCheckFunc,
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx := context.Background()
 			err := errors.New("erros is occurred")
 			cnt := 0
 			f := func(context.Context) (interface{}, bool, error) {
@@ -610,10 +574,6 @@ func Test_backoff_Do(t *testing.T) {
 				},
 				want: want{
 					err: errors.ErrBackoffTimeout(err),
-				},
-				checkFunc: defaultCheckFunc,
-				afterFunc: func(args) {
-					cancel()
 				},
 			}
 		}(),
