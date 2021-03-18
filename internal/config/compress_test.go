@@ -44,25 +44,40 @@ func Test_compressAlgorithm_String(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return gob when compressAlgorithm is GOB",
+			ca:   GOB,
+			want: want{
+				want: "gob",
+			},
+		},
+		{
+			name: "return gzip when compressAlgorithm is GZIP",
+			ca:   GZIP,
+			want: want{
+				want: "gzip",
+			},
+		},
+		{
+			name: "return lz4 when compressAlgorithm is LZ4",
+			ca:   LZ4,
+			want: want{
+				want: "lz4",
+			},
+		},
+		{
+			name: "return zstd when compressAlgorithm is ZSTD",
+			ca:   ZSTD,
+			want: want{
+				want: "zstd",
+			},
+		},
+		{
+			name: "return zstd when compressAlgorithm is the default value of uint8",
+			want: want{
+				want: "unknown",
+			},
+		},
 	}
 
 	for _, test := range tests {
