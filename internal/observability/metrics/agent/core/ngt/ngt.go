@@ -25,15 +25,17 @@ import (
 )
 
 type ngtMetrics struct {
-	ngt                       service.NGT
-	indexCount                metrics.Int64Measure
-	uncommittedIndexCount     metrics.Int64Measure
-	insertVCacheCount         metrics.Int64Measure
-	deleteVCacheCount         metrics.Int64Measure
-	completedCreateIndexTotal metrics.Int64Measure
-	executedProactiveGCTotal  metrics.Int64Measure
-	isIndexing                metrics.Int64Measure
-	isSaving                  metrics.Int64Measure
+	ngt                            service.NGT
+	indexCount                     metrics.Int64Measure
+	uncommittedIndexCount          metrics.Int64Measure
+	insertVQueueCount              metrics.Int64Measure
+	deleteVQueueCount              metrics.Int64Measure
+	insertVQueueChannelBufferCount metrics.Int64Measure
+	deleteVQueueChannelBufferCount metrics.Int64Measure
+	completedCreateIndexTotal      metrics.Int64Measure
+	executedProactiveGCTotal       metrics.Int64Measure
+	isIndexing                     metrics.Int64Measure
+	isSaving                       metrics.Int64Measure
 }
 
 func New(n service.NGT) metrics.Metric {
@@ -47,13 +49,21 @@ func New(n service.NGT) metrics.Metric {
 			metrics.ValdOrg+"/agent/core/ngt/uncommitted_index_count",
 			"Agent NGT uncommitted index count",
 			metrics.UnitDimensionless),
-		insertVCacheCount: *metrics.Int64(
-			metrics.ValdOrg+"/agent/core/ngt/insert_vcache_count",
-			"Agent NGT insert vcache count",
+		insertVQueueCount: *metrics.Int64(
+			metrics.ValdOrg+"/agent/core/ngt/insert_vqueue_count",
+			"Agent NGT insert vqueue count",
 			metrics.UnitDimensionless),
-		deleteVCacheCount: *metrics.Int64(
-			metrics.ValdOrg+"/agent/core/ngt/delete_vcache_count",
-			"Agent NGT delete vcache count",
+		deleteVQueueCount: *metrics.Int64(
+			metrics.ValdOrg+"/agent/core/ngt/delete_vqueue_count",
+			"Agent NGT delete vqueue count",
+			metrics.UnitDimensionless),
+		insertVQueueChannelBufferCount: *metrics.Int64(
+			metrics.ValdOrg+"/agent/core/ngt/insert_vqueue_channel_buffer_count",
+			"Agent NGT insert vqueue channel buffer count",
+			metrics.UnitDimensionless),
+		deleteVQueueChannelBufferCount: *metrics.Int64(
+			metrics.ValdOrg+"/agent/core/ngt/delete_vqueue_channel_buffer_count",
+			"Agent NGT delete vqueue channel buffer count",
 			metrics.UnitDimensionless),
 		completedCreateIndexTotal: *metrics.Int64(
 			metrics.ValdOrg+"/agent/core/ngt/completed_create_index_total",
@@ -87,9 +97,11 @@ func (n *ngtMetrics) Measurement(ctx context.Context) ([]metrics.Measurement, er
 
 	return []metrics.Measurement{
 		n.indexCount.M(int64(n.ngt.Len())),
-		n.uncommittedIndexCount.M(int64(n.ngt.InsertVCacheLen() + n.ngt.DeleteVCacheLen())),
-		n.insertVCacheCount.M(int64(n.ngt.InsertVCacheLen())),
-		n.deleteVCacheCount.M(int64(n.ngt.DeleteVCacheLen())),
+		n.uncommittedIndexCount.M(int64(n.ngt.InsertVQueueBufferLen() + n.ngt.DeleteVQueueBufferLen())),
+		n.insertVQueueCount.M(int64(n.ngt.InsertVQueueBufferLen())),
+		n.deleteVQueueCount.M(int64(n.ngt.DeleteVQueueBufferLen())),
+		n.insertVQueueChannelBufferCount.M(int64(n.ngt.InsertVQueueChannelLen())),
+		n.deleteVQueueChannelBufferCount.M(int64(n.ngt.DeleteVQueueChannelLen())),
 		n.completedCreateIndexTotal.M(int64(n.ngt.NumberOfCreateIndexExecution())),
 		n.executedProactiveGCTotal.M(int64(n.ngt.NumberOfProactiveGCExecution())),
 		n.isIndexing.M(isIndexing),
@@ -116,15 +128,27 @@ func (n *ngtMetrics) View() []*metrics.View {
 			Aggregation: metrics.LastValue(),
 		},
 		{
-			Name:        "agent_core_ngt_insert_vcache_count",
-			Description: n.insertVCacheCount.Description(),
-			Measure:     &n.insertVCacheCount,
+			Name:        "agent_core_ngt_insert_vqueue_count",
+			Description: n.insertVQueueCount.Description(),
+			Measure:     &n.insertVQueueCount,
 			Aggregation: metrics.LastValue(),
 		},
 		{
-			Name:        "agent_core_ngt_delete_vcache_count",
-			Description: n.deleteVCacheCount.Description(),
-			Measure:     &n.deleteVCacheCount,
+			Name:        "agent_core_ngt_delete_vqueue_count",
+			Description: n.deleteVQueueCount.Description(),
+			Measure:     &n.deleteVQueueCount,
+			Aggregation: metrics.LastValue(),
+		},
+		{
+			Name:        "agent_core_ngt_insert_vqueue_channel_buffer_count",
+			Description: n.insertVQueueChannelBufferCount.Description(),
+			Measure:     &n.insertVQueueChannelBufferCount,
+			Aggregation: metrics.LastValue(),
+		},
+		{
+			Name:        "agent_core_ngt_delete_vqueue_channel_buffer_count",
+			Description: n.deleteVQueueChannelBufferCount.Description(),
+			Measure:     &n.deleteVQueueChannelBufferCount,
 			Aggregation: metrics.LastValue(),
 		},
 		{

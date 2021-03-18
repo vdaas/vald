@@ -79,9 +79,6 @@ func main() {
 	glg.Infof("Start Inserting %d training vector to Vald Agent", insertCount)
 	// Insert 400 example vectors into Vald cluster
 	for i := range ids[:insertCount] {
-		if i%10 == 0 {
-			glg.Infof("Inserted: %d", i+10)
-		}
 		// Calls `Insert` function of Vald Agent client.
 		// Sends set of vector and id to server via gRPC.
 		_, err := client.Insert(ctx, &payload.Insert_Request{
@@ -96,7 +93,11 @@ func main() {
 		if err != nil {
 			glg.Fatal(err)
 		}
+		if i%10 == 0 {
+			glg.Infof("Inserted: %d", i+10)
+		}
 	}
+	glg.Infof("Finish Inserting %d training vector to Vald Agent", insertCount)
 	/**
 	Option: Run Indexing instead of Auto Indexing
 	If you run client.CreateAndSaveIndex, it costs less time for search
@@ -140,6 +141,38 @@ func main() {
 		glg.Infof("%d - Results : %s\n\n", i+1, string(b))
 		time.Sleep(1 * time.Second)
 	}
+
+	glg.Info("Start removing vector")
+	// Remove indexed 400 vectors from vald cluster.
+	for i := range ids[:insertCount] {
+		// Call `Remove` function of Vald client.
+		// Sends id to server via gRPC.
+		_, err := client.Remove(ctx, &payload.Remove_Request{
+			// Conditions for removing the vector.
+			Id: &payload.Object_ID{
+				Id: ids[i],
+			},
+		})
+		if err != nil {
+			glg.Fatal(err)
+		}
+		if i%10 == 0 {
+			glg.Infof("Removed: %d", i+10)
+		}
+	}
+	glg.Info("Finish removing vector")
+	glg.Info("Start removing indexed vector from backup")
+	/**
+	Run Indexing instead of Auto Indexing.
+	Before calling the SaveIndex (or CreateAndSaveIndex) API, the vectors you inserted before still exist in the NGT graph index even the Remove API is called due to the design of NGT.
+	So at this moment, the neighbor vectors will be returned from the SearchByID API.
+	To remove the vectors from the NGT graph completely, the SaveIndex API will be used here instead of waiting auto CreateIndex phase.
+	**/
+	_, err = agent.NewAgentClient(conn).SaveIndex(ctx, &payload.Empty{})
+	if err != nil {
+		glg.Fatal(err)
+	}
+	glg.Info("Finish removing indexed vector from backup")
 }
 
 // load function loads training and test vector from hdf file. The size of ids is same to the number of training data.

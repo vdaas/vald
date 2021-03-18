@@ -16,12 +16,18 @@
 package backoff
 
 import (
+	"reflect"
 	"testing"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
 )
+
+// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
+var goleakIgnoreOptions = []goleak.Option{
+	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+}
 
 func TestWithInitialDuration(t *testing.T) {
 	type test struct {
@@ -299,37 +305,6 @@ func TestWithBackOffTimeLimit(t *testing.T) {
 	}
 }
 
-func TestWithEWithEnableErrorLog(t *testing.T) {
-	type test struct {
-		name      string
-		checkFunc func(Option) error
-	}
-
-	tests := []test{
-		{
-			name: "set success",
-			checkFunc: func(opt Option) error {
-				got := new(backoff)
-				opt(got)
-
-				if got.errLog != true {
-					return errors.New("invalid param was set")
-				}
-				return nil
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			opt := WithEnableErrorLog()
-			if err := tt.checkFunc(opt); err != nil {
-				t.Error(err)
-			}
-		})
-	}
-}
-
 func TestWithDisableErrorLog(t *testing.T) {
 	type test struct {
 		name      string
@@ -420,72 +395,39 @@ func TestDefaultOptions(t *testing.T) {
 }
 
 func TestWithEnableErrorLog(t *testing.T) {
-	type T = interface{}
+	type T = backoff
 	type want struct {
 		obj *T
-		// Uncomment this line if the option returns an error, otherwise delete it
-		// err error
 	}
 	type test struct {
-		name string
-		want want
-		// Use the first line if the option returns an error. otherwise use the second line
-		// checkFunc  func(want, *T, error) error
-		// checkFunc  func(want, *T) error
+		name       string
+		want       want
+		checkFunc  func(want, *T) error
 		beforeFunc func()
 		afterFunc  func()
 	}
 
-	// Uncomment this block if the option returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T, err error) error {
-	       if !errors.Is(err, w.err) {
-	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-	       }
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
-	       }
-	       return nil
-	   }
-	*/
-
-	// Uncomment this block if the option do not returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T) error {
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
-	       }
-	       return nil
-	   }
-	*/
+	defaultCheckFunc := func(w want, obj *T) error {
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+		}
+		return nil
+	}
 
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
+		{
+			name: "set success",
+			want: want{
+				obj: &T{
+					errLog: true,
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -493,31 +435,15 @@ func TestWithEnableErrorLog(t *testing.T) {
 				defer test.afterFunc()
 			}
 
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-
-			   got := WithEnableErrorLog()
-			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-			   got := WithEnableErrorLog()
-			   obj := new(T)
-			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			got := WithEnableErrorLog()
+			obj := new(T)
+			got(obj)
+			if err := test.checkFunc(test.want, obj); err != nil {
+				tt.Errorf("error = %v", err)
+			}
 		})
 	}
 }

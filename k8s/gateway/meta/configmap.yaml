@@ -20,10 +20,10 @@ metadata:
   name: vald-meta-gateway-config
   labels:
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.0.3
+    helm.sh/chart: vald-v1.0.4
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v1.0.3
+    app.kubernetes.io/version: v1.0.4
     app.kubernetes.io/component: gateway-meta
 data:
   config.yaml: |
@@ -42,6 +42,7 @@ data:
           grpc:
             bidirectional_stream_concurrency: 20
             connection_timeout: ""
+            enable_reflection: true
             header_table_size: 0
             initial_conn_window_size: 0
             initial_window_size: 0
