@@ -3,7 +3,7 @@ vald-helm-operator
 
 This is a Helm chart to install vald-helm-operator.
 
-Current chart version is `v1.0.3`
+Current chart version is `v1.0.4`
 
 Table of Contents
 ---
@@ -67,10 +67,20 @@ Configuration
 | annotations | object | `{}` | deployment annotations |
 | enableLeaderElection | bool | `true` | enable leader election for controller manager. |
 | enableMetrics | bool | `true` | enable metrics endpoint |
+| healthPort | int | `8081` | port of health endpoint |
 | image.pullPolicy | string | `"Always"` | image pull policy |
 | image.repository | string | `"vdaas/vald-helm-operator"` | image repository |
-| image.tag | string | `"v1.0.3"` | image tag |
+| image.tag | string | `"v1.0.4"` | image tag |
 | leaderElectionID | string | `"vald-helm-operator"` | name of the configmap that is used for holding the leader lock. |
+| livenessProbe.enabled | bool | `true` | enable liveness probe. |
+| livenessProbe.failureThreshold | int | `2` | liveness probe failure threshold |
+| livenessProbe.httpGet.path | string | `"/healthz"` | readiness probe path |
+| livenessProbe.httpGet.port | string | `"health"` | readiness probe port |
+| livenessProbe.httpGet.scheme | string | `"HTTP"` | readiness probe scheme |
+| livenessProbe.initialDelaySeconds | int | `15` | liveness probe initial delay seconds |
+| livenessProbe.periodSeconds | int | `20` | liveness probe period seconds |
+| livenessProbe.successThreshold | int | `1` | liveness probe success threshold |
+| livenessProbe.timeoutSeconds | int | `5` | liveness probe timeout seconds |
 | logging.format | string | `"console"` | logging format of operator (console or json) |
 | logging.level | string | `"info"` | logging level of operator (debug, info, or error) |
 | logging.stacktraceLevel | string | `"error"` | minimum log level triggers stacktrace generation |
@@ -82,6 +92,15 @@ Configuration
 | podAnnotations | object | `{}` | pod annotations |
 | rbac.create | bool | `true` | required roles and rolebindings will be created |
 | rbac.name | string | `"vald-helm-operator"` | name of roles and rolebindings |
+| readinessProbe.enabled | bool | `true` | enable readiness probe. |
+| readinessProbe.failureThreshold | int | `2` | liveness probe failure threshold |
+| readinessProbe.httpGet.path | string | `"/readyz"` | readiness probe path |
+| readinessProbe.httpGet.port | string | `"health"` | readiness probe port |
+| readinessProbe.httpGet.scheme | string | `"HTTP"` | readiness probe scheme |
+| readinessProbe.initialDelaySeconds | int | `5` | liveness probe initial delay seconds |
+| readinessProbe.periodSeconds | int | `10` | liveness probe period seconds |
+| readinessProbe.successThreshold | int | `1` | liveness probe success threshold |
+| readinessProbe.timeoutSeconds | int | `5` | liveness probe timeout seconds |
 | reconcilePeriod | string | `"1m"` | reconcile duration of operator |
 | replicas | int | `2` | number of replicas |
 | resources | object | `{}` | kubernetes resources of pod |

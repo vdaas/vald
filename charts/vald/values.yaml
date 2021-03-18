@@ -38,7 +38,7 @@ defaults:
   image:
     # @schema {"name": "defaults.image.tag", "type": "string"}
     # defaults.image.tag -- docker image tag
-    tag: v1.0.3
+    tag: v1.0.4
   # @schema {"name": "defaults.server_config", "type": "object", "anchor": "server_config"}
   server_config:
     # @schema {"name": "defaults.server_config.servers", "type": "object"}
@@ -201,6 +201,9 @@ defaults:
             # defaults.server_config.servers.grpc.server.grpc.interceptors -- gRPC server interceptors
             interceptors:
               - "RecoverInterceptor"
+            # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.enable_reflection", "type": "boolean"}
+            # defaults.server_config.servers.grpc.server.grpc.enable_reflection -- gRPC server reflection option
+            enable_reflection: true
           # @schema {"name": "defaults.server_config.servers.grpc.server.socket_option", "alias": "socket_option"}
           socket_option:
             # defaults.server_config.servers.grpc.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
@@ -2578,6 +2581,20 @@ agent:
     # @schema {"name": "agent.ngt.enable_proactive_gc", "type": "boolean"}
     # agent.ngt.enable_proactive_gc -- enable proactive GC call for reducing heap memory allocation
     enable_proactive_gc: true
+    # @schema {"name": "agent.ngt.vqueue", "type": "object"}
+    vqueue:
+      # @schema {"name": "agent.ngt.vqueue.insert_buffer_size", "type": "integer"}
+      # agent.ngt.vqueue.insert_buffer_size -- insert channel buffer size
+      insert_buffer_size: 100
+      # @schema {"name": "agent.ngt.vqueue.delete_buffer_size", "type": "integer"}
+      # agent.ngt.vqueue.delete_buffer_size -- delete channel buffer size
+      delete_buffer_size: 100
+      # @schema {"name": "agent.ngt.vqueue.insert_buffer_pool_size", "type": "integer"}
+      # agent.ngt.vqueue.insert_buffer_pool_size -- insert slice pool buffer size
+      insert_buffer_pool_size: 10000
+      # @schema {"name": "agent.ngt.vqueue.delete_buffer_pool_size", "type": "integer"}
+      # agent.ngt.vqueue.delete_buffer_pool_size -- delete slice pool buffer size
+      delete_buffer_pool_size: 5000
   # @schema {"name": "agent.sidecar", "type": "object"}
   sidecar:
     # @schema {"name": "agent.sidecar.enabled", "type": "boolean"}

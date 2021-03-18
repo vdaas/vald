@@ -279,7 +279,10 @@ func WithGRPCOption(opts ...grpc.ServerOption) Option {
 func WithGRPCRegistFunc(f func(*grpc.Server)) Option {
 	return func(s *server) {
 		if f != nil {
-			s.grpc.reg = f
+			if s.grpc.regs == nil {
+				s.grpc.regs = make([]func(*grpc.Server), 0, 2)
+			}
+			s.grpc.regs = append(s.grpc.regs, f)
 		}
 	}
 }

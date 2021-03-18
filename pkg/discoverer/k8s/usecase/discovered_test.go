@@ -23,6 +23,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/observability"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/servers/starter"
@@ -121,6 +122,7 @@ func Test_run_PreStart(t *testing.T) {
 		h             handler.DiscovererServer
 		server        starter.Server
 		observability observability.Observability
+		der           net.Dialer
 	}
 	type want struct {
 		err error
@@ -155,6 +157,7 @@ func Test_run_PreStart(t *testing.T) {
 		           h: nil,
 		           server: nil,
 		           observability: nil,
+		           der: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -176,6 +179,7 @@ func Test_run_PreStart(t *testing.T) {
 		           h: nil,
 		           server: nil,
 		           observability: nil,
+		           der: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -205,6 +209,7 @@ func Test_run_PreStart(t *testing.T) {
 				h:             test.fields.h,
 				server:        test.fields.server,
 				observability: test.fields.observability,
+				der:           test.fields.der,
 			}
 
 			err := r.PreStart(test.args.ctx)
@@ -227,6 +232,7 @@ func Test_run_Start(t *testing.T) {
 		h             handler.DiscovererServer
 		server        starter.Server
 		observability observability.Observability
+		der           net.Dialer
 	}
 	type want struct {
 		want <-chan error
@@ -265,6 +271,7 @@ func Test_run_Start(t *testing.T) {
 		           h: nil,
 		           server: nil,
 		           observability: nil,
+		           der: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -286,6 +293,7 @@ func Test_run_Start(t *testing.T) {
 		           h: nil,
 		           server: nil,
 		           observability: nil,
+		           der: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -315,6 +323,7 @@ func Test_run_Start(t *testing.T) {
 				h:             test.fields.h,
 				server:        test.fields.server,
 				observability: test.fields.observability,
+				der:           test.fields.der,
 			}
 
 			got, err := r.Start(test.args.ctx)
@@ -337,6 +346,7 @@ func Test_run_PreStop(t *testing.T) {
 		h             handler.DiscovererServer
 		server        starter.Server
 		observability observability.Observability
+		der           net.Dialer
 	}
 	type want struct {
 		err error
@@ -371,6 +381,7 @@ func Test_run_PreStop(t *testing.T) {
 		           h: nil,
 		           server: nil,
 		           observability: nil,
+		           der: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -392,6 +403,7 @@ func Test_run_PreStop(t *testing.T) {
 		           h: nil,
 		           server: nil,
 		           observability: nil,
+		           der: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -421,6 +433,7 @@ func Test_run_PreStop(t *testing.T) {
 				h:             test.fields.h,
 				server:        test.fields.server,
 				observability: test.fields.observability,
+				der:           test.fields.der,
 			}
 
 			err := r.PreStop(test.args.ctx)
@@ -443,6 +456,7 @@ func Test_run_Stop(t *testing.T) {
 		h             handler.DiscovererServer
 		server        starter.Server
 		observability observability.Observability
+		der           net.Dialer
 	}
 	type want struct {
 		err error
@@ -477,6 +491,7 @@ func Test_run_Stop(t *testing.T) {
 		           h: nil,
 		           server: nil,
 		           observability: nil,
+		           der: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -498,6 +513,7 @@ func Test_run_Stop(t *testing.T) {
 		           h: nil,
 		           server: nil,
 		           observability: nil,
+		           der: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -527,6 +543,7 @@ func Test_run_Stop(t *testing.T) {
 				h:             test.fields.h,
 				server:        test.fields.server,
 				observability: test.fields.observability,
+				der:           test.fields.der,
 			}
 
 			err := r.Stop(test.args.ctx)
@@ -549,6 +566,7 @@ func Test_run_PostStop(t *testing.T) {
 		h             handler.DiscovererServer
 		server        starter.Server
 		observability observability.Observability
+		der           net.Dialer
 	}
 	type want struct {
 		err error
@@ -583,6 +601,7 @@ func Test_run_PostStop(t *testing.T) {
 		           h: nil,
 		           server: nil,
 		           observability: nil,
+		           der: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -604,6 +623,7 @@ func Test_run_PostStop(t *testing.T) {
 		           h: nil,
 		           server: nil,
 		           observability: nil,
+		           der: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -633,6 +653,7 @@ func Test_run_PostStop(t *testing.T) {
 				h:             test.fields.h,
 				server:        test.fields.server,
 				observability: test.fields.observability,
+				der:           test.fields.der,
 			}
 
 			err := r.PostStop(test.args.ctx)

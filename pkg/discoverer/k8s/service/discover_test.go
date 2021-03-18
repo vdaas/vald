@@ -28,6 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
+	"github.com/vdaas/vald/internal/net"
 	"go.uber.org/goleak"
 )
 
@@ -127,6 +128,7 @@ func Test_discoverer_Start(t *testing.T) {
 		namespace       string
 		name            string
 		csd             time.Duration
+		der             net.Dialer
 		eg              errgroup.Group
 	}
 	type want struct {
@@ -173,6 +175,7 @@ func Test_discoverer_Start(t *testing.T) {
 		           namespace: "",
 		           name: "",
 		           csd: nil,
+		           der: nil,
 		           eg: nil,
 		       },
 		       want: want{},
@@ -202,6 +205,7 @@ func Test_discoverer_Start(t *testing.T) {
 		           namespace: "",
 		           name: "",
 		           csd: nil,
+		           der: nil,
 		           eg: nil,
 		           },
 		           want: want{},
@@ -239,6 +243,7 @@ func Test_discoverer_Start(t *testing.T) {
 				namespace:       test.fields.namespace,
 				name:            test.fields.name,
 				csd:             test.fields.csd,
+				der:             test.fields.der,
 				eg:              test.fields.eg,
 			}
 
@@ -269,6 +274,7 @@ func Test_discoverer_GetPods(t *testing.T) {
 		namespace       string
 		name            string
 		csd             time.Duration
+		der             net.Dialer
 		eg              errgroup.Group
 	}
 	type want struct {
@@ -315,6 +321,7 @@ func Test_discoverer_GetPods(t *testing.T) {
 		           namespace: "",
 		           name: "",
 		           csd: nil,
+		           der: nil,
 		           eg: nil,
 		       },
 		       want: want{},
@@ -344,6 +351,7 @@ func Test_discoverer_GetPods(t *testing.T) {
 		           namespace: "",
 		           name: "",
 		           csd: nil,
+		           der: nil,
 		           eg: nil,
 		           },
 		           want: want{},
@@ -381,6 +389,7 @@ func Test_discoverer_GetPods(t *testing.T) {
 				namespace:       test.fields.namespace,
 				name:            test.fields.name,
 				csd:             test.fields.csd,
+				der:             test.fields.der,
 				eg:              test.fields.eg,
 			}
 
@@ -411,6 +420,7 @@ func Test_discoverer_GetNodes(t *testing.T) {
 		namespace       string
 		name            string
 		csd             time.Duration
+		der             net.Dialer
 		eg              errgroup.Group
 	}
 	type want struct {
@@ -457,6 +467,7 @@ func Test_discoverer_GetNodes(t *testing.T) {
 		           namespace: "",
 		           name: "",
 		           csd: nil,
+		           der: nil,
 		           eg: nil,
 		       },
 		       want: want{},
@@ -486,6 +497,7 @@ func Test_discoverer_GetNodes(t *testing.T) {
 		           namespace: "",
 		           name: "",
 		           csd: nil,
+		           der: nil,
 		           eg: nil,
 		           },
 		           want: want{},
@@ -523,6 +535,7 @@ func Test_discoverer_GetNodes(t *testing.T) {
 				namespace:       test.fields.namespace,
 				name:            test.fields.name,
 				csd:             test.fields.csd,
+				der:             test.fields.der,
 				eg:              test.fields.eg,
 			}
 
