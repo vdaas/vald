@@ -21,10 +21,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 
-	"github.com/norwoodj/helm-docs/pkg/helm"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 )
@@ -33,14 +31,9 @@ const (
 	objectType = "object"
 
 	prefix = "# @schema"
-
-	minimumArgumentLength = 2
 )
 
-var (
-	aliases   map[string]Schema
-	chartInfo helm.ChartDocumentationInfo
-)
+var aliases map[string]Schema
 
 type SchemaBase struct {
 	// for object type
@@ -93,20 +86,14 @@ type Schema struct {
 	SchemaBase
 }
 
+const minimumArgumentLength = 2
+
 func main() {
 	log.Init()
 	if len(os.Args) < minimumArgumentLength {
 		log.Fatal(errors.New("invalid argument: must be specify path to the values.yaml"))
 	}
-
-	var err error
-
-	chartInfo, err = helm.ParseChartInformation(filepath.Dir(os.Args[1]))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = genJSONSchema(os.Args[1])
+	err := genJSONSchema(os.Args[1])
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -144,7 +131,7 @@ func genJSONSchema(path string) error {
 		}
 	}
 
-	schemas, err := objectProperties(make([]string, 0), ls)
+	schemas, err := objectProperties(ls)
 	if err != nil {
 		return errors.Errorf("error: %s", err)
 	}
@@ -159,7 +146,7 @@ func genJSONSchema(path string) error {
 	return nil
 }
 
-func objectProperties(prefix []string, ls []VSchema) (map[string]*Schema, error) {
+func objectProperties(ls []VSchema) (map[string]*Schema, error) {
 	if len(ls) == 0 {
 		return nil, errors.New("empty list")
 	}
@@ -176,7 +163,7 @@ func objectProperties(prefix []string, ls []VSchema) (map[string]*Schema, error)
 
 	schemas := make(map[string]*Schema)
 	for _, k := range gOrder {
-		s, err := genNode(prefix, groups[k])
+		s, err := genNode(groups[k])
 		if err != nil {
 			return nil, errors.Errorf("error: %s", err)
 		}
@@ -186,7 +173,7 @@ func objectProperties(prefix []string, ls []VSchema) (map[string]*Schema, error)
 	return schemas, nil
 }
 
-func genNode(prefix []string, ls []VSchema) (*Schema, error) {
+func genNode(ls []VSchema) (*Schema, error) {
 	if len(ls) == 0 {
 		return nil, errors.New("empty list")
 	}
@@ -203,15 +190,12 @@ func genNode(prefix []string, ls []VSchema) (*Schema, error) {
 
 	var schema Schema
 
-	description := chartInfo.ChartValuesDescriptions[strings.Join(append(prefix, l.Name), ".")].Description
-
 	switch l.Type {
 	case objectType:
 		if len(ls) <= 1 {
 			schema = Schema{
-				Type:        objectType,
-				Description: description,
-				SchemaBase:  l.SchemaBase,
+				Type:       objectType,
+				SchemaBase: l.SchemaBase,
 			}
 			break
 		}
@@ -222,21 +206,19 @@ func genNode(prefix []string, ls []VSchema) (*Schema, error) {
 			nls = append(nls, nl)
 		}
 
-		ps, err := objectProperties(append(prefix, l.Name), nls)
+		ps, err := objectProperties(nls)
 		if err != nil {
 			return nil, errors.Errorf("error: %s", err)
 		}
 		schema = Schema{
-			Type:        objectType,
-			Description: description,
-			Properties:  ps,
-			SchemaBase:  l.SchemaBase,
+			Type:       objectType,
+			Properties: ps,
+			SchemaBase: l.SchemaBase,
 		}
 	default:
 		schema = Schema{
-			Type:        l.Type,
-			Description: description,
-			SchemaBase:  l.SchemaBase,
+			Type:       l.Type,
+			SchemaBase: l.SchemaBase,
 		}
 	}
 
