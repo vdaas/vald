@@ -65,6 +65,7 @@ require (
 	github.com/kpango/gache v1.2.5
 	github.com/kpango/glg v1.5.4
 	github.com/lucasb-eyer/go-colorful v1.2.0
+	github.com/norwoodj/helm-docs v1.5.0 // indirect
 	github.com/pierrec/lz4/v3 v3.3.2
 	github.com/scylladb/gocqlx v1.5.0
 	github.com/tensorflow/tensorflow v0.0.0-00010101000000-000000000000
