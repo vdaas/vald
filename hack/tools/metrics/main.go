@@ -66,10 +66,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	p, err := plot.New()
-	if err != nil {
-		log.Fatal(err)
-	}
+	p := plot.New()
 	p.Title.Text = *title
 	p.X.Label.Text = *xLabel
 	p.X.Max = 1.0

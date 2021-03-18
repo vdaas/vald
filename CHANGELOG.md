@@ -1,5 +1,106 @@
 # CHANGELOG
 
+## v1.0.4
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.0.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.0.4</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.0.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.0.4</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.0.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.0.4</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-gateway:v1.0.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-gateway:v1.0.4</code><br/>
+      <code>docker pull vdaas/vald-backup-gateway:v1.0.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-backup-gateway:v1.0.4</code><br/>
+      <code>docker pull vdaas/vald-lb-gateway:v1.0.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.0.4</code><br/>
+      <code>docker pull vdaas/vald-meta-gateway:v1.0.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-gateway:v1.0.4</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Backup managers</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-backup-mysql:v1.0.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-backup-mysql:v1.0.4</code><br/>
+      <code>docker pull vdaas/vald-manager-backup-cassandra:v1.0.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-backup-cassandra:v1.0.4</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Compressor</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-compressor:v1.0.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-compressor:v1.0.4</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Metas</td>
+    <td>
+      <code>docker pull vdaas/vald-meta-redis:v1.0.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-redis:v1.0.4</code><br/>
+      <code>docker pull vdaas/vald-meta-cassandra:v1.0.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-cassandra:v1.0.4</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.0.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.0.4</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.0.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.0.4</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.0.4)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.0.4/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.0.4/charts/vald-helm-operator/README.md)
+
+### Changes
+- Fix error handling of SearchByID API in lb gateway ([#1084](https://github.com/vdaas/vald/pull/1084))
+- Update Agent dashboard ([#1069](https://github.com/vdaas/vald/pull/1069))
+- Revise gRPC error statuses and details in meta (Redis/Cassandra) ([#1013](https://github.com/vdaas/vald/pull/1013))
+- add remove sample code for tutorial ([#1053](https://github.com/vdaas/vald/pull/1053))
+- add grpc reflection ([#1064](https://github.com/vdaas/vald/pull/1064))
+- remove vcache for vald agent due to vcache delete timing control failure and time ordered concurrent vector queue called vqueue ([#1028](https://github.com/vdaas/vald/pull/1028))
+- refactor discoverer client ([#1056](https://github.com/vdaas/vald/pull/1056))
+- bugfix nil pointer no target discovered ([#1055](https://github.com/vdaas/vald/pull/1055))
+- Upgrade Operator SDK version to v1.4.2 ([#1038](https://github.com/vdaas/vald/pull/1038))
+
+
 ## v1.0.3
 
 ### Docker images
