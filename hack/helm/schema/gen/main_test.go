@@ -25,9 +25,7 @@ import (
 )
 
 func Test_main(t *testing.T) {
-	t.Parallel()
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		want       want
@@ -60,11 +58,9 @@ func Test_main(t *testing.T) {
 		*/
 	}
 
-	for _, tc := range tests {
-		test := tc
+	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -84,7 +80,6 @@ func Test_main(t *testing.T) {
 }
 
 func Test_genJSONSchema(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		path string
 	}
@@ -133,11 +128,9 @@ func Test_genJSONSchema(t *testing.T) {
 		*/
 	}
 
-	for _, tc := range tests {
-		test := tc
+	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -152,16 +145,13 @@ func Test_genJSONSchema(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_objectProperties(t *testing.T) {
-	t.Parallel()
 	type args struct {
-		prefix []string
-		ls     []VSchema
+		ls []VSchema
 	}
 	type want struct {
 		want map[string]*Schema
@@ -190,7 +180,6 @@ func Test_objectProperties(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           prefix: nil,
 		           ls: nil,
 		       },
 		       want: want{},
@@ -204,7 +193,6 @@ func Test_objectProperties(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           prefix: nil,
 		           ls: nil,
 		           },
 		           want: want{},
@@ -214,11 +202,9 @@ func Test_objectProperties(t *testing.T) {
 		*/
 	}
 
-	for _, tc := range tests {
-		test := tc
+	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -229,20 +215,17 @@ func Test_objectProperties(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got, err := objectProperties(test.args.prefix, test.args.ls)
+			got, err := objectProperties(test.args.ls)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_genNode(t *testing.T) {
-	t.Parallel()
 	type args struct {
-		prefix []string
-		ls     []VSchema
+		ls []VSchema
 	}
 	type want struct {
 		want *Schema
@@ -271,7 +254,6 @@ func Test_genNode(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           prefix: nil,
 		           ls: nil,
 		       },
 		       want: want{},
@@ -285,7 +267,6 @@ func Test_genNode(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           prefix: nil,
 		           ls: nil,
 		           },
 		           want: want{},
@@ -295,11 +276,9 @@ func Test_genNode(t *testing.T) {
 		*/
 	}
 
-	for _, tc := range tests {
-		test := tc
+	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -310,17 +289,15 @@ func Test_genNode(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got, err := genNode(test.args.prefix, test.args.ls)
+			got, err := genNode(test.args.ls)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
 
 func Test_newRoot(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		schemas map[string]*Schema
 	}
@@ -369,11 +346,9 @@ func Test_newRoot(t *testing.T) {
 		*/
 	}
 
-	for _, tc := range tests {
-		test := tc
+	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			defer goleak.VerifyNone(t)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -388,7 +363,6 @@ func Test_newRoot(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
