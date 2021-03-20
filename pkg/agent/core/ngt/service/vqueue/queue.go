@@ -244,6 +244,7 @@ func (v *vqueue) flushAndLoadInsert() (uii []index) {
 	v.uii = v.uii[:0]
 	v.imu.Unlock()
 	sort.Slice(uii, func(i, j int) bool {
+		// sort by latest unix time order
 		return uii[i].date > uii[j].date
 	})
 	dup := make(map[string]bool, len(uii)/2)
@@ -252,16 +253,20 @@ func (v *vqueue) flushAndLoadInsert() (uii []index) {
 		v.imu.Lock()
 		delete(v.uiim, idx.uuid)
 		v.imu.Unlock()
+		// if duplicated data exists current loop's data is old due to the uii's sort order
 		if dup[idx.uuid] {
+			// if duplicated add id to delete wait list
 			dl = append(dl, i)
 		} else {
 			dup[idx.uuid] = true
 		}
 	}
+	// delete from large index number of slice
 	sort.Sort(sort.Reverse(sort.IntSlice(dl)))
 	for _, i := range dl {
 		uii = append(uii[:i], uii[i+1:]...)
 	}
+	// finally we should sort uii by date order from oldest to newest
 	sort.Slice(uii, func(i, j int) bool {
 		return uii[i].date < uii[j].date
 	})

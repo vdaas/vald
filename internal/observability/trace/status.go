@@ -18,8 +18,47 @@
 package trace
 
 import (
+	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"go.opencensus.io/trace"
 )
+
+func FromGRPCStatusCode(code codes.Code, msg string) trace.Status {
+	switch code {
+	case codes.OK:
+		return StatusCodeOK(msg)
+	case codes.Canceled:
+		return StatusCodeCancelled(msg)
+	case codes.InvalidArgument:
+		return StatusCodeInvalidArgument(msg)
+	case codes.DeadlineExceeded:
+		return StatusCodeDeadlineExceeded(msg)
+	case codes.NotFound:
+		return StatusCodeNotFound(msg)
+	case codes.AlreadyExists:
+		return StatusCodeAlreadyExists(msg)
+	case codes.PermissionDenied:
+		return StatusCodePermissionDenied(msg)
+	case codes.ResourceExhausted:
+		return StatusCodeResourceExhausted(msg)
+	case codes.FailedPrecondition:
+		return StatusCodeFailedPrecondition(msg)
+	case codes.Aborted:
+		return StatusCodeAborted(msg)
+	case codes.OutOfRange:
+		return StatusCodeOutOfRange(msg)
+	case codes.Unimplemented:
+		return StatusCodeUnimplemented(msg)
+	case codes.Internal:
+		return StatusCodeInternal(msg)
+	case codes.Unavailable:
+		return StatusCodeUnavailable(msg)
+	case codes.DataLoss:
+		return StatusCodeDataLoss(msg)
+	case codes.Unauthenticated:
+		return StatusCodeUnauthenticated(msg)
+	}
+	return StatusCodeUnknown(msg)
+}
 
 func StatusCodeOK(msg string) trace.Status {
 	return trace.Status{

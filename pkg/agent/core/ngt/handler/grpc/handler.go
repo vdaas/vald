@@ -443,20 +443,60 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (res *
 	vec := req.GetVector()
 	err = s.ngt.Insert(vec.GetId(), vec.GetVector())
 	if err != nil {
-		err = status.WrapWithInternal("Insert API failed", err,
-			&errdetails.RequestInfo{
-				RequestId:   req.GetVector().GetId(),
-				ServingData: errdetails.Serialize(req),
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: ngtResourceType + "/ngt.Insert",
-				ResourceName: s.ip,
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
-			}, info.Get())
-		log.Error(err)
+		var code trace.Status
+		if errors.Is(err, errors.ErrUUIDAlreadyExists(vec.GetId())) {
+			err = status.WrapWithAlreadyExists(fmt.Sprintf("Insert API uuid %s already exists", vec.GetId()), err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetVector().GetId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.Insert",
+					ResourceName: s.ip,
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				})
+			log.Warn(err)
+			code = trace.StatusCodeAlreadyExists(err.Error())
+		} else if errors.Is(err, errors.ErrUUIDNotFound(0)) {
+			err = status.WrapWithInvalidArgument(fmt.Sprintf("Insert API invalid uuid \"%s\" detected", vec.GetId()), err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetVector().GetId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.BadRequest{
+					FieldViolations: []*errdetails.BadRequestFieldViolation{
+						{
+							Field:       "uuid",
+							Description: err.Error(),
+						},
+					},
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.Insert",
+					ResourceName: s.ip,
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				})
+			log.Warn(err)
+			code = trace.StatusCodeInvalidArgument(err.Error())
+		} else {
+			err = status.WrapWithInternal("Insert API failed", err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetVector().GetId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.Insert",
+					ResourceName: s.ip,
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				}, info.Get())
+			log.Error(err)
+			code = trace.StatusCodeInternal(err.Error())
+		}
 		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			span.SetStatus(code)
 		}
 		return nil, err
 	}
@@ -488,7 +528,7 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 					err = errors.Wrap(st.Err(), err.Error())
 				}
 				if sspan != nil {
-					sspan.SetStatus(trace.StatusCodeInternal(err.Error()))
+					sspan.SetStatus(trace.FromGRPCStatusCode(st.Code(), err.Error()))
 				}
 				return &payload.Object_StreamLocation{
 					Payload: &payload.Object_StreamLocation_Status{
@@ -504,8 +544,13 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 		})
 
 	if err != nil {
+		st, ok := status.FromError(err)
+		if !ok {
+			st = status.New(codes.Internal, errors.Wrap(err, "failed to parse grpc status from error").Error())
+			err = errors.Wrap(st.Err(), err.Error())
+		}
 		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			sspan.SetStatus(trace.FromGRPCStatusCode(st.Code(), err.Error()))
 		}
 		log.Error(err)
 		return err
@@ -529,20 +574,24 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 	}
 	err = s.ngt.InsertMultiple(vmap)
 	if err != nil {
-		err = status.WrapWithInternal("MultiInsert API failed", err,
-			&errdetails.RequestInfo{
-				RequestId:   strings.Join(uuids, ","),
-				ServingData: errdetails.Serialize(reqs),
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: ngtResourceType + "/ngt.Insert",
-				ResourceName: s.ip,
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
-			}, info.Get())
+		st, ok := status.FromError(err)
+		if !ok {
+			st = status.New(codes.Internal, errors.Wrap(err, "failed to parse grpc status from error").Error())
+			err = status.WrapWithInternal("MultiInsert API failed", err,
+				&errdetails.RequestInfo{
+					RequestId:   strings.Join(uuids, ","),
+					ServingData: errdetails.Serialize(reqs),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.Insert",
+					ResourceName: s.ip,
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				}, info.Get())
+		}
 		log.Error(err)
 		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			span.SetStatus(trace.FromGRPCStatusCode(st.Code(), err.Error()))
 		}
 		return nil, err
 	}

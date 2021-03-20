@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+
+// Package errors
 package errors
 
 import (
@@ -980,7 +982,6 @@ func TestErrCAPINotImplemented(t *testing.T) {
 func TestErrUUIDAlreadyExists(t *testing.T) {
 	type args struct {
 		uuid string
-		oid  uint
 	}
 	type want struct {
 		want error
@@ -1001,43 +1002,21 @@ func TestErrUUIDAlreadyExists(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return an ErrUUIDAlreadyExists error when uuid is 550e8400-e29b-41d4 and oid is 100",
+			name: "return an ErrUUIDAlreadyExists error when uuid is 550e8400-e29b-41d4",
 			args: args{
 				uuid: "550e8400-e29b-41d4",
-				oid:  100,
 			},
 			want: want{
 				want: New("ngt uuid 550e8400-e29b-41d4 object id 100 already exists "),
 			},
 		},
 		{
-			name: "return an ErrUUIDAlreadyExists error when uuid is empty and oid is 100",
+			name: "return an ErrUUIDAlreadyExists error when uuid is empty",
 			args: args{
 				uuid: "",
-				oid:  100,
 			},
 			want: want{
 				want: New("ngt uuid  object id 100 already exists "),
-			},
-		},
-		{
-			name: "return an ErrUUIDAlreadyExists error when uuid is 550e8400-e29b-41d4 and oid is the maximum value of uint64",
-			args: args{
-				uuid: "550e8400-e29b-41d4",
-				oid:  uint(math.MaxUint64),
-			},
-			want: want{
-				want: Errorf("ngt uuid 550e8400-e29b-41d4 object id %d already exists ", uint(math.MaxUint64)),
-			},
-		},
-		{
-			name: "return an ErrUUIDAlreadyExists error when uuid is empty and oid is 0",
-			args: args{
-				uuid: "",
-				oid:  0,
-			},
-			want: want{
-				want: New("ngt uuid  object id 0 already exists "),
 			},
 		},
 	}
@@ -1054,7 +1033,7 @@ func TestErrUUIDAlreadyExists(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got := ErrUUIDAlreadyExists(test.args.uuid, test.args.oid)
+			got := ErrUUIDAlreadyExists(test.args.uuid)
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}

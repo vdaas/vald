@@ -427,9 +427,9 @@ func (n *ngt) insert(uuid string, vec []float32, t int64, validation bool) (err 
 		return err
 	}
 	if validation {
-		id, ok := n.kvs.Get(uuid)
+		_, ok := n.kvs.Get(uuid)
 		if ok {
-			err = errors.ErrUUIDAlreadyExists(uuid, uint(id))
+			err = errors.ErrUUIDAlreadyExists(uuid)
 			return err
 		}
 	}
