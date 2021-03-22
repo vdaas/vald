@@ -162,12 +162,12 @@ PROTO_PATHS = \
 	$(GOPATH)/src/github.com/gogo/googleapis
 
 # [Warning]
-# The below directories have the no original implementation.
+# The below packages have no original implementation.
 # You should not add any features.
 # - internal/copress/gob
 # - internal/compress/gzip
 # - internal/compress/lz4
-# - internal/compress/zst
+# - internal/compress/zstd
 # - internal/db/storage/blob/s3/sdk/s3
 # - internal/db/rdb/mysql/dbr
 # - internal/test/comparator
