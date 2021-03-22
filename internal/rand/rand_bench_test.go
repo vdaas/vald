@@ -21,8 +21,6 @@ import (
 )
 
 func BenchmarkUint32(b *testing.B) {
-	b.ReportAllocs()
-	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			Uint32()
@@ -31,8 +29,6 @@ func BenchmarkUint32(b *testing.B) {
 }
 
 func BenchmarkLimitedUint32_0(b *testing.B) {
-	b.ReportAllocs()
-	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			LimitedUint32(0)
@@ -41,8 +37,6 @@ func BenchmarkLimitedUint32_0(b *testing.B) {
 }
 
 func BenchmarkLimitedUint32_10(b *testing.B) {
-	b.ReportAllocs()
-	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			LimitedUint32(10)
@@ -51,8 +45,6 @@ func BenchmarkLimitedUint32_10(b *testing.B) {
 }
 
 func BenchmarkLimitedUint32_100(b *testing.B) {
-	b.ReportAllocs()
-	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			LimitedUint32(100)
@@ -61,8 +53,6 @@ func BenchmarkLimitedUint32_100(b *testing.B) {
 }
 
 func BenchmarkLimitedUint32_MaxUint64(b *testing.B) {
-	b.ReportAllocs()
-	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			LimitedUint32(math.MaxUint64)
