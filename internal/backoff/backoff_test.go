@@ -267,7 +267,7 @@ func Test_backoff_Do(t *testing.T) {
 				return nil, false, err
 			}
 			return test{
-				name: "return nil response and nil error when function returns (nil, false, error)",
+				name: "return nil response and error when function returns (nil, false, error) and not retriable",
 				args: args{
 					ctx: ctx,
 					f:   f,
@@ -283,7 +283,7 @@ func Test_backoff_Do(t *testing.T) {
 				return nil, true, nil
 			}
 			return test{
-				name: "return nil response and nil error when function returns (nil, true, nil)",
+				name: "return nil response and nil error when function returns (nil, true, nil) and not retriable",
 				args: args{
 					ctx: ctx,
 					f:   f,
@@ -298,7 +298,7 @@ func Test_backoff_Do(t *testing.T) {
 				return nil, false, err
 			}
 			return test{
-				name: "return response and error when function return (nil, true, error) and maxRetryCount = 0",
+				name: "return nil response and error when function return (nil, true, error) and maxRetryCount = 0",
 				args: args{
 					ctx: ctx,
 					f:   f,
