@@ -151,6 +151,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 		var errs error
 		for id, _ := range idm {
 			// get vecotr by id
+			log.Infof("[job debug] Get object data: %s", id)
 			vec, err := r.client.GetObject(ctx, &payload.Object_VectorRequest{
 				Id: &payload.Object_ID{
 					Id: id,
@@ -164,6 +165,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 
 			// update data
 			// TODO: use stream or upsert?
+			log.Infof("[job debug] Update object data: %s", id)
 			_, err = r.client.Update(ctx, &payload.Update_Request{
 				Vector: &payload.Object_Vector{
 					Id:     vec.GetId(),
@@ -177,6 +179,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 			}
 
 			cnt++
+			log.Infof("[job debug] Success Rebalance data: success amount data = %d", cnt)
 			if amntData--; amntData == 0 {
 				break
 			}
