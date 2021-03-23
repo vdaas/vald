@@ -4381,7 +4381,7 @@ func Test_mySQLClient_outputLog(t *testing.T) {
 				dbr:                  test.fields.dbr,
 			}
 
-			m.outputLog(test.args.err)
+			m.errorLog(test.args.err)
 			if err := test.checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
