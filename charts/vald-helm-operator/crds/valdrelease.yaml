@@ -61,14 +61,10 @@ spec:
           type: object
           properties:
             apiVersion:
-              description: 'APIVersion defines the versioned schema of this representation
-                of an object. Servers should convert recognized schemas to the latest
-                internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+              description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
               type: string
             kind:
-              description: 'Kind is a string value representing the REST resource this
-                object represents. Servers may infer this from the endpoint the client
-                submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+              description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
               type: string
             metadata:
               type: object
@@ -153,9 +149,9 @@ spec:
                         pullPolicy:
                           type: string
                           enum:
-                          - Always
-                          - Never
-                          - IfNotPresent
+                            - Always
+                            - Never
+                            - IfNotPresent
                         repository:
                           type: string
                         tag:
@@ -168,30 +164,30 @@ spec:
                     kind:
                       type: string
                       enum:
-                      - StatefulSet
-                      - Deployment
-                      - DaemonSet
+                        - StatefulSet
+                        - Deployment
+                        - DaemonSet
                     logging:
                       type: object
                       properties:
                         format:
                           type: string
                           enum:
-                          - raw
-                          - json
+                            - raw
+                            - json
                         level:
                           type: string
                           enum:
-                          - debug
-                          - info
-                          - warn
-                          - error
-                          - fatal
+                            - debug
+                            - info
+                            - warn
+                            - error
+                            - fatal
                         logger:
                           type: string
                           enum:
-                          - glg
-                          - zap
+                            - glg
+                            - zap
                     maxReplicas:
                       type: integer
                       minimum: 0
@@ -231,15 +227,15 @@ spec:
                         distance_type:
                           type: string
                           enum:
-                          - l1
-                          - l2
-                          - angle
-                          - hamming
-                          - cos
-                          - cosine
-                          - normalizedangle
-                          - normalizedcosine
-                          - jaccard
+                            - l1
+                            - l2
+                            - angle
+                            - hamming
+                            - cos
+                            - cosine
+                            - normalizedangle
+                            - normalizedcosine
+                            - jaccard
                         enable_in_memory_mode:
                           type: boolean
                         enable_proactive_gc:
@@ -257,8 +253,8 @@ spec:
                         object_type:
                           type: string
                           enum:
-                          - float
-                          - uint8
+                            - float
+                            - uint8
                         search_edge_size:
                           type: integer
                         vqueue:
@@ -301,16 +297,16 @@ spec:
                                   items:
                                     type: string
                                     enum:
-                                    - vald_version
-                                    - server_name
-                                    - git_commit
-                                    - build_time
-                                    - go_version
-                                    - go_os
-                                    - go_arch
-                                    - cgo_enabled
-                                    - ngt_version
-                                    - build_cpu_info_flags
+                                      - vald_version
+                                      - server_name
+                                      - git_commit
+                                      - build_time
+                                      - go_version
+                                      - go_os
+                                      - go_arch
+                                      - cgo_enabled
+                                      - ngt_version
+                                      - build_cpu_info_flags
                         enabled:
                           type: boolean
                         jaeger:
@@ -451,8 +447,8 @@ spec:
                     podManagementPolicy:
                       type: string
                       enum:
-                      - OrderedReady
-                      - Parallel
+                        - OrderedReady
+                        - Parallel
                     podPriority:
                       type: object
                       properties:
@@ -553,15 +549,15 @@ spec:
                                     network:
                                       type: string
                                       enum:
-                                      - tcp
-                                      - tcp4
-                                      - tcp6
-                                      - udp
-                                      - udp4
-                                      - udp6
-                                      - unix
-                                      - unixgram
-                                      - unixpacket
+                                        - tcp
+                                        - tcp4
+                                        - tcp6
+                                        - udp
+                                        - udp4
+                                        - udp6
+                                        - unix
+                                        - unixgram
+                                        - unixpacket
                                     probe_wait_time:
                                       type: string
                                     socket_option:
@@ -647,15 +643,15 @@ spec:
                                     network:
                                       type: string
                                       enum:
-                                      - tcp
-                                      - tcp4
-                                      - tcp6
-                                      - udp
-                                      - udp4
-                                      - udp6
-                                      - unix
-                                      - unixgram
-                                      - unixpacket
+                                        - tcp
+                                        - tcp4
+                                        - tcp6
+                                        - udp
+                                        - udp4
+                                        - udp6
+                                        - unix
+                                        - unixgram
+                                        - unixpacket
                                     probe_wait_time:
                                       type: string
                                     socket_option:
@@ -722,15 +718,15 @@ spec:
                                     network:
                                       type: string
                                       enum:
-                                      - tcp
-                                      - tcp4
-                                      - tcp6
-                                      - udp
-                                      - udp4
-                                      - udp6
-                                      - unix
-                                      - unixgram
-                                      - unixpacket
+                                        - tcp
+                                        - tcp4
+                                        - tcp6
+                                        - udp
+                                        - udp4
+                                        - udp6
+                                        - unix
+                                        - unixgram
+                                        - unixpacket
                                     probe_wait_time:
                                       type: string
                                     socket_option:
@@ -794,15 +790,15 @@ spec:
                                     network:
                                       type: string
                                       enum:
-                                      - tcp
-                                      - tcp4
-                                      - tcp6
-                                      - udp
-                                      - udp4
-                                      - udp6
-                                      - unix
-                                      - unixgram
-                                      - unixpacket
+                                        - tcp
+                                        - tcp4
+                                        - tcp6
+                                        - udp
+                                        - udp4
+                                        - udp6
+                                        - unix
+                                        - unixgram
+                                        - unixpacket
                                     probe_wait_time:
                                       type: string
                                     socket_option:
@@ -869,9 +865,9 @@ spec:
                                           items:
                                             type: string
                                             enum:
-                                            - RecoverInterceptor
-                                            - AccessLogInterceptor
-                                            - TracePayloadInterceptor
+                                              - RecoverInterceptor
+                                              - AccessLogInterceptor
+                                              - TracePayloadInterceptor
                                         keepalive:
                                           type: object
                                           properties:
@@ -900,15 +896,15 @@ spec:
                                     network:
                                       type: string
                                       enum:
-                                      - tcp
-                                      - tcp4
-                                      - tcp6
-                                      - udp
-                                      - udp4
-                                      - udp6
-                                      - unix
-                                      - unixgram
-                                      - unixpacket
+                                        - tcp
+                                        - tcp4
+                                        - tcp6
+                                        - udp
+                                        - udp4
+                                        - udp6
+                                        - unix
+                                        - unixgram
+                                        - unixpacket
                                     probe_wait_time:
                                       type: string
                                     restart:
@@ -974,15 +970,15 @@ spec:
                                     network:
                                       type: string
                                       enum:
-                                      - tcp
-                                      - tcp4
-                                      - tcp6
-                                      - udp
-                                      - udp4
-                                      - udp6
-                                      - unix
-                                      - unixgram
-                                      - unixpacket
+                                        - tcp
+                                        - tcp4
+                                        - tcp6
+                                        - udp
+                                        - udp4
+                                        - udp6
+                                        - unix
+                                        - unixgram
+                                        - unixpacket
                                     probe_wait_time:
                                       type: string
                                     socket_option:
@@ -1037,9 +1033,9 @@ spec:
                     serviceType:
                       type: string
                       enum:
-                      - ClusterIP
-                      - LoadBalancer
-                      - NodePort
+                        - ClusterIP
+                        - LoadBalancer
+                        - NodePort
                     sidecar:
                       type: object
                       properties:
@@ -1099,7 +1095,7 @@ spec:
                                 storage_type:
                                   type: string
                                   enum:
-                                  - s3
+                                    - s3
                             client:
                               type: object
                               properties:
@@ -1209,10 +1205,10 @@ spec:
                                 compress_algorithm:
                                   type: string
                                   enum:
-                                  - gob
-                                  - gzip
-                                  - lz4
-                                  - zstd
+                                    - gob
+                                    - gzip
+                                    - lz4
+                                    - zstd
                                 compression_level:
                                   type: integer
                             filename:
@@ -1253,9 +1249,9 @@ spec:
                             pullPolicy:
                               type: string
                               enum:
-                              - Always
-                              - Never
-                              - IfNotPresent
+                                - Always
+                                - Never
+                                - IfNotPresent
                             repository:
                               type: string
                             tag:
@@ -1268,21 +1264,21 @@ spec:
                             format:
                               type: string
                               enum:
-                              - raw
-                              - json
+                                - raw
+                                - json
                             level:
                               type: string
                               enum:
-                              - debug
-                              - info
-                              - warn
-                              - error
-                              - fatal
+                                - debug
+                                - info
+                                - warn
+                                - error
+                                - fatal
                             logger:
                               type: string
                               enum:
-                              - glg
-                              - zap
+                                - glg
+                                - zap
                         name:
                           type: string
                         observability:
@@ -1309,16 +1305,16 @@ spec:
                                       items:
                                         type: string
                                         enum:
-                                        - vald_version
-                                        - server_name
-                                        - git_commit
-                                        - build_time
-                                        - go_version
-                                        - go_os
-                                        - go_arch
-                                        - cgo_enabled
-                                        - ngt_version
-                                        - build_cpu_info_flags
+                                          - vald_version
+                                          - server_name
+                                          - git_commit
+                                          - build_time
+                                          - go_version
+                                          - go_os
+                                          - go_arch
+                                          - cgo_enabled
+                                          - ngt_version
+                                          - build_cpu_info_flags
                             enabled:
                               type: boolean
                             jaeger:
@@ -1515,15 +1511,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -1609,15 +1605,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -1684,15 +1680,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -1756,15 +1752,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -1831,9 +1827,9 @@ spec:
                                               items:
                                                 type: string
                                                 enum:
-                                                - RecoverInterceptor
-                                                - AccessLogInterceptor
-                                                - TracePayloadInterceptor
+                                                  - RecoverInterceptor
+                                                  - AccessLogInterceptor
+                                                  - TracePayloadInterceptor
                                             keepalive:
                                               type: object
                                               properties:
@@ -1862,15 +1858,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         restart:
@@ -1936,15 +1932,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -2003,9 +1999,9 @@ spec:
                             type:
                               type: string
                               enum:
-                              - ClusterIP
-                              - LoadBalancer
-                              - NodePort
+                                - ClusterIP
+                                - LoadBalancer
+                                - NodePort
                         time_zone:
                           type: string
                         version:
@@ -2217,21 +2213,21 @@ spec:
                         format:
                           type: string
                           enum:
-                          - raw
-                          - json
+                            - raw
+                            - json
                         level:
                           type: string
                           enum:
-                          - debug
-                          - info
-                          - warn
-                          - error
-                          - fatal
+                            - debug
+                            - info
+                            - warn
+                            - error
+                            - fatal
                         logger:
                           type: string
                           enum:
-                          - glg
-                          - zap
+                            - glg
+                            - zap
                     observability:
                       type: object
                       properties:
@@ -2256,16 +2252,16 @@ spec:
                                   items:
                                     type: string
                                     enum:
-                                    - vald_version
-                                    - server_name
-                                    - git_commit
-                                    - build_time
-                                    - go_version
-                                    - go_os
-                                    - go_arch
-                                    - cgo_enabled
-                                    - ngt_version
-                                    - build_cpu_info_flags
+                                      - vald_version
+                                      - server_name
+                                      - git_commit
+                                      - build_time
+                                      - go_version
+                                      - go_os
+                                      - go_arch
+                                      - cgo_enabled
+                                      - ngt_version
+                                      - build_cpu_info_flags
                         enabled:
                           type: boolean
                         jaeger:
@@ -2453,15 +2449,15 @@ spec:
                                     network:
                                       type: string
                                       enum:
-                                      - tcp
-                                      - tcp4
-                                      - tcp6
-                                      - udp
-                                      - udp4
-                                      - udp6
-                                      - unix
-                                      - unixgram
-                                      - unixpacket
+                                        - tcp
+                                        - tcp4
+                                        - tcp6
+                                        - udp
+                                        - udp4
+                                        - udp6
+                                        - unix
+                                        - unixgram
+                                        - unixpacket
                                     probe_wait_time:
                                       type: string
                                     socket_option:
@@ -2547,15 +2543,15 @@ spec:
                                     network:
                                       type: string
                                       enum:
-                                      - tcp
-                                      - tcp4
-                                      - tcp6
-                                      - udp
-                                      - udp4
-                                      - udp6
-                                      - unix
-                                      - unixgram
-                                      - unixpacket
+                                        - tcp
+                                        - tcp4
+                                        - tcp6
+                                        - udp
+                                        - udp4
+                                        - udp6
+                                        - unix
+                                        - unixgram
+                                        - unixpacket
                                     probe_wait_time:
                                       type: string
                                     socket_option:
@@ -2622,15 +2618,15 @@ spec:
                                     network:
                                       type: string
                                       enum:
-                                      - tcp
-                                      - tcp4
-                                      - tcp6
-                                      - udp
-                                      - udp4
-                                      - udp6
-                                      - unix
-                                      - unixgram
-                                      - unixpacket
+                                        - tcp
+                                        - tcp4
+                                        - tcp6
+                                        - udp
+                                        - udp4
+                                        - udp6
+                                        - unix
+                                        - unixgram
+                                        - unixpacket
                                     probe_wait_time:
                                       type: string
                                     socket_option:
@@ -2694,15 +2690,15 @@ spec:
                                     network:
                                       type: string
                                       enum:
-                                      - tcp
-                                      - tcp4
-                                      - tcp6
-                                      - udp
-                                      - udp4
-                                      - udp6
-                                      - unix
-                                      - unixgram
-                                      - unixpacket
+                                        - tcp
+                                        - tcp4
+                                        - tcp6
+                                        - udp
+                                        - udp4
+                                        - udp6
+                                        - unix
+                                        - unixgram
+                                        - unixpacket
                                     probe_wait_time:
                                       type: string
                                     socket_option:
@@ -2769,9 +2765,9 @@ spec:
                                           items:
                                             type: string
                                             enum:
-                                            - RecoverInterceptor
-                                            - AccessLogInterceptor
-                                            - TracePayloadInterceptor
+                                              - RecoverInterceptor
+                                              - AccessLogInterceptor
+                                              - TracePayloadInterceptor
                                         keepalive:
                                           type: object
                                           properties:
@@ -2800,15 +2796,15 @@ spec:
                                     network:
                                       type: string
                                       enum:
-                                      - tcp
-                                      - tcp4
-                                      - tcp6
-                                      - udp
-                                      - udp4
-                                      - udp6
-                                      - unix
-                                      - unixgram
-                                      - unixpacket
+                                        - tcp
+                                        - tcp4
+                                        - tcp6
+                                        - udp
+                                        - udp4
+                                        - udp6
+                                        - unix
+                                        - unixgram
+                                        - unixpacket
                                     probe_wait_time:
                                       type: string
                                     restart:
@@ -2874,15 +2870,15 @@ spec:
                                     network:
                                       type: string
                                       enum:
-                                      - tcp
-                                      - tcp4
-                                      - tcp6
-                                      - udp
-                                      - udp4
-                                      - udp6
-                                      - unix
-                                      - unixgram
-                                      - unixpacket
+                                        - tcp
+                                        - tcp4
+                                        - tcp6
+                                        - udp
+                                        - udp4
+                                        - udp6
+                                        - unix
+                                        - unixgram
+                                        - unixpacket
                                     probe_wait_time:
                                       type: string
                                     socket_option:
@@ -3078,9 +3074,9 @@ spec:
                         pullPolicy:
                           type: string
                           enum:
-                          - Always
-                          - Never
-                          - IfNotPresent
+                            - Always
+                            - Never
+                            - IfNotPresent
                         repository:
                           type: string
                         tag:
@@ -3093,29 +3089,29 @@ spec:
                     kind:
                       type: string
                       enum:
-                      - Deployment
-                      - DaemonSet
+                        - Deployment
+                        - DaemonSet
                     logging:
                       type: object
                       properties:
                         format:
                           type: string
                           enum:
-                          - raw
-                          - json
+                            - raw
+                            - json
                         level:
                           type: string
                           enum:
-                          - debug
-                          - info
-                          - warn
-                          - error
-                          - fatal
+                            - debug
+                            - info
+                            - warn
+                            - error
+                            - fatal
                         logger:
                           type: string
                           enum:
-                          - glg
-                          - zap
+                            - glg
+                            - zap
                     maxReplicas:
                       type: integer
                       minimum: 0
@@ -3155,16 +3151,16 @@ spec:
                                   items:
                                     type: string
                                     enum:
-                                    - vald_version
-                                    - server_name
-                                    - git_commit
-                                    - build_time
-                                    - go_version
-                                    - go_os
-                                    - go_arch
-                                    - cgo_enabled
-                                    - ngt_version
-                                    - build_cpu_info_flags
+                                      - vald_version
+                                      - server_name
+                                      - git_commit
+                                      - build_time
+                                      - go_version
+                                      - go_os
+                                      - go_arch
+                                      - cgo_enabled
+                                      - ngt_version
+                                      - build_cpu_info_flags
                         enabled:
                           type: boolean
                         jaeger:
@@ -3389,15 +3385,15 @@ spec:
                                     network:
                                       type: string
                                       enum:
-                                      - tcp
-                                      - tcp4
-                                      - tcp6
-                                      - udp
-                                      - udp4
-                                      - udp6
-                                      - unix
-                                      - unixgram
-                                      - unixpacket
+                                        - tcp
+                                        - tcp4
+                                        - tcp6
+                                        - udp
+                                        - udp4
+                                        - udp6
+                                        - unix
+                                        - unixgram
+                                        - unixpacket
                                     probe_wait_time:
                                       type: string
                                     socket_option:
@@ -3483,15 +3479,15 @@ spec:
                                     network:
                                       type: string
                                       enum:
-                                      - tcp
-                                      - tcp4
-                                      - tcp6
-                                      - udp
-                                      - udp4
-                                      - udp6
-                                      - unix
-                                      - unixgram
-                                      - unixpacket
+                                        - tcp
+                                        - tcp4
+                                        - tcp6
+                                        - udp
+                                        - udp4
+                                        - udp6
+                                        - unix
+                                        - unixgram
+                                        - unixpacket
                                     probe_wait_time:
                                       type: string
                                     socket_option:
@@ -3558,15 +3554,15 @@ spec:
                                     network:
                                       type: string
                                       enum:
-                                      - tcp
-                                      - tcp4
-                                      - tcp6
-                                      - udp
-                                      - udp4
-                                      - udp6
-                                      - unix
-                                      - unixgram
-                                      - unixpacket
+                                        - tcp
+                                        - tcp4
+                                        - tcp6
+                                        - udp
+                                        - udp4
+                                        - udp6
+                                        - unix
+                                        - unixgram
+                                        - unixpacket
                                     probe_wait_time:
                                       type: string
                                     socket_option:
@@ -3630,15 +3626,15 @@ spec:
                                     network:
                                       type: string
                                       enum:
-                                      - tcp
-                                      - tcp4
-                                      - tcp6
-                                      - udp
-                                      - udp4
-                                      - udp6
-                                      - unix
-                                      - unixgram
-                                      - unixpacket
+                                        - tcp
+                                        - tcp4
+                                        - tcp6
+                                        - udp
+                                        - udp4
+                                        - udp6
+                                        - unix
+                                        - unixgram
+                                        - unixpacket
                                     probe_wait_time:
                                       type: string
                                     socket_option:
@@ -3705,9 +3701,9 @@ spec:
                                           items:
                                             type: string
                                             enum:
-                                            - RecoverInterceptor
-                                            - AccessLogInterceptor
-                                            - TracePayloadInterceptor
+                                              - RecoverInterceptor
+                                              - AccessLogInterceptor
+                                              - TracePayloadInterceptor
                                         keepalive:
                                           type: object
                                           properties:
@@ -3736,15 +3732,15 @@ spec:
                                     network:
                                       type: string
                                       enum:
-                                      - tcp
-                                      - tcp4
-                                      - tcp6
-                                      - udp
-                                      - udp4
-                                      - udp6
-                                      - unix
-                                      - unixgram
-                                      - unixpacket
+                                        - tcp
+                                        - tcp4
+                                        - tcp6
+                                        - udp
+                                        - udp4
+                                        - udp6
+                                        - unix
+                                        - unixgram
+                                        - unixpacket
                                     probe_wait_time:
                                       type: string
                                     restart:
@@ -3810,15 +3806,15 @@ spec:
                                     network:
                                       type: string
                                       enum:
-                                      - tcp
-                                      - tcp4
-                                      - tcp6
-                                      - udp
-                                      - udp4
-                                      - udp6
-                                      - unix
-                                      - unixgram
-                                      - unixpacket
+                                        - tcp
+                                        - tcp4
+                                        - tcp6
+                                        - udp
+                                        - udp4
+                                        - udp6
+                                        - unix
+                                        - unixgram
+                                        - unixpacket
                                     probe_wait_time:
                                       type: string
                                     socket_option:
@@ -3880,9 +3876,9 @@ spec:
                     serviceType:
                       type: string
                       enum:
-                      - ClusterIP
-                      - LoadBalancer
-                      - NodePort
+                        - ClusterIP
+                        - LoadBalancer
+                        - NodePort
                     terminationGracePeriodSeconds:
                       type: integer
                       minimum: 0
@@ -4302,9 +4298,9 @@ spec:
                             pullPolicy:
                               type: string
                               enum:
-                              - Always
-                              - Never
-                              - IfNotPresent
+                                - Always
+                                - Never
+                                - IfNotPresent
                             repository:
                               type: string
                             tag:
@@ -4331,29 +4327,29 @@ spec:
                         kind:
                           type: string
                           enum:
-                          - Deployment
-                          - DaemonSet
+                            - Deployment
+                            - DaemonSet
                         logging:
                           type: object
                           properties:
                             format:
                               type: string
                               enum:
-                              - raw
-                              - json
+                                - raw
+                                - json
                             level:
                               type: string
                               enum:
-                              - debug
-                              - info
-                              - warn
-                              - error
-                              - fatal
+                                - debug
+                                - info
+                                - warn
+                                - error
+                                - fatal
                             logger:
                               type: string
                               enum:
-                              - glg
-                              - zap
+                                - glg
+                                - zap
                         maxReplicas:
                           type: integer
                           minimum: 0
@@ -4393,16 +4389,16 @@ spec:
                                       items:
                                         type: string
                                         enum:
-                                        - vald_version
-                                        - server_name
-                                        - git_commit
-                                        - build_time
-                                        - go_version
-                                        - go_os
-                                        - go_arch
-                                        - cgo_enabled
-                                        - ngt_version
-                                        - build_cpu_info_flags
+                                          - vald_version
+                                          - server_name
+                                          - git_commit
+                                          - build_time
+                                          - go_version
+                                          - go_os
+                                          - go_arch
+                                          - cgo_enabled
+                                          - ngt_version
+                                          - build_cpu_info_flags
                             enabled:
                               type: boolean
                             jaeger:
@@ -4627,15 +4623,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -4721,15 +4717,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -4796,15 +4792,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -4868,15 +4864,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -4943,9 +4939,9 @@ spec:
                                               items:
                                                 type: string
                                                 enum:
-                                                - RecoverInterceptor
-                                                - AccessLogInterceptor
-                                                - TracePayloadInterceptor
+                                                  - RecoverInterceptor
+                                                  - AccessLogInterceptor
+                                                  - TracePayloadInterceptor
                                             keepalive:
                                               type: object
                                               properties:
@@ -4974,15 +4970,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         restart:
@@ -5048,15 +5044,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -5111,9 +5107,9 @@ spec:
                         serviceType:
                           type: string
                           enum:
-                          - ClusterIP
-                          - LoadBalancer
-                          - NodePort
+                            - ClusterIP
+                            - LoadBalancer
+                            - NodePort
                         terminationGracePeriodSeconds:
                           type: integer
                           minimum: 0
@@ -5718,9 +5714,9 @@ spec:
                             pullPolicy:
                               type: string
                               enum:
-                              - Always
-                              - Never
-                              - IfNotPresent
+                                - Always
+                                - Never
+                                - IfNotPresent
                             repository:
                               type: string
                             tag:
@@ -5747,29 +5743,29 @@ spec:
                         kind:
                           type: string
                           enum:
-                          - Deployment
-                          - DaemonSet
+                            - Deployment
+                            - DaemonSet
                         logging:
                           type: object
                           properties:
                             format:
                               type: string
                               enum:
-                              - raw
-                              - json
+                                - raw
+                                - json
                             level:
                               type: string
                               enum:
-                              - debug
-                              - info
-                              - warn
-                              - error
-                              - fatal
+                                - debug
+                                - info
+                                - warn
+                                - error
+                                - fatal
                             logger:
                               type: string
                               enum:
-                              - glg
-                              - zap
+                                - glg
+                                - zap
                         maxReplicas:
                           type: integer
                           minimum: 0
@@ -5809,16 +5805,16 @@ spec:
                                       items:
                                         type: string
                                         enum:
-                                        - vald_version
-                                        - server_name
-                                        - git_commit
-                                        - build_time
-                                        - go_version
-                                        - go_os
-                                        - go_arch
-                                        - cgo_enabled
-                                        - ngt_version
-                                        - build_cpu_info_flags
+                                          - vald_version
+                                          - server_name
+                                          - git_commit
+                                          - build_time
+                                          - go_version
+                                          - go_os
+                                          - go_arch
+                                          - cgo_enabled
+                                          - ngt_version
+                                          - build_cpu_info_flags
                             enabled:
                               type: boolean
                             jaeger:
@@ -6043,15 +6039,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -6137,15 +6133,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -6212,15 +6208,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -6284,15 +6280,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -6359,9 +6355,9 @@ spec:
                                               items:
                                                 type: string
                                                 enum:
-                                                - RecoverInterceptor
-                                                - AccessLogInterceptor
-                                                - TracePayloadInterceptor
+                                                  - RecoverInterceptor
+                                                  - AccessLogInterceptor
+                                                  - TracePayloadInterceptor
                                             keepalive:
                                               type: object
                                               properties:
@@ -6390,15 +6386,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         restart:
@@ -6464,15 +6460,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -6527,9 +6523,9 @@ spec:
                         serviceType:
                           type: string
                           enum:
-                          - ClusterIP
-                          - LoadBalancer
-                          - NodePort
+                            - ClusterIP
+                            - LoadBalancer
+                            - NodePort
                         terminationGracePeriodSeconds:
                           type: integer
                           minimum: 0
@@ -6958,9 +6954,9 @@ spec:
                             pullPolicy:
                               type: string
                               enum:
-                              - Always
-                              - Never
-                              - IfNotPresent
+                                - Always
+                                - Never
+                                - IfNotPresent
                             repository:
                               type: string
                             tag:
@@ -6987,29 +6983,29 @@ spec:
                         kind:
                           type: string
                           enum:
-                          - Deployment
-                          - DaemonSet
+                            - Deployment
+                            - DaemonSet
                         logging:
                           type: object
                           properties:
                             format:
                               type: string
                               enum:
-                              - raw
-                              - json
+                                - raw
+                                - json
                             level:
                               type: string
                               enum:
-                              - debug
-                              - info
-                              - warn
-                              - error
-                              - fatal
+                                - debug
+                                - info
+                                - warn
+                                - error
+                                - fatal
                             logger:
                               type: string
                               enum:
-                              - glg
-                              - zap
+                                - glg
+                                - zap
                         maxReplicas:
                           type: integer
                           minimum: 0
@@ -7049,16 +7045,16 @@ spec:
                                       items:
                                         type: string
                                         enum:
-                                        - vald_version
-                                        - server_name
-                                        - git_commit
-                                        - build_time
-                                        - go_version
-                                        - go_os
-                                        - go_arch
-                                        - cgo_enabled
-                                        - ngt_version
-                                        - build_cpu_info_flags
+                                          - vald_version
+                                          - server_name
+                                          - git_commit
+                                          - build_time
+                                          - go_version
+                                          - go_os
+                                          - go_arch
+                                          - cgo_enabled
+                                          - ngt_version
+                                          - build_cpu_info_flags
                             enabled:
                               type: boolean
                             jaeger:
@@ -7283,15 +7279,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -7377,15 +7373,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -7452,15 +7448,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -7524,15 +7520,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -7599,9 +7595,9 @@ spec:
                                               items:
                                                 type: string
                                                 enum:
-                                                - RecoverInterceptor
-                                                - AccessLogInterceptor
-                                                - TracePayloadInterceptor
+                                                  - RecoverInterceptor
+                                                  - AccessLogInterceptor
+                                                  - TracePayloadInterceptor
                                             keepalive:
                                               type: object
                                               properties:
@@ -7630,15 +7626,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         restart:
@@ -7704,15 +7700,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -7767,9 +7763,9 @@ spec:
                         serviceType:
                           type: string
                           enum:
-                          - ClusterIP
-                          - LoadBalancer
-                          - NodePort
+                            - ClusterIP
+                            - LoadBalancer
+                            - NodePort
                         terminationGracePeriodSeconds:
                           type: integer
                           minimum: 0
@@ -8195,9 +8191,9 @@ spec:
                             pullPolicy:
                               type: string
                               enum:
-                              - Always
-                              - Never
-                              - IfNotPresent
+                                - Always
+                                - Never
+                                - IfNotPresent
                             repository:
                               type: string
                             tag:
@@ -8224,29 +8220,29 @@ spec:
                         kind:
                           type: string
                           enum:
-                          - Deployment
-                          - DaemonSet
+                            - Deployment
+                            - DaemonSet
                         logging:
                           type: object
                           properties:
                             format:
                               type: string
                               enum:
-                              - raw
-                              - json
+                                - raw
+                                - json
                             level:
                               type: string
                               enum:
-                              - debug
-                              - info
-                              - warn
-                              - error
-                              - fatal
+                                - debug
+                                - info
+                                - warn
+                                - error
+                                - fatal
                             logger:
                               type: string
                               enum:
-                              - glg
-                              - zap
+                                - glg
+                                - zap
                         maxReplicas:
                           type: integer
                           minimum: 0
@@ -8286,16 +8282,16 @@ spec:
                                       items:
                                         type: string
                                         enum:
-                                        - vald_version
-                                        - server_name
-                                        - git_commit
-                                        - build_time
-                                        - go_version
-                                        - go_os
-                                        - go_arch
-                                        - cgo_enabled
-                                        - ngt_version
-                                        - build_cpu_info_flags
+                                          - vald_version
+                                          - server_name
+                                          - git_commit
+                                          - build_time
+                                          - go_version
+                                          - go_os
+                                          - go_arch
+                                          - cgo_enabled
+                                          - ngt_version
+                                          - build_cpu_info_flags
                             enabled:
                               type: boolean
                             jaeger:
@@ -8520,15 +8516,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -8614,15 +8610,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -8689,15 +8685,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -8761,15 +8757,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -8836,9 +8832,9 @@ spec:
                                               items:
                                                 type: string
                                                 enum:
-                                                - RecoverInterceptor
-                                                - AccessLogInterceptor
-                                                - TracePayloadInterceptor
+                                                  - RecoverInterceptor
+                                                  - AccessLogInterceptor
+                                                  - TracePayloadInterceptor
                                             keepalive:
                                               type: object
                                               properties:
@@ -8867,15 +8863,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         restart:
@@ -8941,15 +8937,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -9004,9 +9000,9 @@ spec:
                         serviceType:
                           type: string
                           enum:
-                          - ClusterIP
-                          - LoadBalancer
-                          - NodePort
+                            - ClusterIP
+                            - LoadBalancer
+                            - NodePort
                         terminationGracePeriodSeconds:
                           type: integer
                           minimum: 0
@@ -9759,9 +9755,9 @@ spec:
                             pullPolicy:
                               type: string
                               enum:
-                              - Always
-                              - Never
-                              - IfNotPresent
+                                - Always
+                                - Never
+                                - IfNotPresent
                             repository:
                               type: string
                             tag:
@@ -9788,29 +9784,29 @@ spec:
                         kind:
                           type: string
                           enum:
-                          - Deployment
-                          - DaemonSet
+                            - Deployment
+                            - DaemonSet
                         logging:
                           type: object
                           properties:
                             format:
                               type: string
                               enum:
-                              - raw
-                              - json
+                                - raw
+                                - json
                             level:
                               type: string
                               enum:
-                              - debug
-                              - info
-                              - warn
-                              - error
-                              - fatal
+                                - debug
+                                - info
+                                - warn
+                                - error
+                                - fatal
                             logger:
                               type: string
                               enum:
-                              - glg
-                              - zap
+                                - glg
+                                - zap
                         maxReplicas:
                           type: integer
                           minimum: 0
@@ -9850,16 +9846,16 @@ spec:
                                       items:
                                         type: string
                                         enum:
-                                        - vald_version
-                                        - server_name
-                                        - git_commit
-                                        - build_time
-                                        - go_version
-                                        - go_os
-                                        - go_arch
-                                        - cgo_enabled
-                                        - ngt_version
-                                        - build_cpu_info_flags
+                                          - vald_version
+                                          - server_name
+                                          - git_commit
+                                          - build_time
+                                          - go_version
+                                          - go_os
+                                          - go_arch
+                                          - cgo_enabled
+                                          - ngt_version
+                                          - build_cpu_info_flags
                             enabled:
                               type: boolean
                             jaeger:
@@ -10084,15 +10080,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -10178,15 +10174,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -10253,15 +10249,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -10325,15 +10321,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -10400,9 +10396,9 @@ spec:
                                               items:
                                                 type: string
                                                 enum:
-                                                - RecoverInterceptor
-                                                - AccessLogInterceptor
-                                                - TracePayloadInterceptor
+                                                  - RecoverInterceptor
+                                                  - AccessLogInterceptor
+                                                  - TracePayloadInterceptor
                                             keepalive:
                                               type: object
                                               properties:
@@ -10431,15 +10427,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         restart:
@@ -10505,15 +10501,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -10568,9 +10564,9 @@ spec:
                         serviceType:
                           type: string
                           enum:
-                          - ClusterIP
-                          - LoadBalancer
-                          - NodePort
+                            - ClusterIP
+                            - LoadBalancer
+                            - NodePort
                         terminationGracePeriodSeconds:
                           type: integer
                           minimum: 0
@@ -10664,15 +10660,15 @@ spec:
                                 consistency:
                                   type: string
                                   enum:
-                                  - any
-                                  - one
-                                  - two
-                                  - three
-                                  - all
-                                  - quorum
-                                  - localquorum
-                                  - eachquorum
-                                  - localone
+                                    - any
+                                    - one
+                                    - two
+                                    - three
+                                    - all
+                                    - quorum
+                                    - localquorum
+                                    - eachquorum
+                                    - localone
                                 cql_version:
                                   type: string
                                 default_idempotence:
@@ -10813,8 +10809,8 @@ spec:
                                 serial_consistency:
                                   type: string
                                   enum:
-                                  - localserial
-                                  - serial
+                                    - localserial
+                                    - serial
                                 socket_keepalive:
                                   type: string
                                 timeout:
@@ -10862,9 +10858,9 @@ spec:
                             pullPolicy:
                               type: string
                               enum:
-                              - Always
-                              - Never
-                              - IfNotPresent
+                                - Always
+                                - Never
+                                - IfNotPresent
                             repository:
                               type: string
                             tag:
@@ -10877,29 +10873,29 @@ spec:
                         kind:
                           type: string
                           enum:
-                          - Deployment
-                          - DaemonSet
+                            - Deployment
+                            - DaemonSet
                         logging:
                           type: object
                           properties:
                             format:
                               type: string
                               enum:
-                              - raw
-                              - json
+                                - raw
+                                - json
                             level:
                               type: string
                               enum:
-                              - debug
-                              - info
-                              - warn
-                              - error
-                              - fatal
+                                - debug
+                                - info
+                                - warn
+                                - error
+                                - fatal
                             logger:
                               type: string
                               enum:
-                              - glg
-                              - zap
+                                - glg
+                                - zap
                         maxReplicas:
                           type: integer
                           minimum: 0
@@ -10919,9 +10915,9 @@ spec:
                                 db:
                                   type: string
                                   enum:
-                                  - mysql
-                                  - postgres
-                                  - sqlite3
+                                    - mysql
+                                    - postgres
+                                    - sqlite3
                                 host:
                                   type: string
                                 max_idle_conns:
@@ -10988,15 +10984,15 @@ spec:
                                 network:
                                   type: string
                                   enum:
-                                  - tcp
-                                  - tcp4
-                                  - tcp6
-                                  - udp
-                                  - udp4
-                                  - udp6
-                                  - unix
-                                  - unixgram
-                                  - unixpacket
+                                    - tcp
+                                    - tcp4
+                                    - tcp6
+                                    - udp
+                                    - udp4
+                                    - udp6
+                                    - unix
+                                    - unixgram
+                                    - unixpacket
                                 pass:
                                   type: string
                                 port:
@@ -11051,16 +11047,16 @@ spec:
                                       items:
                                         type: string
                                         enum:
-                                        - vald_version
-                                        - server_name
-                                        - git_commit
-                                        - build_time
-                                        - go_version
-                                        - go_os
-                                        - go_arch
-                                        - cgo_enabled
-                                        - ngt_version
-                                        - build_cpu_info_flags
+                                          - vald_version
+                                          - server_name
+                                          - git_commit
+                                          - build_time
+                                          - go_version
+                                          - go_os
+                                          - go_arch
+                                          - cgo_enabled
+                                          - ngt_version
+                                          - build_cpu_info_flags
                             enabled:
                               type: boolean
                             jaeger:
@@ -11285,15 +11281,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -11379,15 +11375,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -11454,15 +11450,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -11526,15 +11522,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -11601,9 +11597,9 @@ spec:
                                               items:
                                                 type: string
                                                 enum:
-                                                - RecoverInterceptor
-                                                - AccessLogInterceptor
-                                                - TracePayloadInterceptor
+                                                  - RecoverInterceptor
+                                                  - AccessLogInterceptor
+                                                  - TracePayloadInterceptor
                                             keepalive:
                                               type: object
                                               properties:
@@ -11632,15 +11628,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         restart:
@@ -11706,15 +11702,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -11769,9 +11765,9 @@ spec:
                         serviceType:
                           type: string
                           enum:
-                          - ClusterIP
-                          - LoadBalancer
-                          - NodePort
+                            - ClusterIP
+                            - LoadBalancer
+                            - NodePort
                         terminationGracePeriodSeconds:
                           type: integer
                           minimum: 0
@@ -12016,10 +12012,10 @@ spec:
                             compress_algorithm:
                               type: string
                               enum:
-                              - gob
-                              - gzip
-                              - lz4
-                              - zstd
+                                - gob
+                                - gzip
+                                - lz4
+                                - zstd
                             compression_level:
                               type: integer
                             concurrent_limit:
@@ -12048,9 +12044,9 @@ spec:
                             pullPolicy:
                               type: string
                               enum:
-                              - Always
-                              - Never
-                              - IfNotPresent
+                                - Always
+                                - Never
+                                - IfNotPresent
                             repository:
                               type: string
                             tag:
@@ -12063,29 +12059,29 @@ spec:
                         kind:
                           type: string
                           enum:
-                          - Deployment
-                          - DaemonSet
+                            - Deployment
+                            - DaemonSet
                         logging:
                           type: object
                           properties:
                             format:
                               type: string
                               enum:
-                              - raw
-                              - json
+                                - raw
+                                - json
                             level:
                               type: string
                               enum:
-                              - debug
-                              - info
-                              - warn
-                              - error
-                              - fatal
+                                - debug
+                                - info
+                                - warn
+                                - error
+                                - fatal
                             logger:
                               type: string
                               enum:
-                              - glg
-                              - zap
+                                - glg
+                                - zap
                         maxReplicas:
                           type: integer
                           minimum: 0
@@ -12125,16 +12121,16 @@ spec:
                                       items:
                                         type: string
                                         enum:
-                                        - vald_version
-                                        - server_name
-                                        - git_commit
-                                        - build_time
-                                        - go_version
-                                        - go_os
-                                        - go_arch
-                                        - cgo_enabled
-                                        - ngt_version
-                                        - build_cpu_info_flags
+                                          - vald_version
+                                          - server_name
+                                          - git_commit
+                                          - build_time
+                                          - go_version
+                                          - go_os
+                                          - go_arch
+                                          - cgo_enabled
+                                          - ngt_version
+                                          - build_cpu_info_flags
                             enabled:
                               type: boolean
                             jaeger:
@@ -12525,15 +12521,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -12619,15 +12615,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -12694,15 +12690,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -12766,15 +12762,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -12841,9 +12837,9 @@ spec:
                                               items:
                                                 type: string
                                                 enum:
-                                                - RecoverInterceptor
-                                                - AccessLogInterceptor
-                                                - TracePayloadInterceptor
+                                                  - RecoverInterceptor
+                                                  - AccessLogInterceptor
+                                                  - TracePayloadInterceptor
                                             keepalive:
                                               type: object
                                               properties:
@@ -12872,15 +12868,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         restart:
@@ -12946,15 +12942,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -13009,9 +13005,9 @@ spec:
                         serviceType:
                           type: string
                           enum:
-                          - ClusterIP
-                          - LoadBalancer
-                          - NodePort
+                            - ClusterIP
+                            - LoadBalancer
+                            - NodePort
                         terminationGracePeriodSeconds:
                           type: integer
                           minimum: 0
@@ -13106,9 +13102,9 @@ spec:
                             pullPolicy:
                               type: string
                               enum:
-                              - Always
-                              - Never
-                              - IfNotPresent
+                                - Always
+                                - Never
+                                - IfNotPresent
                             repository:
                               type: string
                             tag:
@@ -13456,29 +13452,29 @@ spec:
                         kind:
                           type: string
                           enum:
-                          - Deployment
-                          - DaemonSet
+                            - Deployment
+                            - DaemonSet
                         logging:
                           type: object
                           properties:
                             format:
                               type: string
                               enum:
-                              - raw
-                              - json
+                                - raw
+                                - json
                             level:
                               type: string
                               enum:
-                              - debug
-                              - info
-                              - warn
-                              - error
-                              - fatal
+                                - debug
+                                - info
+                                - warn
+                                - error
+                                - fatal
                             logger:
                               type: string
                               enum:
-                              - glg
-                              - zap
+                                - glg
+                                - zap
                         maxUnavailable:
                           type: string
                         name:
@@ -13512,16 +13508,16 @@ spec:
                                       items:
                                         type: string
                                         enum:
-                                        - vald_version
-                                        - server_name
-                                        - git_commit
-                                        - build_time
-                                        - go_version
-                                        - go_os
-                                        - go_arch
-                                        - cgo_enabled
-                                        - ngt_version
-                                        - build_cpu_info_flags
+                                          - vald_version
+                                          - server_name
+                                          - git_commit
+                                          - build_time
+                                          - go_version
+                                          - go_os
+                                          - go_arch
+                                          - cgo_enabled
+                                          - ngt_version
+                                          - build_cpu_info_flags
                             enabled:
                               type: boolean
                             jaeger:
@@ -13746,15 +13742,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -13840,15 +13836,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -13915,15 +13911,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -13987,15 +13983,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -14062,9 +14058,9 @@ spec:
                                               items:
                                                 type: string
                                                 enum:
-                                                - RecoverInterceptor
-                                                - AccessLogInterceptor
-                                                - TracePayloadInterceptor
+                                                  - RecoverInterceptor
+                                                  - AccessLogInterceptor
+                                                  - TracePayloadInterceptor
                                             keepalive:
                                               type: object
                                               properties:
@@ -14093,15 +14089,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         restart:
@@ -14167,15 +14163,15 @@ spec:
                                         network:
                                           type: string
                                           enum:
-                                          - tcp
-                                          - tcp4
-                                          - tcp6
-                                          - udp
-                                          - udp4
-                                          - udp6
-                                          - unix
-                                          - unixgram
-                                          - unixpacket
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
                                         probe_wait_time:
                                           type: string
                                         socket_option:
@@ -14230,9 +14226,9 @@ spec:
                         serviceType:
                           type: string
                           enum:
-                          - ClusterIP
-                          - LoadBalancer
-                          - NodePort
+                            - ClusterIP
+                            - LoadBalancer
+                            - NodePort
                         terminationGracePeriodSeconds:
                           type: integer
                           minimum: 0
@@ -14326,15 +14322,15 @@ spec:
                             consistency:
                               type: string
                               enum:
-                              - any
-                              - one
-                              - two
-                              - three
-                              - all
-                              - quorum
-                              - localquorum
-                              - eachquorum
-                              - localone
+                                - any
+                                - one
+                                - two
+                                - three
+                                - all
+                                - quorum
+                                - localquorum
+                                - eachquorum
+                                - localone
                             cql_version:
                               type: string
                             default_idempotence:
@@ -14475,8 +14471,8 @@ spec:
                             serial_consistency:
                               type: string
                               enum:
-                              - localserial
-                              - serial
+                                - localserial
+                                - serial
                             socket_keepalive:
                               type: string
                             timeout:
@@ -14524,9 +14520,9 @@ spec:
                         pullPolicy:
                           type: string
                           enum:
-                          - Always
-                          - Never
-                          - IfNotPresent
+                            - Always
+                            - Never
+                            - IfNotPresent
                         repository:
                           type: string
                         tag:
@@ -14539,29 +14535,29 @@ spec:
                     kind:
                       type: string
                       enum:
-                      - Deployment
-                      - DaemonSet
+                        - Deployment
+                        - DaemonSet
                     logging:
                       type: object
                       properties:
                         format:
                           type: string
                           enum:
-                          - raw
-                          - json
+                            - raw
+                            - json
                         level:
                           type: string
                           enum:
-                          - debug
-                          - info
-                          - warn
-                          - error
-                          - fatal
+                            - debug
+                            - info
+                            - warn
+                            - error
+                            - fatal
                         logger:
                           type: string
                           enum:
-                          - glg
-                          - zap
+                            - glg
+                            - zap
                     maxReplicas:
                       type: integer
                       minimum: 0
@@ -14601,16 +14597,16 @@ spec:
                                   items:
                                     type: string
                                     enum:
-                                    - vald_version
-                                    - server_name
-                                    - git_commit
-                                    - build_time
-                                    - go_version
-                                    - go_os
-                                    - go_arch
-                                    - cgo_enabled
-                                    - ngt_version
-                                    - build_cpu_info_flags
+                                      - vald_version
+                                      - server_name
+                                      - git_commit
+                                      - build_time
+                                      - go_version
+                                      - go_os
+                                      - go_arch
+                                      - cgo_enabled
+                                      - ngt_version
+                                      - build_cpu_info_flags
                         enabled:
                           type: boolean
                         jaeger:
@@ -14841,15 +14837,15 @@ spec:
                             network:
                               type: string
                               enum:
-                              - tcp
-                              - tcp4
-                              - tcp6
-                              - udp
-                              - udp4
-                              - udp6
-                              - unix
-                              - unixgram
-                              - unixpacket
+                                - tcp
+                                - tcp4
+                                - tcp6
+                                - udp
+                                - udp4
+                                - udp6
+                                - unix
+                                - unixgram
+                                - unixpacket
                             password:
                               type: string
                             pool_size:
@@ -14975,15 +14971,15 @@ spec:
                                     network:
                                       type: string
                                       enum:
-                                      - tcp
-                                      - tcp4
-                                      - tcp6
-                                      - udp
-                                      - udp4
-                                      - udp6
-                                      - unix
-                                      - unixgram
-                                      - unixpacket
+                                        - tcp
+                                        - tcp4
+                                        - tcp6
+                                        - udp
+                                        - udp4
+                                        - udp6
+                                        - unix
+                                        - unixgram
+                                        - unixpacket
                                     probe_wait_time:
                                       type: string
                                     socket_option:
@@ -15069,15 +15065,15 @@ spec:
                                     network:
                                       type: string
                                       enum:
-                                      - tcp
-                                      - tcp4
-                                      - tcp6
-                                      - udp
-                                      - udp4
-                                      - udp6
-                                      - unix
-                                      - unixgram
-                                      - unixpacket
+                                        - tcp
+                                        - tcp4
+                                        - tcp6
+                                        - udp
+                                        - udp4
+                                        - udp6
+                                        - unix
+                                        - unixgram
+                                        - unixpacket
                                     probe_wait_time:
                                       type: string
                                     socket_option:
@@ -15144,15 +15140,15 @@ spec:
                                     network:
                                       type: string
                                       enum:
-                                      - tcp
-                                      - tcp4
-                                      - tcp6
-                                      - udp
-                                      - udp4
-                                      - udp6
-                                      - unix
-                                      - unixgram
-                                      - unixpacket
+                                        - tcp
+                                        - tcp4
+                                        - tcp6
+                                        - udp
+                                        - udp4
+                                        - udp6
+                                        - unix
+                                        - unixgram
+                                        - unixpacket
                                     probe_wait_time:
                                       type: string
                                     socket_option:
@@ -15216,15 +15212,15 @@ spec:
                                     network:
                                       type: string
                                       enum:
-                                      - tcp
-                                      - tcp4
-                                      - tcp6
-                                      - udp
-                                      - udp4
-                                      - udp6
-                                      - unix
-                                      - unixgram
-                                      - unixpacket
+                                        - tcp
+                                        - tcp4
+                                        - tcp6
+                                        - udp
+                                        - udp4
+                                        - udp6
+                                        - unix
+                                        - unixgram
+                                        - unixpacket
                                     probe_wait_time:
                                       type: string
                                     socket_option:
@@ -15291,9 +15287,9 @@ spec:
                                           items:
                                             type: string
                                             enum:
-                                            - RecoverInterceptor
-                                            - AccessLogInterceptor
-                                            - TracePayloadInterceptor
+                                              - RecoverInterceptor
+                                              - AccessLogInterceptor
+                                              - TracePayloadInterceptor
                                         keepalive:
                                           type: object
                                           properties:
@@ -15322,15 +15318,15 @@ spec:
                                     network:
                                       type: string
                                       enum:
-                                      - tcp
-                                      - tcp4
-                                      - tcp6
-                                      - udp
-                                      - udp4
-                                      - udp6
-                                      - unix
-                                      - unixgram
-                                      - unixpacket
+                                        - tcp
+                                        - tcp4
+                                        - tcp6
+                                        - udp
+                                        - udp4
+                                        - udp6
+                                        - unix
+                                        - unixgram
+                                        - unixpacket
                                     probe_wait_time:
                                       type: string
                                     restart:
@@ -15396,15 +15392,15 @@ spec:
                                     network:
                                       type: string
                                       enum:
-                                      - tcp
-                                      - tcp4
-                                      - tcp6
-                                      - udp
-                                      - udp4
-                                      - udp6
-                                      - unix
-                                      - unixgram
-                                      - unixpacket
+                                        - tcp
+                                        - tcp4
+                                        - tcp6
+                                        - udp
+                                        - udp4
+                                        - udp6
+                                        - unix
+                                        - unixgram
+                                        - unixpacket
                                     probe_wait_time:
                                       type: string
                                     socket_option:
@@ -15459,9 +15455,9 @@ spec:
                     serviceType:
                       type: string
                       enum:
-                      - ClusterIP
-                      - LoadBalancer
-                      - NodePort
+                        - ClusterIP
+                        - LoadBalancer
+                        - NodePort
                     terminationGracePeriodSeconds:
                       type: integer
                       minimum: 0
@@ -15490,4 +15486,3 @@ spec:
                       items:
                         type: object
                         x-kubernetes-preserve-unknown-fields: true
-

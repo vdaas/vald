@@ -99,20 +99,42 @@ charts/vald-helm-operator/values.schema.json: \
 	GOPRIVATE=$(GOPRIVATE) \
 	go run hack/helm/schema/gen/main.go charts/vald-helm-operator/values.yaml > charts/vald-helm-operator/values.schema.json
 
+.PHONY: yq/install
+## install yq
+yq/install: $(BINDIR)/yq
+
+ifeq ($(UNAME),Darwin)
+$(BINDIR)/yq:
+	mkdir -p $(BINDIR)
+	cd $(TEMP_DIR) \
+	    && curl -Lo $(BINDIR)/yq https://github.com/mikefarah/yq/releases/download/$(YQ_VERSION)/yq_darwin_amd64 \
+	    && chmod a+x $(BINDIR)/yq
+else
+$(BINDIR)/yq:
+	mkdir -p $(BINDIR)
+	cd $(TEMP_DIR) \
+	    && curl -Lo $(BINDIR)/yq https://github.com/mikefarah/yq/releases/download/$(YQ_VERSION)/yq_linux_amd64 \
+	    && chmod a+x $(BINDIR)/yq
+endif
+
 .PHONY: helm/schema/crd/vald
 ## generate OpenAPI v3 schema for ValdRelease
-helm/schema/crd/vald:
+helm/schema/crd/vald: \
+	yq/install
 	mv charts/vald-helm-operator/crds/valdrelease.yaml $(TEMP_DIR)/valdrelease.yaml
-	head -n 79 $(TEMP_DIR)/valdrelease.yaml > charts/vald-helm-operator/crds/valdrelease.yaml
 	GOPRIVATE=$(GOPRIVATE) \
 	go run hack/helm/schema/crd/main.go \
-	charts/vald/values.yaml 12 >> charts/vald-helm-operator/crds/valdrelease.yaml
+	charts/vald/values.yaml > $(TEMP_DIR)/valdrelease-spec.yaml
+	yq eval-all 'select(fileIndex==0).spec.versions[0].schema.openAPIV3Schema.properties.spec = select(fileIndex==1).spec | select(fileIndex==0)' \
+	$(TEMP_DIR)/valdrelease.yaml $(TEMP_DIR)/valdrelease-spec.yaml > charts/vald-helm-operator/crds/valdrelease.yaml
 
 .PHONY: helm/schema/crd/vald-helm-operator
 ## generate OpenAPI v3 schema for ValdHelmOperatorRelease
-helm/schema/crd/vald-helm-operator:
+helm/schema/crd/vald-helm-operator: \
+	yq/install
 	mv charts/vald-helm-operator/crds/valdhelmoperatorrelease.yaml $(TEMP_DIR)/valdhelmoperatorrelease.yaml
-	head -n 67 $(TEMP_DIR)/valdhelmoperatorrelease.yaml > charts/vald-helm-operator/crds/valdhelmoperatorrelease.yaml
 	GOPRIVATE=$(GOPRIVATE) \
 	go run hack/helm/schema/crd/main.go \
-	charts/vald-helm-operator/values.yaml 12 >> charts/vald-helm-operator/crds/valdhelmoperatorrelease.yaml
+	charts/vald-helm-operator/values.yaml > $(TEMP_DIR)/valdhelmoperatorrelease-spec.yaml
+	yq eval-all 'select(fileIndex==0).spec.versions[0].schema.openAPIV3Schema.properties.spec = select(fileIndex==1).spec | select(fileIndex==0)' \
+	$(TEMP_DIR)/valdhelmoperatorrelease.yaml $(TEMP_DIR)/valdhelmoperatorrelease-spec.yaml > charts/vald-helm-operator/crds/valdhelmoperatorrelease.yaml
