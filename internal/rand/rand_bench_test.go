@@ -24,7 +24,9 @@ func BenchmarkUint32(b *testing.B) {
 	b.ReportAllocs()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			Uint32()
+			if u := Uint32(); u < 0 {
+				b.Errorf("Uint32() returns invalid value: %d", u)
+			}
 		}
 	})
 }
@@ -33,7 +35,9 @@ func BenchmarkLimitedUint32_0(b *testing.B) {
 	b.ReportAllocs()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			LimitedUint32(0)
+			if u := LimitedUint32(0); u < 0 {
+				b.Errorf("LimitedUint32(0) returns invalid value: %d", u)
+			}
 		}
 	})
 }
@@ -42,7 +46,9 @@ func BenchmarkLimitedUint32_10(b *testing.B) {
 	b.ReportAllocs()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			LimitedUint32(10)
+			if u := LimitedUint32(10); u < 0 {
+				b.Errorf("LimitedUint32(10) returns invalid value: %d", u)
+			}
 		}
 	})
 }
@@ -51,7 +57,9 @@ func BenchmarkLimitedUint32_100(b *testing.B) {
 	b.ReportAllocs()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			LimitedUint32(100)
+			if u := LimitedUint32(100); u < 0 {
+				b.Errorf("LimitedUint32(100) returns invalid value: %d", u)
+			}
 		}
 	})
 }
@@ -60,7 +68,9 @@ func BenchmarkLimitedUint32_MaxUint64(b *testing.B) {
 	b.ReportAllocs()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			LimitedUint32(math.MaxUint64)
+			if u := LimitedUint32(math.MaxUint32); u < 0 {
+				b.Errorf("LimitedUint32(math.MaxUint32) returns invalid value: %d", u)
+			}
 		}
 	})
 }
@@ -74,7 +84,9 @@ func Benchmark_rand_Uint32_0(b *testing.B) {
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			r.Uint32()
+			if u := r.Uint32(); u < 0 {
+				b.Errorf("r.Uint32() returns invalid value: %d", u)
+			}
 		}
 	})
 }
@@ -88,7 +100,9 @@ func Benchmark_rand_Uint32_10(b *testing.B) {
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			r.Uint32()
+			if u := r.Uint32(); u < 0 {
+				b.Errorf("r.Uint32() returns invalid value: %d", u)
+			}
 		}
 	})
 }
@@ -102,7 +116,9 @@ func Benchmark_rand_Uint32_100(b *testing.B) {
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			r.Uint32()
+			if u := r.Uint32(); u < 0 {
+				b.Errorf("r.Uint32() returns invalid value: %d", u)
+			}
 		}
 	})
 }
@@ -116,7 +132,9 @@ func Benchmark_rand_Uint32_MaxUint32(b *testing.B) {
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			r.Uint32()
+			if u := r.Uint32(); u < 0 {
+				b.Errorf("r.Uint32() returns invalid value: %d", u)
+			}
 		}
 	})
 }
@@ -127,7 +145,9 @@ func Benchmark_rand_init_0(b *testing.B) {
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			r.init()
+			if rand := r.init(); rand.x == nil {
+				b.Errorf("r.init() returns invalid object: %#v", rand)
+			}
 		}
 	})
 }
@@ -141,7 +161,9 @@ func Benchmark_rand_init_10(b *testing.B) {
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			r.Uint32()
+			if rand := r.init(); rand.x == nil {
+				b.Errorf("r.init() returns invalid object: %#v", rand)
+			}
 		}
 	})
 }
@@ -155,7 +177,9 @@ func Benchmark_rand_init_100(b *testing.B) {
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			r.Uint32()
+			if rand := r.init(); rand.x == nil {
+				b.Errorf("r.init() returns invalid object: %#v", rand)
+			}
 		}
 	})
 }
@@ -169,7 +193,9 @@ func Benchmark_rand_init_MaxUint32(b *testing.B) {
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			r.Uint32()
+			if rand := r.init(); rand.x == nil {
+				b.Errorf("r.init() returns invalid object: %#v", rand)
+			}
 		}
 	})
 }
