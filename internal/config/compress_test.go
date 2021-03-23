@@ -386,8 +386,8 @@ func TestCompressor_Bind(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *Compressor) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got *Compressor) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -396,45 +396,61 @@ func TestCompressor_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           CompressCore: CompressCore{},
-		           ConcurrentLimit: 0,
-		           QueueCheckDuration: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			return test{
+				name: "return Compressor when the bind successes",
+				fields: fields{
+					QueueCheckDuration: "5ms",
+				},
+				want: want{
+					want: &Compressor{
+						QueueCheckDuration: "5ms",
+					},
+				},
+			}
+		}(),
+		func() test {
+			key := "QUEUE_CHECK_DURATION"
+			wantVal := "5ms"
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           CompressCore: CompressCore{},
-		           ConcurrentLimit: 0,
-		           QueueCheckDuration: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			var cm CompressCore
+
+			return test{
+				name: "return Compressor when the bind successes and the data is loaded from the environment variable",
+				fields: fields{
+					QueueCheckDuration: "_" + key + "_",
+					CompressCore:       cm,
+				},
+				beforeFunc: func(t *testing.T) {
+					t.Helper()
+					if err := os.Setenv(key, wantVal); err != nil {
+						t.Fatal(err)
+					}
+				},
+				afterFunc: func(t *testing.T) {
+					t.Helper()
+					if err := os.Unsetenv(key); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					want: &Compressor{
+						QueueCheckDuration: "5ms",
+						CompressCore:       cm,
+					},
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -467,8 +483,8 @@ func TestCompressorRegisterer_Bind(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *CompressorRegisterer) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got *CompressorRegisterer) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -477,45 +493,82 @@ func TestCompressorRegisterer_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           ConcurrentLimit: 0,
-		           QueueCheckDuration: "",
-		           Compressor: BackupManager{},
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			return test{
+				name: "return CompressorRegisterer when the bind successes",
+				fields: fields{
+					ConcurrentLimit:    10,
+					QueueCheckDuration: "5ms",
+				},
+				want: want{
+					want: &CompressorRegisterer{
+						ConcurrentLimit:    10,
+						QueueCheckDuration: "5ms",
+						Compressor:         new(BackupManager),
+					},
+				},
+			}
+		}(),
+		func() test {
+			key := "QUEUE_CHECK_DURATION"
+			wantVal := "5ms"
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           ConcurrentLimit: 0,
-		           QueueCheckDuration: "",
-		           Compressor: BackupManager{},
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			return test{
+				name: "return CompressorRegisterer when the bind successes and the data is loaded from the environment variable",
+				fields: fields{
+					ConcurrentLimit:    10,
+					QueueCheckDuration: "_" + key + "_",
+				},
+				want: want{
+					want: &CompressorRegisterer{
+						ConcurrentLimit:    10,
+						QueueCheckDuration: "5ms",
+						Compressor:         new(BackupManager),
+					},
+				},
+				beforeFunc: func(t *testing.T) {
+					t.Helper()
+					if err := os.Setenv(key, wantVal); err != nil {
+						t.Fatal(err)
+					}
+				},
+				afterFunc: func(t *testing.T) {
+					t.Helper()
+					if err := os.Unsetenv(key); err != nil {
+						t.Fatal(err)
+					}
+				},
+			}
+		}(),
+		func() test {
+			bm := new(BackupManager)
+
+			return test{
+				name: "return CompressorRegisterer when the bind successes and Compressor is nil",
+				fields: fields{
+					ConcurrentLimit:    10,
+					QueueCheckDuration: "5ms",
+					Compressor:         bm,
+				},
+				want: want{
+					want: &CompressorRegisterer{
+						ConcurrentLimit:    10,
+						QueueCheckDuration: "5ms",
+						Compressor:         bm,
+					},
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
