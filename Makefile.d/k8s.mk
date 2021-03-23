@@ -58,7 +58,6 @@ k8s/manifest/helm-operator/clean:
 k8s/manifest/helm-operator/update: \
 	k8s/manifest/helm-operator/clean
 	helm template \
-	    --set vald.create=true \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald-helm-operator
 	mkdir -p k8s/operator
