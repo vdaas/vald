@@ -2,31 +2,18 @@ package location
 
 import (
 	"testing"
-	"time"
 )
-
-var loc *time.Location
 
 func BenchmarkGMT(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			GMT()
+			if l := GMT(); l == nil {
+				b.Error("GMT return nil")
+			}
 		}
 	})
-}
-
-func BenchmarkGMT1(b *testing.B) {
-	b.ReportAllocs()
-	b.ResetTimer()
-	var l *time.Location
-	b.RunParallel(func(pb *testing.PB) {
-		for pb.Next() {
-			l = GMT()
-		}
-	})
-	loc = l
 }
 
 func BenchmarkUTC(b *testing.B) {
@@ -34,21 +21,11 @@ func BenchmarkUTC(b *testing.B) {
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			UTC()
+			if l := UTC(); l == nil {
+				b.Error("UTC return nil")
+			}
 		}
 	})
-}
-
-func BenchmarkUTC1(b *testing.B) {
-	b.ReportAllocs()
-	b.ResetTimer()
-	var l *time.Location
-	b.RunParallel(func(pb *testing.PB) {
-		for pb.Next() {
-			l = UTC()
-		}
-	})
-	loc = l
 }
 
 func BenchmarkJST(b *testing.B) {
@@ -56,19 +33,9 @@ func BenchmarkJST(b *testing.B) {
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			JST()
+			if l := JST(); l == nil {
+				b.Error("JST return nil")
+			}
 		}
 	})
-}
-
-func BenchmarkJST1(b *testing.B) {
-	b.ReportAllocs()
-	b.ResetTimer()
-	var l *time.Location
-	b.RunParallel(func(pb *testing.PB) {
-		for pb.Next() {
-			l = JST()
-		}
-	})
-	loc = l
 }
