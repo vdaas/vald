@@ -29,7 +29,7 @@ k8s/manifest/clean:
 k8s/manifest/update: \
 	k8s/manifest/clean
 	helm template \
-	    --values charts/vald/values-dev.yaml \
+	    --values charts/vald/values/dev.yaml \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
 	mkdir -p k8s/gateway
@@ -74,7 +74,7 @@ k8s/vald/deploy: \
 	k8s/external/redis/deploy \
 	k8s/metrics/metrics-server/deploy
 	helm template \
-	    --values charts/vald/values-dev.yaml \
+	    --values charts/vald/values/dev.yaml \
 	    --set defaults.image.tag=$(VERSION) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
@@ -114,7 +114,7 @@ k8s/vald/deploy/cassandra: \
 	k8s/external/cassandra/deploy \
 	k8s/metrics/metrics-server/deploy
 	helm template \
-	    --values charts/vald/values-cassandra.yaml \
+	    --values charts/vald/values/cassandra.yaml \
 	    --set defaults.image.tag=$(VERSION) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
@@ -139,7 +139,7 @@ k8s/vald/delete/cassandra: \
 	k8s/external/cassandra/delete \
 	k8s/metrics/metrics-server/delete
 	helm template \
-	    --values charts/vald/values-cassandra.yaml \
+	    --values charts/vald/values/cassandra.yaml \
 	    --set defaults.image.tag=$(VERSION) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
@@ -162,7 +162,7 @@ k8s/vald/deploy/scylla: \
 	k8s/external/scylla/deploy \
 	k8s/metrics/metrics-server/deploy
 	helm template \
-	    --values charts/vald/values-scylla.yaml \
+	    --values charts/vald/values/scylla.yaml \
 	    --set defaults.image.tag=$(VERSION) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
@@ -185,7 +185,7 @@ k8s/vald/delete/scylla: \
 	k8s/external/scylla/delete \
 	k8s/metrics/metrics-server/delete
 	helm template \
-	    --values charts/vald/values-scylla.yaml \
+	    --values charts/vald/values/scylla.yaml \
 	    --set defaults.image.tag=$(VERSION) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
