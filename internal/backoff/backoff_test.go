@@ -19,6 +19,7 @@ package backoff
 
 import (
 	"context"
+	"os"
 	"reflect"
 	"sync"
 	"testing"
@@ -28,6 +29,13 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"go.uber.org/goleak"
 )
+
+const str = "success"
+
+func TestMain(m *testing.M) {
+	log.Init()
+	os.Exit(m.Run())
+}
 
 func TestNew(t *testing.T) {
 	type test struct {
@@ -73,269 +81,6 @@ func TestNew(t *testing.T) {
 	}
 }
 
-func Test_backoff_Do(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		fn   func(context.Context) (interface{}, bool, error)
-		opts []Option
-	}
-
-	type test struct {
-		name      string
-		args      args
-		ctxFn     func() (context.Context, context.CancelFunc)
-		checkFunc func(got, want error) error
-		want      error
-	}
-
-	tests := []test{
-		func() test {
-			cnt := 0
-			fn := func(context.Context) (interface{}, bool, error) {
-				cnt++
-				return nil, false, nil
-			}
-
-			return test{
-				name: "returns response and nil when function return not nil",
-				args: args{
-					fn: fn,
-					opts: []Option{
-						WithDisableErrorLog(),
-					},
-				},
-				ctxFn: func() (context.Context, context.CancelFunc) {
-					return context.WithCancel(context.Background())
-				},
-				checkFunc: func(got, want error) error {
-					if cnt != 1 {
-						return errors.Errorf("error count is wrong, want: %v, got: %v", 2, cnt)
-					}
-
-					if !errors.Is(want, got) {
-						return errors.Errorf("not equals. want: %v, got: %v", want, got)
-					}
-
-					return nil
-				},
-				want: nil,
-			}
-		}(),
-
-		func() test {
-			cnt := 0
-			fn := func(context.Context) (interface{}, bool, error) {
-				cnt++
-				if cnt == 2 {
-					return nil, false, nil
-				}
-				return nil, true, errors.Errorf("error (%d)", cnt)
-			}
-
-			return test{
-				name: "returns response and nil when retried twice and did not return an error",
-				args: args{
-					fn: fn,
-					opts: []Option{
-						WithDisableErrorLog(),
-						WithRetryCount(6),
-					},
-				},
-				ctxFn: func() (context.Context, context.CancelFunc) {
-					return context.WithCancel(context.Background())
-				},
-				checkFunc: func(got, want error) error {
-					if cnt != 2 {
-						return errors.Errorf("error count is wrong, want: %v, got: %v", 2, cnt)
-					}
-
-					if !errors.Is(want, got) {
-						return errors.Errorf("not equals. want: %v, got: %v", want, got)
-					}
-
-					return nil
-				},
-				want: nil,
-			}
-		}(),
-
-		func() test {
-			cnt := 0
-			err := errors.New("not retryable error")
-			fn := func(context.Context) (interface{}, bool, error) {
-				cnt++
-				return nil, false, err
-			}
-
-			return test{
-				name: "returns error when retryable is false",
-				args: args{
-					fn: fn,
-					opts: []Option{
-						WithDisableErrorLog(),
-						WithRetryCount(6),
-					},
-				},
-				ctxFn: func() (context.Context, context.CancelFunc) {
-					return context.WithCancel(context.Background())
-				},
-				checkFunc: func(got, want error) error {
-					if cnt != 1 {
-						return errors.Errorf("error count is wrong, want: %v, got: %v", 1, cnt)
-					}
-
-					if !errors.Is(want, got) {
-						return errors.Errorf("not equals. want: %v, got: %v", want, got)
-					}
-
-					return nil
-				},
-				want: err,
-			}
-		}(),
-
-		func() test {
-			cnt := 0
-			fn := func(context.Context) (interface{}, bool, error) {
-				cnt++
-				return nil, true, errors.Errorf("error (%d)", cnt)
-			}
-
-			return test{
-				name: "returns error when retrying the maximum number of times",
-				args: args{
-					fn: fn,
-					opts: []Option{
-						WithRetryCount(6),
-					},
-				},
-				ctxFn: func() (context.Context, context.CancelFunc) {
-					return context.WithCancel(context.Background())
-				},
-				checkFunc: func(got, want error) error {
-					if cnt != 7 {
-						return errors.Errorf("error count is wrong, want: %v, got: %v", 7, cnt)
-					}
-
-					if want.Error() != got.Error() {
-						return errors.Errorf("not equals. want: %v, got: %v", want, got)
-					}
-
-					return nil
-				},
-				want: errors.New("error (7)"),
-			}
-		}(),
-
-		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
-
-			cnt := 0
-			fn := func(context.Context) (interface{}, bool, error) {
-				cnt++
-				if cnt == 2 {
-					cancel()
-				}
-				return nil, true, errors.Errorf("error (%d)", cnt)
-			}
-
-			return test{
-				name: "return response and error when context canceled",
-				args: args{
-					fn: fn,
-					opts: []Option{
-						WithDisableErrorLog(),
-						WithRetryCount(6),
-					},
-				},
-				ctxFn: func() (context.Context, context.CancelFunc) {
-					return ctx, cancel
-				},
-				checkFunc: func(got, want error) error {
-					if cnt != 2 {
-						return errors.Errorf("error count is wrong, want: %v, got: %v", 2, cnt)
-					}
-
-					if got.Error() != want.Error() {
-						return errors.Errorf("not equals. want: %v, got: %v", want, got)
-					}
-
-					return nil
-				},
-				want: errors.Wrap(context.Canceled, errors.New("error (2)").Error()),
-			}
-		}(),
-
-		func() test {
-			err := errors.New("error")
-			fn := func(context.Context) (interface{}, bool, error) {
-				return nil, true, err
-			}
-
-			return test{
-				name: "return response and error when backoff timeout",
-				args: args{
-					fn: fn,
-					opts: []Option{
-						WithDisableErrorLog(),
-						WithRetryCount(6),
-						WithBackOffTimeLimit("0s"),
-					},
-				},
-				ctxFn: func() (context.Context, context.CancelFunc) {
-					return context.WithCancel(context.Background())
-				},
-				checkFunc: func(got, want error) error {
-					if !errors.Is(got, want) {
-						return errors.Errorf("not equals. want: %v, got: %v", want, got)
-					}
-					return nil
-				},
-				want: err,
-			}
-		}(),
-	}
-
-	log.Init()
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			ctx, cancel := test.ctxFn()
-			defer cancel()
-			_, err := New(test.args.opts...).Do(ctx, test.args.fn)
-			if test.want == nil && err != nil {
-				t.Errorf("Do return err: %v", err)
-			}
-
-			if err := test.checkFunc(err, test.want); err != nil {
-				t.Error(err)
-			}
-		})
-	}
-}
-
-func TestClose(t *testing.T) {
-	type test struct {
-		name string
-		bo   *backoff
-	}
-
-	tests := []test{
-		{
-			name: "processing is successes",
-			bo: &backoff{
-				wg: sync.WaitGroup{},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.bo.Close()
-		})
-	}
-}
-
 func Test_backoff_addJitter(t *testing.T) {
 	t.Parallel()
 	type args struct {
@@ -372,62 +117,25 @@ func Test_backoff_addJitter(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           dur: 0,
-		       },
-		       fields: fields {
-		           wg: sync.WaitGroup{},
-		           backoffFactor: 0,
-		           initialDuration: 0,
-		           jittedInitialDuration: 0,
-		           jitterLimit: 0,
-		           durationLimit: 0,
-		           maxDuration: 0,
-		           maxRetryCount: 0,
-		           backoffTimeLimit: nil,
-		           errLog: false,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           dur: 0,
-		           },
-		           fields: fields {
-		           wg: sync.WaitGroup{},
-		           backoffFactor: 0,
-		           initialDuration: 0,
-		           jittedInitialDuration: 0,
-		           jitterLimit: 0,
-		           durationLimit: 0,
-		           maxDuration: 0,
-		           maxRetryCount: 0,
-		           backoffTimeLimit: nil,
-		           errLog: false,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			return test{
+				name: "success when dur is 0",
+				args: args{
+					dur: 0,
+				},
+				fields: fields{
+					jitterLimit: 100,
+				},
+				want: want{},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -461,16 +169,7 @@ func Test_backoff_addJitter(t *testing.T) {
 func Test_backoff_Close(t *testing.T) {
 	t.Parallel()
 	type fields struct {
-		wg                    sync.WaitGroup
-		backoffFactor         float64
-		initialDuration       float64
-		jittedInitialDuration float64
-		jitterLimit           float64
-		durationLimit         float64
-		maxDuration           float64
-		maxRetryCount         int
-		backoffTimeLimit      time.Duration
-		errLog                bool
+		wg sync.WaitGroup
 	}
 	type want struct{}
 	type test struct {
@@ -485,61 +184,411 @@ func Test_backoff_Close(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           wg: sync.WaitGroup{},
-		           backoffFactor: 0,
-		           initialDuration: 0,
-		           jittedInitialDuration: 0,
-		           jitterLimit: 0,
-		           durationLimit: 0,
-		           maxDuration: 0,
-		           maxRetryCount: 0,
-		           backoffTimeLimit: nil,
-		           errLog: false,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           wg: sync.WaitGroup{},
-		           backoffFactor: 0,
-		           initialDuration: 0,
-		           jittedInitialDuration: 0,
-		           jitterLimit: 0,
-		           durationLimit: 0,
-		           maxDuration: 0,
-		           maxRetryCount: 0,
-		           backoffTimeLimit: nil,
-		           errLog: false,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "success backoff Close",
+			fields: fields{
+				wg: sync.WaitGroup{},
+			},
+			want: want{},
+		},
 	}
 
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			b := &backoff{
+				wg: test.fields.wg,
+			}
+
+			b.Close()
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_backoff_Do(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ctx context.Context
+		f   func(ctx context.Context) (val interface{}, retryable bool, err error)
+	}
+	type fields struct {
+		wg                    sync.WaitGroup
+		backoffFactor         float64
+		initialDuration       float64
+		jittedInitialDuration float64
+		jitterLimit           float64
+		durationLimit         float64
+		maxDuration           float64
+		maxRetryCount         int
+		backoffTimeLimit      time.Duration
+		errLog                bool
+	}
+	type want struct {
+		wantRes interface{}
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, interface{}, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRes interface{}, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		func() test {
+			ctx := context.Background()
+			err := errors.New("error is occurred")
+			f := func(context.Context) (interface{}, bool, error) {
+				return nil, false, err
+			}
+			return test{
+				name: "return nil response and error when function returns (nil, false, error) and not retriable",
+				args: args{
+					ctx: ctx,
+					f:   f,
+				},
+				want: want{
+					err: err,
+				},
+			}
+		}(),
+		func() test {
+			ctx := context.Background()
+			f := func(context.Context) (interface{}, bool, error) {
+				return nil, true, nil
+			}
+			return test{
+				name: "return nil response and nil error when function returns (nil, true, nil) and not retriable",
+				args: args{
+					ctx: ctx,
+					f:   f,
+				},
+				want: want{},
+			}
+		}(),
+		func() test {
+			ctx := context.Background()
+			err := errors.New("erros is occurred")
+			f := func(context.Context) (interface{}, bool, error) {
+				return nil, false, err
+			}
+			return test{
+				name: "return nil response and error when function return (nil, true, error) and maxRetryCount = 0",
+				args: args{
+					ctx: ctx,
+					f:   f,
+				},
+				fields: fields{
+					wg:                    sync.WaitGroup{},
+					backoffFactor:         0,
+					initialDuration:       0,
+					jittedInitialDuration: 0,
+					jitterLimit:           0,
+					durationLimit:         0,
+					maxDuration:           0,
+					maxRetryCount:         0,
+					backoffTimeLimit:      0,
+					errLog:                false,
+				},
+				want: want{
+					wantRes: nil,
+					err:     err,
+				},
+			}
+		}(),
+		func() test {
+			ctx := context.Background()
+			err := errors.New("erros is occurred")
+			f := func(context.Context) (interface{}, bool, error) {
+				return str, true, err
+			}
+			return test{
+				name: "return response and nil error when function return (string, true, error) and maxRetryCount = 1",
+				args: args{
+					ctx: ctx,
+					f:   f,
+				},
+				fields: fields{
+					wg:                    sync.WaitGroup{},
+					backoffFactor:         0,
+					initialDuration:       0,
+					jittedInitialDuration: 0,
+					jitterLimit:           0,
+					durationLimit:         0,
+					maxDuration:           0,
+					maxRetryCount:         1,
+					backoffTimeLimit:      10 * time.Minute,
+					errLog:                false,
+				},
+				want: want{
+					wantRes: str,
+					err:     err,
+				},
+			}
+		}(),
+		func() test {
+			ctx := context.Background()
+			err := errors.New("erros is occurred")
+			cnt := 0
+			f := func(context.Context) (interface{}, bool, error) {
+				cnt++
+				if cnt == 2 {
+					return str, false, err
+				}
+				return str, true, err
+			}
+			return test{
+				name: "return response and error when function return (string, false, error) at 2nd times and maxRetryCount = 1",
+				args: args{
+					ctx: ctx,
+					f:   f,
+				},
+				fields: fields{
+					wg:                    sync.WaitGroup{},
+					backoffFactor:         0,
+					initialDuration:       0,
+					jittedInitialDuration: 0,
+					jitterLimit:           0,
+					durationLimit:         0,
+					maxDuration:           0,
+					maxRetryCount:         1,
+					backoffTimeLimit:      10 * time.Minute,
+					errLog:                false,
+				},
+				want: want{
+					wantRes: str,
+					err:     err,
+				},
+			}
+		}(),
+		func() test {
+			ctx := context.Background()
+			err := errors.New("erros is occurred")
+			cnt := 0
+			f := func(context.Context) (interface{}, bool, error) {
+				cnt++
+				if cnt == 2 {
+					return str, true, nil
+				}
+				return str, true, err
+			}
+			return test{
+				name: "return response and nil error when function return (string, true, nil) at 2nd times and maxRetryCount = 1",
+				args: args{
+					ctx: ctx,
+					f:   f,
+				},
+				fields: fields{
+					wg:                    sync.WaitGroup{},
+					backoffFactor:         0,
+					initialDuration:       0,
+					jittedInitialDuration: 0,
+					jitterLimit:           0,
+					durationLimit:         0,
+					maxDuration:           0,
+					maxRetryCount:         1,
+					backoffTimeLimit:      10 * time.Minute,
+					errLog:                false,
+				},
+				want: want{
+					wantRes: str,
+				},
+			}
+		}(),
+		func() test {
+			ctx := context.Background()
+			err := errors.New("erros is occurred")
+			f := func(context.Context) (interface{}, bool, error) {
+				return str, true, err
+			}
+			return test{
+				name: "return response and error when function return (string, false, error) and maxRetryCount = 1, errLog is true",
+				args: args{
+					ctx: ctx,
+					f:   f,
+				},
+				fields: fields{
+					wg:                    sync.WaitGroup{},
+					backoffFactor:         0,
+					initialDuration:       0,
+					jittedInitialDuration: 0,
+					jitterLimit:           0,
+					durationLimit:         10,
+					maxDuration:           0,
+					maxRetryCount:         1,
+					backoffTimeLimit:      10 * time.Minute,
+					errLog:                true,
+				},
+				want: want{
+					wantRes: str,
+					err:     err,
+				},
+			}
+		}(),
+		func() test {
+			ctx := context.Background()
+			err := errors.New("erros is occurred")
+			f := func(context.Context) (interface{}, bool, error) {
+				return str, true, err
+			}
+			return test{
+				name: "return nil response and error when function returns (string, false, error) and context will be closed due to timelimit",
+				args: args{
+					ctx: ctx,
+					f:   f,
+				},
+				fields: fields{
+					wg:                    sync.WaitGroup{},
+					backoffFactor:         0,
+					initialDuration:       0,
+					jittedInitialDuration: 0,
+					jitterLimit:           0,
+					durationLimit:         10,
+					maxDuration:           0,
+					maxRetryCount:         1,
+					backoffTimeLimit:      1 * time.Microsecond,
+					errLog:                true,
+				},
+				want: want{
+					err: errors.ErrBackoffTimeout(err),
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			err := errors.New("erros is occurred")
+			f := func(context.Context) (interface{}, bool, error) {
+				cancel()
+				return str, true, err
+			}
+			return test{
+				name: "return nil response and error when function returns (string, false, error) and calls cancel()",
+				args: args{
+					ctx: ctx,
+					f:   f,
+				},
+				fields: fields{
+					wg:                    sync.WaitGroup{},
+					backoffFactor:         0,
+					initialDuration:       0,
+					jittedInitialDuration: 0,
+					jitterLimit:           0,
+					durationLimit:         10,
+					maxDuration:           0,
+					maxRetryCount:         1,
+					backoffTimeLimit:      1 * time.Microsecond,
+					errLog:                true,
+				},
+				want: want{
+					err: err,
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			err := errors.New("erros is occurred")
+			cnt := 0
+			f := func(context.Context) (interface{}, bool, error) {
+				cnt++
+				if cnt > 1 {
+					cancel()
+				}
+				return str, true, err
+			}
+			return test{
+				name: "return response and error when function calls cancel()",
+				args: args{
+					ctx: ctx,
+					f:   f,
+				},
+				fields: fields{
+					wg:                    sync.WaitGroup{},
+					backoffFactor:         0,
+					initialDuration:       0,
+					jittedInitialDuration: 0,
+					jitterLimit:           0,
+					durationLimit:         10,
+					maxDuration:           0,
+					maxRetryCount:         1,
+					backoffTimeLimit:      100 * time.Microsecond,
+					errLog:                true,
+				},
+				want: want{
+					err: err,
+				},
+			}
+		}(),
+		func() test {
+			ctx := context.Background()
+			err := errors.New("erros is occurred")
+			cnt := 0
+			f := func(context.Context) (interface{}, bool, error) {
+				cnt++
+				if cnt > 1 {
+					time.Sleep(10000 * time.Microsecond)
+				}
+				return str, true, err
+			}
+			return test{
+				name: "return nil response and error when function returns ends due to backoffTimeLimit",
+				args: args{
+					ctx: ctx,
+					f:   f,
+				},
+				fields: fields{
+					wg:                    sync.WaitGroup{},
+					backoffFactor:         0,
+					initialDuration:       0,
+					jittedInitialDuration: 0,
+					jitterLimit:           0,
+					durationLimit:         10,
+					maxDuration:           0,
+					maxRetryCount:         1,
+					backoffTimeLimit:      100 * time.Microsecond,
+					errLog:                true,
+				},
+				want: want{
+					err: errors.ErrBackoffTimeout(err),
+				},
+			}
+		}(),
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -557,8 +606,8 @@ func Test_backoff_Close(t *testing.T) {
 				errLog:                test.fields.errLog,
 			}
 
-			b.Close()
-			if err := test.checkFunc(test.want); err != nil {
+			gotRes, err := b.Do(test.args.ctx, test.args.f)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
