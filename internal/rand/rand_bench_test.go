@@ -30,6 +30,7 @@ func BenchmarkUint32(b *testing.B) {
 }
 
 func BenchmarkLimitedUint32_0(b *testing.B) {
+	b.ReportAllocs()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			LimitedUint32(0)
