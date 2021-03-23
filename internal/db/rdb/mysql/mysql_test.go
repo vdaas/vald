@@ -4223,7 +4223,7 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 	}
 }
 
-func Test_mySQLClient_outputLog(t *testing.T) {
+func Test_mySQLClient_errorLog(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		err error
