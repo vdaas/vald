@@ -108,54 +108,6 @@ k8s/vald/delete: \
 	kubectl delete -f k8s/discoverer
 	kubectl delete -f k8s/agent
 
-.PHONY: k8s/vald/deploy/cassandra
-## deploy vald sample cluster with cassandra to k8s
-k8s/vald/deploy/cassandra: \
-	k8s/external/cassandra/deploy \
-	k8s/metrics/metrics-server/deploy
-	helm template \
-	    --values charts/vald/values/cassandra.yaml \
-	    --set defaults.image.tag=$(VERSION) \
-	    --output-dir $(TEMP_DIR) \
-	    charts/vald
-	kubectl apply -f $(TEMP_DIR)/vald/templates/jobs/db/initialize/cassandra
-	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/backup
-	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/compressor
-	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/index
-	kubectl apply -f $(TEMP_DIR)/vald/templates/agent
-	kubectl apply -f $(TEMP_DIR)/vald/templates/discoverer
-	kubectl apply -f $(TEMP_DIR)/vald/templates/meta
-	# kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/vald
-	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/lb
-	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/backup
-	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/meta
-	rm -rf $(TEMP_DIR)
-	kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr " " "\n"
-
-
-.PHONY: k8s/vald/delete/cassandra
-## delete vald sample cluster with cassandra to k8s
-k8s/vald/delete/cassandra: \
-	k8s/external/cassandra/delete \
-	k8s/metrics/metrics-server/delete
-	helm template \
-	    --values charts/vald/values/cassandra.yaml \
-	    --set defaults.image.tag=$(VERSION) \
-	    --output-dir $(TEMP_DIR) \
-	    charts/vald
-	kubectl delete -f $(TEMP_DIR)/vald/templates/jobs/db/initialize/cassandra
-	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/backup
-	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/compressor
-	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/index
-	kubectl delete -f $(TEMP_DIR)/vald/templates/agent
-	kubectl delete -f $(TEMP_DIR)/vald/templates/discoverer
-	kubectl delete -f $(TEMP_DIR)/vald/templates/meta
-	# kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/vald
-	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/lb
-	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/backup
-	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/meta
-	rm -rf $(TEMP_DIR)
-
 .PHONY: k8s/vald/deploy/scylla
 ## deploy vald sample cluster with scylla to k8s
 k8s/vald/deploy/scylla: \
