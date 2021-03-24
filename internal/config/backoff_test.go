@@ -18,6 +18,7 @@
 package config
 
 import (
+	"os"
 	"reflect"
 	"testing"
 
@@ -45,8 +46,8 @@ func TestBackoff_Bind(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *Backoff) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got *Backoff) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -75,6 +76,33 @@ func TestBackoff_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
+			key := "INITIAL_DURATION"
+			val := "5m"
+			return test{
+				name: "return Backoff struct when initialDuration is set via the environment value",
+				fields: fields{
+					InitialDuration: "_" + key + "_",
+				},
+				beforeFunc: func(t *testing.T) {
+					t.Helper()
+					if err := os.Setenv(key, val); err != nil {
+						t.Fatal(err)
+					}
+				},
+				afterFunc: func(t *testing.T) {
+					t.Helper()
+					if err := os.Unsetenv(key); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					want: &Backoff{
+						InitialDuration: val,
+					},
+				},
+			}
+		}(),
+		func() test {
 			return test{
 				name:   "return Backoff struct when values are empty",
 				fields: fields{},
@@ -91,10 +119,10 @@ func TestBackoff_Bind(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
