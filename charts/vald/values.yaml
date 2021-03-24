@@ -4946,6 +4946,10 @@ rebalancer:
     leader_election_id: "vald-rebalancer-storage-controller"
     # @schema {"name": "rebalancer.rebalancer.job", "type": "object"}
     job:
+      # @schema {"name": "rebalancer.rebalancer.job.grpc", "type": "object"}
+      grpc:
+        # @schema {"name": "rebalancer.rebalancer.job.grpc.client", "type": "object"}
+        client: {}
       # @schema {"name": "rebalancer.rebalancer.job.client", "type": "object"}
       client:
         # @schema {"name": "rebalancer.rebalancer.job.client.net", "alias": "net"}
