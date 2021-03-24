@@ -4,8 +4,6 @@ import (
 	"testing"
 )
 
-var getResult Detail
-
 func BenchmarkString(b *testing.B) {
 	Init("benchmark")
 	b.ReportAllocs()
