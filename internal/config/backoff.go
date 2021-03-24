@@ -39,7 +39,7 @@ func (b *Backoff) Bind() *Backoff {
 	return b
 }
 
-// Opts creates and returns the slice with the functional options for internal backoff package.
+// Opts creates and returns the slice with the functional options for the internal backoff package.
 func (b *Backoff) Opts() []backoff.Option {
 	opts := make([]backoff.Option, 0, 7)
 	opts = append(opts,
