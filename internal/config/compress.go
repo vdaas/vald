@@ -110,7 +110,7 @@ type CompressorRegisterer struct {
 	Compressor *BackupManager `json:"compressor" yaml:"compressor"`
 }
 
-// Bind binds the actual data from the CompressorRegisterer reciever field.
+// Bind binds the actual data from the CompressorRegisterer receiver field.
 func (cr *CompressorRegisterer) Bind() *CompressorRegisterer {
 	cr.QueueCheckDuration = GetActualValue(cr.QueueCheckDuration)
 
