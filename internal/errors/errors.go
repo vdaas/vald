@@ -150,7 +150,6 @@ var (
 		if target == nil {
 			return err == target
 		}
-
 		isComparable := reflect.TypeOf(target).Comparable()
 		for {
 			if isComparable && (err == target ||
