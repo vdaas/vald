@@ -521,7 +521,7 @@ func Test_backoff_Do(t *testing.T) {
 				return str, true, err
 			}
 			return test{
-				name: "return nil response and error when function calls cancel()",
+				name: "return nil response and error when function returns (string, true, error) and calls cancel() in 2nd times",
 				args: args{
 					ctx: ctx,
 					f:   f,
