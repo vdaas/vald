@@ -70,6 +70,7 @@ func BenchmarkLimitedUint32_100(b *testing.B) {
 
 func BenchmarkLimitedUint32_MaxUint64(b *testing.B) {
 	b.ReportAllocs()
+	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			if u := LimitedUint32(math.MaxUint32); u < 0 {
