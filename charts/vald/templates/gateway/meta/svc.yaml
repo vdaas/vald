@@ -38,7 +38,7 @@ spec:
   {{- include "vald.servicePorts" $servers | nindent 2 }}
   selector:
     app.kubernetes.io/name: {{ include "vald.name" . }}
-    app.kubernetes.io/component: gateway
+    app.kubernetes.io/component: gateway-meta
   {{- if eq $gateway.serviceType "ClusterIP" }}
   clusterIP: None
   {{- end }}
