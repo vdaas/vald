@@ -17,10 +17,12 @@
 // Package config providers configuration type and load configuration logic
 package config
 
+// BackupManager represents the configuration of backup manager.
 type BackupManager struct {
 	Client *GRPCClient `json:"client" yaml:"client"`
 }
 
+// Bind binds the actual data of the backup manager.
 func (b *BackupManager) Bind() *BackupManager {
 	if b.Client != nil {
 		b.Client = b.Client.Bind()

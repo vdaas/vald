@@ -22,12 +22,12 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
+	"go.uber.org/goleak"
 )
 
 func TestBackupManager_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
-		Host   string
-		Port   int
 		Client *GRPCClient
 	}
 	type want struct {
@@ -48,39 +48,40 @@ func TestBackupManager_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           Host: "",
-		           Port: 0,
-		           Client: GRPCClient{},
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           Host: "",
-		           Port: 0,
-		           Client: GRPCClient{},
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return Backup when client is nil",
+			fields: fields{
+				Client: nil,
+			},
+			want: want{
+				want: &BackupManager{
+					Client: newGRPCClientConfig(),
+				},
+			},
+		},
+		func() test {
+			c := &GRPCClient{
+				HealthCheckDuration: "1s",
+			}
+			return test{
+				name: "return Backup when client is not nil",
+				fields: fields{
+					Client: c,
+				},
+				want: want{
+					want: &BackupManager{
+						Client: c.Bind(),
+					},
+				},
+			}
+		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
