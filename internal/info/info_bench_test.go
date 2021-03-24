@@ -4,39 +4,33 @@ import (
 	"testing"
 )
 
-var stringResult string
 var getResult Detail
 
-func initBench() {
-	Init("benchmark_test")
-}
-
 func BenchmarkString(b *testing.B) {
-	initBench()
-
+	Init("benchmark")
 	b.ReportAllocs()
 	b.ResetTimer()
-	var r string
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			r = String()
+			if s := String(); s == "" {
+				b.Error("String return empty string")
+			}
 		}
 	})
-	stringResult = r
 }
 
 func BenchmarkGet(b *testing.B) {
-	initBench()
-
+	sn := "benchmark"
+	Init(sn)
 	b.ReportAllocs()
 	b.ResetTimer()
-	var r Detail
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			r = Get()
+			if d := Get(); d.ServerName != sn {
+				b.Errorf("Get server name is not match, result: %s", d.ServerName)
+			}
 		}
 	})
-	getResult = r
 }
 
 func Benchmark_info_String(b *testing.B) {
@@ -47,13 +41,13 @@ func Benchmark_info_String(b *testing.B) {
 
 	b.ReportAllocs()
 	b.ResetTimer()
-	var r string
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			r = i.String()
+			if s := i.String(); s == "" {
+				b.Error("String return empty string")
+			}
 		}
 	})
-	stringResult = r
 }
 
 func Benchmark_Detail_String(b *testing.B) {
@@ -65,30 +59,31 @@ func Benchmark_Detail_String(b *testing.B) {
 
 	b.ReportAllocs()
 	b.ResetTimer()
-	var r string
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			r = d.String()
+			if s := d.String(); s == "" {
+				b.Error("String return empty string")
+			}
 		}
 	})
-	stringResult = r
 }
 
 func Benchmark_info_Get(b *testing.B) {
-	i, err := New(WithServerName("benchmark"))
+	sn := "benchmark"
+	i, err := New(WithServerName(sn))
 	if err != nil {
 		b.Fatal(err)
 	}
 
 	b.ReportAllocs()
 	b.ResetTimer()
-	var r Detail
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			r = i.Get()
+			if d := i.Get(); d.ServerName != sn {
+				b.Errorf("Get server name is not match, result: %s", d.ServerName)
+			}
 		}
 	})
-	getResult = r
 }
 
 func Benchmark_info_prepare(b *testing.B) {
@@ -116,11 +111,11 @@ func Benchmark_StackTrace_String(b *testing.B) {
 
 	b.ReportAllocs()
 	b.ResetTimer()
-	var s string
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			s = st.String()
+			if s := st.String(); s == "" {
+				b.Error("String return empty string")
+			}
 		}
 	})
-	stringResult = s
 }
