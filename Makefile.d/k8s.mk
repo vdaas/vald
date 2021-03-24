@@ -88,10 +88,16 @@ k8s/vald/deploy: \
 ## delete vald sample cluster from k8s
 k8s/vald/delete: \
 	k8s/metrics/metrics-server/delete
-	kubectl delete -f k8s/gateway/lb
-	kubectl delete -f k8s/manager/index
-	kubectl delete -f k8s/discoverer
-	kubectl delete -f k8s/agent
+	helm template \
+	    --values charts/vald/values/dev.yaml \
+	    --set defaults.image.tag=$(VERSION) \
+	    --output-dir $(TEMP_DIR) \
+	    charts/vald
+	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/lb
+	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/index
+	kubectl delete -f $(TEMP_DIR)/vald/templates/discoverer
+	kubectl delete -f $(TEMP_DIR)/vald/templates/agent
+	rm -rf $(TEMP_DIR)
 
 .PHONY: k8s/vald/deploy/scylla
 ## deploy vald sample cluster with scylla to k8s
@@ -137,6 +143,65 @@ k8s/vald/delete/scylla: \
 	kubectl delete -f $(TEMP_DIR)/vald/templates/agent
 	kubectl delete -f $(TEMP_DIR)/vald/templates/jobs/db/initialize/cassandra
 	rm -rf $(TEMP_DIR)
+
+
+.PHONY: k8s/vald-helm-operator/deploy
+## deploy vald-helm-operator to k8s
+k8s/vald-helm-operator/deploy:
+	helm template \
+	    --output-dir $(TEMP_DIR) \
+	    --set image.tag=$(VERSION) \
+	    --include-crds \
+	    charts/vald-helm-operator
+	kubectl apply -f $(TEMP_DIR)/vald-helm-operator/crds
+	kubectl apply -f $(TEMP_DIR)/vald-helm-operator/templates
+	sleep 2
+	kubectl wait --for=condition=ready pod -l name=vald-helm-operator --timeout=600s
+
+.PHONY: k8s/vald-helm-operator/delete
+## delete vald-helm-operator from k8s
+k8s/vald-helm-operator/delete:
+	helm template \
+	    --output-dir $(TEMP_DIR) \
+	    --set image.tag=$(VERSION) \
+	    --include-crds \
+	    charts/vald-helm-operator
+	kubectl delete -f $(TEMP_DIR)/vald-helm-operator/templates
+	kubectl wait --for=delete pod -l name=vald-helm-operator --timeout=600s
+	kubectl delete -f $(TEMP_DIR)/vald-helm-operator/crds
+	rm -rf $(TEMP_DIR)
+
+.PHONY: k8s/vr/deploy
+## deploy ValdRelease resource to k8s
+k8s/vr/deploy: \
+	yq/install \
+	k8s/metrics/metrics-server/deploy
+	yq eval \
+	    '{"apiVersion": "vald.vdaas.org/v1", "kind": "ValdRelease", "metadata":{"name":"vald-cluster"}, "spec": .}' \
+	    charts/vald/values/dev.yaml \
+	    | kubectl apply -f -
+
+.PHONY: k8s/vr/delete
+## delete ValdRelease resource from k8s
+k8s/vr/delete: \
+	k8s/metrics/metrics-server/delete
+	kubectl delete vr vald-cluster
+
+.PHONY: k8s/vr/deploy/scylla
+## deploy ValdRelease resource with scylla to k8s
+k8s/vr/deploy/scylla: \
+	yq/install \
+	k8s/external/scylla/deploy \
+	k8s/metrics/metrics-server/deploy
+	yq eval \
+	    '{"apiVersion": "vald.vdaas.org/v1", "kind": "ValdRelease", "metadata":{"name":"vald-cluster"}, "spec": .}' \
+	    charts/vald/values/scylla.yaml \
+	    | kubectl apply -f -
+
+.PHONY: k8s/vr/delete/scylla
+k8s/vr/delete/scylla: \
+	k8s/vr/delete \
+	k8s/external/scylla/delete
 
 .PHONY: k8s/external/mysql/deploy
 ## deploy mysql to k8s
