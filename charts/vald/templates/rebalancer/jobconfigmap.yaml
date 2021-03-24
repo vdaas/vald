@@ -124,16 +124,15 @@ data:
           {{- include "vald.grpc.client.addrs" $addrs | nindent 8 }}
           {{- $nextGRPCClient := dict "Values" $client "default" .Values.defaults.grpc.client }}
           {{- include "vald.grpc.client" $nextGRPCClient | nindent 8 }}
-        {{- else }}
+        {{- else if .Values.gateway.lb.enable }}
           {{- $gateway := .Values.gateway.lb -}}
-          {{- $client := $gateway.gateway_config.lb.client }}
           {{- $serverPort := $gateway.server_config.servers.grpc.port }}
           {{- $defaultHost := printf "%s.%s.svc.cluster.local" $gateway.name .Release.Namespace }}
           {{- $defaultPort := default .Values.defaults.server_config.servers.grpc.port $serverPort }}
           {{- $defaultAddr := (list (printf "%s:%d" $defaultHost (int64 $defaultPort))) }}
-          {{- $addrs := dict "Values" $client.addrs "default" $defaultAddr }}
+          {{- $addrs := dict "default" $defaultAddr }}
           {{- include "vald.grpc.client.addrs" $addrs | nindent 8 }}
-          {{- $nextGRPCClient := dict "Values" $client "default" .Values.defaults.grpc.client }}
+          {{- $nextGRPCClient := dict "default" .Values.defaults.grpc.client }}
           {{- include "vald.grpc.client" $nextGRPCClient | nindent 8 }}
         {{- end }}
       client:
