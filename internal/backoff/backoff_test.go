@@ -298,7 +298,7 @@ func Test_backoff_Do(t *testing.T) {
 				return nil, false, err
 			}
 			return test{
-				name: "return nil response and error when function return (nil, true, error) and maxRetryCount = 0",
+				name: "return nil response and error when function return (nil, false, error) and maxRetryCount = 0",
 				args: args{
 					ctx: ctx,
 					f:   f,
@@ -427,7 +427,7 @@ func Test_backoff_Do(t *testing.T) {
 				return str, true, err
 			}
 			return test{
-				name: "return response and error when function return (string, false, error) and maxRetryCount = 1, errLog is true",
+				name: "return response and error when function return (string, true, error) and maxRetryCount = 1, errLog is true",
 				args: args{
 					ctx: ctx,
 					f:   f,
@@ -457,7 +457,7 @@ func Test_backoff_Do(t *testing.T) {
 				return str, true, err
 			}
 			return test{
-				name: "return nil response and error when function returns (string, false, error) and context will be closed due to timelimit",
+				name: "return nil response and error when function returns (string, true, error) and context will be closed due to timelimit",
 				args: args{
 					ctx: ctx,
 					f:   f,
@@ -468,10 +468,10 @@ func Test_backoff_Do(t *testing.T) {
 					initialDuration:       0,
 					jittedInitialDuration: 0,
 					jitterLimit:           0,
-					durationLimit:         10,
+					durationLimit:         0,
 					maxDuration:           0,
 					maxRetryCount:         1,
-					backoffTimeLimit:      1 * time.Microsecond,
+					backoffTimeLimit:      0,
 					errLog:                true,
 				},
 				want: want{
@@ -487,7 +487,7 @@ func Test_backoff_Do(t *testing.T) {
 				return str, true, err
 			}
 			return test{
-				name: "return nil response and error when function returns (string, false, error) and calls cancel()",
+				name: "return nil response and error when function returns (string, true, error) and calls cancel()",
 				args: args{
 					ctx: ctx,
 					f:   f,
@@ -501,7 +501,7 @@ func Test_backoff_Do(t *testing.T) {
 					durationLimit:         10,
 					maxDuration:           0,
 					maxRetryCount:         1,
-					backoffTimeLimit:      1 * time.Microsecond,
+					backoffTimeLimit:      100 * time.Microsecond,
 					errLog:                true,
 				},
 				want: want{
@@ -550,7 +550,7 @@ func Test_backoff_Do(t *testing.T) {
 			f := func(context.Context) (interface{}, bool, error) {
 				cnt++
 				if cnt > 1 {
-					time.Sleep(10000 * time.Microsecond)
+					time.Sleep(1000 * time.Microsecond)
 				}
 				return str, true, err
 			}
