@@ -23,6 +23,7 @@ import (
 	"encoding/gob"
 	"io"
 	"reflect"
+	"sync"
 	"sync/atomic"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -141,7 +142,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 		}
 
 		// Calculate to process data from the above data
-		amntData := int64(r.rate * float64(len(idm)))
+		amntData := int(r.rate * float64(len(idm)))
 		if amntData == 0 {
 			log.Info("[job] no data to rebalance")
 			return nil
@@ -150,11 +151,16 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 
 		log.Infof("Start rebalance data: %d", amntData)
 		var errs error
+		var mu sync.Mutex
 		var parallel = 30
 		eg, egctx := errgroup.New(ctx)
 		eg.Limitation(parallel)
 		for id, _ := range idm {
 			id := id
+			select {
+			case <-egctx.Done():
+				break
+			}
 			eg.Go(func() error {
 				// get vecotr by id
 				log.Infof("[job debug] Get object data: %s", id)
@@ -165,7 +171,9 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 				})
 				if err != nil {
 					log.Error(err)
-					// errs = errors.Wrap(errs, err.Error())
+					mu.Lock()
+					errs = errors.Wrap(errs, err.Error())
+					mu.Unlock()
 					return nil
 				}
 
@@ -180,18 +188,21 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 				})
 				if err != nil {
 					log.Error(err)
-					// errs = errors.Wrap(errs, err.Error())
+					mu.Lock()
+					errs = errors.Wrap(errs, err.Error())
+					mu.Unlock()
 					return nil
 				}
 
 				n := atomic.AddInt64(&cnt, 1)
 				log.Infof("[job debug] Success Rebalance data: success amount data = %d", n)
-				if ad := atomic.AddInt64(&amntData, -1); ad == 0 {
-					log.Infof("[job debug] Finish Rebalance data: success amount data = %d", n)
-					return nil
-				}
 				return nil
 			})
+
+			if amntData--; amntData == 0 {
+				log.Infof("[job debug] Finish Rebalance data: success amount data = %d", atomic.LoadInt64(&cnt))
+				break
+			}
 		}
 		eg.Wait()
 		// for id, _ := range idm {
