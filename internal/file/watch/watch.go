@@ -77,7 +77,7 @@ func (w *watch) init() (*watch, error) {
 	}
 	w.mu.RUnlock()
 	for _, dir := range dirs {
-		log.Debugf("Watching: %s", dir)
+		log.Infof("Watching: %s", dir)
 
 		err = watcher.Add(dir)
 		if err != nil {

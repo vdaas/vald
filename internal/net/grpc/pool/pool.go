@@ -155,7 +155,7 @@ func (p *pool) Connect(ctx context.Context) (c Conn, err error) {
 			log.Debugf("establishing balanced connection to %s", addr)
 			conn, err := p.dial(ctx, addr)
 			if err != nil {
-				log.Debugf("An error occurred during dialing to %s: %s", addr, err)
+				log.Warnf("An error occurred during dialing to %s: %s", addr, err)
 				continue
 			}
 			p.pool[i].Store(&poolConn{
@@ -310,7 +310,7 @@ func (p *pool) IsHealthy(ctx context.Context) bool {
 			log.Debugf("connection for %s is unhealthy trying to dial for new connection", pc.addr)
 			conn, err := p.dial(ctx, pc.addr)
 			if err != nil {
-				log.Debugf("failed to dial connection for %s", pc.addr)
+				log.Warnf("failed to dial connection for %s", pc.addr)
 				return false
 			}
 			p.pool[i].Store(&poolConn{

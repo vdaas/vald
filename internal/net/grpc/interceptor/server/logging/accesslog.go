@@ -88,7 +88,7 @@ func AccessLogInterceptor() grpc.UnaryServerInterceptor {
 
 		if err != nil {
 			entity.Error = err
-// 			 log.Errord(rpcCompletedMessage, entity)
+			log.Infod(rpcCompletedMessage, entity)
 		} else {
 			log.Infod(rpcCompletedMessage, entity)
 		}
@@ -136,7 +136,7 @@ func AccessLogStreamInterceptor() grpc.StreamServerInterceptor {
 
 		if err != nil {
 			entity.Error = err
-// 			 log.Errord(rpcCompletedMessage, entity)
+			log.Infod(rpcCompletedMessage, entity)
 		} else {
 			log.Infod(rpcCompletedMessage, entity)
 		}
