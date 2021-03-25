@@ -132,14 +132,19 @@ func (w *watch) Start(ctx context.Context) (<-chan error, error) {
 					}
 					switch {
 					case event.Op&fsnotify.Write == fsnotify.Write && w.onWrite != nil:
+						log.Debugf("File %s modified. Trigger onWrite hook.", event.Name)
 						err = w.onWrite(ctx, event.Name)
 					case event.Op&fsnotify.Create == fsnotify.Create && w.onCreate != nil:
+						log.Debugf("File %s created. Trigger onCreate hook.", event.Name)
 						err = w.onCreate(ctx, event.Name)
 					case event.Op&fsnotify.Remove == fsnotify.Remove && w.onDelete != nil:
+						log.Debugf("File %s deleted. Trigger onDelete hook.", event.Name)
 						err = w.onDelete(ctx, event.Name)
 					case event.Op&fsnotify.Rename == fsnotify.Rename && w.onRename != nil:
+						log.Debugf("File %s renamed. Trigger onRename hook.", event.Name)
 						err = w.onRename(ctx, event.Name)
 					case event.Op&fsnotify.Chmod == fsnotify.Chmod && w.onChmod != nil:
+						log.Debugf("Permission of file %s changed. Trigger onChmod hook.", event.Name)
 						err = w.onChmod(ctx, event.Name)
 					}
 				}
