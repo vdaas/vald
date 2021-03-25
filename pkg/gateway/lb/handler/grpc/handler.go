@@ -1250,7 +1250,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 		}
 		return nil, err
 	}
-	log.Debugf("uuids %v were removed from %v because of MultiUpdate. MultiInsert will be executed for them soon. Please see detail %#v", ids, locs.GetLocations(), locs)
+	log.Debugf("uuids %v were removed from %v due to MultiUpdate. MultiInsert will be executed for them soon. Please see detail %#v", ids, locs.GetLocations(), locs)
 	locs, err = s.MultiInsert(ctx, &payload.Insert_MultiRequest{
 		Requests: ireqs,
 	})
