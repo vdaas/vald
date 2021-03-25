@@ -76,11 +76,11 @@ require (
 	go.uber.org/zap v1.16.0
 	golang.org/x/net v0.0.0-20210316092652-d523dce5a7f4
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys v0.0.0-20210316164454-77fc1eacc6aa
+	golang.org/x/sys v0.0.0-20210320140829-1e4c9ba3b0c4
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/plot v0.9.0
-	google.golang.org/api v0.42.0
-	google.golang.org/genproto v0.0.0-20210315173758-2651cd453018
+	google.golang.org/api v0.43.0
+	google.golang.org/genproto v0.0.0-20210319143718-93e7006c17a6
 	google.golang.org/grpc v1.36.0
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.20.4
