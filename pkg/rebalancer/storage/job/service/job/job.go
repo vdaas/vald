@@ -23,6 +23,7 @@ import (
 	"encoding/gob"
 	"io"
 	"reflect"
+	"sync/atomic"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
@@ -140,50 +141,94 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 		}
 
 		// Calculate to process data from the above data
-		amntData := int(r.rate * float64(len(idm)))
+		amntData := int64(r.rate * float64(len(idm)))
 		if amntData == 0 {
 			log.Info("[job] no data to rebalance")
 			return nil
 		}
-		cnt := 0
+		var cnt int64 = 0
 
 		log.Infof("Start rebalance data: %d", amntData)
 		var errs error
+		var parallel = 30
+		eg, egctx := errgroup.New(ctx)
+		eg.Limitation(parallel)
 		for id, _ := range idm {
-			// get vecotr by id
-			log.Infof("[job debug] Get object data: %s", id)
-			vec, err := r.client.GetObject(ctx, &payload.Object_VectorRequest{
-				Id: &payload.Object_ID{
-					Id: id,
-				},
-			})
-			if err != nil {
-				log.Error(err)
-				errs = errors.Wrap(errs, err.Error())
-				continue
-			}
+			id := id
+			eg.Go(func() error {
+				// get vecotr by id
+				log.Infof("[job debug] Get object data: %s", id)
+				vec, err := r.client.GetObject(egctx, &payload.Object_VectorRequest{
+					Id: &payload.Object_ID{
+						Id: id,
+					},
+				})
+				if err != nil {
+					log.Error(err)
+					// errs = errors.Wrap(errs, err.Error())
+					return nil
+				}
 
-			// update data
-			// TODO: use stream or upsert?
-			log.Infof("[job debug] Update object data: %s", id)
-			_, err = r.client.Update(ctx, &payload.Update_Request{
-				Vector: &payload.Object_Vector{
-					Id:     vec.GetId(),
-					Vector: vec.GetVector(),
-				},
-			})
-			if err != nil {
-				log.Error(err)
-				errs = errors.Wrap(errs, err.Error())
-				continue
-			}
+				// update data
+				// TODO: use stream or upsert?
+				log.Infof("[job debug] Update object data: %s", id)
+				_, err = r.client.Update(egctx, &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     vec.GetId(),
+						Vector: vec.GetVector(),
+					},
+				})
+				if err != nil {
+					log.Error(err)
+					// errs = errors.Wrap(errs, err.Error())
+					return nil
+				}
 
-			cnt++
-			log.Infof("[job debug] Success Rebalance data: success amount data = %d", cnt)
-			if amntData--; amntData == 0 {
-				break
-			}
+				n := atomic.AddInt64(&cnt, 1)
+				log.Infof("[job debug] Success Rebalance data: success amount data = %d", n)
+				if ad := atomic.AddInt64(&amntData, -1); ad == 0 {
+					log.Infof("[job debug] Finish Rebalance data: success amount data = %d", n)
+					return nil
+				}
+				return nil
+			})
 		}
+		eg.Wait()
+		// for id, _ := range idm {
+		// 	// get vecotr by id
+		// 	log.Infof("[job debug] Get object data: %s", id)
+		// 	vec, err := r.client.GetObject(ctx, &payload.Object_VectorRequest{
+		// 		Id: &payload.Object_ID{
+		// 			Id: id,
+		// 		},
+		// 	})
+		// 	if err != nil {
+		// 		log.Error(err)
+		// 		errs = errors.Wrap(errs, err.Error())
+		// 		continue
+		// 	}
+		//
+		// 	// update data
+		// 	// TODO: use stream or upsert?
+		// 	log.Infof("[job debug] Update object data: %s", id)
+		// 	_, err = r.client.Update(ctx, &payload.Update_Request{
+		// 		Vector: &payload.Object_Vector{
+		// 			Id:     vec.GetId(),
+		// 			Vector: vec.GetVector(),
+		// 		},
+		// 	})
+		// 	if err != nil {
+		// 		log.Error(err)
+		// 		errs = errors.Wrap(errs, err.Error())
+		// 		continue
+		// 	}
+		//
+		// 	cnt++
+		// 	log.Infof("[job debug] Success Rebalance data: success amount data = %d", cnt)
+		// 	if amntData--; amntData == 0 {
+		// 		break
+		// 	}
+		// }
 		if errs != nil {
 			log.Errorf("failed to rebalance data: %s", errs.Error())
 			return errs
