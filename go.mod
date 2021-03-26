@@ -40,9 +40,12 @@ require (
 	cloud.google.com/go v0.79.0
 	code.cloudfoundry.org/bytefmt v0.0.0-20200131002437-cf55d5288a48
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
+	contrib.go.opencensus.io/exporter/ocagent v0.4.12 // indirect
 	contrib.go.opencensus.io/exporter/prometheus v0.3.0
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.5
-	github.com/aws/aws-sdk-go v1.27.0
+	contrib.go.opencensus.io/resource v0.0.0-20190131005048-21591786a5e0 // indirect
+	github.com/Azure/azure-amqp-common-go v1.1.4 // indirect
+	github.com/aws/aws-sdk-go v1.36.1
 	github.com/cespare/xxhash/v2 v2.1.1
 	github.com/codahale/hdrhistogram v0.0.0-20161010025455-3a0bb77429bd // indirect
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
@@ -82,6 +85,7 @@ require (
 	go.uber.org/automaxprocs v1.4.0
 	go.uber.org/goleak v1.1.10
 	go.uber.org/zap v1.16.0
+	gocloud.dev v0.22.0 // indirect
 	golang.org/x/net v0.0.0-20210316092652-d523dce5a7f4
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/sys v0.0.0-20210316164454-77fc1eacc6aa
