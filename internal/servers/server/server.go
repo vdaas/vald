@@ -93,7 +93,7 @@ type server struct {
 		srv       *grpc.Server
 		keepAlive *grpcKeepAlive
 		opts      []grpc.ServerOption
-		reg       func(*grpc.Server)
+		regs      []func(*grpc.Server)
 	}
 	lc            *net.ListenConfig
 	tcfg          *tls.Config
@@ -174,7 +174,7 @@ func New(opts ...Option) (Server, error) {
 		}
 		srv.http.srv.SetKeepAlivesEnabled(true)
 	case GRPC:
-		if srv.grpc.reg == nil {
+		if srv.grpc.regs == nil {
 			return nil, errors.ErrInvalidAPIConfig
 		}
 
@@ -205,7 +205,9 @@ func New(opts ...Option) (Server, error) {
 				srv.grpc.opts...,
 			)
 		}
-		srv.grpc.reg(srv.grpc.srv)
+		for _, reg := range srv.grpc.regs {
+			reg(srv.grpc.srv)
+		}
 	}
 
 	if srv.lc == nil {
