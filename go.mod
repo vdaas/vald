@@ -38,6 +38,7 @@ replace (
 
 require (
 	cloud.google.com/go v0.79.0
+	cloud.google.com/go/storage v1.12.0 // indirect
 	code.cloudfoundry.org/bytefmt v0.0.0-20200131002437-cf55d5288a48
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
 	contrib.go.opencensus.io/exporter/ocagent v0.4.12 // indirect
@@ -87,6 +88,7 @@ require (
 	go.uber.org/zap v1.16.0
 	gocloud.dev v0.22.0 // indirect
 	golang.org/x/net v0.0.0-20210316092652-d523dce5a7f4
+	golang.org/x/oauth2 v0.0.0-20210313182246-cd4f82c27b84 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/sys v0.0.0-20210316164454-77fc1eacc6aa
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
