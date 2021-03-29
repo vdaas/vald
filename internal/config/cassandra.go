@@ -216,13 +216,15 @@ func (cfg *Cassandra) Opts() (opts []cassandra.Option, err error) {
 
 	if cfg.Net != nil {
 		der, err := net.NewDialer(cfg.Net.Opts()...)
-		if err == nil {
-			opts = append(opts,
-				cassandra.WithDialer(
-					der,
-				),
-			)
+		if err != nil {
+			return nil, err
 		}
+
+		opts = append(opts,
+			cassandra.WithDialer(
+				der,
+			),
+		)
 	}
 
 	if cfg.TLS != nil && cfg.TLS.Enabled {

@@ -22,6 +22,7 @@ import (
 	"os/exec"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/vdaas/vald/internal/db/nosql/cassandra"
 	"github.com/vdaas/vald/internal/errors"
@@ -456,7 +457,7 @@ func TestCassandra_Opts(t *testing.T) {
 	tests := []test{
 		func() test {
 			return test{
-				name: "return 41 cassandra.Option when no error occurred",
+				name: "return 45 cassandra.Option when no error occurred",
 				fields: fields{
 					Hosts: []string{
 						"cassandra-0.cassandra.default.svc.cluster.local",
@@ -558,6 +559,7 @@ func TestCassandra_Opts(t *testing.T) {
 						"--host=localhos",
 					}
 					err := exec.Command("go", strs...).Run()
+
 					if err != nil {
 						t.Fatal(err)
 					}
@@ -678,7 +680,106 @@ func TestCassandra_Opts(t *testing.T) {
 				},
 			}
 		}(),
-	}
+		func() test {
+			return test{
+				name: "return 0 cassandra.Option and err when net.NewDialer returns error",
+				fields: fields{
+					Hosts: []string{
+						"cassandra-0.cassandra.default.svc.cluster.local",
+						"cassandra-1.cassandra.default.svc.cluster.local",
+						"cassandra-2.cassandra.default.svc.cluster.local",
+					},
+					CQLVersion:        "3.0.0",
+					ProtoVersion:      0,
+					Timeout:           "600ms",
+					ConnectTimeout:    "3s",
+					Port:              9042,
+					Keyspace:          "vald",
+					NumConns:          2,
+					Consistency:       "quorum",
+					SerialConsistency: "localserial",
+					Username:          "root",
+					Password:          "password",
+					PoolConfig: &PoolConfig{
+						DataCenter:               "",
+						DCAwareRouting:           false,
+						NonLocalReplicasFallback: false,
+						ShuffleReplicas:          false,
+						TokenAwareHostPolicy:     false,
+					},
+					RetryPolicy: &RetryPolicy{
+						NumRetries:  3,
+						MinDuration: "10ms",
+						MaxDuration: "1s",
+					},
+					ReconnectionPolicy: &ReconnectionPolicy{
+						MaxRetries:      3,
+						InitialInterval: "100ms",
+					},
+					HostFilter: &HostFilter{
+						Enabled:    false,
+						DataCenter: "",
+						WhiteList:  []string{},
+					},
+					SocketKeepalive:   "0s",
+					MaxPreparedStmts:  1000,
+					MaxRoutingKeyInfo: 1000,
+					PageSize:          5000,
+					TLS: &TLS{
+						Enabled:            false,
+						Cert:               cert,
+						Key:                key,
+						InsecureSkipVerify: false,
+					},
+					Net: &Net{
+						DNS: &DNS{
+							CacheEnabled:    true,
+							RefreshDuration: "5m",
+							CacheExpiration: "1m",
+						},
+						Dialer: &Dialer{
+							Timeout:          "30s",
+							KeepAlive:        "10m",
+							DualStackEnabled: false,
+						},
+						TLS: &TLS{
+							Enabled:            false,
+							Cert:               cert,
+							Key:                key,
+							InsecureSkipVerify: false,
+						},
+						SocketOption: &SocketOption{
+							ReusePort:                true,
+							ReuseAddr:                true,
+							TCPFastOpen:              true,
+							TCPCork:                  false,
+							TCPDeferAccept:           true,
+							IPTransparent:            false,
+							IPRecoverDestinationAddr: false,
+						},
+					},
+					EnableHostVerification:   false,
+					DefaultTimestamp:         true,
+					ReconnectInterval:        "",
+					MaxWaitSchemaAgreement:   "",
+					IgnorePeerAddr:           false,
+					DisableInitialHostLookup: false,
+					DisableNodeStatusEvents:  false,
+					DisableTopologyEvents:    false,
+					DisableSchemaEvents:      false,
+					DisableSkipMetadata:      false,
+					DefaultIdempotence:       false,
+					WriteCoalesceWaitTime:    "200ms",
+					KVTable:                  "kv",
+					VKTable:                  "vk",
+					VectorBackupTable:        "backup_vector",
+				},
+				want: want{
+					wantOpts: make([]cassandra.Option, 0),
+					err:      errors.ErrInvalidDNSConfig(5*time.Minute, 1*time.Minute),
+				},
+			}
+		}()}
 
 	for _, tc := range tests {
 		test := tc
