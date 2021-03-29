@@ -19,12 +19,15 @@ package config
 
 import "strings"
 
+// BlobStorageType represents blob storage type.
 type BlobStorageType uint8
 
 const (
+	// S3 represents s3 storage type.
 	S3 BlobStorageType = 1 + iota
 )
 
+// String returns blob storage type.
 func (bst BlobStorageType) String() string {
 	switch bst {
 	case S3:
@@ -33,6 +36,7 @@ func (bst BlobStorageType) String() string {
 	return "unknown"
 }
 
+// AtoBST returns BlobStorageType converted from string.
 func AtoBST(bst string) BlobStorageType {
 	switch strings.ToLower(bst) {
 	case S3.String():
@@ -41,6 +45,7 @@ func AtoBST(bst string) BlobStorageType {
 	return 0
 }
 
+// Blob represents Blob configuration.
 type Blob struct {
 	// StorageType represents blob storaget type
 	StorageType string `json:"storage_type" yaml:"storage_type"`
@@ -52,6 +57,7 @@ type Blob struct {
 	S3 *S3Config `json:"s3" yaml:"s3"`
 }
 
+// S3Config represents S3Config configuration.
 type S3Config struct {
 	Endpoint        string `json:"endpoint" yaml:"endpoint"`
 	Region          string `json:"region" yaml:"region"`
@@ -75,6 +81,7 @@ type S3Config struct {
 	MaxChunkSize string `json:"max_chunk_size" yaml:"max_chunk_size"`
 }
 
+// Bind binds the actual data from the Blob receiver field.
 func (b *Blob) Bind() *Blob {
 	b.StorageType = GetActualValue(b.StorageType)
 	b.Bucket = GetActualValue(b.Bucket)
@@ -88,6 +95,7 @@ func (b *Blob) Bind() *Blob {
 	return b
 }
 
+// Bind binds the actual data from the S3Config receiver field.
 func (s *S3Config) Bind() *S3Config {
 	s.Endpoint = GetActualValue(s.Endpoint)
 	s.Region = GetActualValue(s.Region)
