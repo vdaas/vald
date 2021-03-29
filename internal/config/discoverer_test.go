@@ -83,7 +83,7 @@ func TestDiscoverer_Bind(t *testing.T) {
 						Name:              "discoverer",
 						Namespace:         "vald",
 						DiscoveryDuration: "10ms",
-						Net:               new(Net).Bind(),
+						Net:               new(Net),
 					},
 				},
 			}
