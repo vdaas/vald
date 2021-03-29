@@ -46,6 +46,7 @@ type rebalancer struct {
 	rate            float64
 	storage         storage.Storage
 	client          vald.Client
+	parallelism     int
 }
 
 const (
@@ -152,9 +153,9 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 		log.Infof("Start rebalance data: %d", amntData)
 		var errs error
 		var mu sync.Mutex
-		var parallel = 30
+
 		eg, egctx := errgroup.New(ctx)
-		eg.Limitation(parallel)
+		eg.Limitation(r.parallelism)
 		for id, _ := range idm {
 			id := id
 			select {

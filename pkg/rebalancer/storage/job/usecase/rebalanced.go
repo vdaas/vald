@@ -130,6 +130,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		job.WithStorage(st),
 		job.WithValdClient(c),
 		job.WithRate(cfg.Rebalancer.Rate),
+		job.WithParallelism(cfg.Rebalancer.Parallelism),
 	)
 	if err != nil {
 		return nil, err

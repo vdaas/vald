@@ -28,7 +28,9 @@ import (
 
 type Option func(r *rebalancer) error
 
-var defaultOpts = []Option{}
+var defaultOpts = []Option{
+	WithParallelism(30),
+}
 
 func WithStorage(st storage.Storage) Option {
 	return func(r *rebalancer) error {
@@ -64,6 +66,15 @@ func WithValdClient(c vald.Client) Option {
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(r *rebalancer) error {
 		r.eg = eg
+		return nil
+	}
+}
+
+func WithParallelism(p int) Option {
+	return func(r *rebalancer) error {
+		if p > 0 {
+			r.parallelism = p
+		}
 		return nil
 	}
 }

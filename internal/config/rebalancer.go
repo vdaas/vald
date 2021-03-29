@@ -56,6 +56,8 @@ type RebalanceJob struct {
 	GatewayClient *GRPCClient `json:"gateway_client" yaml:"gateway_client"`
 	// Client represent HTTP client configurations
 	Client *Client `yaml:"client" json:"client"`
+	// Parallelism represent the number of parallel rebalance process.
+	Parallelism int `yaml:"parallelism" json:"parallelism"`
 }
 
 // Bind binds rebalance job configuration.
