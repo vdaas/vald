@@ -64,8 +64,11 @@ func TestClient_Bind(t *testing.T) {
 			},
 			want: want{
 				want: &Client{
-					Net:       new(Net).Bind(),
-					Transport: new(Transport).Bind(),
+					Net: new(Net),
+					Transport: &Transport{
+						RoundTripper: new(RoundTripper),
+						Backoff:      new(Backoff),
+					},
 				},
 			},
 		},
