@@ -18,6 +18,7 @@
 package config
 
 import (
+	"os"
 	"reflect"
 	"testing"
 
@@ -38,8 +39,8 @@ func TestBackupManager_Bind(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *BackupManager) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got *BackupManager) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -75,6 +76,40 @@ func TestBackupManager_Bind(t *testing.T) {
 				},
 			}
 		}(),
+		func() test {
+			k := "ADDR"
+			v := "http://backupmanager.com"
+			c := &GRPCClient{
+				Addrs: []string{v},
+			}
+			return test{
+				name: "return Backup when addrs is set via environment variable",
+				fields: fields{
+					Client: &GRPCClient{
+						Addrs: []string{
+							"_" + k + "_",
+						},
+					},
+				},
+				beforeFunc: func(t *testing.T) {
+					t.Helper()
+					if err := os.Setenv(k, v); err != nil {
+						t.Fatal(err)
+					}
+				},
+				afterFunc: func(t *testing.T) {
+					t.Helper()
+					if err := os.Unsetenv(k); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					want: &BackupManager{
+						Client: c.Bind(),
+					},
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -83,10 +118,10 @@ func TestBackupManager_Bind(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
