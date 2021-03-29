@@ -160,6 +160,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 			select {
 			case <-egctx.Done():
 				break
+			default:
 			}
 			eg.Go(func() error {
 				// get vecotr by id
