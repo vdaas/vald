@@ -60,28 +60,29 @@ func TestBackupManager_Bind(t *testing.T) {
 				},
 			},
 		},
-		func() test {
-			c := &GRPCClient{
-				HealthCheckDuration: "1s",
-			}
-			return test{
-				name: "return Backup when client is not nil",
-				fields: fields{
-					Client: c,
+		{
+			name: "return Backup when client is not nil",
+			fields: fields{
+				Client: &GRPCClient{
+					HealthCheckDuration: "1s",
 				},
-				want: want{
-					want: &BackupManager{
-						Client: c.Bind(),
+			},
+			want: want{
+				want: &BackupManager{
+					Client: &GRPCClient{
+						HealthCheckDuration: "1s",
+						ConnectionPool:      new(ConnectionPool),
+						DialOption: &DialOption{
+							Insecure: true,
+						},
+						TLS: new(TLS),
 					},
 				},
-			}
-		}(),
+			},
+		},
 		func() test {
 			k := "ADDR"
 			v := "http://backupmanager.com"
-			c := &GRPCClient{
-				Addrs: []string{v},
-			}
 			return test{
 				name: "return Backup when addrs is set via environment variable",
 				fields: fields{
@@ -105,7 +106,14 @@ func TestBackupManager_Bind(t *testing.T) {
 				},
 				want: want{
 					want: &BackupManager{
-						Client: c.Bind(),
+						Client: &GRPCClient{
+							Addrs:          []string{v},
+							ConnectionPool: new(ConnectionPool),
+							DialOption: &DialOption{
+								Insecure: true,
+							},
+							TLS: new(TLS),
+						},
 					},
 				},
 			}
