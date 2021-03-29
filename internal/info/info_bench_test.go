@@ -48,7 +48,7 @@ func Benchmark_info_String(b *testing.B) {
 	})
 }
 
-func Benchmark_Detail_String(b *testing.B) {
+func BenchmarkDetail_String(b *testing.B) {
 	i, err := New(WithServerName("benchmark"))
 	if err != nil {
 		b.Fatal(err)
@@ -100,7 +100,7 @@ func Benchmark_info_prepare(b *testing.B) {
 	})
 }
 
-func Benchmark_StackTrace_String(b *testing.B) {
+func BenchmarkStackTrace_String(b *testing.B) {
 	i, err := New(WithServerName("benchmark"))
 	if err != nil {
 		b.Fatal(err)
