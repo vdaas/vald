@@ -101,6 +101,7 @@ data:
         {{- end }}
       target_agent_name: _TARGET_AGENT_NAME_
       rate: _RATE_
+      parallelism: {{ .Values.rebalancer.rebalancer.job.parallelism }}
       gateway_client:
         {{- $client := .Values.rebalancer.rebalancer.job.grpc.client }}
         {{- $gRPCClient := dict "Values" $client "default" .Values.defaults.grpc.client }}
