@@ -295,6 +295,7 @@ func TestCassandra_Bind(t *testing.T) {
 					}
 				},
 				afterFunc: func(t *testing.T) {
+					t.Helper()
 					if err := os.Unsetenv(key); err != nil {
 						t.Fatal(err)
 					}
