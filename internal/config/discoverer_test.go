@@ -207,9 +207,21 @@ func TestDiscovererClient_Bind(t *testing.T) {
 				},
 				want: want{
 					want: &DiscovererClient{
-						Duration:           "10ms",
-						Client:             new(GRPCClient).Bind(),
-						AgentClientOptions: new(GRPCClient).Bind(),
+						Duration: "10ms",
+						Client: &GRPCClient{
+							ConnectionPool: new(ConnectionPool),
+							DialOption: &DialOption{
+								Insecure: true,
+							},
+							TLS: new(TLS),
+						},
+						AgentClientOptions: &GRPCClient{
+							ConnectionPool: new(ConnectionPool),
+							DialOption: &DialOption{
+								Insecure: true,
+							},
+							TLS: new(TLS),
+						},
 					},
 				},
 			}
