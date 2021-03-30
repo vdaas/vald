@@ -17,20 +17,26 @@
 // Package config providers configuration type and load configuration logic
 package config
 
+// Debug represents the configuration for internal debug pkg.
 type Debug struct {
-	// Profile represent profiling the server
-	Profile struct {
-		Enable bool    `yaml:"enable" json:"enable"`
-		Server *Server `yaml:"server" json:"server"`
-	} `yaml:"profile" json:"profile"`
+	// Profile represents profiling the server
+	Profile profile `yaml:"profile" json:"profile"`
 
-	// Log represent the server enable debug log or not.
-	Log struct {
-		Level string `yaml:"level" json:"level"`
-		Mode  string `yaml:"mode" json:"mode"`
-	} `yaml:"log" json:"log"`
+	// Log represents the server enable debug log or not.
+	Log debugLog `yaml:"log" json:"log"`
 }
 
+type profile struct {
+	Enable bool    `yaml:"enable" json:"enable"`
+	Server *Server `yaml:"server" json:"server"`
+}
+
+type debugLog struct {
+	Level string `yaml:"level" json:"level"`
+	Mode  string `yaml:"mode" json:"mode"`
+}
+
+// Bind binds the actual data from the Debug receiver fields.
 func (d *Debug) Bind() *Debug {
 	if d.Profile.Server != nil {
 		d.Profile.Server.Bind()

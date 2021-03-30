@@ -22,18 +22,14 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
+	"go.uber.org/goleak"
 )
 
 func TestDebug_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
-		Profile struct {
-			Enable bool
-			Server *Server
-		}
-		Log struct {
-			Level string
-			Mode  string
-		}
+		Profile profile
+		Log     debugLog
 	}
 	type want struct {
 		want *Debug
@@ -53,37 +49,88 @@ func TestDebug_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           Profile: nil,
-		           Log: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           Profile: nil,
-		           Log: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			p := profile{
+				Enable: true,
+				Server: &Server{
+					Name:          "",
+					Network:       "tcp",
+					Host:          "",
+					Port:          8081,
+					SocketPath:    "",
+					Mode:          "GRPC",
+					ProbeWaitTime: "3s",
+					HTTP:          &HTTP{},
+					GRPC:          &GRPC{},
+					SocketOption:  &SocketOption{},
+					Restart:       false,
+				},
+			}
+			log := debugLog{
+				Level: "Error",
+				Mode:  "raw",
+			}
+			return test{
+				name: "return the Debug when all variables are not empty",
+				fields: fields{
+					Profile: p,
+					Log:     log,
+				},
+				want: want{
+					want: &Debug{
+						Profile: p,
+						Log:     log,
+					},
+				},
+			}
+		}(),
+		func() test {
+			p := profile{
+				Enable: false,
+			}
+			log := debugLog{
+				Level: "Error",
+				Mode:  "raw",
+			}
+			return test{
+				name: "return the Debug when all variable are not empty except server's paramter",
+				fields: fields{
+					Profile: p,
+					Log:     log,
+				},
+				want: want{
+					want: &Debug{
+						Profile: profile{
+							Enable: false,
+							Server: nil,
+						},
+						Log: debugLog{
+							Level: "Error",
+							Mode:  "raw",
+						},
+					},
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name:   "return the Debug when all variables are empty",
+				fields: fields{},
+				want: want{
+					want: &Debug{
+						Profile: profile{},
+						Log:     debugLog{},
+					},
+				},
+			}
+		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -94,15 +141,15 @@ func TestDebug_Bind(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			d := &Debug{
-				// TODO: refactor debug.go
-				// Profile: test.fields.Profile,
-				// Log:     test.fields.Log,
+				Profile: test.fields.Profile,
+				Log:     test.fields.Log,
 			}
 
 			got := d.Bind()
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
