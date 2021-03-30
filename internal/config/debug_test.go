@@ -28,8 +28,14 @@ import (
 func TestDebug_Bind(t *testing.T) {
 	t.Parallel()
 	type fields struct {
-		Profile profile
-		Log     debugLog
+		Profile struct {
+			Enable bool    `yaml:"enable" json:"enable"`
+			Server *Server `yaml:"server" json:"server"`
+		}
+		Log struct {
+			Level string `yaml:"level" json:"level"`
+			Mode  string `yaml:"mode" json:"mode"`
+		}
 	}
 	type want struct {
 		want *Debug
@@ -50,7 +56,10 @@ func TestDebug_Bind(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			p := profile{
+			p := struct {
+				Enable bool    `yaml:"enable" json:"enable"`
+				Server *Server `yaml:"server" json:"server"`
+			}{
 				Enable: true,
 				Server: &Server{
 					Name:          "",
@@ -66,7 +75,10 @@ func TestDebug_Bind(t *testing.T) {
 					Restart:       false,
 				},
 			}
-			log := debugLog{
+			log := struct {
+				Level string `yaml:"level" json:"level"`
+				Mode  string `yaml:"mode" json:"mode"`
+			}{
 				Level: "Error",
 				Mode:  "raw",
 			}
@@ -85,10 +97,16 @@ func TestDebug_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
-			p := profile{
+			p := struct {
+				Enable bool    `yaml:"enable" json:"enable"`
+				Server *Server `yaml:"server" json:"server"`
+			}{
 				Enable: false,
 			}
-			log := debugLog{
+			log := struct {
+				Level string `yaml:"level" json:"level"`
+				Mode  string `yaml:"mode" json:"mode"`
+			}{
 				Level: "Error",
 				Mode:  "raw",
 			}
@@ -100,14 +118,8 @@ func TestDebug_Bind(t *testing.T) {
 				},
 				want: want{
 					want: &Debug{
-						Profile: profile{
-							Enable: false,
-							Server: nil,
-						},
-						Log: debugLog{
-							Level: "Error",
-							Mode:  "raw",
-						},
+						Profile: p,
+						Log:     log,
 					},
 				},
 			}
@@ -117,10 +129,7 @@ func TestDebug_Bind(t *testing.T) {
 				name:   "return the Debug when all variables are empty",
 				fields: fields{},
 				want: want{
-					want: &Debug{
-						Profile: profile{},
-						Log:     debugLog{},
-					},
+					want: &Debug{},
 				},
 			}
 		}(),
@@ -140,6 +149,7 @@ func TestDebug_Bind(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
+
 			d := &Debug{
 				Profile: test.fields.Profile,
 				Log:     test.fields.Log,

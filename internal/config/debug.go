@@ -20,20 +20,16 @@ package config
 // Debug represents the configuration for internal debug pkg.
 type Debug struct {
 	// Profile represents profiling the server
-	Profile profile `yaml:"profile" json:"profile"`
+	Profile struct {
+		Enable bool    `yaml:"enable" json:"enable"`
+		Server *Server `yaml:"server" json:"server"`
+	} `yaml:"profile" json:"profile"`
 
 	// Log represents the server enable debug log or not.
-	Log debugLog `yaml:"log" json:"log"`
-}
-
-type profile struct {
-	Enable bool    `yaml:"enable" json:"enable"`
-	Server *Server `yaml:"server" json:"server"`
-}
-
-type debugLog struct {
-	Level string `yaml:"level" json:"level"`
-	Mode  string `yaml:"mode" json:"mode"`
+	Log struct {
+		Level string `yaml:"level" json:"level"`
+		Mode  string `yaml:"mode" json:"mode"`
+	} `yaml:"log" json:"log"`
 }
 
 // Bind binds the actual data from the Debug receiver fields.
