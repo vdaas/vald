@@ -18,6 +18,7 @@
 package config
 
 import (
+	"os"
 	"reflect"
 	"testing"
 
@@ -44,30 +45,31 @@ func TestBlobStorageType_String(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return s3 when the bst is S3",
+			bst:  S3,
+			want: want{
+				want: "s3",
+			},
+		},
+		{
+			name: "return unknown when the bst is empty",
+			want: want{
+				want: "unknown",
+			},
+		},
+		{
+			name: "return unknown when the bst is invalid storage type",
+			bst:  BlobStorageType(100),
+			want: want{
+				want: "unknown",
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -108,36 +110,44 @@ func TestAtoBST(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           bst: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           bst: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return S3 when the bst is s3",
+			args: args{
+				bst: "s3",
+			},
+			want: want{
+				want: S3,
+			},
+		},
+		{
+			name: "return S3 when the bst is S3",
+			args: args{
+				bst: "S3",
+			},
+			want: want{
+				want: S3,
+			},
+		},
+		{
+			name: "return 0 when the bst is empty",
+			want: want{
+				want: 0,
+			},
+		},
+		{
+			name: "return 0 when the bst is invalid storage type",
+			args: args{
+				bst: "storage",
+			},
+			want: want{
+				want: 0,
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -170,8 +180,8 @@ func TestBlob_Bind(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *Blob) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got *Blob) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -180,45 +190,89 @@ func TestBlob_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           StorageType: "",
-		           Bucket: "",
-		           S3: S3Config{},
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			return test{
+				name: "return Blob when the bind successes and the S3Config is nil",
+				fields: fields{
+					StorageType: "s3",
+					Bucket:      "test.vald",
+				},
+				want: want{
+					want: &Blob{
+						StorageType: "s3",
+						Bucket:      "test.vald",
+						S3:          new(S3Config),
+					},
+				},
+			}
+		}(),
+		func() test {
+			s3 := new(S3Config)
+			return test{
+				name: "return Blob when the bind successes and the S3Config is not nil",
+				fields: fields{
+					StorageType: "s3",
+					Bucket:      "test.vald",
+					S3:          s3,
+				},
+				want: want{
+					want: &Blob{
+						StorageType: "s3",
+						Bucket:      "test.vald",
+						S3:          s3,
+					},
+				},
+			}
+		}(),
+		func() test {
+			m := map[string]string{
+				"STORAGE_TYPE": "s3",
+				"BUCKET":       "test.vald",
+			}
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           StorageType: "",
-		           Bucket: "",
-		           S3: S3Config{},
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			return test{
+				name: "return Blob when the bind successes and the data is loaded from the environment variable",
+				fields: fields{
+					StorageType: "_STORAGE_TYPE_",
+					Bucket:      "_BUCKET_",
+				},
+				beforeFunc: func(t *testing.T) {
+					t.Helper()
+
+					for key, val := range m {
+						if err := os.Setenv(key, val); err != nil {
+							t.Fatal(err)
+						}
+					}
+				},
+				afterFunc: func(t *testing.T) {
+					t.Helper()
+
+					for key := range m {
+						if err := os.Unsetenv(key); err != nil {
+							t.Fatal(err)
+						}
+					}
+				},
+				want: want{
+					want: &Blob{
+						StorageType: "s3",
+						Bucket:      "test.vald",
+						S3:          new(S3Config),
+					},
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -256,6 +310,7 @@ func TestS3Config_Bind(t *testing.T) {
 		EnableEndpointDiscovery    bool
 		EnableEndpointHostPrefix   bool
 		MaxPartSize                string
+		MaxChunkSize               string
 	}
 	type want struct {
 		want *S3Config
@@ -265,8 +320,8 @@ func TestS3Config_Bind(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *S3Config) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got *S3Config) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -275,73 +330,115 @@ func TestS3Config_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           Endpoint: "",
-		           Region: "",
-		           AccessKey: "",
-		           SecretAccessKey: "",
-		           Token: "",
-		           MaxRetries: 0,
-		           ForcePathStyle: false,
-		           UseAccelerate: false,
-		           UseARNRegion: false,
-		           UseDualStack: false,
-		           EnableSSL: false,
-		           EnableParamValidation: false,
-		           Enable100Continue: false,
-		           EnableContentMD5Validation: false,
-		           EnableEndpointDiscovery: false,
-		           EnableEndpointHostPrefix: false,
-		           MaxPartSize: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			return test{
+				name: "return S3Config when the bind successes",
+				fields: fields{
+					Endpoint:                   "https://test.us-west-2.amazonaws.com",
+					Region:                     "us-west-2",
+					AccessKey:                  "access_key",
+					SecretAccessKey:            "secret_access_key",
+					Token:                      "token",
+					MaxRetries:                 0,
+					ForcePathStyle:             false,
+					UseAccelerate:              false,
+					UseARNRegion:               false,
+					UseDualStack:               false,
+					EnableSSL:                  false,
+					EnableParamValidation:      false,
+					Enable100Continue:          false,
+					EnableContentMD5Validation: false,
+					EnableEndpointDiscovery:    false,
+					EnableEndpointHostPrefix:   false,
+					MaxPartSize:                "32mb",
+					MaxChunkSize:               "42mb",
+				},
+				want: want{
+					want: &S3Config{
+						Endpoint:        "https://test.us-west-2.amazonaws.com",
+						Region:          "us-west-2",
+						AccessKey:       "access_key",
+						SecretAccessKey: "secret_access_key",
+						Token:           "token",
+						MaxPartSize:     "32mb",
+						MaxChunkSize:    "42mb",
+					},
+				},
+			}
+		}(),
+		func() test {
+			m := map[string]string{
+				"ENDPOINT":          "https://test.us-west-2.amazonaws.com",
+				"REGION":            "us-west-2",
+				"ACCESS_KEY":        "access_key",
+				"SECRET_ACCESS_KEY": "secret_access_key",
+				"TOKEN":             "token",
+				"MAX_PART_SIZE":     "32mb",
+				"MAX_CHUNK_SIZE":    "42mb",
+			}
+			return test{
+				name: "return S3Config when the bind successes and the data is loaded from the environment variable",
+				fields: fields{
+					Endpoint:                   "_ENDPOINT_",
+					Region:                     "_REGION_",
+					AccessKey:                  "_ACCESS_KEY_",
+					SecretAccessKey:            "_SECRET_ACCESS_KEY_",
+					Token:                      "_TOKEN_",
+					MaxRetries:                 0,
+					ForcePathStyle:             false,
+					UseAccelerate:              false,
+					UseARNRegion:               false,
+					UseDualStack:               false,
+					EnableSSL:                  false,
+					EnableParamValidation:      false,
+					Enable100Continue:          false,
+					EnableContentMD5Validation: false,
+					EnableEndpointDiscovery:    false,
+					EnableEndpointHostPrefix:   false,
+					MaxPartSize:                "_MAX_PART_SIZE_",
+					MaxChunkSize:               "_MAX_CHUNK_SIZE_",
+				},
+				beforeFunc: func(t *testing.T) {
+					t.Helper()
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           Endpoint: "",
-		           Region: "",
-		           AccessKey: "",
-		           SecretAccessKey: "",
-		           Token: "",
-		           MaxRetries: 0,
-		           ForcePathStyle: false,
-		           UseAccelerate: false,
-		           UseARNRegion: false,
-		           UseDualStack: false,
-		           EnableSSL: false,
-		           EnableParamValidation: false,
-		           Enable100Continue: false,
-		           EnableContentMD5Validation: false,
-		           EnableEndpointDiscovery: false,
-		           EnableEndpointHostPrefix: false,
-		           MaxPartSize: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+					for key, val := range m {
+						if err := os.Setenv(key, val); err != nil {
+							t.Fatal(err)
+						}
+					}
+				},
+				afterFunc: func(t *testing.T) {
+					t.Helper()
+
+					for key := range m {
+						if err := os.Unsetenv(key); err != nil {
+							t.Fatal(err)
+						}
+					}
+				},
+				want: want{
+					want: &S3Config{
+						Endpoint:        "https://test.us-west-2.amazonaws.com",
+						Region:          "us-west-2",
+						AccessKey:       "access_key",
+						SecretAccessKey: "secret_access_key",
+						Token:           "token",
+						MaxPartSize:     "32mb",
+						MaxChunkSize:    "42mb",
+					},
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -364,6 +461,7 @@ func TestS3Config_Bind(t *testing.T) {
 				EnableEndpointDiscovery:    test.fields.EnableEndpointDiscovery,
 				EnableEndpointHostPrefix:   test.fields.EnableEndpointHostPrefix,
 				MaxPartSize:                test.fields.MaxPartSize,
+				MaxChunkSize:               test.fields.MaxChunkSize,
 			}
 
 			got := s.Bind()
