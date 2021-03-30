@@ -18,13 +18,16 @@
 package config
 
 import (
+	"os"
 	"reflect"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
+	"go.uber.org/goleak"
 )
 
 func TestGateway_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		AgentPort      int
 		AgentName      string
@@ -45,8 +48,8 @@ func TestGateway_Bind(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *Gateway) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got *Gateway) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -55,58 +58,188 @@ func TestGateway_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           AgentPort: 0,
-		           AgentName: "",
-		           AgentNamespace: "",
-		           AgentDNS: "",
-		           NodeName: "",
-		           IndexReplica: 0,
-		           Discoverer: DiscovererClient{},
-		           Meta: Meta{},
-		           BackupManager: BackupManager{},
-		           EgressFilter: EgressFilter{},
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           AgentPort: 0,
-		           AgentName: "",
-		           AgentNamespace: "",
-		           AgentDNS: "",
-		           NodeName: "",
-		           IndexReplica: 0,
-		           Discoverer: DiscovererClient{},
-		           Meta: Meta{},
-		           BackupManager: BackupManager{},
-		           EgressFilter: EgressFilter{},
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			port := 8081
+			name := "vald-agent-ngt-0"
+			ns := "vald"
+			dns := "vald-agent-ngt.vald.svc.local"
+			node := "vald-prod"
+			ireplica := 3
+			return test{
+				name: "return Gateway when only params related agent and dns are set",
+				fields: fields{
+					AgentPort:      port,
+					AgentName:      name,
+					AgentNamespace: ns,
+					AgentDNS:       dns,
+					NodeName:       node,
+					IndexReplica:   ireplica,
+				},
+				want: want{
+					want: &Gateway{
+						AgentPort:      port,
+						AgentName:      name,
+						AgentNamespace: ns,
+						AgentDNS:       dns,
+						NodeName:       node,
+						IndexReplica:   ireplica,
+						Meta:           &Meta{},
+					},
+				},
+			}
+		}(),
+		func() test {
+			port := 8081
+			name := "vald-agent-ngt-0"
+			ns := "vald"
+			dns := "vald-agent-ngt.vald.svc.local"
+			node := "vald-prod"
+			ireplica := 3
+			disc := &DiscovererClient{
+				Duration: "10m",
+			}
+			meta := &Meta{
+				Host:                      "vald-meta.svc.local",
+				Port:                      8081,
+				EnableCache:               true,
+				CacheExpiration:           "3m",
+				ExpiredCacheCheckDuration: "10m",
+			}
+			bmanager := &BackupManager{}
+			efilter := &EgressFilter{}
+			return test{
+				name: "return Gateway when all of params are set",
+				fields: fields{
+					AgentPort:      port,
+					AgentName:      name,
+					AgentNamespace: ns,
+					AgentDNS:       dns,
+					NodeName:       node,
+					IndexReplica:   ireplica,
+					Discoverer:     disc,
+					Meta:           meta,
+					BackupManager:  bmanager,
+					EgressFilter:   efilter,
+				},
+				want: want{
+					want: &Gateway{
+						AgentPort:      port,
+						AgentName:      name,
+						AgentNamespace: ns,
+						AgentDNS:       dns,
+						NodeName:       node,
+						IndexReplica:   ireplica,
+						Discoverer: &DiscovererClient{
+							Duration: "10m",
+							Client: &GRPCClient{
+								DialOption: &DialOption{
+									Insecure: true,
+								},
+							},
+							AgentClientOptions: &GRPCClient{
+								DialOption: &DialOption{
+									Insecure: true,
+								},
+							},
+						},
+						Meta: &Meta{
+							Host: "vald-meta.svc.local",
+							Port: 8081,
+							Client: &GRPCClient{
+								Addrs: []string{
+									"vald-meta.svc.local:8081",
+								},
+								DialOption: &DialOption{
+									Insecure: true,
+								},
+							},
+							EnableCache:               true,
+							CacheExpiration:           "3m",
+							ExpiredCacheCheckDuration: "10m",
+						},
+						BackupManager: &BackupManager{
+							Client: &GRPCClient{
+								DialOption: &DialOption{
+									Insecure: true,
+								},
+							},
+						},
+						EgressFilter: &EgressFilter{},
+					},
+				},
+			}
+		}(),
+		func() test {
+			p := map[string]string{
+				"AGENT_NAME":      "vald-agent-ngt-0",
+				"AGENT_NAMESPACE": "vald",
+				"AGENT_DNS":       "vald-agent-ngt.svc.local",
+				"NODE_NAME":       "vald-prod",
+			}
+			port := 8081
+			ireplica := 3
+			return test{
+				name: "return Gateway when params set as environment value",
+				fields: fields{
+					AgentPort:      port,
+					AgentName:      "_AGENT_NAME_",
+					AgentNamespace: "_AGENT_NAMESPACE_",
+					AgentDNS:       "_AGENT_DNS_",
+					NodeName:       "_NODE_NAME_",
+					IndexReplica:   ireplica,
+				},
+				beforeFunc: func(t *testing.T) {
+					t.Helper()
+					for k, v := range p {
+						if err := os.Setenv(k, v); err != nil {
+							t.Fatal(err)
+						}
+					}
+				},
+				afterFunc: func(t *testing.T) {
+					t.Helper()
+					for k, _ := range p {
+						if err := os.Unsetenv(k); err != nil {
+							t.Fatal(err)
+						}
+					}
+				},
+				want: want{
+					want: &Gateway{
+						AgentPort:      8081,
+						AgentName:      "vald-agent-ngt-0",
+						AgentNamespace: "vald",
+						AgentDNS:       "vald-agent-ngt.svc.local",
+						NodeName:       "vald-prod",
+						IndexReplica:   3,
+						Meta:           &Meta{},
+					},
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name:   "return Gateway when all params are not set",
+				fields: fields{},
+				want: want{
+					want: &Gateway{
+						Meta: &Meta{},
+					},
+				},
+			}
+		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -128,6 +261,7 @@ func TestGateway_Bind(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
