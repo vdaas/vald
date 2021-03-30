@@ -17,12 +17,14 @@
 // Package config providers configuration type and load configuration logic
 package config
 
+// EgressFilter represents EgressFilter configuration.
 type EgressFilter struct {
 	Client          *GRPCClient `json:"client,omitempty" yaml:"client"`
 	DistanceFilters []string    `json:"distance_filters,omitempty" yaml:"distance_filters"`
 	ObjectFilters   []string    `json:"object_filters,omitempty" yaml:"object_filters"`
 }
 
+// IngressFilter represents IngressFilter configuration.
 type IngressFilter struct {
 	Client        *GRPCClient `json:"client,omitempty" yaml:"client"`
 	Vectorizer    string      `json:"vectorizer,omitempty" yaml:"vectorizer"`
@@ -32,6 +34,7 @@ type IngressFilter struct {
 	UpsertFilters []string    `json:"upsert_filters,omitempty" yaml:"upsert_filters"`
 }
 
+// Bind binds the actual data from the EgressFilter receiver field.
 func (e *EgressFilter) Bind() *EgressFilter {
 	if e.Client != nil {
 		e.Client.Bind()
@@ -45,6 +48,7 @@ func (e *EgressFilter) Bind() *EgressFilter {
 	return e
 }
 
+// Bind binds the actual data from the IngressFilter receiver field.
 func (i *IngressFilter) Bind() *IngressFilter {
 	if i.Client != nil {
 		i.Client.Bind()
