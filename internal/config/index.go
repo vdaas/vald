@@ -17,6 +17,7 @@
 // Package config providers configuration type and load configuration logic
 package config
 
+// Indexer represents Indexer configuration.
 type Indexer struct {
 	// AgentPort represent agent port number
 	AgentPort int `json:"agent_port" yaml:"agent_port"`
@@ -52,6 +53,7 @@ type Indexer struct {
 	Discoverer *DiscovererClient `json:"discoverer" yaml:"discoverer"`
 }
 
+// Bind binds the actual data from the Indexer receiver field.
 func (im *Indexer) Bind() *Indexer {
 	im.AgentName = GetActualValue(im.AgentName)
 	im.AgentNamespace = GetActualValue(im.AgentNamespace)
