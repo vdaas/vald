@@ -27,6 +27,7 @@ import (
 )
 
 func TestDiscoverer_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		Name              string
 		Namespace         string
@@ -90,16 +91,16 @@ func TestDiscoverer_Bind(t *testing.T) {
 		}(),
 		func() test {
 			m := map[string]string{
-				"NAME":               "discoverer",
-				"NAMESPACE":          "vald",
-				"DISCOVERY_DURATION": "10ms",
+				"NAME_FOR_DISCOVERER_TEST":               "discoverer",
+				"NAMESPACE_FOR_DISCOVERER_TEST":          "vald",
+				"DISCOVERY_DURATION_FOR_DISCOVERER_TEST": "10ms",
 			}
 			return test{
 				name: "return Discoverer when the bind successes and the data is loaded from the environment variable",
 				fields: fields{
-					Name:              "_NAME_",
-					Namespace:         "_NAMESPACE_",
-					DiscoveryDuration: "_DISCOVERY_DURATION_",
+					Name:              "_NAME_FOR_DISCOVERER_TEST_",
+					Namespace:         "_NAMESPACE_FOR_DISCOVERER_TEST_",
+					DiscoveryDuration: "_DISCOVERY_DURATION_FOR_DISCOVERER_TEST_",
 				},
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
@@ -129,9 +130,11 @@ func TestDiscoverer_Bind(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)
 			}
@@ -187,9 +190,17 @@ func TestDiscovererClient_Bind(t *testing.T) {
 				},
 				want: want{
 					want: &DiscovererClient{
-						Duration:           "10ms",
-						Client:             newGRPCClientConfig(),
-						AgentClientOptions: newGRPCClientConfig(),
+						Duration: "10ms",
+						Client: &GRPCClient{
+							DialOption: &DialOption{
+								Insecure: true,
+							},
+						},
+						AgentClientOptions: &GRPCClient{
+							DialOption: &DialOption{
+								Insecure: true,
+							},
+						},
 					},
 				},
 			}
@@ -249,9 +260,17 @@ func TestDiscovererClient_Bind(t *testing.T) {
 				},
 				want: want{
 					want: &DiscovererClient{
-						Duration:           "10ms",
-						Client:             newGRPCClientConfig(),
-						AgentClientOptions: newGRPCClientConfig(),
+						Duration: "10ms",
+						Client: &GRPCClient{
+							DialOption: &DialOption{
+								Insecure: true,
+							},
+						},
+						AgentClientOptions: &GRPCClient{
+							DialOption: &DialOption{
+								Insecure: true,
+							},
+						},
 					},
 				},
 			}
@@ -260,7 +279,7 @@ func TestDiscovererClient_Bind(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)
 			}
