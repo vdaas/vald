@@ -17,7 +17,7 @@
 // Package config providers configuration type and load configuration logic
 package config
 
-// Gateway represents the list of configuration for gateway.
+// Gateway represents the list of configurations for gateway.
 type Gateway struct {
 	// AgentPort represent agent port number
 	AgentPort int `json:"agent_port" yaml:"agent_port"`
