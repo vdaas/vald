@@ -56,7 +56,11 @@ func TestBackupManager_Bind(t *testing.T) {
 			},
 			want: want{
 				want: &BackupManager{
-					Client: newGRPCClientConfig(),
+					Client: &GRPCClient{
+						DialOption: &DialOption{
+							Insecure: true,
+						},
+					},
 				},
 			},
 		},
