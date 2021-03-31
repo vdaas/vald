@@ -362,7 +362,7 @@ func TestGRPCClientKeepalive_Bind(t *testing.T) {
 				"TIMEOUT": "300s",
 			}
 			return test{
-				name: "return GRPCClientKeepalive when paramters are set as environment value",
+				name: "return GRPCClientKeepalive when parameters are set as environment value",
 				fields: fields{
 					Time:    "_TIME_",
 					Timeout: "_TIMEOUT_",
@@ -394,7 +394,7 @@ func TestGRPCClientKeepalive_Bind(t *testing.T) {
 		}(),
 		func() test {
 			return test{
-				name:   "return GRPCClientKeepalive when all paramters are not set",
+				name:   "return GRPCClientKeepalive when all parameters are not set",
 				fields: fields{},
 				want: want{
 					want: &GRPCClientKeepalive{},
@@ -463,7 +463,7 @@ func TestCallOption_Bind(t *testing.T) {
 			maxRecvMsgSize := 1000
 			maxSendMsgSize := 1000
 			return test{
-				name: "return CallOption when all paramters are set",
+				name: "return CallOption when all parameters are set",
 				fields: fields{
 					WaitForReady:          waitForReady,
 					MaxRetryRPCBufferSize: maxRetryRPCBufferSize,
@@ -482,7 +482,7 @@ func TestCallOption_Bind(t *testing.T) {
 		}(),
 		func() test {
 			return test{
-				name:   "return CallOption when all paramters are not set",
+				name:   "return CallOption when all parameters are not set",
 				fields: fields{},
 				want: want{
 					want: &CallOption{},
@@ -578,7 +578,7 @@ func TestDialOption_Bind(t *testing.T) {
 				PermitWithoutStream: true,
 			}
 			return test{
-				name: "return DialOption when all paramters are set",
+				name: "return DialOption when all parameters are set",
 				fields: fields{
 					WriteBufferSize:             writeBufferSize,
 					ReadBufferSize:              readBufferSize,
@@ -623,7 +623,7 @@ func TestDialOption_Bind(t *testing.T) {
 				"TIMEOUT":           "3m",
 			}
 			return test{
-				name: "return DialOption when paramters are set as environment value",
+				name: "return DialOption when parameters are set as environment value",
 				fields: fields{
 					BackoffMaxDelay: "_BACKOFF_MAX_DELAY_",
 					Timeout:         "_TIMEOUT_",
@@ -655,7 +655,7 @@ func TestDialOption_Bind(t *testing.T) {
 		}(),
 		func() test {
 			return test{
-				name:   "return DialOption when all paramters are not set",
+				name:   "return DialOption when all parameters are not set",
 				fields: fields{},
 				want: want{
 					want: &DialOption{},
@@ -734,7 +734,7 @@ func TestGRPCClient_Opts(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return 25 grpc.Option when all paramters are set",
+			name: "return 25 grpc.Option when all parameters are set",
 			fields: fields{
 				Addrs: []string{
 					"10.40.3.342",
@@ -807,7 +807,7 @@ func TestGRPCClient_Opts(t *testing.T) {
 			},
 		},
 		{
-			name:   "return 1 grpc.Option when all paramters are set",
+			name:   "return 1 grpc.Option when all parameters are set",
 			fields: fields{},
 			want: want{
 				want: make([]grpc.Option, 1),
