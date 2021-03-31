@@ -262,7 +262,7 @@ func TestGRPCClient_Bind(t *testing.T) {
 		}(),
 		func() test {
 			return test{
-				name:   "return GRPCClient when all paramters are not set",
+				name:   "return GRPCClient when all parameters are not set",
 				fields: fields{},
 				want: want{
 					want: &GRPCClient{
