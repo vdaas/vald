@@ -19,13 +19,13 @@ package config
 
 import (
 	"os"
-	"os/exec"
 	"reflect"
 	"testing"
 	"time"
 
 	"github.com/vdaas/vald/internal/db/nosql/cassandra"
 	"github.com/vdaas/vald/internal/errors"
+	testdata "github.com/vdaas/vald/internal/test"
 	"go.uber.org/goleak"
 )
 
@@ -387,11 +387,6 @@ func TestCassandra_Bind(t *testing.T) {
 	}
 }
 
-const (
-	cert = "cert.pem"
-	key  = "key.pem"
-)
-
 func TestCassandra_Opts(t *testing.T) {
 	t.Parallel()
 	type fields struct {
@@ -456,6 +451,9 @@ func TestCassandra_Opts(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
+			cert := testdata.GetTestdataPath("tls/dummyServer.crt")
+			key := testdata.GetTestdataPath("tls/dummyServer.key")
+			ca := testdata.GetTestdataPath("tls/dummyCa.pem")
 			return test{
 				name: "return 45 cassandra.Option when no error occurred",
 				fields: fields{
@@ -504,6 +502,7 @@ func TestCassandra_Opts(t *testing.T) {
 						Enabled:            true,
 						Cert:               cert,
 						Key:                key,
+						CA:                 ca,
 						InsecureSkipVerify: false,
 					},
 					Net: &Net{
@@ -521,6 +520,7 @@ func TestCassandra_Opts(t *testing.T) {
 							Enabled:            false,
 							Cert:               cert,
 							Key:                key,
+							CA:                 ca,
 							InsecureSkipVerify: false,
 						},
 						SocketOption: &SocketOption{
@@ -548,30 +548,6 @@ func TestCassandra_Opts(t *testing.T) {
 					KVTable:                  "kv",
 					VKTable:                  "vk",
 					VectorBackupTable:        "backup_vector",
-				},
-				beforeFunc: func(t *testing.T) {
-					t.Helper()
-					path := os.ExpandEnv("$GOROOT") + "/src/crypto/tls/generate_cert.go"
-					strs := []string{
-						"run",
-						path,
-						"--rsa-bits=2048",
-						"--host=localhos",
-					}
-					err := exec.Command("go", strs...).Run()
-
-					if err != nil {
-						t.Fatal(err)
-					}
-				},
-				afterFunc: func(t *testing.T) {
-					t.Helper()
-					if err := os.Remove("cert.pem"); err != nil {
-						t.Fatal(err)
-					}
-					if err := os.Remove("key.pem"); err != nil {
-						t.Fatal(err)
-					}
 				},
 				want: want{
 					wantOpts: make([]cassandra.Option, 45),
@@ -681,6 +657,9 @@ func TestCassandra_Opts(t *testing.T) {
 			}
 		}(),
 		func() test {
+			cert := testdata.GetTestdataPath("tls/dummyServer.crt")
+			key := testdata.GetTestdataPath("tls/dummyServer.key")
+			ca := testdata.GetTestdataPath("tls/dummyCa.pem")
 			return test{
 				name: "return 0 cassandra.Option and err when net.NewDialer returns error",
 				fields: fields{
@@ -729,6 +708,7 @@ func TestCassandra_Opts(t *testing.T) {
 						Enabled:            false,
 						Cert:               cert,
 						Key:                key,
+						CA:                 ca,
 						InsecureSkipVerify: false,
 					},
 					Net: &Net{
@@ -746,6 +726,7 @@ func TestCassandra_Opts(t *testing.T) {
 							Enabled:            false,
 							Cert:               cert,
 							Key:                key,
+							CA:                 ca,
 							InsecureSkipVerify: false,
 						},
 						SocketOption: &SocketOption{
