@@ -341,7 +341,7 @@ func TestGRPCClientKeepalive_Bind(t *testing.T) {
 			timeout := "300s"
 			permitWithoutStream := true
 			return test{
-				name: "return GRPCClientKeepalive when paramters are set",
+				name: "return GRPCClientKeepalive when parameters are set",
 				fields: fields{
 					Time:                time,
 					Timeout:             timeout,
