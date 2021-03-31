@@ -198,7 +198,7 @@ func TestGateway_Bind(t *testing.T) {
 				},
 				afterFunc: func(t *testing.T) {
 					t.Helper()
-					for k, _ := range p {
+					for k := range p {
 						if err := os.Unsetenv(k); err != nil {
 							t.Fatal(err)
 						}
