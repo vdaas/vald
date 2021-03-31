@@ -27,6 +27,7 @@ import (
 )
 
 func TestEgressFilter_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		Client          *GRPCClient
 		DistanceFilters []string
@@ -105,18 +106,19 @@ func TestEgressFilter_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
+			suffix := "_FOR_TEST_EGRESS_FILTER_BIND"
 			m := map[string]string{
-				"DISTANCE_FILTERS": "192.168.1.2",
-				"OBJECT_FILTERS":   "192.168.1.3",
+				"DISTANCE_FILTERS" + suffix: "192.168.1.2",
+				"OBJECT_FILTERS" + suffix:   "192.168.1.3",
 			}
 			return test{
 				name: "return EgressFilter when the bind successes and the data is loaded from the environment variable",
 				fields: fields{
 					DistanceFilters: []string{
-						"_DISTANCE_FILTERS_",
+						"_DISTANCE_FILTERS" + suffix + "_",
 					},
 					ObjectFilters: []string{
-						"_OBJECT_FILTERS_",
+						"_OBJECT_FILTERS" + suffix + "_",
 					},
 				},
 				beforeFunc: func(t *testing.T) {
@@ -149,8 +151,10 @@ func TestEgressFilter_Bind(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)
@@ -176,6 +180,7 @@ func TestEgressFilter_Bind(t *testing.T) {
 }
 
 func TestIngressFilter_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		Client        *GRPCClient
 		Vectorizer    string
@@ -285,29 +290,30 @@ func TestIngressFilter_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
+			sufix := "_FOR_TEST_INGRESS_FILTER_BIND"
 			m := map[string]string{
-				"VECTORIZER":     "192.168.1.2",
-				"SEARCH_FILTERS": "192.168.1.3",
-				"INSERT_FILTERS": "192.168.1.4",
-				"UPDATE_FILTERS": "192.168.1.5",
-				"UPSERT_FILTERS": "192.168.1.6",
+				"VECTORIZER" + sufix:     "192.168.1.2",
+				"SEARCH_FILTERS" + sufix: "192.168.1.3",
+				"INSERT_FILTERS" + sufix: "192.168.1.4",
+				"UPDATE_FILTERS" + sufix: "192.168.1.5",
+				"UPSERT_FILTERS" + sufix: "192.168.1.6",
 			}
 
 			return test{
 				name: "return IngressFilter when the bind successes",
 				fields: fields{
-					Vectorizer: "_VECTORIZER_",
+					Vectorizer: "_VECTORIZER" + sufix + "_",
 					SearchFilters: []string{
-						"_SEARCH_FILTERS_",
+						"_SEARCH_FILTERS" + sufix + "_",
 					},
 					InsertFilters: []string{
-						"_INSERT_FILTERS_",
+						"_INSERT_FILTERS" + sufix + "_",
 					},
 					UpdateFilters: []string{
-						"_UPDATE_FILTERS_",
+						"_UPDATE_FILTERS" + sufix + "_",
 					},
 					UpsertFilters: []string{
-						"_UPSERT_FILTERS_",
+						"_UPSERT_FILTERS" + sufix + "_",
 					},
 				},
 				beforeFunc: func(t *testing.T) {
@@ -347,8 +353,10 @@ func TestIngressFilter_Bind(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)
