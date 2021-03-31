@@ -27,6 +27,7 @@ import (
 )
 
 func TestIndexer_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		AgentPort              int
 		AgentName              string
@@ -126,28 +127,29 @@ func TestIndexer_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
+			suffix := "_FOR_TEST_INDEXER_BIND"
 			m := map[string]string{
-				"AGENT_NAME":                "vald-agent-ngt",
-				"AGENT_NAMESPACE":           "vald",
-				"AGENT_DNS":                 "vald-agent-ngt.vald.svc.cluster.local",
-				"AUTO_INDEX_DURATION_LIMIT": "30m",
-				"AUTO_INDEX_CHECK_DURATION": "1m",
-				"NODE_NAME":                 "vald-01-worker",
+				"AGENT_NAME" + suffix:                "vald-agent-ngt",
+				"AGENT_NAMESPACE" + suffix:           "vald",
+				"AGENT_DNS" + suffix:                 "vald-agent-ngt.vald.svc.cluster.local",
+				"AUTO_INDEX_DURATION_LIMIT" + suffix: "30m",
+				"AUTO_INDEX_CHECK_DURATION" + suffix: "1m",
+				"NODE_NAME" + suffix:                 "vald-01-worker",
 			}
 
 			return test{
 				name: "return Indexer when the bind successes and the data is loaded from the environment variable",
 				fields: fields{
 					AgentPort:              8081,
-					AgentName:              "_AGENT_NAME_",
-					AgentNamespace:         "_AGENT_NAMESPACE_",
-					AgentDNS:               "_AGENT_DNS_",
+					AgentName:              "_AGENT_NAME" + suffix + "_",
+					AgentNamespace:         "_AGENT_NAMESPACE" + suffix + "_",
+					AgentDNS:               "_AGENT_DNS" + suffix + "_",
 					Concurrency:            10,
-					AutoIndexDurationLimit: "_AUTO_INDEX_DURATION_LIMIT_",
-					AutoIndexCheckDuration: "_AUTO_INDEX_CHECK_DURATION_",
+					AutoIndexDurationLimit: "_AUTO_INDEX_DURATION_LIMIT" + suffix + "_",
+					AutoIndexCheckDuration: "_AUTO_INDEX_CHECK_DURATION" + suffix + "_",
 					AutoIndexLength:        100,
 					CreationPoolSize:       10000,
-					NodeName:               "_NODE_NAME_",
+					NodeName:               "_NODE_NAME" + suffix + "_",
 				},
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
@@ -183,9 +185,10 @@ func TestIndexer_Bind(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)
