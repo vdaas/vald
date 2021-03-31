@@ -17,7 +17,7 @@
 // Package config providers configuration type and load configuration logic
 package config
 
-// Client represents Client configuration.
+// Client represents the Client configurations.
 type Client struct {
 	Net       *Net       `json:"net" yaml:"net"`
 	Transport *Transport `json:"transport" yaml:"transport"`
