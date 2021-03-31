@@ -17,7 +17,7 @@
 // Package config providers configuration type and load configuration logic
 package config
 
-// Indexer represents Indexer configuration.
+// Indexer represents the Indexer configurations.
 type Indexer struct {
 	// AgentPort represent agent port number
 	AgentPort int `json:"agent_port" yaml:"agent_port"`
