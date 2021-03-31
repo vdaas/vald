@@ -196,7 +196,7 @@ func TestGRPCClient_Bind(t *testing.T) {
 				CA:      "ca",
 			}
 			return test{
-				name: "return GRPCClient when all paramters are set",
+				name: "return GRPCClient when all parameters are set",
 				fields: fields{
 					Addrs:               addrs,
 					HealthCheckDuration: healthcheck,
