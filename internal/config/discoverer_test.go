@@ -90,17 +90,18 @@ func TestDiscoverer_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
+			suffix := "_FOR_TEST_DISCOVERER_BIND"
 			m := map[string]string{
-				"NAME_FOR_DISCOVERER_TEST":               "discoverer",
-				"NAMESPACE_FOR_DISCOVERER_TEST":          "vald",
-				"DISCOVERY_DURATION_FOR_DISCOVERER_TEST": "10ms",
+				"NAME" + suffix:               "discoverer",
+				"NAMESPACE" + suffix:          "vald",
+				"DISCOVERY_DURATION" + suffix: "10ms",
 			}
 			return test{
 				name: "return Discoverer when the bind successes and the data is loaded from the environment variable",
 				fields: fields{
-					Name:              "_NAME_FOR_DISCOVERER_TEST_",
-					Namespace:         "_NAMESPACE_FOR_DISCOVERER_TEST_",
-					DiscoveryDuration: "_DISCOVERY_DURATION_FOR_DISCOVERER_TEST_",
+					Name:              "_NAME" + suffix + "_",
+					Namespace:         "_NAMESPACE" + suffix + "_",
+					DiscoveryDuration: "_DISCOVERY_DURATION" + suffix + "_",
 				},
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
@@ -159,6 +160,7 @@ func TestDiscoverer_Bind(t *testing.T) {
 }
 
 func TestDiscovererClient_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		Duration           string
 		Client             *GRPCClient
@@ -238,7 +240,7 @@ func TestDiscovererClient_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
-			key := "DURATION"
+			key := "DURATION_FOR_TEST_DISCOVERER_CLIENT_BIND"
 			val := "10ms"
 
 			return test{
@@ -279,6 +281,7 @@ func TestDiscovererClient_Bind(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)
