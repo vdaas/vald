@@ -18,11 +18,13 @@
 package config
 
 import (
+	"os"
 	"reflect"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
+	testdata "github.com/vdaas/vald/internal/test"
 	"go.uber.org/goleak"
 )
 
@@ -45,32 +47,23 @@ func Test_newGRPCClientConfig(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return GRPCClient when called newGRPCClientConfig()",
+			want: want{
+				want: &GRPCClient{
+					DialOption: &DialOption{
+						Insecure: true,
+					},
+				},
+			},
+		},
 	}
 
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -108,8 +101,8 @@ func TestGRPCClient_Bind(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *GRPCClient) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got *GRPCClient) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -118,55 +111,184 @@ func TestGRPCClient_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           Addrs: nil,
-		           HealthCheckDuration: "",
-		           ConnectionPool: ConnectionPool{},
-		           Backoff: Backoff{},
-		           CallOption: CallOption{},
-		           DialOption: DialOption{},
-		           TLS: TLS{},
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           Addrs: nil,
-		           HealthCheckDuration: "",
-		           ConnectionPool: ConnectionPool{},
-		           Backoff: Backoff{},
-		           CallOption: CallOption{},
-		           DialOption: DialOption{},
-		           TLS: TLS{},
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			addrs := []string{
+				"10.40.3.342",
+				"10.40.98.17",
+				"10.40.84.215",
+			}
+			healthcheck := "30s"
+			return test{
+				name: "return GRPCClient when only addrs and healthcheck duration are set",
+				fields: fields{
+					Addrs:               addrs,
+					HealthCheckDuration: healthcheck,
+				},
+				want: want{
+					want: &GRPCClient{
+						Addrs:               addrs,
+						HealthCheckDuration: healthcheck,
+						ConnectionPool:      &ConnectionPool{},
+						DialOption: &DialOption{
+							Insecure: true,
+						},
+						TLS: &TLS{
+							Enabled: false,
+						},
+					},
+				},
+			}
+		}(),
+		func() test {
+			addrs := []string{
+				"10.40.3.342",
+				"10.40.98.17",
+				"10.40.84.215",
+			}
+			healthcheck := "30s"
+			connectionPool := &ConnectionPool{
+				ResolveDNS:           true,
+				EnableRebalance:      true,
+				RebalanceDuration:    "5m",
+				Size:                 100,
+				OldConnCloseDuration: "3m",
+			}
+			backoffOpts := &Backoff{
+				InitialDuration:  "5m",
+				BackoffTimeLimit: "10m",
+				MaximumDuration:  "15m",
+				JitterLimit:      "3m",
+				BackoffFactor:    3,
+				RetryCount:       100,
+				EnableErrorLog:   true,
+			}
+			callOpts := &CallOption{
+				WaitForReady:          true,
+				MaxRetryRPCBufferSize: 100,
+				MaxRecvMsgSize:        1000,
+				MaxSendMsgSize:        1000,
+			}
+			dialOpts := &DialOption{
+				WriteBufferSize:             10000,
+				ReadBufferSize:              10000,
+				InitialWindowSize:           100,
+				InitialConnectionWindowSize: 100,
+				MaxMsgSize:                  1000,
+				BackoffMaxDelay:             "3m",
+				BackoffBaseDelay:            "1m",
+				BackoffJitter:               100,
+				BackoffMultiplier:           10,
+				MinimumConnectionTimeout:    "5m",
+				EnableBackoff:               true,
+				Insecure:                    true,
+				Timeout:                     "5m",
+				Net:                         &Net{},
+				KeepAlive: &GRPCClientKeepalive{
+					Time:                "100s",
+					Timeout:             "300s",
+					PermitWithoutStream: true,
+				},
+			}
+			tls := &TLS{
+				Enabled: true,
+				Cert:    "cert",
+				Key:     "key",
+				CA:      "ca",
+			}
+			return test{
+				name: "return GRPCClient when all paramters are set",
+				fields: fields{
+					Addrs:               addrs,
+					HealthCheckDuration: healthcheck,
+					ConnectionPool:      connectionPool,
+					Backoff:             backoffOpts,
+					CallOption:          callOpts,
+					DialOption:          dialOpts,
+					TLS:                 tls,
+				},
+				want: want{
+					want: &GRPCClient{
+						Addrs:               addrs,
+						HealthCheckDuration: healthcheck,
+						ConnectionPool:      connectionPool,
+						Backoff:             backoffOpts,
+						CallOption:          callOpts,
+						DialOption:          dialOpts,
+						TLS:                 tls,
+					},
+				},
+			}
+		}(),
+		func() test {
+			addrs := []string{
+				"10.40.3.342",
+				"10.40.98.17",
+				"10.40.84.215",
+			}
+			key := "HEALTH_CHECK_DURATION"
+			value := "30s"
+			return test{
+				name: "return GRPCClient when only healthcheck duration is set as environment value",
+				fields: fields{
+					Addrs:               addrs,
+					HealthCheckDuration: "_" + key + "_",
+				},
+				beforeFunc: func(t *testing.T) {
+					t.Helper()
+					if err := os.Setenv(key, value); err != nil {
+						t.Fatal(err)
+					}
+				},
+				afterFunc: func(t *testing.T) {
+					t.Helper()
+					if err := os.Unsetenv(key); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					want: &GRPCClient{
+						Addrs:               addrs,
+						HealthCheckDuration: value,
+						ConnectionPool:      &ConnectionPool{},
+						DialOption: &DialOption{
+							Insecure: true,
+						},
+						TLS: &TLS{
+							Enabled: false,
+						},
+					},
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name:   "return GRPCClient when all paramters are not set",
+				fields: fields{},
+				want: want{
+					want: &GRPCClient{
+						ConnectionPool: &ConnectionPool{},
+						DialOption: &DialOption{
+							Insecure: true,
+						},
+						TLS: &TLS{
+							Enabled: false,
+						},
+					},
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -204,8 +326,8 @@ func TestGRPCClientKeepalive_Bind(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *GRPCClientKeepalive) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got *GRPCClientKeepalive) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -214,47 +336,83 @@ func TestGRPCClientKeepalive_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           Time: "",
-		           Timeout: "",
-		           PermitWithoutStream: false,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			time := "100s"
+			timeout := "300s"
+			permitWithoutStream := true
+			return test{
+				name: "return GRPCClientKeepalive when paramters are set",
+				fields: fields{
+					Time:                time,
+					Timeout:             timeout,
+					PermitWithoutStream: permitWithoutStream,
+				},
+				want: want{
+					want: &GRPCClientKeepalive{
+						Time:                time,
+						Timeout:             timeout,
+						PermitWithoutStream: permitWithoutStream,
+					},
+				},
+			}
+		}(),
+		func() test {
+			p := map[string]string{
+				"TIME":    "100s",
+				"TIMEOUT": "300s",
+			}
+			return test{
+				name: "return GRPCClientKeepalive when paramters are set as environment value",
+				fields: fields{
+					Time:    "_TIME_",
+					Timeout: "_TIMEOUT_",
+				},
+				beforeFunc: func(t *testing.T) {
+					t.Helper()
+					for key, value := range p {
+						if err := os.Setenv(key, value); err != nil {
+							t.Fatal(err)
+						}
+					}
+				},
+				afterFunc: func(t *testing.T) {
+					t.Helper()
+					for key := range p {
+						if err := os.Unsetenv(key); err != nil {
+							t.Fatal(err)
+						}
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           Time: "",
-		           Timeout: "",
-		           PermitWithoutStream: false,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+					}
+				},
+				want: want{
+					want: &GRPCClientKeepalive{
+						Time:    "100s",
+						Timeout: "300s",
+					},
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name:   "return GRPCClientKeepalive when all paramters are not set",
+				fields: fields{},
+				want: want{
+					want: &GRPCClientKeepalive{},
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -299,44 +457,45 @@ func TestCallOption_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           WaitForReady: false,
-		           MaxRetryRPCBufferSize: 0,
-		           MaxRecvMsgSize: 0,
-		           MaxSendMsgSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           WaitForReady: false,
-		           MaxRetryRPCBufferSize: 0,
-		           MaxRecvMsgSize: 0,
-		           MaxSendMsgSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			waitForReady := true
+			maxRetryRPCBufferSize := 100
+			maxRecvMsgSize := 1000
+			maxSendMsgSize := 1000
+			return test{
+				name: "return CallOption when all paramters are set",
+				fields: fields{
+					WaitForReady:          waitForReady,
+					MaxRetryRPCBufferSize: maxRetryRPCBufferSize,
+					MaxRecvMsgSize:        maxRecvMsgSize,
+					MaxSendMsgSize:        maxSendMsgSize,
+				},
+				want: want{
+					want: &CallOption{
+						WaitForReady:          waitForReady,
+						MaxRetryRPCBufferSize: maxRetryRPCBufferSize,
+						MaxRecvMsgSize:        maxRecvMsgSize,
+						MaxSendMsgSize:        maxSendMsgSize,
+					},
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name:   "return CallOption when all paramters are not set",
+				fields: fields{},
+				want: want{
+					want: &CallOption{},
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -388,8 +547,8 @@ func TestDialOption_Bind(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *DialOption) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got *DialOption) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -398,71 +557,123 @@ func TestDialOption_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           WriteBufferSize: 0,
-		           ReadBufferSize: 0,
-		           InitialWindowSize: 0,
-		           InitialConnectionWindowSize: 0,
-		           MaxMsgSize: 0,
-		           BackoffMaxDelay: "",
-		           BackoffBaseDelay: "",
-		           BackoffJitter: 0,
-		           BackoffMultiplier: 0,
-		           MinimumConnectionTimeout: "",
-		           EnableBackoff: false,
-		           Insecure: false,
-		           Timeout: "",
-		           Net: Net{},
-		           KeepAlive: GRPCClientKeepalive{},
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			writeBufferSize := 10000
+			readBufferSize := 10000
+			initialWindowSize := 100
+			initialConnectionWindowSize := 100
+			maxMsgSize := 1000
+			backoffMaxDelay := "3m"
+			backoffBaseDelay := "1m"
+			backoffJitter := float64(100)
+			backoffMultiplier := float64(10)
+			minimumConnectionTimeout := "5m"
+			enableBackoff := true
+			insecure := true
+			timeout := "5m"
+			net := &Net{}
+			keepAlive := &GRPCClientKeepalive{
+				Time:                "100s",
+				Timeout:             "300s",
+				PermitWithoutStream: true,
+			}
+			return test{
+				name: "return DialOption when all paramters are set",
+				fields: fields{
+					WriteBufferSize:             writeBufferSize,
+					ReadBufferSize:              readBufferSize,
+					InitialWindowSize:           initialWindowSize,
+					InitialConnectionWindowSize: initialConnectionWindowSize,
+					MaxMsgSize:                  maxMsgSize,
+					BackoffMaxDelay:             backoffMaxDelay,
+					BackoffBaseDelay:            backoffBaseDelay,
+					BackoffJitter:               backoffJitter,
+					BackoffMultiplier:           backoffMultiplier,
+					MinimumConnectionTimeout:    minimumConnectionTimeout,
+					EnableBackoff:               enableBackoff,
+					Insecure:                    insecure,
+					Timeout:                     timeout,
+					Net:                         net,
+					KeepAlive:                   keepAlive,
+				},
+				want: want{
+					want: &DialOption{
+						WriteBufferSize:             writeBufferSize,
+						ReadBufferSize:              readBufferSize,
+						InitialWindowSize:           initialWindowSize,
+						InitialConnectionWindowSize: initialConnectionWindowSize,
+						MaxMsgSize:                  maxMsgSize,
+						BackoffMaxDelay:             backoffMaxDelay,
+						BackoffBaseDelay:            backoffBaseDelay,
+						BackoffJitter:               backoffJitter,
+						BackoffMultiplier:           backoffMultiplier,
+						MinimumConnectionTimeout:    minimumConnectionTimeout,
+						EnableBackoff:               enableBackoff,
+						Insecure:                    insecure,
+						Timeout:                     timeout,
+						Net:                         net,
+						KeepAlive:                   keepAlive,
+					},
+				},
+			}
+		}(),
+		func() test {
+			p := map[string]string{
+				"BACKOFF_MAX_DELAY": "3m",
+				"TIMEOUT":           "3m",
+			}
+			return test{
+				name: "return DialOption when paramters are set as environment value",
+				fields: fields{
+					BackoffMaxDelay: "_BACKOFF_MAX_DELAY_",
+					Timeout:         "_TIMEOUT_",
+				},
+				beforeFunc: func(t *testing.T) {
+					t.Helper()
+					for key, value := range p {
+						if err := os.Setenv(key, value); err != nil {
+							t.Fatal(err)
+						}
+					}
+				},
+				afterFunc: func(t *testing.T) {
+					t.Helper()
+					for key := range p {
+						if err := os.Unsetenv(key); err != nil {
+							t.Fatal(err)
+						}
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           WriteBufferSize: 0,
-		           ReadBufferSize: 0,
-		           InitialWindowSize: 0,
-		           InitialConnectionWindowSize: 0,
-		           MaxMsgSize: 0,
-		           BackoffMaxDelay: "",
-		           BackoffBaseDelay: "",
-		           BackoffJitter: 0,
-		           BackoffMultiplier: 0,
-		           MinimumConnectionTimeout: "",
-		           EnableBackoff: false,
-		           Insecure: false,
-		           Timeout: "",
-		           Net: Net{},
-		           KeepAlive: GRPCClientKeepalive{},
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+					}
+				},
+				want: want{
+					want: &DialOption{
+						BackoffMaxDelay: "3m",
+						Timeout:         "3m",
+					},
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name:   "return DialOption when all paramters are not set",
+				fields: fields{},
+				want: want{
+					want: &DialOption{},
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -516,56 +727,99 @@ func TestGRPCClient_Opts(t *testing.T) {
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, got []grpc.Option) error {
-		if !reflect.DeepEqual(got, w.want) {
+		if !reflect.DeepEqual(len(got), len(w.want)) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           Addrs: nil,
-		           HealthCheckDuration: "",
-		           ConnectionPool: ConnectionPool{},
-		           Backoff: Backoff{},
-		           CallOption: CallOption{},
-		           DialOption: DialOption{},
-		           TLS: TLS{},
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           Addrs: nil,
-		           HealthCheckDuration: "",
-		           ConnectionPool: ConnectionPool{},
-		           Backoff: Backoff{},
-		           CallOption: CallOption{},
-		           DialOption: DialOption{},
-		           TLS: TLS{},
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return 25 grpc.Option when all paramters are set",
+			fields: fields{
+				Addrs: []string{
+					"10.40.3.342",
+					"10.40.98.17",
+					"10.40.84.215",
+				},
+				HealthCheckDuration: "30s",
+				ConnectionPool: &ConnectionPool{
+					ResolveDNS:           true,
+					EnableRebalance:      true,
+					RebalanceDuration:    "5m",
+					Size:                 100,
+					OldConnCloseDuration: "3m",
+				},
+				Backoff: &Backoff{
+					InitialDuration:  "5m",
+					BackoffTimeLimit: "10m",
+					MaximumDuration:  "15m",
+					JitterLimit:      "3m",
+					BackoffFactor:    3,
+					RetryCount:       100,
+					EnableErrorLog:   true,
+				},
+				CallOption: &CallOption{
+					WaitForReady:          true,
+					MaxRetryRPCBufferSize: 100,
+					MaxRecvMsgSize:        1000,
+					MaxSendMsgSize:        1000,
+				},
+				DialOption: &DialOption{
+					WriteBufferSize:             10000,
+					ReadBufferSize:              10000,
+					InitialWindowSize:           100,
+					InitialConnectionWindowSize: 100,
+					MaxMsgSize:                  1000,
+					BackoffMaxDelay:             "3m",
+					BackoffBaseDelay:            "1m",
+					BackoffJitter:               100,
+					BackoffMultiplier:           10,
+					MinimumConnectionTimeout:    "5m",
+					EnableBackoff:               true,
+					Insecure:                    false,
+					Timeout:                     "5m",
+					Net: &Net{
+						Dialer: &Dialer{
+							Timeout: "10m",
+						},
+						TLS: &TLS{
+							Enabled: true,
+							Cert:    testdata.GetTestdataPath("tls/dummyServer.crt"),
+							Key:     testdata.GetTestdataPath("tls/dummyServer.key"),
+							CA:      testdata.GetTestdataPath("tls/dummyCa.pem"),
+						},
+					},
+					KeepAlive: &GRPCClientKeepalive{
+						Time:                "100s",
+						Timeout:             "300s",
+						PermitWithoutStream: true,
+					},
+				},
+				TLS: &TLS{
+					Enabled: true,
+					Cert:    testdata.GetTestdataPath("tls/dummyServer.crt"),
+					Key:     testdata.GetTestdataPath("tls/dummyServer.key"),
+					CA:      testdata.GetTestdataPath("tls/dummyCa.pem"),
+				},
+			},
+			want: want{
+				want: make([]grpc.Option, 25),
+			},
+		},
+		{
+			name:   "return 1 grpc.Option when all paramters are set",
+			fields: fields{},
+			want: want{
+				want: make([]grpc.Option, 1),
+			},
+		},
 	}
 
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
