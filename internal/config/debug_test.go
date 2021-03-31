@@ -111,7 +111,7 @@ func TestDebug_Bind(t *testing.T) {
 				Mode:  "raw",
 			}
 			return test{
-				name: "return the Debug when all variable are not empty except server's paramter",
+				name: "return the Debug when all variable are not empty except server's parameter",
 				fields: fields{
 					Profile: p,
 					Log:     log,
