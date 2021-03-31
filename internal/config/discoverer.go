@@ -17,7 +17,7 @@
 // Package config providers configuration type and load configuration logic
 package config
 
-// Discoverer represents Discoverer configuration.
+// Discoverer represents the Discoverer configurations.
 type Discoverer struct {
 	Name              string `json:"name" yaml:"name"`
 	Namespace         string `json:"namespace" yaml:"namespace"`
@@ -38,7 +38,7 @@ func (d *Discoverer) Bind() *Discoverer {
 	return d
 }
 
-// DiscovererClient represents DiscovererClient configuration.
+// DiscovererClient represents the DiscovererClient configurations.
 type DiscovererClient struct {
 	Duration           string      `json:"duration" yaml:"duration"`
 	Client             *GRPCClient `json:"client" yaml:"client"`
