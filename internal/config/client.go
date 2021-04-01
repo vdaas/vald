@@ -17,11 +17,13 @@
 // Package config providers configuration type and load configuration logic
 package config
 
+// Client represents the Client configurations.
 type Client struct {
 	Net       *Net       `json:"net" yaml:"net"`
 	Transport *Transport `json:"transport" yaml:"transport"`
 }
 
+// Bind binds the actual data from the Client receiver field.
 func (c *Client) Bind() *Client {
 	if c.Net != nil {
 		c.Net.Bind()
