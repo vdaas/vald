@@ -18,6 +18,7 @@
 package config
 
 import (
+	"os"
 	"reflect"
 	"testing"
 
@@ -40,8 +41,8 @@ func TestEgressFilter_Bind(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *EgressFilter) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got *EgressFilter) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -50,35 +51,104 @@ func TestEgressFilter_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           Client: GRPCClient{},
-		           DistanceFilters: nil,
-		           ObjectFilters: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           Client: GRPCClient{},
-		           DistanceFilters: nil,
-		           ObjectFilters: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			return test{
+				name: "return EgressFilter when the bind successes",
+				fields: fields{
+					DistanceFilters: []string{
+						"192.168.1.2",
+					},
+					ObjectFilters: []string{
+						"192.168.1.3",
+					},
+				},
+				want: want{
+					want: &EgressFilter{
+						DistanceFilters: []string{
+							"192.168.1.2",
+						},
+						ObjectFilters: []string{
+							"192.168.1.3",
+						},
+					},
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return EgressFilter when the bind successes and the Client is not nil",
+				fields: fields{
+					DistanceFilters: []string{
+						"192.168.1.2",
+					},
+					ObjectFilters: []string{
+						"192.168.1.3",
+					},
+					Client: new(GRPCClient),
+				},
+				want: want{
+					want: &EgressFilter{
+						DistanceFilters: []string{
+							"192.168.1.2",
+						},
+						ObjectFilters: []string{
+							"192.168.1.3",
+						},
+						Client: &GRPCClient{
+							ConnectionPool: new(ConnectionPool),
+							DialOption: &DialOption{
+								Insecure: true,
+							},
+							TLS: new(TLS),
+						},
+					},
+				},
+			}
+		}(),
+		func() test {
+			suffix := "_FOR_TEST_EGRESS_FILTER_BIND"
+			m := map[string]string{
+				"DISTANCE_FILTERS" + suffix: "192.168.1.2",
+				"OBJECT_FILTERS" + suffix:   "192.168.1.3",
+			}
+			return test{
+				name: "return EgressFilter when the bind successes and the data is loaded from the environment variable",
+				fields: fields{
+					DistanceFilters: []string{
+						"_DISTANCE_FILTERS" + suffix + "_",
+					},
+					ObjectFilters: []string{
+						"_OBJECT_FILTERS" + suffix + "_",
+					},
+				},
+				beforeFunc: func(t *testing.T) {
+					t.Helper()
+					for k, v := range m {
+						if err := os.Setenv(k, v); err != nil {
+							t.Fatal(err)
+						}
+					}
+				},
+				afterFunc: func(t *testing.T) {
+					t.Helper()
+					for k := range m {
+						if err := os.Unsetenv(k); err != nil {
+							t.Fatal(err)
+						}
+					}
+				},
+				want: want{
+					want: &EgressFilter{
+						DistanceFilters: []string{
+							"192.168.1.2",
+						},
+						ObjectFilters: []string{
+							"192.168.1.3",
+						},
+					},
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -87,10 +157,10 @@ func TestEgressFilter_Bind(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -127,8 +197,8 @@ func TestIngressFilter_Bind(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *IngressFilter) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got *IngressFilter) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -137,41 +207,150 @@ func TestIngressFilter_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           Client: GRPCClient{},
-		           Vectorizer: "",
-		           SearchFilters: nil,
-		           InsertFilters: nil,
-		           UpdateFilters: nil,
-		           UpsertFilters: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			return test{
+				name: "return IngressFilter when the bind successes",
+				fields: fields{
+					Vectorizer: "192.168.1.2",
+					SearchFilters: []string{
+						"192.168.1.3",
+					},
+					InsertFilters: []string{
+						"192.168.1.4",
+					},
+					UpdateFilters: []string{
+						"192.168.1.5",
+					},
+					UpsertFilters: []string{
+						"192.168.1.6",
+					},
+				},
+				want: want{
+					want: &IngressFilter{
+						Vectorizer: "192.168.1.2",
+						SearchFilters: []string{
+							"192.168.1.3",
+						},
+						InsertFilters: []string{
+							"192.168.1.4",
+						},
+						UpdateFilters: []string{
+							"192.168.1.5",
+						},
+						UpsertFilters: []string{
+							"192.168.1.6",
+						},
+					},
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return IngressFilter when the bind successes when the bind successes and the Client is not nil",
+				fields: fields{
+					Vectorizer: "192.168.1.2",
+					SearchFilters: []string{
+						"192.168.1.3",
+					},
+					InsertFilters: []string{
+						"192.168.1.4",
+					},
+					UpdateFilters: []string{
+						"192.168.1.5",
+					},
+					UpsertFilters: []string{
+						"192.168.1.6",
+					},
+					Client: new(GRPCClient),
+				},
+				want: want{
+					want: &IngressFilter{
+						Vectorizer: "192.168.1.2",
+						SearchFilters: []string{
+							"192.168.1.3",
+						},
+						InsertFilters: []string{
+							"192.168.1.4",
+						},
+						UpdateFilters: []string{
+							"192.168.1.5",
+						},
+						UpsertFilters: []string{
+							"192.168.1.6",
+						},
+						Client: &GRPCClient{
+							ConnectionPool: new(ConnectionPool),
+							DialOption: &DialOption{
+								Insecure: true,
+							},
+							TLS: new(TLS),
+						},
+					},
+				},
+			}
+		}(),
+		func() test {
+			sufix := "_FOR_TEST_INGRESS_FILTER_BIND"
+			m := map[string]string{
+				"VECTORIZER" + sufix:     "192.168.1.2",
+				"SEARCH_FILTERS" + sufix: "192.168.1.3",
+				"INSERT_FILTERS" + sufix: "192.168.1.4",
+				"UPDATE_FILTERS" + sufix: "192.168.1.5",
+				"UPSERT_FILTERS" + sufix: "192.168.1.6",
+			}
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           Client: GRPCClient{},
-		           Vectorizer: "",
-		           SearchFilters: nil,
-		           InsertFilters: nil,
-		           UpdateFilters: nil,
-		           UpsertFilters: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			return test{
+				name: "return IngressFilter when the bind successes",
+				fields: fields{
+					Vectorizer: "_VECTORIZER" + sufix + "_",
+					SearchFilters: []string{
+						"_SEARCH_FILTERS" + sufix + "_",
+					},
+					InsertFilters: []string{
+						"_INSERT_FILTERS" + sufix + "_",
+					},
+					UpdateFilters: []string{
+						"_UPDATE_FILTERS" + sufix + "_",
+					},
+					UpsertFilters: []string{
+						"_UPSERT_FILTERS" + sufix + "_",
+					},
+				},
+				beforeFunc: func(t *testing.T) {
+					t.Helper()
+					for k, v := range m {
+						if err := os.Setenv(k, v); err != nil {
+							t.Fatal(err)
+						}
+					}
+				},
+				afterFunc: func(t *testing.T) {
+					t.Helper()
+					for k := range m {
+						if err := os.Unsetenv(k); err != nil {
+							t.Fatal(err)
+						}
+					}
+				},
+				want: want{
+					want: &IngressFilter{
+						Vectorizer: "192.168.1.2",
+						SearchFilters: []string{
+							"192.168.1.3",
+						},
+						InsertFilters: []string{
+							"192.168.1.4",
+						},
+						UpdateFilters: []string{
+							"192.168.1.5",
+						},
+						UpsertFilters: []string{
+							"192.168.1.6",
+						},
+					},
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -180,10 +359,10 @@ func TestIngressFilter_Bind(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc

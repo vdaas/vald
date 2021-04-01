@@ -13,24 +13,44 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+package location
 
-// Package config providers configuration type and load configuration logic
-package config
+import (
+	"testing"
+)
 
-// Client represents the Client configurations.
-type Client struct {
-	Net       *Net       `json:"net" yaml:"net"`
-	Transport *Transport `json:"transport" yaml:"transport"`
+func BenchmarkGMT(b *testing.B) {
+	b.ReportAllocs()
+	b.ResetTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			if l := GMT(); l == nil {
+				b.Error("GMT return nil")
+			}
+		}
+	})
 }
 
-// Bind binds the actual data from the Client receiver field.
-func (c *Client) Bind() *Client {
-	if c.Net != nil {
-		c.Net.Bind()
-	}
+func BenchmarkUTC(b *testing.B) {
+	b.ReportAllocs()
+	b.ResetTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			if l := UTC(); l == nil {
+				b.Error("UTC return nil")
+			}
+		}
+	})
+}
 
-	if c.Transport != nil {
-		c.Transport.Bind()
-	}
-	return c
+func BenchmarkJST(b *testing.B) {
+	b.ReportAllocs()
+	b.ResetTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			if l := JST(); l == nil {
+				b.Error("JST return nil")
+			}
+		}
+	})
 }

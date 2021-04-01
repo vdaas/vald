@@ -17,6 +17,7 @@
 // Package config providers configuration type and load configuration logic
 package config
 
+// Gateway represents the list of configurations for gateway.
 type Gateway struct {
 	// AgentPort represent agent port number
 	AgentPort int `json:"agent_port" yaml:"agent_port"`
@@ -49,6 +50,7 @@ type Gateway struct {
 	EgressFilter *EgressFilter `json:"egress_filter" yaml:"egress_filter"`
 }
 
+// Bind binds the actual data from the Gateway receiver field on the Gateway.
 func (g *Gateway) Bind() *Gateway {
 	g.AgentName = GetActualValue(g.AgentName)
 	g.AgentNamespace = GetActualValue(g.AgentNamespace)
