@@ -57,7 +57,7 @@ func TestLB_Bind(t *testing.T) {
 	tests := []test{
 		func() test {
 			return test{
-				name: "return LB when the Discoverer is nil",
+				name: "return LB when the bind successes and the Discoverer is nil",
 				fields: fields{
 					AgentPort:      8081,
 					AgentName:      "vald-agent-ngt",
@@ -80,7 +80,7 @@ func TestLB_Bind(t *testing.T) {
 		}(),
 		func() test {
 			return test{
-				name: "return LB when the Discoverer is not nil",
+				name: "return LB when the bind successes and the Discoverer is not nil",
 				fields: fields{
 					AgentPort:      8081,
 					AgentName:      "vald-agent-ngt",
@@ -122,7 +122,7 @@ func TestLB_Bind(t *testing.T) {
 				"NODE_NAME":       "vald-01-worker",
 			}
 			return test{
-				name: "return LB when the data is loaded from the environment variable",
+				name: "return LB when the bind successes and the data is loaded from the environment variable",
 				fields: fields{
 					AgentPort:      8081,
 					AgentName:      "_AGENT_NAME_",
