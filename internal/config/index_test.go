@@ -119,8 +119,16 @@ func TestIndexer_Bind(t *testing.T) {
 						CreationPoolSize:       10000,
 						NodeName:               "vald-01-worker",
 						Discoverer: &DiscovererClient{
-							Client:             newGRPCClientConfig(),
-							AgentClientOptions: newGRPCClientConfig(),
+							Client: &GRPCClient{
+								DialOption: &DialOption{
+									Insecure: true,
+								},
+							},
+							AgentClientOptions: &GRPCClient{
+								DialOption: &DialOption{
+									Insecure: true,
+								},
+							},
 						},
 					},
 				},
