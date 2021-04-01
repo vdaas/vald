@@ -760,7 +760,8 @@ func TestCassandra_Opts(t *testing.T) {
 					err:      errors.ErrInvalidDNSConfig(5*time.Minute, 1*time.Minute),
 				},
 			}
-		}()}
+		}(),
+	}
 
 	for _, tc := range tests {
 		test := tc
