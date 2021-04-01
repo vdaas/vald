@@ -17,14 +17,14 @@
 // Package config providers configuration type and load configuration logic
 package config
 
-// EgressFilter represents EgressFilter configuration.
+// EgressFilter represents the EgressFilter configuration.
 type EgressFilter struct {
 	Client          *GRPCClient `json:"client,omitempty" yaml:"client"`
 	DistanceFilters []string    `json:"distance_filters,omitempty" yaml:"distance_filters"`
 	ObjectFilters   []string    `json:"object_filters,omitempty" yaml:"object_filters"`
 }
 
-// IngressFilter represents IngressFilter configuration.
+// IngressFilter represents the IngressFilter configuration.
 type IngressFilter struct {
 	Client        *GRPCClient `json:"client,omitempty" yaml:"client"`
 	Vectorizer    string      `json:"vectorizer,omitempty" yaml:"vectorizer"`
