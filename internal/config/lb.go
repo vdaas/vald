@@ -17,6 +17,7 @@
 // Package config providers configuration type and load configuration logic
 package config
 
+// LB represents the configuration for lb gateway.
 type LB struct {
 	// AgentPort represent agent port number
 	AgentPort int `json:"agent_port" yaml:"agent_port"`
@@ -40,6 +41,7 @@ type LB struct {
 	Discoverer *DiscovererClient `json:"discoverer" yaml:"discoverer"`
 }
 
+// Bind binds the actual data from the LB receiver fields.
 func (g *LB) Bind() *LB {
 	g.AgentName = GetActualValue(g.AgentName)
 	g.AgentNamespace = GetActualValue(g.AgentNamespace)

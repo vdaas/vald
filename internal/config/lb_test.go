@@ -18,6 +18,7 @@
 package config
 
 import (
+	"os"
 	"reflect"
 	"testing"
 
@@ -26,6 +27,7 @@ import (
 )
 
 func TestLB_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		AgentPort      int
 		AgentName      string
@@ -43,8 +45,8 @@ func TestLB_Bind(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *LB) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got *LB) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -53,53 +55,122 @@ func TestLB_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           AgentPort: 0,
-		           AgentName: "",
-		           AgentNamespace: "",
-		           AgentDNS: "",
-		           NodeName: "",
-		           IndexReplica: 0,
-		           Discoverer: DiscovererClient{},
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           AgentPort: 0,
-		           AgentName: "",
-		           AgentNamespace: "",
-		           AgentDNS: "",
-		           NodeName: "",
-		           IndexReplica: 0,
-		           Discoverer: DiscovererClient{},
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			return test{
+				name: "return LB when the Discoverer is nil",
+				fields: fields{
+					AgentPort:      8081,
+					AgentName:      "vald-agent-ngt",
+					AgentNamespace: "vald",
+					AgentDNS:       "vald-agent-ngt.vald.svc.cluster.local",
+					NodeName:       "vald-01-worker",
+					IndexReplica:   3,
+				},
+				want: want{
+					want: &LB{
+						AgentPort:      8081,
+						AgentName:      "vald-agent-ngt",
+						AgentNamespace: "vald",
+						AgentDNS:       "vald-agent-ngt.vald.svc.cluster.local",
+						NodeName:       "vald-01-worker",
+						IndexReplica:   3,
+					},
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return LB when the Discoverer is not nil",
+				fields: fields{
+					AgentPort:      8081,
+					AgentName:      "vald-agent-ngt",
+					AgentNamespace: "vald",
+					AgentDNS:       "vald-agent-ngt.vald.svc.cluster.local",
+					NodeName:       "vald-01-worker",
+					IndexReplica:   3,
+					Discoverer:     new(DiscovererClient),
+				},
+				want: want{
+					want: &LB{
+						AgentPort:      8081,
+						AgentName:      "vald-agent-ngt",
+						AgentNamespace: "vald",
+						AgentDNS:       "vald-agent-ngt.vald.svc.cluster.local",
+						NodeName:       "vald-01-worker",
+						IndexReplica:   3,
+						Discoverer: &DiscovererClient{
+							Client: &GRPCClient{
+								DialOption: &DialOption{
+									Insecure: true,
+								},
+							},
+							AgentClientOptions: &GRPCClient{
+								DialOption: &DialOption{
+									Insecure: true,
+								},
+							},
+						},
+					},
+				},
+			}
+		}(),
+		func() test {
+			m := map[string]string{
+				"AGENT_NAME":      "vald-agent-ngt",
+				"AGENT_NAMESPACE": "vald",
+				"AGENT_DNS":       "vald-agent-ngt.vald.svc.cluster.local",
+				"NODE_NAME":       "vald-01-worker",
+			}
+			return test{
+				name: "return LB when the data is loaded from the environment variable",
+				fields: fields{
+					AgentPort:      8081,
+					AgentName:      "_AGENT_NAME_",
+					AgentNamespace: "_AGENT_NAMESPACE_",
+					AgentDNS:       "_AGENT_DNS_",
+					NodeName:       "_NODE_NAME_",
+					IndexReplica:   3,
+				},
+				beforeFunc: func(t *testing.T) {
+					t.Helper()
+					for k, v := range m {
+						if err := os.Setenv(k, v); err != nil {
+							t.Fatal(err)
+						}
+					}
+				},
+				afterFunc: func(t *testing.T) {
+					t.Helper()
+					for k := range m {
+						if err := os.Unsetenv(k); err != nil {
+							t.Fatal(err)
+						}
+					}
+				},
+				want: want{
+					want: &LB{
+						AgentPort:      8081,
+						AgentName:      "vald-agent-ngt",
+						AgentNamespace: "vald",
+						AgentDNS:       "vald-agent-ngt.vald.svc.cluster.local",
+						NodeName:       "vald-01-worker",
+						IndexReplica:   3,
+					},
+				},
+			}
+		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
