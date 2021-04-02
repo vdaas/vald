@@ -24,6 +24,7 @@ import (
 
 	"github.com/vdaas/vald/internal/db/rdb/mysql"
 	"github.com/vdaas/vald/internal/errors"
+	testdata "github.com/vdaas/vald/internal/test"
 	"go.uber.org/goleak"
 )
 
@@ -255,6 +256,7 @@ func TestMySQL_Opts(t *testing.T) {
 	t.Parallel()
 	type fields struct {
 		DB                   string
+		Network              string
 		Host                 string
 		Port                 uint16
 		User                 string
@@ -286,71 +288,104 @@ func TestMySQL_Opts(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		if !reflect.DeepEqual(len(got), len(w.want)) {
+			return errors.Errorf("length got: \"%#v\",\n\t\t\t\twant: \"%#v\"", len(got), len(w.want))
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           DB: "",
-		           Host: "",
-		           Port: 0,
-		           User: "",
-		           Pass: "",
-		           Name: "",
-		           Charset: "",
-		           Timezone: "",
-		           InitialPingTimeLimit: "",
-		           InitialPingDuration: "",
-		           ConnMaxLifeTime: "",
-		           MaxOpenConns: 0,
-		           MaxIdleConns: 0,
-		           TLS: TLS{},
-		           Net: Net{},
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           DB: "",
-		           Host: "",
-		           Port: 0,
-		           User: "",
-		           Pass: "",
-		           Name: "",
-		           Charset: "",
-		           Timezone: "",
-		           InitialPingTimeLimit: "",
-		           InitialPingDuration: "",
-		           ConnMaxLifeTime: "",
-		           MaxOpenConns: 0,
-		           MaxIdleConns: 0,
-		           TLS: TLS{},
-		           Net: Net{},
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return 16 option and nil when all parameters are set",
+			fields: fields{
+				DB:                   "mysql",
+				Host:                 "mysql.default.svc.cluster.clocal",
+				Network:              "tcp",
+				Port:                 3360,
+				User:                 "root",
+				Pass:                 "pass",
+				Name:                 "vald",
+				Charset:              "utf8mb4",
+				Timezone:             "Local",
+				InitialPingTimeLimit: "5m",
+				InitialPingDuration:  "30ms",
+				ConnMaxLifeTime:      "2m",
+				MaxOpenConns:         40,
+				MaxIdleConns:         50,
+				TLS: &TLS{
+					Enabled: true,
+					Cert:    testdata.GetTestdataPath("tls/dummyServer.crt"),
+					Key:     testdata.GetTestdataPath("tls/dummyServer.key"),
+					CA:      testdata.GetTestdataPath("tls/dummyCa.pem"),
+				},
+				Net: new(Net),
+			},
+			want: want{
+				want: make([]mysql.Option, 17),
+			},
+		},
+		// {
+		// 	name: "return 16 option and nil when all parameters are set but network type is invalid",
+		// 	fields: fields{
+		// 		DB:                   "mysql",
+		// 		Host:                 "mysql.default.svc.cluster.clocal",
+		// 		Network:              "unknown",
+		// 		Port:                 3360,
+		// 		User:                 "root",
+		// 		Pass:                 "pass",
+		// 		Name:                 "vald",
+		// 		Charset:              "utf8mb4",
+		// 		Timezone:             "Local",
+		// 		InitialPingTimeLimit: "5m",
+		// 		InitialPingDuration:  "30ms",
+		// 		ConnMaxLifeTime:      "2m",
+		// 		MaxOpenConns:         40,
+		// 		MaxIdleConns:         50,
+		// 		TLS: &TLS{
+		// 			Enabled: true,
+		// 			Cert:    testdata.GetTestdataPath("tls/dummyServer.crt"),
+		// 			Key:     testdata.GetTestdataPath("tls/dummyServer.key"),
+		// 			CA:      testdata.GetTestdataPath("tls/dummyCa.pem"),
+		// 		},
+		// 		Net: new(Net),
+		// 	},
+		// 	want: want{
+		// 		want: make([]mysql.Option, 17),
+		// 	},
+		// },
+		{
+			name: "return nil and error when all parameters are set but network type is invalid",
+			fields: fields{
+				DB:                   "mysql",
+				Host:                 "mysql.default.svc.cluster.clocal",
+				Port:                 3360,
+				User:                 "root",
+				Pass:                 "pass",
+				Name:                 "vald",
+				Charset:              "utf8mb4",
+				Timezone:             "Local",
+				InitialPingTimeLimit: "5m",
+				InitialPingDuration:  "30ms",
+				ConnMaxLifeTime:      "2m",
+				MaxOpenConns:         40,
+				MaxIdleConns:         50,
+				TLS: &TLS{
+					Enabled: true,
+					Cert:    testdata.GetTestdataPath("tls/dummyServer.crt"),
+					Key:     testdata.GetTestdataPath("tls/dummyServer.key"),
+					CA:      testdata.GetTestdataPath("tls/dummyCa.pem"),
+				},
+				Net: new(Net),
+			},
+			want: want{
+				want: make([]mysql.Option, 17),
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
