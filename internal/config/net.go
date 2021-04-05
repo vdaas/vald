@@ -23,7 +23,7 @@ import (
 	"github.com/vdaas/vald/internal/tls"
 )
 
-// Net represent the network configuration tcp, udp, unix socket.
+// Net represents the network configuration tcp, udp, unix socket.
 type Net struct {
 	DNS          *DNS          `yaml:"dns" json:"dns,omitempty"`
 	Dialer       *Dialer       `yaml:"dialer" json:"dialer,omitempty"`
@@ -31,6 +31,7 @@ type Net struct {
 	TLS          *TLS          `yaml:"tls" json:"tls,omitempty"`
 }
 
+// Dialer represents the configuration for dial.
 type Dialer struct {
 	Timeout          string `yaml:"timeout" json:"timeout,omitempty"`
 	KeepAlive        string `yaml:"keep_alive" json:"keep_alive,omitempty"`
@@ -38,12 +39,14 @@ type Dialer struct {
 	DualStackEnabled bool   `yaml:"dual_stack_enabled" json:"dual_stack_enabled,omitempty"`
 }
 
+// DNS represents the configuration for resolving DNS.
 type DNS struct {
 	CacheEnabled    bool   `yaml:"cache_enabled" json:"cache_enabled,omitempty"`
 	RefreshDuration string `yaml:"refresh_duration" json:"refresh_duration,omitempty"`
 	CacheExpiration string `yaml:"cache_expiration" json:"cache_expiration,omitempty"`
 }
 
+// SocketOption represents the socket configurations.
 type SocketOption struct {
 	ReusePort                bool `json:"reuse_port,omitempty" yaml:"reuse_port"`
 	ReuseAddr                bool `json:"reuse_addr,omitempty" yaml:"reuse_addr"`
@@ -56,12 +59,14 @@ type SocketOption struct {
 	IPRecoverDestinationAddr bool `json:"ip_recover_destination_addr,omitempty" yaml:"ip_recover_destination_addr"`
 }
 
+// Bind binds the actual data from the DNS fields.
 func (d *DNS) Bind() *DNS {
 	d.RefreshDuration = GetActualValue(d.RefreshDuration)
 	d.CacheExpiration = GetActualValue(d.CacheExpiration)
 	return d
 }
 
+// Bind binds the actual data from the Dialer fields.
 func (d *Dialer) Bind() *Dialer {
 	d.Timeout = GetActualValue(d.Timeout)
 	d.KeepAlive = GetActualValue(d.KeepAlive)
@@ -69,10 +74,12 @@ func (d *Dialer) Bind() *Dialer {
 	return d
 }
 
+// Bind binds the actual data from the SocketOption fields.
 func (s *SocketOption) Bind() *SocketOption {
 	return s
 }
 
+// ToSocketFlag returns the control.SocketFlag defined as uint along with the SocketOption's fields. 
 func (s *SocketOption) ToSocketFlag() control.SocketFlag {
 	var flg control.SocketFlag
 	if s == nil {
@@ -108,6 +115,7 @@ func (s *SocketOption) ToSocketFlag() control.SocketFlag {
 	return flg
 }
 
+// Bind binds the actual data from the Net fields.
 func (t *Net) Bind() *Net {
 	if t.TLS != nil {
 		t.TLS = t.TLS.Bind()
@@ -124,6 +132,7 @@ func (t *Net) Bind() *Net {
 	return t
 }
 
+// Opts creates the slice with the functional options for the net.Dialer options.
 func (t *Net) Opts() []net.DialerOption {
 	opts := make([]net.DialerOption, 0, 7)
 	if t.DNS != nil {
