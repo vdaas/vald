@@ -23,7 +23,7 @@ import (
 	"github.com/vdaas/vald/internal/tls"
 )
 
-// Net represents the network configuration tcp, udp, unix socket.
+// Net represents the network configuration tcp, udp, unix domain socket.
 type Net struct {
 	DNS          *DNS          `yaml:"dns" json:"dns,omitempty"`
 	Dialer       *Dialer       `yaml:"dialer" json:"dialer,omitempty"`
