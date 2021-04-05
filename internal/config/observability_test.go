@@ -220,37 +220,66 @@ func TestStackdriver_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           ProjectID: "",
-		           Client: StackdriverClient{},
-		           Exporter: StackdriverExporter{},
-		           Profiler: StackdriverProfiler{},
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			projectID := "vald"
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           ProjectID: "",
-		           Client: StackdriverClient{},
-		           Exporter: StackdriverExporter{},
-		           Profiler: StackdriverProfiler{},
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			return test{
+				name: "return Stackdriver when the Client and the Exporter and the Profiler is nil",
+				fields: fields{
+					ProjectID: projectID,
+				},
+				want: want{
+					want: &Stackdriver{
+						ProjectID: projectID,
+						Client:    new(StackdriverClient),
+						Exporter:  new(StackdriverExporter),
+						Profiler:  new(StackdriverProfiler),
+					},
+				},
+			}
+		}(),
+		func() test {
+			projectID := "vald"
+
+			return test{
+				name: "return Stackdriver when the Client and the Exporter and the Profiler is not nil",
+				fields: fields{
+					ProjectID: projectID,
+					Client:    new(StackdriverClient),
+					Exporter:  new(StackdriverExporter),
+					Profiler:  new(StackdriverProfiler),
+				},
+				want: want{
+					want: &Stackdriver{
+						ProjectID: projectID,
+						Client:    new(StackdriverClient),
+						Exporter:  new(StackdriverExporter),
+						Profiler:  new(StackdriverProfiler),
+					},
+				},
+			}
+		}(),
+		func() test {
+			projectID := "vald"
+
+			return test{
+				name: "return Stackdriver when the data is loaded from the environment variable",
+				fields: fields{
+					ProjectID: projectID,
+					Client:    new(StackdriverClient),
+					Exporter:  new(StackdriverExporter),
+					Profiler:  new(StackdriverProfiler),
+				},
+				want: want{
+					want: &Stackdriver{
+						ProjectID: projectID,
+						Client:    new(StackdriverClient),
+						Exporter:  new(StackdriverExporter),
+						Profiler:  new(StackdriverProfiler),
+					},
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
