@@ -584,7 +584,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				}
 				return nil, err
 			}
-			if reqs.Requests[i].GetConfig() != nil {
+			if req.GetConfig() != nil {
 				reqs.Requests[i].Config.SkipStrictExistCheck = true
 			} else {
 				reqs.Requests[i].Config = &payload.Insert_Config{SkipStrictExistCheck: true}
