@@ -17,7 +17,7 @@
 // Package config providers configuration type and load configuration logic
 package config
 
-// LB represents the configuration for LB.
+// LB represents the configuration for load balancer.
 type LB struct {
 	// AgentPort represent agent port number
 	AgentPort int `json:"agent_port" yaml:"agent_port"`
