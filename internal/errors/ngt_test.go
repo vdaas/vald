@@ -1007,7 +1007,7 @@ func TestErrUUIDAlreadyExists(t *testing.T) {
 				uuid: "550e8400-e29b-41d4",
 			},
 			want: want{
-				want: New("ngt uuid 550e8400-e29b-41d4 object id 100 already exists "),
+				want: New("ngt uuid 550e8400-e29b-41d4 index already exists"),
 			},
 		},
 		{
@@ -1016,7 +1016,7 @@ func TestErrUUIDAlreadyExists(t *testing.T) {
 				uuid: "",
 			},
 			want: want{
-				want: New("ngt uuid  object id 100 already exists "),
+				want: New("ngt uuid  index already exists"),
 			},
 		},
 	}

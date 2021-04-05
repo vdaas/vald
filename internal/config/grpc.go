@@ -101,14 +101,10 @@ func (g *GRPCClient) Bind() *GRPCClient {
 
 	if g.Backoff != nil {
 		g.Backoff.Bind()
-	} else {
-		g.Backoff = new(Backoff)
 	}
 
 	if g.CallOption != nil {
 		g.CallOption.Bind()
-	} else {
-		g.CallOption = new(CallOption)
 	}
 
 	if g.DialOption != nil {
