@@ -18,9 +18,12 @@
 package config
 
 import (
+	"io/fs"
 	"os"
 	"reflect"
+	"syscall"
 	"testing"
+	"time"
 
 	"github.com/vdaas/vald/internal/db/rdb/mysql"
 	"github.com/vdaas/vald/internal/errors"
@@ -323,40 +326,12 @@ func TestMySQL_Opts(t *testing.T) {
 				want: make([]mysql.Option, 17),
 			},
 		},
-		// {
-		// 	name: "return 16 option and nil when all parameters are set but network type is invalid",
-		// 	fields: fields{
-		// 		DB:                   "mysql",
-		// 		Host:                 "mysql.default.svc.cluster.clocal",
-		// 		Network:              "unknown",
-		// 		Port:                 3360,
-		// 		User:                 "root",
-		// 		Pass:                 "pass",
-		// 		Name:                 "vald",
-		// 		Charset:              "utf8mb4",
-		// 		Timezone:             "Local",
-		// 		InitialPingTimeLimit: "5m",
-		// 		InitialPingDuration:  "30ms",
-		// 		ConnMaxLifeTime:      "2m",
-		// 		MaxOpenConns:         40,
-		// 		MaxIdleConns:         50,
-		// 		TLS: &TLS{
-		// 			Enabled: true,
-		// 			Cert:    testdata.GetTestdataPath("tls/dummyServer.crt"),
-		// 			Key:     testdata.GetTestdataPath("tls/dummyServer.key"),
-		// 			CA:      testdata.GetTestdataPath("tls/dummyCa.pem"),
-		// 		},
-		// 		Net: new(Net),
-		// 	},
-		// 	want: want{
-		// 		want: make([]mysql.Option, 17),
-		// 	},
-		// },
 		{
-			name: "return nil and error when all parameters are set but network type is invalid",
+			name: "return 16 option and nil when all parameters are set but the network type is invalid",
 			fields: fields{
 				DB:                   "mysql",
 				Host:                 "mysql.default.svc.cluster.clocal",
+				Network:              "unknown",
 				Port:                 3360,
 				User:                 "root",
 				Pass:                 "pass",
@@ -380,9 +355,107 @@ func TestMySQL_Opts(t *testing.T) {
 				want: make([]mysql.Option, 17),
 			},
 		},
+		{
+			name: "return 16 option and nil when all parameters are set but the network type is empty",
+			fields: fields{
+				DB:                   "mysql",
+				Host:                 "mysql.default.svc.cluster.clocal",
+				Network:              "",
+				Port:                 3360,
+				User:                 "root",
+				Pass:                 "pass",
+				Name:                 "vald",
+				Charset:              "utf8mb4",
+				Timezone:             "Local",
+				InitialPingTimeLimit: "5m",
+				InitialPingDuration:  "30ms",
+				ConnMaxLifeTime:      "2m",
+				MaxOpenConns:         40,
+				MaxIdleConns:         50,
+				TLS: &TLS{
+					Enabled: true,
+					Cert:    testdata.GetTestdataPath("tls/dummyServer.crt"),
+					Key:     testdata.GetTestdataPath("tls/dummyServer.key"),
+					CA:      testdata.GetTestdataPath("tls/dummyCa.pem"),
+				},
+				Net: new(Net),
+			},
+			want: want{
+				want: make([]mysql.Option, 17),
+			},
+		},
+		{
+			name: "return nil and error when all parameters are set but the tls creation returns an error",
+			fields: fields{
+				DB:                   "mysql",
+				Host:                 "mysql.default.svc.cluster.clocal",
+				Port:                 3360,
+				User:                 "root",
+				Pass:                 "pass",
+				Name:                 "vald",
+				Charset:              "utf8mb4",
+				Timezone:             "Local",
+				InitialPingTimeLimit: "5m",
+				InitialPingDuration:  "30ms",
+				ConnMaxLifeTime:      "2m",
+				MaxOpenConns:         40,
+				MaxIdleConns:         50,
+				TLS: &TLS{
+					Enabled: true,
+					Cert:    testdata.GetTestdataPath("tls/dummyServer.crt"),
+					Key:     "tls/dummyServer.key",
+					CA:      testdata.GetTestdataPath("tls/dummyCa.pem"),
+				},
+				Net: new(Net),
+			},
+			want: want{
+				want: nil,
+				err: &fs.PathError{
+					Op:   "open",
+					Path: "tls/dummyServer.key",
+					Err:  syscall.Errno(0x2),
+				},
+			},
+		},
+		{
+			name: "return nil and error when all parameters are set but the dialer creation returns an error",
+			fields: fields{
+				DB:                   "mysql",
+				Host:                 "mysql.default.svc.cluster.clocal",
+				Port:                 3360,
+				User:                 "root",
+				Pass:                 "pass",
+				Name:                 "vald",
+				Charset:              "utf8mb4",
+				Timezone:             "Local",
+				InitialPingTimeLimit: "5m",
+				InitialPingDuration:  "30ms",
+				ConnMaxLifeTime:      "2m",
+				MaxOpenConns:         40,
+				MaxIdleConns:         50,
+				TLS: &TLS{
+					Enabled: true,
+					Cert:    testdata.GetTestdataPath("tls/dummyServer.crt"),
+					Key:     testdata.GetTestdataPath("tls/dummyServer.key"),
+					CA:      testdata.GetTestdataPath("tls/dummyCa.pem"),
+				},
+				Net: &Net{
+					DNS: &DNS{
+						CacheEnabled:    true,
+						CacheExpiration: "1m",
+						RefreshDuration: "10m",
+					},
+				},
+			},
+			want: want{
+				want: nil,
+				err:  errors.ErrInvalidDNSConfig(10*time.Minute, time.Minute),
+			},
+		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
@@ -397,6 +470,7 @@ func TestMySQL_Opts(t *testing.T) {
 			}
 			m := &MySQL{
 				DB:                   test.fields.DB,
+				Network:              test.fields.Network,
 				Host:                 test.fields.Host,
 				Port:                 test.fields.Port,
 				User:                 test.fields.User,
