@@ -103,7 +103,7 @@ func TestNew(t *testing.T) {
 	}
 }
 
-func Test_newStatus(t *testing.T) {
+func Test_NewStatus(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		code    codes.Code
@@ -177,7 +177,7 @@ func Test_newStatus(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			gotSt := newStatus(test.args.code, test.args.msg, test.args.err, test.args.details...)
+			gotSt := NewStatus(test.args.code, test.args.msg, test.args.err, test.args.details...)
 			if err := test.checkFunc(test.want, gotSt); err != nil {
 				tt.Errorf("error = %v", err)
 			}

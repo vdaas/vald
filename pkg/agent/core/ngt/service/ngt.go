@@ -426,9 +426,10 @@ func (n *ngt) insert(uuid string, vec []float32, t int64, validation bool) (err 
 		err = errors.ErrUUIDNotFound(0)
 		return err
 	}
-	if validation {
+	if validation && !n.vq.DVExists(uuid) {
+		// if delete schedule exists we can insert new vector
 		_, ok := n.kvs.Get(uuid)
-		if ok {
+		if ok || n.vq.IVExists(uuid) {
 			err = errors.ErrUUIDAlreadyExists(uuid)
 			return err
 		}
@@ -453,8 +454,8 @@ func (n *ngt) InsertMultiple(vecs map[string][]float32) (err error) {
 
 func (n *ngt) Update(uuid string, vec []float32) (err error) {
 	now := time.Now().UnixNano()
-	if !n.readyForUpdate(uuid, vec) {
-		return nil
+	if err = n.readyForUpdate(uuid, vec); err != nil {
+		return err
 	}
 	err = n.delete(uuid, now)
 	if err != nil {
@@ -467,10 +468,10 @@ func (n *ngt) Update(uuid string, vec []float32) (err error) {
 func (n *ngt) UpdateMultiple(vecs map[string][]float32) (err error) {
 	uuids := make([]string, 0, len(vecs))
 	for uuid, vec := range vecs {
-		if n.readyForUpdate(uuid, vec) {
-			uuids = append(uuids, uuid)
-		} else {
+		if err = n.readyForUpdate(uuid, vec); err != nil {
 			delete(vecs, uuid)
+		} else {
+			uuids = append(uuids, uuid)
 		}
 	}
 	err = n.DeleteMultiple(uuids...)
@@ -490,7 +491,7 @@ func (n *ngt) delete(uuid string, t int64) (err error) {
 		return err
 	}
 	_, ok := n.kvs.Get(uuid)
-	if !ok {
+	if !ok && !n.vq.IVExists(uuid) {
 		return errors.ErrObjectIDNotFound(uuid)
 	}
 	return n.vq.PushDelete(uuid, t)
@@ -701,23 +702,26 @@ func (n *ngt) Exists(uuid string) (oid uint32, ok bool) {
 	return oid, ok
 }
 
-func (n *ngt) readyForUpdate(uuid string, vec []float32) (ready bool) {
-	if len(uuid) == 0 || len(vec) == 0 {
-		return false
+func (n *ngt) readyForUpdate(uuid string, vec []float32) (err error) {
+	if len(uuid) == 0 {
+		return errors.ErrUUIDNotFound(0)
+	}
+	if len(vec) == 0 {
+		return errors.ErrInvalidDimensionSize(len(vec), 0)
 	}
 	ovec, err := n.GetObject(uuid)
 	if err != nil || len(vec) != len(ovec) {
 		// if error (GetObject cannot find vector) or vector length is not equal let's try update
-		return true
+		return nil
 	}
 	for i, v := range vec {
 		if v != ovec[i] {
-			// if difference exists return true for update
-			return true
+			// if difference exists return nil for update
+			return nil
 		}
 	}
-	// if no difference exists (same vector already exists) return false for skip update
-	return false
+	// if no difference exists (same vector already exists) return error for skip update
+	return errors.ErrUUIDAlreadyExists(uuid)
 }
 
 func (n *ngt) IsSaving() bool {
