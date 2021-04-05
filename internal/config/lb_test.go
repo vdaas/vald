@@ -56,48 +56,62 @@ func TestLB_Bind(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
+			agentPort := 8081
+			agentName := "vald-agent-ngt"
+			agentNamespace := "vald"
+			agentDNS := "vald-agent-ngt.vald.svc.cluster.local"
+			nodeName := "vald-01-worker"
+			indexReplica := 3
+
 			return test{
 				name: "return LB when the bind successes and the Discoverer is nil",
 				fields: fields{
-					AgentPort:      8081,
-					AgentName:      "vald-agent-ngt",
-					AgentNamespace: "vald",
-					AgentDNS:       "vald-agent-ngt.vald.svc.cluster.local",
-					NodeName:       "vald-01-worker",
-					IndexReplica:   3,
+					AgentPort:      agentPort,
+					AgentName:      agentName,
+					AgentNamespace: agentNamespace,
+					AgentDNS:       agentDNS,
+					NodeName:       nodeName,
+					IndexReplica:   indexReplica,
 				},
 				want: want{
 					want: &LB{
-						AgentPort:      8081,
-						AgentName:      "vald-agent-ngt",
-						AgentNamespace: "vald",
-						AgentDNS:       "vald-agent-ngt.vald.svc.cluster.local",
-						NodeName:       "vald-01-worker",
-						IndexReplica:   3,
+						AgentPort:      agentPort,
+						AgentName:      agentName,
+						AgentNamespace: agentNamespace,
+						AgentDNS:       agentDNS,
+						NodeName:       nodeName,
+						IndexReplica:   indexReplica,
 					},
 				},
 			}
 		}(),
 		func() test {
+			agentPort := 8081
+			agentName := "vald-agent-ngt"
+			agentNamespace := "vald"
+			agentDNS := "vald-agent-ngt.vald.svc.cluster.local"
+			nodeName := "vald-01-worker"
+			indexReplica := 3
+
 			return test{
 				name: "return LB when the bind successes and the Discoverer is not nil",
 				fields: fields{
-					AgentPort:      8081,
-					AgentName:      "vald-agent-ngt",
-					AgentNamespace: "vald",
-					AgentDNS:       "vald-agent-ngt.vald.svc.cluster.local",
-					NodeName:       "vald-01-worker",
-					IndexReplica:   3,
+					AgentPort:      agentPort,
+					AgentName:      agentName,
+					AgentNamespace: agentNamespace,
+					AgentDNS:       agentDNS,
+					NodeName:       nodeName,
+					IndexReplica:   indexReplica,
 					Discoverer:     new(DiscovererClient),
 				},
 				want: want{
 					want: &LB{
-						AgentPort:      8081,
-						AgentName:      "vald-agent-ngt",
-						AgentNamespace: "vald",
-						AgentDNS:       "vald-agent-ngt.vald.svc.cluster.local",
-						NodeName:       "vald-01-worker",
-						IndexReplica:   3,
+						AgentPort:      agentPort,
+						AgentName:      agentName,
+						AgentNamespace: agentNamespace,
+						AgentDNS:       agentDNS,
+						NodeName:       nodeName,
+						IndexReplica:   indexReplica,
 						Discoverer: &DiscovererClient{
 							Client: &GRPCClient{
 								DialOption: &DialOption{
@@ -115,11 +129,16 @@ func TestLB_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
+			agentName := "vald-agent-ngt"
+			agentNamespace := "vald"
+			agentDNS := "vald-agent-ngt.vald.svc.cluster.local"
+			nodeName := "vald-01-worker"
+
 			m := map[string]string{
-				"AGENT_NAME":      "vald-agent-ngt",
-				"AGENT_NAMESPACE": "vald",
-				"AGENT_DNS":       "vald-agent-ngt.vald.svc.cluster.local",
-				"NODE_NAME":       "vald-01-worker",
+				"AGENT_NAME":      agentName,
+				"AGENT_NAMESPACE": agentNamespace,
+				"AGENT_DNS":       agentDNS,
+				"NODE_NAME":       nodeName,
 			}
 			return test{
 				name: "return LB when the bind successes and the data is loaded from the environment variable",
@@ -150,10 +169,10 @@ func TestLB_Bind(t *testing.T) {
 				want: want{
 					want: &LB{
 						AgentPort:      8081,
-						AgentName:      "vald-agent-ngt",
-						AgentNamespace: "vald",
-						AgentDNS:       "vald-agent-ngt.vald.svc.cluster.local",
-						NodeName:       "vald-01-worker",
+						AgentName:      agentName,
+						AgentNamespace: agentNamespace,
+						AgentDNS:       agentDNS,
+						NodeName:       nodeName,
 						IndexReplica:   3,
 					},
 				},
