@@ -22,9 +22,12 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
+	"go.uber.org/goleak"
 )
 
 func TestClient_Bind(t *testing.T) {
+	t.Parallel()
+
 	type fields struct {
 		Net       *Net
 		Transport *Transport
@@ -47,37 +50,36 @@ func TestClient_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           Net: Net{},
-		           Transport: Transport{},
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           Net: Net{},
-		           Transport: Transport{},
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return Client when the bind successes and net and transport is nil",
+			want: want{
+				want: new(Client),
+			},
+		},
+		{
+			name: "return Client when the bind successes and net and transport is not nil",
+			fields: fields{
+				Net:       new(Net),
+				Transport: new(Transport),
+			},
+			want: want{
+				want: &Client{
+					Net: new(Net),
+					Transport: &Transport{
+						RoundTripper: new(RoundTripper),
+						Backoff:      new(Backoff),
+					},
+				},
+			},
+		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}

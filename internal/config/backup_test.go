@@ -22,12 +22,12 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
+	"go.uber.org/goleak"
 )
 
 func TestBackupManager_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
-		Host   string
-		Port   int
 		Client *GRPCClient
 	}
 	type want struct {
@@ -48,39 +48,112 @@ func TestBackupManager_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           Host: "",
-		           Port: 0,
-		           Client: GRPCClient{},
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           Host: "",
-		           Port: 0,
-		           Client: GRPCClient{},
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			addrs := []string{
+				"10.40.3.342",
+				"10.40.98.17",
+				"10.40.84.215",
+			}
+			healthcheck := "30s"
+			connectionPool := &ConnectionPool{
+				ResolveDNS:           true,
+				EnableRebalance:      true,
+				RebalanceDuration:    "5m",
+				Size:                 100,
+				OldConnCloseDuration: "3m",
+			}
+			backoffOpts := &Backoff{
+				InitialDuration:  "5m",
+				BackoffTimeLimit: "10m",
+				MaximumDuration:  "15m",
+				JitterLimit:      "3m",
+				BackoffFactor:    3,
+				RetryCount:       100,
+				EnableErrorLog:   true,
+			}
+			callOpts := &CallOption{
+				WaitForReady:          true,
+				MaxRetryRPCBufferSize: 100,
+				MaxRecvMsgSize:        1000,
+				MaxSendMsgSize:        1000,
+			}
+			dialOpts := &DialOption{
+				WriteBufferSize:             10000,
+				ReadBufferSize:              10000,
+				InitialWindowSize:           100,
+				InitialConnectionWindowSize: 100,
+				MaxMsgSize:                  1000,
+				BackoffMaxDelay:             "3m",
+				BackoffBaseDelay:            "1m",
+				BackoffJitter:               100,
+				BackoffMultiplier:           10,
+				MinimumConnectionTimeout:    "5m",
+				EnableBackoff:               true,
+				Insecure:                    true,
+				Timeout:                     "5m",
+				Net:                         &Net{},
+				KeepAlive: &GRPCClientKeepalive{
+					Time:                "100s",
+					Timeout:             "300s",
+					PermitWithoutStream: true,
+				},
+			}
+			tls := &TLS{
+				Enabled: true,
+				Cert:    "cert",
+				Key:     "key",
+				CA:      "ca",
+			}
+			return test{
+				name: "return BackupManager when the b.Client is not nil",
+				fields: fields{
+					Client: &GRPCClient{
+						Addrs:               addrs,
+						HealthCheckDuration: healthcheck,
+						ConnectionPool:      connectionPool,
+						Backoff:             backoffOpts,
+						CallOption:          callOpts,
+						DialOption:          dialOpts,
+						TLS:                 tls,
+					},
+				},
+				want: want{
+					want: &BackupManager{
+						Client: &GRPCClient{
+							Addrs:               addrs,
+							HealthCheckDuration: healthcheck,
+							ConnectionPool:      connectionPool,
+							Backoff:             backoffOpts,
+							CallOption:          callOpts,
+							DialOption:          dialOpts,
+							TLS:                 tls,
+						},
+					},
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name:   "return BackupManager when the b.Client is nil",
+				fields: fields{},
+				want: want{
+					want: &BackupManager{
+						Client: &GRPCClient{
+							DialOption: &DialOption{
+								Insecure: true,
+							},
+						},
+					},
+				},
+			}
+		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
