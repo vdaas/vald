@@ -21,6 +21,7 @@ import (
 	"github.com/vdaas/vald/internal/net"
 )
 
+// Meta represents the configurations for vald meta.
 type Meta struct {
 	Host                      string      `json:"host" yaml:"host"`
 	Port                      uint16      `json:"port" yaml:"port"`
@@ -30,6 +31,7 @@ type Meta struct {
 	ExpiredCacheCheckDuration string      `json:"expired_cache_check_duration" yaml:"expired_cache_check_duration"`
 }
 
+// Bind binds the actual data from Meta receiver fields.
 func (m *Meta) Bind() *Meta {
 	m.Host = GetActualValue(m.Host)
 	m.CacheExpiration = GetActualValue(m.CacheExpiration)
