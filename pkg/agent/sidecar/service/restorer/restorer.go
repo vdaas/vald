@@ -157,8 +157,7 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 		}
 	}()
 
-	log.Infof("restoring directory %s started", r.dir)
-	defer log.Infof("restoring directory %s finished", r.dir)
+	log.Infof("started to restore directory %s", r.dir)
 
 	pr, pw := io.Pipe()
 	defer pr.Close()
@@ -259,6 +258,8 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 			}
 		}
 	}
+
+	log.Infof("finished to restore directory %s finished", r.dir)
 
 	return nil
 }

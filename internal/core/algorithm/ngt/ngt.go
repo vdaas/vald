@@ -231,7 +231,7 @@ func (n *ngt) loadOptions(opts ...Option) (err error) {
 
 func (n *ngt) create() (err error) {
 	if fileExists(n.idxPath) {
-		log.Infof("index path exists, will remove the directory. path: %s", n.idxPath)
+		log.Warnf("index path exists, will remove the directory. path: %s", n.idxPath)
 		if err = os.RemoveAll(n.idxPath); err != nil {
 			return err
 		}
