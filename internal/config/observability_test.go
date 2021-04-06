@@ -18,6 +18,7 @@
 package config
 
 import (
+	"os"
 	"reflect"
 	"testing"
 
@@ -52,46 +53,78 @@ func TestObservability_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           Enabled: false,
-		           Collector: Collector{},
-		           Trace: Trace{},
-		           Prometheus: Prometheus{},
-		           Jaeger: Jaeger{},
-		           Stackdriver: Stackdriver{},
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           Enabled: false,
-		           Collector: Collector{},
-		           Trace: Trace{},
-		           Prometheus: Prometheus{},
-		           Jaeger: Jaeger{},
-		           Stackdriver: Stackdriver{},
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			return test{
+				name: "return Observability when all object parameters are nil",
+				fields: fields{
+					Enabled: false,
+				},
+				want: want{
+					want: &Observability{
+						Enabled: true,
+						Collector: &Collector{
+							Metrics: new(Metrics),
+						},
+						Trace:      new(Trace),
+						Prometheus: new(Prometheus),
+						Jaeger:     new(Jaeger),
+						Stackdriver: &Stackdriver{
+							Client:   new(StackdriverClient),
+							Exporter: new(StackdriverExporter),
+							Profiler: new(StackdriverProfiler),
+						},
+					},
+				},
+			}
+		}(),
+		func() test {
+			collectorDur := "5ms"
+			prometheusEndpoint := "http://prometheus:9091"
+			prometheusNamespace := "monitoring"
+			return test{
+				name: "return Observability when all object parameters are not nil",
+				fields: fields{
+					Enabled: false,
+					Collector: &Collector{
+						Duration: collectorDur,
+					},
+					Trace: new(Trace),
+					Prometheus: &Prometheus{
+						Endpoint:  prometheusEndpoint,
+						Namespace: prometheusNamespace,
+					},
+					Jaeger: new(Jaeger),
+					Stackdriver: &Stackdriver{
+						Client:   new(StackdriverClient),
+						Exporter: new(StackdriverExporter),
+						Profiler: new(StackdriverProfiler),
+					},
+				},
+				want: want{
+					want: &Observability{
+						Enabled: true,
+						Collector: &Collector{
+							Metrics: new(Metrics),
+						},
+						Trace:      new(Trace),
+						Prometheus: new(Prometheus),
+						Jaeger:     new(Jaeger),
+						Stackdriver: &Stackdriver{
+							Client:   new(StackdriverClient),
+							Exporter: new(StackdriverExporter),
+							Profiler: new(StackdriverProfiler),
+						},
+					},
+				},
+			}
+		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -131,8 +164,8 @@ func TestCollector_Bind(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *Collector) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got *Collector) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -141,43 +174,92 @@ func TestCollector_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           Duration: "",
-		           Metrics: Metrics{},
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           Duration: "",
-		           Metrics: Metrics{},
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			return test{
+				name: "return Collector when the Metrics is nil",
+				fields: fields{
+					Duration: "5ms",
+				},
+				want: want{
+					want: &Collector{
+						Duration: "5ms",
+						Metrics:  new(Metrics),
+					},
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return Collector when the Metrics is not nil",
+				fields: fields{
+					Duration: "5ms",
+					Metrics:  new(Metrics),
+				},
+				want: want{
+					want: &Collector{
+						Duration: "5ms",
+						Metrics:  new(Metrics),
+					},
+				},
+			}
+		}(),
+		func() test {
+			duration := "5ms"
+			versionInfoLabels := "vald_version"
+			m := map[string]string{
+				"DURATION":                    duration,
+				"METRICS_VERSION_INFO_LABELS": versionInfoLabels,
+			}
+			return test{
+				name: "return Collector when the data is loaded from the environment variable",
+				fields: fields{
+					Duration: "_DURATION_",
+					Metrics: &Metrics{
+						VersionInfoLabels: []string{
+							"_METRICS_VERSION_INFO_LABELS_",
+						},
+					},
+				},
+				beforeFunc: func(t *testing.T) {
+					t.Helper()
+					for k, v := range m {
+						if err := os.Setenv(k, v); err != nil {
+							t.Fatal(err)
+						}
+					}
+				},
+				afterFunc: func(t *testing.T) {
+					t.Helper()
+					for k := range m {
+						if err := os.Unsetenv(k); err != nil {
+							t.Fatal(err)
+						}
+					}
+				},
+				want: want{
+					want: &Collector{
+						Duration: duration,
+						Metrics: &Metrics{
+							VersionInfoLabels: []string{
+								versionInfoLabels,
+							},
+						},
+					},
+				},
+			}
+		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -196,6 +278,7 @@ func TestCollector_Bind(t *testing.T) {
 }
 
 func TestStackdriver_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		ProjectID string
 		Client    *StackdriverClient
@@ -210,8 +293,8 @@ func TestStackdriver_Bind(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *Stackdriver) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got *Stackdriver) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -222,7 +305,6 @@ func TestStackdriver_Bind(t *testing.T) {
 	tests := []test{
 		func() test {
 			projectID := "vald"
-
 			return test{
 				name: "return Stackdriver when the Client and the Exporter and the Profiler is nil",
 				fields: fields{
@@ -240,7 +322,6 @@ func TestStackdriver_Bind(t *testing.T) {
 		}(),
 		func() test {
 			projectID := "vald"
-
 			return test{
 				name: "return Stackdriver when the Client and the Exporter and the Profiler is not nil",
 				fields: fields{
@@ -260,36 +341,74 @@ func TestStackdriver_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
-			projectID := "vald"
-
+			projectID := "vdaas/vald"
+			clientAPIKey := "api_key"
+			exporterLocation := "asia-northeast1-a"
+			profileService := "vald-service"
+			m := map[string]string{
+				"PROJECT_ID":        projectID,
+				"CLIENT_API_KEY":    clientAPIKey,
+				"EXPORTER_LOCATION": exporterLocation,
+				"PROFILER_SERVICE":  profileService,
+			}
 			return test{
 				name: "return Stackdriver when the data is loaded from the environment variable",
 				fields: fields{
-					ProjectID: projectID,
-					Client:    new(StackdriverClient),
-					Exporter:  new(StackdriverExporter),
-					Profiler:  new(StackdriverProfiler),
+					ProjectID: "_PROJECT_ID_",
+					Client: &StackdriverClient{
+						APIKey: "_API_KEY_",
+					},
+					Exporter: &StackdriverExporter{
+						Location: "_EXPORTER_LOCATION_",
+					},
+					Profiler: &StackdriverProfiler{
+						Service: "_PROFILER_SERVICE_",
+					},
+				},
+				beforeFunc: func(t *testing.T) {
+					t.Helper()
+					for k, v := range m {
+						if err := os.Setenv(k, v); err != nil {
+							t.Fatal(err)
+						}
+					}
+				},
+				afterFunc: func(t *testing.T) {
+					t.Helper()
+					for k := range m {
+						if err := os.Unsetenv(k); err != nil {
+							t.Fatal(err)
+						}
+					}
 				},
 				want: want{
 					want: &Stackdriver{
 						ProjectID: projectID,
-						Client:    new(StackdriverClient),
-						Exporter:  new(StackdriverExporter),
-						Profiler:  new(StackdriverProfiler),
+						Client: &StackdriverClient{
+							APIKey: clientAPIKey,
+						},
+						Exporter: &StackdriverExporter{
+							Location: exporterLocation,
+						},
+						Profiler: &StackdriverProfiler{
+							Service: profileService,
+						},
 					},
 				},
 			}
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
