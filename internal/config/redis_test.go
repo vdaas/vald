@@ -18,8 +18,10 @@
 package config
 
 import (
+	"os"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/vdaas/vald/internal/db/kvs/redis"
 	"github.com/vdaas/vald/internal/errors"
@@ -53,6 +55,8 @@ func TestRedis_Bind(t *testing.T) {
 		ReadTimeout          string
 		RouteByLatency       bool
 		RouteRandomly        bool
+		SentinelPassword     string
+		SentinelMasterName   string
 		Net                  *Net
 		TLS                  *TLS
 		Username             string
@@ -67,8 +71,8 @@ func TestRedis_Bind(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *Redis) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got *Redis) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -77,99 +81,306 @@ func TestRedis_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           Addrs: nil,
-		           DB: 0,
-		           DialTimeout: "",
-		           IdleCheckFrequency: "",
-		           IdleTimeout: "",
-		           InitialPingDuration: "",
-		           InitialPingTimeLimit: "",
-		           KVPrefix: "",
-		           KeyPref: "",
-		           MaxConnAge: "",
-		           MaxRedirects: 0,
-		           MaxRetries: 0,
-		           MaxRetryBackoff: "",
-		           MinIdleConns: 0,
-		           MinRetryBackoff: "",
-		           Network: "",
-		           Password: "",
-		           PoolSize: 0,
-		           PoolTimeout: "",
-		           PrefixDelimiter: "",
-		           ReadOnly: false,
-		           ReadTimeout: "",
-		           RouteByLatency: false,
-		           RouteRandomly: false,
-		           Net: Net{},
-		           TLS: TLS{},
-		           Username: "",
-		           VKPrefix: "",
-		           WriteTimeout: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           Addrs: nil,
-		           DB: 0,
-		           DialTimeout: "",
-		           IdleCheckFrequency: "",
-		           IdleTimeout: "",
-		           InitialPingDuration: "",
-		           InitialPingTimeLimit: "",
-		           KVPrefix: "",
-		           KeyPref: "",
-		           MaxConnAge: "",
-		           MaxRedirects: 0,
-		           MaxRetries: 0,
-		           MaxRetryBackoff: "",
-		           MinIdleConns: 0,
-		           MinRetryBackoff: "",
-		           Network: "",
-		           Password: "",
-		           PoolSize: 0,
-		           PoolTimeout: "",
-		           PrefixDelimiter: "",
-		           ReadOnly: false,
-		           ReadTimeout: "",
-		           RouteByLatency: false,
-		           RouteRandomly: false,
-		           Net: Net{},
-		           TLS: TLS{},
-		           Username: "",
-		           VKPrefix: "",
-		           WriteTimeout: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			addrs := []string{"redis.default.svc.cluster.local:6379"}
+			db := 0
+			dialTimeout := "5s"
+			idleCheckFrequency := "1m"
+			IdleTimeout := "5m"
+			initialPingDuration := "5s"
+			initialPingTimelimit := "30s"
+			keyPref := "vald"
+			maxConnAge := "0s"
+			maxRedirects := 3
+			maxRetries := 1
+			maxRetryBackoff := "512s"
+			minIdleConns := 0
+			minRetryBackoff := "8ms"
+			network := "tcp"
+			password := "password"
+			poolSize := 10
+			poolTimeout := "4s"
+			prefixDelimiter := "+"
+			readOnly := true
+			readTimeout := "3s"
+			routeByLatency := false
+			routeRandomly := true
+			sentinelPassword := ""
+			sentinelMasterName := ""
+			kvPrefix := ""
+			vkPrefix := ""
+			username := "vald"
+			writeTimeout := "3s"
+			tls := &TLS{
+				Enabled: false,
+			}
+			net := &Net{
+				DNS: &DNS{
+					CacheEnabled:    true,
+					RefreshDuration: "1h",
+					CacheExpiration: "24h",
+				},
+				Dialer: &Dialer{
+					Timeout:          "5s",
+					KeepAlive:        "5m",
+					DualStackEnabled: false,
+				},
+				TLS: tls,
+				SocketOption: &SocketOption{
+					ReusePort:                true,
+					ReuseAddr:                true,
+					TCPFastOpen:              true,
+					TCPNoDelay:               true,
+					TCPCork:                  false,
+					TCPQuickAck:              true,
+					TCPDeferAccept:           true,
+					IPTransparent:            false,
+					IPRecoverDestinationAddr: false,
+				},
+			}
+			return test{
+				name: "return Redis when parameters are set",
+				fields: fields{
+					Addrs:                addrs,
+					DB:                   db,
+					DialTimeout:          dialTimeout,
+					IdleCheckFrequency:   idleCheckFrequency,
+					IdleTimeout:          IdleTimeout,
+					InitialPingDuration:  initialPingDuration,
+					InitialPingTimeLimit: initialPingTimelimit,
+					KVPrefix:             kvPrefix,
+					KeyPref:              keyPref,
+					MaxConnAge:           maxConnAge,
+					MaxRedirects:         maxRedirects,
+					MaxRetries:           maxRetries,
+					MaxRetryBackoff:      maxRetryBackoff,
+					MinIdleConns:         minIdleConns,
+					MinRetryBackoff:      minRetryBackoff,
+					Network:              network,
+					Password:             password,
+					PoolSize:             poolSize,
+					PoolTimeout:          poolTimeout,
+					PrefixDelimiter:      prefixDelimiter,
+					ReadOnly:             readOnly,
+					ReadTimeout:          readTimeout,
+					RouteByLatency:       routeByLatency,
+					RouteRandomly:        routeRandomly,
+					SentinelPassword:     sentinelPassword,
+					SentinelMasterName:   sentinelMasterName,
+					Net:                  net,
+					TLS:                  tls,
+					Username:             username,
+					VKPrefix:             vkPrefix,
+					WriteTimeout:         writeTimeout,
+				},
+				want: want{
+					want: &Redis{
+						Addrs:                addrs,
+						DB:                   db,
+						DialTimeout:          dialTimeout,
+						IdleCheckFrequency:   idleCheckFrequency,
+						IdleTimeout:          IdleTimeout,
+						InitialPingDuration:  initialPingDuration,
+						InitialPingTimeLimit: initialPingTimelimit,
+						KVPrefix:             kvPrefix,
+						KeyPref:              keyPref,
+						MaxConnAge:           maxConnAge,
+						MaxRedirects:         maxRedirects,
+						MaxRetries:           maxRetries,
+						MaxRetryBackoff:      maxRetryBackoff,
+						MinIdleConns:         minIdleConns,
+						MinRetryBackoff:      minRetryBackoff,
+						Network:              network,
+						Password:             password,
+						PoolSize:             poolSize,
+						PoolTimeout:          poolTimeout,
+						PrefixDelimiter:      prefixDelimiter,
+						ReadOnly:             readOnly,
+						ReadTimeout:          readTimeout,
+						RouteByLatency:       routeByLatency,
+						RouteRandomly:        routeRandomly,
+						SentinelPassword:     sentinelPassword,
+						SentinelMasterName:   sentinelMasterName,
+						Net:                  net,
+						TLS:                  tls,
+						Username:             username,
+						VKPrefix:             vkPrefix,
+						WriteTimeout:         writeTimeout,
+					},
+				},
+			}
+		}(),
+		func() test {
+			p := map[string]string{
+				"ADDRS":                "redis.default.svc.cluster.local:6379",
+				"DIAL_TIMEOUT":         "5s",
+				"IDLE_CHECK_FREQUENCY": "1m",
+				"IDLE_TIMEOUT":         "5m",
+				"KEY_PREF":             "vald",
+				"MAX_CONN_AGE":         "0s",
+				"MAX_RETRY_BACKOFF":    "512s",
+				"MIN_RETRY_BACKOFF":    "8ms",
+				"NETWORK":              "tcp",
+				"PASSWORD":             "password",
+				"POOL_TIMEOUT":         "4s",
+				"PREFIX_DELIMITER":     "_",
+				"READ_TIMEOUT":         "3s",
+				"SENTINEL_PASSWORD":    "",
+				"SENTINEL_MASTER_NAME": "",
+				"KV_PREFIX":            "",
+				"VK_PREFIX":            "",
+				"USERNAME":             "vald",
+				"WRITE_TIMEOUT":        "3s",
+			}
+			db := 0
+			maxRedirects := 3
+			maxRetries := 1
+			minIdleConns := 0
+			poolSize := 10
+			readOnly := true
+			routeByLatency := false
+			routeRandomly := true
+			tls := &TLS{
+				Enabled: false,
+			}
+			net := &Net{
+				DNS: &DNS{
+					CacheEnabled:    true,
+					RefreshDuration: "1h",
+					CacheExpiration: "24h",
+				},
+				Dialer: &Dialer{
+					Timeout:          "5s",
+					KeepAlive:        "5m",
+					DualStackEnabled: false,
+				},
+				TLS: tls,
+				SocketOption: &SocketOption{
+					ReusePort:                true,
+					ReuseAddr:                true,
+					TCPFastOpen:              true,
+					TCPNoDelay:               true,
+					TCPCork:                  false,
+					TCPQuickAck:              true,
+					TCPDeferAccept:           true,
+					IPTransparent:            false,
+					IPRecoverDestinationAddr: false,
+				},
+			}
+			return test{
+				name: "return Redis when parameters are set as environment value",
+				fields: fields{
+					Addrs:                []string{"_ADDRS_"},
+					DB:                   db,
+					DialTimeout:          "_DIAL_TIMEOUT_",
+					IdleCheckFrequency:   "_IDLE_CHECK_FREQUENCY_",
+					IdleTimeout:          "_IDLE_TIMEOUT_",
+					InitialPingDuration:  "",
+					InitialPingTimeLimit: "",
+					KVPrefix:             "_KV_PREFIX_",
+					KeyPref:              "_KEY_PREF_",
+					MaxConnAge:           "_MAX_CONN_AGE_",
+					MaxRedirects:         maxRedirects,
+					MaxRetries:           maxRetries,
+					MaxRetryBackoff:      "_MAX_RETRY_BACKOFF_",
+					MinIdleConns:         minIdleConns,
+					MinRetryBackoff:      "_MIN_RETRY_BACKOFF_",
+					Network:              "_NETWORK_",
+					Password:             "_PASSWORD_",
+					PoolSize:             poolSize,
+					PoolTimeout:          "_POOL_TIMEOUT_",
+					PrefixDelimiter:      "_PREFIX_DELIMITER_",
+					ReadOnly:             readOnly,
+					ReadTimeout:          "_READ_TIMEOUT_",
+					RouteByLatency:       routeByLatency,
+					RouteRandomly:        routeRandomly,
+					SentinelPassword:     "_SENTINEL_PASSWORD_",
+					SentinelMasterName:   "_SENTINEL_MASTER_NAME_",
+					Net:                  net,
+					TLS:                  tls,
+					Username:             "_USERNAME_",
+					VKPrefix:             "_VK_PREFIX_",
+					WriteTimeout:         "_WRITE_TIMEOUT_",
+				},
+				beforeFunc: func(t *testing.T) {
+					t.Helper()
+					for k, v := range p {
+						if err := os.Setenv(k, v); err != nil {
+							t.Fatal(err)
+						}
+					}
+				},
+				afterFunc: func(t *testing.T) {
+					t.Helper()
+					for k := range p {
+						if err := os.Unsetenv(k); err != nil {
+							t.Fatal(err)
+						}
+					}
+				},
+				want: want{
+					want: &Redis{
+						Addrs: []string{
+							"redis.default.svc.cluster.local:6379",
+						},
+						DB:                   db,
+						DialTimeout:          "5s",
+						IdleCheckFrequency:   "1m",
+						IdleTimeout:          "5m",
+						InitialPingDuration:  "",
+						InitialPingTimeLimit: "",
+						KVPrefix:             "",
+						KeyPref:              "vald",
+						MaxConnAge:           "0s",
+						MaxRedirects:         maxRedirects,
+						MaxRetries:           maxRetries,
+						MaxRetryBackoff:      "512s",
+						MinIdleConns:         minIdleConns,
+						MinRetryBackoff:      "8ms",
+						Network:              "tcp",
+						Password:             "password",
+						PoolSize:             poolSize,
+						PoolTimeout:          "4s",
+						PrefixDelimiter:      "_",
+						ReadOnly:             readOnly,
+						ReadTimeout:          "3s",
+						RouteByLatency:       routeByLatency,
+						RouteRandomly:        routeRandomly,
+						SentinelPassword:     "",
+						SentinelMasterName:   "",
+						Net:                  net,
+						TLS:                  tls,
+						Username:             "vald",
+						VKPrefix:             "",
+						WriteTimeout:         "3s",
+					},
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name:   "return Redis when parameters are not set",
+				fields: fields{},
+				want: want{
+					want: &Redis{
+						Net: &Net{},
+						TLS: &TLS{},
+					},
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -199,6 +410,8 @@ func TestRedis_Bind(t *testing.T) {
 				ReadTimeout:          test.fields.ReadTimeout,
 				RouteByLatency:       test.fields.RouteByLatency,
 				RouteRandomly:        test.fields.RouteRandomly,
+				SentinelPassword:     test.fields.SentinelPassword,
+				SentinelMasterName:   test.fields.SentinelMasterName,
 				Net:                  test.fields.Net,
 				TLS:                  test.fields.TLS,
 				Username:             test.fields.Username,
@@ -241,6 +454,8 @@ func TestRedis_Opts(t *testing.T) {
 		ReadTimeout          string
 		RouteByLatency       bool
 		RouteRandomly        bool
+		SentinelPassword     string
+		SentinelMasterName   string
 		Net                  *Net
 		TLS                  *TLS
 		Username             string
@@ -263,100 +478,357 @@ func TestRedis_Opts(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(gotOpts, w.wantOpts) {
+		if !reflect.DeepEqual(len(gotOpts), len(w.wantOpts)) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOpts, w.wantOpts)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           Addrs: nil,
-		           DB: 0,
-		           DialTimeout: "",
-		           IdleCheckFrequency: "",
-		           IdleTimeout: "",
-		           InitialPingDuration: "",
-		           InitialPingTimeLimit: "",
-		           KVPrefix: "",
-		           KeyPref: "",
-		           MaxConnAge: "",
-		           MaxRedirects: 0,
-		           MaxRetries: 0,
-		           MaxRetryBackoff: "",
-		           MinIdleConns: 0,
-		           MinRetryBackoff: "",
-		           Network: "",
-		           Password: "",
-		           PoolSize: 0,
-		           PoolTimeout: "",
-		           PrefixDelimiter: "",
-		           ReadOnly: false,
-		           ReadTimeout: "",
-		           RouteByLatency: false,
-		           RouteRandomly: false,
-		           Net: Net{},
-		           TLS: TLS{},
-		           Username: "",
-		           VKPrefix: "",
-		           WriteTimeout: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           Addrs: nil,
-		           DB: 0,
-		           DialTimeout: "",
-		           IdleCheckFrequency: "",
-		           IdleTimeout: "",
-		           InitialPingDuration: "",
-		           InitialPingTimeLimit: "",
-		           KVPrefix: "",
-		           KeyPref: "",
-		           MaxConnAge: "",
-		           MaxRedirects: 0,
-		           MaxRetries: 0,
-		           MaxRetryBackoff: "",
-		           MinIdleConns: 0,
-		           MinRetryBackoff: "",
-		           Network: "",
-		           Password: "",
-		           PoolSize: 0,
-		           PoolTimeout: "",
-		           PrefixDelimiter: "",
-		           ReadOnly: false,
-		           ReadTimeout: "",
-		           RouteByLatency: false,
-		           RouteRandomly: false,
-		           Net: Net{},
-		           TLS: TLS{},
-		           Username: "",
-		           VKPrefix: "",
-		           WriteTimeout: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return 26 []redis.Options and nil error when all parameters are set",
+			fields: fields{
+				Addrs: []string{
+					"redis.default.svc.cluster.local:6379",
+				},
+				DB:                   0,
+				DialTimeout:          "5s",
+				IdleCheckFrequency:   "1m",
+				IdleTimeout:          "5m",
+				InitialPingDuration:  "",
+				InitialPingTimeLimit: "",
+				KVPrefix:             "",
+				KeyPref:              "vald",
+				MaxConnAge:           "0s",
+				MaxRedirects:         3,
+				MaxRetries:           1,
+				MaxRetryBackoff:      "512s",
+				MinIdleConns:         0,
+				MinRetryBackoff:      "8ms",
+				Network:              "tcp",
+				Password:             "password",
+				PoolSize:             10,
+				PoolTimeout:          "4s",
+				PrefixDelimiter:      "_",
+				ReadOnly:             true,
+				ReadTimeout:          "3s",
+				RouteByLatency:       false,
+				RouteRandomly:        true,
+				SentinelPassword:     "",
+				SentinelMasterName:   "",
+				Net: &Net{
+					DNS: &DNS{
+						CacheEnabled:    true,
+						RefreshDuration: "1h",
+						CacheExpiration: "24h",
+					},
+					Dialer: &Dialer{
+						Timeout:          "5s",
+						KeepAlive:        "5m",
+						DualStackEnabled: false,
+					},
+					TLS: &TLS{
+						Enabled: false,
+					},
+					SocketOption: &SocketOption{
+						ReusePort:                true,
+						ReuseAddr:                true,
+						TCPFastOpen:              true,
+						TCPNoDelay:               true,
+						TCPCork:                  false,
+						TCPQuickAck:              true,
+						TCPDeferAccept:           true,
+						IPTransparent:            false,
+						IPRecoverDestinationAddr: false,
+					},
+				},
+				TLS: &TLS{
+					Enabled: false,
+				},
+				Username:     "vald",
+				VKPrefix:     "",
+				WriteTimeout: "3s",
+			},
+			want: want{
+				wantOpts: make([]redis.Option, 26),
+			},
+		},
+		{
+			name: "return 26 []redis.Options and nil error when addrs is nil",
+			fields: fields{
+				DB:                   0,
+				DialTimeout:          "5s",
+				IdleCheckFrequency:   "1m",
+				IdleTimeout:          "5m",
+				InitialPingDuration:  "",
+				InitialPingTimeLimit: "",
+				KVPrefix:             "",
+				KeyPref:              "vald",
+				MaxConnAge:           "0s",
+				MaxRedirects:         3,
+				MaxRetries:           1,
+				MaxRetryBackoff:      "512s",
+				MinIdleConns:         0,
+				MinRetryBackoff:      "8ms",
+				Network:              "tcp",
+				Password:             "password",
+				PoolSize:             10,
+				PoolTimeout:          "4s",
+				PrefixDelimiter:      "_",
+				ReadOnly:             true,
+				ReadTimeout:          "3s",
+				RouteByLatency:       false,
+				RouteRandomly:        true,
+				SentinelPassword:     "",
+				SentinelMasterName:   "",
+				Net: &Net{
+					DNS: &DNS{
+						CacheEnabled:    true,
+						RefreshDuration: "1h",
+						CacheExpiration: "24h",
+					},
+					Dialer: &Dialer{
+						Timeout:          "5s",
+						KeepAlive:        "5m",
+						DualStackEnabled: false,
+					},
+					TLS: &TLS{
+						Enabled: false,
+					},
+					SocketOption: &SocketOption{
+						ReusePort:                true,
+						ReuseAddr:                true,
+						TCPFastOpen:              true,
+						TCPNoDelay:               true,
+						TCPCork:                  false,
+						TCPQuickAck:              true,
+						TCPDeferAccept:           true,
+						IPTransparent:            false,
+						IPRecoverDestinationAddr: false,
+					},
+				},
+				TLS: &TLS{
+					Enabled: false,
+				},
+				Username:     "vald",
+				VKPrefix:     "",
+				WriteTimeout: "3s",
+			},
+			want: want{
+				wantOpts: make([]redis.Option, 26),
+			},
+		},
+		{
+			name: "return 26 []redis.Options and nil error when Network is empty",
+			fields: fields{
+				Addrs: []string{
+					"redis.default.svc.cluster.local:6379",
+				},
+				DB:                   0,
+				DialTimeout:          "5s",
+				IdleCheckFrequency:   "1m",
+				IdleTimeout:          "5m",
+				InitialPingDuration:  "",
+				InitialPingTimeLimit: "",
+				KVPrefix:             "",
+				KeyPref:              "vald",
+				MaxConnAge:           "0s",
+				MaxRedirects:         3,
+				MaxRetries:           1,
+				MaxRetryBackoff:      "512s",
+				MinIdleConns:         0,
+				MinRetryBackoff:      "8ms",
+				Password:             "password",
+				PoolSize:             10,
+				PoolTimeout:          "4s",
+				PrefixDelimiter:      "_",
+				ReadOnly:             true,
+				ReadTimeout:          "3s",
+				RouteByLatency:       false,
+				RouteRandomly:        true,
+				SentinelPassword:     "",
+				SentinelMasterName:   "",
+				Net: &Net{
+					DNS: &DNS{
+						CacheEnabled:    true,
+						RefreshDuration: "1h",
+						CacheExpiration: "24h",
+					},
+					Dialer: &Dialer{
+						Timeout:          "5s",
+						KeepAlive:        "5m",
+						DualStackEnabled: false,
+					},
+					TLS: &TLS{
+						Enabled: false,
+					},
+					SocketOption: &SocketOption{
+						ReusePort:                true,
+						ReuseAddr:                true,
+						TCPFastOpen:              true,
+						TCPNoDelay:               true,
+						TCPCork:                  false,
+						TCPQuickAck:              true,
+						TCPDeferAccept:           true,
+						IPTransparent:            false,
+						IPRecoverDestinationAddr: false,
+					},
+				},
+				TLS: &TLS{
+					Enabled: false,
+				},
+				Username:     "vald",
+				VKPrefix:     "",
+				WriteTimeout: "3s",
+			},
+			want: want{
+				wantOpts: make([]redis.Option, 26),
+			},
+		},
+		{
+			name: "return nil []redis.Options and error when TLS has invalid parameter",
+			fields: fields{
+				Addrs: []string{
+					"redis.default.svc.cluster.local:6379",
+				},
+				DB:                   0,
+				DialTimeout:          "5s",
+				IdleCheckFrequency:   "1m",
+				IdleTimeout:          "5m",
+				InitialPingDuration:  "",
+				InitialPingTimeLimit: "",
+				KVPrefix:             "",
+				KeyPref:              "vald",
+				MaxConnAge:           "0s",
+				MaxRedirects:         3,
+				MaxRetries:           1,
+				MaxRetryBackoff:      "512s",
+				MinIdleConns:         0,
+				MinRetryBackoff:      "8ms",
+				Network:              "tcp",
+				Password:             "password",
+				PoolSize:             10,
+				PoolTimeout:          "4s",
+				PrefixDelimiter:      "_",
+				ReadOnly:             true,
+				ReadTimeout:          "3s",
+				RouteByLatency:       false,
+				RouteRandomly:        true,
+				SentinelPassword:     "",
+				SentinelMasterName:   "",
+				Net: &Net{
+					DNS: &DNS{
+						CacheEnabled:    true,
+						RefreshDuration: "1h",
+						CacheExpiration: "24h",
+					},
+					Dialer: &Dialer{
+						Timeout:          "5s",
+						KeepAlive:        "5m",
+						DualStackEnabled: false,
+					},
+					TLS: &TLS{
+						Enabled: false,
+					},
+					SocketOption: &SocketOption{
+						ReusePort:                true,
+						ReuseAddr:                true,
+						TCPFastOpen:              true,
+						TCPNoDelay:               true,
+						TCPCork:                  false,
+						TCPQuickAck:              true,
+						TCPDeferAccept:           true,
+						IPTransparent:            false,
+						IPRecoverDestinationAddr: false,
+					},
+				},
+				TLS: &TLS{
+					Enabled: true,
+				},
+				Username:     "vald",
+				VKPrefix:     "",
+				WriteTimeout: "3s",
+			},
+			want: want{
+				wantOpts: nil,
+				err:      errors.ErrTLSCertOrKeyNotFound,
+			},
+		},
+		{
+			name: "return nil []redis.Options and error when Dialer has invalid parameter",
+			fields: fields{
+				Addrs: []string{
+					"redis.default.svc.cluster.local:6379",
+				},
+				DB:                   0,
+				DialTimeout:          "5s",
+				IdleCheckFrequency:   "1m",
+				IdleTimeout:          "5m",
+				InitialPingDuration:  "",
+				InitialPingTimeLimit: "",
+				KVPrefix:             "",
+				KeyPref:              "vald",
+				MaxConnAge:           "0s",
+				MaxRedirects:         3,
+				MaxRetries:           1,
+				MaxRetryBackoff:      "512s",
+				MinIdleConns:         0,
+				MinRetryBackoff:      "8ms",
+				Network:              "tcp",
+				Password:             "password",
+				PoolSize:             10,
+				PoolTimeout:          "4s",
+				PrefixDelimiter:      "_",
+				ReadOnly:             true,
+				ReadTimeout:          "3s",
+				RouteByLatency:       false,
+				RouteRandomly:        true,
+				SentinelPassword:     "",
+				SentinelMasterName:   "",
+				Net: &Net{
+					DNS: &DNS{
+						CacheEnabled:    true,
+						RefreshDuration: "12h",
+						CacheExpiration: "1h",
+					},
+					Dialer: &Dialer{
+						Timeout:          "5s",
+						KeepAlive:        "5m",
+						DualStackEnabled: false,
+					},
+					TLS: &TLS{
+						Enabled: false,
+					},
+					SocketOption: &SocketOption{
+						ReusePort:                true,
+						ReuseAddr:                true,
+						TCPFastOpen:              true,
+						TCPNoDelay:               true,
+						TCPCork:                  false,
+						TCPQuickAck:              true,
+						TCPDeferAccept:           true,
+						IPTransparent:            false,
+						IPRecoverDestinationAddr: false,
+					},
+				},
+				TLS: &TLS{
+					Enabled: false,
+				},
+				Username:     "vald",
+				VKPrefix:     "",
+				WriteTimeout: "3s",
+			},
+			want: want{
+				wantOpts: nil,
+				err:      errors.ErrInvalidDNSConfig(12*time.Hour, time.Hour),
+			},
+		},
 	}
 
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -391,6 +863,8 @@ func TestRedis_Opts(t *testing.T) {
 				ReadTimeout:          test.fields.ReadTimeout,
 				RouteByLatency:       test.fields.RouteByLatency,
 				RouteRandomly:        test.fields.RouteRandomly,
+				SentinelPassword:     test.fields.SentinelPassword,
+				SentinelMasterName:   test.fields.SentinelMasterName,
 				Net:                  test.fields.Net,
 				TLS:                  test.fields.TLS,
 				Username:             test.fields.Username,
