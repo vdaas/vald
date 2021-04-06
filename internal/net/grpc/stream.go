@@ -28,7 +28,6 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
@@ -78,13 +77,9 @@ func BidirectionalStream(ctx context.Context, stream ServerStream,
 		if errs == nil {
 			return nil
 		}
-		st, ok := status.FromError(err)
-		if !ok {
-			return status.New(codes.Unknown, errs.Error()).Err()
-		}
-		err = st.Err()
+		st, msg, err := status.ParseError(errs)
 		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 		}
 		return err
 	}
@@ -118,8 +113,12 @@ func BidirectionalStream(ctx context.Context, stream ServerStream,
 					if err != nil {
 						runtime.Gosched()
 						errMap.Store(err.Error(), err)
+						st, msg, err := status.ParseError(err)
 						if sspan != nil {
-							sspan.SetStatus(trace.StatusCodeInternal(err.Error()))
+							sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+						}
+						if err != nil {
+							log.Error(err)
 						}
 					}
 					if res != nil {
@@ -128,8 +127,9 @@ func BidirectionalStream(ctx context.Context, stream ServerStream,
 						mu.Unlock()
 						if err != nil {
 							runtime.Gosched()
+							st, msg, err := status.ParseError(err)
 							if sspan != nil {
-								sspan.SetStatus(trace.StatusCodeInternal(err.Error()))
+								sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 							}
 							return err
 						}

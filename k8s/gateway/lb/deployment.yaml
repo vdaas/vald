@@ -44,7 +44,7 @@ spec:
         app: vald-lb-gateway
         app.kubernetes.io/name: vald
         app.kubernetes.io/instance: RELEASE-NAME
-        app.kubernetes.io/component: gateway
+        app.kubernetes.io/component: gateway-lb
       annotations:
         checksum/configmap: f342694f612a7a0182a77671d8b617b629bacdfece5d57edbb30592524f3a671
     spec:

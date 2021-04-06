@@ -24,6 +24,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"syscall"
 
 	"github.com/vdaas/vald/internal/backoff"
@@ -209,6 +210,11 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 		target := filepath.Join(r.dir, header.Name)
 
 		log.Debug("restoring: ", target)
+
+		if strings.Contains(target, "..") {
+			log.Warn(errors.ErrPathNotAllowed(target))
+			continue
+		}
 
 		switch header.Typeflag {
 		case tar.TypeDir:
