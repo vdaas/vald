@@ -41,6 +41,6 @@ spec:
       protocol: TCP
   selector:
     app.kubernetes.io/name: vald
-    app.kubernetes.io/component: gateway
+    app.kubernetes.io/component: gateway-lb
   clusterIP: None
   type: ClusterIP
