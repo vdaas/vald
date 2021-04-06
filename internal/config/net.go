@@ -79,7 +79,7 @@ func (s *SocketOption) Bind() *SocketOption {
 	return s
 }
 
-// ToSocketFlag returns the control.SocketFlag defined as uint along with the SocketOption's fields. 
+// ToSocketFlag returns the control.SocketFlag defined as uint along with the SocketOption's fields.
 func (s *SocketOption) ToSocketFlag() control.SocketFlag {
 	var flg control.SocketFlag
 	if s == nil {
