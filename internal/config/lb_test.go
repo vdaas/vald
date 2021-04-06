@@ -92,7 +92,6 @@ func TestLB_Bind(t *testing.T) {
 			agentDNS := "vald-agent-ngt.vald.svc.cluster.local"
 			nodeName := "vald-01-worker"
 			indexReplica := 3
-
 			return test{
 				name: "return LB when the bind successes and the Discoverer is not nil",
 				fields: fields{
@@ -133,7 +132,6 @@ func TestLB_Bind(t *testing.T) {
 			agentNamespace := "vald"
 			agentDNS := "vald-agent-ngt.vald.svc.cluster.local"
 			nodeName := "vald-01-worker"
-
 			m := map[string]string{
 				"AGENT_NAME":      agentName,
 				"AGENT_NAMESPACE": agentNamespace,
