@@ -25,6 +25,7 @@ import (
 
 	"github.com/vdaas/vald/internal/db/kvs/redis"
 	"github.com/vdaas/vald/internal/errors"
+	testdata "github.com/vdaas/vald/internal/test"
 	"go.uber.org/goleak"
 )
 
@@ -488,7 +489,8 @@ func TestRedis_Opts(t *testing.T) {
 			name: "return 26 []redis.Options and nil error when all parameters are set",
 			fields: fields{
 				Addrs: []string{
-					"redis.default.svc.cluster.local:6379",
+					"redis-01.default.svc.cluster.local:6379",
+					"redis-02.default.svc.cluster.local:6379",
 				},
 				DB:                   0,
 				DialTimeout:          "5s",
@@ -542,14 +544,17 @@ func TestRedis_Opts(t *testing.T) {
 					},
 				},
 				TLS: &TLS{
-					Enabled: false,
+					Enabled: true,
+					Cert:    testdata.GetTestdataPath("tls/dummyServer.crt"),
+					Key:     testdata.GetTestdataPath("tls/dummyServer.key"),
+					CA:      testdata.GetTestdataPath("tls/dummyCa.pem"),
 				},
 				Username:     "vald",
 				VKPrefix:     "",
 				WriteTimeout: "3s",
 			},
 			want: want{
-				wantOpts: make([]redis.Option, 26),
+				wantOpts: make([]redis.Option, 27),
 			},
 		},
 		{
