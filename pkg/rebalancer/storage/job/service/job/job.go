@@ -172,36 +172,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 					},
 				})
 				if err != nil {
-					log.Errorf("[job debug] get object err: %v\n", err)
-					mu.Lock()
-					errs = errors.Wrap(errs, err.Error())
-					mu.Unlock()
-					return nil
-				}
-
-				log.Infof("[job debug] Remove object data: %s", id)
-				_, err = r.client.Remove(egctx, &payload.Remove_Request{
-					Id: &payload.Object_ID{
-						Id: vec.GetId(),
-					},
-				})
-				if err != nil {
-					log.Errorf("[job debug] remove err: %v\n", err)
-					mu.Lock()
-					errs = errors.Wrap(errs, err.Error())
-					mu.Unlock()
-					return nil
-				}
-
-				log.Infof("[job debug] Insert object data: %s", id)
-				_, err = r.client.Insert(egctx, &payload.Insert_Request{
-					Vector: &payload.Object_Vector{
-						Id:     vec.GetId(),
-						Vector: vec.GetVector(),
-					},
-				})
-				if err != nil {
-					log.Errorf("[job debug] insert err: %v\n", err)
+					log.Error(err)
 					mu.Lock()
 					errs = errors.Wrap(errs, err.Error())
 					mu.Unlock()
@@ -210,22 +181,20 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 
 				// update data
 				// TODO: use stream or upsert?
-				/*
-					log.Infof("[job debug] Update object data: %s", id)
-					_, err = r.client.Update(egctx, &payload.Update_Request{
-						Vector: &payload.Object_Vector{
-							Id:     vec.GetId(),
-							Vector: vec.GetVector(),
-						},
-					})
-					if err != nil {
-						log.Error(err)
-						mu.Lock()
-						errs = errors.Wrap(errs, err.Error())
-						mu.Unlock()
-						return nil
-					}
-				*/
+				log.Infof("[job debug] Update object data: %s", id)
+				_, err = r.client.Update(egctx, &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     vec.GetId(),
+						Vector: vec.GetVector(),
+					},
+				})
+				if err != nil {
+					log.Error(err)
+					mu.Lock()
+					errs = errors.Wrap(errs, err.Error())
+					mu.Unlock()
+					return nil
+				}
 
 				n := atomic.AddInt64(&cnt, 1)
 				log.Infof("[job debug] Success Rebalance data: success amount data = %d", n)
