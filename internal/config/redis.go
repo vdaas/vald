@@ -100,7 +100,7 @@ func (r *Redis) Bind() *Redis {
 }
 
 // Opts creates the functional option list from the Redis.
-// If the error is ocurred, it will return no functional options and the error.
+// If the error occurs, it will return no functional options and the error.
 func (r *Redis) Opts() (opts []redis.Option, err error) {
 	nt := net.NetworkTypeFromString(r.Network)
 	if nt == 0 || nt == net.Unknown || strings.EqualFold(nt.String(), net.Unknown.String()) {
