@@ -443,7 +443,6 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (res *
 	vec := req.GetVector()
 	err = s.ngt.Insert(vec.GetId(), vec.GetVector())
 	if err != nil {
-		log.Debugf("[rebalancer] err: %v", err)
 		err = status.WrapWithInternal("Insert API failed", err,
 			&errdetails.RequestInfo{
 				RequestId:   req.GetVector().GetId(),
@@ -845,7 +844,6 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (res *
 	uuid := id.GetId()
 	err = s.ngt.Delete(uuid)
 	if err != nil {
-		log.Debugf("[rebalancer] err: %v", err)
 		err = status.WrapWithInternal("Remove API failed to remove", err,
 			&errdetails.RequestInfo{
 				RequestId:   uuid,
