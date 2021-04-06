@@ -234,7 +234,7 @@ func (cfg *Cassandra) Opts() (opts []cassandra.Option, err error) {
 			tls.WithCa(cfg.TLS.CA),
 		)
 		if err != nil {
-			return opts, err
+			return nil, err
 		}
 
 		opts = append(

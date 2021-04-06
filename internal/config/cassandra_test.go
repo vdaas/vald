@@ -557,7 +557,7 @@ func TestCassandra_Opts(t *testing.T) {
 		}(),
 		func() test {
 			return test{
-				name: "return 41 cassandra.Option and error when TLS config value in the invalid value",
+				name: "return 0 cassandra.Option and error when TLS config value in the invalid value",
 				fields: fields{
 					Hosts: []string{
 						"cassandra-0.cassandra.default.svc.cluster.local",
@@ -651,7 +651,7 @@ func TestCassandra_Opts(t *testing.T) {
 					VectorBackupTable:        "backup_vector",
 				},
 				want: want{
-					wantOpts: make([]cassandra.Option, 41),
+					wantOpts: make([]cassandra.Option, 0),
 					err:      errors.ErrTLSCertOrKeyNotFound,
 				},
 			}
