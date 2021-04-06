@@ -190,6 +190,36 @@ func Errorf(code codes.Code, format string, args ...interface{}) error {
 	return status.Errorf(code, format, args...)
 }
 
+func ParseError(err error, details ...interface{}) (st *status.Status, msg string, rerr error) {
+	var ok bool
+	st, ok = FromError(err)
+	if !ok {
+		st = newStatus(codes.Internal, "failed to parse grpc status from error", err, details...)
+		err = errors.Wrap(st.Err(), err.Error())
+		msg = err.Error()
+	} else {
+		pms := make([]proto.Message, 0, len(details))
+		for _, detail := range details {
+			pm, ok := detail.(proto.Message)
+			if ok {
+				pms = append(pms, pm)
+			}
+		}
+		sst, err := st.WithDetails(pms...)
+		if err == nil {
+			st = sst
+		}
+		err = st.Err()
+		if err == nil {
+			msg = st.Message()
+		} else {
+			msg = st.Err().Error()
+		}
+	}
+	rerr = err
+	return st, msg, rerr
+}
+
 func FromError(err error) (st *status.Status, ok bool) {
 	if err == nil {
 		return nil, false
@@ -199,9 +229,10 @@ func FromError(err error) (st *status.Status, ok bool) {
 		if !ok {
 			return
 		}
-		sst, ok := FromError(errors.Unwrap(err))
+		ierr := errors.Unwrap(err)
+		sst, ok := FromError(ierr)
 		if ok && sst != nil && sst.Err() != nil {
-			pms := make([]proto.Message, 0, len(st.Details())+len(sst.Details())+1)
+			pms := make([]interface{}, 0, len(st.Details())+len(sst.Details())+1)
 			for _, detail := range append(st.Details(), sst.Details()) {
 				pm, ok := detail.(proto.Message)
 				if ok {
@@ -212,10 +243,7 @@ func FromError(err error) (st *status.Status, ok bool) {
 				Domain: fmt.Sprintf("code: %d, message: %s", sst.Code(), sst.Message()),
 				Reason: sst.Err().Error(),
 			})
-			ist, err := New(st.Code(), st.Message()).WithDetails(pms...)
-			if err == nil {
-				st = ist
-			}
+			st = newStatus(st.Code(), st.Message(), st.Err(), pms...)
 		}
 	}()
 

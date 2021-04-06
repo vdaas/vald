@@ -18,13 +18,16 @@
 package config
 
 import (
+	"os"
 	"reflect"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
+	"go.uber.org/goleak"
 )
 
 func TestIndexer_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		AgentPort              int
 		AgentName              string
@@ -46,8 +49,8 @@ func TestIndexer_Bind(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *Indexer) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got *Indexer) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -56,60 +59,151 @@ func TestIndexer_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           AgentPort: 0,
-		           AgentName: "",
-		           AgentNamespace: "",
-		           AgentDNS: "",
-		           Concurrency: 0,
-		           AutoIndexDurationLimit: "",
-		           AutoIndexCheckDuration: "",
-		           AutoIndexLength: 0,
-		           CreationPoolSize: 0,
-		           NodeName: "",
-		           Discoverer: DiscovererClient{},
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			return test{
+				name: "return Indexer when the bind successes",
+				fields: fields{
+					AgentPort:              8081,
+					AgentName:              "vald-agent-ngt",
+					AgentNamespace:         "vald",
+					AgentDNS:               "vald-agent-ngt.vald.svc.cluster.local",
+					Concurrency:            10,
+					AutoIndexDurationLimit: "30m",
+					AutoIndexCheckDuration: "1m",
+					AutoIndexLength:        100,
+					CreationPoolSize:       10000,
+					NodeName:               "vald-01-worker",
+				},
+				want: want{
+					want: &Indexer{
+						AgentPort:              8081,
+						AgentName:              "vald-agent-ngt",
+						AgentNamespace:         "vald",
+						AgentDNS:               "vald-agent-ngt.vald.svc.cluster.local",
+						Concurrency:            10,
+						AutoIndexDurationLimit: "30m",
+						AutoIndexCheckDuration: "1m",
+						AutoIndexLength:        100,
+						CreationPoolSize:       10000,
+						NodeName:               "vald-01-worker",
+					},
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return Indexer when the bind successes and Discoverer is not nil",
+				fields: fields{
+					AgentPort:              8081,
+					AgentName:              "vald-agent-ngt",
+					AgentNamespace:         "vald",
+					AgentDNS:               "vald-agent-ngt.vald.svc.cluster.local",
+					Concurrency:            10,
+					AutoIndexDurationLimit: "30m",
+					AutoIndexCheckDuration: "1m",
+					AutoIndexLength:        100,
+					CreationPoolSize:       10000,
+					NodeName:               "vald-01-worker",
+					Discoverer:             new(DiscovererClient),
+				},
+				want: want{
+					want: &Indexer{
+						AgentPort:              8081,
+						AgentName:              "vald-agent-ngt",
+						AgentNamespace:         "vald",
+						AgentDNS:               "vald-agent-ngt.vald.svc.cluster.local",
+						Concurrency:            10,
+						AutoIndexDurationLimit: "30m",
+						AutoIndexCheckDuration: "1m",
+						AutoIndexLength:        100,
+						CreationPoolSize:       10000,
+						NodeName:               "vald-01-worker",
+						Discoverer: &DiscovererClient{
+							Client: &GRPCClient{
+								DialOption: &DialOption{
+									Insecure: true,
+								},
+							},
+							AgentClientOptions: &GRPCClient{
+								DialOption: &DialOption{
+									Insecure: true,
+								},
+							},
+						},
+					},
+				},
+			}
+		}(),
+		func() test {
+			suffix := "_FOR_TEST_INDEXER_BIND"
+			m := map[string]string{
+				"AGENT_NAME" + suffix:                "vald-agent-ngt",
+				"AGENT_NAMESPACE" + suffix:           "vald",
+				"AGENT_DNS" + suffix:                 "vald-agent-ngt.vald.svc.cluster.local",
+				"AUTO_INDEX_DURATION_LIMIT" + suffix: "30m",
+				"AUTO_INDEX_CHECK_DURATION" + suffix: "1m",
+				"NODE_NAME" + suffix:                 "vald-01-worker",
+			}
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           AgentPort: 0,
-		           AgentName: "",
-		           AgentNamespace: "",
-		           AgentDNS: "",
-		           Concurrency: 0,
-		           AutoIndexDurationLimit: "",
-		           AutoIndexCheckDuration: "",
-		           AutoIndexLength: 0,
-		           CreationPoolSize: 0,
-		           NodeName: "",
-		           Discoverer: DiscovererClient{},
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			return test{
+				name: "return Indexer when the bind successes and the data is loaded from the environment variable",
+				fields: fields{
+					AgentPort:              8081,
+					AgentName:              "_AGENT_NAME" + suffix + "_",
+					AgentNamespace:         "_AGENT_NAMESPACE" + suffix + "_",
+					AgentDNS:               "_AGENT_DNS" + suffix + "_",
+					Concurrency:            10,
+					AutoIndexDurationLimit: "_AUTO_INDEX_DURATION_LIMIT" + suffix + "_",
+					AutoIndexCheckDuration: "_AUTO_INDEX_CHECK_DURATION" + suffix + "_",
+					AutoIndexLength:        100,
+					CreationPoolSize:       10000,
+					NodeName:               "_NODE_NAME" + suffix + "_",
+				},
+				beforeFunc: func(t *testing.T) {
+					t.Helper()
+					for k, v := range m {
+						if err := os.Setenv(k, v); err != nil {
+							t.Fatal(err)
+						}
+					}
+				},
+				afterFunc: func(t *testing.T) {
+					t.Helper()
+					for k := range m {
+						if err := os.Unsetenv(k); err != nil {
+							t.Fatal(err)
+						}
+					}
+				},
+				want: want{
+					want: &Indexer{
+						AgentPort:              8081,
+						AgentName:              "vald-agent-ngt",
+						AgentNamespace:         "vald",
+						AgentDNS:               "vald-agent-ngt.vald.svc.cluster.local",
+						Concurrency:            10,
+						AutoIndexDurationLimit: "30m",
+						AutoIndexCheckDuration: "1m",
+						AutoIndexLength:        100,
+						CreationPoolSize:       10000,
+						NodeName:               "vald-01-worker",
+					},
+				},
+			}
+		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc

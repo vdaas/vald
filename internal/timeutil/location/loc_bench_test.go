@@ -13,21 +13,44 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+package location
 
-// Package config providers configuration type and load configuration logic
-package config
+import (
+	"testing"
+)
 
-// BackupManager represents the configuration for backup manager.
-type BackupManager struct {
-	Client *GRPCClient `json:"client" yaml:"client"`
+func BenchmarkGMT(b *testing.B) {
+	b.ReportAllocs()
+	b.ResetTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			if l := GMT(); l == nil {
+				b.Error("GMT return nil")
+			}
+		}
+	})
 }
 
-// Bind binds the actual data from the BackupManager receiver fields.
-func (b *BackupManager) Bind() *BackupManager {
-	if b.Client != nil {
-		b.Client = b.Client.Bind()
-	} else {
-		b.Client = newGRPCClientConfig()
-	}
-	return b
+func BenchmarkUTC(b *testing.B) {
+	b.ReportAllocs()
+	b.ResetTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			if l := UTC(); l == nil {
+				b.Error("UTC return nil")
+			}
+		}
+	})
+}
+
+func BenchmarkJST(b *testing.B) {
+	b.ReportAllocs()
+	b.ResetTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			if l := JST(); l == nil {
+				b.Error("JST return nil")
+			}
+		}
+	})
 }

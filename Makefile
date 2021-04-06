@@ -162,6 +162,17 @@ PROTO_PATHS = \
 	$(GOPATH)/src/github.com/googleapis/googleapis \
 	$(GOPATH)/src/github.com/gogo/googleapis
 
+# [Warning]
+# The below packages have no original implementation.
+# You should not add any features.
+# - internal/copress/gob
+# - internal/compress/gzip
+# - internal/compress/lz4
+# - internal/compress/zstd
+# - internal/db/storage/blob/s3/sdk/s3
+# - internal/db/rdb/mysql/dbr
+# - internal/test/comparator
+# - internal/test/mock
 GO_SOURCES = $(eval GO_SOURCES := $(shell find \
 		./cmd \
 		./hack \
@@ -169,6 +180,12 @@ GO_SOURCES = $(eval GO_SOURCES := $(shell find \
 		./pkg \
 		-not -path './cmd/cli/*' \
 		-not -path './internal/core/algorithm/ngt/*' \
+		-not -path './internal/compress/gob/*' \
+		-not -path './internal/compress/gzip/*' \
+		-not -path './internal/compress/lz4/*' \
+		-not -path './internal/compress/zstd/*' \
+		-not -path './internal/db/storage/blob/s3/sdk/s3/*' \
+		-not -path './internal/db/rdb/mysql/dbr/*' \
 		-not -path './internal/test/comparator/*' \
 		-not -path './internal/test/mock/*' \
 		-not -path './hack/benchmark/internal/client/ngtd/*' \
@@ -183,6 +200,7 @@ GO_SOURCES = $(eval GO_SOURCES := $(shell find \
 		-name '*.go' \
 		-not -regex '.*options?\.go' \
 		-not -name '*_test.go' \
+		-not -name '*_mock.go' \
 		-not -name 'doc.go'))$(GO_SOURCES)
 GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell find \
 		./cmd \
@@ -191,6 +209,12 @@ GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell find \
 		./pkg \
 		-not -path './cmd/cli/*' \
 		-not -path './internal/core/algorithm/ngt/*' \
+		-not -path './internal/compress/gob/*' \
+		-not -path './internal/compress/gzip/*' \
+		-not -path './internal/compress/lz4/*' \
+		-not -path './internal/compress/zstd/*' \
+		-not -path './internal/db/storage/blob/s3/sdk/s3/*' \
+		-not -path './internal/db/rdb/mysql/dbr/*' \
 		-not -path './internal/test/comparator/*' \
 		-not -path './internal/test/mock/*' \
 		-not -path './hack/benchmark/internal/client/ngtd/*' \
@@ -204,6 +228,7 @@ GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell find \
 		-type f \
 		-regex '.*options?\.go' \
 		-not -name '*_test.go' \
+		-not -name '*_mock.go' \
 		-not -name 'doc.go'))$(GO_OPTION_SOURCES)
 
 GO_SOURCES_INTERNAL = $(eval GO_SOURCES_INTERNAL := $(shell find \
@@ -211,6 +236,7 @@ GO_SOURCES_INTERNAL = $(eval GO_SOURCES_INTERNAL := $(shell find \
 		-type f \
 		-name '*.go' \
 		-not -name '*_test.go' \
+		-not -name '*_mock.go' \
 		-not -name 'doc.go'))$(GO_SOURCES_INTERNAL)
 
 GO_TEST_SOURCES = $(GO_SOURCES:%.go=%_test.go)

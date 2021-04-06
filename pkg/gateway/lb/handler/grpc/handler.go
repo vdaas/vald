@@ -879,9 +879,9 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 	}()
 	vecs := reqs.GetRequests()
 	ids := make([]string, 0, len(vecs))
-	for i, vec := range vecs {
-		uuid := vec.GetVector().GetId()
-		vector := vec.GetVector().GetVector()
+	for i, req := range vecs {
+		uuid := req.GetVector().GetId()
+		vector := req.GetVector().GetVector()
 		vl := len(vector)
 		if vl < algorithm.MinimumVectorDimensionSize {
 			err = errors.ErrInvalidDimensionSize(vl, 0)
@@ -904,7 +904,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 			}
 			return nil, err
 		}
-		if !vec.GetConfig().GetSkipStrictExistCheck() {
+		if !req.GetConfig().GetSkipStrictExistCheck() {
 			id, err := s.Exists(ctx, &payload.Object_ID{
 				Id: uuid,
 			})
@@ -927,7 +927,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				}
 				return nil, err
 			}
-			if reqs.Requests[i] != nil {
+			if req.GetConfig() != nil {
 				reqs.Requests[i].Config.SkipStrictExistCheck = true
 			} else {
 				reqs.Requests[i].Config = &payload.Insert_Config{SkipStrictExistCheck: true}

@@ -200,6 +200,8 @@ func (s *Server) Bind() *Server {
 
 	if s.SocketOption != nil {
 		s.SocketOption.Bind()
+	} else {
+		s.SocketOption = new(SocketOption)
 	}
 	return s
 }

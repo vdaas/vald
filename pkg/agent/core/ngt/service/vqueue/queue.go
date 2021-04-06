@@ -30,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 )
 
+// Queue
 type Queue interface {
 	Start(ctx context.Context) (<-chan error, error)
 	PushInsert(uuid string, vector []float32, date int64) error
@@ -37,6 +38,8 @@ type Queue interface {
 	GetVector(uuid string) ([]float32, bool)
 	RangePopInsert(ctx context.Context, f func(uuid string, vector []float32) bool)
 	RangePopDelete(ctx context.Context, f func(uuid string) bool)
+	IVExists(uuid string) bool
+	DVExists(uuid string) bool
 	IVQLen() int
 	IVCLen() int
 	DVQLen() int
@@ -44,13 +47,14 @@ type Queue interface {
 }
 
 type vqueue struct {
-	ich              chan index           // ich is insert channel
-	uii              []index              // uii is un inserted index
-	imu              sync.Mutex           // insert mutex
-	uiim             map[string][]float32 // uiim is un inserted index map (this value is used for GetVector operation to return queued vector cache data)
-	dch              chan key             // dch is delete channel
-	udk              []key                // udk is un deleted key
-	dmu              sync.Mutex           // delete mutex
+	ich              chan index       // ich is insert channel
+	uii              []index          // uii is un inserted index
+	imu              sync.Mutex       // insert mutex
+	uiim             map[string]index // uiim is un inserted index map (this value is used for GetVector operation to return queued vector cache data)
+	dch              chan key         // dch is delete channel
+	udk              []key            // udk is un deleted key
+	dmu              sync.Mutex       // delete mutex
+	udim             map[string]int64 // udim is un deleted index map (this value is used for Exists operation to return cache data existence)
 	eg               errgroup.Group
 	finalizingInsert atomic.Value
 	finalizingDelete atomic.Value
@@ -84,9 +88,10 @@ func New(opts ...Option) (Queue, error) {
 	}
 	vq.ich = make(chan index, vq.ichSize)
 	vq.uii = make([]index, 0, vq.iBufSize)
-	vq.uiim = make(map[string][]float32, vq.iBufSize)
+	vq.uiim = make(map[string]index, vq.iBufSize)
 	vq.dch = make(chan key, vq.dchSize)
 	vq.udk = make([]key, 0, vq.dBufSize)
+	vq.udim = make(map[string]int64, vq.dBufSize)
 	vq.finalizingInsert.Store(false)
 	vq.finalizingDelete.Store(false)
 	vq.closed.Store(true)
@@ -221,19 +226,58 @@ func (v *vqueue) GetVector(uuid string) ([]float32, bool) {
 	v.imu.Lock()
 	vec, ok := v.uiim[uuid]
 	v.imu.Unlock()
-	return vec, ok
+	return vec.vector, ok
+}
+
+func (v *vqueue) IVExists(uuid string) bool {
+	v.imu.Lock()
+	vec, ok := v.uiim[uuid]
+	v.imu.Unlock()
+	if !ok {
+		// data not in the insert queue then return not exists(false)
+		return false
+	}
+	v.dmu.Lock()
+	di, ok := v.udim[uuid]
+	v.dmu.Unlock()
+	if !ok {
+		// data not in the delete queue but exists in insert queue then return exists(true)
+		return true
+	}
+	// data exists both queue, compare data timestamp if insert queue timestamp is newer than delete one, this function returns exists(true)
+	return di < vec.date
+}
+
+func (v *vqueue) DVExists(uuid string) bool {
+	v.dmu.Lock()
+	di, ok := v.udim[uuid]
+	v.dmu.Unlock()
+	if !ok {
+		return false
+	}
+	v.imu.Lock()
+	vec, ok := v.uiim[uuid]
+	v.imu.Unlock()
+	if !ok {
+		// data not in the insert queue then return not exists(false)
+		return true
+	}
+
+	// data exists both queue, compare data timestamp if insert queue timestamp is newer than delete one, this function returns exists(true)
+	return di > vec.date
 }
 
 func (v *vqueue) addInsert(i index) {
 	v.imu.Lock()
 	v.uii = append(v.uii, i)
-	v.uiim[i.uuid] = i.vector
+	v.uiim[i.uuid] = i
 	v.imu.Unlock()
 }
 
 func (v *vqueue) addDelete(d key) {
 	v.dmu.Lock()
 	v.udk = append(v.udk, d)
+	v.udim[d.uuid] = d.date
 	v.dmu.Unlock()
 }
 
@@ -244,6 +288,7 @@ func (v *vqueue) flushAndLoadInsert() (uii []index) {
 	v.uii = v.uii[:0]
 	v.imu.Unlock()
 	sort.Slice(uii, func(i, j int) bool {
+		// sort by latest unix time order
 		return uii[i].date > uii[j].date
 	})
 	dup := make(map[string]bool, len(uii)/2)
@@ -252,16 +297,20 @@ func (v *vqueue) flushAndLoadInsert() (uii []index) {
 		v.imu.Lock()
 		delete(v.uiim, idx.uuid)
 		v.imu.Unlock()
+		// if duplicated data exists current loop's data is old due to the uii's sort order
 		if dup[idx.uuid] {
+			// if duplicated add id to delete wait list
 			dl = append(dl, i)
 		} else {
 			dup[idx.uuid] = true
 		}
 	}
+	// delete from large index number of slice
 	sort.Sort(sort.Reverse(sort.IntSlice(dl)))
 	for _, i := range dl {
 		uii = append(uii[:i], uii[i+1:]...)
 	}
+	// finally we should sort uii by date order from oldest to newest
 	sort.Slice(uii, func(i, j int) bool {
 		return uii[i].date < uii[j].date
 	})
@@ -280,6 +329,9 @@ func (v *vqueue) flushAndLoadDelete() (udk []key) {
 	dup := make(map[string]bool, len(udk)/2)
 	dl := make([]int, 0, len(udk)/2)
 	for i, idx := range udk {
+		v.dmu.Lock()
+		delete(v.udim, idx.uuid)
+		v.dmu.Unlock()
 		if dup[idx.uuid] {
 			dl = append(dl, i)
 		} else {

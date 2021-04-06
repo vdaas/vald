@@ -18,6 +18,7 @@
 package config
 
 import (
+	"os"
 	"reflect"
 	"testing"
 
@@ -44,30 +45,52 @@ func Test_compressAlgorithm_String(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return gob when compressAlgorithm is GOB",
+			ca:   GOB,
+			want: want{
+				want: "gob",
+			},
+		},
+		{
+			name: "return gzip when compressAlgorithm is GZIP",
+			ca:   GZIP,
+			want: want{
+				want: "gzip",
+			},
+		},
+		{
+			name: "return lz4 when compressAlgorithm is LZ4",
+			ca:   LZ4,
+			want: want{
+				want: "lz4",
+			},
+		},
+		{
+			name: "return zstd when compressAlgorithm is ZSTD",
+			ca:   ZSTD,
+			want: want{
+				want: "zstd",
+			},
+		},
+		{
+			name: "return unknown when compressAlgorithm is the default value of uint8",
+			want: want{
+				want: "unknown",
+			},
+		},
+		{
+			name: "return unknown when compressAlgorithm is 100",
+			ca:   compressAlgorithm(100),
+			want: want{
+				want: "unknown",
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -108,36 +131,89 @@ func TestCompressAlgorithm(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ca: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ca: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return GOB when ca is gob",
+			args: args{
+				ca: "gob",
+			},
+			want: want{
+				want: GOB,
+			},
+		},
+		{
+			name: "return GOB when ca is gOB",
+			args: args{
+				ca: "gOB",
+			},
+			want: want{
+				want: GOB,
+			},
+		},
+		{
+			name: "return GZIP when ca is gzip",
+			args: args{
+				ca: "gzip",
+			},
+			want: want{
+				want: GZIP,
+			},
+		},
+		{
+			name: "return GZIP when ca is gZIP",
+			args: args{
+				ca: "gZIP",
+			},
+			want: want{
+				want: GZIP,
+			},
+		},
+		{
+			name: "return LZ4 when ca is lz4",
+			args: args{
+				ca: "lz4",
+			},
+			want: want{
+				want: LZ4,
+			},
+		},
+		{
+			name: "return LZ4 when ca is lZ4",
+			args: args{
+				ca: "lZ4",
+			},
+			want: want{
+				want: LZ4,
+			},
+		},
+		{
+			name: "return ZSTD when ca is zstd",
+			args: args{
+				ca: "zstd",
+			},
+			want: want{
+				want: ZSTD,
+			},
+		},
+		{
+			name: "return ZSTD when ca is zSTD",
+			args: args{
+				ca: "zSTD",
+			},
+			want: want{
+				want: ZSTD,
+			},
+		},
+		{
+			name: "return 0 when ca is empty",
+			want: want{
+				want: 0,
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -169,8 +245,8 @@ func TestCompressCore_Bind(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *CompressCore) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got *CompressCore) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -179,43 +255,106 @@ func TestCompressCore_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           CompressAlgorithm: "",
-		           CompressionLevel: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			return test{
+				name: "return CompressCore when the bind successes",
+				fields: fields{
+					CompressAlgorithm: "gob",
+				},
+				want: want{
+					want: &CompressCore{
+						CompressAlgorithm: "gob",
+					},
+				},
+			}
+		}(),
+		func() test {
+			key := "COMPRESS_ALGORITHM"
+			wantVal := "gzip"
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           CompressAlgorithm: "",
-		           CompressionLevel: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			return test{
+				name: "return CompressCore when the bind successes and the data is loaded from the environment variable",
+				fields: fields{
+					CompressAlgorithm: "_" + key + "_",
+				},
+				beforeFunc: func(t *testing.T) {
+					t.Helper()
+					if err := os.Setenv(key, wantVal); err != nil {
+						t.Fatal(err)
+					}
+				},
+				afterFunc: func(t *testing.T) {
+					t.Helper()
+					if err := os.Unsetenv(key); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					want: &CompressCore{
+						CompressAlgorithm: wantVal,
+					},
+				},
+			}
+		}(),
+		func() test {
+			key := "COMPRESS_ALGORITHM"
+			wantVal := ""
+
+			return test{
+				name: "return CompressCore when the bind successes but loaded environment variable is empty",
+				fields: fields{
+					CompressAlgorithm: "_" + key + "_",
+				},
+				beforeFunc: func(t *testing.T) {
+					t.Helper()
+					if err := os.Setenv(key, wantVal); err != nil {
+						t.Fatal(err)
+					}
+				},
+				afterFunc: func(t *testing.T) {
+					t.Helper()
+					if err := os.Unsetenv(key); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					want: &CompressCore{
+						CompressAlgorithm: wantVal,
+					},
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return CompressCore when the bind successes but loaded environment variable is not found",
+				fields: fields{
+					CompressAlgorithm: "_COMPRESS_ALGORITHM_",
+				},
+				want: want{
+					want: &CompressCore{
+						CompressAlgorithm: "",
+					},
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return CompressCore when the bind successes but the field is empty",
+				want: want{
+					want: &CompressCore{},
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -247,8 +386,8 @@ func TestCompressor_Bind(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *Compressor) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got *Compressor) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -257,45 +396,61 @@ func TestCompressor_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           CompressCore: CompressCore{},
-		           ConcurrentLimit: 0,
-		           QueueCheckDuration: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			return test{
+				name: "return Compressor when the bind successes",
+				fields: fields{
+					QueueCheckDuration: "5ms",
+				},
+				want: want{
+					want: &Compressor{
+						QueueCheckDuration: "5ms",
+					},
+				},
+			}
+		}(),
+		func() test {
+			key := "QUEUE_CHECK_DURATION"
+			wantVal := "5ms"
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           CompressCore: CompressCore{},
-		           ConcurrentLimit: 0,
-		           QueueCheckDuration: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			var cm CompressCore
+
+			return test{
+				name: "return Compressor when the bind successes and the data is loaded from the environment variable",
+				fields: fields{
+					QueueCheckDuration: "_" + key + "_",
+					CompressCore:       cm,
+				},
+				beforeFunc: func(t *testing.T) {
+					t.Helper()
+					if err := os.Setenv(key, wantVal); err != nil {
+						t.Fatal(err)
+					}
+				},
+				afterFunc: func(t *testing.T) {
+					t.Helper()
+					if err := os.Unsetenv(key); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					want: &Compressor{
+						QueueCheckDuration: "5ms",
+						CompressCore:       cm,
+					},
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -328,8 +483,8 @@ func TestCompressorRegisterer_Bind(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *CompressorRegisterer) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got *CompressorRegisterer) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -338,45 +493,82 @@ func TestCompressorRegisterer_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           ConcurrentLimit: 0,
-		           QueueCheckDuration: "",
-		           Compressor: BackupManager{},
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			return test{
+				name: "return CompressorRegisterer when the bind successes",
+				fields: fields{
+					ConcurrentLimit:    10,
+					QueueCheckDuration: "5ms",
+				},
+				want: want{
+					want: &CompressorRegisterer{
+						ConcurrentLimit:    10,
+						QueueCheckDuration: "5ms",
+						Compressor:         new(BackupManager),
+					},
+				},
+			}
+		}(),
+		func() test {
+			key := "QUEUE_CHECK_DURATION"
+			wantVal := "5ms"
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           ConcurrentLimit: 0,
-		           QueueCheckDuration: "",
-		           Compressor: BackupManager{},
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			return test{
+				name: "return CompressorRegisterer when the bind successes and the data is loaded from the environment variable",
+				fields: fields{
+					ConcurrentLimit:    10,
+					QueueCheckDuration: "_" + key + "_",
+				},
+				want: want{
+					want: &CompressorRegisterer{
+						ConcurrentLimit:    10,
+						QueueCheckDuration: "5ms",
+						Compressor:         new(BackupManager),
+					},
+				},
+				beforeFunc: func(t *testing.T) {
+					t.Helper()
+					if err := os.Setenv(key, wantVal); err != nil {
+						t.Fatal(err)
+					}
+				},
+				afterFunc: func(t *testing.T) {
+					t.Helper()
+					if err := os.Unsetenv(key); err != nil {
+						t.Fatal(err)
+					}
+				},
+			}
+		}(),
+		func() test {
+			bm := new(BackupManager)
+
+			return test{
+				name: "return CompressorRegisterer when the bind successes and Compressor is nil",
+				fields: fields{
+					ConcurrentLimit:    10,
+					QueueCheckDuration: "5ms",
+					Compressor:         bm,
+				},
+				want: want{
+					want: &CompressorRegisterer{
+						ConcurrentLimit:    10,
+						QueueCheckDuration: "5ms",
+						Compressor:         bm,
+					},
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
