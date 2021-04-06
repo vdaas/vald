@@ -22,12 +22,17 @@ import "strings"
 type compressAlgorithm uint8
 
 const (
+	// GOB represents gob algorithm.
 	GOB compressAlgorithm = 1 + iota
+	// GZIP represents gzip algorithm.
 	GZIP
+	// LZ4 represents lz4 algorithm.
 	LZ4
+	// ZSTD represents zstd algorithm.
 	ZSTD
 )
 
+// String returns compress algorithm.
 func (ca compressAlgorithm) String() string {
 	switch ca {
 	case GOB:
@@ -42,6 +47,7 @@ func (ca compressAlgorithm) String() string {
 	return "unknown"
 }
 
+// CompressAlgorithm returns compressAlgorithm converted from string.
 func CompressAlgorithm(ca string) compressAlgorithm {
 	switch strings.ToLower(ca) {
 	case "gob":
@@ -56,6 +62,7 @@ func CompressAlgorithm(ca string) compressAlgorithm {
 	return 0
 }
 
+// CompressCore represents CompressCore configuration.
 type CompressCore struct {
 	// CompressorAlgorithm represents compression algorithm type
 	CompressAlgorithm string `json:"compress_algorithm" yaml:"compress_algorithm"`
@@ -64,12 +71,14 @@ type CompressCore struct {
 	CompressionLevel int `json:"compression_level" yaml:"compression_level"`
 }
 
+// Bind binds the actual data from the receiver field.
 func (c *CompressCore) Bind() *CompressCore {
 	c.CompressAlgorithm = GetActualValue(c.CompressAlgorithm)
 
 	return c
 }
 
+// Compressor represents Compressor configuration.
 type Compressor struct {
 	CompressCore `json:",inline" yaml:",inline"`
 
@@ -80,6 +89,7 @@ type Compressor struct {
 	QueueCheckDuration string `json:"queue_check_duration" yaml:"queue_check_duration"`
 }
 
+// Bind binds the actual data from the Compressor receiver field.
 func (c *Compressor) Bind() *Compressor {
 	c.CompressCore = *c.CompressCore.Bind()
 
@@ -88,6 +98,7 @@ func (c *Compressor) Bind() *Compressor {
 	return c
 }
 
+// CompressorRegisterer represents CompressorRegisterer configuration.
 type CompressorRegisterer struct {
 	// ConcurrentLimit represents limitation of worker
 	ConcurrentLimit int `json:"concurrent_limit" yaml:"concurrent_limit"`
@@ -99,6 +110,7 @@ type CompressorRegisterer struct {
 	Compressor *BackupManager `json:"compressor" yaml:"compressor"`
 }
 
+// Bind binds the actual data from the CompressorRegisterer receiver field.
 func (cr *CompressorRegisterer) Bind() *CompressorRegisterer {
 	cr.QueueCheckDuration = GetActualValue(cr.QueueCheckDuration)
 

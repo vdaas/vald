@@ -15,7 +15,12 @@
 //
 package cassandra
 
-import "github.com/gocql/gocql"
+import (
+	"context"
+	"net"
+
+	"github.com/gocql/gocql"
+)
 
 type MockClusterConfig struct {
 	CreateSessionFunc func() (*gocql.Session, error)
@@ -24,3 +29,16 @@ type MockClusterConfig struct {
 func (m *MockClusterConfig) CreateSession() (*gocql.Session, error) {
 	return m.CreateSessionFunc()
 }
+
+type DialerMock struct {
+	DialContextFunc func(ctx context.Context, network, addr string) (net.Conn, error)
+}
+
+func (dm *DialerMock) DialContext(ctx context.Context, network, addr string) (net.Conn, error) {
+	return dm.DialContextFunc(ctx, network, addr)
+}
+
+func (dm *DialerMock) GetDialer() func(ctx context.Context, network, addr string) (net.Conn, error) {
+	return dm.DialContextFunc
+}
+func (dm *DialerMock) StartDialerCache(ctx context.Context) {}

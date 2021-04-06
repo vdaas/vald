@@ -3,7 +3,7 @@ vald-helm-operator
 
 This is a Helm chart to install vald-helm-operator.
 
-Current chart version is `v1.0.4`
+Current chart version is `v1.0.5`
 
 Table of Contents
 ---
@@ -70,7 +70,7 @@ Configuration
 | healthPort | int | `8081` | port of health endpoint |
 | image.pullPolicy | string | `"Always"` | image pull policy |
 | image.repository | string | `"vdaas/vald-helm-operator"` | image repository |
-| image.tag | string | `"v1.0.4"` | image tag |
+| image.tag | string | `"v1.0.5"` | image tag |
 | leaderElectionID | string | `"vald-helm-operator"` | name of the configmap that is used for holding the leader lock. |
 | livenessProbe.enabled | bool | `true` | enable liveness probe. |
 | livenessProbe.failureThreshold | int | `2` | liveness probe failure threshold |

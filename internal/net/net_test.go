@@ -327,7 +327,7 @@ func TestParse(t *testing.T) {
 				wantHost: "dummy",
 				wantPort: uint16(80),
 				err: &strconv.NumError{
-					Func: "Atoi",
+					Func: "ParseUint",
 					Num:  "",
 					Err:  strconv.ErrSyntax,
 				},
@@ -345,7 +345,7 @@ func TestParse(t *testing.T) {
 				isV6:     false,
 				isLocal:  false,
 				err: &strconv.NumError{
-					Func: "Atoi",
+					Func: "ParseUint",
 					Num:  "",
 					Err:  strconv.ErrSyntax,
 				},
@@ -363,7 +363,7 @@ func TestParse(t *testing.T) {
 				isV6:     true,
 				isLocal:  false,
 				err: &strconv.NumError{
-					Func: "Atoi",
+					Func: "ParseUint",
 					Num:  "",
 					Err:  strconv.ErrSyntax,
 				},
@@ -460,7 +460,7 @@ func TestSplitHostPort(t *testing.T) {
 			want: want{
 				wantHost: "dummy",
 				wantPort: uint16(80),
-				err:      &strconv.NumError{"Atoi", "", strconv.ErrSyntax},
+				err:      &strconv.NumError{"ParseUint", "", strconv.ErrSyntax},
 			},
 		},
 		{
@@ -471,7 +471,7 @@ func TestSplitHostPort(t *testing.T) {
 			want: want{
 				wantHost: "192.168.1.1",
 				wantPort: uint16(80),
-				err:      &strconv.NumError{"Atoi", "", strconv.ErrSyntax},
+				err:      &strconv.NumError{"ParseUint", "", strconv.ErrSyntax},
 			},
 		},
 		{
@@ -482,7 +482,7 @@ func TestSplitHostPort(t *testing.T) {
 			want: want{
 				wantHost: "2001:db8::1",
 				wantPort: uint16(80),
-				err:      &strconv.NumError{"Atoi", "", strconv.ErrSyntax},
+				err:      &strconv.NumError{"ParseUint", "", strconv.ErrSyntax},
 			},
 		},
 		{
@@ -566,7 +566,7 @@ func TestScanPorts(t *testing.T) {
 			testSrv := httptest.NewServer(handler)
 
 			s := strings.Split(testSrv.URL, ":")
-			p, _ := strconv.Atoi(s[len(s)-1])
+			p, _ := strconv.ParseUint(s[len(s)-1], 10, 16)
 			srvPort := uint16(p)
 
 			return test{
@@ -594,7 +594,7 @@ func TestScanPorts(t *testing.T) {
 			testSrv := httptest.NewServer(handler)
 
 			s := strings.Split(testSrv.URL, ":")
-			p, _ := strconv.Atoi(s[len(s)-1])
+			p, _ := strconv.ParseUint(s[len(s)-1], 10, 16)
 			srvPort := uint16(p)
 
 			return test{
@@ -622,7 +622,7 @@ func TestScanPorts(t *testing.T) {
 			testSrv := httptest.NewServer(handler)
 
 			s := strings.Split(testSrv.URL, ":")
-			p, _ := strconv.Atoi(s[len(s)-1])
+			p, _ := strconv.ParseUint(s[len(s)-1], 10, 16)
 			srvPort := uint16(p)
 
 			return test{
@@ -659,7 +659,7 @@ func TestScanPorts(t *testing.T) {
 				srvs = append(srvs, srv)
 
 				s := strings.Split(srv.URL, ":")
-				p, _ := strconv.Atoi(s[len(s)-1])
+				p, _ := strconv.ParseUint(s[len(s)-1], 10, 16)
 				port := uint16(p)
 				ports = append(ports, port)
 
@@ -921,6 +921,83 @@ func TestNetworkType_String(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+		})
+	}
+}
+
+func TestJoinHostPort(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		host string
+		port uint16
+	}
+	type want struct {
+		want string
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, string) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got string) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           host: "",
+		           port: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           host: "",
+		           port: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := JoinHostPort(test.args.host, test.args.port)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
 		})
 	}
 }

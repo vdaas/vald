@@ -47,7 +47,7 @@ spec:
         app: {{ $gateway.name }}
         app.kubernetes.io/name: {{ include "vald.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
-        app.kubernetes.io/component: gateway
+        app.kubernetes.io/component: gateway-meta
       annotations:
         checksum/configmap: {{ include (print $.Template.BasePath "/gateway/meta/configmap.yaml") . | sha256sum }}
         {{- if $gateway.podAnnotations }}

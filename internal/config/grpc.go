@@ -24,6 +24,7 @@ import (
 	"github.com/vdaas/vald/internal/tls"
 )
 
+// GRPCClient represents the configurations for gRPC client.
 type GRPCClient struct {
 	Addrs               []string        `json:"addrs" yaml:"addrs"`
 	HealthCheckDuration string          `json:"health_check_duration" yaml:"health_check_duration"`
@@ -34,6 +35,7 @@ type GRPCClient struct {
 	TLS                 *TLS            `json:"tls" yaml:"tls"`
 }
 
+// CallOption represents the configurations for call option.
 type CallOption struct {
 	WaitForReady          bool `json:"wait_for_ready" yaml:"wait_for_ready"`
 	MaxRetryRPCBufferSize int  `json:"max_retry_rpc_buffer_size" yaml:"max_retry_rpc_buffer_size"`
@@ -41,6 +43,7 @@ type CallOption struct {
 	MaxSendMsgSize        int  `json:"max_send_msg_size" yaml:"max_send_msg_size"`
 }
 
+// DialOption represents the configurations for dial option.
 type DialOption struct {
 	WriteBufferSize             int                  `json:"write_buffer_size" yaml:"write_buffer_size"`
 	ReadBufferSize              int                  `json:"read_buffer_size" yaml:"read_buffer_size"`
@@ -59,6 +62,7 @@ type DialOption struct {
 	KeepAlive                   *GRPCClientKeepalive `json:"keep_alive" yaml:"keep_alive"`
 }
 
+// ConnectionPool represents the configurations for connection pool.
 type ConnectionPool struct {
 	ResolveDNS           bool   `json:"enable_dns_resolver" yaml:"enable_dns_resolver"`
 	EnableRebalance      bool   `json:"enable_rebalance" yaml:"enable_rebalance"`
@@ -67,12 +71,14 @@ type ConnectionPool struct {
 	OldConnCloseDuration string `json:"old_conn_close_duration" yaml:"old_conn_close_duration"`
 }
 
+// GRPCClientKeepalive represents the configurations for gRPC keep-alive.
 type GRPCClientKeepalive struct {
 	Time                string `json:"time" yaml:"time"`
 	Timeout             string `json:"timeout" yaml:"timeout"`
 	PermitWithoutStream bool   `json:"permit_without_stream" yaml:"permit_without_stream"`
 }
 
+// newGRPCClientConfig returns the GRPCClient with DailOption with insecure is true.
 func newGRPCClientConfig() *GRPCClient {
 	return &GRPCClient{
 		DialOption: &DialOption{
@@ -81,6 +87,7 @@ func newGRPCClientConfig() *GRPCClient {
 	}
 }
 
+// Bind binds the actual data from the GRPCClient receiver fields.
 func (g *GRPCClient) Bind() *GRPCClient {
 	g.Addrs = GetActualValues(g.Addrs)
 	g.HealthCheckDuration = GetActualValue(g.HealthCheckDuration)
@@ -121,42 +128,52 @@ func (g *GRPCClient) Bind() *GRPCClient {
 	return g
 }
 
+// Bind binds the actual data from the GRPCClientKeepalive receiver fields.
 func (g *GRPCClientKeepalive) Bind() *GRPCClientKeepalive {
 	g.Time = GetActualValue(g.Time)
 	g.Timeout = GetActualValue(g.Timeout)
 	return g
 }
 
+// Bind binds the actual data from the CallOption receiver fields.
 func (c *CallOption) Bind() *CallOption {
 	return c
 }
 
+// Bind binds the actual data from the DialOption receiver fields.
 func (d *DialOption) Bind() *DialOption {
 	d.BackoffMaxDelay = GetActualValue(d.BackoffMaxDelay)
 	d.Timeout = GetActualValue(d.Timeout)
 	return d
 }
 
+// Opts creates the slice with the functional options for the gRPC options.
 func (g *GRPCClient) Opts() []grpc.Option {
 	opts := make([]grpc.Option, 0, 18)
 	opts = append(opts,
 		grpc.WithHealthCheckDuration(g.HealthCheckDuration),
-		grpc.WithConnectionPoolSize(g.ConnectionPool.Size),
-		grpc.WithOldConnCloseDuration(g.ConnectionPool.OldConnCloseDuration),
-		grpc.WithResolveDNS(g.ConnectionPool.ResolveDNS),
 	)
+
+	if g.ConnectionPool != nil {
+		opts = append(opts,
+			grpc.WithConnectionPoolSize(g.ConnectionPool.Size),
+			grpc.WithOldConnCloseDuration(g.ConnectionPool.OldConnCloseDuration),
+			grpc.WithResolveDNS(g.ConnectionPool.ResolveDNS),
+		)
+		if g.ConnectionPool.EnableRebalance {
+			opts = append(opts,
+				grpc.WithEnableConnectionPoolRebalance(g.ConnectionPool.EnableRebalance),
+				grpc.WithConnectionPoolRebalanceDuration(g.ConnectionPool.RebalanceDuration),
+			)
+		}
+	}
+
 	if g.Addrs != nil && len(g.Addrs) != 0 {
 		opts = append(opts,
 			grpc.WithAddrs(g.Addrs...),
 		)
 	}
 
-	if g.ConnectionPool.EnableRebalance {
-		opts = append(opts,
-			grpc.WithEnableConnectionPoolRebalance(g.ConnectionPool.EnableRebalance),
-			grpc.WithConnectionPoolRebalanceDuration(g.ConnectionPool.RebalanceDuration),
-		)
-	}
 	if g.Backoff != nil &&
 		len(g.Backoff.InitialDuration) != 0 &&
 		g.Backoff.RetryCount > 2 {
