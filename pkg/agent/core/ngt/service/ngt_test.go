@@ -3577,20 +3577,20 @@ func Test_ngt_readyForUpdate(t *testing.T) {
 		dcd               bool
 	}
 	type want struct {
-		wantReady bool
+		wantError error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, bool) error
+		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotReady bool) error {
-		if !reflect.DeepEqual(gotReady, w.wantReady) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotReady, w.wantReady)
+	defaultCheckFunc := func(w want, gotError error) error {
+		if !reflect.DeepEqual(gotError, w.wantError) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotError, w.wantError)
 		}
 		return nil
 	}
@@ -3717,8 +3717,8 @@ func Test_ngt_readyForUpdate(t *testing.T) {
 				dcd:               test.fields.dcd,
 			}
 
-			gotReady := n.readyForUpdate(test.args.uuid, test.args.vec)
-			if err := test.checkFunc(test.want, gotReady); err != nil {
+			gotError := n.readyForUpdate(test.args.uuid, test.args.vec)
+			if err := test.checkFunc(test.want, gotError); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

@@ -90,8 +90,8 @@ var (
 	ErrCAPINotImplemented = New("not implemented in C API")
 
 	// ErrUUIDAlreadyExists represents a function to generate an error that the uuid already exists.
-	ErrUUIDAlreadyExists = func(uuid string, oid uint) error {
-		return Errorf("ngt uuid %s object id %d already exists ", uuid, oid)
+	ErrUUIDAlreadyExists = func(uuid string) error {
+		return Errorf("ngt uuid %s index already exists", uuid)
 	}
 
 	// ErrUUIDNotFound represents a function to generate an error that the uuid is not found.

@@ -55,7 +55,6 @@ func (s *server) GetMeta(ctx context.Context, key *payload.Meta_Key) (*payload.M
 	val, err := s.redis.Get(ctx, key.GetKey())
 	if err != nil {
 		if errors.IsErrRedisNotFound(err) {
-			log.Warnf("[GetMeta]\tnot found\t%v\t%s", key.GetKey(), err.Error())
 			err = status.WrapWithNotFound(fmt.Sprintf("GetMeta API: not found: key %s", key.GetKey()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(key),
@@ -101,7 +100,6 @@ func (s *server) GetMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *pay
 	mv.Vals, err = s.redis.GetMultiple(ctx, keys.GetKeys()...)
 	if err != nil {
 		if errors.IsErrRedisNotFound(err) {
-			log.Warnf("[GetMetas]\tnot found\t%v\t%s", keys.GetKeys(), err.Error())
 			err = status.WrapWithNotFound(fmt.Sprintf("GetMetas API: not found: keys %#v", keys.GetKeys()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(keys),
@@ -144,7 +142,6 @@ func (s *server) GetMetaInverse(ctx context.Context, val *payload.Meta_Val) (*pa
 	key, err := s.redis.GetInverse(ctx, val.GetVal())
 	if err != nil {
 		if errors.IsErrRedisNotFound(err) {
-			log.Warnf("[GetMetaInverse]\tnot found\t%v\t%s", val.GetVal(), err.Error())
 			err = status.WrapWithNotFound(fmt.Sprintf("GetMetaInverse API: not found: val %s", val.GetVal()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(val),
@@ -190,7 +187,6 @@ func (s *server) GetMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (
 	mk.Keys, err = s.redis.GetInverseMultiple(ctx, vals.GetVals()...)
 	if err != nil {
 		if errors.IsErrRedisNotFound(err) {
-			log.Warnf("[GetMetasInverse]\tnot found\t%v\t%s", vals.GetVals(), err.Error())
 			err = status.WrapWithNotFound(fmt.Sprintf("GetMetasInverse API: not found: vals %#v", vals.GetVals()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(vals),
@@ -232,7 +228,7 @@ func (s *server) SetMeta(ctx context.Context, kv *payload.Meta_KeyVal) (_ *paylo
 	}()
 	err = s.redis.Set(ctx, kv.GetKey(), kv.GetVal())
 	if err != nil {
-		log.Errorf("[SetMeta]\tunknown error\t%+v", err)
+		log.Errorf("[SetMeta]\tinternal error\t%+v", err)
 		err = status.WrapWithInternal(fmt.Sprintf("SetMeta API: failed to store: key %s val %s", kv.GetKey(), kv.GetVal()), err,
 			&errdetails.RequestInfo{
 				ServingData: errdetails.Serialize(kv),
@@ -263,7 +259,7 @@ func (s *server) SetMetas(ctx context.Context, kvs *payload.Meta_KeyVals) (_ *pa
 	}
 	err = s.redis.SetMultiple(ctx, query)
 	if err != nil {
-		log.Errorf("[SetMetas]\tunknown error\t%+v", err)
+		log.Errorf("[SetMetas]\tinternal error\t%+v", err)
 		err = status.WrapWithInternal(fmt.Sprintf("SetMetas API: failed to store: %#v", query), err,
 			&errdetails.RequestInfo{
 				ServingData: errdetails.Serialize(kvs),
@@ -291,7 +287,6 @@ func (s *server) DeleteMeta(ctx context.Context, key *payload.Meta_Key) (*payloa
 	val, err := s.redis.Delete(ctx, key.GetKey())
 	if err != nil {
 		if errors.IsErrRedisNotFound(err) {
-			log.Warnf("[DeleteMeta]\tnot found\t%v\t%s", key.GetKey(), err.Error())
 			err = status.WrapWithNotFound(fmt.Sprintf("DeleteMeta API: not found: key %s", key.GetKey()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(key),
@@ -337,7 +332,6 @@ func (s *server) DeleteMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *
 	mv.Vals, err = s.redis.DeleteMultiple(ctx, keys.GetKeys()...)
 	if err != nil {
 		if errors.IsErrRedisNotFound(err) {
-			log.Warnf("[DeleteMetas]\tnot found\t%v\t%s", keys.GetKeys(), err.Error())
 			err = status.WrapWithNotFound(fmt.Sprintf("DeleteMetas API: not found: keys %#v", keys.GetKeys()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(keys),
@@ -380,7 +374,6 @@ func (s *server) DeleteMetaInverse(ctx context.Context, val *payload.Meta_Val) (
 	key, err := s.redis.DeleteInverse(ctx, val.GetVal())
 	if err != nil {
 		if errors.IsErrRedisNotFound(err) {
-			log.Warnf("[DeleteMetaInverse]\tnot found\t%v\t%s", val.GetVal(), err.Error())
 			err = status.WrapWithNotFound(fmt.Sprintf("DeleteMetaInverse API: not found: val %s", val.GetVal()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(val),
@@ -426,7 +419,6 @@ func (s *server) DeleteMetasInverse(ctx context.Context, vals *payload.Meta_Vals
 	mk.Keys, err = s.redis.DeleteInverseMultiple(ctx, vals.GetVals()...)
 	if err != nil {
 		if errors.IsErrRedisNotFound(err) {
-			log.Warnf("[DeleteMetasInverse]\tnot found\t%v\t%s", vals.GetVals(), err.Error())
 			err = status.WrapWithNotFound(fmt.Sprintf("DeleteMetasInverse API: not found: vals %#v", vals.GetVals()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(vals),

@@ -327,7 +327,7 @@ func TestParse(t *testing.T) {
 				wantHost: "dummy",
 				wantPort: uint16(80),
 				err: &strconv.NumError{
-					Func: "Atoi",
+					Func: "ParseUint",
 					Num:  "",
 					Err:  strconv.ErrSyntax,
 				},
@@ -345,7 +345,7 @@ func TestParse(t *testing.T) {
 				isV6:     false,
 				isLocal:  false,
 				err: &strconv.NumError{
-					Func: "Atoi",
+					Func: "ParseUint",
 					Num:  "",
 					Err:  strconv.ErrSyntax,
 				},
@@ -363,7 +363,7 @@ func TestParse(t *testing.T) {
 				isV6:     true,
 				isLocal:  false,
 				err: &strconv.NumError{
-					Func: "Atoi",
+					Func: "ParseUint",
 					Num:  "",
 					Err:  strconv.ErrSyntax,
 				},
@@ -460,7 +460,7 @@ func TestSplitHostPort(t *testing.T) {
 			want: want{
 				wantHost: "dummy",
 				wantPort: uint16(80),
-				err:      &strconv.NumError{"Atoi", "", strconv.ErrSyntax},
+				err:      &strconv.NumError{"ParseUint", "", strconv.ErrSyntax},
 			},
 		},
 		{
@@ -471,7 +471,7 @@ func TestSplitHostPort(t *testing.T) {
 			want: want{
 				wantHost: "192.168.1.1",
 				wantPort: uint16(80),
-				err:      &strconv.NumError{"Atoi", "", strconv.ErrSyntax},
+				err:      &strconv.NumError{"ParseUint", "", strconv.ErrSyntax},
 			},
 		},
 		{
@@ -482,7 +482,7 @@ func TestSplitHostPort(t *testing.T) {
 			want: want{
 				wantHost: "2001:db8::1",
 				wantPort: uint16(80),
-				err:      &strconv.NumError{"Atoi", "", strconv.ErrSyntax},
+				err:      &strconv.NumError{"ParseUint", "", strconv.ErrSyntax},
 			},
 		},
 		{
@@ -566,7 +566,7 @@ func TestScanPorts(t *testing.T) {
 			testSrv := httptest.NewServer(handler)
 
 			s := strings.Split(testSrv.URL, ":")
-			p, _ := strconv.Atoi(s[len(s)-1])
+			p, _ := strconv.ParseUint(s[len(s)-1], 10, 16)
 			srvPort := uint16(p)
 
 			return test{
@@ -594,7 +594,7 @@ func TestScanPorts(t *testing.T) {
 			testSrv := httptest.NewServer(handler)
 
 			s := strings.Split(testSrv.URL, ":")
-			p, _ := strconv.Atoi(s[len(s)-1])
+			p, _ := strconv.ParseUint(s[len(s)-1], 10, 16)
 			srvPort := uint16(p)
 
 			return test{
@@ -622,7 +622,7 @@ func TestScanPorts(t *testing.T) {
 			testSrv := httptest.NewServer(handler)
 
 			s := strings.Split(testSrv.URL, ":")
-			p, _ := strconv.Atoi(s[len(s)-1])
+			p, _ := strconv.ParseUint(s[len(s)-1], 10, 16)
 			srvPort := uint16(p)
 
 			return test{
@@ -659,7 +659,7 @@ func TestScanPorts(t *testing.T) {
 				srvs = append(srvs, srv)
 
 				s := strings.Split(srv.URL, ":")
-				p, _ := strconv.Atoi(s[len(s)-1])
+				p, _ := strconv.ParseUint(s[len(s)-1], 10, 16)
 				port := uint16(p)
 				ports = append(ports, port)
 

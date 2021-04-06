@@ -127,7 +127,6 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		Id: req.GetId(),
 	})
 	if err != nil {
-		log.Errorf("error at SearchByID\t%v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
