@@ -24,6 +24,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"syscall"
 
 	"github.com/vdaas/vald/internal/backoff"
@@ -221,6 +222,11 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 				}
 			}
 		case tar.TypeReg:
+			if strings.Contains(target, "..") {
+				log.Warn(errors.ErrPathNotAllowed(target))
+				return nil
+			}
+
 			if _, err := os.Stat(target); err == nil {
 				log.Warn(errors.ErrFileAlreadyExists(target))
 				return nil
