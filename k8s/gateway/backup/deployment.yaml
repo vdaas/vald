@@ -44,7 +44,7 @@ spec:
         app: vald-backup-gateway
         app.kubernetes.io/name: vald
         app.kubernetes.io/instance: RELEASE-NAME
-        app.kubernetes.io/component: gateway
+        app.kubernetes.io/component: gateway-backup
       annotations:
         checksum/configmap: b513a762dd01eecdf378023b82ea7b2871ee4c898631698d5f77f1514881db9d
     spec:
