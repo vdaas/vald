@@ -462,7 +462,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (res *
 			log.Warn(err)
 			code = trace.StatusCodeAlreadyExists(err.Error())
 		} else if errors.Is(err, errors.ErrUUIDNotFound(0)) {
-			err = status.WrapWithInvalidArgument(fmt.Sprintf("Insert API invalid uuid \"%s\" detected", vec.GetId()), err,
+			err = status.WrapWithInvalidArgument(fmt.Sprintf("Insert API empty uuid \"%s\" was given", vec.GetId()), err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetVector().GetId(),
 					ServingData: errdetails.Serialize(req),
