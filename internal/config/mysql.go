@@ -74,7 +74,7 @@ func (m *MySQL) Bind() *MySQL {
 }
 
 // Opts creates and returns the slice with the functional options for the internal mysql package.
-// In addition, Opts returns the error when the any errors are occurred.
+// In addition, Opts returns the error when any errors occur.
 func (m *MySQL) Opts() ([]mysql.Option, error) {
 	nt := net.NetworkTypeFromString(m.Network)
 	if nt == 0 || nt == net.Unknown || strings.EqualFold(nt.String(), net.Unknown.String()) {
