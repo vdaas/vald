@@ -557,7 +557,7 @@ func TestCassandra_Opts(t *testing.T) {
 		}(),
 		func() test {
 			return test{
-				name: "return 0 cassandra.Option and error when TLS config value in the invalid value",
+				name: "return nil and error when TLS config value in the invalid value",
 				fields: fields{
 					Hosts: []string{
 						"cassandra-0.cassandra.default.svc.cluster.local",
