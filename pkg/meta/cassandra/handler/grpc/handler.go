@@ -112,7 +112,6 @@ func (s *server) GetMeta(ctx context.Context, key *payload.Meta_Key) (*payload.M
 	if err != nil {
 		switch {
 		case errors.IsErrCassandraNotFound(err):
-			log.Warnf("[GetMeta]\tnot found\t%v\t%s", key.GetKey(), err.Error())
 			err = status.WrapWithNotFound(fmt.Sprintf("GetMeta API: not found: key %s", key.GetKey()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(key),
@@ -127,7 +126,7 @@ func (s *server) GetMeta(ctx context.Context, key *payload.Meta_Key) (*payload.M
 			}
 			return nil, err
 		case errors.IsErrCassandraUnavailable(err):
-			log.Warnf("[GetMeta]\tunavailable\t%+v", err)
+			log.Errorf("[GetMeta]\tunavailable\t%+v", err)
 			err = status.WrapWithUnavailable(fmt.Sprintf("GetMeta API: Cassandra unavailable: key %s", key.GetKey()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(key),
@@ -142,7 +141,7 @@ func (s *server) GetMeta(ctx context.Context, key *payload.Meta_Key) (*payload.M
 			}
 			return nil, err
 		case isInternalError(err):
-			log.Warnf("[GetMeta]\tinternal error\t%+v", err)
+			log.Errorf("[GetMeta]\tinternal error\t%+v", err)
 			err = status.WrapWithInternal(fmt.Sprintf("GetMeta API: internal error occurred: key %s", key.GetKey()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(key),
@@ -157,7 +156,7 @@ func (s *server) GetMeta(ctx context.Context, key *payload.Meta_Key) (*payload.M
 			}
 			return nil, err
 		case isFailedPrecondition(err):
-			log.Warnf("[GetMeta]\tfailed precondition\t%+v", err)
+			log.Errorf("[GetMeta]\tfailed precondition\t%+v", err)
 			err = status.WrapWithFailedPrecondition(fmt.Sprintf("GetMeta API: failed precondition: key %s", key.GetKey()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(key),
@@ -208,7 +207,6 @@ func (s *server) GetMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *pay
 	if err != nil {
 		switch {
 		case errors.IsErrCassandraNotFound(err):
-			log.Warnf("[GetMetas]\tnot found\t%v\t%s", keys.GetKeys(), err.Error())
 			err = status.WrapWithNotFound(fmt.Sprintf("GetMetas API: not found: keys %#v", keys.GetKeys()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(keys),
@@ -223,7 +221,7 @@ func (s *server) GetMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *pay
 			}
 			return mv, err
 		case errors.IsErrCassandraUnavailable(err):
-			log.Warnf("[GetMetas]\tunavailable\t%+v", err)
+			log.Errorf("[GetMetas]\tunavailable\t%+v", err)
 			err = status.WrapWithUnavailable(fmt.Sprintf("GetMetas API: Cassandra unavailable: keys %#v", keys.GetKeys()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(keys),
@@ -238,7 +236,7 @@ func (s *server) GetMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *pay
 			}
 			return mv, err
 		case isInternalError(err):
-			log.Warnf("[GetMetas]\tinternal error\t%+v", err)
+			log.Errorf("[GetMetas]\tinternal error\t%+v", err)
 			err = status.WrapWithInternal(fmt.Sprintf("GetMetas API: internal error occurred: keys %#v", keys.GetKeys()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(keys),
@@ -253,7 +251,7 @@ func (s *server) GetMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *pay
 			}
 			return nil, err
 		case isFailedPrecondition(err):
-			log.Warnf("[GetMetas]\tfailed precondition\t%+v", err)
+			log.Errorf("[GetMetas]\tfailed precondition\t%+v", err)
 			err = status.WrapWithFailedPrecondition(fmt.Sprintf("GetMetas API: failed precondition: keys %#v", keys.GetKeys()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(keys),
@@ -301,7 +299,6 @@ func (s *server) GetMetaInverse(ctx context.Context, val *payload.Meta_Val) (*pa
 	if err != nil {
 		switch {
 		case errors.IsErrCassandraNotFound(err):
-			log.Warnf("[GetMetaInverse]\tnot found\t%v\t%s", val.GetVal(), err.Error())
 			err = status.WrapWithNotFound(fmt.Sprintf("GetMetaInverse API: not found: val %s", val.GetVal()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(val),
@@ -316,7 +313,7 @@ func (s *server) GetMetaInverse(ctx context.Context, val *payload.Meta_Val) (*pa
 			}
 			return nil, err
 		case errors.IsErrCassandraUnavailable(err):
-			log.Warnf("[GetMetaInverse]\tunavailable\t%+v", err)
+			log.Errorf("[GetMetaInverse]\tunavailable\t%+v", err)
 			err = status.WrapWithUnavailable(fmt.Sprintf("GetMetaInverse API: Cassandra unavailable: val %s", val.GetVal()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(val),
@@ -331,7 +328,7 @@ func (s *server) GetMetaInverse(ctx context.Context, val *payload.Meta_Val) (*pa
 			}
 			return nil, err
 		case isInternalError(err):
-			log.Warnf("[GetMetaInverse]\tinternal error\t%+v", err)
+			log.Errorf("[GetMetaInverse]\tinternal error\t%+v", err)
 			err = status.WrapWithInternal(fmt.Sprintf("GetMetaInverse API: internal error occurred: val %s", val.GetVal()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(val),
@@ -346,7 +343,7 @@ func (s *server) GetMetaInverse(ctx context.Context, val *payload.Meta_Val) (*pa
 			}
 			return nil, err
 		case isFailedPrecondition(err):
-			log.Warnf("[GetMetaInverse]\tfailed precondition\t%+v", err)
+			log.Errorf("[GetMetaInverse]\tfailed precondition\t%+v", err)
 			err = status.WrapWithFailedPrecondition(fmt.Sprintf("GetMetaInverse API: failed precondition: val %s", val.GetVal()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(val),
@@ -397,7 +394,6 @@ func (s *server) GetMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (
 	if err != nil {
 		switch {
 		case errors.IsErrCassandraNotFound(err):
-			log.Warnf("[GetMetasInverse]\tnot found\t%v\t%s", vals.GetVals(), err.Error())
 			err = status.WrapWithNotFound(fmt.Sprintf("GetMetasInverse API: not found: vals %#v", vals.GetVals()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(vals),
@@ -412,7 +408,7 @@ func (s *server) GetMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (
 			}
 			return mk, err
 		case errors.IsErrCassandraUnavailable(err):
-			log.Warnf("[GetMetasInverse]\tunavailable\t%+v", err)
+			log.Errorf("[GetMetasInverse]\tunavailable\t%+v", err)
 			err = status.WrapWithUnavailable(fmt.Sprintf("GetMetasInverse API: Cassandra unavailable: vals %#v", vals.GetVals()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(vals),
@@ -427,7 +423,7 @@ func (s *server) GetMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (
 			}
 			return mk, err
 		case isInternalError(err):
-			log.Warnf("[GetMetasInverse]\tinternal error\t%+v", err)
+			log.Errorf("[GetMetasInverse]\tinternal error\t%+v", err)
 			err = status.WrapWithInternal(fmt.Sprintf("GetMetasInverse API: internal error occurred: vals %#v", vals.GetVals()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(vals),
@@ -442,7 +438,7 @@ func (s *server) GetMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (
 			}
 			return nil, err
 		case isFailedPrecondition(err):
-			log.Warnf("[GetMetasInverse]\tfailed precondition\t%+v", err)
+			log.Errorf("[GetMetasInverse]\tfailed precondition\t%+v", err)
 			err = status.WrapWithFailedPrecondition(fmt.Sprintf("GetMetasInverse API: failed precondition: vals %#v", vals.GetVals()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(vals),
@@ -490,7 +486,7 @@ func (s *server) SetMeta(ctx context.Context, kv *payload.Meta_KeyVal) (_ *paylo
 	if err != nil {
 		switch {
 		case errors.IsErrCassandraUnavailable(err):
-			log.Warnf("[SetMeta]\tunavailable\t%+v", err)
+			log.Errorf("[SetMeta]\tunavailable\t%+v", err)
 			err = status.WrapWithUnavailable(fmt.Sprintf("SetMeta API: Cassandra unavailable: key %s, val %s", kv.GetKey(), kv.GetVal()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(kv),
@@ -505,7 +501,7 @@ func (s *server) SetMeta(ctx context.Context, kv *payload.Meta_KeyVal) (_ *paylo
 			}
 			return nil, err
 		case isInternalError(err):
-			log.Warnf("[SetMeta]\tinternal error\t%+v", err)
+			log.Errorf("[SetMeta]\tinternal error\t%+v", err)
 			err = status.WrapWithInternal(fmt.Sprintf("SetMeta API: internal error occurred: key %s val %s", kv.GetKey(), kv.GetVal()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(kv),
@@ -520,7 +516,7 @@ func (s *server) SetMeta(ctx context.Context, kv *payload.Meta_KeyVal) (_ *paylo
 			}
 			return nil, err
 		case isFailedPrecondition(err):
-			log.Warnf("[SetMeta]\tfailed precondition\t%+v", err)
+			log.Errorf("[SetMeta]\tfailed precondition\t%+v", err)
 			err = status.WrapWithFailedPrecondition(fmt.Sprintf("SetMeta API: failed precondition: key %s val %s", kv.GetKey(), kv.GetVal()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(kv),
@@ -572,7 +568,7 @@ func (s *server) SetMetas(ctx context.Context, kvs *payload.Meta_KeyVals) (_ *pa
 	if err != nil {
 		switch {
 		case errors.IsErrCassandraUnavailable(err):
-			log.Warnf("[SetMetas]\tunavailable\t%+v", err)
+			log.Errorf("[SetMetas]\tunavailable\t%+v", err)
 			err = status.WrapWithUnavailable(fmt.Sprintf("SetMetas API: Cassandra unavailable: kvs %#v", query), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(kvs),
@@ -587,7 +583,7 @@ func (s *server) SetMetas(ctx context.Context, kvs *payload.Meta_KeyVals) (_ *pa
 			}
 			return nil, err
 		case isInternalError(err):
-			log.Warnf("[SetMetas]\tinternal error\t%+v", err)
+			log.Errorf("[SetMetas]\tinternal error\t%+v", err)
 			err = status.WrapWithInternal(fmt.Sprintf("SetMetas API: internal error occurred: kvs %#v", query), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(kvs),
@@ -602,7 +598,7 @@ func (s *server) SetMetas(ctx context.Context, kvs *payload.Meta_KeyVals) (_ *pa
 			}
 			return nil, err
 		case isFailedPrecondition(err):
-			log.Warnf("[SetMetas]\tfailed precondition\t%+v", err)
+			log.Errorf("[SetMetas]\tfailed precondition\t%+v", err)
 			err = status.WrapWithFailedPrecondition(fmt.Sprintf("SetMetas API: failed precondition: kvs %#v", query), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(kvs),
@@ -650,7 +646,6 @@ func (s *server) DeleteMeta(ctx context.Context, key *payload.Meta_Key) (*payloa
 	if err != nil {
 		switch {
 		case errors.IsErrCassandraNotFound(err):
-			log.Warnf("[DeleteMeta]\tnot found\t%v\t%s", key.GetKey(), err.Error())
 			err = status.WrapWithNotFound(fmt.Sprintf("DeleteMeta API: not found: key %s", key.GetKey()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(key),
@@ -665,7 +660,7 @@ func (s *server) DeleteMeta(ctx context.Context, key *payload.Meta_Key) (*payloa
 			}
 			return nil, err
 		case errors.IsErrCassandraUnavailable(err):
-			log.Warnf("[DeleteMeta]\tunavailable\t%+v", err)
+			log.Errorf("[DeleteMeta]\tunavailable\t%+v", err)
 			err = status.WrapWithUnavailable(fmt.Sprintf("DeleteMeta API: Cassandra unavailable: key %s", key.GetKey()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(key),
@@ -680,7 +675,7 @@ func (s *server) DeleteMeta(ctx context.Context, key *payload.Meta_Key) (*payloa
 			}
 			return nil, err
 		case isInternalError(err):
-			log.Warnf("[DeleteMeta]\tinternal error\t%+v", err)
+			log.Errorf("[DeleteMeta]\tinternal error\t%+v", err)
 			err = status.WrapWithInternal(fmt.Sprintf("DeleteMeta API: internal error occurred: key %s", key.GetKey()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(key),
@@ -695,7 +690,7 @@ func (s *server) DeleteMeta(ctx context.Context, key *payload.Meta_Key) (*payloa
 			}
 			return nil, err
 		case isFailedPrecondition(err):
-			log.Warnf("[DeleteMeta]\tfailed precondition\t%+v", err)
+			log.Errorf("[DeleteMeta]\tfailed precondition\t%+v", err)
 			err = status.WrapWithFailedPrecondition(fmt.Sprintf("DeleteMeta API: failed precondition: key %s", key.GetKey()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(key),
@@ -746,7 +741,6 @@ func (s *server) DeleteMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *
 	if err != nil {
 		switch {
 		case errors.IsErrCassandraNotFound(err):
-			log.Warnf("[DeleteMetas]\tnot found\t%v\t%s", keys.GetKeys(), err.Error())
 			err = status.WrapWithNotFound(fmt.Sprintf("DeleteMetas API: not found: keys %#v", keys.GetKeys()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(keys),
@@ -761,7 +755,7 @@ func (s *server) DeleteMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *
 			}
 			return mv, err
 		case errors.IsErrCassandraUnavailable(err):
-			log.Warnf("[DeleteMetas]\tunavailable\t%+v", err)
+			log.Errorf("[DeleteMetas]\tunavailable\t%+v", err)
 			err = status.WrapWithUnavailable(fmt.Sprintf("DeleteMetas API: Cassandra unavailable: keys %#v", keys.GetKeys()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(keys),
@@ -776,7 +770,7 @@ func (s *server) DeleteMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *
 			}
 			return nil, err
 		case isInternalError(err):
-			log.Warnf("[DeleteMetas]\tinternal error\t%+v", err)
+			log.Errorf("[DeleteMetas]\tinternal error\t%+v", err)
 			err = status.WrapWithInternal(fmt.Sprintf("DeleteMetas API: internal error occurred: keys %#v", keys.GetKeys()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(keys),
@@ -791,7 +785,7 @@ func (s *server) DeleteMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *
 			}
 			return nil, err
 		case isFailedPrecondition(err):
-			log.Warnf("[DeleteMetas]\tfailed precondition\t%+v", err)
+			log.Errorf("[DeleteMetas]\tfailed precondition\t%+v", err)
 			err = status.WrapWithFailedPrecondition(fmt.Sprintf("DeleteMetas API: failed precondition: keys %#v", keys.GetKeys()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(keys),
@@ -839,7 +833,6 @@ func (s *server) DeleteMetaInverse(ctx context.Context, val *payload.Meta_Val) (
 	if err != nil {
 		switch {
 		case errors.IsErrCassandraNotFound(err):
-			log.Warnf("[DeleteMetaInverse]\tnot found\t%v\t%s", val.GetVal(), err.Error())
 			err = status.WrapWithNotFound(fmt.Sprintf("DeleteMetaInverse API: not found: val %s", val.GetVal()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(val),
@@ -854,7 +847,7 @@ func (s *server) DeleteMetaInverse(ctx context.Context, val *payload.Meta_Val) (
 			}
 			return nil, err
 		case errors.IsErrCassandraUnavailable(err):
-			log.Warnf("[DeleteMetaInverse]\tunavailable\t%+v", err)
+			log.Errorf("[DeleteMetaInverse]\tunavailable\t%+v", err)
 			err = status.WrapWithUnavailable(fmt.Sprintf("DeleteMetaInverse API: Cassandra unavailable: val %s", val.GetVal()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(val),
@@ -869,7 +862,7 @@ func (s *server) DeleteMetaInverse(ctx context.Context, val *payload.Meta_Val) (
 			}
 			return nil, err
 		case isInternalError(err):
-			log.Warnf("[DeleteMetaInverse]\tinternal error\t%+v", err)
+			log.Errorf("[DeleteMetaInverse]\tinternal error\t%+v", err)
 			err = status.WrapWithInternal(fmt.Sprintf("DeleteMetaInverse API: internal error occurred: val %s", val.GetVal()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(val),
@@ -884,7 +877,7 @@ func (s *server) DeleteMetaInverse(ctx context.Context, val *payload.Meta_Val) (
 			}
 			return nil, err
 		case isFailedPrecondition(err):
-			log.Warnf("[DeleteMetaInverse]\tfailed precondition\t%+v", err)
+			log.Errorf("[DeleteMetaInverse]\tfailed precondition\t%+v", err)
 			err = status.WrapWithFailedPrecondition(fmt.Sprintf("DeleteMetaInverse API: failed precondition: val %s", val.GetVal()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(val),
@@ -935,7 +928,6 @@ func (s *server) DeleteMetasInverse(ctx context.Context, vals *payload.Meta_Vals
 	if err != nil {
 		switch {
 		case errors.IsErrCassandraNotFound(err):
-			log.Warnf("[DeleteMetasInverse]\tnot found\t%v\t%s", vals.GetVals(), err.Error())
 			err = status.WrapWithNotFound(fmt.Sprintf("DeleteMetasInverse API: not found: vals %#v", vals.GetVals()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(vals),
@@ -950,7 +942,7 @@ func (s *server) DeleteMetasInverse(ctx context.Context, vals *payload.Meta_Vals
 			}
 			return mk, err
 		case errors.IsErrCassandraUnavailable(err):
-			log.Warnf("[DeleteMetasInverse]\tunavailable\t%+v", err)
+			log.Errorf("[DeleteMetasInverse]\tunavailable\t%+v", err)
 			err = status.WrapWithUnavailable(fmt.Sprintf("DeleteMetasInverse API: Cassandra unavailable: vals %#v", vals.GetVals()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(vals),
@@ -965,7 +957,7 @@ func (s *server) DeleteMetasInverse(ctx context.Context, vals *payload.Meta_Vals
 			}
 			return nil, err
 		case isInternalError(err):
-			log.Warnf("[DeleteMetasInverse]\tinternal error\t%+v", err)
+			log.Errorf("[DeleteMetasInverse]\tinternal error\t%+v", err)
 			err = status.WrapWithInternal(fmt.Sprintf("DeleteMetasInverse API: internal error occurred: vals %#v", vals.GetVals()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(vals),
@@ -980,7 +972,7 @@ func (s *server) DeleteMetasInverse(ctx context.Context, vals *payload.Meta_Vals
 			}
 			return nil, err
 		case isFailedPrecondition(err):
-			log.Warnf("[DeleteMetasInverse]\tfailed precondition\t%+v", err)
+			log.Errorf("[DeleteMetasInverse]\tfailed precondition\t%+v", err)
 			err = status.WrapWithFailedPrecondition(fmt.Sprintf("DeleteMetasInverse API: failed precondition: vals %#v", vals.GetVals()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(vals),

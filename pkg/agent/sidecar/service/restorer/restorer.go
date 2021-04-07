@@ -157,8 +157,7 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 		}
 	}()
 
-	log.Infof("restoring directory %s started", r.dir)
-	defer log.Infof("restoring directory %s finished", r.dir)
+	log.Infof("started to restore directory %s", r.dir)
 
 	pr, pw := io.Pipe()
 	defer pr.Close()
@@ -212,6 +211,11 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 
 		log.Debug("restoring: ", target)
 
+		if strings.Contains(target, "..") {
+			log.Warn(errors.ErrPathNotAllowed(target))
+			continue
+		}
+
 		switch header.Typeflag {
 		case tar.TypeDir:
 			_, err = os.Stat(target)
@@ -222,11 +226,6 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 				}
 			}
 		case tar.TypeReg:
-			if strings.Contains(target, "..") {
-				log.Warn(errors.ErrPathNotAllowed(target))
-				return nil
-			}
-
 			if _, err := os.Stat(target); err == nil {
 				log.Warn(errors.ErrFileAlreadyExists(target))
 				return nil
@@ -259,6 +258,8 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 			}
 		}
 	}
+
+	log.Infof("finished to restore directory %s finished", r.dir)
 
 	return nil
 }

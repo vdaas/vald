@@ -421,8 +421,7 @@ func (o *observer) backup(ctx context.Context) (err error) {
 		}
 	}()
 
-	log.Infof("backup directory %s started", o.dir)
-	defer log.Infof("backup directory %s finished", o.dir)
+	log.Infof("started to backup directory %s", o.dir)
 
 	pr, pw := io.Pipe()
 	defer func() {
@@ -540,6 +539,8 @@ func (o *observer) backup(ctx context.Context) (err error) {
 			return err
 		}
 	}
+
+	log.Infof("finished to backup directory %s", o.dir)
 
 	return nil
 }

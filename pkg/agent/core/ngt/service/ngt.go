@@ -180,7 +180,7 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 		return err
 	}
 	if os.IsPermission(err) {
-		log.Debugf("no permission for index path,\tpath: %s,\terr: %v", n.path, err)
+		log.Errorf("no permission for index path,\tpath: %s,\terr: %v", n.path, err)
 		return err
 	}
 
@@ -200,7 +200,7 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 		}
 
 		if os.IsPermission(err) {
-			log.Debugf("no permission for kvsdb file,\tpath: %s,\terr: %v", filepath.Join(n.path, kvsFileName), err)
+			log.Errorf("no permission for kvsdb file,\tpath: %s,\terr: %v", filepath.Join(n.path, kvsFileName), err)
 			return err
 		}
 	}
@@ -386,7 +386,7 @@ func (n *ngt) Search(vec []float32, size uint32, epsilon, radius float32) ([]mod
 	ds := make([]model.Distance, 0, len(sr))
 	for _, d := range sr {
 		if err = d.Error; d.ID == 0 && err != nil {
-			log.Debug("an error occurred while searching:", err)
+			log.Warnf("an error occurred while searching: %s", err)
 			continue
 		}
 		key, ok := n.kvs.GetInverse(d.ID)
@@ -552,7 +552,7 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	defer n.gc()
 
 	log.Infof("create index operation started, uncommitted indexes = %d", ic)
-	log.Info("create index delete phase started")
+	log.Debug("create index delete phase started")
 	n.vq.RangePopDelete(ctx, func(uuid string) bool {
 		var ierr error
 		oid, ok := n.kvs.Delete(uuid)
@@ -569,9 +569,9 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 		}
 		return true
 	})
-	log.Info("create index delete phase finished")
+	log.Debug("create index delete phase finished")
 	n.gc()
-	log.Info("create index insert phase started")
+	log.Debug("create index insert phase started")
 	n.vq.RangePopInsert(ctx, func(uuid string, vector []float32) bool {
 		oid, ierr := n.core.Insert(vector)
 		if ierr != nil {
@@ -582,15 +582,15 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 		}
 		return true
 	})
-	log.Info("create index insert phase finished")
-	log.Info("create graph and tree phase started")
+	log.Debug("create index insert phase finished")
+	log.Debug("create graph and tree phase started")
 	log.Debugf("pool size = %d", poolSize)
 	cierr := n.core.CreateIndex(poolSize)
 	if cierr != nil {
 		log.Error("an error occurred on creating graph and tree phase:", cierr)
 		err = errors.Wrap(err, cierr.Error())
 	}
-	log.Info("create graph and tree phase finished")
+	log.Debug("create graph and tree phase finished")
 
 	log.Info("create index operation finished")
 	atomic.AddUint64(&n.nocie, 1)

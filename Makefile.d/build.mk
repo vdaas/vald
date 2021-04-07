@@ -30,6 +30,7 @@ binary/build: \
 	cmd/manager/backup/mysql/backup \
 	cmd/manager/backup/cassandra/backup \
 	cmd/manager/compressor/compressor \
+	cmd/filter/ingress/tensorflow/tensorflow \
 	cmd/manager/index/index
 
 cmd/agent/core/ngt/ngt: \
@@ -472,6 +473,39 @@ cmd/manager/replication/controller/controller: \
 		-o $@ \
 		$(dir $@)main.go
 
+cmd/filter/ingress/tensorflow/tensorflow: \
+	tensorflow/install \
+	$(GO_SOURCES_INTERNAL) \
+	$(PBGOS) \
+	$(shell find ./cmd/filter/ingress/tensorflow -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find ./pkg/filter/ingress/tensorflow -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	CFLAGS="$(CFLAGS)" \
+	CXXFLAGS="$(CXXFLAGS)" \
+	CGO_ENABLED=1 \
+	CGO_CXXFLAGS="-g -Ofast -march=native" \
+	CGO_FFLAGS="-g -Ofast -march=native" \
+	CGO_LDFLAGS="-g -Ofast -march=native" \
+	GO111MODULE=on \
+	GOPRIVATE=$(GOPRIVATE) \
+	go build \
+		--ldflags "-s -w \
+		-extldflags '-pthread -fopenmp -std=gnu++2a -lstdc++ -lm $(EXTLDFLAGS)' \
+		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
+		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
+		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
+		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
+		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
+		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
+		-X '$(GOPKG)/internal/info.NGTVersion=$(NGT_VERSION)' \
+		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
+		-buildid=" \
+		-a \
+		-tags "cgo osusergo netgo static_build" \
+		-trimpath \
+		-o $@ \
+		$(dir $@)main.go
+
 cmd/rebalancer/storage/controller/rebalancer-storage-controller: \
 	$(GO_SOURCES_INTERNAL) \
 	$(PBGOS) \
@@ -506,6 +540,7 @@ binary/build/zip: \
 	artifacts/vald-gateway-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-lb-gateway-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-meta-gateway-$(GOOS)-$(GOARCH).zip \
+	artifacts/vald-filter-ingress-tensorflow-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-backup-gateway-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-meta-redis-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-meta-cassandra-$(GOOS)-$(GOARCH).zip \
@@ -569,3 +604,9 @@ artifacts/vald-manager-compressor-$(GOOS)-$(GOARCH).zip: cmd/manager/compressor/
 artifacts/vald-manager-index-$(GOOS)-$(GOARCH).zip: cmd/manager/index/index
 	$(call mkdir, $(dir $@))
 	zip --junk-paths $@ $<
+
+
+artifacts/vald-filter-ingress-tensorflow-$(GOOS)-$(GOARCH).zip: cmd/filter/ingress/tensorflow/tensorflow
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+

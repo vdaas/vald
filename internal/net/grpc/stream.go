@@ -94,7 +94,7 @@ func BidirectionalStream(ctx context.Context, stream ServerStream,
 			err = stream.RecvMsg(data)
 			if err != nil {
 				if err != io.EOF && !errors.Is(err, io.EOF) {
-					log.Errorf("failed to receive stream message %v", err)
+					log.Errorf("failed to receive stream message: %v", err)
 					errMap.Store(err.Error(), err)
 				}
 				return finalize()
