@@ -30,21 +30,23 @@ k8s/manifest/update: \
 	k8s/manifest/clean
 	helm template \
 	    --values charts/vald/values/dev.yaml \
+	    --set initializer.mysql.enabled=true \
+	    --set initializer.mysql.configmap.enabled=true \
+	    --set initializer.mysql.secret.enabled=true \
+	    --set initializer.redis.enabled=true \
+	    --set initializer.redis.secret.enabled=true \
+	    --set initializer.cassandra.enabled=true \
+	    --set initializer.cassandra.configmap.enabled=true \
+	    --set initializer.cassandra.secret.enabled=true \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
 	mkdir -p k8s/gateway
 	mkdir -p k8s/manager
 	mv $(TEMP_DIR)/vald/templates/agent k8s/agent
 	mv $(TEMP_DIR)/vald/templates/discoverer k8s/discoverer
-	mv $(TEMP_DIR)/vald/templates/gateway/backup k8s/gateway/backup
 	mv $(TEMP_DIR)/vald/templates/gateway/lb k8s/gateway/lb
-	mv $(TEMP_DIR)/vald/templates/gateway/meta k8s/gateway/meta
-	mv $(TEMP_DIR)/vald/templates/gateway/vald k8s/gateway/vald
-	mv $(TEMP_DIR)/vald/templates/jobs k8s/jobs
-	mv $(TEMP_DIR)/vald/templates/manager/backup k8s/manager/backup
-	mv $(TEMP_DIR)/vald/templates/manager/compressor k8s/manager/compressor
 	mv $(TEMP_DIR)/vald/templates/manager/index k8s/manager/index
-	mv $(TEMP_DIR)/vald/templates/meta k8s/meta
+	mv $(TEMP_DIR)/vald/templates/jobs k8s/jobs
 	rm -rf $(TEMP_DIR)
 
 .PHONY: k8s/manifest/helm-operator/clean
@@ -69,41 +71,25 @@ k8s/manifest/helm-operator/update: \
 .PHONY: k8s/vald/deploy
 ## deploy vald sample cluster to k8s
 k8s/vald/deploy: \
-	k8s/external/mysql/deploy \
-	k8s/external/redis/deploy \
 	k8s/metrics/metrics-server/deploy
 	helm template \
 	    --values charts/vald/values/dev.yaml \
 	    --set defaults.image.tag=$(VERSION) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
-	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/backup
-	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/compressor
 	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/index
 	kubectl apply -f $(TEMP_DIR)/vald/templates/agent
 	kubectl apply -f $(TEMP_DIR)/vald/templates/discoverer
-	kubectl apply -f $(TEMP_DIR)/vald/templates/meta
-	# kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/vald
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/lb
-	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/backup
-	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/meta
 	rm -rf $(TEMP_DIR)
 	kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr " " "\n"
 
 .PHONY: k8s/vald/delete
 ## delete vald sample cluster from k8s
 k8s/vald/delete: \
-	k8s/external/mysql/delete \
-	k8s/external/redis/delete \
 	k8s/metrics/metrics-server/delete
-	kubectl delete -f k8s/gateway/meta
-	kubectl delete -f k8s/gateway/backup
 	kubectl delete -f k8s/gateway/lb
-	# kubectl delete -f k8s/gateway/vald
-	kubectl delete -f k8s/manager/backup
-	kubectl delete -f k8s/manager/compressor
 	kubectl delete -f k8s/manager/index
-	kubectl delete -f k8s/meta
 	kubectl delete -f k8s/discoverer
 	kubectl delete -f k8s/agent
 
