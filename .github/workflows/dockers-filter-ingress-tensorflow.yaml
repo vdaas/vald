@@ -24,6 +24,7 @@ on:
       - "*.*.*-*"
       - "v*.*.*-*"
     paths:
+      - ".github/workflows/dockers-filter-ingress-tensorflow.yaml"
       - "go.mod"
       - "go.sum"
       - "internal/**"
@@ -39,6 +40,7 @@ on:
       - "versions/GO_VERSION"
   pull_request:
     paths:
+      - ".github/workflows/dockers-filter-ingress-tensorflow.yaml"
       - "go.mod"
       - "go.sum"
       - "internal/**"
