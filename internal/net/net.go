@@ -158,23 +158,24 @@ func Parse(addr string) (host string, port uint16, isLocal, isIPv4, isIPv6 bool,
 		host = addr
 	}
 
-	ip, err := netaddr.ParseIP(host)
+	ip, nerr := netaddr.ParseIP(host)
+	if nerr != nil {
+		log.Debugf("host: %s,\tport: %d,\tip: %#v,\terror: %v", host, port, ip, nerr)
+	}
+
 	// return host and port and flags
 	return host, port,
 		// check is local ip or not
-		err == nil ||
-			host == localHost ||
+		host == localHost ||
 			host == localIPv4 ||
 			host == localIPv6 ||
-			ip.IsInterfaceLocalMulticast() ||
-			ip.IsLinkLocalMulticast() ||
-			ip.IsLinkLocalUnicast() ||
-			ip.IsLoopback() ||
-			ip.IsMulticast(),
+			ip.IsLoopback(),
 		// check is IPv4 or not
-		err == nil && ip.Is4(),
+		// ic < 2,
+		nerr == nil && ip.Is4(),
 		// check is IPv6 or not
-		err == nil && (ip.Is6() || ip.Is4in6()),
+		// ic >= 2,
+		nerr == nil && (ip.Is6() || ip.Is4in6()),
 		// Split error
 		err
 }
