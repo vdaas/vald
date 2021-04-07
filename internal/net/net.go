@@ -157,24 +157,29 @@ func Parse(addr string) (host string, port uint16, isLocal, isIPv4, isIPv6 bool,
 		log.Warnf("failed to parse addr %s\terror: %v", addr, err)
 		host = addr
 	}
-	isIP := netaddr.ParseIP(host) != nil
-	ic := strings.Count(host, ":")
 
+	ip, err := netaddr.ParseIP(host)
 	// return host and port and flags
 	return host, port,
 		// check is local ip or not
-		host == localHost ||
+		err == nil ||
+			host == localHost ||
 			host == localIPv4 ||
-			host == localIPv6,
+			host == localIPv6 ||
+			ip.IsInterfaceLocalMulticast() ||
+			ip.IsLinkLocalMulticast() ||
+			ip.IsLinkLocalUnicast() ||
+			ip.IsLoopback() ||
+			ip.IsMulticast(),
 		// check is IPv4 or not
-		isIP && ic < 2,
+		err == nil && ip.Is4(),
 		// check is IPv6 or not
-		isIP && ic >= 2,
+		err == nil && (ip.Is6() || ip.Is4in6()),
 		// Split error
 		err
 }
 
-// Dial is a wrapper function of the net.Dial function.
+// DialContext is a wrapper function of the net.Dial function.
 func DialContext(ctx context.Context, network, addr string) (conn Conn, err error) {
 	if DefaultResolver.Dial == nil {
 		return net.Dial(network, addr)

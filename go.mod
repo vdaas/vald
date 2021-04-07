@@ -5,7 +5,7 @@ go 1.16
 replace (
 	cloud.google.com/go => cloud.google.com/go v0.81.0
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20210210161804-c7f947c0610d+incompatible
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.38.13
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.38.14
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
@@ -16,12 +16,12 @@ replace (
 	github.com/gogo/googleapis => github.com/gogo/googleapis v1.4.1
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 	github.com/google/go-cmp => github.com/google/go-cmp v0.5.5
-	github.com/google/pprof => github.com/google/pprof v0.0.0-20210323184331-8eee2492667d
+	github.com/google/pprof => github.com/google/pprof v0.0.0-20210406223550-17a10ee72223
 	github.com/googleapis/gnostic => github.com/googleapis/gnostic v0.5.4
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.16.0
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.2
 	github.com/hailocab/go-hostpool => github.com/kpango/go-hostpool v0.0.0-20210303030322-aab80263dcd0
-	github.com/klauspost/compress => github.com/klauspost/compress v1.11.14-0.20210330161112-b2eb8368e62b
+	github.com/klauspost/compress => github.com/klauspost/compress v1.11.14-0.20210407071140-c223fea4e1ab
 	github.com/kpango/glg => github.com/kpango/glg v1.5.1
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.2+incompatible
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2
@@ -61,7 +61,7 @@ require (
 	github.com/json-iterator/go v1.1.10
 	github.com/klauspost/compress v0.0.0-00010101000000-000000000000
 	github.com/kpango/fastime v1.0.16
-	github.com/kpango/fuid v0.0.0-20200823100533-287aa95e0641
+	github.com/kpango/fuid v0.0.0-20210407064122-2990e29e1ea5
 	github.com/kpango/gache v1.2.5
 	github.com/kpango/glg v1.5.4
 	github.com/lucasb-eyer/go-colorful v1.2.0
@@ -80,9 +80,10 @@ require (
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/plot v0.9.0
 	google.golang.org/api v0.43.0
-	google.golang.org/genproto v0.0.0-20210405174219-a39eb2f71cb9
+	google.golang.org/genproto v0.0.0-20210406143921-e86de6bf7a46
 	google.golang.org/grpc v1.36.1
 	gopkg.in/yaml.v2 v2.4.0
+	inet.af/netaddr v0.0.0-20210403172118-1e1430f727e0
 	k8s.io/api v0.20.5
 	k8s.io/apimachinery v0.20.5
 	k8s.io/cli-runtime v0.0.0-00010101000000-000000000000
