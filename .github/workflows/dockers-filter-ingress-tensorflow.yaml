@@ -84,6 +84,7 @@ jobs:
         with:
           target: filter-ingress-tensorflow
           builder: ${{ steps.buildx.outputs.name }}
+          platforms: linux/amd64
       - name: Initialize CodeQL
         if: startsWith( github.ref, 'refs/tags/')
         uses: github/codeql-action/init@v1
