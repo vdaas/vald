@@ -105,8 +105,7 @@ func WithTags(tags ...string) Option {
 	}
 }
 
-func withLoadFunc(
-	loadFunc func(exportDir string, tags []string, options *SessionOptions) (*tf.SavedModel, error)) Option {
+func withLoadFunc(loadFunc func(exportDir string, tags []string, options *SessionOptions) (*tf.SavedModel, error)) Option {
 	return func(t *tensorflow) {
 		if loadFunc != nil {
 			t.loadFunc = loadFunc
@@ -117,17 +116,17 @@ func withLoadFunc(
 // WithFeed returns Option that sets feeds.
 func WithFeed(operationName string, outputIndex int) Option {
 	return func(t *tensorflow) {
-		t.feeds = append(t.feeds, OutputSpec{operationName, outputIndex})
+		if len(operationName) != 0 {
+			t.feeds = append(t.feeds, OutputSpec{operationName, outputIndex})
+		}
 	}
 }
 
 // WithFeeds returns Option that sets feeds.
-func WithFeeds(operationNames []string, outputIndexes []int) Option {
+func WithFeeds(feeds map[string]int) Option {
 	return func(t *tensorflow) {
-		if operationNames != nil && outputIndexes != nil && len(operationNames) == len(outputIndexes) {
-			for i := range operationNames {
-				t.feeds = append(t.feeds, OutputSpec{operationNames[i], outputIndexes[i]})
-			}
+		for operationName, outputIndex := range feeds {
+			WithFeed(operationName, outputIndex)(t)
 		}
 	}
 }
@@ -135,17 +134,17 @@ func WithFeeds(operationNames []string, outputIndexes []int) Option {
 // WithFetch returns Option that sets fetches.
 func WithFetch(operationName string, outputIndex int) Option {
 	return func(t *tensorflow) {
-		t.fetches = append(t.fetches, OutputSpec{operationName, outputIndex})
+		if len(operationName) != 0 {
+			t.fetches = append(t.fetches, OutputSpec{operationName, outputIndex})
+		}
 	}
 }
 
-// WithFetches returns Option that sets fetches.
-func WithFetches(operationNames []string, outputIndexes []int) Option {
+// WithFetches returns Option that sets feeds.
+func WithFetches(feeds map[string]int) Option {
 	return func(t *tensorflow) {
-		if operationNames != nil && outputIndexes != nil && len(operationNames) == len(outputIndexes) {
-			for i := range operationNames {
-				t.fetches = append(t.fetches, OutputSpec{operationNames[i], outputIndexes[i]})
-			}
+		for operationName, outputIndex := range feeds {
+			WithFetch(operationName, outputIndex)(t)
 		}
 	}
 }
