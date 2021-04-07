@@ -661,7 +661,7 @@ func TestCassandra_Opts(t *testing.T) {
 			key := testdata.GetTestdataPath("tls/dummyServer.key")
 			ca := testdata.GetTestdataPath("tls/dummyCa.pem")
 			return test{
-				name: "return 0 cassandra.Option and err when net.NewDialer returns error",
+				name: "return nil and err when net.NewDialer returns error",
 				fields: fields{
 					Hosts: []string{
 						"cassandra-0.cassandra.default.svc.cluster.local",
