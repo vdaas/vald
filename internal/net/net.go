@@ -166,10 +166,7 @@ func Parse(addr string) (host string, port uint16, isLocal, isIPv4, isIPv6 bool,
 	// return host and port and flags
 	return host, port,
 		// check is local ip or not
-		host == localHost ||
-			host == localIPv4 ||
-			host == localIPv6 ||
-			ip.IsLoopback(),
+		IsLocal(host) || ip.IsLoopback(),
 		// check is IPv4 or not
 		// ic < 2,
 		nerr == nil && ip.Is4(),
@@ -277,9 +274,10 @@ func LoadLocalIP() string {
 		return ""
 	}
 	for _, address := range addrs {
-		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
-			if ipnet.IP.To4() != nil {
-				return ipnet.IP.String()
+		if ipn, ok := address.(*net.IPNet); ok {
+			if ip, ok := netaddr.FromStdIPNet(ipn); ok && ip.IP.IsLoopback() &&
+				(ip.IP.Is4() || ip.IP.Is6() || ip.IP.Is4in6()) {
+				return ip.IP.String()
 			}
 		}
 	}

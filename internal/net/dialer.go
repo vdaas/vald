@@ -210,7 +210,6 @@ func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (conn 
 		var isV4, isV6 bool
 		host, nport, _, isV4, isV6, err = Parse(addr)
 		if err != nil {
-			log.Error(err)
 			d.addrs.Delete(addr)
 			return nil, err
 		}

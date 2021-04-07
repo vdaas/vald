@@ -32,10 +32,12 @@ import (
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var _ = proto.Marshal
-var _ = golang_proto.Marshal
-var _ = fmt.Errorf
-var _ = math.Inf
+var (
+	_ = proto.Marshal
+	_ = golang_proto.Marshal
+	_ = fmt.Errorf
+	_ = math.Inf
+)
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -44,6 +46,7 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 func init() { proto.RegisterFile("apis/proto/v1/vald/upsert.proto", fileDescriptor_792e000853e2404f) }
+
 func init() {
 	golang_proto.RegisterFile("apis/proto/v1/vald/upsert.proto", fileDescriptor_792e000853e2404f)
 }
@@ -75,8 +78,10 @@ var fileDescriptor_792e000853e2404f = []byte{
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
-var _ context.Context
-var _ grpc.ClientConn
+var (
+	_ context.Context
+	_ grpc.ClientConn
+)
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
@@ -156,15 +161,16 @@ type UpsertServer interface {
 }
 
 // UnimplementedUpsertServer can be embedded to have forward compatible implementations.
-type UnimplementedUpsertServer struct {
-}
+type UnimplementedUpsertServer struct{}
 
 func (*UnimplementedUpsertServer) Upsert(ctx context.Context, req *payload.Upsert_Request) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Upsert not implemented")
 }
+
 func (*UnimplementedUpsertServer) StreamUpsert(srv Upsert_StreamUpsertServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamUpsert not implemented")
 }
+
 func (*UnimplementedUpsertServer) MultiUpsert(ctx context.Context, req *payload.Upsert_MultiRequest) (*payload.Object_Locations, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiUpsert not implemented")
 }
