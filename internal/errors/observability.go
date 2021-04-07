@@ -17,6 +17,9 @@
 // Package errors provides error types and function
 package errors
 
-var ErrCollectorNotFound = func() error {
-	return New("observability.collector not found")
-}
+// ErrCollectorNotFound represents a function to generate an error that the observability collector is not found.
+var (
+	ErrCollectorNotFound = func() error {
+		return New("observability.collector not found")
+	}
+)

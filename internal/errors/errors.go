@@ -150,11 +150,11 @@ var (
 		if target == nil {
 			return err == target
 		}
-
 		isComparable := reflect.TypeOf(target).Comparable()
 		for {
 			if isComparable && (err == target ||
-				err.Error() == target.Error()) {
+				err.Error() == target.Error() ||
+				strings.EqualFold(err.Error(), target.Error())) {
 				return true
 			}
 			if x, ok := err.(interface {
@@ -163,7 +163,9 @@ var (
 				return true
 			}
 			if uerr := Unwrap(err); uerr == nil {
-				return err.Error() == target.Error()
+				return (err == target ||
+					err.Error() == target.Error() ||
+					strings.EqualFold(err.Error(), target.Error()))
 			} else {
 				err = uerr
 			}

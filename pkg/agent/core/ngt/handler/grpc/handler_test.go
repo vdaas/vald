@@ -431,8 +431,8 @@ func Test_server_Search(t *testing.T) {
 		streamConcurrency int
 	}
 	type want struct {
-		want *payload.Search_Response
-		err  error
+		wantRes *payload.Search_Response
+		err     error
 	}
 	type test struct {
 		name       string
@@ -443,12 +443,12 @@ func Test_server_Search(t *testing.T) {
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *payload.Search_Response, err error) error {
+	defaultCheckFunc := func(w want, gotRes *payload.Search_Response, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
 		return nil
 	}
@@ -518,8 +518,8 @@ func Test_server_Search(t *testing.T) {
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
-			got, err := s.Search(test.args.ctx, test.args.req)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			gotRes, err := s.Search(test.args.ctx, test.args.req)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -540,8 +540,8 @@ func Test_server_SearchByID(t *testing.T) {
 		streamConcurrency int
 	}
 	type want struct {
-		want *payload.Search_Response
-		err  error
+		wantRes *payload.Search_Response
+		err     error
 	}
 	type test struct {
 		name       string
@@ -552,12 +552,12 @@ func Test_server_SearchByID(t *testing.T) {
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *payload.Search_Response, err error) error {
+	defaultCheckFunc := func(w want, gotRes *payload.Search_Response, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
 		return nil
 	}
@@ -627,8 +627,8 @@ func Test_server_SearchByID(t *testing.T) {
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
-			got, err := s.SearchByID(test.args.ctx, test.args.req)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			gotRes, err := s.SearchByID(test.args.ctx, test.args.req)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1791,8 +1791,8 @@ func Test_server_Upsert(t *testing.T) {
 		streamConcurrency int
 	}
 	type want struct {
-		want *payload.Object_Location
-		err  error
+		wantLoc *payload.Object_Location
+		err     error
 	}
 	type test struct {
 		name       string
@@ -1803,12 +1803,12 @@ func Test_server_Upsert(t *testing.T) {
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *payload.Object_Location, err error) error {
+	defaultCheckFunc := func(w want, gotLoc *payload.Object_Location, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		if !reflect.DeepEqual(gotLoc, w.wantLoc) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLoc, w.wantLoc)
 		}
 		return nil
 	}
@@ -1878,8 +1878,8 @@ func Test_server_Upsert(t *testing.T) {
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
-			got, err := s.Upsert(test.args.ctx, test.args.req)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			gotLoc, err := s.Upsert(test.args.ctx, test.args.req)
+			if err := test.checkFunc(test.want, gotLoc, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

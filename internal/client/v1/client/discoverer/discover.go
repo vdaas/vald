@@ -19,7 +19,6 @@ package discoverer
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"sync"
 	"sync/atomic"
@@ -202,7 +201,7 @@ func (c *client) dnsDiscovery(ctx context.Context, ech chan<- error) (addrs []st
 	}
 	addrs = make([]string, 0, len(ips))
 	for _, ip := range ips {
-		addr := fmt.Sprintf("%s:%d", ip.String(), c.port)
+		addr := net.JoinHostPort(ip.String(), uint16(c.port))
 		if err = c.connect(ctx, addr); err != nil {
 			ech <- err
 		} else {
@@ -254,11 +253,14 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 					if node != nil && node.GetPods() != nil {
 						pods := node.GetPods().GetPods()
 						if i < len(pods) {
-							addr := fmt.Sprintf("%s:%d", pods[i].GetIp(), c.port)
+							addr := net.JoinHostPort(pods[i].GetIp(), uint16(c.port))
 							if err = c.connect(ctx, addr); err != nil {
 								err = errors.ErrAddrCouldNotDiscover(err, addr)
-								log.Debugf("could not discover %s: %s", addr, err)
-								ech <- err
+								select {
+								case <-ictx.Done():
+									return nil, ictx.Err()
+								case ech <- err:
+								}
 								err = nil
 							} else {
 								if c.autoconn {
@@ -326,14 +328,22 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 			if !ok {
 				err = c.disconnect(ctx, addr)
 				if err != nil {
-					ech <- err
+					select {
+					case <-ctx.Done():
+						return errors.Wrap(ctx.Err(), err.Error())
+					case ech <- err:
+						return err
+					}
 				}
-				return err
 			}
 			return nil
 		}); err != nil {
-			ech <- err
-			return err
+			select {
+			case <-ctx.Done():
+				return errors.Wrap(ctx.Err(), err.Error())
+			case ech <- err:
+				return err
+			}
 		}
 	}
 	return nil

@@ -31,7 +31,6 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
-	"github.com/vdaas/vald/internal/net/tcp"
 	"go.uber.org/goleak"
 )
 
@@ -83,7 +82,7 @@ func TestNew(t *testing.T) {
 				wantRc: &redisClient{
 					initialPingDuration:  30 * time.Millisecond,
 					initialPingTimeLimit: 5 * time.Minute,
-					network:              "tcp",
+					network:              net.TCP.String(),
 				},
 				err: nil,
 			},
@@ -254,7 +253,7 @@ func Test_redisClient_setClient(t *testing.T) {
 		clusterSlots         func(context.Context) ([]redis.ClusterSlot, error)
 		db                   int
 		dialTimeout          time.Duration
-		dialer               tcp.Dialer
+		dialer               net.Dialer
 		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
 		idleCheckFrequency   time.Duration
 		idleTimeout          time.Duration
@@ -426,7 +425,7 @@ func Test_redisClient_newClient(t *testing.T) {
 		network              string
 		db                   int
 		dialTimeout          time.Duration
-		dialer               tcp.Dialer
+		dialer               net.Dialer
 		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
 		idleCheckFrequency   time.Duration
 		idleTimeout          time.Duration
@@ -499,7 +498,7 @@ func Test_redisClient_newClient(t *testing.T) {
 				Addr:               "127.0.0.1:6379",
 				Password:           "pass",
 				Dialer:             dialer,
-				Network:            "tcp",
+				Network:            net.TCP.String(),
 				OnConnect:          connFn,
 				DB:                 1,
 				MaxRetries:         2,
@@ -522,7 +521,7 @@ func Test_redisClient_newClient(t *testing.T) {
 				name: "returns redis.Client successfully",
 				fields: fields{
 					addrs:              []string{"127.0.0.1:6379"},
-					network:            "tcp",
+					network:            net.TCP.String(),
 					password:           "pass",
 					dialerFunc:         dialer,
 					onConnect:          connFn,
@@ -646,7 +645,7 @@ func Test_redisClient_newClusterClient(t *testing.T) {
 		clusterSlots         func(context.Context) ([]redis.ClusterSlot, error)
 		db                   int
 		dialTimeout          time.Duration
-		dialer               tcp.Dialer
+		dialer               net.Dialer
 		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
 		idleCheckFrequency   time.Duration
 		idleTimeout          time.Duration
@@ -894,7 +893,7 @@ func Test_redisClient_Connect(t *testing.T) {
 		clusterSlots         func(ctx context.Context) ([]redis.ClusterSlot, error)
 		db                   int
 		dialTimeout          time.Duration
-		dialer               tcp.Dialer
+		dialer               net.Dialer
 		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
 		idleCheckFrequency   time.Duration
 		idleTimeout          time.Duration
@@ -944,7 +943,7 @@ func Test_redisClient_Connect(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			dialer, err := tcp.NewDialer()
+			dialer, err := net.NewDialer()
 			if err != nil {
 				panic(err)
 			}
@@ -965,7 +964,7 @@ func Test_redisClient_Connect(t *testing.T) {
 			}
 		}(),
 		func() test {
-			dialer, err := tcp.NewDialer()
+			dialer, err := net.NewDialer()
 			if err != nil {
 				panic(err)
 			}

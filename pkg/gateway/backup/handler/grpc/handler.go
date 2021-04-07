@@ -83,7 +83,6 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (*payload.
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-		log.Warn(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
@@ -115,7 +114,6 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 					},
 				},
 			}, info.Get())
-		log.Warn(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 		}
@@ -167,7 +165,6 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 					},
 				},
 			}, info.Get())
-		log.Warn(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 		}
@@ -382,7 +379,6 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 					},
 				},
 			}, info.Get())
-		log.Warn(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 		}
@@ -405,7 +401,6 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				}, info.Get())
-			log.Error(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeAlreadyExists(err.Error()))
 			}
@@ -562,7 +557,6 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 						},
 					},
 				}, info.Get())
-			log.Warn(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 			}
@@ -585,13 +579,12 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 						Owner:        errdetails.ValdResourceOwner,
 						Description:  err.Error(),
 					}, info.Get())
-				log.Error(err)
 				if span != nil {
 					span.SetStatus(trace.StatusCodeAlreadyExists(err.Error()))
 				}
 				return nil, err
 			}
-			if reqs.Requests[i].GetConfig() != nil {
+			if req.GetConfig() != nil {
 				reqs.Requests[i].Config.SkipStrictExistCheck = true
 			} else {
 				reqs.Requests[i].Config = &payload.Insert_Config{SkipStrictExistCheck: true}
@@ -703,7 +696,6 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 					},
 				},
 			}, info.Get())
-		log.Warn(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 		}
@@ -728,7 +720,6 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				}, info.Get())
-			log.Error(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
@@ -875,7 +866,6 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 						},
 					},
 				}, info.Get())
-			log.Warn(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 			}
@@ -901,7 +891,6 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 						Owner:        errdetails.ValdResourceOwner,
 						Description:  err.Error(),
 					}, info.Get())
-				log.Error(err)
 				if span != nil {
 					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 				}
@@ -951,7 +940,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 		}
 		return nil, err
 	}
-	log.Debugf("uuids %v were removed from %v for MultiUpdate it will execute MultiInsert soon, see detailt %#v", ids, locs.GetLocations(), locs)
+	log.Debugf("uuids %v were removed from %v due to MultiUpdate. MultiInsert will be executed for them soon. Please see detail %#v", ids, locs.GetLocations(), locs)
 	locs, err = s.MultiInsert(ctx, &payload.Insert_MultiRequest{
 		Requests: ireqs,
 	})
@@ -1002,7 +991,6 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 					},
 				},
 			}, info.Get())
-		log.Warn(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 		}
@@ -1132,7 +1120,6 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 						},
 					},
 				}, info.Get())
-			log.Warn(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 			}
@@ -1261,7 +1248,6 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				}, info.Get())
-			log.Error(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
@@ -1394,7 +1380,6 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 						Owner:        errdetails.ValdResourceOwner,
 						Description:  err.Error(),
 					}, info.Get())
-				log.Error(err)
 				if span != nil {
 					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 				}
@@ -1475,7 +1460,6 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
@@ -1492,7 +1476,7 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 		}
 	}()
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Object_ID) },
+		func() interface{} { return new(payload.Object_VectorRequest) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			req := data.(*payload.Object_VectorRequest)
 			ctx, sspan := trace.StartSpan(ctx, apiName+".StreamGetObject/id-"+req.GetId().GetId())

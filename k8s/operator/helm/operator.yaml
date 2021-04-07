@@ -22,10 +22,10 @@ metadata:
   labels:
     app: vald-helm-operator
     app.kubernetes.io/name: vald-helm-operator
-    helm.sh/chart: vald-helm-operator-v1.0.1
+    helm.sh/chart: vald-helm-operator-v1.0.4
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v1.0.1
+    app.kubernetes.io/version: v1.0.4
     app.kubernetes.io/component: helm-operator
 spec:
   replicas: 2
@@ -43,7 +43,7 @@ spec:
       serviceAccountName: vald-helm-operator
       containers:
         - name: vald-helm-operator
-          image: "vdaas/vald-helm-operator:v1.0.1"
+          image: "vdaas/vald-helm-operator:v1.0.4"
           imagePullPolicy: Always
           args:
             - "run"
@@ -52,12 +52,36 @@ spec:
             - "--leader-election-id=vald-helm-operator"
             - "--leader-election-namespace=default"
             - "--metrics-addr=:6061"
+            - "--health-probe-bind-address=:8081"
             - "--reconcile-period=1m"
             - "--max-concurrent-reconciles=1"
             - "--zap-encoder=console"
             - "--zap-log-level=info"
             - "--zap-stacktrace-level=error"
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: health
+              scheme: HTTP
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 2
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: health
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 2
+            timeoutSeconds: 5
           ports:
+            - name: health
+              protocol: TCP
+              containerPort: 8081
             - name: prometheus
               protocol: TCP
               containerPort: 6061

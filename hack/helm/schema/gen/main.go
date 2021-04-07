@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -31,9 +32,17 @@ const (
 	objectType = "object"
 
 	prefix = "# @schema"
+
+	minimumArgumentLength = 2
 )
 
-var aliases map[string]Schema
+var (
+	aliases      map[string]Schema
+	descriptions map[string]string
+
+	descriptionRegexp   = regexp.MustCompile(`^\s*#\s*(.*)\s+--\s*(.*)$`)
+	continuedLineRegexp = regexp.MustCompile(`^\s*#\s+(.*)$`)
+)
 
 type SchemaBase struct {
 	// for object type
@@ -86,9 +95,8 @@ type Schema struct {
 	SchemaBase
 }
 
-const minimumArgumentLength = 2
-
 func main() {
+	log.Init()
 	if len(os.Args) < minimumArgumentLength {
 		log.Fatal(errors.New("invalid argument: must be specify path to the values.yaml"))
 	}
@@ -112,23 +120,54 @@ func genJSONSchema(path string) error {
 	}()
 
 	aliases = make(map[string]Schema)
+	descriptions = make(map[string]string)
 
 	ls := make([]VSchema, 0)
 
+	continuedLine := false
+	currentKey := ""
+
+	var line uint64
 	sc := bufio.NewScanner(f)
 	for sc.Scan() {
+		line++
+
 		tx := strings.TrimLeft(sc.Text(), " ")
+
 		if strings.HasPrefix(tx, prefix) {
 			var l VSchema
 			err = json.Unmarshal([]byte(strings.TrimPrefix(tx, prefix)), &l)
 			if err != nil {
-				log.Error(err)
+				log.Errorf("error occurred line %d, data %s, error %v", line, tx, err)
 			}
 			ls = append(ls, l)
+			continue
 		}
+
+		if continuedLine {
+			match := continuedLineRegexp.FindStringSubmatch(tx)
+			if len(match) > 1 {
+				descriptions[currentKey] += " " + match[1]
+
+				continue
+			}
+
+			continuedLine = false
+
+			continue
+		}
+
+		match := descriptionRegexp.FindStringSubmatch(tx)
+		if len(match) < 3 || match[1] == "" {
+			continue
+		}
+
+		currentKey = match[1]
+		descriptions[currentKey] = match[2]
+		continuedLine = true
 	}
 
-	schemas, err := objectProperties(ls)
+	schemas, err := objectProperties(make([]string, 0), ls)
 	if err != nil {
 		return errors.Errorf("error: %s", err)
 	}
@@ -143,7 +182,7 @@ func genJSONSchema(path string) error {
 	return nil
 }
 
-func objectProperties(ls []VSchema) (map[string]*Schema, error) {
+func objectProperties(prefix []string, ls []VSchema) (map[string]*Schema, error) {
 	if len(ls) == 0 {
 		return nil, errors.New("empty list")
 	}
@@ -160,7 +199,7 @@ func objectProperties(ls []VSchema) (map[string]*Schema, error) {
 
 	schemas := make(map[string]*Schema)
 	for _, k := range gOrder {
-		s, err := genNode(groups[k])
+		s, err := genNode(prefix, groups[k])
 		if err != nil {
 			return nil, errors.Errorf("error: %s", err)
 		}
@@ -170,7 +209,7 @@ func objectProperties(ls []VSchema) (map[string]*Schema, error) {
 	return schemas, nil
 }
 
-func genNode(ls []VSchema) (*Schema, error) {
+func genNode(prefix []string, ls []VSchema) (*Schema, error) {
 	if len(ls) == 0 {
 		return nil, errors.New("empty list")
 	}
@@ -187,12 +226,15 @@ func genNode(ls []VSchema) (*Schema, error) {
 
 	var schema Schema
 
+	description := descriptions[strings.Join(append(prefix, l.Name), ".")]
+
 	switch l.Type {
 	case objectType:
 		if len(ls) <= 1 {
 			schema = Schema{
-				Type:       objectType,
-				SchemaBase: l.SchemaBase,
+				Type:        objectType,
+				Description: description,
+				SchemaBase:  l.SchemaBase,
 			}
 			break
 		}
@@ -203,19 +245,21 @@ func genNode(ls []VSchema) (*Schema, error) {
 			nls = append(nls, nl)
 		}
 
-		ps, err := objectProperties(nls)
+		ps, err := objectProperties(append(prefix, l.Name), nls)
 		if err != nil {
 			return nil, errors.Errorf("error: %s", err)
 		}
 		schema = Schema{
-			Type:       objectType,
-			Properties: ps,
-			SchemaBase: l.SchemaBase,
+			Type:        objectType,
+			Description: description,
+			Properties:  ps,
+			SchemaBase:  l.SchemaBase,
 		}
 	default:
 		schema = Schema{
-			Type:       l.Type,
-			SchemaBase: l.SchemaBase,
+			Type:        l.Type,
+			Description: description,
+			SchemaBase:  l.SchemaBase,
 		}
 	}
 

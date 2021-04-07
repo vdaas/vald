@@ -20,7 +20,6 @@ GOPKG                           = github.com/$(ORG)/$(NAME)
 GOPRIVATE                       = $(GOPKG),$(GOPKG)/apis
 DATETIME                        = $(eval DATETIME := $(shell date -u +%Y/%m/%d_%H:%M:%S%z))$(DATETIME)
 TAG                            ?= latest
-BASE_IMAGE                      = $(NAME)-base
 AGENT_IMAGE                     = $(NAME)-agent-ngt
 AGENT_SIDECAR_IMAGE             = $(NAME)-agent-sidecar
 BACKUP_GATEWAY_IMAGE            = $(NAME)-backup-gateway
@@ -42,7 +41,7 @@ META_GATEWAY_IMAGE              = $(NAME)-meta-gateway
 META_REDIS_IMAGE                = $(NAME)-meta-redis
 MAINTAINER                      = "$(ORG).org $(NAME) team <$(NAME)@$(ORG).org>"
 
-VERSION ?= $(eval VALD_VERSION := $(shell cat versions/VALD_VERSION))$(VALD_VERSION)
+VERSION ?= $(eval VERSION := $(shell cat versions/VALD_VERSION))$(VERSION)
 
 NGT_VERSION := $(eval NGT_VERSION := $(shell cat versions/NGT_VERSION))$(NGT_VERSION)
 NGT_REPO = github.com/yahoojapan/NGT
@@ -60,11 +59,12 @@ TENSORFLOW_C_VERSION := $(eval TENSORFLOW_C_VERSION := $(shell cat versions/TENS
 
 OPERATOR_SDK_VERSION := $(eval OPERATOR_SDK_VERSION := $(shell cat versions/OPERATOR_SDK_VERSION))$(OPERATOR_SDK_VERSION)
 
-KIND_VERSION         ?= v0.9.0
-HELM_VERSION         ?= v3.5.0
+KIND_VERSION         ?= v0.10.0
+HELM_VERSION         ?= v3.5.2
 HELM_DOCS_VERSION    ?= 1.5.0
-VALDCLI_VERSION      ?= v0.0.66
-TELEPRESENCE_VERSION ?= 0.108
+YQ_VERSION           ?= v4.6.3
+VALDCLI_VERSION      ?= v1.0.2
+TELEPRESENCE_VERSION ?= 0.109
 KUBELINTER_VERSION   ?= 0.1.6
 
 SWAP_DEPLOYMENT_TYPE ?= deployment
@@ -163,6 +163,17 @@ PROTO_PATHS = \
 	$(GOPATH)/src/github.com/googleapis/googleapis \
 	$(GOPATH)/src/github.com/gogo/googleapis
 
+# [Warning]
+# The below packages have no original implementation.
+# You should not add any features.
+# - internal/copress/gob
+# - internal/compress/gzip
+# - internal/compress/lz4
+# - internal/compress/zstd
+# - internal/db/storage/blob/s3/sdk/s3
+# - internal/db/rdb/mysql/dbr
+# - internal/test/comparator
+# - internal/test/mock
 GO_SOURCES = $(eval GO_SOURCES := $(shell find \
 		./cmd \
 		./hack \
@@ -170,6 +181,12 @@ GO_SOURCES = $(eval GO_SOURCES := $(shell find \
 		./pkg \
 		-not -path './cmd/cli/*' \
 		-not -path './internal/core/algorithm/ngt/*' \
+		-not -path './internal/compress/gob/*' \
+		-not -path './internal/compress/gzip/*' \
+		-not -path './internal/compress/lz4/*' \
+		-not -path './internal/compress/zstd/*' \
+		-not -path './internal/db/storage/blob/s3/sdk/s3/*' \
+		-not -path './internal/db/rdb/mysql/dbr/*' \
 		-not -path './internal/test/comparator/*' \
 		-not -path './internal/test/mock/*' \
 		-not -path './hack/benchmark/internal/client/ngtd/*' \
@@ -184,6 +201,7 @@ GO_SOURCES = $(eval GO_SOURCES := $(shell find \
 		-name '*.go' \
 		-not -regex '.*options?\.go' \
 		-not -name '*_test.go' \
+		-not -name '*_mock.go' \
 		-not -name 'doc.go'))$(GO_SOURCES)
 GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell find \
 		./cmd \
@@ -192,6 +210,12 @@ GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell find \
 		./pkg \
 		-not -path './cmd/cli/*' \
 		-not -path './internal/core/algorithm/ngt/*' \
+		-not -path './internal/compress/gob/*' \
+		-not -path './internal/compress/gzip/*' \
+		-not -path './internal/compress/lz4/*' \
+		-not -path './internal/compress/zstd/*' \
+		-not -path './internal/db/storage/blob/s3/sdk/s3/*' \
+		-not -path './internal/db/rdb/mysql/dbr/*' \
 		-not -path './internal/test/comparator/*' \
 		-not -path './internal/test/mock/*' \
 		-not -path './hack/benchmark/internal/client/ngtd/*' \
@@ -205,6 +229,7 @@ GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell find \
 		-type f \
 		-regex '.*options?\.go' \
 		-not -name '*_test.go' \
+		-not -name '*_mock.go' \
 		-not -name 'doc.go'))$(GO_OPTION_SOURCES)
 
 GO_SOURCES_INTERNAL = $(eval GO_SOURCES_INTERNAL := $(shell find \
@@ -212,6 +237,7 @@ GO_SOURCES_INTERNAL = $(eval GO_SOURCES_INTERNAL := $(shell find \
 		-type f \
 		-name '*.go' \
 		-not -name '*_test.go' \
+		-not -name '*_mock.go' \
 		-not -name 'doc.go'))$(GO_SOURCES_INTERNAL)
 
 GO_TEST_SOURCES = $(GO_SOURCES:%.go=%_test.go)
@@ -235,15 +261,15 @@ SHELL = bash
 
 E2E_BIND_HOST                      ?= 127.0.0.1
 E2E_BIND_PORT                      ?= 8082
-E2E_TIMEOUT                        ?= 15m
+E2E_TIMEOUT                        ?= 30m
 E2E_DATASET_NAME                   ?= fashion-mnist-784-euclidean
-E2E_INSERT_COUNT                   ?= 1000
+E2E_INSERT_COUNT                   ?= 10000
 E2E_SEARCH_COUNT                   ?= 1000
-E2E_SEARCH_BY_ID_COUNT             ?= 10
+E2E_SEARCH_BY_ID_COUNT             ?= 100
 E2E_GET_OBJECT_COUNT               ?= 10
-E2E_UPDATE_COUNT                   ?= 3
+E2E_UPDATE_COUNT                   ?= 10
 E2E_REMOVE_COUNT                   ?= 3
-E2E_WAIT_FOR_CREATE_INDEX_DURATION ?= 3m
+E2E_WAIT_FOR_CREATE_INDEX_DURATION ?= 8m
 E2E_TARGET_NAME                    ?= vald-meta-gateway
 E2E_TARGET_POD_NAME                ?= $(eval E2E_TARGET_POD_NAME := $(shell kubectl get pods --selector=app=$(E2E_TARGET_NAME) | tail -1 | cut -f1 -d " "))$(E2E_TARGET_POD_NAME)
 E2E_TARGET_NAMESPACE               ?= default
@@ -272,11 +298,6 @@ help:
 	{ lastLine = $$0 }' $(MAKELISTS) | sort -u
 	@printf "\n"
 
-.PHONY: version
-## print vald version
-version:
-	@echo $(VERSION)
-
 .PHONY: all
 ## execute clean and deps
 all: clean deps
@@ -284,6 +305,7 @@ all: clean deps
 .PHONY: clean
 ## clean
 clean:
+	rm -rf vendor
 	go clean -cache -modcache -testcache -i -r
 	mv ./apis/grpc/v1/vald/vald.go $(TEMP_DIR)/vald.go
 	rm -rf \
@@ -393,10 +415,15 @@ goimports/install:
 prettier/install:
 	type prettier || npm install -g prettier
 
+.PHONY: version
+## print vald version
+version: \
+	version/vald
+
 .PHONY: version/vald
 ## print vald version
 version/vald:
-	@echo $(VALD_VERSION)
+	@echo $(VERSION)
 
 .PHONY: version/go
 ## print go version
@@ -471,7 +498,7 @@ changelog/update:
 ## print next changelog entry
 changelog/next/print:
 	@cat hack/CHANGELOG.template.md | \
-	    sed -e 's/{{ version }}/$(VALD_VERSION)/g'
+	    sed -e 's/{{ version }}/$(VERSION)/g'
 	@echo "$$BODY"
 
 include Makefile.d/bench.mk

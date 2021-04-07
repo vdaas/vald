@@ -29,7 +29,7 @@ jobs:
   e2e-deploy-redis-mysql:
     name: "E2E deploy test (Redis, MySQL)"
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
     steps:
       - uses: actions/checkout@v2
@@ -133,7 +133,7 @@ jobs:
           go test \
             -v tests/e2e/crud_test.go \
             -tags "e2e" \
-            -timeout 15m \
+            -timeout 30m \
             -host=localhost \
             -port=8081 \
             -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
@@ -143,7 +143,7 @@ jobs:
             -get-object-num=5 \
             -update-num=2 \
             -remove-num=2 \
-            -wait-after-insert=3m \
+            -wait-after-insert=10m \
             -portforward \
             -portforward-ns=default \
             -portforward-pod-name=${podname} \
@@ -154,7 +154,7 @@ jobs:
   e2e-deploy-cassandra:
     name: "E2E deploy test (Cassandra)"
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
     steps:
       - uses: actions/checkout@v2
@@ -255,7 +255,7 @@ jobs:
           go test \
             -v tests/e2e/crud_test.go \
             -tags "e2e" \
-            -timeout 15m \
+            -timeout 30m \
             -host=localhost \
             -port=8081 \
             -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
@@ -265,7 +265,7 @@ jobs:
             -get-object-num=10 \
             -update-num=3 \
             -remove-num=2 \
-            -wait-after-insert=3m \
+            -wait-after-insert=10m \
             -portforward \
             -portforward-ns=default \
             -portforward-pod-name=${podname} \
@@ -276,7 +276,7 @@ jobs:
   e2e-deploy-sidecar:
     name: "E2E deploy test (Agent & Sidecar)"
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
     steps:
       - uses: actions/checkout@v2

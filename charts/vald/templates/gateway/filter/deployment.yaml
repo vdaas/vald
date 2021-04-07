@@ -52,7 +52,7 @@ spec:
         app: {{ $gateway.name }}
         app.kubernetes.io/name: {{ include "vald.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
-        app.kubernetes.io/component: gateway
+        app.kubernetes.io/component: gateway-filter
       annotations:
         checksum/configmap: {{ include (print $.Template.BasePath "/gateway/filter/configmap.yaml") . | sha256sum }}
         {{- if $gateway.podAnnotations }}
@@ -123,7 +123,7 @@ spec:
       {{- end }}
       {{- if $gateway.podPriority }}
       {{- if $gateway.podPriority.enabled }}
-      priorityClassName: {{ $gateway.name }}-priority
+      priorityClassName: {{ .Release.Namespace }}-{{ $gateway.name }}-priority
       {{- end }}
       {{- end }}
 status:

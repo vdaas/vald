@@ -120,7 +120,6 @@ func (r *reader) Open(ctx context.Context, key string) (err error) {
 			}
 
 			if chunk < r.maxChunkSize {
-				log.Debugf("read %d bytes.", offset+chunk)
 				return nil
 			}
 

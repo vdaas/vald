@@ -26,7 +26,6 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
-	"go.uber.org/goleak"
 )
 
 func TestWithHost(t *testing.T) {
@@ -80,7 +79,7 @@ func TestWithHost(t *testing.T) {
 func TestWithPort(t *testing.T) {
 	type test struct {
 		name      string
-		port      uint
+		port      uint16
 		checkFunc func(opt Option) error
 	}
 
@@ -1104,10 +1103,12 @@ func TestWithGRPCRegistFunc(t *testing.T) {
 					got := new(server)
 					opt(got)
 
-					if reflect.ValueOf(got.grpc.reg).Pointer() != reflect.ValueOf(fn).Pointer() {
-						return errors.New("invalid param was set")
+					for _, reg := range got.grpc.regs {
+						if reflect.ValueOf(reg).Pointer() == reflect.ValueOf(fn).Pointer() {
+							return nil
+						}
 					}
-					return nil
+					return errors.New("invalid param was set")
 				},
 			}
 		}(),
@@ -1117,13 +1118,14 @@ func TestWithGRPCRegistFunc(t *testing.T) {
 			checkFunc: func(opt Option) error {
 				fn := func(*grpc.Server) {}
 				got := new(server)
-				got.grpc.reg = fn
+				got.grpc.regs = append(got.grpc.regs, fn)
 				opt(got)
-
-				if reflect.ValueOf(got.grpc.reg).Pointer() != reflect.ValueOf(fn).Pointer() {
-					return errors.New("invalid param was set")
+				for _, reg := range got.grpc.regs {
+					if reflect.ValueOf(reg).Pointer() == reflect.ValueOf(fn).Pointer() {
+						return nil
+					}
 				}
-				return nil
+				return errors.New("invalid param was set")
 			},
 		},
 	}
@@ -2396,7 +2398,7 @@ func TestDefaultHealthServerOption(t *testing.T) {
 		name string
 		host string
 		path string
-		port uint
+		port uint16
 	}
 
 	type test struct {
@@ -2480,119 +2482,6 @@ func TestDefaultHealthServerOption(t *testing.T) {
 			if err := tt.checkFunc(opts); err != nil {
 				t.Error(err)
 			}
-		})
-	}
-}
-
-func TestWithPreStopFunction(t *testing.T) {
-	type T = interface{}
-	type args struct {
-		f func() error
-	}
-	type want struct {
-		obj *T
-		// Uncomment this line if the option returns an error, otherwise delete it
-		// err error
-	}
-	type test struct {
-		name string
-		args args
-		want want
-		// Use the first line if the option returns an error. otherwise use the second line
-		// checkFunc  func(want, *T, error) error
-		// checkFunc  func(want, *T) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-
-	// Uncomment this block if the option returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T, err error) error {
-	       if !errors.Is(err, w.err) {
-	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-	       }
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
-	       }
-	       return nil
-	   }
-	*/
-
-	// Uncomment this block if the option do not returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T) error {
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.c)
-	       }
-	       return nil
-	   }
-	*/
-
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           f: nil,
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           f: nil,
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-
-			   got := WithPreStopFunction(test.args.f)
-			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-			   got := WithPreStopFunction(test.args.f)
-			   obj := new(T)
-			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
 		})
 	}
 }

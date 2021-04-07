@@ -3,7 +3,7 @@ Vald
 
 This is a Helm chart to install Vald components.
 
-Current chart version is `v1.0.1`
+Current chart version is `v1.0.4`
 
 Table of Contents
 ---
@@ -100,6 +100,10 @@ Configuration
 | agent.ngt.min_load_index_timeout | string | `"3m"` | minimum duration of load index timeout |
 | agent.ngt.object_type | string | `"float"` | object type. it should be `float` or `uint8`. for further details: https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference |
 | agent.ngt.search_edge_size | int | `10` | search edge size |
+| agent.ngt.vqueue.delete_buffer_pool_size | int | `5000` | delete slice pool buffer size |
+| agent.ngt.vqueue.delete_buffer_size | int | `100` | delete channel buffer size |
+| agent.ngt.vqueue.insert_buffer_pool_size | int | `10000` | insert slice pool buffer size |
+| agent.ngt.vqueue.insert_buffer_size | int | `100` | insert channel buffer size |
 | agent.nodeName | string | `""` | node name |
 | agent.nodeSelector | object | `{}` | node selector |
 | agent.observability | object | `{"jaeger":{"service_name":"vald-agent-ngt"},"stackdriver":{"profiler":{"service":"vald-agent-ngt"}}}` | observability config (overrides defaults.observability) |
@@ -145,16 +149,26 @@ Configuration
 | agent.sidecar.config.blob_storage.s3.use_arn_region | bool | `false` | s3 service client to use the region specified in the ARN |
 | agent.sidecar.config.blob_storage.s3.use_dual_stack | bool | `false` | use dual stack |
 | agent.sidecar.config.blob_storage.storage_type | string | `"s3"` | storage type |
-| agent.sidecar.config.client.tcp.dialer.dual_stack_enabled | bool | `false` | HTTP client TCP dialer dual stack enabled |
-| agent.sidecar.config.client.tcp.dialer.keep_alive | string | `"5m"` | HTTP client TCP dialer keep alive |
-| agent.sidecar.config.client.tcp.dialer.timeout | string | `"5s"` | HTTP client TCP dialer connect timeout |
-| agent.sidecar.config.client.tcp.dns.cache_enabled | bool | `true` | HTTP client TCP DNS cache enabled |
-| agent.sidecar.config.client.tcp.dns.cache_expiration | string | `"24h"` |  |
-| agent.sidecar.config.client.tcp.dns.refresh_duration | string | `"1h"` | HTTP client TCP DNS cache expiration |
-| agent.sidecar.config.client.tcp.tls.ca | string | `"/path/to/ca"` | HTTP client TCP TLS ca path |
-| agent.sidecar.config.client.tcp.tls.cert | string | `"/path/to/cert"` | HTTP client TCP TLS cert path |
-| agent.sidecar.config.client.tcp.tls.enabled | bool | `false` | HTTP client TCP TLS enabled |
-| agent.sidecar.config.client.tcp.tls.key | string | `"/path/to/key"` | HTTP client TCP TLS key path |
+| agent.sidecar.config.client.net.dialer.dual_stack_enabled | bool | `false` | HTTP client TCP dialer dual stack enabled |
+| agent.sidecar.config.client.net.dialer.keep_alive | string | `"5m"` | HTTP client TCP dialer keep alive |
+| agent.sidecar.config.client.net.dialer.timeout | string | `"5s"` | HTTP client TCP dialer connect timeout |
+| agent.sidecar.config.client.net.dns.cache_enabled | bool | `true` | HTTP client TCP DNS cache enabled |
+| agent.sidecar.config.client.net.dns.cache_expiration | string | `"24h"` |  |
+| agent.sidecar.config.client.net.dns.refresh_duration | string | `"1h"` | HTTP client TCP DNS cache expiration |
+| agent.sidecar.config.client.net.socket_option.ip_recover_destination_addr | bool | `false` |  |
+| agent.sidecar.config.client.net.socket_option.ip_transparent | bool | `false` |  |
+| agent.sidecar.config.client.net.socket_option.reuse_addr | bool | `true` | server listen socket option for reuse_addr functionality |
+| agent.sidecar.config.client.net.socket_option.reuse_port | bool | `true` | server listen socket option for ip_recover_destination_addr functionality |
+| agent.sidecar.config.client.net.socket_option.tcp_cork | bool | `false` |  |
+| agent.sidecar.config.client.net.socket_option.tcp_defer_accept | bool | `true` |  |
+| agent.sidecar.config.client.net.socket_option.tcp_fast_open | bool | `true` |  |
+| agent.sidecar.config.client.net.socket_option.tcp_no_delay | bool | `true` |  |
+| agent.sidecar.config.client.net.socket_option.tcp_quick_ack | bool | `true` |  |
+| agent.sidecar.config.client.net.tls.ca | string | `"/path/to/ca"` | TLS ca path |
+| agent.sidecar.config.client.net.tls.cert | string | `"/path/to/cert"` | TLS cert path |
+| agent.sidecar.config.client.net.tls.enabled | bool | `false` | TLS enabled |
+| agent.sidecar.config.client.net.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
+| agent.sidecar.config.client.net.tls.key | string | `"/path/to/key"` | TLS key path |
 | agent.sidecar.config.client.transport.backoff.backoff_factor | float | `1.1` | backoff backoff factor |
 | agent.sidecar.config.client.transport.backoff.backoff_time_limit | string | `"5s"` | backoff time limit |
 | agent.sidecar.config.client.transport.backoff.enable_error_log | bool | `true` | backoff error log enabled |
@@ -242,29 +256,40 @@ Configuration
 | defaults.grpc.client.dial_option.keep_alive.timeout | string | `""` | gRPC client keep alive timeout |
 | defaults.grpc.client.dial_option.max_msg_size | int | `0` | gRPC client dial option max message size |
 | defaults.grpc.client.dial_option.min_connection_timeout | string | `"20s"` | gRPC client dial option minimum connection timeout |
+| defaults.grpc.client.dial_option.net.dialer.dual_stack_enabled | bool | `true` | gRPC client TCP dialer dual stack enabled |
+| defaults.grpc.client.dial_option.net.dialer.keep_alive | string | `""` | gRPC client TCP dialer keep alive |
+| defaults.grpc.client.dial_option.net.dialer.timeout | string | `""` | gRPC client TCP dialer timeout |
+| defaults.grpc.client.dial_option.net.dns.cache_enabled | bool | `true` | gRPC client TCP DNS cache enabled |
+| defaults.grpc.client.dial_option.net.dns.cache_expiration | string | `"1h"` | gRPC client TCP DNS cache expiration |
+| defaults.grpc.client.dial_option.net.dns.refresh_duration | string | `"30m"` | gRPC client TCP DNS cache refresh duration |
+| defaults.grpc.client.dial_option.net.socket_option.ip_recover_destination_addr | bool | `false` |  |
+| defaults.grpc.client.dial_option.net.socket_option.ip_transparent | bool | `false` |  |
+| defaults.grpc.client.dial_option.net.socket_option.reuse_addr | bool | `true` | server listen socket option for reuse_addr functionality |
+| defaults.grpc.client.dial_option.net.socket_option.reuse_port | bool | `true` | server listen socket option for ip_recover_destination_addr functionality |
+| defaults.grpc.client.dial_option.net.socket_option.tcp_cork | bool | `false` |  |
+| defaults.grpc.client.dial_option.net.socket_option.tcp_defer_accept | bool | `true` |  |
+| defaults.grpc.client.dial_option.net.socket_option.tcp_fast_open | bool | `true` |  |
+| defaults.grpc.client.dial_option.net.socket_option.tcp_no_delay | bool | `true` |  |
+| defaults.grpc.client.dial_option.net.socket_option.tcp_quick_ack | bool | `true` |  |
+| defaults.grpc.client.dial_option.net.tls.ca | string | `"/path/to/ca"` | TLS ca path |
+| defaults.grpc.client.dial_option.net.tls.cert | string | `"/path/to/cert"` | TLS cert path |
+| defaults.grpc.client.dial_option.net.tls.enabled | bool | `false` | TLS enabled |
+| defaults.grpc.client.dial_option.net.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
+| defaults.grpc.client.dial_option.net.tls.key | string | `"/path/to/key"` | TLS key path |
 | defaults.grpc.client.dial_option.read_buffer_size | int | `0` | gRPC client dial option read buffer size |
-| defaults.grpc.client.dial_option.tcp.dialer.dual_stack_enabled | bool | `true` | gRPC client TCP dialer dual stack enabled |
-| defaults.grpc.client.dial_option.tcp.dialer.keep_alive | string | `""` | gRPC client TCP dialer keep alive |
-| defaults.grpc.client.dial_option.tcp.dialer.timeout | string | `""` | gRPC client TCP dialer timeout |
-| defaults.grpc.client.dial_option.tcp.dns.cache_enabled | bool | `true` | gRPC client TCP DNS cache enabled |
-| defaults.grpc.client.dial_option.tcp.dns.cache_expiration | string | `"1h"` | gRPC client TCP DNS cache expiration |
-| defaults.grpc.client.dial_option.tcp.dns.refresh_duration | string | `"30m"` | gRPC client TCP DNS cache refresh duration |
-| defaults.grpc.client.dial_option.tcp.tls.ca | string | `"/path/to/ca"` | gRPC client TCP TLS ca path |
-| defaults.grpc.client.dial_option.tcp.tls.cert | string | `"/path/to/cert"` | gRPC client TCP TLS cert path |
-| defaults.grpc.client.dial_option.tcp.tls.enabled | bool | `false` | gRPC client TCP TLS enabled |
-| defaults.grpc.client.dial_option.tcp.tls.key | string | `"/path/to/key"` | gRPC client TCP TLS key path |
 | defaults.grpc.client.dial_option.timeout | string | `""` | gRPC client dial option timeout |
 | defaults.grpc.client.dial_option.write_buffer_size | int | `0` | gRPC client dial option write buffer size |
 | defaults.grpc.client.health_check_duration | string | `"1s"` | gRPC client health check duration |
-| defaults.grpc.client.tls.ca | string | `"/path/to/ca"` | gRPC client TLS ca path |
-| defaults.grpc.client.tls.cert | string | `"/path/to/cert"` | gRPC client TLS cert path |
-| defaults.grpc.client.tls.enabled | bool | `false` | gRPC client TLS enabled |
-| defaults.grpc.client.tls.key | string | `"/path/to/key"` | gRPC client TLS key path |
-| defaults.image.tag | string | `"v1.0.1"` | docker image tag |
+| defaults.grpc.client.tls.ca | string | `"/path/to/ca"` | TLS ca path |
+| defaults.grpc.client.tls.cert | string | `"/path/to/cert"` | TLS cert path |
+| defaults.grpc.client.tls.enabled | bool | `false` | TLS enabled |
+| defaults.grpc.client.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
+| defaults.grpc.client.tls.key | string | `"/path/to/key"` | TLS key path |
+| defaults.image.tag | string | `"v1.0.4"` | docker image tag |
 | defaults.ingress.usev1beta1 | bool | `false` | use networking.k8s.io/v1beta1 instead of v1 for ingresses. This option will be removed once k8s 1.22 is released. |
 | defaults.logging.format | string | `"raw"` | logging format. logging format must be `raw` or `json` |
 | defaults.logging.level | string | `"debug"` | logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`. |
-| defaults.logging.logger | string | `"glg"` | logger name. currently logger must be `glg`. |
+| defaults.logging.logger | string | `"glg"` | logger name. currently logger must be `glg` or `zap`. |
 | defaults.observability.collector.duration | string | `"5s"` | metrics collect duration. if it is set as 5s, enabled metrics are collected every 5 seconds. |
 | defaults.observability.collector.metrics.enable_cgo | bool | `true` | CGO metrics enabled |
 | defaults.observability.collector.metrics.enable_goroutine | bool | `true` | goroutine metrics enabled |
@@ -339,7 +364,18 @@ Configuration
 | defaults.server_config.healths.liveness.server.http.shutdown_duration | string | `"5s"` | liveness server shutdown duration |
 | defaults.server_config.healths.liveness.server.http.write_timeout | string | `""` | liveness server write timeout |
 | defaults.server_config.healths.liveness.server.mode | string | `""` | liveness server mode |
+| defaults.server_config.healths.liveness.server.network | string | `"tcp"` | mysql network |
 | defaults.server_config.healths.liveness.server.probe_wait_time | string | `"3s"` | liveness server probe wait time |
+| defaults.server_config.healths.liveness.server.socket_option.ip_recover_destination_addr | bool | `false` |  |
+| defaults.server_config.healths.liveness.server.socket_option.ip_transparent | bool | `false` |  |
+| defaults.server_config.healths.liveness.server.socket_option.reuse_addr | bool | `true` | server listen socket option for reuse_addr functionality |
+| defaults.server_config.healths.liveness.server.socket_option.reuse_port | bool | `true` | server listen socket option for ip_recover_destination_addr functionality |
+| defaults.server_config.healths.liveness.server.socket_option.tcp_cork | bool | `false` |  |
+| defaults.server_config.healths.liveness.server.socket_option.tcp_defer_accept | bool | `true` |  |
+| defaults.server_config.healths.liveness.server.socket_option.tcp_fast_open | bool | `true` |  |
+| defaults.server_config.healths.liveness.server.socket_option.tcp_no_delay | bool | `true` |  |
+| defaults.server_config.healths.liveness.server.socket_option.tcp_quick_ack | bool | `true` |  |
+| defaults.server_config.healths.liveness.server.socket_path | string | `""` | mysql socket_path |
 | defaults.server_config.healths.liveness.servicePort | int | `3000` | liveness server service port |
 | defaults.server_config.healths.readiness.enabled | bool | `true` | readiness server enabled |
 | defaults.server_config.healths.readiness.host | string | `"0.0.0.0"` | readiness server host |
@@ -359,7 +395,18 @@ Configuration
 | defaults.server_config.healths.readiness.server.http.shutdown_duration | string | `"0s"` | readiness server shutdown duration |
 | defaults.server_config.healths.readiness.server.http.write_timeout | string | `""` | readiness server write timeout |
 | defaults.server_config.healths.readiness.server.mode | string | `""` | readiness server mode |
+| defaults.server_config.healths.readiness.server.network | string | `"tcp"` | mysql network |
 | defaults.server_config.healths.readiness.server.probe_wait_time | string | `"3s"` | readiness server probe wait time |
+| defaults.server_config.healths.readiness.server.socket_option.ip_recover_destination_addr | bool | `false` |  |
+| defaults.server_config.healths.readiness.server.socket_option.ip_transparent | bool | `false` |  |
+| defaults.server_config.healths.readiness.server.socket_option.reuse_addr | bool | `true` | server listen socket option for reuse_addr functionality |
+| defaults.server_config.healths.readiness.server.socket_option.reuse_port | bool | `true` | server listen socket option for ip_recover_destination_addr functionality |
+| defaults.server_config.healths.readiness.server.socket_option.tcp_cork | bool | `false` |  |
+| defaults.server_config.healths.readiness.server.socket_option.tcp_defer_accept | bool | `true` |  |
+| defaults.server_config.healths.readiness.server.socket_option.tcp_fast_open | bool | `true` |  |
+| defaults.server_config.healths.readiness.server.socket_option.tcp_no_delay | bool | `true` |  |
+| defaults.server_config.healths.readiness.server.socket_option.tcp_quick_ack | bool | `true` |  |
+| defaults.server_config.healths.readiness.server.socket_path | string | `""` | mysql socket_path |
 | defaults.server_config.healths.readiness.servicePort | int | `3001` | readiness server service port |
 | defaults.server_config.metrics.pprof.enabled | bool | `false` | pprof server enabled |
 | defaults.server_config.metrics.pprof.host | string | `"0.0.0.0"` | pprof server host |
@@ -371,7 +418,18 @@ Configuration
 | defaults.server_config.metrics.pprof.server.http.shutdown_duration | string | `"5s"` | pprof server shutdown duration |
 | defaults.server_config.metrics.pprof.server.http.write_timeout | string | `"1s"` | pprof server write timeout |
 | defaults.server_config.metrics.pprof.server.mode | string | `"REST"` | pprof server mode |
+| defaults.server_config.metrics.pprof.server.network | string | `"tcp"` | mysql network |
 | defaults.server_config.metrics.pprof.server.probe_wait_time | string | `"3s"` | pprof server probe wait time |
+| defaults.server_config.metrics.pprof.server.socket_option.ip_recover_destination_addr | bool | `false` |  |
+| defaults.server_config.metrics.pprof.server.socket_option.ip_transparent | bool | `false` |  |
+| defaults.server_config.metrics.pprof.server.socket_option.reuse_addr | bool | `true` | server listen socket option for reuse_addr functionality |
+| defaults.server_config.metrics.pprof.server.socket_option.reuse_port | bool | `true` | server listen socket option for ip_recover_destination_addr functionality |
+| defaults.server_config.metrics.pprof.server.socket_option.tcp_cork | bool | `false` |  |
+| defaults.server_config.metrics.pprof.server.socket_option.tcp_defer_accept | bool | `true` |  |
+| defaults.server_config.metrics.pprof.server.socket_option.tcp_fast_open | bool | `true` |  |
+| defaults.server_config.metrics.pprof.server.socket_option.tcp_no_delay | bool | `true` |  |
+| defaults.server_config.metrics.pprof.server.socket_option.tcp_quick_ack | bool | `true` |  |
+| defaults.server_config.metrics.pprof.server.socket_path | string | `""` | mysql socket_path |
 | defaults.server_config.metrics.pprof.servicePort | int | `6060` | pprof server service port |
 | defaults.server_config.metrics.prometheus.enabled | bool | `false` | prometheus server enabled |
 | defaults.server_config.metrics.prometheus.host | string | `"0.0.0.0"` | prometheus server host |
@@ -383,13 +441,25 @@ Configuration
 | defaults.server_config.metrics.prometheus.server.http.shutdown_duration | string | `"5s"` | prometheus server shutdown duration |
 | defaults.server_config.metrics.prometheus.server.http.write_timeout | string | `"1s"` | prometheus server write timeout |
 | defaults.server_config.metrics.prometheus.server.mode | string | `"REST"` | prometheus server mode |
+| defaults.server_config.metrics.prometheus.server.network | string | `"tcp"` | mysql network |
 | defaults.server_config.metrics.prometheus.server.probe_wait_time | string | `"3s"` | prometheus server probe wait time |
+| defaults.server_config.metrics.prometheus.server.socket_option.ip_recover_destination_addr | bool | `false` |  |
+| defaults.server_config.metrics.prometheus.server.socket_option.ip_transparent | bool | `false` |  |
+| defaults.server_config.metrics.prometheus.server.socket_option.reuse_addr | bool | `true` | server listen socket option for reuse_addr functionality |
+| defaults.server_config.metrics.prometheus.server.socket_option.reuse_port | bool | `true` | server listen socket option for ip_recover_destination_addr functionality |
+| defaults.server_config.metrics.prometheus.server.socket_option.tcp_cork | bool | `false` |  |
+| defaults.server_config.metrics.prometheus.server.socket_option.tcp_defer_accept | bool | `true` |  |
+| defaults.server_config.metrics.prometheus.server.socket_option.tcp_fast_open | bool | `true` |  |
+| defaults.server_config.metrics.prometheus.server.socket_option.tcp_no_delay | bool | `true` |  |
+| defaults.server_config.metrics.prometheus.server.socket_option.tcp_quick_ack | bool | `true` |  |
+| defaults.server_config.metrics.prometheus.server.socket_path | string | `""` | mysql socket_path |
 | defaults.server_config.metrics.prometheus.servicePort | int | `6061` | prometheus server service port |
 | defaults.server_config.servers.grpc.enabled | bool | `true` | gRPC server enabled |
 | defaults.server_config.servers.grpc.host | string | `"0.0.0.0"` | gRPC server host |
 | defaults.server_config.servers.grpc.port | int | `8081` | gRPC server port |
 | defaults.server_config.servers.grpc.server.grpc.bidirectional_stream_concurrency | int | `20` | gRPC server bidirectional stream concurrency |
 | defaults.server_config.servers.grpc.server.grpc.connection_timeout | string | `""` | gRPC server connection timeout |
+| defaults.server_config.servers.grpc.server.grpc.enable_reflection | bool | `true` | gRPC server reflection option |
 | defaults.server_config.servers.grpc.server.grpc.header_table_size | int | `0` | gRPC server header table size |
 | defaults.server_config.servers.grpc.server.grpc.initial_conn_window_size | int | `0` | gRPC server initial connection window size |
 | defaults.server_config.servers.grpc.server.grpc.initial_window_size | int | `0` | gRPC server initial window size |
@@ -405,8 +475,19 @@ Configuration
 | defaults.server_config.servers.grpc.server.grpc.read_buffer_size | int | `0` | gRPC server read buffer size |
 | defaults.server_config.servers.grpc.server.grpc.write_buffer_size | int | `0` | gRPC server write buffer size |
 | defaults.server_config.servers.grpc.server.mode | string | `"GRPC"` | gRPC server server mode |
+| defaults.server_config.servers.grpc.server.network | string | `"tcp"` | mysql network |
 | defaults.server_config.servers.grpc.server.probe_wait_time | string | `"3s"` | gRPC server probe wait time |
 | defaults.server_config.servers.grpc.server.restart | bool | `true` | gRPC server restart |
+| defaults.server_config.servers.grpc.server.socket_option.ip_recover_destination_addr | bool | `false` |  |
+| defaults.server_config.servers.grpc.server.socket_option.ip_transparent | bool | `false` |  |
+| defaults.server_config.servers.grpc.server.socket_option.reuse_addr | bool | `true` | server listen socket option for reuse_addr functionality |
+| defaults.server_config.servers.grpc.server.socket_option.reuse_port | bool | `true` | server listen socket option for ip_recover_destination_addr functionality |
+| defaults.server_config.servers.grpc.server.socket_option.tcp_cork | bool | `false` |  |
+| defaults.server_config.servers.grpc.server.socket_option.tcp_defer_accept | bool | `true` |  |
+| defaults.server_config.servers.grpc.server.socket_option.tcp_fast_open | bool | `true` |  |
+| defaults.server_config.servers.grpc.server.socket_option.tcp_no_delay | bool | `true` |  |
+| defaults.server_config.servers.grpc.server.socket_option.tcp_quick_ack | bool | `true` |  |
+| defaults.server_config.servers.grpc.server.socket_path | string | `""` | mysql socket_path |
 | defaults.server_config.servers.grpc.servicePort | int | `8081` | gRPC server service port |
 | defaults.server_config.servers.rest.enabled | bool | `false` | REST server enabled |
 | defaults.server_config.servers.rest.host | string | `"0.0.0.0"` | REST server host |
@@ -418,11 +499,23 @@ Configuration
 | defaults.server_config.servers.rest.server.http.shutdown_duration | string | `"5s"` | REST server shutdown duration |
 | defaults.server_config.servers.rest.server.http.write_timeout | string | `"1s"` | REST server write timeout |
 | defaults.server_config.servers.rest.server.mode | string | `"REST"` | REST server server mode |
+| defaults.server_config.servers.rest.server.network | string | `"tcp"` | mysql network |
 | defaults.server_config.servers.rest.server.probe_wait_time | string | `"3s"` | REST server probe wait time |
+| defaults.server_config.servers.rest.server.socket_option.ip_recover_destination_addr | bool | `false` |  |
+| defaults.server_config.servers.rest.server.socket_option.ip_transparent | bool | `false` |  |
+| defaults.server_config.servers.rest.server.socket_option.reuse_addr | bool | `true` | server listen socket option for reuse_addr functionality |
+| defaults.server_config.servers.rest.server.socket_option.reuse_port | bool | `true` | server listen socket option for ip_recover_destination_addr functionality |
+| defaults.server_config.servers.rest.server.socket_option.tcp_cork | bool | `false` |  |
+| defaults.server_config.servers.rest.server.socket_option.tcp_defer_accept | bool | `true` |  |
+| defaults.server_config.servers.rest.server.socket_option.tcp_fast_open | bool | `true` |  |
+| defaults.server_config.servers.rest.server.socket_option.tcp_no_delay | bool | `true` |  |
+| defaults.server_config.servers.rest.server.socket_option.tcp_quick_ack | bool | `true` |  |
+| defaults.server_config.servers.rest.server.socket_path | string | `""` | mysql socket_path |
 | defaults.server_config.servers.rest.servicePort | int | `8080` | REST server service port |
 | defaults.server_config.tls.ca | string | `"/path/to/ca"` | TLS ca path |
 | defaults.server_config.tls.cert | string | `"/path/to/cert"` | TLS cert path |
 | defaults.server_config.tls.enabled | bool | `false` | TLS enabled |
+| defaults.server_config.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
 | defaults.server_config.tls.key | string | `"/path/to/key"` | TLS key path |
 | defaults.time_zone | string | `"UTC"` | Time zone |
 | discoverer.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[]` | node affinity preferred scheduling terms |
@@ -439,6 +532,26 @@ Configuration
 | discoverer.discoverer.discovery_duration | string | `"3s"` | duration to discovery |
 | discoverer.discoverer.name | string | `""` | name to discovery |
 | discoverer.discoverer.namespace | string | `"_MY_POD_NAMESPACE_"` | namespace to discovery |
+| discoverer.discoverer.net.dialer.dual_stack_enabled | bool | `false` | TCP dialer dual stack enabled |
+| discoverer.discoverer.net.dialer.keep_alive | string | `"10m"` | TCP dialer keep alive |
+| discoverer.discoverer.net.dialer.timeout | string | `"30s"` | TCP dialer timeout |
+| discoverer.discoverer.net.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
+| discoverer.discoverer.net.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
+| discoverer.discoverer.net.dns.refresh_duration | string | `"5m"` | TCP DNS cache refresh duration |
+| discoverer.discoverer.net.socket_option.ip_recover_destination_addr | bool | `false` |  |
+| discoverer.discoverer.net.socket_option.ip_transparent | bool | `false` |  |
+| discoverer.discoverer.net.socket_option.reuse_addr | bool | `true` | server listen socket option for reuse_addr functionality |
+| discoverer.discoverer.net.socket_option.reuse_port | bool | `true` | server listen socket option for ip_recover_destination_addr functionality |
+| discoverer.discoverer.net.socket_option.tcp_cork | bool | `false` |  |
+| discoverer.discoverer.net.socket_option.tcp_defer_accept | bool | `true` |  |
+| discoverer.discoverer.net.socket_option.tcp_fast_open | bool | `true` |  |
+| discoverer.discoverer.net.socket_option.tcp_no_delay | bool | `true` |  |
+| discoverer.discoverer.net.socket_option.tcp_quick_ack | bool | `true` |  |
+| discoverer.discoverer.net.tls.ca | string | `"/path/to/ca"` | TLS ca path |
+| discoverer.discoverer.net.tls.cert | string | `"/path/to/cert"` | TLS cert path |
+| discoverer.discoverer.net.tls.enabled | bool | `false` | TLS enabled |
+| discoverer.discoverer.net.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
+| discoverer.discoverer.net.tls.key | string | `"/path/to/key"` | TLS key path |
 | discoverer.enabled | bool | `true` | discoverer enabled |
 | discoverer.env | list | `[{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]` | environment variables |
 | discoverer.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
@@ -844,6 +957,26 @@ Configuration
 | manager.backup.cassandra.config.max_prepared_stmts | int | `1000` | maximum number of prepared statements |
 | manager.backup.cassandra.config.max_routing_key_info | int | `1000` | maximum number of routing key info |
 | manager.backup.cassandra.config.max_wait_schema_agreement | string | `"1m"` | maximum duration to wait for schema agreement |
+| manager.backup.cassandra.config.net.dialer.dual_stack_enabled | bool | `false` | TCP dialer dual stack enabled |
+| manager.backup.cassandra.config.net.dialer.keep_alive | string | `"10m"` | TCP dialer keep alive |
+| manager.backup.cassandra.config.net.dialer.timeout | string | `"30s"` | TCP dialer timeout |
+| manager.backup.cassandra.config.net.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
+| manager.backup.cassandra.config.net.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
+| manager.backup.cassandra.config.net.dns.refresh_duration | string | `"5m"` | TCP DNS cache refresh duration |
+| manager.backup.cassandra.config.net.socket_option.ip_recover_destination_addr | bool | `false` |  |
+| manager.backup.cassandra.config.net.socket_option.ip_transparent | bool | `false` |  |
+| manager.backup.cassandra.config.net.socket_option.reuse_addr | bool | `true` | server listen socket option for reuse_addr functionality |
+| manager.backup.cassandra.config.net.socket_option.reuse_port | bool | `true` | server listen socket option for ip_recover_destination_addr functionality |
+| manager.backup.cassandra.config.net.socket_option.tcp_cork | bool | `false` |  |
+| manager.backup.cassandra.config.net.socket_option.tcp_defer_accept | bool | `true` |  |
+| manager.backup.cassandra.config.net.socket_option.tcp_fast_open | bool | `true` |  |
+| manager.backup.cassandra.config.net.socket_option.tcp_no_delay | bool | `true` |  |
+| manager.backup.cassandra.config.net.socket_option.tcp_quick_ack | bool | `true` |  |
+| manager.backup.cassandra.config.net.tls.ca | string | `"/path/to/ca"` | TLS ca path |
+| manager.backup.cassandra.config.net.tls.cert | string | `"/path/to/cert"` | TLS cert path |
+| manager.backup.cassandra.config.net.tls.enabled | bool | `false` | TLS enabled |
+| manager.backup.cassandra.config.net.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
+| manager.backup.cassandra.config.net.tls.key | string | `"/path/to/key"` | TLS key path |
 | manager.backup.cassandra.config.num_conns | int | `2` | number of connections per hosts |
 | manager.backup.cassandra.config.page_size | int | `5000` | page size |
 | manager.backup.cassandra.config.password | string | `"_CASSANDRA_PASSWORD_"` | cassandra password |
@@ -862,17 +995,12 @@ Configuration
 | manager.backup.cassandra.config.retry_policy.num_retries | int | `3` | number of retries |
 | manager.backup.cassandra.config.serial_consistency | string | `"localserial"` | read consistency type |
 | manager.backup.cassandra.config.socket_keepalive | string | `"0s"` | socket keep alive time |
-| manager.backup.cassandra.config.tcp.dialer.dual_stack_enabled | bool | `false` | TCP dialer dual stack enabled |
-| manager.backup.cassandra.config.tcp.dialer.keep_alive | string | `"10m"` | TCP dialer keep alive |
-| manager.backup.cassandra.config.tcp.dialer.timeout | string | `"30s"` | TCP dialer timeout |
-| manager.backup.cassandra.config.tcp.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
-| manager.backup.cassandra.config.tcp.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
-| manager.backup.cassandra.config.tcp.dns.refresh_duration | string | `"5m"` | TCP DNS cache refresh duration |
 | manager.backup.cassandra.config.timeout | string | `"600ms"` | timeout |
-| manager.backup.cassandra.config.tls.ca | string | `"/path/to/ca"` | path to TLS ca |
-| manager.backup.cassandra.config.tls.cert | string | `"/path/to/cert"` | path to TLS cert |
+| manager.backup.cassandra.config.tls.ca | string | `"/path/to/ca"` | TLS ca path |
+| manager.backup.cassandra.config.tls.cert | string | `"/path/to/cert"` | TLS cert path |
 | manager.backup.cassandra.config.tls.enabled | bool | `false` | TLS enabled |
-| manager.backup.cassandra.config.tls.key | string | `"/path/to/key"` | path to TLS key |
+| manager.backup.cassandra.config.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
+| manager.backup.cassandra.config.tls.key | string | `"/path/to/key"` | TLS key path |
 | manager.backup.cassandra.config.username | string | `"root"` | cassandra username |
 | manager.backup.cassandra.config.vector_backup_table | string | `"backup_vector"` | table name of backup |
 | manager.backup.cassandra.config.write_coalesce_wait_time | string | `"200µs"` | write coalesce wait time |
@@ -897,22 +1025,35 @@ Configuration
 | manager.backup.mysql.config.max_idle_conns | int | `100` | maximum number of idle connections |
 | manager.backup.mysql.config.max_open_conns | int | `100` | maximum number of open connections |
 | manager.backup.mysql.config.name | string | `"vald"` | mysql db name |
+| manager.backup.mysql.config.net.dialer.dual_stack_enabled | bool | `false` | TCP dialer dual stack enabled |
+| manager.backup.mysql.config.net.dialer.keep_alive | string | `"5m"` | TCP dialer keep alive |
+| manager.backup.mysql.config.net.dialer.timeout | string | `"5s"` | TCP dialer timeout |
+| manager.backup.mysql.config.net.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
+| manager.backup.mysql.config.net.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
+| manager.backup.mysql.config.net.dns.refresh_duration | string | `"1h"` | TCP DNS cache refresh duration |
+| manager.backup.mysql.config.net.socket_option.ip_recover_destination_addr | bool | `false` |  |
+| manager.backup.mysql.config.net.socket_option.ip_transparent | bool | `false` |  |
+| manager.backup.mysql.config.net.socket_option.reuse_addr | bool | `true` | server listen socket option for reuse_addr functionality |
+| manager.backup.mysql.config.net.socket_option.reuse_port | bool | `true` | server listen socket option for ip_recover_destination_addr functionality |
+| manager.backup.mysql.config.net.socket_option.tcp_cork | bool | `false` |  |
+| manager.backup.mysql.config.net.socket_option.tcp_defer_accept | bool | `true` |  |
+| manager.backup.mysql.config.net.socket_option.tcp_fast_open | bool | `true` |  |
+| manager.backup.mysql.config.net.socket_option.tcp_no_delay | bool | `true` |  |
+| manager.backup.mysql.config.net.socket_option.tcp_quick_ack | bool | `true` |  |
+| manager.backup.mysql.config.net.tls.ca | string | `"/path/to/ca"` | TLS ca path |
+| manager.backup.mysql.config.net.tls.cert | string | `"/path/to/cert"` | TLS cert path |
+| manager.backup.mysql.config.net.tls.enabled | bool | `false` | TLS enabled |
+| manager.backup.mysql.config.net.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
+| manager.backup.mysql.config.net.tls.key | string | `"/path/to/key"` | TLS key path |
+| manager.backup.mysql.config.network | string | `"tcp"` | mysql network |
 | manager.backup.mysql.config.pass | string | `"_MYSQL_PASSWORD_"` | mysql password |
 | manager.backup.mysql.config.port | int | `3306` | mysql port |
-| manager.backup.mysql.config.tcp.dialer.dual_stack_enabled | bool | `false` | TCP dialer dual stack enabled |
-| manager.backup.mysql.config.tcp.dialer.keep_alive | string | `"5m"` | TCP dialer keep alive |
-| manager.backup.mysql.config.tcp.dialer.timeout | string | `"5s"` | TCP dialer timeout |
-| manager.backup.mysql.config.tcp.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
-| manager.backup.mysql.config.tcp.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
-| manager.backup.mysql.config.tcp.dns.refresh_duration | string | `"1h"` | TCP DNS cache refresh duration |
-| manager.backup.mysql.config.tcp.tls.ca | string | `"/path/to/ca"` | path to TCP TLS ca |
-| manager.backup.mysql.config.tcp.tls.cert | string | `"/path/to/cert"` | path to TCP TLS cert |
-| manager.backup.mysql.config.tcp.tls.enabled | bool | `false` | TCP TLS enabled |
-| manager.backup.mysql.config.tcp.tls.key | string | `"/path/to/key"` | path to TCP TLS key |
-| manager.backup.mysql.config.tls.ca | string | `"/path/to/ca"` | path to TLS ca |
-| manager.backup.mysql.config.tls.cert | string | `"/path/to/cert"` | path to TLS cert |
+| manager.backup.mysql.config.socket_path | string | `""` | mysql socket_path |
+| manager.backup.mysql.config.tls.ca | string | `"/path/to/ca"` | TLS ca path |
+| manager.backup.mysql.config.tls.cert | string | `"/path/to/cert"` | TLS cert path |
 | manager.backup.mysql.config.tls.enabled | bool | `false` | TLS enabled |
-| manager.backup.mysql.config.tls.key | string | `"/path/to/key"` | path to TLS key |
+| manager.backup.mysql.config.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
+| manager.backup.mysql.config.tls.key | string | `"/path/to/key"` | TLS key path |
 | manager.backup.mysql.config.user | string | `"root"` | mysql username |
 | manager.backup.mysql.enabled | bool | `true` | mysql config enabled |
 | manager.backup.name | string | `"vald-manager-backup"` | name of backup manager deployment |
@@ -1013,7 +1154,7 @@ Configuration
 | manager.index.indexer.auto_index_length | int | `100` | number of cache to trigger automatic indexing |
 | manager.index.indexer.concurrency | int | `1` | concurrency |
 | manager.index.indexer.creation_pool_size | int | `10000` | number of pool size of create index processing |
-| manager.index.indexer.discoverer.agent_client_options | object | `{"dial_option":{"tcp":{"dialer":{"keep_alive":"15m"}}}}` | gRPC client options for agents (overrides defaults.grpc.client) |
+| manager.index.indexer.discoverer.agent_client_options | object | `{"dial_option":{"net":{"dialer":{"keep_alive":"15m"}}}}` | gRPC client options for agents (overrides defaults.grpc.client) |
 | manager.index.indexer.discoverer.client | object | `{}` | gRPC client for discoverer (overrides defaults.grpc.client) |
 | manager.index.indexer.discoverer.duration | string | `"500ms"` | refresh duration to discover |
 | manager.index.indexer.node_name | string | `""` | node name |
@@ -1073,6 +1214,26 @@ Configuration
 | meta.cassandra.config.max_prepared_stmts | int | `1000` | maximum number of prepared statements |
 | meta.cassandra.config.max_routing_key_info | int | `1000` | maximum number of routing key info |
 | meta.cassandra.config.max_wait_schema_agreement | string | `"1m"` | maximum duration to wait for schema agreement |
+| meta.cassandra.config.net.dialer.dual_stack_enabled | bool | `false` | TCP dialer dual stack enabled |
+| meta.cassandra.config.net.dialer.keep_alive | string | `"10m"` | TCP dialer keep alive |
+| meta.cassandra.config.net.dialer.timeout | string | `"30s"` | TCP dialer timeout |
+| meta.cassandra.config.net.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
+| meta.cassandra.config.net.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
+| meta.cassandra.config.net.dns.refresh_duration | string | `"5m"` | TCP DNS cache refresh duration |
+| meta.cassandra.config.net.socket_option.ip_recover_destination_addr | bool | `false` |  |
+| meta.cassandra.config.net.socket_option.ip_transparent | bool | `false` |  |
+| meta.cassandra.config.net.socket_option.reuse_addr | bool | `true` | server listen socket option for reuse_addr functionality |
+| meta.cassandra.config.net.socket_option.reuse_port | bool | `true` | server listen socket option for ip_recover_destination_addr functionality |
+| meta.cassandra.config.net.socket_option.tcp_cork | bool | `false` |  |
+| meta.cassandra.config.net.socket_option.tcp_defer_accept | bool | `true` |  |
+| meta.cassandra.config.net.socket_option.tcp_fast_open | bool | `true` |  |
+| meta.cassandra.config.net.socket_option.tcp_no_delay | bool | `true` |  |
+| meta.cassandra.config.net.socket_option.tcp_quick_ack | bool | `true` |  |
+| meta.cassandra.config.net.tls.ca | string | `"/path/to/ca"` | TLS ca path |
+| meta.cassandra.config.net.tls.cert | string | `"/path/to/cert"` | TLS cert path |
+| meta.cassandra.config.net.tls.enabled | bool | `false` | TLS enabled |
+| meta.cassandra.config.net.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
+| meta.cassandra.config.net.tls.key | string | `"/path/to/key"` | TLS key path |
 | meta.cassandra.config.num_conns | int | `2` | number of connections per hosts |
 | meta.cassandra.config.page_size | int | `5000` | page size |
 | meta.cassandra.config.password | string | `"_CASSANDRA_PASSWORD_"` | cassandra password |
@@ -1091,17 +1252,12 @@ Configuration
 | meta.cassandra.config.retry_policy.num_retries | int | `3` | number of retries |
 | meta.cassandra.config.serial_consistency | string | `"localserial"` | read consistency type |
 | meta.cassandra.config.socket_keepalive | string | `"0s"` | socket keep alive time |
-| meta.cassandra.config.tcp.dialer.dual_stack_enabled | bool | `false` | TCP dialer dual stack enabled |
-| meta.cassandra.config.tcp.dialer.keep_alive | string | `"10m"` | TCP dialer keep alive |
-| meta.cassandra.config.tcp.dialer.timeout | string | `"30s"` | TCP dialer timeout |
-| meta.cassandra.config.tcp.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
-| meta.cassandra.config.tcp.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
-| meta.cassandra.config.tcp.dns.refresh_duration | string | `"5m"` | TCP DNS cache refresh duration |
 | meta.cassandra.config.timeout | string | `"600ms"` | timeout |
-| meta.cassandra.config.tls.ca | string | `"/path/to/ca"` | path to TLS ca |
-| meta.cassandra.config.tls.cert | string | `"/path/to/cert"` | path to TLS cert |
+| meta.cassandra.config.tls.ca | string | `"/path/to/ca"` | TLS ca path |
+| meta.cassandra.config.tls.cert | string | `"/path/to/cert"` | TLS cert path |
 | meta.cassandra.config.tls.enabled | bool | `false` | TLS enabled |
-| meta.cassandra.config.tls.key | string | `"/path/to/key"` | path to TLS key |
+| meta.cassandra.config.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
+| meta.cassandra.config.tls.key | string | `"/path/to/key"` | TLS key path |
 | meta.cassandra.config.username | string | `"root"` | cassandra username |
 | meta.cassandra.config.vector_backup_table | string | `"backup_vector"` | table name of backup |
 | meta.cassandra.config.write_coalesce_wait_time | string | `"200µs"` | write coalesce wait time |
@@ -1142,6 +1298,26 @@ Configuration
 | meta.redis.config.max_retry_backoff | string | `"512ms"` | max retry backoff |
 | meta.redis.config.min_idle_conns | int | `0` | min idle connections |
 | meta.redis.config.min_retry_backoff | string | `"8ms"` | min retry backoff |
+| meta.redis.config.net.dialer.dual_stack_enabled | bool | `false` | TCP dialer dual stack enabled |
+| meta.redis.config.net.dialer.keep_alive | string | `"5m"` | TCP dialer keep alive |
+| meta.redis.config.net.dialer.timeout | string | `"5s"` | TCP dialer timeout |
+| meta.redis.config.net.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
+| meta.redis.config.net.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
+| meta.redis.config.net.dns.refresh_duration | string | `"1h"` | TCP DNS cache refresh duration |
+| meta.redis.config.net.socket_option.ip_recover_destination_addr | bool | `false` |  |
+| meta.redis.config.net.socket_option.ip_transparent | bool | `false` |  |
+| meta.redis.config.net.socket_option.reuse_addr | bool | `true` | server listen socket option for reuse_addr functionality |
+| meta.redis.config.net.socket_option.reuse_port | bool | `true` | server listen socket option for ip_recover_destination_addr functionality |
+| meta.redis.config.net.socket_option.tcp_cork | bool | `false` |  |
+| meta.redis.config.net.socket_option.tcp_defer_accept | bool | `true` |  |
+| meta.redis.config.net.socket_option.tcp_fast_open | bool | `true` |  |
+| meta.redis.config.net.socket_option.tcp_no_delay | bool | `true` |  |
+| meta.redis.config.net.socket_option.tcp_quick_ack | bool | `true` |  |
+| meta.redis.config.net.tls.ca | string | `"/path/to/ca"` | TLS ca path |
+| meta.redis.config.net.tls.cert | string | `"/path/to/cert"` | TLS cert path |
+| meta.redis.config.net.tls.enabled | bool | `false` | TLS enabled |
+| meta.redis.config.net.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
+| meta.redis.config.net.tls.key | string | `"/path/to/key"` | TLS key path |
 | meta.redis.config.network | string | `"tcp"` | connection network type |
 | meta.redis.config.password | string | `"_REDIS_PASSWORD_"` | redis password |
 | meta.redis.config.pool_size | int | `10` | pool size |
@@ -1153,20 +1329,11 @@ Configuration
 | meta.redis.config.route_randomly | bool | `true` | random routing enabled |
 | meta.redis.config.sentinel_master_name | string | `""` | redis sentinel master name |
 | meta.redis.config.sentinel_password | string | `""` | redis sentinel password |
-| meta.redis.config.tcp.dialer.dual_stack_enabled | bool | `false` | TCP dialer dual stack enabled |
-| meta.redis.config.tcp.dialer.keep_alive | string | `"5m"` | TCP dialer keep alive |
-| meta.redis.config.tcp.dialer.timeout | string | `"5s"` | TCP dialer timeout |
-| meta.redis.config.tcp.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
-| meta.redis.config.tcp.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
-| meta.redis.config.tcp.dns.refresh_duration | string | `"1h"` | TCP DNS cache refresh duration |
-| meta.redis.config.tcp.tls.ca | string | `"/path/to/ca"` | path to TCP TLS ca |
-| meta.redis.config.tcp.tls.cert | string | `"/path/to/cert"` | path to TCP TLS cert |
-| meta.redis.config.tcp.tls.enabled | bool | `false` | TCP TLS enabled |
-| meta.redis.config.tcp.tls.key | string | `"/path/to/key"` | path to TCP TLS key |
-| meta.redis.config.tls.ca | string | `"/path/to/ca"` | path to TLS ca |
-| meta.redis.config.tls.cert | string | `"/path/to/cert"` | path to TLS cert |
+| meta.redis.config.tls.ca | string | `"/path/to/ca"` | TLS ca path |
+| meta.redis.config.tls.cert | string | `"/path/to/cert"` | TLS cert path |
 | meta.redis.config.tls.enabled | bool | `false` | TLS enabled |
-| meta.redis.config.tls.key | string | `"/path/to/key"` | path to TLS key |
+| meta.redis.config.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
+| meta.redis.config.tls.key | string | `"/path/to/key"` | TLS key path |
 | meta.redis.config.vk_prefix | string | `""` | VK prefix |
 | meta.redis.config.write_timeout | string | `"3s"` | write timeout |
 | meta.redis.enabled | bool | `true` | redis config enabled |

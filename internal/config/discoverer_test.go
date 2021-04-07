@@ -18,6 +18,7 @@
 package config
 
 import (
+	"os"
 	"reflect"
 	"testing"
 
@@ -31,6 +32,7 @@ func TestDiscoverer_Bind(t *testing.T) {
 		Name              string
 		Namespace         string
 		DiscoveryDuration string
+		Net               *Net
 	}
 	type want struct {
 		want *Discoverer
@@ -40,8 +42,8 @@ func TestDiscoverer_Bind(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *Discoverer) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got *Discoverer) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -50,47 +52,95 @@ func TestDiscoverer_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           Name: "",
-		           Namespace: "",
-		           DiscoveryDuration: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           Name: "",
-		           Namespace: "",
-		           DiscoveryDuration: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			return test{
+				name: "return Discoverer when the bind successes",
+				fields: fields{
+					Name:              "discoverer",
+					Namespace:         "vald",
+					DiscoveryDuration: "10ms",
+				},
+				want: want{
+					want: &Discoverer{
+						Name:              "discoverer",
+						Namespace:         "vald",
+						DiscoveryDuration: "10ms",
+						Net:               new(Net),
+					},
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return Discoverer when the bind successes and Net is not nil",
+				fields: fields{
+					Name:              "discoverer",
+					Namespace:         "vald",
+					DiscoveryDuration: "10ms",
+					Net:               new(Net),
+				},
+				want: want{
+					want: &Discoverer{
+						Name:              "discoverer",
+						Namespace:         "vald",
+						DiscoveryDuration: "10ms",
+						Net:               new(Net),
+					},
+				},
+			}
+		}(),
+		func() test {
+			suffix := "_FOR_TEST_DISCOVERER_BIND"
+			m := map[string]string{
+				"NAME" + suffix:               "discoverer",
+				"NAMESPACE" + suffix:          "vald",
+				"DISCOVERY_DURATION" + suffix: "10ms",
+			}
+			return test{
+				name: "return Discoverer when the bind successes and the data is loaded from the environment variable",
+				fields: fields{
+					Name:              "_NAME" + suffix + "_",
+					Namespace:         "_NAMESPACE" + suffix + "_",
+					DiscoveryDuration: "_DISCOVERY_DURATION" + suffix + "_",
+				},
+				beforeFunc: func(t *testing.T) {
+					t.Helper()
+					for key, val := range m {
+						if err := os.Setenv(key, val); err != nil {
+							t.Fatal(err)
+						}
+					}
+				},
+				afterFunc: func(t *testing.T) {
+					t.Helper()
+					for key := range m {
+						if err := os.Unsetenv(key); err != nil {
+							t.Fatal(err)
+						}
+					}
+				},
+				want: want{
+					want: &Discoverer{
+						Name:              "discoverer",
+						Namespace:         "vald",
+						DiscoveryDuration: "10ms",
+						Net:               new(Net),
+					},
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -124,8 +174,8 @@ func TestDiscovererClient_Bind(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *DiscovererClient) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got *DiscovererClient) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -134,47 +184,110 @@ func TestDiscovererClient_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           Duration: "",
-		           Client: GRPCClient{},
-		           AgentClientOptions: GRPCClient{},
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			return test{
+				name: "return DiscovererClient when the bind successes",
+				fields: fields{
+					Duration: "10ms",
+				},
+				want: want{
+					want: &DiscovererClient{
+						Duration: "10ms",
+						Client: &GRPCClient{
+							DialOption: &DialOption{
+								Insecure: true,
+							},
+						},
+						AgentClientOptions: &GRPCClient{
+							DialOption: &DialOption{
+								Insecure: true,
+							},
+						},
+					},
+				},
+			}
+		}(),
+		func() test {
+			c := new(GRPCClient)
+			ac := new(GRPCClient)
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           Duration: "",
-		           Client: GRPCClient{},
-		           AgentClientOptions: GRPCClient{},
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			return test{
+				name: "return DiscovererClient when the bind successes and Client and AgentClientOptions is not nil",
+				fields: fields{
+					Duration:           "10ms",
+					Client:             c,
+					AgentClientOptions: ac,
+				},
+				want: want{
+					want: &DiscovererClient{
+						Duration: "10ms",
+						Client: &GRPCClient{
+							ConnectionPool: new(ConnectionPool),
+							DialOption: &DialOption{
+								Insecure: true,
+							},
+							TLS: new(TLS),
+						},
+						AgentClientOptions: &GRPCClient{
+							ConnectionPool: new(ConnectionPool),
+							DialOption: &DialOption{
+								Insecure: true,
+							},
+							TLS: new(TLS),
+						},
+					},
+				},
+			}
+		}(),
+		func() test {
+			key := "DURATION_FOR_TEST_DISCOVERER_CLIENT_BIND"
+			val := "10ms"
+
+			return test{
+				name: "return DiscovererClient when the bind successes and the data is loaded from the environment variable",
+				fields: fields{
+					Duration: "_" + key + "_",
+				},
+				beforeFunc: func(t *testing.T) {
+					t.Helper()
+					if err := os.Setenv(key, val); err != nil {
+						t.Fatal(err)
+					}
+				},
+				afterFunc: func(t *testing.T) {
+					t.Helper()
+					if err := os.Unsetenv(key); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					want: &DiscovererClient{
+						Duration: "10ms",
+						Client: &GRPCClient{
+							DialOption: &DialOption{
+								Insecure: true,
+							},
+						},
+						AgentClientOptions: &GRPCClient{
+							DialOption: &DialOption{
+								Insecure: true,
+							},
+						},
+					},
+				},
+			}
+		}(),
 	}
 
-	for _, tc := range tests {
-		test := tc
+	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc

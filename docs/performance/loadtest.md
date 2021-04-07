@@ -81,7 +81,7 @@ After the Vald Load Testing tools finished, the following output will be display
 2020-07-13 17:11:05	[INFO]:	executing daemon pre-stop function
 2020-07-13 17:11:05	[INFO]:	executing daemon stop function
 2020-07-13 17:11:05	[INFO]:	executing daemon post-stop function
-2020-07-13 17:11:05	[ERR]:	error occured in runner.Wait at load test: context canceled
+2020-07-13 17:11:05	[ERR]:	error occurred in runner.Wait at load test: context canceled
 2020-07-13 17:11:05	[WARN]:	daemon stopped
 ```
 

@@ -17,25 +17,35 @@
 // Package config providers configuration type and load configuration logic
 package config
 
+// Discoverer represents the Discoverer configurations.
 type Discoverer struct {
 	Name              string `json:"name" yaml:"name"`
 	Namespace         string `json:"namespace" yaml:"namespace"`
 	DiscoveryDuration string `json:"discovery_duration" yaml:"discovery_duration"`
+	Net               *Net   `json:"net" yaml:"net"`
 }
 
+// Bind binds the actual data from the Discoverer receiver field.
 func (d *Discoverer) Bind() *Discoverer {
 	d.Name = GetActualValue(d.Name)
 	d.Namespace = GetActualValue(d.Namespace)
 	d.DiscoveryDuration = GetActualValue(d.DiscoveryDuration)
+	if d.Net != nil {
+		d.Net.Bind()
+	} else {
+		d.Net = new(Net)
+	}
 	return d
 }
 
+// DiscovererClient represents the DiscovererClient configurations.
 type DiscovererClient struct {
 	Duration           string      `json:"duration" yaml:"duration"`
 	Client             *GRPCClient `json:"client" yaml:"client"`
 	AgentClientOptions *GRPCClient `json:"agent_client_options" yaml:"agent_client_options"`
 }
 
+// Bind binds the actual data from the DiscovererClient receiver field.
 func (d *DiscovererClient) Bind() *DiscovererClient {
 	d.Duration = GetActualValue(d.Duration)
 	if d.Client != nil {

@@ -17,7 +17,7 @@ assignees: ""
 
 <!--- Please change the versions below along with your environment -->
 
-- Go Version: 1.15.7
+- Go Version: 1.16
 - Docker Version: 19.03.8
 - Kubernetes Version: 1.18.2
-- NGT Version: 1.13.1
+- NGT Version: 1.12.3

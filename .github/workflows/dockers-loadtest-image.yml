@@ -24,6 +24,8 @@ on:
       - "*.*.*-*"
       - "v*.*.*-*"
     paths:
+      - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/dockers-loadtest-image.yml"
       - "go.mod"
       - "go.sum"
       - "internal/**"
@@ -33,11 +35,12 @@ on:
       - "apis/grpc/**"
       - "pkg/tools/cli/loadtest/**"
       - "cmd/tools/cli/loadtest/**"
-      - "dockers/base/Dockerfile"
       - "dockers/tools/cli/loadtest/Dockerfile"
       - "versions/GO_VERSION"
   pull_request:
     paths:
+      - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/dockers-loadtest-image.yml"
       - "go.mod"
       - "go.sum"
       - "internal/**"
@@ -47,13 +50,14 @@ on:
       - "apis/grpc/**"
       - "pkg/tools/cli/loadtest/**"
       - "cmd/tools/cli/loadtest/**"
-      - "dockers/base/Dockerfile"
       - "dockers/tools/cli/loadtest/Dockerfile"
       - "versions/GO_VERSION"
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
     steps:
       - uses: actions/checkout@v2
       - name: Setup QEMU

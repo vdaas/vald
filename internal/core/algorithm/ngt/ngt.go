@@ -231,7 +231,7 @@ func (n *ngt) loadOptions(opts ...Option) (err error) {
 
 func (n *ngt) create() (err error) {
 	if fileExists(n.idxPath) {
-		log.Infof("index path exists, will remove the directory. path: %s", n.idxPath)
+		log.Warnf("index path exists, will remove the directory. path: %s", n.idxPath)
 		if err = os.RemoveAll(n.idxPath); err != nil {
 			return err
 		}
@@ -499,16 +499,14 @@ func (n *ngt) Remove(id uint) error {
 }
 
 // BulkRemove removes multiple index from NGT index.
-func (n *ngt) BulkRemove(ids ...uint) error {
-	n.mu.Lock()
-	defer n.mu.Unlock()
-	for _, id := range ids {
-		if C.ngt_remove_index(n.index, C.ObjectID(id), n.ebuf) == ErrorCode {
-			ne := n.ebuf
-			return n.newGoError(ne)
+func (n *ngt) BulkRemove(ids ...uint) (errs error) {
+	for i, id := range ids {
+		err := n.Remove(id)
+		if err != nil {
+			errs = errors.Wrapf(errs, "bulkremove error detected index number: %d,\tid: %d\terr: %v", i, id, err)
 		}
 	}
-	return nil
+	return errs
 }
 
 // GetVector returns vector stored in NGT index.

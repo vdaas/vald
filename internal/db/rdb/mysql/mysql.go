@@ -29,7 +29,6 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
-	"github.com/vdaas/vald/internal/net/tcp"
 )
 
 const (
@@ -52,8 +51,10 @@ type MySQL interface {
 
 type mySQLClient struct {
 	db                   string
+	network              string
+	socketPath           string
 	host                 string
-	port                 int
+	port                 uint16
 	user                 string
 	pass                 string
 	name                 string
@@ -62,7 +63,7 @@ type mySQLClient struct {
 	initialPingTimeLimit time.Duration
 	initialPingDuration  time.Duration
 	connMaxLifeTime      time.Duration
-	dialer               tcp.Dialer
+	dialer               net.Dialer
 	dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
 	tlsConfig            *tls.Config
 	maxOpenConns         int
@@ -97,12 +98,9 @@ func (m *mySQLClient) Open(ctx context.Context) (err error) {
 	}
 
 	var addParam string
-
-	network := "tcp"
-
 	if m.dialerFunc != nil {
-		mysql.RegisterDialContext(network, func(ctx context.Context, addr string) (net.Conn, error) {
-			return m.dialerFunc(ctx, network, addr)
+		mysql.RegisterDialContext(m.network, func(ctx context.Context, addr string) (net.Conn, error) {
+			return m.dialerFunc(ctx, m.network, addr)
 		})
 	}
 
@@ -115,15 +113,21 @@ func (m *mySQLClient) Open(ctx context.Context) (err error) {
 		addParam += "&tls=" + tlsConfName
 	}
 
-	conn, err := m.dbr.Open(
-		m.db,
-		fmt.Sprintf(
-			"%s:%s@%s(%s:%d)/%s?charset=%s&parseTime=true&loc=%s%s",
-			m.user, m.pass, network, m.host, m.port, m.name,
-			m.charset, m.timezone, addParam,
-		),
-		m.eventReceiver,
-	)
+	var addr, network string
+	nt := net.NetworkTypeFromString(m.network)
+	if len(m.socketPath) != 0 && (nt == net.UNIX ||
+		nt == net.UNIXGRAM ||
+		nt == net.UNIXPACKET) {
+		network = net.UNIX.String()
+		addr = m.socketPath
+	} else {
+		network = net.TCP.String()
+		addr = net.JoinHostPort(m.host, m.port)
+	}
+	conn, err := m.dbr.Open(m.db, fmt.Sprintf(
+		"%s:%s@%s(%s)/%s?charset=%s&parseTime=true&loc=%s%s",
+		m.user, m.pass, network, addr, m.name, m.charset, m.timezone, addParam),
+		m.eventReceiver)
 	if err != nil {
 		return err
 	}
@@ -132,7 +136,9 @@ func (m *mySQLClient) Open(ctx context.Context) (err error) {
 	conn.SetMaxIdleConns(m.maxIdleConns)
 	conn.SetMaxOpenConns(m.maxOpenConns)
 
-	m.session = dbr.NewSession(conn, nil)
+	if m.session == nil {
+		m.session = dbr.NewSession(conn, m.eventReceiver)
+	}
 	m.connected.Store(true)
 
 	return m.Ping(ctx)
@@ -141,6 +147,11 @@ func (m *mySQLClient) Open(ctx context.Context) (err error) {
 // Ping check the connection of MySQL database.
 // If the connection is closed, it returns error.
 func (m *mySQLClient) Ping(ctx context.Context) (err error) {
+	if m.session == nil {
+		err = errors.ErrMySQLSessionNil
+		m.errorLog(err)
+		return err
+	}
 	pctx, cancel := context.WithTimeout(ctx, m.initialPingTimeLimit)
 	defer cancel()
 	tick := time.NewTicker(m.initialPingDuration)
@@ -168,8 +179,15 @@ func (m *mySQLClient) Ping(ctx context.Context) (err error) {
 }
 
 // Close closes the connection of MySQL database.
-// If the connection is already closed or closing conncection is failed, it returns error.
+// If the connection is already closed or closing connection is failed, it returns error.
 func (m *mySQLClient) Close(ctx context.Context) (err error) {
+	if m.session == nil {
+		err = errors.ErrMySQLSessionNil
+		m.errorLog(err)
+		m.connected.Store(false)
+		return err
+	}
+
 	if m.connected.Load().(bool) {
 		err = m.session.Close()
 		if err == nil {
@@ -183,6 +201,12 @@ func (m *mySQLClient) Close(ctx context.Context) (err error) {
 func (m *mySQLClient) GetVector(ctx context.Context, uuid string) (Vector, error) {
 	if !m.connected.Load().(bool) {
 		return nil, errors.ErrMySQLConnectionClosed
+	}
+
+	if m.session == nil {
+		err := errors.ErrMySQLSessionNil
+		m.errorLog(err)
+		return nil, err
 	}
 
 	var data *data
@@ -210,6 +234,12 @@ func (m *mySQLClient) GetVector(ctx context.Context, uuid string) (Vector, error
 func (m *mySQLClient) GetIPs(ctx context.Context, uuid string) ([]string, error) {
 	if !m.connected.Load().(bool) {
 		return nil, errors.ErrMySQLConnectionClosed
+	}
+
+	if m.session == nil {
+		err := errors.ErrMySQLSessionNil
+		m.errorLog(err)
+		return nil, err
 	}
 
 	var id int64
@@ -247,6 +277,12 @@ func validateVector(vec Vector) error {
 func (m *mySQLClient) SetVector(ctx context.Context, vec Vector) error {
 	if !m.connected.Load().(bool) {
 		return errors.ErrMySQLConnectionClosed
+	}
+
+	if m.session == nil {
+		err := errors.ErrMySQLSessionNil
+		m.errorLog(err)
+		return err
 	}
 
 	tx, err := m.session.Begin()
@@ -298,6 +334,12 @@ func (m *mySQLClient) SetVector(ctx context.Context, vec Vector) error {
 func (m *mySQLClient) SetVectors(ctx context.Context, vecs ...Vector) error {
 	if !m.connected.Load().(bool) {
 		return errors.ErrMySQLConnectionClosed
+	}
+
+	if m.session == nil {
+		err := errors.ErrMySQLSessionNil
+		m.errorLog(err)
+		return err
 	}
 
 	tx, err := m.session.Begin()
@@ -354,6 +396,12 @@ func (m *mySQLClient) deleteVector(ctx context.Context, val string) error {
 		return errors.ErrMySQLConnectionClosed
 	}
 
+	if m.session == nil {
+		err := errors.ErrMySQLSessionNil
+		m.errorLog(err)
+		return err
+	}
+
 	tx, err := m.session.Begin()
 	if err != nil {
 		return err
@@ -407,6 +455,12 @@ func (m *mySQLClient) SetIPs(ctx context.Context, uuid string, ips ...string) er
 		return errors.ErrMySQLConnectionClosed
 	}
 
+	if m.session == nil {
+		err := errors.ErrMySQLSessionNil
+		m.errorLog(err)
+		return err
+	}
+
 	tx, err := m.session.Begin()
 	if err != nil {
 		return err
@@ -440,6 +494,12 @@ func (m *mySQLClient) RemoveIPs(ctx context.Context, ips ...string) error {
 		return errors.ErrMySQLConnectionClosed
 	}
 
+	if m.session == nil {
+		err := errors.ErrMySQLSessionNil
+		m.errorLog(err)
+		return err
+	}
+
 	tx, err := m.session.Begin()
 	if err != nil {
 		return err
@@ -452,4 +512,11 @@ func (m *mySQLClient) RemoveIPs(ctx context.Context, ips ...string) error {
 	}
 
 	return tx.Commit()
+}
+
+func (m *mySQLClient) errorLog(err error) {
+	log.Errorf(
+		"err: %v, { host: %s, port: %d, user: %s, name: %s, db: %s, charset: %s, socketPath: %s, network: %s} ",
+		err, m.host, m.port, m.user, m.name, m.db, m.charset, m.socketPath, m.network,
+	)
 }

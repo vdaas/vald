@@ -20,20 +20,22 @@ package server
 import (
 	"context"
 	"crypto/tls"
-	"fmt"
 	"net/http"
+	"os"
+	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/net/control"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/credentials"
 	"github.com/vdaas/vald/internal/net/grpc/keepalive"
-	"github.com/vdaas/vald/internal/net/tcp"
 	"github.com/vdaas/vald/internal/safety"
 )
 
@@ -91,7 +93,7 @@ type server struct {
 		srv       *grpc.Server
 		keepAlive *grpcKeepAlive
 		opts      []grpc.ServerOption
-		reg       func(*grpc.Server)
+		regs      []func(*grpc.Server)
 	}
 	lc            *net.ListenConfig
 	tcfg          *tls.Config
@@ -101,7 +103,11 @@ type server struct {
 	rt            time.Duration // ReadTimeout
 	wt            time.Duration // WriteTimeout
 	it            time.Duration // IdleTimeout
-	port          uint
+	ctrl          control.SocketController
+	sockFlg       control.SocketFlag
+	network       net.NetworkType
+	socketPath    string
+	port          uint16
 	host          string
 	enableRestart bool
 	shuttingDown  bool
@@ -132,12 +138,7 @@ func New(opts ...Option) (Server, error) {
 		srv.eg = errgroup.Get()
 	}
 
-	if srv.lc == nil {
-		srv.lc = &net.ListenConfig{
-			Control: tcp.Control,
-		}
-	}
-
+	var keepAlive time.Duration
 	switch srv.mode {
 	case REST, GQL:
 		if srv.http.h == nil {
@@ -162,7 +163,10 @@ func New(opts ...Option) (Server, error) {
 			srv.http.srv.Handler = srv.http.h
 		}
 		srv.http.starter = srv.http.srv.Serve
-		if srv.tcfg != nil {
+		if srv.tcfg != nil &&
+			(len(srv.tcfg.Certificates) != 0 ||
+				srv.tcfg.GetCertificate != nil ||
+				srv.tcfg.GetConfigForClient != nil) {
 			srv.http.srv.TLSConfig = srv.tcfg
 			srv.http.starter = func(l net.Listener) error {
 				return srv.http.srv.ServeTLS(l, "", "")
@@ -170,8 +174,7 @@ func New(opts ...Option) (Server, error) {
 		}
 		srv.http.srv.SetKeepAlivesEnabled(true)
 	case GRPC:
-
-		if srv.grpc.reg == nil {
+		if srv.grpc.regs == nil {
 			return nil, errors.ErrInvalidAPIConfig
 		}
 
@@ -185,9 +188,13 @@ func New(opts ...Option) (Server, error) {
 					Timeout:               srv.grpc.keepAlive.timeout,
 				}),
 			)
+			keepAlive = srv.grpc.keepAlive.timeout
 		}
 
-		if srv.tcfg != nil {
+		if srv.tcfg != nil &&
+			(len(srv.tcfg.Certificates) != 0 ||
+				srv.tcfg.GetCertificate != nil ||
+				srv.tcfg.GetConfigForClient != nil) {
 			srv.grpc.opts = append(srv.grpc.opts,
 				grpc.Creds(credentials.NewTLS(srv.tcfg)),
 			)
@@ -198,7 +205,23 @@ func New(opts ...Option) (Server, error) {
 				srv.grpc.opts...,
 			)
 		}
-		srv.grpc.reg(srv.grpc.srv)
+		for _, reg := range srv.grpc.regs {
+			reg(srv.grpc.srv)
+		}
+	}
+
+	if srv.lc == nil {
+		srv.ctrl = control.New(srv.sockFlg, int(keepAlive))
+		srv.lc = &net.ListenConfig{
+			KeepAlive: keepAlive,
+			Control: func(network, addr string, c syscall.RawConn) (err error) {
+				if srv.ctrl != nil {
+					return srv.ctrl.GetControl()(network, addr, c)
+				}
+				log.Warn("socket controller is nil")
+				return nil
+			},
+		}
 	}
 
 	return srv, nil
@@ -228,12 +251,29 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 			}
 		}
 
-		l, err := s.lc.Listen(ctx, "tcp", fmt.Sprintf("%s:%d", s.host, s.port))
+		l, err := s.lc.Listen(ctx, func() string {
+			if s.network == 0 || s.network == net.Unknown || strings.EqualFold(s.network.String(), net.Unknown.String()) {
+				return net.TCP.String()
+			}
+			return s.network.String()
+		}(), func() string {
+			if s.network == net.UNIX {
+				if len(s.socketPath) == 0 {
+					s.socketPath = os.TempDir() + "/" + s.name + "." + strconv.Itoa(os.Getpid()) + ".sock"
+				}
+				return s.socketPath
+			}
+			return net.JoinHostPort(s.host, s.port)
+		}())
 		if err != nil {
+			log.Errorf("failed to listen socket %v", err)
 			return err
 		}
 
-		if s.tcfg != nil {
+		if s.tcfg != nil &&
+			(len(s.tcfg.Certificates) != 0 ||
+				s.tcfg.GetCertificate != nil ||
+				s.tcfg.GetConfigForClient != nil) {
 			l = tls.NewListener(l, s.tcfg)
 		}
 
@@ -250,8 +290,7 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 					s.running = true
 					s.mu.Unlock()
 				}
-
-				log.Infof("%s server %s starting on %s:%d", s.mode.String(), s.name, s.host, s.port)
+				log.Infof("%s server %s starting on %s://%s", s.mode.String(), s.name, l.Addr().Network(), l.Addr().String())
 
 				switch s.mode {
 				case REST, GQL:
@@ -298,26 +337,45 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 		ech := make(chan error, 1)
 		s.wg.Add(1)
 		s.eg.Go(safety.RecoverFunc(func() (err error) {
+			defer close(ech)
 			log.Infof("server %s executing preStopFunc", s.name)
 			err = s.preStopFunc()
 			if err != nil {
-				ech <- err
+				select {
+				case <-ctx.Done():
+				case ech <- nil:
+				}
 			}
-			close(ech)
 			s.wg.Done()
-			return err
+			select {
+			case <-ctx.Done():
+			case ech <- nil:
+			}
+			return nil
 		}))
-		tctx, cancel := context.WithTimeout(ctx, s.pwt)
-		defer cancel()
-		<-tctx.Done()
-		err := <-ech
-		if err != nil {
-			rerr = err
+		select {
+		case <-ctx.Done():
+		case <-time.After(s.pwt):
+		case err := <-ech:
+			if err != nil {
+				rerr = err
+			}
 		}
+
 	} else {
-		tctx, cancel := context.WithTimeout(ctx, s.pwt)
-		defer cancel()
-		<-tctx.Done()
+		select {
+		case <-ctx.Done():
+		case <-time.After(s.pwt):
+		}
+	}
+
+	if len(s.socketPath) != 0 {
+		defer func() {
+			err := os.RemoveAll(s.socketPath)
+			if err != nil {
+				rerr = errors.Wrap(rerr, err.Error())
+			}
+		}()
 	}
 
 	log.Warnf("%s server %s is now shutting down", s.mode.String(), s.name)

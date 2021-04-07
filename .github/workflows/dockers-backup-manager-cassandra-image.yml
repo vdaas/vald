@@ -24,6 +24,8 @@ on:
       - "*.*.*-*"
       - "v*.*.*-*"
     paths:
+      - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/dockers-backup-manager-cassandra-image.yml"
       - "go.mod"
       - "go.sum"
       - "internal/**"
@@ -34,12 +36,13 @@ on:
       - "apis/grpc/**"
       - "pkg/manager/backup/cassandra/**"
       - "cmd/manager/backup/cassandra/**"
-      - "dockers/base/Dockerfile"
       - "dockers/manager/backup/cassandra/Dockerfile"
       - "versions/GO_VERSION"
       - "versions/NGT_VERSION"
   pull_request:
     paths:
+      - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/dockers-backup-manager-cassandra-image.yml"
       - "go.mod"
       - "go.sum"
       - "internal/**"
@@ -50,13 +53,14 @@ on:
       - "apis/grpc/**"
       - "pkg/manager/backup/cassandra/**"
       - "cmd/manager/backup/cassandra/**"
-      - "dockers/base/Dockerfile"
       - "dockers/manager/backup/cassandra/Dockerfile"
       - "versions/GO_VERSION"
       - "versions/NGT_VERSION"
 
 jobs:
   build:
+    strategy:
+      max-parallel: 4
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

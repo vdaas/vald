@@ -29,6 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc/pool"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
@@ -93,6 +94,7 @@ type gRPCClient struct {
 	conns               grpcConns
 	hcDur               time.Duration
 	prDur               time.Duration
+	dialer              net.Dialer
 	enablePoolRebalance bool
 	resolveDNS          bool
 	dopts               []DialOption
@@ -136,6 +138,10 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 	addrs, ok := g.atomicAddrs.GetAll()
 	if !ok {
 		return nil, errors.ErrGRPCTargetAddrNotFound
+	}
+
+	if g.dialer != nil {
+		g.dialer.StartDialerCache(ctx)
 	}
 
 	ech := make(chan error, len(addrs))
@@ -567,7 +573,7 @@ func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOpti
 				g.atomicAddrs.Add(addr)
 				return conn, nil
 			}
-			log.Warnf("failed to reconnect unhealthy pool addr= %s\terror= %s", addr, err.Error())
+			log.Warnf("failed to reconnect unhealthy pool addr= %s\tconn= %v\terror= %v\t trying to disconnect", addr, conn, err)
 			err = g.Disconnect(ctx, addr)
 			if err != nil {
 				log.Warnf("failed to disconnect unhealthy pool addr= %s\terror= %s", addr, err.Error())

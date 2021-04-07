@@ -24,6 +24,8 @@ on:
       - "*.*.*-*"
       - "v*.*.*-*"
     paths:
+      - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/dockers-backup-manager-mysql-image.yml"
       - "go.mod"
       - "go.sum"
       - "internal/**"
@@ -34,11 +36,12 @@ on:
       - "apis/grpc/**"
       - "pkg/manager/backup/mysql/**"
       - "cmd/manager/backup/mysql/**"
-      - "dockers/base/Dockerfile"
       - "dockers/manager/backup/mysql/Dockerfile"
       - "versions/GO_VERSION"
   pull_request:
     paths:
+      - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/dockers-backup-manager-mysql-image.yml"
       - "go.mod"
       - "go.sum"
       - "internal/**"
@@ -49,12 +52,13 @@ on:
       - "apis/grpc/**"
       - "pkg/manager/backup/mysql/**"
       - "cmd/manager/backup/mysql/**"
-      - "dockers/base/Dockerfile"
       - "dockers/manager/backup/mysql/Dockerfile"
       - "versions/GO_VERSION"
 
 jobs:
   build:
+    strategy:
+      max-parallel: 4
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

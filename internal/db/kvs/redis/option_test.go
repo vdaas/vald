@@ -27,14 +27,13 @@ import (
 	redis "github.com/go-redis/redis/v8"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net"
-	"github.com/vdaas/vald/internal/net/tcp"
 	"go.uber.org/goleak"
 )
 
 func TestWithDialer(t *testing.T) {
 	type T = redisClient
 	type args struct {
-		der tcp.Dialer
+		der net.Dialer
 	}
 	type want struct {
 		obj *T
@@ -63,7 +62,7 @@ func TestWithDialer(t *testing.T) {
 
 	tests := []test{
 		func() test {
-			der, err := tcp.NewDialer()
+			der, err := net.NewDialer()
 			if err != nil {
 				panic(err)
 			}

@@ -24,6 +24,8 @@ on:
       - "*.*.*-*"
       - "v*.*.*-*"
     paths:
+      - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/dockers-discoverer-k8s-image.yml"
       - "go.mod"
       - "go.sum"
       - "internal/**"
@@ -32,11 +34,12 @@ on:
       - "apis/grpc/**"
       - "pkg/discoverer/k8s/**"
       - "cmd/discoverer/k8s/**"
-      - "dockers/base/Dockerfile"
       - "dockers/discoverer/k8s/Dockerfile"
       - "versions/GO_VERSION"
   pull_request:
     paths:
+      - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/dockers-discoverer-k8s-image.yml"
       - "go.mod"
       - "go.sum"
       - "internal/**"
@@ -45,12 +48,13 @@ on:
       - "apis/grpc/**"
       - "pkg/discoverer/k8s/**"
       - "cmd/discoverer/k8s/**"
-      - "dockers/base/Dockerfile"
       - "dockers/discoverer/k8s/Dockerfile"
       - "versions/GO_VERSION"
 
 jobs:
   build:
+    strategy:
+      max-parallel: 4
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

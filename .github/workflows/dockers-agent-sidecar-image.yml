@@ -24,6 +24,8 @@ on:
       - "*.*.*-*"
       - "v*.*.*-*"
     paths:
+      - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/dockers-agent-sidecar-image.yml"
       - "go.mod"
       - "go.sum"
       - "internal/**"
@@ -34,11 +36,12 @@ on:
       - "apis/grpc/**"
       - "pkg/agent/sidecar/**"
       - "cmd/agent/sidecar/**"
-      - "dockers/base/Dockerfile"
       - "dockers/agent/sidecar/Dockerfile"
       - "versions/GO_VERSION"
   pull_request:
     paths:
+      - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/dockers-agent-sidecar-image.yml"
       - "go.mod"
       - "go.sum"
       - "internal/**"
@@ -49,12 +52,13 @@ on:
       - "apis/grpc/**"
       - "pkg/agent/sidecar/**"
       - "cmd/agent/sidecar/**"
-      - "dockers/base/Dockerfile"
       - "dockers/agent/sidecar/Dockerfile"
       - "versions/GO_VERSION"
 
 jobs:
   build:
+    strategy:
+      max-parallel: 4
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

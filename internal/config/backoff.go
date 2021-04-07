@@ -19,6 +19,7 @@ package config
 
 import "github.com/vdaas/vald/internal/backoff"
 
+// Backoff represents the configuration for the internal backoff package.
 type Backoff struct {
 	InitialDuration  string  `json:"initial_duration" yaml:"initial_duration"`
 	BackoffTimeLimit string  `json:"backoff_time_limit" yaml:"backoff_time_limit"`
@@ -29,6 +30,7 @@ type Backoff struct {
 	EnableErrorLog   bool    `json:"enable_error_log" yaml:"enable_error_log"`
 }
 
+// Bind binds the actual data from the Backoff receiver fields.
 func (b *Backoff) Bind() *Backoff {
 	b.InitialDuration = GetActualValue(b.InitialDuration)
 	b.BackoffTimeLimit = GetActualValue(b.BackoffTimeLimit)
@@ -37,6 +39,7 @@ func (b *Backoff) Bind() *Backoff {
 	return b
 }
 
+// Opts creates and returns the slice with the functional options for the internal backoff package.
 func (b *Backoff) Opts() []backoff.Option {
 	opts := make([]backoff.Option, 0, 7)
 	opts = append(opts,
