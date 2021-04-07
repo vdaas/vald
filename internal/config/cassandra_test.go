@@ -756,7 +756,7 @@ func TestCassandra_Opts(t *testing.T) {
 					VectorBackupTable:        "backup_vector",
 				},
 				want: want{
-					wantOpts: make([]cassandra.Option, 0),
+					wantOpts: nil,
 					err:      errors.ErrInvalidDNSConfig(5*time.Minute, 1*time.Minute),
 				},
 			}
