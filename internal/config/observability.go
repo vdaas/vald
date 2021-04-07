@@ -17,6 +17,7 @@
 // Package config providers configuration type and load configuration logic
 package config
 
+// Observability represents the configuration for the observability.
 type Observability struct {
 	Enabled     bool         `json:"enabled" yaml:"enabled"`
 	Collector   *Collector   `json:"collector" yaml:"collector"`
@@ -26,16 +27,19 @@ type Observability struct {
 	Stackdriver *Stackdriver `json:"stackdriver" yaml:"stackdriver"`
 }
 
+// Collector represents the configuration for the collector.
 type Collector struct {
 	Duration string   `json:"duration" yaml:"duration"`
 	Metrics  *Metrics `json:"metrics" yaml:"metrics"`
 }
 
+// Trace represents the configuration for the trace.
 type Trace struct {
 	Enabled      bool    `json:"enabled" yaml:"enabled"`
 	SamplingRate float64 `json:"sampling_rate" yaml:"sampling_rate"`
 }
 
+// Metrics represents the configuration for the metrics.
 type Metrics struct {
 	EnableVersionInfo bool     `json:"enable_version_info" yaml:"enable_version_info"`
 	VersionInfoLabels []string `json:"version_info_labels" yaml:"version_info_labels"`
@@ -44,12 +48,14 @@ type Metrics struct {
 	EnableCGO         bool     `json:"enable_cgo" yaml:"enable_cgo"`
 }
 
+// Prometheus represents the configuration for the prometheus.
 type Prometheus struct {
 	Enabled   bool   `json:"enabled" yaml:"enabled"`
 	Endpoint  string `json:"endpoint" yaml:"endpoint"`
 	Namespace string `json:"namespace" yaml:"namespace"`
 }
 
+// Jaeger represents the configuration for the jaeger.
 type Jaeger struct {
 	Enabled bool `json:"enabled" yaml:"enabled"`
 
@@ -64,6 +70,7 @@ type Jaeger struct {
 	BufferMaxCount int `json:"buffer_max_count" yaml:"buffer_max_count"`
 }
 
+// Stackdriver represents the configuration for the stackdriver.
 type Stackdriver struct {
 	ProjectID string `json:"project_id" yaml:"project_id"`
 
@@ -73,6 +80,7 @@ type Stackdriver struct {
 	Profiler *StackdriverProfiler `json:"profiler" yaml:"profiler"`
 }
 
+// StackdriverClient represents the configuration for the client of stackdriver.
 type StackdriverClient struct {
 	APIKey                string   `json:"api_key" yaml:"api_key"`
 	Audiences             []string `json:"audiences" yaml:"audiences"`
@@ -87,6 +95,7 @@ type StackdriverClient struct {
 	AuthenticationEnabled bool     `json:"authentication_enabled" yaml:"authentication_enabled"`
 }
 
+// StackdriverExporter represents the configuration for the exporter of stackdriver.
 type StackdriverExporter struct {
 	MonitoringEnabled bool `json:"monitoring_enabled" yaml:"monitoring_enabled"`
 	TracingEnabled    bool `json:"tracing_enabled" yaml:"tracing_enabled"`
@@ -104,6 +113,7 @@ type StackdriverExporter struct {
 	NumberOfWorkers   int    `json:"number_of_workers" yaml:"number_of_workers"`
 }
 
+// StackdriverProfiler represents the configuration for the profiler of stackdriver.
 type StackdriverProfiler struct {
 	Enabled        bool   `json:"enabled" yaml:"enabled"`
 	Service        string `json:"service" yaml:"service"`
@@ -124,6 +134,7 @@ type StackdriverProfiler struct {
 	Zone     string `json:"zone" yaml:"zone"`
 }
 
+// Bind binds the actual data from the Observability receiver fields.
 func (o *Observability) Bind() *Observability {
 	if o.Collector != nil {
 		o.Collector = o.Collector.Bind()
@@ -165,6 +176,7 @@ func (o *Observability) Bind() *Observability {
 	return o
 }
 
+// Bind binds the actual data from the Collector receiver fields.
 func (c *Collector) Bind() *Collector {
 	c.Duration = GetActualValue(c.Duration)
 
@@ -177,6 +189,7 @@ func (c *Collector) Bind() *Collector {
 	return c
 }
 
+// Bind binds the actual data from the Stackdriver receiver fields.
 func (sd *Stackdriver) Bind() *Stackdriver {
 	sd.ProjectID = GetActualValue(sd.ProjectID)
 

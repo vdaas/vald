@@ -43,8 +43,8 @@ func TestObservability_Bind(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *Observability) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got *Observability) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -79,8 +79,14 @@ func TestObservability_Bind(t *testing.T) {
 		}(),
 		func() test {
 			collectorDur := "5ms"
-			prometheusEndpoint := "http://prometheus:9091"
+			prometheusEndpoint := "http://prometheus.kube-system.svc.cluster.local.:9090"
 			prometheusNamespace := "monitoring"
+			jaegerCollectorEndpoint := "http://jaeger-collector.monitoring.svc.cluster.local:14268/api/traces"
+			jaegerAgentEndpoint := "jaeger-agent.monitoring.svc.cluster.local:6831"
+			jaegerUsername := "username"
+			jaegerPassword := "pass"
+			jaegerServiceName := "jaeger"
+			stackdriverProjectID := "vald"
 			return test{
 				name: "return Observability when all object parameters are not nil",
 				fields: fields{
@@ -93,26 +99,133 @@ func TestObservability_Bind(t *testing.T) {
 						Endpoint:  prometheusEndpoint,
 						Namespace: prometheusNamespace,
 					},
-					Jaeger: new(Jaeger),
+					Jaeger: &Jaeger{
+						CollectorEndpoint: jaegerCollectorEndpoint,
+						AgentEndpoint:     jaegerAgentEndpoint,
+						Username:          jaegerUsername,
+						Password:          jaegerPassword,
+						ServiceName:       jaegerServiceName,
+					},
 					Stackdriver: &Stackdriver{
-						Client:   new(StackdriverClient),
-						Exporter: new(StackdriverExporter),
-						Profiler: new(StackdriverProfiler),
+						ProjectID: stackdriverProjectID,
+						Client:    new(StackdriverClient),
+						Exporter:  new(StackdriverExporter),
+						Profiler:  new(StackdriverProfiler),
 					},
 				},
 				want: want{
 					want: &Observability{
-						Enabled: true,
+						Enabled: false,
 						Collector: &Collector{
-							Metrics: new(Metrics),
+							Duration: collectorDur,
 						},
-						Trace:      new(Trace),
-						Prometheus: new(Prometheus),
-						Jaeger:     new(Jaeger),
+						Trace: new(Trace),
+						Prometheus: &Prometheus{
+							Endpoint:  prometheusEndpoint,
+							Namespace: prometheusNamespace,
+						},
+						Jaeger: &Jaeger{
+							CollectorEndpoint: jaegerCollectorEndpoint,
+							AgentEndpoint:     jaegerAgentEndpoint,
+							Username:          jaegerUsername,
+							Password:          jaegerPassword,
+							ServiceName:       jaegerServiceName,
+						},
 						Stackdriver: &Stackdriver{
-							Client:   new(StackdriverClient),
-							Exporter: new(StackdriverExporter),
-							Profiler: new(StackdriverProfiler),
+							ProjectID: stackdriverProjectID,
+							Client:    new(StackdriverClient),
+							Exporter:  new(StackdriverExporter),
+							Profiler:  new(StackdriverProfiler),
+						},
+					},
+				},
+			}
+		}(),
+		func() test {
+			collectorDur := "5ms"
+			prometheusEndpoint := "http://prometheus.kube-system.svc.cluster.local.:9090"
+			prometheusNamespace := "monitoring"
+			jaegerCollectorEndpoint := "http://jaeger-collector.monitoring.svc.cluster.local:14268/api/traces"
+			jaegerAgentEndpoint := "jaeger-agent.monitoring.svc.cluster.local:6831"
+			jaegerUsername := "username"
+			jaegerPassword := "pass"
+			jaegerServiceName := "jaeger"
+			stackdriverProjectID := "vald"
+			m := map[string]string{
+				"PROMETHEUS_ENDPOINT":       prometheusEndpoint,
+				"PROMETHUS_NAMESPACE":       prometheusNamespace,
+				"JAEGER_COLLECTOR_ENDPOINT": jaegerCollectorEndpoint,
+				"JAEGER_AGENT_ENDPOINT":     jaegerAgentEndpoint,
+				"JAEGER_USERNAME":           jaegerUsername,
+				"JAEGER_PASSWORD":           jaegerPassword,
+				"JAEGER_SERVICE_NAME":       jaegerServiceName,
+				"STACKDRIVER_PROJECT_ID":    stackdriverProjectID,
+			}
+			return test{
+				name: "return Observability when the data is loaded environment variable",
+				fields: fields{
+					Enabled: false,
+					Collector: &Collector{
+						Duration: collectorDur,
+					},
+					Trace: new(Trace),
+					Prometheus: &Prometheus{
+						Endpoint:  "_PROMETHEUS_ENDPOINT_",
+						Namespace: "_PROMETHUS_NAMESPACE_",
+					},
+					Jaeger: &Jaeger{
+						CollectorEndpoint: "_JAEGER_COLLECTOR_ENDPOINT_",
+						AgentEndpoint:     "_JAEGER_AGENT_ENDPOINT_",
+						Username:          "_JAEGER_USERNAME_",
+						Password:          "_JAEGER_PASSWORD_",
+						ServiceName:       "_JAEGER_SERVICE_NAME_",
+					},
+					Stackdriver: &Stackdriver{
+						ProjectID: "_STACKDRIVER_PROJECT_ID_",
+						Client:    new(StackdriverClient),
+						Exporter:  new(StackdriverExporter),
+						Profiler:  new(StackdriverProfiler),
+					},
+				},
+				beforeFunc: func(t *testing.T) {
+					t.Helper()
+					for k, v := range m {
+						if err := os.Setenv(k, v); err != nil {
+							t.Fatal(err)
+						}
+					}
+				},
+				afterFunc: func(t *testing.T) {
+					t.Helper()
+					for k := range m {
+						if err := os.Unsetenv(k); err != nil {
+							t.Fatal(err)
+						}
+					}
+				},
+				want: want{
+					want: &Observability{
+						Enabled: false,
+						Collector: &Collector{
+							Duration: collectorDur,
+						},
+						Trace: new(Trace),
+						Prometheus: &Prometheus{
+							Endpoint:  prometheusEndpoint,
+							Namespace: prometheusNamespace,
+						},
+						Jaeger: &Jaeger{
+							CollectorEndpoint: jaegerCollectorEndpoint,
+							AgentEndpoint:     jaegerAgentEndpoint,
+							Username:          jaegerUsername,
+							Password:          jaegerPassword,
+							ServiceName:       jaegerServiceName,
+						},
+						Stackdriver: &Stackdriver{
+							ProjectID: stackdriverProjectID,
+							Client:    new(StackdriverClient),
+							Exporter:  new(StackdriverExporter),
+							Profiler:  new(StackdriverProfiler),
 						},
 					},
 				},
@@ -126,10 +239,10 @@ func TestObservability_Bind(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
