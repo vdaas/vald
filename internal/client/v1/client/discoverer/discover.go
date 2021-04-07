@@ -138,7 +138,7 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 				err = c.discover(ctx, ech)
 			}
 			if err != nil {
-				log.Warn(err)
+				log.Error(err)
 				select {
 				case <-ctx.Done():
 					return finalize()
@@ -256,7 +256,6 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 							addr := net.JoinHostPort(pods[i].GetIp(), uint16(c.port))
 							if err = c.connect(ctx, addr); err != nil {
 								err = errors.ErrAddrCouldNotDiscover(err, addr)
-								log.Debugf("could not discover addr:%s\terror: %v", addr, err)
 								select {
 								case <-ictx.Done():
 									return nil, ictx.Err()

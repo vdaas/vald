@@ -25,6 +25,21 @@ Run the following command to install the chart,
 
     $ helm install vald-helm-operator-release vald/vald-helm-operator
 
+Upgrading the version
+---
+
+Please upgrade the CRDs first because Helm doesn't have a support to upgrade CRDs.
+
+    $ kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/{{ template "chart.version" . }}/charts/vald-helm-operator/crds/valdrelease.yaml
+    $ kubectl apply -f https://raw.githubusercontent.com/vdaas/vald/{{ template "chart.version" . }}/charts/vald-helm-operator/crds/valdhelmoperatorrelease.yaml
+
+After upgrading CRDs, you can upgrade the operator.
+If you're using `valdhelmoperatorrelease` (or `vhor`) resource, please update the `spec.image.tag` field of it.
+
+    $ kubectl patch vhor vhor-release -p '{"spec":{"image":{"tag":"{{ template "chart.version" . }}"}}}'
+
+On the other hand, please update the operator's deployment manually.
+
 Custom Resources
 ---
 

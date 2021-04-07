@@ -238,7 +238,7 @@ func (d *dialer) cachedDialer(dctx context.Context, network, addr string) (conn 
 				if err == nil && conn != nil {
 					return conn, nil
 				}
-				log.Debugf("failed to dial connection to %s\terror: %v", target, err)
+				log.Warnf("failed to dial connection to %s\terror: %v", target, err)
 			}
 			d.cache.Delete(host)
 		}
