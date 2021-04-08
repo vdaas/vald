@@ -37,7 +37,7 @@ replace (
 )
 
 require (
-	cloud.google.com/go v0.79.0
+	cloud.google.com/go v0.81.0
 	code.cloudfoundry.org/bytefmt v0.0.0-20200131002437-cf55d5288a48
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
 	contrib.go.opencensus.io/exporter/prometheus v0.3.0
@@ -79,7 +79,7 @@ require (
 	golang.org/x/sys v0.0.0-20210403161142-5e06dd20ab57
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/plot v0.9.0
-	google.golang.org/api v0.43.0
+	google.golang.org/api v0.44.0
 	google.golang.org/genproto v0.0.0-20210405174219-a39eb2f71cb9
 	google.golang.org/grpc v1.36.1
 	gopkg.in/yaml.v2 v2.4.0
