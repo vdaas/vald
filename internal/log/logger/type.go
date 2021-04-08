@@ -54,7 +54,7 @@ func Atot(str string) Type {
 		return GLG
 	case "zap":
 		return ZAP
-	case "nop":
+	case "nop", "empty", "discard":
 		return NOP
 		// case "zerolog":
 		// 	return ZEROLOG
