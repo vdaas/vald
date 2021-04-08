@@ -24,6 +24,7 @@ const (
 	Unknown Type = iota
 	GLG
 	ZAP
+	NOP
 	// ZEROLOG
 	// LOGRUS
 	// KLOG
@@ -35,6 +36,8 @@ func (m Type) String() string {
 		return "glg"
 	case ZAP:
 		return "zap"
+	case NOP:
+		return "nop"
 		// case ZEROLOG:
 		// 	return "zerolog"
 		// case LOGRUS:
@@ -51,6 +54,8 @@ func Atot(str string) Type {
 		return GLG
 	case "zap":
 		return ZAP
+	case "nop":
+		return NOP
 		// case "zerolog":
 		// 	return ZEROLOG
 		// case "logrus":
