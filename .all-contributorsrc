@@ -106,6 +106,16 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "thedrow",
+      "name": "Omer Katz",
+      "avatar_url": "https://avatars.githubusercontent.com/u/48936?v=4",
+      "profile": "http://omerkatz.com",
+      "contributions": [
+        "doc",
+        "tutorial"
+      ]
     }
   ],
   "contributorsPerLine": 7,
