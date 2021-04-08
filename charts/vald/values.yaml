@@ -259,7 +259,7 @@ defaults:
           # @schema {"name": "defaults.server_config.healths.liveness.livenessProbe.initialDelaySeconds", "type": "integer"}
           # defaults.server_config.healths.liveness.livenessProbe.initialDelaySeconds -- liveness probe initial delay seconds
           initialDelaySeconds: 5
-          # @schema {"name": "defaults.server_config.healths.liveness.livenessProbe.timetoutSeconds", "type": "integer"}
+          # @schema {"name": "defaults.server_config.healths.liveness.livenessProbe.timeoutSeconds", "type": "integer"}
           # defaults.server_config.healths.liveness.livenessProbe.timeoutSeconds -- liveness probe timeout seconds
           timeoutSeconds: 2
           # @schema {"name": "defaults.server_config.healths.liveness.livenessProbe.successThreshold", "type": "integer"}
@@ -2899,6 +2899,7 @@ agent:
             retry_count: 100
             # agent.sidecar.config.client.transport.backoff.enable_error_log -- backoff error log enabled
             enable_error_log: true
+      # @schema {"name": "agent.sidecar.config.restore_backoff_enabled", "type": "boolean"}
       # agent.sidecar.config.restore_backoff_enabled -- restore backoff enabled
       restore_backoff_enabled: false
       # @schema {"name": "agent.sidecar.config.restore_backoff", "alias": "backoff"}
