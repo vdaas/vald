@@ -65,7 +65,7 @@ Go to [Get Started](./docs/tutorial/get-started.md) page to try out Vald :)
 - Multi language supported
     - Go, Java, Clojure, Node.js, and Python client library are supported.
     - gRPC APIs can be triggered by any programming languages which support gRPC.
-    - REST API is also supported.```
+    - REST API is also supported.
 
 ## Requirements
 
