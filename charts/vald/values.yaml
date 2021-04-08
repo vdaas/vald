@@ -1227,7 +1227,7 @@ gateway:
       # @schema {"name": "gateway.vald.gateway_config.agent_namespace", "type": "string"}
       # gateway.vald.gateway_config.agent_namespace -- agent namespace
       agent_namespace: _MY_POD_NAMESPACE_
-      # @schema {"name": "gateway.vald.gateway_config.node_namespace", "type": "string"}
+      # @schema {"name": "gateway.vald.gateway_config.node_name", "type": "string"}
       # gateway.vald.gateway_config.node_name -- node name
       node_name: "" # _MY_NODE_NAME_
       # @schema {"name": "gateway.vald.gateway_config.index_replica", "type": "integer", "minimum": 1}
@@ -1754,7 +1754,7 @@ gateway:
       # @schema {"name": "gateway.lb.gateway_config.agent_namespace", "type": "string"}
       # gateway.lb.gateway_config.agent_namespace -- agent namespace
       agent_namespace: _MY_POD_NAMESPACE_
-      # @schema {"name": "gateway.lb.gateway_config.node_namespace", "type": "string"}
+      # @schema {"name": "gateway.lb.gateway_config.node_name", "type": "string"}
       # gateway.lb.gateway_config.node_name -- node name
       node_name: "" # _MY_NODE_NAME_
       # @schema {"name": "gateway.lb.gateway_config.index_replica", "type": "integer", "minimum": 1}
@@ -3991,7 +3991,7 @@ manager:
     # @schema {"name": "manager.index.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
     # manager.index.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
     terminationGracePeriodSeconds: 30
-    # @schema {"name": "mangaer.index.podSecurityContext", "type": "object"}
+    # @schema {"name": "manager.index.podSecurityContext", "type": "object"}
     # manager.index.podSecurityContext -- security context for pod
     podSecurityContext:
       runAsUser: 1002
@@ -4701,6 +4701,7 @@ meta:
         # meta.cassandra.config.host_filter.white_list -- list of white_list which allows each connection
         white_list: []
 
+# @schema {"name": "initializer", "type": "object"}
 initializer:
   mysql:
     # initializer.mysql.enabled -- mysql initializer job enabled
