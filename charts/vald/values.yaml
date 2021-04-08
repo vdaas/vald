@@ -99,26 +99,26 @@ defaults:
             # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.reuse_addr", "type": "boolean"}
             # defaults.server_config.servers.rest.server.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
             reuse_addr: true
-            # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.net_fast_open", "type": "boolean"}
-            # defaults.server_config.servers.rest.server.socket_option.reuse_port -- server listen socket option for tcp_fast_open functionality
+            # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.tcp_fast_open", "type": "boolean"}
+            # defaults.server_config.servers.rest.server.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
             tcp_fast_open: true
-            # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.net_no_delay", "type": "boolean"}
-            # defaults.server_config.servers.rest.server.socket_option.reuse_port -- server listen socket option for tcp_no_delay functionality
+            # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.tcp_no_delay", "type": "boolean"}
+            # defaults.server_config.servers.rest.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
             tcp_no_delay: true
-            # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.net_cork", "type": "boolean"}
-            # defaults.server_config.servers.rest.server.socket_option.reuse_port -- server listen socket option for tcp_cork functionality
+            # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.tcp_cork", "type": "boolean"}
+            # defaults.server_config.servers.rest.server.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
             tcp_cork: false
-            # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.net_quick_ack", "type": "boolean"}
-            # defaults.server_config.servers.rest.server.socket_option.reuse_port -- server listen socket option for tcp_quick_ack functionality
+            # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.tcp_quick_ack", "type": "boolean"}
+            # defaults.server_config.servers.rest.server.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
             tcp_quick_ack: true
-            # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.net_defer_accept", "type": "boolean"}
-            # defaults.server_config.servers.rest.server.socket_option.reuse_port -- server listen socket option for tcp_defer_accept functionality
+            # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.tcp_defer_accept", "type": "boolean"}
+            # defaults.server_config.servers.rest.server.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
             tcp_defer_accept: true
             # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.ip_transparent", "type": "boolean"}
-            # defaults.server_config.servers.rest.server.socket_option.reuse_port -- server listen socket option for ip_transparent functionality
+            # defaults.server_config.servers.rest.server.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
             ip_transparent: false
             # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.ip_recover_destination_addr", "type": "boolean"}
-            # defaults.server_config.servers.rest.server.socket_option.reuse_port -- server listen socket option for ip_recover_destination_addr functionality
+            # defaults.server_config.servers.rest.server.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
             ip_recover_destination_addr: false
       # @schema {"name": "defaults.server_config.servers.grpc", "type": "object"}
       grpc:
@@ -210,19 +210,19 @@ defaults:
             reuse_port: true
             # defaults.server_config.servers.grpc.server.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
             reuse_addr: true
-            # defaults.server_config.servers.grpc.server.socket_option.reuse_port -- server listen socket option for tcp_fast_open functionality
+            # defaults.server_config.servers.grpc.server.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
             tcp_fast_open: true
-            # defaults.server_config.servers.grpc.server.socket_option.reuse_port -- server listen socket option for tcp_no_delay functionality
+            # defaults.server_config.servers.grpc.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
             tcp_no_delay: true
-            # defaults.server_config.servers.grpc.server.socket_option.reuse_port -- server listen socket option for tcp_cork functionality
+            # defaults.server_config.servers.grpc.server.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
             tcp_cork: false
-            # defaults.server_config.servers.grpc.server.socket_option.reuse_port -- server listen socket option for tcp_quick_ack functionality
+            # defaults.server_config.servers.grpc.server.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
             tcp_quick_ack: true
-            # defaults.server_config.servers.grpc.server.socket_option.reuse_port -- server listen socket option for tcp_defer_accept functionality
+            # defaults.server_config.servers.grpc.server.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
             tcp_defer_accept: true
-            # defaults.server_config.servers.grpc.server.socket_option.reuse_port -- server listen socket option for ip_transparent functionality
+            # defaults.server_config.servers.grpc.server.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
             ip_transparent: false
-            # defaults.server_config.servers.grpc.server.socket_option.reuse_port -- server listen socket option for ip_recover_destination_addr functionality
+            # defaults.server_config.servers.grpc.server.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
             ip_recover_destination_addr: false
           # @schema {"name": "defaults.server_config.servers.grpc.server.restart", "type": "boolean"}
           # defaults.server_config.servers.grpc.server.restart -- gRPC server restart
@@ -259,7 +259,7 @@ defaults:
           # @schema {"name": "defaults.server_config.healths.liveness.livenessProbe.initialDelaySeconds", "type": "integer"}
           # defaults.server_config.healths.liveness.livenessProbe.initialDelaySeconds -- liveness probe initial delay seconds
           initialDelaySeconds: 5
-          # @schema {"name": "defaults.server_config.healths.liveness.livenessProbe.timetoutSeconds", "type": "integer"}
+          # @schema {"name": "defaults.server_config.healths.liveness.livenessProbe.timeoutSeconds", "type": "integer"}
           # defaults.server_config.healths.liveness.livenessProbe.timeoutSeconds -- liveness probe timeout seconds
           timeoutSeconds: 2
           # @schema {"name": "defaults.server_config.healths.liveness.livenessProbe.successThreshold", "type": "integer"}
@@ -311,19 +311,19 @@ defaults:
             reuse_port: true
             # defaults.server_config.healths.liveness.server.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
             reuse_addr: true
-            # defaults.server_config.healths.liveness.server.socket_option.reuse_port -- server listen socket option for tcp_fast_open functionality
+            # defaults.server_config.healths.liveness.server.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
             tcp_fast_open: true
-            # defaults.server_config.healths.liveness.server.socket_option.reuse_port -- server listen socket option for tcp_no_delay functionality
+            # defaults.server_config.healths.liveness.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
             tcp_no_delay: true
-            # defaults.server_config.healths.liveness.server.socket_option.reuse_port -- server listen socket option for tcp_cork functionality
+            # defaults.server_config.healths.liveness.server.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
             tcp_cork: false
-            # defaults.server_config.healths.liveness.server.socket_option.reuse_port -- server listen socket option for tcp_quick_ack functionality
+            # defaults.server_config.healths.liveness.server.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
             tcp_quick_ack: true
-            # defaults.server_config.healths.liveness.server.socket_option.reuse_port -- server listen socket option for tcp_defer_accept functionality
+            # defaults.server_config.healths.liveness.server.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
             tcp_defer_accept: true
-            # defaults.server_config.healths.liveness.server.socket_option.reuse_port -- server listen socket option for ip_transparent functionality
+            # defaults.server_config.healths.liveness.server.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
             ip_transparent: false
-            # defaults.server_config.healths.liveness.server.socket_option.reuse_port -- server listen socket option for ip_recover_destination_addr functionality
+            # defaults.server_config.healths.liveness.server.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
             ip_recover_destination_addr: false
       # @schema {"name": "defaults.server_config.healths.readiness", "type": "object"}
       readiness:
@@ -407,19 +407,19 @@ defaults:
             reuse_port: true
             # defaults.server_config.healths.readiness.server.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
             reuse_addr: true
-            # defaults.server_config.healths.readiness.server.socket_option.reuse_port -- server listen socket option for tcp_fast_open functionality
+            # defaults.server_config.healths.readiness.server.socket_option.tcp_fast_oepn -- server listen socket option for tcp_fast_open functionality
             tcp_fast_open: true
-            # defaults.server_config.healths.readiness.server.socket_option.reuse_port -- server listen socket option for tcp_no_delay functionality
+            # defaults.server_config.healths.readiness.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
             tcp_no_delay: true
-            # defaults.server_config.healths.readiness.server.socket_option.reuse_port -- server listen socket option for tcp_cork functionality
+            # defaults.server_config.healths.readiness.server.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
             tcp_cork: false
-            # defaults.server_config.healths.readiness.server.socket_option.reuse_port -- server listen socket option for tcp_quick_ack functionality
+            # defaults.server_config.healths.readiness.server.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
             tcp_quick_ack: true
-            # defaults.server_config.healths.readiness.server.socket_option.reuse_port -- server listen socket option for tcp_defer_accept functionality
+            # defaults.server_config.healths.readiness.server.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
             tcp_defer_accept: true
-            # defaults.server_config.healths.readiness.server.socket_option.reuse_port -- server listen socket option for ip_transparent functionality
+            # defaults.server_config.healths.readiness.server.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
             ip_transparent: false
-            # defaults.server_config.healths.readiness.server.socket_option.reuse_port -- server listen socket option for ip_recover_destination_addr functionality
+            # defaults.server_config.healths.readiness.server.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
             ip_recover_destination_addr: false
     # @schema {"name": "defaults.server_config.metrics", "type": "object"}
     metrics:
@@ -477,19 +477,19 @@ defaults:
             reuse_port: true
             # defaults.server_config.metrics.pprof.server.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
             reuse_addr: true
-            # defaults.server_config.metrics.pprof.server.socket_option.reuse_port -- server listen socket option for tcp_fast_open functionality
+            # defaults.server_config.metrics.pprof.server.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
             tcp_fast_open: true
-            # defaults.server_config.metrics.pprof.server.socket_option.reuse_port -- server listen socket option for tcp_no_delay functionality
+            # defaults.server_config.metrics.pprof.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
             tcp_no_delay: true
-            # defaults.server_config.metrics.pprof.server.socket_option.reuse_port -- server listen socket option for tcp_cork functionality
+            # defaults.server_config.metrics.pprof.server.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
             tcp_cork: false
-            # defaults.server_config.metrics.pprof.server.socket_option.reuse_port -- server listen socket option for tcp_quick_ack functionality
+            # defaults.server_config.metrics.pprof.server.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
             tcp_quick_ack: true
-            # defaults.server_config.metrics.pprof.server.socket_option.reuse_port -- server listen socket option for tcp_defer_accept functionality
+            # defaults.server_config.metrics.pprof.server.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
             tcp_defer_accept: true
-            # defaults.server_config.metrics.pprof.server.socket_option.reuse_port -- server listen socket option for ip_transparent functionality
+            # defaults.server_config.metrics.pprof.server.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
             ip_transparent: false
-            # defaults.server_config.metrics.pprof.server.socket_option.reuse_port -- server listen socket option for ip_recover_destination_addr functionality
+            # defaults.server_config.metrics.pprof.server.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
             ip_recover_destination_addr: false
       # @schema {"name": "defaults.server_config.metrics.prometheus", "type": "object"}
       prometheus:
@@ -545,19 +545,19 @@ defaults:
             reuse_port: true
             # defaults.server_config.metrics.prometheus.server.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
             reuse_addr: true
-            # defaults.server_config.metrics.prometheus.server.socket_option.reuse_port -- server listen socket option for tcp_fast_open functionality
+            # defaults.server_config.metrics.prometheus.server.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
             tcp_fast_open: true
-            # defaults.server_config.metrics.prometheus.server.socket_option.reuse_port -- server listen socket option for tcp_no_delay functionality
+            # defaults.server_config.metrics.prometheus.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
             tcp_no_delay: true
-            # defaults.server_config.metrics.prometheus.server.socket_option.reuse_port -- server listen socket option for tcp_cork functionality
+            # defaults.server_config.metrics.prometheus.server.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
             tcp_cork: false
-            # defaults.server_config.metrics.prometheus.server.socket_option.reuse_port -- server listen socket option for tcp_quick_ack functionality
+            # defaults.server_config.metrics.prometheus.server.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
             tcp_quick_ack: true
-            # defaults.server_config.metrics.prometheus.server.socket_option.reuse_port -- server listen socket option for tcp_defer_accept functionality
+            # defaults.server_config.metrics.prometheus.server.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
             tcp_defer_accept: true
-            # defaults.server_config.metrics.prometheus.server.socket_option.reuse_port -- server listen socket option for ip_transparent functionality
+            # defaults.server_config.metrics.prometheus.server.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
             ip_transparent: false
-            # defaults.server_config.metrics.prometheus.server.socket_option.reuse_port -- server listen socket option for ip_recover_destination_addr functionality
+            # defaults.server_config.metrics.prometheus.server.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
             ip_recover_destination_addr: false
     # @schema {"name": "defaults.server_config.full_shutdown_duration", "type": "string"}
     # defaults.server_config.full_shutdown_duration -- server full shutdown duration
@@ -726,19 +726,19 @@ defaults:
             reuse_port: true
             # defaults.grpc.client.dial_option.net.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
             reuse_addr: true
-            # defaults.grpc.client.dial_option.net.socket_option.reuse_port -- server listen socket option for tcp_fast_open functionality
+            # defaults.grpc.client.dial_option.net.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
             tcp_fast_open: true
-            # defaults.grpc.client.dial_option.net.socket_option.reuse_port -- server listen socket option for tcp_no_delay functionality
+            # defaults.grpc.client.dial_option.net.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
             tcp_no_delay: true
-            # defaults.grpc.client.dial_option.net.socket_option.reuse_port -- server listen socket option for tcp_cork functionality
+            # defaults.grpc.client.dial_option.net.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
             tcp_cork: false
-            # defaults.grpc.client.dial_option.net.socket_option.reuse_port -- server listen socket option for tcp_quick_ack functionality
+            # defaults.grpc.client.dial_option.net.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
             tcp_quick_ack: true
-            # defaults.grpc.client.dial_option.net.socket_option.reuse_port -- server listen socket option for tcp_defer_accept functionality
+            # defaults.grpc.client.dial_option.net.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
             tcp_defer_accept: true
-            # defaults.grpc.client.dial_option.net.socket_option.reuse_port -- server listen socket option for ip_transparent functionality
+            # defaults.grpc.client.dial_option.net.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
             ip_transparent: false
-            # defaults.grpc.client.dial_option.net.socket_option.reuse_port -- server listen socket option for ip_recover_destination_addr functionality
+            # defaults.grpc.client.dial_option.net.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
             ip_recover_destination_addr: false
         # @schema {"name": "defaults.grpc.client.dial_option.keep_alive", "type": "object"}
         keep_alive:
@@ -1227,7 +1227,7 @@ gateway:
       # @schema {"name": "gateway.vald.gateway_config.agent_namespace", "type": "string"}
       # gateway.vald.gateway_config.agent_namespace -- agent namespace
       agent_namespace: _MY_POD_NAMESPACE_
-      # @schema {"name": "gateway.vald.gateway_config.node_namespace", "type": "string"}
+      # @schema {"name": "gateway.vald.gateway_config.node_name", "type": "string"}
       # gateway.vald.gateway_config.node_name -- node name
       node_name: "" # _MY_NODE_NAME_
       # @schema {"name": "gateway.vald.gateway_config.index_replica", "type": "integer", "minimum": 1}
@@ -1754,7 +1754,7 @@ gateway:
       # @schema {"name": "gateway.lb.gateway_config.agent_namespace", "type": "string"}
       # gateway.lb.gateway_config.agent_namespace -- agent namespace
       agent_namespace: _MY_POD_NAMESPACE_
-      # @schema {"name": "gateway.lb.gateway_config.node_namespace", "type": "string"}
+      # @schema {"name": "gateway.lb.gateway_config.node_name", "type": "string"}
       # gateway.lb.gateway_config.node_name -- node name
       node_name: "" # _MY_NODE_NAME_
       # @schema {"name": "gateway.lb.gateway_config.index_replica", "type": "integer", "minimum": 1}
@@ -2863,19 +2863,19 @@ agent:
             reuse_port: true
             # agent.sidecar.config.client.net.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
             reuse_addr: true
-            # agent.sidecar.config.client.net.socket_option.reuse_port -- server listen socket option for tcp_fast_open functionality
+            # agent.sidecar.config.client.net.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
             tcp_fast_open: true
-            # agent.sidecar.config.client.net.socket_option.reuse_port -- server listen socket option for tcp_no_delay functionality
+            # agent.sidecar.config.client.net.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
             tcp_no_delay: true
-            # agent.sidecar.config.client.net.socket_option.reuse_port -- server listen socket option for tcp_cork functionality
+            # agent.sidecar.config.client.net.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
             tcp_cork: false
-            # agent.sidecar.config.client.net.socket_option.reuse_port -- server listen socket option for tcp_quick_ack functionality
+            # agent.sidecar.config.client.net.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
             tcp_quick_ack: true
-            # agent.sidecar.config.client.net.socket_option.reuse_port -- server listen socket option for tcp_defer_accept functionality
+            # agent.sidecar.config.client.net.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
             tcp_defer_accept: true
-            # agent.sidecar.config.client.net.socket_option.reuse_port -- server listen socket option for ip_transparent functionality
+            # agent.sidecar.config.client.net.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
             ip_transparent: false
-            # agent.sidecar.config.client.net.socket_option.reuse_port -- server listen socket option for ip_recover_destination_addr functionality
+            # agent.sidecar.config.client.net.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
             ip_recover_destination_addr: false
         # @schema {"name": "agent.sidecar.config.client.transport", "type": "object"}
         transport:
@@ -2930,6 +2930,7 @@ agent:
             retry_count: 100
             # agent.sidecar.config.client.transport.backoff.enable_error_log -- backoff error log enabled
             enable_error_log: true
+      # @schema {"name": "agent.sidecar.config.restore_backoff_enabled", "type": "boolean"}
       # agent.sidecar.config.restore_backoff_enabled -- restore backoff enabled
       restore_backoff_enabled: false
       # @schema {"name": "agent.sidecar.config.restore_backoff", "alias": "backoff"}
@@ -3181,19 +3182,19 @@ discoverer:
         reuse_port: true
         # discoverer.discoverer.net.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
         reuse_addr: true
-        # discoverer.discoverer.net.socket_option.reuse_port -- server listen socket option for tcp_fast_open functionality
+        # discoverer.discoverer.net.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
         tcp_fast_open: true
-        # discoverer.discoverer.net.socket_option.reuse_port -- server listen socket option for tcp_no_delay functionality
+        # discoverer.discoverer.net.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
         tcp_no_delay: true
-        # discoverer.discoverer.net.socket_option.reuse_port -- server listen socket option for tcp_cork functionality
+        # discoverer.discoverer.net.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
         tcp_cork: false
-        # discoverer.discoverer.net.socket_option.reuse_port -- server listen socket option for tcp_quick_ack functionality
+        # discoverer.discoverer.net.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
         tcp_quick_ack: true
-        # discoverer.discoverer.net.socket_option.reuse_port -- server listen socket option for tcp_defer_accept functionality
+        # discoverer.discoverer.net.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
         tcp_defer_accept: true
-        # discoverer.discoverer.net.socket_option.reuse_port -- server listen socket option for ip_transparent functionality
+        # discoverer.discoverer.net.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
         ip_transparent: false
-        # discoverer.discoverer.net.socket_option.reuse_port -- server listen socket option for ip_recover_destination_addr functionality
+        # discoverer.discoverer.net.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
         ip_recover_destination_addr: false
   # @schema {"name": "discoverer.clusterRole", "type": "object"}
   clusterRole:
@@ -3762,19 +3763,19 @@ manager:
             reuse_port: true
             # manager.backup.mysql.config.net.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
             reuse_addr: true
-            # manager.backup.mysql.config.net.socket_option.reuse_port -- server listen socket option for tcp_fast_open functionality
+            # manager.backup.mysql.config.net.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
             tcp_fast_open: true
-            # manager.backup.mysql.config.net.socket_option.reuse_port -- server listen socket option for tcp_no_delay functionality
+            # manager.backup.mysql.config.net.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
             tcp_no_delay: true
-            # manager.backup.mysql.config.net.socket_option.reuse_port -- server listen socket option for tcp_cork functionality
+            # manager.backup.mysql.config.net.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
             tcp_cork: false
-            # manager.backup.mysql.config.net.socket_option.reuse_port -- server listen socket option for tcp_quick_ack functionality
+            # manager.backup.mysql.config.net.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
             tcp_quick_ack: true
-            # manager.backup.mysql.config.net.socket_option.reuse_port -- server listen socket option for tcp_defer_accept functionality
+            # manager.backup.mysql.config.net.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
             tcp_defer_accept: true
-            # manager.backup.mysql.config.net.socket_option.reuse_port -- server listen socket option for ip_transparent functionality
+            # manager.backup.mysql.config.net.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
             ip_transparent: false
-            # manager.backup.mysql.config.net.socket_option.reuse_port -- server listen socket option for ip_recover_destination_addr functionality
+            # manager.backup.mysql.config.net.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
             ip_recover_destination_addr: false
     # @schema {"name": "manager.backup.cassandra", "type": "object", "anchor": "cassandra"}
     cassandra:
@@ -3901,19 +3902,19 @@ manager:
             reuse_port: true
             # manager.backup.cassandra.config.net.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
             reuse_addr: true
-            # manager.backup.cassandra.config.net.socket_option.reuse_port -- server listen socket option for tcp_fast_open functionality
+            # manager.backup.cassandra.config.net.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
             tcp_fast_open: true
-            # manager.backup.cassandra.config.net.socket_option.reuse_port -- server listen socket option for tcp_no_delay functionality
+            # manager.backup.cassandra.config.net.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
             tcp_no_delay: true
-            # manager.backup.cassandra.config.net.socket_option.reuse_port -- server listen socket option for tcp_cork functionality
+            # manager.backup.cassandra.config.net.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
             tcp_cork: false
-            # manager.backup.cassandra.config.net.socket_option.reuse_port -- server listen socket option for tcp_quick_ack functionality
+            # manager.backup.cassandra.config.net.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
             tcp_quick_ack: true
-            # manager.backup.cassandra.config.net.socket_option.reuse_port -- server listen socket option for tcp_defer_accept functionality
+            # manager.backup.cassandra.config.net.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
             tcp_defer_accept: true
-            # manager.backup.cassandra.config.net.socket_option.reuse_port -- server listen socket option for ip_transparent functionality
+            # manager.backup.cassandra.config.net.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
             ip_transparent: false
-            # manager.backup.cassandra.config.net.socket_option.reuse_port -- server listen socket option for ip_recover_destination_addr functionality
+            # manager.backup.cassandra.config.net.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
             ip_recover_destination_addr: false
         # @schema {"name": "manager.backup.cassandra.config.enable_host_verification", "type": "boolean"}
         # manager.backup.cassandra.config.enable_host_verification -- host verification enabled
@@ -4021,7 +4022,7 @@ manager:
     # @schema {"name": "manager.index.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
     # manager.index.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
     terminationGracePeriodSeconds: 30
-    # @schema {"name": "mangaer.index.podSecurityContext", "type": "object"}
+    # @schema {"name": "manager.index.podSecurityContext", "type": "object"}
     # manager.index.podSecurityContext -- security context for pod
     podSecurityContext:
       runAsUser: 1002
@@ -4551,19 +4552,19 @@ meta:
           reuse_port: true
           # meta.redis.config.net.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
           reuse_addr: true
-          # meta.redis.config.net.socket_option.reuse_port -- server listen socket option for tcp_fast_open functionality
+          # meta.redis.config.net.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
           tcp_fast_open: true
-          # meta.redis.config.net.socket_option.reuse_port -- server listen socket option for tcp_no_delay functionality
+          # meta.redis.config.net.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
           tcp_no_delay: true
-          # meta.redis.config.net.socket_option.reuse_port -- server listen socket option for tcp_cork functionality
+          # meta.redis.config.net.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
           tcp_cork: false
-          # meta.redis.config.net.socket_option.reuse_port -- server listen socket option for tcp_quick_ack functionality
+          # meta.redis.config.net.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
           tcp_quick_ack: true
-          # meta.redis.config.net.socket_option.reuse_port -- server listen socket option for tcp_defer_accept functionality
+          # meta.redis.config.net.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
           tcp_defer_accept: true
-          # meta.redis.config.net.socket_option.reuse_port -- server listen socket option for ip_transparent functionality
+          # meta.redis.config.net.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
           ip_transparent: false
-          # meta.redis.config.net.socket_option.reuse_port -- server listen socket option for ip_recover_destination_addr functionality
+          # meta.redis.config.net.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
           ip_recover_destination_addr: false
       # @schema {"name": "meta.redis.config.kv_prefix", "type": "string"}
       # meta.redis.config.kv_prefix -- KV prefix
@@ -4674,19 +4675,19 @@ meta:
           reuse_port: true
           # meta.cassandra.config.net.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
           reuse_addr: true
-          # meta.cassandra.config.net.socket_option.reuse_port -- server listen socket option for tcp_fast_open functionality
+          # meta.cassandra.config.net.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
           tcp_fast_open: true
-          # meta.cassandra.config.net.socket_option.reuse_port -- server listen socket option for tcp_no_delay functionality
+          # meta.cassandra.config.net.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
           tcp_no_delay: true
-          # meta.cassandra.config.net.socket_option.reuse_port -- server listen socket option for tcp_cork functionality
+          # meta.cassandra.config.net.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
           tcp_cork: false
-          # meta.cassandra.config.net.socket_option.reuse_port -- server listen socket option for tcp_quick_ack functionality
+          # meta.cassandra.config.net.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
           tcp_quick_ack: true
-          # meta.cassandra.config.net.socket_option.reuse_port -- server listen socket option for tcp_defer_accept functionality
+          # meta.cassandra.config.net.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
           tcp_defer_accept: true
-          # meta.cassandra.config.net.socket_option.reuse_port -- server listen socket option for ip_transparent functionality
+          # meta.cassandra.config.net.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
           ip_transparent: false
-          # meta.cassandra.config.net.socket_option.reuse_port -- server listen socket option for ip_recover_destination_addr functionality
+          # meta.cassandra.config.net.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
           ip_recover_destination_addr: false
       # meta.cassandra.config.enable_host_verification -- host verification enabled
       enable_host_verification: false
@@ -4731,6 +4732,7 @@ meta:
         # meta.cassandra.config.host_filter.white_list -- list of white_list which allows each connection
         white_list: []
 
+# @schema {"name": "initializer", "type": "object"}
 initializer:
   mysql:
     # initializer.mysql.enabled -- mysql initializer job enabled

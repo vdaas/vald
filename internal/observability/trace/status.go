@@ -18,122 +18,163 @@
 package trace
 
 import (
+	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"go.opencensus.io/trace"
 )
 
-func StatusCodeOK(msg string) trace.Status {
+type Status = trace.Status
+
+func FromGRPCStatus(code codes.Code, msg string) Status {
+	switch code {
+	case codes.OK:
+		return StatusCodeOK(msg)
+	case codes.Canceled:
+		return StatusCodeCancelled(msg)
+	case codes.InvalidArgument:
+		return StatusCodeInvalidArgument(msg)
+	case codes.DeadlineExceeded:
+		return StatusCodeDeadlineExceeded(msg)
+	case codes.NotFound:
+		return StatusCodeNotFound(msg)
+	case codes.AlreadyExists:
+		return StatusCodeAlreadyExists(msg)
+	case codes.PermissionDenied:
+		return StatusCodePermissionDenied(msg)
+	case codes.ResourceExhausted:
+		return StatusCodeResourceExhausted(msg)
+	case codes.FailedPrecondition:
+		return StatusCodeFailedPrecondition(msg)
+	case codes.Aborted:
+		return StatusCodeAborted(msg)
+	case codes.OutOfRange:
+		return StatusCodeOutOfRange(msg)
+	case codes.Unimplemented:
+		return StatusCodeUnimplemented(msg)
+	case codes.Internal:
+		return StatusCodeInternal(msg)
+	case codes.Unavailable:
+		return StatusCodeUnavailable(msg)
+	case codes.DataLoss:
+		return StatusCodeDataLoss(msg)
+	case codes.Unauthenticated:
+		return StatusCodeUnauthenticated(msg)
+	}
+	return StatusCodeUnknown(msg)
+}
+
+func StatusCodeOK(msg string) Status {
 	return trace.Status{
 		Code:    trace.StatusCodeOK,
 		Message: msg,
 	}
 }
 
-func StatusCodeCancelled(msg string) trace.Status {
+func StatusCodeCancelled(msg string) Status {
 	return trace.Status{
 		Code:    trace.StatusCodeCancelled,
 		Message: msg,
 	}
 }
 
-func StatusCodeUnknown(msg string) trace.Status {
+func StatusCodeUnknown(msg string) Status {
 	return trace.Status{
 		Code:    trace.StatusCodeUnknown,
 		Message: msg,
 	}
 }
 
-func StatusCodeInvalidArgument(msg string) trace.Status {
+func StatusCodeInvalidArgument(msg string) Status {
 	return trace.Status{
 		Code:    trace.StatusCodeInvalidArgument,
 		Message: msg,
 	}
 }
 
-func StatusCodeDeadlineExceeded(msg string) trace.Status {
+func StatusCodeDeadlineExceeded(msg string) Status {
 	return trace.Status{
 		Code:    trace.StatusCodeDeadlineExceeded,
 		Message: msg,
 	}
 }
 
-func StatusCodeNotFound(msg string) trace.Status {
+func StatusCodeNotFound(msg string) Status {
 	return trace.Status{
 		Code:    trace.StatusCodeNotFound,
 		Message: msg,
 	}
 }
 
-func StatusCodeAlreadyExists(msg string) trace.Status {
+func StatusCodeAlreadyExists(msg string) Status {
 	return trace.Status{
 		Code:    trace.StatusCodeAlreadyExists,
 		Message: msg,
 	}
 }
 
-func StatusCodePermissionDenied(msg string) trace.Status {
+func StatusCodePermissionDenied(msg string) Status {
 	return trace.Status{
 		Code:    trace.StatusCodePermissionDenied,
 		Message: msg,
 	}
 }
 
-func StatusCodeResourceExhausted(msg string) trace.Status {
+func StatusCodeResourceExhausted(msg string) Status {
 	return trace.Status{
 		Code:    trace.StatusCodeResourceExhausted,
 		Message: msg,
 	}
 }
 
-func StatusCodeFailedPrecondition(msg string) trace.Status {
+func StatusCodeFailedPrecondition(msg string) Status {
 	return trace.Status{
 		Code:    trace.StatusCodeFailedPrecondition,
 		Message: msg,
 	}
 }
 
-func StatusCodeAborted(msg string) trace.Status {
+func StatusCodeAborted(msg string) Status {
 	return trace.Status{
 		Code:    trace.StatusCodeAborted,
 		Message: msg,
 	}
 }
 
-func StatusCodeOutOfRange(msg string) trace.Status {
+func StatusCodeOutOfRange(msg string) Status {
 	return trace.Status{
 		Code:    trace.StatusCodeOutOfRange,
 		Message: msg,
 	}
 }
 
-func StatusCodeUnimplemented(msg string) trace.Status {
+func StatusCodeUnimplemented(msg string) Status {
 	return trace.Status{
 		Code:    trace.StatusCodeUnimplemented,
 		Message: msg,
 	}
 }
 
-func StatusCodeInternal(msg string) trace.Status {
+func StatusCodeInternal(msg string) Status {
 	return trace.Status{
 		Code:    trace.StatusCodeInternal,
 		Message: msg,
 	}
 }
 
-func StatusCodeUnavailable(msg string) trace.Status {
+func StatusCodeUnavailable(msg string) Status {
 	return trace.Status{
 		Code:    trace.StatusCodeUnavailable,
 		Message: msg,
 	}
 }
 
-func StatusCodeDataLoss(msg string) trace.Status {
+func StatusCodeDataLoss(msg string) Status {
 	return trace.Status{
 		Code:    trace.StatusCodeDataLoss,
 		Message: msg,
 	}
 }
 
-func StatusCodeUnauthenticated(msg string) trace.Status {
+func StatusCodeUnauthenticated(msg string) Status {
 	return trace.Status{
 		Code:    trace.StatusCodeUnauthenticated,
 		Message: msg,

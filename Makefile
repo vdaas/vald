@@ -27,6 +27,7 @@ CI_CONTAINER_IMAGE              = $(NAME)-ci-container
 DEV_CONTAINER_IMAGE             = $(NAME)-dev-container
 DISCOVERER_IMAGE                = $(NAME)-discoverer-k8s
 FILTER_GATEWAY_IMAGE            = $(NAME)-filter-gateway
+FILTER_INGRESS_TF_IMAGE         = $(NAME)-filter-ingress-tensorflow
 GATEWAY_IMAGE                   = $(NAME)-gateway
 HELM_OPERATOR_IMAGE             = $(NAME)-helm-operator
 LB_GATEWAY_IMAGE                = $(NAME)-lb-gateway
@@ -61,6 +62,7 @@ OPERATOR_SDK_VERSION := $(eval OPERATOR_SDK_VERSION := $(shell cat versions/OPER
 KIND_VERSION         ?= v0.10.0
 HELM_VERSION         ?= v3.5.2
 HELM_DOCS_VERSION    ?= 1.5.0
+YQ_VERSION           ?= v4.6.3
 VALDCLI_VERSION      ?= v1.0.2
 TELEPRESENCE_VERSION ?= 0.109
 KUBELINTER_VERSION   ?= 0.1.6

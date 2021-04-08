@@ -180,7 +180,7 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 		return err
 	}
 	if os.IsPermission(err) {
-		log.Debugf("no permission for index path,\tpath: %s,\terr: %v", n.path, err)
+		log.Errorf("no permission for index path,\tpath: %s,\terr: %v", n.path, err)
 		return err
 	}
 
@@ -200,7 +200,7 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 		}
 
 		if os.IsPermission(err) {
-			log.Debugf("no permission for kvsdb file,\tpath: %s,\terr: %v", filepath.Join(n.path, kvsFileName), err)
+			log.Errorf("no permission for kvsdb file,\tpath: %s,\terr: %v", filepath.Join(n.path, kvsFileName), err)
 			return err
 		}
 	}
@@ -386,7 +386,7 @@ func (n *ngt) Search(vec []float32, size uint32, epsilon, radius float32) ([]mod
 	ds := make([]model.Distance, 0, len(sr))
 	for _, d := range sr {
 		if err = d.Error; d.ID == 0 && err != nil {
-			log.Debug("an error occurred while searching:", err)
+			log.Warnf("an error occurred while searching: %s", err)
 			continue
 		}
 		key, ok := n.kvs.GetInverse(d.ID)
@@ -426,10 +426,11 @@ func (n *ngt) insert(uuid string, vec []float32, t int64, validation bool) (err 
 		err = errors.ErrUUIDNotFound(0)
 		return err
 	}
-	if validation {
-		id, ok := n.kvs.Get(uuid)
-		if ok {
-			err = errors.ErrUUIDAlreadyExists(uuid, uint(id))
+	if validation && !n.vq.DVExists(uuid) {
+		// if delete schedule exists we can insert new vector
+		_, ok := n.kvs.Get(uuid)
+		if ok || n.vq.IVExists(uuid) {
+			err = errors.ErrUUIDAlreadyExists(uuid)
 			return err
 		}
 	}
@@ -453,8 +454,8 @@ func (n *ngt) InsertMultiple(vecs map[string][]float32) (err error) {
 
 func (n *ngt) Update(uuid string, vec []float32) (err error) {
 	now := time.Now().UnixNano()
-	if !n.readyForUpdate(uuid, vec) {
-		return nil
+	if err = n.readyForUpdate(uuid, vec); err != nil {
+		return err
 	}
 	err = n.delete(uuid, now)
 	if err != nil {
@@ -467,10 +468,10 @@ func (n *ngt) Update(uuid string, vec []float32) (err error) {
 func (n *ngt) UpdateMultiple(vecs map[string][]float32) (err error) {
 	uuids := make([]string, 0, len(vecs))
 	for uuid, vec := range vecs {
-		if n.readyForUpdate(uuid, vec) {
-			uuids = append(uuids, uuid)
-		} else {
+		if err = n.readyForUpdate(uuid, vec); err != nil {
 			delete(vecs, uuid)
+		} else {
+			uuids = append(uuids, uuid)
 		}
 	}
 	err = n.DeleteMultiple(uuids...)
@@ -490,7 +491,7 @@ func (n *ngt) delete(uuid string, t int64) (err error) {
 		return err
 	}
 	_, ok := n.kvs.Get(uuid)
-	if !ok {
+	if !ok && !n.vq.IVExists(uuid) {
 		return errors.ErrObjectIDNotFound(uuid)
 	}
 	return n.vq.PushDelete(uuid, t)
@@ -551,7 +552,7 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	defer n.gc()
 
 	log.Infof("create index operation started, uncommitted indexes = %d", ic)
-	log.Info("create index delete phase started")
+	log.Debug("create index delete phase started")
 	n.vq.RangePopDelete(ctx, func(uuid string) bool {
 		var ierr error
 		oid, ok := n.kvs.Delete(uuid)
@@ -568,9 +569,9 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 		}
 		return true
 	})
-	log.Info("create index delete phase finished")
+	log.Debug("create index delete phase finished")
 	n.gc()
-	log.Info("create index insert phase started")
+	log.Debug("create index insert phase started")
 	n.vq.RangePopInsert(ctx, func(uuid string, vector []float32) bool {
 		oid, ierr := n.core.Insert(vector)
 		if ierr != nil {
@@ -581,15 +582,15 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 		}
 		return true
 	})
-	log.Info("create index insert phase finished")
-	log.Info("create graph and tree phase started")
+	log.Debug("create index insert phase finished")
+	log.Debug("create graph and tree phase started")
 	log.Debugf("pool size = %d", poolSize)
 	cierr := n.core.CreateIndex(poolSize)
 	if cierr != nil {
 		log.Error("an error occurred on creating graph and tree phase:", cierr)
 		err = errors.Wrap(err, cierr.Error())
 	}
-	log.Info("create graph and tree phase finished")
+	log.Debug("create graph and tree phase finished")
 
 	log.Info("create index operation finished")
 	atomic.AddUint64(&n.nocie, 1)
@@ -701,23 +702,26 @@ func (n *ngt) Exists(uuid string) (oid uint32, ok bool) {
 	return oid, ok
 }
 
-func (n *ngt) readyForUpdate(uuid string, vec []float32) (ready bool) {
-	if len(uuid) == 0 || len(vec) == 0 {
-		return false
+func (n *ngt) readyForUpdate(uuid string, vec []float32) (err error) {
+	if len(uuid) == 0 {
+		return errors.ErrUUIDNotFound(0)
+	}
+	if len(vec) == 0 {
+		return errors.ErrInvalidDimensionSize(len(vec), 0)
 	}
 	ovec, err := n.GetObject(uuid)
 	if err != nil || len(vec) != len(ovec) {
 		// if error (GetObject cannot find vector) or vector length is not equal let's try update
-		return true
+		return nil
 	}
 	for i, v := range vec {
 		if v != ovec[i] {
-			// if difference exists return true for update
-			return true
+			// if difference exists return nil for update
+			return nil
 		}
 	}
-	// if no difference exists (same vector already exists) return false for skip update
-	return false
+	// if no difference exists (same vector already exists) return error for skip update
+	return errors.ErrUUIDAlreadyExists(uuid)
 }
 
 func (n *ngt) IsSaving() bool {

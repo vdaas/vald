@@ -51,9 +51,15 @@ func main() {
 
 	log.Init()
 
+	if err := run(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func run() error {
 	in, err := os.OpenFile(*input, os.O_RDONLY, os.ModeDevice)
 	if err != nil {
-		log.Error(err)
+		return err
 	}
 	defer func() {
 		if err := in.Close(); err != nil {
@@ -63,7 +69,7 @@ func main() {
 
 	var ms []metrics.Metrics
 	if err := gob.NewDecoder(in).Decode(&ms); err != nil {
-		log.Error(err)
+		return err
 	}
 
 	p := plot.New()
@@ -107,7 +113,7 @@ func main() {
 	p.Draw(draw.New(canvas))
 	out, err := os.OpenFile(*output, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, os.ModePerm)
 	if err != nil {
-		log.Error(err)
+		return err
 	}
 	defer func() {
 		err := out.Close()
@@ -117,6 +123,8 @@ func main() {
 	}()
 	_, err = canvas.WriteTo(out)
 	if err != nil {
-		log.Error(err)
+		return err
 	}
+
+	return nil
 }

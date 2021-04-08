@@ -130,7 +130,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	grpcServerOptions := []server.Option{
 		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
-			vald.RegisterValdServer(srv, v)
+			vald.RegisterValdServerWithFilter(srv, v)
 		}),
 		server.WithPreStopFunction(func() error {
 			return nil

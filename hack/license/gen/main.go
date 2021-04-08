@@ -145,7 +145,7 @@ func dirwalk(dir string) []string {
 			default:
 				path, err := filepath.Abs(filepath.Join(dir, file.Name()))
 				if err != nil {
-					log.Fatal("error")
+					log.Fatal(err)
 				}
 				paths = append(paths, path)
 			}
@@ -163,7 +163,7 @@ func readAndRewrite(path string) error {
 	if err != nil {
 		err = f.Close()
 		if err != nil {
-			log.Fatal("error")
+			log.Fatal(err)
 		}
 		return errors.Errorf("filepath %s, could not open", path)
 	}
@@ -180,7 +180,7 @@ func readAndRewrite(path string) error {
 	if fi.Name() == "LICENSE" {
 		err = license.Execute(buf, d)
 		if err != nil {
-			log.Fatal("error")
+			log.Fatal(err)
 		}
 	} else {
 		switch filepath.Ext(path) {
@@ -198,26 +198,26 @@ func readAndRewrite(path string) error {
 				bf = true
 				_, err = buf.WriteString(line)
 				if err != nil {
-					log.Fatal("error")
+					log.Fatal(err)
 				}
 				_, err = buf.WriteString("\n")
 				if err != nil {
-					log.Fatal("error")
+					log.Fatal(err)
 				}
 				_, err = buf.WriteString("\n")
 				if err != nil {
-					log.Fatal("error")
+					log.Fatal(err)
 				}
 				continue
 			}
 			if (filepath.Ext(path) == ".yaml" || filepath.Ext(path) == ".yml") && strings.HasPrefix(line, "---") {
 				_, err = buf.WriteString(line)
 				if err != nil {
-					log.Fatal("error")
+					log.Fatal(err)
 				}
 				_, err = buf.WriteString("\n")
 				if err != nil {
-					log.Fatal("error")
+					log.Fatal(err)
 				}
 				continue
 			}
@@ -227,7 +227,7 @@ func readAndRewrite(path string) error {
 				once.Do(func() {
 					err = apache.Execute(buf, d)
 					if err != nil {
-						log.Fatal("error")
+						log.Fatal(err)
 					}
 				})
 				lf = false
@@ -235,11 +235,11 @@ func readAndRewrite(path string) error {
 			if !lf {
 				_, err = buf.WriteString(line)
 				if err != nil {
-					log.Fatal("error")
+					log.Fatal(err)
 				}
 				_, err = buf.WriteString("\n")
 				if err != nil {
-					log.Fatal("error")
+					log.Fatal(err)
 				}
 			}
 			bf = false
@@ -257,17 +257,17 @@ func readAndRewrite(path string) error {
 	if err != nil {
 		err = f.Close()
 		if err != nil {
-			log.Fatal("error")
+			log.Fatal(err)
 		}
 		return errors.Errorf("filepath %s, could not open", path)
 	}
 	_, err = f.WriteString(strings.ReplaceAll(buf.String(), d.Escape+"\n\n\n", d.Escape+"\n\n"))
 	if err != nil {
-		log.Fatal("error")
+		log.Fatal(err)
 	}
 	err = f.Close()
 	if err != nil {
-		log.Fatal("error")
+		log.Fatal(err)
 	}
 	return nil
 }

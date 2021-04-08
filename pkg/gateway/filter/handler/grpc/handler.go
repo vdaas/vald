@@ -853,7 +853,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 	loc, err = s.gateway.Insert(ctx, req, s.copts...)
 	if err != nil {
 		err = errors.Wrapf(err, "Insert API failed to Insert uuid = %s\tinfo = %#v", uuid, info.Get())
-		log.Debug(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -1013,7 +1013,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 	loc, err = s.gateway.Update(ctx, req, s.copts...)
 	if err != nil {
 		err = errors.Wrapf(err, "Update API failed to Update uuid = %s\tinfo = %#v", uuid, info.Get())
-		log.Debug(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -1173,7 +1173,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 	loc, err = s.gateway.Upsert(ctx, req, s.copts...)
 	if err != nil {
 		err = errors.Wrapf(err, "Upsert API failed to Upsert uuid = %s\tinfo = %#v", uuid, info.Get())
-		log.Debug(err)
+		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}

@@ -19,6 +19,7 @@ package net
 
 import (
 	"context"
+	"math"
 	"net"
 	"strconv"
 	"strings"
@@ -190,8 +191,8 @@ func SplitHostPort(hostport string) (host string, port uint16, err error) {
 		host = hostport
 		port = defaultPort
 	}
-	p, err := strconv.Atoi(portStr)
-	if err != nil {
+	p, err := strconv.ParseUint(portStr, 10, 16)
+	if err != nil || p < 0 || p > math.MaxUint16 {
 		port = defaultPort
 	} else {
 		port = uint16(p)
