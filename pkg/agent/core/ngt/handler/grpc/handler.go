@@ -115,7 +115,6 @@ func (s *server) Exists(ctx context.Context, uid *payload.Object_ID) (res *paylo
 				Description:  err.Error(),
 			},
 			uid.GetId(), info.Get())
-		log.Warn(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
@@ -1268,7 +1267,6 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_VectorRequest
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
@@ -1358,7 +1356,6 @@ func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndex
 						},
 					},
 				}, info.Get())
-			log.Warn(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeFailedPrecondition(err.Error()))
 			}
@@ -1438,7 +1435,6 @@ func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_Crea
 						},
 					},
 				}, info.Get())
-			log.Error(err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeFailedPrecondition(err.Error()))
 			}
