@@ -77,35 +77,35 @@ func BenchmarkParseWithDefault(b *testing.B) {
 
 	tests := []test{
 		{
-			name: "t 10second",
+			name: "t 10second and 50*time.Millisecond",
 			args: args{
 				t: "10second",
 				d: 50 * time.Millisecond,
 			},
 		},
 		{
-			name: "t 100second",
+			name: "t 100second and 50*time.Millisecond",
 			args: args{
 				t: "100second",
 				d: 50 * time.Millisecond,
 			},
 		},
 		{
-			name: "t 1000second",
+			name: "t 1000second and 50*time.Millisecond",
 			args: args{
 				t: "1000second",
 				d: 50 * time.Millisecond,
 			},
 		},
 		{
-			name: "t 10000second",
+			name: "t 10000second and 50*time.Millisecond",
 			args: args{
 				t: "1000second",
 				d: 50 * time.Millisecond,
 			},
 		},
 		{
-			name: "t 100000second",
+			name: "t 100000second and 50*time.Millisecond",
 			args: args{
 				t: "10000second",
 				d: 50 * time.Millisecond,
