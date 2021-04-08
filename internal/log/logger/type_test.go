@@ -59,6 +59,14 @@ func TestType_String(t *testing.T) {
 			},
 		},
 
+		{
+			name: "returns nop when m is NOP",
+			m:    NOP,
+			want: want{
+				want: "nop",
+			},
+		},
+
 		// {
 		// 	name: "returns zerolog when m is ZEROLOG",
 		// 	m:    ZEROLOG,
@@ -172,6 +180,56 @@ func TestAtot(t *testing.T) {
 			},
 			want: want{
 				want: ZAP,
+			},
+		},
+
+		{
+			name: "returns NOP when str is `nop`",
+			args: args{
+				str: "nop",
+			},
+			want: want{
+				want: NOP,
+			},
+		},
+
+		{
+			name: "returns NOP when str is `NOp`",
+			args: args{
+				str: "NOp",
+			},
+			want: want{
+				want: NOP,
+			},
+		},
+
+		{
+			name: "returns NOP when str is `EMpty`",
+			args: args{
+				str: "EMpty",
+			},
+			want: want{
+				want: NOP,
+			},
+		},
+
+		{
+			name: "returns NOP when str is `discard`",
+			args: args{
+				str: "discard",
+			},
+			want: want{
+				want: NOP,
+			},
+		},
+
+		{
+			name: "returns NOP when str is `DIscard`",
+			args: args{
+				str: "DIscard",
+			},
+			want: want{
+				want: NOP,
 			},
 		},
 

@@ -520,7 +520,7 @@ spec:
                                       type: integer
                                     successThreshold:
                                       type: integer
-                                    timetoutSeconds:
+                                    timeoutSeconds:
                                       type: integer
                                 port:
                                   type: integer
@@ -567,19 +567,19 @@ spec:
                                           type: boolean
                                         ip_transparent:
                                           type: boolean
-                                        net_cork:
-                                          type: boolean
-                                        net_defer_accept:
-                                          type: boolean
-                                        net_fast_open:
-                                          type: boolean
-                                        net_no_delay:
-                                          type: boolean
-                                        net_quick_ack:
-                                          type: boolean
                                         reuse_addr:
                                           type: boolean
                                         reuse_port:
+                                          type: boolean
+                                        tcp_cork:
+                                          type: boolean
+                                        tcp_defer_accept:
+                                          type: boolean
+                                        tcp_fast_open:
+                                          type: boolean
+                                        tcp_no_delay:
+                                          type: boolean
+                                        tcp_quick_ack:
                                           type: boolean
                                     socket_path:
                                       type: string
@@ -661,19 +661,19 @@ spec:
                                           type: boolean
                                         ip_transparent:
                                           type: boolean
-                                        net_cork:
-                                          type: boolean
-                                        net_defer_accept:
-                                          type: boolean
-                                        net_fast_open:
-                                          type: boolean
-                                        net_no_delay:
-                                          type: boolean
-                                        net_quick_ack:
-                                          type: boolean
                                         reuse_addr:
                                           type: boolean
                                         reuse_port:
+                                          type: boolean
+                                        tcp_cork:
+                                          type: boolean
+                                        tcp_defer_accept:
+                                          type: boolean
+                                        tcp_fast_open:
+                                          type: boolean
+                                        tcp_no_delay:
+                                          type: boolean
+                                        tcp_quick_ack:
                                           type: boolean
                                     socket_path:
                                       type: string
@@ -736,19 +736,19 @@ spec:
                                           type: boolean
                                         ip_transparent:
                                           type: boolean
-                                        net_cork:
-                                          type: boolean
-                                        net_defer_accept:
-                                          type: boolean
-                                        net_fast_open:
-                                          type: boolean
-                                        net_no_delay:
-                                          type: boolean
-                                        net_quick_ack:
-                                          type: boolean
                                         reuse_addr:
                                           type: boolean
                                         reuse_port:
+                                          type: boolean
+                                        tcp_cork:
+                                          type: boolean
+                                        tcp_defer_accept:
+                                          type: boolean
+                                        tcp_fast_open:
+                                          type: boolean
+                                        tcp_no_delay:
+                                          type: boolean
+                                        tcp_quick_ack:
                                           type: boolean
                                     socket_path:
                                       type: string
@@ -808,19 +808,19 @@ spec:
                                           type: boolean
                                         ip_transparent:
                                           type: boolean
-                                        net_cork:
-                                          type: boolean
-                                        net_defer_accept:
-                                          type: boolean
-                                        net_fast_open:
-                                          type: boolean
-                                        net_no_delay:
-                                          type: boolean
-                                        net_quick_ack:
-                                          type: boolean
                                         reuse_addr:
                                           type: boolean
                                         reuse_port:
+                                          type: boolean
+                                        tcp_cork:
+                                          type: boolean
+                                        tcp_defer_accept:
+                                          type: boolean
+                                        tcp_fast_open:
+                                          type: boolean
+                                        tcp_no_delay:
+                                          type: boolean
+                                        tcp_quick_ack:
                                           type: boolean
                                     socket_path:
                                       type: string
@@ -916,19 +916,19 @@ spec:
                                           type: boolean
                                         ip_transparent:
                                           type: boolean
-                                        net_cork:
-                                          type: boolean
-                                        net_defer_accept:
-                                          type: boolean
-                                        net_fast_open:
-                                          type: boolean
-                                        net_no_delay:
-                                          type: boolean
-                                        net_quick_ack:
-                                          type: boolean
                                         reuse_addr:
                                           type: boolean
                                         reuse_port:
+                                          type: boolean
+                                        tcp_cork:
+                                          type: boolean
+                                        tcp_defer_accept:
+                                          type: boolean
+                                        tcp_fast_open:
+                                          type: boolean
+                                        tcp_no_delay:
+                                          type: boolean
+                                        tcp_quick_ack:
                                           type: boolean
                                     socket_path:
                                       type: string
@@ -988,19 +988,19 @@ spec:
                                           type: boolean
                                         ip_transparent:
                                           type: boolean
-                                        net_cork:
-                                          type: boolean
-                                        net_defer_accept:
-                                          type: boolean
-                                        net_fast_open:
-                                          type: boolean
-                                        net_no_delay:
-                                          type: boolean
-                                        net_quick_ack:
-                                          type: boolean
                                         reuse_addr:
                                           type: boolean
                                         reuse_port:
+                                          type: boolean
+                                        tcp_cork:
+                                          type: boolean
+                                        tcp_defer_accept:
+                                          type: boolean
+                                        tcp_fast_open:
+                                          type: boolean
+                                        tcp_no_delay:
+                                          type: boolean
+                                        tcp_quick_ack:
                                           type: boolean
                                     socket_path:
                                       type: string
@@ -1127,19 +1127,19 @@ spec:
                                           type: boolean
                                         ip_transparent:
                                           type: boolean
-                                        net_cork:
-                                          type: boolean
-                                        net_defer_accept:
-                                          type: boolean
-                                        net_fast_open:
-                                          type: boolean
-                                        net_no_delay:
-                                          type: boolean
-                                        net_quick_ack:
-                                          type: boolean
                                         reuse_addr:
                                           type: boolean
                                         reuse_port:
+                                          type: boolean
+                                        tcp_cork:
+                                          type: boolean
+                                        tcp_defer_accept:
+                                          type: boolean
+                                        tcp_fast_open:
+                                          type: boolean
+                                        tcp_no_delay:
+                                          type: boolean
+                                        tcp_quick_ack:
                                           type: boolean
                                     tls:
                                       type: object
@@ -1234,6 +1234,8 @@ spec:
                                   type: string
                                 retry_count:
                                   type: integer
+                            restore_backoff_enabled:
+                              type: boolean
                             watch_enabled:
                               type: boolean
                         enabled:
@@ -1482,7 +1484,7 @@ spec:
                                           type: integer
                                         successThreshold:
                                           type: integer
-                                        timetoutSeconds:
+                                        timeoutSeconds:
                                           type: integer
                                     port:
                                       type: integer
@@ -1529,19 +1531,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -1623,19 +1625,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -1698,19 +1700,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -1770,19 +1772,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -1878,19 +1880,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -1950,19 +1952,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -2141,19 +2143,19 @@ spec:
                                           type: boolean
                                         ip_transparent:
                                           type: boolean
-                                        net_cork:
-                                          type: boolean
-                                        net_defer_accept:
-                                          type: boolean
-                                        net_fast_open:
-                                          type: boolean
-                                        net_no_delay:
-                                          type: boolean
-                                        net_quick_ack:
-                                          type: boolean
                                         reuse_addr:
                                           type: boolean
                                         reuse_port:
+                                          type: boolean
+                                        tcp_cork:
+                                          type: boolean
+                                        tcp_defer_accept:
+                                          type: boolean
+                                        tcp_fast_open:
+                                          type: boolean
+                                        tcp_no_delay:
+                                          type: boolean
+                                        tcp_quick_ack:
                                           type: boolean
                                     tls:
                                       type: object
@@ -2420,7 +2422,7 @@ spec:
                                       type: integer
                                     successThreshold:
                                       type: integer
-                                    timetoutSeconds:
+                                    timeoutSeconds:
                                       type: integer
                                 port:
                                   type: integer
@@ -2467,19 +2469,19 @@ spec:
                                           type: boolean
                                         ip_transparent:
                                           type: boolean
-                                        net_cork:
-                                          type: boolean
-                                        net_defer_accept:
-                                          type: boolean
-                                        net_fast_open:
-                                          type: boolean
-                                        net_no_delay:
-                                          type: boolean
-                                        net_quick_ack:
-                                          type: boolean
                                         reuse_addr:
                                           type: boolean
                                         reuse_port:
+                                          type: boolean
+                                        tcp_cork:
+                                          type: boolean
+                                        tcp_defer_accept:
+                                          type: boolean
+                                        tcp_fast_open:
+                                          type: boolean
+                                        tcp_no_delay:
+                                          type: boolean
+                                        tcp_quick_ack:
                                           type: boolean
                                     socket_path:
                                       type: string
@@ -2561,19 +2563,19 @@ spec:
                                           type: boolean
                                         ip_transparent:
                                           type: boolean
-                                        net_cork:
-                                          type: boolean
-                                        net_defer_accept:
-                                          type: boolean
-                                        net_fast_open:
-                                          type: boolean
-                                        net_no_delay:
-                                          type: boolean
-                                        net_quick_ack:
-                                          type: boolean
                                         reuse_addr:
                                           type: boolean
                                         reuse_port:
+                                          type: boolean
+                                        tcp_cork:
+                                          type: boolean
+                                        tcp_defer_accept:
+                                          type: boolean
+                                        tcp_fast_open:
+                                          type: boolean
+                                        tcp_no_delay:
+                                          type: boolean
+                                        tcp_quick_ack:
                                           type: boolean
                                     socket_path:
                                       type: string
@@ -2636,19 +2638,19 @@ spec:
                                           type: boolean
                                         ip_transparent:
                                           type: boolean
-                                        net_cork:
-                                          type: boolean
-                                        net_defer_accept:
-                                          type: boolean
-                                        net_fast_open:
-                                          type: boolean
-                                        net_no_delay:
-                                          type: boolean
-                                        net_quick_ack:
-                                          type: boolean
                                         reuse_addr:
                                           type: boolean
                                         reuse_port:
+                                          type: boolean
+                                        tcp_cork:
+                                          type: boolean
+                                        tcp_defer_accept:
+                                          type: boolean
+                                        tcp_fast_open:
+                                          type: boolean
+                                        tcp_no_delay:
+                                          type: boolean
+                                        tcp_quick_ack:
                                           type: boolean
                                     socket_path:
                                       type: string
@@ -2708,19 +2710,19 @@ spec:
                                           type: boolean
                                         ip_transparent:
                                           type: boolean
-                                        net_cork:
-                                          type: boolean
-                                        net_defer_accept:
-                                          type: boolean
-                                        net_fast_open:
-                                          type: boolean
-                                        net_no_delay:
-                                          type: boolean
-                                        net_quick_ack:
-                                          type: boolean
                                         reuse_addr:
                                           type: boolean
                                         reuse_port:
+                                          type: boolean
+                                        tcp_cork:
+                                          type: boolean
+                                        tcp_defer_accept:
+                                          type: boolean
+                                        tcp_fast_open:
+                                          type: boolean
+                                        tcp_no_delay:
+                                          type: boolean
+                                        tcp_quick_ack:
                                           type: boolean
                                     socket_path:
                                       type: string
@@ -2816,19 +2818,19 @@ spec:
                                           type: boolean
                                         ip_transparent:
                                           type: boolean
-                                        net_cork:
-                                          type: boolean
-                                        net_defer_accept:
-                                          type: boolean
-                                        net_fast_open:
-                                          type: boolean
-                                        net_no_delay:
-                                          type: boolean
-                                        net_quick_ack:
-                                          type: boolean
                                         reuse_addr:
                                           type: boolean
                                         reuse_port:
+                                          type: boolean
+                                        tcp_cork:
+                                          type: boolean
+                                        tcp_defer_accept:
+                                          type: boolean
+                                        tcp_fast_open:
+                                          type: boolean
+                                        tcp_no_delay:
+                                          type: boolean
+                                        tcp_quick_ack:
                                           type: boolean
                                     socket_path:
                                       type: string
@@ -2888,19 +2890,19 @@ spec:
                                           type: boolean
                                         ip_transparent:
                                           type: boolean
-                                        net_cork:
-                                          type: boolean
-                                        net_defer_accept:
-                                          type: boolean
-                                        net_fast_open:
-                                          type: boolean
-                                        net_no_delay:
-                                          type: boolean
-                                        net_quick_ack:
-                                          type: boolean
                                         reuse_addr:
                                           type: boolean
                                         reuse_port:
+                                          type: boolean
+                                        tcp_cork:
+                                          type: boolean
+                                        tcp_defer_accept:
+                                          type: boolean
+                                        tcp_fast_open:
+                                          type: boolean
+                                        tcp_no_delay:
+                                          type: boolean
+                                        tcp_quick_ack:
                                           type: boolean
                                     socket_path:
                                       type: string
@@ -3025,19 +3027,19 @@ spec:
                                   type: boolean
                                 ip_transparent:
                                   type: boolean
-                                net_cork:
-                                  type: boolean
-                                net_defer_accept:
-                                  type: boolean
-                                net_fast_open:
-                                  type: boolean
-                                net_no_delay:
-                                  type: boolean
-                                net_quick_ack:
-                                  type: boolean
                                 reuse_addr:
                                   type: boolean
                                 reuse_port:
+                                  type: boolean
+                                tcp_cork:
+                                  type: boolean
+                                tcp_defer_accept:
+                                  type: boolean
+                                tcp_fast_open:
+                                  type: boolean
+                                tcp_no_delay:
+                                  type: boolean
+                                tcp_quick_ack:
                                   type: boolean
                             tls:
                               type: object
@@ -3356,7 +3358,7 @@ spec:
                                       type: integer
                                     successThreshold:
                                       type: integer
-                                    timetoutSeconds:
+                                    timeoutSeconds:
                                       type: integer
                                 port:
                                   type: integer
@@ -3403,19 +3405,19 @@ spec:
                                           type: boolean
                                         ip_transparent:
                                           type: boolean
-                                        net_cork:
-                                          type: boolean
-                                        net_defer_accept:
-                                          type: boolean
-                                        net_fast_open:
-                                          type: boolean
-                                        net_no_delay:
-                                          type: boolean
-                                        net_quick_ack:
-                                          type: boolean
                                         reuse_addr:
                                           type: boolean
                                         reuse_port:
+                                          type: boolean
+                                        tcp_cork:
+                                          type: boolean
+                                        tcp_defer_accept:
+                                          type: boolean
+                                        tcp_fast_open:
+                                          type: boolean
+                                        tcp_no_delay:
+                                          type: boolean
+                                        tcp_quick_ack:
                                           type: boolean
                                     socket_path:
                                       type: string
@@ -3497,19 +3499,19 @@ spec:
                                           type: boolean
                                         ip_transparent:
                                           type: boolean
-                                        net_cork:
-                                          type: boolean
-                                        net_defer_accept:
-                                          type: boolean
-                                        net_fast_open:
-                                          type: boolean
-                                        net_no_delay:
-                                          type: boolean
-                                        net_quick_ack:
-                                          type: boolean
                                         reuse_addr:
                                           type: boolean
                                         reuse_port:
+                                          type: boolean
+                                        tcp_cork:
+                                          type: boolean
+                                        tcp_defer_accept:
+                                          type: boolean
+                                        tcp_fast_open:
+                                          type: boolean
+                                        tcp_no_delay:
+                                          type: boolean
+                                        tcp_quick_ack:
                                           type: boolean
                                     socket_path:
                                       type: string
@@ -3572,19 +3574,19 @@ spec:
                                           type: boolean
                                         ip_transparent:
                                           type: boolean
-                                        net_cork:
-                                          type: boolean
-                                        net_defer_accept:
-                                          type: boolean
-                                        net_fast_open:
-                                          type: boolean
-                                        net_no_delay:
-                                          type: boolean
-                                        net_quick_ack:
-                                          type: boolean
                                         reuse_addr:
                                           type: boolean
                                         reuse_port:
+                                          type: boolean
+                                        tcp_cork:
+                                          type: boolean
+                                        tcp_defer_accept:
+                                          type: boolean
+                                        tcp_fast_open:
+                                          type: boolean
+                                        tcp_no_delay:
+                                          type: boolean
+                                        tcp_quick_ack:
                                           type: boolean
                                     socket_path:
                                       type: string
@@ -3644,19 +3646,19 @@ spec:
                                           type: boolean
                                         ip_transparent:
                                           type: boolean
-                                        net_cork:
-                                          type: boolean
-                                        net_defer_accept:
-                                          type: boolean
-                                        net_fast_open:
-                                          type: boolean
-                                        net_no_delay:
-                                          type: boolean
-                                        net_quick_ack:
-                                          type: boolean
                                         reuse_addr:
                                           type: boolean
                                         reuse_port:
+                                          type: boolean
+                                        tcp_cork:
+                                          type: boolean
+                                        tcp_defer_accept:
+                                          type: boolean
+                                        tcp_fast_open:
+                                          type: boolean
+                                        tcp_no_delay:
+                                          type: boolean
+                                        tcp_quick_ack:
                                           type: boolean
                                     socket_path:
                                       type: string
@@ -3752,19 +3754,19 @@ spec:
                                           type: boolean
                                         ip_transparent:
                                           type: boolean
-                                        net_cork:
-                                          type: boolean
-                                        net_defer_accept:
-                                          type: boolean
-                                        net_fast_open:
-                                          type: boolean
-                                        net_no_delay:
-                                          type: boolean
-                                        net_quick_ack:
-                                          type: boolean
                                         reuse_addr:
                                           type: boolean
                                         reuse_port:
+                                          type: boolean
+                                        tcp_cork:
+                                          type: boolean
+                                        tcp_defer_accept:
+                                          type: boolean
+                                        tcp_fast_open:
+                                          type: boolean
+                                        tcp_no_delay:
+                                          type: boolean
+                                        tcp_quick_ack:
                                           type: boolean
                                     socket_path:
                                       type: string
@@ -3824,19 +3826,19 @@ spec:
                                           type: boolean
                                         ip_transparent:
                                           type: boolean
-                                        net_cork:
-                                          type: boolean
-                                        net_defer_accept:
-                                          type: boolean
-                                        net_fast_open:
-                                          type: boolean
-                                        net_no_delay:
-                                          type: boolean
-                                        net_quick_ack:
-                                          type: boolean
                                         reuse_addr:
                                           type: boolean
                                         reuse_port:
+                                          type: boolean
+                                        tcp_cork:
+                                          type: boolean
+                                        tcp_defer_accept:
+                                          type: boolean
+                                        tcp_fast_open:
+                                          type: boolean
+                                        tcp_no_delay:
+                                          type: boolean
+                                        tcp_quick_ack:
                                           type: boolean
                                     socket_path:
                                       type: string
@@ -4073,19 +4075,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         tls:
                                           type: object
@@ -4229,19 +4231,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         tls:
                                           type: object
@@ -4594,7 +4596,7 @@ spec:
                                           type: integer
                                         successThreshold:
                                           type: integer
-                                        timetoutSeconds:
+                                        timeoutSeconds:
                                           type: integer
                                     port:
                                       type: integer
@@ -4641,19 +4643,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -4735,19 +4737,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -4810,19 +4812,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -4882,19 +4884,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -4990,19 +4992,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -5062,19 +5064,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -5304,19 +5306,19 @@ spec:
                                                   type: boolean
                                                 ip_transparent:
                                                   type: boolean
-                                                net_cork:
-                                                  type: boolean
-                                                net_defer_accept:
-                                                  type: boolean
-                                                net_fast_open:
-                                                  type: boolean
-                                                net_no_delay:
-                                                  type: boolean
-                                                net_quick_ack:
-                                                  type: boolean
                                                 reuse_addr:
                                                   type: boolean
                                                 reuse_port:
+                                                  type: boolean
+                                                tcp_cork:
+                                                  type: boolean
+                                                tcp_defer_accept:
+                                                  type: boolean
+                                                tcp_fast_open:
+                                                  type: boolean
+                                                tcp_no_delay:
+                                                  type: boolean
+                                                tcp_quick_ack:
                                                   type: boolean
                                             tls:
                                               type: object
@@ -5468,19 +5470,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         tls:
                                           type: object
@@ -5627,19 +5629,19 @@ spec:
                                                   type: boolean
                                                 ip_transparent:
                                                   type: boolean
-                                                net_cork:
-                                                  type: boolean
-                                                net_defer_accept:
-                                                  type: boolean
-                                                net_fast_open:
-                                                  type: boolean
-                                                net_no_delay:
-                                                  type: boolean
-                                                net_quick_ack:
-                                                  type: boolean
                                                 reuse_addr:
                                                   type: boolean
                                                 reuse_port:
+                                                  type: boolean
+                                                tcp_cork:
+                                                  type: boolean
+                                                tcp_defer_accept:
+                                                  type: boolean
+                                                tcp_fast_open:
+                                                  type: boolean
+                                                tcp_no_delay:
+                                                  type: boolean
+                                                tcp_quick_ack:
                                                   type: boolean
                                             tls:
                                               type: object
@@ -6010,7 +6012,7 @@ spec:
                                           type: integer
                                         successThreshold:
                                           type: integer
-                                        timetoutSeconds:
+                                        timeoutSeconds:
                                           type: integer
                                     port:
                                       type: integer
@@ -6057,19 +6059,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -6151,19 +6153,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -6226,19 +6228,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -6298,19 +6300,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -6406,19 +6408,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -6478,19 +6480,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -6722,19 +6724,19 @@ spec:
                                                   type: boolean
                                                 ip_transparent:
                                                   type: boolean
-                                                net_cork:
-                                                  type: boolean
-                                                net_defer_accept:
-                                                  type: boolean
-                                                net_fast_open:
-                                                  type: boolean
-                                                net_no_delay:
-                                                  type: boolean
-                                                net_quick_ack:
-                                                  type: boolean
                                                 reuse_addr:
                                                   type: boolean
                                                 reuse_port:
+                                                  type: boolean
+                                                tcp_cork:
+                                                  type: boolean
+                                                tcp_defer_accept:
+                                                  type: boolean
+                                                tcp_fast_open:
+                                                  type: boolean
+                                                tcp_no_delay:
+                                                  type: boolean
+                                                tcp_quick_ack:
                                                   type: boolean
                                             tls:
                                               type: object
@@ -6878,19 +6880,19 @@ spec:
                                                   type: boolean
                                                 ip_transparent:
                                                   type: boolean
-                                                net_cork:
-                                                  type: boolean
-                                                net_defer_accept:
-                                                  type: boolean
-                                                net_fast_open:
-                                                  type: boolean
-                                                net_no_delay:
-                                                  type: boolean
-                                                net_quick_ack:
-                                                  type: boolean
                                                 reuse_addr:
                                                   type: boolean
                                                 reuse_port:
+                                                  type: boolean
+                                                tcp_cork:
+                                                  type: boolean
+                                                tcp_defer_accept:
+                                                  type: boolean
+                                                tcp_fast_open:
+                                                  type: boolean
+                                                tcp_no_delay:
+                                                  type: boolean
+                                                tcp_quick_ack:
                                                   type: boolean
                                             tls:
                                               type: object
@@ -6939,7 +6941,7 @@ spec:
                             index_replica:
                               type: integer
                               minimum: 1
-                            node_namespace:
+                            node_name:
                               type: string
                         hpa:
                           type: object
@@ -7250,7 +7252,7 @@ spec:
                                           type: integer
                                         successThreshold:
                                           type: integer
-                                        timetoutSeconds:
+                                        timeoutSeconds:
                                           type: integer
                                     port:
                                       type: integer
@@ -7297,19 +7299,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -7391,19 +7393,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -7466,19 +7468,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -7538,19 +7540,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -7646,19 +7648,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -7718,19 +7720,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -7957,19 +7959,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         tls:
                                           type: object
@@ -8118,19 +8120,19 @@ spec:
                                                   type: boolean
                                                 ip_transparent:
                                                   type: boolean
-                                                net_cork:
-                                                  type: boolean
-                                                net_defer_accept:
-                                                  type: boolean
-                                                net_fast_open:
-                                                  type: boolean
-                                                net_no_delay:
-                                                  type: boolean
-                                                net_quick_ack:
-                                                  type: boolean
                                                 reuse_addr:
                                                   type: boolean
                                                 reuse_port:
+                                                  type: boolean
+                                                tcp_cork:
+                                                  type: boolean
+                                                tcp_defer_accept:
+                                                  type: boolean
+                                                tcp_fast_open:
+                                                  type: boolean
+                                                tcp_no_delay:
+                                                  type: boolean
+                                                tcp_quick_ack:
                                                   type: boolean
                                             tls:
                                               type: object
@@ -8487,7 +8489,7 @@ spec:
                                           type: integer
                                         successThreshold:
                                           type: integer
-                                        timetoutSeconds:
+                                        timeoutSeconds:
                                           type: integer
                                     port:
                                       type: integer
@@ -8534,19 +8536,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -8628,19 +8630,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -8703,19 +8705,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -8775,19 +8777,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -8883,19 +8885,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -8955,19 +8957,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -9199,19 +9201,19 @@ spec:
                                                   type: boolean
                                                 ip_transparent:
                                                   type: boolean
-                                                net_cork:
-                                                  type: boolean
-                                                net_defer_accept:
-                                                  type: boolean
-                                                net_fast_open:
-                                                  type: boolean
-                                                net_no_delay:
-                                                  type: boolean
-                                                net_quick_ack:
-                                                  type: boolean
                                                 reuse_addr:
                                                   type: boolean
                                                 reuse_port:
+                                                  type: boolean
+                                                tcp_cork:
+                                                  type: boolean
+                                                tcp_defer_accept:
+                                                  type: boolean
+                                                tcp_fast_open:
+                                                  type: boolean
+                                                tcp_no_delay:
+                                                  type: boolean
+                                                tcp_quick_ack:
                                                   type: boolean
                                             tls:
                                               type: object
@@ -9358,19 +9360,19 @@ spec:
                                                   type: boolean
                                                 ip_transparent:
                                                   type: boolean
-                                                net_cork:
-                                                  type: boolean
-                                                net_defer_accept:
-                                                  type: boolean
-                                                net_fast_open:
-                                                  type: boolean
-                                                net_no_delay:
-                                                  type: boolean
-                                                net_quick_ack:
-                                                  type: boolean
                                                 reuse_addr:
                                                   type: boolean
                                                 reuse_port:
+                                                  type: boolean
+                                                tcp_cork:
+                                                  type: boolean
+                                                tcp_defer_accept:
+                                                  type: boolean
+                                                tcp_fast_open:
+                                                  type: boolean
+                                                tcp_no_delay:
+                                                  type: boolean
+                                                tcp_quick_ack:
                                                   type: boolean
                                             tls:
                                               type: object
@@ -9514,19 +9516,19 @@ spec:
                                                   type: boolean
                                                 ip_transparent:
                                                   type: boolean
-                                                net_cork:
-                                                  type: boolean
-                                                net_defer_accept:
-                                                  type: boolean
-                                                net_fast_open:
-                                                  type: boolean
-                                                net_no_delay:
-                                                  type: boolean
-                                                net_quick_ack:
-                                                  type: boolean
                                                 reuse_addr:
                                                   type: boolean
                                                 reuse_port:
+                                                  type: boolean
+                                                tcp_cork:
+                                                  type: boolean
+                                                tcp_defer_accept:
+                                                  type: boolean
+                                                tcp_fast_open:
+                                                  type: boolean
+                                                tcp_no_delay:
+                                                  type: boolean
+                                                tcp_quick_ack:
                                                   type: boolean
                                             tls:
                                               type: object
@@ -9680,19 +9682,19 @@ spec:
                                                   type: boolean
                                                 ip_transparent:
                                                   type: boolean
-                                                net_cork:
-                                                  type: boolean
-                                                net_defer_accept:
-                                                  type: boolean
-                                                net_fast_open:
-                                                  type: boolean
-                                                net_no_delay:
-                                                  type: boolean
-                                                net_quick_ack:
-                                                  type: boolean
                                                 reuse_addr:
                                                   type: boolean
                                                 reuse_port:
+                                                  type: boolean
+                                                tcp_cork:
+                                                  type: boolean
+                                                tcp_defer_accept:
+                                                  type: boolean
+                                                tcp_fast_open:
+                                                  type: boolean
+                                                tcp_no_delay:
+                                                  type: boolean
+                                                tcp_quick_ack:
                                                   type: boolean
                                             tls:
                                               type: object
@@ -9740,7 +9742,7 @@ spec:
                                   type: boolean
                                 expired_cache_check_duration:
                                   type: string
-                            node_namespace:
+                            node_name:
                               type: string
                         hpa:
                           type: object
@@ -10051,7 +10053,7 @@ spec:
                                           type: integer
                                         successThreshold:
                                           type: integer
-                                        timetoutSeconds:
+                                        timeoutSeconds:
                                           type: integer
                                     port:
                                       type: integer
@@ -10098,19 +10100,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -10192,19 +10194,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -10267,19 +10269,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -10339,19 +10341,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -10447,19 +10449,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -10519,19 +10521,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -10595,6 +10597,9 @@ spec:
                           items:
                             type: object
                             x-kubernetes-preserve-unknown-fields: true
+                initializer:
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
                 manager:
                   type: object
                   properties:
@@ -10738,19 +10743,19 @@ spec:
                                           type: boolean
                                         ip_transparent:
                                           type: boolean
-                                        net_cork:
-                                          type: boolean
-                                        net_defer_accept:
-                                          type: boolean
-                                        net_fast_open:
-                                          type: boolean
-                                        net_no_delay:
-                                          type: boolean
-                                        net_quick_ack:
-                                          type: boolean
                                         reuse_addr:
                                           type: boolean
                                         reuse_port:
+                                          type: boolean
+                                        tcp_cork:
+                                          type: boolean
+                                        tcp_defer_accept:
+                                          type: boolean
+                                        tcp_fast_open:
+                                          type: boolean
+                                        tcp_no_delay:
+                                          type: boolean
+                                        tcp_quick_ack:
                                           type: boolean
                                     tls:
                                       type: object
@@ -10954,19 +10959,19 @@ spec:
                                           type: boolean
                                         ip_transparent:
                                           type: boolean
-                                        net_cork:
-                                          type: boolean
-                                        net_defer_accept:
-                                          type: boolean
-                                        net_fast_open:
-                                          type: boolean
-                                        net_no_delay:
-                                          type: boolean
-                                        net_quick_ack:
-                                          type: boolean
                                         reuse_addr:
                                           type: boolean
                                         reuse_port:
+                                          type: boolean
+                                        tcp_cork:
+                                          type: boolean
+                                        tcp_defer_accept:
+                                          type: boolean
+                                        tcp_fast_open:
+                                          type: boolean
+                                        tcp_no_delay:
+                                          type: boolean
+                                        tcp_quick_ack:
                                           type: boolean
                                     tls:
                                       type: object
@@ -11252,7 +11257,7 @@ spec:
                                           type: integer
                                         successThreshold:
                                           type: integer
-                                        timetoutSeconds:
+                                        timeoutSeconds:
                                           type: integer
                                     port:
                                       type: integer
@@ -11299,19 +11304,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -11393,19 +11398,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -11468,19 +11473,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -11540,19 +11545,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -11648,19 +11653,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -11720,19 +11725,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -11950,19 +11955,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         tls:
                                           type: object
@@ -12375,19 +12380,19 @@ spec:
                                                   type: boolean
                                                 ip_transparent:
                                                   type: boolean
-                                                net_cork:
-                                                  type: boolean
-                                                net_defer_accept:
-                                                  type: boolean
-                                                net_fast_open:
-                                                  type: boolean
-                                                net_no_delay:
-                                                  type: boolean
-                                                net_quick_ack:
-                                                  type: boolean
                                                 reuse_addr:
                                                   type: boolean
                                                 reuse_port:
+                                                  type: boolean
+                                                tcp_cork:
+                                                  type: boolean
+                                                tcp_defer_accept:
+                                                  type: boolean
+                                                tcp_fast_open:
+                                                  type: boolean
+                                                tcp_no_delay:
+                                                  type: boolean
+                                                tcp_quick_ack:
                                                   type: boolean
                                             tls:
                                               type: object
@@ -12492,7 +12497,7 @@ spec:
                                           type: integer
                                         successThreshold:
                                           type: integer
-                                        timetoutSeconds:
+                                        timeoutSeconds:
                                           type: integer
                                     port:
                                       type: integer
@@ -12539,19 +12544,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -12633,19 +12638,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -12708,19 +12713,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -12780,19 +12785,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -12888,19 +12893,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -12960,19 +12965,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -13228,19 +13233,19 @@ spec:
                                                   type: boolean
                                                 ip_transparent:
                                                   type: boolean
-                                                net_cork:
-                                                  type: boolean
-                                                net_defer_accept:
-                                                  type: boolean
-                                                net_fast_open:
-                                                  type: boolean
-                                                net_no_delay:
-                                                  type: boolean
-                                                net_quick_ack:
-                                                  type: boolean
                                                 reuse_addr:
                                                   type: boolean
                                                 reuse_port:
+                                                  type: boolean
+                                                tcp_cork:
+                                                  type: boolean
+                                                tcp_defer_accept:
+                                                  type: boolean
+                                                tcp_fast_open:
+                                                  type: boolean
+                                                tcp_no_delay:
+                                                  type: boolean
+                                                tcp_quick_ack:
                                                   type: boolean
                                             tls:
                                               type: object
@@ -13384,19 +13389,19 @@ spec:
                                                   type: boolean
                                                 ip_transparent:
                                                   type: boolean
-                                                net_cork:
-                                                  type: boolean
-                                                net_defer_accept:
-                                                  type: boolean
-                                                net_fast_open:
-                                                  type: boolean
-                                                net_no_delay:
-                                                  type: boolean
-                                                net_quick_ack:
-                                                  type: boolean
                                                 reuse_addr:
                                                   type: boolean
                                                 reuse_port:
+                                                  type: boolean
+                                                tcp_cork:
+                                                  type: boolean
+                                                tcp_defer_accept:
+                                                  type: boolean
+                                                tcp_fast_open:
+                                                  type: boolean
+                                                tcp_no_delay:
+                                                  type: boolean
+                                                tcp_quick_ack:
                                                   type: boolean
                                             tls:
                                               type: object
@@ -13651,6 +13656,9 @@ spec:
                               type: boolean
                             value:
                               type: integer
+                        podSecurityContext:
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         progressDeadlineSeconds:
                           type: integer
                         replicas:
@@ -13713,7 +13721,7 @@ spec:
                                           type: integer
                                         successThreshold:
                                           type: integer
-                                        timetoutSeconds:
+                                        timeoutSeconds:
                                           type: integer
                                     port:
                                       type: integer
@@ -13760,19 +13768,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -13854,19 +13862,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -13929,19 +13937,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -14001,19 +14009,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -14109,19 +14117,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -14181,19 +14189,19 @@ spec:
                                               type: boolean
                                             ip_transparent:
                                               type: boolean
-                                            net_cork:
-                                              type: boolean
-                                            net_defer_accept:
-                                              type: boolean
-                                            net_fast_open:
-                                              type: boolean
-                                            net_no_delay:
-                                              type: boolean
-                                            net_quick_ack:
-                                              type: boolean
                                             reuse_addr:
                                               type: boolean
                                             reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
                                               type: boolean
                                         socket_path:
                                           type: string
@@ -14257,9 +14265,6 @@ spec:
                           items:
                             type: object
                             x-kubernetes-preserve-unknown-fields: true
-                mangaer:
-                  type: object
-                  x-kubernetes-preserve-unknown-fields: true
                 meta:
                   type: object
                   properties:
@@ -14400,19 +14405,19 @@ spec:
                                       type: boolean
                                     ip_transparent:
                                       type: boolean
-                                    net_cork:
-                                      type: boolean
-                                    net_defer_accept:
-                                      type: boolean
-                                    net_fast_open:
-                                      type: boolean
-                                    net_no_delay:
-                                      type: boolean
-                                    net_quick_ack:
-                                      type: boolean
                                     reuse_addr:
                                       type: boolean
                                     reuse_port:
+                                      type: boolean
+                                    tcp_cork:
+                                      type: boolean
+                                    tcp_defer_accept:
+                                      type: boolean
+                                    tcp_fast_open:
+                                      type: boolean
+                                    tcp_no_delay:
+                                      type: boolean
+                                    tcp_quick_ack:
                                       type: boolean
                                 tls:
                                   type: object
@@ -14807,19 +14812,19 @@ spec:
                                       type: boolean
                                     ip_transparent:
                                       type: boolean
-                                    net_cork:
-                                      type: boolean
-                                    net_defer_accept:
-                                      type: boolean
-                                    net_fast_open:
-                                      type: boolean
-                                    net_no_delay:
-                                      type: boolean
-                                    net_quick_ack:
-                                      type: boolean
                                     reuse_addr:
                                       type: boolean
                                     reuse_port:
+                                      type: boolean
+                                    tcp_cork:
+                                      type: boolean
+                                    tcp_defer_accept:
+                                      type: boolean
+                                    tcp_fast_open:
+                                      type: boolean
+                                    tcp_no_delay:
+                                      type: boolean
+                                    tcp_quick_ack:
                                       type: boolean
                                 tls:
                                   type: object
@@ -14942,7 +14947,7 @@ spec:
                                       type: integer
                                     successThreshold:
                                       type: integer
-                                    timetoutSeconds:
+                                    timeoutSeconds:
                                       type: integer
                                 port:
                                   type: integer
@@ -14989,19 +14994,19 @@ spec:
                                           type: boolean
                                         ip_transparent:
                                           type: boolean
-                                        net_cork:
-                                          type: boolean
-                                        net_defer_accept:
-                                          type: boolean
-                                        net_fast_open:
-                                          type: boolean
-                                        net_no_delay:
-                                          type: boolean
-                                        net_quick_ack:
-                                          type: boolean
                                         reuse_addr:
                                           type: boolean
                                         reuse_port:
+                                          type: boolean
+                                        tcp_cork:
+                                          type: boolean
+                                        tcp_defer_accept:
+                                          type: boolean
+                                        tcp_fast_open:
+                                          type: boolean
+                                        tcp_no_delay:
+                                          type: boolean
+                                        tcp_quick_ack:
                                           type: boolean
                                     socket_path:
                                       type: string
@@ -15083,19 +15088,19 @@ spec:
                                           type: boolean
                                         ip_transparent:
                                           type: boolean
-                                        net_cork:
-                                          type: boolean
-                                        net_defer_accept:
-                                          type: boolean
-                                        net_fast_open:
-                                          type: boolean
-                                        net_no_delay:
-                                          type: boolean
-                                        net_quick_ack:
-                                          type: boolean
                                         reuse_addr:
                                           type: boolean
                                         reuse_port:
+                                          type: boolean
+                                        tcp_cork:
+                                          type: boolean
+                                        tcp_defer_accept:
+                                          type: boolean
+                                        tcp_fast_open:
+                                          type: boolean
+                                        tcp_no_delay:
+                                          type: boolean
+                                        tcp_quick_ack:
                                           type: boolean
                                     socket_path:
                                       type: string
@@ -15158,19 +15163,19 @@ spec:
                                           type: boolean
                                         ip_transparent:
                                           type: boolean
-                                        net_cork:
-                                          type: boolean
-                                        net_defer_accept:
-                                          type: boolean
-                                        net_fast_open:
-                                          type: boolean
-                                        net_no_delay:
-                                          type: boolean
-                                        net_quick_ack:
-                                          type: boolean
                                         reuse_addr:
                                           type: boolean
                                         reuse_port:
+                                          type: boolean
+                                        tcp_cork:
+                                          type: boolean
+                                        tcp_defer_accept:
+                                          type: boolean
+                                        tcp_fast_open:
+                                          type: boolean
+                                        tcp_no_delay:
+                                          type: boolean
+                                        tcp_quick_ack:
                                           type: boolean
                                     socket_path:
                                       type: string
@@ -15230,19 +15235,19 @@ spec:
                                           type: boolean
                                         ip_transparent:
                                           type: boolean
-                                        net_cork:
-                                          type: boolean
-                                        net_defer_accept:
-                                          type: boolean
-                                        net_fast_open:
-                                          type: boolean
-                                        net_no_delay:
-                                          type: boolean
-                                        net_quick_ack:
-                                          type: boolean
                                         reuse_addr:
                                           type: boolean
                                         reuse_port:
+                                          type: boolean
+                                        tcp_cork:
+                                          type: boolean
+                                        tcp_defer_accept:
+                                          type: boolean
+                                        tcp_fast_open:
+                                          type: boolean
+                                        tcp_no_delay:
+                                          type: boolean
+                                        tcp_quick_ack:
                                           type: boolean
                                     socket_path:
                                       type: string
@@ -15338,19 +15343,19 @@ spec:
                                           type: boolean
                                         ip_transparent:
                                           type: boolean
-                                        net_cork:
-                                          type: boolean
-                                        net_defer_accept:
-                                          type: boolean
-                                        net_fast_open:
-                                          type: boolean
-                                        net_no_delay:
-                                          type: boolean
-                                        net_quick_ack:
-                                          type: boolean
                                         reuse_addr:
                                           type: boolean
                                         reuse_port:
+                                          type: boolean
+                                        tcp_cork:
+                                          type: boolean
+                                        tcp_defer_accept:
+                                          type: boolean
+                                        tcp_fast_open:
+                                          type: boolean
+                                        tcp_no_delay:
+                                          type: boolean
+                                        tcp_quick_ack:
                                           type: boolean
                                     socket_path:
                                       type: string
@@ -15410,19 +15415,19 @@ spec:
                                           type: boolean
                                         ip_transparent:
                                           type: boolean
-                                        net_cork:
-                                          type: boolean
-                                        net_defer_accept:
-                                          type: boolean
-                                        net_fast_open:
-                                          type: boolean
-                                        net_no_delay:
-                                          type: boolean
-                                        net_quick_ack:
-                                          type: boolean
                                         reuse_addr:
                                           type: boolean
                                         reuse_port:
+                                          type: boolean
+                                        tcp_cork:
+                                          type: boolean
+                                        tcp_defer_accept:
+                                          type: boolean
+                                        tcp_fast_open:
+                                          type: boolean
+                                        tcp_no_delay:
+                                          type: boolean
+                                        tcp_quick_ack:
                                           type: boolean
                                     socket_path:
                                       type: string
