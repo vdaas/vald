@@ -8,7 +8,7 @@ type nopLogger struct{}
 
 // New returns a new logger instance.
 func New() logger.Logger {
-	return nil
+	return new(nopLogger)
 }
 
 // Debug logs the vals at Debug level.
