@@ -4862,7 +4862,7 @@ rebalancer:
     stackdriver:
       profiler:
         service: vald-rebalancer-storage-controller
-  # @schema {"name": "meta.hpa", "alias": "hpa"}
+  # @schema {"name": "rebalancer.hpa", "alias": "hpa"}
   hpa:
     # rebalancer.hpa.enabled -- HPA enabled
     enabled: false
