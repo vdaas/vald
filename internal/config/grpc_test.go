@@ -381,7 +381,6 @@ func TestGRPCClientKeepalive_Bind(t *testing.T) {
 						if err := os.Unsetenv(key); err != nil {
 							t.Fatal(err)
 						}
-
 					}
 				},
 				want: want{
@@ -642,7 +641,6 @@ func TestDialOption_Bind(t *testing.T) {
 						if err := os.Unsetenv(key); err != nil {
 							t.Fatal(err)
 						}
-
 					}
 				},
 				want: want{

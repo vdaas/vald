@@ -853,7 +853,8 @@ func TestNet_Opts(t *testing.T) {
 			want: want{
 				want: make([]net.DialerOption, 0),
 			},
-		}}
+		},
+	}
 
 	for _, tc := range tests {
 		test := tc

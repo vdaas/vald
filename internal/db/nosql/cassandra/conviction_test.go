@@ -17,12 +17,12 @@
 package cassandra
 
 import (
-	"net"
 	"reflect"
 	"testing"
 
 	"github.com/gocql/gocql"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net"
 	"go.uber.org/goleak"
 )
 
