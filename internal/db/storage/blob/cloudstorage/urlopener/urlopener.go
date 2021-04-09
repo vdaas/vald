@@ -45,6 +45,7 @@ func New(opts ...Option) (URLOpener, error) {
 
 func (uo *urlOpener) URLOpener(ctx context.Context) (guo *gcsblob.URLOpener, err error) {
 	var creds *google.Credentials
+	scope := storage.ScopeReadWrite
 
 	switch {
 	case len(uo.credentialsFilePath) != 0:
@@ -52,24 +53,24 @@ func (uo *urlOpener) URLOpener(ctx context.Context) (guo *gcsblob.URLOpener, err
 		if err != nil {
 			return nil, err
 		}
-		creds, err = google.CredentialsFromJSON(ctx, data, storage.ScopeReadWrite)
+		creds, err = google.CredentialsFromJSON(ctx, data, scope)
 		if err != nil {
 			return nil, err
 		}
 	case len(uo.credentialsJSON) != 0:
 		data := *(*[]byte)(unsafe.Pointer(&uo.credentialsJSON))
-		creds, err = google.CredentialsFromJSON(ctx, data, storage.ScopeReadWrite)
+		creds, err = google.CredentialsFromJSON(ctx, data, scope)
 		if err != nil {
 			return nil, err
 		}
 	default:
-		creds, err = google.FindDefaultCredentials(ctx, storage.ScopeReadWrite)
+		creds, err = google.FindDefaultCredentials(ctx, scope)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	cfg, err := google.JWTConfigFromJSON(creds.JSON, storage.ScopeReadWrite)
+	cfg, err := google.JWTConfigFromJSON(creds.JSON, scope)
 	if err != nil {
 		return nil, err
 	}
