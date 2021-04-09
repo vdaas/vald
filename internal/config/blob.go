@@ -89,13 +89,10 @@ type S3Config struct {
 	MaxChunkSize string `json:"max_chunk_size" yaml:"max_chunk_size"`
 }
 
+// CloudStorageConfig represents CloudStorage configuration.
 type CloudStorageConfig struct {
-	URL string `json:"url" yaml:"url"`
-
-	Client struct {
-		CredentialsFilePath string `json:"credentials_file_path" yaml:"credentials_file_path"`
-		CredentialsJSON     string `json:"credentials_json" yaml:"credentials_json"`
-	} `json:"client" yaml:"client"`
+	URL    string              `json:"url" yaml:"url"`
+	Client *CloudStorageClient `json:"client" yaml:"client"`
 
 	WriteBufferSize         int    `json:"write_buffer_size" yaml:"write_buffer_size"`
 	WriteCacheControl       string `json:"write_cache_control" yaml:"write_cache_control"`
@@ -103,6 +100,12 @@ type CloudStorageConfig struct {
 	WriteContentEncoding    string `json:"write_content_encoding" yaml:"write_content_encoding"`
 	WriteContentLanguage    string `json:"write_content_language" yaml:"write_content_language"`
 	WriteContentType        string `json:"write_content_type" yaml:"write_content_type"`
+}
+
+// CloudStorageClient represents CloudStorage client configuration.
+type CloudStorageClient struct {
+	CredentialsFilePath string `json:"credentials_file_path" yaml:"credentials_file_path"`
+	CredentialsJSON     string `json:"credentials_json" yaml:"credentials_json"`
 }
 
 // Bind binds the actual data from the Blob receiver field.
@@ -141,8 +144,12 @@ func (s *S3Config) Bind() *S3Config {
 func (c *CloudStorageConfig) Bind() *CloudStorageConfig {
 	c.URL = GetActualValue(c.URL)
 
-	c.Client.CredentialsFilePath = GetActualValue(c.Client.CredentialsFilePath)
-	c.Client.CredentialsJSON = GetActualValue(c.Client.CredentialsJSON)
+	if c.Client != nil {
+		c.Client.CredentialsFilePath = GetActualValue(c.Client.CredentialsFilePath)
+		c.Client.CredentialsJSON = GetActualValue(c.Client.CredentialsJSON)
+	} else {
+		c.Client = new(CloudStorageClient)
+	}
 
 	c.WriteCacheControl = GetActualValue(c.WriteCacheControl)
 	c.WriteContentDisposition = GetActualValue(c.WriteContentDisposition)
