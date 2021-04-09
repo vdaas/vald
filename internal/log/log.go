@@ -21,6 +21,7 @@ import (
 
 	"github.com/vdaas/vald/internal/log/glg"
 	logger "github.com/vdaas/vald/internal/log/logger"
+	"github.com/vdaas/vald/internal/log/nop"
 	"github.com/vdaas/vald/internal/log/zap"
 )
 
@@ -45,6 +46,8 @@ func Close() error {
 
 func getLogger(o *option) logger.Logger {
 	switch o.logType {
+	case logger.NOP:
+		return nop.New()
 	case logger.ZAP:
 		z, err := zap.New(
 			zap.WithLevel(o.level.String()),

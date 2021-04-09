@@ -26,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/log/level"
 	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/log/mock"
+	"github.com/vdaas/vald/internal/log/nop"
 	"go.uber.org/goleak"
 )
 
@@ -150,6 +151,18 @@ func Test_getLogger(t *testing.T) {
 				},
 			}
 		}(),
+
+		{
+			name: "returns nop logger when *option.logType is NOP",
+			args: args{
+				o: &option{
+					logType: logger.NOP,
+				},
+			},
+			want: want{
+				want: nop.New(),
+			},
+		},
 
 		{
 			name: "returns glg object when *option.logType is GLG",
