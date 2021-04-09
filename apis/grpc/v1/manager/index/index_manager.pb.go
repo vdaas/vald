@@ -32,10 +32,12 @@ import (
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var _ = proto.Marshal
-var _ = golang_proto.Marshal
-var _ = fmt.Errorf
-var _ = math.Inf
+var (
+	_ = proto.Marshal
+	_ = golang_proto.Marshal
+	_ = fmt.Errorf
+	_ = math.Inf
+)
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -46,6 +48,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 func init() {
 	proto.RegisterFile("apis/proto/v1/manager/index/index_manager.proto", fileDescriptor_0152ec67984b188e)
 }
+
 func init() {
 	golang_proto.RegisterFile("apis/proto/v1/manager/index/index_manager.proto", fileDescriptor_0152ec67984b188e)
 }
@@ -73,8 +76,10 @@ var fileDescriptor_0152ec67984b188e = []byte{
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
-var _ context.Context
-var _ grpc.ClientConn
+var (
+	_ context.Context
+	_ grpc.ClientConn
+)
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
@@ -110,8 +115,7 @@ type IndexServer interface {
 }
 
 // UnimplementedIndexServer can be embedded to have forward compatible implementations.
-type UnimplementedIndexServer struct {
-}
+type UnimplementedIndexServer struct{}
 
 func (*UnimplementedIndexServer) IndexInfo(ctx context.Context, req *payload.Empty) (*payload.Info_Index_Count, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IndexInfo not implemented")

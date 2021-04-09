@@ -4235,8 +4235,7 @@ func Test_mySQLClient_errorLog(t *testing.T) {
 		eventReceiver        EventReceiver
 		dbr                  dbr.DBR
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
