@@ -28,6 +28,12 @@ const (
 	locationGMT   = "GMT"
 )
 
+var (
+	gmt = location(locationGMT, 0)
+	utc = location(locationUTC, 0)
+	jst = location(locationJST, 9*60*60)
+)
+
 func Set(loc string) {
 	switch strings.ToLower(loc) {
 	case strings.ToLower(locationUTC):
@@ -42,15 +48,15 @@ func Set(loc string) {
 }
 
 func GMT() *time.Location {
-	return location(locationGMT, 0)
+	return gmt
 }
 
 func UTC() *time.Location {
-	return location(locationUTC, 0)
+	return utc
 }
 
 func JST() *time.Location {
-	return location(locationJST, 9*60*60)
+	return jst
 }
 
 func location(zone string, offset int) *time.Location {
