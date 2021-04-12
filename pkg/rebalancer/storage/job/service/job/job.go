@@ -63,6 +63,11 @@ func New(opts ...Option) (dsc Rebalancer, err error) {
 	return r, nil
 }
 
+func (r *rebalancer) renameFile(from, to string) error {
+
+	return nil
+}
+
 func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 2)
 	cech, err := r.client.Start(ctx)
@@ -126,7 +131,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 		}))
 
 		// Unpack tar.gz file and Decode kvsdb file to get the vector ids
-		log.Info("[job debug] unpack tar.gs file and decode kvsdb file")
+		log.Info("[job debug] unpack tar.gz file and decode kvsdb file")
 		idm, err := r.loadKVS(ctx, pr)
 		log.Infof("[job debug] finish unpack: len kvs: %d, err: %#v ", len(idm), err)
 		if err != nil {
@@ -246,6 +251,9 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 			log.Errorf("failed to rebalance data: %s", errs.Error())
 			return errs
 		}
+
+		// rename backup file
+
 		// request multi update using v1 client
 		log.Infof("Finish rebalance data: %d, remaining data: %d", cnt, amntData)
 
