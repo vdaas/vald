@@ -122,7 +122,7 @@ func TestAgentSidecar_Bind(t *testing.T) {
 			filename := "vald-ngt-1"
 			filenameSuffix := "tar.gz"
 			return test{
-				name: "return AgentSidecar when all of object are set",
+				name: "return AgentSidecar when all of object are not set",
 				fields: fields{
 					Mode:               mode,
 					WatchDir:           watchDir,
