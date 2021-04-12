@@ -13,7 +13,6 @@ func BenchmarkParse(b *testing.B) {
 		name string
 		args args
 	}
-
 	tests := []test{
 		{
 			name: "t 10ms",
@@ -46,7 +45,6 @@ func BenchmarkParse(b *testing.B) {
 			},
 		},
 	}
-
 	for _, test := range tests {
 		b.Run(test.name, func(b *testing.B) {
 			b.RunParallel(func(pb *testing.PB) {
@@ -74,45 +72,43 @@ func BenchmarkParseWithDefault(b *testing.B) {
 		name string
 		args args
 	}
-
 	tests := []test{
 		{
-			name: "t 10second and 50*time.Millisecond",
+			name: "t 10 second and d 50 millisecond",
 			args: args{
 				t: "10second",
 				d: 50 * time.Millisecond,
 			},
 		},
 		{
-			name: "t 100second and 50*time.Millisecond",
+			name: "t 100 second and d 50 millisecond",
 			args: args{
 				t: "100second",
 				d: 50 * time.Millisecond,
 			},
 		},
 		{
-			name: "t 1000second and 50*time.Millisecond",
+			name: "t 1000 second and d 50 millisecond",
 			args: args{
 				t: "1000second",
 				d: 50 * time.Millisecond,
 			},
 		},
 		{
-			name: "t 10000second and 50*time.Millisecond",
+			name: "t 10000 second and d 50 millisecond",
 			args: args{
 				t: "1000second",
 				d: 50 * time.Millisecond,
 			},
 		},
 		{
-			name: "t 100000second and 50*time.Millisecond",
+			name: "t 100000 second and d 50 millisecond",
 			args: args{
 				t: "10000second",
 				d: 50 * time.Millisecond,
 			},
 		},
 	}
-
 	for _, test := range tests {
 		b.Run(test.name, func(b *testing.B) {
 			b.RunParallel(func(pb *testing.PB) {
