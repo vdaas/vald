@@ -25,7 +25,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
     app.kubernetes.io/version: v1.0.4
-    app.kubernetes.io/component: gateway
+    app.kubernetes.io/component: gateway-meta
 spec:
   progressDeadlineSeconds: 600
   revisionHistoryLimit: 2
@@ -44,7 +44,7 @@ spec:
         app: vald-meta-gateway
         app.kubernetes.io/name: vald
         app.kubernetes.io/instance: RELEASE-NAME
-        app.kubernetes.io/component: gateway
+        app.kubernetes.io/component: gateway-meta
       annotations:
         checksum/configmap: 75fb8c7d3cb5ea4b5cc1ca1cdf9d2838d47040e6092f7f9caff4b6bef70c0aa2
     spec:

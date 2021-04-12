@@ -28,4 +28,9 @@ var (
 
 	// ErrPathNotSpecified represents an error that the path is not specified.
 	ErrPathNotSpecified = New("the path is not specified")
+
+	// ErrPathNotAllowed represents a function to generate an error indicates that the specified path is not allowed.
+	ErrPathNotAllowed = func(path string) error {
+		return Errorf("the specified file path is not allowed: %s", path)
+	}
 )

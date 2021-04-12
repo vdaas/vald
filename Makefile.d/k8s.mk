@@ -272,8 +272,8 @@ k8s/external/scylla/deploy: \
 	k8s/external/cert-manager/deploy
 	kubectl apply -f https://raw.githubusercontent.com/scylladb/scylla-operator/master/examples/common/operator.yaml
 	sleep $(K8S_SLEEP_DURATION_FOR_WAIT_COMMAND)
-	kubectl wait -n scylla-operator-system --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=scylla-operator-controller-manager-0 --timeout=600s
-	kubectl -n scylla-operator-system get pod
+	kubectl wait -n scylla-operator --for=condition=ready pod -l app.kubernetes.io/name=scylla-operator --timeout=600s
+	kubectl -n scylla-operator get pod
 	kubectl apply -f $(K8S_EXTERNAL_SCYLLA_MANIFEST)
 	sleep $(K8S_SLEEP_DURATION_FOR_WAIT_COMMAND)
 	kubectl -n scylla get ScyllaCluster

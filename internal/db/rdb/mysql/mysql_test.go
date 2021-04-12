@@ -708,26 +708,9 @@ func Test_mySQLClient_GetVector(t *testing.T) {
 		uuid string
 	}
 	type fields struct {
-		db                   string
-		host                 string
-		port                 int
-		user                 string
-		pass                 string
-		name                 string
-		charset              string
-		timezone             string
-		initialPingTimeLimit time.Duration
-		initialPingDuration  time.Duration
-		connMaxLifeTime      time.Duration
-		dialer               net.Dialer
-		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
-		tlsConfig            *tls.Config
-		maxOpenConns         int
-		maxIdleConns         int
-		session              dbr.Session
-		connected            atomic.Value
-		eventReceiver        EventReceiver
-		dbr                  dbr.DBR
+		session   dbr.Session
+		connected atomic.Value
+		dbr       dbr.DBR
 	}
 	type want struct {
 		want Vector
@@ -4252,8 +4235,7 @@ func Test_mySQLClient_errorLog(t *testing.T) {
 		eventReceiver        EventReceiver
 		dbr                  dbr.DBR
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

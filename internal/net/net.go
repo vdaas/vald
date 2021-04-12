@@ -19,6 +19,7 @@ package net
 
 import (
 	"context"
+	"math"
 	"net"
 	"strconv"
 	"strings"
@@ -29,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
+	"inet.af/netaddr"
 )
 
 type (
@@ -68,8 +70,16 @@ const (
 	UDP6
 )
 
-// DefaultResolver is an alias of net.DefaultResolver.
-var DefaultResolver = net.DefaultResolver
+var (
+	// DefaultResolver is an alias of net.DefaultResolver.
+	DefaultResolver = net.DefaultResolver
+
+	// Listen is an alias of net.Listen.
+	Listen = net.Listen
+
+	// IPv4 is an alias of net.IPv4.
+	IPv4 = net.IPv4
+)
 
 func NetworkTypeFromString(str string) NetworkType {
 	switch strings.ToLower(str) {
@@ -147,23 +157,27 @@ func Parse(addr string) (host string, port uint16, isLocal, isIPv4, isIPv6 bool,
 		log.Warnf("failed to parse addr %s\terror: %v", addr, err)
 		host = addr
 	}
-	isIP := net.ParseIP(host) != nil
-	ic := strings.Count(host, ":")
+
+	ip, nerr := netaddr.ParseIP(host)
+	if nerr != nil {
+		log.Debugf("host: %s,\tport: %d,\tip: %#v,\terror: %v", host, port, ip, nerr)
+	}
+
 	// return host and port and flags
 	return host, port,
 		// check is local ip or not
-		host == localHost ||
-			host == localIPv4 ||
-			host == localIPv6,
+		IsLocal(host) || ip.IsLoopback(),
 		// check is IPv4 or not
-		isIP && ic < 2,
+		// ic < 2,
+		nerr == nil && ip.Is4(),
 		// check is IPv6 or not
-		isIP && ic >= 2,
+		// ic >= 2,
+		nerr == nil && (ip.Is6() || ip.Is4in6()),
 		// Split error
 		err
 }
 
-// Dial is a wrapper function of the net.Dial function.
+// DialContext is a wrapper function of the net.Dial function.
 func DialContext(ctx context.Context, network, addr string) (conn Conn, err error) {
 	if DefaultResolver.Dial == nil {
 		return net.Dial(network, addr)
@@ -190,8 +204,8 @@ func SplitHostPort(hostport string) (host string, port uint16, err error) {
 		host = hostport
 		port = defaultPort
 	}
-	p, err := strconv.Atoi(portStr)
-	if err != nil {
+	p, err := strconv.ParseUint(portStr, 10, 16)
+	if err != nil || p < 0 || p > math.MaxUint16 {
 		port = defaultPort
 	} else {
 		port = uint16(p)
@@ -260,9 +274,10 @@ func LoadLocalIP() string {
 		return ""
 	}
 	for _, address := range addrs {
-		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
-			if ipnet.IP.To4() != nil {
-				return ipnet.IP.String()
+		if ipn, ok := address.(*net.IPNet); ok {
+			if ip, ok := netaddr.FromStdIPNet(ipn); ok && ip.IP.IsLoopback() &&
+				(ip.IP.Is4() || ip.IP.Is6() || ip.IP.Is4in6()) {
+				return ip.IP.String()
 			}
 		}
 	}

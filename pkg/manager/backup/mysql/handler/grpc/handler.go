@@ -58,7 +58,6 @@ func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Re
 	vector, err := s.mysql.GetVector(ctx, uuid)
 	if err != nil {
 		if errors.IsErrMySQLNotFound(err) {
-			log.Warnf("[GetVector]\tnot found\t%v\t%s", req.Uuid, err.Error())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
@@ -84,7 +83,6 @@ func (s *server) Locations(ctx context.Context, req *payload.Backup_Locations_Re
 	uuid := req.GetUuid()
 	ips, err := s.mysql.GetIPs(ctx, uuid)
 	if err != nil {
-		log.Errorf("[Locations]\tunknown error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
@@ -106,7 +104,7 @@ func (s *server) Register(ctx context.Context, vector *payload.Backup_Compressed
 	uuid := vector.GetUuid()
 	m, err := toModelVector(vector)
 	if err != nil {
-		log.Errorf("[Register]\tunknown error\t%+v", err)
+		log.Errorf("[Register]\tinternal error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -115,7 +113,7 @@ func (s *server) Register(ctx context.Context, vector *payload.Backup_Compressed
 
 	err = s.mysql.SetVector(ctx, m)
 	if err != nil {
-		log.Errorf("[Register]\tunknown error\t%+v", err)
+		log.Errorf("[Register]\tinternal error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -137,7 +135,7 @@ func (s *server) RegisterMulti(ctx context.Context, vectors *payload.Backup_Comp
 		var m *model.Vector
 		m, err = toModelVector(vector)
 		if err != nil {
-			log.Errorf("[RegisterMulti]\tunknown error\t%+v", err)
+			log.Errorf("[RegisterMulti]\tinternal error\t%+v", err)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInternal(err.Error()))
 			}
@@ -148,7 +146,7 @@ func (s *server) RegisterMulti(ctx context.Context, vectors *payload.Backup_Comp
 
 	err = s.mysql.SetVectors(ctx, ms...)
 	if err != nil {
-		log.Errorf("[RegisterMulti]\tunknown error\t%+v", err)
+		log.Errorf("[RegisterMulti]\tinternal error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -168,7 +166,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Backup_Remove_Request)
 	uuid := req.GetUuid()
 	err = s.mysql.DeleteVector(ctx, uuid)
 	if err != nil {
-		log.Errorf("[Remove]\tunknown error\t%+v", err)
+		log.Errorf("[Remove]\tinternal error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -188,7 +186,7 @@ func (s *server) RemoveMulti(ctx context.Context, req *payload.Backup_Remove_Req
 	uuids := req.GetUuids()
 	err = s.mysql.DeleteVectors(ctx, uuids...)
 	if err != nil {
-		log.Errorf("[RemoveMulti]\tunknown error\t%+v", err)
+		log.Errorf("[RemoveMulti]\tinternal error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -208,7 +206,7 @@ func (s *server) RegisterIPs(ctx context.Context, req *payload.Backup_IP_Registe
 	uuid := req.GetUuid()
 	err = s.mysql.SetIPs(ctx, uuid, req.Ips...)
 	if err != nil {
-		log.Errorf("[RegisterIPs]\tunknown error\t%+v", err)
+		log.Errorf("[RegisterIPs]\tinternal error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -228,7 +226,7 @@ func (s *server) RemoveIPs(ctx context.Context, req *payload.Backup_IP_Remove_Re
 	ips := req.GetIps()
 	err = s.mysql.RemoveIPs(ctx, ips...)
 	if err != nil {
-		log.Errorf("[RemoveIPs]\tunknown error\t%+v", err)
+		log.Errorf("[RemoveIPs]\tinternal error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}

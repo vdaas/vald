@@ -639,8 +639,7 @@ func TestWithFeed(t *testing.T) {
 func TestWithFeeds(t *testing.T) {
 	type T = tensorflow
 	type args struct {
-		operationNames []string
-		outputIndexes  []int
+		feeds map[string]int
 	}
 	type want struct {
 		obj *T
@@ -665,11 +664,8 @@ func TestWithFeeds(t *testing.T) {
 		{
 			name: "set success when operationNames is []string{`test`} and outputIndexes is []int{0}",
 			args: args{
-				operationNames: []string{
-					"test",
-				},
-				outputIndexes: []int{
-					0,
+				feeds: map[string]int{
+					"test": 0,
 				},
 			},
 			want: want{
@@ -685,34 +681,14 @@ func TestWithFeeds(t *testing.T) {
 		},
 		{
 			name: "set nothing when operationNames is nil",
-			args: args{
-				outputIndexes: []int{
-					0,
-				},
-			},
+			args: args{},
 			want: want{
 				obj: new(T),
 			},
 		},
 		{
 			name: "set nothing when outputIndexes is nil",
-			args: args{
-				operationNames: []string{
-					"test",
-				},
-			},
-			want: want{
-				obj: new(T),
-			},
-		},
-		{
-			name: "set nothing when length of operationName and outputIndexes are different",
-			args: args{
-				operationNames: []string{},
-				outputIndexes: []int{
-					0,
-				},
-			},
+			args: args{},
 			want: want{
 				obj: new(T),
 			},
@@ -732,7 +708,7 @@ func TestWithFeeds(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			got := WithFeeds(test.args.operationNames, test.args.outputIndexes)
+			got := WithFeeds(test.args.feeds)
 			obj := new(T)
 			got(obj)
 			if err := test.checkFunc(test.want, obj); err != nil {
@@ -813,8 +789,7 @@ func TestWithFetch(t *testing.T) {
 func TestWithFetches(t *testing.T) {
 	type T = tensorflow
 	type args struct {
-		operationNames []string
-		outputIndexes  []int
+		fetches map[string]int
 	}
 	type want struct {
 		obj *T
@@ -839,11 +814,8 @@ func TestWithFetches(t *testing.T) {
 		{
 			name: "set success when operationNames is []string{`test`} and outputIndexes is []int{0}",
 			args: args{
-				operationNames: []string{
-					"test",
-				},
-				outputIndexes: []int{
-					0,
+				fetches: map[string]int{
+					"test": 0,
 				},
 			},
 			want: want{
@@ -858,35 +830,8 @@ func TestWithFetches(t *testing.T) {
 			},
 		},
 		{
-			name: "set nothing when operationNames is nil",
-			args: args{
-				outputIndexes: []int{
-					0,
-				},
-			},
-			want: want{
-				obj: new(T),
-			},
-		},
-		{
-			name: "set nothing when outputIndexs is nil",
-			args: args{
-				operationNames: []string{
-					"test",
-				},
-			},
-			want: want{
-				obj: new(T),
-			},
-		},
-		{
-			name: "set nothing when length of operationNames and outputIndexs are different",
-			args: args{
-				operationNames: []string{},
-				outputIndexes: []int{
-					0,
-				},
-			},
+			name: "set nothing when fetch is nil",
+			args: args{},
 			want: want{
 				obj: new(T),
 			},
@@ -906,7 +851,7 @@ func TestWithFetches(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			got := WithFetches(test.args.operationNames, test.args.outputIndexes)
+			got := WithFetches(test.args.fetches)
 			obj := new(T)
 			got(obj)
 			if err := test.checkFunc(test.want, obj); err != nil {

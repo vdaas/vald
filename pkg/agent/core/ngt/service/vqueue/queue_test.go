@@ -115,7 +115,7 @@ func Test_vqueue_Start(t *testing.T) {
 		ich              chan index
 		uii              []index
 		imu              sync.Mutex
-		uiim             map[string][]float32
+		uiim             map[string]index
 		dch              chan key
 		udk              []key
 		dmu              sync.Mutex
@@ -263,7 +263,7 @@ func Test_vqueue_PushInsert(t *testing.T) {
 		ich              chan index
 		uii              []index
 		imu              sync.Mutex
-		uiim             map[string][]float32
+		uiim             map[string]index
 		dch              chan key
 		udk              []key
 		dmu              sync.Mutex
@@ -410,7 +410,7 @@ func Test_vqueue_PushDelete(t *testing.T) {
 		ich              chan index
 		uii              []index
 		imu              sync.Mutex
-		uiim             map[string][]float32
+		uiim             map[string]index
 		dch              chan key
 		udk              []key
 		dmu              sync.Mutex
@@ -555,7 +555,7 @@ func Test_vqueue_RangePopInsert(t *testing.T) {
 		ich              chan index
 		uii              []index
 		imu              sync.Mutex
-		uiim             map[string][]float32
+		uiim             map[string]index
 		dch              chan key
 		udk              []key
 		dmu              sync.Mutex
@@ -695,7 +695,7 @@ func Test_vqueue_RangePopDelete(t *testing.T) {
 		ich              chan index
 		uii              []index
 		imu              sync.Mutex
-		uiim             map[string][]float32
+		uiim             map[string]index
 		dch              chan key
 		udk              []key
 		dmu              sync.Mutex
@@ -834,7 +834,7 @@ func Test_vqueue_GetVector(t *testing.T) {
 		ich              chan index
 		uii              []index
 		imu              sync.Mutex
-		uiim             map[string][]float32
+		uiim             map[string]index
 		dch              chan key
 		udk              []key
 		dmu              sync.Mutex
@@ -980,7 +980,7 @@ func Test_vqueue_addInsert(t *testing.T) {
 		ich              chan index
 		uii              []index
 		imu              sync.Mutex
-		uiim             map[string][]float32
+		uiim             map[string]index
 		dch              chan key
 		udk              []key
 		dmu              sync.Mutex
@@ -1117,7 +1117,7 @@ func Test_vqueue_addDelete(t *testing.T) {
 		ich              chan index
 		uii              []index
 		imu              sync.Mutex
-		uiim             map[string][]float32
+		uiim             map[string]index
 		dch              chan key
 		udk              []key
 		dmu              sync.Mutex
@@ -1251,7 +1251,7 @@ func Test_vqueue_flushAndLoadInsert(t *testing.T) {
 		ich              chan index
 		uii              []index
 		imu              sync.Mutex
-		uiim             map[string][]float32
+		uiim             map[string]index
 		dch              chan key
 		udk              []key
 		dmu              sync.Mutex
@@ -1383,7 +1383,7 @@ func Test_vqueue_flushAndLoadDelete(t *testing.T) {
 		ich              chan index
 		uii              []index
 		imu              sync.Mutex
-		uiim             map[string][]float32
+		uiim             map[string]index
 		dch              chan key
 		udk              []key
 		dmu              sync.Mutex
@@ -1515,7 +1515,7 @@ func Test_vqueue_IVQLen(t *testing.T) {
 		ich              chan index
 		uii              []index
 		imu              sync.Mutex
-		uiim             map[string][]float32
+		uiim             map[string]index
 		dch              chan key
 		udk              []key
 		dmu              sync.Mutex
@@ -1647,7 +1647,7 @@ func Test_vqueue_DVQLen(t *testing.T) {
 		ich              chan index
 		uii              []index
 		imu              sync.Mutex
-		uiim             map[string][]float32
+		uiim             map[string]index
 		dch              chan key
 		udk              []key
 		dmu              sync.Mutex
@@ -1779,7 +1779,7 @@ func Test_vqueue_IVCLen(t *testing.T) {
 		ich              chan index
 		uii              []index
 		imu              sync.Mutex
-		uiim             map[string][]float32
+		uiim             map[string]index
 		dch              chan key
 		udk              []key
 		dmu              sync.Mutex
@@ -1911,7 +1911,7 @@ func Test_vqueue_DVCLen(t *testing.T) {
 		ich              chan index
 		uii              []index
 		imu              sync.Mutex
-		uiim             map[string][]float32
+		uiim             map[string]index
 		dch              chan key
 		udk              []key
 		dmu              sync.Mutex

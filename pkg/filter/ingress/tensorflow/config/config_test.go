@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// Package config providers configuration type and load configuration logic
+// Package setting stores all server application settings
 package config
 
 import (
@@ -22,33 +22,32 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
+	"go.uber.org/goleak"
 )
 
-func TestDebug_Bind(t *testing.T) {
-	type fields struct {
-		Profile struct {
-			Enable bool
-			Server *Server
-		}
-		Log struct {
-			Level string
-			Mode  string
-		}
+func TestNewConfig(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		path string
 	}
 	type want struct {
-		want *Debug
+		wantCfg *Data
+		err     error
 	}
 	type test struct {
 		name       string
-		fields     fields
+		args       args
 		want       want
-		checkFunc  func(want, *Debug) error
-		beforeFunc func()
-		afterFunc  func()
+		checkFunc  func(want, *Data, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *Debug) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+	defaultCheckFunc := func(w want, gotCfg *Data, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotCfg, w.wantCfg) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotCfg, w.wantCfg)
 		}
 		return nil
 	}
@@ -57,9 +56,8 @@ func TestDebug_Bind(t *testing.T) {
 		/*
 		   {
 		       name: "test_case_1",
-		       fields: fields {
-		           Profile: nil,
-		           Log: nil,
+		       args: args {
+		           path: "",
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -71,9 +69,8 @@ func TestDebug_Bind(t *testing.T) {
 		   func() test {
 		       return test {
 		           name: "test_case_2",
-		           fields: fields {
-		           Profile: nil,
-		           Log: nil,
+		           args: args {
+		           path: "",
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -82,25 +79,23 @@ func TestDebug_Bind(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			d := &Debug{
-				// TODO: refactor debug.go
-				// Profile: test.fields.Profile,
-				// Log:     test.fields.Log,
-			}
 
-			got := d.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			gotCfg, err := NewConfig(test.args.path)
+			if err := test.checkFunc(test.want, gotCfg, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
