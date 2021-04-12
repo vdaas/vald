@@ -57,7 +57,7 @@ func TestObservability_Bind(t *testing.T) {
 			return test{
 				name: "return Observability when all object parameters are nil",
 				fields: fields{
-					Enabled: false,
+					Enabled: true,
 				},
 				want: want{
 					want: &Observability{
@@ -118,6 +118,7 @@ func TestObservability_Bind(t *testing.T) {
 						Enabled: false,
 						Collector: &Collector{
 							Duration: collectorDur,
+							Metrics:  new(Metrics),
 						},
 						Trace: new(Trace),
 						Prometheus: &Prometheus{
@@ -208,6 +209,7 @@ func TestObservability_Bind(t *testing.T) {
 						Enabled: false,
 						Collector: &Collector{
 							Duration: collectorDur,
+							Metrics:  new(Metrics),
 						},
 						Trace: new(Trace),
 						Prometheus: &Prometheus{
@@ -469,7 +471,7 @@ func TestStackdriver_Bind(t *testing.T) {
 				fields: fields{
 					ProjectID: "_PROJECT_ID_",
 					Client: &StackdriverClient{
-						APIKey: "_API_KEY_",
+						APIKey: "_CLIENT_API_KEY_",
 					},
 					Exporter: &StackdriverExporter{
 						Location: "_EXPORTER_LOCATION_",
