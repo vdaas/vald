@@ -292,13 +292,13 @@ func TestMySQL_Opts(t *testing.T) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(len(got), len(w.want)) {
-			return errors.Errorf("length got: \"%#v\",\n\t\t\t\twant: \"%#v\"", len(got), len(w.want))
+			return errors.Errorf("length got: \"%#v\",\n\t\t\t\tlenght want: \"%#v\"", len(got), len(w.want))
 		}
 		return nil
 	}
 	tests := []test{
 		{
-			name: "return 16 option and nil when all parameters are set",
+			name: "return 17 option and nil when all parameters are set",
 			fields: fields{
 				DB:                   "mysql",
 				Host:                 "mysql.default.svc.cluster.clocal",
@@ -327,7 +327,7 @@ func TestMySQL_Opts(t *testing.T) {
 			},
 		},
 		{
-			name: "return 16 option and nil when all parameters are set but the network type is invalid",
+			name: "return 17 option and nil when all parameters are set but the network type is invalid",
 			fields: fields{
 				DB:                   "mysql",
 				Host:                 "mysql.default.svc.cluster.clocal",
@@ -356,7 +356,7 @@ func TestMySQL_Opts(t *testing.T) {
 			},
 		},
 		{
-			name: "return 16 option and nil when all parameters are set but the network type is empty",
+			name: "return 17 option and nil when all parameters are set but the network type is empty",
 			fields: fields{
 				DB:                   "mysql",
 				Host:                 "mysql.default.svc.cluster.clocal",
