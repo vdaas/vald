@@ -36,6 +36,7 @@ func TestAgentSidecar_Bind(t *testing.T) {
 		BlobStorage        *Blob
 		Compress           *CompressCore
 		RestoreBackoff     *Backoff
+		Client             *Client
 	}
 	type want struct {
 		want *AgentSidecar
@@ -55,47 +56,54 @@ func TestAgentSidecar_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           Mode: "",
-		           WatchDir: "",
-		           AutoBackupDuration: "",
-		           PostStopTimeout: "",
-		           Filename: "",
-		           FilenameSuffix: "",
-		           BlobStorage: Blob{},
-		           Compress: CompressCore{},
-		           RestoreBackoff: Backoff{},
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           Mode: "",
-		           WatchDir: "",
-		           AutoBackupDuration: "",
-		           PostStopTimeout: "",
-		           Filename: "",
-		           FilenameSuffix: "",
-		           BlobStorage: Blob{},
-		           Compress: CompressCore{},
-		           RestoreBackoff: Backoff{},
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			fields := fields{
+				Mode:               "sidecar",
+				WatchDir:           "/var/index",
+				AutoBackupDuration: "10ms",
+				PostStopTimeout:    "5m",
+				Filename:           "vald-ngt-1",
+				FilenameSuffix:     "tar.gz",
+				BlobStorage: &Blob{
+					StorageType: "s3",
+				},
+				Compress: &CompressCore{
+					CompressAlgorithm: GOB.String(),
+				},
+				RestoreBackoff: &Backoff{
+					InitialDuration: "10ms",
+				},
+				Client: &Client{
+					Net: new(Net),
+				},
+			}
+			return test{
+				name:   "return AgentSidecar when all of object are set",
+				fields: fields,
+				want: want{
+					want: &AgentSidecar{
+						Mode: fields.Mode,
+						// WatchDir:           "/var/index",
+						// AutoBackupDuration: "10ms",
+						// PostStopTimeout:    "5m",
+						// Filename:           "vald-ngt-1",
+						// FilenameSuffix:     "tar.gz",
+						// BlobStorage: &Blob{
+						// 	StorageType: "s3",
+						// },
+						// Compress: &CompressCore{
+						// 	CompressAlgorithm: GOB.String(),
+						// },
+						// RestoreBackoff: &Backoff{
+						// 	InitialDuration: "10ms",
+						// },
+						// Client: &Client{
+						// 	Net: new(Net),
+						// },
+					},
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {
@@ -120,6 +128,7 @@ func TestAgentSidecar_Bind(t *testing.T) {
 				BlobStorage:        test.fields.BlobStorage,
 				Compress:           test.fields.Compress,
 				RestoreBackoff:     test.fields.RestoreBackoff,
+				Client:             test.fields.Client,
 			}
 
 			got := s.Bind()
