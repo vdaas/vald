@@ -126,6 +126,9 @@ func (r *Redis) Opts() (opts []redis.Option, err error) {
 		redis.WithPassword(r.Password),
 		redis.WithPoolSize(r.PoolSize),
 		redis.WithPoolTimeout(r.PoolTimeout),
+		// In the current implementation, we do not need to use the read only flag for redis usages.
+		// This implementation is to only align to the redis interface.
+		// We will remove this comment out if we need to use this.
 		// redis.WithReadOnlyFlag(readOnly bool) ,
 		redis.WithNetwork(r.Network),
 		redis.WithReadTimeout(r.ReadTimeout),
