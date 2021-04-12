@@ -32,7 +32,7 @@ var goleakIgnoreOptions = []goleak.Option{
 }
 
 func TestMain(m *testing.M) {
-	log.Init()
+	log.Init(log.WithLoggerType("nop"))
 	info.Init("")
 	os.Exit(m.Run())
 }
