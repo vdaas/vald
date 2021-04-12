@@ -18,6 +18,7 @@
 package config
 
 import (
+	"os"
 	"reflect"
 	"testing"
 
@@ -46,8 +47,8 @@ func TestAgentSidecar_Bind(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *AgentSidecar) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got *AgentSidecar) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -57,63 +58,164 @@ func TestAgentSidecar_Bind(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			fields := fields{
-				Mode:               "sidecar",
-				WatchDir:           "/var/index",
-				AutoBackupDuration: "10ms",
-				PostStopTimeout:    "5m",
-				Filename:           "vald-ngt-1",
-				FilenameSuffix:     "tar.gz",
-				BlobStorage: &Blob{
-					StorageType: "s3",
-				},
-				Compress: &CompressCore{
-					CompressAlgorithm: GOB.String(),
-				},
-				RestoreBackoff: &Backoff{
-					InitialDuration: "10ms",
-				},
-				Client: &Client{
-					Net: new(Net),
-				},
-			}
+			mode := "sidecar"
+			watchDir := "sidecar"
+			autoBackupDuration := "10ms"
+			postStopTimeout := "5m"
+			filename := "vald-ngt-1"
+			filenameSuffix := "tar.gz"
+			blobStorageType := "s3"
+			compressAlgorithm := GOB.String()
+			backoffInitialDuration := "10ms"
 			return test{
-				name:   "return AgentSidecar when all of object are set",
-				fields: fields,
+				name: "return AgentSidecar when all of object are set",
+				fields: fields{
+					Mode:               mode,
+					WatchDir:           watchDir,
+					AutoBackupDuration: autoBackupDuration,
+					PostStopTimeout:    postStopTimeout,
+					Filename:           filename,
+					FilenameSuffix:     filenameSuffix,
+					BlobStorage: &Blob{
+						StorageType: blobStorageType,
+					},
+					Compress: &CompressCore{
+						CompressAlgorithm: compressAlgorithm,
+					},
+					RestoreBackoff: &Backoff{
+						InitialDuration: backoffInitialDuration,
+					},
+					Client: &Client{
+						Net: new(Net),
+					},
+				},
 				want: want{
 					want: &AgentSidecar{
-						Mode: fields.Mode,
-						// WatchDir:           "/var/index",
-						// AutoBackupDuration: "10ms",
-						// PostStopTimeout:    "5m",
-						// Filename:           "vald-ngt-1",
-						// FilenameSuffix:     "tar.gz",
-						// BlobStorage: &Blob{
-						// 	StorageType: "s3",
-						// },
-						// Compress: &CompressCore{
-						// 	CompressAlgorithm: GOB.String(),
-						// },
-						// RestoreBackoff: &Backoff{
-						// 	InitialDuration: "10ms",
-						// },
-						// Client: &Client{
-						// 	Net: new(Net),
-						// },
+						Mode:               mode,
+						WatchDir:           watchDir,
+						AutoBackupDuration: autoBackupDuration,
+						PostStopTimeout:    postStopTimeout,
+						Filename:           filename,
+						FilenameSuffix:     filenameSuffix,
+						BlobStorage: &Blob{
+							StorageType: blobStorageType,
+							S3:          new(S3Config),
+						},
+						Compress: &CompressCore{
+							CompressAlgorithm: compressAlgorithm,
+						},
+						RestoreBackoff: &Backoff{
+							InitialDuration: backoffInitialDuration,
+						},
+						Client: &Client{
+							Net: new(Net),
+						},
+					},
+				},
+			}
+		}(),
+		func() test {
+			mode := "sidecar"
+			watchDir := "sidecar"
+			autoBackupDuration := "10ms"
+			postStopTimeout := "5m"
+			filename := "vald-ngt-1"
+			filenameSuffix := "tar.gz"
+			return test{
+				name: "return AgentSidecar when all of object are set",
+				fields: fields{
+					Mode:               mode,
+					WatchDir:           watchDir,
+					AutoBackupDuration: autoBackupDuration,
+					PostStopTimeout:    postStopTimeout,
+					Filename:           filename,
+					FilenameSuffix:     filenameSuffix,
+				},
+				want: want{
+					want: &AgentSidecar{
+						Mode:               mode,
+						WatchDir:           watchDir,
+						AutoBackupDuration: autoBackupDuration,
+						PostStopTimeout:    postStopTimeout,
+						Filename:           filename,
+						FilenameSuffix:     filenameSuffix,
+						BlobStorage:        new(Blob),
+						Compress:           new(CompressCore),
+						RestoreBackoff:     new(Backoff),
+						Client:             new(Client),
+					},
+				},
+			}
+		}(),
+		func() test {
+			mode := "sidecar"
+			watchDir := "sidecar"
+			autoBackupDuration := "10ms"
+			postStopTimeout := "5m"
+			filename := "vald-ngt-1"
+			filenameSuffix := "tar.gz"
+			m := map[string]string{
+				"MODE":                 mode,
+				"WATCH_DIR":            watchDir,
+				"AUTO_BACKUP_DURATION": autoBackupDuration,
+				"POST_STOP_TIMEOUT":    postStopTimeout,
+				"FILENAME":             filename,
+				"FILENAME_SUFFIX":      filenameSuffix,
+			}
+			return test{
+				name: "return AgentSidecar when the data is loaded from the environment variable",
+				fields: fields{
+					Mode:               "_MODE_",
+					WatchDir:           "_WATCH_DIR_",
+					AutoBackupDuration: "_AUTO_BACKUP_DURATION_",
+					PostStopTimeout:    "_POST_STOP_TIMEOUT_",
+					Filename:           "_FILENAME_",
+					FilenameSuffix:     "_FILENAME_SUFFIX_",
+				},
+				beforeFunc: func(t *testing.T) {
+					t.Helper()
+					for k, v := range m {
+						if err := os.Setenv(k, v); err != nil {
+							t.Fatal(err)
+						}
+					}
+				},
+				afterFunc: func(t *testing.T) {
+					t.Helper()
+					for k := range m {
+						if err := os.Unsetenv(k); err != nil {
+							t.Fatal(err)
+						}
+					}
+				},
+				want: want{
+					want: &AgentSidecar{
+						Mode:               mode,
+						WatchDir:           watchDir,
+						AutoBackupDuration: autoBackupDuration,
+						PostStopTimeout:    postStopTimeout,
+						Filename:           filename,
+						FilenameSuffix:     filenameSuffix,
+						BlobStorage:        new(Blob),
+						Compress:           new(CompressCore),
+						RestoreBackoff:     new(Backoff),
+						Client:             new(Client),
 					},
 				},
 			}
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
