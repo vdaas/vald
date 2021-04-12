@@ -26,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/servers/server"
 )
 
+// Servers represents the configuration list.
 type Servers struct {
 	// Server represent server configuration.
 	Servers []*Server `json:"servers" yaml:"servers"`
@@ -48,6 +49,7 @@ type Servers struct {
 	TLS *TLS `json:"tls" yaml:"tls"`
 }
 
+// Server represents the server configuration.
 type Server struct {
 	Name          string        `json:"name,omitempty" yaml:"name"`
 	Network       string        `json:"network,omitempty" yaml:"network"`
@@ -62,6 +64,7 @@ type Server struct {
 	Restart       bool          `json:"restart,omitempty" yaml:"restart"`
 }
 
+// HTTP represents the configuration for HTTP.
 type HTTP struct {
 	ShutdownDuration  string `json:"shutdown_duration" yaml:"shutdown_duration"`
 	HandlerTimeout    string `json:"handler_timeout" yaml:"handler_timeout"`
@@ -71,6 +74,7 @@ type HTTP struct {
 	WriteTimeout      string `json:"write_timeout" yaml:"write_timeout"`
 }
 
+// GRPC represents the configuration for gPRC.
 type GRPC struct {
 	BidirectionalStreamConcurrency int            `json:"bidirectional_stream_concurrency,omitempty" yaml:"bidirectional_stream_concurrency"`
 	MaxReceiveMessageSize          int            `json:"max_receive_message_size,omitempty" yaml:"max_receive_message_size"`
@@ -87,6 +91,7 @@ type GRPC struct {
 	EnableReflection               bool           `json:"enable_reflection,omitempty" yaml:"enable_reflection"`
 }
 
+// GRPCKeepalive represents the configuration for gPRC keep-alive.
 type GRPCKeepalive struct {
 	MaxConnIdle     string `json:"max_conn_idle" yaml:"max_conn_idle"`
 	MaxConnAge      string `json:"max_conn_age" yaml:"max_conn_age"`
@@ -95,6 +100,7 @@ type GRPCKeepalive struct {
 	Timeout         string `json:"timeout" yaml:"timeout"`
 }
 
+// Bind binds the actual value from the Servers struct field.
 func (s *Servers) Bind() *Servers {
 	check := make(map[string]struct{}, len(s.Servers)+len(s.HealthCheckServers)+len(s.MetricsServers))
 	for i, srv := range s.Servers {
@@ -146,6 +152,7 @@ func (s *Servers) Bind() *Servers {
 	return s
 }
 
+// GetGRPCStreamConcurrency returns the gRPC stream concurrency.
 func (s *Servers) GetGRPCStreamConcurrency() (c int) {
 	for _, s := range s.Servers {
 		if s.GRPC != nil {
@@ -155,6 +162,7 @@ func (s *Servers) GetGRPCStreamConcurrency() (c int) {
 	return 0
 }
 
+// Bind binds the actual value from the HTTP struct field.
 func (h *HTTP) Bind() *HTTP {
 	h.HandlerTimeout = GetActualValue(h.HandlerTimeout)
 	h.ShutdownDuration = GetActualValue(h.ShutdownDuration)
@@ -165,6 +173,7 @@ func (h *HTTP) Bind() *HTTP {
 	return h
 }
 
+// Bind binds the actual value from the GRPC struct field.
 func (g *GRPC) Bind() *GRPC {
 	g.ConnectionTimeout = GetActualValue(g.ConnectionTimeout)
 	for i, ic := range g.Interceptors {
@@ -173,6 +182,7 @@ func (g *GRPC) Bind() *GRPC {
 	return g
 }
 
+// Bind binds the actual value from the GRPCKeepalive struct field.
 func (k *GRPCKeepalive) Bind() *GRPCKeepalive {
 	k.MaxConnIdle = GetActualValue(k.MaxConnIdle)
 	k.MaxConnAge = GetActualValue(k.MaxConnAge)
@@ -182,6 +192,7 @@ func (k *GRPCKeepalive) Bind() *GRPCKeepalive {
 	return k
 }
 
+// Bind binds the actual value from the Server struct field.
 func (s *Server) Bind() *Server {
 	s.Name = GetActualValue(s.Name)
 	s.Network = GetActualValue(s.Network)
@@ -206,6 +217,7 @@ func (s *Server) Bind() *Server {
 	return s
 }
 
+// Opts sets the functional options into the []server.Option slice using the Server struct fields' value.
 func (s *Server) Opts() []server.Option {
 	opts := make([]server.Option, 0, 10)
 	nt := net.NetworkTypeFromString(s.Network)
