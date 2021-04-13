@@ -99,6 +99,11 @@ var (
 
 	once         sync.Once
 	infoProvider Info
+
+	rt = reflect.TypeOf(Detail{})
+
+	rtNumField = rt.NumField()
+	valdRepo   = fmt.Sprintf("github.com/%s/%s", Organization, Repository)
 )
 
 // Init initializes Detail object only once.
@@ -177,15 +182,16 @@ func (i info) String() string {
 func (d Detail) String() string {
 	d.Version = log.Bold(d.Version)
 	maxlen, l := 0, 0
-	rt, rv := reflect.TypeOf(d), reflect.ValueOf(d)
-	info := make(map[string]string, rt.NumField())
-	for i := 0; i < rt.NumField(); i++ {
+	rv := reflect.ValueOf(d)
+	info := make(map[string]string, rtNumField)
+	for i := 0; i < rtNumField; i++ {
+		rtField := rt.Field(i)
 		v := rv.Field(i).Interface()
 		value, ok := v.(string)
 		if !ok {
 			sts, ok := v.([]StackTrace)
 			if ok {
-				tag := reps.Replace(rt.Field(i).Tag.Get("json"))
+				tag := reps.Replace(rtField.Tag.Get("json"))
 				l = len(tag) + 2
 				if maxlen < l {
 					maxlen = l
@@ -204,7 +210,7 @@ func (d Detail) String() string {
 			} else {
 				strs, ok := v.([]string)
 				if ok {
-					tag := reps.Replace(rt.Field(i).Tag.Get("json"))
+					tag := reps.Replace(rtField.Tag.Get("json"))
 					l = len(tag)
 					if maxlen < l {
 						maxlen = l
@@ -214,7 +220,7 @@ func (d Detail) String() string {
 			}
 			continue
 		}
-		tag := reps.Replace(rt.Field(i).Tag.Get("json"))
+		tag := reps.Replace(rtField.Tag.Get("json"))
 		l = len(tag)
 		if maxlen < l {
 			maxlen = l
@@ -223,7 +229,7 @@ func (d Detail) String() string {
 	}
 
 	infoFormat := fmt.Sprintf("%%-%ds ->\t%%s", maxlen)
-	strs := make([]string, 0, rt.NumField())
+	strs := make([]string, 0, rtNumField)
 	for tag, value := range info {
 		if len(tag) != 0 && len(value) != 0 {
 			strs = append(strs, fmt.Sprintf(infoFormat, tag, value))
@@ -236,7 +242,6 @@ func (d Detail) String() string {
 // Get returns parased Detail object.
 func (i info) Get() Detail {
 	i.prepare()
-	valdRepo := fmt.Sprintf("github.com/%s/%s", Organization, Repository)
 	defaultURL := fmt.Sprintf("https://%s/tree/%s", valdRepo, i.detail.GitCommit)
 
 	i.detail.StackTrace = make([]StackTrace, 0, 10)
