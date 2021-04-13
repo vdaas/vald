@@ -20,3 +20,6 @@
 .idea/
 *.tmproj
 .vscode/
+
+# values/xxx.yaml
+values/

@@ -54,3 +54,32 @@ jobs:
       - name: Run lint for charts/vald-helm-operator
         run: |
           helm lint charts/vald-helm-operator
+  lint-values-schema:
+    name: lint for values schema
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code.
+        uses: actions/checkout@v2
+      - name: Helm version
+        run: |
+          helm version
+      - name: install YQ
+        run: |
+          sudo make yq/install
+      - name: Generate ValdRelease schema
+        run: |
+          make helm/schema/crd/vald
+      - uses: rinx/setup-k3d@v0.0.2
+        with:
+          version: latest
+          name: vald
+      - name: check k3d
+        run: |
+          kubectl cluster-info
+      - name: Test to apply
+        run: |
+          kubectl apply -f charts/vald-helm-operator/crds/valdrelease.yaml
+          yq eval \
+              '{"apiVersion": "vald.vdaas.org/v1", "kind": "ValdRelease", "metadata":{"name":"vald-cluster"}, "spec": .}' \
+              charts/vald/values.yaml \
+              | kubectl apply -f -

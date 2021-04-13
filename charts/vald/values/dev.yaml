@@ -23,15 +23,19 @@ defaults:
         enabled: true
 
 gateway:
-  vald:
+  backup:
+    enabled: false
+  lb:
     podAnnotations:
       profefe.com/enable: "true"
       profefe.com/port: "6060"
-      profefe.com/service: "vald-gateway"
+      profefe.com/service: "vald-lb-gateway"
     resources:
       requests:
         cpu: 100m
         memory: 50Mi
+  meta:
+    enabled: false
 
 agent:
   podAnnotations:
@@ -58,24 +62,10 @@ discoverer:
 
 manager:
   compressor:
-    podAnnotations:
-      profefe.com/enable: "true"
-      profefe.com/port: "6060"
-      profefe.com/service: "vald-manager-compressor"
-    resources:
-      requests:
-        cpu: 100m
-        memory: 50Mi
+    enabled: false
 
   backup:
-    podAnnotations:
-      profefe.com/enable: "true"
-      profefe.com/port: "6060"
-      profefe.com/service: "vald-manager-backup"
-    resources:
-      requests:
-        cpu: 100m
-        memory: 30Mi
+    enabled: false
 
   index:
     podAnnotations:
@@ -88,29 +78,4 @@ manager:
         memory: 30Mi
 
 meta:
-  podAnnotations:
-    profefe.com/enable: "true"
-    profefe.com/port: "6060"
-    profefe.com/service: "vald-meta"
-  resources:
-    requests:
-      cpu: 100m
-      memory: 30Mi
-
-initializer:
-  mysql:
-    enabled: true
-    configmap:
-      enabled: true
-    secret:
-      enabled: true
-  redis:
-    enabled: true
-    secret:
-      enabled: true
-  cassandra:
-    enabled: true
-    configmap:
-      enabled: true
-    secret:
-      enabled: true
+  enabled: false
