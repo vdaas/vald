@@ -26,7 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/servers/server"
 )
 
-// Servers represents the configuration list.
+// Servers represents the configuration of server list.
 type Servers struct {
 	// Server represent server configuration.
 	Servers []*Server `json:"servers" yaml:"servers"`
