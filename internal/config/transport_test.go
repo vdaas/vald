@@ -27,6 +27,7 @@ import (
 )
 
 func TestRoundTripper_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		TLSHandshakeTimeout   string
 		MaxIdleConns          int
@@ -58,13 +59,15 @@ func TestRoundTripper_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		{
-			name:   "return RoundTripper when all parameters are nil",
-			fields: fields{},
-			want: want{
-				want: new(RoundTripper),
-			},
-		},
+		func() test {
+			return test{
+				name:   "return RoundTripper when all parameters are nil",
+				fields: fields{},
+				want: want{
+					want: new(RoundTripper),
+				},
+			}
+		}(),
 		func() test {
 			tlsHandshakeTimeout := "5s"
 			maxIdleConns := 20
@@ -158,7 +161,6 @@ func TestRoundTripper_Bind(t *testing.T) {
 			}
 		}(),
 	}
-	t.Parallel()
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
@@ -196,6 +198,7 @@ func TestRoundTripper_Bind(t *testing.T) {
 }
 
 func TestTransport_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		RoundTripper *RoundTripper
 		Backoff      *Backoff
@@ -218,16 +221,18 @@ func TestTransport_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		{
-			name:   "return Transport when all parameters are nil",
-			fields: fields{},
-			want: want{
-				want: &Transport{
-					RoundTripper: new(RoundTripper),
-					Backoff:      new(Backoff),
+		func() test {
+			return test{
+				name:   "return Transport when all parameters are nil",
+				fields: fields{},
+				want: want{
+					want: &Transport{
+						RoundTripper: new(RoundTripper),
+						Backoff:      new(Backoff),
+					},
 				},
-			},
-		},
+			}
+		}(),
 		func() test {
 			roundTripper := &RoundTripper{
 				TLSHandshakeTimeout: "1s",
@@ -298,7 +303,6 @@ func TestTransport_Bind(t *testing.T) {
 			}
 		}(),
 	}
-	t.Parallel()
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
