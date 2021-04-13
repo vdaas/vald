@@ -91,7 +91,7 @@ type GRPC struct {
 	EnableReflection               bool           `json:"enable_reflection,omitempty" yaml:"enable_reflection"`
 }
 
-// GRPCKeepalive represents the configuration for gPRC keep-alive.
+// GRPCKeepalive represents the configuration for gRPC keep-alive.
 type GRPCKeepalive struct {
 	MaxConnIdle     string `json:"max_conn_idle" yaml:"max_conn_idle"`
 	MaxConnAge      string `json:"max_conn_age" yaml:"max_conn_age"`
