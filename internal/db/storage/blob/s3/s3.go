@@ -25,6 +25,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/db/storage/blob"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/deleter"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/reader"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/writer"
 	"github.com/vdaas/vald/internal/errgroup"
@@ -116,4 +117,13 @@ func (c *client) Writer(ctx context.Context, key string) (wc io.WriteCloser, err
 		return nil, err
 	}
 	return c.writer, nil
+}
+
+func (c *client) Deleter(ctx context.Context, key string) (d deleter.Deleter, err error) {
+	return nil, nil
+	// err = c.writer.Open(ctx, key)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// return c.writer, nil
 }

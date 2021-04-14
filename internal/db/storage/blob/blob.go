@@ -20,7 +20,7 @@ import (
 	"context"
 	"io"
 
-	"github.com/vdaas/vald/internal/db/storage/blob/s3/flusher"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/deleter"
 )
 
 type Bucket interface {
@@ -28,5 +28,5 @@ type Bucket interface {
 	Close() error
 	Reader(ctx context.Context, key string) (io.ReadCloser, error)
 	Writer(ctx context.Context, key string) (io.WriteCloser, error)
-	Flusher(ctx context.Context, key string) (flusher.Flusher, error)
+	Deleter(ctx context.Context, key string) (deleter.Deleter, error)
 }
