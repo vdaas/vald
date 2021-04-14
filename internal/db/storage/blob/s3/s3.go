@@ -130,6 +130,6 @@ func (c *client) Writer(ctx context.Context, key string) (wc io.WriteCloser, err
 	return c.writer, nil
 }
 
-func (c *client) Deleter(ctx context.Context, key string) (d deleter.Deleter, err error) {
+func (c *client) Deleter(ctx context.Context) (d deleter.Deleter, err error) {
 	return c.deleter, nil
 }

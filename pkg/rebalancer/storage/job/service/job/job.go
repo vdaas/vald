@@ -63,11 +63,6 @@ func New(opts ...Option) (dsc Rebalancer, err error) {
 	return r, nil
 }
 
-func (r *rebalancer) renameFile(from, to string) error {
-
-	return nil
-}
-
 func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 2)
 	cech, err := r.client.Start(ctx)
@@ -212,47 +207,22 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 			}
 		}
 		eg.Wait()
-		// for id, _ := range idm {
-		// 	// get vecotr by id
-		// 	log.Infof("[job debug] Get object data: %s", id)
-		// 	vec, err := r.client.GetObject(ctx, &payload.Object_VectorRequest{
-		// 		Id: &payload.Object_ID{
-		// 			Id: id,
-		// 		},
-		// 	})
-		// 	if err != nil {
-		// 		log.Error(err)
-		// 		errs = errors.Wrap(errs, err.Error())
-		// 		continue
-		// 	}
-		//
-		// 	// update data
-		// 	// TODO: use stream or upsert?
-		// 	log.Infof("[job debug] Update object data: %s", id)
-		// 	_, err = r.client.Update(ctx, &payload.Update_Request{
-		// 		Vector: &payload.Object_Vector{
-		// 			Id:     vec.GetId(),
-		// 			Vector: vec.GetVector(),
-		// 		},
-		// 	})
-		// 	if err != nil {
-		// 		log.Error(err)
-		// 		errs = errors.Wrap(errs, err.Error())
-		// 		continue
-		// 	}
-		//
-		// 	cnt++
-		// 	log.Infof("[job debug] Success Rebalance data: success amount data = %d", cnt)
-		// 	if amntData--; amntData == 0 {
-		// 		break
-		// 	}
-		// }
+
 		if errs != nil {
 			log.Errorf("failed to rebalance data: %s", errs.Error())
 			return errs
 		}
 
-		// rename backup file
+		// delete backup file
+		if r.rate == float64(1) {
+			log.Info("Start delete backup file")
+			err = r.storage.Delete(ctx)
+			if err != nil {
+				log.Errorf("failed to delete backup file: %s", err.Error())
+				return err
+			}
+			log.Info("Finish delete backup file")
+		}
 
 		// request multi update using v1 client
 		log.Infof("Finish rebalance data: %d, remaining data: %d", cnt, amntData)

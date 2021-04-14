@@ -28,5 +28,5 @@ type Bucket interface {
 	Close() error
 	Reader(ctx context.Context, key string) (io.ReadCloser, error)
 	Writer(ctx context.Context, key string) (io.WriteCloser, error)
-	Deleter(ctx context.Context, key string) (deleter.Deleter, error)
+	Deleter(ctx context.Context) (deleter.Deleter, error)
 }

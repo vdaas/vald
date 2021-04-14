@@ -33,6 +33,7 @@ import (
 
 type Storage interface {
 	Reader(ctx context.Context) (io.ReadCloser, error)
+	Delete(ctx context.Context) error
 }
 
 type bs struct {
@@ -139,4 +140,12 @@ func (b *bs) Reader(ctx context.Context) (r io.ReadCloser, err error) {
 	}
 
 	return r, nil
+}
+
+func (b *bs) Delete(ctx context.Context) error {
+	d, err := b.bucket.Deleter(ctx)
+	if err != nil {
+		return err
+	}
+	return d.Delete(b.filename + b.suffix)
 }
