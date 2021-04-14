@@ -41,8 +41,9 @@ type client struct {
 	maxPartSize  int64
 	maxChunkSize int64
 
-	reader reader.Reader
-	writer writer.Writer
+	reader  reader.Reader
+	writer  writer.Writer
+	deleter deleter.Deleter
 
 	readerBackoffEnabled bool
 	readerBackoffOpts    []backoff.Option
@@ -86,6 +87,16 @@ func New(opts ...Option) (b blob.Bucket, err error) {
 		}
 	}
 
+	if c.deleter == nil {
+		c.deleter, err = deleter.New(
+			deleter.WithService(c.service),
+			deleter.WithBucket(c.bucket),
+		)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return c, nil
 }
 
@@ -120,10 +131,5 @@ func (c *client) Writer(ctx context.Context, key string) (wc io.WriteCloser, err
 }
 
 func (c *client) Deleter(ctx context.Context, key string) (d deleter.Deleter, err error) {
-	return nil, nil
-	// err = c.writer.Open(ctx, key)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// return c.writer, nil
+	return c.deleter, nil
 }
