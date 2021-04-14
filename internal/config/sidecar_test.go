@@ -204,6 +204,20 @@ func TestAgentSidecar_Bind(t *testing.T) {
 				},
 			}
 		}(),
+		func() test {
+			return test{
+				name:   "return AgentSidecar when all of fields are empty or nil",
+				fields: fields{},
+				want: want{
+					want: &AgentSidecar{
+						BlobStorage:    new(Blob),
+						Compress:       new(CompressCore),
+						RestoreBackoff: new(Backoff),
+						Client:         new(Client),
+					},
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
