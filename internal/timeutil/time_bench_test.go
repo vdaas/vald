@@ -15,15 +15,21 @@ func BenchmarkParse(b *testing.B) {
 	}
 	tests := []test{
 		{
-			name: "t 10ms",
+			name: "t 1ns",
 			args: args{
-				t: "10ms",
+				t: "1ns",
 			},
 		},
 		{
-			name: "t 100ms",
+			name: "t 1µs",
 			args: args{
-				t: "100ms",
+				t: "1µs",
+			},
+		},
+		{
+			name: "t 1ms",
+			args: args{
+				t: "1ms",
 			},
 		},
 		{
@@ -33,15 +39,15 @@ func BenchmarkParse(b *testing.B) {
 			},
 		},
 		{
-			name: "t 10s",
+			name: "t 1m",
 			args: args{
-				t: "10s",
+				t: "1m",
 			},
 		},
 		{
-			name: "t 100s",
+			name: "t 1h",
 			args: args{
-				t: "100s",
+				t: "1h",
 			},
 		},
 	}
@@ -74,37 +80,96 @@ func BenchmarkParseWithDefault(b *testing.B) {
 	}
 	tests := []test{
 		{
-			name: "t 10 second and d 50 millisecond",
+			name: "t 1ns and d 50 millisecond",
 			args: args{
-				t: "10second",
+				t: "1ns",
 				d: 50 * time.Millisecond,
 			},
 		},
 		{
-			name: "t 100 second and d 50 millisecond",
+			name: "t 1µs and d 50 millisecond",
 			args: args{
-				t: "100second",
+				t: "1µs",
 				d: 50 * time.Millisecond,
 			},
 		},
 		{
-			name: "t 1000 second and d 50 millisecond",
+			name: "t 1ms and d 50 millisecond",
 			args: args{
-				t: "1000second",
+				t: "1ms",
 				d: 50 * time.Millisecond,
 			},
 		},
 		{
-			name: "t 10000 second and d 50 millisecond",
+			name: "t 1s and d 50 millisecond",
 			args: args{
-				t: "1000second",
+				t: "1s",
 				d: 50 * time.Millisecond,
 			},
 		},
 		{
-			name: "t 100000 second and d 50 millisecond",
+			name: "t 1m and d 50 millisecond",
 			args: args{
-				t: "10000second",
+				t: "1m",
+				d: 50 * time.Millisecond,
+			},
+		},
+		{
+			name: "t 1h and d 50 millisecond",
+			args: args{
+				t: "1h",
+				d: 50 * time.Millisecond,
+			},
+		},
+
+		// The following are error pattern.
+		// So default value is returned.
+
+		// The length of t is 5.
+		{
+			name: "t 1days and d 50 millisecond",
+			args: args{
+				t: "1days",
+				d: 50 * time.Millisecond,
+			},
+		},
+		// The length of t is 6.
+		{
+			name: "t 1month and d 50 millisecond",
+			args: args{
+				t: "1month",
+				d: 50 * time.Millisecond,
+			},
+		},
+		// The length of t is 7.
+		{
+			name: "t 10month and d 50 millisecond",
+			args: args{
+				t: "10month",
+				d: 50 * time.Millisecond,
+			},
+		},
+		// The length of t is 8.
+		{
+			name: "t 100month and d 50 millisecond",
+			args: args{
+				t: "10month",
+				d: 50 * time.Millisecond,
+			},
+		},
+		// The length of t is 9.
+		{
+			name: "t 1000month and d 50 millisecond",
+			args: args{
+				t: "10month",
+				d: 50 * time.Millisecond,
+			},
+		},
+		// The length of t is 10.
+		{
+			name: "t 10000month and d 50 millisecond",
+			args: args{
+				t: "10month",
 				d: 50 * time.Millisecond,
 			},
 		},
