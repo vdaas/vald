@@ -16,7 +16,7 @@ func BenchmarkRecoverFunc(b *testing.B) {
 	}
 	tests := []test{
 		{
-			name: "fn return error",
+			name: "fn return error func",
 			args: args{
 				fn: func() error {
 					return errors.New("fn err")
@@ -48,7 +48,7 @@ func BenchmarkRecoverWithoutPanicFunc(b *testing.B) {
 	}
 	tests := []test{
 		{
-			name: "fn return error",
+			name: "fn return error func",
 			args: args{
 				fn: func() error {
 					return errors.New("fn err")
@@ -80,7 +80,7 @@ func BenchmarkRecoverWithoutPanicFunc_with_execution(b *testing.B) {
 	}
 	tests := []test{
 		{
-			name: "fn return error",
+			name: "fn return error func",
 			args: args{
 				fn: func() error {
 					return errors.New("fn err")
@@ -88,7 +88,7 @@ func BenchmarkRecoverWithoutPanicFunc_with_execution(b *testing.B) {
 			},
 		},
 		{
-			name: "fn panic runtime",
+			name: "fn panic runtime error func",
 			args: args{
 				fn: func() error {
 					_ = []string{}[10]
@@ -97,7 +97,7 @@ func BenchmarkRecoverWithoutPanicFunc_with_execution(b *testing.B) {
 			},
 		},
 		{
-			name: "fn panic string",
+			name: "fn panic string func",
 			args: args{
 				fn: func() error {
 					panic("panic")
@@ -105,7 +105,7 @@ func BenchmarkRecoverWithoutPanicFunc_with_execution(b *testing.B) {
 			},
 		},
 		{
-			name: "fn panic error",
+			name: "fn panic error func",
 			args: args{
 				fn: func() error {
 					panic(errors.Errorf("error"))
@@ -113,7 +113,7 @@ func BenchmarkRecoverWithoutPanicFunc_with_execution(b *testing.B) {
 			},
 		},
 		{
-			name: "fn panic int",
+			name: "fn panic int func",
 			args: args{
 				fn: func() error {
 					panic(10)
