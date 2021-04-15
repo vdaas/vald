@@ -93,7 +93,7 @@ func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res 
 			RequeueAfter: time.Millisecond * 100,
 		}
 		if k8serrors.IsNotFound(err) {
-			log.Errorf("not found: %s", err)
+			log.Errorf("not found: %v", err)
 			res.RequeueAfter = time.Second
 			return res, nil
 		}
