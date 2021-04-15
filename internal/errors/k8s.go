@@ -29,6 +29,6 @@ var (
 	}
 
 	ErrEmptyReconileResult = func(resType string) error {
-		return Errorf("reconile result is empty: %s", resType)
+		return Errorf("reconcile result is empty: %s", resType)
 	}
 )
