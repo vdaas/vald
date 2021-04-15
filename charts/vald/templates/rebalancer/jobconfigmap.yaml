@@ -88,17 +88,11 @@ data:
     rebalancer_job:
       {{- $sidecar := .Values.agent.sidecar.config }}
       blob_storage:
-        {{- if $sidecar.blob_storage }}
         {{- toYaml $sidecar.blob_storage | nindent 8 }}
-        {{- end }}
       compress:
-        {{- if $sidecar.compress }}
         {{- toYaml $sidecar.compress | nindent 8 }}
-        {{- end }}
       filename_suffix:
-        {{- if $sidecar.filename_suffix }}
         {{- toYaml $sidecar.filename_suffix | nindent 8 }}
-        {{- end }}
       target_agent_name: _TARGET_AGENT_NAME_
       rate: _RATE_
       parallelism: {{ .Values.rebalancer.rebalancer.job.parallelism }}
