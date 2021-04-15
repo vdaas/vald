@@ -44,6 +44,7 @@ type reconciler struct {
 	namespaces  []string
 	onError     func(err error)
 	onReconcile func(rs map[string][]ConfigMap) // map[namespace][]configmap
+	listOpts    []client.ListOption
 	pool        sync.Pool
 }
 
@@ -66,6 +67,13 @@ func New(opts ...Option) (ConfigMapWatcher, error) {
 		}
 	}
 
+	if len(r.namespaces) != 0 {
+		r.listOpts = make([]client.ListOption, 0, len(r.namespaces))
+		for _, ns := range r.namespaces {
+			r.listOpts = append(r.listOpts, client.InNamespace(ns))
+		}
+	}
+
 	return r, nil
 }
 
@@ -73,15 +81,9 @@ func New(opts ...Option) (ConfigMapWatcher, error) {
 func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
 	cml := new(corev1.ConfigMapList)
 
-	listOpts := make([]client.ListOption, 0, len(r.namespaces))
-
-	for _, ns := range r.namespaces {
-		listOpts = append(listOpts, client.InNamespace(ns))
-	}
-
 	// TODO: add option for config map name.
 
-	err = r.mgr.GetClient().List(ctx, cml, listOpts...)
+	err = r.mgr.GetClient().List(ctx, cml, r.listOpts...)
 	if err != nil {
 		if r.onError != nil {
 			r.onError(err)
