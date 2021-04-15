@@ -213,15 +213,23 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 			return errs
 		}
 
-		// delete backup file
+		// rename backup file
 		if r.rate == float64(1) {
-			log.Info("Start delete backup file")
-			err = r.storage.Delete(ctx)
+			log.Info("Start create backup file")
+			err = r.storage.Backup(ctx)
 			if err != nil {
-				log.Errorf("failed to delete backup file: %s", err.Error())
+				log.Errorf("failed to create backup file: %s", err.Error())
 				return err
 			}
-			log.Info("Finish delete backup file")
+			log.Info("Finish create backup file")
+
+			log.Info("Start delete original backup file")
+			err = r.storage.Delete(ctx)
+			if err != nil {
+				log.Errorf("failed to delete original backup file: %s", err.Error())
+				return err
+			}
+			log.Info("Finish delete original backup file")
 		}
 
 		// request multi update using v1 client

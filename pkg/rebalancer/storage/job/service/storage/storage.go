@@ -21,6 +21,8 @@ import (
 	"context"
 	"io"
 	"reflect"
+	"strconv"
+	"time"
 
 	"github.com/vdaas/vald/internal/compress"
 	"github.com/vdaas/vald/internal/config"
@@ -32,8 +34,9 @@ import (
 )
 
 type Storage interface {
-	Reader(ctx context.Context) (io.ReadCloser, error)
+	Backup(ctx context.Context) error
 	Delete(ctx context.Context) error
+	Reader(ctx context.Context) (io.ReadCloser, error)
 }
 
 type bs struct {
@@ -148,4 +151,14 @@ func (b *bs) Delete(ctx context.Context) error {
 		return err
 	}
 	return d.Delete(b.filename + b.suffix)
+}
+
+func (b *bs) Backup(ctx context.Context) error {
+	c, err := b.bucket.Copier(ctx)
+	if err != nil {
+		return err
+	}
+
+	to := b.filename + "_" + strconv.FormatInt(time.Now().UnixNano(), 10) + b.suffix
+	return c.Copy(b.filename+b.suffix, to)
 }
