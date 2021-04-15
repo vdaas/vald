@@ -1,34 +1,34 @@
-package deleter
+package copier
 
 import (
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/sdk/s3"
 	"github.com/vdaas/vald/internal/errors"
 )
 
-type Option func(d *deleter) error
+type Option func(c *copier) error
 
 var (
 	defaultOpts = []Option{}
 )
 
-// WithService returns the option to set s for deleter.
+// WithService returns the option to set s for copier.
 func WithService(s *s3.S3) Option {
-	return func(d *deleter) error {
+	return func(c *copier) error {
 		if s == nil {
 			return errors.NewErrInvalidOption("service", s)
 		}
-		d.service = s
+		c.service = s
 		return nil
 	}
 }
 
-// WithBucket returns the option to set bucket for deleter.
+// WithBucket returns the option to set bucket for copier.
 func WithBucket(bucket string) Option {
-	return func(d *deleter) error {
+	return func(c *copier) error {
 		if len(bucket) == 0 {
 			return errors.NewErrInvalidOption("bucket", bucket)
 		}
-		d.bucket = bucket
+		c.bucket = bucket
 		return nil
 	}
 }

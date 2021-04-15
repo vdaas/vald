@@ -20,6 +20,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/vdaas/vald/internal/backoff"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/copier"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/deleter"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/reader"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/writer"
@@ -88,6 +89,15 @@ func WithDeleter(d deleter.Deleter) Option {
 	return func(c *client) error {
 		if d != nil {
 			c.deleter = d
+		}
+		return nil
+	}
+}
+
+func WithCopier(co copier.Copier) Option {
+	return func(c *client) error {
+		if co != nil {
+			c.copier = co
 		}
 		return nil
 	}
