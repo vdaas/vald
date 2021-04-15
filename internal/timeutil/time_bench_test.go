@@ -153,7 +153,7 @@ func BenchmarkParseWithDefault(b *testing.B) {
 		{
 			name: "t 100month and d 50 millisecond",
 			args: args{
-				t: "10month",
+				t: "100month",
 				d: 50 * time.Millisecond,
 			},
 		},
