@@ -4797,6 +4797,24 @@ rebalancer:
       valueFrom:
         fieldRef:
           fieldPath: metadata.name
+    - name: AWS_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: aws-secret
+          key: access-key
+    - name: AWS_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: aws-secret
+          key: secret-access-key
+    - name: RATE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.annotations['rebalancer.vald.vdaas.org/rate']
+    - name: TARGET_AGENT_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.labels['rebalancer.vald.vdaas.org/target_agent_name']
   # @schema {"name": "rebalancer.volumeMounts", "alias": "volumeMounts"}
   # rebalancer.volumeMounts -- volume mounts
   volumeMounts: []

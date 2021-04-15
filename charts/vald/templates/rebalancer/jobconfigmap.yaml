@@ -44,25 +44,10 @@ data:
             - name: vald-rebalancer-job
               image: {{ .Values.rebalancer.rebalancer.rebalance_job_image }}
               imagePullPolicy: Always
+              {{- if .Values.rebalancer.env }}
               env:
-                - name: AWS_ACCESS_KEY
-                  valueFrom:
-                    secretKeyRef:
-                      name: aws-secret
-                      key: access-key
-                - name: AWS_SECRET_ACCESS_KEY
-                  valueFrom:
-                    secretKeyRef:
-                      name: aws-secret
-                      key: secret-access-key
-                - name: RATE
-                  valueFrom:
-                    fieldRef:
-                      fieldPath: metadata.annotations['rebalancer.vald.vdaas.org/rate']
-                - name: TARGET_AGENT_NAME
-                  valueFrom:
-                    fieldRef:
-                      fieldPath: metadata.labels['rebalancer.vald.vdaas.org/target_agent_name']
+                {{- toYaml .Values.rebalancer.env | nindent 16 }}
+              {{- end }}
               volumeMounts:
                 - name: {{ .Values.rebalancer.rebalancer.rebalance_job_configmap_name }}
                   mountPath: /etc/server/
