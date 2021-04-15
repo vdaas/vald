@@ -49,9 +49,6 @@ func NewErrInvalidOption(name string, val interface{}, errs ...error) error {
 
 // Error returns a string of ErrInvalidOption.err.
 func (e *ErrInvalidOption) Error() string {
-	if e.err == nil {
-		return ""
-	}
 	return e.err.Error()
 }
 
@@ -95,9 +92,6 @@ func NewErrCriticalOption(name string, val interface{}, errs ...error) error {
 
 // Error returns a string of ErrCriticalOption.err.
 func (e *ErrCriticalOption) Error() string {
-	if e.err == nil {
-		return ""
-	}
 	return e.err.Error()
 }
 

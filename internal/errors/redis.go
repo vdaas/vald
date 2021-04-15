@@ -73,10 +73,7 @@ type ErrRedisNotFoundIdentity struct {
 
 // Error returns the string of ErrRedisNotFoundIdentity.error.
 func (e *ErrRedisNotFoundIdentity) Error() string {
-	if e.err != nil {
-		return e.err.Error()
-	}
-	return ""
+	return e.err.Error()
 }
 
 // Unwrap returns the error value of ErrRedisNotFoundIdentity.

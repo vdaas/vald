@@ -24,6 +24,149 @@ import (
 	"go.uber.org/goleak"
 )
 
+func TestNewErrBlobNoSuchBucket(t *testing.T) {
+	type args struct {
+		err  error
+		name string
+	}
+	type want struct {
+		want error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got error) error {
+		if !Is(got, w.want) {
+			return Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "return Wrapped blob nno such bucket error when err is session error, name is not empty",
+			args: args{
+				err:  New("session error"),
+				name: "vald-backup",
+			},
+			want: want{
+				want: New("bucket vald-backup not found: session error"),
+			},
+		},
+		{
+			name: "return Wrapped blob nno such bucket error when err is nil, name is not empty",
+			args: args{
+				name: "vald-backup",
+			},
+			want: want{
+				want: New("bucket vald-backup not found"),
+			},
+		},
+		{
+			name: "return Wrapped blob nno such bucket error when err is session error, name is empty",
+			args: args{
+				err: New("session error"),
+			},
+			want: want{
+				want: New("bucket  not found: session error"),
+			},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := NewErrBlobNoSuchBucket(test.args.err, test.args.name)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestNewErrBlobNoSuchKey(t *testing.T) {
+	type args struct {
+		err error
+		key string
+	}
+	type want struct {
+		want error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got error) error {
+		if !Is(got, w.want) {
+			return Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "return Wrapped blob nno such bucket error when err is session error, key is not empty",
+			args: args{
+				err: New("session error"),
+				key: "vald-agent-ngt-0",
+			},
+			want: want{
+				want: New("key vald-agent-ngt-0 not found: session error"),
+			},
+		},
+		{
+			name: "return Wrapped blob nno such bucket error when err is nil, key is not empty",
+			args: args{
+				key: "vald-agent-ngt-0",
+			},
+			want: want{
+				want: New("key vald-agent-ngt-0 not found"),
+			},
+		},
+		{
+			name: "return Wrapped blob nno such bucket error when err is session error, key is empty",
+			args: args{
+				err: New("session error"),
+			},
+			want: want{
+				want: New("key  not found: session error"),
+			},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := NewErrBlobNoSuchKey(test.args.err, test.args.key)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
 func TestErrBlobNoSuchBucket_Error(t *testing.T) {
 	type fields struct {
 		err error

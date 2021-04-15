@@ -367,6 +367,79 @@ func TestErrDimensionLimitExceed(t *testing.T) {
 	}
 }
 
+func TestErrIncompatibleDimensionSize(t *testing.T) {
+	type args struct {
+		req int
+		dim int
+	}
+	type want struct {
+		want error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got error) error {
+		if !Is(got, w.want) {
+			return Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "return an ErrIncompatibleDimensionSize error when req is 640 and dim is 720",
+			args: args{
+				req: 640,
+				dim: 720,
+			},
+			want: want{
+				want: New("incompatible dimension size detected\trequested: 640,\tconfigured: 720"),
+			},
+		},
+		{
+			name: "return an ErrIncompatibleDimensionSize error when req is empty and dim is 720",
+			args: args{
+				dim: 720,
+			},
+			want: want{
+				want: New("incompatible dimension size detected\trequested: 0,\tconfigured: 720"),
+			},
+		},
+		{
+			name: "return an ErrIncompatibleDimensionSize error when req is 640 and dim is 720",
+			args: args{
+				req: 640,
+			},
+			want: want{
+				want: New("incompatible dimension size detected\trequested: 640,\tconfigured: 0"),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := ErrIncompatibleDimensionSize(test.args.req, test.args.dim)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
 func TestErrUnsupportedObjectType(t *testing.T) {
 	type want struct {
 		want error

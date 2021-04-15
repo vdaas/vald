@@ -204,13 +204,6 @@ func TestErrInvalidOption_Error(t *testing.T) {
 
 	tests := []test{
 		{
-			name:   "return empty string when e.err is nil.",
-			fields: fields{},
-			want: want{
-				want: "",
-			},
-		},
-		{
 			name: "return empty string when e.err is not nil.",
 			fields: fields{
 				err: New("invalid option. name: WithPort, val: 8080"),
@@ -497,13 +490,6 @@ func TestErrCriticalOption_Error(t *testing.T) {
 	}
 
 	tests := []test{
-		{
-			name:   "return empty string when e.err is nil",
-			fields: fields{},
-			want: want{
-				want: "",
-			},
-		},
 		{
 			name: "return empty string when e.err is not nil",
 			fields: fields{
