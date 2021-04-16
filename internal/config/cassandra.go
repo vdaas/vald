@@ -215,7 +215,11 @@ func (cfg *Cassandra) Opts() (opts []cassandra.Option, err error) {
 	}
 
 	if cfg.Net != nil {
-		der, err := net.NewDialer(cfg.Net.Opts()...)
+		netOpts, err := cfg.Net.Opts()
+		if err != nil {
+			return nil, err
+		}
+		der, err := net.NewDialer(netOpts...)
 		if err != nil {
 			return nil, err
 		}
