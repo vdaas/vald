@@ -257,6 +257,9 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 }
 
 func (r *run) PreStop(ctx context.Context) error {
+	if r.rs != nil {
+		r.rs.PreStop(ctx)
+	}
 	return nil
 }
 
@@ -268,8 +271,5 @@ func (r *run) Stop(ctx context.Context) error {
 }
 
 func (r *run) PostStop(ctx context.Context) error {
-	if r.rs != nil {
-		r.rs.PostStop(ctx)
-	}
 	return nil
 }
