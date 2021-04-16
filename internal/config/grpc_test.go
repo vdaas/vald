@@ -18,9 +18,12 @@
 package config
 
 import (
+	"io/fs"
 	"os"
 	"reflect"
+	"syscall"
 	"testing"
+	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -715,24 +718,28 @@ func TestGRPCClient_Opts(t *testing.T) {
 	}
 	type want struct {
 		want []grpc.Option
+		err  error
 	}
 	type test struct {
 		name       string
 		fields     fields
 		want       want
-		checkFunc  func(want, []grpc.Option) error
+		checkFunc  func(want, []grpc.Option, error) error
 		beforeFunc func()
 		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want, got []grpc.Option) error {
-		if !reflect.DeepEqual(len(got), len(w.want)) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+	defaultCheckFunc := func(w want, gotOpts []grpc.Option, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(len(gotOpts), len(w.want)) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOpts, w.want)
 		}
 		return nil
 	}
 	tests := []test{
 		{
-			name: "return 25 grpc.Option when all parameters are set",
+			name: "return 25 grpc.Option and nil error when all parameters are set",
 			fields: fields{
 				Addrs: []string{
 					"10.40.3.342",
@@ -805,6 +812,244 @@ func TestGRPCClient_Opts(t *testing.T) {
 			},
 		},
 		{
+			name: "return nil grpc.Option and an error when dns error is ocurred",
+			fields: fields{
+				Addrs: []string{
+					"10.40.3.342",
+					"10.40.98.17",
+					"10.40.84.215",
+				},
+				HealthCheckDuration: "30s",
+				ConnectionPool: &ConnectionPool{
+					ResolveDNS:           true,
+					EnableRebalance:      true,
+					RebalanceDuration:    "5m",
+					Size:                 100,
+					OldConnCloseDuration: "3m",
+				},
+				Backoff: &Backoff{
+					InitialDuration:  "5m",
+					BackoffTimeLimit: "10m",
+					MaximumDuration:  "15m",
+					JitterLimit:      "3m",
+					BackoffFactor:    3,
+					RetryCount:       100,
+					EnableErrorLog:   true,
+				},
+				CallOption: &CallOption{
+					WaitForReady:          true,
+					MaxRetryRPCBufferSize: 100,
+					MaxRecvMsgSize:        1000,
+					MaxSendMsgSize:        1000,
+				},
+				DialOption: &DialOption{
+					WriteBufferSize:             10000,
+					ReadBufferSize:              10000,
+					InitialWindowSize:           100,
+					InitialConnectionWindowSize: 100,
+					MaxMsgSize:                  1000,
+					BackoffMaxDelay:             "1m",
+					BackoffBaseDelay:            "3m",
+					BackoffJitter:               100,
+					BackoffMultiplier:           10,
+					MinimumConnectionTimeout:    "5m",
+					EnableBackoff:               true,
+					Insecure:                    false,
+					Timeout:                     "5m",
+					Net: &Net{
+						Dialer: &Dialer{
+							Timeout: "10m",
+						},
+						DNS: &DNS{
+							CacheEnabled:    true,
+							RefreshDuration: "3m",
+							CacheExpiration: "1m",
+						},
+						TLS: &TLS{
+							Enabled: true,
+							Cert:    testdata.GetTestdataPath("tls/dummyServer.crt"),
+							Key:     testdata.GetTestdataPath("tls/dummyServer.key"),
+							CA:      testdata.GetTestdataPath("tls/dummyCa.pem"),
+						},
+					},
+					KeepAlive: &GRPCClientKeepalive{
+						Time:                "100s",
+						Timeout:             "300s",
+						PermitWithoutStream: true,
+					},
+				},
+				TLS: &TLS{
+					Enabled: true,
+					Cert:    testdata.GetTestdataPath("tls/dummyServer.crt"),
+					Key:     testdata.GetTestdataPath("tls/dummyServer.key"),
+					CA:      testdata.GetTestdataPath("tls/dummyCa.pem"),
+				},
+			},
+			want: want{
+				want: make([]grpc.Option, 0),
+				err:  errors.ErrInvalidDNSConfig(3*time.Minute, time.Minute),
+			},
+		},
+		{
+			name: "return nil grpc.Option and an error when tls error is ocurred",
+			fields: fields{
+				Addrs: []string{
+					"10.40.3.342",
+					"10.40.98.17",
+					"10.40.84.215",
+				},
+				HealthCheckDuration: "30s",
+				ConnectionPool: &ConnectionPool{
+					ResolveDNS:           true,
+					EnableRebalance:      true,
+					RebalanceDuration:    "5m",
+					Size:                 100,
+					OldConnCloseDuration: "3m",
+				},
+				Backoff: &Backoff{
+					InitialDuration:  "5m",
+					BackoffTimeLimit: "10m",
+					MaximumDuration:  "15m",
+					JitterLimit:      "3m",
+					BackoffFactor:    3,
+					RetryCount:       100,
+					EnableErrorLog:   true,
+				},
+				CallOption: &CallOption{
+					WaitForReady:          true,
+					MaxRetryRPCBufferSize: 100,
+					MaxRecvMsgSize:        1000,
+					MaxSendMsgSize:        1000,
+				},
+				DialOption: &DialOption{
+					WriteBufferSize:             10000,
+					ReadBufferSize:              10000,
+					InitialWindowSize:           100,
+					InitialConnectionWindowSize: 100,
+					MaxMsgSize:                  1000,
+					BackoffMaxDelay:             "1m",
+					BackoffBaseDelay:            "3m",
+					BackoffJitter:               100,
+					BackoffMultiplier:           10,
+					MinimumConnectionTimeout:    "5m",
+					EnableBackoff:               true,
+					Insecure:                    false,
+					Timeout:                     "5m",
+					Net: &Net{
+						Dialer: &Dialer{
+							Timeout: "10m",
+						},
+						DNS: &DNS{
+							CacheEnabled:    true,
+							RefreshDuration: "1m",
+							CacheExpiration: "3m",
+						},
+						TLS: &TLS{
+							Enabled: true,
+							Cert:    testdata.GetTestdataPath("tls/dummyServer.crt"),
+							Key:     testdata.GetTestdataPath("tls/dummyServer.key"),
+							CA:      testdata.GetTestdataPath("tls/dummyCa.pem"),
+						},
+					},
+					KeepAlive: &GRPCClientKeepalive{
+						Time:                "100s",
+						Timeout:             "300s",
+						PermitWithoutStream: true,
+					},
+				},
+				TLS: &TLS{
+					Enabled: true,
+					Cert:    testdata.GetTestdataPath("tls/dummyServer.crt"),
+					Key:     "tls/dummy/Server.key",
+					CA:      testdata.GetTestdataPath("tls/dummyCa.pem"),
+				},
+			},
+			want: want{
+				want: make([]grpc.Option, 0),
+				err: &fs.PathError{
+					Op:   "open",
+					Path: "tls/dummy/Server.key",
+					Err:  syscall.Errno(0x2),
+				},
+			},
+		},
+		{
+			name: "return nil grpc.Option and an error when net.TLS.Opts error is ocurred",
+			fields: fields{
+				Addrs: []string{
+					"10.40.3.342",
+					"10.40.98.17",
+					"10.40.84.215",
+				},
+				HealthCheckDuration: "30s",
+				ConnectionPool: &ConnectionPool{
+					ResolveDNS:           true,
+					EnableRebalance:      true,
+					RebalanceDuration:    "5m",
+					Size:                 100,
+					OldConnCloseDuration: "3m",
+				},
+				Backoff: &Backoff{
+					InitialDuration:  "5m",
+					BackoffTimeLimit: "10m",
+					MaximumDuration:  "15m",
+					JitterLimit:      "3m",
+					BackoffFactor:    3,
+					RetryCount:       100,
+					EnableErrorLog:   true,
+				},
+				CallOption: &CallOption{
+					WaitForReady:          true,
+					MaxRetryRPCBufferSize: 100,
+					MaxRecvMsgSize:        1000,
+					MaxSendMsgSize:        1000,
+				},
+				DialOption: &DialOption{
+					WriteBufferSize:             10000,
+					ReadBufferSize:              10000,
+					InitialWindowSize:           100,
+					InitialConnectionWindowSize: 100,
+					MaxMsgSize:                  1000,
+					BackoffMaxDelay:             "1m",
+					BackoffBaseDelay:            "3m",
+					BackoffJitter:               100,
+					BackoffMultiplier:           10,
+					MinimumConnectionTimeout:    "5m",
+					EnableBackoff:               true,
+					Insecure:                    false,
+					Timeout:                     "5m",
+					Net: &Net{
+						Dialer: &Dialer{
+							Timeout: "10m",
+						},
+						DNS: &DNS{
+							CacheEnabled:    true,
+							RefreshDuration: "1m",
+							CacheExpiration: "3m",
+						},
+						TLS: &TLS{
+							Enabled: true,
+						},
+					},
+					KeepAlive: &GRPCClientKeepalive{
+						Time:                "100s",
+						Timeout:             "300s",
+						PermitWithoutStream: true,
+					},
+				},
+				TLS: &TLS{
+					Enabled: true,
+					Cert:    testdata.GetTestdataPath("tls/dummyServer.crt"),
+					Key:     testdata.GetTestdataPath("tls/dummyServer.key"),
+					CA:      testdata.GetTestdataPath("tls/dummyCa.pem"),
+				},
+			},
+			want: want{
+				want: make([]grpc.Option, 0),
+				err:  errors.ErrTLSCertOrKeyNotFound,
+			},
+		},
+		{
 			name:   "return 1 grpc.Option when all parameters are set",
 			fields: fields{},
 			want: want{
@@ -837,8 +1082,8 @@ func TestGRPCClient_Opts(t *testing.T) {
 				TLS:                 test.fields.TLS,
 			}
 
-			got := g.Opts()
-			if err := test.checkFunc(test.want, got); err != nil {
+			got, err := g.Opts()
+			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

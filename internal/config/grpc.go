@@ -148,7 +148,7 @@ func (d *DialOption) Bind() *DialOption {
 }
 
 // Opts creates the slice with the functional options for the gRPC options.
-func (g *GRPCClient) Opts() []grpc.Option {
+func (g *GRPCClient) Opts() ([]grpc.Option, error) {
 	opts := make([]grpc.Option, 0, 18)
 	opts = append(opts,
 		grpc.WithHealthCheckDuration(g.HealthCheckDuration),
@@ -212,12 +212,17 @@ func (g *GRPCClient) Opts() []grpc.Option {
 					grpc.WithInsecure(false),
 				)
 			}
-			der, err := net.NewDialer(g.DialOption.Net.Opts()...)
-			if err == nil {
-				opts = append(opts,
-					grpc.WithDialer(der),
-				)
+			netOpts, err := g.DialOption.Net.Opts()
+			if err != nil {
+				return nil, err
 			}
+			der, err := net.NewDialer(netOpts...)
+			if err != nil {
+				return nil, err
+			}
+			opts = append(opts,
+				grpc.WithDialer(der),
+			)
 		}
 
 		if g.DialOption.KeepAlive != nil {
@@ -233,12 +238,15 @@ func (g *GRPCClient) Opts() []grpc.Option {
 
 	if g.TLS != nil && g.TLS.Enabled {
 		cfg, err := tls.NewClientConfig(g.TLS.Opts()...)
-		if err == nil && cfg != nil {
+		if err != nil {
+			return nil, err
+		}
+		if cfg != nil {
 			opts = append(opts,
 				grpc.WithTLSConfig(cfg),
 			)
 		}
 	}
 
-	return opts
+	return opts, nil
 }

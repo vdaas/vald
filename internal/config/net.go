@@ -133,7 +133,7 @@ func (t *Net) Bind() *Net {
 }
 
 // Opts creates the slice with the functional options for the net.Dialer options.
-func (t *Net) Opts() []net.DialerOption {
+func (t *Net) Opts() ([]net.DialerOption, error) {
 	opts := make([]net.DialerOption, 0, 7)
 	if t.DNS != nil {
 		opts = append(opts,
@@ -165,12 +165,13 @@ func (t *Net) Opts() []net.DialerOption {
 
 	if t.TLS != nil && t.TLS.Enabled {
 		cfg, err := tls.New(t.TLS.Opts()...)
-		if err == nil {
-			opts = append(opts,
-				net.WithTLS(cfg),
-			)
+		if err != nil {
+			return nil, err
 		}
+		opts = append(opts,
+			net.WithTLS(cfg),
+		)
 	}
 
-	return opts
+	return opts, nil
 }
