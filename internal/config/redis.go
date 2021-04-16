@@ -27,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/tls"
 )
 
+// Redis represents the configuration for redis cluster.
 type Redis struct {
 	Addrs                []string `json:"addrs,omitempty" yaml:"addrs"`
 	DB                   int      `json:"db,omitempty" yaml:"db"`
@@ -61,6 +62,7 @@ type Redis struct {
 	WriteTimeout         string   `json:"write_timeout,omitempty" yaml:"write_timeout"`
 }
 
+// Bind binds the actual data from the Redis receiver fields.
 func (r *Redis) Bind() *Redis {
 	if r.TLS != nil {
 		r.TLS.Bind()
@@ -74,7 +76,6 @@ func (r *Redis) Bind() *Redis {
 	}
 
 	r.Addrs = GetActualValues(r.Addrs)
-	r.DialTimeout = GetActualValue(r.DialTimeout)
 	r.DialTimeout = GetActualValue(r.DialTimeout)
 	r.IdleCheckFrequency = GetActualValue(r.IdleCheckFrequency)
 	r.IdleTimeout = GetActualValue(r.IdleTimeout)
@@ -98,6 +99,8 @@ func (r *Redis) Bind() *Redis {
 	return r
 }
 
+// Opts creates the functional option list from the Redis.
+// If the error occurs, it will return no functional options and the error.
 func (r *Redis) Opts() (opts []redis.Option, err error) {
 	nt := net.NetworkTypeFromString(r.Network)
 	if nt == 0 || nt == net.Unknown || strings.EqualFold(nt.String(), net.Unknown.String()) {
@@ -123,6 +126,9 @@ func (r *Redis) Opts() (opts []redis.Option, err error) {
 		redis.WithPassword(r.Password),
 		redis.WithPoolSize(r.PoolSize),
 		redis.WithPoolTimeout(r.PoolTimeout),
+		// In the current implementation, we do not need to use the read only flag for redis usages.
+		// This implementation is to only align to the redis interface.
+		// We will remove this comment out if we need to use this.
 		// redis.WithReadOnlyFlag(readOnly bool) ,
 		redis.WithNetwork(r.Network),
 		redis.WithReadTimeout(r.ReadTimeout),
