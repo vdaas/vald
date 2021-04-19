@@ -314,7 +314,6 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 							log.Debugf("[rate/podname checking] pod name, rate, rateThreshold: %s, %.3f, %f", maxPodName, rate, r.rateThreshold)
 							continue
 						}
-						// log.Debugf("[bias/jobcheck] jobName: %#v", [r.jobNamespace])
 
 						if !r.isJobRunning(namespaceByJobs, ns) {
 							log.Debugf("[bias] creating job for pod %s, rate: %v", maxPodName, rate)
