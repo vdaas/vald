@@ -45,7 +45,7 @@ type reconciler struct {
 	onError     func(err error)
 	onReconcile func(rs map[string][]ConfigMap) // map[namespace][]configmap
 	listOpts    []client.ListOption
-	pool        sync.Pool
+	nsConfigmapsPool        sync.Pool
 }
 
 // ConfigMap is a type alias for the k8s configmap definition.
@@ -54,7 +54,7 @@ type ConfigMap = corev1.ConfigMap
 // New returns the ConfigMapWather that implements reconciliation loop, or any error occured.
 func New(opts ...Option) (ConfigMapWatcher, error) {
 	r := &reconciler{
-		pool: sync.Pool{
+		nsConfigmapsPool: sync.Pool{
 			New: func() interface{} {
 				return make(map[string][]ConfigMap)
 			},
@@ -100,7 +100,7 @@ func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res 
 		return
 	}
 
-	cmm := make(map[string][]ConfigMap)
+	cmm := r.nsConfigmapsPool.Get().(map[string][]ConfigMap)
 
 	for _, configmap := range cml.Items {
 		if _, ok := cmm[configmap.Namespace]; !ok {
@@ -116,7 +116,7 @@ func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res 
 	for name := range cmm {
 		cmm[name] = cmm[name][:0:len(cmm[name])]
 	}
-	r.pool.Put(cmm)
+	r.nsConfigmapsPool.Put(cmm)
 
 	return
 }
