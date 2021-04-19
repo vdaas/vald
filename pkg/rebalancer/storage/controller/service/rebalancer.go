@@ -121,19 +121,19 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 		}),
 		configmap.WithOnReconcileFunc(func(configmapList map[string][]configmap.ConfigMap) {
 			configmaps, ok := configmapList[r.jobNamespace]
-			if ok {
-				for _, cm := range configmaps {
-					if cm.Name == r.jobConfigmapName {
-						if tmpl, ok := cm.Data[r.jobTemplateKey]; ok {
-							r.jobTemplate.Store(tmpl)
-						} else {
-							log.Infof("job template not found: %s", r.jobTemplateKey)
-						}
-						break
-					}
-				}
-			} else {
+			if !ok {
 				log.Infof("configmap not found: %s", r.jobConfigmapName)
+				return
+			}
+			for _, cm := range configmaps {
+				if cm.Name == r.jobConfigmapName {
+					if tmpl, ok := cm.Data[r.jobTemplateKey]; ok {
+						r.jobTemplate.Store(tmpl)
+					} else {
+						log.Infof("job template not found: %s", r.jobTemplateKey)
+					}
+					break
+				}
 			}
 		}),
 	)
