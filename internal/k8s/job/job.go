@@ -45,6 +45,7 @@ type reconciler struct {
 	namespaces  []string
 	onError     func(err error)
 	onReconcile func(jobList map[string][]Job)
+	listOpts    []client.ListOption
 	pool        sync.Pool
 }
 
@@ -67,6 +68,13 @@ func New(opts ...Option) (JobWatcher, error) {
 		}
 	}
 
+	if len(r.namespaces) != 0 {
+		r.listOpts = make([]client.ListOption, 0, len(r.namespaces))
+		for _, ns := range r.namespaces {
+			r.listOpts = append(r.listOpts, client.InNamespace(ns))
+		}
+	}
+
 	return r, nil
 }
 
@@ -74,12 +82,7 @@ func New(opts ...Option) (JobWatcher, error) {
 func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
 	js := new(batchv1.JobList)
 
-	listOpts := make([]client.ListOption, 0, len(r.namespaces))
-	for _, ns := range r.namespaces {
-		listOpts = append(listOpts, client.InNamespace(ns))
-	}
-
-	err = r.mgr.GetClient().List(ctx, js, listOpts...)
+	err = r.mgr.GetClient().List(ctx, js, r.listOpts...)
 	if err != nil {
 		if r.onError != nil {
 			r.onError(err)
