@@ -229,11 +229,11 @@ func (r *rebalancer) initCtrl() (err error) {
 			pod.WithOnReconcileFunc(func(podList map[string][]pod.Pod) {
 				log.Debugf("[reconcile pod] length podList[%s]: %d", r.agentName, len(podList[r.agentName]))
 				pods, ok := podList[r.agentName]
-				if ok {
-					r.pods.Store(pods)
-				} else {
+				if !ok {
 					log.Infof("pod not found: %s", r.agentName)
+					return
 				}
+				r.pods.Store(pods)
 			}),
 		)),
 		k8s.WithResourceController(mpod.New(
