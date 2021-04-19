@@ -20,7 +20,7 @@ Here is the list of Official SDKs.
 
 ## How to use SDKs
 
-If you use the client libraries, you can use easily.
+If you use the client libraries provided by Vald, you can try it easily.
 There are only a few steps to use like as following:
 
 1. Import package
