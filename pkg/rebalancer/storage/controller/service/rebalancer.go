@@ -117,10 +117,11 @@ func (r *rebalancer) initCtrl() (err error) {
 			jobs, ok := jobList[r.jobName]
 			if ok {
 				r.jobs.Store(jobs)
-			} else {
-				r.jobs.Store(make([]job.Job, 0))
-				log.Infof("job not found: %s", r.jobName)
+				return
 			}
+
+			r.jobs.Store(make([]job.Job, 0))
+			log.Infof("job not found: %s", r.jobName)
 		}),
 	)
 	if err != nil {
