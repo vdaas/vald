@@ -92,6 +92,20 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 		}
 	}
 
+	err := r.initCtrl()
+	if err != nil {
+		return nil, err
+	}
+
+	r.decoder, err = decoder.NewDecoder(r.ctrl.GetManager().GetScheme())
+	if err != nil {
+		return nil, err
+	}
+
+	return r, nil
+}
+
+func (r *rebalancer) initCtrl() (err error) {
 	job, err := job.New(
 		job.WithControllerName("job rebalancer"),
 		job.WithNamespaces(r.jobNamespace),
@@ -110,9 +124,10 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 		}),
 	)
 	if err != nil {
-		return nil, err
+		return  err
 	}
 
+	// TODO: delete this logic
 	cm, err := configmap.New(
 		configmap.WithControllerName("configmap rebalancer"),
 		configmap.WithNamespaces(r.jobNamespace),
@@ -138,7 +153,7 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 		}),
 	)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	var rc k8s.ResourceController
@@ -182,16 +197,16 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 			}),
 		)
 		if err != nil {
-			return nil, err
+			return err
 		}
 	case config.REPLICASET:
 		// TODO: implment get replicaset reconciled result
-		return nil, nil
+		return nil
 	case config.DAEMONSET:
 		// TODO: implment get daemonset reconciled result
-		return nil, nil
+		return nil
 	default:
-		return nil, errors.ErrInvalidAgentResourceType(r.agentResourceType.String())
+		return errors.ErrInvalidAgentResourceType(r.agentResourceType.String())
 	}
 
 	r.ctrl, err = k8s.New(
@@ -231,15 +246,10 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 		k8s.WithResourceController(cm),
 	)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	r.decoder, err = decoder.NewDecoder(r.ctrl.GetManager().GetScheme())
-	if err != nil {
-		return nil, err
-	}
-
-	return r, nil
+	return nil
 }
 
 // Start starts the rebalancer controller loop for the Vald agent index rebalancer.
