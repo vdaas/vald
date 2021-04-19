@@ -332,13 +332,13 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 						}
 
 						if !r.isJobRunning(namespaceByJobs, ns) {
-							log.Debugf("[bias] creating job for pod %s, rate: %v", maxPodName, rate)
-							if err := r.createJob(ctx, *jobTpl, config.BIAS, maxPodName, ns, rate); err != nil {
-								log.Errorf("[bias] failed to create job: %s", err)
+							log.Debugf("[deviation] creating job for pod %s, rate: %v", maxPodName, rate)
+							if err := r.createJob(ctx, *jobTpl, config.DEVIATION, maxPodName, ns, rate); err != nil {
+								log.Errorf("[deviation] failed to create job: %s", err)
 								continue
 							}
 						} else {
-							log.Debugf("[bias] job is already running")
+							log.Debugf("[deviation] job is already running")
 						}
 					}
 

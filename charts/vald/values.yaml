@@ -4955,7 +4955,7 @@ rebalancer:
     # rebalancer.rebalancer.reconcile_check_duration -- check duration of rebalancer
     reconcile_check_duration: 5m
     # @schema {"name": "rebalancer.rebalancer.tolerance", "type": "number"}
-    # rebalancer.rebalancer.tolerance -- memory bias tolerance to trigger rebalance job
+    # rebalancer.rebalancer.tolerance -- memory deviation tolerance to trigger rebalance job
     tolerance: 0.1
     # @schema {"name": "rebalancer.rebalancer.rate_threshold", "type": "number"}
     # rebalancer.rebalancer.rate_threshold -- rate threshold to trigger rebalance job

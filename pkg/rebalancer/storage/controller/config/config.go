@@ -28,15 +28,15 @@ type GlobalConfig = config.GlobalConfig
 type RebalanceReason uint8
 
 const (
-	BIAS RebalanceReason = iota
+	DEVIATION RebalanceReason = iota
 	RECOVERY
 	MANUAL
 )
 
 func (r RebalanceReason) String() string {
 	switch r {
-	case BIAS:
-		return "bias"
+	case DEVIATION:
+		return "deviation"
 	case RECOVERY:
 		return "recovery"
 	case MANUAL:
