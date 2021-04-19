@@ -46,7 +46,7 @@ type reconciler struct {
 	onError     func(err error)
 	onReconcile func(jobList map[string][]Job)
 	listOpts    []client.ListOption
-	pool        sync.Pool
+	jobsByNamePool        sync.Pool
 }
 
 // Job is a type alias for the k8s job definition.
@@ -55,7 +55,7 @@ type Job = batchv1.Job
 // New returns the JobWatcher that implements reconciliation loop, or any errors occurred.
 func New(opts ...Option) (JobWatcher, error) {
 	r := &reconciler{
-		pool: sync.Pool{
+		jobsByNamePool: sync.Pool{
 			New: func() interface{} {
 				return make(map[string][]Job)
 			},
@@ -101,7 +101,7 @@ func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res 
 		return
 	}
 
-	jobs := r.pool.Get().(map[string][]Job)
+	jobs := r.jobsByNamePool.Get().(map[string][]Job)
 	for _, job := range js.Items {
 		name, ok := job.GetObjectMeta().GetLabels()["app"]
 		if !ok {
@@ -123,7 +123,7 @@ func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res 
 		jobs[name] = jobs[name][:0:len(jobs[name])]
 	}
 
-	r.pool.Put(jobs)
+	r.jobsByNamePool.Put(jobs)
 
 	return
 }
