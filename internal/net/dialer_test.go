@@ -952,7 +952,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 			},
 			checkFunc: func(d *dialer, w want, gotConn Conn, err error) error {
 				if err != nil {
-					return errors.Errorf("err is not nil: %v", err)
+					return errors.Errorf("err is not nil: %v, want: %#v, got: %#v", err, w, gotConn)
 				}
 
 				if gotConn == nil {
@@ -1249,7 +1249,9 @@ func Test_dialer_cachedDialer(t *testing.T) {
 
 					check := func(gotConn Conn, gotErr error, cnt int, port string, srvContent string) error {
 						defer func() {
-							_ = gotConn.Close()
+							if gotConn != nil {
+								_ = gotConn.Close()
+							}
 						}()
 
 						if gotErr != nil {

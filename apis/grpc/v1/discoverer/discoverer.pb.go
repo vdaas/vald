@@ -32,10 +32,12 @@ import (
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var _ = proto.Marshal
-var _ = golang_proto.Marshal
-var _ = fmt.Errorf
-var _ = math.Inf
+var (
+	_ = proto.Marshal
+	_ = golang_proto.Marshal
+	_ = fmt.Errorf
+	_ = math.Inf
+)
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -46,6 +48,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 func init() {
 	proto.RegisterFile("apis/proto/v1/discoverer/discoverer.proto", fileDescriptor_374200cbacdb4f39)
 }
+
 func init() {
 	golang_proto.RegisterFile("apis/proto/v1/discoverer/discoverer.proto", fileDescriptor_374200cbacdb4f39)
 }
@@ -75,8 +78,10 @@ var fileDescriptor_374200cbacdb4f39 = []byte{
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
-var _ context.Context
-var _ grpc.ClientConn
+var (
+	_ context.Context
+	_ grpc.ClientConn
+)
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
@@ -123,12 +128,12 @@ type DiscovererServer interface {
 }
 
 // UnimplementedDiscovererServer can be embedded to have forward compatible implementations.
-type UnimplementedDiscovererServer struct {
-}
+type UnimplementedDiscovererServer struct{}
 
 func (*UnimplementedDiscovererServer) Pods(ctx context.Context, req *payload.Discoverer_Request) (*payload.Info_Pods, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Pods not implemented")
 }
+
 func (*UnimplementedDiscovererServer) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*payload.Info_Nodes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Nodes not implemented")
 }

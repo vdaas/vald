@@ -17,12 +17,13 @@
 // Package config providers configuration type and load configuration logic
 package config
 
-// TCP represent the TCP configuration for server.
+// TCP represents the TCP configuration for server.
 type Transport struct {
 	RoundTripper *RoundTripper `yaml:"round_tripper" json:"round_tripper"`
 	Backoff      *Backoff      `yaml:"backoff" json:"backoff"`
 }
 
+// RoundTripper represents the round trip configuration for transport.
 type RoundTripper struct {
 	TLSHandshakeTimeout   string `yaml:"tls_handshake_timeout" json:"tls_handshake_timeout"`
 	MaxIdleConns          int    `yaml:"max_idle_conns" json:"max_idle_conns"`
@@ -37,6 +38,7 @@ type RoundTripper struct {
 	ForceAttemptHTTP2     bool   `yaml:"force_attempt_http_2" json:"force_attempt_http_2"`
 }
 
+// Bind binds the actual data from the RoundTripper receiver fields.
 func (r *RoundTripper) Bind() *RoundTripper {
 	r.TLSHandshakeTimeout = GetActualValue(r.TLSHandshakeTimeout)
 	r.IdleConnTimeout = GetActualValue(r.IdleConnTimeout)
@@ -45,6 +47,7 @@ func (r *RoundTripper) Bind() *RoundTripper {
 	return r
 }
 
+// Bind binds the actual data from the Transport receiver fields.
 func (t *Transport) Bind() *Transport {
 	if t.RoundTripper != nil {
 		t.RoundTripper = t.RoundTripper.Bind()

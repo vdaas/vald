@@ -48,7 +48,6 @@ data:
     CREATE TABLE {{ .Values.initializer.cassandra.configmap.keyspace }}.{{ .Values.initializer.cassandra.configmap.backup.name }} (
       uuid   text,
       vector blob,
-      meta   text,
       ips    frozen<list<text>>,
       PRIMARY KEY (uuid)
     );

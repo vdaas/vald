@@ -29,9 +29,11 @@ import (
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var _ = proto.Marshal
-var _ = fmt.Errorf
-var _ = math.Inf
+var (
+	_ = proto.Marshal
+	_ = fmt.Errorf
+	_ = math.Inf
+)
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -63,8 +65,10 @@ var fileDescriptor_deef420cdb5157c4 = []byte{
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
-var _ context.Context
-var _ grpc.ClientConn
+var (
+	_ context.Context
+	_ grpc.ClientConn
+)
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
@@ -133,12 +137,12 @@ type EgressFilterServer interface {
 }
 
 // UnimplementedEgressFilterServer can be embedded to have forward compatible implementations.
-type UnimplementedEgressFilterServer struct {
-}
+type UnimplementedEgressFilterServer struct{}
 
 func (*UnimplementedEgressFilterServer) Filter(ctx context.Context, req *payload.Search_Response) (*payload.Search_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Filter not implemented")
 }
+
 func (*UnimplementedEgressFilterServer) StreamFilter(srv EgressFilter_StreamFilterServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamFilter not implemented")
 }

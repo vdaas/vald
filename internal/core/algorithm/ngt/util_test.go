@@ -77,7 +77,7 @@ func Test_fileExists(t *testing.T) {
 			},
 			beforeFunc: func(t *testing.T, args args) {
 				t.Helper()
-				if err := os.MkdirAll(args.path, 0750); err != nil {
+				if err := os.MkdirAll(args.path, 0o750); err != nil {
 					t.Fatal(err)
 				}
 			},
@@ -92,7 +92,7 @@ func Test_fileExists(t *testing.T) {
 			},
 			beforeFunc: func(t *testing.T, args args) {
 				t.Helper()
-				if err := os.MkdirAll(testDirPath, 0750); err != nil {
+				if err := os.MkdirAll(testDirPath, 0o750); err != nil {
 					t.Fatal(err)
 				}
 				if err := os.Symlink(testDirPath, testSym); err != nil {
@@ -110,7 +110,7 @@ func Test_fileExists(t *testing.T) {
 			},
 			beforeFunc: func(t *testing.T, args args) {
 				t.Helper()
-				if err := os.MkdirAll(baseDir, 0750); err != nil {
+				if err := os.MkdirAll(baseDir, 0o750); err != nil {
 					t.Fatal(err)
 				}
 
@@ -135,7 +135,7 @@ func Test_fileExists(t *testing.T) {
 			},
 			beforeFunc: func(t *testing.T, args args) {
 				t.Helper()
-				if err := os.MkdirAll(baseDir, 0750); err != nil {
+				if err := os.MkdirAll(baseDir, 0o750); err != nil {
 					t.Fatal(err)
 				}
 
