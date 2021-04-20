@@ -81,6 +81,8 @@ spec:
           volumeMounts:
             - name: {{ .Values.rebalancer.name }}-config
               mountPath: /etc/server/
+            - name: {{ .Values.rebalancer.rebalancer.rebalance_job_configmap_name }}
+              mountPath: /etc/job/
             {{- if .Values.rebalancer.volumeMounts }}
             {{- toYaml .Values.rebalancer.volumeMounts | nindent 12 }}
             {{- end }}
@@ -96,6 +98,10 @@ spec:
           configMap:
             defaultMode: 420
             name: {{ .Values.rebalancer.name }}-config
+        - name: {{ .Values.rebalancer.rebalancer.rebalance_job_configmap_name }}
+          configMap:
+            defaultMode: 420
+            name: {{ .Values.rebalancer.rebalancer.rebalance_job_configmap_name }}
         {{- if .Values.rebalancer.volumes }}
         {{- toYaml .Values.rebalancer.volumes | nindent 8 }}
         {{- end }}

@@ -42,9 +42,9 @@ func WithJobNamespace(ns string) RebalancerOption {
 	}
 }
 
-func WithJobTemplateKey(k string) RebalancerOption {
+func WithJobTemplate(tpl string) RebalancerOption {
 	return func(r *rebalancer) error {
-		r.jobTemplateKey = k
+		r.jobTemplate = tpl
 		return nil
 	}
 }
@@ -69,13 +69,6 @@ func WithAgentResourceType(art string) RebalancerOption {
 		if r.agentResourceType == config.UNKNOWN_RESOURCE_TYPE {
 			return errors.NewErrCriticalOption("agentResourceType", art)
 		}
-		return nil
-	}
-}
-
-func WithJobConfigMapName(n string) RebalancerOption {
-	return func(r *rebalancer) error {
-		r.jobConfigmapName = n
 		return nil
 	}
 }

@@ -4933,9 +4933,9 @@ rebalancer:
     # @schema {"name": "rebalancer.rebalancer.rebalance_job_namespace", "type": "string"}
     # rebalancer.rebalancer.rebalance_job_namespace -- namespace of rebalancer job
     rebalance_job_namespace: _MY_POD_NAMESPACE_
-    # @schema {"name": "rebalancer.rebalancer.rebalance_job_template_key", "type": "string"}
-    # rebalancer.rebalancer.rebalance_job_template_key -- template key of rebalancer job
-    rebalance_job_template_key: job.tpl
+    # @schema {"name": "rebalancer.rebalancer.rebalance_job_template", "type": "string"}
+    # rebalancer.rebalancer.rebalance_job_template -- template of rebalancer job
+    rebalance_job_template: file:///etc/job/job.tpl
     # @schema {"name": "rebalancer.rebalancer.rebalance_job_image", "type": "string"}
     # rebalancer.rebalancer.rebalance_job_image -- container image of rebalancer job
     rebalance_job_image: hello-world

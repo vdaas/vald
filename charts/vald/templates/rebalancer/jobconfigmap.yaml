@@ -26,7 +26,7 @@ metadata:
     app.kubernetes.io/version: {{ .Chart.Version }}
     app.kubernetes.io/component: rebalancer
 data:
-  {{ .Values.rebalancer.rebalancer.rebalance_job_template_key }}: |
+  job.tpl: |
     ---
     apiVersion: batch/v1
     kind: Job

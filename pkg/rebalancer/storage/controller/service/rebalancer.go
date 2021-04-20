@@ -30,7 +30,6 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
-	"github.com/vdaas/vald/internal/k8s/configmap"
 	"github.com/vdaas/vald/internal/k8s/decoder"
 	"github.com/vdaas/vald/internal/k8s/job"
 	mpod "github.com/vdaas/vald/internal/k8s/metrics/pod"
@@ -55,19 +54,17 @@ type rebalancer struct {
 	podName      string
 	podNamespace string
 
-	jobs           atomic.Value
-	jobName        string
-	jobNamespace   string
-	jobTemplate    atomic.Value
-	jobTemplateKey string // config map key of job template
+	jobs         atomic.Value
+	jobName      string
+	jobNamespace string
+	jobTemplate  string   // row manifest template data of rebalance job.
+	jobObject    *job.Job // object generated from template.
 
 	agentName         string
 	agentNamespace    string
 	agentResourceType config.AgentResourceType
 	pods              atomic.Value
 	podMetrics        atomic.Value
-
-	jobConfigmapName string
 
 	statefulSets atomic.Value
 
@@ -102,6 +99,12 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 		return nil, err
 	}
 
+	r.jobObject = new(job.Job)
+	err = r.decoder.DecodeInto([]byte(r.jobTemplate), r.jobObject)
+	if err != nil {
+		return nil, errors.ErrFailedToDecodeJobTemplate(err)
+	}
+
 	return r, nil
 }
 
@@ -122,35 +125,6 @@ func (r *rebalancer) initCtrl() (err error) {
 
 			r.jobs.Store(make([]job.Job, 0))
 			log.Infof("job not found: %s", r.jobName)
-		}),
-	)
-	if err != nil {
-		return err
-	}
-
-	// TODO: delete this logic
-	cm, err := configmap.New(
-		configmap.WithControllerName("configmap rebalancer"),
-		configmap.WithNamespaces(r.jobNamespace),
-		configmap.WithOnErrorFunc(func(err error) {
-			log.Error(err)
-		}),
-		configmap.WithOnReconcileFunc(func(configmapList map[string][]configmap.ConfigMap) {
-			configmaps, ok := configmapList[r.jobNamespace]
-			if !ok {
-				log.Infof("configmap not found: %s", r.jobConfigmapName)
-				return
-			}
-			for _, cm := range configmaps {
-				if cm.Name == r.jobConfigmapName {
-					if tmpl, ok := cm.Data[r.jobTemplateKey]; ok {
-						r.jobTemplate.Store(tmpl)
-					} else {
-						log.Infof("job template not found: %s", r.jobTemplateKey)
-					}
-					break
-				}
-			}
 		}),
 	)
 	if err != nil {
@@ -185,17 +159,12 @@ func (r *rebalancer) initCtrl() (err error) {
 
 				pss, ok := r.statefulSets.Load().(statefulset.StatefulSet)
 				if ok && *sss[0].Spec.Replicas < *pss.Spec.Replicas {
-					jobTpl, err := r.genJobTpl()
-					if err != nil {
-						log.Errorf("[recovery] error generating job template: %s", err.Error())
-					} else {
-						for i := int(*pss.Spec.Replicas); i > int(*sss[0].Spec.Replicas); i-- {
-							name := r.agentName + "-" + strconv.Itoa(i-1)
-							log.Debugf("[recovery] creating job for pod %s", name)
-							ctx := context.TODO()
-							if err := r.createJob(ctx, *jobTpl, config.RECOVERY, name, r.agentNamespace, 1); err != nil {
-								log.Errorf("[recovery] failed to create job: %s", err)
-							}
+					for i := int(*pss.Spec.Replicas); i > int(*sss[0].Spec.Replicas); i-- {
+						name := r.agentName + "-" + strconv.Itoa(i-1)
+						log.Debugf("[recovery] creating job for pod %s", name)
+						ctx := context.TODO()
+						if err := r.createJob(ctx, *r.jobObject, config.RECOVERY, name, r.agentNamespace, 1); err != nil {
+							log.Errorf("[recovery] failed to create job: %s", err)
 						}
 					}
 				}
@@ -249,7 +218,6 @@ func (r *rebalancer) initCtrl() (err error) {
 				}
 			}),
 		)),
-		k8s.WithResourceController(cm),
 	)
 	if err != nil {
 		return err
@@ -283,7 +251,6 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 					podModels       map[string][]*model.Pod
 					namespaceByJobs map[string][]job.Job
 					ssModel         map[string]*model.StatefulSet
-					jobTpl          *job.Job
 				)
 
 				podModels, err := r.genPodModels()
@@ -295,12 +262,6 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 				namespaceByJobs, err = r.namespaceByJobs()
 				if err != nil {
 					log.Infof("error generating job models: %s", err.Error())
-				}
-
-				jobTpl, err = r.genJobTpl()
-				if err != nil {
-					log.Infof("error generating job template: %s", err.Error())
-					continue
 				}
 
 				// TODO: cache specified reconciled result based on agentResourceType.
@@ -333,7 +294,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 
 						if !r.isJobRunning(namespaceByJobs, ns) {
 							log.Debugf("[deviation] creating job for pod %s, rate: %v", maxPodName, rate)
-							if err := r.createJob(ctx, *jobTpl, config.DEVIATION, maxPodName, ns, rate); err != nil {
+							if err := r.createJob(ctx, *r.jobObject, config.DEVIATION, maxPodName, ns, rate); err != nil {
 								log.Errorf("[deviation] failed to create job: %s", err)
 								continue
 							}
@@ -484,19 +445,6 @@ func (r *rebalancer) namespaceByJobs() (jobmap map[string][]job.Job, err error) 
 		jobmap[j.Namespace] = append(jobmap[j.Namespace], j)
 	}
 
-	return
-}
-
-func (r *rebalancer) genJobTpl() (jobTpl *job.Job, err error) {
-	tmpl, ok := r.jobTemplate.Load().(string)
-	if !ok {
-		return nil, errors.ErrJobTemplateNotFound()
-	}
-	jobTpl = &job.Job{}
-	err = r.decoder.DecodeInto([]byte(tmpl), jobTpl)
-	if err != nil {
-		return nil, errors.ErrFailedToDecodeJobTemplate(err)
-	}
 	return
 }
 

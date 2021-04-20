@@ -19,19 +19,18 @@ package config
 
 // RebalanceController represent rebalance controller configuration.
 type RebalanceController struct {
-	PodName                 string  `yaml:"pod_name" json:"pod_name"`
-	PodNamespace            string  `yaml:"pod_namespace" json:"pod_namespace"`
-	RebalanceJobName        string  `yaml:"rebalance_job_name" json:"rebalance_job_name"`
-	RebalanceJobNamespace   string  `yaml:"rebalance_job_namespace" json:"rebalance_job_namespace"`
-	RebalanceJobTemplateKey string  `yaml:"rebalance_job_template_key" json:"rebalance_job_template_key"`
-	JobConfigMapName        string  `yaml:"rebalance_job_configmap_name" json:"rebalance_job_configmap_name"`
-	AgentName               string  `yaml:"agent_name" json:"agent_name"`
-	AgentNamespace          string  `yaml:"agent_namespace" json:"agent_namespace"`
-	AgentResourceType       string  `yaml:"agent_resource_type" json:"agent_resource_type"`
-	ReconcileCheckDuration  string  `yaml:"reconcile_check_duration" json:"reconcile_check_duration"`
-	Tolerance               float64 `yaml:"tolerance" json:"tolerance"`
-	RateThreshold           float64 `yaml:"rate_threshold" json:"rate_threshold"`
-	LeaderElectionID        string  `yaml:"leader_election_id" json:"leader_election_id"`
+	PodName                string  `yaml:"pod_name" json:"pod_name"`
+	PodNamespace           string  `yaml:"pod_namespace" json:"pod_namespace"`
+	RebalanceJobName       string  `yaml:"rebalance_job_name" json:"rebalance_job_name"`
+	RebalanceJobNamespace  string  `yaml:"rebalance_job_namespace" json:"rebalance_job_namespace"`
+	RebalanceJobTemplate   string  `yaml:"rebalance_job_template" json:"rebalance_job_template"`
+	AgentName              string  `yaml:"agent_name" json:"agent_name"`
+	AgentNamespace         string  `yaml:"agent_namespace" json:"agent_namespace"`
+	AgentResourceType      string  `yaml:"agent_resource_type" json:"agent_resource_type"`
+	ReconcileCheckDuration string  `yaml:"reconcile_check_duration" json:"reconcile_check_duration"`
+	Tolerance              float64 `yaml:"tolerance" json:"tolerance"`
+	RateThreshold          float64 `yaml:"rate_threshold" json:"rate_threshold"`
+	LeaderElectionID       string  `yaml:"leader_election_id" json:"leader_election_id"`
 }
 
 // Bind binds rebalance controller configuration.
@@ -40,8 +39,7 @@ func (r *RebalanceController) Bind() *RebalanceController {
 	r.PodNamespace = GetActualValue(r.PodNamespace)
 	r.RebalanceJobName = GetActualValue(r.RebalanceJobName)
 	r.RebalanceJobNamespace = GetActualValue(r.RebalanceJobNamespace)
-	r.RebalanceJobTemplateKey = GetActualValue(r.RebalanceJobTemplateKey)
-	r.JobConfigMapName = GetActualValue(r.JobConfigMapName)
+	r.RebalanceJobTemplate = GetActualValue(r.RebalanceJobTemplate)
 	r.AgentName = GetActualValue(r.AgentName)
 	r.AgentNamespace = GetActualValue(r.AgentNamespace)
 	r.AgentResourceType = GetActualValue(r.AgentResourceType)
