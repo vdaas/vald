@@ -497,7 +497,6 @@ cmd/filter/ingress/tensorflow/tensorflow: \
 		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
 		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
-		-X '$(GOPKG)/internal/info.NGTVersion=$(NGT_VERSION)' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
 		-a \

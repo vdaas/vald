@@ -1362,13 +1362,13 @@ Miscellaneous
 Each component can be disabled by setting the value `false` to the `[component].enabled` field.
 This is useful for deploying only Vald agent NGT pods.
 
-There is an example yaml [values-agent-ngt-standalone.yaml][agent-ngt-standalone-yaml] to deploy standalone agent NGT.
+There is an example yaml [agent-ngt-standalone.yaml][agent-ngt-standalone-yaml] to deploy standalone agent NGT.
 Please run the following command to install the chart with this values yaml,
 
     $ helm repo add vald https://vald.vdaas.org/charts
-    $ helm install --values values-agent-ngt-standalone.yaml vald-agent-ngt vald/vald
+    $ helm install --values values/agent-ngt-standalone.yaml vald-agent-ngt vald/vald
 
 If you'd like to access the agents from out of the Kubernetes cluster, it is recommended to create an [Ingress][kubernetes-ingress].
 
-[agent-ngt-standalone-yaml]: ./values-agent-ngt-standalone.yaml
+[agent-ngt-standalone-yaml]: ./values/agent-ngt-standalone.yaml
 [kubernetes-ingress]: https://kubernetes.io/docs/concepts/services-networking/ingress/

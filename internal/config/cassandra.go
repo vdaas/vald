@@ -23,6 +23,7 @@ import (
 	"github.com/vdaas/vald/internal/tls"
 )
 
+// Cassandra represents the configuration for the internal cassandra package.
 type Cassandra struct {
 	Hosts             []string `json:"hosts" yaml:"hosts"`
 	CQLVersion        string   `json:"cql_version" yaml:"cql_version"`
@@ -70,6 +71,7 @@ type Cassandra struct {
 	VectorBackupTable string `json:"vector_backup_table" yaml:"vector_backup_table"`
 }
 
+// PoolConfig represents the configuration for the pool config.
 type PoolConfig struct {
 	DataCenter               string `json:"data_center" yaml:"data_center"`
 	DCAwareRouting           bool   `json:"dc_aware_routing" yaml:"dc_aware_routing"`
@@ -78,23 +80,27 @@ type PoolConfig struct {
 	TokenAwareHostPolicy     bool   `json:"token_aware_host_policy" yaml:"token_aware_host_policy"`
 }
 
+// RetryPolicy represents the configuration for the retry policy.
 type RetryPolicy struct {
 	NumRetries  int    `json:"num_retries" yaml:"num_retries"`
 	MinDuration string `json:"min_duration" yaml:"min_duration"`
 	MaxDuration string `json:"max_duration" yaml:"max_duration"`
 }
 
+// ReconnectionPolicy represents the configuration for the reconnection policy.
 type ReconnectionPolicy struct {
 	MaxRetries      int    `json:"max_retries" yaml:"max_retries"`
 	InitialInterval string `json:"initial_interval" yaml:"initial_interval"`
 }
 
+// HostFilter represents the configuration for the host filter.
 type HostFilter struct {
 	Enabled    bool     `json:"enabled"`
 	DataCenter string   `json:"data_center" yaml:"data_center"`
 	WhiteList  []string `json:"white_list" yaml:"white_list"`
 }
 
+// Bind binds the actual data from the Cassandra receiver fields.
 func (c *Cassandra) Bind() *Cassandra {
 	c.Hosts = GetActualValues(c.Hosts)
 	c.CQLVersion = GetActualValue(c.CQLVersion)
@@ -139,10 +145,11 @@ func (c *Cassandra) Bind() *Cassandra {
 	c.VKTable = GetActualValue(c.VKTable)
 
 	c.VectorBackupTable = GetActualValue(c.VectorBackupTable)
-
 	return c
 }
 
+// Opts creates and returns the slice with the functional options for the internal cassandra package.
+// In addition, Opts sometimes returns the error when the any errors are occurred.
 func (cfg *Cassandra) Opts() (opts []cassandra.Option, err error) {
 	opts = []cassandra.Option{
 		cassandra.WithHosts(cfg.Hosts...),
@@ -209,13 +216,15 @@ func (cfg *Cassandra) Opts() (opts []cassandra.Option, err error) {
 
 	if cfg.Net != nil {
 		der, err := net.NewDialer(cfg.Net.Opts()...)
-		if err == nil {
-			opts = append(opts,
-				cassandra.WithDialer(
-					der,
-				),
-			)
+		if err != nil {
+			return nil, err
 		}
+
+		opts = append(opts,
+			cassandra.WithDialer(
+				der,
+			),
+		)
 	}
 
 	if cfg.TLS != nil && cfg.TLS.Enabled {
@@ -225,7 +234,7 @@ func (cfg *Cassandra) Opts() (opts []cassandra.Option, err error) {
 			tls.WithCa(cfg.TLS.CA),
 		)
 		if err != nil {
-			return opts, err
+			return nil, err
 		}
 
 		opts = append(

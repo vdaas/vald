@@ -32,10 +32,12 @@ import (
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var _ = proto.Marshal
-var _ = golang_proto.Marshal
-var _ = fmt.Errorf
-var _ = math.Inf
+var (
+	_ = proto.Marshal
+	_ = golang_proto.Marshal
+	_ = fmt.Errorf
+	_ = math.Inf
+)
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -44,6 +46,7 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 func init() { proto.RegisterFile("apis/proto/v1/meta/meta.proto", fileDescriptor_f506bb68c7e24dcc) }
+
 func init() {
 	golang_proto.RegisterFile("apis/proto/v1/meta/meta.proto", fileDescriptor_f506bb68c7e24dcc)
 }
@@ -80,8 +83,10 @@ var fileDescriptor_f506bb68c7e24dcc = []byte{
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
-var _ context.Context
-var _ grpc.ClientConn
+var (
+	_ context.Context
+	_ grpc.ClientConn
+)
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
@@ -216,36 +221,44 @@ type MetaServer interface {
 }
 
 // UnimplementedMetaServer can be embedded to have forward compatible implementations.
-type UnimplementedMetaServer struct {
-}
+type UnimplementedMetaServer struct{}
 
 func (*UnimplementedMetaServer) GetMeta(ctx context.Context, req *payload.Meta_Key) (*payload.Meta_Val, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMeta not implemented")
 }
+
 func (*UnimplementedMetaServer) GetMetas(ctx context.Context, req *payload.Meta_Keys) (*payload.Meta_Vals, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMetas not implemented")
 }
+
 func (*UnimplementedMetaServer) GetMetaInverse(ctx context.Context, req *payload.Meta_Val) (*payload.Meta_Key, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMetaInverse not implemented")
 }
+
 func (*UnimplementedMetaServer) GetMetasInverse(ctx context.Context, req *payload.Meta_Vals) (*payload.Meta_Keys, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMetasInverse not implemented")
 }
+
 func (*UnimplementedMetaServer) SetMeta(ctx context.Context, req *payload.Meta_KeyVal) (*payload.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetMeta not implemented")
 }
+
 func (*UnimplementedMetaServer) SetMetas(ctx context.Context, req *payload.Meta_KeyVals) (*payload.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetMetas not implemented")
 }
+
 func (*UnimplementedMetaServer) DeleteMeta(ctx context.Context, req *payload.Meta_Key) (*payload.Meta_Val, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteMeta not implemented")
 }
+
 func (*UnimplementedMetaServer) DeleteMetas(ctx context.Context, req *payload.Meta_Keys) (*payload.Meta_Vals, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteMetas not implemented")
 }
+
 func (*UnimplementedMetaServer) DeleteMetaInverse(ctx context.Context, req *payload.Meta_Val) (*payload.Meta_Key, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteMetaInverse not implemented")
 }
+
 func (*UnimplementedMetaServer) DeleteMetasInverse(ctx context.Context, req *payload.Meta_Vals) (*payload.Meta_Keys, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteMetasInverse not implemented")
 }

@@ -30,8 +30,7 @@ data:
         `vector` BLOB NOT NULL,
         `id` int NOT NULL AUTO_INCREMENT,
         PRIMARY KEY (`uuid`),
-        UNIQUE INDEX `id_unique` (`id` ASC),
-        UNIQUE INDEX `meta_unique` (`meta` ASC)
+        UNIQUE INDEX `id_unique` (`id` ASC)
     )
     ENGINE = InnoDB;
 

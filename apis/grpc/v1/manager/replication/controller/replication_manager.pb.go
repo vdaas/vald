@@ -32,10 +32,12 @@ import (
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var _ = proto.Marshal
-var _ = golang_proto.Marshal
-var _ = fmt.Errorf
-var _ = math.Inf
+var (
+	_ = proto.Marshal
+	_ = golang_proto.Marshal
+	_ = fmt.Errorf
+	_ = math.Inf
+)
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -46,6 +48,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 func init() {
 	proto.RegisterFile("apis/proto/v1/manager/replication/controller/replication_manager.proto", fileDescriptor_7996d9fdae0b086a)
 }
+
 func init() {
 	golang_proto.RegisterFile("apis/proto/v1/manager/replication/controller/replication_manager.proto", fileDescriptor_7996d9fdae0b086a)
 }
@@ -75,8 +78,10 @@ var fileDescriptor_7996d9fdae0b086a = []byte{
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
-var _ context.Context
-var _ grpc.ClientConn
+var (
+	_ context.Context
+	_ grpc.ClientConn
+)
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
@@ -112,8 +117,7 @@ type ReplicationControllerServer interface {
 }
 
 // UnimplementedReplicationControllerServer can be embedded to have forward compatible implementations.
-type UnimplementedReplicationControllerServer struct {
-}
+type UnimplementedReplicationControllerServer struct{}
 
 func (*UnimplementedReplicationControllerServer) ReplicationInfo(ctx context.Context, req *payload.Empty) (*payload.Replication_Agents, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReplicationInfo not implemented")

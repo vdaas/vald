@@ -107,14 +107,16 @@ ifeq ($(UNAME),Darwin)
 $(BINDIR)/yq:
 	mkdir -p $(BINDIR)
 	cd $(TEMP_DIR) \
-	    && curl -Lo $(BINDIR)/yq https://github.com/mikefarah/yq/releases/download/$(YQ_VERSION)/yq_darwin_amd64 \
-	    && chmod a+x $(BINDIR)/yq
+	    && curl -Lo yq https://github.com/mikefarah/yq/releases/download/$(YQ_VERSION)/yq_darwin_amd64 \
+	    && chmod a+x yq \
+	    && mv yq $(BINDIR)/yq
 else
 $(BINDIR)/yq:
 	mkdir -p $(BINDIR)
 	cd $(TEMP_DIR) \
-	    && curl -Lo $(BINDIR)/yq https://github.com/mikefarah/yq/releases/download/$(YQ_VERSION)/yq_linux_amd64 \
-	    && chmod a+x $(BINDIR)/yq
+	    && curl -Lo yq https://github.com/mikefarah/yq/releases/download/$(YQ_VERSION)/yq_linux_amd64 \
+	    && chmod a+x yq \
+	    && mv yq $(BINDIR)/yq
 endif
 
 .PHONY: helm/schema/crd/vald

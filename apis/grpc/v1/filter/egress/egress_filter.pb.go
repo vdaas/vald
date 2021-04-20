@@ -32,10 +32,12 @@ import (
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var _ = proto.Marshal
-var _ = golang_proto.Marshal
-var _ = fmt.Errorf
-var _ = math.Inf
+var (
+	_ = proto.Marshal
+	_ = golang_proto.Marshal
+	_ = fmt.Errorf
+	_ = math.Inf
+)
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -46,6 +48,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 func init() {
 	proto.RegisterFile("apis/proto/v1/filter/egress/egress_filter.proto", fileDescriptor_7f3e67472eb32d70)
 }
+
 func init() {
 	golang_proto.RegisterFile("apis/proto/v1/filter/egress/egress_filter.proto", fileDescriptor_7f3e67472eb32d70)
 }
@@ -76,8 +79,10 @@ var fileDescriptor_7f3e67472eb32d70 = []byte{
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
-var _ context.Context
-var _ grpc.ClientConn
+var (
+	_ context.Context
+	_ grpc.ClientConn
+)
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
@@ -124,12 +129,12 @@ type FilterServer interface {
 }
 
 // UnimplementedFilterServer can be embedded to have forward compatible implementations.
-type UnimplementedFilterServer struct {
-}
+type UnimplementedFilterServer struct{}
 
 func (*UnimplementedFilterServer) FilterDistance(ctx context.Context, req *payload.Object_Distance) (*payload.Object_Distance, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FilterDistance not implemented")
 }
+
 func (*UnimplementedFilterServer) FilterVector(ctx context.Context, req *payload.Object_Vector) (*payload.Object_Vector, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FilterVector not implemented")
 }
