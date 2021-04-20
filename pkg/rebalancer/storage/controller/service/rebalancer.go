@@ -501,7 +501,7 @@ func (r *rebalancer) genJobTpl() (jobTpl *job.Job, err error) {
 }
 
 func getDecreasedPodNames(prev, cur []pod.Pod, ns string) (podNames []string) {
-	podNames = make([]string, 0)
+	podNames = make([]string, 0, len(prev))
 	for _, prevPod := range prev {
 		if prevPod.Namespace != ns {
 			continue
