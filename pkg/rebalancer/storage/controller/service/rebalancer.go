@@ -140,7 +140,7 @@ func (r *rebalancer) initCtrl() (err error) {
 			statefulset.WithOnErrorFunc(func(err error) {
 				log.Error(err)
 			}),
-			statefulset.WithOnReconcileFunc(func(statefulSetList map[string][]statefulset.StatefulSet) {
+			statefulset.WithOnReconcileFunc(func(ctx context.Context, statefulSetList map[string][]statefulset.StatefulSet) {
 				log.Debugf("[reconcile StatefulSet] length StatefulSet[%s]: %d", r.agentName, len(statefulSetList))
 				sss, ok := statefulSetList[r.agentName]
 				if !ok {
@@ -162,7 +162,6 @@ func (r *rebalancer) initCtrl() (err error) {
 					for i := int(*pss.Spec.Replicas); i > int(*sss[0].Spec.Replicas); i-- {
 						name := r.agentName + "-" + strconv.Itoa(i-1)
 						log.Debugf("[recovery] creating job for pod %s", name)
-						ctx := context.TODO()
 						if err := r.createJob(ctx, *r.jobObject, config.RECOVERY, name, r.agentNamespace, 1); err != nil {
 							log.Errorf("[recovery] failed to create job: %s", err)
 						}
