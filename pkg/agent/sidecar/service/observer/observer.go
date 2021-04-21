@@ -322,6 +322,8 @@ func (o *observer) onWrite(ctx context.Context, name string) error {
 		}
 	}()
 
+	log.Infof("[rebalance controller] onWrite event. name: %s", name)
+
 	if name != o.metadataPath {
 		return nil
 	}
@@ -346,6 +348,8 @@ func (o *observer) onCreate(ctx context.Context, name string) error {
 			span.End()
 		}
 	}()
+
+	log.Infof("[rebalance controller] onCreate event. name: %s", name)
 
 	if name != o.metadataPath {
 		return nil
