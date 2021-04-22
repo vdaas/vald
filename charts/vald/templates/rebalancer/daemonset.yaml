@@ -89,7 +89,6 @@ spec:
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
-      serviceAccount: vald
       serviceAccountName: vald
       securityContext: {}
       terminationGracePeriodSeconds: {{ .Values.rebalancer.terminationGracePeriodSeconds }}
