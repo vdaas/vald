@@ -79,6 +79,11 @@ var (
 		return Wrapf(err, "failed to output %s logs", str)
 	}
 
+	// ErrErrorIsNil represents a function to generate an error that given name's error object is nil.
+	ErrErrorIsNil = func(name string) error {
+		return Errorf("error object is nil: %s", name)
+	}
+
 	// New represents a function to generate the new error with a message.
 	// When the message is nil, it will return nil instead of an error.
 	New = func(msg string) error {

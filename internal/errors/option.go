@@ -15,6 +15,8 @@
 //
 package errors
 
+import "reflect"
+
 // ErrInvalidOption represents the invalid option error.
 type ErrInvalidOption struct {
 	err    error
@@ -49,6 +51,9 @@ func NewErrInvalidOption(name string, val interface{}, errs ...error) error {
 
 // Error returns a string of ErrInvalidOption.err.
 func (e *ErrInvalidOption) Error() string {
+	if e.err == nil {
+		return ErrErrorIsNil(reflect.TypeOf(e).Elem().Name()).Error()
+	}
 	return e.err.Error()
 }
 
@@ -92,6 +97,9 @@ func NewErrCriticalOption(name string, val interface{}, errs ...error) error {
 
 // Error returns a string of ErrCriticalOption.err.
 func (e *ErrCriticalOption) Error() string {
+	if e.err == nil {
+		return ErrErrorIsNil(reflect.TypeOf(e).Elem().Name()).Error()
+	}
 	return e.err.Error()
 }
 
