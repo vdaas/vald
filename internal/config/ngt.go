@@ -23,16 +23,16 @@ type NGT struct {
 	IndexPath string `yaml:"index_path" json:"index_path,omitempty"`
 
 	// Dimension represent the ngt index dimension
-	Dimension int `yaml:"dimension" json:"dimension,omitempty"`
+	Dimension int `yaml:"dimension" json:"dimension,omitempty" info:"dimension"`
 
 	// BulkInsertChunkSize represent the bulk insert chunk size
 	BulkInsertChunkSize int `yaml:"bulk_insert_chunk_size" json:"bulk_insert_chunk_size,omitempty"`
 
 	// DistanceType represent the ngt index distance type
-	DistanceType string `yaml:"distance_type" json:"distance_type,omitempty"`
+	DistanceType string `yaml:"distance_type" json:"distance_type,omitempty" info:"distance_type"`
 
 	// ObjectType represent the ngt index object type float or int
-	ObjectType string `yaml:"object_type" json:"object_type,omitempty"`
+	ObjectType string `yaml:"object_type" json:"object_type,omitempty" info:"object_type"`
 
 	// CreationEdgeSize represent the index edge count
 	CreationEdgeSize int `yaml:"creation_edge_size" json:"creation_edge_size,omitempty"`
