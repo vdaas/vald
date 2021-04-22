@@ -812,7 +812,7 @@ func TestGRPCClient_Opts(t *testing.T) {
 			},
 		},
 		{
-			name: "return nil grpc.Option and an error when dns error is ocurred",
+			name: "return nil grpc.Option and an error when dns error is occurred",
 			fields: fields{
 				Addrs: []string{
 					"10.40.3.342",
@@ -891,7 +891,7 @@ func TestGRPCClient_Opts(t *testing.T) {
 			},
 		},
 		{
-			name: "return nil grpc.Option and an error when tls error is ocurred",
+			name: "return nil grpc.Option and an error when tls error is occurred",
 			fields: fields{
 				Addrs: []string{
 					"10.40.3.342",
@@ -974,7 +974,7 @@ func TestGRPCClient_Opts(t *testing.T) {
 			},
 		},
 		{
-			name: "return nil grpc.Option and an error when net.TLS.Opts error is ocurred",
+			name: "return nil grpc.Option and an error when net.TLS.Opts error is occurred",
 			fields: fields{
 				Addrs: []string{
 					"10.40.3.342",
