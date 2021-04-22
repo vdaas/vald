@@ -37,7 +37,7 @@ replace (
 )
 
 require (
-	cloud.google.com/go v0.79.0
+	cloud.google.com/go v0.81.0
 	code.cloudfoundry.org/bytefmt v0.0.0-20200131002437-cf55d5288a48
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
 	contrib.go.opencensus.io/exporter/prometheus v0.3.0
@@ -76,12 +76,12 @@ require (
 	go.uber.org/zap v1.16.0
 	golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys v0.0.0-20210403161142-5e06dd20ab57
+	golang.org/x/sys v0.0.0-20210412220455-f1c623a9e750
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/plot v0.9.0
-	google.golang.org/api v0.43.0
-	google.golang.org/genproto v0.0.0-20210406143921-e86de6bf7a46
-	google.golang.org/grpc v1.36.1
+	google.golang.org/api v0.45.0
+	google.golang.org/genproto v0.0.0-20210413151531-c14fb6ef47c3
+	google.golang.org/grpc v1.37.0
 	gopkg.in/yaml.v2 v2.4.0
 	inet.af/netaddr v0.0.0-20210403172118-1e1430f727e0
 	k8s.io/api v0.20.5
