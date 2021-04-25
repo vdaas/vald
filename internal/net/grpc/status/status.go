@@ -190,7 +190,7 @@ func Errorf(code codes.Code, format string, args ...interface{}) error {
 	return status.Errorf(code, format, args...)
 }
 
-func ParseError(err error, details ...interface{}) (st *status.Status, msg string, rerr error) {
+func ParseError(err error, defaultCode codes.Code, defaultMsg string, details ...interface{}) (st *status.Status, msg string, rerr error) {
 	if err == nil {
 		st = newStatus(codes.OK, "", nil, details...)
 		msg = st.Message()
@@ -199,7 +199,13 @@ func ParseError(err error, details ...interface{}) (st *status.Status, msg strin
 	var ok bool
 	st, ok = FromError(err)
 	if !ok {
-		st = newStatus(codes.Internal, "failed to parse grpc status from error", err, details...)
+		if defaultCode == 0 {
+			defaultCode = codes.Internal
+		}
+		if len(defaultMsg) == 0 {
+			defaultMsg = "failed to parse grpc status from error"
+		}
+		st = newStatus(defaultCode, defaultMsg, err, details...)
 		err = errors.Wrap(st.Err(), err.Error())
 		msg = err.Error()
 	} else {

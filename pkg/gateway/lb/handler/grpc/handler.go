@@ -72,6 +72,8 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 	var cancel context.CancelFunc
 	ctx, cancel = context.WithCancel(ctx)
 	var once sync.Once
+	var errs error
+	var mu sync.Mutex
 	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
 		ctx, span := trace.StartSpan(ctx, apiName+".Exists/"+target)
 		defer func() {
@@ -81,7 +83,7 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 		}()
 		oid, err := vc.Exists(ctx, meta, copts...)
 		if err != nil {
-			err = status.WrapWithNotFound(fmt.Sprintf("Exists API meta %s's uuid not found in %s", meta.GetId(), target), err,
+			st, msg, err := status.ParseError(err, codes.NotFound, fmt.Sprintf("error Exists API meta %s's uuid not found", meta.GetId()),
 				&errdetails.RequestInfo{
 					RequestId:   meta.GetId(),
 					ServingData: errdetails.Serialize(meta),
@@ -93,8 +95,11 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 					Description:  err.Error(),
 				})
 			if span != nil {
-				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+				span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 			}
+			mu.Lock()
+			errs = errors.Wrap(errs, err.Error())
+			mu.Unlock()
 			return nil
 		}
 		if oid != nil && oid.GetId() != "" {
@@ -105,11 +110,14 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 		}
 		return nil
 	})
-	if err != nil || id == nil || id.GetId() == "" {
-		if err == nil {
-			err = errors.ErrObjectIDNotFound(id.GetId())
+	if err != nil {
+		errs = errors.Wrap(err)
+	}
+	if errs != nil || id == nil || id.GetId() == "" {
+		if errs == nil {
+			errs = errors.ErrObjectIDNotFound(meta.GetId())
 		}
-		err = status.WrapWithNotFound(fmt.Sprintf("Exists API meta %s's uuid not found", meta.GetId()), err,
+		st, msg, err := status.ParseError(errs, codes.NotFound, fmt.Sprintf("error Exists API meta %s's uuid not found", meta.GetId()),
 			&errdetails.RequestInfo{
 				RequestId:   meta.GetId(),
 				ServingData: errdetails.Serialize(meta),
@@ -118,11 +126,12 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Exists",
 				ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
 				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
-			}, info.Get())
+				Description:  errs.Error(),
+			})
 		if span != nil {
-			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 		}
+
 		return nil, err
 	}
 	return id, nil
@@ -162,7 +171,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 		})
 
 	if err != nil {
-		err = status.WrapWithInternal("Search API failed to process search request", err,
+		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse Search gRPC error response",
 			&errdetails.RequestInfo{
 				RequestId:   req.GetConfig().GetRequestId(),
 				ServingData: errdetails.Serialize(req),
@@ -173,9 +182,8 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-		log.Error(err)
 		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 		}
 		return nil, err
 	}
@@ -210,69 +218,25 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		}
 		return nil, err
 	}
-	vec, err := s.GetObject(ctx, &payload.Object_VectorRequest{
+	oreq := &payload.Object_VectorRequest{
 		Id: &payload.Object_ID{
 			Id: req.GetId(),
 		},
 		Filters: req.GetConfig().GetEgressFilters(),
-	})
-	if err != nil {
-		err = status.WrapWithNotFound(fmt.Sprintf("SearchByID API uuid %s's object not found", req.GetId()), err,
-			&errdetails.RequestInfo{
-				RequestId:   req.GetConfig().GetRequestId(),
-				ServingData: errdetails.Serialize(req),
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.SearchByID",
-				ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
-			},
-			info.Get())
-		log.Error(err)
-		var serr error
-		res, serr = s.search(ctx, req.GetConfig(),
-			func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
-				return vc.SearchByID(ctx, req, copts...)
-			})
-
-		if serr == nil {
-			return res, nil
-		}
-		err = errors.Wrap(err, status.WrapWithInternal("SearchByID API failed to process search request", serr,
-			&errdetails.RequestInfo{
-				RequestId:   req.GetConfig().GetRequestId(),
-				ServingData: errdetails.Serialize(req),
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.SearchByID",
-				ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  serr.Error(),
-			}).Error())
-		log.Error(err)
-		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
-		}
-		return nil, err
 	}
-	res, err = s.Search(ctx, &payload.Search_Request{
-		Vector: vec.GetVector(),
-		Config: req.GetConfig(),
-	})
+	vec, err := s.GetObject(ctx, oreq)
 	if err != nil {
-		err = status.WrapWithInternal("SearchByID API failed to process search request", err,
+		_, _, err := status.ParseError(err, codes.NotFound, fmt.Sprintf("SearchByID API uuid %s's object not found", req.GetId()),
 			&errdetails.RequestInfo{
 				RequestId:   req.GetConfig().GetRequestId(),
-				ServingData: errdetails.Serialize(req),
+				ServingData: errdetails.Serialize(oreq),
 			},
 			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.SearchByID",
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.GetObject",
 				ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
-		log.Error(err)
 		var serr error
 		res, serr = s.search(ctx, req.GetConfig(),
 			func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
@@ -282,7 +246,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		if serr == nil {
 			return res, nil
 		}
-		err = errors.Wrap(err, status.WrapWithInternal("SearchByID API failed to process search request", err,
+		st, msg, serr := status.ParseError(serr, codes.Internal, "SearchByID API failed to process search request",
 			&errdetails.RequestInfo{
 				RequestId:   req.GetConfig().GetRequestId(),
 				ServingData: errdetails.Serialize(req),
@@ -292,10 +256,52 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 				ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
-			}).Error())
-		log.Error(err)
+			})
+		err = errors.Wrap(err, serr.Error())
 		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+		}
+		return nil, err
+	}
+	sreq := &payload.Search_Request{
+		Vector: vec.GetVector(),
+		Config: req.GetConfig(),
+	}
+	res, err = s.Search(ctx, sreq)
+	if err != nil {
+		_, _, err := status.ParseError(err, codes.Internal, "SearchByID API failed to process search request",
+			&errdetails.RequestInfo{
+				RequestId:   req.GetConfig().GetRequestId(),
+				ServingData: errdetails.Serialize(sreq),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Search",
+				ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
+			}, info.Get())
+		var serr error
+		res, serr = s.search(ctx, req.GetConfig(),
+			func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+				return vc.SearchByID(ctx, req, copts...)
+			})
+		if serr == nil {
+			return res, nil
+		}
+		st, msg, serr := status.ParseError(serr, codes.Internal, "SearchByID API failed to process search request",
+			&errdetails.RequestInfo{
+				RequestId:   req.GetConfig().GetRequestId(),
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.SearchByID",
+				ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
+			})
+		err = errors.Wrap(err, serr.Error())
+		if span != nil {
+			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 		}
 		return nil, err
 	}
@@ -339,19 +345,16 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 				}
 			}()
 			r, err := f(ctx, vc, copts...)
-			if err != nil {
-				if !errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded) {
-					err = status.WrapWithInternal("failed to process search request", err,
-						&errdetails.ResourceInfo{
-							ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Search",
-							ResourceName: target,
-							Owner:        errdetails.ValdResourceOwner,
-							Description:  err.Error(),
-						})
-					log.Warn(err)
-				}
+			if err != nil && !errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded) {
+				st, msg, _ := status.ParseError(err, codes.Internal, "failed to parse Search gRPC error response",
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Search",
+						ResourceName: target,
+						Owner:        errdetails.ValdResourceOwner,
+						Description:  err.Error(),
+					})
 				if span != nil {
-					span.SetStatus(trace.StatusCodeInternal(err.Error()))
+					span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 				}
 				return nil
 			}
@@ -466,12 +469,18 @@ func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error)
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Search_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
+			req := data.(*payload.Search_Request)
+			ctx, sspan := trace.StartSpan(ctx, apiName+".StreamSearch/requestID-"+req.GetConfig().GetRequestId())
+			defer func() {
+				if sspan != nil {
+					sspan.End()
+				}
+			}()
 			res, err := s.Search(ctx, data.(*payload.Search_Request))
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok {
-					st = status.New(codes.Internal, errors.Wrap(err, "failed to parse grpc status from error").Error())
-					err = errors.Wrap(st.Err(), err.Error())
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse Search gRPC error response")
+				if sspan != nil {
+					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 				}
 				return &payload.Search_StreamResponse{
 					Payload: &payload.Search_StreamResponse_Status{
@@ -487,10 +496,11 @@ func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error)
 		})
 
 	if err != nil {
+		st, msg, err := status.ParseError(err, codes.Internal,
+			"failed to parse StreamSearch gRPC error response")
 		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 		}
-		log.Error(err)
 		return err
 	}
 	return nil
@@ -515,13 +525,9 @@ func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (er
 			}()
 			res, err := s.SearchByID(ctx, req)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok {
-					st = status.New(codes.Internal, errors.Wrap(err, "failed to parse grpc status from error").Error())
-					err = errors.Wrap(st.Err(), err.Error())
-				}
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse SearchByID gRPC error response")
 				if sspan != nil {
-					sspan.SetStatus(trace.StatusCodeInternal(err.Error()))
+					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 				}
 				return &payload.Search_StreamResponse{
 					Payload: &payload.Search_StreamResponse_Status{
@@ -537,10 +543,10 @@ func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (er
 		})
 
 	if err != nil {
+		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse StreamSearchByID gRPC error response")
 		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 		}
-		log.Error(err)
 		return err
 	}
 	return nil

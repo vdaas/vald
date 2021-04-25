@@ -127,7 +127,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 		return vc.Search(ctx, req, copts...)
 	})
 	if err != nil {
-		st, msg, err := status.ParseError(err,
+		st, msg, err := status.ParseError(err, codes.Internal, "",
 			&errdetails.RequestInfo{
 				RequestId:   req.GetConfig().GetRequestId(),
 				ServingData: errdetails.Serialize(req),
@@ -178,7 +178,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		return vc.SearchByID(ctx, req, copts...)
 	})
 	if err != nil {
-		st, msg, err := status.ParseError(err,
+		st, msg, err := status.ParseError(err, codes.Internal, "",
 			&errdetails.RequestInfo{
 				RequestId:   req.GetConfig().GetRequestId(),
 				ServingData: errdetails.Serialize(req),

@@ -32,6 +32,7 @@ import (
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -263,7 +264,7 @@ func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error)
 			}()
 			res, err := s.Search(ctx, data.(*payload.Search_Request))
 			if err != nil {
-				st, msg, err := status.ParseError(err)
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse Search gRPC error response")
 				if sspan != nil {
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 				}
@@ -281,11 +282,11 @@ func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error)
 		})
 
 	if err != nil {
-		st, msg, err := status.ParseError(err)
+		st, msg, err := status.ParseError(err, codes.Internal,
+			"failed to parse StreamSearch gRPC error response")
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 		}
-		log.Error(err)
 		return err
 	}
 	return nil
@@ -310,7 +311,7 @@ func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (er
 			}()
 			res, err := s.SearchByID(ctx, req)
 			if err != nil {
-				st, msg, err := status.ParseError(err)
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse SearchByID gRPC error response")
 				if sspan != nil {
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 				}
@@ -327,11 +328,10 @@ func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (er
 			}, nil
 		})
 	if err != nil {
-		st, msg, err := status.ParseError(err)
+		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse StreamSearchByID gRPC error response")
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 		}
-		log.Error(err)
 		return err
 	}
 	return nil
@@ -365,10 +365,11 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 			}()
 			r, err := s.Search(ctx, query)
 			if err != nil {
-				st, msg, err := status.ParseError(err, &errdetails.RequestInfo{
-					RequestId:   query.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(query),
-				})
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse Search gRPC error response",
+					&errdetails.RequestInfo{
+						RequestId:   query.GetConfig().GetRequestId(),
+						ServingData: errdetails.Serialize(query),
+					})
 				if sspan != nil {
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 				}
@@ -387,7 +388,7 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 	}
 	wg.Wait()
 	if errs != nil {
-		st, msg, err := status.ParseError(errs,
+		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse MultiSearch gRPC error response",
 			&errdetails.RequestInfo{
 				RequestId:   strings.Join(rids, ","),
 				ServingData: errdetails.Serialize(reqs),
@@ -434,10 +435,11 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 			defer wg.Done()
 			r, err := s.SearchByID(ctx, query)
 			if err != nil {
-				st, msg, err := status.ParseError(err, &errdetails.RequestInfo{
-					RequestId:   query.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(query),
-				})
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse MultiSearchByID gRPC error response",
+					&errdetails.RequestInfo{
+						RequestId:   query.GetConfig().GetRequestId(),
+						ServingData: errdetails.Serialize(query),
+					})
 				if sspan != nil {
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 				}
@@ -566,7 +568,7 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 			}()
 			res, err := s.Insert(ctx, req)
 			if err != nil {
-				st, msg, err := status.ParseError(err)
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse Insert gRPC error response")
 				if sspan != nil {
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 				}
@@ -584,7 +586,7 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 		})
 
 	if err != nil {
-		st, msg, err := status.ParseError(err)
+		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse StreamInsert gRPC error response")
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 		}
@@ -781,7 +783,7 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) (err error)
 			}()
 			res, err := s.Update(ctx, req)
 			if err != nil {
-				st, msg, err := status.ParseError(err)
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse Update gRPC error response")
 				if sspan != nil {
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 				}
@@ -799,7 +801,7 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) (err error)
 		})
 
 	if err != nil {
-		st, msg, err := status.ParseError(err)
+		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse StreamUpdate gRPC error response")
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 		}
@@ -947,7 +949,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 		rtName = "/ngt.Insert"
 	}
 	if err != nil {
-		st, msg, err := status.ParseError(err,
+		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse Upsert gRPC error response",
 			&errdetails.RequestInfo{
 				RequestId:   req.GetVector().GetId(),
 				ServingData: errdetails.Serialize(req),
@@ -986,7 +988,7 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 			}()
 			res, err := s.Upsert(ctx, req)
 			if err != nil {
-				st, msg, err := status.ParseError(err)
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse Upsert gRPC error response")
 				if sspan != nil {
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 				}
@@ -1004,7 +1006,7 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 		})
 
 	if err != nil {
-		st, msg, err := status.ParseError(err)
+		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse StreamUpsert gRPC error response")
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 		}
@@ -1065,7 +1067,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 	}))
 	err = eg.Wait()
 	if err != nil {
-		st, msg, err := status.ParseError(err,
+		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse MultiUpsert gRPC error response",
 			&errdetails.RequestInfo{
 				RequestId:   strings.Join(ids, ","),
 				ServingData: errdetails.Serialize(reqs),
@@ -1178,7 +1180,7 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error)
 			}()
 			res, err := s.Remove(ctx, req)
 			if err != nil {
-				st, msg, err := status.ParseError(err)
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse Remove gRPC error response")
 				if sspan != nil {
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 				}
@@ -1196,7 +1198,7 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error)
 		})
 
 	if err != nil {
-		st, msg, err := status.ParseError(err)
+		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse StreamRemove gRPC error response")
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 		}
@@ -1340,7 +1342,7 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 			}()
 			res, err := s.GetObject(ctx, req)
 			if err != nil {
-				st, msg, err := status.ParseError(err)
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse GetObject gRPC error response")
 				if sspan != nil {
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 				}
@@ -1358,7 +1360,7 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 		})
 
 	if err != nil {
-		st, msg, err := status.ParseError(err)
+		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse StreamGetObject gRPC error response")
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 		}
