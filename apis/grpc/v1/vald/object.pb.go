@@ -32,12 +32,10 @@ import (
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = golang_proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-)
+var _ = proto.Marshal
+var _ = golang_proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -46,7 +44,6 @@ var (
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 func init() { proto.RegisterFile("apis/proto/v1/vald/object.proto", fileDescriptor_f3068a4c11e32302) }
-
 func init() {
 	golang_proto.RegisterFile("apis/proto/v1/vald/object.proto", fileDescriptor_f3068a4c11e32302)
 }
@@ -77,10 +74,8 @@ var fileDescriptor_f3068a4c11e32302 = []byte{
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ context.Context
-	_ grpc.ClientConn
-)
+var _ context.Context
+var _ grpc.ClientConn
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
@@ -160,16 +155,15 @@ type ObjectServer interface {
 }
 
 // UnimplementedObjectServer can be embedded to have forward compatible implementations.
-type UnimplementedObjectServer struct{}
+type UnimplementedObjectServer struct {
+}
 
 func (*UnimplementedObjectServer) Exists(ctx context.Context, req *payload.Object_ID) (*payload.Object_ID, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Exists not implemented")
 }
-
 func (*UnimplementedObjectServer) GetObject(ctx context.Context, req *payload.Object_VectorRequest) (*payload.Object_Vector, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetObject not implemented")
 }
-
 func (*UnimplementedObjectServer) StreamGetObject(srv Object_StreamGetObjectServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamGetObject not implemented")
 }

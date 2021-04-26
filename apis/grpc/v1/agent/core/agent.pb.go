@@ -32,12 +32,10 @@ import (
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = golang_proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-)
+var _ = proto.Marshal
+var _ = golang_proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -48,7 +46,6 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 func init() {
 	proto.RegisterFile("apis/proto/v1/agent/core/agent.proto", fileDescriptor_dc5722b42aaec2d2)
 }
-
 func init() {
 	golang_proto.RegisterFile("apis/proto/v1/agent/core/agent.proto", fileDescriptor_dc5722b42aaec2d2)
 }
@@ -81,10 +78,8 @@ var fileDescriptor_dc5722b42aaec2d2 = []byte{
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ context.Context
-	_ grpc.ClientConn
-)
+var _ context.Context
+var _ grpc.ClientConn
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
@@ -153,20 +148,18 @@ type AgentServer interface {
 }
 
 // UnimplementedAgentServer can be embedded to have forward compatible implementations.
-type UnimplementedAgentServer struct{}
+type UnimplementedAgentServer struct {
+}
 
 func (*UnimplementedAgentServer) CreateIndex(ctx context.Context, req *payload.Control_CreateIndexRequest) (*payload.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateIndex not implemented")
 }
-
 func (*UnimplementedAgentServer) SaveIndex(ctx context.Context, req *payload.Empty) (*payload.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SaveIndex not implemented")
 }
-
 func (*UnimplementedAgentServer) CreateAndSaveIndex(ctx context.Context, req *payload.Control_CreateIndexRequest) (*payload.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateAndSaveIndex not implemented")
 }
-
 func (*UnimplementedAgentServer) IndexInfo(ctx context.Context, req *payload.Empty) (*payload.Info_Index_Count, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IndexInfo not implemented")
 }

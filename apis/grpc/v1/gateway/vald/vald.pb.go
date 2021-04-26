@@ -32,12 +32,10 @@ import (
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = golang_proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-)
+var _ = proto.Marshal
+var _ = golang_proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -48,7 +46,6 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 func init() {
 	proto.RegisterFile("apis/proto/v1/gateway/vald/vald.proto", fileDescriptor_afca6feed49a0850)
 }
-
 func init() {
 	golang_proto.RegisterFile("apis/proto/v1/gateway/vald/vald.proto", fileDescriptor_afca6feed49a0850)
 }
@@ -92,10 +89,8 @@ var fileDescriptor_afca6feed49a0850 = []byte{
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ context.Context
-	_ grpc.ClientConn
-)
+var _ context.Context
+var _ grpc.ClientConn
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
@@ -483,80 +478,63 @@ type ValdServer interface {
 }
 
 // UnimplementedValdServer can be embedded to have forward compatible implementations.
-type UnimplementedValdServer struct{}
+type UnimplementedValdServer struct {
+}
 
 func (*UnimplementedValdServer) Exists(ctx context.Context, req *payload.Object_ID) (*payload.Object_ID, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Exists not implemented")
 }
-
 func (*UnimplementedValdServer) Search(ctx context.Context, req *payload.Search_Request) (*payload.Search_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Search not implemented")
 }
-
 func (*UnimplementedValdServer) SearchByID(ctx context.Context, req *payload.Search_IDRequest) (*payload.Search_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SearchByID not implemented")
 }
-
 func (*UnimplementedValdServer) StreamSearch(srv Vald_StreamSearchServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamSearch not implemented")
 }
-
 func (*UnimplementedValdServer) StreamSearchByID(srv Vald_StreamSearchByIDServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamSearchByID not implemented")
 }
-
 func (*UnimplementedValdServer) Insert(ctx context.Context, req *payload.Object_Vector) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Insert not implemented")
 }
-
 func (*UnimplementedValdServer) StreamInsert(srv Vald_StreamInsertServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamInsert not implemented")
 }
-
 func (*UnimplementedValdServer) MultiInsert(ctx context.Context, req *payload.Object_Vectors) (*payload.Object_Locations, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiInsert not implemented")
 }
-
 func (*UnimplementedValdServer) Update(ctx context.Context, req *payload.Object_Vector) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
 }
-
 func (*UnimplementedValdServer) StreamUpdate(srv Vald_StreamUpdateServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamUpdate not implemented")
 }
-
 func (*UnimplementedValdServer) MultiUpdate(ctx context.Context, req *payload.Object_Vectors) (*payload.Object_Locations, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiUpdate not implemented")
 }
-
 func (*UnimplementedValdServer) Upsert(ctx context.Context, req *payload.Object_Vector) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Upsert not implemented")
 }
-
 func (*UnimplementedValdServer) StreamUpsert(srv Vald_StreamUpsertServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamUpsert not implemented")
 }
-
 func (*UnimplementedValdServer) MultiUpsert(ctx context.Context, req *payload.Object_Vectors) (*payload.Object_Locations, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiUpsert not implemented")
 }
-
 func (*UnimplementedValdServer) Remove(ctx context.Context, req *payload.Object_ID) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Remove not implemented")
 }
-
 func (*UnimplementedValdServer) StreamRemove(srv Vald_StreamRemoveServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamRemove not implemented")
 }
-
 func (*UnimplementedValdServer) MultiRemove(ctx context.Context, req *payload.Object_IDs) (*payload.Object_Locations, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiRemove not implemented")
 }
-
 func (*UnimplementedValdServer) GetObject(ctx context.Context, req *payload.Object_ID) (*payload.Object_Vector, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetObject not implemented")
 }
-
 func (*UnimplementedValdServer) StreamGetObject(srv Vald_StreamGetObjectServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamGetObject not implemented")
 }
