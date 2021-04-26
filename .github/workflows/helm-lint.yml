@@ -78,7 +78,7 @@ jobs:
           kubectl cluster-info
       - name: Test to apply
         run: |
-          kubectl apply -f charts/vald-helm-operator/crds/valdrelease.yaml
+          kubectl create -f charts/vald-helm-operator/crds/valdrelease.yaml
           yq eval \
               '{"apiVersion": "vald.vdaas.org/v1", "kind": "ValdRelease", "metadata":{"name":"vald-cluster"}, "spec": .}' \
               charts/vald/values.yaml \
