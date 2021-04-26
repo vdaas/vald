@@ -25,6 +25,8 @@ import (
 	"sync/atomic"
 	"time"
 
+	payload "github.com/vdaas/vald/apis/grpc/v1/payload"
+	agent "github.com/vdaas/vald/internal/client/v1/client/agent/core"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
@@ -343,7 +345,43 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
+func (r *rebalancer) getPodByAgentName(agentName string) (*pod.Pod, error) {
+	agentPods, ok := r.pods.Load().([]pod.Pod)
+	if !ok {
+		return nil, errors.New("cannot read agent pod list")
+	}
+	// 2. get target agent pod by name
+	for _, p := range agentPods {
+		if p.Name == agentName {
+			return &p, nil
+		}
+	}
+	return nil, errors.New("pod not found")
+}
+
 func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, reason config.RebalanceReason, agentName, agentNs string, rate float64) error {
+	// check indexing or not
+	if reason == config.BIAS {
+		p, err := r.getPodByAgentName(agentName)
+		if err != nil {
+			return err
+		}
+		c, err := agent.New(agent.WithAddrs(p.IP))
+		if err != nil {
+			return err
+		}
+		res, err := c.IndexInfo(ctx, new(payload.Empty))
+		if err != nil {
+			return err
+		}
+
+		if res.GetIndexing() {
+			return errors.New("pod is indexing, job will not be created")
+		}
+
+		// if saving flag = true
+		//     return error
+	}
 	jobTpl.Name += "-" + strconv.FormatInt(time.Now().UnixNano(), 10)
 
 	if len(r.jobNamespace) != 0 {
