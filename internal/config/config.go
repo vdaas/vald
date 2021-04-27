@@ -64,7 +64,7 @@ func (c *GlobalConfig) UnmarshalJSON(data []byte) (err error) {
 	ic := new(struct {
 		Ver     string   `json:"version"`
 		TZ      string   `json:"time_zone"`
-		Logging *Logging `json:"logging"`
+		Logging *Logging `json:"logging,omitempty" yaml:"logging,omitempty"`
 	})
 	err = json.Unmarshal(data, &ic)
 	if err != nil {
