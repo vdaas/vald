@@ -28,7 +28,7 @@ var defaultOptions = []Option{
 	WithAddr("127.0.0.1:8200"),
 	WithGRPCClientOption(
 		func() (opts []grpc.Option) {
-			opts, _ = (&config.GRPCClient{
+			c := &config.GRPCClient{
 				Addrs: []string{
 					"127.0.0.1:8200",
 				},
@@ -38,7 +38,11 @@ var defaultOptions = []Option{
 				DialOption: &config.DialOption{
 					Insecure: true,
 				},
-			}).Bind().Opts()
+			}
+			opts, err := c.Bind().Opts()
+			if err != nil {
+				log.Error(err)
+			}
 			return
 		}()...,
 	),
