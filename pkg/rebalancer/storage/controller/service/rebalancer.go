@@ -272,7 +272,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 					continue
 				}
 
-				jobsByNamespace, err := r.jobsByNamespace()
+				jobsByNamespace, err := r.getJobsByNamespace()
 				if err != nil {
 					log.Infof("error generating job models: %s", err.Error())
 				}
@@ -354,7 +354,7 @@ func (r *rebalancer) getPodByAgentName(agentName string) (*pod.Pod, error) {
 
 func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, reason config.RebalanceReason, agentName, agentNs string, rate float64) error {
 	// check indexing or not
-	if reason == config.BIAS {
+	if reason == config.DEVIATION {
 		p, err := r.getPodByAgentName(agentName)
 		if err != nil {
 			return err
@@ -448,7 +448,7 @@ func (r *rebalancer) podsByNamespace() (podModels map[string][]*model.Pod, err e
 	return
 }
 
-func (r *rebalancer) jobsByNamespace() (jobmap map[string][]job.Job, err error) {
+func (r *rebalancer) getJobsByNamespace() (jobmap map[string][]job.Job, err error) {
 	jobs, ok := r.jobs.Load().([]job.Job)
 	if !ok {
 		return nil, errors.ErrEmptyReconcileResult("job")

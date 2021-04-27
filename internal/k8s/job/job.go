@@ -40,13 +40,13 @@ import (
 type JobWatcher k8s.ResourceController
 
 type reconciler struct {
-	mgr         manager.Manager
-	name        string
-	namespaces  []string
-	onError     func(err error)
-	onReconcile func(jobList map[string][]Job)
-	listOpts    []client.ListOption
-	jobsByNamePool        sync.Pool
+	mgr               manager.Manager
+	name              string
+	namespaces        []string
+	onError           func(err error)
+	onReconcile       func(jobList map[string][]Job)
+	listOpts          []client.ListOption
+	jobsByAppNamePool sync.Pool // map[app][]Job
 }
 
 // Job is a type alias for the k8s job definition.
@@ -55,7 +55,7 @@ type Job = batchv1.Job
 // New returns the JobWatcher that implements reconciliation loop, or any errors occurred.
 func New(opts ...Option) (JobWatcher, error) {
 	r := &reconciler{
-		jobsByNamePool: sync.Pool{
+		jobsByAppNamePool: sync.Pool{
 			New: func() interface{} {
 				return make(map[string][]Job)
 			},
@@ -101,7 +101,7 @@ func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res 
 		return
 	}
 
-	jobs := r.jobsByNamePool.Get().(map[string][]Job)
+	jobs := r.jobsByAppNamePool.Get().(map[string][]Job)
 	for _, job := range js.Items {
 		name, ok := job.GetObjectMeta().GetLabels()["app"]
 		if !ok {
@@ -123,7 +123,7 @@ func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res 
 		jobs[name] = jobs[name][:0:len(jobs[name])]
 	}
 
-	r.jobsByNamePool.Put(jobs)
+	r.jobsByAppNamePool.Put(jobs)
 
 	return
 }
