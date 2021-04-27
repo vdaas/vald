@@ -951,6 +951,7 @@
 | stored | [uint32](#uint32) |  |  |
 | uncommitted | [uint32](#uint32) |  |  |
 | indexing | [bool](#bool) |  |  |
+| saving | [bool](#bool) |  |  |
 
 
 

@@ -153,7 +153,8 @@ k8s/vald-helm-operator/deploy:
 	    --set image.tag=$(VERSION) \
 	    --include-crds \
 	    charts/vald-helm-operator
-	kubectl apply -f $(TEMP_DIR)/vald-helm-operator/crds
+	kubectl create -f $(TEMP_DIR)/vald-helm-operator/crds/valdrelease.yaml
+	kubectl create -f $(TEMP_DIR)/vald-helm-operator/crds/valdhelmoperatorrelease.yaml
 	kubectl apply -f $(TEMP_DIR)/vald-helm-operator/templates
 	sleep 2
 	kubectl wait --for=condition=ready pod -l name=vald-helm-operator --timeout=600s

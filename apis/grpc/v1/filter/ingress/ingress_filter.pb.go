@@ -32,12 +32,10 @@ import (
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = golang_proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-)
+var _ = proto.Marshal
+var _ = golang_proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -48,7 +46,6 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 func init() {
 	proto.RegisterFile("apis/proto/v1/filter/ingress/ingress_filter.proto", fileDescriptor_8b82e91ce4fe335b)
 }
-
 func init() {
 	golang_proto.RegisterFile("apis/proto/v1/filter/ingress/ingress_filter.proto", fileDescriptor_8b82e91ce4fe335b)
 }
@@ -78,10 +75,8 @@ var fileDescriptor_8b82e91ce4fe335b = []byte{
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ context.Context
-	_ grpc.ClientConn
-)
+var _ context.Context
+var _ grpc.ClientConn
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
@@ -128,12 +123,12 @@ type FilterServer interface {
 }
 
 // UnimplementedFilterServer can be embedded to have forward compatible implementations.
-type UnimplementedFilterServer struct{}
+type UnimplementedFilterServer struct {
+}
 
 func (*UnimplementedFilterServer) GenVector(ctx context.Context, req *payload.Object_Blob) (*payload.Object_Vector, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GenVector not implemented")
 }
-
 func (*UnimplementedFilterServer) FilterVector(ctx context.Context, req *payload.Object_Vector) (*payload.Object_Vector, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FilterVector not implemented")
 }
