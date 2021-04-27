@@ -146,6 +146,7 @@ func (r *rebalancer) initCtrl() (err error) {
 		return errors.ErrInvalidAgentResourceType(r.agentResourceType.String())
 	}
 
+	lastDesiredPods := 0
 	r.ctrl, err = k8s.New(
 		k8s.WithControllerName("rebalance storage controller"),
 		k8s.WithEnableLeaderElection(),
@@ -157,7 +158,29 @@ func (r *rebalancer) initCtrl() (err error) {
 			pod.WithOnErrorFunc(func(err error) {
 				log.Error(err)
 			}),
-			pod.WithOnReconcileFunc(r.podReconcile),
+			pod.WithOnReconcileFunc(func(podList map[string][]pod.Pod) {
+				log.Debugf("[reconcile pod] length podList[%s]: %d", r.agentName, len(podList[r.agentName]))
+				pods, ok := podList[r.agentName]
+				if !ok {
+					log.Infof("pod not found: %s", r.agentName)
+					return
+				}
+				// if current pod status is desired (no of pod is the same as statefulset replicas)
+				if len(pods) == int(*r.statefulSets.Load().(statefulset.StatefulSet).Spec.Replicas) {
+					if len(pods) < lastDesiredPods {
+						for i := lastDesiredPods; i > len(pods); i-- {
+							name := r.agentName + "-" + strconv.Itoa(i-1)
+							log.Debugf("[recovery] creating job for pod %s", name)
+							ctx := context.TODO()
+							if err := r.createJob(ctx, *r.jobObject, config.RECOVERY, name, r.agentNamespace, 1); err != nil {
+								log.Errorf("[recovery] failed to create job: %s", err)
+							}
+						}
+					}
+					lastDesiredPods = len(pods)
+				}
+				r.pods.Store(pods)
+			}),
 		)),
 		k8s.WithResourceController(mpod.New(
 			mpod.WithControllerName("pod metrics discover"),
@@ -194,41 +217,57 @@ func (r *rebalancer) statefulsetReconcile(ctx context.Context, statefulSetList m
 		return
 	}
 
-	// If there are multiple sets of stateful agents in the namespace or none
-	// it will return early because it is an unexpected error.
-	if len(sss) != 1 {
-		log.Infof("statefulset list: want 1, but %d", len(sss))
-		return
-	}
-	defer r.statefulSets.Store(sss[0])
-
 	log.Debugf("[reconcile StatefulSet] StatefulSet[%s]: desired replica: %d, current replica: %d", r.agentName, *sss[0].Spec.Replicas, sss[0].Status.Replicas)
-
-	prevSs, ok := r.statefulSets.Load().(statefulset.StatefulSet)
-	if ok {
-		var (
-			desiredReplica     = int(*sss[0].Spec.Replicas)
-			prevDesiredReplica = int(*prevSs.Spec.Replicas)
-		)
-		if desiredReplica < prevDesiredReplica {
-			for i := prevDesiredReplica; i > desiredReplica; i-- {
-
-				// If the number of replicas is reduced from 3 to 2, get the name of the pod below.
-				// vald-agent-0
-				// vald-agent-1
-				// vald-agent-2 <- deteced
-				name := r.agentName + "-" + strconv.Itoa(i-1)
-				log.Debugf("[recovery] creating job for pod %s", name)
-
-				// If the case of a recover job, all the data will be rebalanced, so set the rate to 1.0.
-				err := r.createJob(ctx, *r.jobObject, config.RECOVERY, name, r.agentNamespace, 1)
-				if err != nil {
-					log.Errorf("[recovery] failed to create job: %s", err)
-				}
-			}
-		}
+	if len(sss) == 1 {
+		r.statefulSets.Store(sss[0])
+	} else {
+		log.Infof("too many statefulset list: want 1, but %r", len(sss))
 	}
 }
+
+// func (r *rebalancer) statefulsetReconcile(ctx context.Context, statefulSetList map[string][]statefulset.StatefulSet) {
+// 	log.Debugf("[reconcile StatefulSet] length StatefulSet[%s]: %d", r.agentName, len(statefulSetList))
+// 	sss, ok := statefulSetList[r.agentName]
+// 	if !ok {
+// 		log.Infof("statefuleset not found: %s", r.agentName)
+// 		return
+// 	}
+//
+// 	// If there are multiple sets of stateful agents in the namespace or none
+// 	// it will return early because it is an unexpected error.
+// 	if len(sss) != 1 {
+// 		log.Infof("statefulset list: want 1, but %d", len(sss))
+// 		return
+// 	}
+// 	defer r.statefulSets.Store(sss[0])
+//
+// 	log.Debugf("[reconcile StatefulSet] StatefulSet[%s]: desired replica: %d, current replica: %d", r.agentName, *sss[0].Spec.Replicas, sss[0].Status.Replicas)
+//
+// 	prevSs, ok := r.statefulSets.Load().(statefulset.StatefulSet)
+// 	if ok {
+// 		var (
+// 			desiredReplica     = int(*sss[0].Spec.Replicas)
+// 			prevDesiredReplica = int(*prevSs.Spec.Replicas)
+// 		)
+// 		if desiredReplica < prevDesiredReplica {
+// 			for i := prevDesiredReplica; i > desiredReplica; i-- {
+//
+// 				// If the number of replicas is reduced from 3 to 2, get the name of the pod below.
+// 				// vald-agent-0
+// 				// vald-agent-1
+// 				// vald-agent-2 <- deteced
+// 				name := r.agentName + "-" + strconv.Itoa(i-1)
+// 				log.Debugf("[recovery] creating job for pod %s", name)
+//
+// 				// If the case of a recover job, all the data will be rebalanced, so set the rate to 1.0.
+// 				err := r.createJob(ctx, *r.jobObject, config.RECOVERY, name, r.agentNamespace, 1)
+// 				if err != nil {
+// 					log.Errorf("[recovery] failed to create job: %s", err)
+// 				}
+// 			}
+// 		}
+// 	}
+// }
 
 func (r *rebalancer) podReconcile(podList map[string][]pod.Pod) {
 	log.Debugf("[reconcile pod] length podList[%s]: %d", r.agentName, len(podList[r.agentName]))
@@ -368,12 +407,9 @@ func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, reason confi
 			return err
 		}
 
-		if res.GetIndexing() {
+		if res.GetIndexing() || res.GetSaving() {
 			return errors.New("pod is indexing, job will not be created")
 		}
-
-		// if saving flag = true
-		//     return error
 	}
 	jobTpl.Name += "-" + strconv.FormatInt(time.Now().UnixNano(), 10)
 
