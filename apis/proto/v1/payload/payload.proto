@@ -339,6 +339,7 @@ message Info {
       uint32 stored = 1;
       uint32 uncommitted = 2;
       bool indexing = 3;
+      bool saving = 4;
     }
     message UUID {
       message Committed {

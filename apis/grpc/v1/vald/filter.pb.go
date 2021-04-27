@@ -32,12 +32,10 @@ import (
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = golang_proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-)
+var _ = proto.Marshal
+var _ = golang_proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -46,7 +44,6 @@ var (
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 func init() { proto.RegisterFile("apis/proto/v1/vald/filter.proto", fileDescriptor_a46f8d8eee988c86) }
-
 func init() {
 	golang_proto.RegisterFile("apis/proto/v1/vald/filter.proto", fileDescriptor_a46f8d8eee988c86)
 }
@@ -86,10 +83,8 @@ var fileDescriptor_a46f8d8eee988c86 = []byte{
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ context.Context
-	_ grpc.ClientConn
-)
+var _ context.Context
+var _ grpc.ClientConn
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
@@ -334,52 +329,42 @@ type FilterServer interface {
 }
 
 // UnimplementedFilterServer can be embedded to have forward compatible implementations.
-type UnimplementedFilterServer struct{}
+type UnimplementedFilterServer struct {
+}
 
 func (*UnimplementedFilterServer) SearchObject(ctx context.Context, req *payload.Search_ObjectRequest) (*payload.Search_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SearchObject not implemented")
 }
-
 func (*UnimplementedFilterServer) MultiSearchObject(ctx context.Context, req *payload.Search_MultiObjectRequest) (*payload.Search_Responses, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiSearchObject not implemented")
 }
-
 func (*UnimplementedFilterServer) StreamSearchObject(srv Filter_StreamSearchObjectServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamSearchObject not implemented")
 }
-
 func (*UnimplementedFilterServer) InsertObject(ctx context.Context, req *payload.Insert_ObjectRequest) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InsertObject not implemented")
 }
-
 func (*UnimplementedFilterServer) StreamInsertObject(srv Filter_StreamInsertObjectServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamInsertObject not implemented")
 }
-
 func (*UnimplementedFilterServer) MultiInsertObject(ctx context.Context, req *payload.Insert_MultiObjectRequest) (*payload.Object_Locations, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiInsertObject not implemented")
 }
-
 func (*UnimplementedFilterServer) UpdateObject(ctx context.Context, req *payload.Update_ObjectRequest) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateObject not implemented")
 }
-
 func (*UnimplementedFilterServer) StreamUpdateObject(srv Filter_StreamUpdateObjectServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamUpdateObject not implemented")
 }
-
 func (*UnimplementedFilterServer) MultiUpdateObject(ctx context.Context, req *payload.Update_MultiObjectRequest) (*payload.Object_Locations, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiUpdateObject not implemented")
 }
-
 func (*UnimplementedFilterServer) UpsertObject(ctx context.Context, req *payload.Upsert_ObjectRequest) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpsertObject not implemented")
 }
-
 func (*UnimplementedFilterServer) StreamUpsertObject(srv Filter_StreamUpsertObjectServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamUpsertObject not implemented")
 }
-
 func (*UnimplementedFilterServer) MultiUpsertObject(ctx context.Context, req *payload.Upsert_MultiObjectRequest) (*payload.Object_Locations, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiUpsertObject not implemented")
 }
