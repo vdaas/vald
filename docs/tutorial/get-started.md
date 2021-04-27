@@ -41,19 +41,7 @@ brew install hdf5
 ## Deploy and Run Vald on kubernetes
 
 This chapter shows the way to deploy Vald using Helm and to run on your kubernetes cluster.<br>
-In this tutorial, you will deploy as below images.<br>
-```
-<ingress>
-|
-|- <vald-lb-gateway>
-|  |
-|  |- <vald-agent-ngt>
-|     |
-|     |- <vald-agent-sidecar>
-|- <vald-discoverer>
-|  |
-|  |- <vald-manager-index>
-```
+In this tutorial, you will deploy the minimum Vald that is consisted of vald-agent-ngt, vald-lb-gateway, vald-discoverer and vald-manager-index.<br>
 
 ### Deploy
 
