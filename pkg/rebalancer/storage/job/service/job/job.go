@@ -22,9 +22,11 @@ import (
 	"context"
 	"encoding/gob"
 	"io"
+	"os"
 	"reflect"
 	"sync"
 	"sync/atomic"
+	"syscall"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
@@ -85,6 +87,14 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 
 		pr, pw := io.Pipe()
 		defer pr.Close()
+		defer func() {
+			p, err := os.FindProcess(os.Getpid())
+			if err != nil {
+				log.Error(err)
+				return
+			}
+			p.Signal(syscall.SIGTERM)
+		}()
 
 		// Download tar gz file
 		log.Info("[job debug] download s3 backup file")
