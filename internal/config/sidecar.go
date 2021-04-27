@@ -17,6 +17,7 @@
 // Package config providers configuration type and load configuration logic
 package config
 
+// AgentSidecar represents the configuration for the agent sidecar.
 type AgentSidecar struct {
 	// Mode represents sidecar mode
 	Mode string `yaml:"mode" json:"mode"`
@@ -58,6 +59,7 @@ type AgentSidecar struct {
 	Client *Client `yaml:"client" json:"client"`
 }
 
+// Bind binds the actual data from the AgentSidecar receiver fields.
 func (s *AgentSidecar) Bind() *AgentSidecar {
 	s.Mode = GetActualValue(s.Mode)
 	s.WatchDir = GetActualValue(s.WatchDir)

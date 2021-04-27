@@ -1470,5 +1470,6 @@ func (s *server) IndexInfo(ctx context.Context, _ *payload.Empty) (res *payload.
 		Stored:      uint32(s.ngt.Len()),
 		Uncommitted: uint32(s.ngt.InsertVQueueBufferLen() + s.ngt.DeleteVQueueBufferLen()),
 		Indexing:    s.ngt.IsIndexing(),
+		Saving:      s.ngt.IsSaving(),
 	}, nil
 }

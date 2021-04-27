@@ -32,12 +32,10 @@ import (
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = golang_proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-)
+var _ = proto.Marshal
+var _ = golang_proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -46,7 +44,6 @@ var (
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 func init() { proto.RegisterFile("apis/proto/v1/vald/search.proto", fileDescriptor_f8168beed818734d) }
-
 func init() {
 	golang_proto.RegisterFile("apis/proto/v1/vald/search.proto", fileDescriptor_f8168beed818734d)
 }
@@ -81,10 +78,8 @@ var fileDescriptor_f8168beed818734d = []byte{
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ context.Context
-	_ grpc.ClientConn
-)
+var _ context.Context
+var _ grpc.ClientConn
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
@@ -219,28 +214,24 @@ type SearchServer interface {
 }
 
 // UnimplementedSearchServer can be embedded to have forward compatible implementations.
-type UnimplementedSearchServer struct{}
+type UnimplementedSearchServer struct {
+}
 
 func (*UnimplementedSearchServer) Search(ctx context.Context, req *payload.Search_Request) (*payload.Search_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Search not implemented")
 }
-
 func (*UnimplementedSearchServer) SearchByID(ctx context.Context, req *payload.Search_IDRequest) (*payload.Search_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SearchByID not implemented")
 }
-
 func (*UnimplementedSearchServer) StreamSearch(srv Search_StreamSearchServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamSearch not implemented")
 }
-
 func (*UnimplementedSearchServer) StreamSearchByID(srv Search_StreamSearchByIDServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamSearchByID not implemented")
 }
-
 func (*UnimplementedSearchServer) MultiSearch(ctx context.Context, req *payload.Search_MultiRequest) (*payload.Search_Responses, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiSearch not implemented")
 }
-
 func (*UnimplementedSearchServer) MultiSearchByID(ctx context.Context, req *payload.Search_MultiIDRequest) (*payload.Search_Responses, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiSearchByID not implemented")
 }
