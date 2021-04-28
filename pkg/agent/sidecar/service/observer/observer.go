@@ -319,7 +319,6 @@ func (o *observer) startBackupLoop(ctx context.Context) (<-chan error, error) {
 					err = nil
 				}
 			}
-
 		}
 	}))
 
@@ -335,6 +334,12 @@ func (o *observer) onWrite(ctx context.Context, name string) error {
 	}()
 
 	log.Infof("[rebalance controller] onWrite event. name: %s", name)
+
+	/**
+	if name == "ngt.kvsdb" {
+		return o.requestKVSBackup(ctx)
+	}
+	**/
 
 	if name != o.metadataPath {
 		return nil
@@ -362,6 +367,12 @@ func (o *observer) onCreate(ctx context.Context, name string) error {
 	}()
 
 	log.Infof("[rebalance controller] onCreate event. name: %s", name)
+
+	/**
+	if name == "ngt.kvsdb" {
+		return o.requestKVSBackup(ctx)
+	}
+	**/
 
 	if name != o.metadataPath {
 		return nil

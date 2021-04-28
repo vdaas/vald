@@ -191,6 +191,13 @@ func (b *bs) Reader(ctx context.Context) (r io.ReadCloser, err error) {
 	return r, nil
 }
 
+/**
+
+- agent-ngt-0.tar.gz
+- agent-ngt-0.kvsdb
+
+**/
+
 func (b *bs) Writer(ctx context.Context) (w io.WriteCloser, err error) {
 	w, err = b.bucket.Writer(ctx, b.filename+b.suffix)
 	if err != nil {

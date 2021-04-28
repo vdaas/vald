@@ -59,8 +59,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
 
 	var (
-		so observer.StorageObserver
-		bs storage.Storage
+		so    observer.StorageObserver
+		bs    storage.Storage
+		kvsbs storage.Storage
 	)
 
 	netOpts, err := cfg.AgentSidecar.Client.Net.Opts()
@@ -92,37 +93,39 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 
+	s3SessionOpts := []session.Option{
+		session.WithEndpoint(cfg.AgentSidecar.BlobStorage.S3.Endpoint),
+		session.WithRegion(cfg.AgentSidecar.BlobStorage.S3.Region),
+		session.WithAccessKey(cfg.AgentSidecar.BlobStorage.S3.AccessKey),
+		session.WithSecretAccessKey(cfg.AgentSidecar.BlobStorage.S3.SecretAccessKey),
+		session.WithToken(cfg.AgentSidecar.BlobStorage.S3.Token),
+		session.WithMaxRetries(cfg.AgentSidecar.BlobStorage.S3.MaxRetries),
+		session.WithForcePathStyle(cfg.AgentSidecar.BlobStorage.S3.ForcePathStyle),
+		session.WithUseAccelerate(cfg.AgentSidecar.BlobStorage.S3.UseAccelerate),
+		session.WithUseARNRegion(cfg.AgentSidecar.BlobStorage.S3.UseARNRegion),
+		session.WithUseDualStack(cfg.AgentSidecar.BlobStorage.S3.UseDualStack),
+		session.WithEnableSSL(cfg.AgentSidecar.BlobStorage.S3.EnableSSL),
+		session.WithEnableParamValidation(cfg.AgentSidecar.BlobStorage.S3.EnableParamValidation),
+		session.WithEnable100Continue(cfg.AgentSidecar.BlobStorage.S3.Enable100Continue),
+		session.WithEnableContentMD5Validation(cfg.AgentSidecar.BlobStorage.S3.EnableContentMD5Validation),
+		session.WithEnableEndpointDiscovery(cfg.AgentSidecar.BlobStorage.S3.EnableEndpointDiscovery),
+		session.WithEnableEndpointHostPrefix(cfg.AgentSidecar.BlobStorage.S3.EnableEndpointHostPrefix),
+		session.WithHTTPClient(client),
+	}
+
+	s3Opts := []s3.Option{
+		s3.WithMaxPartSize(cfg.AgentSidecar.BlobStorage.S3.MaxPartSize),
+		s3.WithMaxChunkSize(cfg.AgentSidecar.BlobStorage.S3.MaxChunkSize),
+		s3.WithReaderBackoff(cfg.AgentSidecar.RestoreBackoffEnabled),
+		s3.WithReaderBackoffOpts(cfg.AgentSidecar.RestoreBackoff.Opts()...),
+	}
+
 	bs, err = storage.New(
 		storage.WithErrGroup(eg),
 		storage.WithType(cfg.AgentSidecar.BlobStorage.StorageType),
 		storage.WithBucketName(cfg.AgentSidecar.BlobStorage.Bucket),
 		storage.WithFilename(cfg.AgentSidecar.Filename),
 		storage.WithFilenameSuffix(cfg.AgentSidecar.FilenameSuffix),
-		storage.WithS3SessionOpts(
-			session.WithEndpoint(cfg.AgentSidecar.BlobStorage.S3.Endpoint),
-			session.WithRegion(cfg.AgentSidecar.BlobStorage.S3.Region),
-			session.WithAccessKey(cfg.AgentSidecar.BlobStorage.S3.AccessKey),
-			session.WithSecretAccessKey(cfg.AgentSidecar.BlobStorage.S3.SecretAccessKey),
-			session.WithToken(cfg.AgentSidecar.BlobStorage.S3.Token),
-			session.WithMaxRetries(cfg.AgentSidecar.BlobStorage.S3.MaxRetries),
-			session.WithForcePathStyle(cfg.AgentSidecar.BlobStorage.S3.ForcePathStyle),
-			session.WithUseAccelerate(cfg.AgentSidecar.BlobStorage.S3.UseAccelerate),
-			session.WithUseARNRegion(cfg.AgentSidecar.BlobStorage.S3.UseARNRegion),
-			session.WithUseDualStack(cfg.AgentSidecar.BlobStorage.S3.UseDualStack),
-			session.WithEnableSSL(cfg.AgentSidecar.BlobStorage.S3.EnableSSL),
-			session.WithEnableParamValidation(cfg.AgentSidecar.BlobStorage.S3.EnableParamValidation),
-			session.WithEnable100Continue(cfg.AgentSidecar.BlobStorage.S3.Enable100Continue),
-			session.WithEnableContentMD5Validation(cfg.AgentSidecar.BlobStorage.S3.EnableContentMD5Validation),
-			session.WithEnableEndpointDiscovery(cfg.AgentSidecar.BlobStorage.S3.EnableEndpointDiscovery),
-			session.WithEnableEndpointHostPrefix(cfg.AgentSidecar.BlobStorage.S3.EnableEndpointHostPrefix),
-			session.WithHTTPClient(client),
-		),
-		storage.WithS3Opts(
-			s3.WithMaxPartSize(cfg.AgentSidecar.BlobStorage.S3.MaxPartSize),
-			s3.WithMaxChunkSize(cfg.AgentSidecar.BlobStorage.S3.MaxChunkSize),
-			s3.WithReaderBackoff(cfg.AgentSidecar.RestoreBackoffEnabled),
-			s3.WithReaderBackoffOpts(cfg.AgentSidecar.RestoreBackoff.Opts()...),
-		),
 		storage.WithCloudStorageURLOpenerOpts(
 			urlopener.WithCredentialsFile(cfg.AgentSidecar.BlobStorage.CloudStorage.Client.CredentialsFilePath),
 			urlopener.WithCredentialsJSON(cfg.AgentSidecar.BlobStorage.CloudStorage.Client.CredentialsJSON),
@@ -137,8 +140,23 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			cloudstorage.WithWriteContentLanguage(cfg.AgentSidecar.BlobStorage.CloudStorage.WriteContentLanguage),
 			cloudstorage.WithWriteContentType(cfg.AgentSidecar.BlobStorage.CloudStorage.WriteContentType),
 		),
+		storage.WithS3SessionOpts(s3SessionOpts...),
+		storage.WithS3Opts(s3Opts...),
 		storage.WithCompressAlgorithm(cfg.AgentSidecar.Compress.CompressAlgorithm),
 		storage.WithCompressionLevel(cfg.AgentSidecar.Compress.CompressionLevel),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	kvsbs, err = storage.New(
+		storage.WithErrGroup(eg),
+		storage.WithType(cfg.AgentSidecar.BlobStorage.StorageType),
+		storage.WithBucketName(cfg.AgentSidecar.BlobStorage.Bucket),
+		storage.WithFilename(cfg.AgentSidecar.Filename),
+		storage.WithFilenameSuffix("-meta.kvsdb"), // cfg.AgentSidecar.KVSFileNameSuffix
+		storage.WithS3SessionOpts(s3SessionOpts...),
+		storage.WithS3Opts(s3Opts...),
 	)
 	if err != nil {
 		return nil, err
