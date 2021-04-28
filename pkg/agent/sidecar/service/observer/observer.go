@@ -58,7 +58,8 @@ type observer struct {
 	watchEnabled  bool
 	tickerEnabled bool
 
-	storage storage.Storage
+	storage      storage.Storage
+	kvsdbStorage storage.Storage
 
 	ch    chan struct{}
 	kvsch chan struct{}
@@ -335,12 +336,6 @@ func (o *observer) onWrite(ctx context.Context, name string) error {
 
 	log.Infof("[rebalance controller] onWrite event. name: %s", name)
 
-	/**
-	if name == "ngt.kvsdb" {
-		return o.requestKVSBackup(ctx)
-	}
-	**/
-
 	if name != o.metadataPath {
 		return nil
 	}
@@ -352,6 +347,7 @@ func (o *observer) onWrite(ctx context.Context, name string) error {
 	}
 
 	if ok {
+		o.requestKVSBackup(ctx)
 		return o.requestBackup(ctx)
 	}
 

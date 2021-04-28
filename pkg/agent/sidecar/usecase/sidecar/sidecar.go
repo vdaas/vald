@@ -170,6 +170,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		observer.WithPostStopTimeout(cfg.AgentSidecar.PostStopTimeout),
 		observer.WithDir(cfg.AgentSidecar.WatchDir),
 		observer.WithBlobStorage(bs),
+		observer.WithKvsdbBlobStorage(kvsbs),
 	}
 
 	var metricsHook metrics.MetricsHook
