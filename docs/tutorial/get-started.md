@@ -13,7 +13,8 @@ Fashion-mnist is used as an example of a dataset.
 - helm: v3 ~
 - libhdf5 (_only required for this tutorial._)
 
-Helm and hdf5 is required for this tutorial. If helm or hdf5 is not installed, please install [helm](https://helm.sh/docs/intro/install) and [hdf5](https://www.hdfgroup.org/).
+Helm is used for deploy Vald on your kubernetes and Hdf5 is used for running example code.<br>
+If helm or hdf5 is not installed, please install [helm](https://helm.sh/docs/intro/install) and [hdf5](https://www.hdfgroup.org/).
 
 <details><summary>[Optional] Install helm</summary><br>
 
@@ -127,7 +128,7 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
    In this example, the fashion-mnist dataset will insert into the Vald cluster and perform a search using [vald-client-go](https://github.com/vdaas/vald-client-go).
 
    We use [`example/client/main.go`](https://github.com/vdaas/vald/blob/master/example/client/main.go) to run the example.
-   This will execute 4 steps.
+   This will execute 6 steps.
 
    1. init
 
@@ -331,7 +332,7 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
    helm uninstall vald
    ```
 
-## Deploy and Run Vald on kubernetes
+## Deploy and Run full Vald on kubernetes
 
 ### Deploy
 
@@ -482,198 +483,6 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
 
    Vald provides multiple language client libraries such as Go, Java, Node.js, Python, and so on.<br>
    In this example, the fashion-mnist dataset will insert into the Vald cluster and perform a search using [vald-client-go](https://github.com/vdaas/vald-client-go).
-
-   We use [`example/client/main.go`](https://github.com/vdaas/vald/blob/master/example/client/main.go) to run the example.
-   This will execute 4 steps.
-
-   1. init
-
-      - Import packages
-          <details><summary>example code</summary><br>
-
-        ```go
-        package main
-
-        import (
-            "context"
-            "encoding/json"
-            "flag"
-            "time"
-
-            "github.com/kpango/fuid"
-            "github.com/kpango/glg"
-            "github.com/vdaas/vald-client-go/v1/payload"
-            "github.com/vdaas/vald-client-go/v1/vald"
-
-            "gonum.org/v1/hdf5"
-            "google.golang.org/grpc"
-        )
-        ```
-
-          </details>
-
-      - Set variables
-
-        - The constant number of training datasets and test datasets.
-            <details><summary>example code</summary><br>
-
-          ```go
-          const (
-              insertCount = 400
-              testCount = 20
-          )
-          ```
-
-            </details>
-
-        - The variables for configuration.
-            <details><summary>example code</summary><br>
-
-          ```go
-          const (
-              datasetPath         string
-              grpcServerAddr      string
-              indexingWaitSeconds uint
-          )
-          ```
-
-            </details>
-
-      - Recognition parameters.
-          <details><summary>example code</summary><br>
-
-        ```go
-        func init() {
-            flag.StringVar(&datasetPath, "path", "fashion-mnist-784-euclidean.hdf5", "set dataset path")
-            flag.StringVar(&grpcServerAddr, "addr", "127.0.0.1:8081", "set gRPC server address")
-            flag.UintVar(&indexingWaitSeconds, "wait", 60, "set indexing wait seconds")
-            flag.Parse()
-        }
-        ```
-
-          </details>
-
-   1. load
-
-      - Loading from fashion-mnist dataset and set id for each vector that is loaded. This step will return the training dataset, test dataset, and ids list of ids when loading is completed with success.
-          <details><summary>example code</summary><br>
-
-        ```go
-        ids, train, test, err := load(datasetPath)
-        if err != nil {
-            glg.Fatal(err)
-        }
-        ```
-
-          </details>
-
-   1. Create the gRPC connection and Vald client with gRPC connection.
-
-      <details><summary>example code</summary><br>
-
-      ```go
-      ctx := context.Background()
-
-      conn, err := grpc.DialContext(ctx, grpcServerAddr, grpc.WithInsecure())
-      if err != nil {
-          glg.Fatal(err)
-      }
-
-      client := vald.NewValdClient(conn)
-      ```
-
-      </details>
-
-   1. Insert and Index
-
-      - Insert and Indexing 400 training datasets to the Vald agent.
-          <details><summary>example code</summary><br>
-
-        ```go
-        for i := range ids [:insertCount] {
-            _, err := client.Insert(ctx, &payload.Insert_Request{
-                Vector: &payload.Object_Vector{
-                    Id: ids[i],
-                    Vector: train[i],
-                },
-                Config: &payload.Insert_Config{
-                    SkipStrictExistCheck: true,
-                },
-            })
-            if err != nil {
-                glg.Fatal(err)
-            }
-            if i%10 == 0 {
-                glg.Infof("Inserted %d", i)
-            }
-        }
-        ```
-
-          </details>
-
-      - Wait until indexing finish.
-          <details><summary>example code</summary><br>
-
-        ```go
-        wt := time.Duration(indexingWaitSeconds) * time.Second
-        glg.Infof("Wait %s for indexing to finish", wt)
-        time.Sleep(wt)
-        ```
-
-          </details>
-
-   1. Search
-
-      - Search 10 neighbor vectors for each 20 test datasets and return list of neighbor vector.
-
-      - When getting approximate vectors, the Vald client sends search config and vector to the server via gRPC.
-          <details><summary>example code</summary><br>
-
-        ```go
-        glg.Infof("Start search %d times", testCount)
-        for i, vec := range test[:testCount] {
-            res, err := client.Search(ctx, &payload.Search_Request){
-                Vector: vec,
-                Config: &payload.Search_Config{
-                    Num: 10,
-                    Radius: -1,
-                    Epsilon: 0.01,
-                }
-            }
-            if err != nil {
-                glg.Fatal(err)
-            }
-
-            b, _ := json.MarshalIndent(res.GetResults(), "", " ")
-            glg.Infof("%d - Results : %s\n\n", i+1, string(b))
-            time.Sleep(1 * time.Second)
-        }
-        ```
-
-          </details>
-
-   1. Remove
-
-      - Remove 400 indexed training datasets from the Vald agent.
-          <details><summary>example code</summary><br>
-
-        ```go
-        for i := range ids [:insertCount] {
-            _, err := client.Remove(ctx, &payload.Remove_Request{
-                Id: &payload.Object_ID{
-                    Id: ids[i],
-                },
-            })
-            if err != nil {
-                glg.Fatal(err)
-            }
-            if i%10 == 0 {
-                glg.Infof("Removed %d", i)
-            }
-        }
-        ```
-
-          </details>
 
    ```bash
    # run example
