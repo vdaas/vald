@@ -60,7 +60,8 @@ type observer struct {
 
 	storage storage.Storage
 
-	ch chan struct{}
+	ch    chan struct{}
+	kvsch chan struct{}
 
 	hooks []Hook
 }
@@ -310,7 +311,15 @@ func (o *observer) startBackupLoop(ctx context.Context) (<-chan error, error) {
 					log.Error("an error occurred during backup:", err)
 					err = nil
 				}
+			case <-o.kvsch:
+				err = o.kvsBackup(ctx)
+				if err != nil {
+					ech <- err
+					log.Error("an error occurred during kvs backup:", err)
+					err = nil
+				}
 			}
+
 		}
 	}))
 
@@ -549,5 +558,20 @@ func (o *observer) backup(ctx context.Context) (err error) {
 
 	log.Infof("finished to backup directory %s", o.dir)
 
+	return nil
+}
+
+func (o *observer) requestKVSBackup(ctx context.Context) error {
+	select {
+	case o.kvsch <- struct{}{}:
+	default:
+		log.Debug("cannot request kvs backup: channel is full")
+	}
+
+	return nil
+}
+
+func (o *observer) kvsBackup(ctx context.Context) (err error) {
+	// TODO: backup kvsdb file
 	return nil
 }
