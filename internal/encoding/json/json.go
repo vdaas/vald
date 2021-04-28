@@ -17,6 +17,7 @@
 package json
 
 import (
+	"encoding/json"
 	"io"
 
 	jsoniter "github.com/json-iterator/go"
@@ -27,7 +28,7 @@ func Encode(w io.Writer, data interface{}) (err error) {
 }
 
 func Decode(r io.Reader, data interface{}) (err error) {
-	return jsoniter.NewDecoder(r).Decode(data)
+	return json.NewDecoder(r).Decode(data)
 }
 
 func Unmarshal(data []byte, i interface{}) error {
