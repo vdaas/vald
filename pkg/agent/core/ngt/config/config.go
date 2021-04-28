@@ -26,7 +26,7 @@ type GlobalConfig = config.GlobalConfig
 // Config represent a application setting data content (config.yaml).
 // In K8s environment, this configuration is stored in K8s ConfigMap.
 type Data struct {
-	config.GlobalConfig `json:",inline" yaml:",inline"`
+	GlobalConfig `json:",inline" yaml:",inline"`
 
 	// Server represent all server configurations
 	Server *config.Servers `json:"server_config" yaml:"server_config"`
@@ -46,7 +46,7 @@ func NewConfig(path string) (cfg *Data, err error) {
 	}
 
 	if cfg != nil {
-		cfg.Bind()
+		cfg.GlobalConfig.Bind()
 	}
 
 	if cfg.Server != nil {

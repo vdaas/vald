@@ -50,6 +50,9 @@ const (
 
 // Bind binds the actual data from the receiver field.
 func (c *GlobalConfig) Bind() *GlobalConfig {
+	if c == nil {
+		c = new(GlobalConfig)
+	}
 	c.Version = GetActualValue(c.Version)
 	c.TZ = GetActualValue(c.TZ)
 
@@ -60,21 +63,24 @@ func (c *GlobalConfig) Bind() *GlobalConfig {
 }
 
 // UnmarshalJSON parses the JSON-encoded data and stores the result in the field of receiver.
-func (c *GlobalConfig) UnmarshalJSON(data []byte) (err error) {
-	ic := new(struct {
-		Ver     string   `json:"version"`
-		TZ      string   `json:"time_zone"`
-		Logging *Logging `json:"logging"`
-	})
-	err = json.Unmarshal(data, &ic)
-	if err != nil {
-		return err
-	}
-	c.Version = ic.Ver
-	c.TZ = ic.TZ
-	c.Logging = ic.Logging
-	return nil
-}
+// func (c *GlobalConfig) UnmarshalJSON(data []byte) (err error) {
+// 	ic := new(struct {
+// 		Ver     string   `json:"version"`
+// 		TZ      string   `json:"time_zone"`
+// 		Logging *Logging `json:"logging"`
+// 	})
+// 	err = json.Unmarshal(data, &ic)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	if c == nil {
+// 		c = new(GlobalConfig)
+// 	}
+// 	c.Version = ic.Ver
+// 	c.TZ = ic.TZ
+// 	c.Logging = ic.Logging
+// 	return nil
+// }
 
 // Read returns config struct or error when decoding the configuration file to actually *Config struct.
 func Read(path string, cfg interface{}) (err error) {
