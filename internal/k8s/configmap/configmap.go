@@ -39,13 +39,13 @@ import (
 type ConfigMapWatcher k8s.ResourceController
 
 type reconciler struct {
-	mgr         manager.Manager
-	name        string
-	namespaces  []string
-	onError     func(err error)
-	onReconcile func(rs map[string][]ConfigMap) // map[namespace][]configmap
-	listOpts    []client.ListOption
-	nsConfigmapsPool        sync.Pool
+	mgr              manager.Manager
+	name             string
+	namespaces       []string
+	onError          func(err error)
+	onReconcile      func(rs map[string][]ConfigMap) // map[namespace][]configmap
+	listOpts         []client.ListOption
+	nsConfigmapsPool sync.Pool
 }
 
 // ConfigMap is a type alias for the k8s configmap definition.
