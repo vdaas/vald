@@ -27,6 +27,7 @@ import (
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
 )
 
+// Option represents the functional option for server.
 type Option func(*server) error
 
 var defaultOptions = []Option{
@@ -42,6 +43,7 @@ var defaultOptions = []Option{
 	WithErrGroup(errgroup.Get()),
 }
 
+// WithIP returns the option to set the IP for server.
 func WithIP(ip string) Option {
 	return func(s *server) error {
 		if len(ip) == 0 {
@@ -52,6 +54,7 @@ func WithIP(ip string) Option {
 	}
 }
 
+// WithName returns the option to set the name for server.
 func WithName(name string) Option {
 	return func(s *server) error {
 		if len(name) == 0 {
@@ -62,6 +65,7 @@ func WithName(name string) Option {
 	}
 }
 
+// WithNGT returns the option to set the NGT service for server.
 func WithNGT(n service.NGT) Option {
 	return func(s *server) error {
 		if n == nil {
@@ -72,6 +76,7 @@ func WithNGT(n service.NGT) Option {
 	}
 }
 
+// WithStreamConcurrency returns the option to set the stream concurrency for server.
 func WithStreamConcurrency(c int) Option {
 	return func(s *server) error {
 		if c <= 0 {
@@ -82,6 +87,7 @@ func WithStreamConcurrency(c int) Option {
 	}
 }
 
+// WithErrGroup returns the option to set the error group for server.
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(s *server) error {
 		if eg == nil {
