@@ -19,6 +19,7 @@ package grpc
 
 import (
 	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 )
 
