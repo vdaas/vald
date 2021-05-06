@@ -23,24 +23,15 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
-	"reflect"
-	"strconv"
-	"sync"
 	"testing"
 	"time"
 
-	"github.com/vdaas/vald/apis/grpc/v1/payload"
-	"github.com/vdaas/vald/apis/grpc/v1/vald"
-	"github.com/vdaas/vald/internal/net/grpc/errdetails"
-	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/tests/e2e/operation"
 	"github.com/vdaas/vald/tests/e2e/portforward"
 
 	"gonum.org/v1/hdf5"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/keepalive"
 )
 
 var (
@@ -130,16 +121,10 @@ func teardown() {
 	}
 }
 
-func TestMain(m *testing.M) {
-	ret := m.Run()
-	teardown()
-	os.Exit(ret)
-}
-
 type dataset struct {
-	train     map[string][]float32
-	test      map[string][]float32
-	neighbors map[string][]string
+	train     [][]float32
+	test      [][]float32
+	neighbors [][]int
 }
 
 func hdf5ToDataset(name string) (*dataset, error) {
@@ -160,17 +145,16 @@ func hdf5ToDataset(name string) (*dataset, error) {
 		return nil, err
 	}
 
-	nbors, err := readDatasetI32(file, "neighbors")
+	neighbors32, err := readDatasetI32(file, "neighbors")
 	if err != nil {
 		return nil, err
 	}
-	neighbors := make(map[string][]string, len(nbors))
-	for k, vs := range nbors {
-		vss := make([]string, len(vs))
-		for i, v := range vs {
-			vss[i] = strconv.Itoa(int(v))
+	neighbors := make([][]int, len(neighbors32))
+	for i, ns := range neighbors32 {
+		neighbors[i] = make([]int, len(ns))
+		for j, n := range ns {
+			neighbors[i][j] = int(n)
 		}
-		neighbors[k] = vss
 	}
 
 	return &dataset{
@@ -180,7 +164,7 @@ func hdf5ToDataset(name string) (*dataset, error) {
 	}, nil
 }
 
-func readDatasetF32(file *hdf5.File, name string) (map[string][]float32, error) {
+func readDatasetF32(file *hdf5.File, name string) ([][]float32, error) {
 	data, err := file.OpenDataset(name)
 	if err != nil {
 		return nil, err
@@ -201,15 +185,15 @@ func readDatasetF32(file *hdf5.File, name string) (map[string][]float32, error) 
 		return nil, err
 	}
 
-	vecs := make(map[string][]float32, height)
+	vecs := make([][]float32, height)
 	for i := 0; i < height; i++ {
-		vecs[strconv.Itoa(i)] = rawFloats[i*width : i*width+width]
+		vecs[i] = rawFloats[i*width : i*width+width]
 	}
 
 	return vecs, nil
 }
 
-func readDatasetI32(file *hdf5.File, name string) (map[string][]int32, error) {
+func readDatasetI32(file *hdf5.File, name string) ([][]int32, error) {
 	data, err := file.OpenDataset(name)
 	if err != nil {
 		return nil, err
@@ -230,32 +214,12 @@ func readDatasetI32(file *hdf5.File, name string) (map[string][]int32, error) {
 		return nil, err
 	}
 
-	vecs := make(map[string][]int32, height)
+	vecs := make([][]int32, height)
 	for i := 0; i < height; i++ {
-		vecs[strconv.Itoa(i)] = rawFloats[i*width : i*width+width]
+		vecs[i] = rawFloats[i*width : i*width+width]
 	}
 
 	return vecs, nil
-}
-
-func getClient(ctx context.Context) (vald.Client, error) {
-	conn, err := grpc.DialContext(
-		ctx,
-		host+":"+strconv.Itoa(port),
-		grpc.WithInsecure(),
-		grpc.WithKeepaliveParams(
-			keepalive.ClientParameters{
-				Time:                time.Second,
-				Timeout:             5 * time.Second,
-				PermitWithoutStream: true,
-			},
-		),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return vald.NewValdClient(conn), nil
 }
 
 func sleep(t *testing.T, dur time.Duration) {
@@ -264,505 +228,56 @@ func sleep(t *testing.T, dur time.Duration) {
 	t.Logf("%v sleep finished.", time.Now())
 }
 
-func TestE2EInsert(t *testing.T) {
+func TestE2E(t *testing.T) {
 	ctx := context.Background()
 
-	client, err := getClient(ctx)
+	op, err := operation.New(host, port)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("an error occurred: %s", err)
 	}
 
-	sc, err := client.StreamInsert(ctx)
+	err = op.Insert(t, ctx, operation.Dataset{
+		Train: ds.train[insertFrom : insertFrom+insertNum],
+	})
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("an error occurred: %s", err)
 	}
-
-	wg := sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
-		count := 0
-		for {
-			res, err := sc.Recv()
-			if err == io.EOF {
-				t.Logf("%d items inserted.", count)
-				return
-			} else if err != nil {
-				st, serr := status.FromError(err)
-				t.Fatalf("error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s", err, serr, st.Code().String(), errdetails.Serialize(st.Details()), st.Message(), st.Err().Error(), errdetails.Serialize(st.Proto()))
-			}
-
-			loc := res.GetLocation()
-			if loc == nil {
-				err := res.GetStatus()
-				if err != nil {
-					t.Errorf("an error returned:\tcode: %d\tmessage: %s\tdetails: %s", err.GetCode(), err.GetMessage(), errdetails.Serialize(err.GetDetails()))
-				}
-			} else {
-				t.Logf("returned: %s", loc)
-			}
-
-			count++
-
-			if count%1000 == 0 {
-				t.Logf("inserted: %d", count)
-			}
-		}
-	}()
-
-	t.Log("insert start")
-	for i := insertFrom; i < len(ds.train); i++ {
-		id := strconv.Itoa(i)
-		err := sc.Send(&payload.Insert_Request{
-			Vector: &payload.Object_Vector{
-				Id:     id,
-				Vector: ds.train[id],
-			},
-			Config: &payload.Insert_Config{
-				SkipStrictExistCheck: false,
-			},
-		})
-		if err != nil {
-			t.Fatalf("send failed at %d: %s", i+1, err)
-		}
-
-		if (i+1)%1000 == 0 {
-			t.Logf("sent: %d", i+1)
-		}
-
-		if i+1 >= insertFrom+insertNum {
-			t.Logf("%d items sent.", i+1)
-			break
-		}
-	}
-
-	sc.CloseSend()
-
-	wg.Wait()
-
-	t.Log("insert finished.")
 
 	sleep(t, waitAfterInsertDuration)
-}
 
-func TestE2ESearch(t *testing.T) {
-	ctx := context.Background()
-
-	client, err := getClient(ctx)
+	err = op.Search(t, ctx, operation.Dataset{
+		Test:      ds.test[searchFrom : searchFrom+searchNum],
+		Neighbors: ds.neighbors[searchFrom : searchFrom+searchNum],
+	})
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("an error occurred: %s", err)
 	}
 
-	sc, err := client.StreamSearch(ctx)
+	err = op.SearchByID(t, ctx, operation.Dataset{
+		Train: ds.train[searchByIDFrom : searchByIDFrom+searchByIDNum],
+	})
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("an error occurred: %s", err)
 	}
 
-	wg := sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
-		k := 0
-		for {
-			res, err := sc.Recv()
-			if err == io.EOF {
-				t.Logf("%d items searched.", k)
-				return
-			} else if err != nil {
-				st, serr := status.FromError(err)
-				t.Fatalf("error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s", err, serr, st.Code().String(), errdetails.Serialize(st.Details()), st.Message(), st.Err().Error(), errdetails.Serialize(st.Proto()))
-			}
-
-			resp := res.GetResponse()
-			if resp == nil {
-				err := res.GetStatus()
-				if err != nil {
-					t.Errorf("an error returned:\tcode: %d\tmessage: %s\tdetails: %s", err.GetCode(), err.GetMessage(), errdetails.Serialize(err.GetDetails()))
-				}
-			} else {
-				topKIDs := make([]string, len(resp.GetResults()))
-				for i, d := range resp.GetResults() {
-					topKIDs[i] = d.Id
-				}
-
-				if len(topKIDs) == 0 {
-					t.Errorf("empty result is returned for ID %d: %#v", k, topKIDs)
-				}
-
-				// TODO: validation
-				// calculate recall?
-				// t.Logf("result: %#v", topKIDs)
-				// t.Logf("expected: %#v", ds.neighbors[strconv.Itoa(k)][:len(topKIDs)])
-			}
-
-			k++
-
-			if k%1000 == 0 {
-				t.Logf("searched: %d", k)
-			}
-		}
-	}()
-
-	t.Log("search start")
-	for i := searchFrom; i < len(ds.test); i++ {
-		id := strconv.Itoa(i)
-		err := sc.Send(&payload.Search_Request{
-			Vector: ds.test[id],
-			Config: &payload.Search_Config{
-				Num:     100,
-				Radius:  -1.0,
-				Epsilon: 0.01,
-				Timeout: 3000000000,
-			},
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if (i+1)%1000 == 0 {
-			t.Logf("sent: %d", i+1)
-		}
-
-		if i+1 >= searchFrom+searchNum {
-			t.Logf("%d items sent.", i+1)
-			break
-		}
-	}
-
-	sc.CloseSend()
-
-	wg.Wait()
-
-	t.Log("search finished.")
-}
-
-func TestE2ESearchByID(t *testing.T) {
-	ctx := context.Background()
-
-	client, err := getClient(ctx)
+	err = op.GetObject(t, ctx, operation.Dataset{
+		Train: ds.train[getObjectFrom : getObjectFrom+getObjectNum],
+	})
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("an error occurred: %s", err)
 	}
 
-	sc, err := client.StreamSearchByID(ctx)
+	err = op.Update(t, ctx, operation.Dataset{
+		Train: ds.train[updateFrom : updateFrom+updateNum],
+	})
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("an error occurred: %s", err)
 	}
 
-	wg := sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
-		count := 0
-		for {
-			res, err := sc.Recv()
-			if err == io.EOF {
-				t.Logf("%d items searched.", count)
-				return
-			} else if err != nil {
-				st, serr := status.FromError(err)
-				t.Fatalf("error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s", err, serr, st.Code().String(), errdetails.Serialize(st.Details()), st.Message(), st.Err().Error(), errdetails.Serialize(st.Proto()))
-			}
-
-			resp := res.GetResponse()
-			if resp == nil {
-				err := res.GetStatus()
-				if err != nil {
-					t.Errorf("an error returned:\tcode: %d\tmessage: %s\tdetails: %s", err.GetCode(), err.GetMessage(), errdetails.Serialize(err.GetDetails()))
-				}
-			} else {
-				topKIDs := make([]string, len(resp.GetResults()))
-				for i, d := range resp.GetResults() {
-					topKIDs[i] = d.Id
-				}
-
-				if len(topKIDs) == 0 {
-					t.Errorf("empty result is returned: %#v", topKIDs)
-				}
-			}
-
-			count++
-
-			if count%1000 == 0 {
-				t.Logf("searched: %d", count)
-			}
-		}
-	}()
-
-	t.Log("search-by-id start")
-	for i := searchByIDFrom; i < len(ds.train); i++ {
-		id := strconv.Itoa(i)
-		err := sc.Send(&payload.Search_IDRequest{
-			Id: id,
-			Config: &payload.Search_Config{
-				Num:     100,
-				Radius:  -1.0,
-				Epsilon: 0.01,
-				Timeout: 3000000000,
-			},
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if (i+1)%1000 == 0 {
-			t.Logf("sent: %d", i+1)
-		}
-
-		if i+1 >= searchByIDFrom+searchByIDNum {
-			t.Logf("%d items sent.", i+1)
-			break
-		}
-	}
-
-	sc.CloseSend()
-
-	wg.Wait()
-
-	t.Log("search-by-id finished.")
-}
-
-func TestE2EGetObject(t *testing.T) {
-	ctx := context.Background()
-
-	client, err := getClient(ctx)
+	err = op.Remove(t, ctx, operation.Dataset{
+		Train: ds.train[removeFrom : removeFrom+removeNum],
+	})
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("an error occurred: %s", err)
 	}
-
-	sc, err := client.StreamGetObject(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	wg := sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
-		count := 0
-		for {
-			res, err := sc.Recv()
-			if err == io.EOF {
-				t.Logf("%d items got.", count)
-				return
-			} else if err != nil {
-				st, serr := status.FromError(err)
-				t.Fatalf("error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s", err, serr, st.Code().String(), errdetails.Serialize(st.Details()), st.Message(), st.Err().Error(), errdetails.Serialize(st.Proto()))
-			}
-
-			resp := res.GetVector()
-			if resp == nil {
-				err := res.GetStatus()
-				if err != nil {
-					t.Errorf("an error returned:\tcode: %d\tmessage: %s\tdetails: %s", err.GetCode(), err.GetMessage(), errdetails.Serialize(err.GetDetails()))
-				}
-			} else {
-				if !reflect.DeepEqual(res.GetVector().GetVector(), ds.train[resp.GetId()]) {
-					t.Errorf(
-						"result: %#v, expected: %#v",
-						res.GetVector().GetVector(),
-						ds.train[resp.GetId()],
-					)
-				}
-			}
-
-			count++
-
-			if count%1000 == 0 {
-				t.Logf("get object: %d", count)
-			}
-		}
-	}()
-
-	t.Log("get object start")
-	for i := getObjectFrom; i < len(ds.train); i++ {
-		id := strconv.Itoa(i)
-		err := sc.Send(&payload.Object_VectorRequest{
-			Id: &payload.Object_ID{
-				Id: id,
-			},
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if (i+1)%1000 == 0 {
-			t.Logf("sent: %d", i+1)
-		}
-
-		if i+1 >= getObjectFrom+getObjectNum {
-			t.Logf("%d items sent.", i+1)
-			break
-		}
-	}
-
-	sc.CloseSend()
-
-	wg.Wait()
-
-	t.Log("get object finished.")
-}
-
-func TestE2EUpdate(t *testing.T) {
-	ctx := context.Background()
-
-	client, err := getClient(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	sc, err := client.StreamUpdate(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	wg := sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
-		count := 0
-		for {
-			res, err := sc.Recv()
-			if err == io.EOF {
-				t.Logf("%d items updated.", count)
-				return
-			} else if err != nil {
-				st, serr := status.FromError(err)
-				t.Fatalf("error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s", err, serr, st.Code().String(), errdetails.Serialize(st.Details()), st.Message(), st.Err().Error(), errdetails.Serialize(st.Proto()))
-			}
-
-			loc := res.GetLocation()
-			if loc == nil {
-				err := res.GetStatus()
-				if err != nil {
-					t.Errorf("an error returned:\tcode: %d\tmessage: %s\tdetails: %s", err.GetCode(), err.GetMessage(), errdetails.Serialize(err.GetDetails()))
-				}
-			} else {
-				t.Logf("returned: %s", loc)
-			}
-
-			count++
-
-			if count%1000 == 0 {
-				t.Logf("updated: %d", count)
-			}
-		}
-	}()
-
-	t.Log("update start")
-	for i := updateFrom; i < len(ds.train); i++ {
-		id := strconv.Itoa(i)
-		v := ds.train[id]
-		err := sc.Send(&payload.Update_Request{
-			Vector: &payload.Object_Vector{
-				Id:     id,
-				Vector: append(v[1:], v[0]), // shift
-			},
-			Config: &payload.Update_Config{
-				SkipStrictExistCheck: false,
-			},
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if (i+1)%1000 == 0 {
-			t.Logf("sent: %d", i+1)
-		}
-
-		if i+1 >= updateFrom+updateNum {
-			t.Logf("%d items sent.", i+1)
-			break
-		}
-	}
-
-	sc.CloseSend()
-
-	wg.Wait()
-
-	t.Log("update finished.")
-}
-
-func TestE2ERemove(t *testing.T) {
-	ctx := context.Background()
-
-	client, err := getClient(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	sc, err := client.StreamRemove(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	wg := sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
-		count := 0
-		for {
-			res, err := sc.Recv()
-			if err == io.EOF {
-				t.Logf("%d items removed.", count)
-				return
-			} else if err != nil {
-				st, serr := status.FromError(err)
-				t.Fatalf("error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s", err, serr, st.Code().String(), errdetails.Serialize(st.Details()), st.Message(), st.Err().Error(), errdetails.Serialize(st.Proto()))
-			}
-
-			loc := res.GetLocation()
-			if loc == nil {
-				err := res.GetStatus()
-				if err != nil {
-					t.Errorf("an error returned:\tcode: %d\tmessage: %s\tdetails: %s", err.GetCode(), err.GetMessage(), errdetails.Serialize(err.GetDetails()))
-				}
-			} else {
-				t.Logf("returned: %s", loc)
-			}
-
-			count++
-
-			if count%1000 == 0 {
-				t.Logf("removed: %d", count)
-			}
-		}
-	}()
-
-	t.Log("remove start")
-	for i := removeFrom; i < len(ds.train); i++ {
-		id := strconv.Itoa(i)
-		err := sc.Send(&payload.Remove_Request{
-			Id: &payload.Object_ID{
-				Id: id,
-			},
-			Config: &payload.Remove_Config{
-				SkipStrictExistCheck: false,
-			},
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if (i+1)%1000 == 0 {
-			t.Logf("sent: %d", i+1)
-		}
-
-		if i+1 >= removeFrom+removeNum {
-			t.Logf("%d items sent.", i+1)
-			break
-		}
-	}
-
-	sc.CloseSend()
-
-	wg.Wait()
-
-	t.Log("remove finished.")
 }
