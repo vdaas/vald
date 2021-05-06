@@ -241,11 +241,9 @@ func (g *GRPCClient) Opts() ([]grpc.Option, error) {
 		if err != nil {
 			return nil, err
 		}
-		if cfg != nil {
-			opts = append(opts,
-				grpc.WithTLSConfig(cfg),
-			)
-		}
+		opts = append(opts,
+			grpc.WithTLSConfig(cfg),
+		)
 	}
 
 	return opts, nil
