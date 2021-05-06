@@ -13,7 +13,7 @@ Fashion-mnist is used as an example of a dataset.
 - helm: v3 ~
 - libhdf5 (_only required for this tutorial._)
 
-Helm is used for deploy Vald on your kubernetes and Hdf5 is used for running example code.<br>
+Helm is used to deploying Vald on your kubernetes and Hdf5 is used to decode the sample data file to run the example.<br>
 If helm or hdf5 is not installed, please install [helm](https://helm.sh/docs/intro/install) and [hdf5](https://www.hdfgroup.org/).
 
 <details><summary>[Optional] Install helm</summary><br>
