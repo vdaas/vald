@@ -21,12 +21,13 @@ import (
 	"os"
 
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
 )
 
-type Option func(*server)
+type Option func(*server) error
 
 var defaultOptions = []Option{
 	WithName(func() string {
@@ -42,39 +43,51 @@ var defaultOptions = []Option{
 }
 
 func WithIP(ip string) Option {
-	return func(s *server) {
-		if len(ip) != 0 {
-			s.ip = ip
+	return func(s *server) error {
+		if len(ip) == 0 {
+			return errors.NewErrInvalidOption("ip", ip)
 		}
+		s.ip = ip
+		return nil
 	}
 }
 
 func WithName(name string) Option {
-	return func(s *server) {
-		if len(name) != 0 {
-			s.name = name
+	return func(s *server) error {
+		if len(name) == 0 {
+			return errors.NewErrInvalidOption("name", name)
 		}
+		s.name = name
+		return nil
 	}
 }
 
 func WithNGT(n service.NGT) Option {
-	return func(s *server) {
+	return func(s *server) error {
+		if n == nil {
+			return errors.NewErrInvalidOption("ngt", n)
+		}
 		s.ngt = n
+		return nil
 	}
 }
 
 func WithStreamConcurrency(c int) Option {
-	return func(s *server) {
-		if c != 0 {
-			s.streamConcurrency = c
+	return func(s *server) error {
+		if c <= 0 {
+			return errors.NewErrInvalidOption("streamConcurrency", c)
 		}
+		s.streamConcurrency = c
+		return nil
 	}
 }
 
 func WithErrGroup(eg errgroup.Group) Option {
-	return func(s *server) {
-		if eg != nil {
-			s.eg = eg
+	return func(s *server) error {
+		if eg == nil {
+			return errors.NewErrInvalidOption("errGroup", eg)
 		}
+		s.eg = eg
+		return nil
 	}
 }
