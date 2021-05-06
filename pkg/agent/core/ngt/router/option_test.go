@@ -208,7 +208,7 @@ func TestWithErrGroup(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "set sucess when err group is nil",
+			name: "set success when err group is nil",
 			args: args{
 				eg: nil,
 			},
@@ -217,7 +217,7 @@ func TestWithErrGroup(t *testing.T) {
 			},
 		},
 		{
-			name: "set sucess when err group is not nil",
+			name: "set success when err group is not nil",
 			args: args{
 				eg: errgroup.Get(),
 			},
