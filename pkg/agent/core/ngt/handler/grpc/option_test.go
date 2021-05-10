@@ -206,8 +206,8 @@ func TestWithNGT(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, *T, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, *args, *want)
+		afterFunc  func(*testing.T, args, want)
 	}
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
@@ -220,40 +220,34 @@ func TestWithNGT(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		func() test {
-			n, err := service.New(&config.NGT{
-				Dimension:    1024,
-				DistanceType: "cos",
-				ObjectType:   "uint8",
-				VQueue:       &config.VQueue{},
-			})
-			if err != nil {
-				panic(err)
-			}
-			return test{
-				name: "set success when ngt is not nil",
-				args: args{
-					n: n,
-				},
-				want: want{
-					obj: &T{
-						ngt: n,
-					},
-				},
-			}
-		}(),
-		func() test {
-			return test{
-				name: "set fail when ngt is nil",
-				args: args{
-					n: nil,
-				},
-				want: want{
-					obj: new(T),
-					err: errors.NewErrInvalidOption("ngt", nil),
-				},
-			}
-		}(),
+		{
+			name: "set success when ngt is not nil",
+			beforeFunc: func(t *testing.T, args *args, w *want) {
+				n, err := service.New(&config.NGT{
+					Dimension:    1024,
+					DistanceType: "cos",
+					ObjectType:   "uint8",
+					VQueue:       &config.VQueue{},
+				})
+				if err != nil {
+					t.Fatal(err)
+				}
+				args.n = n
+				w.obj = &T{
+					ngt: n,
+				}
+			},
+		},
+		{
+			name: "set fail when ngt is nil",
+			args: args{
+				n: nil,
+			},
+			want: want{
+				obj: new(T),
+				err: errors.NewErrInvalidOption("ngt", nil),
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -262,10 +256,10 @@ func TestWithNGT(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, &test.args, &test.want)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args, test.want)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
