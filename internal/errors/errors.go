@@ -147,7 +147,7 @@ var (
 
 	// Is represents a function to check whether err and the target is the same or not.
 	Is = func(err, target error) bool {
-		if target == nil {
+		if target == nil || err == nil {
 			return err == target
 		}
 		isComparable := reflect.TypeOf(target).Comparable()
