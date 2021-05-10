@@ -154,7 +154,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		storage.WithType(cfg.AgentSidecar.BlobStorage.StorageType),
 		storage.WithBucketName(cfg.AgentSidecar.BlobStorage.Bucket),
 		storage.WithFilename(cfg.AgentSidecar.Filename),
-		storage.WithFilenameSuffix("-meta.kvsdb"), // cfg.AgentSidecar.KVSFileNameSuffix
+		storage.WithFilenameSuffix("-kvsdb.tar.gz"), // cfg.AgentSidecar.KVSFileNameSuffix
 		storage.WithS3SessionOpts(s3SessionOpts...),
 		storage.WithS3Opts(s3Opts...),
 	)

@@ -633,6 +633,12 @@ func (o *observer) kvsBackup(ctx context.Context) (err error) {
 		}
 	}()
 
+	file := filepath.Join(o.dir, "ngt-meta.kvsdb")
+	fi, err := os.Stat(file)
+	if err != nil && os.IsNotExist(err) {
+		return err
+	}
+
 	wg := new(sync.WaitGroup)
 	wg.Add(1)
 
@@ -653,13 +659,6 @@ func (o *observer) kvsBackup(ctx context.Context) (err error) {
 			}
 		}()
 
-		// o.dir = /user/wdiu/ngt
-		file := o.dir + "ngt-meta.kvsdb"
-		fi, err := os.Stat(file)
-		if err != nil {
-			return err
-		}
-
 		header, err := tar.FileInfoHeader(fi, file)
 		if err != nil {
 			return err
@@ -678,10 +677,6 @@ func (o *observer) kvsBackup(ctx context.Context) (err error) {
 		}
 
 		log.Debug("writing: ", file)
-
-		if fi.IsDir() {
-			return nil
-		}
 
 		data, err := os.OpenFile(file, os.O_RDONLY, os.ModePerm)
 		if err != nil {
@@ -704,63 +699,6 @@ func (o *observer) kvsBackup(ctx context.Context) (err error) {
 			return err
 		}
 		return nil
-
-		return filepath.Walk(o.dir, func(file string, fi os.FileInfo, err error) error {
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			default:
-			}
-
-			if err != nil {
-				return err
-			}
-
-			header, err := tar.FileInfoHeader(fi, file)
-			if err != nil {
-				return err
-			}
-
-			rel, err := filepath.Rel(o.dir, file)
-			if err != nil {
-				return err
-			}
-
-			header.Name = filepath.ToSlash(rel)
-
-			err = tw.WriteHeader(header)
-			if err != nil {
-				return err
-			}
-
-			log.Debug("writing: ", file)
-
-			if fi.IsDir() {
-				return nil
-			}
-
-			data, err := os.OpenFile(file, os.O_RDONLY, os.ModePerm)
-			if err != nil {
-				return err
-			}
-			defer func() {
-				e := data.Close()
-				if e != nil {
-					log.Errorf("failed to close %s: %s", file, e)
-				}
-			}()
-
-			d, err := ctxio.NewReaderWithContext(ctx, data)
-			if err != nil {
-				return err
-			}
-
-			_, err = io.Copy(tw, d)
-			if err != nil {
-				return err
-			}
-			return nil
-		})
 	}))
 
 	prr, err := ctxio.NewReaderWithContext(ctx, pr)
@@ -783,7 +721,7 @@ func (o *observer) kvsBackup(ctx context.Context) (err error) {
 		}
 	}
 
-	log.Infof("finished to backup directory %s", o.dir)
+	log.Infof("finished to backup kvsdb: %s", file)
 
 	return nil
 }
