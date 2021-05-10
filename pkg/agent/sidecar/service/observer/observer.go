@@ -265,6 +265,12 @@ func (o *observer) startTicker(ctx context.Context) (<-chan error, error) {
 					continue
 				}
 
+				err = o.requestKVSBackup(ctx)
+				if err != nil {
+					ech <- err
+					log.Error("failed to request kvsdb backup:", err)
+					err = nil
+				}
 				err = o.requestBackup(ctx)
 				if err != nil {
 					ech <- err
@@ -347,7 +353,10 @@ func (o *observer) onWrite(ctx context.Context, name string) error {
 	}
 
 	if ok {
-		o.requestKVSBackup(ctx)
+		err := o.requestKVSBackup(ctx)
+		if err != nil {
+			return errors.Wrap(o.requestBackup(ctx), err.Error())
+		}
 		return o.requestBackup(ctx)
 	}
 
@@ -364,12 +373,6 @@ func (o *observer) onCreate(ctx context.Context, name string) error {
 
 	log.Infof("[rebalance controller] onCreate event. name: %s", name)
 
-	/**
-	if name == "ngt.kvsdb" {
-		return o.requestKVSBackup(ctx)
-	}
-	**/
-
 	if name != o.metadataPath {
 		return nil
 	}
@@ -381,6 +384,10 @@ func (o *observer) onCreate(ctx context.Context, name string) error {
 	}
 
 	if ok {
+		err := o.requestKVSBackup(ctx)
+		if err != nil {
+			return errors.Wrap(o.requestBackup(ctx), err.Error())
+		}
 		return o.requestBackup(ctx)
 	}
 
@@ -579,6 +586,204 @@ func (o *observer) requestKVSBackup(ctx context.Context) error {
 }
 
 func (o *observer) kvsBackup(ctx context.Context) (err error) {
-	// TODO: backup kvsdb file
+	bi := &BackupInfo{
+		StorageInfo: o.kvsdbStorage.StorageInfo(),
+	}
+	bi.StartTime = time.Now()
+
+	for _, hook := range o.hooks {
+		ctx, err = hook.BeforeProcess(ctx, bi)
+		if err != nil {
+			return err
+		}
+	}
+
+	ctx, span := trace.StartSpan(ctx, "vald/agent-sidecar/service/observer/StorageObserver.kvsdbBackup")
+	if span != nil {
+		span.AddAttributes(
+			trace.StringAttribute("storage_type", bi.StorageInfo.Type),
+			trace.StringAttribute("bucket_name", bi.BucketName),
+			trace.StringAttribute("filename", bi.Filename),
+		)
+	}
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
+	log.Info("started to backup kvsdb file")
+
+	pr, pw := io.Pipe()
+	defer func() {
+		e := pr.Close()
+		if e != nil {
+			log.Errorf("error on closing pipe reader: %s", e)
+		}
+	}()
+
+	sw, err := o.kvsdbStorage.Writer(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		e := sw.Close()
+		if e != nil {
+			log.Errorf("error on closing blob-storage writer: %s", e)
+		}
+	}()
+
+	wg := new(sync.WaitGroup)
+	wg.Add(1)
+
+	o.eg.Go(safety.RecoverFunc(func() (err error) {
+		defer wg.Done()
+		defer func() {
+			e := pw.Close()
+			if e != nil {
+				log.Errorf("error on closing pipe writer: %s", e)
+			}
+		}()
+
+		tw := tar.NewWriter(pw)
+		defer func() {
+			e := tw.Close()
+			if e != nil {
+				log.Errorf("error on closing tar writer: %s", e)
+			}
+		}()
+
+		// o.dir = /user/wdiu/ngt
+		file := o.dir + "ngt-meta.kvsdb"
+		fi, err := os.Stat(file)
+		if err != nil {
+			return err
+		}
+
+		header, err := tar.FileInfoHeader(fi, file)
+		if err != nil {
+			return err
+		}
+
+		rel, err := filepath.Rel(o.dir, file)
+		if err != nil {
+			return err
+		}
+
+		header.Name = filepath.ToSlash(rel)
+
+		err = tw.WriteHeader(header)
+		if err != nil {
+			return err
+		}
+
+		log.Debug("writing: ", file)
+
+		if fi.IsDir() {
+			return nil
+		}
+
+		data, err := os.OpenFile(file, os.O_RDONLY, os.ModePerm)
+		if err != nil {
+			return err
+		}
+		defer func() {
+			e := data.Close()
+			if e != nil {
+				log.Errorf("failed to close %s: %s", file, e)
+			}
+		}()
+
+		d, err := ctxio.NewReaderWithContext(ctx, data)
+		if err != nil {
+			return err
+		}
+
+		_, err = io.Copy(tw, d)
+		if err != nil {
+			return err
+		}
+		return nil
+
+		return filepath.Walk(o.dir, func(file string, fi os.FileInfo, err error) error {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			default:
+			}
+
+			if err != nil {
+				return err
+			}
+
+			header, err := tar.FileInfoHeader(fi, file)
+			if err != nil {
+				return err
+			}
+
+			rel, err := filepath.Rel(o.dir, file)
+			if err != nil {
+				return err
+			}
+
+			header.Name = filepath.ToSlash(rel)
+
+			err = tw.WriteHeader(header)
+			if err != nil {
+				return err
+			}
+
+			log.Debug("writing: ", file)
+
+			if fi.IsDir() {
+				return nil
+			}
+
+			data, err := os.OpenFile(file, os.O_RDONLY, os.ModePerm)
+			if err != nil {
+				return err
+			}
+			defer func() {
+				e := data.Close()
+				if e != nil {
+					log.Errorf("failed to close %s: %s", file, e)
+				}
+			}()
+
+			d, err := ctxio.NewReaderWithContext(ctx, data)
+			if err != nil {
+				return err
+			}
+
+			_, err = io.Copy(tw, d)
+			if err != nil {
+				return err
+			}
+			return nil
+		})
+	}))
+
+	prr, err := ctxio.NewReaderWithContext(ctx, pr)
+	if err != nil {
+		return err
+	}
+
+	bi.Bytes, err = io.Copy(sw, prr)
+	if err != nil {
+		return err
+	}
+
+	wg.Wait()
+
+	bi.EndTime = time.Now()
+	for _, hook := range o.hooks {
+		err = hook.AfterProcess(ctx, bi)
+		if err != nil {
+			return err
+		}
+	}
+
+	log.Infof("finished to backup directory %s", o.dir)
+
 	return nil
 }
