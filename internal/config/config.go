@@ -62,26 +62,6 @@ func (c *GlobalConfig) Bind() *GlobalConfig {
 	return c
 }
 
-// UnmarshalJSON parses the JSON-encoded data and stores the result in the field of receiver.
-// func (c *GlobalConfig) UnmarshalJSON(data []byte) (err error) {
-// 	ic := new(struct {
-// 		Ver     string   `json:"version"`
-// 		TZ      string   `json:"time_zone"`
-// 		Logging *Logging `json:"logging"`
-// 	})
-// 	err = json.Unmarshal(data, &ic)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	if c == nil {
-// 		c = new(GlobalConfig)
-// 	}
-// 	c.Version = ic.Ver
-// 	c.TZ = ic.TZ
-// 	c.Logging = ic.Logging
-// 	return nil
-// }
-
 // Read returns config struct or error when decoding the configuration file to actually *Config struct.
 func Read(path string, cfg interface{}) (err error) {
 	f, err := os.OpenFile(path, os.O_RDONLY, 0o600)
