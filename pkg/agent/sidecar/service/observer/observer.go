@@ -294,6 +294,7 @@ func (o *observer) startTicker(ctx context.Context) (<-chan error, error) {
 
 func (o *observer) startBackupLoop(ctx context.Context) (<-chan error, error) {
 	o.ch = make(chan struct{}, 1)
+	o.kvsch = make(chan struct{}, 1)
 
 	ech := make(chan error, 100)
 	o.eg.Go(safety.RecoverFunc(func() (err error) {
