@@ -29,21 +29,21 @@ var defaultOptions = []Option{
 	WithTimeout("3s"),
 }
 
-// WithHandler returns the option to set the handler for router.
+// WithHandler returns the option to set the handler for the router.
 func WithHandler(h rest.Handler) Option {
 	return func(r *router) {
 		r.handler = h
 	}
 }
 
-// WithTimeout returns the option to set the timeout for router.
+// WithTimeout returns the option to set the timeout for the router.
 func WithTimeout(timeout string) Option {
 	return func(r *router) {
 		r.timeout = timeout
 	}
 }
 
-// WithErrGroup returns the option to set the error group for router.
+// WithErrGroup returns the option to set the error group for the router.
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(r *router) {
 		r.eg = eg
