@@ -75,14 +75,20 @@ func TestNewConfig(t *testing.T) {
 					path: "bind_success.json",
 				},
 				beforeFunc: func(t *testing.T, a args) {
+					t.Helper()
 					f, err := os.Create(a.path)
 					if err != nil {
 						t.Fatal(err)
 					}
-					f.Write([]byte(data))
-					defer f.Close()
+					if _, err := f.Write([]byte(data)); err != nil {
+						t.Fatal(err)
+					}
+					if err := f.Close(); err != nil {
+						t.Fatal(err)
+					}
 				},
 				afterFunc: func(t *testing.T, a args) {
+					t.Helper()
 					if err := os.Remove(a.path); err != nil {
 						t.Fatal(err)
 					}
@@ -139,14 +145,20 @@ func TestNewConfig(t *testing.T) {
 					path: "bind_success_but_observability_is_empty.json",
 				},
 				beforeFunc: func(t *testing.T, a args) {
+					t.Helper()
 					f, err := os.Create(a.path)
 					if err != nil {
 						t.Fatal(err)
 					}
-					f.Write([]byte(data))
-					defer f.Close()
+					if _, err := f.Write([]byte(data)); err != nil {
+						t.Fatal(err)
+					}
+					if err := f.Close(); err != nil {
+						t.Fatal(err)
+					}
 				},
 				afterFunc: func(t *testing.T, a args) {
+					t.Helper()
 					if err := os.Remove(a.path); err != nil {
 						t.Fatal(err)
 					}
@@ -190,14 +202,20 @@ ngt:
 					path: "bind_success.yaml",
 				},
 				beforeFunc: func(t *testing.T, a args) {
+					t.Helper()
 					f, err := os.Create(a.path)
 					if err != nil {
 						t.Fatal(err)
 					}
-					f.Write([]byte(data))
-					defer f.Close()
+					if _, err := f.Write([]byte(data)); err != nil {
+						t.Fatal(err)
+					}
+					if err := f.Close(); err != nil {
+						t.Fatal(err)
+					}
 				},
 				afterFunc: func(t *testing.T, a args) {
+					t.Helper()
 					if err := os.Remove(a.path); err != nil {
 						t.Fatal(err)
 					}
@@ -252,14 +270,20 @@ ngt:
 					path: "bind_success_but_observability_is_empty.yaml",
 				},
 				beforeFunc: func(t *testing.T, a args) {
+					t.Helper()
 					f, err := os.Create(a.path)
 					if err != nil {
 						t.Fatal(err)
 					}
-					f.Write([]byte(data))
-					defer f.Close()
+					if _, err := f.Write([]byte(data)); err != nil {
+						t.Fatal(err)
+					}
+					if err := f.Close(); err != nil {
+						t.Fatal(err)
+					}
 				},
 				afterFunc: func(t *testing.T, a args) {
+					t.Helper()
 					if err := os.Remove(a.path); err != nil {
 						t.Fatal(err)
 					}
