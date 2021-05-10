@@ -28,8 +28,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/vdaas/vald/tests/e2e/kubernetes/client"
+	"github.com/vdaas/vald/tests/e2e/kubernetes/portforward"
 	"github.com/vdaas/vald/tests/e2e/operation"
-	"github.com/vdaas/vald/tests/e2e/portforward"
 
 	"gonum.org/v1/hdf5"
 )
@@ -54,6 +55,9 @@ var (
 	removeFrom     int
 
 	waitAfterInsertDuration time.Duration
+
+	kubeClient client.Client
+	namespace  string
 
 	forwarder *portforward.Portforward
 )
@@ -82,19 +86,22 @@ func init() {
 	waitAfterInsert := flag.String("wait-after-insert", "3m", "wait duration after inserting vectors")
 
 	pf := flag.Bool("portforward", false, "enable port forwarding")
-	pfNamespace := flag.String("portforward-ns", "default", "namespace (only for port forward)")
 	pfPodName := flag.String("portforward-pod-name", "vald-gateway-0", "pod name (only for port forward)")
 	pfPodPort := flag.Int("portforward-pod-port", port, "pod gRPC port (only for port forward)")
-	kubeConfig := flag.String("kubeconfig", filepath.Join(os.Getenv("HOME"), ".kube", "config"), "kubeconfig path (only for port forward)")
+
+	kubeConfig := flag.String("kubeconfig", filepath.Join(os.Getenv("HOME"), ".kube", "config"), "kubeconfig path")
+	namespace := flag.String("namespace", "default", "namespace")
 
 	flag.Parse()
 
 	var err error
 	if *pf {
-		forwarder, err = portforward.NewPortforward(*kubeConfig, *pfNamespace, *pfPodName, port, *pfPodPort)
+		kubeClient, err = client.New(*kubeConfig)
 		if err != nil {
 			panic(err)
 		}
+
+		forwarder = kubeClient.Portforward(*namespace, *pfPodName, port, *pfPodPort)
 
 		err = forwarder.Start()
 		if err != nil {
@@ -279,5 +286,75 @@ func TestE2E(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
+	}
+}
+
+func TestE2EForSidecar(t *testing.T) {
+	ctx := context.Background()
+
+	op, err := operation.New(host, port)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Insert(t, ctx, operation.Dataset{
+		Train: ds.train[insertFrom : insertFrom+insertNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.CreateIndex(t, ctx)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Search(t, ctx, operation.Dataset{
+		Test:      ds.test[searchFrom : searchFrom+searchNum],
+		Neighbors: ds.neighbors[searchFrom : searchFrom+searchNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	pods, err := kubeClient.GetPods(ctx, namespace, "app=vald-agent-ngt")
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	if len(pods) == 0 {
+		t.Fatalf("there's no Agent pods")
+	}
+
+	podName := pods[0].Name
+
+	err = kubeClient.DeletePod(ctx, namespace, podName)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	ok, err := kubeClient.WaitForPodReady(ctx, namespace, podName, 10*time.Minute)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+	if !ok {
+		t.Fatalf("pod didn't become ready")
+	}
+
+	err = op.Search(t, ctx, operation.Dataset{
+		Test:      ds.test[searchFrom : searchFrom+searchNum],
+		Neighbors: ds.neighbors[searchFrom : searchFrom+searchNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	res, err := op.IndexInfo(t, ctx)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	if insertNum != int(res.Stored) {
+		t.Errorf("Stored index count is invalid, expected: %d, stored: %d", insertNum, res.Stored)
 	}
 }

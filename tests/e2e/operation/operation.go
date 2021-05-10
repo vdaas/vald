@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/vdaas/vald/apis/grpc/v1/agent/core"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
@@ -35,6 +36,8 @@ type Client interface {
 	Update(t *testing.T, ctx context.Context, ds Dataset) error
 	Remove(t *testing.T, ctx context.Context, ds Dataset) error
 	GetObject(t *testing.T, ctx context.Context, ds Dataset) error
+	CreateIndex(t *testing.T, ctx context.Context) error
+	IndexInfo(t *testing.T, ctx context.Context) (*payload.Info_Index_Count, error)
 }
 
 func New(host string, port int) (Client, error) {
@@ -501,8 +504,29 @@ func (c *client) GetObject(t *testing.T, ctx context.Context, ds Dataset) error 
 	return nil
 }
 
-func (c *client) getClient(ctx context.Context) (vald.Client, error) {
-	conn, err := grpc.DialContext(
+func (c *client) CreateIndex(t *testing.T, ctx context.Context) error {
+	client, err := c.getAgentClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	_, err = client.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+		PoolSize: 10000,
+	})
+	return err
+}
+
+func (c *client) IndexInfo(t *testing.T, ctx context.Context) (*payload.Info_Index_Count, error) {
+	client, err := c.getAgentClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return client.IndexInfo(ctx, &payload.Empty{})
+}
+
+func (c *client) getGRPCConn(ctx context.Context) (*grpc.ClientConn, error) {
+	return grpc.DialContext(
 		ctx,
 		c.host+":"+strconv.Itoa(c.port),
 		grpc.WithInsecure(),
@@ -514,11 +538,24 @@ func (c *client) getClient(ctx context.Context) (vald.Client, error) {
 			},
 		),
 	)
+}
+
+func (c *client) getClient(ctx context.Context) (vald.Client, error) {
+	conn, err := c.getGRPCConn(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	return vald.NewValdClient(conn), nil
+}
+
+func (c *client) getAgentClient(ctx context.Context) (core.AgentClient, error) {
+	conn, err := c.getGRPCConn(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return core.NewAgentClient(conn), nil
 }
 
 func (c *client) recall(results []string, neighbors []int) (recall float64) {
