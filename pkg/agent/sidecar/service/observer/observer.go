@@ -91,7 +91,7 @@ func New(opts ...Option) (so StorageObserver, err error) {
 func (o *observer) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 100)
 
-	var wech, tech, sech, bech <-chan error
+	var wech, tech, sech, ksech, bech <-chan error
 	var err error
 
 	if o.watchEnabled {
@@ -115,6 +115,12 @@ func (o *observer) Start(ctx context.Context) (<-chan error, error) {
 		return nil, err
 	}
 
+	ksech, err = o.kvsdbStorage.Start(ctx)
+	if err != nil {
+		close(ech)
+		return nil, err
+	}
+
 	bech, err = o.startBackupLoop(ctx)
 	if err != nil {
 		close(ech)
@@ -131,6 +137,7 @@ func (o *observer) Start(ctx context.Context) (<-chan error, error) {
 			case err = <-wech:
 			case err = <-tech:
 			case err = <-sech:
+			case err = <-ksech:
 			case err = <-bech:
 			}
 			if err != nil {
