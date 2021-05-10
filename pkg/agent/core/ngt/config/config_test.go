@@ -18,13 +18,13 @@
 package config
 
 import (
-	"fmt"
 	"io/fs"
 	"os"
 	"reflect"
 	"syscall"
 	"testing"
 
+	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
 )
@@ -70,9 +70,9 @@ func TestNewConfig(t *testing.T) {
 				}
 			}`
 			return test{
-				name: "return Data and nil when the bind successes",
+				name: "return Data and nil when the json bind successes",
 				args: args{
-					path: "bind_success_test.json",
+					path: "bind_success.json",
 				},
 				beforeFunc: func(t *testing.T, a args) {
 					f, err := os.Create(a.path)
@@ -88,34 +88,201 @@ func TestNewConfig(t *testing.T) {
 					}
 				},
 				want: want{
-					// wantCfg: &Data{
-					// 	GlobalConfig: &config.GlobalConfig{
-					// 		Version: "v1.0.0",
-					// 	},
-					// 	Server: &config.Servers{
-					// 		FullShutdownDuration: "10ms",
-					// 		TLS: &config.TLS{
-					// 			Enabled: true,
-					// 		},
-					// 	},
-					// 	Observability: &config.Observability{
-					// 		Collector: &config.Collector{
-					// 			Metrics: new(config.Metrics),
-					// 		},
-					// 		Trace:      new(config.Trace),
-					// 		Prometheus: new(config.Prometheus),
-					// 		Jaeger:     new(config.Jaeger),
-					// 		Stackdriver: &config.Stackdriver{
-					// 			Client:   new(config.StackdriverClient),
-					// 			Exporter: new(config.StackdriverExporter),
-					// 			Profiler: new(config.StackdriverProfiler),
-					// 		},
-					// 	},
-					// 	NGT: &config.NGT{
-					// 		IndexPath: "/var/index",
-					// 		VQueue:    new(config.VQueue),
-					// 	},
-					// },
+					wantCfg: &Data{
+						GlobalConfig: config.GlobalConfig{
+							Version: "v1.0.0",
+						},
+						Server: &config.Servers{
+							FullShutdownDuration: "10ms",
+							ShutdownStrategy:     make([]string, 0),
+							StartUpStrategy:      make([]string, 0),
+							TLS: &config.TLS{
+								Enabled: false,
+							},
+						},
+						Observability: &config.Observability{
+							Enabled: true,
+							Collector: &config.Collector{
+								Metrics: new(config.Metrics),
+							},
+							Trace:      new(config.Trace),
+							Prometheus: new(config.Prometheus),
+							Jaeger:     new(config.Jaeger),
+							Stackdriver: &config.Stackdriver{
+								Client:   new(config.StackdriverClient),
+								Exporter: new(config.StackdriverExporter),
+								Profiler: new(config.StackdriverProfiler),
+							},
+						},
+						NGT: &config.NGT{
+							IndexPath: "/var/index",
+							VQueue:    new(config.VQueue),
+						},
+					},
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			data := `{
+				"version": "v1.0.0",
+				"server_config": {
+					"full_shutdown_duration": "10ms"
+				},
+				"ngt": {
+					"index_path": "/var/index"
+				}
+			}`
+			return test{
+				name: "return Data and nil when the json bind successes but the input json value of observability is empty",
+				args: args{
+					path: "bind_success_but_observability_is_empty.json",
+				},
+				beforeFunc: func(t *testing.T, a args) {
+					f, err := os.Create(a.path)
+					if err != nil {
+						t.Fatal(err)
+					}
+					f.Write([]byte(data))
+					defer f.Close()
+				},
+				afterFunc: func(t *testing.T, a args) {
+					if err := os.Remove(a.path); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					wantCfg: &Data{
+						GlobalConfig: config.GlobalConfig{
+							Version: "v1.0.0",
+						},
+						Server: &config.Servers{
+							FullShutdownDuration: "10ms",
+							ShutdownStrategy:     make([]string, 0),
+							StartUpStrategy:      make([]string, 0),
+							TLS: &config.TLS{
+								Enabled: false,
+							},
+						},
+						Observability: new(config.Observability),
+						NGT: &config.NGT{
+							IndexPath: "/var/index",
+							VQueue:    new(config.VQueue),
+						},
+					},
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			data := `
+version: v1.0.0
+server_config:
+  full_shutdown_duration: 10ms
+observability:
+  enabled: true
+ngt:
+  index_path: /var/index
+`
+			return test{
+				name: "return Data and nil when the yaml bind successes",
+				args: args{
+					path: "bind_success.yaml",
+				},
+				beforeFunc: func(t *testing.T, a args) {
+					f, err := os.Create(a.path)
+					if err != nil {
+						t.Fatal(err)
+					}
+					f.Write([]byte(data))
+					defer f.Close()
+				},
+				afterFunc: func(t *testing.T, a args) {
+					if err := os.Remove(a.path); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					wantCfg: &Data{
+						GlobalConfig: config.GlobalConfig{
+							Version: "v1.0.0",
+						},
+						Server: &config.Servers{
+							FullShutdownDuration: "10ms",
+							ShutdownStrategy:     make([]string, 0),
+							StartUpStrategy:      make([]string, 0),
+							TLS: &config.TLS{
+								Enabled: false,
+							},
+						},
+						Observability: &config.Observability{
+							Enabled: true,
+							Collector: &config.Collector{
+								Metrics: new(config.Metrics),
+							},
+							Trace:      new(config.Trace),
+							Prometheus: new(config.Prometheus),
+							Jaeger:     new(config.Jaeger),
+							Stackdriver: &config.Stackdriver{
+								Client:   new(config.StackdriverClient),
+								Exporter: new(config.StackdriverExporter),
+								Profiler: new(config.StackdriverProfiler),
+							},
+						},
+						NGT: &config.NGT{
+							IndexPath: "/var/index",
+							VQueue:    new(config.VQueue),
+						},
+					},
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			data := `
+version: v1.0.0
+server_config:
+  full_shutdown_duration: 10ms
+ngt:
+  index_path: /var/index
+`
+			return test{
+				name: "return Data and nil when the yaml bind successes but the input yaml value of observability is empty",
+				args: args{
+					path: "bind_success_but_observability_is_empty.yaml",
+				},
+				beforeFunc: func(t *testing.T, a args) {
+					f, err := os.Create(a.path)
+					if err != nil {
+						t.Fatal(err)
+					}
+					f.Write([]byte(data))
+					defer f.Close()
+				},
+				afterFunc: func(t *testing.T, a args) {
+					if err := os.Remove(a.path); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					wantCfg: &Data{
+						GlobalConfig: config.GlobalConfig{
+							Version: "v1.0.0",
+						},
+						Server: &config.Servers{
+							FullShutdownDuration: "10ms",
+							ShutdownStrategy:     make([]string, 0),
+							StartUpStrategy:      make([]string, 0),
+							TLS: &config.TLS{
+								Enabled: false,
+							},
+						},
+						Observability: new(config.Observability),
+						NGT: &config.NGT{
+							IndexPath: "/var/index",
+							VQueue:    new(config.VQueue),
+						},
+					},
 					err: nil,
 				},
 			}
@@ -155,7 +322,6 @@ func TestNewConfig(t *testing.T) {
 			}
 
 			gotCfg, err := NewConfig(test.args.path)
-			fmt.Println(gotCfg)
 			if err := test.checkFunc(test.want, gotCfg, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
