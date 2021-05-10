@@ -21,9 +21,10 @@ import (
 	"github.com/vdaas/vald/internal/config"
 )
 
+// GlobalConfig is type alias for config.GlobalConfig.
 type GlobalConfig = config.GlobalConfig
 
-// Config represent a application setting data content (config.yaml).
+// Data represent a application setting data content (config.yaml).
 // In K8s environment, this configuration is stored in K8s ConfigMap.
 type Data struct {
 	GlobalConfig `json:",inline" yaml:",inline"`
@@ -38,6 +39,7 @@ type Data struct {
 	NGT *config.NGT `json:"ngt" yaml:"ngt"`
 }
 
+// NewConfig returns the Data struct or error from the given file path.
 func NewConfig(path string) (cfg *Data, err error) {
 	err = config.Read(path, &cfg)
 
