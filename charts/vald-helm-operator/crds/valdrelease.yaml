@@ -15920,6 +15920,10 @@ spec:
                                   x-kubernetes-preserve-unknown-fields: true
                             parallelism:
                               type: number
+                            rate:
+                              type: string
+                            target_agent_name:
+                              type: string
                         leader_election_id:
                           type: string
                         pod_name:
@@ -15936,7 +15940,7 @@ spec:
                           type: string
                         rebalance_job_namespace:
                           type: string
-                        rebalance_job_template_key:
+                        rebalance_job_template:
                           type: string
                         reconcile_check_duration:
                           type: string
