@@ -752,6 +752,13 @@ func TestErrRedisNotFoundIdentity_Error(t *testing.T) {
 				want: "Not found identity",
 			},
 		},
+		{
+			name:   "Success when err is nil",
+			fields: fields{},
+			want: want{
+				want: "custom error object is nil: ErrRedisNotFoundIdentity",
+			},
+		},
 	}
 
 	for _, test := range tests {

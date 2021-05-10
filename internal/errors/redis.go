@@ -17,10 +17,6 @@
 // Package errors provides error types and function
 package errors
 
-import (
-	"reflect"
-)
-
 var (
 
 	// ErrRedisInvalidKVVKPrefix represents a function to generate an error that kv index and vk prefix are invalid.
@@ -78,7 +74,7 @@ type ErrRedisNotFoundIdentity struct {
 // Error returns the string of ErrRedisNotFoundIdentity.error.
 func (e *ErrRedisNotFoundIdentity) Error() string {
 	if e.err == nil {
-		return ErrErrorIsNil(reflect.TypeOf(e).Elem().Name()).Error()
+		return errNilCustomError("ErrRedisNotFoundIdentity")
 	}
 	return e.err.Error()
 }
