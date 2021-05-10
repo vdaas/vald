@@ -4970,7 +4970,7 @@ rebalancer:
       # @schema {"name": "rebalancer.rebalancer.job.target_agent_name", "type": "string"}
       # rebalancer.rebalancer.job.target_agent_name -- target agent name to rebalance
       target_agent_name: _TARGET_AGENT_NAME_
-      # @schema {"name": "rebalancer.rebalancer.job.rate", "type": "number"}
+      # @schema {"name": "rebalancer.rebalancer.job.rate"}
       # rebalancer.rebalancer.job.rate -- rate to rebalance data
       rate: _RATE_
       # @schema {"name": "rebalancer.rebalancer.job.grpc", "type": "object"}
