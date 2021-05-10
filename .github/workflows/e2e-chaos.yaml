@@ -130,7 +130,8 @@ jobs:
           go test \
             -v tests/e2e/crud_test.go \
             -tags "e2e" \
-            -run "TestE2EInsert" \
+            -timeout 30m \
+            -run "TestE2EInsertOnly" \
             -timeout 15m \
             -host=localhost \
             -port=8081 \
@@ -138,10 +139,10 @@ jobs:
             -insert-num=100 \
             -wait-after-insert=2m \
             -portforward \
-            -portforward-ns=default \
             -portforward-pod-name=${podname} \
             -portforward-pod-port=8081 \
-            -kubeconfig=${KUBECONFIG}
+            -kubeconfig=${KUBECONFIG} \
+            -namespace=default
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
       - name: deploy Chaos Mesh
@@ -157,7 +158,7 @@ jobs:
           go test \
             -v tests/e2e/crud_test.go \
             -tags "e2e" \
-            -run "TestE2EInsert|TestE2ESearch" \
+            -run "TestE2EInsertAndSearch" \
             -timeout 15m \
             -host=localhost \
             -port=8081 \
@@ -167,10 +168,10 @@ jobs:
             -search-num=1000 \
             -wait-after-insert=2m \
             -portforward \
-            -portforward-ns=default \
             -portforward-pod-name=${podname} \
             -portforward-pod-port=8081 \
-            -kubeconfig=${KUBECONFIG}
+            -kubeconfig=${KUBECONFIG} \
+            -namespace=default
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
   random-pod-failure:
@@ -277,7 +278,7 @@ jobs:
           go test \
             -v tests/e2e/crud_test.go \
             -tags "e2e" \
-            -run "TestE2EInsert" \
+            -run "TestE2EInsertOnly" \
             -timeout 15m \
             -host=localhost \
             -port=8081 \
@@ -285,10 +286,10 @@ jobs:
             -insert-num=100 \
             -wait-after-insert=2m \
             -portforward \
-            -portforward-ns=default \
             -portforward-pod-name=${podname} \
             -portforward-pod-port=8081 \
-            -kubeconfig=${KUBECONFIG}
+            -kubeconfig=${KUBECONFIG} \
+            -namespace=default
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
       - name: deploy Chaos Mesh
@@ -305,7 +306,7 @@ jobs:
           go test \
             -v tests/e2e/crud_test.go \
             -tags "e2e" \
-            -run "TestE2EInsert|TestE2ESearch" \
+            -run "TestE2EInsertAndSearch" \
             -timeout 15m \
             -host=localhost \
             -port=8081 \
@@ -315,10 +316,10 @@ jobs:
             -search-num=1000 \
             -wait-after-insert=2m \
             -portforward \
-            -portforward-ns=default \
             -portforward-pod-name=${podname} \
             -portforward-pod-port=8081 \
-            -kubeconfig=${KUBECONFIG}
+            -kubeconfig=${KUBECONFIG} \
+            -namespace=default
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
   meta-network-partition:
@@ -431,7 +432,7 @@ jobs:
           go test \
             -v tests/e2e/crud_test.go \
             -tags "e2e" \
-            -run "TestE2EInsert|TestE2ESearch" \
+            -run "TestE2EInsertAndSearch" \
             -timeout 15m \
             -host=localhost \
             -port=8081 \
@@ -440,10 +441,10 @@ jobs:
             -search-num=1000 \
             -wait-after-insert=2m \
             -portforward \
-            -portforward-ns=default \
             -portforward-pod-name=${podname} \
             -portforward-pod-port=8081 \
-            -kubeconfig=${KUBECONFIG}
+            -kubeconfig=${KUBECONFIG} \
+            -namespace=default
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
   slack-notification:

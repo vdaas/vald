@@ -235,7 +235,49 @@ func sleep(t *testing.T, dur time.Duration) {
 	t.Logf("%v sleep finished.", time.Now())
 }
 
-func TestE2E(t *testing.T) {
+func TestE2EInsertOnly(t *testing.T) {
+	ctx := context.Background()
+
+	op, err := operation.New(host, port)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Insert(t, ctx, operation.Dataset{
+		Train: ds.train[insertFrom : insertFrom+insertNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+}
+
+func TestE2EInsertAndSearch(t *testing.T) {
+	ctx := context.Background()
+
+	op, err := operation.New(host, port)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Insert(t, ctx, operation.Dataset{
+		Train: ds.train[insertFrom : insertFrom+insertNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	sleep(t, waitAfterInsertDuration)
+
+	err = op.Search(t, ctx, operation.Dataset{
+		Test:      ds.test[searchFrom : searchFrom+searchNum],
+		Neighbors: ds.neighbors[searchFrom : searchFrom+searchNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+}
+
+func TestE2EStandardCRUD(t *testing.T) {
 	ctx := context.Background()
 
 	op, err := operation.New(host, port)

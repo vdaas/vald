@@ -134,6 +134,7 @@ jobs:
             -v tests/e2e/crud_test.go \
             -tags "e2e" \
             -timeout 30m \
+            -run "TestE2EStandardCRUD" \
             -host=localhost \
             -port=8081 \
             -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
@@ -145,10 +146,10 @@ jobs:
             -remove-num=2 \
             -wait-after-insert=10m \
             -portforward \
-            -portforward-ns=default \
             -portforward-pod-name=${podname} \
             -portforward-pod-port=8081 \
-            -kubeconfig=${KUBECONFIG}
+            -kubeconfig=${KUBECONFIG} \
+            -namespace=default
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
   e2e-deploy-cassandra:
@@ -256,6 +257,7 @@ jobs:
             -v tests/e2e/crud_test.go \
             -tags "e2e" \
             -timeout 30m \
+            -run "TestE2EStandardCRUD" \
             -host=localhost \
             -port=8081 \
             -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
@@ -267,10 +269,10 @@ jobs:
             -remove-num=2 \
             -wait-after-insert=10m \
             -portforward \
-            -portforward-ns=default \
             -portforward-pod-name=${podname} \
             -portforward-pod-port=8081 \
-            -kubeconfig=${KUBECONFIG}
+            -kubeconfig=${KUBECONFIG} \
+            -namespace=default
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
   e2e-deploy-sidecar:
@@ -361,43 +363,20 @@ jobs:
           make hack/benchmark/assets/dataset/${DATASET}
           podname=`kubectl get pods --selector=app=vald-agent-ngt | tail -1 | awk '{print $1}'`
           go test \
-            -v tests/e2e/sidecar_test.go \
-            -run "TestE2EInsert|TestE2ECreateIndex|TestE2ESearch" \
+            -v tests/e2e/crud_test.go \
             -tags "e2e" \
+            -timeout 30m \
+            -run "TestE2EForSidecar" \
             -host=localhost \
             -port=8081 \
             -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
             -insert-num=1000 \
             -search-num=1000 \
             -portforward \
-            -portforward-ns=default \
             -portforward-pod-name=${podname} \
             -portforward-pod-port=8081 \
-            -kubeconfig=${KUBECONFIG}
-          echo "killing agent pod"
-          kubectl delete pod vald-agent-ngt-0
-          jq_query='.items[] | select( ([ .status.conditions[] | select( .type == "Ready" and .status == "True" ) ] | length ) == 1) | .metadata.namespace + "/" + .metadata.name'
-          until [ $(kubectl get pod --selector=app=vald-agent-ngt -o json | jq -r "$jq_query" | wc -l) -ge 1 ]
-          do
-            echo "waiting for Vald to be ready..."
-            kubectl get pods
-            sleep 2
-          done
-          kubectl get pods
-          go test \
-            -v tests/e2e/sidecar_test.go \
-            -run "TestE2ESearch|TestE2EIndexInfo" \
-            -tags "e2e" \
-            -host=localhost \
-            -port=8081 \
-            -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
-            -insert-num=1000 \
-            -search-num=1000 \
-            -portforward \
-            -portforward-ns=default \
-            -portforward-pod-name=${podname} \
-            -portforward-pod-port=8081 \
-            -kubeconfig=${KUBECONFIG}
+            -kubeconfig=${KUBECONFIG} \
+            -namespace=default
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
   slack-notification:
