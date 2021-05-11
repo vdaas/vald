@@ -176,6 +176,10 @@ func (o *observer) PostStop(ctx context.Context) (err error) {
 			return nil
 		}
 
+		err = o.kvsBackup(ctx)
+		if err != nil {
+			return errors.Wrap(o.backup(ctx), err.Error())
+		}
 		return o.backup(ctx)
 	}
 
