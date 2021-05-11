@@ -1215,6 +1215,8 @@ spec:
                               type: string
                             filename_suffix:
                               type: string
+                            kvsdb_filename_suffix:
+                              type: string
                             post_stop_timeout:
                               type: string
                             restore_backoff:
