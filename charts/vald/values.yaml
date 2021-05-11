@@ -2719,6 +2719,9 @@ agent:
       # @schema {"name": "agent.sidecar.config.filename_suffix", "type": "string"}
       # agent.sidecar.config.filename_suffix -- suffix for backup filename
       filename_suffix: ".tar.gz"
+      # @schema {"name": "agent.sidecar.config.kvsdb_filename_suffix", "type": "string"}
+      # agent.sidecar.config.kvsdb_filename_suffix -- suffix for kvsdb backup filename
+      kvsdb_filename_suffix: "-kvsdb.tar.gz"
       # @schema {"name": "agent.sidecar.config.blob_storage", "type": "object"}
       blob_storage:
         # @schema {"name": "agent.sidecar.config.blob_storage.storage_type", "type": "string", "enum": ["s3", "cloud_storage"]}
