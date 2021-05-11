@@ -19,6 +19,7 @@ package kvs
 import (
 	"context"
 	"reflect"
+	"sync/atomic"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -291,7 +292,7 @@ func Test_bidi_GetInverse(t *testing.T) {
 					val: val,
 				},
 				fields: fields,
-				beforeFunc: func(a args, bm BidiMap) {
+				beforeFunc: func(_ args, bm BidiMap) {
 					bm.Set(key, val)
 				},
 				want: want{
@@ -321,7 +322,7 @@ func Test_bidi_GetInverse(t *testing.T) {
 					val: val2,
 				},
 				fields: fields,
-				beforeFunc: func(a args, bm BidiMap) {
+				beforeFunc: func(_ args, bm BidiMap) {
 					bm.Set(key, val1)
 				},
 				want: want{
@@ -348,7 +349,7 @@ func Test_bidi_GetInverse(t *testing.T) {
 				name:   "return false when there is a no key for the value and the val is default value",
 				args:   args{},
 				fields: fields,
-				beforeFunc: func(a args, bm BidiMap) {
+				beforeFunc: func(_ args, bm BidiMap) {
 					bm.Set(key, val)
 				},
 				want: want{
@@ -399,57 +400,118 @@ func Test_bidi_Set(t *testing.T) {
 		uo [slen]*uo
 		l  uint64
 	}
-	type want struct{}
+	type want struct {
+		key string
+		val uint32
+		l   uint64
+	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want) error
+		checkFunc  func(w want, args args, b *bidi) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func(w want, args args, b *bidi) error {
+		val, ok := b.Get(args.key)
+		if !ok {
+			return errors.New("uuid not found")
+		}
+		key, ok := b.GetInverse(args.val)
+		if !ok {
+			return errors.New("object id not found")
+		}
+		if val != w.val {
+			return errors.Errorf("val is not equals. want: %v, but got: %v", w.val, val)
+		}
+		if key != w.key {
+			return errors.Errorf("key is not equals. want: %v, but got: %v", w.key, key)
+		}
+		if l := atomic.LoadUint64(&b.l); l != w.l {
+			return errors.Errorf("l is not equals. want: %v, but got: %v", l, w.l)
+		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           key: "",
-		           val: 0,
-		       },
-		       fields: fields {
-		           ou: nil,
-		           uo: nil,
-		           l: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			fields := fields{
+				l: 0,
+			}
+			for i := 0; i < slen; i++ {
+				fields.ou[i] = new(ou)
+				fields.uo[i] = new(uo)
+			}
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           key: "",
-		           val: 0,
-		           },
-		           fields: fields {
-		           ou: nil,
-		           uo: nil,
-		           l: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			var (
+				key        = "45637ec4-c85f-11ea-87d0"
+				val uint32 = 14438
+			)
+
+			return test{
+				name: "set success",
+				args: args{
+					key: key,
+					val: val,
+				},
+				fields: fields,
+				want: want{
+					key: key,
+					val: val,
+					l:   1,
+				},
+			}
+		}(),
+		func() test {
+			fields := fields{
+				l: 0,
+			}
+			for i := 0; i < slen; i++ {
+				fields.ou[i] = new(ou)
+				fields.uo[i] = new(uo)
+			}
+
+			var (
+				key = "45637ec4-c85f-11ea-87d0"
+			)
+
+			return test{
+				name: "set success when the val is default value",
+				args: args{
+					key: key,
+				},
+				fields: fields,
+				want: want{
+					key: key,
+					val: 0,
+					l:   1,
+				},
+			}
+		}(),
+		func() test {
+			fields := fields{
+				l: 0,
+			}
+			for i := 0; i < slen; i++ {
+				fields.ou[i] = new(ou)
+				fields.uo[i] = new(uo)
+			}
+
+			var (
+				val uint32 = 14438
+			)
+
+			return test{
+				name:   "set success when the key is default value",
+				args:   args{},
+				fields: fields,
+				want: want{
+					val: val,
+					l:   1,
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -473,7 +535,7 @@ func Test_bidi_Set(t *testing.T) {
 			}
 
 			b.Set(test.args.key, test.args.val)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := test.checkFunc(test.want, test.args, b); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -499,11 +561,11 @@ func Test_bidi_Delete(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, uint32, bool) error
-		beforeFunc func(args)
+		checkFunc  func(want, args, *bidi, uint32, bool) error
+		beforeFunc func(args, BidiMap)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotVal uint32, gotOk bool) error {
+	defaultCheckFunc := func(w want, a args, b *bidi, gotVal uint32, gotOk bool) error {
 		if !reflect.DeepEqual(gotVal, w.wantVal) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotVal, w.wantVal)
 		}
@@ -513,41 +575,51 @@ func Test_bidi_Delete(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           key: "",
-		       },
-		       fields: fields {
-		           ou: nil,
-		           uo: nil,
-		           l: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			fields := fields{
+				l: 0,
+			}
+			for i := 0; i < slen; i++ {
+				fields.ou[i] = new(ou)
+				fields.uo[i] = new(uo)
+			}
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           key: "",
-		           },
-		           fields: fields {
-		           ou: nil,
-		           uo: nil,
-		           l: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			var (
+				key        = "45637ec4-c85f-11ea-87d0"
+				val uint32 = 14438
+			)
+			var wantl = 0
+
+			return test{
+				name: "return (14438, true) when the delete successes",
+				args: args{
+					key: key,
+				},
+				fields: fields,
+				beforeFunc: func(a args, bm BidiMap) {
+					bm.Set(a.key, val)
+				},
+				checkFunc: func(w want, a args, b *bidi, gotVal uint32, gotOk bool) error {
+					if err := defaultCheckFunc(w, a, b, gotVal, gotOk); err != nil {
+						return err
+					}
+					if l := atomic.LoadUint64(&b.l); wantl != 0 {
+						return errors.Errorf("l is not equals. want: %v, but got: %v", wantl, l)
+					}
+					if _, ok := b.Get(key); ok {
+						return errors.New("the value for the key exists")
+					}
+					if _, ok := b.GetInverse(val); ok {
+						return errors.New("the key for the val has not disappeared")
+					}
+					return nil
+				},
+				want: want{
+					wantVal: val,
+					wantOk:  true,
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -555,8 +627,13 @@ func Test_bidi_Delete(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			b := &bidi{
+				ou: test.fields.ou,
+				uo: test.fields.uo,
+				l:  test.fields.l,
+			}
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(test.args, b)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -564,14 +641,9 @@ func Test_bidi_Delete(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			b := &bidi{
-				ou: test.fields.ou,
-				uo: test.fields.uo,
-				l:  test.fields.l,
-			}
 
 			gotVal, gotOk := b.Delete(test.args.key)
-			if err := test.checkFunc(test.want, gotVal, gotOk); err != nil {
+			if err := test.checkFunc(test.want, test.args, b, gotVal, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
