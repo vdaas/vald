@@ -53,8 +53,14 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, errors.ErrInvalidBackupConfig
 	}
 
-	bopts := cfg.Backup.Opts()
-	copts := cfg.Client.Opts()
+	bopts, err := cfg.Backup.Opts()
+	if err != nil {
+		return nil, err
+	}
+	copts, err := cfg.Client.Opts()
+	if err != nil {
+		return nil, err
+	}
 
 	var obs observability.Observability
 	if cfg.Observability.Enabled {

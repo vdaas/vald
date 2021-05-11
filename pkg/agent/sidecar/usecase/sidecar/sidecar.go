@@ -61,7 +61,12 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		bs storage.Storage
 	)
 
-	dialer, err := net.NewDialer(cfg.AgentSidecar.Client.Net.Opts()...)
+	netOpts, err := cfg.AgentSidecar.Client.Net.Opts()
+	if err != nil {
+		return nil, err
+	}
+
+	dialer, err := net.NewDialer(netOpts...)
 	if err != nil {
 		return nil, err
 	}

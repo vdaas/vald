@@ -59,8 +59,12 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, errors.ErrInvalidBackupConfig
 	}
 
+	bcOpts, err := cfg.BackupManager.Client.Opts()
+	if err != nil {
+		return nil, err
+	}
 	backupClientOptions := append(
-		cfg.BackupManager.Client.Opts(),
+		bcOpts,
 		grpc.WithErrGroup(eg),
 	)
 
@@ -100,8 +104,12 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 
+	ccOpts, err := cfg.Registerer.Compressor.Client.Opts()
+	if err != nil {
+		return nil, err
+	}
 	compressorClientOptions := append(
-		cfg.Registerer.Compressor.Client.Opts(),
+		ccOpts,
 		grpc.WithErrGroup(eg),
 		grpc.WithAddrs(cfg.Registerer.Compressor.Client.Addrs...),
 	)
