@@ -788,6 +788,16 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 		Uuid: uuid,
 		Ips:  make([]string, 0, s.replica),
 	}
+	if req.GetConfig().GetTimestamp() == 0 {
+		now := time.Now().UnixNano()
+		if req.GetConfig() == nil {
+			req.Config = &payload.Insert_Config{
+				Timestamp: now,
+			}
+		} else {
+			req.Config.Timestamp = now
+		}
+	}
 	emu := new(sync.Mutex)
 	var errs error
 	err = s.gateway.DoMulti(ctx, s.replica, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
@@ -914,6 +924,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 	}()
 	vecs := reqs.GetRequests()
 	ids := make([]string, 0, len(vecs))
+	now := time.Now().UnixNano()
 	for i, req := range vecs {
 		uuid := req.GetVector().GetId()
 		vector := req.GetVector().GetVector()
@@ -967,6 +978,15 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				reqs.Requests[i].Config.SkipStrictExistCheck = true
 			} else {
 				reqs.Requests[i].Config = &payload.Insert_Config{SkipStrictExistCheck: true}
+			}
+		}
+		if reqs.Requests[i].GetConfig().GetTimestamp() == 0 {
+			if reqs.Requests[i].GetConfig() == nil {
+				reqs.Requests[i].Config = &payload.Insert_Config{
+					Timestamp: now,
+				}
+			} else {
+				reqs.Requests[i].Config.Timestamp = now
 			}
 		}
 		ids = append(ids, uuid)
@@ -1110,6 +1130,12 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 			req.Config = &payload.Update_Config{SkipStrictExistCheck: true}
 		}
 	}
+	var now int64
+	if req.GetConfig().GetTimestamp() != 0 {
+		now = req.GetConfig().GetTimestamp()
+	} else {
+		now = time.Now().UnixNano()
+	}
 
 	rreq := &payload.Remove_Request{
 		Id: &payload.Object_ID{
@@ -1117,6 +1143,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 		},
 		Config: &payload.Remove_Config{
 			SkipStrictExistCheck: true,
+			Timestamp:            now,
 		},
 	}
 	res, err = s.Remove(ctx, rreq)
@@ -1143,6 +1170,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 		Config: &payload.Insert_Config{
 			SkipStrictExistCheck: true,
 			Filters:              req.GetConfig().GetFilters(),
+			Timestamp:            now,
 		},
 	}
 	res, err = s.Insert(ctx, ireq)
@@ -1225,6 +1253,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 	ids := make([]string, 0, len(vecs))
 	ireqs := make([]*payload.Insert_Request, 0, len(vecs))
 	rreqs := make([]*payload.Remove_Request, 0, len(vecs))
+	now := time.Now().UnixNano()
 	for _, vec := range vecs {
 		vl := len(vec.GetVector().GetVector())
 		if vl < algorithm.MinimumVectorDimensionSize {
@@ -1279,12 +1308,19 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 				vec.Config = &payload.Update_Config{SkipStrictExistCheck: true}
 			}
 		}
+		var n int64
+		if vec.GetConfig().GetTimestamp() != 0 {
+			n = vec.GetConfig().GetTimestamp()
+		} else {
+			n = now
+		}
 		ids = append(ids, vec.GetVector().GetId())
 		ireqs = append(ireqs, &payload.Insert_Request{
 			Vector: vec.GetVector(),
 			Config: &payload.Insert_Config{
 				SkipStrictExistCheck: true,
 				Filters:              vec.GetConfig().GetFilters(),
+				Timestamp:            n,
 			},
 		})
 		rreqs = append(rreqs, &payload.Remove_Request{
@@ -1293,6 +1329,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 			},
 			Config: &payload.Remove_Config{
 				SkipStrictExistCheck: true,
+				Timestamp:            n,
 			},
 		})
 	}
@@ -1386,6 +1423,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 			Config: &payload.Insert_Config{
 				SkipStrictExistCheck: true,
 				Filters:              filters,
+				Timestamp:            req.GetConfig().GetTimestamp(),
 			},
 		})
 	} else {
@@ -1395,6 +1433,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 			Config: &payload.Update_Config{
 				SkipStrictExistCheck: true,
 				Filters:              filters,
+				Timestamp:            req.GetConfig().GetTimestamp(),
 			},
 		})
 	}
@@ -1507,12 +1546,14 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 			Id: uuid,
 		})
 		filters := req.GetConfig().GetFilters()
+		ts := req.GetConfig().GetTimestamp()
 		if err != nil {
 			insertReqs = append(insertReqs, &payload.Insert_Request{
 				Vector: vec,
 				Config: &payload.Insert_Config{
 					SkipStrictExistCheck: true,
 					Filters:              filters,
+					Timestamp:            ts,
 				},
 			})
 		} else {
@@ -1521,6 +1562,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 				Config: &payload.Update_Config{
 					SkipStrictExistCheck: true,
 					Filters:              filters,
+					Timestamp:            ts,
 				},
 			})
 		}
@@ -1648,6 +1690,16 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs 
 			req.Config = &payload.Remove_Config{SkipStrictExistCheck: true}
 		}
 	}
+	if req.GetConfig().GetTimestamp() == 0 {
+		now := time.Now().UnixNano()
+		if req.GetConfig() == nil {
+			req.Config = &payload.Remove_Config{
+				Timestamp: now,
+			}
+		} else {
+			req.Config.Timestamp = now
+		}
+	}
 	var mu sync.Mutex
 	locs = &payload.Object_Location{
 		Uuid: id.GetId(),
@@ -1758,6 +1810,8 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 			span.End()
 		}
 	}()
+
+	now := time.Now().UnixNano()
 	ids := make([]string, 0, len(reqs.GetRequests()))
 	for i, req := range reqs.GetRequests() {
 		id := req.GetId()
@@ -1791,6 +1845,15 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 				reqs.Requests[i].Config = &payload.Remove_Config{SkipStrictExistCheck: true}
 			}
 
+		}
+		if req.GetConfig().GetTimestamp() == 0 {
+			if req.GetConfig() == nil {
+				reqs.Requests[i].Config = &payload.Remove_Config{
+					Timestamp: now,
+				}
+			} else {
+				reqs.Requests[i].Config.Timestamp = now
+			}
 		}
 	}
 	var mu sync.Mutex

@@ -1116,12 +1116,6 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 		return nil, err
 	}
 
-	var now int64
-	if req.GetConfig().GetTimestamp() > 0 {
-		now = req.GetConfig().GetTimestamp()
-	} else {
-		now = time.Now().UnixNano()
-	}
 	filters := req.GetConfig().GetFilters()
 	exists, err := s.metadata.Exists(ctx, meta)
 	if err != nil {
@@ -1135,7 +1129,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 			Config: &payload.Insert_Config{
 				SkipStrictExistCheck: true,
 				Filters:              filters,
-				Timestamp:            now,
+				Timestamp:            req.GetConfig().GetTimestamp(),
 			},
 		})
 	} else {
@@ -1145,7 +1139,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 			Config: &payload.Update_Config{
 				SkipStrictExistCheck: true,
 				Filters:              filters,
-				Timestamp:            now,
+				Timestamp:            req.GetConfig().GetTimestamp(),
 			},
 		})
 	}
@@ -1228,7 +1222,6 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 	updateReqs := make([]*payload.Update_Request, 0, len(reqs.GetRequests()))
 
 	ids := make([]string, 0, len(reqs.GetRequests()))
-	now := time.Now().UnixNano()
 	for _, req := range reqs.GetRequests() {
 		vec := req.GetVector()
 		meta := vec.GetId()
@@ -1252,9 +1245,6 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 			}
 			return nil, err
-		}
-		if req.GetConfig().GetTimestamp() == 0 {
-			req.Config.Timestamp = now
 		}
 		ids = append(ids, meta)
 		filters := req.GetConfig().GetFilters()
@@ -1370,7 +1360,6 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 			span.End()
 		}
 	}()
-	now := time.Now().UnixNano()
 	meta := req.GetId().GetId()
 	uuid, err := s.metadata.GetUUID(ctx, meta)
 	if err != nil {
@@ -1404,7 +1393,14 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 		req.Id = &payload.Object_ID{Id: uuid}
 	}
 	if req.GetConfig().GetTimestamp() == 0 {
-		req.Config.Timestamp = now
+		now := time.Now().UnixNano()
+		if req.GetConfig() == nil {
+			req.Config = &payload.Remove_Config{
+				Timestamp: now,
+			}
+		} else {
+			req.Config.Timestamp = now
+		}
 	}
 	loc, err = s.gateway.Remove(ctx, req, s.copts...)
 	if err != nil {
@@ -1543,7 +1539,13 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 			reqs.Requests[i].Id = &payload.Object_ID{Id: id}
 		}
 		if req.GetConfig().GetTimestamp() == 0 {
-			reqs.Requests[i].Config.Timestamp = now
+			if req.GetConfig() == nil {
+				reqs.Requests[i].Config = &payload.Remove_Config{
+					Timestamp: now,
+				}
+			} else {
+				reqs.Requests[i].Config.Timestamp = now
+			}
 		}
 	}
 	locs, err = s.gateway.MultiRemove(ctx, reqs, s.copts...)
