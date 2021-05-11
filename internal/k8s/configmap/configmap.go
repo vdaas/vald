@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,12 +39,13 @@ import (
 type ConfigMapWatcher k8s.ResourceController
 
 type reconciler struct {
-	mgr         manager.Manager
-	name        string
-	namespaces  []string
-	onError     func(err error)
-	onReconcile func(rs map[string][]ConfigMap) // map[namespace][]configmap
-	pool        sync.Pool
+	mgr              manager.Manager
+	name             string
+	namespaces       []string
+	onError          func(err error)
+	onReconcile      func(rs map[string][]ConfigMap) // map[namespace][]configmap
+	listOpts         []client.ListOption
+	nsConfigmapsPool sync.Pool
 }
 
 // ConfigMap is a type alias for the k8s configmap definition.
@@ -53,7 +54,7 @@ type ConfigMap = corev1.ConfigMap
 // New returns the ConfigMapWather that implements reconciliation loop, or any error occured.
 func New(opts ...Option) (ConfigMapWatcher, error) {
 	r := &reconciler{
-		pool: sync.Pool{
+		nsConfigmapsPool: sync.Pool{
 			New: func() interface{} {
 				return make(map[string][]ConfigMap)
 			},
@@ -66,6 +67,13 @@ func New(opts ...Option) (ConfigMapWatcher, error) {
 		}
 	}
 
+	if len(r.namespaces) != 0 {
+		r.listOpts = make([]client.ListOption, 0, len(r.namespaces))
+		for _, ns := range r.namespaces {
+			r.listOpts = append(r.listOpts, client.InNamespace(ns))
+		}
+	}
+
 	return r, nil
 }
 
@@ -73,15 +81,9 @@ func New(opts ...Option) (ConfigMapWatcher, error) {
 func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
 	cml := new(corev1.ConfigMapList)
 
-	listOpts := make([]client.ListOption, 0, len(r.namespaces))
-
-	for _, ns := range r.namespaces {
-		listOpts = append(listOpts, client.InNamespace(ns))
-	}
-
 	// TODO: add option for config map name.
 
-	err = r.mgr.GetClient().List(ctx, cml, listOpts...)
+	err = r.mgr.GetClient().List(ctx, cml, r.listOpts...)
 	if err != nil {
 		if r.onError != nil {
 			r.onError(err)
@@ -91,14 +93,14 @@ func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res 
 			RequeueAfter: time.Millisecond * 100,
 		}
 		if k8serrors.IsNotFound(err) {
-			log.Errorf("not found: %s", err)
+			log.Errorf("not found: %v", err)
 			res.RequeueAfter = time.Second
 			return res, nil
 		}
 		return
 	}
 
-	cmm := make(map[string][]ConfigMap)
+	cmm := r.nsConfigmapsPool.Get().(map[string][]ConfigMap)
 
 	for _, configmap := range cml.Items {
 		if _, ok := cmm[configmap.Namespace]; !ok {
@@ -114,7 +116,7 @@ func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res 
 	for name := range cmm {
 		cmm[name] = cmm[name][:0:len(cmm[name])]
 	}
-	r.pool.Put(cmm)
+	r.nsConfigmapsPool.Put(cmm)
 
 	return
 }

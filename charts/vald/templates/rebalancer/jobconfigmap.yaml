@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 Vdaas.org Vald team ( kpango, rinx, kmrmt )
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ metadata:
     app.kubernetes.io/version: {{ .Chart.Version }}
     app.kubernetes.io/component: rebalancer
 data:
-  {{ .Values.rebalancer.rebalancer.rebalance_job_template_key }}: |
+  job.tpl: |
     ---
     apiVersion: batch/v1
     kind: Job
@@ -44,25 +44,10 @@ data:
             - name: vald-rebalancer-job
               image: {{ .Values.rebalancer.rebalancer.rebalance_job_image }}
               imagePullPolicy: Always
+              {{- if .Values.rebalancer.env }}
               env:
-                - name: AWS_ACCESS_KEY
-                  valueFrom:
-                    secretKeyRef:
-                      name: aws-secret
-                      key: access-key
-                - name: AWS_SECRET_ACCESS_KEY
-                  valueFrom:
-                    secretKeyRef:
-                      name: aws-secret
-                      key: secret-access-key
-                - name: RATE
-                  valueFrom:
-                    fieldRef:
-                      fieldPath: metadata.annotations['rebalancer.vald.vdaas.org/rate']
-                - name: TARGET_AGENT_NAME
-                  valueFrom:
-                    fieldRef:
-                      fieldPath: metadata.labels['rebalancer.vald.vdaas.org/target_agent_name']
+                {{- toYaml .Values.rebalancer.env | nindent 16 }}
+              {{- end }}
               volumeMounts:
                 - name: {{ .Values.rebalancer.rebalancer.rebalance_job_configmap_name }}
                   mountPath: /etc/server/
@@ -88,19 +73,13 @@ data:
     rebalancer_job:
       {{- $sidecar := .Values.agent.sidecar.config }}
       blob_storage:
-        {{- if $sidecar.blob_storage }}
         {{- toYaml $sidecar.blob_storage | nindent 8 }}
-        {{- end }}
       compress:
-        {{- if $sidecar.compress }}
         {{- toYaml $sidecar.compress | nindent 8 }}
-        {{- end }}
       filename_suffix:
-        {{- if $sidecar.filename_suffix }}
         {{- toYaml $sidecar.filename_suffix | nindent 8 }}
-        {{- end }}
-      target_agent_name: _TARGET_AGENT_NAME_
-      rate: _RATE_
+      target_agent_name: {{ .Values.rebalancer.rebalancer.job.target_agent_name }}
+      rate: {{ .Values.rebalancer.rebalancer.job.rate }}
       parallelism: {{ .Values.rebalancer.rebalancer.job.parallelism }}
       gateway_client:
         {{- $client := .Values.rebalancer.rebalancer.job.grpc.client }}
@@ -125,11 +104,7 @@ data:
         {{- end }}
       client:
         net:
-          {{- if .Values.rebalancer.rebalancer.job.client.net }}
           {{- toYaml .Values.rebalancer.rebalancer.job.client.net | nindent 10 }}
-          {{- end }}
         transport:
-          {{- if .Values.rebalancer.rebalancer.job.client.transport }}
           {{- toYaml .Values.rebalancer.rebalancer.job.client.transport | nindent 10 }}
-          {{- end }}
 {{- end }}

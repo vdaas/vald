@@ -4797,6 +4797,24 @@ rebalancer:
       valueFrom:
         fieldRef:
           fieldPath: metadata.name
+    - name: AWS_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: aws-secret
+          key: access-key
+    - name: AWS_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: aws-secret
+          key: secret-access-key
+    - name: RATE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.annotations['rebalancer.vald.vdaas.org/rate']
+    - name: TARGET_AGENT_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.labels['rebalancer.vald.vdaas.org/target_agent_name']
   # @schema {"name": "rebalancer.volumeMounts", "alias": "volumeMounts"}
   # rebalancer.volumeMounts -- volume mounts
   volumeMounts: []
@@ -4915,9 +4933,9 @@ rebalancer:
     # @schema {"name": "rebalancer.rebalancer.rebalance_job_namespace", "type": "string"}
     # rebalancer.rebalancer.rebalance_job_namespace -- namespace of rebalancer job
     rebalance_job_namespace: _MY_POD_NAMESPACE_
-    # @schema {"name": "rebalancer.rebalancer.rebalance_job_template_key", "type": "string"}
-    # rebalancer.rebalancer.rebalance_job_template_key -- template key of rebalancer job
-    rebalance_job_template_key: job.tpl
+    # @schema {"name": "rebalancer.rebalancer.rebalance_job_template", "type": "string"}
+    # rebalancer.rebalancer.rebalance_job_template -- template of rebalancer job
+    rebalance_job_template: file:///etc/job/job.tpl
     # @schema {"name": "rebalancer.rebalancer.rebalance_job_image", "type": "string"}
     # rebalancer.rebalancer.rebalance_job_image -- container image of rebalancer job
     rebalance_job_image: hello-world
@@ -4937,7 +4955,7 @@ rebalancer:
     # rebalancer.rebalancer.reconcile_check_duration -- check duration of rebalancer
     reconcile_check_duration: 5m
     # @schema {"name": "rebalancer.rebalancer.tolerance", "type": "number"}
-    # rebalancer.rebalancer.tolerance -- memory bias tolerance to trigger rebalance job
+    # rebalancer.rebalancer.tolerance -- memory deviation tolerance to trigger rebalance job
     tolerance: 0.1
     # @schema {"name": "rebalancer.rebalancer.rate_threshold", "type": "number"}
     # rebalancer.rebalancer.rate_threshold -- rate threshold to trigger rebalance job
@@ -4949,6 +4967,12 @@ rebalancer:
     job:
       # @schema {"name": "rebalancer.rebalancer.job.parallelism", "type": "number"}
       parallelism: 30
+      # @schema {"name": "rebalancer.rebalancer.job.target_agent_name", "type": "string"}
+      # rebalancer.rebalancer.job.target_agent_name -- target agent name to rebalance
+      target_agent_name: _TARGET_AGENT_NAME_
+      # @schema {"name": "rebalancer.rebalancer.job.rate", "type": "string"}
+      # rebalancer.rebalancer.job.rate -- rate to rebalance data
+      rate: _RATE_
       # @schema {"name": "rebalancer.rebalancer.job.grpc", "type": "object"}
       grpc:
         # @schema {"name": "rebalancer.rebalancer.job.grpc.client", "type": "object"}

@@ -44,7 +44,7 @@ type reconciler struct {
 	name        string
 	namespaces  []string
 	onError     func(err error)
-	onReconcile func(rs map[string][]StatefulSet)
+	onReconcile func(ctx context.Context, rs map[string][]StatefulSet)
 	pool        sync.Pool
 }
 
@@ -116,7 +116,7 @@ func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res 
 	}
 
 	if r.onReconcile != nil {
-		r.onReconcile(ssm)
+		r.onReconcile(ctx, ssm)
 	}
 
 	for name := range ssm {

@@ -40,12 +40,13 @@ import (
 type JobWatcher k8s.ResourceController
 
 type reconciler struct {
-	mgr         manager.Manager
-	name        string
-	namespaces  []string
-	onError     func(err error)
-	onReconcile func(jobList map[string][]Job)
-	pool        sync.Pool
+	mgr               manager.Manager
+	name              string
+	namespaces        []string
+	onError           func(err error)
+	onReconcile       func(jobList map[string][]Job)
+	listOpts          []client.ListOption
+	jobsByAppNamePool sync.Pool // map[app][]Job
 }
 
 // Job is a type alias for the k8s job definition.
@@ -54,7 +55,7 @@ type Job = batchv1.Job
 // New returns the JobWatcher that implements reconciliation loop, or any errors occurred.
 func New(opts ...Option) (JobWatcher, error) {
 	r := &reconciler{
-		pool: sync.Pool{
+		jobsByAppNamePool: sync.Pool{
 			New: func() interface{} {
 				return make(map[string][]Job)
 			},
@@ -67,6 +68,13 @@ func New(opts ...Option) (JobWatcher, error) {
 		}
 	}
 
+	if len(r.namespaces) != 0 {
+		r.listOpts = make([]client.ListOption, 0, len(r.namespaces))
+		for _, ns := range r.namespaces {
+			r.listOpts = append(r.listOpts, client.InNamespace(ns))
+		}
+	}
+
 	return r, nil
 }
 
@@ -74,12 +82,7 @@ func New(opts ...Option) (JobWatcher, error) {
 func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
 	js := new(batchv1.JobList)
 
-	listOpts := make([]client.ListOption, 0, len(r.namespaces))
-	for _, ns := range r.namespaces {
-		listOpts = append(listOpts, client.InNamespace(ns))
-	}
-
-	err = r.mgr.GetClient().List(ctx, js, listOpts...)
+	err = r.mgr.GetClient().List(ctx, js, r.listOpts...)
 	if err != nil {
 		if r.onError != nil {
 			r.onError(err)
@@ -98,7 +101,7 @@ func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res 
 		return
 	}
 
-	jobs := r.pool.Get().(map[string][]Job)
+	jobs := r.jobsByAppNamePool.Get().(map[string][]Job)
 	for _, job := range js.Items {
 		name, ok := job.GetObjectMeta().GetLabels()["app"]
 		if !ok {
@@ -120,7 +123,7 @@ func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res 
 		jobs[name] = jobs[name][:0:len(jobs[name])]
 	}
 
-	r.pool.Put(jobs)
+	r.jobsByAppNamePool.Put(jobs)
 
 	return
 }

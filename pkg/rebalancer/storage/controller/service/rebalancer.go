@@ -24,13 +24,13 @@ import (
 	"strconv"
 	"sync/atomic"
 	"time"
+	"unsafe"
 
 	payload "github.com/vdaas/vald/apis/grpc/v1/payload"
 	agent "github.com/vdaas/vald/internal/client/v1/client/agent/core"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
-	"github.com/vdaas/vald/internal/k8s/configmap"
 	"github.com/vdaas/vald/internal/k8s/decoder"
 	"github.com/vdaas/vald/internal/k8s/job"
 	mpod "github.com/vdaas/vald/internal/k8s/metrics/pod"
@@ -55,19 +55,17 @@ type rebalancer struct {
 	podName      string
 	podNamespace string
 
-	jobs           atomic.Value
-	jobName        string
-	jobNamespace   string
-	jobTemplate    atomic.Value
-	jobTemplateKey string // config map key of job template
+	jobs         atomic.Value
+	jobName      string
+	jobNamespace string
+	jobTemplate  string   // row manifest template data of rebalance job.
+	jobObject    *job.Job // object generated from template.
 
 	agentName         string
 	agentNamespace    string
 	agentResourceType config.AgentResourceType
 	pods              atomic.Value
 	podMetrics        atomic.Value
-
-	jobConfigmapName string
 
 	statefulSets atomic.Value
 
@@ -92,53 +90,36 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 		}
 	}
 
+	err := r.initCtrl()
+	if err != nil {
+		return nil, err
+	}
+
+	r.decoder, err = decoder.NewDecoder(r.ctrl.GetManager().GetScheme())
+	if err != nil {
+		return nil, err
+	}
+
+	r.jobObject = new(job.Job)
+	err = r.decoder.DecodeInto(*(*[]byte)(unsafe.Pointer(&r.jobTemplate)), r.jobObject)
+	if err != nil {
+		return nil, errors.ErrFailedToDecodeJobTemplate(err)
+	}
+
+	return r, nil
+}
+
+func (r *rebalancer) initCtrl() (err error) {
 	job, err := job.New(
 		job.WithControllerName("job rebalancer"),
 		job.WithNamespaces(r.jobNamespace),
 		job.WithOnErrorFunc(func(err error) {
 			log.Error(err)
 		}),
-		job.WithOnReconcileFunc(func(jobList map[string][]job.Job) {
-			log.Debugf("[reconcile Job] length Joblist: %d", len(jobList))
-			jobs, ok := jobList[r.jobName]
-			if ok {
-				r.jobs.Store(jobs)
-			} else {
-				r.jobs.Store(make([]job.Job, 0))
-				log.Infof("job not found: %s", r.jobName)
-			}
-		}),
+		job.WithOnReconcileFunc(r.jobReconcile),
 	)
 	if err != nil {
-		return nil, err
-	}
-
-	cm, err := configmap.New(
-		configmap.WithControllerName("configmap rebalancer"),
-		configmap.WithNamespaces(r.jobNamespace),
-		configmap.WithOnErrorFunc(func(err error) {
-			log.Error(err)
-		}),
-		configmap.WithOnReconcileFunc(func(configmapList map[string][]configmap.ConfigMap) {
-			configmaps, ok := configmapList[r.jobNamespace]
-			if ok {
-				for _, cm := range configmaps {
-					if cm.Name == r.jobConfigmapName {
-						if tmpl, ok := cm.Data[r.jobTemplateKey]; ok {
-							r.jobTemplate.Store(tmpl)
-						} else {
-							log.Infof("job template not found: %s", r.jobTemplateKey)
-						}
-						break
-					}
-				}
-			} else {
-				log.Infof("configmap not found: %s", r.jobConfigmapName)
-			}
-		}),
-	)
-	if err != nil {
-		return nil, err
+		return err
 	}
 
 	var rc k8s.ResourceController
@@ -150,48 +131,19 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 			statefulset.WithOnErrorFunc(func(err error) {
 				log.Error(err)
 			}),
-			statefulset.WithOnReconcileFunc(func(statefulSetList map[string][]statefulset.StatefulSet) {
-				log.Debugf("[reconcile StatefulSet] length StatefulSet[%s]: %d", r.agentName, len(statefulSetList))
-				sss, ok := statefulSetList[r.agentName]
-				if ok {
-					log.Debugf("[reconcile StatefulSet] StatefulSet[%s]: desired replica: %d, current replica: %d", r.agentName, *sss[0].Spec.Replicas, sss[0].Status.Replicas)
-					if len(sss) == 1 {
-						pss, ok := r.statefulSets.Load().(statefulset.StatefulSet)
-						if ok && *sss[0].Spec.Replicas < *pss.Spec.Replicas {
-							jobTpl, err := r.genJobTpl()
-							if err != nil {
-								log.Errorf("[recovery] error generating job template: %s", err.Error())
-							} else {
-								for i := int(*pss.Spec.Replicas); i > int(*sss[0].Spec.Replicas); i-- {
-									name := r.agentName + "-" + strconv.Itoa(i-1)
-									log.Debugf("[recovery] creating job for pod %s", name)
-									ctx := context.TODO()
-									if err := r.createJob(ctx, *jobTpl, config.RECOVERY, name, r.agentNamespace, 1); err != nil {
-										log.Errorf("[recovery] failed to create job: %s", err)
-									}
-								}
-							}
-						}
-						r.statefulSets.Store(sss[0])
-					} else {
-						log.Infof("too many statefulset list: want 1, but %r", len(sss))
-					}
-				} else {
-					log.Infof("statefuleset not found: %s", r.agentName)
-				}
-			}),
+			statefulset.WithOnReconcileFunc(r.statefulsetReconcile),
 		)
 		if err != nil {
-			return nil, err
+			return err
 		}
 	case config.REPLICASET:
 		// TODO: implment get replicaset reconciled result
-		return nil, nil
+		return nil
 	case config.DAEMONSET:
 		// TODO: implment get daemonset reconciled result
-		return nil, nil
+		return nil
 	default:
-		return nil, errors.ErrInvalidAgentResourceType(r.agentResourceType.String())
+		return errors.ErrInvalidAgentResourceType(r.agentResourceType.String())
 	}
 
 	r.ctrl, err = k8s.New(
@@ -199,47 +151,101 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 		k8s.WithEnableLeaderElection(),
 		k8s.WithLeaderElectionID(r.leaderElectionID),
 		k8s.WithResourceController(job),
-		k8s.WithResourceController(rc), // statefulset controller
+		k8s.WithResourceController(rc),
 		k8s.WithResourceController(pod.New(
 			pod.WithControllerName("pod discover"),
 			pod.WithOnErrorFunc(func(err error) {
 				log.Error(err)
 			}),
-			pod.WithOnReconcileFunc(func(podList map[string][]pod.Pod) {
-				log.Debugf("[reconcile pod] length podList[%s]: %d", r.agentName, len(podList[r.agentName]))
-				pods, ok := podList[r.agentName]
-				if ok {
-					r.pods.Store(pods)
-				} else {
-					log.Infof("pod not found: %s", r.agentName)
-				}
-			}),
+			pod.WithOnReconcileFunc(r.podReconcile),
 		)),
 		k8s.WithResourceController(mpod.New(
 			mpod.WithControllerName("pod metrics discover"),
 			mpod.WithOnErrorFunc(func(err error) {
 				log.Error(err)
 			}),
-			mpod.WithOnReconcileFunc(func(podList map[string]mpod.Pod) {
-				if len(podList) > 0 {
-					r.podMetrics.Store(podList)
-				} else {
-					log.Info("pod metrics not found")
-				}
-			}),
+			mpod.WithOnReconcileFunc(r.podMetricsReconcile),
 		)),
-		k8s.WithResourceController(cm),
 	)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	r.decoder, err = decoder.NewDecoder(r.ctrl.GetManager().GetScheme())
-	if err != nil {
-		return nil, err
+	return nil
+}
+
+func (r *rebalancer) jobReconcile(jobList map[string][]job.Job) {
+	log.Debugf("[reconcile Job] length Joblist: %d", len(jobList))
+	jobs, ok := jobList[r.jobName]
+	if ok {
+		r.jobs.Store(jobs)
+		return
 	}
 
-	return r, nil
+	r.jobs.Store(make([]job.Job, 0))
+	log.Infof("job not found: %s", r.jobName)
+}
+
+func (r *rebalancer) statefulsetReconcile(ctx context.Context, statefulSetList map[string][]statefulset.StatefulSet) {
+	log.Debugf("[reconcile StatefulSet] length StatefulSet[%s]: %d", r.agentName, len(statefulSetList))
+	sss, ok := statefulSetList[r.agentName]
+	if !ok {
+		log.Infof("statefuleset not found: %s", r.agentName)
+		return
+	}
+
+	// If there are multiple sets of stateful agents in the namespace or none
+	// it will return early because it is an unexpected error.
+	if len(sss) != 1 {
+		log.Infof("statefulset list: want 1, but %d", len(sss))
+		return
+	}
+	defer r.statefulSets.Store(sss[0])
+
+	log.Debugf("[reconcile StatefulSet] StatefulSet[%s]: desired replica: %d, current replica: %d", r.agentName, *sss[0].Spec.Replicas, sss[0].Status.Replicas)
+
+	prevSs, ok := r.statefulSets.Load().(statefulset.StatefulSet)
+	if ok {
+		var (
+			desiredReplica     = int(*sss[0].Spec.Replicas)
+			prevDesiredReplica = int(*prevSs.Spec.Replicas)
+		)
+		if desiredReplica < prevDesiredReplica {
+			for i := prevDesiredReplica; i > desiredReplica; i-- {
+
+				// If the number of replicas is reduced from 3 to 2, get the name of the pod below.
+				// vald-agent-0
+				// vald-agent-1
+				// vald-agent-2 <- deteced
+				name := r.agentName + "-" + strconv.Itoa(i-1)
+				log.Debugf("[recovery] creating job for pod %s", name)
+
+				// If the case of a recover job, all the data will be rebalanced, so set the rate to 1.0.
+				err := r.createJob(ctx, *r.jobObject, config.RECOVERY, name, r.agentNamespace, 1)
+				if err != nil {
+					log.Errorf("[recovery] failed to create job: %s", err)
+				}
+			}
+		}
+	}
+}
+
+func (r *rebalancer) podReconcile(podList map[string][]pod.Pod) {
+	log.Debugf("[reconcile pod] length podList[%s]: %d", r.agentName, len(podList[r.agentName]))
+	pods, ok := podList[r.agentName]
+	if ok {
+		r.pods.Store(pods)
+		return
+	}
+	log.Infof("pod not found: %s", r.agentName)
+}
+
+func (r *rebalancer) podMetricsReconcile(podList map[string]mpod.Pod) {
+	if len(podList) > 0 {
+		r.podMetrics.Store(podList)
+		return
+	}
+	log.Info("pod metrics not found")
 }
 
 // Start starts the rebalancer controller loop for the Vald agent index rebalancer.
@@ -260,73 +266,60 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 			case <-ctx.Done():
 				return ctx.Err()
 			case <-dt.C:
-				var (
-					ss statefulset.StatefulSet
-					ok bool
-
-					podModels       map[string][]*model.Pod
-					namespaceByJobs map[string][]job.Job
-					ssModel         map[string]*model.StatefulSet
-					jobTpl          *job.Job
-				)
-
-				podModels, err := r.genPodModels()
+				podsByNamespace, err := r.podsByNamespace()
 				if err != nil {
 					log.Infof("error generating pod models: %s", err.Error())
 					continue
 				}
 
-				namespaceByJobs, err = r.namespaceByJobs()
+				jobsByNamespace, err := r.getJobsByNamespace()
 				if err != nil {
 					log.Infof("error generating job models: %s", err.Error())
-				}
-
-				jobTpl, err = r.genJobTpl()
-				if err != nil {
-					log.Infof("error generating job template: %s", err.Error())
-					continue
 				}
 
 				// TODO: cache specified reconciled result based on agentResourceType.
 				switch r.agentResourceType {
 				case config.STATEFULSET:
-					ss, ok = r.statefulSets.Load().(statefulset.StatefulSet)
+					ss, ok := r.statefulSets.Load().(statefulset.StatefulSet)
 					if !ok {
 						log.Info("statefulset is empty")
 						continue
 					}
-					ssModel = make(map[string]*model.StatefulSet)
-					ssModel[ss.Namespace] = &model.StatefulSet{
+
+					// Because there is a possibility that it will be supported for each namespace in the future,
+					// declared it with a map type using the namespace as a key.
+					ssModelByNamespace := make(map[string]*model.StatefulSet)
+					ssModelByNamespace[ss.Namespace] = &model.StatefulSet{
 						Name:            ss.Name,
 						Namespace:       ss.Namespace,
 						DesiredReplicas: ss.Spec.Replicas,
 						Replicas:        ss.Status.Replicas,
 					}
 
-					for ns, sm := range ssModel {
+					for ns, sm := range ssModelByNamespace {
+
+						// If the current number of replicas does not match the desired number of replicas,
+						// the number of pods is changing and no processing is performed.
 						if *sm.DesiredReplicas != sm.Replicas {
 							log.Debugf("[not desired] desired replica: %d, current replica: %d", *sm.DesiredReplicas, sm.Replicas)
 							continue
 						}
 
-						maxPodName, rate := r.getBiasOverDetail(podModels[ns])
-						if maxPodName == "" || rate < r.rateThreshold {
+						maxPodName, rate := r.getBiasOverDetail(podsByNamespace[ns])
+						if len(maxPodName) == 0 || rate < r.rateThreshold {
 							log.Debugf("[rate/podname checking] pod name, rate, rateThreshold: %s, %.3f, %f", maxPodName, rate, r.rateThreshold)
 							continue
 						}
-						// log.Debugf("[bias/jobcheck] jobName: %#v", [r.jobNamespace])
 
-						if !r.isJobRunning(namespaceByJobs, ns) {
-							log.Debugf("[bias] creating job for pod %s, rate: %v", maxPodName, rate)
-							if err := r.createJob(ctx, *jobTpl, config.BIAS, maxPodName, ns, rate); err != nil {
-								log.Errorf("[bias] failed to create job: %s", err)
-								continue
+						if !r.isJobRunning(jobsByNamespace, ns) {
+							log.Debugf("[deviation] creating job for pod %s, rate: %v", maxPodName, rate)
+							if err := r.createJob(ctx, *r.jobObject, config.DEVIATION, maxPodName, ns, rate); err != nil {
+								log.Errorf("[deviation] failed to create job: %s", err)
 							}
 						} else {
-							log.Debugf("[bias] job is already running")
+							log.Debugf("[deviation] job is already running")
 						}
 					}
-
 				default:
 					return errors.ErrInvalidAgentResourceType(r.agentResourceType.String())
 				}
@@ -361,7 +354,7 @@ func (r *rebalancer) getPodByAgentName(agentName string) (*pod.Pod, error) {
 
 func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, reason config.RebalanceReason, agentName, agentNs string, rate float64) error {
 	// check indexing or not
-	if reason == config.BIAS {
+	if reason == config.DEVIATION {
 		p, err := r.getPodByAgentName(agentName)
 		if err != nil {
 			return err
@@ -426,15 +419,15 @@ func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, reason confi
 	return nil
 }
 
-func (r *rebalancer) genPodModels() (podModels map[string][]*model.Pod, err error) {
+func (r *rebalancer) podsByNamespace() (podModels map[string][]*model.Pod, err error) {
 	mpods, ok := r.podMetrics.Load().(map[string]mpod.Pod)
 	if !ok {
-		return nil, errors.ErrEmptyReconileResult("pod metrics")
+		return nil, errors.ErrEmptyReconcileResult("pod metrics")
 	}
 
 	pods, ok := r.pods.Load().([]pod.Pod)
 	if !ok {
-		return nil, errors.ErrEmptyReconileResult("pod")
+		return nil, errors.ErrEmptyReconcileResult("pod")
 	}
 
 	podModels = make(map[string][]*model.Pod)
@@ -455,10 +448,10 @@ func (r *rebalancer) genPodModels() (podModels map[string][]*model.Pod, err erro
 	return
 }
 
-func (r *rebalancer) namespaceByJobs() (jobmap map[string][]job.Job, err error) {
+func (r *rebalancer) getJobsByNamespace() (jobmap map[string][]job.Job, err error) {
 	jobs, ok := r.jobs.Load().([]job.Job)
 	if !ok {
-		return nil, errors.ErrEmptyReconileResult("job")
+		return nil, errors.ErrEmptyReconcileResult("job")
 	}
 
 	jobmap = make(map[string][]job.Job)
@@ -472,21 +465,8 @@ func (r *rebalancer) namespaceByJobs() (jobmap map[string][]job.Job, err error) 
 	return
 }
 
-func (r *rebalancer) genJobTpl() (jobTpl *job.Job, err error) {
-	tmpl, ok := r.jobTemplate.Load().(string)
-	if !ok {
-		return nil, errors.ErrJobTemplateNotFound()
-	}
-	jobTpl = &job.Job{}
-	err = r.decoder.DecodeInto([]byte(tmpl), jobTpl)
-	if err != nil {
-		return nil, errors.ErrFailedToDecodeJobTemplate(err)
-	}
-	return
-}
-
 func getDecreasedPodNames(prev, cur []pod.Pod, ns string) (podNames []string) {
-	podNames = make([]string, 0)
+	podNames = make([]string, 0, len(prev))
 	for _, prevPod := range prev {
 		if prevPod.Namespace != ns {
 			continue
@@ -570,8 +550,8 @@ func calSigMemUsg(pm []*model.Pod, avgMemUsg float64) (sig float64) {
 	return
 }
 
-func (r *rebalancer) isJobRunning(jobsmap map[string][]job.Job, ns string) bool {
-	for _, jobs := range jobsmap {
+func (r *rebalancer) isJobRunning(jobsByNamespace map[string][]job.Job, ns string) bool {
+	for _, jobs := range jobsByNamespace {
 		for _, job := range jobs {
 			if job.Labels[qualifiedNamePrefix+"reason"] != config.MANUAL.String() && job.Status.Active != 0 && job.Labels[qualifiedNamePrefix+"target_agent_namespace"] == ns {
 				return true
