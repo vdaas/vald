@@ -59,7 +59,7 @@ func TestWithIP(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant_error: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(obj, w.obj) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
@@ -136,7 +136,7 @@ func TestWithName(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant_error: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(obj, w.obj) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
@@ -212,7 +212,7 @@ func TestWithNGT(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%s\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+			return errors.Errorf("got_error: \"%s\",\n\t\t\t\twant_error: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(obj, w.obj) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
@@ -295,7 +295,7 @@ func TestWithStreamConcurrency(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant_error: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(obj, w.obj) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
@@ -385,7 +385,7 @@ func TestWithErrGroup(t *testing.T) {
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant_error: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(obj, w.obj) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
