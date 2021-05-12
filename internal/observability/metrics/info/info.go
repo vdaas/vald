@@ -68,30 +68,11 @@ func labelKVs(i interface{}) (map[metrics.Key]string, error) {
 			value = fmt.Sprintf("%.255s", fmt.Sprintf("%v", v))
 		case bool:
 			value = strconv.FormatBool(v)
-		case uint:
-			value = strconv.FormatUint(uint64(v), 10)
-		case uint8:
-			value = strconv.FormatUint(uint64(v), 10)
-		case uint16:
-			value = strconv.FormatUint(uint64(v), 10)
-		case uint32:
-			value = strconv.FormatUint(uint64(v), 10)
-		case uint64:
-			value = strconv.FormatUint(v, 10)
-		case int:
-			value = strconv.Itoa(v)
-		case int8:
-			value = strconv.Itoa(int(v))
-		case int16:
-			value = strconv.Itoa(int(v))
-		case int32:
-			value = strconv.Itoa(int(v))
-		case int64:
-			value = strconv.FormatInt(v, 10)
-		case float32:
-			value = strconv.FormatFloat(float64(v), 'E', -1, 64)
-		case float64:
-			value = strconv.FormatFloat(v, 'E', -1, 64)
+		case uint, uint8, uint16, uint32, uint64,
+			int, int8, int16, int32, int64:
+			value = fmt.Sprintf("%d", v)
+		case float32, float64:
+			value = fmt.Sprintf("%f", v)
 		default:
 			continue
 		}
