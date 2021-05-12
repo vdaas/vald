@@ -1360,6 +1360,13 @@ func TestIs(t *testing.T) {
 			want: want{},
 		},
 		{
+			name: "return false when err is nil.",
+			args: args{
+				target: New("invalid parameter"),
+			},
+			want: want{},
+		},
+		{
 			name: "return true when err is same comparable errors type and same error as target.",
 			args: args{
 				err:    New("invalid parameter"),

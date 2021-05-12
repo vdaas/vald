@@ -109,7 +109,11 @@ func (m *MySQL) Opts() ([]mysql.Option, error) {
 	}
 
 	if m.Net != nil {
-		dialer, err := net.NewDialer(m.Net.Opts()...)
+		netOpts, err := m.Net.Opts()
+		if err != nil {
+			return nil, err
+		}
+		dialer, err := net.NewDialer(netOpts...)
 		if err != nil {
 			return nil, err
 		}
