@@ -51,7 +51,7 @@ func New(opts ...Option) http.Handler {
 
 		rt.Handle(route.Pattern,
 			r.routing(route.Name, route.Pattern,
-				route.Methods, route.HandlerFunc))
+				route.Methods, route.HandlerFunc)).Name(route.Name)
 	}
 
 	return rt
