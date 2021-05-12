@@ -756,7 +756,7 @@ func TestErrRedisNotFoundIdentity_Error(t *testing.T) {
 			name:   "Success when err is nil",
 			fields: fields{},
 			want: want{
-				want: "custom error object is nil: ErrRedisNotFoundIdentity",
+				want: "expected err is nil: ErrRedisNotFoundIdentity",
 			},
 		},
 	}

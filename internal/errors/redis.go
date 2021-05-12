@@ -74,7 +74,7 @@ type ErrRedisNotFoundIdentity struct {
 // Error returns the string of ErrRedisNotFoundIdentity.error.
 func (e *ErrRedisNotFoundIdentity) Error() string {
 	if e.err == nil {
-		return errNilCustomError("ErrRedisNotFoundIdentity")
+		e.err = errExpectedErrIsNil("ErrRedisNotFoundIdentity")
 	}
 	return e.err.Error()
 }

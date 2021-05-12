@@ -216,7 +216,7 @@ func TestErrInvalidOption_Error(t *testing.T) {
 			name:   "return string when e.err is nil.",
 			fields: fields{},
 			want: want{
-				want: "custom error object is nil: ErrInvalidOption",
+				want: "expected err is nil: ErrInvalidOption",
 			},
 		},
 	}
@@ -510,7 +510,7 @@ func TestErrCriticalOption_Error(t *testing.T) {
 			name:   "return string when e.err is nil",
 			fields: fields{},
 			want: want{
-				want: "custom error object is nil: ErrCriticalOption",
+				want: "expected err is nil: ErrCriticalOption",
 			},
 		},
 	}
