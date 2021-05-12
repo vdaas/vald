@@ -409,21 +409,16 @@ func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, reason confi
 			return err
 		}
 
-		gc := grpc.New(grpc.WithAddrs(p.IP))
-		ech, err := gc.StartConnectionMonitor(ctx)
+		ctx, cancel := context.WithCancel(ctx)
+		defer cancel()
+
+		gc := grpc.New(grpc.WithAddrs(p.IP), grpc.WithConnectionPoolSize(1))
+		_, err = gc.StartConnectionMonitor(ctx)
 		if err != nil {
 			return err
 		}
-		go func() {
-			for {
-				select {
-				case <-ctx.Done():
-					log.Error(ctx.Err())
-				case err = <-ech:
-					log.Error(err)
-				}
-			}
-		}()
+
+		defer gc.Close(ctx)
 
 		c, err := agent.New(agent.WithAddrs(p.IP), agent.WithGRPCClient(gc))
 		if err != nil {
