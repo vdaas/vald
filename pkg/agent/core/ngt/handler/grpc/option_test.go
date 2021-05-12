@@ -86,7 +86,7 @@ func TestWithIP(t *testing.T) {
 			},
 			want: want{
 				obj: new(T),
-				err: errors.NewErrInvalidOption("ip", ""),
+				err: errors.New("invalid option, name: ip, val: "),
 			},
 		},
 	}
@@ -162,7 +162,7 @@ func TestWithName(t *testing.T) {
 			},
 			want: want{
 				obj: new(T),
-				err: errors.NewErrInvalidOption("name", ""),
+				err: errors.New("invalid option, name: name, val: "),
 			},
 		},
 	}
@@ -245,7 +245,7 @@ func TestWithNGT(t *testing.T) {
 			},
 			want: want{
 				obj: new(T),
-				err: errors.NewErrInvalidOption("ngt", nil),
+				err: errors.New("invalid option, name: ngt, val: <nil>"),
 			},
 		},
 	}
@@ -323,7 +323,7 @@ func TestWithStreamConcurrency(t *testing.T) {
 				obj: &T{
 					streamConcurrency: 0,
 				},
-				err: errors.NewErrInvalidOption("streamConcurrency", -500),
+				err: errors.New("invalid option, name: streamConcurrency, val: -500"),
 			},
 		},
 		{
@@ -335,7 +335,7 @@ func TestWithStreamConcurrency(t *testing.T) {
 				obj: &T{
 					streamConcurrency: 0,
 				},
-				err: errors.NewErrInvalidOption("streamConcurrency", 0),
+				err: errors.New("invalid option, name: streamConcurrency, val: 0"),
 			},
 		},
 	}
@@ -417,7 +417,7 @@ func TestWithErrGroup(t *testing.T) {
 					obj: &T{
 						eg: nil,
 					},
-					err: errors.NewErrInvalidOption("errGroup", nil),
+					err: errors.New("invalid option, name: errGroup, val: <nil>"),
 				},
 			}
 		}(),
