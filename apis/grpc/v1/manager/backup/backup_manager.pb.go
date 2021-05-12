@@ -32,12 +32,10 @@ import (
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = golang_proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-)
+var _ = proto.Marshal
+var _ = golang_proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -48,7 +46,6 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 func init() {
 	proto.RegisterFile("apis/proto/v1/manager/backup/backup_manager.proto", fileDescriptor_a861c800442e9f9a)
 }
-
 func init() {
 	golang_proto.RegisterFile("apis/proto/v1/manager/backup/backup_manager.proto", fileDescriptor_a861c800442e9f9a)
 }
@@ -90,10 +87,8 @@ var fileDescriptor_a861c800442e9f9a = []byte{
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ context.Context
-	_ grpc.ClientConn
-)
+var _ context.Context
+var _ grpc.ClientConn
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
@@ -206,36 +201,30 @@ type BackupServer interface {
 }
 
 // UnimplementedBackupServer can be embedded to have forward compatible implementations.
-type UnimplementedBackupServer struct{}
+type UnimplementedBackupServer struct {
+}
 
 func (*UnimplementedBackupServer) GetVector(ctx context.Context, req *payload.Backup_GetVector_Request) (*payload.Backup_Compressed_Vector, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetVector not implemented")
 }
-
 func (*UnimplementedBackupServer) Locations(ctx context.Context, req *payload.Backup_Locations_Request) (*payload.Info_IPs, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Locations not implemented")
 }
-
 func (*UnimplementedBackupServer) Register(ctx context.Context, req *payload.Backup_Compressed_Vector) (*payload.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
 }
-
 func (*UnimplementedBackupServer) RegisterMulti(ctx context.Context, req *payload.Backup_Compressed_Vectors) (*payload.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterMulti not implemented")
 }
-
 func (*UnimplementedBackupServer) Remove(ctx context.Context, req *payload.Backup_Remove_Request) (*payload.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Remove not implemented")
 }
-
 func (*UnimplementedBackupServer) RemoveMulti(ctx context.Context, req *payload.Backup_Remove_RequestMulti) (*payload.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveMulti not implemented")
 }
-
 func (*UnimplementedBackupServer) RegisterIPs(ctx context.Context, req *payload.Backup_IP_Register_Request) (*payload.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterIPs not implemented")
 }
-
 func (*UnimplementedBackupServer) RemoveIPs(ctx context.Context, req *payload.Backup_IP_Remove_Request) (*payload.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveIPs not implemented")
 }

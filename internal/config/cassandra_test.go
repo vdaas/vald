@@ -18,11 +18,14 @@
 package config
 
 import (
+	"os"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/vdaas/vald/internal/db/nosql/cassandra"
 	"github.com/vdaas/vald/internal/errors"
+	testdata "github.com/vdaas/vald/internal/test"
 	"go.uber.org/goleak"
 )
 
@@ -75,8 +78,8 @@ func TestCassandra_Bind(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *Cassandra) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got *Cassandra) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -85,115 +88,253 @@ func TestCassandra_Bind(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           Hosts: nil,
-		           CQLVersion: "",
-		           ProtoVersion: 0,
-		           Timeout: "",
-		           ConnectTimeout: "",
-		           Port: 0,
-		           Keyspace: "",
-		           NumConns: 0,
-		           Consistency: "",
-		           SerialConsistency: "",
-		           Username: "",
-		           Password: "",
-		           PoolConfig: PoolConfig{},
-		           RetryPolicy: RetryPolicy{},
-		           ReconnectionPolicy: ReconnectionPolicy{},
-		           HostFilter: HostFilter{},
-		           SocketKeepalive: "",
-		           MaxPreparedStmts: 0,
-		           MaxRoutingKeyInfo: 0,
-		           PageSize: 0,
-		           TLS: TLS{},
-		           Net: Net{},
-		           EnableHostVerification: false,
-		           DefaultTimestamp: false,
-		           ReconnectInterval: "",
-		           MaxWaitSchemaAgreement: "",
-		           IgnorePeerAddr: false,
-		           DisableInitialHostLookup: false,
-		           DisableNodeStatusEvents: false,
-		           DisableTopologyEvents: false,
-		           DisableSchemaEvents: false,
-		           DisableSkipMetadata: false,
-		           DefaultIdempotence: false,
-		           WriteCoalesceWaitTime: "",
-		           KVTable: "",
-		           VKTable: "",
-		           VectorBackupTable: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			return test{
+				name: "return Cassandra that is variable set when parameters are not empty",
+				fields: fields{
+					Hosts: []string{
+						"cassandra-0.cassandra.default.svc.cluster.local",
+						"cassandra-1.cassandra.default.svc.cluster.local",
+						"cassandra-2.cassandra.default.svc.cluster.local",
+					},
+					CQLVersion:        "3.0.0",
+					ProtoVersion:      0,
+					Timeout:           "600ms",
+					ConnectTimeout:    "3s",
+					Port:              9042,
+					Keyspace:          "vald",
+					NumConns:          2,
+					Consistency:       "quorum",
+					SerialConsistency: "localserial",
+					Username:          "root",
+					Password:          "password",
+					PoolConfig: &PoolConfig{
+						DataCenter:               "",
+						DCAwareRouting:           false,
+						NonLocalReplicasFallback: false,
+						ShuffleReplicas:          false,
+						TokenAwareHostPolicy:     false,
+					},
+					RetryPolicy: &RetryPolicy{
+						NumRetries:  3,
+						MinDuration: "10ms",
+						MaxDuration: "1s",
+					},
+					ReconnectionPolicy: &ReconnectionPolicy{
+						MaxRetries:      3,
+						InitialInterval: "100ms",
+					},
+					HostFilter: &HostFilter{
+						Enabled:    false,
+						DataCenter: "",
+						WhiteList:  []string{},
+					},
+					SocketKeepalive:   "0s",
+					MaxPreparedStmts:  1000,
+					MaxRoutingKeyInfo: 1000,
+					PageSize:          5000,
+					TLS: &TLS{
+						Enabled:            false,
+						Cert:               "/path/ro/cert",
+						Key:                "/path/to/key",
+						CA:                 "/path/to/ca",
+						InsecureSkipVerify: false,
+					},
+					Net: &Net{
+						DNS: &DNS{
+							CacheEnabled:    true,
+							RefreshDuration: "5m",
+							CacheExpiration: "24h",
+						},
+						Dialer: &Dialer{
+							Timeout:          "30s",
+							KeepAlive:        "10m",
+							DualStackEnabled: false,
+						},
+						TLS: &TLS{
+							Enabled:            false,
+							Cert:               "/path/ro/cert",
+							Key:                "/path/to/key",
+							CA:                 "/path/to/ca",
+							InsecureSkipVerify: false,
+						},
+						SocketOption: &SocketOption{
+							ReusePort:                true,
+							ReuseAddr:                true,
+							TCPFastOpen:              true,
+							TCPCork:                  false,
+							TCPDeferAccept:           true,
+							IPTransparent:            false,
+							IPRecoverDestinationAddr: false,
+						},
+					},
+					EnableHostVerification:   false,
+					DefaultTimestamp:         true,
+					ReconnectInterval:        "",
+					MaxWaitSchemaAgreement:   "",
+					IgnorePeerAddr:           false,
+					DisableInitialHostLookup: false,
+					DisableNodeStatusEvents:  false,
+					DisableTopologyEvents:    false,
+					DisableSchemaEvents:      false,
+					DisableSkipMetadata:      false,
+					DefaultIdempotence:       false,
+					WriteCoalesceWaitTime:    "200ms",
+					KVTable:                  "kv",
+					VKTable:                  "vk",
+					VectorBackupTable:        "backup_vector",
+				},
+				want: want{
+					want: &Cassandra{
+						Hosts: []string{
+							"cassandra-0.cassandra.default.svc.cluster.local",
+							"cassandra-1.cassandra.default.svc.cluster.local",
+							"cassandra-2.cassandra.default.svc.cluster.local",
+						},
+						CQLVersion:        "3.0.0",
+						ProtoVersion:      0,
+						Timeout:           "600ms",
+						ConnectTimeout:    "3s",
+						Port:              9042,
+						Keyspace:          "vald",
+						NumConns:          2,
+						Consistency:       "quorum",
+						SerialConsistency: "localserial",
+						Username:          "root",
+						Password:          "password",
+						PoolConfig: &PoolConfig{
+							DataCenter:               "",
+							DCAwareRouting:           false,
+							NonLocalReplicasFallback: false,
+							ShuffleReplicas:          false,
+							TokenAwareHostPolicy:     false,
+						},
+						RetryPolicy: &RetryPolicy{
+							NumRetries:  3,
+							MinDuration: "10ms",
+							MaxDuration: "1s",
+						},
+						ReconnectionPolicy: &ReconnectionPolicy{
+							MaxRetries:      3,
+							InitialInterval: "100ms",
+						},
+						HostFilter: &HostFilter{
+							Enabled:    false,
+							DataCenter: "",
+							WhiteList:  []string{},
+						},
+						SocketKeepalive:   "0s",
+						MaxPreparedStmts:  1000,
+						MaxRoutingKeyInfo: 1000,
+						PageSize:          5000,
+						TLS: &TLS{
+							Enabled:            false,
+							Cert:               "/path/ro/cert",
+							Key:                "/path/to/key",
+							CA:                 "/path/to/ca",
+							InsecureSkipVerify: false,
+						},
+						Net: &Net{
+							DNS: &DNS{
+								CacheEnabled:    true,
+								RefreshDuration: "5m",
+								CacheExpiration: "24h",
+							},
+							Dialer: &Dialer{
+								Timeout:          "30s",
+								KeepAlive:        "10m",
+								DualStackEnabled: false,
+							},
+							TLS: &TLS{
+								Enabled:            false,
+								Cert:               "/path/ro/cert",
+								Key:                "/path/to/key",
+								CA:                 "/path/to/ca",
+								InsecureSkipVerify: false,
+							},
+							SocketOption: &SocketOption{
+								ReusePort:                true,
+								ReuseAddr:                true,
+								TCPFastOpen:              true,
+								TCPCork:                  false,
+								TCPDeferAccept:           true,
+								IPTransparent:            false,
+								IPRecoverDestinationAddr: false,
+							},
+						},
+						EnableHostVerification:   false,
+						DefaultTimestamp:         true,
+						ReconnectInterval:        "",
+						MaxWaitSchemaAgreement:   "",
+						IgnorePeerAddr:           false,
+						DisableInitialHostLookup: false,
+						DisableNodeStatusEvents:  false,
+						DisableTopologyEvents:    false,
+						DisableSchemaEvents:      false,
+						DisableSkipMetadata:      false,
+						DefaultIdempotence:       false,
+						WriteCoalesceWaitTime:    "200ms",
+						KVTable:                  "kv",
+						VKTable:                  "vk",
+						VectorBackupTable:        "backup_vector",
+					},
+				},
+			}
+		}(),
+		func() test {
+			key := "PASSWORD"
+			val := "cassandra_password"
+			return test{
+				name: "return Cassandra struct when Password is set via the envirionment value",
+				fields: fields{
+					Password: "_" + key + "_",
+				},
+				beforeFunc: func(t *testing.T) {
+					t.Helper()
+					if err := os.Setenv(key, val); err != nil {
+						t.Fatal(err)
+					}
+				},
+				afterFunc: func(t *testing.T) {
+					t.Helper()
+					if err := os.Unsetenv(key); err != nil {
+						t.Fatal(err)
+					}
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           Hosts: nil,
-		           CQLVersion: "",
-		           ProtoVersion: 0,
-		           Timeout: "",
-		           ConnectTimeout: "",
-		           Port: 0,
-		           Keyspace: "",
-		           NumConns: 0,
-		           Consistency: "",
-		           SerialConsistency: "",
-		           Username: "",
-		           Password: "",
-		           PoolConfig: PoolConfig{},
-		           RetryPolicy: RetryPolicy{},
-		           ReconnectionPolicy: ReconnectionPolicy{},
-		           HostFilter: HostFilter{},
-		           SocketKeepalive: "",
-		           MaxPreparedStmts: 0,
-		           MaxRoutingKeyInfo: 0,
-		           PageSize: 0,
-		           TLS: TLS{},
-		           Net: Net{},
-		           EnableHostVerification: false,
-		           DefaultTimestamp: false,
-		           ReconnectInterval: "",
-		           MaxWaitSchemaAgreement: "",
-		           IgnorePeerAddr: false,
-		           DisableInitialHostLookup: false,
-		           DisableNodeStatusEvents: false,
-		           DisableTopologyEvents: false,
-		           DisableSchemaEvents: false,
-		           DisableSkipMetadata: false,
-		           DefaultIdempotence: false,
-		           WriteCoalesceWaitTime: "",
-		           KVTable: "",
-		           VKTable: "",
-		           VectorBackupTable: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+				},
+				want: want{
+					want: &Cassandra{
+						Password: val,
+						TLS:      new(TLS),
+						Net:      new(Net),
+					},
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name:   "return Cassandra that is the default variables set when all parameters are empty or nil",
+				fields: fields{},
+				want: want{
+					want: &Cassandra{
+						TLS: new(TLS),
+						Net: new(Net),
+					},
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -296,128 +437,436 @@ func TestCassandra_Opts(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, []cassandra.Option, error) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, gotOpts []cassandra.Option, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(gotOpts, w.wantOpts) {
+		if !reflect.DeepEqual(len(gotOpts), len(w.wantOpts)) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOpts, w.wantOpts)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           Hosts: nil,
-		           CQLVersion: "",
-		           ProtoVersion: 0,
-		           Timeout: "",
-		           ConnectTimeout: "",
-		           Port: 0,
-		           Keyspace: "",
-		           NumConns: 0,
-		           Consistency: "",
-		           SerialConsistency: "",
-		           Username: "",
-		           Password: "",
-		           PoolConfig: PoolConfig{},
-		           RetryPolicy: RetryPolicy{},
-		           ReconnectionPolicy: ReconnectionPolicy{},
-		           HostFilter: HostFilter{},
-		           SocketKeepalive: "",
-		           MaxPreparedStmts: 0,
-		           MaxRoutingKeyInfo: 0,
-		           PageSize: 0,
-		           TLS: TLS{},
-		           Net: Net{},
-		           EnableHostVerification: false,
-		           DefaultTimestamp: false,
-		           ReconnectInterval: "",
-		           MaxWaitSchemaAgreement: "",
-		           IgnorePeerAddr: false,
-		           DisableInitialHostLookup: false,
-		           DisableNodeStatusEvents: false,
-		           DisableTopologyEvents: false,
-		           DisableSchemaEvents: false,
-		           DisableSkipMetadata: false,
-		           DefaultIdempotence: false,
-		           WriteCoalesceWaitTime: "",
-		           KVTable: "",
-		           VKTable: "",
-		           VectorBackupTable: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           Hosts: nil,
-		           CQLVersion: "",
-		           ProtoVersion: 0,
-		           Timeout: "",
-		           ConnectTimeout: "",
-		           Port: 0,
-		           Keyspace: "",
-		           NumConns: 0,
-		           Consistency: "",
-		           SerialConsistency: "",
-		           Username: "",
-		           Password: "",
-		           PoolConfig: PoolConfig{},
-		           RetryPolicy: RetryPolicy{},
-		           ReconnectionPolicy: ReconnectionPolicy{},
-		           HostFilter: HostFilter{},
-		           SocketKeepalive: "",
-		           MaxPreparedStmts: 0,
-		           MaxRoutingKeyInfo: 0,
-		           PageSize: 0,
-		           TLS: TLS{},
-		           Net: Net{},
-		           EnableHostVerification: false,
-		           DefaultTimestamp: false,
-		           ReconnectInterval: "",
-		           MaxWaitSchemaAgreement: "",
-		           IgnorePeerAddr: false,
-		           DisableInitialHostLookup: false,
-		           DisableNodeStatusEvents: false,
-		           DisableTopologyEvents: false,
-		           DisableSchemaEvents: false,
-		           DisableSkipMetadata: false,
-		           DefaultIdempotence: false,
-		           WriteCoalesceWaitTime: "",
-		           KVTable: "",
-		           VKTable: "",
-		           VectorBackupTable: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			cert := testdata.GetTestdataPath("tls/dummyServer.crt")
+			key := testdata.GetTestdataPath("tls/dummyServer.key")
+			ca := testdata.GetTestdataPath("tls/dummyCa.pem")
+			return test{
+				name: "return 45 cassandra.Option when no error occurred",
+				fields: fields{
+					Hosts: []string{
+						"cassandra-0.cassandra.default.svc.cluster.local",
+						"cassandra-1.cassandra.default.svc.cluster.local",
+						"cassandra-2.cassandra.default.svc.cluster.local",
+					},
+					CQLVersion:        "3.0.0",
+					ProtoVersion:      0,
+					Timeout:           "600ms",
+					ConnectTimeout:    "3s",
+					Port:              9042,
+					Keyspace:          "vald",
+					NumConns:          2,
+					Consistency:       "quorum",
+					SerialConsistency: "localserial",
+					Username:          "root",
+					Password:          "password",
+					PoolConfig: &PoolConfig{
+						DataCenter:               "",
+						DCAwareRouting:           false,
+						NonLocalReplicasFallback: false,
+						ShuffleReplicas:          false,
+						TokenAwareHostPolicy:     false,
+					},
+					RetryPolicy: &RetryPolicy{
+						NumRetries:  3,
+						MinDuration: "10ms",
+						MaxDuration: "1s",
+					},
+					ReconnectionPolicy: &ReconnectionPolicy{
+						MaxRetries:      3,
+						InitialInterval: "100ms",
+					},
+					HostFilter: &HostFilter{
+						Enabled:    false,
+						DataCenter: "",
+						WhiteList:  []string{},
+					},
+					SocketKeepalive:   "0s",
+					MaxPreparedStmts:  1000,
+					MaxRoutingKeyInfo: 1000,
+					PageSize:          5000,
+					TLS: &TLS{
+						Enabled:            true,
+						Cert:               cert,
+						Key:                key,
+						CA:                 ca,
+						InsecureSkipVerify: false,
+					},
+					Net: &Net{
+						DNS: &DNS{
+							CacheEnabled:    true,
+							RefreshDuration: "5m",
+							CacheExpiration: "24h",
+						},
+						Dialer: &Dialer{
+							Timeout:          "30s",
+							KeepAlive:        "10m",
+							DualStackEnabled: false,
+						},
+						TLS: &TLS{
+							Enabled:            false,
+							Cert:               cert,
+							Key:                key,
+							CA:                 ca,
+							InsecureSkipVerify: false,
+						},
+						SocketOption: &SocketOption{
+							ReusePort:                true,
+							ReuseAddr:                true,
+							TCPFastOpen:              true,
+							TCPCork:                  false,
+							TCPDeferAccept:           true,
+							IPTransparent:            false,
+							IPRecoverDestinationAddr: false,
+						},
+					},
+					EnableHostVerification:   false,
+					DefaultTimestamp:         true,
+					ReconnectInterval:        "",
+					MaxWaitSchemaAgreement:   "",
+					IgnorePeerAddr:           false,
+					DisableInitialHostLookup: false,
+					DisableNodeStatusEvents:  false,
+					DisableTopologyEvents:    false,
+					DisableSchemaEvents:      false,
+					DisableSkipMetadata:      false,
+					DefaultIdempotence:       false,
+					WriteCoalesceWaitTime:    "200ms",
+					KVTable:                  "kv",
+					VKTable:                  "vk",
+					VectorBackupTable:        "backup_vector",
+				},
+				want: want{
+					wantOpts: make([]cassandra.Option, 45),
+					err:      nil,
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return nil and error when TLS config value in the invalid value",
+				fields: fields{
+					Hosts: []string{
+						"cassandra-0.cassandra.default.svc.cluster.local",
+						"cassandra-1.cassandra.default.svc.cluster.local",
+						"cassandra-2.cassandra.default.svc.cluster.local",
+					},
+					CQLVersion:        "3.0.0",
+					ProtoVersion:      0,
+					Timeout:           "600ms",
+					ConnectTimeout:    "3s",
+					Port:              9042,
+					Keyspace:          "vald",
+					NumConns:          2,
+					Consistency:       "quorum",
+					SerialConsistency: "localserial",
+					Username:          "root",
+					Password:          "password",
+					PoolConfig: &PoolConfig{
+						DataCenter:               "",
+						DCAwareRouting:           false,
+						NonLocalReplicasFallback: false,
+						ShuffleReplicas:          false,
+						TokenAwareHostPolicy:     false,
+					},
+					RetryPolicy: &RetryPolicy{
+						NumRetries:  3,
+						MinDuration: "10ms",
+						MaxDuration: "1s",
+					},
+					ReconnectionPolicy: &ReconnectionPolicy{
+						MaxRetries:      3,
+						InitialInterval: "100ms",
+					},
+					HostFilter: &HostFilter{
+						Enabled:    false,
+						DataCenter: "",
+						WhiteList:  []string{},
+					},
+					SocketKeepalive:   "0s",
+					MaxPreparedStmts:  1000,
+					MaxRoutingKeyInfo: 1000,
+					PageSize:          5000,
+					TLS: &TLS{
+						Enabled:            true,
+						Cert:               "",
+						Key:                "",
+						InsecureSkipVerify: false,
+					},
+					Net: &Net{
+						DNS: &DNS{
+							CacheEnabled:    true,
+							RefreshDuration: "5m",
+							CacheExpiration: "24h",
+						},
+						Dialer: &Dialer{
+							Timeout:          "30s",
+							KeepAlive:        "10m",
+							DualStackEnabled: false,
+						},
+						TLS: &TLS{
+							Enabled:            false,
+							Cert:               "/path/ro/cert",
+							Key:                "/path/to/key",
+							CA:                 "/path/to/ca",
+							InsecureSkipVerify: false,
+						},
+						SocketOption: &SocketOption{
+							ReusePort:                true,
+							ReuseAddr:                true,
+							TCPFastOpen:              true,
+							TCPCork:                  false,
+							TCPDeferAccept:           true,
+							IPTransparent:            false,
+							IPRecoverDestinationAddr: false,
+						},
+					},
+					EnableHostVerification:   false,
+					DefaultTimestamp:         true,
+					ReconnectInterval:        "",
+					MaxWaitSchemaAgreement:   "",
+					IgnorePeerAddr:           false,
+					DisableInitialHostLookup: false,
+					DisableNodeStatusEvents:  false,
+					DisableTopologyEvents:    false,
+					DisableSchemaEvents:      false,
+					DisableSkipMetadata:      false,
+					DefaultIdempotence:       false,
+					WriteCoalesceWaitTime:    "200ms",
+					KVTable:                  "kv",
+					VKTable:                  "vk",
+					VectorBackupTable:        "backup_vector",
+				},
+				want: want{
+					wantOpts: nil,
+					err:      errors.ErrTLSCertOrKeyNotFound,
+				},
+			}
+		}(),
+		func() test {
+			cert := testdata.GetTestdataPath("tls/dummyServer.crt")
+			key := testdata.GetTestdataPath("tls/dummyServer.key")
+			ca := testdata.GetTestdataPath("tls/dummyCa.pem")
+			return test{
+				name: "return nil and err when net.NewDialer returns error",
+				fields: fields{
+					Hosts: []string{
+						"cassandra-0.cassandra.default.svc.cluster.local",
+						"cassandra-1.cassandra.default.svc.cluster.local",
+						"cassandra-2.cassandra.default.svc.cluster.local",
+					},
+					CQLVersion:        "3.0.0",
+					ProtoVersion:      0,
+					Timeout:           "600ms",
+					ConnectTimeout:    "3s",
+					Port:              9042,
+					Keyspace:          "vald",
+					NumConns:          2,
+					Consistency:       "quorum",
+					SerialConsistency: "localserial",
+					Username:          "root",
+					Password:          "password",
+					PoolConfig: &PoolConfig{
+						DataCenter:               "",
+						DCAwareRouting:           false,
+						NonLocalReplicasFallback: false,
+						ShuffleReplicas:          false,
+						TokenAwareHostPolicy:     false,
+					},
+					RetryPolicy: &RetryPolicy{
+						NumRetries:  3,
+						MinDuration: "10ms",
+						MaxDuration: "1s",
+					},
+					ReconnectionPolicy: &ReconnectionPolicy{
+						MaxRetries:      3,
+						InitialInterval: "100ms",
+					},
+					HostFilter: &HostFilter{
+						Enabled:    false,
+						DataCenter: "",
+						WhiteList:  []string{},
+					},
+					SocketKeepalive:   "0s",
+					MaxPreparedStmts:  1000,
+					MaxRoutingKeyInfo: 1000,
+					PageSize:          5000,
+					TLS: &TLS{
+						Enabled:            false,
+						Cert:               cert,
+						Key:                key,
+						CA:                 ca,
+						InsecureSkipVerify: false,
+					},
+					Net: &Net{
+						DNS: &DNS{
+							CacheEnabled:    true,
+							RefreshDuration: "5m",
+							CacheExpiration: "1m",
+						},
+						Dialer: &Dialer{
+							Timeout:          "30s",
+							KeepAlive:        "10m",
+							DualStackEnabled: false,
+						},
+						TLS: &TLS{
+							Enabled:            false,
+							Cert:               cert,
+							Key:                key,
+							CA:                 ca,
+							InsecureSkipVerify: false,
+						},
+						SocketOption: &SocketOption{
+							ReusePort:                true,
+							ReuseAddr:                true,
+							TCPFastOpen:              true,
+							TCPCork:                  false,
+							TCPDeferAccept:           true,
+							IPTransparent:            false,
+							IPRecoverDestinationAddr: false,
+						},
+					},
+					EnableHostVerification:   false,
+					DefaultTimestamp:         true,
+					ReconnectInterval:        "",
+					MaxWaitSchemaAgreement:   "",
+					IgnorePeerAddr:           false,
+					DisableInitialHostLookup: false,
+					DisableNodeStatusEvents:  false,
+					DisableTopologyEvents:    false,
+					DisableSchemaEvents:      false,
+					DisableSkipMetadata:      false,
+					DefaultIdempotence:       false,
+					WriteCoalesceWaitTime:    "200ms",
+					KVTable:                  "kv",
+					VKTable:                  "vk",
+					VectorBackupTable:        "backup_vector",
+				},
+				want: want{
+					wantOpts: nil,
+					err:      errors.ErrInvalidDNSConfig(5*time.Minute, 1*time.Minute),
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return nil and err when net.Net.Opts returns error",
+				fields: fields{
+					Hosts: []string{
+						"cassandra-0.cassandra.default.svc.cluster.local",
+						"cassandra-1.cassandra.default.svc.cluster.local",
+						"cassandra-2.cassandra.default.svc.cluster.local",
+					},
+					CQLVersion:        "3.0.0",
+					ProtoVersion:      0,
+					Timeout:           "600ms",
+					ConnectTimeout:    "3s",
+					Port:              9042,
+					Keyspace:          "vald",
+					NumConns:          2,
+					Consistency:       "quorum",
+					SerialConsistency: "localserial",
+					Username:          "root",
+					Password:          "password",
+					PoolConfig: &PoolConfig{
+						DataCenter:               "",
+						DCAwareRouting:           false,
+						NonLocalReplicasFallback: false,
+						ShuffleReplicas:          false,
+						TokenAwareHostPolicy:     false,
+					},
+					RetryPolicy: &RetryPolicy{
+						NumRetries:  3,
+						MinDuration: "10ms",
+						MaxDuration: "1s",
+					},
+					ReconnectionPolicy: &ReconnectionPolicy{
+						MaxRetries:      3,
+						InitialInterval: "100ms",
+					},
+					HostFilter: &HostFilter{
+						Enabled:    false,
+						DataCenter: "",
+						WhiteList:  []string{},
+					},
+					SocketKeepalive:   "0s",
+					MaxPreparedStmts:  1000,
+					MaxRoutingKeyInfo: 1000,
+					PageSize:          5000,
+					TLS: &TLS{
+						Enabled: false,
+					},
+					Net: &Net{
+						DNS: &DNS{
+							CacheEnabled:    true,
+							RefreshDuration: "1m",
+							CacheExpiration: "5m",
+						},
+						Dialer: &Dialer{
+							Timeout:          "30s",
+							KeepAlive:        "10m",
+							DualStackEnabled: false,
+						},
+						TLS: &TLS{
+							Enabled: true,
+						},
+						SocketOption: &SocketOption{
+							ReusePort:                true,
+							ReuseAddr:                true,
+							TCPFastOpen:              true,
+							TCPCork:                  false,
+							TCPDeferAccept:           true,
+							IPTransparent:            false,
+							IPRecoverDestinationAddr: false,
+						},
+					},
+					EnableHostVerification:   false,
+					DefaultTimestamp:         true,
+					ReconnectInterval:        "",
+					MaxWaitSchemaAgreement:   "",
+					IgnorePeerAddr:           false,
+					DisableInitialHostLookup: false,
+					DisableNodeStatusEvents:  false,
+					DisableTopologyEvents:    false,
+					DisableSchemaEvents:      false,
+					DisableSkipMetadata:      false,
+					DefaultIdempotence:       false,
+					WriteCoalesceWaitTime:    "200ms",
+					KVTable:                  "kv",
+					VKTable:                  "vk",
+					VectorBackupTable:        "backup_vector",
+				},
+				want: want{
+					wantOpts: nil,
+					err:      errors.ErrTLSCertOrKeyNotFound,
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc

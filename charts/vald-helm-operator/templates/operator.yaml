@@ -56,12 +56,12 @@ spec:
             - "run"
             - "--watches-file=./watches.yaml"
             {{- if .Values.enableLeaderElection }}
-            - "--enable-leader-election"
+            - "--leader-elect"
             - "--leader-election-id={{ default .Values.name .Values.leaderElectionID }}"
             - "--leader-election-namespace={{ .Release.Namespace }}"
             {{- end }}
             {{- if .Values.enableMetrics }}
-            - "--metrics-addr=:{{ .Values.metricsPort }}"
+            - "--metrics-bind-address=:{{ .Values.metricsPort }}"
             {{- end }}
             - "--health-probe-bind-address=:{{ .Values.healthPort }}"
             - "--reconcile-period={{ .Values.reconcilePeriod }}"

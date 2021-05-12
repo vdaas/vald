@@ -20,6 +20,7 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 	"sync"
@@ -58,13 +59,22 @@ const (
 	ngtResourceType = "vald/internal/core/algorithm"
 )
 
-func New(opts ...Option) Server {
+func New(opts ...Option) (Server, error) {
 	s := new(server)
 
 	for _, opt := range append(defaultOptions, opts...) {
-		opt(s)
+		if err := opt(s); err != nil {
+			werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+
+			e := new(errors.ErrCriticalOption)
+			if errors.As(err, &e) {
+				log.Error(werr)
+				return nil, werr
+			}
+			log.Warn(werr)
+		}
 	}
-	return s
+	return s, nil
 }
 
 func (s *server) newLocations(uuids ...string) (locs *payload.Object_Locations) {
@@ -1470,5 +1480,6 @@ func (s *server) IndexInfo(ctx context.Context, _ *payload.Empty) (res *payload.
 		Stored:      uint32(s.ngt.Len()),
 		Uncommitted: uint32(s.ngt.InsertVQueueBufferLen() + s.ngt.DeleteVQueueBufferLen()),
 		Indexing:    s.ngt.IsIndexing(),
+		Saving:      s.ngt.IsSaving(),
 	}, nil
 }

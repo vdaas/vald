@@ -32,12 +32,10 @@ import (
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = golang_proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-)
+var _ = proto.Marshal
+var _ = golang_proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -48,7 +46,6 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 func init() {
 	proto.RegisterFile("apis/proto/v1/manager/replication/agent/replication_manager.proto", fileDescriptor_e8f74170057978aa)
 }
-
 func init() {
 	golang_proto.RegisterFile("apis/proto/v1/manager/replication/agent/replication_manager.proto", fileDescriptor_e8f74170057978aa)
 }
@@ -81,10 +78,8 @@ var fileDescriptor_e8f74170057978aa = []byte{
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ context.Context
-	_ grpc.ClientConn
-)
+var _ context.Context
+var _ grpc.ClientConn
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
@@ -142,16 +137,15 @@ type ReplicationServer interface {
 }
 
 // UnimplementedReplicationServer can be embedded to have forward compatible implementations.
-type UnimplementedReplicationServer struct{}
+type UnimplementedReplicationServer struct {
+}
 
 func (*UnimplementedReplicationServer) Recover(ctx context.Context, req *payload.Replication_Recovery) (*payload.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Recover not implemented")
 }
-
 func (*UnimplementedReplicationServer) Rebalance(ctx context.Context, req *payload.Replication_Rebalance) (*payload.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Rebalance not implemented")
 }
-
 func (*UnimplementedReplicationServer) AgentInfo(ctx context.Context, req *payload.Empty) (*payload.Replication_Agents, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AgentInfo not implemented")
 }
