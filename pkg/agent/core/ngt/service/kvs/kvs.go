@@ -67,13 +67,13 @@ func New() BidiMap {
 }
 
 // Get returns the value from the given key.
-// If the value does not exist, returns false.
+// If the value does not exist, It returns false.
 func (b *bidi) Get(key string) (uint32, bool) {
 	return b.uo[xxhash.Sum64(stringToBytes(key))&mask].Load(key)
 }
 
 // Get returns the key from the given val.
-// If the key does not exist, returns false.
+// If the key does not exist, It returns false.
 func (b *bidi) GetInverse(val uint32) (string, bool) {
 	return b.ou[val&mask].Load(val)
 }
@@ -86,7 +86,7 @@ func (b *bidi) Set(key string, val uint32) {
 }
 
 // Delete the value for the key and the key for the value.
-// If the value for the key does not exist, returns false.
+// If the value for the key does not exist, It returns false.
 func (b *bidi) Delete(key string) (val uint32, ok bool) {
 	idx := xxhash.Sum64(stringToBytes(key)) & mask
 	val, ok = b.uo[idx].Load(key)
@@ -100,7 +100,7 @@ func (b *bidi) Delete(key string) (val uint32, ok bool) {
 }
 
 // Delete the key for the value and the value for the key a.
-// If the key for the val does not exist, returns false.
+// If the key for the val does not exist, It returns false.
 func (b *bidi) DeleteInverse(val uint32) (key string, ok bool) {
 	idx := val & mask
 	key, ok = b.ou[idx].Load(val)
