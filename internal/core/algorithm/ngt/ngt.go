@@ -547,7 +547,7 @@ func (n *ngt) newGoError(ne C.NGTError) (err error) {
 	err = errors.New(C.GoString(C.ngt_get_error_string(ne)))
 	C.ngt_destroy_error_object(n.ebuf)
 	n.ebuf = C.ngt_create_error_object()
-	n.mu.Lock()
+	n.mu.Unlock()
 	return err
 }
 
