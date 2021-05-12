@@ -37,6 +37,7 @@ import (
 	"github.com/vdaas/vald/internal/k8s/pod"
 	"github.com/vdaas/vald/internal/k8s/statefulset"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/pkg/rebalancer/storage/controller/config"
 	"github.com/vdaas/vald/pkg/rebalancer/storage/controller/model"
@@ -407,7 +408,24 @@ func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, reason confi
 		if err != nil {
 			return err
 		}
-		c, err := agent.New(agent.WithAddrs(p.IP))
+
+		gc := grpc.New(grpc.WithAddrs(p.IP))
+		ech, err := gc.StartConnectionMonitor(ctx)
+		if err != nil {
+			return err
+		}
+		go func() {
+			for {
+				select {
+				case <-ctx.Done():
+					log.Error(ctx.Err())
+				case err = <-ech:
+					log.Error(err)
+				}
+			}
+		}()
+
+		c, err := agent.New(agent.WithAddrs(p.IP), agent.WithGRPCClient(gc))
 		if err != nil {
 			return err
 		}
