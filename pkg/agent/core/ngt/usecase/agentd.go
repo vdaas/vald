@@ -69,10 +69,13 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
-	g := handler.New(
+	g, err := handler.New(
 		handler.WithNGT(ngt),
 		handler.WithStreamConcurrency(cfg.Server.GetGRPCStreamConcurrency()),
 	)
+	if err != nil {
+		return nil, err
+	}
 	eg := errgroup.Get()
 
 	grpcServerOptions := []server.Option{
