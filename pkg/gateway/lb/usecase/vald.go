@@ -50,11 +50,19 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	var gateway service.Gateway
 
+	cOpts, err := cfg.Gateway.Discoverer.Client.Opts()
+	if err != nil {
+		return nil, err
+	}
 	dopts := append(
-		cfg.Gateway.Discoverer.Client.Opts(),
+		cOpts,
 		grpc.WithErrGroup(eg))
+	acOpts, err := cfg.Gateway.Discoverer.AgentClientOptions.Opts()
+	if err != nil {
+		return nil, err
+	}
 	aopts := append(
-		cfg.Gateway.Discoverer.AgentClientOptions.Opts(),
+		acOpts,
 		grpc.WithErrGroup(eg))
 
 	var obs observability.Observability

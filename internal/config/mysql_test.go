@@ -452,6 +452,44 @@ func TestMySQL_Opts(t *testing.T) {
 				err:  errors.ErrInvalidDNSConfig(10*time.Minute, time.Minute),
 			},
 		},
+		{
+			name: "return nil and error when all parameters are set but the Net.TLS.Opts returns an error",
+			fields: fields{
+				DB:                   "mysql",
+				Host:                 "mysql.default.svc.cluster.clocal",
+				Port:                 3360,
+				User:                 "root",
+				Pass:                 "pass",
+				Name:                 "vald",
+				Charset:              "utf8mb4",
+				Timezone:             "Local",
+				InitialPingTimeLimit: "5m",
+				InitialPingDuration:  "30ms",
+				ConnMaxLifeTime:      "2m",
+				MaxOpenConns:         40,
+				MaxIdleConns:         50,
+				TLS: &TLS{
+					Enabled: true,
+					Cert:    testdata.GetTestdataPath("tls/dummyServer.crt"),
+					Key:     testdata.GetTestdataPath("tls/dummyServer.key"),
+					CA:      testdata.GetTestdataPath("tls/dummyCa.pem"),
+				},
+				Net: &Net{
+					DNS: &DNS{
+						CacheEnabled:    true,
+						CacheExpiration: "10m",
+						RefreshDuration: "1m",
+					},
+					TLS: &TLS{
+						Enabled: true,
+					},
+				},
+			},
+			want: want{
+				want: nil,
+				err:  errors.ErrTLSCertOrKeyNotFound,
+			},
+		},
 	}
 
 	for _, tc := range tests {
