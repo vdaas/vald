@@ -39,12 +39,14 @@ jobs:
     steps:
       - name: Check out code.
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 10
       - name: Run coverage
         continue-on-error: true
         run: |
           make coverage
       - name: Upload coverage report to Codecov
-        uses: codecov/codecov-action@v1.4.1
+        uses: codecov/codecov-action@v1
         with:
           token: ${{secrets.CODECOV_TOKEN}}
           file: ./coverage.out
