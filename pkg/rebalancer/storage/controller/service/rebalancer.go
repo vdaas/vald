@@ -77,6 +77,8 @@ type rebalancer struct {
 	tolerance     float64
 	rateThreshold float64
 	decoder       *decoder.Decoder
+
+	prevDesiredPods int // prev desired replica number in statefulset
 }
 
 // NewRebalancer initialize job, configmap, pod, podMetrics, statefulset, replicaset, daemonset reconciler.
@@ -146,7 +148,6 @@ func (r *rebalancer) initCtrl() (err error) {
 		return errors.ErrInvalidAgentResourceType(r.agentResourceType.String())
 	}
 
-	lastDesiredPods := 0
 	r.ctrl, err = k8s.New(
 		k8s.WithControllerName("rebalance storage controller"),
 		k8s.WithEnableLeaderElection(),
@@ -164,20 +165,6 @@ func (r *rebalancer) initCtrl() (err error) {
 				if !ok {
 					log.Infof("pod not found: %s", r.agentName)
 					return
-				}
-				// if current pod status is desired (no of pod is the same as statefulset replicas)
-				if len(pods) == int(*r.statefulSets.Load().(statefulset.StatefulSet).Spec.Replicas) {
-					if len(pods) < lastDesiredPods {
-						for i := lastDesiredPods; i > len(pods); i-- {
-							name := r.agentName + "-" + strconv.Itoa(i-1)
-							log.Debugf("[recovery] creating job for pod %s", name)
-							ctx := context.TODO()
-							if err := r.createJob(ctx, *r.jobObject, config.RECOVERY, name, r.agentNamespace, 1); err != nil {
-								log.Errorf("[recovery] failed to create job: %s", err)
-							}
-						}
-					}
-					lastDesiredPods = len(pods)
 				}
 				r.pods.Store(pods)
 			}),
@@ -218,11 +205,33 @@ func (r *rebalancer) statefulsetReconcile(ctx context.Context, statefulSetList m
 	}
 
 	log.Debugf("[reconcile StatefulSet] StatefulSet[%s]: desired replica: %d, current replica: %d", r.agentName, *sss[0].Spec.Replicas, sss[0].Status.Replicas)
-	if len(sss) == 1 {
-		r.statefulSets.Store(sss[0])
-	} else {
+	if len(sss) != 1 {
 		log.Infof("too many statefulset list: want 1, but %r", len(sss))
+		return
 	}
+
+	var (
+		desiredReplica = int(*sss[0].Spec.Replicas)
+		currentReplica = int(sss[0].Status.Replicas)
+	)
+
+	// skip job creation when current pod status is not desired
+	if currentReplica != desiredReplica {
+		r.statefulSets.Store(sss[0])
+		return
+	}
+
+	if currentReplica < r.prevDesiredPods {
+		for i := r.prevDesiredPods; i > currentReplica; i-- {
+			name := r.agentName + "-" + strconv.Itoa(i-1)
+			log.Debugf("[recovery] creating job for pod %s", name)
+			if err := r.createJob(ctx, *r.jobObject, config.RECOVERY, name, r.agentNamespace, 1); err != nil {
+				log.Errorf("[recovery] failed to create job: %s", err)
+			}
+		}
+	}
+	r.prevDesiredPods = currentReplica
+	r.statefulSets.Store(sss[0])
 }
 
 // func (r *rebalancer) statefulsetReconcile(ctx context.Context, statefulSetList map[string][]statefulset.StatefulSet) {
