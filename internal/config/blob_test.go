@@ -53,6 +53,13 @@ func TestBlobStorageType_String(t *testing.T) {
 			},
 		},
 		{
+			name: "return cloud_storage when the bst is CloudStorage",
+			bst:  CloudStorage,
+			want: want{
+				want: "cloud_storage",
+			},
+		},
+		{
 			name: "return unknown when the bst is empty",
 			want: want{
 				want: "unknown",
@@ -129,6 +136,24 @@ func TestAtoBST(t *testing.T) {
 			},
 		},
 		{
+			name: "return CloudStorage when the bst is cloud_storage",
+			args: args{
+				bst: "cloud_storage",
+			},
+			want: want{
+				want: CloudStorage,
+			},
+		},
+		{
+			name: "return CloudStorage when the bst is CLOUD_storage",
+			args: args{
+				bst: "CLOUD_storage",
+			},
+			want: want{
+				want: CloudStorage,
+			},
+		},
+		{
 			name: "return 0 when the bst is empty",
 			want: want{
 				want: 0,
@@ -168,9 +193,10 @@ func TestAtoBST(t *testing.T) {
 
 func TestBlob_Bind(t *testing.T) {
 	type fields struct {
-		StorageType string
-		Bucket      string
-		S3          *S3Config
+		StorageType  string
+		Bucket       string
+		S3           *S3Config
+		CloudStorage *CloudStorageConfig
 	}
 	type want struct {
 		want *Blob
@@ -192,34 +218,43 @@ func TestBlob_Bind(t *testing.T) {
 	tests := []test{
 		func() test {
 			return test{
-				name: "return Blob when the bind successes and the S3Config is nil",
+				name: "return Blob when the bind successes and the S3Config and CloudStorage is nil",
 				fields: fields{
 					StorageType: "s3",
 					Bucket:      "test.vald",
 				},
 				want: want{
 					want: &Blob{
-						StorageType: "s3",
-						Bucket:      "test.vald",
-						S3:          new(S3Config),
+						StorageType:  "s3",
+						Bucket:       "test.vald",
+						S3:           new(S3Config),
+						CloudStorage: new(CloudStorageConfig),
 					},
 				},
 			}
 		}(),
 		func() test {
-			s3 := new(S3Config)
+			s3 := &S3Config{
+				Endpoint: "https://test.vald",
+			}
+			cloudStorage := &CloudStorageConfig{
+				URL:    "gs://test.vald",
+				Client: new(CloudStorageClient),
+			}
 			return test{
-				name: "return Blob when the bind successes and the S3Config is not nil",
+				name: "return Blob when the bind successes and the S3Config CloudStorageConfig is not nil",
 				fields: fields{
-					StorageType: "s3",
-					Bucket:      "test.vald",
-					S3:          s3,
+					StorageType:  "s3",
+					Bucket:       "test.vald",
+					S3:           s3,
+					CloudStorage: cloudStorage,
 				},
 				want: want{
 					want: &Blob{
-						StorageType: "s3",
-						Bucket:      "test.vald",
-						S3:          s3,
+						StorageType:  "s3",
+						Bucket:       "test.vald",
+						S3:           s3,
+						CloudStorage: cloudStorage,
 					},
 				},
 			}
@@ -256,9 +291,10 @@ func TestBlob_Bind(t *testing.T) {
 				},
 				want: want{
 					want: &Blob{
-						StorageType: "s3",
-						Bucket:      "test.vald",
-						S3:          new(S3Config),
+						StorageType:  "s3",
+						Bucket:       "test.vald",
+						S3:           new(S3Config),
+						CloudStorage: new(CloudStorageConfig),
 					},
 				},
 			}
@@ -278,9 +314,10 @@ func TestBlob_Bind(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			b := &Blob{
-				StorageType: test.fields.StorageType,
-				Bucket:      test.fields.Bucket,
-				S3:          test.fields.S3,
+				StorageType:  test.fields.StorageType,
+				Bucket:       test.fields.Bucket,
+				S3:           test.fields.S3,
+				CloudStorage: test.fields.CloudStorage,
 			}
 
 			got := b.Bind()
@@ -468,6 +505,189 @@ func TestS3Config_Bind(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+		})
+	}
+}
+
+func TestCloudStorageConfig_Bind(t *testing.T) {
+	t.Parallel()
+	type fields struct {
+		URL                     string
+		Client                  *CloudStorageClient
+		WriteBufferSize         int
+		WriteCacheControl       string
+		WriteContentDisposition string
+		WriteContentEncoding    string
+		WriteContentLanguage    string
+		WriteContentType        string
+	}
+	type want struct {
+		want *CloudStorageConfig
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, *CloudStorageConfig) error
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
+	}
+	defaultCheckFunc := func(w want, got *CloudStorageConfig) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		func() test {
+			fields := fields{
+				URL: "gs://test.vald",
+				Client: &CloudStorageClient{
+					CredentialsFilePath: "/var/cred",
+					CredentialsJSON:     "{\"type\": \"json\"}",
+				},
+				WriteBufferSize:         256,
+				WriteCacheControl:       "no-cache",
+				WriteContentDisposition: "attachment",
+				WriteContentEncoding:    "uint8",
+				WriteContentLanguage:    "en-US",
+				WriteContentType:        "text/plain",
+			}
+			return test{
+				name:   "return CloudStorageConfig when the CloudStorageClient is not nil",
+				fields: fields,
+				want: want{
+					want: &CloudStorageConfig{
+						URL:                     fields.URL,
+						Client:                  fields.Client,
+						WriteBufferSize:         fields.WriteBufferSize,
+						WriteCacheControl:       fields.WriteCacheControl,
+						WriteContentDisposition: fields.WriteContentDisposition,
+						WriteContentEncoding:    fields.WriteContentEncoding,
+						WriteContentLanguage:    fields.WriteContentLanguage,
+						WriteContentType:        fields.WriteContentType,
+					},
+				},
+			}
+		}(),
+		func() test {
+			fields := fields{
+				URL:                     "gs://test.vald",
+				WriteBufferSize:         256,
+				WriteCacheControl:       "no-cache",
+				WriteContentDisposition: "attachment",
+				WriteContentEncoding:    "uint8",
+				WriteContentLanguage:    "en-US",
+				WriteContentType:        "text/plain",
+			}
+			return test{
+				name:   "return CloudStorageConfig when the CloudStorageClient is nil",
+				fields: fields,
+				want: want{
+					want: &CloudStorageConfig{
+						URL:                     fields.URL,
+						Client:                  new(CloudStorageClient),
+						WriteBufferSize:         fields.WriteBufferSize,
+						WriteCacheControl:       fields.WriteCacheControl,
+						WriteContentDisposition: fields.WriteContentDisposition,
+						WriteContentEncoding:    fields.WriteContentEncoding,
+						WriteContentLanguage:    fields.WriteContentLanguage,
+						WriteContentType:        fields.WriteContentType,
+					},
+				},
+			}
+		}(),
+		func() test {
+			m := map[string]string{
+				"URL":                          "gs://test.vald",
+				"CLIENT_CREDENTIALS_FILE_PATH": "/var/cred",
+				"CLIENT_CREDENTIALS_JSON":      "{\"type\": \"json\"}",
+				"WRITE_CACHE_CONTROL":          "no-cache",
+				"WRITE_CONTENT_DISPOSITION":    "attachment",
+				"WRITE_CONTENT_ENCODING":       "uint8",
+				"WRITE_CONTENT_LANGUAGE":       "en-US",
+				"WRITE_CONTENT_TYPE":           "text/plain",
+			}
+			return test{
+				name: "return CloudStorageConfig when the data is loaded from the environment variable",
+				fields: fields{
+					URL: "_URL_",
+					Client: &CloudStorageClient{
+						CredentialsFilePath: "_CLIENT_CREDENTIALS_FILE_PATH_",
+						CredentialsJSON:     "_CLIENT_CREDENTIALS_JSON_",
+					},
+					WriteBufferSize:         256,
+					WriteCacheControl:       "_WRITE_CACHE_CONTROL_",
+					WriteContentDisposition: "_WRITE_CONTENT_DISPOSITION_",
+					WriteContentEncoding:    "_WRITE_CONTENT_ENCODING_",
+					WriteContentLanguage:    "_WRITE_CONTENT_LANGUAGE_",
+					WriteContentType:        "_WRITE_CONTENT_TYPE_",
+				},
+				beforeFunc: func(t *testing.T) {
+					t.Helper()
+					for k, v := range m {
+						if err := os.Setenv(k, v); err != nil {
+							t.Fatal(err)
+						}
+					}
+				},
+				afterFunc: func(t *testing.T) {
+					t.Helper()
+					for k := range m {
+						if err := os.Unsetenv(k); err != nil {
+							t.Fatal(err)
+						}
+					}
+				},
+				want: want{
+					want: &CloudStorageConfig{
+						URL: "gs://test.vald",
+						Client: &CloudStorageClient{
+							CredentialsFilePath: "/var/cred",
+							CredentialsJSON:     "{\"type\": \"json\"}",
+						},
+						WriteBufferSize:         256,
+						WriteCacheControl:       "no-cache",
+						WriteContentDisposition: "attachment",
+						WriteContentEncoding:    "uint8",
+						WriteContentLanguage:    "en-US",
+						WriteContentType:        "text/plain",
+					},
+				},
+			}
+		}(),
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			c := &CloudStorageConfig{
+				URL:                     test.fields.URL,
+				Client:                  test.fields.Client,
+				WriteBufferSize:         test.fields.WriteBufferSize,
+				WriteCacheControl:       test.fields.WriteCacheControl,
+				WriteContentDisposition: test.fields.WriteContentDisposition,
+				WriteContentEncoding:    test.fields.WriteContentEncoding,
+				WriteContentLanguage:    test.fields.WriteContentLanguage,
+				WriteContentType:        test.fields.WriteContentType,
+			}
+
+			got := c.Bind()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
 		})
 	}
 }

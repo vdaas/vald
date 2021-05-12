@@ -40,6 +40,7 @@ import (
 
 type Restorer interface {
 	Start(ctx context.Context) (<-chan error, error)
+	PreStop(ctx context.Context) error
 }
 
 type restorer struct {
@@ -109,6 +110,13 @@ func (r *restorer) Start(ctx context.Context) (<-chan error, error) {
 	}))
 
 	return ech, nil
+}
+
+func (r *restorer) PreStop(ctx context.Context) error {
+	if r.storage != nil {
+		return r.storage.Stop(ctx)
+	}
+	return nil
 }
 
 func (r *restorer) startRestore(ctx context.Context) (<-chan error, error) {

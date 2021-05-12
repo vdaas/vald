@@ -25,6 +25,7 @@ type BlobStorageType uint8
 const (
 	// S3 represents s3 storage type.
 	S3 BlobStorageType = 1 + iota
+	CloudStorage
 )
 
 // String returns blob storage type.
@@ -32,6 +33,8 @@ func (bst BlobStorageType) String() string {
 	switch bst {
 	case S3:
 		return "s3"
+	case CloudStorage:
+		return "cloud_storage"
 	}
 	return "unknown"
 }
@@ -41,6 +44,8 @@ func AtoBST(bst string) BlobStorageType {
 	switch strings.ToLower(bst) {
 	case S3.String():
 		return S3
+	case CloudStorage.String():
+		return CloudStorage
 	}
 	return 0
 }
@@ -55,6 +60,9 @@ type Blob struct {
 
 	// S3 represents S3 config
 	S3 *S3Config `json:"s3" yaml:"s3"`
+
+	// CloudStorage represents CloudStorage config
+	CloudStorage *CloudStorageConfig `json:"cloud_storage" yaml:"cloud_storage"`
 }
 
 // S3Config represents S3Config configuration.
@@ -81,6 +89,25 @@ type S3Config struct {
 	MaxChunkSize string `json:"max_chunk_size" yaml:"max_chunk_size"`
 }
 
+// CloudStorageConfig represents CloudStorage configuration.
+type CloudStorageConfig struct {
+	URL    string              `json:"url" yaml:"url"`
+	Client *CloudStorageClient `json:"client" yaml:"client"`
+
+	WriteBufferSize         int    `json:"write_buffer_size" yaml:"write_buffer_size"`
+	WriteCacheControl       string `json:"write_cache_control" yaml:"write_cache_control"`
+	WriteContentDisposition string `json:"write_content_disposition" yaml:"write_content_disposition"`
+	WriteContentEncoding    string `json:"write_content_encoding" yaml:"write_content_encoding"`
+	WriteContentLanguage    string `json:"write_content_language" yaml:"write_content_language"`
+	WriteContentType        string `json:"write_content_type" yaml:"write_content_type"`
+}
+
+// CloudStorageClient represents CloudStorage client configuration.
+type CloudStorageClient struct {
+	CredentialsFilePath string `json:"credentials_file_path" yaml:"credentials_file_path"`
+	CredentialsJSON     string `json:"credentials_json" yaml:"credentials_json"`
+}
+
 // Bind binds the actual data from the Blob receiver field.
 func (b *Blob) Bind() *Blob {
 	b.StorageType = GetActualValue(b.StorageType)
@@ -90,6 +117,12 @@ func (b *Blob) Bind() *Blob {
 		b.S3 = b.S3.Bind()
 	} else {
 		b.S3 = new(S3Config)
+	}
+
+	if b.CloudStorage != nil {
+		b.CloudStorage = b.CloudStorage.Bind()
+	} else {
+		b.CloudStorage = new(CloudStorageConfig)
 	}
 
 	return b
@@ -106,4 +139,23 @@ func (s *S3Config) Bind() *S3Config {
 	s.MaxChunkSize = GetActualValue(s.MaxChunkSize)
 
 	return s
+}
+
+func (c *CloudStorageConfig) Bind() *CloudStorageConfig {
+	c.URL = GetActualValue(c.URL)
+
+	if c.Client != nil {
+		c.Client.CredentialsFilePath = GetActualValue(c.Client.CredentialsFilePath)
+		c.Client.CredentialsJSON = GetActualValue(c.Client.CredentialsJSON)
+	} else {
+		c.Client = new(CloudStorageClient)
+	}
+
+	c.WriteCacheControl = GetActualValue(c.WriteCacheControl)
+	c.WriteContentDisposition = GetActualValue(c.WriteContentDisposition)
+	c.WriteContentEncoding = GetActualValue(c.WriteContentEncoding)
+	c.WriteContentLanguage = GetActualValue(c.WriteContentLanguage)
+	c.WriteContentType = GetActualValue(c.WriteContentType)
+
+	return c
 }

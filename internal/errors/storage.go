@@ -22,4 +22,6 @@ var (
 
 	ErrStorageReaderNotOpened = New("reader not opened")
 	ErrStorageWriterNotOpened = New("writer not opened")
+
+	ErrBucketNotOpened = New("bucket not opened")
 )

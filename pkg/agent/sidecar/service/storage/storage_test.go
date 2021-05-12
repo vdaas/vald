@@ -226,7 +226,10 @@ func Test_bs_initCompressor(t *testing.T) {
 }
 
 func Test_bs_initBucket(t *testing.T) {
-	t.Parallel()
+  t.Parallel()
+	type args struct {
+		ctx context.Context
+	}
 	type fields struct {
 		eg                errgroup.Group
 		storageType       string
@@ -245,6 +248,7 @@ func Test_bs_initBucket(t *testing.T) {
 	}
 	type test struct {
 		name       string
+		args       args
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
@@ -333,7 +337,7 @@ func Test_bs_initBucket(t *testing.T) {
 				compressor:        test.fields.compressor,
 			}
 
-			err := b.initBucket()
+			err := b.initBucket(test.args.ctx)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}

@@ -25,6 +25,8 @@ import (
 	"github.com/vdaas/vald/internal/compress"
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/db/storage/blob"
+	"github.com/vdaas/vald/internal/db/storage/blob/cloudstorage"
+	"github.com/vdaas/vald/internal/db/storage/blob/cloudstorage/urlopener"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/session"
 	"github.com/vdaas/vald/internal/errgroup"
@@ -33,6 +35,7 @@ import (
 
 type Storage interface {
 	Start(ctx context.Context) (<-chan error, error)
+	Stop(ctx context.Context) error
 	Reader(ctx context.Context) (io.ReadCloser, error)
 	Writer(ctx context.Context) (io.WriteCloser, error)
 
@@ -48,6 +51,9 @@ type bs struct {
 
 	s3Opts        []s3.Option
 	s3SessionOpts []session.Option
+
+	cloudStorageOpts          []cloudstorage.Option
+	cloudStorageURLOpenerOpts []urlopener.Option
 
 	compressAlgorithm string
 	compressionLevel  int
@@ -100,7 +106,7 @@ func (b *bs) initCompressor() (err error) {
 	return err
 }
 
-func (b *bs) initBucket() (err error) {
+func (b *bs) initBucket(ctx context.Context) (err error) {
 	switch config.AtoBST(b.storageType) {
 	case config.S3:
 		s, err := session.New(b.s3SessionOpts...).Session()
@@ -119,6 +125,26 @@ func (b *bs) initBucket() (err error) {
 		if err != nil {
 			return err
 		}
+	case config.CloudStorage:
+		uoi, err := urlopener.New(b.cloudStorageURLOpenerOpts...)
+		if err != nil {
+			return err
+		}
+
+		uo, err := uoi.URLOpener(ctx)
+		if err != nil {
+			return err
+		}
+
+		b.bucket, err = cloudstorage.New(
+			append(
+				b.cloudStorageOpts,
+				cloudstorage.WithURLOpener(uo),
+			)...,
+		)
+		if err != nil {
+			return err
+		}
 	default:
 		return errors.ErrInvalidStorageType
 	}
@@ -129,12 +155,24 @@ func (b *bs) initBucket() (err error) {
 func (b *bs) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 1)
 
-	err := b.initBucket()
+	err := b.initBucket(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	err = b.bucket.Open(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	return ech, nil
+}
+
+func (b *bs) Stop(ctx context.Context) error {
+	if b.bucket != nil {
+		return b.bucket.Close()
+	}
+	return nil
 }
 
 func (b *bs) Reader(ctx context.Context) (r io.ReadCloser, err error) {
