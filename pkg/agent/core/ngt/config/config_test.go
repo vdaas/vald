@@ -314,7 +314,7 @@ func TestNewConfig(t *testing.T) {
 		func() test {
 			path := "not_found.txt"
 			return test{
-				name: "test_case_2",
+				name: "return error when the file does not exist",
 				args: args{
 					path: path,
 				},
