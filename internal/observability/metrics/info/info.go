@@ -57,32 +57,38 @@ func labelKVs(i interface{}) (map[metrics.Key]string, error) {
 			continue
 		}
 
-		v := rv.Field(k).Interface()
-
 		var value string
 
-		switch v := v.(type) {
-		case string:
-			value = v
-		case []string:
-			value = fmt.Sprintf("%.255s", fmt.Sprintf("%v", v))
-		case bool:
-			value = strconv.FormatBool(v)
-		case uint, uint8, uint16, uint32, uint64,
-			int, int8, int16, int32, int64:
-			value = fmt.Sprintf("%d", v)
-		case float32, float64:
-			value = fmt.Sprintf("%f", v)
+		switch v := rv.Field(k); v.Kind() {
+		case reflect.String:
+			value = v.String()
+		case reflect.Slice, reflect.Array:
+			switch v.Interface().(type) {
+			case []string:
+				value = fmt.Sprintf("%.255s", fmt.Sprintf("%v", v.Interface()))
+			case []rune:
+				value = v.Convert(reflect.TypeOf("")).String()
+			}
+		case reflect.Bool:
+			value = strconv.FormatBool(v.Bool())
+		case reflect.Int, reflect.Int8, reflect.Int16,
+			reflect.Int32, reflect.Int64:
+			value = strconv.FormatInt(v.Int(), 10)
+		case reflect.Uint, reflect.Uint8, reflect.Uint16,
+			reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+			value = strconv.FormatUint(v.Uint(), 10)
+		case reflect.Float32, reflect.Float64:
+			value = strconv.FormatFloat(v.Float(), 'E', -1, 64)
 		default:
 			continue
 		}
 
-		k, err := metrics.NewKey(keyName)
+		mk, err := metrics.NewKey(keyName)
 		if err != nil {
 			return nil, err
 		}
 
-		kvs[k] = value
+		kvs[mk] = value
 	}
 
 	return kvs, nil
