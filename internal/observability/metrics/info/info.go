@@ -68,6 +68,8 @@ func labelKVs(i interface{}) (map[metrics.Key]string, error) {
 				value = fmt.Sprintf("%.255s", fmt.Sprintf("%v", v.Interface()))
 			case []rune:
 				value = v.Convert(reflect.TypeOf("")).String()
+			default:
+				continue
 			}
 		case reflect.Bool:
 			value = strconv.FormatBool(v.Bool())

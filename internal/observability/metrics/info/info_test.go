@@ -197,6 +197,8 @@ func Test_labelKVs(t *testing.T) {
 				O bool     `info:"o"`
 				P y        `info:"p"`
 				Q string
+				R []rune `info:"r"`
+				S []y    `info:"s"`
 			}
 			return test{
 				name: "returns kvs when the passed struct is valid",
@@ -220,6 +222,7 @@ func Test_labelKVs(t *testing.T) {
 						metrics.MustNewKey("m"): "0E+00",
 						metrics.MustNewKey("n"): "0E+00",
 						metrics.MustNewKey("o"): "false",
+						metrics.MustNewKey("r"): "",
 					},
 					err: nil,
 				},
