@@ -188,14 +188,14 @@ func TestNewConfig(t *testing.T) {
 		}(),
 		func() test {
 			data := `
-version: v1.0.0
-server_config:
-  full_shutdown_duration: 10ms
-observability:
-  enabled: true
-ngt:
-  index_path: /var/index
-`
+                version: v1.0.0
+                server_config:
+                  full_shutdown_duration: 10ms
+                observability:
+                  enabled: true
+                ngt:
+                  index_path: /var/index
+                `
 			return test{
 				name: "return Data and nil when the yaml bind successes",
 				args: args{
@@ -258,12 +258,12 @@ ngt:
 		}(),
 		func() test {
 			data := `
-version: v1.0.0
-server_config:
-  full_shutdown_duration: 10ms
-ngt:
-  index_path: /var/index
-`
+                version: v1.0.0
+                server_config:
+                  full_shutdown_duration: 10ms
+                ngt:
+                  index_path: /var/index
+                `
 			return test{
 				name: "return Data and nil when the yaml bind successes but the input yaml value of observability is empty",
 				args: args{
