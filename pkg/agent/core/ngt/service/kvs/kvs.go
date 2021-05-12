@@ -26,6 +26,7 @@ import (
 	xxhash "github.com/cespare/xxhash/v2"
 )
 
+// BidiMap represents an interface for operating kvs.
 type BidiMap interface {
 	Get(string) (uint32, bool)
 	GetInverse(uint32) (string, bool)
@@ -51,6 +52,7 @@ const (
 	// mask = 0xFFF.
 )
 
+// New returns BidiMap.
 func New() BidiMap {
 	b := &bidi{
 		l: 0,
@@ -64,20 +66,27 @@ func New() BidiMap {
 	return b
 }
 
+// Get returns the value from the given key.
+// If the value does not exist, returns false.
 func (b *bidi) Get(key string) (uint32, bool) {
 	return b.uo[xxhash.Sum64(stringToBytes(key))&mask].Load(key)
 }
 
+// Get returns the key from the given val.
+// If the key does not exist, returns false.
 func (b *bidi) GetInverse(val uint32) (string, bool) {
 	return b.ou[val&mask].Load(val)
 }
 
+// Set sets the key and val.
 func (b *bidi) Set(key string, val uint32) {
 	b.uo[xxhash.Sum64(stringToBytes(key))&mask].Store(key, val)
 	b.ou[val&mask].Store(val, key)
 	atomic.AddUint64(&b.l, 1)
 }
 
+// Delete the value for the key and the key for the value.
+// If the value for the key does not exist, returns false.
 func (b *bidi) Delete(key string) (val uint32, ok bool) {
 	idx := xxhash.Sum64(stringToBytes(key)) & mask
 	val, ok = b.uo[idx].Load(key)
@@ -90,6 +99,8 @@ func (b *bidi) Delete(key string) (val uint32, ok bool) {
 	return val, true
 }
 
+// Delete the key for the value and the value for the key a.
+// If the key for the val does not exist, returns false.
 func (b *bidi) DeleteInverse(val uint32) (key string, ok bool) {
 	idx := val & mask
 	key, ok = b.ou[idx].Load(val)
@@ -102,6 +113,7 @@ func (b *bidi) DeleteInverse(val uint32) (key string, ok bool) {
 	return key, true
 }
 
+// Range retrieves all set keys and values and calls the callback function f.
 func (b *bidi) Range(ctx context.Context, f func(string, uint32) bool) {
 	wg := new(sync.WaitGroup)
 	for i := range b.uo {
@@ -122,6 +134,7 @@ func (b *bidi) Range(ctx context.Context, f func(string, uint32) bool) {
 	wg.Wait()
 }
 
+// Len returns the length of the cache that is set.
 func (b *bidi) Len() uint64 {
 	return atomic.LoadUint64(&b.l)
 }
