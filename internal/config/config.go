@@ -50,9 +50,6 @@ const (
 
 // Bind binds the actual data from the receiver field.
 func (c *GlobalConfig) Bind() *GlobalConfig {
-	if c == nil {
-		c = new(GlobalConfig)
-	}
 	c.Version = GetActualValue(c.Version)
 	c.TZ = GetActualValue(c.TZ)
 
