@@ -59,7 +59,7 @@ func labelKVs(i interface{}) (map[metrics.Key]string, error) {
 
 		v := rv.Field(k).Interface()
 
-		value := ""
+		var value string
 
 		switch v := v.(type) {
 		case string:
