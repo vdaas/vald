@@ -48,7 +48,7 @@ func NewConfig(path string) (cfg *Data, err error) {
 	}
 
 	if cfg != nil {
-		cfg.GlobalConfig.Bind()
+		cfg.Bind()
 	}
 
 	if cfg.Server != nil {
