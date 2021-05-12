@@ -223,6 +223,7 @@ func TestWithNGT(t *testing.T) {
 		{
 			name: "set success when ngt is not nil",
 			beforeFunc: func(t *testing.T, args *args, w *want) {
+				t.Helper()
 				n, err := service.New(&config.NGT{
 					Dimension:    1024,
 					DistanceType: "cos",
