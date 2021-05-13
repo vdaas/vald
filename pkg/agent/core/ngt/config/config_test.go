@@ -18,6 +18,7 @@
 package config
 
 import (
+	"io"
 	"io/fs"
 	"os"
 	"reflect"
@@ -324,6 +325,97 @@ func TestNewConfig(t *testing.T) {
 						Op:   "open",
 						Path: path,
 						Err:  syscall.Errno(0x2),
+					},
+				},
+			}
+		}(),
+		func() test {
+			path := "empty.json"
+			return test{
+				name: "return error when the json file is empty",
+				args: args{
+					path: path,
+				},
+				beforeFunc: func(t *testing.T, a args) {
+					t.Helper()
+					f, err := os.Create(a.path)
+					if err != nil {
+						t.Fatal(err)
+					}
+					if err := f.Close(); err != nil {
+						t.Fatal(err)
+					}
+				},
+				afterFunc: func(t *testing.T, a args) {
+					t.Helper()
+					if err := os.Remove(a.path); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					wantCfg: nil,
+					err:     io.EOF,
+				},
+			}
+		}(),
+		func() test {
+			path := "empty.yaml"
+			return test{
+				name: "return error when the yaml file is empty",
+				args: args{
+					path: path,
+				},
+				beforeFunc: func(t *testing.T, a args) {
+					t.Helper()
+					f, err := os.Create(a.path)
+					if err != nil {
+						t.Fatal(err)
+					}
+					if err := f.Close(); err != nil {
+						t.Fatal(err)
+					}
+				},
+				afterFunc: func(t *testing.T, a args) {
+					t.Helper()
+					if err := os.Remove(a.path); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					wantCfg: nil,
+					err:     io.EOF,
+				},
+			}
+		}(),
+		func() test {
+			path := "unreadable.txt"
+			return test{
+				name: "return error when can't read file",
+				args: args{
+					path: path,
+				},
+				beforeFunc: func(t *testing.T, a args) {
+					t.Helper()
+					f, err := os.OpenFile(a.path, os.O_CREATE, 0x222)
+					if err != nil {
+						t.Fatal(err)
+					}
+					if err := f.Close(); err != nil {
+						t.Fatal(err)
+					}
+				},
+				afterFunc: func(t *testing.T, a args) {
+					t.Helper()
+					if err := os.Remove(a.path); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					wantCfg: nil,
+					err: &fs.PathError{
+						Op:   "open",
+						Path: "unreadable.txt",
+						Err:  syscall.Errno(0x1),
 					},
 				},
 			}
