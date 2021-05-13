@@ -281,7 +281,7 @@ func TestCassandra_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
-			key := "PASSWORD"
+			key := "CASSANDRA_BIND_PASSWORD"
 			val := "cassandra_password"
 			return test{
 				name: "return Cassandra struct when Password is set via the envirionment value",

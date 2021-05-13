@@ -75,16 +75,17 @@ func TestDNS_Bind(t *testing.T) {
 		}(),
 		func() test {
 			cacheEnabled := true
+			envPrefix := "DNS_BIND_"
 			p := map[string]string{
-				"REFRESH_DURATION": "10m",
-				"CACHE_EXPIRATION": "24h",
+				envPrefix + "REFRESH_DURATION": "10m",
+				envPrefix + "CACHE_EXPIRATION": "24h",
 			}
 			return test{
 				name: "return DNS when string values are set as environment value",
 				fields: fields{
 					CacheEnabled:    cacheEnabled,
-					RefreshDuration: "_REFRESH_DURATION_",
-					CacheExpiration: "_CACHE_EXPIRATION_",
+					RefreshDuration: "_" + envPrefix + "REFRESH_DURATION_",
+					CacheExpiration: "_" + envPrefix + "CACHE_EXPIRATION_",
 				},
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
@@ -199,17 +200,18 @@ func TestDialer_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
+			envPrefix := "DIALER_BIND_"
 			p := map[string]string{
-				"TIMEOUT":          "3s",
-				"KEEP_ALIVE":       "5m",
-				"DUAL_STACK_DELAY": "10m",
+				envPrefix + "TIMEOUT":          "3s",
+				envPrefix + "KEEP_ALIVE":       "5m",
+				envPrefix + "DUAL_STACK_DELAY": "10m",
 			}
 			return test{
 				name: "return Dialer when fields are set as environment value",
 				fields: fields{
-					Timeout:       "_TIMEOUT_",
-					KeepAlive:     "_KEEP_ALIVE_",
-					FallbackDelay: "_DUAL_STACK_DELAY_",
+					Timeout:       "_" + envPrefix + "TIMEOUT_",
+					KeepAlive:     "_" + envPrefix + "KEEP_ALIVE_",
+					FallbackDelay: "_" + envPrefix + "DUAL_STACK_DELAY_",
 				},
 				want: want{
 					want: &Dialer{

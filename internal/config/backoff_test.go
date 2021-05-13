@@ -75,7 +75,7 @@ func TestBackoff_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
-			key := "INITIAL_DURATION"
+			key := "BACKOFF_BIND_INITIAL_DURATION"
 			val := "5m"
 			return test{
 				name: "return Backoff struct when initialDuration is set via the environment value",

@@ -226,7 +226,7 @@ func TestGRPCClient_Bind(t *testing.T) {
 				"10.40.98.17",
 				"10.40.84.215",
 			}
-			key := "HEALTH_CHECK_DURATION"
+			key := "GRPCCLIENT_BIND_HEALTH_CHECK_DURATION"
 			value := "30s"
 			return test{
 				name: "return GRPCClient when only healthcheck duration is set as environment value",
@@ -357,15 +357,16 @@ func TestGRPCClientKeepalive_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
+			envPrefix := "GRPCCLIENTKEEPALIVE_BIND_"
 			p := map[string]string{
-				"TIME":    "100s",
-				"TIMEOUT": "300s",
+				envPrefix + "TIME":    "100s",
+				envPrefix + "TIMEOUT": "300s",
 			}
 			return test{
 				name: "return GRPCClientKeepalive when parameters are set as environment value",
 				fields: fields{
-					Time:    "_TIME_",
-					Timeout: "_TIMEOUT_",
+					Time:    "_" + envPrefix + "TIME_",
+					Timeout: "_" + envPrefix + "TIMEOUT_",
 				},
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
@@ -615,15 +616,16 @@ func TestDialOption_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
+			envPrefix := "DIALOPTION_BIND_"
 			p := map[string]string{
-				"BACKOFF_MAX_DELAY": "3m",
-				"TIMEOUT":           "3m",
+				envPrefix + "BACKOFF_MAX_DELAY": "3m",
+				envPrefix + "TIMEOUT":           "3m",
 			}
 			return test{
 				name: "return DialOption when parameters are set as environment value",
 				fields: fields{
-					BackoffMaxDelay: "_BACKOFF_MAX_DELAY_",
-					Timeout:         "_TIMEOUT_",
+					BackoffMaxDelay: "_" + envPrefix + "BACKOFF_MAX_DELAY_",
+					Timeout:         "_" + envPrefix + "TIMEOUT_",
 				},
 				beforeFunc: func(t *testing.T) {
 					t.Helper()

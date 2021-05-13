@@ -127,24 +127,25 @@ func TestLB_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
+			envPrefix := "LB_BIND_"
 			agentName := "vald-agent-ngt"
 			agentNamespace := "vald"
 			agentDNS := "vald-agent-ngt.vald.svc.cluster.local"
 			nodeName := "vald-01-worker"
 			m := map[string]string{
-				"AGENT_NAME":      agentName,
-				"AGENT_NAMESPACE": agentNamespace,
-				"AGENT_DNS":       agentDNS,
-				"NODE_NAME":       nodeName,
+				envPrefix + "AGENT_NAME":      agentName,
+				envPrefix + "AGENT_NAMESPACE": agentNamespace,
+				envPrefix + "AGENT_DNS":       agentDNS,
+				envPrefix + "NODE_NAME":       nodeName,
 			}
 			return test{
 				name: "return LB when the bind successes and the data is loaded from the environment variable",
 				fields: fields{
 					AgentPort:      8081,
-					AgentName:      "_AGENT_NAME_",
-					AgentNamespace: "_AGENT_NAMESPACE_",
-					AgentDNS:       "_AGENT_DNS_",
-					NodeName:       "_NODE_NAME_",
+					AgentName:      "_" + envPrefix + "AGENT_NAME_",
+					AgentNamespace: "_" + envPrefix + "AGENT_NAMESPACE_",
+					AgentDNS:       "_" + envPrefix + "AGENT_DNS_",
+					NodeName:       "_" + envPrefix + "NODE_NAME_",
 					IndexReplica:   3,
 				},
 				beforeFunc: func(t *testing.T) {

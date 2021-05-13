@@ -132,21 +132,22 @@ func TestMeta_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
+			envPrefix := "META_BIND_"
 			p := map[string]string{
-				"HOST":                         "vald-meta.vald.svc.cluster.local",
-				"CACHE_EXPIRATION":             "24h",
-				"EXPIRED_CACHE_CHECK_DURATION": "1m",
+				envPrefix + "HOST":                         "vald-meta.vald.svc.cluster.local",
+				envPrefix + "CACHE_EXPIRATION":             "24h",
+				envPrefix + "EXPIRED_CACHE_CHECK_DURATION": "1m",
 			}
 			port := uint16(8081)
 			enableCache := true
 			return test{
 				name: "return Meta when some parameters are set as environment value",
 				fields: fields{
-					Host:                      "_HOST_",
+					Host:                      "_" + envPrefix + "HOST_",
 					Port:                      port,
 					EnableCache:               enableCache,
-					CacheExpiration:           "_CACHE_EXPIRATION_",
-					ExpiredCacheCheckDuration: "_EXPIRED_CACHE_CHECK_DURATION_",
+					CacheExpiration:           "_" + envPrefix + "CACHE_EXPIRATION_",
+					ExpiredCacheCheckDuration: "_" + envPrefix + "EXPIRED_CACHE_CHECK_DURATION_",
 				},
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
