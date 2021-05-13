@@ -236,7 +236,7 @@ func Test_group_Do(t *testing.T) {
 					go func() {
 						defer wg.Done()
 						g.Do(context.Background(), args.key, func() (interface{}, error) {
-							time.Sleep(3 * time.Second)
+							time.Sleep(300 * time.Nanosecond)
 							return args.fn()
 						})
 					}()
