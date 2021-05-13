@@ -415,7 +415,7 @@ func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, reason confi
 
 		agentAddr := net.JoinHostPort(p.IP, uint16(r.agentPort))
 
-		gc := grpc.New(grpc.WithAddrs(agentAddr), grpc.WithConnectionPoolSize(1))
+		gc := grpc.New(grpc.WithAddrs(agentAddr), grpc.WithConnectionPoolSize(1), grpc.WithInsecure(true), grpc.WithResolveDNS(false))
 		_, err = gc.StartConnectionMonitor(ctx)
 		if err != nil {
 			return err
