@@ -890,7 +890,7 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 			var wantl = 0
 
 			return test{
-				name: "return (45637ec4-c85f-11ea-87d0, true) when the delete successes and the val is default value",
+				name: "return key and true when the delete successes and the val is 0",
 				args: args{},
 				beforeFunc: func(a args, bm BidiMap) {
 					bm.Set(key, a.val)
