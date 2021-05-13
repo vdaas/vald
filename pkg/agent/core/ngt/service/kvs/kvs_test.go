@@ -385,6 +385,33 @@ func Test_bidi_GetInverse(t *testing.T) {
 				},
 			}
 		}(),
+		func() test {
+			fields := fields{
+				l: 0,
+			}
+			for i := 0; i < slen; i++ {
+				fields.ou[i] = new(ou)
+				fields.uo[i] = new(uo)
+			}
+
+			var (
+				key        = ""
+				val uint32 = 0
+			)
+
+			return test{
+				name:   "return true when set the default value and there is a key for the value and the val is 0",
+				args:   args{},
+				fields: fields,
+				beforeFunc: func(_ args, bm BidiMap) {
+					bm.Set(key, val)
+				},
+				want: want{
+					want:  "",
+					want1: true,
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
