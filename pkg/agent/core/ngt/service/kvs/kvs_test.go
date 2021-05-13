@@ -541,6 +541,25 @@ func Test_bidi_Set(t *testing.T) {
 				},
 			}
 		}(),
+		func() test {
+			fields := fields{
+				l: 0,
+			}
+			for i := 0; i < slen; i++ {
+				fields.ou[i] = new(ou)
+				fields.uo[i] = new(uo)
+			}
+
+			return test{
+				name:   "set success when the key and empty and the val is 0",
+				args:   args{},
+				fields: fields,
+				want: want{
+					val: 0,
+					l:   1,
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
