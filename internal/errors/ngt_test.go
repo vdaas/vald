@@ -410,7 +410,7 @@ func TestErrIncompatibleDimensionSize(t *testing.T) {
 			},
 		},
 		{
-			name: "return an ErrIncompatibleDimensionSize error when req is 640 and dim is 720",
+			name: "return an ErrIncompatibleDimensionSize error when req is 640"
 			args: args{
 				req: 640,
 			},
