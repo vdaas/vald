@@ -15806,6 +15806,8 @@ spec:
                           type: string
                         agent_namespace:
                           type: string
+                        agent_port:
+                          type: number
                         agent_resource_type:
                           type: string
                         job:
