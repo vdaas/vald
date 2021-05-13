@@ -209,6 +209,33 @@ func Test_bidi_Get(t *testing.T) {
 				},
 			}
 		}(),
+		func() test {
+			fields := fields{
+				l: 0,
+			}
+			for i := 0; i < slen; i++ {
+				fields.ou[i] = new(ou)
+				fields.uo[i] = new(uo)
+			}
+
+			var (
+				key        = ""
+				val uint32 = 0
+			)
+
+			return test{
+				name:   "return (0, false) when default value is set and there is value for the key and the key is default value",
+				args:   args{},
+				fields: fields,
+				beforeFunc: func(_ args, bm BidiMap) {
+					bm.Set(key, val)
+				},
+				want: want{
+					want:  0,
+					want1: true,
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
