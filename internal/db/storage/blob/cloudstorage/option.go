@@ -25,9 +25,7 @@ import (
 // Option configures client of google cloud storage.
 type Option func(*client) error
 
-var (
-	defaultOpts = []Option{}
-)
+var defaultOpts = []Option{}
 
 // WithURL returns Option that sets c.urlstr.
 func WithURL(str string) Option {

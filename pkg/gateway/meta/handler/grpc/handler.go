@@ -266,7 +266,7 @@ func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error)
 					sspan.End()
 				}
 			}()
-			res, err := s.Search(ctx, data.(*payload.Search_Request))
+			res, err := s.Search(ctx, req)
 			if err != nil {
 				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse Search gRPC error response")
 				if sspan != nil {

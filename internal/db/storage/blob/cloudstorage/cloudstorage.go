@@ -57,6 +57,7 @@ func (c *client) Open(ctx context.Context) (err error) {
 	}
 	return
 }
+
 func (c *client) Close() error {
 	if c.bucket == nil {
 		return errors.ErrBucketNotOpened
