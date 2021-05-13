@@ -504,7 +504,7 @@ func Test_bidi_Set(t *testing.T) {
 			)
 
 			return test{
-				name: "set success when the val is default value",
+				name: "set success when the val is 0",
 				args: args{
 					key: key,
 				},
