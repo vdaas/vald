@@ -68,6 +68,7 @@ type NGT interface {
 	InsertVQueueBufferLen() uint64
 	DeleteVQueueChannelLen() uint64
 	InsertVQueueChannelLen() uint64
+	GetDimensionSize() int
 	Close(ctx context.Context) error
 }
 
@@ -89,8 +90,8 @@ type ngt struct {
 
 	// configurations
 	inMem bool // in-memory mode
-
-	alen int // auto indexing length
+	dim   int  // dimension size
+	alen  int  // auto indexing length
 
 	lim  time.Duration // auto indexing time limit
 	dur  time.Duration // auto indexing check duration
@@ -126,6 +127,7 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 	}
 
 	n.kvs = kvs.New()
+	n.dim = cfg.Dimension
 
 	err = n.initNGT(
 		core.WithInMemoryMode(n.inMem),
@@ -773,6 +775,10 @@ func (n *ngt) InsertVQueueChannelLen() uint64 {
 
 func (n *ngt) DeleteVQueueChannelLen() uint64 {
 	return uint64(n.vq.DVCLen())
+}
+
+func (n *ngt) GetDimensionSize() int {
+	return n.dim
 }
 
 func (n *ngt) Close(ctx context.Context) (err error) {

@@ -143,6 +143,34 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 			span.End()
 		}
 	}()
+	if len(req.GetVector()) != s.ngt.GetDimensionSize() {
+		err = errors.ErrIncompatibleDimensionSize(len(req.GetVector()), int(s.ngt.GetDimensionSize()))
+		err = status.WrapWithInvalidArgument("Search API Incompatible Dimension Size detected",
+			err,
+			&errdetails.RequestInfo{
+				RequestId:   req.GetConfig().GetRequestId(),
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "vector dimension size",
+						Description: err.Error(),
+					},
+				},
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: ngtResourceType + "/ngt.Search",
+				ResourceName: s.ip,
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
+			})
+		log.Warn(err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+		}
+		return nil, err
+	}
 	res, err = toSearchResponse(
 		s.ngt.Search(
 			req.GetVector(),
@@ -365,7 +393,7 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 		idx, query := i, req
 		rids = append(rids, req.GetConfig().GetRequestId())
 		wg.Add(1)
-		s.eg.Go(func() error {
+		s.eg.Go(func() (err error) {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, fmt.Sprintf("%s.MultiSearch/errgroup.Go/id-%d", apiName, idx))
 			defer func() {
@@ -499,6 +527,35 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (res *
 		}
 	}()
 	vec := req.GetVector()
+	if len(vec.GetVector()) != s.ngt.GetDimensionSize() {
+		err = errors.ErrIncompatibleDimensionSize(len(vec.GetVector()), int(s.ngt.GetDimensionSize()))
+		err = status.WrapWithInvalidArgument("Insert API Incompatible Dimension Size detected",
+			err,
+			&errdetails.RequestInfo{
+				RequestId:   vec.GetId(),
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "vector dimension size",
+						Description: err.Error(),
+					},
+				},
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: ngtResourceType + "/ngt.Insert",
+				ResourceName: s.ip,
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
+			})
+		log.Warn(err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+		}
+		return nil, err
+	}
+
 	err = s.ngt.Insert(vec.GetId(), vec.GetVector())
 	if err != nil {
 		var code trace.Status
@@ -623,6 +680,34 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 	vmap := make(map[string][]float32, len(reqs.GetRequests()))
 	for _, req := range reqs.GetRequests() {
 		vec := req.GetVector()
+		if len(vec.GetVector()) != s.ngt.GetDimensionSize() {
+			err = errors.ErrIncompatibleDimensionSize(len(vec.GetVector()), int(s.ngt.GetDimensionSize()))
+			err = status.WrapWithInvalidArgument("MultiInsert API Incompatible Dimension Size detected",
+				err,
+				&errdetails.RequestInfo{
+					RequestId:   vec.GetId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.BadRequest{
+					FieldViolations: []*errdetails.BadRequestFieldViolation{
+						{
+							Field:       "vector dimension size",
+							Description: err.Error(),
+						},
+					},
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.MultiInsert",
+					ResourceName: s.ip,
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				})
+			log.Warn(err)
+			if span != nil {
+				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+			}
+			return nil, err
+		}
 		vmap[vec.GetId()] = vec.GetVector()
 		uuids = append(uuids, vec.GetId())
 	}
@@ -704,6 +789,34 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 		}
 	}()
 	vec := req.GetVector()
+	if len(vec.GetVector()) != s.ngt.GetDimensionSize() {
+		err = errors.ErrIncompatibleDimensionSize(len(vec.GetVector()), int(s.ngt.GetDimensionSize()))
+		err = status.WrapWithInvalidArgument("Update API Incompatible Dimension Size detected",
+			err,
+			&errdetails.RequestInfo{
+				RequestId:   vec.GetId(),
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "vector dimension size",
+						Description: err.Error(),
+					},
+				},
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: ngtResourceType + "/ngt.Update",
+				ResourceName: s.ip,
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
+			})
+		log.Warn(err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+		}
+		return nil, err
+	}
 	err = s.ngt.Update(vec.GetId(), vec.GetVector())
 	if err != nil {
 		var code trace.Status
@@ -838,6 +951,34 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 	vmap := make(map[string][]float32, len(reqs.GetRequests()))
 	for _, req := range reqs.GetRequests() {
 		vec := req.GetVector()
+		if len(vec.GetVector()) != s.ngt.GetDimensionSize() {
+			err = errors.ErrIncompatibleDimensionSize(len(vec.GetVector()), int(s.ngt.GetDimensionSize()))
+			err = status.WrapWithInvalidArgument("MultiUpdate API Incompatible Dimension Size detected",
+				err,
+				&errdetails.RequestInfo{
+					RequestId:   vec.GetId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.BadRequest{
+					FieldViolations: []*errdetails.BadRequestFieldViolation{
+						{
+							Field:       "vector dimension size",
+							Description: err.Error(),
+						},
+					},
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.MultiUpdate",
+					ResourceName: s.ip,
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				})
+			log.Warn(err)
+			if span != nil {
+				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+			}
+			return nil, err
+		}
 		vmap[vec.GetId()] = vec.GetVector()
 		uuids = append(uuids, vec.GetId())
 	}
@@ -949,6 +1090,35 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 			span.End()
 		}
 	}()
+	vec := req.GetVector()
+	if len(vec.GetVector()) != s.ngt.GetDimensionSize() {
+		err = errors.ErrIncompatibleDimensionSize(len(vec.GetVector()), int(s.ngt.GetDimensionSize()))
+		err = status.WrapWithInvalidArgument("Upsert API Incompatible Dimension Size detected",
+			err,
+			&errdetails.RequestInfo{
+				RequestId:   vec.GetId(),
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "vector dimension size",
+						Description: err.Error(),
+					},
+				},
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: ngtResourceType + "/ngt.Upsert",
+				ResourceName: s.ip,
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
+			})
+		log.Warn(err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+		}
+		return nil, err
+	}
 
 	rtName := "/ngt.Upsert"
 	_, exists := s.ngt.Exists(req.GetVector().GetId())
@@ -1045,6 +1215,34 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 	ids := make([]string, 0, len(reqs.GetRequests()))
 	for _, req := range reqs.GetRequests() {
 		vec := req.GetVector()
+		if len(vec.GetVector()) != s.ngt.GetDimensionSize() {
+			err = errors.ErrIncompatibleDimensionSize(len(vec.GetVector()), int(s.ngt.GetDimensionSize()))
+			err = status.WrapWithInvalidArgument("MultiUpsert API Incompatible Dimension Size detected",
+				err,
+				&errdetails.RequestInfo{
+					RequestId:   vec.GetId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.BadRequest{
+					FieldViolations: []*errdetails.BadRequestFieldViolation{
+						{
+							Field:       "vector dimension size",
+							Description: err.Error(),
+						},
+					},
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.MultiUpsert",
+					ResourceName: s.ip,
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				})
+			log.Warn(err)
+			if span != nil {
+				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+			}
+			return nil, err
+		}
 		ids = append(ids, vec.GetId())
 		_, exists := s.ngt.Exists(vec.GetId())
 		if exists {

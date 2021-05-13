@@ -46,8 +46,8 @@ var (
 	}
 
 	// ErrIncompatibleDimensionSize represents a function to generate an error that the incompatible dimension size detected.
-	ErrIncompatibleDimensionSize = func(req, dim int) error {
-		return Errorf("incompatible dimension size detected\trequested: %d,\tconfigured: %d", req, dim)
+	ErrIncompatibleDimensionSize = func(current, expected int) error {
+		return Errorf("incompatible dimension size detected\trequested: %d,\tconfigured: %d", current, expected)
 	}
 
 	// ErrUnsupportedObjectType represents an error that the object type is unsupported.
