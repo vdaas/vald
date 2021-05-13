@@ -1,23 +1,20 @@
-# Get Started
+# Vald Agent Standalone on Kubernetes
 
-Vald is a highly scalable distributed fast approximate nearest neighbor dense vector search engine.<br>
-Vald is designed and implemented based on Cloud-Native architecture.
-
-This article will show you how to deploy and run the Vald components on your kubernetes cluster.
-And, Fashion-mnist is used as an example of a dataset.
+This article will show you how to deploy a standalone Vald Agent using Helm and run it on your kubernetes cluster.
 
 ## Overview
 
-Before starting, let's check the below image.
-It shows the architecture image about the deployment result of Get Started.<br>
-The 4 kinds of microservices, `Vald LB Gateway`, `Vald Discoverer`, `Vald Agent` and `Vald Index Manager` will deployed on kuberntes.
+Vald is made up of multiple micro services.
+In the [Get Started](../tutorial/get-started.md), you may use 4 kinds of microsevices to deploy Vald.
+In this case, you use only 1 micro service, `Vald Agent` that is the core component for Vald named as `vald-agent-ngt`, to deploy.
+The below image shows the architecture image of this case.
 
-<img src="../../assets/docs/getstarted.png" />
+<img src="../../assets/docs/vald-agent-standalon-on-k8s.png">
 
-The 5 steps to Get Started with Vald:
+The 5 steps to Vald Agent Standalone on Kubernetes with Vald:
 1. [Check and satisfy the requirements](#Requirements)
 1. [Prepare kubernetes cluster](#Prepare-the-kubernetes-cluster)
-1. [Deploy Vald on kubernetes cluster](#Deploy-Vald-on-Kubernetes-Cluster)
+1. [Deploy Vald Agent Standalone on kubernetes cluster](#Deploy-Vald-Agent-Standalone-on-Kubernetes-Cluster)
 1. [Running exapmle code](#Running-Exapmle-Code)
 1. [Cleanup](#Cleanup)
 
@@ -62,19 +59,10 @@ brew install hdf5
     Vald will run on Cloud Service such as GKE, AWS.
     In the sense of trying to "Get-Started", [k3d](https://k3d.io/) or [kind](https://kind.sigs.k8s.io/) are easy kubernetes tools to use.
 
-1. Apply kubenetes metrics server
+## Deploy Vald Agent Standalone on Kubernetes Cluster
 
-    After creating your kubernetes cluster, let's apply kubernetes metrics server.
-
-    ```bash
-    kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
-    kubectl wait -n kube-system --for=condition=ready pod -l k8s-app=metrics-server --timeout=600s
-    ```
-
-## Deploy Vald on Kubernetes Cluster
-
-This chapter shows the way to deploy Vald using Helm and to run on your kubernetes cluster.<br>
-In this tutorial, you will deploy the basic configuration of Vald that is consisted of vald-agent-ngt, vald-lb-gateway, vald-discoverer and vald-manager-index.<br>
+This chapter will show you how to deploy a standalone Vald Agent using Helm and run it on your kubernetes cluster. <br>
+This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perform vector insertion operation, indexing and searching operations.<br>
 
 1. Clone the repository
 
@@ -85,60 +73,44 @@ In this tutorial, you will deploy the basic configuration of Vald that is consis
     cd vald
     ```
 
-1. Confirm which cluster to deploy
+1. Deploy Vald Agent Standalonw using Helm
 
-   ```bash
-   kubectl cluster-info
-   ```
-
-1. Deploy Vald using Helm
+    There is the [values.yaml](https://github.com/vdaas/vald/blob/master/example/helm/values-standalone-agent-ngt.yaml) to deploy standalone Vald Agent.
+    Each component can be disabled by setting the value `false` to the `[component].enabled` field.
+    This is useful for deploying standalone Vald Agent NGT pods.
 
     ```bash
-    # add vald repo into helm repo
     helm repo add vald https://vald.vdaas.org/charts
-    # deploy vald on your kubernetes cluster
-    helm install vald vald/vald --values example/helm/values.yaml
+    helm install vald-agent-ngt vald/vald --values example/helm/values-standalone-agent-ngt.yaml
     ```
 
 1. Verify
 
-    When finish deploy, you can check the Vald's pods status following command.
-
     ```bash
     kubectl get pods
     ```
+
     <details><summary>Example output</summary><br>
-    If the deployment is successful, all Vald components should be running.
+    If the deployment is successful, Vald Agent component should be running.
 
     ```bash
-    NAME                                       READY   STATUS      RESTARTS   AGE
-    vald-agent-ngt-0                           1/1     Running     0          7m12s
-    vald-agent-ngt-1                           1/1     Running     0          7m12s
-    vald-agent-ngt-2                           1/1     Running     0          7m12s
-    vald-agent-ngt-3                           1/1     Running     0          7m12s
-    vald-agent-ngt-4                           1/1     Running     0          7m12s
-    vald-discoverer-7f9f697dbb-q44qh           1/1     Running     0          7m11s
-    vald-lb-gateway-6b7b9f6948-4z5md           1/1     Running     0          7m12s
-    vald-lb-gateway-6b7b9f6948-68g94           1/1     Running     0          6m56s
-    vald-lb-gateway-6b7b9f6948-cvspq           1/1     Running     0          6m56s
-    vald-manager-index-74c7b5ddd6-jrnlw        1/1     Running     0          7m12s
+    NAME               READY   STATUS    RESTARTS   AGE
+    vald-agent-ngt-0   1/1     Running   0          20m
+    vald-agent-ngt-1   1/1     Running   0          20m
+    vald-agent-ngt-2   1/1     Running   0          20m
+    vald-agent-ngt-3   1/1     Running   0          20m
     ```
 
+    </details>
+
 ## Running Exapmle Code
-
-In this chaptor, you will execute insert vectors, search vectors, and delete vectors to your Vald cluster using the exmaple code.<br>
-The [fashion-mnist](https://github.com/zalandoresearch/fashion-mnist) is used as a dataset for indexing and search query.
-
-The example code is implemented Go and using [vald-client-go](https://github.com/vdaas/vald-client-go), one of the official Vald client library,  for requesting to Vald cluster.
-Vald provides multiple language client libraries such as Go, Java, Node.js, Python, and so on.
-If you are interested in, please refer to [SDKs](../../user-guides/sdks).<br>
 
 1. Port Forward
 
     At first, port-foward is required to make request from your local environment possible.
 
     ```bash
-    kubectl port-forward deployment/vald-lb-gateway 8081:8081
+    kubectl port-forward service/vald-agent-ngt 8081:8081
     ```
 
 1. Download dataset
@@ -147,7 +119,7 @@ If you are interested in, please refer to [SDKs](../../user-guides/sdks).<br>
 
     ```bash
     # move to working directory
-    cd example/client
+    cd example/client/agent
 
     # download fashion-mnist testing dataset
     wget http://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5
@@ -155,7 +127,7 @@ If you are interested in, please refer to [SDKs](../../user-guides/sdks).<br>
 
 1. Run
 
-    We use [`example/client/main.go`](https://github.com/vdaas/vald/blob/master/example/client/main.go) to run the example.<br>
+    We use [`example/client/agent/main.go`](https://github.com/vdaas/vald/blob/master/example/client/agent/main.go) to run the example.<br>
     Run example codes by executing below command.
 
     ```bash
@@ -184,8 +156,9 @@ If you are interested in, please refer to [SDKs](../../user-guides/sdks).<br>
 
                 "github.com/kpango/fuid"
                 "github.com/kpango/glg"
-                "github.com/vdaas/vald-client-go/v1/payload"
+                agent "github.com/vdaas/vald-client-go/v1/agent/core"
                 "github.com/vdaas/vald-client-go/v1/vald"
+                "github.com/vdaas/vald-client-go/v1/payload"
 
                 "gonum.org/v1/hdf5"
                 "google.golang.org/grpc"
@@ -250,7 +223,6 @@ If you are interested in, please refer to [SDKs](../../user-guides/sdks).<br>
             </details>
 
     1. Create the gRPC connection and Vald client with gRPC connection.
-
         <details><summary>example code</summary><br>
 
         ```go
@@ -261,7 +233,7 @@ If you are interested in, please refer to [SDKs](../../user-guides/sdks).<br>
             glg.Fatal(err)
         }
 
-        client := vald.NewValdClient(conn)
+        client := agent.NewAgentClient(conn)
         ```
 
         </details>
@@ -273,6 +245,9 @@ If you are interested in, please refer to [SDKs](../../user-guides/sdks).<br>
 
             ```go
             for i := range ids [:insertCount] {
+                if i%10 == 0 {
+                    glg.Infof("Inserted %d", i)
+                }
                 _, err := client.Insert(ctx, &payload.Insert_Request{
                     Vector: &payload.Object_Vector{
                         Id: ids[i],
@@ -284,9 +259,6 @@ If you are interested in, please refer to [SDKs](../../user-guides/sdks).<br>
                 })
                 if err != nil {
                     glg.Fatal(err)
-                }
-                if i%10 == 0 {
-                    glg.Infof("Inserted %d", i)
                 }
             }
             ```
@@ -300,6 +272,22 @@ If you are interested in, please refer to [SDKs](../../user-guides/sdks).<br>
             wt := time.Duration(indexingWaitSeconds) * time.Second
             glg.Infof("Wait %s for indexing to finish", wt)
             time.Sleep(wt)
+            ```
+
+            </details>
+
+        - [Optional] Indexing manually instead of waiting for auto indexing
+        You can set Agent NGT configuration `auto_index_duration_limit` and `auto_index_check_duration` for auto indexing.
+        In this example, you can create index manually using `CreateAndSaveIndex()` mthod in the client library
+            <details><summary>example code</summary><br>
+
+            ```go
+            _, err = client.CreateAndSaveIndex(ctx, &payload.Control_CreateIndexRequest{
+                PoolSize: uint32(insertCount),
+            })
+            if err != nil {
+                glg.Fatal(err)
+            }
             ```
 
             </details>
@@ -336,7 +324,7 @@ If you are interested in, please refer to [SDKs](../../user-guides/sdks).<br>
 
     1. Remove
 
-        - Remove 400 indexed training datasets from the Vald agent.
+        - Remove indexed 400 training datasets from the Vald agent.
             <details><summary>example code</summary><br>
 
             ```go
@@ -356,6 +344,21 @@ If you are interested in, please refer to [SDKs](../../user-guides/sdks).<br>
             ```
 
             </details>
+
+
+        - Remove from the index manually instead of waiting for auto indexing.
+        The removed vectors are still exist in the NGT graph index before the SaveIndex (or CreateAndSaveIndex) API is called.
+        If you run the below code, the indexes will be removed completely from the Vald Agent NGT graph and the Backup file.
+            <details><summary>example code</summary><br>
+
+            ```go
+            _, err = client.SaveIndex(ctx, &payload.Empty{})
+            if err != nil {
+                glg.Fatal(err)
+            }
+            ```
+
+            </details>
     </details>
 
 ## Cleanup
@@ -363,17 +366,5 @@ If you are interested in, please refer to [SDKs](../../user-guides/sdks).<br>
 In the last, you can remove the all deployed Vald pods by executing below command.
 
 ```bash
-helm uninstall vald
+helm uninstall vald-agent-ngt
 ```
-
-## Next Steps
-
-Conglatulation! You completely entered into the Vald World!
-
-If you want, you can try other tutorials such as:
-- [Vald Agent Standalone on k8s](../tutorial/vald-agent-standalone-on-k8s.md)
-- [Vald Agent on Docker](../tutorial/vald-agent-on-docker.md)
-
-For more information, we recommend you to check:
-- [Configration](../user-guides/configration.md)
-- [Operations](../user-guides/operations.md)

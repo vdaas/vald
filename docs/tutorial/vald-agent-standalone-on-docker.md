@@ -1,4 +1,4 @@
-# Deploy Vald Agent on Docker
+# Vald Agent Standalone on Docker
 
 Vald is designed and implemented based on Cloud-Native architecture.
 However, there may be cases that want to use only Vald Agent without Kubernetes.
@@ -11,7 +11,6 @@ Fashion-mnist is used as an example dataset, same as [Get Started](../tutorial/g
 - docker: v19.0 ~
 - go: v1.15 ~
 - libhdf5 (_only required for this tutorial._)
-
 
 Hdf5 is required for this tutorial. If hdf5 is not installed, please install [hdf5](https://www.hdfgroup.org/).
 <details><summary>[Optional] Install hdf5</summary><br>
