@@ -37,6 +37,7 @@ import (
 	"github.com/vdaas/vald/internal/k8s/pod"
 	"github.com/vdaas/vald/internal/k8s/statefulset"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/pkg/rebalancer/storage/controller/config"
@@ -63,6 +64,7 @@ type rebalancer struct {
 	jobObject    *job.Job // object generated from template.
 
 	agentName         string
+	agentPort         int
 	agentNamespace    string
 	agentResourceType config.AgentResourceType
 	pods              atomic.Value
@@ -402,7 +404,6 @@ func (r *rebalancer) getPodByAgentName(agentName string) (*pod.Pod, error) {
 }
 
 func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, reason config.RebalanceReason, agentName, agentNs string, rate float64) error {
-	// check indexing or not
 	if reason == config.DEVIATION {
 		p, err := r.getPodByAgentName(agentName)
 		if err != nil {
@@ -412,15 +413,16 @@ func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, reason confi
 		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
 
-		gc := grpc.New(grpc.WithAddrs(p.IP), grpc.WithConnectionPoolSize(1))
+		agentAddr := net.JoinHostPort(p.IP, uint16(r.agentPort))
+
+		gc := grpc.New(grpc.WithAddrs(agentAddr), grpc.WithConnectionPoolSize(1))
 		_, err = gc.StartConnectionMonitor(ctx)
 		if err != nil {
 			return err
 		}
-
 		defer gc.Close(ctx)
 
-		c, err := agent.New(agent.WithAddrs(p.IP), agent.WithGRPCClient(gc))
+		c, err := agent.New(agent.WithAddrs(agentAddr), agent.WithGRPCClient(gc))
 		if err != nil {
 			return err
 		}
@@ -433,6 +435,7 @@ func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, reason confi
 			return errors.New("pod is indexing, job will not be created")
 		}
 	}
+
 	jobTpl.Name += "-" + strconv.FormatInt(time.Now().UnixNano(), 10)
 
 	if len(r.jobNamespace) != 0 {
