@@ -138,7 +138,7 @@ func Test_bidi_Get(t *testing.T) {
 			)
 
 			return test{
-				name: "return (14438, true) when there is a value for the key",
+				name: "return the value when there is a value for the key",
 				args: args{
 					key: key,
 				},
@@ -197,7 +197,7 @@ func Test_bidi_Get(t *testing.T) {
 			)
 
 			return test{
-				name:   "return (0, false) when there is no value for the key and the key is default value",
+				name:   "return (0, false) when there is no value for the key and the key is empty string",
 				args:   args{},
 				fields: fields,
 				beforeFunc: func(_ args, bm BidiMap) {
@@ -314,7 +314,7 @@ func Test_bidi_GetInverse(t *testing.T) {
 			)
 
 			return test{
-				name: "return (45637ec4-c85f-11ea-87d0, true) when there is a key for the value",
+				name: "return key and true when there is a key for the value",
 				args: args{
 					val: val,
 				},
@@ -373,7 +373,7 @@ func Test_bidi_GetInverse(t *testing.T) {
 			)
 
 			return test{
-				name:   "return false when there is a no key for the value and the val is default value",
+				name:   "return false when there is a no key for the value and the val is 0",
 				args:   args{},
 				fields: fields,
 				beforeFunc: func(_ args, bm BidiMap) {
@@ -477,7 +477,7 @@ func Test_bidi_Set(t *testing.T) {
 			)
 
 			return test{
-				name: "set success",
+				name: "set success when the key is not empty string and val is not 0",
 				args: args{
 					key: key,
 					val: val,
@@ -530,7 +530,7 @@ func Test_bidi_Set(t *testing.T) {
 			)
 
 			return test{
-				name: "set success when the key is default value",
+				name: "set success when the key is empty string",
 				args: args{
 					val: val,
 				},
@@ -620,7 +620,7 @@ func Test_bidi_Delete(t *testing.T) {
 			var wantl = 0
 
 			return test{
-				name: "return (14438, true) when the delete successes",
+				name: "return val and true when the delete successes",
 				args: args{
 					key: key,
 				},
@@ -664,7 +664,7 @@ func Test_bidi_Delete(t *testing.T) {
 			var wantl = 0
 
 			return test{
-				name:   "return (14438, true) when the delete successes and the key is default value",
+				name:   "return val and true when the delete successes and the key is empty string",
 				args:   args{},
 				fields: fields,
 				beforeFunc: func(a args, bm BidiMap) {
@@ -800,7 +800,7 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 			var wantl = 0
 
 			return test{
-				name: "return (45637ec4-c85f-11ea-87d0, true) when the delete successes",
+				name: "return key and true when the delete successes",
 				args: args{
 					val: val,
 				},
