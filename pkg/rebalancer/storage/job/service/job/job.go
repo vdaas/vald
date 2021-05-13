@@ -66,7 +66,7 @@ func New(opts ...Option) (dsc Rebalancer, err error) {
 }
 
 func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
-	ech := make(chan error, 2)
+	ech := make(chan error, 3)
 	cech, err := r.client.Start(ctx)
 	if err != nil {
 		log.Errorf("[job debug] failed start connection monitor")
@@ -76,7 +76,6 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 		for {
 			select {
 			case <-ctx.Done():
-				ech <- ctx.Err()
 				return nil
 			case ech <- <-cech:
 			}
