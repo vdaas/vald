@@ -61,7 +61,7 @@ func TestNew(t *testing.T) {
 		want       want
 		beforeFunc func(args)
 		checkFunc  func(want, Watcher, error) error
-		afterFunc  func(args, Watcher)
+		afterFunc  func(*testing.T, args, Watcher)
 	}
 	defaultCheckFunc := func(w want, got Watcher, err error) error {
 		if !errors.Is(err, w.err) {
@@ -72,11 +72,18 @@ func TestNew(t *testing.T) {
 		}
 		return nil
 	}
-	defaultAfterFunc := func(args args, w Watcher) {
+	defaultAfterFunc := func(t *testing.T, args args, w Watcher) {
+		t.Helper()
 		if w != nil {
-			w.Stop(context.Background())
+			err := w.Stop(context.Background())
+			if err != nil {
+				t.Error(err)
+			}
 			if watch, ok := w.(*watch); ok {
-				watch.w.Close()
+				err := watch.w.Close()
+				if err != nil {
+					t.Error(err)
+				}
 			}
 		}
 	}
@@ -127,7 +134,8 @@ func TestNew(t *testing.T) {
 				tt.Errorf("error = %v", err)
 			}
 
-			tt.Cleanup(func() { test.afterFunc(test.args, got) })
+			//tt.Cleanup(func() { test.afterFunc(tt, test.args, got) })
+			test.afterFunc(tt, test.args, got)
 		})
 	}
 }
@@ -147,7 +155,7 @@ func Test_watch_init(t *testing.T) {
 		want       want
 		beforeFunc func(*testing.T, *fields)
 		checkFunc  func(want, *watch, error) error
-		afterFunc  func(Watcher)
+		afterFunc  func(*testing.T, Watcher)
 	}
 	defaultCheckFunc := func(w want, got *watch, err error) error {
 		if !errors.Is(err, w.err) {
@@ -158,12 +166,19 @@ func Test_watch_init(t *testing.T) {
 		}
 		return nil
 	}
-	defaultAfterFunc := func(w Watcher) {
+	defaultAfterFunc := func(t *testing.T, w Watcher) {
+		t.Helper()
 		if w != nil {
-			w.Stop(context.Background())
+			err := w.Stop(context.Background())
+			if err != nil {
+				t.Error(err)
+			}
 			if watch, ok := w.(*watch); ok {
 				if watch.w != nil {
-					watch.w.Close()
+					err := watch.w.Close()
+					if err != nil {
+						t.Error(err)
+					}
 				}
 			}
 		}
@@ -282,7 +297,8 @@ func Test_watch_init(t *testing.T) {
 				tt.Errorf("error = %v", err)
 			}
 
-			tt.Cleanup(func() { test.afterFunc(w) })
+			//tt.Cleanup(func() { test.afterFunc(tt, w) })
+			test.afterFunc(tt, w)
 		})
 	}
 }
@@ -314,7 +330,7 @@ func Test_watch_Start(t *testing.T) {
 		want       want
 		checkFunc  func(want, <-chan error, error) error
 		beforeFunc func(args)
-		afterFunc  func(args, Watcher)
+		afterFunc  func(*testing.T, args, Watcher)
 	}
 	defaultCheckFunc := func(w want, got <-chan error, err error) error {
 		if !errors.Is(err, w.err) {
@@ -327,11 +343,18 @@ func Test_watch_Start(t *testing.T) {
 
 		return nil
 	}
-	defaultAfterFunc := func(args args, w Watcher) {
+	defaultAfterFunc := func(t *testing.T, args args, w Watcher) {
+		t.Helper()
 		if w != nil {
-			w.Stop(context.Background())
+			err := w.Stop(context.Background())
+			if err != nil {
+				t.Error(err)
+			}
 			if watch, ok := w.(*watch); ok {
-				watch.w.Close()
+				err := watch.w.Close()
+				if err != nil {
+					t.Error(err)
+				}
 			}
 		}
 	}
@@ -362,8 +385,9 @@ func Test_watch_Start(t *testing.T) {
 						},
 					}
 				},
-				afterFunc: func(args args, w Watcher) {
-					defaultAfterFunc(args, w)
+				afterFunc: func(t *testing.T, args args, w Watcher) {
+					w.Remove("vald")
+					defaultAfterFunc(t, args, w)
 					cancel()
 				},
 				want: want{
@@ -416,8 +440,8 @@ func Test_watch_Start(t *testing.T) {
 						},
 					}
 				},
-				afterFunc: func(args args, w Watcher) {
-					defaultAfterFunc(args, w)
+				afterFunc: func(t *testing.T, args args, w Watcher) {
+					defaultAfterFunc(t, args, w)
 					cancel()
 				},
 				want: want{
@@ -464,8 +488,8 @@ func Test_watch_Start(t *testing.T) {
 						},
 					}
 				},
-				afterFunc: func(args args, w Watcher) {
-					defaultAfterFunc(args, w)
+				afterFunc: func(t *testing.T, args args, w Watcher) {
+					defaultAfterFunc(t, args, w)
 					cancel()
 				},
 				want: want{
@@ -511,8 +535,8 @@ func Test_watch_Start(t *testing.T) {
 						},
 					}
 				},
-				afterFunc: func(args args, w Watcher) {
-					defaultAfterFunc(args, w)
+				afterFunc: func(t *testing.T, args args, w Watcher) {
+					defaultAfterFunc(t, args, w)
 					cancel()
 				},
 				want: want{
@@ -558,8 +582,8 @@ func Test_watch_Start(t *testing.T) {
 						},
 					}
 				},
-				afterFunc: func(args args, w Watcher) {
-					defaultAfterFunc(args, w)
+				afterFunc: func(t *testing.T, args args, w Watcher) {
+					defaultAfterFunc(t, args, w)
 					cancel()
 				},
 				want: want{
@@ -605,8 +629,8 @@ func Test_watch_Start(t *testing.T) {
 						},
 					}
 				},
-				afterFunc: func(args args, w Watcher) {
-					defaultAfterFunc(args, w)
+				afterFunc: func(t *testing.T, args args, w Watcher) {
+					defaultAfterFunc(t, args, w)
 					cancel()
 				},
 				want: want{
@@ -652,8 +676,8 @@ func Test_watch_Start(t *testing.T) {
 						},
 					}
 				},
-				afterFunc: func(args args, w Watcher) {
-					defaultAfterFunc(args, w)
+				afterFunc: func(t *testing.T, args args, w Watcher) {
+					defaultAfterFunc(t, args, w)
 					cancel()
 				},
 				want: want{
@@ -710,8 +734,8 @@ func Test_watch_Start(t *testing.T) {
 						},
 					}
 				},
-				afterFunc: func(args args, w Watcher) {
-					defaultAfterFunc(args, w)
+				afterFunc: func(t *testing.T, args args, w Watcher) {
+					defaultAfterFunc(t, args, w)
 					cancel()
 				},
 				want: want{
@@ -760,7 +784,8 @@ func Test_watch_Start(t *testing.T) {
 				tt.Errorf("error = %v", err)
 			}
 
-			tt.Cleanup(func() { test.afterFunc(test.args, w) })
+			//tt.Cleanup(func() { test.afterFunc(tt, test.args, w) })
+			test.afterFunc(tt, test.args, w)
 		})
 	}
 }
@@ -811,10 +836,17 @@ func Test_watch_Add(t *testing.T) {
 		}
 	}
 	defaultAfterFunc := func(t *testing.T, args args, w Watcher) {
+		t.Helper()
 		if w != nil {
-			w.Stop(context.Background())
+			err := w.Stop(context.Background())
+			if err != nil {
+				t.Error(err)
+			}
 			if watch, ok := w.(*watch); ok {
-				watch.w.Close()
+				err := watch.w.Close()
+				if err != nil {
+					t.Error(err)
+				}
 			}
 		}
 	}
@@ -829,16 +861,20 @@ func Test_watch_Add(t *testing.T) {
 			},
 			fields: fields{
 				dirs: map[string]struct{}{
-					"watch_test.go": {},
+					"./watch_test.go": {},
 				},
+			},
+			afterFunc: func(t *testing.T, args args, w Watcher) {
+				w.Remove("./watch_test.go")
+				defaultAfterFunc(t, args, w)
 			},
 			want: want{
 				err: nil,
 				want: &watch{
 					dirs: map[string]struct{}{
-						"watch_test.go": {},
-						"./watch.go":    {},
-						"./option.go":   {},
+						"./watch_test.go": {},
+						"./watch.go":      {},
+						"./option.go":     {},
 					},
 				},
 			},
@@ -909,7 +945,8 @@ func Test_watch_Add(t *testing.T) {
 				tt.Errorf("error = %v", err)
 			}
 
-			tt.Cleanup(func() { test.afterFunc(tt, test.args, w) })
+			//tt.Cleanup(func() { test.afterFunc(tt, test.args, w) })
+			test.afterFunc(tt, test.args, w)
 		})
 	}
 }
@@ -977,10 +1014,17 @@ func Test_watch_Remove(t *testing.T) {
 		}
 	}
 	defaultAfterFunc := func(t *testing.T, args args, w Watcher) {
+		t.Helper()
 		if w != nil {
-			w.Stop(context.Background())
+			err := w.Stop(context.Background())
+			if err != nil {
+				t.Error(err)
+			}
 			if watch, ok := w.(*watch); ok {
-				watch.w.Close()
+				err := watch.w.Close()
+				if err != nil {
+					t.Error(err)
+				}
 			}
 		}
 	}
@@ -1079,7 +1123,8 @@ func Test_watch_Remove(t *testing.T) {
 				tt.Errorf("error = %v", err)
 			}
 
-			tt.Cleanup(func() { test.afterFunc(tt, test.args, w) })
+			//tt.Cleanup(func() { test.afterFunc(tt, test.args, w) })
+			test.afterFunc(tt, test.args, w)
 		})
 	}
 }
@@ -1103,7 +1148,7 @@ func Test_watch_Stop(t *testing.T) {
 		want       want
 		checkFunc  func(want, *watch, error) error
 		beforeFunc func(*testing.T, *fields, args)
-		afterFunc  func(args, Watcher)
+		afterFunc  func(*testing.T, args, Watcher)
 	}
 	defaultCheckFunc := func(w want, got *watch, err error) error {
 		if w.err == nil {
@@ -1140,11 +1185,18 @@ func Test_watch_Stop(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	defaultAfterFunc := func(args args, w Watcher) {
+	defaultAfterFunc := func(t *testing.T, args args, w Watcher) {
+		t.Helper()
 		if w != nil {
-			w.Stop(context.Background())
+			err := w.Stop(context.Background())
+			if err != nil {
+				t.Error(err)
+			}
 			if watch, ok := w.(*watch); ok {
-				watch.w.Close()
+				err := watch.w.Close()
+				if err != nil {
+					t.Error(err)
+				}
 			}
 		}
 	}
@@ -1224,7 +1276,8 @@ func Test_watch_Stop(t *testing.T) {
 				tt.Errorf("error = %v", err)
 			}
 
-			tt.Cleanup(func() { test.afterFunc(test.args, w) })
+			//tt.Cleanup(func() { test.afterFunc(tt, test.args, w) })
+			test.afterFunc(tt, test.args, w)
 		})
 	}
 }
