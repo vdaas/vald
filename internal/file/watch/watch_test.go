@@ -35,16 +35,15 @@ import (
 
 // Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
 var goleakIgnoreOptions = []goleak.Option{
-	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+	goleak.IgnoreCurrent(),
 	goleak.IgnoreTopFunction("syscall.Syscall6"),
 	goleak.IgnoreTopFunction("syscall.syscall6"),
+	goleak.IgnoreTopFunction("syscall.syscall"),
 }
 
 func TestMain(m *testing.M) {
 	log.Init(log.WithLoggerType(logger.NOP.String()))
-
 	code := m.Run()
-
 	os.Exit(code)
 }
 
@@ -60,9 +59,9 @@ func TestNew(t *testing.T) {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, Watcher, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		checkFunc  func(want, Watcher, error) error
+		afterFunc  func(args, Watcher)
 	}
 	defaultCheckFunc := func(w want, got Watcher, err error) error {
 		if !errors.Is(err, w.err) {
@@ -72,6 +71,14 @@ func TestNew(t *testing.T) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
+	}
+	defaultAfterFunc := func(args args, w Watcher) {
+		if w != nil {
+			w.Stop(context.Background())
+			if watch, ok := w.(*watch); ok {
+				watch.w.Close()
+			}
+		}
 	}
 	tests := []test{
 		{
@@ -94,7 +101,6 @@ func TestNew(t *testing.T) {
 				return nil
 			},
 		},
-
 		{
 			name: "returns (nil, error) when option is nil and w.dirs is empty",
 			want: want{
@@ -109,17 +115,19 @@ func TestNew(t *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
-			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
-			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
+			}
+			if test.afterFunc == nil {
+				test.afterFunc = defaultAfterFunc
 			}
 
 			got, err := New(test.args.opts...)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
+			tt.Cleanup(func() { test.afterFunc(test.args, got) })
 		})
 	}
 }
@@ -137,9 +145,9 @@ func Test_watch_init(t *testing.T) {
 		name       string
 		fields     fields
 		want       want
-		checkFunc  func(want, *watch, error) error
 		beforeFunc func(*testing.T, *fields)
-		afterFunc  func()
+		checkFunc  func(want, *watch, error) error
+		afterFunc  func(Watcher)
 	}
 	defaultCheckFunc := func(w want, got *watch, err error) error {
 		if !errors.Is(err, w.err) {
@@ -149,6 +157,16 @@ func Test_watch_init(t *testing.T) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
+	}
+	defaultAfterFunc := func(w Watcher) {
+		if w != nil {
+			w.Stop(context.Background())
+			if watch, ok := w.(*watch); ok {
+				if watch.w != nil {
+					watch.w.Close()
+				}
+			}
+		}
 	}
 	tests := []test{
 		{
@@ -162,7 +180,6 @@ func Test_watch_init(t *testing.T) {
 				err: syscall.Errno(0x2),
 			},
 		},
-
 		{
 			name: "returns no such file or directory error when directory not exists",
 			fields: fields{
@@ -174,7 +191,6 @@ func Test_watch_init(t *testing.T) {
 				err: syscall.Errno(0x2),
 			},
 		},
-
 		{
 			name: "returns no such file or directory error when some file not exists",
 			fields: fields{
@@ -187,7 +203,6 @@ func Test_watch_init(t *testing.T) {
 				err: syscall.Errno(0x2),
 			},
 		},
-
 		{
 			name: "returns nil when watcher already created and initialize success",
 			fields: fields{
@@ -217,7 +232,6 @@ func Test_watch_init(t *testing.T) {
 				err: nil,
 			},
 		},
-
 		{
 			name: "returns nil when initialize success",
 			fields: fields{
@@ -251,12 +265,13 @@ func Test_watch_init(t *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt, &test.fields)
 			}
-			if test.afterFunc != nil {
-				tt.Cleanup(test.afterFunc)
-			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
+			if test.afterFunc == nil {
+				test.afterFunc = defaultAfterFunc
+			}
+
 			w := &watch{
 				w:    test.fields.w,
 				dirs: test.fields.dirs,
@@ -266,6 +281,8 @@ func Test_watch_init(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
+			tt.Cleanup(func() { test.afterFunc(w) })
 		})
 	}
 }
@@ -297,7 +314,7 @@ func Test_watch_Start(t *testing.T) {
 		want       want
 		checkFunc  func(want, <-chan error, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(args, Watcher)
 	}
 	defaultCheckFunc := func(w want, got <-chan error, err error) error {
 		if !errors.Is(err, w.err) {
@@ -309,6 +326,14 @@ func Test_watch_Start(t *testing.T) {
 		}
 
 		return nil
+	}
+	defaultAfterFunc := func(args args, w Watcher) {
+		if w != nil {
+			w.Stop(context.Background())
+			if watch, ok := w.(*watch); ok {
+				watch.w.Close()
+			}
+		}
 	}
 	tests := []test{
 		func() test {
@@ -337,7 +362,8 @@ func Test_watch_Start(t *testing.T) {
 						},
 					}
 				},
-				afterFunc: func(args) {
+				afterFunc: func(args args, w Watcher) {
+					defaultAfterFunc(args, w)
 					cancel()
 				},
 				want: want{
@@ -390,7 +416,8 @@ func Test_watch_Start(t *testing.T) {
 						},
 					}
 				},
-				afterFunc: func(args) {
+				afterFunc: func(args args, w Watcher) {
+					defaultAfterFunc(args, w)
 					cancel()
 				},
 				want: want{
@@ -437,7 +464,8 @@ func Test_watch_Start(t *testing.T) {
 						},
 					}
 				},
-				afterFunc: func(args) {
+				afterFunc: func(args args, w Watcher) {
+					defaultAfterFunc(args, w)
 					cancel()
 				},
 				want: want{
@@ -483,7 +511,8 @@ func Test_watch_Start(t *testing.T) {
 						},
 					}
 				},
-				afterFunc: func(args) {
+				afterFunc: func(args args, w Watcher) {
+					defaultAfterFunc(args, w)
 					cancel()
 				},
 				want: want{
@@ -529,7 +558,8 @@ func Test_watch_Start(t *testing.T) {
 						},
 					}
 				},
-				afterFunc: func(args) {
+				afterFunc: func(args args, w Watcher) {
+					defaultAfterFunc(args, w)
 					cancel()
 				},
 				want: want{
@@ -575,7 +605,8 @@ func Test_watch_Start(t *testing.T) {
 						},
 					}
 				},
-				afterFunc: func(args) {
+				afterFunc: func(args args, w Watcher) {
+					defaultAfterFunc(args, w)
 					cancel()
 				},
 				want: want{
@@ -621,7 +652,8 @@ func Test_watch_Start(t *testing.T) {
 						},
 					}
 				},
-				afterFunc: func(args) {
+				afterFunc: func(args args, w Watcher) {
+					defaultAfterFunc(args, w)
 					cancel()
 				},
 				want: want{
@@ -678,7 +710,8 @@ func Test_watch_Start(t *testing.T) {
 						},
 					}
 				},
-				afterFunc: func(args) {
+				afterFunc: func(args args, w Watcher) {
+					defaultAfterFunc(args, w)
 					cancel()
 				},
 				want: want{
@@ -701,11 +734,11 @@ func Test_watch_Start(t *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
-			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
-			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
+			}
+			if test.afterFunc == nil {
+				test.afterFunc = defaultAfterFunc
 			}
 			fields := test.fieldsFunc(tt)
 
@@ -726,6 +759,8 @@ func Test_watch_Start(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
+			tt.Cleanup(func() { test.afterFunc(test.args, w) })
 		})
 	}
 }
@@ -749,7 +784,7 @@ func Test_watch_Add(t *testing.T) {
 		want       want
 		checkFunc  func(want, *watch, error) error
 		beforeFunc func(*testing.T, *fields, args)
-		afterFunc  func(*testing.T, args)
+		afterFunc  func(*testing.T, args, Watcher)
 	}
 	defaultCheckFunc := func(w want, got *watch, err error) error {
 		if !errors.Is(err, w.err) {
@@ -773,6 +808,14 @@ func Test_watch_Add(t *testing.T) {
 		fields.w, err = fsnotify.NewWatcher()
 		if err != nil {
 			t.Fatal(err)
+		}
+	}
+	defaultAfterFunc := func(t *testing.T, args args, w Watcher) {
+		if w != nil {
+			w.Stop(context.Background())
+			if watch, ok := w.(*watch); ok {
+				watch.w.Close()
+			}
 		}
 	}
 	tests := []test{
@@ -800,7 +843,6 @@ func Test_watch_Add(t *testing.T) {
 				},
 			},
 		},
-
 		{
 			name: "returns nil when directory add success",
 			args: args{
@@ -820,7 +862,6 @@ func Test_watch_Add(t *testing.T) {
 				},
 			},
 		},
-
 		{
 			name: "returns no such file or directory error when some file not exists",
 			args: args{
@@ -849,14 +890,15 @@ func Test_watch_Add(t *testing.T) {
 			if test.beforeFunc == nil {
 				test.beforeFunc = defaultBeforeFunc
 			}
-			test.beforeFunc(tt, &test.fields, test.args)
-
-			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(tt, test.args) })
-			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
+			if test.afterFunc == nil {
+				test.afterFunc = defaultAfterFunc
+			}
+
+			test.beforeFunc(tt, &test.fields, test.args)
+
 			w := &watch{
 				w:    test.fields.w,
 				dirs: test.fields.dirs,
@@ -866,6 +908,8 @@ func Test_watch_Add(t *testing.T) {
 			if err := test.checkFunc(test.want, w, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
+			tt.Cleanup(func() { test.afterFunc(tt, test.args, w) })
 		})
 	}
 }
@@ -889,7 +933,7 @@ func Test_watch_Remove(t *testing.T) {
 		want       want
 		checkFunc  func(want, *watch, error) error
 		beforeFunc func(*testing.T, *fields, args)
-		afterFunc  func(*testing.T, args)
+		afterFunc  func(*testing.T, args, Watcher)
 	}
 	defaultCheckFunc := func(w want, got *watch, err error) error {
 		if w.err == nil {
@@ -932,6 +976,14 @@ func Test_watch_Remove(t *testing.T) {
 			}
 		}
 	}
+	defaultAfterFunc := func(t *testing.T, args args, w Watcher) {
+		if w != nil {
+			w.Stop(context.Background())
+			if watch, ok := w.(*watch); ok {
+				watch.w.Close()
+			}
+		}
+	}
 	tests := []test{
 		{
 			name: "returns nil when remove success",
@@ -957,7 +1009,6 @@ func Test_watch_Remove(t *testing.T) {
 				err: nil,
 			},
 		},
-
 		{
 			name: "returns nil when directory remove success",
 			args: args{
@@ -977,7 +1028,6 @@ func Test_watch_Remove(t *testing.T) {
 				err: nil,
 			},
 		},
-
 		{
 			name: "returns non-exist error when some file not exists",
 			args: args{
@@ -1010,14 +1060,14 @@ func Test_watch_Remove(t *testing.T) {
 			if test.beforeFunc == nil {
 				test.beforeFunc = defaultBeforeFunc
 			}
-			test.beforeFunc(tt, &test.fields, test.args)
-
-			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(tt, test.args) })
-			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
+			if test.afterFunc == nil {
+				test.afterFunc = defaultAfterFunc
+			}
+
+			test.beforeFunc(tt, &test.fields, test.args)
 
 			w := &watch{
 				w:    test.fields.w,
@@ -1028,6 +1078,8 @@ func Test_watch_Remove(t *testing.T) {
 			if err := test.checkFunc(test.want, w, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
+			tt.Cleanup(func() { test.afterFunc(tt, test.args, w) })
 		})
 	}
 }
@@ -1051,7 +1103,7 @@ func Test_watch_Stop(t *testing.T) {
 		want       want
 		checkFunc  func(want, *watch, error) error
 		beforeFunc func(*testing.T, *fields, args)
-		afterFunc  func(args)
+		afterFunc  func(args, Watcher)
 	}
 	defaultCheckFunc := func(w want, got *watch, err error) error {
 		if w.err == nil {
@@ -1086,6 +1138,14 @@ func Test_watch_Stop(t *testing.T) {
 		fields.w, err = fsnotify.NewWatcher()
 		if err != nil {
 			t.Fatal(err)
+		}
+	}
+	defaultAfterFunc := func(args args, w Watcher) {
+		if w != nil {
+			w.Stop(context.Background())
+			if watch, ok := w.(*watch); ok {
+				watch.w.Close()
+			}
 		}
 	}
 	tests := []test{
@@ -1145,13 +1205,15 @@ func Test_watch_Stop(t *testing.T) {
 			if test.beforeFunc == nil {
 				test.beforeFunc = defaultBeforeFunc
 			}
-			test.beforeFunc(tt, &test.fields, test.args)
-			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
-			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
+			if test.afterFunc == nil {
+				test.afterFunc = defaultAfterFunc
+			}
+
+			test.beforeFunc(tt, &test.fields, test.args)
+
 			w := &watch{
 				w:    test.fields.w,
 				dirs: test.fields.dirs,
@@ -1161,6 +1223,8 @@ func Test_watch_Stop(t *testing.T) {
 			if err := test.checkFunc(test.want, w, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
+			tt.Cleanup(func() { test.afterFunc(test.args, w) })
 		})
 	}
 }
