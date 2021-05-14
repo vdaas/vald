@@ -24,6 +24,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/net/http/middleware"
 	"github.com/vdaas/vald/internal/net/http/rest"
 	"go.uber.org/goleak"
@@ -168,7 +169,7 @@ func TestRouting(t *testing.T) {
 		}(),
 	}
 
-	log.Init()
+	log.Init(log.WithLoggerType(logger.NOP.String()))
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			hdr := new(router).routing(tt.args.name, tt.args.path, tt.args.m, tt.args.h)

@@ -29,6 +29,7 @@ import (
 	"github.com/scylladb/gocqlx/qb"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"go.uber.org/goleak"
 )
@@ -85,7 +86,7 @@ var clientComparatorOpts = []comparator.Option{
 }
 
 func TestMain(m *testing.M) {
-	log.Init()
+	log.Init(log.WithLoggerType(logger.NOP.String()))
 	os.Exit(m.Run())
 }
 

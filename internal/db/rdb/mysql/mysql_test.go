@@ -29,12 +29,13 @@ import (
 	"github.com/vdaas/vald/internal/db/rdb/mysql/dbr"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/net"
 	"go.uber.org/goleak"
 )
 
 func TestMain(m *testing.M) {
-	log.Init()
+	log.Init(log.WithLoggerType(logger.NOP.String()))
 	os.Exit(m.Run())
 }
 

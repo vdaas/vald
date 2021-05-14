@@ -28,13 +28,14 @@ import (
 	"github.com/vdaas/vald/hack/benchmark/internal/e2e/strategy"
 	"github.com/vdaas/vald/hack/benchmark/internal/starter/external/ngtd"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/log/logger"
 )
 
 var targets []string
 
 func init() {
 	testing.Init()
-	log.Init()
+	log.Init(log.WithLoggerType(logger.NOP.String()))
 
 	var dataset string
 	flag.StringVar(&dataset, "dataset", "", "set available dataset list (choice with comma)")
