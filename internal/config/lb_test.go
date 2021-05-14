@@ -27,7 +27,6 @@ import (
 )
 
 func TestLB_Bind(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		AgentPort      int
 		AgentName      string

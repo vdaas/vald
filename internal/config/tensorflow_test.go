@@ -26,7 +26,6 @@ import (
 )
 
 func TestTensorflow_Bind(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		SessionOption         *SessionOption
 		ExportPath            string
@@ -134,7 +133,6 @@ func TestTensorflow_Bind(t *testing.T) {
 }
 
 func TestSessionOption_Bind(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		Target       string
 		Base64Config string
@@ -218,7 +216,6 @@ func TestSessionOption_Bind(t *testing.T) {
 }
 
 func TestOutputSpec_Bind(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		OperationName string
 		OutputIndex   int

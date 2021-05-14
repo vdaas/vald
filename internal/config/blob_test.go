@@ -510,7 +510,6 @@ func TestS3Config_Bind(t *testing.T) {
 }
 
 func TestCloudStorageConfig_Bind(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		URL                     string
 		Client                  *CloudStorageClient
