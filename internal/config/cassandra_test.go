@@ -30,7 +30,6 @@ import (
 )
 
 func TestCassandra_Bind(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		Hosts                    []string
 		CQLVersion               string
@@ -388,7 +387,6 @@ func TestCassandra_Bind(t *testing.T) {
 }
 
 func TestCassandra_Opts(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		Hosts                    []string
 		CQLVersion               string
