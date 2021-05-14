@@ -256,7 +256,6 @@ func TestMySQL_Bind(t *testing.T) {
 }
 
 func TestMySQL_Opts(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		DB                   string
 		Network              string
