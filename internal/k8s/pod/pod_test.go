@@ -91,7 +91,7 @@ func TestNew(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -193,7 +193,7 @@ func Test_reconciler_Reconcile(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -285,7 +285,7 @@ func Test_reconciler_GetName(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				tt.Cleanup(test.afterFunc)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -387,7 +387,7 @@ func Test_reconciler_NewReconciler(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -483,7 +483,7 @@ func Test_reconciler_For(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				tt.Cleanup(test.afterFunc)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -579,7 +579,7 @@ func Test_reconciler_Owns(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				tt.Cleanup(test.afterFunc)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -679,7 +679,7 @@ func Test_reconciler_Watches(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				tt.Cleanup(test.afterFunc)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc

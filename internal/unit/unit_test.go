@@ -103,7 +103,7 @@ func TestParseBytes(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc

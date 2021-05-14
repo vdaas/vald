@@ -81,7 +81,7 @@ func TestNew(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				tt.Cleanup(test.afterFunc)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -188,7 +188,7 @@ func Test_redisMetrics_Measurement(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -305,7 +305,7 @@ func Test_redisMetrics_MeasurementWithTags(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -408,7 +408,7 @@ func Test_redisMetrics_View(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				tt.Cleanup(test.afterFunc)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -528,7 +528,7 @@ func Test_redisMetrics_BeforeProcess(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -644,7 +644,7 @@ func Test_redisMetrics_AfterProcess(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -764,7 +764,7 @@ func Test_redisMetrics_BeforeProcessPipeline(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -880,7 +880,7 @@ func Test_redisMetrics_AfterProcessPipeline(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc

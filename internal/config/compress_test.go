@@ -95,7 +95,7 @@ func Test_compressAlgorithm_String(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				tt.Cleanup(test.afterFunc)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -218,7 +218,7 @@ func TestCompressAlgorithm(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -354,7 +354,7 @@ func TestCompressCore_Bind(t *testing.T) {
 				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(tt)
+				tt.Cleanup(func() { test.afterFunc(tt) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -450,7 +450,7 @@ func TestCompressor_Bind(t *testing.T) {
 				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(tt)
+				tt.Cleanup(func() { test.afterFunc(tt) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -568,7 +568,7 @@ func TestCompressorRegisterer_Bind(t *testing.T) {
 				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(tt)
+				tt.Cleanup(func() { test.afterFunc(tt) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc

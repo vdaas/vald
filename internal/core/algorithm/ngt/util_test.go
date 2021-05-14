@@ -186,7 +186,7 @@ func Test_fileExists(t *testing.T) {
 			if test.afterFunc == nil {
 				test.afterFunc = defaultAfterFunc
 			}
-			defer test.afterFunc(tt, test.args)
+			tt.Cleanup(func() { test.afterFunc(tt, test.args) })
 
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc

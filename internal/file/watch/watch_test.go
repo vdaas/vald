@@ -110,7 +110,7 @@ func TestNew(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -252,7 +252,7 @@ func Test_watch_init(t *testing.T) {
 				test.beforeFunc(tt, &test.fields)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				tt.Cleanup(test.afterFunc)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -702,7 +702,7 @@ func Test_watch_Start(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -852,7 +852,7 @@ func Test_watch_Add(t *testing.T) {
 			test.beforeFunc(tt, &test.fields, test.args)
 
 			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
+				tt.Cleanup(func() { test.afterFunc(tt, test.args) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -1013,7 +1013,7 @@ func Test_watch_Remove(t *testing.T) {
 			test.beforeFunc(tt, &test.fields, test.args)
 
 			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
+				tt.Cleanup(func() { test.afterFunc(tt, test.args) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -1147,7 +1147,7 @@ func Test_watch_Stop(t *testing.T) {
 			}
 			test.beforeFunc(tt, &test.fields, test.args)
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc

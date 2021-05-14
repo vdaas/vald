@@ -88,7 +88,7 @@ func TestNewGob(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -189,7 +189,7 @@ func Test_gobCompressor_CompressVector(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -255,7 +255,7 @@ func Test_E2E_gobCompressor_CompressVector(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -361,7 +361,7 @@ func Test_gobCompressor_DecompressVector(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -441,7 +441,7 @@ func Test_gobCompressor_Reader(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -521,7 +521,7 @@ func Test_gobCompressor_Writer(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -614,7 +614,7 @@ func Test_gobReader_Read(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -676,7 +676,7 @@ func Test_gobReader_Close(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				tt.Cleanup(test.afterFunc)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -769,7 +769,7 @@ func Test_gobWriter_Write(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -831,7 +831,7 @@ func Test_gobWriter_Close(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				tt.Cleanup(test.afterFunc)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc

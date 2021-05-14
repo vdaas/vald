@@ -132,7 +132,7 @@ func TestDNS_Bind(t *testing.T) {
 				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(tt)
+				tt.Cleanup(func() { test.afterFunc(tt) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -259,7 +259,7 @@ func TestDialer_Bind(t *testing.T) {
 				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(tt)
+				tt.Cleanup(func() { test.afterFunc(tt) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -367,7 +367,7 @@ func TestSocketOption_Bind(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				tt.Cleanup(test.afterFunc)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -559,7 +559,7 @@ func TestSocketOption_ToSocketFlag(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				tt.Cleanup(test.afterFunc)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -663,7 +663,7 @@ func TestNet_Bind(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				tt.Cleanup(test.afterFunc)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -866,7 +866,7 @@ func TestNet_Opts(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				tt.Cleanup(test.afterFunc)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc

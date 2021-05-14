@@ -107,7 +107,7 @@ func TestWithErrGroup(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -221,7 +221,7 @@ func TestWithDuration(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -335,7 +335,7 @@ func TestWithMetrics(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -452,7 +452,7 @@ func TestWithVersionInfo(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -566,7 +566,7 @@ func TestWithMemoryMetrics(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -680,7 +680,7 @@ func TestWithGoroutineMetrics(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -794,7 +794,7 @@ func TestWithCGOMetrics(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it

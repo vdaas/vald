@@ -111,7 +111,7 @@ func TestWithOnDiscoverFunc(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -228,7 +228,7 @@ func TestWithOnConnectFunc(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -345,7 +345,7 @@ func TestWithOnDisconnectFunc(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -462,7 +462,7 @@ func TestWithDiscovererClient(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -579,7 +579,7 @@ func TestWithDiscoverDuration(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -696,7 +696,7 @@ func TestWithOptions(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -813,7 +813,7 @@ func TestWithAutoConnect(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -930,7 +930,7 @@ func TestWithName(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -1047,7 +1047,7 @@ func TestWithNamespace(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -1164,7 +1164,7 @@ func TestWithPort(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -1281,7 +1281,7 @@ func TestWithServiceDNSARecord(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -1398,7 +1398,7 @@ func TestWithNodeName(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -1515,7 +1515,7 @@ func TestWithErrGroup(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it

@@ -104,7 +104,7 @@ func TestWithDialer(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -186,7 +186,7 @@ func TestWithDialerFunc(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -295,7 +295,7 @@ func TestWithAddrs(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -362,7 +362,7 @@ func TestWithDB(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -446,7 +446,7 @@ func TestWithClusterSlots(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -533,7 +533,7 @@ func TestWithDialTimeout(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -620,7 +620,7 @@ func TestWithIdleCheckFrequency(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -707,7 +707,7 @@ func TestWithIdleTimeout(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -782,7 +782,7 @@ func TestWithKeyPrefix(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -867,7 +867,7 @@ func TestWithMaximumConnectionAge(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -932,7 +932,7 @@ func TestWithRedirectLimit(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -997,7 +997,7 @@ func TestWithRetryLimit(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -1084,7 +1084,7 @@ func TestWithMaximumRetryBackoff(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -1149,7 +1149,7 @@ func TestWithMinimumIdleConnection(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -1236,7 +1236,7 @@ func TestWithMinimumRetryBackoff(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -1318,7 +1318,7 @@ func TestWithOnConnectFunction(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -1393,7 +1393,7 @@ func TestWithPassword(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -1458,7 +1458,7 @@ func TestWithPoolSize(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -1545,7 +1545,7 @@ func TestWithPoolTimeout(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -1610,7 +1610,7 @@ func TestWithReadOnlyFlag(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -1697,7 +1697,7 @@ func TestWithReadTimeout(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -1762,7 +1762,7 @@ func TestWithRouteByLatencyFlag(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -1827,7 +1827,7 @@ func TestWithRouteRandomlyFlag(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -1907,7 +1907,7 @@ func TestWithTLSConfig(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -1994,7 +1994,7 @@ func TestWithWriteTimeout(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -2081,7 +2081,7 @@ func TestWithInitialPingTimeLimit(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -2168,7 +2168,7 @@ func TestWithInitialPingDuration(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -2286,7 +2286,7 @@ func TestWithHooks(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -2389,7 +2389,7 @@ func TestWithNetwork(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -2506,7 +2506,7 @@ func TestWithUsername(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -2623,7 +2623,7 @@ func TestWithLimiter(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -2740,7 +2740,7 @@ func TestWithSentinelMasterName(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -2857,7 +2857,7 @@ func TestWithSentinelPassword(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it

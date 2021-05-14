@@ -187,7 +187,7 @@ func TestLB_Bind(t *testing.T) {
 				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(tt)
+				tt.Cleanup(func() { test.afterFunc(tt) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc

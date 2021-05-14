@@ -85,7 +85,7 @@ func TestWithEndpoint(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -161,7 +161,7 @@ func TestWithRegion(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -237,7 +237,7 @@ func TestWithAccessKey(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -313,7 +313,7 @@ func TestWithSecretAccessKey(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -389,7 +389,7 @@ func TestWithToken(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -454,7 +454,7 @@ func TestWithMaxRetries(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -519,7 +519,7 @@ func TestWithForcePathStyle(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -584,7 +584,7 @@ func TestWithUseAccelerate(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -649,7 +649,7 @@ func TestWithUseARNRegion(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -714,7 +714,7 @@ func TestWithUseDualStack(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -779,7 +779,7 @@ func TestWithEnableSSL(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -844,7 +844,7 @@ func TestWithEnableParamValidation(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -909,7 +909,7 @@ func TestWithEnable100Continue(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -974,7 +974,7 @@ func TestWithEnableContentMD5Validation(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -1039,7 +1039,7 @@ func TestWithEnableEndpointDiscovery(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -1104,7 +1104,7 @@ func TestWithEnableEndpointHostPrefix(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {
@@ -1185,7 +1185,7 @@ func TestWithHTTPClient(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			if test.checkFunc == nil {

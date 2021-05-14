@@ -111,7 +111,7 @@ func TestNew(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -151,7 +151,7 @@ func Test_reader_Open(t *testing.T) {
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
-		afterFunc  func(args, *testing.T)
+		afterFunc  func(args, Reader, *testing.T)
 		hookFunc   func(*reader)
 	}
 	defaultCheckFunc := func(w want, err error) error {
@@ -159,6 +159,9 @@ func Test_reader_Open(t *testing.T) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
+	}
+	defaultAfterFunc := func(args args, r Reader, t *testing.T) {
+		r.Close()
 	}
 	tests := []test{
 		func() test {
@@ -181,8 +184,9 @@ func Test_reader_Open(t *testing.T) {
 				beforeFunc: func(args) {
 					cancel()
 				},
-				afterFunc: func(_ args, t *testing.T) {
+				afterFunc: func(args args, r Reader, t *testing.T) {
 					t.Helper()
+					defaultAfterFunc(args, r, t)
 					if err := eg.Wait(); !errors.Is(err, context.Canceled) {
 						t.Errorf("want: %v, but got: %v", context.Canceled, err)
 					}
@@ -217,9 +221,10 @@ func Test_reader_Open(t *testing.T) {
 				want: want{
 					err: nil,
 				},
-				afterFunc: func(_ args, t *testing.T) {
+				afterFunc: func(args args, r Reader, t *testing.T) {
 					t.Helper()
 
+					defaultAfterFunc(args, r, t)
 					if err := eg.Wait(); !errors.Is(err, wantErr) {
 						t.Errorf("want: %v, but got: %v", wantErr, err)
 					}
@@ -251,9 +256,10 @@ func Test_reader_Open(t *testing.T) {
 				want: want{
 					err: nil,
 				},
-				afterFunc: func(_ args, t *testing.T) {
+				afterFunc: func(args args, r Reader, t *testing.T) {
 					t.Helper()
 
+					defaultAfterFunc(args, r, t)
 					if err := eg.Wait(); !errors.Is(err, wantErr) {
 						t.Errorf("want: %v, but got: %v", wantErr, err)
 					}
@@ -300,9 +306,10 @@ func Test_reader_Open(t *testing.T) {
 				want: want{
 					err: nil,
 				},
-				afterFunc: func(_ args, t *testing.T) {
+				afterFunc: func(args args, r Reader, t *testing.T) {
 					t.Helper()
 
+					defaultAfterFunc(args, r, t)
 					if err := eg.Wait(); !errors.Is(err, wantErr) {
 						t.Errorf("want: %v, but got: %v", wantErr, err)
 					}
@@ -353,9 +360,10 @@ func Test_reader_Open(t *testing.T) {
 				want: want{
 					err: nil,
 				},
-				afterFunc: func(_ args, t *testing.T) {
+				afterFunc: func(args args, r Reader, t *testing.T) {
 					t.Helper()
 
+					defaultAfterFunc(args, r, t)
 					if err := eg.Wait(); !errors.Is(err, wantErr) {
 						t.Errorf("want: %v, but got: %v", wantErr, err)
 					}
@@ -431,9 +439,10 @@ func Test_reader_Open(t *testing.T) {
 						}
 					}()
 				},
-				afterFunc: func(_ args, t *testing.T) {
+				afterFunc: func(args args, r Reader, t *testing.T) {
 					t.Helper()
 
+					defaultAfterFunc(args, r, t)
 					if err := eg.Wait(); err != nil {
 						t.Errorf("want: %v, but got: %v", nil, err)
 					}
@@ -450,9 +459,7 @@ func Test_reader_Open(t *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args, t)
-			}
+
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
@@ -474,6 +481,9 @@ func Test_reader_Open(t *testing.T) {
 			}
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
+			}
+			if test.afterFunc != nil {
+				tt.Cleanup(func() { test.afterFunc(test.args, r, t) })
 			}
 		})
 	}
@@ -551,7 +561,7 @@ func Test_reader_Close(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				tt.Cleanup(test.afterFunc)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -661,7 +671,7 @@ func Test_reader_Read(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -793,7 +803,7 @@ func Test_reader_getObjectWithBackoff(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -1087,7 +1097,7 @@ func Test_reader_getObject(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc

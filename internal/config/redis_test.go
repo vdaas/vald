@@ -381,7 +381,7 @@ func TestRedis_Bind(t *testing.T) {
 				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(tt)
+				tt.Cleanup(func() { test.afterFunc(tt) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -906,7 +906,7 @@ func TestRedis_Opts(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				tt.Cleanup(test.afterFunc)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc

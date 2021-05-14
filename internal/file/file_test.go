@@ -194,7 +194,7 @@ func TestOpen(t *testing.T) {
 				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
+				tt.Cleanup(func() { test.afterFunc(tt, test.args) })
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc

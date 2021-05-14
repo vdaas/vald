@@ -105,7 +105,7 @@ func TestWithAPIKey(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -219,7 +219,7 @@ func TestWithAudiences(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -333,7 +333,7 @@ func TestWithCredentialsFile(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -447,7 +447,7 @@ func TestWithEndpoint(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -561,7 +561,7 @@ func TestWithQuotaProject(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -675,7 +675,7 @@ func TestWithRequestReason(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -789,7 +789,7 @@ func TestWithScopes(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -903,7 +903,7 @@ func TestWithUserAgent(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -1017,7 +1017,7 @@ func TestWithCredentialsJSON(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -1131,7 +1131,7 @@ func TestWithTelemetry(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -1245,7 +1245,7 @@ func TestWithAuthentication(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it

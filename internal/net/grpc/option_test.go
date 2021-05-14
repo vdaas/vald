@@ -113,7 +113,7 @@ func TestWithAddrs(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -230,7 +230,7 @@ func TestWithHealthCheckDuration(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -347,7 +347,7 @@ func TestWithConnectionPoolRebalanceDuration(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -464,7 +464,7 @@ func TestWithResolveDNS(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -581,7 +581,7 @@ func TestWithEnableConnectionPoolRebalance(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -698,7 +698,7 @@ func TestWithConnectionPoolSize(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -815,7 +815,7 @@ func TestWithDialOptions(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -932,7 +932,7 @@ func TestWithBackoffMaxDelay(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -1049,7 +1049,7 @@ func TestWithBackoffBaseDelay(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -1166,7 +1166,7 @@ func TestWithBackoffMultiplier(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -1283,7 +1283,7 @@ func TestWithBackoffJitter(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -1400,7 +1400,7 @@ func TestWithMinConnectTimeout(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -1517,7 +1517,7 @@ func TestWithCallOptions(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -1634,7 +1634,7 @@ func TestWithErrGroup(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -1751,7 +1751,7 @@ func TestWithBackoff(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -1868,7 +1868,7 @@ func TestWithWaitForReady(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -1985,7 +1985,7 @@ func TestWithMaxRetryRPCBufferSize(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -2102,7 +2102,7 @@ func TestWithMaxRecvMsgSize(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -2219,7 +2219,7 @@ func TestWithMaxSendMsgSize(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -2336,7 +2336,7 @@ func TestWithWriteBufferSize(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -2453,7 +2453,7 @@ func TestWithReadBufferSize(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -2570,7 +2570,7 @@ func TestWithInitialWindowSize(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -2687,7 +2687,7 @@ func TestWithInitialConnectionWindowSize(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -2804,7 +2804,7 @@ func TestWithMaxMsgSize(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -2921,7 +2921,7 @@ func TestWithInsecure(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -3038,7 +3038,7 @@ func TestWithDialTimeout(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -3161,7 +3161,7 @@ func TestWithKeepaliveParams(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -3278,7 +3278,7 @@ func TestWithDialer(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -3395,7 +3395,7 @@ func TestWithTLSConfig(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -3512,7 +3512,7 @@ func TestWithOldConnCloseDuration(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
