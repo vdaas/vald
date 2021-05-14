@@ -42,7 +42,7 @@ func TestOpen(t *testing.T) {
 		want       want
 		checkFunc  func(want, *os.File, error) error
 		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
+		afterFunc  func(*testing.T, args, *os.File)
 	}
 
 	defaultCheckFunc := func(w want, got *os.File, err error) error {
@@ -60,6 +60,14 @@ func TestOpen(t *testing.T) {
 			}
 		}
 		return nil
+	}
+	defaultAfterFunc := func(t *testing.T, args args, f *os.File) {
+		t.Helper()
+		if f != nil {
+			if err := f.Close(); err != nil {
+				t.Error(err)
+			}
+		}
 	}
 	tests := []test{
 		{
@@ -79,8 +87,9 @@ func TestOpen(t *testing.T) {
 					err:  nil,
 				}, got, gotErr)
 			},
-			afterFunc: func(t *testing.T, _ args) {
+			afterFunc: func(t *testing.T, args args, f *os.File) {
 				t.Helper()
+				defaultAfterFunc(t, args, f)
 				if err := os.RemoveAll("test"); err != nil {
 					t.Fatal(err)
 				}
@@ -104,8 +113,9 @@ func TestOpen(t *testing.T) {
 					err:  nil,
 				}, got, gotErr)
 			},
-			afterFunc: func(t *testing.T, _ args) {
+			afterFunc: func(t *testing.T, args args, f *os.File) {
 				t.Helper()
+				defaultAfterFunc(t, args, f)
 				if err := os.RemoveAll("test"); err != nil {
 					t.Fatal(err)
 				}
@@ -178,8 +188,9 @@ func TestOpen(t *testing.T) {
 					}(),
 				},
 			},
-			afterFunc: func(t *testing.T, _ args) {
+			afterFunc: func(t *testing.T, args args, f *os.File) {
 				t.Helper()
+				defaultAfterFunc(t, args, f)
 				if err := os.RemoveAll("dummy"); err != nil {
 					t.Fatal(err)
 				}
@@ -193,17 +204,19 @@ func TestOpen(t *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt, test.args)
 			}
-			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(tt, test.args) })
-			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
+			}
+			if test.afterFunc == nil {
+				test.afterFunc = defaultAfterFunc
 			}
 
 			got, err := Open(test.args.path, test.args.flg, test.args.perm)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
+			tt.Cleanup(func() { test.afterFunc(tt, test.args, got) })
 		})
 	}
 }
