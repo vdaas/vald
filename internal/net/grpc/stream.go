@@ -28,6 +28,8 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
@@ -77,7 +79,7 @@ func BidirectionalStream(ctx context.Context, stream ServerStream,
 		if errs == nil {
 			return nil
 		}
-		st, msg, err := status.ParseError(errs)
+		st, msg, err := status.ParseError(errs, codes.Internal, "failed to parse BidirectionalStream final gRPC error response")
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 		}
@@ -102,7 +104,8 @@ func BidirectionalStream(ctx context.Context, stream ServerStream,
 			}
 			if data != nil {
 				eg.Go(safety.RecoverWithoutPanicFunc(func() (err error) {
-					ctx, sspan := trace.StartSpan(ctx, fmt.Sprintf("%s/BidirectionalStream/stream-%020d", apiName, atomic.AddUint64(&cnt, 1)))
+					id := atomic.AddUint64(&cnt, 1)
+					ctx, sspan := trace.StartSpan(ctx, fmt.Sprintf("%s/BidirectionalStream/stream-%020d", apiName, id))
 					defer func() {
 						if sspan != nil {
 							sspan.End()
@@ -113,7 +116,7 @@ func BidirectionalStream(ctx context.Context, stream ServerStream,
 					if err != nil {
 						runtime.Gosched()
 						errMap.Store(err.Error(), err)
-						st, msg, err := status.ParseError(err)
+						st, msg, err := status.ParseError(err, codes.Internal, fmt.Sprintf("failed to parse BidirectionalStream id= %020d gRPC error response", id))
 						if sspan != nil {
 							sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 						}
@@ -127,7 +130,11 @@ func BidirectionalStream(ctx context.Context, stream ServerStream,
 						mu.Unlock()
 						if err != nil {
 							runtime.Gosched()
-							st, msg, err := status.ParseError(err)
+							st, msg, err := status.ParseError(err, codes.Internal, fmt.Sprintf("failed to parse BidirectionalStream.SendMsg id= %020d gRPC error response", id),
+								&errdetails.RequestInfo{
+									RequestId:   fmt.Sprintf("%s/BidirectionalStream/stream-%020d/SendMsg", apiName, id),
+									ServingData: errdetails.Serialize(res),
+								})
 							if sspan != nil {
 								sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 							}

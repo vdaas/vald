@@ -156,7 +156,6 @@ func (v *vqueue) PushInsert(uuid string, vector []float32, date int64) error {
 	if date == 0 {
 		date = time.Now().UnixNano()
 	}
-
 	v.ich <- index{
 		uuid:   uuid,
 		vector: vector,

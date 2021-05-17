@@ -32,13 +32,15 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/proto"
 )
 
+type Status = status.Status
+
 var Code = status.Code
 
-func New(c codes.Code, msg string) *status.Status {
+func New(c codes.Code, msg string) *Status {
 	return status.New(c, msg)
 }
 
-func newStatus(code codes.Code, msg string, err error, details ...interface{}) (st *status.Status) {
+func newStatus(code codes.Code, msg string, err error, details ...interface{}) (st *Status) {
 	st = New(code, msg)
 
 	messages := make([]proto.Message, 0, 4)
@@ -190,11 +192,22 @@ func Errorf(code codes.Code, format string, args ...interface{}) error {
 	return status.Errorf(code, format, args...)
 }
 
-func ParseError(err error, details ...interface{}) (st *status.Status, msg string, rerr error) {
+func ParseError(err error, defaultCode codes.Code, defaultMsg string, details ...interface{}) (st *Status, msg string, rerr error) {
+	if err == nil {
+		st = newStatus(codes.OK, "", nil, details...)
+		msg = st.Message()
+		return st, msg, nil
+	}
 	var ok bool
 	st, ok = FromError(err)
 	if !ok {
-		st = newStatus(codes.Internal, "failed to parse grpc status from error", err, details...)
+		if defaultCode == 0 {
+			defaultCode = codes.Internal
+		}
+		if len(defaultMsg) == 0 {
+			defaultMsg = "failed to parse grpc status from error"
+		}
+		st = newStatus(defaultCode, defaultMsg, err, details...)
 		err = errors.Wrap(st.Err(), err.Error())
 		msg = err.Error()
 	} else {
@@ -216,11 +229,18 @@ func ParseError(err error, details ...interface{}) (st *status.Status, msg strin
 			msg = st.Err().Error()
 		}
 	}
+	if err != nil {
+		if st.Code() == codes.Internal {
+			log.Error(err)
+		} else {
+			log.Warn(err)
+		}
+	}
 	rerr = err
 	return st, msg, rerr
 }
 
-func FromError(err error) (st *status.Status, ok bool) {
+func FromError(err error) (st *Status, ok bool) {
 	if err == nil {
 		return nil, false
 	}
