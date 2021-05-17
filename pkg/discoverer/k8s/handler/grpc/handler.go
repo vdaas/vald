@@ -84,7 +84,31 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 		}
 		return nil, status.WrapWithNotFound(fmt.Sprintf("Pods API request %#v pods not found", req), err, info.Get())
 	}
-	return proto.Clone(res.(*payload.Info_Pods)).(*payload.Info_Pods), nil
+	if res == nil {
+		log.Warn("Pods not found:", res)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeNotFound(fmt.Sprintf("%#v", req)))
+		}
+		return nil, status.WrapWithNotFound(fmt.Sprintf("Pods API request %#v pods not found", req), nil)
+	}
+	cp := proto.Clone(res.(*payload.Info_Pods))
+	if cp == nil {
+		log.Warn("Pods not found:", res)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeNotFound(fmt.Sprintf("%#v", req)))
+		}
+		return nil, status.WrapWithNotFound(fmt.Sprintf("Pods API request %#v pods not found", req), nil)
+	}
+	in, ok := cp.(*payload.Info_Pods)
+	if in == nil || !ok {
+		log.Warn("Pods not found:", res)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeNotFound(fmt.Sprintf("%#v", req)))
+		}
+		return nil, status.WrapWithNotFound(fmt.Sprintf("Pods API request %#v pods not found", req), nil)
+	}
+	return in, nil
+
 }
 
 func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*payload.Info_Nodes, error) {
@@ -104,7 +128,30 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 		}
 		return nil, status.WrapWithNotFound(fmt.Sprintf("Nodes API request %#v nodes not found", req), err, info.Get())
 	}
-	return proto.Clone(res.(*payload.Info_Nodes)).(*payload.Info_Nodes), nil
+	if res == nil {
+		log.Warn("Nodes not found:", res)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeNotFound(fmt.Sprintf("%#v", req)))
+		}
+		return nil, status.WrapWithNotFound(fmt.Sprintf("Nodes API request %#v nodes not found", req), nil)
+	}
+	cp := proto.Clone(res.(*payload.Info_Nodes))
+	if cp == nil {
+		log.Warn("Nodes not found:", res)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeNotFound(fmt.Sprintf("%#v", req)))
+		}
+		return nil, status.WrapWithNotFound(fmt.Sprintf("Nodes API request %#v nodes not found", req), nil)
+	}
+	in, ok := cp.(*payload.Info_Nodes)
+	if in == nil || !ok {
+		log.Warn("Nodes not found:", res)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeNotFound(fmt.Sprintf("%#v", req)))
+		}
+		return nil, status.WrapWithNotFound(fmt.Sprintf("Nodes API request %#v nodes not found", req), nil)
+	}
+	return in, nil
 }
 
 func singleflightKey(pref string, req *payload.Discoverer_Request) string {
