@@ -376,11 +376,13 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 					sspan.SetStatus(trace.StatusCodeNotFound(err.Error()))
 				}
 			default:
-				log.Infof("XXXPR1235-search API result is nil from agent %s, %v", r.String(), err)
+				log.Infof("XXXPR1235-search API result length is %d", len(r.GetResults()))
 				for _, dist := range r.GetResults() {
 					if dist == nil {
 						continue
 					}
+
+					log.Infof("XXXPR1235-search dist.GetDistance: %v, maxDist: %v", dist.GetDistance(), math.Float32frombits(atomic.LoadUint32(&maxDist)))
 					if dist.GetDistance() >= math.Float32frombits(atomic.LoadUint32(&maxDist)) {
 						return nil
 					}
