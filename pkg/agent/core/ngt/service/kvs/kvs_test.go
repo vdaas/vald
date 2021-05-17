@@ -224,7 +224,7 @@ func Test_bidi_Get(t *testing.T) {
 			)
 
 			return test{
-				name:   "return (0, false) when default value is set and there is value for the key and the key is default value",
+				name:   "return (0, true) when the default value is set for the key and the key is empty string",
 				args:   args{},
 				fields: fields,
 				beforeFunc: func(_ args, bm BidiMap) {
@@ -400,7 +400,7 @@ func Test_bidi_GetInverse(t *testing.T) {
 			)
 
 			return test{
-				name:   "return true when set the default value and there is a key for the value and the val is 0",
+				name:   "return (0, true) when the default value is set for the key and the val is 0",
 				args:   args{},
 				fields: fields,
 				beforeFunc: func(_ args, bm BidiMap) {
