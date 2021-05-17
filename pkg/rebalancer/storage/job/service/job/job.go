@@ -81,18 +81,22 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 			}
 		}
 	})
-	r.eg.Go(func() error {
+	r.eg.Go(func() (err error) {
 		log.Infof("[job debug] Start rebalance job service: %s", r.targetAgentName)
 
 		pr, pw := io.Pipe()
 		defer pr.Close()
 		defer func() {
-			p, err := os.FindProcess(os.Getpid())
-			if err != nil {
-				log.Error(err)
+			p, perr := os.FindProcess(os.Getpid())
+			if perr != nil {
+				log.Error(perr)
 				return
 			}
-			p.Signal(syscall.SIGTERM)
+			if err != nil {
+				p.Signal(syscall.SIGKILL) // TODO: #403
+			} else {
+				p.Signal(syscall.SIGTERM)
+			}
 		}()
 
 		// Download tar gz file
@@ -160,7 +164,6 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 		var cnt int64 = 0
 
 		log.Infof("Start rebalance data: %d", amntData)
-		var errs error
 		var mu sync.Mutex
 
 		eg, egctx := errgroup.New(ctx)
@@ -175,15 +178,15 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 			eg.Go(func() error {
 				// get vecotr by id
 				log.Infof("[job debug] Get object data: %s", id)
-				vec, err := r.client.GetObject(egctx, &payload.Object_VectorRequest{
+				vec, gerr := r.client.GetObject(egctx, &payload.Object_VectorRequest{
 					Id: &payload.Object_ID{
 						Id: id,
 					},
 				})
-				if err != nil {
-					log.Error(err)
+				if gerr != nil {
+					log.Error(gerr)
 					mu.Lock()
-					errs = errors.Wrap(errs, err.Error())
+					err = errors.Wrap(err, gerr.Error())
 					mu.Unlock()
 					return nil
 				}
@@ -191,16 +194,16 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 				// update data
 				// TODO: use stream or upsert?
 				log.Infof("[job debug] Update object data: %s", id)
-				_, err = r.client.Update(egctx, &payload.Update_Request{
+				_, uerr := r.client.Update(egctx, &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     vec.GetId(),
 						Vector: vec.GetVector(),
 					},
 				})
-				if err != nil {
-					log.Error(err)
+				if uerr != nil {
+					log.Error(uerr)
 					mu.Lock()
-					errs = errors.Wrap(errs, err.Error())
+					err = errors.Wrap(err, uerr.Error())
 					mu.Unlock()
 					return nil
 				}
@@ -217,9 +220,9 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 		}
 		eg.Wait()
 
-		if errs != nil {
-			log.Errorf("failed to rebalance data: %s", errs.Error())
-			return errs
+		if err != nil {
+			log.Errorf("failed to rebalance data: %s", err.Error())
+			return err
 		}
 
 		// rename backup file
