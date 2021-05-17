@@ -376,7 +376,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 					sspan.SetStatus(trace.StatusCodeNotFound(err.Error()))
 				}
 			default:
-				log.Successf("XXXPR1235-search API result is nil from agent %s, %v", r.String(), err)
+				log.Infof("XXXPR1235-search API result is nil from agent %s, %v", r.String(), err)
 				for _, dist := range r.GetResults() {
 					if dist == nil {
 						continue
@@ -389,7 +389,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 						case <-ectx.Done():
 							return nil
 						case dch <- dist:
-							log.Successf("XXXPR1235-search API succeeded for sending result channel %#v", dist)
+							log.Infof("XXXPR1235-search API succeeded for sending result channel %#v", dist)
 						}
 					}
 				}
@@ -444,14 +444,17 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 		case <-ectx.Done():
 			err = eg.Wait()
 			close(dch)
+			log.Debugf("XXXPR1235-search API starting to finalize %#v, err: %v", res, err)
 			// range over channel patter to check remaining channel's data for vald's search accuracy
 			for dist := range dch {
 				add(dist)
 			}
 			if num != 0 && len(res.GetResults()) > num {
+				log.Debugf("XXXPR1235-search API cut the result length %d to %d", len(res.GetResults()), num)
 				res.Results = res.GetResults()[:num]
 			}
 			if err != nil {
+				log.Errorf("XXXPR1235-search API error occurred %#v, err: %v", res, err)
 				st, msg, err := status.ParseError(err, codes.Internal,
 					"failed to parse search gRPC error response",
 					&errdetails.RequestInfo{
@@ -469,10 +472,11 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 				}
 				return nil, err
 			}
-			if len(res.GetResults()) == 0 {
+			if num != 0 && len(res.GetResults()) == 0 {
 				if err == nil {
 					err = errors.ErrIndexNotFound
 				}
+				log.Errorf("XXXPR1235-search API result is nil from agent %#v, err: %v", res, err)
 				st, msg, err := status.ParseError(err, codes.NotFound,
 					"error search result length is 0",
 					&errdetails.RequestInfo{
@@ -493,7 +497,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 			res.RequestId = cfg.GetRequestId()
 			return res, nil
 		case dist := <-dch:
-			log.Successf("XXXPR1235-search API succeeded for receive result channel %#v", dist)
+			log.Infof("XXXPR1235-search API succeeded for receive result channel %#v", dist)
 			add(dist)
 		}
 	}
