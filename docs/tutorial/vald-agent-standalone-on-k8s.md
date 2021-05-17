@@ -9,7 +9,7 @@ In the [Get Started](../tutorial/get-started.md), you may use 4 kinds of microse
 In this case, you use only 1 micro service, `Vald Agent` that is the core component for Vald named as `vald-agent-ngt`, to deploy.
 The below image shows the architecture image of this case.
 
-<img src="../../assets/docs/vald-agent-standalon-on-k8s.png">
+<img src="../../assets/docs/tutorial/vald-agent-standalone-on-k8s.png">
 
 The 5 steps to Vald Agent Standalone on Kubernetes with Vald:
 1. [Check and satisfy the requirements](#Requirements)

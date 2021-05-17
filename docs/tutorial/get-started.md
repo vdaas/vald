@@ -12,7 +12,7 @@ Before starting, let's check the below image.
 It shows the architecture image about the deployment result of Get Started.<br>
 The 4 kinds of microservices, `Vald LB Gateway`, `Vald Discoverer`, `Vald Agent` and `Vald Index Manager` will deployed on kuberntes.
 
-<img src="../../assets/docs/getstarted.png" />
+<img src="../../assets/docs/tutorial/getstarted.png" />
 
 The 5 steps to Get Started with Vald:
 1. [Check and satisfy the requirements](#Requirements)

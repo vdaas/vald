@@ -10,7 +10,7 @@ If you havn't complete [Get Started](../tutorial/get-started.md) yet, we recomme
 
 The following image is the architecture image of this tutorial.
 
-<img src="../../assets/docs/vald-with-syclladb.png" />
+<img src="../../assets/docs/tutorial/vald-with-syclladb.png" />
 
 The x steps to Using Backup with Scylladb:
 1. [Check and satisfy the requirements](#Requirements)
