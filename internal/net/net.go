@@ -275,9 +275,9 @@ func LoadLocalIP() string {
 	}
 	for _, address := range addrs {
 		if ipn, ok := address.(*net.IPNet); ok {
-			if ip, ok := netaddr.FromStdIPNet(ipn); ok && ip.IP.IsLoopback() &&
-				(ip.IP.Is4() || ip.IP.Is6() || ip.IP.Is4in6()) {
-				return ip.IP.String()
+			if ip, ok := netaddr.FromStdIPNet(ipn); ok && ip.Valid() && ip.IP().IsLoopback() &&
+				(ip.IP().Is4() || ip.IP().Is6() || ip.IP().Is4in6()) {
+				return ip.IP().String()
 			}
 		}
 	}

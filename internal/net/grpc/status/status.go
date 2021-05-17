@@ -200,7 +200,7 @@ func ParseError(err error, defaultCode codes.Code, defaultMsg string, details ..
 	}
 	var ok bool
 	st, ok = FromError(err)
-	if !ok {
+	if !ok || st == nil {
 		if defaultCode == 0 {
 			defaultCode = codes.Internal
 		}

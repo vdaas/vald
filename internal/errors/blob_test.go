@@ -167,6 +167,7 @@ func TestNewErrBlobNoSuchKey(t *testing.T) {
 		})
 	}
 }
+
 func TestErrBlobNoSuchBucket_Error(t *testing.T) {
 	type fields struct {
 		err error
