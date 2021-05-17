@@ -33,56 +33,22 @@ jobs:
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
     steps:
       - uses: actions/checkout@v2
-      - name: wait for dockers
+      - name: Wait for Docker images
         if: startsWith( github.ref, 'refs/tags/')
-        run: |
-          tag=$(cat versions/VALD_VERSION)
-          for image in \
-            vdaas/vald-agent-ngt \
-            vdaas/vald-discoverer-k8s \
-            vdaas/vald-manager-compressor \
-            vdaas/vald-meta-redis \
-            vdaas/vald-manager-backup-mysql \
-            vdaas/vald-backup-gateway \
-            vdaas/vald-lb-gateway \
-            vdaas/vald-meta-gateway \
-            vdaas/vald-manager-index
-          do
-            echo "searching ${image}:${tag}"
-            until curl -s "https://registry.hub.docker.com/v2/repositories/${image}/tags/${tag}" | jq '.name' | grep -v "null"; do
-              echo "waiting for ${image}:${tag} to be uploaded..."
-              sleep 2
-            done
-          done
-      - name: Specify container versions
+        id: wait_for_docker_images
+        uses: ./.github/actions/wait-for-docker-image
+      - name: Get PR number
+        id: get_pr_number
         if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
         run: |
           pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
-
-          declare -A images=(
-            ["vdaas/vald-agent-ngt"]="agent.image.tag"
-            ["vdaas/vald-discoverer-k8s"]="discoverer.image.tag"
-            ["vdaas/vald-manager-compressor"]="manager.compressor.image.tag"
-            ["vdaas/vald-meta-redis"]="meta.image.tag"
-            ["vdaas/vald-manager-backup-mysql"]="manager.backup.image.tag"
-            ["vdaas/vald-backup-gateway"]="gateway.backup.image.tag"
-            ["vdaas/vald-lb-gateway"]="gateway.lb.image.tag"
-            ["vdaas/vald-meta-gateway"]="gateway.meta.image.tag"
-            ["vdaas/vald-manager-index"]="manager.index.image.tag"
-          )
-
-          for image in "${!images[@]}"
-          do
-            echo "check for ${image}"
-
-            if curl -s "https://registry.hub.docker.com/v2/repositories/${image}/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
-              echo "${image}:pr-${pr_num} exists. adding a helm option '--set ${images[${image}]}=pr-${pr_num}'."
-              export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set ${images[${image}]}=pr-${pr_num}"
-            fi
-          done
-
-          echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}"
-          echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}" >> $GITHUB_ENV
+          echo "::set-output name=PR_NUM::${pr_num}"
+      - name: Specify container versions
+        if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
+        id: specify_container_versions
+        uses: ./.github/actions/detect-docker-image-tags
+        with:
+          tag_name: pr-${{ steps.get_pr_number.outputs.PR_NUM }}
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -124,6 +90,8 @@ jobs:
           kubectl wait --for=condition=ready pod -l app=vald-meta-gateway --timeout=600s
 
           kubectl get pods
+        env:
+          HELM_EXTRA_OPTIONS: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
       - name: run E2E CRUD
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
@@ -157,56 +125,22 @@ jobs:
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
     steps:
       - uses: actions/checkout@v2
-      - name: wait for dockers
+      - name: Wait for Docker images
         if: startsWith( github.ref, 'refs/tags/')
-        run: |
-          tag=$(cat versions/VALD_VERSION)
-          for image in \
-            vdaas/vald-agent-ngt \
-            vdaas/vald-discoverer-k8s \
-            vdaas/vald-manager-compressor \
-            vdaas/vald-meta-cassandra \
-            vdaas/vald-manager-backup-cassandra \
-            vdaas/vald-backup-gateway \
-            vdaas/vald-lb-gateway \
-            vdaas/vald-meta-gateway \
-            vdaas/vald-manager-index
-          do
-            echo "searching ${image}:${tag}"
-            until curl -s "https://registry.hub.docker.com/v2/repositories/${image}/tags/${tag}" | jq '.name' | grep -v "null"; do
-              echo "waiting for ${image}:${tag} to be uploaded..."
-              sleep 2
-            done
-          done
-      - name: Specify container versions
+        id: wait_for_docker_images
+        uses: ./.github/actions/wait-for-docker-image
+      - name: Get PR number
+        id: get_pr_number
         if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
         run: |
           pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
-
-          declare -A images=(
-            ["vdaas/vald-agent-ngt"]="agent.image.tag"
-            ["vdaas/vald-discoverer-k8s"]="discoverer.image.tag"
-            ["vdaas/vald-manager-compressor"]="manager.compressor.image.tag"
-            ["vdaas/vald-meta-cassandra"]="meta.image.tag"
-            ["vdaas/vald-manager-backup-cassandra"]="manager.backup.image.tag"
-            ["vdaas/vald-backup-gateway"]="gateway.backup.image.tag"
-            ["vdaas/vald-lb-gateway"]="gateway.lb.image.tag"
-            ["vdaas/vald-meta-gateway"]="gateway.meta.image.tag"
-            ["vdaas/vald-manager-index"]="manager.index.image.tag"
-          )
-
-          for image in "${!images[@]}"
-          do
-            echo "check for ${image}"
-
-            if curl -s "https://registry.hub.docker.com/v2/repositories/${image}/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
-              echo "${image}:pr-${pr_num} exists. adding a helm option '--set ${images[${image}]}=pr-${pr_num}'."
-              export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set ${images[${image}]}=pr-${pr_num}"
-            fi
-          done
-
-          echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}"
-          echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}" >> $GITHUB_ENV
+          echo "::set-output name=PR_NUM::${pr_num}"
+      - name: Specify container versions
+        if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
+        id: specify_container_versions
+        uses: ./.github/actions/detect-docker-image-tags
+        with:
+          tag_name: pr-${{ steps.get_pr_number.outputs.PR_NUM }}
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -245,6 +179,8 @@ jobs:
           kubectl wait --for=condition=ready pod -l app=vald-meta-gateway --timeout=600s
 
           kubectl get pods
+        env:
+          HELM_EXTRA_OPTIONS: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
       - name: run E2E CRUD
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
@@ -278,42 +214,25 @@ jobs:
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
     steps:
       - uses: actions/checkout@v2
-      - name: wait for dockers
+      - name: Wait for Docker images
         if: startsWith( github.ref, 'refs/tags/')
-        run: |
-          tag=$(cat versions/VALD_VERSION)
-          for image in \
-            vdaas/vald-agent-ngt \
-            vdaas/vald-agent-sidecar
-          do
-            echo "searching ${image}:${tag}"
-            until curl -s "https://registry.hub.docker.com/v2/repositories/${image}/tags/${tag}" | jq '.name' | grep -v "null"; do
-              echo "waiting for ${image}:${tag} to be uploaded..."
-              sleep 2
-            done
-          done
-      - name: Specify container versions
+        id: wait_for_docker_images
+        uses: ./.github/actions/wait-for-docker-image
+        with:
+          images: vdaas/vald-agent-ngt vdaas/vald-agent-sidecar
+      - name: Get PR number
+        id: get_pr_number
         if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
         run: |
           pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
-
-          declare -A images=(
-            ["vdaas/vald-agent-ngt"]="agent.image.tag"
-            ["vdaas/vald-agent-sidecar"]="agent.sidecar.image.tag"
-          )
-
-          for image in "${!images[@]}"
-          do
-            echo "check for ${image}"
-
-            if curl -s "https://registry.hub.docker.com/v2/repositories/${image}/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
-              echo "${image}:pr-${pr_num} exists. adding a helm option '--set ${images[${image}]}=pr-${pr_num}'."
-              export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set ${images[${image}]}=pr-${pr_num}"
-            fi
-          done
-
-          echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}"
-          echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}" >> $GITHUB_ENV
+          echo "::set-output name=PR_NUM::${pr_num}"
+      - name: Specify container versions
+        if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
+        id: specify_container_versions
+        uses: ./.github/actions/detect-docker-image-tags
+        with:
+          tag_name: pr-${{ steps.get_pr_number.outputs.PR_NUM }}
+          images: vdaas/vald-agent-ngt vdaas/vald-agent-sidecar
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -352,6 +271,8 @@ jobs:
           kubectl wait --for=condition=ready pod -l app=vald-agent-ngt --timeout=600s
 
           kubectl get pods
+        env:
+          HELM_EXTRA_OPTIONS: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
       - name: run E2E Agent & Sidecar
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
