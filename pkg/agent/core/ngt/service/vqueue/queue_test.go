@@ -884,67 +884,68 @@ func Test_vqueue_GetVector(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           uuid: "",
-		       },
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           uuid: "",
-		           },
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			var (
+				uuid   = "535f54cc-b6d3-11eb-8529-0242ac130003"
+				vector = []float32{1, 2, 3}
+			)
+			uiim := make(map[string]index)
+			for uuid, index := range map[string]index{
+				uuid: index{
+					vector: vector,
+				},
+				"535f57ce-b6d3-11eb-8529-0242ac130003": index{
+					vector: []float32{
+						4, 5, 6,
+					},
+				},
+			} {
+				uiim[uuid] = index
+			}
+			return test{
+				name: "return ([]float32{1, 2, 3}, true) when the uuid exists",
+				args: args{
+					uuid: uuid,
+				},
+				fields: fields{
+					uiim: uiim,
+				},
+				want: want{
+					want:  vector,
+					want1: true,
+				},
+			}
+		}(),
+		func() test {
+			var (
+				uuid = "535f54cc-b6d3-11eb-8529-0242ac130003"
+			)
+			uiim := make(map[string]index)
+			for uuid, index := range map[string]index{
+				"535f58f0-b6d3-11eb-8529-0242ac130003": index{
+					vector: []float32{1, 2, 3},
+				},
+				"535f57ce-b6d3-11eb-8529-0242ac130003": index{
+					vector: []float32{
+						4, 5, 6,
+					},
+				},
+			} {
+				uiim[uuid] = index
+			}
+			return test{
+				name: "return ([]float32{1, 2, 3}, true) when the uuid exists",
+				args: args{
+					uuid: uuid,
+				},
+				fields: fields{
+					uiim: uiim,
+				},
+				want: want{
+					want1: false,
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -1307,74 +1308,26 @@ func Test_vqueue_addInsert(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
+		beforeFunc func(args, *vqueue)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           i: index{},
-		       },
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           i: index{},
-		           },
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			return test{
+				name: "insert success",
+				args: args{
+					i: index{},
+				},
+				fields: fields{
+					uii:  nil,
+					uiim: nil,
+				},
+				want: want{},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -1382,15 +1335,7 @@ func Test_vqueue_addInsert(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
+
 			v := &vqueue{
 				ich:              test.fields.ich,
 				uii:              test.fields.uii,
@@ -1408,6 +1353,15 @@ func Test_vqueue_addInsert(t *testing.T) {
 				dchSize:          test.fields.dchSize,
 				iBufSize:         test.fields.iBufSize,
 				dBufSize:         test.fields.dBufSize,
+			}
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args, v)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
 			}
 
 			v.addInsert(test.args.i)
@@ -1865,61 +1819,19 @@ func Test_vqueue_IVQLen(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			size := 10
+			uii := make([]index, size)
+			return test{
+				name: "return size of un inserted index",
+				fields: fields{
+					uii: uii,
+				},
+				want: want{
+					wantL: size,
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -2000,61 +1912,19 @@ func Test_vqueue_DVQLen(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			size := 10
+			udk := make([]key, size)
+			return test{
+				name: "return size of undeleted key",
+				fields: fields{
+					udk: udk,
+				},
+				want: want{
+					wantL: size,
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -2135,61 +2005,23 @@ func Test_vqueue_IVCLen(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			size := 10
+			ich := make(chan index, size)
+			for i := 0; i < size; i++ {
+				ich <- index{}
+			}
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			return test{
+				name: "return size of insert queue",
+				fields: fields{
+					ich: ich,
+				},
+				want: want{
+					want: size,
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -2270,61 +2102,26 @@ func Test_vqueue_DVCLen(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			size := 10
+			dch := make(chan key, size)
+			for i := 0; i < size; i++ {
+				dch <- key{}
+			}
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			return test{
+				name: "return size of delete queue",
+				fields: fields{
+					dch: dch,
+				},
+				afterFunc: func() {
+					close(dch)
+				},
+				want: want{
+					want: size,
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
