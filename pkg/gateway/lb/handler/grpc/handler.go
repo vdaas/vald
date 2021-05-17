@@ -327,6 +327,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 	}
 
 	var maxDist uint32
+	atomic.StoreUint32(&maxDist, math.Float32bits(math.MaxFloat32))
 	ectx, cancel = context.WithTimeout(ectx, timeout)
 	eg.Go(safety.RecoverFunc(func() error {
 		defer cancel()
