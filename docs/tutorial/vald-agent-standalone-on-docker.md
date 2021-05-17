@@ -163,7 +163,7 @@ This chapter will use NGT for the core engine of Vald Agent.
 1. Running example
 
     Vald provides multiple language client libraries such as Go, Java, Node.js, Python, and so on.<br>
-    This example will insert and index 400 vectors into the Vald from the fashion-mnist dataset via grpc.
+    This example will insert and index 400 vectors into the Vald from the fashion-mnist dataset via gRPC.
     And then after waiting for indexing, it will request for searching nearest vector at 10 times.
     You will get the 10 nearest neighbor vectors for each search query.<br>
     

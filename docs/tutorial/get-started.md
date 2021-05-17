@@ -15,10 +15,10 @@ The 4 kinds of microservices, `Vald LB Gateway`, `Vald Discoverer`, `Vald Agent`
 <img src="../../assets/docs/tutorial/getstarted.png" />
 
 The 5 steps to Get Started with Vald:
-1. [Check and satisfy the requirements](#Requirements)
-1. [Prepare kubernetes cluster](#Prepare-the-kubernetes-cluster)
-1. [Deploy Vald on kubernetes cluster](#Deploy-Vald-on-Kubernetes-Cluster)
-1. [Running exapmle code](#Running-Exapmle-Code)
+1. [Check and Satisfy the Requirements](#Requirements)
+1. [Prepare Kubernetes Cluster](#Prepare-the-Kubernetes-Cluster)
+1. [Deploy Vald on Kubernetes Cluster](#Deploy-Vald-on-Kubernetes-Cluster)
+1. [Run Exapmle Code](#Run-Exapmle-Code)
 1. [Cleanup](#Cleanup)
 
 ## Requirements
@@ -31,7 +31,7 @@ The 5 steps to Get Started with Vald:
 Helm is used to deploying Vald on your kubernetes and Hdf5 is used to decode the sample data file to run the example.<br>
 If helm or hdf5 is not installed, please install [helm](https://helm.sh/docs/intro/install) and [hdf5](https://www.hdfgroup.org/).
 
-<details><summary>Installatoin command for helm</summary><br>
+<details><summary>Installation command for helm</summary><br>
 
 ```bash
 curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
@@ -54,17 +54,17 @@ brew install hdf5
 
 </details>
 
-## Prepare the kubernetes cluster
+## Prepare the Kubernetes Cluster
 
 1. Prepare kubernetes cluster
 
-    To complete get started, the kubernetes cluster is required.<br>
+    To complete get started, the Kubernetes cluster is required.<br>
     Vald will run on Cloud Service such as GKE, AWS.
-    In the sense of trying to "Get-Started", [k3d](https://k3d.io/) or [kind](https://kind.sigs.k8s.io/) are easy kubernetes tools to use.
+    In the sense of trying to "Get-Started", [k3d](https://k3d.io/) or [kind](https://kind.sigs.k8s.io/) are easy Kubernetes tools to use.
 
 1. Apply kubenetes metrics server
 
-    After creating your kubernetes cluster, let's apply kubernetes metrics server.
+    After creating your Kubernetes cluster, let's apply Kubernetes metrics server.
 
     ```bash
     kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
@@ -73,7 +73,7 @@ brew install hdf5
 
 ## Deploy Vald on Kubernetes Cluster
 
-This chapter shows the way to deploy Vald using Helm and to run on your kubernetes cluster.<br>
+This chapter shows the way to deploy Vald using Helm and to run on your Kubernetes cluster.<br>
 In this tutorial, you will deploy the basic configuration of Vald that is consisted of vald-agent-ngt, vald-lb-gateway, vald-discoverer and vald-manager-index.<br>
 
 1. Clone the repository
@@ -124,9 +124,9 @@ In this tutorial, you will deploy the basic configuration of Vald that is consis
     vald-manager-index-74c7b5ddd6-jrnlw        1/1     Running     0          7m12s
     ```
 
-## Running Exapmle Code
+## Run Exapmle Code
 
-In this chaptor, you will execute insert vectors, search vectors, and delete vectors to your Vald cluster using the exmaple code.<br>
+In this chapter, you will execute insert vectors, search vectors, and delete vectors to your Vald cluster using the example code.<br>
 The [fashion-mnist](https://github.com/zalandoresearch/fashion-mnist) is used as a dataset for indexing and search query.
 
 The example code is implemented Go and using [vald-client-go](https://github.com/vdaas/vald-client-go), one of the official Vald client library,  for requesting to Vald cluster.
@@ -153,10 +153,10 @@ If you are interested in, please refer to [SDKs](../../user-guides/sdks).<br>
     wget http://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5
     ```
 
-1. Run
+1. Run Example
 
     We use [`example/client/main.go`](https://github.com/vdaas/vald/blob/master/example/client/main.go) to run the example.<br>
-    This example will insert and index 400 vectors into the Vald from the fashion-mnist dataset via grpc.
+    This example will insert and index 400 vectors into the Vald from the fashion-mnist dataset via gRPC.
     And then after waiting for indexing, it will request for searching nearest vector at 10 times.
     You will get the 10 nearest neighbor vectors for each search query.<br>
     Run example codes by executing below command.
@@ -309,7 +309,7 @@ If you are interested in, please refer to [SDKs](../../user-guides/sdks).<br>
 
     1. Search
 
-        - Search 10 neighbor vectors for each 20 test datasets and return list of neighbor vector.
+        - Search 10 neighbor vectors for each 20 test datasets and return a list of the neighbor vectors.
 
         - When getting approximate vectors, the Vald client sends search config and vector to the server via gRPC.
             <details><summary>example code</summary><br>

@@ -1,35 +1,37 @@
 # Using Backup with SycllaDB
 
-This article will show you how to deploy Vald with ScyallaDB as backup Database using Helm and run it on your kubernetes cluster.
+This article will show you how to deploy Vald with ScyallaDB as backup Database using Helm and run it on your Kubernetes cluster.
 
 ## Overview
 
-One of the Vald's feature, Vald has auto index backup feature using MySQL + Redis or Cassandra which enables disaster recovery.
-In this tutorial, you will use ScyllaDB for backup Persistent Volume and deploy more microsevices than [Get Started](../tutorial/get-started.md).
-If you havn't complete [Get Started](../tutorial/get-started.md) yet, we recommend to try this at first.
+This tutorial leads you to deploy Vald with using the external database for backup.
+As one of the features, Vald can auto index backup using MySQL + Redis or Cassandra to enable disaster recovery.<br>
+In this tutorial, you will use ScyllaDB deployed to the Persistent Volume for backup.
+And you will also deploy more microservices than [Get Started](../tutorial/get-started.md).
+If you haven't completed [Get Started](../tutorial/get-started.md) yet, we recommend to try it out at first.
 
 The following image is the architecture image of this tutorial.
 
 <img src="../../assets/docs/tutorial/vald-with-syclladb.png" />
 
-The x steps to Using Backup with Scylladb:
-1. [Check and satisfy the requirements](#Requirements)
-1. [Prepare kubernetes cluster](#Prepare-the-kubernetes-cluster)
-1. [Deploy Vald on kubernetes cluster](#Deploy-Vald-on-Kubernetes-Cluster)
-1. [Running exapmle code](#Running-Exapmle-Code)
+The 5 steps to Using Backup with Scylladb:
+1. [Check and Satisfy the Requirements](#Requirements)
+1. [Prepare Kubernetes Cluster](#Prepare-the-Kubernetes-Cluster)
+1. [Deploy Vald on Kubernetes Cluster](#Deploy-Vald-on-Kubernetes-Cluster)
+1. [Run Example Code](#Run-Example-Code)
 1. [Cleanup](#Cleanup)
 
 ## Requirements
 
-- kubernetes: v1.19 ~
+- Kubernetes: v1.19 ~
 - go: v1.15 ~
 - helm: v3 ~
-- libhdf5 (_only required for get started_)
+- libhdf5 (_only required for this tutorial_)
 
-Helm is used to deploying Vald on your kubernetes and Hdf5 is used to decode the sample data file to run the example.<br>
+Helm is used to deploying Vald on your Kubernetes and Hdf5 is used to decode the sample data file to run the example.<br>
 If helm or hdf5 is not installed, please install [helm](https://helm.sh/docs/intro/install) and [hdf5](https://www.hdfgroup.org/).
 
-<details><summary>Installatoin command for helm</summary><br>
+<details><summary>Installation command for helm</summary><br>
 
 ```bash
 curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
@@ -52,13 +54,13 @@ brew install hdf5
 
 </details>
 
-## Prepare the kubernetes cluster
+## Prepare the Kubernetes Cluster
 
-1. Prepare kubernetes cluster
+1. Prepare Kubernetes cluster
 
     To complete get started, the kubernetes cluster is required.<br>
     Vald will run on Cloud Service such as GKE, AWS.
-    In the sense of trying to "Get-Started", [k3d](https://k3d.io/) or [kind](https://kind.sigs.k8s.io/) are easy kubernetes tools to use.
+    In the sense of trying to "Get-Started", [k3d](https://k3d.io/) or [kind](https://kind.sigs.k8s.io/) are easy Kubernetes tools to use.
 
 1. Prepare Scylla DB and kubernetes metrics-server
 
@@ -120,7 +122,7 @@ This chapter will show you how to deploy using Helm and run Vald on your kuberne
 This chapter uses Scylla DB as a backend data store for indexing and data backup.<br>
 If you want to learn about Scylla, please refer to [the official website](https://www.scylladb.com/).
 
-1. Clone the repository
+1. Clone the Repository
 
     To use the `deployment yaml` for deploy, let's clone [`vdaas/vald`](https://github.com/vdaas/vald.git) repository.
 
@@ -129,13 +131,13 @@ If you want to learn about Scylla, please refer to [the official website](https:
     cd vald
     ```
 
-1. Confirm which cluster to deploy
+1. Confirm which Cluster to Deploy
 
    ```bash
    kubectl cluster-info
    ```
 
-1. Deploy Vald using helm
+1. Deploy Vald Using Helm
 
     ```bash
     # add vald repo into helm repo
@@ -187,7 +189,7 @@ If you want to learn about Scylla, please refer to [the official website](https:
 
     </details>
 
-### Run using example code
+## Run Example Code
 
 This chapter shows how to perform a search action in Vald with fashion-mnist dataset.
 
@@ -199,7 +201,7 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
     kubectl port-forward deployment/vald-meta-gateway 8081:8081
     ```
 
-1. Download dataset
+1. Download Dataset
 
     Download [fashion-mnist](https://github.com/zalandoresearch/fashion-mnist) that is used as dataset for indexing and search query.
 
@@ -211,10 +213,10 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
     wget http://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5
     ```
 
-1. Running example
+1. Run Example
 
     We use [`example/client/main.go`](https://github.com/vdaas/vald/blob/master/example/client/main.go) to run the example.<br>
-    This exapmle will insert and index 400 vectors into the Vald from the fashion-mnist dataset via grpc.
+    This example will insert and index 400 vectors into the Vald from the fashion-mnist dataset via grpc.
     And then after waiting for indexing, it will request for searching nearest vector at 10 times.
     You will get the 10 nearest neighbor vectors for each search query.<br>
     Run example codes by executing below command.
@@ -224,7 +226,7 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
     go run main.go
     ```
 
-    The datailed explanation of exapmle code is shown in [Get Started](../tutorial/get-started.md#Running-Example-Code)
+    The datailed explanation of example code is shown in [Get Started](../tutorial/get-started.md#Running-Example-Code)
 
 ## Cleanup
 
