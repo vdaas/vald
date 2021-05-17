@@ -3,7 +3,7 @@
 Vald is a highly scalable distributed fast approximate nearest neighbor dense vector search engine.<br>
 Vald is designed and implemented based on Cloud-Native architecture.
 
-This article will show you how to deploy and run the Vald components on your kubernetes cluster.
+This article will show you how to deploy and run the Vald components on your Kubernetes cluster.
 And, Fashion-mnist is used as an example of a dataset.
 
 ## Overview
@@ -62,7 +62,7 @@ brew install hdf5
     Vald will run on Cloud Service such as GKE, AWS.
     In the sense of trying to "Get-Started", [k3d](https://k3d.io/) or [kind](https://kind.sigs.k8s.io/) are easy Kubernetes tools to use.
 
-1. Apply kubenetes metrics server
+1. Apply Kubernetes metrics server
 
     After creating your Kubernetes cluster, let's apply Kubernetes metrics server.
 

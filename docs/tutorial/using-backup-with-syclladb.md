@@ -1,6 +1,6 @@
 # Using Backup with SycllaDB
 
-This article will show you how to deploy Vald with ScyallaDB as backup Database using Helm and run it on your Kubernetes cluster.
+This article will show you how to deploy Vald with ScyallaDB as backup database using Helm and run it on your Kubernetes cluster.
 
 ## Overview
 
@@ -58,11 +58,11 @@ brew install hdf5
 
 1. Prepare Kubernetes cluster
 
-    To complete get started, the kubernetes cluster is required.<br>
+    To complete get started, the Kubernetes cluster is required.<br>
     Vald will run on Cloud Service such as GKE, AWS.
     In the sense of trying to "Get-Started", [k3d](https://k3d.io/) or [kind](https://kind.sigs.k8s.io/) are easy Kubernetes tools to use.
 
-1. Prepare Scylla DB and kubernetes metrics-server
+1. Prepare Scylla DB and Kubernetes metrics-server
 
     Deploy Scylla as a backup database.
 
@@ -109,7 +109,7 @@ brew install hdf5
 
     For documentation on scylladb operator, please refer to [here](http://operator.docs.scylladb.com/master/generic)
 
-1. Apply kubenetes metrics server
+1. Apply Kubenetes metrics server
 
     ```bash
     kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
@@ -118,7 +118,7 @@ brew install hdf5
 
 ## Deploy Vald on Kubernetes Cluster
 
-This chapter will show you how to deploy using Helm and run Vald on your kubernetes cluster.<br>
+This chapter will show you how to deploy using Helm and run Vald on your Kubernetes cluster.<br>
 This chapter uses Scylla DB as a backend data store for indexing and data backup.<br>
 If you want to learn about Scylla, please refer to [the official website](https://www.scylladb.com/).
 

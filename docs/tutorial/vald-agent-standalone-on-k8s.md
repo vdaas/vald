@@ -1,6 +1,6 @@
 # Vald Agent Standalone on Kubernetes
 
-This article will show you how to deploy a standalone Vald Agent using Helm and run it on your kubernetes cluster.
+This article will show you how to deploy a standalone Vald Agent using Helm and run it on your Kubernetes cluster.
 
 ## Overview
 
@@ -20,12 +20,12 @@ The 5 steps to Vald Agent Standalone on Kubernetes with Vald:
 
 ## Requirements
 
-- kubernetes: v1.19 ~
+- Kubernetes: v1.19 ~
 - go: v1.15 ~
 - helm: v3 ~
 - libhdf5 (_only required for get started_)
 
-Helm is used to deploying Vald on your kubernetes and Hdf5 is used to decode the sample data file to run the example.<br>
+Helm is used to deploying Vald on your Kubernetes and Hdf5 is used to decode the sample data file to run the example.<br>
 If helm or hdf5 is not installed, please install [helm](https://helm.sh/docs/intro/install) and [hdf5](https://www.hdfgroup.org/).
 
 <details><summary>Installation command for helm</summary><br>
@@ -53,15 +53,15 @@ brew install hdf5
 
 ## Prepare the Kubernetes Cluster
 
-1. Prepare kubernetes cluster
+1. Prepare Kubernetes cluster
 
     To complete get started, the Kubernetes cluster is required.<br>
     Vald will run on Cloud Service such as GKE, AWS.
-    In the sense of trying to "Get-Started", [k3d](https://k3d.io/) or [kind](https://kind.sigs.k8s.io/) are easy kubernetes tools to use.
+    In the sense of trying to "Get-Started", [k3d](https://k3d.io/) or [kind](https://kind.sigs.k8s.io/) are easy Kubernetes tools to use.
 
 ## Deploy Vald Agent Standalone on Kubernetes Cluster
 
-This chapter will show you how to deploy a standalone Vald Agent using Helm and run it on your kubernetes cluster. <br>
+This chapter will show you how to deploy a standalone Vald Agent using Helm and run it on your Kubernetes cluster. <br>
 This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perform vector insertion operation, indexing and searching operations.<br>
 
 1. Clone the repository
@@ -73,7 +73,7 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
     cd vald
     ```
 
-1. Deploy Vald Agent Standalonw using Helm
+1. Deploy Vald Agent Standalone using Helm
 
     There is the [values.yaml](https://github.com/vdaas/vald/blob/master/example/helm/values-standalone-agent-ngt.yaml) to deploy standalone Vald Agent.
     Each component can be disabled by setting the value `false` to the `[component].enabled` field.
