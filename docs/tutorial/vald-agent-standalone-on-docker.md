@@ -163,7 +163,9 @@ This chapter will use NGT for the core engine of Vald Agent.
 1. Running example
 
     Vald provides multiple language client libraries such as Go, Java, Node.js, Python, and so on.<br>
-    In this example, the fashion-mnist dataset will insert into the Vald and search using [vald-client-go](https://github.com/vdaas/vald-client-go).
+    This example will insert and index 400 vectors into the Vald from the fashion-mnist dataset via grpc.
+    And then after waiting for indexing, it will request for searching nearest vector at 10 times.
+    You will get the 10 nearest neighbor vectors for each search query.<br>
     
     We use [`example/client/agent/main.go`](https://github.com/vdaas/vald/blob/master/example/client/agent/main.go) to run the example.
     The example code is the same as running an example only Vald agent on Kubernetes.

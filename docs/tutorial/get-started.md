@@ -156,6 +156,9 @@ If you are interested in, please refer to [SDKs](../../user-guides/sdks).<br>
 1. Run
 
     We use [`example/client/main.go`](https://github.com/vdaas/vald/blob/master/example/client/main.go) to run the example.<br>
+    This example will insert and index 400 vectors into the Vald from the fashion-mnist dataset via grpc.
+    And then after waiting for indexing, it will request for searching nearest vector at 10 times.
+    You will get the 10 nearest neighbor vectors for each search query.<br>
     Run example codes by executing below command.
 
     ```bash
