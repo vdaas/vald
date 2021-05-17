@@ -397,11 +397,32 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 			err = eg.Wait()
 			close(dch)
 			if num != 0 && len(res.GetResults()) > num {
-				res.Results = res.Results[:num]
+				res.Results = res.GetResults()[:num]
 			}
-			if len(res.Results) == 0 {
-				st, msg, err := status.ParseError(err, codes.NotFound,
+			if err != nil {
+				st, msg, err := status.ParseError(err, codes.Internal,
 					"failed to parse search gRPC error response",
+					&errdetails.RequestInfo{
+						RequestId:   cfg.GetRequestId(),
+						ServingData: errdetails.Serialize(cfg),
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
+						ResourceName: strings.Join(s.gateway.Addrs(ctx), ", "),
+						Owner:        errdetails.ValdResourceOwner,
+						Description:  err.Error(),
+					}, info.Get())
+				if span != nil {
+					span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+				}
+				return nil, err
+			}
+			if len(res.GetResults()) == 0 {
+				if err == nil {
+					err = errors.ErrIndexNotFound
+				}
+				st, msg, err := status.ParseError(err, codes.NotFound,
+					"error search result length is 0",
 					&errdetails.RequestInfo{
 						RequestId:   cfg.GetRequestId(),
 						ServingData: errdetails.Serialize(cfg),
