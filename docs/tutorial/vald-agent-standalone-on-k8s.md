@@ -297,7 +297,7 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
 
     1. Search
 
-        - Search 10 neighbor vectors for each 20 test datasets and return list of neighbor vector.
+        - Search 10 neighbor vectors for each 20 test datasets and return a list of neighbor vectors.
 
         - When getting approximate vectors, the Vald client sends search config and vector to the server via gRPC.
             <details><summary>example code</summary><br>

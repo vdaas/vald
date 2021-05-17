@@ -226,7 +226,7 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
     go run main.go
     ```
 
-    The datailed explanation of example code is shown in [Get Started](../tutorial/get-started.md#Running-Example-Code)
+    The detailed explanation of example code is shown in [Get Started](../tutorial/get-started.md#Running-Example-Code)
 
 ## Cleanup
 

@@ -23,12 +23,12 @@ The 5 steps to Get Started with Vald:
 
 ## Requirements
 
-- kubernetes: v1.19 ~
+- Kubernetes: v1.19 ~
 - go: v1.15 ~
 - helm: v3 ~
 - libhdf5 (_only required for get started_)
 
-Helm is used to deploying Vald on your kubernetes and Hdf5 is used to decode the sample data file to run the example.<br>
+Helm is used to deploying Vald on your Kubernetes and Hdf5 is used to decode the sample data file to run the example.<br>
 If helm or hdf5 is not installed, please install [helm](https://helm.sh/docs/intro/install) and [hdf5](https://www.hdfgroup.org/).
 
 <details><summary>Installation command for helm</summary><br>
@@ -56,7 +56,7 @@ brew install hdf5
 
 ## Prepare the Kubernetes Cluster
 
-1. Prepare kubernetes cluster
+1. Prepare Kubernetes cluster
 
     To complete get started, the Kubernetes cluster is required.<br>
     Vald will run on Cloud Service such as GKE, AWS.
@@ -166,7 +166,7 @@ If you are interested in, please refer to [SDKs](../../user-guides/sdks).<br>
     go run main.go
     ```
 
-    The datailed explanation of exapmle code is below.
+    The detailed explanation of example code is below.
 
     <details><summary>detailed explanation</summary><br>
     This will execute 6 steps.
@@ -363,7 +363,7 @@ If you are interested in, please refer to [SDKs](../../user-guides/sdks).<br>
 
 ## Cleanup
 
-In the last, you can remove the all deployed Vald pods by executing below command.
+In the last, you can remove the deployed Vald Cluster by executing below command.
 
 ```bash
 helm uninstall vald
@@ -375,7 +375,7 @@ Conglatulation! You completely entered into the Vald World!
 
 If you want, you can try other tutorials such as:
 - [Vald Agent Standalone on k8s](../tutorial/vald-agent-standalone-on-k8s.md)
-- [Vald Agent on Docker](../tutorial/vald-agent-on-docker.md)
+- [Vald Agent on Docker](../tutorial/vald-agent-standalone-on-docker.md)
 
 For more information, we recommend you to check:
 - [Configration](../user-guides/configration.md)
