@@ -465,7 +465,7 @@ func Test_bidi_Set(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(w want, args args, b *bidi) error
-		beforeFunc func(args)
+		beforeFunc func(args, *bidi)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, args args, b *bidi) error {
@@ -514,6 +514,41 @@ func Test_bidi_Set(t *testing.T) {
 					key: key,
 					val: val,
 					l:   1,
+				},
+			}
+		}(),
+		func() test {
+			fields := fields{
+				l: 0,
+			}
+			for i := 0; i < slen; i++ {
+				fields.ou[i] = new(ou)
+				fields.uo[i] = new(uo)
+			}
+
+			var (
+				val1 uint32 = 10000
+			)
+
+			var (
+				key2        = "45637ec4-c85f-11ea-87d0"
+				val2 uint32 = 14438
+			)
+
+			return test{
+				name: "set success when the key is already set and the same key is set twie",
+				args: args{
+					key: key2,
+					val: val2,
+				},
+				fields: fields,
+				beforeFunc: func(a args, b *bidi) {
+					b.Set(a.key, val1)
+				},
+				want: want{
+					key: key2,
+					val: val2,
+					l:   2,
 				},
 			}
 		}(),
@@ -594,19 +629,20 @@ func Test_bidi_Set(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+
+			b := &bidi{
+				ou: test.fields.ou,
+				uo: test.fields.uo,
+				l:  test.fields.l,
+			}
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(test.args, b)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
-			}
-			b := &bidi{
-				ou: test.fields.ou,
-				uo: test.fields.uo,
-				l:  test.fields.l,
 			}
 
 			b.Set(test.args.key, test.args.val)
