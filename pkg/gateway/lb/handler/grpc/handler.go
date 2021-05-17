@@ -341,14 +341,17 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 			r, err := f(sctx, vc, copts...)
 			switch {
 			case errors.Is(err, context.Canceled):
+				log.Warnf("XXXPR1235-search API context Canceled, %v", err)
 				if sspan != nil {
 					sspan.SetStatus(trace.StatusCodeCancelled(err.Error()))
 				}
 			case errors.Is(err, context.DeadlineExceeded):
+				log.Warnf("XXXPR1235-search API context DeadlineExceeded, %v", err)
 				if sspan != nil {
 					sspan.SetStatus(trace.StatusCodeDeadlineExceeded(err.Error()))
 				}
 			case err != nil:
+				log.Errorf("XXXPR1235-search API error occured, %v", err)
 				st, msg, _ := status.ParseError(err, codes.Internal, "failed to parse Search gRPC error response",
 					&errdetails.ResourceInfo{
 						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Search",
@@ -361,6 +364,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 				}
 			case r == nil || len(r.GetResults()) == 0:
 				err = errors.ErrIndexNotFound
+				log.Errorf("XXXPR1235-search API result is nil from agent %s, %v", r.String(), err)
 				err = status.WrapWithNotFound("failed to process search request", err,
 					&errdetails.ResourceInfo{
 						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Search",
@@ -372,6 +376,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 					sspan.SetStatus(trace.StatusCodeNotFound(err.Error()))
 				}
 			default:
+				log.Successf("XXXPR1235-search API result is nil from agent %s, %v", r.String(), err)
 				for _, dist := range r.GetResults() {
 					if dist == nil {
 						continue
@@ -384,6 +389,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 						case <-ectx.Done():
 							return nil
 						case dch <- dist:
+							log.Successf("XXXPR1235-search API succeeded for sending result channel %#v", dist)
 						}
 					}
 				}
@@ -487,6 +493,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 			res.RequestId = cfg.GetRequestId()
 			return res, nil
 		case dist := <-dch:
+			log.Successf("XXXPR1235-search API succeeded for receive result channel %#v", dist)
 			add(dist)
 		}
 	}
