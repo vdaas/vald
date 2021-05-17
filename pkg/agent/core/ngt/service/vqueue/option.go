@@ -45,7 +45,7 @@ func WithErrGroup(eg errgroup.Group) Option {
 	}
 }
 
-// WithInsertBufferSize returns the option to set the size of insert buffer.
+// WithInsertBufferSize returns the option to set the size of the insert buffer.
 func WithInsertBufferSize(size int) Option {
 	return func(v *vqueue) error {
 		if size <= 0 {
@@ -57,7 +57,7 @@ func WithInsertBufferSize(size int) Option {
 	}
 }
 
-// WithDeleteBufferSize returns the option to set the size of delete buffer.
+// WithDeleteBufferSize returns the option to set the size of the delete buffer.
 func WithDeleteBufferSize(size int) Option {
 	return func(v *vqueue) error {
 		if size <= 0 {
@@ -69,7 +69,7 @@ func WithDeleteBufferSize(size int) Option {
 	}
 }
 
-// WithInsertBufferPoolSize returns the option to set the pool size of insert buffer.
+// WithInsertBufferPoolSize returns the option to set the pool size of the insert buffer.
 func WithInsertBufferPoolSize(size int) Option {
 	return func(v *vqueue) error {
 		if size <= 0 {
@@ -81,7 +81,7 @@ func WithInsertBufferPoolSize(size int) Option {
 	}
 }
 
-// WithDeleteBufferPoolSize returns the option to set the pool size of delete buffer.
+// WithDeleteBufferPoolSize returns the option to set the pool size of the delete buffer.
 func WithDeleteBufferPoolSize(size int) Option {
 	return func(v *vqueue) error {
 		if size <= 0 {
