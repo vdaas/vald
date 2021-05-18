@@ -11,6 +11,8 @@ The below image shows the architecture image of this case.
 
 <img src="../../assets/docs/tutorial/vald-agent-standalone-on-k8s.png">
 
+Notice: Using only Vald Agent, the auto indexing function is not in use.
+
 The 5 steps to Vald Agent Standalone on Kubernetes with Vald:
 1. [Check and Satisfy the Requirements](#Requirements)
 1. [Prepare Kubernetes Cluster](#Prepare-the-Kubernetes-Cluster)
@@ -21,14 +23,14 @@ The 5 steps to Vald Agent Standalone on Kubernetes with Vald:
 ## Requirements
 
 - Kubernetes: v1.19 ~
-- go: v1.15 ~
-- helm: v3 ~
+- Go: v1.15 ~
+- Helm: v3 ~
 - libhdf5 (_only required for get started_)
 
 Helm is used to deploying Vald on your Kubernetes and Hdf5 is used to decode the sample data file to run the example.<br>
-If helm or hdf5 is not installed, please install [helm](https://helm.sh/docs/intro/install) and [hdf5](https://www.hdfgroup.org/).
+If Helm or HDF5 is not installed, please install [Helm](https://helm.sh/docs/intro/install) and [HDF5](https://www.hdfgroup.org/).
 
-<details><summary>Installation command for helm</summary><br>
+<details><summary>Installation command for Helm</summary><br>
 
 ```bash
 curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
@@ -36,7 +38,7 @@ curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bas
 
 </details>
 
-<details><summary>Installation command for hdf5</summary><br>
+<details><summary>Installation command for HDF5</summary><br>
 
 ```bash
 # yum
@@ -138,9 +140,7 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
     go run main.go
     ```
 
-    The datailed explanation of exapmle code is below.
-
-    <details><summary>detailed explanation</summary><br>
+    <details><summary>The datailed explanation of example code is here</summary><br>
     This will execute 6 steps.
 
     1. init
@@ -371,3 +371,12 @@ In the last, you can remove the all deployed Vald pods by executing below comman
 ```bash
 helm uninstall vald-agent-ngt
 ```
+
+## Recommened Documents
+
+Conglatulation! You completely entered into the Vald World!
+
+For more information, we recommend you to check:
+- [Architecture](../overview/architecture.md)
+- [Configration](../user-guides/configration.md)
+- [Operations](../user-guides/operations.md)

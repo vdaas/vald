@@ -24,14 +24,14 @@ The 5 steps to Using Backup with Scylladb:
 ## Requirements
 
 - Kubernetes: v1.19 ~
-- go: v1.15 ~
-- helm: v3 ~
+- Go: v1.15 ~
+- Helm: v3 ~
 - libhdf5 (_only required for this tutorial_)
 
 Helm is used to deploying Vald on your Kubernetes and Hdf5 is used to decode the sample data file to run the example.<br>
-If helm or hdf5 is not installed, please install [helm](https://helm.sh/docs/intro/install) and [hdf5](https://www.hdfgroup.org/).
+If Helm or HDF5 is not installed, please install [Helm](https://helm.sh/docs/intro/install) and [HDF5](https://www.hdfgroup.org/).
 
-<details><summary>Installation command for helm</summary><br>
+<details><summary>Installation command for Helm</summary><br>
 
 ```bash
 curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
@@ -39,7 +39,7 @@ curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bas
 
 </details>
 
-<details><summary>Installation command for hdf5</summary><br>
+<details><summary>Installation command for HDF5</summary><br>
 
 ```bash
 # yum
@@ -235,3 +235,12 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
     ```bash
     helm uninstall vald
     ```
+
+## Recommened Documents
+
+Conglatulation! You completely entered into the Vald World!
+
+For more information, we recommend you to check:
+- [Architecture](../overview/architecture.md)
+- [Configration](../user-guides/configration.md)
+- [Operations](../user-guides/operations.md)

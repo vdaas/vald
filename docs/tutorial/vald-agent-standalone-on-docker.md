@@ -8,12 +8,12 @@ Fashion-mnist is used as an example dataset, same as [Get Started](../tutorial/g
 
 ## Requirements
 
-- docker: v19.0 ~
-- go: v1.15 ~
+- Docker: v19.0 ~
+- Go: v1.15 ~
 - libhdf5 (_only required for this tutorial._)
 
-Hdf5 is required for this tutorial. If hdf5 is not installed, please install [hdf5](https://www.hdfgroup.org/).
-<details><summary>[Optional] Install hdf5</summary><br>
+HDF5 is required for this tutorial. If hdf5 is not installed, please install [HDF5](https://www.hdfgroup.org/).
+<details><summary>[Optional] Install HDF5</summary><br>
 
 ```bash
 # yum
@@ -182,3 +182,15 @@ This chapter will use NGT for the core engine of Vald Agent.
 1. Clean Up
 
     Stop the Vald Agent docker container via `Ctrl+C`.
+
+## Recommened Documents
+
+Conglatulation! You completely entered into the Vald World!
+
+If you want, you can try other tutorials such as:
+- [Vald Agent Standalone on k8s](../tutorial/vald-agent-standalone-on-k8s.md)
+
+For more information, we recommend you to check:
+- [Architecture](../overview/architecture.md)
+- [Configration](../user-guides/configration.md)
+- [Operations](../user-guides/operations.md)
