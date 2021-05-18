@@ -67,7 +67,7 @@ define telepresence
 endef
 
 
-define run-e2e-test
+define run-e2e-crud-test
 	go test \
 	    $1 \
 	    -v $(ROOTDIR)/tests/e2e/crud_test.go \
@@ -83,8 +83,8 @@ define run-e2e-test
 	    -update-num=$(E2E_UPDATE_COUNT) \
 	    -remove-num=$(E2E_REMOVE_COUNT) \
 	    -wait-after-insert=$(E2E_WAIT_FOR_CREATE_INDEX_DURATION) \
-	    -portforward-ns=$(E2E_TARGET_NAMESPACE) \
+	    -portforward \
 	    -portforward-pod-name=$(E2E_TARGET_POD_NAME) \
 	    -portforward-pod-port=$(E2E_TARGET_PORT) \
-	    -portforward
+	    -namespace=$(E2E_TARGET_NAMESPACE)
 endef

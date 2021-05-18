@@ -251,6 +251,55 @@ func TestE2EInsertOnly(t *testing.T) {
 	}
 }
 
+func TestE2ESearchOnly(t *testing.T) {
+	ctx := context.Background()
+
+	op, err := operation.New(host, port)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Search(t, ctx, operation.Dataset{
+		Test:      ds.test[searchFrom : searchFrom+searchNum],
+		Neighbors: ds.neighbors[searchFrom : searchFrom+searchNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+}
+
+func TestE2EUpdateOnly(t *testing.T) {
+	ctx := context.Background()
+
+	op, err := operation.New(host, port)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Update(t, ctx, operation.Dataset{
+		Train: ds.train[updateFrom : updateFrom+updateNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+}
+
+func TestE2ERemoveOnly(t *testing.T) {
+	ctx := context.Background()
+
+	op, err := operation.New(host, port)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Remove(t, ctx, operation.Dataset{
+		Train: ds.train[removeFrom : removeFrom+removeNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+}
+
 func TestE2EInsertAndSearch(t *testing.T) {
 	ctx := context.Background()
 
