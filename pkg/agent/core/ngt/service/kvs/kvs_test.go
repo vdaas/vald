@@ -55,7 +55,7 @@ func TestNew(t *testing.T) {
 				wantUo[i] = new(uo)
 			}
 			return test{
-				name: "return BindiMap",
+				name: "return the bidi struct",
 				want: want{
 					want: &bidi{
 						l:  0,
