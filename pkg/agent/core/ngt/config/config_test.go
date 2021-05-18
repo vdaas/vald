@@ -387,6 +387,39 @@ func TestNewConfig(t *testing.T) {
 				},
 			}
 		}(),
+		func() test {
+			path := "unreadable.txt"
+			return test{
+				name: "return error when can't read file",
+				args: args{
+					path: path,
+				},
+				beforeFunc: func(t *testing.T, a args) {
+					t.Helper()
+					f, err := os.OpenFile(a.path, os.O_CREATE, os.FileMode(0222))
+					if err != nil {
+						t.Fatal(err)
+					}
+					if err := f.Close(); err != nil {
+						t.Fatal(err)
+					}
+				},
+				afterFunc: func(t *testing.T, a args) {
+					t.Helper()
+					if err := os.Remove(a.path); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					wantCfg: nil,
+					err: &fs.PathError{
+						Op:   "open",
+						Path: "unreadable.txt",
+						Err:  syscall.Errno(0x1),
+					},
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
