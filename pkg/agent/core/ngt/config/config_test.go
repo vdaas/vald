@@ -396,7 +396,7 @@ func TestNewConfig(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T, a args) {
 					t.Helper()
-					f, err := os.OpenFile(a.path, os.O_CREATE, os.FileMode(0222))
+					f, err := os.OpenFile(a.path, os.O_CREATE, fs.ModeIrregular)
 					if err != nil {
 						t.Fatal(err)
 					}
