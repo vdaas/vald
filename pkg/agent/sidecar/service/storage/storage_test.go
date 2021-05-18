@@ -226,7 +226,7 @@ func Test_bs_initCompressor(t *testing.T) {
 }
 
 func Test_bs_initBucket(t *testing.T) {
-  t.Parallel()
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}

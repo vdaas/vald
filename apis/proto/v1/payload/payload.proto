@@ -117,6 +117,7 @@ message Insert {
   message Config {
     bool skip_strict_exist_check = 1;
     Filter.Config filters = 2;
+    int64 timestamp = 3;
   }
 }
 
@@ -139,6 +140,7 @@ message Update {
   message Config {
     bool skip_strict_exist_check = 1;
     Filter.Config filters = 2;
+    int64 timestamp = 3;
   }
 }
 
@@ -161,6 +163,7 @@ message Upsert {
   message Config {
     bool skip_strict_exist_check = 1;
     Filter.Config filters = 2;
+    int64 timestamp = 3;
   }
 }
 
@@ -174,6 +177,7 @@ message Remove {
   }
   message Config {
     bool skip_strict_exist_check = 1;
+    int64 timestamp = 3;
   }
 }
 
