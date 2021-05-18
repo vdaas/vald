@@ -175,6 +175,19 @@ func TestWithInsertBufferSize(t *testing.T) {
 				},
 			}
 		}(),
+		func() test {
+			size := -100
+			return test{
+				name: "set fails when size is -100",
+				args: args{
+					size: size,
+				},
+				want: want{
+					err: errors.NewErrInvalidOption("insertBufferSize", size),
+					obj: new(T),
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -260,7 +273,20 @@ func TestWithDeleteBufferSize(t *testing.T) {
 		func() test {
 			size := -1
 			return test{
-				name: "set fails when size is 0",
+				name: "set fails when size is -1",
+				args: args{
+					size: size,
+				},
+				want: want{
+					err: errors.NewErrInvalidOption("deleteBufferSize", size),
+					obj: new(T),
+				},
+			}
+		}(),
+		func() test {
+			size := -100
+			return test{
+				name: "set fails when size is -100",
 				args: args{
 					size: size,
 				},
@@ -355,7 +381,20 @@ func TestWithInsertBufferPoolSize(t *testing.T) {
 		func() test {
 			size := -1
 			return test{
-				name: "set fails when size is 0",
+				name: "set fails when size is -1",
+				args: args{
+					size: size,
+				},
+				want: want{
+					err: errors.NewErrInvalidOption("insertBufferPoolSize", size),
+					obj: new(T),
+				},
+			}
+		}(),
+		func() test {
+			size := -100
+			return test{
+				name: "set fails when size is -100",
 				args: args{
 					size: size,
 				},
@@ -450,7 +489,20 @@ func TestWithDeleteBufferPoolSize(t *testing.T) {
 		func() test {
 			size := -1
 			return test{
-				name: "set fails when size is 0",
+				name: "set fails when size is -1",
+				args: args{
+					size: size,
+				},
+				want: want{
+					err: errors.NewErrInvalidOption("deleteBufferPoolSize", size),
+					obj: new(T),
+				},
+			}
+		}(),
+		func() test {
+			size := -100
+			return test{
+				name: "set fails when size is -100",
 				args: args{
 					size: size,
 				},
