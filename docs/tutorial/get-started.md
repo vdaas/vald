@@ -131,7 +131,7 @@ The [fashion-mnist](https://github.com/zalandoresearch/fashion-mnist) is used as
 
 The example code is implemented Go and using [vald-client-go](https://github.com/vdaas/vald-client-go), one of the official Vald client libraries,  for requesting to Vald cluster.
 Vald provides multiple language client libraries such as Go, Java, Node.js, Python, and so on.
-If you are interested in, please refer to [SDKs](../../user-guides/sdks).<br>
+If you are interested in, please refer to [SDKs](../user-guides/sdks).<br>
 
 1. Port Forward
 
