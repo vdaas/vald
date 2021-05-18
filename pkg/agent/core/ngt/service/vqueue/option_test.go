@@ -19,6 +19,7 @@ package vqueue
 
 import (
 	"context"
+	"math"
 	"reflect"
 	"testing"
 
@@ -137,14 +138,43 @@ func TestWithInsertBufferSize(t *testing.T) {
 
 	tests := []test{
 		func() test {
+			size := 100
 			return test{
 				name: "set success when size is 100",
 				args: args{
-					size: 100,
+					size: size,
 				},
 				want: want{
 					obj: &T{
 						ichSize: 100,
+					},
+				},
+			}
+		}(),
+		func() test {
+			size := 1
+			return test{
+				name: "set success when size is 1",
+				args: args{
+					size: size,
+				},
+				want: want{
+					obj: &T{
+						ichSize: size,
+					},
+				},
+			}
+		}(),
+		func() test {
+			size := math.MaxInt64
+			return test{
+				name: "set success when size is maximum value of int",
+				args: args{
+					size: size,
+				},
+				want: want{
+					obj: &T{
+						ichSize: size,
 					},
 				},
 			}
@@ -179,6 +209,19 @@ func TestWithInsertBufferSize(t *testing.T) {
 			size := -100
 			return test{
 				name: "set fails when size is -100",
+				args: args{
+					size: size,
+				},
+				want: want{
+					err: errors.NewErrInvalidOption("insertBufferSize", size),
+					obj: new(T),
+				},
+			}
+		}(),
+		func() test {
+			size := math.MinInt64
+			return test{
+				name: "set success when size is minimum value of int",
 				args: args{
 					size: size,
 				},
@@ -245,14 +288,43 @@ func TestWithDeleteBufferSize(t *testing.T) {
 
 	tests := []test{
 		func() test {
+			size := 100
 			return test{
 				name: "set success when size is 100",
 				args: args{
-					size: 100,
+					size: size,
 				},
 				want: want{
 					obj: &T{
-						dchSize: 100,
+						dchSize: size,
+					},
+				},
+			}
+		}(),
+		func() test {
+			size := 1
+			return test{
+				name: "set success when size is 1",
+				args: args{
+					size: size,
+				},
+				want: want{
+					obj: &T{
+						dchSize: size,
+					},
+				},
+			}
+		}(),
+		func() test {
+			size := math.MaxInt64
+			return test{
+				name: "set success when size is maximum value of int",
+				args: args{
+					size: size,
+				},
+				want: want{
+					obj: &T{
+						dchSize: size,
 					},
 				},
 			}
@@ -287,6 +359,19 @@ func TestWithDeleteBufferSize(t *testing.T) {
 			size := -100
 			return test{
 				name: "set fails when size is -100",
+				args: args{
+					size: size,
+				},
+				want: want{
+					err: errors.NewErrInvalidOption("deleteBufferSize", size),
+					obj: new(T),
+				},
+			}
+		}(),
+		func() test {
+			size := math.MinInt64
+			return test{
+				name: "set success when size is minimum value of int",
 				args: args{
 					size: size,
 				},
@@ -353,14 +438,43 @@ func TestWithInsertBufferPoolSize(t *testing.T) {
 
 	tests := []test{
 		func() test {
+			size := 100
 			return test{
 				name: "set success when size is 100",
 				args: args{
-					size: 100,
+					size: size,
 				},
 				want: want{
 					obj: &T{
-						iBufSize: 100,
+						iBufSize: size,
+					},
+				},
+			}
+		}(),
+		func() test {
+			size := 1
+			return test{
+				name: "set success when size is 1",
+				args: args{
+					size: size,
+				},
+				want: want{
+					obj: &T{
+						iBufSize: size,
+					},
+				},
+			}
+		}(),
+		func() test {
+			size := math.MaxInt64
+			return test{
+				name: "set success when size is maximum value of int",
+				args: args{
+					size: size,
+				},
+				want: want{
+					obj: &T{
+						iBufSize: size,
 					},
 				},
 			}
@@ -395,6 +509,19 @@ func TestWithInsertBufferPoolSize(t *testing.T) {
 			size := -100
 			return test{
 				name: "set fails when size is -100",
+				args: args{
+					size: size,
+				},
+				want: want{
+					err: errors.NewErrInvalidOption("insertBufferPoolSize", size),
+					obj: new(T),
+				},
+			}
+		}(),
+		func() test {
+			size := math.MinInt64
+			return test{
+				name: "set success when size is minimum value of int",
 				args: args{
 					size: size,
 				},
@@ -461,14 +588,43 @@ func TestWithDeleteBufferPoolSize(t *testing.T) {
 
 	tests := []test{
 		func() test {
+			size := 100
 			return test{
 				name: "set success when size is 100",
 				args: args{
-					size: 100,
+					size: size,
 				},
 				want: want{
 					obj: &T{
-						dBufSize: 100,
+						dBufSize: size,
+					},
+				},
+			}
+		}(),
+		func() test {
+			size := 1
+			return test{
+				name: "set success when size is 1",
+				args: args{
+					size: size,
+				},
+				want: want{
+					obj: &T{
+						dBufSize: size,
+					},
+				},
+			}
+		}(),
+		func() test {
+			size := math.MaxInt64
+			return test{
+				name: "set success when size is maximum value of int",
+				args: args{
+					size: size,
+				},
+				want: want{
+					obj: &T{
+						dBufSize: size,
 					},
 				},
 			}
@@ -503,6 +659,19 @@ func TestWithDeleteBufferPoolSize(t *testing.T) {
 			size := -100
 			return test{
 				name: "set fails when size is -100",
+				args: args{
+					size: size,
+				},
+				want: want{
+					err: errors.NewErrInvalidOption("deleteBufferPoolSize", size),
+					obj: new(T),
+				},
+			}
+		}(),
+		func() test {
+			size := math.MinInt64
+			return test{
+				name: "set success when size is minimum value of int",
 				args: args{
 					size: size,
 				},
