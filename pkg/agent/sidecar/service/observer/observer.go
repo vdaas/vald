@@ -40,6 +40,10 @@ import (
 	"github.com/vdaas/vald/pkg/agent/sidecar/service/storage"
 )
 
+const (
+	kvsFileName = "ngt-meta.kvsdb"
+)
+
 type StorageObserver interface {
 	Start(ctx context.Context) (<-chan error, error)
 	PostStop(ctx context.Context) error
@@ -645,7 +649,7 @@ func (o *observer) kvsBackup(ctx context.Context) (err error) {
 		}
 	}()
 
-	file := filepath.Join(o.dir, "ngt-meta.kvsdb")
+	file := filepath.Join(o.dir, kvsFileName)
 	fi, err := os.Stat(file)
 	if err != nil && os.IsNotExist(err) {
 		return err
