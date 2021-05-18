@@ -415,7 +415,7 @@ func TestNewConfig(t *testing.T) {
 					err: &fs.PathError{
 						Op:   "open",
 						Path: "unreadable.txt",
-						Err:  syscall.Errno(0x1),
+						Err:  syscall.Errno(syscall.IN_ACCESS),
 					},
 				},
 			}
