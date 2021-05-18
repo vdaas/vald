@@ -1,4 +1,4 @@
-# Deploy Vald Agent on Docker
+# Vald Agent Standalone on Docker
 
 Vald is designed and implemented based on Cloud-Native architecture.
 However, there may be cases that want to use only Vald Agent without Kubernetes.
@@ -8,13 +8,12 @@ Fashion-mnist is used as an example dataset, same as [Get Started](../tutorial/g
 
 ## Requirements
 
-- docker: v19.0 ~
-- go: v1.15 ~
+- Docker: v19.0 ~
+- Go: v1.15 ~
 - libhdf5 (_only required for this tutorial._)
 
-
-Hdf5 is required for this tutorial. If hdf5 is not installed, please install [hdf5](https://www.hdfgroup.org/).
-<details><summary>[Optional] Install hdf5</summary><br>
+HDF5 is required for this tutorial. If hdf5 is not installed, please install [HDF5](https://www.hdfgroup.org/).
+<details><summary>[Optional] Install HDF5</summary><br>
 
 ```bash
 # yum
@@ -116,7 +115,7 @@ This chapter will use NGT for the core engine of Vald Agent.
     EOF
     ```
 
-1. Create backup directory
+1. Create a backup directory
 
     To avoid removing the indexing data due to any trouble after finishing indexing, we should prepare the path for auto backup.
 
@@ -126,9 +125,9 @@ This chapter will use NGT for the core engine of Vald Agent.
 
 1. Deploy Vald Agent on Docker
 
-    To deploy Vald agent on docker with `config.yaml`, you can run below command.
+    To deploy Vald agent on docker with `config.yaml`, you can run the below command.
     Note: 
-      - Please check whether there are `config.yaml` and `backup` directory in your current directory.
+      - Please check whether there is `config.yaml` file and `backup` directory in your current directory.
 
     ```bash
     docker run -v $(pwd)/:/etc/server -p 8081:8081 --rm -it vdaas/vald-agent-ngt
@@ -154,7 +153,7 @@ This chapter will use NGT for the core engine of Vald Agent.
     In this tutorial. we use [fashion-mnist](https://github.com/zalandoresearch/fashion-mnist) as a dataset for indexing and search query.
 
     ```bash
-    # move to working directory
+    # move to the working directory
     cd example/client/agent
     
     # download fashion-mnist testing dataset
@@ -164,7 +163,9 @@ This chapter will use NGT for the core engine of Vald Agent.
 1. Running example
 
     Vald provides multiple language client libraries such as Go, Java, Node.js, Python, and so on.<br>
-    In this example, the fashion-mnist dataset will insert into the Vald and search using [vald-client-go](https://github.com/vdaas/vald-client-go).
+    This example will insert and index 400 vectors into the Vald from the fashion-mnist dataset via gRPC.
+    And then after waiting for indexing, it will request for searching the nearest vector 10 times.
+    You will get the 10 nearest neighbor vectors for each search query.<br>
     
     We use [`example/client/agent/main.go`](https://github.com/vdaas/vald/blob/master/example/client/agent/main.go) to run the example.
     The example code is the same as running an example only Vald agent on Kubernetes.
@@ -175,9 +176,21 @@ This chapter will use NGT for the core engine of Vald Agent.
     go run main.go
     ```
     Note:
-      - We recommend you to run `CreateIndex()` after `Insert()` without waiting auto indexing.
+      - We recommend you to run `CreateIndex()` after `Insert()` without waiting for auto indexing.
       - When finish indexing completely, the backup files (metadata.json and ngt-meta.kvsdb) can be confirmed in your mount directory.
 
 1. Clean Up
 
     Stop the Vald Agent docker container via `Ctrl+C`.
+
+## Recommended Documents
+
+Congratulation! You achieved this tutorial!
+
+If you want, you can try other tutorials such as:
+- [Vald Agent Standalone on k8s](../tutorial/vald-agent-standalone-on-k8s.md)
+
+For more information, we recommend you to check:
+- [Architecture](../overview/architecture.md)
+- [Configuration](../user-guides/configuration.md)
+- [Operations](../user-guides/operations.md)
