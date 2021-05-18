@@ -5,8 +5,8 @@ This article will show you how to deploy a standalone Vald Agent using Helm and 
 ## Overview
 
 Vald is made up of multiple microservices.
-In the [Get Started](../tutorial/get-started.md), you may use 4 kinds of microservices to deploy Vald.
-In this case, you use only 1 microservice, `Vald Agent` that is the core component for Vald named as `vald-agent-ngt`, to deploy.
+In the [Get Started](../tutorial/get-started.md), you may use 4 kinds of components to deploy Vald.
+In this case, you use only 1 component, `Vald Agent` that is the core component for Vald named `vald-agent-ngt`, to deploy.
 The below image shows the architecture image of this case.
 
 <img src="../../assets/docs/tutorial/vald-agent-standalone-on-k8s.png">
@@ -64,7 +64,7 @@ brew install hdf5
 ## Deploy Vald Agent Standalone on Kubernetes Cluster
 
 This chapter will show you how to deploy a standalone Vald Agent using Helm and run it on your Kubernetes cluster. <br>
-This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perform vector insertion operation, indexing and searching operations.<br>
+This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perform vector insertion operation, indexing, and searching operations.<br>
 
 1. Clone the repository
 
@@ -109,7 +109,7 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
 
 1. Port Forward
 
-    At first, pord fowarding the vald-lb-geateway is required to make request from your local environment possible.
+    At first, port-forward the vald-lb-gateway is required to make request from your local environment possible.
 
     ```bash
     kubectl port-forward service/vald-agent-ngt 8081:8081
@@ -117,7 +117,7 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
 
 1. Download dataset
 
-    Download [fashion-mnist](https://github.com/zalandoresearch/fashion-mnist) that is used as dataset for indexing and search query.
+    Download [fashion-mnist](https://github.com/zalandoresearch/fashion-mnist) that is used as a dataset for indexing and search query.
 
     ```bash
     # move to working directory
@@ -131,7 +131,7 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
 
     We use [`example/client/agent/main.go`](https://github.com/vdaas/vald/blob/master/example/client/agent/main.go) to run the example.<br>
     This example will insert and index 400 vectors into the Vald from the fashion-mnist dataset via gRPC.
-    And then after waiting for indexing, it will request for searching nearest vector at 10 times.
+    And then after waiting for indexing, it will request for searching hte nearest vector 10 times.
     You will get the 10 nearest neighbor vectors for each search query.<br>
     Run example codes by executing the below command.
 
@@ -140,7 +140,7 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
     go run main.go
     ```
 
-    <details><summary>The datailed explanation of example code is here</summary><br>
+    <details><summary>The detailed explanation of example code is here</summary><br>
     This will execute 6 steps.
 
     1. init
@@ -281,7 +281,7 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
 
         - [Optional] Indexing manually instead of waiting for auto indexing
         You can set Agent NGT configuration `auto_index_duration_limit` and `auto_index_check_duration` for auto indexing.
-        In this example, you can create index manually using `CreateAndSaveIndex()` mthod in the client library
+        In this example, you can create index manually using `CreateAndSaveIndex()` method in the client library
             <details><summary>example code</summary><br>
 
             ```go
@@ -350,7 +350,7 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
 
 
         - Remove from the index manually instead of waiting for auto indexing.
-        The removed vectors are still exist in the NGT graph index before the SaveIndex (or CreateAndSaveIndex) API is called.
+        The removed vectors still exist in the NGT graph index before the SaveIndex (or CreateAndSaveIndex) API is called.
         If you run the below code, the indexes will be removed completely from the Vald Agent NGT graph and the Backup file.
             <details><summary>example code</summary><br>
 
@@ -366,17 +366,17 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
 
 ## Cleanup
 
-In the last, you can remove the all deployed Vald pods by executing below command.
+In the last, you can remove all deployed Vald pods by executing the below command.
 
 ```bash
 helm uninstall vald-agent-ngt
 ```
 
-## Recommened Documents
+## Recommended Documents
 
-Conglatulation! You completely entered into the Vald World!
+Congratulation! You achieved this tutorial!
 
 For more information, we recommend you to check:
 - [Architecture](../overview/architecture.md)
-- [Configration](../user-guides/configration.md)
+- [Configuration](../user-guides/configuration.md)
 - [Operations](../user-guides/operations.md)

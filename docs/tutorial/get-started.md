@@ -10,7 +10,7 @@ And, Fashion-mnist is used as an example of a dataset.
 
 Before starting, let's check the below image.
 It shows the architecture image about the deployment result of Get Started.<br>
-The 4 kinds of components, `Vald LB Gateway`, `Vald Discoverer`, `Vald Agent` and `Vald Index Manager` will be deployed to the Kubernetes.
+The 4 kinds of components, `Vald LB Gateway`, `Vald Discoverer`, `Vald Agent`, and `Vald Index Manager` will be deployed to the Kubernetes.
 
 <img src="../../assets/docs/tutorial/getstarted.png" />
 
@@ -18,7 +18,7 @@ The 5 steps to Get Started with Vald:
 1. [Check and Satisfy the Requirements](#Requirements)
 1. [Prepare Kubernetes Cluster](#Prepare-the-Kubernetes-Cluster)
 1. [Deploy Vald on Kubernetes Cluster](#Deploy-Vald-on-Kubernetes-Cluster)
-1. [Run Exapmle Code](#Run-Exapmle-Code)
+1. [Run Example Code](#Run-Example-Code)
 1. [Cleanup](#Cleanup)
 
 ## Requirements
@@ -102,7 +102,7 @@ In this tutorial, you will deploy the basic configuration of Vald that is consis
 
 1. Verify
 
-    When finish deploy, you can check the Vald's pods status following command.
+    When finish deploying Vald, you can check the Vald's pods status following command.
 
     ```bash
     kubectl get pods
@@ -124,18 +124,18 @@ In this tutorial, you will deploy the basic configuration of Vald that is consis
     vald-manager-index-74c7b5ddd6-jrnlw        1/1     Running     0          7m12s
     ```
 
-## Run Exapmle Code
+## Run Example Code
 
 In this chapter, you will execute insert vectors, search vectors, and delete vectors to your Vald cluster using the example code.<br>
 The [fashion-mnist](https://github.com/zalandoresearch/fashion-mnist) is used as a dataset for indexing and search query.
 
-The example code is implemented Go and using [vald-client-go](https://github.com/vdaas/vald-client-go), one of the official Vald client library,  for requesting to Vald cluster.
+The example code is implemented Go and using [vald-client-go](https://github.com/vdaas/vald-client-go), one of the official Vald client libraries,  for requesting to Vald cluster.
 Vald provides multiple language client libraries such as Go, Java, Node.js, Python, and so on.
 If you are interested in, please refer to [SDKs](../../user-guides/sdks).<br>
 
 1. Port Forward
 
-    At first, port-foward is required to make request from your local environment possible.
+    At first, port-forward is required to make request from your local environment possible.
 
     ```bash
     kubectl port-forward deployment/vald-lb-gateway 8081:8081
@@ -143,10 +143,10 @@ If you are interested in, please refer to [SDKs](../../user-guides/sdks).<br>
 
 1. Download dataset
 
-    Download [fashion-mnist](https://github.com/zalandoresearch/fashion-mnist) that is used as dataset for indexing and search query.
+    Download [fashion-mnist](https://github.com/zalandoresearch/fashion-mnist) that is used as a dataset for indexing and search query.
 
     ```bash
-    # move to working directory
+    # move to the working directory
     cd example/client
 
     # download fashion-mnist testing dataset
@@ -157,9 +157,9 @@ If you are interested in, please refer to [SDKs](../../user-guides/sdks).<br>
 
     We use [`example/client/main.go`](https://github.com/vdaas/vald/blob/master/example/client/main.go) to run the example.<br>
     This example will insert and index 400 vectors into the Vald from the fashion-mnist dataset via gRPC.
-    And then after waiting for indexing, it will request for searching nearest vector at 10 times.
+    And then after waiting for indexing, it will request for searching the nearest vector 10 times.
     You will get the 10 nearest neighbor vectors for each search query.<br>
-    Run example codes by executing below command.
+    Run example codes by executing the below command.
 
     ```bash
     # run example
@@ -361,7 +361,7 @@ If you are interested in, please refer to [SDKs](../../user-guides/sdks).<br>
 
 ## Cleanup
 
-In the last, you can remove the deployed Vald Cluster by executing below command.
+In the last, you can remove the deployed Vald Cluster by executing the below command.
 
 ```bash
 helm uninstall vald
@@ -369,12 +369,12 @@ helm uninstall vald
 
 ## Next Steps
 
-Conglatulation! You completely entered into the Vald World!
+Congratulation! You completely entered the Vald World!
 
 If you want, you can try other tutorials such as:
 - [Vald Agent Standalone on k8s](../tutorial/vald-agent-standalone-on-k8s.md)
 - [Vald Agent on Docker](../tutorial/vald-agent-standalone-on-docker.md)
 
 For more information, we recommend you to check:
-- [Configration](../user-guides/configration.md)
+- [Configuration](../user-guides/configuration.md)
 - [Operations](../user-guides/operations.md)

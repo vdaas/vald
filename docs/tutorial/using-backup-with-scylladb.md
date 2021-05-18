@@ -1,20 +1,20 @@
-# Using Backup with SycllaDB
+# Using Backup with ScyllaDB
 
-This article will show you how to deploy Vald with ScyallaDB as backup database using Helm and run it on your Kubernetes cluster.
+This article will show you how to deploy Vald with ScyllaDB as a backup database using Helm and run it on your Kubernetes cluster.
 
 ## Overview
 
-This tutorial leads you to deploy Vald with using the external database for backup.
+This tutorial leads you to deploy Vald and the external database for backup.
 As one of the features, Vald can auto index backup using MySQL + Redis or Cassandra to enable disaster recovery.<br>
 In this tutorial, you will use ScyllaDB deployed to the Persistent Volume for backup.
 And you will also deploy more microservices than [Get Started](../tutorial/get-started.md).
-If you haven't completed [Get Started](../tutorial/get-started.md) yet, we recommend to try it out at first.
+If you haven't completed [Get Started](../tutorial/get-started.md) yet, we recommend trying it out at first.
 
 The following image is the architecture image of this tutorial.
 
 <img src="../../assets/docs/tutorial/vald-with-syclladb.png" />
 
-The 5 steps to Using Backup with Scylladb:
+The 5 steps to Using Backup with ScyllaDB:
 1. [Check and Satisfy the Requirements](#Requirements)
 1. [Prepare Kubernetes Cluster](#Prepare-the-Kubernetes-Cluster)
 1. [Deploy Vald on Kubernetes Cluster](#Deploy-Vald-on-Kubernetes-Cluster)
@@ -62,15 +62,15 @@ brew install hdf5
     Vald will run on Cloud Service such as GKE, AWS.
     In the sense of trying to "Get-Started", [k3d](https://k3d.io/) or [kind](https://kind.sigs.k8s.io/) are easy Kubernetes tools to use.
 
-1. Prepare Scylla DB and Kubernetes metrics-server
+1. Prepare ScyllaDB and Kubernetes metrics-server
 
-    Deploy Scylla as a backup database.
+    Deploy ScyllaDB as a backup database.
 
     ```bash
     make k8s/external/scylla/deploy
     ```
 
-    In this make command, we are deploying a lightweight Cassandra-compatible scylladb using Operator.
+    In this make command, we are deploying a lightweight Cassandra-compatible ScyllaDB using Operator.
     <details><summary>If you're interested in this make command, take a look here for more detail of make command</summary><br>
 
     1. Deploy cert-manager for ScyllaDB
@@ -107,9 +107,9 @@ brew install hdf5
 
     </details>
 
-    For documentation on scylladb operator, please refer to [here](http://operator.docs.scylladb.com/master/generic)
+    For documentation on ScyllaDB operator, please refer to [here](http://operator.docs.scylladb.com/master/generic)
 
-1. Apply Kubenetes metrics server
+1. Apply Kubernetes metrics server
 
     ```bash
     kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
@@ -119,12 +119,12 @@ brew install hdf5
 ## Deploy Vald on Kubernetes Cluster
 
 This chapter will show you how to deploy using Helm and run Vald on your Kubernetes cluster.<br>
-This chapter uses Scylla DB as a backend data store for indexing and data backup.<br>
-If you want to learn about Scylla, please refer to [the official website](https://www.scylladb.com/).
+This chapter uses ScyllaDB as a backend data store for indexing and data backup.<br>
+If you want to learn about ScyllaDB, please refer to [the official website](https://www.scylladb.com/).
 
 1. Clone the Repository
 
-    To use the `deployment yaml` for deploy, let's clone [`vdaas/vald`](https://github.com/vdaas/vald.git) repository.
+    To use the `deployment yaml` for deployment, let's clone [`vdaas/vald`](https://github.com/vdaas/vald.git) repository.
 
     ```bash
     git clone https://github.com/vdaas/vald.git
@@ -148,7 +148,7 @@ If you want to learn about Scylla, please refer to [the official website](https:
 
 1. Verify
 
-    When finish deploy, you can check the Vald's pods status following command.
+    When finish deploying Vald, you can check the Vald's pods status following the command.
 
     ```bash
     kubectl get pods
@@ -195,7 +195,7 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
 
 1. Port Forward
 
-    At first, port-foward is required to make request from your local environment possible.
+    At first, port-forward is required to make request from your local environment possible.
 
     ```bash
     kubectl port-forward deployment/vald-meta-gateway 8081:8081
@@ -206,7 +206,7 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
     Download [fashion-mnist](https://github.com/zalandoresearch/fashion-mnist) that is used as dataset for indexing and search query.
 
     ```bash
-    # move to working directory
+    # move to the working directory
     cd example/client
 
     # download fashion-mnist testing dataset
@@ -216,10 +216,10 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
 1. Run Example
 
     We use [`example/client/main.go`](https://github.com/vdaas/vald/blob/master/example/client/main.go) to run the example.<br>
-    This example will insert and index 400 vectors into the Vald from the fashion-mnist dataset via grpc.
-    And then after waiting for indexing, it will request for searching nearest vector at 10 times.
+    This example will insert and index 400 vectors into the Vald from the fashion-mnist dataset via gRPC.
+    And then after waiting for indexing, it will request for searching the nearest vector 10 times.
     You will get the 10 nearest neighbor vectors for each search query.<br>
-    Run example codes by executing below command.
+    Run example codes by executing the below command.
 
     ```bash
     # run example
@@ -236,11 +236,11 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
     helm uninstall vald
     ```
 
-## Recommened Documents
+## Recommended Documents
 
-Conglatulation! You completely entered into the Vald World!
+Congratulation! You achieved this tutorial!
 
 For more information, we recommend you to check:
 - [Architecture](../overview/architecture.md)
-- [Configration](../user-guides/configration.md)
+- [Configuration](../user-guides/configuration.md)
 - [Operations](../user-guides/operations.md)
