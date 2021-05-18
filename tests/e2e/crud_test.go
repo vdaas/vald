@@ -90,7 +90,7 @@ func init() {
 	pfPodPort := flag.Int("portforward-pod-port", port, "pod gRPC port (only for port forward)")
 
 	kubeConfig := flag.String("kubeconfig", filepath.Join(os.Getenv("HOME"), ".kube", "config"), "kubeconfig path")
-	namespace := flag.String("namespace", "default", "namespace")
+	flag.StringVar(&namespace, "namespace", "default", "namespace")
 
 	flag.Parse()
 
@@ -101,7 +101,7 @@ func init() {
 			panic(err)
 		}
 
-		forwarder = kubeClient.Portforward(*namespace, *pfPodName, port, *pfPodPort)
+		forwarder = kubeClient.Portforward(namespace, *pfPodName, port, *pfPodPort)
 
 		err = forwarder.Start()
 		if err != nil {
@@ -423,6 +423,19 @@ func TestE2EForSidecar(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
 	}
+
+	sleep(t, time.Minute)
+
+	pods, err = kubeClient.GetPods(ctx, namespace, "app=vald-agent-ngt")
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	if len(pods) == 0 {
+		t.Fatalf("there's no Agent pods")
+	}
+
+	podName = pods[0].Name
 
 	ok, err := kubeClient.WaitForPodReady(ctx, namespace, podName, 10*time.Minute)
 	if err != nil {
