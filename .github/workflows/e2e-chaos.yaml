@@ -110,11 +110,9 @@ jobs:
         run: |
           make K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 k8s/external/scylla/deploy
 
-          helm repo add vald https://vald.vdaas.org/charts
-          tag=$(cat versions/VALD_VERSION)
           helm install \
             --values .github/helm/values/values-chaos.yaml \
-            --set defaults.image.tag=${tag} \
+            --set defaults.image.tag=nightly \
             ${HELM_EXTRA_OPTIONS} \
             vald-cluster charts/vald
 
@@ -258,11 +256,9 @@ jobs:
         run: |
           make K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 k8s/external/scylla/deploy
 
-          helm repo add vald https://vald.vdaas.org/charts
-          tag=$(cat versions/VALD_VERSION)
           helm install \
             --values .github/helm/values/values-chaos.yaml \
-            --set defaults.image.tag=${tag} \
+            --set defaults.image.tag=nightly \
             ${HELM_EXTRA_OPTIONS} \
             vald-cluster charts/vald
 
@@ -406,11 +402,9 @@ jobs:
         run: |
           make K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 k8s/external/scylla/deploy
 
-          helm repo add vald https://vald.vdaas.org/charts
-          tag=$(cat versions/VALD_VERSION)
           helm install \
             --values .github/helm/values/values-chaos.yaml \
-            --set defaults.image.tag=${tag} \
+            --set defaults.image.tag=nightly \
             ${HELM_EXTRA_OPTIONS} \
             vald-cluster charts/vald
 
