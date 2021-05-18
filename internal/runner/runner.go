@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"os"
 	"os/signal"
 	"strings"
 	"syscall"
@@ -140,23 +139,17 @@ func Do(ctx context.Context, opts ...Option) error {
 }
 
 func Run(ctx context.Context, run Runner, name string) (err error) {
-	sigCh := make(chan os.Signal, 1)
-	defer close(sigCh)
-
-	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
-	rctx, cancel := context.WithCancel(ctx)
+	sctx, cancel := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
-
-	rctx = errgroup.Init(rctx)
-
+	sctx = errgroup.Init(sctx)
 	log.Info("executing daemon pre-start function")
-	err = run.PreStart(rctx)
+	err = run.PreStart(sctx)
 	if err != nil {
 		return err
 	}
 
 	log.Info("executing daemon start function")
-	ech, err := run.Start(rctx)
+	ech, err := run.Start(sctx)
 	if err != nil {
 		return errors.ErrDaemonStartFailed(err)
 	}
@@ -166,9 +159,6 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 
 	for {
 		select {
-		case sig := <-sigCh:
-			log.Warnf("%s signal received daemon will stopping soon...", sig)
-			cancel()
 		case err = <-ech:
 			if err != nil {
 				log.Error(errors.ErrStartFunc(name, err))
@@ -177,7 +167,7 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 				}
 				emap[err.Error()]++
 			}
-		case <-rctx.Done():
+		case <-sctx.Done():
 			log.Info("executing daemon pre-stop function")
 			err = safety.RecoverFunc(func() error {
 				return run.PreStop(ctx)

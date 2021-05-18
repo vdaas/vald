@@ -68,6 +68,7 @@ type NGT interface {
 	InsertVQueueBufferLen() uint64
 	DeleteVQueueChannelLen() uint64
 	InsertVQueueChannelLen() uint64
+	GetDimensionSize() int
 	Close(ctx context.Context) error
 }
 
@@ -89,8 +90,8 @@ type ngt struct {
 
 	// configurations
 	inMem bool // in-memory mode
-
-	alen int // auto indexing length
+	dim   int  // dimension size
+	alen  int  // auto indexing length
 
 	lim  time.Duration // auto indexing time limit
 	dur  time.Duration // auto indexing check duration
@@ -126,6 +127,7 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 	}
 
 	n.kvs = kvs.New()
+	n.dim = cfg.Dimension
 
 	err = n.initNGT(
 		core.WithInMemoryMode(n.inMem),
@@ -376,7 +378,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 
 func (n *ngt) Search(vec []float32, size uint32, epsilon, radius float32) ([]model.Distance, error) {
 	if n.IsIndexing() {
-		return make([]model.Distance, 0), nil
+		return nil, errors.ErrCreateIndexingIsInProgress
 	}
 	sr, err := n.core.Search(vec, int(size), epsilon, radius)
 	if err != nil {
@@ -405,8 +407,7 @@ func (n *ngt) Search(vec []float32, size uint32, epsilon, radius float32) ([]mod
 
 func (n *ngt) SearchByID(uuid string, size uint32, epsilon, radius float32) (dst []model.Distance, err error) {
 	if n.IsIndexing() {
-		log.Debug("SearchByID\t now indexing...")
-		return make([]model.Distance, 0), nil
+		return nil, errors.ErrCreateIndexingIsInProgress
 	}
 	log.Debugf("SearchByID\tuuid: %s size: %d epsilon: %f radius: %f", uuid, size, epsilon, radius)
 	vec, err := n.GetObject(uuid)
@@ -558,12 +559,10 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 		oid, ok := n.kvs.Delete(uuid)
 		if ok {
 			ierr = n.core.Remove(uint(oid))
-			if ierr != nil {
-				log.Error(ierr)
-				err = errors.Wrap(err, ierr.Error())
-			}
 		} else {
 			ierr = errors.ErrObjectIDNotFound(uuid)
+		}
+		if ierr != nil {
 			log.Error(ierr)
 			err = errors.Wrap(err, ierr.Error())
 		}
@@ -776,6 +775,10 @@ func (n *ngt) InsertVQueueChannelLen() uint64 {
 
 func (n *ngt) DeleteVQueueChannelLen() uint64 {
 	return uint64(n.vq.DVCLen())
+}
+
+func (n *ngt) GetDimensionSize() int {
+	return n.dim
 }
 
 func (n *ngt) Close(ctx context.Context) (err error) {

@@ -28,7 +28,6 @@ import (
 )
 
 func TestServers_Bind(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		Servers              []*Server
 		HealthCheckServers   []*Server
@@ -303,7 +302,6 @@ func TestServers_Bind(t *testing.T) {
 }
 
 func TestServers_GetGRPCStreamConcurrency(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		Servers              []*Server
 		HealthCheckServers   []*Server
@@ -497,7 +495,6 @@ func TestServers_GetGRPCStreamConcurrency(t *testing.T) {
 }
 
 func TestHTTP_Bind(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		ShutdownDuration  string
 		HandlerTimeout    string
@@ -643,7 +640,6 @@ func TestHTTP_Bind(t *testing.T) {
 }
 
 func TestGRPC_Bind(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		BidirectionalStreamConcurrency int
 		MaxReceiveMessageSize          int
@@ -863,7 +859,6 @@ func TestGRPC_Bind(t *testing.T) {
 }
 
 func TestGRPCKeepalive_Bind(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		MaxConnIdle     string
 		MaxConnAge      string
@@ -1001,7 +996,6 @@ func TestGRPCKeepalive_Bind(t *testing.T) {
 }
 
 func TestServer_Bind(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		Name          string
 		Network       string
@@ -1265,7 +1259,6 @@ func TestServer_Bind(t *testing.T) {
 }
 
 func TestServer_Opts(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		Name          string
 		Network       string

@@ -30,7 +30,6 @@ import (
 )
 
 func TestCassandra_Bind(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		Hosts                    []string
 		CQLVersion               string
@@ -300,7 +299,6 @@ func TestCassandra_Bind(t *testing.T) {
 					if err := os.Unsetenv(key); err != nil {
 						t.Fatal(err)
 					}
-
 				},
 				want: want{
 					want: &Cassandra{
@@ -388,7 +386,6 @@ func TestCassandra_Bind(t *testing.T) {
 }
 
 func TestCassandra_Opts(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		Hosts                    []string
 		CQLVersion               string

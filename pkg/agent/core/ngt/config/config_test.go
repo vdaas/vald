@@ -18,9 +18,14 @@
 package config
 
 import (
+	"io"
+	"io/fs"
+	"os"
 	"reflect"
+	"syscall"
 	"testing"
 
+	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
 )
@@ -39,8 +44,8 @@ func TestNewConfig(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, *Data, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, gotCfg *Data, err error) error {
 		if !errors.Is(err, w.err) {
@@ -52,31 +57,369 @@ func TestNewConfig(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           path: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           path: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			data := `{
+				"version": "v1.0.0",
+				"server_config": {
+					"full_shutdown_duration": "10ms"
+				},
+				"observability": {
+					"enabled": true
+				},
+				"ngt": {
+					"index_path": "/var/index"
+				}
+			}`
+			return test{
+				name: "return Data and nil when the json bind successes",
+				args: args{
+					path: "bind_success.json",
+				},
+				beforeFunc: func(t *testing.T, a args) {
+					t.Helper()
+					f, err := os.Create(a.path)
+					if err != nil {
+						t.Fatal(err)
+					}
+					if _, err := f.Write([]byte(data)); err != nil {
+						t.Fatal(err)
+					}
+					if err := f.Close(); err != nil {
+						t.Fatal(err)
+					}
+				},
+				afterFunc: func(t *testing.T, a args) {
+					t.Helper()
+					if err := os.Remove(a.path); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					wantCfg: &Data{
+						GlobalConfig: config.GlobalConfig{
+							Version: "v1.0.0",
+						},
+						Server: &config.Servers{
+							FullShutdownDuration: "10ms",
+							ShutdownStrategy:     make([]string, 0),
+							StartUpStrategy:      make([]string, 0),
+							TLS: &config.TLS{
+								Enabled: false,
+							},
+						},
+						Observability: &config.Observability{
+							Enabled: true,
+							Collector: &config.Collector{
+								Metrics: new(config.Metrics),
+							},
+							Trace:      new(config.Trace),
+							Prometheus: new(config.Prometheus),
+							Jaeger:     new(config.Jaeger),
+							Stackdriver: &config.Stackdriver{
+								Client:   new(config.StackdriverClient),
+								Exporter: new(config.StackdriverExporter),
+								Profiler: new(config.StackdriverProfiler),
+							},
+						},
+						NGT: &config.NGT{
+							IndexPath: "/var/index",
+							VQueue:    new(config.VQueue),
+						},
+					},
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			data := `{
+				"version": "v1.0.0",
+				"server_config": {
+					"full_shutdown_duration": "10ms"
+				},
+				"ngt": {
+					"index_path": "/var/index"
+				}
+			}`
+			return test{
+				name: "return Data and nil when the json bind successes but the input json value of observability is empty",
+				args: args{
+					path: "bind_success_but_observability_is_empty.json",
+				},
+				beforeFunc: func(t *testing.T, a args) {
+					t.Helper()
+					f, err := os.Create(a.path)
+					if err != nil {
+						t.Fatal(err)
+					}
+					if _, err := f.Write([]byte(data)); err != nil {
+						t.Fatal(err)
+					}
+					if err := f.Close(); err != nil {
+						t.Fatal(err)
+					}
+				},
+				afterFunc: func(t *testing.T, a args) {
+					t.Helper()
+					if err := os.Remove(a.path); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					wantCfg: &Data{
+						GlobalConfig: config.GlobalConfig{
+							Version: "v1.0.0",
+						},
+						Server: &config.Servers{
+							FullShutdownDuration: "10ms",
+							ShutdownStrategy:     make([]string, 0),
+							StartUpStrategy:      make([]string, 0),
+							TLS: &config.TLS{
+								Enabled: false,
+							},
+						},
+						Observability: new(config.Observability),
+						NGT: &config.NGT{
+							IndexPath: "/var/index",
+							VQueue:    new(config.VQueue),
+						},
+					},
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			data := `
+                version: v1.0.0
+                server_config:
+                  full_shutdown_duration: 10ms
+                observability:
+                  enabled: true
+                ngt:
+                  index_path: /var/index
+                `
+			return test{
+				name: "return Data and nil when the yaml bind successes",
+				args: args{
+					path: "bind_success.yaml",
+				},
+				beforeFunc: func(t *testing.T, a args) {
+					t.Helper()
+					f, err := os.Create(a.path)
+					if err != nil {
+						t.Fatal(err)
+					}
+					if _, err := f.Write([]byte(data)); err != nil {
+						t.Fatal(err)
+					}
+					if err := f.Close(); err != nil {
+						t.Fatal(err)
+					}
+				},
+				afterFunc: func(t *testing.T, a args) {
+					t.Helper()
+					if err := os.Remove(a.path); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					wantCfg: &Data{
+						GlobalConfig: config.GlobalConfig{
+							Version: "v1.0.0",
+						},
+						Server: &config.Servers{
+							FullShutdownDuration: "10ms",
+							ShutdownStrategy:     make([]string, 0),
+							StartUpStrategy:      make([]string, 0),
+							TLS: &config.TLS{
+								Enabled: false,
+							},
+						},
+						Observability: &config.Observability{
+							Enabled: true,
+							Collector: &config.Collector{
+								Metrics: new(config.Metrics),
+							},
+							Trace:      new(config.Trace),
+							Prometheus: new(config.Prometheus),
+							Jaeger:     new(config.Jaeger),
+							Stackdriver: &config.Stackdriver{
+								Client:   new(config.StackdriverClient),
+								Exporter: new(config.StackdriverExporter),
+								Profiler: new(config.StackdriverProfiler),
+							},
+						},
+						NGT: &config.NGT{
+							IndexPath: "/var/index",
+							VQueue:    new(config.VQueue),
+						},
+					},
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			data := `
+                version: v1.0.0
+                server_config:
+                  full_shutdown_duration: 10ms
+                ngt:
+                  index_path: /var/index
+                `
+			return test{
+				name: "return Data and nil when the yaml bind successes but the input yaml value of observability is empty",
+				args: args{
+					path: "bind_success_but_observability_is_empty.yaml",
+				},
+				beforeFunc: func(t *testing.T, a args) {
+					t.Helper()
+					f, err := os.Create(a.path)
+					if err != nil {
+						t.Fatal(err)
+					}
+					if _, err := f.Write([]byte(data)); err != nil {
+						t.Fatal(err)
+					}
+					if err := f.Close(); err != nil {
+						t.Fatal(err)
+					}
+				},
+				afterFunc: func(t *testing.T, a args) {
+					t.Helper()
+					if err := os.Remove(a.path); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					wantCfg: &Data{
+						GlobalConfig: config.GlobalConfig{
+							Version: "v1.0.0",
+						},
+						Server: &config.Servers{
+							FullShutdownDuration: "10ms",
+							ShutdownStrategy:     make([]string, 0),
+							StartUpStrategy:      make([]string, 0),
+							TLS: &config.TLS{
+								Enabled: false,
+							},
+						},
+						Observability: new(config.Observability),
+						NGT: &config.NGT{
+							IndexPath: "/var/index",
+							VQueue:    new(config.VQueue),
+						},
+					},
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			path := "not_found.txt"
+			return test{
+				name: "return error when the file does not exist",
+				args: args{
+					path: path,
+				},
+				want: want{
+					wantCfg: nil,
+					err: &fs.PathError{
+						Op:   "open",
+						Path: path,
+						Err:  syscall.Errno(0x2),
+					},
+				},
+			}
+		}(),
+		func() test {
+			path := "empty.json"
+			return test{
+				name: "return error when the json file is empty",
+				args: args{
+					path: path,
+				},
+				beforeFunc: func(t *testing.T, a args) {
+					t.Helper()
+					f, err := os.Create(a.path)
+					if err != nil {
+						t.Fatal(err)
+					}
+					if err := f.Close(); err != nil {
+						t.Fatal(err)
+					}
+				},
+				afterFunc: func(t *testing.T, a args) {
+					t.Helper()
+					if err := os.Remove(a.path); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					wantCfg: nil,
+					err:     io.EOF,
+				},
+			}
+		}(),
+		func() test {
+			path := "empty.yaml"
+			return test{
+				name: "return error when the yaml file is empty",
+				args: args{
+					path: path,
+				},
+				beforeFunc: func(t *testing.T, a args) {
+					t.Helper()
+					f, err := os.Create(a.path)
+					if err != nil {
+						t.Fatal(err)
+					}
+					if err := f.Close(); err != nil {
+						t.Fatal(err)
+					}
+				},
+				afterFunc: func(t *testing.T, a args) {
+					t.Helper()
+					if err := os.Remove(a.path); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					wantCfg: nil,
+					err:     io.EOF,
+				},
+			}
+		}(),
+		func() test {
+			path := "unreadable.txt"
+			return test{
+				name: "return error when can't read file",
+				args: args{
+					path: path,
+				},
+				beforeFunc: func(t *testing.T, a args) {
+					t.Helper()
+					f, err := os.OpenFile(a.path, os.O_CREATE, fs.ModeIrregular)
+					if err != nil {
+						t.Fatal(err)
+					}
+					if err := f.Close(); err != nil {
+						t.Fatal(err)
+					}
+				},
+				afterFunc: func(t *testing.T, a args) {
+					t.Helper()
+					if err := os.Remove(a.path); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					wantCfg: nil,
+					err: &fs.PathError{
+						Op:   "open",
+						Path: path,
+						Err:  syscall.EPERM,
+					},
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -85,10 +428,10 @@ func TestNewConfig(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc

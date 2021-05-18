@@ -174,4 +174,9 @@ var (
 
 	// As represents errors.As.
 	As = errors.As
+
+	// errExpectedErrIsNil represents a function to generate an error that given name's error object is nil.
+	errExpectedErrIsNil = func(n string) error {
+		return Errorf("expected err is nil: %s", n)
+	}
 )
