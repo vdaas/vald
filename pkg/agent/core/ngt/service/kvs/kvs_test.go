@@ -162,19 +162,18 @@ func Test_bidi_Get(t *testing.T) {
 			}
 
 			var (
-				key1        = "45637ec4-c85f-11ea-87d0"
-				val1 uint32 = 14438
+				key        = "45637ec4-c85f-11ea-87d0"
+				val uint32 = 14438
 			)
-			var key2 = "84a333-59633fd4-4553-414a"
 
 			return test{
 				name: "return (0, false) when there is no value for the key",
 				args: args{
-					key: key2,
+					key: "84a333-59633fd4-4553-414a",
 				},
 				fields: fields,
 				beforeFunc: func(_ args, bm BidiMap) {
-					bm.Set(key1, val1)
+					bm.Set(key, val)
 				},
 				want: want{
 					want:  0,
@@ -338,19 +337,18 @@ func Test_bidi_GetInverse(t *testing.T) {
 			}
 
 			var (
-				key         = "45637ec4-c85f-11ea-87d0"
-				val1 uint32 = 14438
+				key        = "45637ec4-c85f-11ea-87d0"
+				val uint32 = 14438
 			)
-			var val2 uint32 = 10000
 
 			return test{
 				name: "return false when there is a no key for the value",
 				args: args{
-					val: val2,
+					val: 10000,
 				},
 				fields: fields,
 				beforeFunc: func(_ args, bm BidiMap) {
-					bm.Set(key, val1)
+					bm.Set(key, val)
 				},
 				want: want{
 					want:  "",
@@ -527,27 +525,27 @@ func Test_bidi_Set(t *testing.T) {
 			}
 
 			var (
-				val1 uint32 = 10000
+				oldVal uint32 = 10000
 			)
 
 			var (
-				key2        = "45637ec4-c85f-11ea-87d0"
-				val2 uint32 = 14438
+				key        = "45637ec4-c85f-11ea-87d0"
+				val uint32 = 14438
 			)
 
 			return test{
 				name: "set success when the key is already set and the same key is set twie",
 				args: args{
-					key: key2,
-					val: val2,
+					key: key,
+					val: val,
 				},
 				fields: fields,
 				beforeFunc: func(a args, b *bidi) {
-					b.Set(a.key, val1)
+					b.Set(a.key, oldVal)
 				},
 				want: want{
-					key: key2,
-					val: val2,
+					key: key,
+					val: val,
 					l:   2,
 				},
 			}
@@ -783,19 +781,18 @@ func Test_bidi_Delete(t *testing.T) {
 			}
 
 			var (
-				key1        = "45637ec4-c85f-11ea-87d0"
-				val1 uint32 = 14438
+				key        = "45637ec4-c85f-11ea-87d0"
+				val uint32 = 14438
 			)
-			var key2 = "95314ec4-d95f-14ea-19d0"
 
 			return test{
 				name: "return (0, false) when the delete fails",
 				args: args{
-					key: key2,
+					key: "95314ec4-d95f-14ea-19d0",
 				},
 				fields: fields,
 				beforeFunc: func(a args, bm BidiMap) {
-					bm.Set(key1, val1)
+					bm.Set(key, val)
 				},
 				want: want{
 					wantVal: 0,
@@ -963,18 +960,17 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 			}
 
 			var (
-				key1        = "45637ec4-c85f-11ea-87d0"
-				val1 uint32 = 14438
+				key        = "45637ec4-c85f-11ea-87d0"
+				val uint32 = 14438
 			)
-			var val2 uint32 = 10000
 
 			return test{
 				name: "return false when the delete fails",
 				args: args{
-					val: val2,
+					val: 10000,
 				},
 				beforeFunc: func(a args, bm BidiMap) {
-					bm.Set(key1, val1)
+					bm.Set(key, val)
 				},
 				fields: fields,
 				want: want{
