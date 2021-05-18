@@ -10,7 +10,7 @@ And, Fashion-mnist is used as an example of a dataset.
 
 Before starting, let's check the below image.
 It shows the architecture image about the deployment result of Get Started.<br>
-The 4 kinds of microservices, `Vald LB Gateway`, `Vald Discoverer`, `Vald Agent` and `Vald Index Manager` will deployed on Kubernetes.
+The 4 kinds of components, `Vald LB Gateway`, `Vald Discoverer`, `Vald Agent` and `Vald Index Manager` will be deployed to the Kubernetes.
 
 <img src="../../assets/docs/tutorial/getstarted.png" />
 
