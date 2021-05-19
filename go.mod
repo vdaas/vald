@@ -3,8 +3,8 @@ module github.com/vdaas/vald
 go 1.16
 
 replace (
-	cloud.google.com/go => cloud.google.com/go v0.82.1-0.20210518235149-124671783dcd
-	cloud.google.com/go/storage => cloud.google.com/go/storage v1.15.1-0.20210518235149-124671783dcd
+	cloud.google.com/go => cloud.google.com/go v0.82.1-0.20210519010221-a2538e16123c
+	cloud.google.com/go/storage => cloud.google.com/go/storage v1.15.1-0.20210519010221-a2538e16123c
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20210210161804-c7f947c0610d+incompatible
 	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.38.42
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1

@@ -1,11 +1,11 @@
 bazil.org/fuse v0.0.0-20180421153158-65cc252bf669/go.mod h1:Xbm+BRKSBEpa4q4hTSxohYNQpsxXPbPry4JJWOB3LB8=
-cloud.google.com/go v0.82.1-0.20210518235149-124671783dcd h1:nCuKI12M7CyY4/sKaP/yLCRdRFvHp6fA3Zod1+iNn8w=
-cloud.google.com/go v0.82.1-0.20210518235149-124671783dcd/go.mod h1:8pjknV7d+5paNrOP08yaAGc2+w/A/90R4zVumaI6/d8=
+cloud.google.com/go v0.82.1-0.20210519010221-a2538e16123c h1:jYBR+K22weOSZjzVp4fVhTsHwNwGDsTLONEQSILQwR8=
+cloud.google.com/go v0.82.1-0.20210519010221-a2538e16123c/go.mod h1:8pjknV7d+5paNrOP08yaAGc2+w/A/90R4zVumaI6/d8=
 cloud.google.com/go/firestore v1.1.0/go.mod h1:ulACoGHTpvq5r8rxGJ4ddJZBZqakUQqClKRT5SZwBmk=
 cloud.google.com/go/firestore v1.5.0/go.mod h1:c4nNYR1qdq7eaZ+jSc5fonrQN2k3M7sWATcYTiakjEo=
 cloud.google.com/go/pubsub v1.10.3/go.mod h1:FUcc28GpGxxACoklPsE1sCtbkY4Ix+ro7yvw+h82Jn4=
-cloud.google.com/go/storage v1.15.1-0.20210518235149-124671783dcd h1:vAVhrDE8KfgaIZwEChIjnVfQIDlFRQ80hHJbgRZpzMw=
-cloud.google.com/go/storage v1.15.1-0.20210518235149-124671783dcd/go.mod h1:j8Rfn7cnrx4q7ChDAkHuiXmv1BIuI9b/QPOvLRvgyT4=
+cloud.google.com/go/storage v1.15.1-0.20210519010221-a2538e16123c h1:EVkuho+6Rwo+vfbsrUXqatBm8iy3OEARQ9q0ER8UYmA=
+cloud.google.com/go/storage v1.15.1-0.20210519010221-a2538e16123c/go.mod h1:j8Rfn7cnrx4q7ChDAkHuiXmv1BIuI9b/QPOvLRvgyT4=
 code.cloudfoundry.org/bytefmt v0.0.0-20190710193110-1eb035ffe2b6/go.mod h1:wN/zk7mhREp/oviagqUXY3EwuHhWyOvAdsn5Y4CzOrc=
 code.cloudfoundry.org/bytefmt v0.0.0-20200131002437-cf55d5288a48 h1:/EMHruHCFXR9xClkGV/t0rmHrdhX4+trQUcBqjwc9xE=
 code.cloudfoundry.org/bytefmt v0.0.0-20200131002437-cf55d5288a48/go.mod h1:wN/zk7mhREp/oviagqUXY3EwuHhWyOvAdsn5Y4CzOrc=

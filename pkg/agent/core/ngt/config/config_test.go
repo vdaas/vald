@@ -21,12 +21,12 @@ import (
 	"io"
 	"io/fs"
 	"os"
-	"reflect"
 	"syscall"
 	"testing"
 
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/test/comparator"
 	"go.uber.org/goleak"
 )
 
@@ -51,8 +51,9 @@ func TestNewConfig(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(gotCfg, w.wantCfg) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotCfg, w.wantCfg)
+		if diff := comparator.Diff(gotCfg, w.wantCfg,
+			comparator.IgnoreTypes(config.Observability{})); diff != "" {
+			return errors.New(diff)
 		}
 		return nil
 	}
@@ -415,7 +416,7 @@ func TestNewConfig(t *testing.T) {
 					err: &fs.PathError{
 						Op:   "open",
 						Path: path,
-						Err:  syscall.EPERM,
+						Err:  syscall.EACCES,
 					},
 				},
 			}
