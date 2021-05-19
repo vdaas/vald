@@ -70,7 +70,7 @@ endef
 define run-e2e-crud-test
 	go test \
 	    $1 \
-	    -v $(ROOTDIR)/tests/e2e/crud_test.go \
+	    -v $(ROOTDIR)/tests/e2e/crud/crud_test.go \
 	    -tags "e2e" \
 	    -timeout $(E2E_TIMEOUT) \
 	    -host=$(E2E_BIND_HOST) \

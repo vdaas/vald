@@ -16,8 +16,8 @@
 // limitations under the License.
 //
 
-// package e2e provides e2e tests using ann-benchmarks datasets
-package e2e
+// package crud provides e2e tests using ann-benchmarks datasets
+package crud
 
 import (
 	"context"
@@ -28,17 +28,16 @@ import (
 	"testing"
 	"time"
 
+	"github.com/vdaas/vald/tests/e2e/hdf5"
 	"github.com/vdaas/vald/tests/e2e/kubernetes/client"
 	"github.com/vdaas/vald/tests/e2e/kubernetes/portforward"
 	"github.com/vdaas/vald/tests/e2e/operation"
-
-	"gonum.org/v1/hdf5"
 )
 
 var (
 	host string
 	port int
-	ds   *dataset
+	ds   *hdf5.Dataset
 
 	insertNum     int
 	searchNum     int
@@ -110,7 +109,7 @@ func init() {
 	}
 
 	fmt.Printf("loading dataset: %s ", *datasetName)
-	ds, err = hdf5ToDataset(*datasetName)
+	ds, err = hdf5.HDF5ToDataset(*datasetName)
 	if err != nil {
 		panic(err)
 	}
@@ -128,107 +127,6 @@ func teardown() {
 	}
 }
 
-type dataset struct {
-	train     [][]float32
-	test      [][]float32
-	neighbors [][]int
-}
-
-func hdf5ToDataset(name string) (*dataset, error) {
-	file, err := hdf5.OpenFile(name, hdf5.F_ACC_RDONLY)
-	if err != nil {
-		return nil, err
-	}
-
-	defer file.Close()
-
-	train, err := readDatasetF32(file, "train")
-	if err != nil {
-		return nil, err
-	}
-
-	test, err := readDatasetF32(file, "test")
-	if err != nil {
-		return nil, err
-	}
-
-	neighbors32, err := readDatasetI32(file, "neighbors")
-	if err != nil {
-		return nil, err
-	}
-	neighbors := make([][]int, len(neighbors32))
-	for i, ns := range neighbors32 {
-		neighbors[i] = make([]int, len(ns))
-		for j, n := range ns {
-			neighbors[i][j] = int(n)
-		}
-	}
-
-	return &dataset{
-		train:     train,
-		test:      test,
-		neighbors: neighbors,
-	}, nil
-}
-
-func readDatasetF32(file *hdf5.File, name string) ([][]float32, error) {
-	data, err := file.OpenDataset(name)
-	if err != nil {
-		return nil, err
-	}
-	defer data.Close()
-
-	dataspace := data.Space()
-	defer dataspace.Close()
-
-	dims, _, err := dataspace.SimpleExtentDims()
-	if err != nil {
-		return nil, err
-	}
-	height, width := int(dims[0]), int(dims[1])
-
-	rawFloats := make([]float32, dataspace.SimpleExtentNPoints())
-	if err := data.Read(&rawFloats); err != nil {
-		return nil, err
-	}
-
-	vecs := make([][]float32, height)
-	for i := 0; i < height; i++ {
-		vecs[i] = rawFloats[i*width : i*width+width]
-	}
-
-	return vecs, nil
-}
-
-func readDatasetI32(file *hdf5.File, name string) ([][]int32, error) {
-	data, err := file.OpenDataset(name)
-	if err != nil {
-		return nil, err
-	}
-	defer data.Close()
-
-	dataspace := data.Space()
-	defer dataspace.Close()
-
-	dims, _, err := dataspace.SimpleExtentDims()
-	if err != nil {
-		return nil, err
-	}
-	height, width := int(dims[0]), int(dims[1])
-
-	rawFloats := make([]int32, dataspace.SimpleExtentNPoints())
-	if err := data.Read(&rawFloats); err != nil {
-		return nil, err
-	}
-
-	vecs := make([][]int32, height)
-	for i := 0; i < height; i++ {
-		vecs[i] = rawFloats[i*width : i*width+width]
-	}
-
-	return vecs, nil
-}
-
 func sleep(t *testing.T, dur time.Duration) {
 	t.Logf("%v sleep for %s.", time.Now(), dur)
 	time.Sleep(dur)
@@ -244,11 +142,13 @@ func TestE2EInsertOnly(t *testing.T) {
 	}
 
 	err = op.Insert(t, ctx, operation.Dataset{
-		Train: ds.train[insertFrom : insertFrom+insertNum],
+		Train: ds.Train[insertFrom : insertFrom+insertNum],
 	})
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
 	}
+
+	teardown()
 }
 
 func TestE2ESearchOnly(t *testing.T) {
@@ -260,12 +160,14 @@ func TestE2ESearchOnly(t *testing.T) {
 	}
 
 	err = op.Search(t, ctx, operation.Dataset{
-		Test:      ds.test[searchFrom : searchFrom+searchNum],
-		Neighbors: ds.neighbors[searchFrom : searchFrom+searchNum],
+		Test:      ds.Test[searchFrom : searchFrom+searchNum],
+		Neighbors: ds.Neighbors[searchFrom : searchFrom+searchNum],
 	})
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
 	}
+
+	teardown()
 }
 
 func TestE2EUpdateOnly(t *testing.T) {
@@ -277,7 +179,7 @@ func TestE2EUpdateOnly(t *testing.T) {
 	}
 
 	err = op.Update(t, ctx, operation.Dataset{
-		Train: ds.train[updateFrom : updateFrom+updateNum],
+		Train: ds.Train[updateFrom : updateFrom+updateNum],
 	})
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
@@ -293,11 +195,13 @@ func TestE2ERemoveOnly(t *testing.T) {
 	}
 
 	err = op.Remove(t, ctx, operation.Dataset{
-		Train: ds.train[removeFrom : removeFrom+removeNum],
+		Train: ds.Train[removeFrom : removeFrom+removeNum],
 	})
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
 	}
+
+	teardown()
 }
 
 func TestE2EInsertAndSearch(t *testing.T) {
@@ -309,7 +213,7 @@ func TestE2EInsertAndSearch(t *testing.T) {
 	}
 
 	err = op.Insert(t, ctx, operation.Dataset{
-		Train: ds.train[insertFrom : insertFrom+insertNum],
+		Train: ds.Train[insertFrom : insertFrom+insertNum],
 	})
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
@@ -318,12 +222,14 @@ func TestE2EInsertAndSearch(t *testing.T) {
 	sleep(t, waitAfterInsertDuration)
 
 	err = op.Search(t, ctx, operation.Dataset{
-		Test:      ds.test[searchFrom : searchFrom+searchNum],
-		Neighbors: ds.neighbors[searchFrom : searchFrom+searchNum],
+		Test:      ds.Test[searchFrom : searchFrom+searchNum],
+		Neighbors: ds.Neighbors[searchFrom : searchFrom+searchNum],
 	})
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
 	}
+
+	teardown()
 }
 
 func TestE2EStandardCRUD(t *testing.T) {
@@ -335,7 +241,7 @@ func TestE2EStandardCRUD(t *testing.T) {
 	}
 
 	err = op.Insert(t, ctx, operation.Dataset{
-		Train: ds.train[insertFrom : insertFrom+insertNum],
+		Train: ds.Train[insertFrom : insertFrom+insertNum],
 	})
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
@@ -344,121 +250,40 @@ func TestE2EStandardCRUD(t *testing.T) {
 	sleep(t, waitAfterInsertDuration)
 
 	err = op.Search(t, ctx, operation.Dataset{
-		Test:      ds.test[searchFrom : searchFrom+searchNum],
-		Neighbors: ds.neighbors[searchFrom : searchFrom+searchNum],
+		Test:      ds.Test[searchFrom : searchFrom+searchNum],
+		Neighbors: ds.Neighbors[searchFrom : searchFrom+searchNum],
 	})
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
 	err = op.SearchByID(t, ctx, operation.Dataset{
-		Train: ds.train[searchByIDFrom : searchByIDFrom+searchByIDNum],
+		Train: ds.Train[searchByIDFrom : searchByIDFrom+searchByIDNum],
 	})
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
 	err = op.GetObject(t, ctx, operation.Dataset{
-		Train: ds.train[getObjectFrom : getObjectFrom+getObjectNum],
+		Train: ds.Train[getObjectFrom : getObjectFrom+getObjectNum],
 	})
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
 	err = op.Update(t, ctx, operation.Dataset{
-		Train: ds.train[updateFrom : updateFrom+updateNum],
+		Train: ds.Train[updateFrom : updateFrom+updateNum],
 	})
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
 	err = op.Remove(t, ctx, operation.Dataset{
-		Train: ds.train[removeFrom : removeFrom+removeNum],
-	})
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
-}
-
-func TestE2EForSidecar(t *testing.T) {
-	ctx := context.Background()
-
-	op, err := operation.New(host, port)
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
-
-	err = op.Insert(t, ctx, operation.Dataset{
-		Train: ds.train[insertFrom : insertFrom+insertNum],
+		Train: ds.Train[removeFrom : removeFrom+removeNum],
 	})
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
-	err = op.CreateIndex(t, ctx)
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
-
-	err = op.Search(t, ctx, operation.Dataset{
-		Test:      ds.test[searchFrom : searchFrom+searchNum],
-		Neighbors: ds.neighbors[searchFrom : searchFrom+searchNum],
-	})
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
-
-	pods, err := kubeClient.GetPods(ctx, namespace, "app=vald-agent-ngt")
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
-
-	if len(pods) == 0 {
-		t.Fatalf("there's no Agent pods")
-	}
-
-	podName := pods[0].Name
-
-	err = kubeClient.DeletePod(ctx, namespace, podName)
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
-
-	sleep(t, time.Minute)
-
-	pods, err = kubeClient.GetPods(ctx, namespace, "app=vald-agent-ngt")
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
-
-	if len(pods) == 0 {
-		t.Fatalf("there's no Agent pods")
-	}
-
-	podName = pods[0].Name
-
-	ok, err := kubeClient.WaitForPodReady(ctx, namespace, podName, 10*time.Minute)
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
-	if !ok {
-		t.Fatalf("pod didn't become ready")
-	}
-
-	err = op.Search(t, ctx, operation.Dataset{
-		Test:      ds.test[searchFrom : searchFrom+searchNum],
-		Neighbors: ds.neighbors[searchFrom : searchFrom+searchNum],
-	})
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
-
-	res, err := op.IndexInfo(t, ctx)
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
-
-	if insertNum != int(res.Stored) {
-		t.Errorf("Stored index count is invalid, expected: %d, stored: %d", insertNum, res.Stored)
-	}
+	teardown()
 }

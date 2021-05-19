@@ -37,6 +37,7 @@ type Client interface {
 	Remove(t *testing.T, ctx context.Context, ds Dataset) error
 	GetObject(t *testing.T, ctx context.Context, ds Dataset) error
 	CreateIndex(t *testing.T, ctx context.Context) error
+	SaveIndex(t *testing.T, ctx context.Context) error
 	IndexInfo(t *testing.T, ctx context.Context) (*payload.Info_Index_Count, error)
 }
 
@@ -105,7 +106,7 @@ func (c *client) Search(t *testing.T, ctx context.Context, ds Dataset) error {
 				continue
 			}
 
-			t.Logf("recall: %f", c.recall(topKIDs, ds.Neighbors[idx][:len(topKIDs)]))
+			t.Logf("results: %d, recall: %f", len(topKIDs), c.recall(topKIDs, ds.Neighbors[idx][:len(topKIDs)]))
 		}
 	}()
 
@@ -513,6 +514,18 @@ func (c *client) CreateIndex(t *testing.T, ctx context.Context) error {
 	_, err = client.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
 		PoolSize: 10000,
 	})
+
+	return err
+}
+
+func (c *client) SaveIndex(t *testing.T, ctx context.Context) error {
+	client, err := c.getAgentClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	_, err = client.SaveIndex(ctx, &payload.Empty{})
+
 	return err
 }
 
