@@ -858,6 +858,7 @@ func Test_bidi_Delete(t *testing.T) {
 	type want struct {
 		wantVal uint32
 		wantOk  bool
+		wantLen uint64
 	}
 	type test struct {
 		name       string
@@ -891,7 +892,6 @@ func Test_bidi_Delete(t *testing.T) {
 				key        = "45637ec4-c85f-11ea-87d0"
 				val uint32 = 14438
 			)
-			var wantl = 0
 
 			return test{
 				name: "return val and true when the delete successes",
@@ -906,8 +906,8 @@ func Test_bidi_Delete(t *testing.T) {
 					if err := defaultCheckFunc(w, a, b, gotVal, gotOk); err != nil {
 						return err
 					}
-					if l := atomic.LoadUint64(&b.l); wantl != 0 {
-						return errors.Errorf("l is not equals.\twant: %v, but got: %v", wantl, l)
+					if want, got := w.wantLen, atomic.LoadUint64(&b.l); want != got {
+						return errors.Errorf("l is not equals.\twant: %v, but got: %v", want, got)
 					}
 					if _, ok := b.Get(key); ok {
 						return errors.New("the value for the key exists")
@@ -920,6 +920,7 @@ func Test_bidi_Delete(t *testing.T) {
 				want: want{
 					wantVal: val,
 					wantOk:  true,
+					wantLen: 0,
 				},
 			}
 		}(),
@@ -936,7 +937,6 @@ func Test_bidi_Delete(t *testing.T) {
 				key        = "45637ec4-c85f-11ea-87d0"
 				val uint32 = 14438
 			)
-			var wantl uint64 = 100
 
 			return test{
 				name: "return val and true when the delete successes and l of fields is 100",
@@ -951,8 +951,8 @@ func Test_bidi_Delete(t *testing.T) {
 					if err := defaultCheckFunc(w, a, b, gotVal, gotOk); err != nil {
 						return err
 					}
-					if l := atomic.LoadUint64(&b.l); wantl != l {
-						return errors.Errorf("l is not equals.\twant: %v, but got: %v", wantl, l)
+					if want, got := w.wantLen, atomic.LoadUint64(&b.l); want != got {
+						return errors.Errorf("l is not equals.\twant: %v, but got: %v", want, got)
 					}
 					if _, ok := b.Get(key); ok {
 						return errors.New("the value for the key exists")
@@ -965,6 +965,7 @@ func Test_bidi_Delete(t *testing.T) {
 				want: want{
 					wantVal: val,
 					wantOk:  true,
+					wantLen: 100,
 				},
 			}
 		}(),
@@ -981,7 +982,6 @@ func Test_bidi_Delete(t *testing.T) {
 				key        = "45637ec4-c85f-11ea-87d0"
 				val uint32 = 14438
 			)
-			var wantl = 0
 
 			return test{
 				name: "return val and true when the delete successes and l of fields is maximun value of uint64",
@@ -996,8 +996,8 @@ func Test_bidi_Delete(t *testing.T) {
 					if err := defaultCheckFunc(w, a, b, gotVal, gotOk); err != nil {
 						return err
 					}
-					if l := atomic.LoadUint64(&b.l); wantl != 0 {
-						return errors.Errorf("l is not equals.\twant: %v, but got: %v", wantl, l)
+					if want, got := w.wantLen, atomic.LoadUint64(&b.l); want != got {
+						return errors.Errorf("l is not equals.\twant: %v, but got: %v", want, got)
 					}
 					if _, ok := b.Get(key); ok {
 						return errors.New("the value for the key exists")
@@ -1010,6 +1010,7 @@ func Test_bidi_Delete(t *testing.T) {
 				want: want{
 					wantVal: val,
 					wantOk:  true,
+					wantLen: math.MaxUint64,
 				},
 			}
 		}(),
@@ -1025,7 +1026,6 @@ func Test_bidi_Delete(t *testing.T) {
 			var (
 				val uint32 = 14438
 			)
-			var wantl = 0
 
 			return test{
 				name:   "return val and true when the delete successes and the key is empty string",
@@ -1038,8 +1038,8 @@ func Test_bidi_Delete(t *testing.T) {
 					if err := defaultCheckFunc(w, a, b, gotVal, gotOk); err != nil {
 						return err
 					}
-					if l := atomic.LoadUint64(&b.l); wantl != 0 {
-						return errors.Errorf("l is not equals.\twant: %v, but got: %v", wantl, l)
+					if want, got := w.wantLen, atomic.LoadUint64(&b.l); want != got {
+						return errors.Errorf("l is not equals.\twant: %v, but got: %v", want, got)
 					}
 					if _, ok := b.Get(a.key); ok {
 						return errors.New("the value for the key exists")
@@ -1052,6 +1052,7 @@ func Test_bidi_Delete(t *testing.T) {
 				want: want{
 					wantVal: val,
 					wantOk:  true,
+					wantLen: 0,
 				},
 			}
 		}(),
@@ -1127,6 +1128,7 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 	type want struct {
 		wantKey string
 		wantOk  bool
+		wantLen uint64
 	}
 	type test struct {
 		name       string
@@ -1160,7 +1162,6 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 				key        = "45637ec4-c85f-11ea-87d0"
 				val uint32 = 14438
 			)
-			var wantl = 0
 
 			return test{
 				name: "return key and true when the delete successes",
@@ -1174,8 +1175,8 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 					if err := defaultCheckFunc(w, a, b, gotKey, gotOk); err != nil {
 						return err
 					}
-					if l := atomic.LoadUint64(&b.l); wantl != 0 {
-						return errors.Errorf("l is not equals.\twant: %v, but got: %v", wantl, l)
+					if want, got := w.wantLen, atomic.LoadUint64(&b.l); want != got {
+						return errors.Errorf("l is not equals.\twant: %v, but got: %v", want, got)
 					}
 					if _, ok := b.Get(key); ok {
 						return errors.New("the value for the key exists")
@@ -1189,6 +1190,7 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 				want: want{
 					wantKey: key,
 					wantOk:  true,
+					wantLen: 0,
 				},
 			}
 		}(),
@@ -1205,7 +1207,6 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 				key        = "45637ec4-c85f-11ea-87d0"
 				val uint32 = 14438
 			)
-			var wantl uint64 = 100
 
 			return test{
 				name: "return key and true when the delete successes and l of fields is 100",
@@ -1219,8 +1220,8 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 					if err := defaultCheckFunc(w, a, b, gotKey, gotOk); err != nil {
 						return err
 					}
-					if l := atomic.LoadUint64(&b.l); wantl != l {
-						return errors.Errorf("l is not equals.\twant: %v, but got: %v", wantl, l)
+					if want, got := w.wantLen, atomic.LoadUint64(&b.l); want != got {
+						return errors.Errorf("l is not equals.\twant: %v, but got: %v", want, got)
 					}
 					if _, ok := b.Get(key); ok {
 						return errors.New("the value for the key exists")
@@ -1234,6 +1235,7 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 				want: want{
 					wantKey: key,
 					wantOk:  true,
+					wantLen: 100,
 				},
 			}
 		}(),
@@ -1250,7 +1252,6 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 				key        = "45637ec4-c85f-11ea-87d0"
 				val uint32 = 14438
 			)
-			var wantl = fields.l
 
 			return test{
 				name: "return key and true when the delete successes and l of fields is maximun value of uint64",
@@ -1264,8 +1265,8 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 					if err := defaultCheckFunc(w, a, b, gotKey, gotOk); err != nil {
 						return err
 					}
-					if l := atomic.LoadUint64(&b.l); wantl != l {
-						return errors.Errorf("l is not equals.\twant: %v, but got: %v", wantl, l)
+					if want, got := w.wantLen, atomic.LoadUint64(&b.l); want != got {
+						return errors.Errorf("l is not equals.\twant: %v, but got: %v", want, got)
 					}
 					if _, ok := b.Get(key); ok {
 						return errors.New("the value for the key exists")
@@ -1279,6 +1280,7 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 				want: want{
 					wantKey: key,
 					wantOk:  true,
+					wantLen: math.MaxUint64,
 				},
 			}
 		}(),
@@ -1294,7 +1296,6 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 			var (
 				key = "45637ec4-c85f-11ea-87d0"
 			)
-			var wantl uint64 = 0
 
 			return test{
 				name: "return key and true when the delete successes and the val is 0",
@@ -1306,8 +1307,8 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 					if err := defaultCheckFunc(w, a, b, gotKey, gotOk); err != nil {
 						return err
 					}
-					if l := atomic.LoadUint64(&b.l); wantl != l {
-						return errors.Errorf("l is not equals.\twant: %v, but got: %v", wantl, l)
+					if want, got := w.wantLen, atomic.LoadUint64(&b.l); want != got {
+						return errors.Errorf("l is not equals.\twant: %v, but got: %v", want, got)
 					}
 					if _, ok := b.Get(key); ok {
 						return errors.New("the value for the key exists")
@@ -1321,6 +1322,7 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 				want: want{
 					wantKey: key,
 					wantOk:  true,
+					wantLen: 0,
 				},
 			}
 		}(),
@@ -1350,6 +1352,7 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 				want: want{
 					wantKey: "",
 					wantOk:  false,
+					wantLen: 0,
 				},
 			}
 		}(),
