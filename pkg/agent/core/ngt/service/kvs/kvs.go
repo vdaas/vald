@@ -78,14 +78,14 @@ func (b *bidi) GetInverse(val uint32) (string, bool) {
 	return b.ou[val&mask].Load(val)
 }
 
-// Set sets the key and val to the BidMap.
+// Set sets the key and val to the bidi.
 func (b *bidi) Set(key string, val uint32) {
 	b.uo[xxhash.Sum64(stringToBytes(key))&mask].Store(key, val)
 	b.ou[val&mask].Store(val, key)
 	atomic.AddUint64(&b.l, 1)
 }
 
-// Delete deletes the key and the value from the given key and returns val and true.
+// Delete deletes the key and the value from the bidi by the given key and returns val and true.
 // If the value for the key does not exist, it returns nil and false.
 func (b *bidi) Delete(key string) (val uint32, ok bool) {
 	idx := xxhash.Sum64(stringToBytes(key)) & mask
@@ -99,7 +99,7 @@ func (b *bidi) Delete(key string) (val uint32, ok bool) {
 	return val, true
 }
 
-// DeleteInverse deletes the key and the value from the given val and returns the key and true.
+// DeleteInverse deletes the key and the value from the bidi by the given val and returns the key and true.
 // If the key for the val does not exist, it returns nil and false.
 func (b *bidi) DeleteInverse(val uint32) (key string, ok bool) {
 	idx := val & mask
