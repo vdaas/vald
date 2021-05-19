@@ -41,6 +41,8 @@ type Data struct {
 
 // NewConfig returns the Data struct or error from the given file path.
 func NewConfig(path string) (cfg *Data, err error) {
+	cfg = new(Data)
+
 	err = config.Read(path, &cfg)
 
 	if err != nil {
