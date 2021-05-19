@@ -361,7 +361,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 				}
 			case r == nil || len(r.GetResults()) == 0:
-				err = errors.ErrIndexNotFound
+				err = errors.ErrEmptySearchResult
 				err = status.WrapWithNotFound("failed to process search request", err,
 					&errdetails.ResourceInfo{
 						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Search",
@@ -467,7 +467,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 			}
 			if num != 0 && len(res.GetResults()) == 0 {
 				if err == nil {
-					err = errors.ErrIndexNotFound
+					err = errors.ErrEmptySearchResult
 				}
 				st, msg, err := status.ParseError(err, codes.NotFound,
 					"error search result length is 0",
