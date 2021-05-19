@@ -440,7 +440,7 @@ func TestNewConfig(t *testing.T) {
 
 			gotCfg, err := NewConfig(test.args.path)
 			if err := test.checkFunc(test.want, gotCfg, err); err != nil {
-				tt.Errorf("error = %v", err)
+				tt.Errorf("error = %v, got = %#v", err, gotCfg)
 			}
 		})
 	}
