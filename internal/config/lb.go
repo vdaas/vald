@@ -45,9 +45,7 @@ type LB struct {
 func (g *LB) Bind() *LB {
 	g.AgentName = GetActualValue(g.AgentName)
 	g.AgentNamespace = GetActualValue(g.AgentNamespace)
-
 	g.AgentDNS = GetActualValue(g.AgentDNS)
-
 	g.NodeName = GetActualValue(g.NodeName)
 
 	if g.Discoverer != nil {

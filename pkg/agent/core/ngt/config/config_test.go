@@ -21,12 +21,12 @@ import (
 	"io"
 	"io/fs"
 	"os"
-	"reflect"
 	"syscall"
 	"testing"
 
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/test/comparator"
 	"go.uber.org/goleak"
 )
 
@@ -51,8 +51,9 @@ func TestNewConfig(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(gotCfg, w.wantCfg) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotCfg, w.wantCfg)
+		if diff := comparator.Diff(gotCfg, w.wantCfg,
+			comparator.IgnoreTypes(config.Observability{})); diff != "" {
+			return errors.New(diff)
 		}
 		return nil
 	}
@@ -404,6 +405,15 @@ func TestNewConfig(t *testing.T) {
 						t.Fatal(err)
 					}
 				},
+				checkFunc: func(w want, gotCfg *Data, err error) error {
+					if os.IsPermission(err) {
+						return nil
+					}
+					if !errors.Is(err, w.err) {
+						return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+					}
+					return nil
+				},
 				afterFunc: func(t *testing.T, a args) {
 					t.Helper()
 					if err := os.Remove(a.path); err != nil {
@@ -412,11 +422,7 @@ func TestNewConfig(t *testing.T) {
 				},
 				want: want{
 					wantCfg: nil,
-					err: &fs.PathError{
-						Op:   "open",
-						Path: path,
-						Err:  syscall.EPERM,
-					},
+					err:     errors.ErrInvalidConfig,
 				},
 			}
 		}(),
@@ -439,7 +445,7 @@ func TestNewConfig(t *testing.T) {
 
 			gotCfg, err := NewConfig(test.args.path)
 			if err := test.checkFunc(test.want, gotCfg, err); err != nil {
-				tt.Errorf("error = %v", err)
+				tt.Errorf("error = %v, got = %#v", err, gotCfg)
 			}
 		})
 	}
