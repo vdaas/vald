@@ -409,13 +409,8 @@ func TestNewConfig(t *testing.T) {
 					if os.IsPermission(err) {
 						return nil
 					}
-
 					if !errors.Is(err, w.err) {
 						return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-					}
-					if diff := comparator.Diff(gotCfg, w.wantCfg,
-						comparator.IgnoreTypes(config.Observability{})); diff != "" {
-						return errors.New(diff)
 					}
 					return nil
 				},
@@ -427,11 +422,7 @@ func TestNewConfig(t *testing.T) {
 				},
 				want: want{
 					wantCfg: nil,
-					err: &fs.PathError{
-						Op:   "open",
-						Path: path,
-						Err:  syscall.EACCES,
-					},
+					err:     errors.ErrInvalidConfig,
 				},
 			}
 		}(),
