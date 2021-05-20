@@ -23,7 +23,6 @@ FROM ubuntu:devel AS builder
 ARG PROTOBUF_VERSION=3.14.0
 ARG GOLANGCI_LINT_VERSION=v1.36.0
 ARG REVIEWDOG_VERSION=v0.11.0
-ARG YQ_VERSION=4.5.0
 
 LABEL maintainer "${MAINTAINER}"
 
@@ -85,6 +84,7 @@ RUN make helm-docs/install
 RUN make kind/install
 RUN make valdcli/install
 RUN make kubelinter/install
+RUN make yq/install
 
 RUN make tparse/install
 
@@ -95,9 +95,6 @@ RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/i
     | sh -s -- -b $(go env GOPATH)/bin ${GOLANGCI_LINT_VERSION}
 RUN curl -sSfL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh \
     | sh -s -- -b $(go env GOPATH)/bin ${REVIEWDOG_VERSION}
-
-RUN curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64 \
-    && chmod a+x /usr/local/bin/yq
 
 ENV PATH=$PATH:$GOPATH/bin
 
