@@ -205,7 +205,7 @@ func SplitHostPort(hostport string) (host string, port uint16, err error) {
 		port = defaultPort
 	}
 	p, err := strconv.ParseUint(portStr, 10, 16)
-	if err != nil || p < 0 || p > math.MaxUint16 {
+	if err != nil || p > math.MaxUint16 {
 		port = defaultPort
 	} else {
 		port = uint16(p)
@@ -275,9 +275,9 @@ func LoadLocalIP() string {
 	}
 	for _, address := range addrs {
 		if ipn, ok := address.(*net.IPNet); ok {
-			if ip, ok := netaddr.FromStdIPNet(ipn); ok && ip.IP.IsLoopback() &&
-				(ip.IP.Is4() || ip.IP.Is6() || ip.IP.Is4in6()) {
-				return ip.IP.String()
+			if ip, ok := netaddr.FromStdIPNet(ipn); ok && ip.Valid() && ip.IP().IsLoopback() &&
+				(ip.IP().Is4() || ip.IP().Is6() || ip.IP().Is4in6()) {
+				return ip.IP().String()
 			}
 		}
 	}

@@ -50,7 +50,11 @@ type run struct {
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
-	der, err := net.NewDialer(cfg.Discoverer.Net.Opts()...)
+	netOpts, err := cfg.Discoverer.Net.Opts()
+	if err != nil {
+		return nil, err
+	}
+	der, err := net.NewDialer(netOpts...)
 	if err != nil {
 		log.Error(err)
 		return nil, err

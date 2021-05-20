@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/errors"
 )
 
 // GlobalConfig is type alias of config.GlobalConfig.
@@ -85,6 +86,8 @@ type Data struct {
 
 // NewConfig returns loaded configuration from file.
 func NewConfig(path string) (cfg *Data, err error) {
+	cfg = new(Data)
+
 	err = config.Read(path, &cfg)
 
 	if err != nil {
@@ -93,9 +96,14 @@ func NewConfig(path string) (cfg *Data, err error) {
 
 	if cfg != nil {
 		cfg.Bind()
+	} else {
+		return nil, errors.ErrInvalidConfig
 	}
+
 	if cfg.Client != nil {
-		cfg.Client.Bind()
+		cfg.Client = cfg.Client.Bind()
+	} else {
+		return nil, errors.ErrInvalidConfig
 	}
 
 	cfg.Addr = config.GetActualValue(cfg.Addr)

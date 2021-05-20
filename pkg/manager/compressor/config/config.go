@@ -19,6 +19,7 @@ package config
 
 import (
 	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/errors"
 )
 
 type GlobalConfig = config.GlobalConfig
@@ -45,6 +46,8 @@ type Data struct {
 }
 
 func NewConfig(path string) (cfg *Data, err error) {
+	cfg = new(Data)
+
 	err = config.Read(path, &cfg)
 
 	if err != nil {
@@ -53,26 +56,38 @@ func NewConfig(path string) (cfg *Data, err error) {
 
 	if cfg != nil {
 		cfg.Bind()
+	} else {
+		return nil, errors.ErrInvalidConfig
 	}
 
 	if cfg.Server != nil {
 		cfg.Server = cfg.Server.Bind()
+	} else {
+		return nil, errors.ErrInvalidConfig
 	}
 
 	if cfg.Observability != nil {
 		cfg.Observability = cfg.Observability.Bind()
+	} else {
+		cfg.Observability = new(config.Observability).Bind()
 	}
 
 	if cfg.BackupManager != nil {
 		cfg.BackupManager = cfg.BackupManager.Bind()
+	} else {
+		return nil, errors.ErrInvalidConfig
 	}
 
 	if cfg.Compressor != nil {
 		cfg.Compressor = cfg.Compressor.Bind()
+	} else {
+		return nil, errors.ErrInvalidConfig
 	}
 
 	if cfg.Registerer != nil {
 		cfg.Registerer = cfg.Registerer.Bind()
+	} else {
+		return nil, errors.ErrInvalidConfig
 	}
 
 	return cfg, nil

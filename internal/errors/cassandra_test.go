@@ -655,6 +655,128 @@ func TestErrCassandraHostDownDetected(t *testing.T) {
 	}
 }
 
+func TestErrCassandraFailedToCreateSession(t *testing.T) {
+	type args struct {
+		err        error
+		hosts      []string
+		port       int
+		cqlVersion string
+	}
+	type want struct {
+		want error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got error) error {
+		if !Is(got, w.want) {
+			return Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "returns wrapped cassandra failed to create session error when hosts, port and cqlVersion are not nil and error is database error",
+			args: args{
+				err: New("database error"),
+				hosts: []string{
+					"vald-cassandra-01.dev.com",
+					"vald-cassandra-02.dev.com",
+				},
+				port:       9042,
+				cqlVersion: "3.0.0",
+			},
+			want: want{
+				want: New("error cassandra client failed to create session to hosts: [vald-cassandra-01.dev.com vald-cassandra-02.dev.com]\tport: 9042\tcql_version: 3.0.0 : database error"),
+			},
+		},
+		{
+			name: "returns wrapped cassandra failed to create session error when hosts, port and cqlVersion are not nil and error is nil",
+			args: args{
+				hosts: []string{
+					"vald-cassandra-01.dev.com",
+					"vald-cassandra-02.dev.com",
+				},
+				port:       9042,
+				cqlVersion: "3.0.0",
+			},
+			want: want{
+				want: New("error cassandra client failed to create session to hosts: [vald-cassandra-01.dev.com vald-cassandra-02.dev.com]\tport: 9042\tcql_version: 3.0.0 "),
+			},
+		},
+		{
+			name: "returns wrapped cassandra failed to create session error when hosts and cqlVersion are not nil and error is database error and port is nil",
+			args: args{
+				err: New("database error"),
+				hosts: []string{
+					"vald-cassandra-01.dev.com",
+					"vald-cassandra-02.dev.com",
+				},
+				cqlVersion: "3.0.0",
+			},
+			want: want{
+				want: New("error cassandra client failed to create session to hosts: [vald-cassandra-01.dev.com vald-cassandra-02.dev.com]\tport: 0\tcql_version: 3.0.0 : database error"),
+			},
+		},
+		{
+			name: "returns wrapped cassandra failed to create session error when hosts is nil, port and cqlVersion not nil and error is database error",
+			args: args{
+				err:        New("database error"),
+				port:       9042,
+				cqlVersion: "3.0.0",
+			},
+			want: want{
+				want: New("error cassandra client failed to create session to hosts: []\tport: 9042\tcql_version: 3.0.0 : database error"),
+			},
+		},
+		{
+			name: "returns wrapped cassandra failed to create session error when hosts, port are not nil and cqlVersion is nil and error is database error",
+			args: args{
+				err: New("database error"),
+				hosts: []string{
+					"vald-cassandra-01.dev.com",
+					"vald-cassandra-02.dev.com",
+				},
+				port: 9042,
+			},
+			want: want{
+				want: New("error cassandra client failed to create session to hosts: [vald-cassandra-01.dev.com vald-cassandra-02.dev.com]\tport: 9042\tcql_version:  : database error"),
+			},
+		},
+		{
+			name: "returns wrapped cassandra failed to create session error when all of input are nil or empty",
+			args: args{},
+			want: want{
+				want: New("error cassandra client failed to create session to hosts: []\tport: 0\tcql_version:  "),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := ErrCassandraFailedToCreateSession(test.args.err, test.args.hosts, test.args.port, test.args.cqlVersion)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
 func TestErrCassandraNotFoundIdentity_Error(t *testing.T) {
 	type fields struct {
 		err error

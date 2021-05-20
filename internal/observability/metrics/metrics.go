@@ -125,7 +125,8 @@ var (
 		10000000,
 	)
 
-	NewKey = tag.NewKey
+	NewKey     = tag.NewKey
+	MustNewKey = tag.MustNewKey
 
 	ValdOrg = "vald.vdaas.org"
 )

@@ -95,8 +95,8 @@ jobs:
           make helm/package/vald
           make helm/package/vald-helm-operator
       - name: Push to gh-pages
-        continue-on-error: true
         run: |
+          git checkout .
           git checkout gh-pages
           mv -f vald-*.tgz charts/
           helm repo index --url https://vald.vdaas.org/charts charts/

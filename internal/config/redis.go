@@ -150,7 +150,11 @@ func (r *Redis) Opts() (opts []redis.Option, err error) {
 	}
 
 	if r.Net != nil {
-		dialer, err := net.NewDialer(r.Net.Opts()...)
+		netOpts, err := r.Net.Opts()
+		if err != nil {
+			return nil, err
+		}
+		dialer, err := net.NewDialer(netOpts...)
 		if err != nil {
 			return nil, err
 		}
