@@ -1,7 +1,7 @@
 // initial sidebar
 window.onload = () => {
   initSidebar();
-  window.scroll(0, 0)
+  window.scroll(0, 0);
   if (location.hash.length > 0) {
     setTimeout(() => {
       scrollTocNav(location.hash.replace('#', ''));
@@ -17,7 +17,7 @@ window.onclick = (event) => {
   } else {
     if (elem.id === 'list-button') {
       toggleSideAll();
-    } else if (elem.id.startsWith('menu_')) {
+    } else if (elem.id.startsWith('cat_')) {
       toggleSidebar(elem);
     } else if (elem.href) {
       let id = elem.href.split('/').slice(-1)[0];
@@ -149,12 +149,21 @@ for (let i = 0; i < links.length; i++) {
 // initialize sidebar style
 const initSidebar = () => {
   const sidebar = document.getElementById('list-body');
+  const paths = window.location.href.split("/").filter((v) => {
+      if (v.length != 0) {
+          return v;
+      }
+  });
   if (sidebar) {
+    const lastPath = paths[paths.length - 1];
     for (let child of sidebar.children) {
+      if ((lastPath == "docs" || lastPath.match("v\[0-9\]+")) && child.className == "withchild") {
+        child.className = "withchild open";
+      }
       let isOpen = false;
       let category = document.getElementById(child.id);
       const contents = category.getElementsByTagName('li');
-      for (const link of category.getElementsByTagName('li')) {
+      for (const link of contents) {
         if (link.className === 'view') isOpen = !isOpen;
       }
       if (isOpen) {
