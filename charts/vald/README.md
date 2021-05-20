@@ -3,7 +3,7 @@ Vald
 
 This is a Helm chart to install Vald components.
 
-Current chart version is `v1.0.4`
+Current chart version is `v1.1.0`
 
 Table of Contents
 ---
@@ -130,6 +130,15 @@ Configuration
 | agent.sidecar.config.auto_backup_duration | string | `"24h"` | auto backup duration |
 | agent.sidecar.config.auto_backup_enabled | bool | `true` | auto backup triggered by timer is enabled |
 | agent.sidecar.config.blob_storage.bucket | string | `""` | bucket name |
+| agent.sidecar.config.blob_storage.cloud_storage.client.credentials_file_path | string | `""` | credentials file path |
+| agent.sidecar.config.blob_storage.cloud_storage.client.credentials_json | string | `""` | credentials json |
+| agent.sidecar.config.blob_storage.cloud_storage.url | string | `""` | cloud storage url |
+| agent.sidecar.config.blob_storage.cloud_storage.write_buffer_size | int | `0` | bytes of the chunks for upload |
+| agent.sidecar.config.blob_storage.cloud_storage.write_cache_control | string | `""` | Cache-Control of HTTP Header |
+| agent.sidecar.config.blob_storage.cloud_storage.write_content_disposition | string | `""` | Content-Disposition of HTTP Header |
+| agent.sidecar.config.blob_storage.cloud_storage.write_content_encoding | string | `""` | the encoding of the blob's content |
+| agent.sidecar.config.blob_storage.cloud_storage.write_content_language | string | `""` | the language of blob's content |
+| agent.sidecar.config.blob_storage.cloud_storage.write_content_type | string | `""` | MIME type of the blob |
 | agent.sidecar.config.blob_storage.s3.access_key | string | `"_AWS_ACCESS_KEY_"` | s3 access key |
 | agent.sidecar.config.blob_storage.s3.enable_100_continue | bool | `true` | enable AWS SDK adding the 'Expect: 100-Continue' header to PUT requests over 2MB of content. |
 | agent.sidecar.config.blob_storage.s3.enable_content_md5_validation | bool | `true` | enable the S3 client to add MD5 checksum to upload API calls. |
@@ -155,15 +164,15 @@ Configuration
 | agent.sidecar.config.client.net.dns.cache_enabled | bool | `true` | HTTP client TCP DNS cache enabled |
 | agent.sidecar.config.client.net.dns.cache_expiration | string | `"24h"` |  |
 | agent.sidecar.config.client.net.dns.refresh_duration | string | `"1h"` | HTTP client TCP DNS cache expiration |
-| agent.sidecar.config.client.net.socket_option.ip_recover_destination_addr | bool | `false` |  |
-| agent.sidecar.config.client.net.socket_option.ip_transparent | bool | `false` |  |
+| agent.sidecar.config.client.net.socket_option.ip_recover_destination_addr | bool | `false` | server listen socket option for ip_recover_destination_addr functionality |
+| agent.sidecar.config.client.net.socket_option.ip_transparent | bool | `false` | server listen socket option for ip_transparent functionality |
 | agent.sidecar.config.client.net.socket_option.reuse_addr | bool | `true` | server listen socket option for reuse_addr functionality |
-| agent.sidecar.config.client.net.socket_option.reuse_port | bool | `true` | server listen socket option for ip_recover_destination_addr functionality |
-| agent.sidecar.config.client.net.socket_option.tcp_cork | bool | `false` |  |
-| agent.sidecar.config.client.net.socket_option.tcp_defer_accept | bool | `true` |  |
-| agent.sidecar.config.client.net.socket_option.tcp_fast_open | bool | `true` |  |
-| agent.sidecar.config.client.net.socket_option.tcp_no_delay | bool | `true` |  |
-| agent.sidecar.config.client.net.socket_option.tcp_quick_ack | bool | `true` |  |
+| agent.sidecar.config.client.net.socket_option.reuse_port | bool | `true` | server listen socket option for reuse_port functionality |
+| agent.sidecar.config.client.net.socket_option.tcp_cork | bool | `false` | server listen socket option for tcp_cork functionality |
+| agent.sidecar.config.client.net.socket_option.tcp_defer_accept | bool | `true` | server listen socket option for tcp_defer_accept functionality |
+| agent.sidecar.config.client.net.socket_option.tcp_fast_open | bool | `true` | server listen socket option for tcp_fast_open functionality |
+| agent.sidecar.config.client.net.socket_option.tcp_no_delay | bool | `true` | server listen socket option for tcp_no_delay functionality |
+| agent.sidecar.config.client.net.socket_option.tcp_quick_ack | bool | `true` | server listen socket option for tcp_quick_ack functionality |
 | agent.sidecar.config.client.net.tls.ca | string | `"/path/to/ca"` | TLS ca path |
 | agent.sidecar.config.client.net.tls.cert | string | `"/path/to/cert"` | TLS cert path |
 | agent.sidecar.config.client.net.tls.enabled | bool | `false` | TLS enabled |
@@ -262,15 +271,15 @@ Configuration
 | defaults.grpc.client.dial_option.net.dns.cache_enabled | bool | `true` | gRPC client TCP DNS cache enabled |
 | defaults.grpc.client.dial_option.net.dns.cache_expiration | string | `"1h"` | gRPC client TCP DNS cache expiration |
 | defaults.grpc.client.dial_option.net.dns.refresh_duration | string | `"30m"` | gRPC client TCP DNS cache refresh duration |
-| defaults.grpc.client.dial_option.net.socket_option.ip_recover_destination_addr | bool | `false` |  |
-| defaults.grpc.client.dial_option.net.socket_option.ip_transparent | bool | `false` |  |
+| defaults.grpc.client.dial_option.net.socket_option.ip_recover_destination_addr | bool | `false` | server listen socket option for ip_recover_destination_addr functionality |
+| defaults.grpc.client.dial_option.net.socket_option.ip_transparent | bool | `false` | server listen socket option for ip_transparent functionality |
 | defaults.grpc.client.dial_option.net.socket_option.reuse_addr | bool | `true` | server listen socket option for reuse_addr functionality |
-| defaults.grpc.client.dial_option.net.socket_option.reuse_port | bool | `true` | server listen socket option for ip_recover_destination_addr functionality |
-| defaults.grpc.client.dial_option.net.socket_option.tcp_cork | bool | `false` |  |
-| defaults.grpc.client.dial_option.net.socket_option.tcp_defer_accept | bool | `true` |  |
-| defaults.grpc.client.dial_option.net.socket_option.tcp_fast_open | bool | `true` |  |
-| defaults.grpc.client.dial_option.net.socket_option.tcp_no_delay | bool | `true` |  |
-| defaults.grpc.client.dial_option.net.socket_option.tcp_quick_ack | bool | `true` |  |
+| defaults.grpc.client.dial_option.net.socket_option.reuse_port | bool | `true` | server listen socket option for reuse_port functionality |
+| defaults.grpc.client.dial_option.net.socket_option.tcp_cork | bool | `false` | server listen socket option for tcp_cork functionality |
+| defaults.grpc.client.dial_option.net.socket_option.tcp_defer_accept | bool | `true` | server listen socket option for tcp_defer_accept functionality |
+| defaults.grpc.client.dial_option.net.socket_option.tcp_fast_open | bool | `true` | server listen socket option for tcp_fast_open functionality |
+| defaults.grpc.client.dial_option.net.socket_option.tcp_no_delay | bool | `true` | server listen socket option for tcp_no_delay functionality |
+| defaults.grpc.client.dial_option.net.socket_option.tcp_quick_ack | bool | `true` | server listen socket option for tcp_quick_ack functionality |
 | defaults.grpc.client.dial_option.net.tls.ca | string | `"/path/to/ca"` | TLS ca path |
 | defaults.grpc.client.dial_option.net.tls.cert | string | `"/path/to/cert"` | TLS cert path |
 | defaults.grpc.client.dial_option.net.tls.enabled | bool | `false` | TLS enabled |
@@ -285,7 +294,7 @@ Configuration
 | defaults.grpc.client.tls.enabled | bool | `false` | TLS enabled |
 | defaults.grpc.client.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
 | defaults.grpc.client.tls.key | string | `"/path/to/key"` | TLS key path |
-| defaults.image.tag | string | `"v1.0.4"` | docker image tag |
+| defaults.image.tag | string | `"v1.1.0"` | docker image tag |
 | defaults.ingress.usev1beta1 | bool | `false` | use networking.k8s.io/v1beta1 instead of v1 for ingresses. This option will be removed once k8s 1.22 is released. |
 | defaults.logging.format | string | `"raw"` | logging format. logging format must be `raw` or `json` |
 | defaults.logging.level | string | `"debug"` | logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`. |
@@ -366,15 +375,15 @@ Configuration
 | defaults.server_config.healths.liveness.server.mode | string | `""` | liveness server mode |
 | defaults.server_config.healths.liveness.server.network | string | `"tcp"` | mysql network |
 | defaults.server_config.healths.liveness.server.probe_wait_time | string | `"3s"` | liveness server probe wait time |
-| defaults.server_config.healths.liveness.server.socket_option.ip_recover_destination_addr | bool | `false` |  |
-| defaults.server_config.healths.liveness.server.socket_option.ip_transparent | bool | `false` |  |
+| defaults.server_config.healths.liveness.server.socket_option.ip_recover_destination_addr | bool | `false` | server listen socket option for ip_recover_destination_addr functionality |
+| defaults.server_config.healths.liveness.server.socket_option.ip_transparent | bool | `false` | server listen socket option for ip_transparent functionality |
 | defaults.server_config.healths.liveness.server.socket_option.reuse_addr | bool | `true` | server listen socket option for reuse_addr functionality |
-| defaults.server_config.healths.liveness.server.socket_option.reuse_port | bool | `true` | server listen socket option for ip_recover_destination_addr functionality |
-| defaults.server_config.healths.liveness.server.socket_option.tcp_cork | bool | `false` |  |
-| defaults.server_config.healths.liveness.server.socket_option.tcp_defer_accept | bool | `true` |  |
-| defaults.server_config.healths.liveness.server.socket_option.tcp_fast_open | bool | `true` |  |
-| defaults.server_config.healths.liveness.server.socket_option.tcp_no_delay | bool | `true` |  |
-| defaults.server_config.healths.liveness.server.socket_option.tcp_quick_ack | bool | `true` |  |
+| defaults.server_config.healths.liveness.server.socket_option.reuse_port | bool | `true` | server listen socket option for reuse_port functionality |
+| defaults.server_config.healths.liveness.server.socket_option.tcp_cork | bool | `false` | server listen socket option for tcp_cork functionality |
+| defaults.server_config.healths.liveness.server.socket_option.tcp_defer_accept | bool | `true` | server listen socket option for tcp_defer_accept functionality |
+| defaults.server_config.healths.liveness.server.socket_option.tcp_fast_open | bool | `true` | server listen socket option for tcp_fast_open functionality |
+| defaults.server_config.healths.liveness.server.socket_option.tcp_no_delay | bool | `true` | server listen socket option for tcp_no_delay functionality |
+| defaults.server_config.healths.liveness.server.socket_option.tcp_quick_ack | bool | `true` | server listen socket option for tcp_quick_ack functionality |
 | defaults.server_config.healths.liveness.server.socket_path | string | `""` | mysql socket_path |
 | defaults.server_config.healths.liveness.servicePort | int | `3000` | liveness server service port |
 | defaults.server_config.healths.readiness.enabled | bool | `true` | readiness server enabled |
@@ -397,15 +406,15 @@ Configuration
 | defaults.server_config.healths.readiness.server.mode | string | `""` | readiness server mode |
 | defaults.server_config.healths.readiness.server.network | string | `"tcp"` | mysql network |
 | defaults.server_config.healths.readiness.server.probe_wait_time | string | `"3s"` | readiness server probe wait time |
-| defaults.server_config.healths.readiness.server.socket_option.ip_recover_destination_addr | bool | `false` |  |
-| defaults.server_config.healths.readiness.server.socket_option.ip_transparent | bool | `false` |  |
+| defaults.server_config.healths.readiness.server.socket_option.ip_recover_destination_addr | bool | `false` | server listen socket option for ip_recover_destination_addr functionality |
+| defaults.server_config.healths.readiness.server.socket_option.ip_transparent | bool | `false` | server listen socket option for ip_transparent functionality |
 | defaults.server_config.healths.readiness.server.socket_option.reuse_addr | bool | `true` | server listen socket option for reuse_addr functionality |
-| defaults.server_config.healths.readiness.server.socket_option.reuse_port | bool | `true` | server listen socket option for ip_recover_destination_addr functionality |
-| defaults.server_config.healths.readiness.server.socket_option.tcp_cork | bool | `false` |  |
-| defaults.server_config.healths.readiness.server.socket_option.tcp_defer_accept | bool | `true` |  |
+| defaults.server_config.healths.readiness.server.socket_option.reuse_port | bool | `true` | server listen socket option for reuse_port functionality |
+| defaults.server_config.healths.readiness.server.socket_option.tcp_cork | bool | `false` | server listen socket option for tcp_cork functionality |
+| defaults.server_config.healths.readiness.server.socket_option.tcp_defer_accept | bool | `true` | server listen socket option for tcp_defer_accept functionality |
 | defaults.server_config.healths.readiness.server.socket_option.tcp_fast_open | bool | `true` |  |
-| defaults.server_config.healths.readiness.server.socket_option.tcp_no_delay | bool | `true` |  |
-| defaults.server_config.healths.readiness.server.socket_option.tcp_quick_ack | bool | `true` |  |
+| defaults.server_config.healths.readiness.server.socket_option.tcp_no_delay | bool | `true` | server listen socket option for tcp_no_delay functionality |
+| defaults.server_config.healths.readiness.server.socket_option.tcp_quick_ack | bool | `true` | server listen socket option for tcp_quick_ack functionality |
 | defaults.server_config.healths.readiness.server.socket_path | string | `""` | mysql socket_path |
 | defaults.server_config.healths.readiness.servicePort | int | `3001` | readiness server service port |
 | defaults.server_config.metrics.pprof.enabled | bool | `false` | pprof server enabled |
@@ -420,15 +429,15 @@ Configuration
 | defaults.server_config.metrics.pprof.server.mode | string | `"REST"` | pprof server mode |
 | defaults.server_config.metrics.pprof.server.network | string | `"tcp"` | mysql network |
 | defaults.server_config.metrics.pprof.server.probe_wait_time | string | `"3s"` | pprof server probe wait time |
-| defaults.server_config.metrics.pprof.server.socket_option.ip_recover_destination_addr | bool | `false` |  |
-| defaults.server_config.metrics.pprof.server.socket_option.ip_transparent | bool | `false` |  |
+| defaults.server_config.metrics.pprof.server.socket_option.ip_recover_destination_addr | bool | `false` | server listen socket option for ip_recover_destination_addr functionality |
+| defaults.server_config.metrics.pprof.server.socket_option.ip_transparent | bool | `false` | server listen socket option for ip_transparent functionality |
 | defaults.server_config.metrics.pprof.server.socket_option.reuse_addr | bool | `true` | server listen socket option for reuse_addr functionality |
-| defaults.server_config.metrics.pprof.server.socket_option.reuse_port | bool | `true` | server listen socket option for ip_recover_destination_addr functionality |
-| defaults.server_config.metrics.pprof.server.socket_option.tcp_cork | bool | `false` |  |
-| defaults.server_config.metrics.pprof.server.socket_option.tcp_defer_accept | bool | `true` |  |
-| defaults.server_config.metrics.pprof.server.socket_option.tcp_fast_open | bool | `true` |  |
-| defaults.server_config.metrics.pprof.server.socket_option.tcp_no_delay | bool | `true` |  |
-| defaults.server_config.metrics.pprof.server.socket_option.tcp_quick_ack | bool | `true` |  |
+| defaults.server_config.metrics.pprof.server.socket_option.reuse_port | bool | `true` | server listen socket option for reuse_port functionality |
+| defaults.server_config.metrics.pprof.server.socket_option.tcp_cork | bool | `false` | server listen socket option for tcp_cork functionality |
+| defaults.server_config.metrics.pprof.server.socket_option.tcp_defer_accept | bool | `true` | server listen socket option for tcp_defer_accept functionality |
+| defaults.server_config.metrics.pprof.server.socket_option.tcp_fast_open | bool | `true` | server listen socket option for tcp_fast_open functionality |
+| defaults.server_config.metrics.pprof.server.socket_option.tcp_no_delay | bool | `true` | server listen socket option for tcp_no_delay functionality |
+| defaults.server_config.metrics.pprof.server.socket_option.tcp_quick_ack | bool | `true` | server listen socket option for tcp_quick_ack functionality |
 | defaults.server_config.metrics.pprof.server.socket_path | string | `""` | mysql socket_path |
 | defaults.server_config.metrics.pprof.servicePort | int | `6060` | pprof server service port |
 | defaults.server_config.metrics.prometheus.enabled | bool | `false` | prometheus server enabled |
@@ -443,15 +452,15 @@ Configuration
 | defaults.server_config.metrics.prometheus.server.mode | string | `"REST"` | prometheus server mode |
 | defaults.server_config.metrics.prometheus.server.network | string | `"tcp"` | mysql network |
 | defaults.server_config.metrics.prometheus.server.probe_wait_time | string | `"3s"` | prometheus server probe wait time |
-| defaults.server_config.metrics.prometheus.server.socket_option.ip_recover_destination_addr | bool | `false` |  |
-| defaults.server_config.metrics.prometheus.server.socket_option.ip_transparent | bool | `false` |  |
+| defaults.server_config.metrics.prometheus.server.socket_option.ip_recover_destination_addr | bool | `false` | server listen socket option for ip_recover_destination_addr functionality |
+| defaults.server_config.metrics.prometheus.server.socket_option.ip_transparent | bool | `false` | server listen socket option for ip_transparent functionality |
 | defaults.server_config.metrics.prometheus.server.socket_option.reuse_addr | bool | `true` | server listen socket option for reuse_addr functionality |
-| defaults.server_config.metrics.prometheus.server.socket_option.reuse_port | bool | `true` | server listen socket option for ip_recover_destination_addr functionality |
-| defaults.server_config.metrics.prometheus.server.socket_option.tcp_cork | bool | `false` |  |
-| defaults.server_config.metrics.prometheus.server.socket_option.tcp_defer_accept | bool | `true` |  |
-| defaults.server_config.metrics.prometheus.server.socket_option.tcp_fast_open | bool | `true` |  |
-| defaults.server_config.metrics.prometheus.server.socket_option.tcp_no_delay | bool | `true` |  |
-| defaults.server_config.metrics.prometheus.server.socket_option.tcp_quick_ack | bool | `true` |  |
+| defaults.server_config.metrics.prometheus.server.socket_option.reuse_port | bool | `true` | server listen socket option for reuse_port functionality |
+| defaults.server_config.metrics.prometheus.server.socket_option.tcp_cork | bool | `false` | server listen socket option for tcp_cork functionality |
+| defaults.server_config.metrics.prometheus.server.socket_option.tcp_defer_accept | bool | `true` | server listen socket option for tcp_defer_accept functionality |
+| defaults.server_config.metrics.prometheus.server.socket_option.tcp_fast_open | bool | `true` | server listen socket option for tcp_fast_open functionality |
+| defaults.server_config.metrics.prometheus.server.socket_option.tcp_no_delay | bool | `true` | server listen socket option for tcp_no_delay functionality |
+| defaults.server_config.metrics.prometheus.server.socket_option.tcp_quick_ack | bool | `true` | server listen socket option for tcp_quick_ack functionality |
 | defaults.server_config.metrics.prometheus.server.socket_path | string | `""` | mysql socket_path |
 | defaults.server_config.metrics.prometheus.servicePort | int | `6061` | prometheus server service port |
 | defaults.server_config.servers.grpc.enabled | bool | `true` | gRPC server enabled |
@@ -478,15 +487,15 @@ Configuration
 | defaults.server_config.servers.grpc.server.network | string | `"tcp"` | mysql network |
 | defaults.server_config.servers.grpc.server.probe_wait_time | string | `"3s"` | gRPC server probe wait time |
 | defaults.server_config.servers.grpc.server.restart | bool | `true` | gRPC server restart |
-| defaults.server_config.servers.grpc.server.socket_option.ip_recover_destination_addr | bool | `false` |  |
-| defaults.server_config.servers.grpc.server.socket_option.ip_transparent | bool | `false` |  |
+| defaults.server_config.servers.grpc.server.socket_option.ip_recover_destination_addr | bool | `false` | server listen socket option for ip_recover_destination_addr functionality |
+| defaults.server_config.servers.grpc.server.socket_option.ip_transparent | bool | `false` | server listen socket option for ip_transparent functionality |
 | defaults.server_config.servers.grpc.server.socket_option.reuse_addr | bool | `true` | server listen socket option for reuse_addr functionality |
-| defaults.server_config.servers.grpc.server.socket_option.reuse_port | bool | `true` | server listen socket option for ip_recover_destination_addr functionality |
-| defaults.server_config.servers.grpc.server.socket_option.tcp_cork | bool | `false` |  |
-| defaults.server_config.servers.grpc.server.socket_option.tcp_defer_accept | bool | `true` |  |
-| defaults.server_config.servers.grpc.server.socket_option.tcp_fast_open | bool | `true` |  |
-| defaults.server_config.servers.grpc.server.socket_option.tcp_no_delay | bool | `true` |  |
-| defaults.server_config.servers.grpc.server.socket_option.tcp_quick_ack | bool | `true` |  |
+| defaults.server_config.servers.grpc.server.socket_option.reuse_port | bool | `true` | server listen socket option for reuse_port functionality |
+| defaults.server_config.servers.grpc.server.socket_option.tcp_cork | bool | `false` | server listen socket option for tcp_cork functionality |
+| defaults.server_config.servers.grpc.server.socket_option.tcp_defer_accept | bool | `true` | server listen socket option for tcp_defer_accept functionality |
+| defaults.server_config.servers.grpc.server.socket_option.tcp_fast_open | bool | `true` | server listen socket option for tcp_fast_open functionality |
+| defaults.server_config.servers.grpc.server.socket_option.tcp_no_delay | bool | `true` | server listen socket option for tcp_no_delay functionality |
+| defaults.server_config.servers.grpc.server.socket_option.tcp_quick_ack | bool | `true` | server listen socket option for tcp_quick_ack functionality |
 | defaults.server_config.servers.grpc.server.socket_path | string | `""` | mysql socket_path |
 | defaults.server_config.servers.grpc.servicePort | int | `8081` | gRPC server service port |
 | defaults.server_config.servers.rest.enabled | bool | `false` | REST server enabled |
@@ -501,15 +510,15 @@ Configuration
 | defaults.server_config.servers.rest.server.mode | string | `"REST"` | REST server server mode |
 | defaults.server_config.servers.rest.server.network | string | `"tcp"` | mysql network |
 | defaults.server_config.servers.rest.server.probe_wait_time | string | `"3s"` | REST server probe wait time |
-| defaults.server_config.servers.rest.server.socket_option.ip_recover_destination_addr | bool | `false` |  |
-| defaults.server_config.servers.rest.server.socket_option.ip_transparent | bool | `false` |  |
+| defaults.server_config.servers.rest.server.socket_option.ip_recover_destination_addr | bool | `false` | server listen socket option for ip_recover_destination_addr functionality |
+| defaults.server_config.servers.rest.server.socket_option.ip_transparent | bool | `false` | server listen socket option for ip_transparent functionality |
 | defaults.server_config.servers.rest.server.socket_option.reuse_addr | bool | `true` | server listen socket option for reuse_addr functionality |
-| defaults.server_config.servers.rest.server.socket_option.reuse_port | bool | `true` | server listen socket option for ip_recover_destination_addr functionality |
-| defaults.server_config.servers.rest.server.socket_option.tcp_cork | bool | `false` |  |
-| defaults.server_config.servers.rest.server.socket_option.tcp_defer_accept | bool | `true` |  |
-| defaults.server_config.servers.rest.server.socket_option.tcp_fast_open | bool | `true` |  |
-| defaults.server_config.servers.rest.server.socket_option.tcp_no_delay | bool | `true` |  |
-| defaults.server_config.servers.rest.server.socket_option.tcp_quick_ack | bool | `true` |  |
+| defaults.server_config.servers.rest.server.socket_option.reuse_port | bool | `true` | server listen socket option for reuse_port functionality |
+| defaults.server_config.servers.rest.server.socket_option.tcp_cork | bool | `false` | server listen socket option for tcp_cork functionality |
+| defaults.server_config.servers.rest.server.socket_option.tcp_defer_accept | bool | `true` | server listen socket option for tcp_defer_accept functionality |
+| defaults.server_config.servers.rest.server.socket_option.tcp_fast_open | bool | `true` | server listen socket option for tcp_fast_open functionality |
+| defaults.server_config.servers.rest.server.socket_option.tcp_no_delay | bool | `true` | server listen socket option for tcp_no_delay functionality |
+| defaults.server_config.servers.rest.server.socket_option.tcp_quick_ack | bool | `true` | server listen socket option for tcp_quick_ack functionality |
 | defaults.server_config.servers.rest.server.socket_path | string | `""` | mysql socket_path |
 | defaults.server_config.servers.rest.servicePort | int | `8080` | REST server service port |
 | defaults.server_config.tls.ca | string | `"/path/to/ca"` | TLS ca path |
@@ -538,15 +547,15 @@ Configuration
 | discoverer.discoverer.net.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
 | discoverer.discoverer.net.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
 | discoverer.discoverer.net.dns.refresh_duration | string | `"5m"` | TCP DNS cache refresh duration |
-| discoverer.discoverer.net.socket_option.ip_recover_destination_addr | bool | `false` |  |
-| discoverer.discoverer.net.socket_option.ip_transparent | bool | `false` |  |
+| discoverer.discoverer.net.socket_option.ip_recover_destination_addr | bool | `false` | server listen socket option for ip_recover_destination_addr functionality |
+| discoverer.discoverer.net.socket_option.ip_transparent | bool | `false` | server listen socket option for ip_transparent functionality |
 | discoverer.discoverer.net.socket_option.reuse_addr | bool | `true` | server listen socket option for reuse_addr functionality |
-| discoverer.discoverer.net.socket_option.reuse_port | bool | `true` | server listen socket option for ip_recover_destination_addr functionality |
-| discoverer.discoverer.net.socket_option.tcp_cork | bool | `false` |  |
-| discoverer.discoverer.net.socket_option.tcp_defer_accept | bool | `true` |  |
-| discoverer.discoverer.net.socket_option.tcp_fast_open | bool | `true` |  |
-| discoverer.discoverer.net.socket_option.tcp_no_delay | bool | `true` |  |
-| discoverer.discoverer.net.socket_option.tcp_quick_ack | bool | `true` |  |
+| discoverer.discoverer.net.socket_option.reuse_port | bool | `true` | server listen socket option for reuse_port functionality |
+| discoverer.discoverer.net.socket_option.tcp_cork | bool | `false` | server listen socket option for tcp_cork functionality |
+| discoverer.discoverer.net.socket_option.tcp_defer_accept | bool | `true` | server listen socket option for tcp_defer_accept functionality |
+| discoverer.discoverer.net.socket_option.tcp_fast_open | bool | `true` | server listen socket option for tcp_fast_open functionality |
+| discoverer.discoverer.net.socket_option.tcp_no_delay | bool | `true` | server listen socket option for tcp_no_delay functionality |
+| discoverer.discoverer.net.socket_option.tcp_quick_ack | bool | `true` | server listen socket option for tcp_quick_ack functionality |
 | discoverer.discoverer.net.tls.ca | string | `"/path/to/ca"` | TLS ca path |
 | discoverer.discoverer.net.tls.cert | string | `"/path/to/cert"` | TLS cert path |
 | discoverer.discoverer.net.tls.enabled | bool | `false` | TLS enabled |
@@ -963,15 +972,15 @@ Configuration
 | manager.backup.cassandra.config.net.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
 | manager.backup.cassandra.config.net.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
 | manager.backup.cassandra.config.net.dns.refresh_duration | string | `"5m"` | TCP DNS cache refresh duration |
-| manager.backup.cassandra.config.net.socket_option.ip_recover_destination_addr | bool | `false` |  |
-| manager.backup.cassandra.config.net.socket_option.ip_transparent | bool | `false` |  |
+| manager.backup.cassandra.config.net.socket_option.ip_recover_destination_addr | bool | `false` | server listen socket option for ip_recover_destination_addr functionality |
+| manager.backup.cassandra.config.net.socket_option.ip_transparent | bool | `false` | server listen socket option for ip_transparent functionality |
 | manager.backup.cassandra.config.net.socket_option.reuse_addr | bool | `true` | server listen socket option for reuse_addr functionality |
-| manager.backup.cassandra.config.net.socket_option.reuse_port | bool | `true` | server listen socket option for ip_recover_destination_addr functionality |
-| manager.backup.cassandra.config.net.socket_option.tcp_cork | bool | `false` |  |
-| manager.backup.cassandra.config.net.socket_option.tcp_defer_accept | bool | `true` |  |
-| manager.backup.cassandra.config.net.socket_option.tcp_fast_open | bool | `true` |  |
-| manager.backup.cassandra.config.net.socket_option.tcp_no_delay | bool | `true` |  |
-| manager.backup.cassandra.config.net.socket_option.tcp_quick_ack | bool | `true` |  |
+| manager.backup.cassandra.config.net.socket_option.reuse_port | bool | `true` | server listen socket option for reuse_port functionality |
+| manager.backup.cassandra.config.net.socket_option.tcp_cork | bool | `false` | server listen socket option for tcp_cork functionality |
+| manager.backup.cassandra.config.net.socket_option.tcp_defer_accept | bool | `true` | server listen socket option for tcp_defer_accept functionality |
+| manager.backup.cassandra.config.net.socket_option.tcp_fast_open | bool | `true` | server listen socket option for tcp_fast_open functionality |
+| manager.backup.cassandra.config.net.socket_option.tcp_no_delay | bool | `true` | server listen socket option for tcp_no_delay functionality |
+| manager.backup.cassandra.config.net.socket_option.tcp_quick_ack | bool | `true` | server listen socket option for tcp_quick_ack functionality |
 | manager.backup.cassandra.config.net.tls.ca | string | `"/path/to/ca"` | TLS ca path |
 | manager.backup.cassandra.config.net.tls.cert | string | `"/path/to/cert"` | TLS cert path |
 | manager.backup.cassandra.config.net.tls.enabled | bool | `false` | TLS enabled |
@@ -1031,15 +1040,15 @@ Configuration
 | manager.backup.mysql.config.net.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
 | manager.backup.mysql.config.net.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
 | manager.backup.mysql.config.net.dns.refresh_duration | string | `"1h"` | TCP DNS cache refresh duration |
-| manager.backup.mysql.config.net.socket_option.ip_recover_destination_addr | bool | `false` |  |
-| manager.backup.mysql.config.net.socket_option.ip_transparent | bool | `false` |  |
+| manager.backup.mysql.config.net.socket_option.ip_recover_destination_addr | bool | `false` | server listen socket option for ip_recover_destination_addr functionality |
+| manager.backup.mysql.config.net.socket_option.ip_transparent | bool | `false` | server listen socket option for ip_transparent functionality |
 | manager.backup.mysql.config.net.socket_option.reuse_addr | bool | `true` | server listen socket option for reuse_addr functionality |
-| manager.backup.mysql.config.net.socket_option.reuse_port | bool | `true` | server listen socket option for ip_recover_destination_addr functionality |
-| manager.backup.mysql.config.net.socket_option.tcp_cork | bool | `false` |  |
-| manager.backup.mysql.config.net.socket_option.tcp_defer_accept | bool | `true` |  |
-| manager.backup.mysql.config.net.socket_option.tcp_fast_open | bool | `true` |  |
-| manager.backup.mysql.config.net.socket_option.tcp_no_delay | bool | `true` |  |
-| manager.backup.mysql.config.net.socket_option.tcp_quick_ack | bool | `true` |  |
+| manager.backup.mysql.config.net.socket_option.reuse_port | bool | `true` | server listen socket option for reuse_port functionality |
+| manager.backup.mysql.config.net.socket_option.tcp_cork | bool | `false` | server listen socket option for tcp_cork functionality |
+| manager.backup.mysql.config.net.socket_option.tcp_defer_accept | bool | `true` | server listen socket option for tcp_defer_accept functionality |
+| manager.backup.mysql.config.net.socket_option.tcp_fast_open | bool | `true` | server listen socket option for tcp_fast_open functionality |
+| manager.backup.mysql.config.net.socket_option.tcp_no_delay | bool | `true` | server listen socket option for tcp_no_delay functionality |
+| manager.backup.mysql.config.net.socket_option.tcp_quick_ack | bool | `true` | server listen socket option for tcp_quick_ack functionality |
 | manager.backup.mysql.config.net.tls.ca | string | `"/path/to/ca"` | TLS ca path |
 | manager.backup.mysql.config.net.tls.cert | string | `"/path/to/cert"` | TLS cert path |
 | manager.backup.mysql.config.net.tls.enabled | bool | `false` | TLS enabled |
@@ -1220,15 +1229,15 @@ Configuration
 | meta.cassandra.config.net.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
 | meta.cassandra.config.net.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
 | meta.cassandra.config.net.dns.refresh_duration | string | `"5m"` | TCP DNS cache refresh duration |
-| meta.cassandra.config.net.socket_option.ip_recover_destination_addr | bool | `false` |  |
-| meta.cassandra.config.net.socket_option.ip_transparent | bool | `false` |  |
+| meta.cassandra.config.net.socket_option.ip_recover_destination_addr | bool | `false` | server listen socket option for ip_recover_destination_addr functionality |
+| meta.cassandra.config.net.socket_option.ip_transparent | bool | `false` | server listen socket option for ip_transparent functionality |
 | meta.cassandra.config.net.socket_option.reuse_addr | bool | `true` | server listen socket option for reuse_addr functionality |
-| meta.cassandra.config.net.socket_option.reuse_port | bool | `true` | server listen socket option for ip_recover_destination_addr functionality |
-| meta.cassandra.config.net.socket_option.tcp_cork | bool | `false` |  |
-| meta.cassandra.config.net.socket_option.tcp_defer_accept | bool | `true` |  |
-| meta.cassandra.config.net.socket_option.tcp_fast_open | bool | `true` |  |
-| meta.cassandra.config.net.socket_option.tcp_no_delay | bool | `true` |  |
-| meta.cassandra.config.net.socket_option.tcp_quick_ack | bool | `true` |  |
+| meta.cassandra.config.net.socket_option.reuse_port | bool | `true` | server listen socket option for reuse_port functionality |
+| meta.cassandra.config.net.socket_option.tcp_cork | bool | `false` | server listen socket option for tcp_cork functionality |
+| meta.cassandra.config.net.socket_option.tcp_defer_accept | bool | `true` | server listen socket option for tcp_defer_accept functionality |
+| meta.cassandra.config.net.socket_option.tcp_fast_open | bool | `true` | server listen socket option for tcp_fast_open functionality |
+| meta.cassandra.config.net.socket_option.tcp_no_delay | bool | `true` | server listen socket option for tcp_no_delay functionality |
+| meta.cassandra.config.net.socket_option.tcp_quick_ack | bool | `true` | server listen socket option for tcp_quick_ack functionality |
 | meta.cassandra.config.net.tls.ca | string | `"/path/to/ca"` | TLS ca path |
 | meta.cassandra.config.net.tls.cert | string | `"/path/to/cert"` | TLS cert path |
 | meta.cassandra.config.net.tls.enabled | bool | `false` | TLS enabled |
@@ -1304,15 +1313,15 @@ Configuration
 | meta.redis.config.net.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
 | meta.redis.config.net.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
 | meta.redis.config.net.dns.refresh_duration | string | `"1h"` | TCP DNS cache refresh duration |
-| meta.redis.config.net.socket_option.ip_recover_destination_addr | bool | `false` |  |
-| meta.redis.config.net.socket_option.ip_transparent | bool | `false` |  |
+| meta.redis.config.net.socket_option.ip_recover_destination_addr | bool | `false` | server listen socket option for ip_recover_destination_addr functionality |
+| meta.redis.config.net.socket_option.ip_transparent | bool | `false` | server listen socket option for ip_transparent functionality |
 | meta.redis.config.net.socket_option.reuse_addr | bool | `true` | server listen socket option for reuse_addr functionality |
-| meta.redis.config.net.socket_option.reuse_port | bool | `true` | server listen socket option for ip_recover_destination_addr functionality |
-| meta.redis.config.net.socket_option.tcp_cork | bool | `false` |  |
-| meta.redis.config.net.socket_option.tcp_defer_accept | bool | `true` |  |
-| meta.redis.config.net.socket_option.tcp_fast_open | bool | `true` |  |
-| meta.redis.config.net.socket_option.tcp_no_delay | bool | `true` |  |
-| meta.redis.config.net.socket_option.tcp_quick_ack | bool | `true` |  |
+| meta.redis.config.net.socket_option.reuse_port | bool | `true` | server listen socket option for reuse_port functionality |
+| meta.redis.config.net.socket_option.tcp_cork | bool | `false` | server listen socket option for tcp_cork functionality |
+| meta.redis.config.net.socket_option.tcp_defer_accept | bool | `true` | server listen socket option for tcp_defer_accept functionality |
+| meta.redis.config.net.socket_option.tcp_fast_open | bool | `true` | server listen socket option for tcp_fast_open functionality |
+| meta.redis.config.net.socket_option.tcp_no_delay | bool | `true` | server listen socket option for tcp_no_delay functionality |
+| meta.redis.config.net.socket_option.tcp_quick_ack | bool | `true` | server listen socket option for tcp_quick_ack functionality |
 | meta.redis.config.net.tls.ca | string | `"/path/to/ca"` | TLS ca path |
 | meta.redis.config.net.tls.cert | string | `"/path/to/cert"` | TLS cert path |
 | meta.redis.config.net.tls.enabled | bool | `false` | TLS enabled |

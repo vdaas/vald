@@ -39,6 +39,8 @@ type Data struct {
 }
 
 func NewConfig(path string) (cfg *Data, err error) {
+	cfg = new(Data)
+
 	err = config.Read(path, &cfg)
 
 	if err != nil {
@@ -47,6 +49,8 @@ func NewConfig(path string) (cfg *Data, err error) {
 
 	if cfg != nil {
 		cfg.Bind()
+	} else {
+		cfg = new(Data)
 	}
 
 	if cfg.Server != nil {
@@ -60,7 +64,7 @@ func NewConfig(path string) (cfg *Data, err error) {
 	if cfg.Discoverer != nil {
 		cfg.Discoverer = cfg.Discoverer.Bind()
 	} else {
-		cfg.Discoverer = new(config.Discoverer)
+		cfg.Discoverer = new(config.Discoverer).Bind()
 	}
 	return cfg, nil
 }

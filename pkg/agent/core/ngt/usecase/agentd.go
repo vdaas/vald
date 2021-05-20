@@ -27,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/observability"
 	ngtmetrics "github.com/vdaas/vald/internal/observability/metrics/agent/core/ngt"
+	infometrics "github.com/vdaas/vald/internal/observability/metrics/info"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -68,10 +69,13 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
-	g := handler.New(
+	g, err := handler.New(
 		handler.WithNGT(ngt),
 		handler.WithStreamConcurrency(cfg.Server.GetGRPCStreamConcurrency()),
 	)
+	if err != nil {
+		return nil, err
+	}
 	eg := errgroup.Get()
 
 	grpcServerOptions := []server.Option{
@@ -89,9 +93,15 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	var obs observability.Observability
 	if cfg.Observability != nil && cfg.Observability.Enabled {
+		info, err := infometrics.New("agent/core/ngt/info", "agent_core_ngt_info", "Agent NGT info", *cfg.NGT)
+		if err != nil {
+			return nil, err
+		}
+
 		obs, err = observability.NewWithConfig(
 			cfg.Observability,
 			ngtmetrics.New(ngt),
+			info,
 		)
 		if err != nil {
 			return nil, err

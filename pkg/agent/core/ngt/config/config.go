@@ -19,14 +19,16 @@ package config
 
 import (
 	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/errors"
 )
 
+// GlobalConfig is type alias for config.GlobalConfig.
 type GlobalConfig = config.GlobalConfig
 
-// Config represent a application setting data content (config.yaml).
+// Data represent a application setting data content (config.yaml).
 // In K8s environment, this configuration is stored in K8s ConfigMap.
 type Data struct {
-	config.GlobalConfig `json:",inline" yaml:",inline"`
+	GlobalConfig `json:",inline" yaml:",inline"`
 
 	// Server represent all server configurations
 	Server *config.Servers `json:"server_config" yaml:"server_config"`
@@ -38,7 +40,10 @@ type Data struct {
 	NGT *config.NGT `json:"ngt" yaml:"ngt"`
 }
 
+// NewConfig returns the Data struct or error from the given file path.
 func NewConfig(path string) (cfg *Data, err error) {
+	cfg = new(Data)
+
 	err = config.Read(path, &cfg)
 
 	if err != nil {
@@ -47,20 +52,26 @@ func NewConfig(path string) (cfg *Data, err error) {
 
 	if cfg != nil {
 		cfg.Bind()
+	} else {
+		return nil, errors.ErrInvalidConfig
 	}
 
 	if cfg.Server != nil {
 		cfg.Server = cfg.Server.Bind()
+	} else {
+		return nil, errors.ErrInvalidConfig
 	}
 
 	if cfg.Observability != nil {
 		cfg.Observability = cfg.Observability.Bind()
 	} else {
-		cfg.Observability = new(config.Observability)
+		cfg.Observability = new(config.Observability).Bind()
 	}
 
 	if cfg.NGT != nil {
 		cfg.NGT = cfg.NGT.Bind()
+	} else {
+		return nil, errors.ErrInvalidConfig
 	}
 
 	return cfg, nil

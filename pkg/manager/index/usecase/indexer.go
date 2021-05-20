@@ -51,11 +51,20 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	var indexer service.Indexer
 
+	cOpts, err := cfg.Indexer.Discoverer.Client.Opts()
+	if err != nil {
+		return nil, err
+	}
 	dopts := append(
-		cfg.Indexer.Discoverer.Client.Opts(),
+		cOpts,
 		grpc.WithErrGroup(eg))
+
+	acOpts, err := cfg.Indexer.Discoverer.AgentClientOptions.Opts()
+	if err != nil {
+		return nil, err
+	}
 	aopts := append(
-		cfg.Indexer.Discoverer.AgentClientOptions.Opts(),
+		acOpts,
 		grpc.WithErrGroup(eg))
 
 	var obs observability.Observability

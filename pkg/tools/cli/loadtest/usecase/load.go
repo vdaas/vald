@@ -41,8 +41,12 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		eg: errgroup.Get(),
 	}
 
+	cOpts, err := cfg.Client.Opts()
+	if err != nil {
+		return nil, err
+	}
 	clientOpts := append(
-		cfg.Client.Opts(),
+		cOpts,
 		grpc.WithAddrs(cfg.Addr),
 		grpc.WithErrGroup(run.eg),
 	)

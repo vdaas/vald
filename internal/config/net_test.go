@@ -30,7 +30,6 @@ import (
 )
 
 func TestDNS_Bind(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		CacheEnabled    bool
 		RefreshDuration string
@@ -152,7 +151,6 @@ func TestDNS_Bind(t *testing.T) {
 }
 
 func TestDialer_Bind(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		Timeout          string
 		KeepAlive        string
@@ -280,7 +278,6 @@ func TestDialer_Bind(t *testing.T) {
 }
 
 func TestSocketOption_Bind(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		ReusePort                bool
 		ReuseAddr                bool
@@ -394,7 +391,6 @@ func TestSocketOption_Bind(t *testing.T) {
 }
 
 func TestSocketOption_ToSocketFlag(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		socketOpts *SocketOption
 	}
@@ -577,7 +573,6 @@ func TestSocketOption_ToSocketFlag(t *testing.T) {
 }
 
 func TestNet_Bind(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		DNS          *DNS
 		Dialer       *Dialer
@@ -687,7 +682,6 @@ func TestNet_Bind(t *testing.T) {
 }
 
 func TestNet_Opts(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		DNS          *DNS
 		Dialer       *Dialer
@@ -696,24 +690,28 @@ func TestNet_Opts(t *testing.T) {
 	}
 	type want struct {
 		want []net.DialerOption
+		err  error
 	}
 	type test struct {
 		name       string
 		fields     fields
 		want       want
-		checkFunc  func(want, []net.DialerOption) error
+		checkFunc  func(want, []net.DialerOption, error) error
 		beforeFunc func()
 		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want, got []net.DialerOption) error {
-		if !reflect.DeepEqual(len(got), len(w.want)) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+	defaultCheckFunc := func(w want, gotOpts []net.DialerOption, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(len(gotOpts), len(w.want)) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOpts, w.want)
 		}
 		return nil
 	}
 	tests := []test{
 		{
-			name: "return 8 net.DialerOption when all fields are not empty and TLS is not enabled",
+			name: "return 8 net.DialerOption and nil error when all fields are not empty and TLS is not enabled",
 			fields: fields{
 				DNS: &DNS{
 					CacheEnabled:    true,
@@ -746,7 +744,7 @@ func TestNet_Opts(t *testing.T) {
 			},
 		},
 		{
-			name: "return 6 net.DialerOption when all fields are not empty and TLS/DNS Cache/Dialer DualStack is not enabled",
+			name: "return 6 net.DialerOption and nil error when all fields are not empty and TLS/DNS Cache/Dialer DualStack is not enabled",
 			fields: fields{
 				DNS: &DNS{
 					CacheEnabled:    false,
@@ -779,7 +777,7 @@ func TestNet_Opts(t *testing.T) {
 			},
 		},
 		{
-			name: "return 8 net.DialerOption when all fields are not empty and tls.New() returns error",
+			name: "return nil net.DialerOption an error when all fields are not empty and tls.New() returns error",
 			fields: fields{
 				DNS: &DNS{
 					CacheEnabled:    true,
@@ -808,11 +806,12 @@ func TestNet_Opts(t *testing.T) {
 				},
 			},
 			want: want{
-				want: make([]net.DialerOption, 8),
+				want: make([]net.DialerOption, 0),
+				err:  errors.ErrTLSCertOrKeyNotFound,
 			},
 		},
 		{
-			name: "return 8 net.DialerOption when all fields are not empty and tls.New() returns nil error",
+			name: "return 8 net.DialerOption and nil error when all fields are not empty and tls.New() returns nil error",
 			fields: fields{
 				DNS: &DNS{
 					CacheEnabled:    true,
@@ -848,7 +847,7 @@ func TestNet_Opts(t *testing.T) {
 			},
 		},
 		{
-			name:   "return 0 net.DialerOption when all fields are empty",
+			name:   "return 0 net.DialerOption and nil error when all fields are empty",
 			fields: fields{},
 			want: want{
 				want: make([]net.DialerOption, 0),
@@ -877,8 +876,8 @@ func TestNet_Opts(t *testing.T) {
 				TLS:          test.fields.TLS,
 			}
 
-			got := tr.Opts()
-			if err := test.checkFunc(test.want, got); err != nil {
+			got, err := tr.Opts()
+			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

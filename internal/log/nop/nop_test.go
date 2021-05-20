@@ -70,7 +70,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -80,8 +79,7 @@ func Test_nopLogger_Debug(t *testing.T) {
 	type args struct {
 		vals []interface{}
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -130,8 +128,7 @@ func Test_nopLogger_Debugf(t *testing.T) {
 		format string
 		vals   []interface{}
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -180,8 +177,7 @@ func Test_nopLogger_Debugd(t *testing.T) {
 		msg     string
 		details []interface{}
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -229,8 +225,7 @@ func Test_nopLogger_Info(t *testing.T) {
 	type args struct {
 		vals []interface{}
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -279,8 +274,7 @@ func Test_nopLogger_Infof(t *testing.T) {
 		format string
 		vals   []interface{}
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -329,8 +323,7 @@ func Test_nopLogger_Infod(t *testing.T) {
 		msg     string
 		details []interface{}
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -378,8 +371,7 @@ func Test_nopLogger_Warn(t *testing.T) {
 	type args struct {
 		vals []interface{}
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -428,8 +420,7 @@ func Test_nopLogger_Warnf(t *testing.T) {
 		format string
 		vals   []interface{}
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -478,8 +469,7 @@ func Test_nopLogger_Warnd(t *testing.T) {
 		msg     string
 		details []interface{}
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -527,8 +517,7 @@ func Test_nopLogger_Error(t *testing.T) {
 	type args struct {
 		vals []interface{}
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -577,8 +566,7 @@ func Test_nopLogger_Errorf(t *testing.T) {
 		format string
 		vals   []interface{}
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -627,8 +615,7 @@ func Test_nopLogger_Errord(t *testing.T) {
 		msg     string
 		details []interface{}
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -676,8 +663,7 @@ func Test_nopLogger_Fatal(t *testing.T) {
 	type args struct {
 		vals []interface{}
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -726,8 +712,7 @@ func Test_nopLogger_Fatalf(t *testing.T) {
 		format string
 		vals   []interface{}
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -776,8 +761,7 @@ func Test_nopLogger_Fatald(t *testing.T) {
 		msg     string
 		details []interface{}
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -868,7 +852,6 @@ func Test_nopLogger_Close(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

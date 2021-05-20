@@ -26,7 +26,6 @@ import (
 )
 
 func TestBackupManager_Bind(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		Client *GRPCClient
 	}

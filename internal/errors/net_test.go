@@ -260,3 +260,63 @@ func TestErrNoPortAvailable(t *testing.T) {
 		})
 	}
 }
+
+func TestErrLookupIPAddrNotFound(t *testing.T) {
+	type args struct {
+		host string
+	}
+	type want struct {
+		want error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got error) error {
+		if !Is(got, w.want) {
+			return Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "return an ErrLookupIPAddrNotFound error when host is localhost",
+			args: args{
+				host: "localhost",
+			},
+			want: want{
+				want: New("failed to lookup ip addrs for host: localhost"),
+			},
+		},
+		{
+			name: "return an ErrLookupIPAddrNotFound error when host is empty",
+			args: args{},
+			want: want{
+				want: New("failed to lookup ip addrs for host: "),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := ErrLookupIPAddrNotFound(test.args.host)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}

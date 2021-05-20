@@ -38,7 +38,7 @@ defaults:
   image:
     # @schema {"name": "defaults.image.tag", "type": "string"}
     # defaults.image.tag -- docker image tag
-    tag: v1.0.4
+    tag: v1.1.0
   # @schema {"name": "defaults.server_config", "type": "object", "anchor": "server_config"}
   server_config:
     # @schema {"name": "defaults.server_config.servers", "type": "object"}
@@ -2721,7 +2721,7 @@ agent:
       filename_suffix: ".tar.gz"
       # @schema {"name": "agent.sidecar.config.blob_storage", "type": "object"}
       blob_storage:
-        # @schema {"name": "agent.sidecar.config.blob_storage.storage_type", "type": "string", "enum": ["s3"]}
+        # @schema {"name": "agent.sidecar.config.blob_storage.storage_type", "type": "string", "enum": ["s3", "cloud_storage"]}
         # agent.sidecar.config.blob_storage.storage_type -- storage type
         storage_type: "s3"
         # @schema {"name": "agent.sidecar.config.blob_storage.bucket", "type": "string"}
@@ -2783,6 +2783,37 @@ agent:
           # @schema {"name": "agent.sidecar.config.blob_storage.s3.max_chunk_size", "type": "string", "pattern": "^[0-9]+(kb|mb|gb)$"}
           # agent.sidecar.config.blob_storage.s3.max_chunk_size -- s3 download max chunk size
           max_chunk_size: 64mb
+        # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage", "type": "object"}
+        cloud_storage:
+          # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.url", "type": "string"}
+          # agent.sidecar.config.blob_storage.cloud_storage.url -- cloud storage url
+          url: ""
+          # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.client", "type": "object"}
+          client:
+            # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.client.credentials_file_path", "type": "string"}
+            # agent.sidecar.config.blob_storage.cloud_storage.client.credentials_file_path -- credentials file path
+            credentials_file_path: ""
+            # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.client.credentials_json", "type": "string"}
+            # agent.sidecar.config.blob_storage.cloud_storage.client.credentials_json -- credentials json
+            credentials_json: ""
+          # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.write_buffer_size", "type": "integer"}
+          # agent.sidecar.config.blob_storage.cloud_storage.write_buffer_size -- bytes of the chunks for upload
+          write_buffer_size: 0
+          # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.write_cache_control", "type": "string"}
+          # agent.sidecar.config.blob_storage.cloud_storage.write_cache_control -- Cache-Control of HTTP Header
+          write_cache_control: ""
+          # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.write_content_disposition", "type": "string"}
+          # agent.sidecar.config.blob_storage.cloud_storage.write_content_disposition -- Content-Disposition of HTTP Header
+          write_content_disposition: ""
+          # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.write_content_encoding", "type": "string"}
+          # agent.sidecar.config.blob_storage.cloud_storage.write_content_encoding -- the encoding of the blob's content
+          write_content_encoding: ""
+          # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.write_content_language", "type": "string"}
+          # agent.sidecar.config.blob_storage.cloud_storage.write_content_language -- the language of blob's content
+          write_content_language: ""
+          # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.write_content_type", "type": "string"}
+          # agent.sidecar.config.blob_storage.cloud_storage.write_content_type -- MIME type of the blob
+          write_content_type: ""
       # @schema {"name": "agent.sidecar.config.compress", "type": "object"}
       compress:
         # @schema {"name": "agent.sidecar.config.compress.compress_algorithm", "type": "string", "enum": ["gob", "gzip", "lz4", "zstd"]}

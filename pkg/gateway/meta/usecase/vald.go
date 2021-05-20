@@ -51,8 +51,14 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	var metadata service.Meta
 
-	mopts := cfg.Meta.Client.Opts()
-	copts := cfg.Client.Opts()
+	mopts, err := cfg.Meta.Client.Opts()
+	if err != nil {
+		return nil, err
+	}
+	copts, err := cfg.Client.Opts()
+	if err != nil {
+		return nil, err
+	}
 
 	var obs observability.Observability
 	if cfg.Observability.Enabled {

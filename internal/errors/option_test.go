@@ -204,19 +204,19 @@ func TestErrInvalidOption_Error(t *testing.T) {
 
 	tests := []test{
 		{
-			name:   "return empty string when e.err is nil.",
-			fields: fields{},
-			want: want{
-				want: "",
-			},
-		},
-		{
-			name: "return empty string when e.err is not nil.",
+			name: "return string when e.err is not nil.",
 			fields: fields{
 				err: New("invalid option. name: WithPort, val: 8080"),
 			},
 			want: want{
 				want: "invalid option. name: WithPort, val: 8080",
+			},
+		},
+		{
+			name:   "return string when e.err is nil.",
+			fields: fields{},
+			want: want{
+				want: "expected err is nil: ErrInvalidOption",
 			},
 		},
 	}
@@ -498,19 +498,19 @@ func TestErrCriticalOption_Error(t *testing.T) {
 
 	tests := []test{
 		{
-			name:   "return empty string when e.err is nil",
-			fields: fields{},
-			want: want{
-				want: "",
-			},
-		},
-		{
-			name: "return empty string when e.err is not nil",
+			name: "return string when e.err is not nil",
 			fields: fields{
 				err: New("invalid option. name: WithPort, val: 8080"),
 			},
 			want: want{
 				want: "invalid option. name: WithPort, val: 8080",
+			},
+		},
+		{
+			name:   "return string when e.err is nil",
+			fields: fields{},
+			want: want{
+				want: "expected err is nil: ErrCriticalOption",
 			},
 		},
 	}

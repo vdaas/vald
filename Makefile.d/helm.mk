@@ -127,7 +127,7 @@ helm/schema/crd/vald: \
 	GOPRIVATE=$(GOPRIVATE) \
 	go run hack/helm/schema/crd/main.go \
 	charts/vald/values.yaml > $(TEMP_DIR)/valdrelease-spec.yaml
-	yq eval-all 'select(fileIndex==0).spec.versions[0].schema.openAPIV3Schema.properties.spec = select(fileIndex==1).spec | select(fileIndex==0)' \
+	$(BINDIR)/yq eval-all 'select(fileIndex==0).spec.versions[0].schema.openAPIV3Schema.properties.spec = select(fileIndex==1).spec | select(fileIndex==0)' \
 	$(TEMP_DIR)/valdrelease.yaml $(TEMP_DIR)/valdrelease-spec.yaml > charts/vald-helm-operator/crds/valdrelease.yaml
 
 .PHONY: helm/schema/crd/vald-helm-operator
@@ -138,5 +138,5 @@ helm/schema/crd/vald-helm-operator: \
 	GOPRIVATE=$(GOPRIVATE) \
 	go run hack/helm/schema/crd/main.go \
 	charts/vald-helm-operator/values.yaml > $(TEMP_DIR)/valdhelmoperatorrelease-spec.yaml
-	yq eval-all 'select(fileIndex==0).spec.versions[0].schema.openAPIV3Schema.properties.spec = select(fileIndex==1).spec | select(fileIndex==0)' \
+	$(BINDIR)/yq eval-all 'select(fileIndex==0).spec.versions[0].schema.openAPIV3Schema.properties.spec = select(fileIndex==1).spec | select(fileIndex==0)' \
 	$(TEMP_DIR)/valdhelmoperatorrelease.yaml $(TEMP_DIR)/valdhelmoperatorrelease-spec.yaml > charts/vald-helm-operator/crds/valdhelmoperatorrelease.yaml

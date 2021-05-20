@@ -54,9 +54,18 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 	eg := errgroup.Get()
 	var obs observability.Observability
-	copts := cfg.Client.Opts()
-	icopts := cfg.IngressFilters.Client.Opts()
-	ecopts := cfg.EgressFilters.Client.Opts()
+	copts, err := cfg.Client.Opts()
+	if err != nil {
+		return nil, err
+	}
+	icopts, err := cfg.IngressFilters.Client.Opts()
+	if err != nil {
+		return nil, err
+	}
+	ecopts, err := cfg.EgressFilters.Client.Opts()
+	if err != nil {
+		return nil, err
+	}
 	if cfg.Observability.Enabled {
 		obs, err = observability.NewWithConfig(cfg.Observability)
 		if err != nil {

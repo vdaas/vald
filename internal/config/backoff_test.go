@@ -28,7 +28,6 @@ import (
 )
 
 func TestBackoff_Bind(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		InitialDuration  string
 		BackoffTimeLimit string
@@ -143,7 +142,6 @@ func TestBackoff_Bind(t *testing.T) {
 }
 
 func TestBackoff_Opts(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		InitialDuration  string
 		BackoffTimeLimit string

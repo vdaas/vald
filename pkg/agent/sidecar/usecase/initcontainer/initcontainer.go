@@ -21,6 +21,8 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/agent/sidecar"
 	iconf "github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/db/storage/blob/cloudstorage"
+	"github.com/vdaas/vald/internal/db/storage/blob/cloudstorage/urlopener"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/session"
 	"github.com/vdaas/vald/internal/errgroup"
@@ -70,7 +72,12 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		_ = obs
 	}
 
-	dialer, err := net.NewDialer(cfg.AgentSidecar.Client.Net.Opts()...)
+	netOpts, err := cfg.AgentSidecar.Client.Net.Opts()
+	if err != nil {
+		return nil, err
+	}
+
+	dialer, err := net.NewDialer(netOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -123,6 +130,20 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			s3.WithMaxChunkSize(cfg.AgentSidecar.BlobStorage.S3.MaxChunkSize),
 			s3.WithReaderBackoff(cfg.AgentSidecar.RestoreBackoffEnabled),
 			s3.WithReaderBackoffOpts(cfg.AgentSidecar.RestoreBackoff.Opts()...),
+		),
+		storage.WithCloudStorageURLOpenerOpts(
+			urlopener.WithCredentialsFile(cfg.AgentSidecar.BlobStorage.CloudStorage.Client.CredentialsFilePath),
+			urlopener.WithCredentialsJSON(cfg.AgentSidecar.BlobStorage.CloudStorage.Client.CredentialsJSON),
+			urlopener.WithHTTPClient(client),
+		),
+		storage.WithCloudStorageOpts(
+			cloudstorage.WithURL(cfg.AgentSidecar.BlobStorage.CloudStorage.URL),
+			cloudstorage.WithWriteBufferSize(cfg.AgentSidecar.BlobStorage.CloudStorage.WriteBufferSize),
+			cloudstorage.WithWriteCacheControl(cfg.AgentSidecar.BlobStorage.CloudStorage.WriteCacheControl),
+			cloudstorage.WithWriteContentDisposition(cfg.AgentSidecar.BlobStorage.CloudStorage.WriteContentDisposition),
+			cloudstorage.WithWriteContentEncoding(cfg.AgentSidecar.BlobStorage.CloudStorage.WriteContentEncoding),
+			cloudstorage.WithWriteContentLanguage(cfg.AgentSidecar.BlobStorage.CloudStorage.WriteContentLanguage),
+			cloudstorage.WithWriteContentType(cfg.AgentSidecar.BlobStorage.CloudStorage.WriteContentType),
 		),
 		storage.WithCompressAlgorithm(cfg.AgentSidecar.Compress.CompressAlgorithm),
 		storage.WithCompressionLevel(cfg.AgentSidecar.Compress.CompressionLevel),
@@ -241,6 +262,9 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 }
 
 func (r *run) PreStop(ctx context.Context) error {
+	if r.rs != nil {
+		return r.rs.PreStop(ctx)
+	}
 	return nil
 }
 
