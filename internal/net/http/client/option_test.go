@@ -98,7 +98,7 @@ func TestWithProxy(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -181,7 +181,7 @@ func TestWithDialContext(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -270,7 +270,7 @@ func TestWithTLSHandshakeTimeout(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -351,7 +351,7 @@ func TestWithEnableKeepAlives(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -432,7 +432,7 @@ func TestWithEnableCompression(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -510,7 +510,7 @@ func TestWithMaxIdleConns(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -589,7 +589,7 @@ func TestWithMaxIdleConnsPerHost(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -667,7 +667,7 @@ func TestWithMaxConnsPerHost(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -757,7 +757,7 @@ func TestWithIdleConnTimeout(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -847,7 +847,7 @@ func TestWithResponseHeaderTimeout(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -937,7 +937,7 @@ func TestWithExpectContinueTimeout(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -1019,7 +1019,7 @@ func TestWithProxyConnectHeader(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -1098,7 +1098,7 @@ func TestWithMaxResponseHeaderBytes(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -1177,7 +1177,7 @@ func TestWithWriteBufferSize(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -1256,7 +1256,7 @@ func TestWithReadBufferSize(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -1324,7 +1324,7 @@ func TestWithForceAttemptHTTP2(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -1432,7 +1432,7 @@ func TestWithBackoffOpts(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc

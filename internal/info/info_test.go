@@ -99,7 +99,7 @@ func TestString(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
 			if test.afterFunc != nil {
-				tt.Cleanup(test.afterFunc)
+				defer test.afterFunc()
 			}
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -169,7 +169,7 @@ func TestGet(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(test.afterFunc)
+				defer test.afterFunc()
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -311,7 +311,7 @@ func TestInit(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -512,7 +512,7 @@ func TestNew(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -612,7 +612,7 @@ func Test_info_String(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(test.afterFunc)
+				defer test.afterFunc()
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -718,7 +718,7 @@ func TestDetail_String(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(test.afterFunc)
+				defer test.afterFunc()
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -1038,7 +1038,7 @@ func Test_info_Get(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(test.afterFunc)
+				defer test.afterFunc()
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -1341,7 +1341,7 @@ func Test_info_prepare(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(test.afterFunc)
+				defer test.afterFunc()
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -1407,7 +1407,7 @@ func TestStackTrace_String(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(test.afterFunc)
+				defer test.afterFunc()
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc

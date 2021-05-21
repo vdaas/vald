@@ -130,12 +130,11 @@ func TestNew(t *testing.T) {
 			}
 
 			got, err := New(test.args.opts...)
+			defer test.afterFunc(tt, test.args, got)
+
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
-			//tt.Cleanup(func() { test.afterFunc(tt, test.args, got) })
-			test.afterFunc(tt, test.args, got)
 		})
 	}
 }
@@ -291,14 +290,12 @@ func Test_watch_init(t *testing.T) {
 				w:    test.fields.w,
 				dirs: test.fields.dirs,
 			}
+			defer test.afterFunc(tt, w)
 
 			got, err := w.init()
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
-			//tt.Cleanup(func() { test.afterFunc(tt, w) })
-			test.afterFunc(tt, w)
 		})
 	}
 }
@@ -778,14 +775,12 @@ func Test_watch_Start(t *testing.T) {
 				onChmod:  fields.onChmod,
 				onError:  fields.onError,
 			}
+			defer test.afterFunc(tt, test.args, w)
 
 			got, err := w.Start(test.args.ctx)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
-			//tt.Cleanup(func() { test.afterFunc(tt, test.args, w) })
-			test.afterFunc(tt, test.args, w)
 		})
 	}
 }
@@ -940,13 +935,12 @@ func Test_watch_Add(t *testing.T) {
 				dirs: test.fields.dirs,
 			}
 
+			defer test.afterFunc(tt, test.args, w)
+
 			err := w.Add(test.args.dirs...)
 			if err := test.checkFunc(test.want, w, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
-			//tt.Cleanup(func() { test.afterFunc(tt, test.args, w) })
-			test.afterFunc(tt, test.args, w)
 		})
 	}
 }
@@ -1112,19 +1106,17 @@ func Test_watch_Remove(t *testing.T) {
 			}
 
 			test.beforeFunc(tt, &test.fields, test.args)
-
 			w := &watch{
 				w:    test.fields.w,
 				dirs: test.fields.dirs,
 			}
 
+			defer test.afterFunc(tt, test.args, w)
+
 			err := w.Remove(test.args.dirs...)
 			if err := test.checkFunc(test.want, w, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
-			//tt.Cleanup(func() { test.afterFunc(tt, test.args, w) })
-			test.afterFunc(tt, test.args, w)
 		})
 	}
 }
@@ -1270,14 +1262,12 @@ func Test_watch_Stop(t *testing.T) {
 				w:    test.fields.w,
 				dirs: test.fields.dirs,
 			}
+			defer test.afterFunc(tt, test.args, w)
 
 			err := w.Stop(test.args.ctx)
 			if err := test.checkFunc(test.want, w, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
-			//tt.Cleanup(func() { test.afterFunc(tt, test.args, w) })
-			test.afterFunc(tt, test.args, w)
 		})
 	}
 }

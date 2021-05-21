@@ -86,7 +86,7 @@ func Test_newAddr(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -172,7 +172,7 @@ func Test_atomicAddrs_GetAll(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(test.afterFunc)
+				defer test.afterFunc()
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -265,7 +265,7 @@ func Test_atomicAddrs_Range(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -358,7 +358,7 @@ func Test_atomicAddrs_Add(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -451,7 +451,7 @@ func Test_atomicAddrs_Delete(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -543,7 +543,7 @@ func Test_atomicAddrs_Next(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(test.afterFunc)
+				defer test.afterFunc()
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -631,7 +631,7 @@ func Test_atomicAddrs_Len(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(test.afterFunc)
+				defer test.afterFunc()
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc

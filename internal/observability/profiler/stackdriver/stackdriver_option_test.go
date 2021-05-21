@@ -106,7 +106,7 @@ func TestWithProjectID(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -220,7 +220,7 @@ func TestWithService(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -334,7 +334,7 @@ func TestWithServiceVersion(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -448,7 +448,7 @@ func TestWithDebugLogging(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -562,7 +562,7 @@ func TestWithMutexProfiling(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -676,7 +676,7 @@ func TestWithCPUProfiling(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -790,7 +790,7 @@ func TestWithAllocProfiling(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -904,7 +904,7 @@ func TestWithHeapProfiling(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -1018,7 +1018,7 @@ func TestWithGoroutineProfiling(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -1132,7 +1132,7 @@ func TestWithAllocForceGC(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -1246,7 +1246,7 @@ func TestWithAPIAddr(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -1360,7 +1360,7 @@ func TestWithInstance(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -1474,7 +1474,7 @@ func TestWithZone(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -1588,7 +1588,7 @@ func TestWithClientOptions(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it

@@ -63,7 +63,7 @@ func TestNew(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(test.afterFunc)
+				defer test.afterFunc()
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -278,7 +278,7 @@ func Test_group_Do(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc

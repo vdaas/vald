@@ -71,7 +71,7 @@ func Test_newGRPCClientConfig(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(test.afterFunc)
+				defer test.afterFunc()
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -291,7 +291,7 @@ func TestGRPCClient_Bind(t *testing.T) {
 				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(tt) })
+				defer test.afterFunc(tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -415,7 +415,7 @@ func TestGRPCClientKeepalive_Bind(t *testing.T) {
 				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(tt) })
+				defer test.afterFunc(tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -503,7 +503,7 @@ func TestCallOption_Bind(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(test.afterFunc)
+				defer test.afterFunc()
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -676,7 +676,7 @@ func TestDialOption_Bind(t *testing.T) {
 				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(tt) })
+				defer test.afterFunc(tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -1069,7 +1069,7 @@ func TestGRPCClient_Opts(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(test.afterFunc)
+				defer test.afterFunc()
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc

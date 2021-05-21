@@ -79,7 +79,7 @@ func TestWithSessionOptions(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			if test.checkFunc == nil {
@@ -148,7 +148,7 @@ func TestWithSessionTarget(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			if test.checkFunc == nil {
@@ -217,7 +217,7 @@ func TestWithSessionConfig(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			if test.checkFunc == nil {
@@ -302,7 +302,7 @@ func TestWithOperations(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			if test.checkFunc == nil {
@@ -371,7 +371,7 @@ func TestWithExportPath(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			if test.checkFunc == nil {
@@ -467,7 +467,7 @@ func TestWithTags(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			if test.checkFunc == nil {
@@ -552,7 +552,7 @@ func TestWithLoadFunc(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			if test.checkFunc == nil {
@@ -620,7 +620,7 @@ func TestWithFeed(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			if test.checkFunc == nil {
@@ -702,7 +702,7 @@ func TestWithFeeds(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			if test.checkFunc == nil {
@@ -770,7 +770,7 @@ func TestWithFetch(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			if test.checkFunc == nil {
@@ -845,7 +845,7 @@ func TestWithFetches(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			if test.checkFunc == nil {
@@ -941,7 +941,7 @@ func TestWithWarmupInputs(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			if test.checkFunc == nil {
@@ -1004,7 +1004,7 @@ func TestWithNdim(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			if test.checkFunc == nil {
@@ -1102,7 +1102,7 @@ func Test_withLoadFunc(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it

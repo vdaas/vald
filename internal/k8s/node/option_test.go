@@ -109,7 +109,7 @@ func TestWithControllerName(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -226,7 +226,7 @@ func TestWithManager(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -343,7 +343,7 @@ func TestWithOnErrorFunc(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -460,7 +460,7 @@ func TestWithOnReconcileFunc(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it

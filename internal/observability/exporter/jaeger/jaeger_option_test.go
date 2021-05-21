@@ -105,7 +105,7 @@ func TestWithCollectorEndpoint(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -219,7 +219,7 @@ func TestWithAgentEndpoint(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -333,7 +333,7 @@ func TestWithUsername(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -447,7 +447,7 @@ func TestWithPassword(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -561,7 +561,7 @@ func TestWithServiceName(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -675,7 +675,7 @@ func TestWithBufferMaxCount(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
@@ -789,7 +789,7 @@ func TestWithOnErrorFunc(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args) })
+				defer test.afterFunc(test.args)
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it

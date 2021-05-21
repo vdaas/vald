@@ -333,7 +333,7 @@ func TestCassandra_Bind(t *testing.T) {
 				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(tt) })
+				defer test.afterFunc(tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -865,7 +865,7 @@ func TestCassandra_Opts(t *testing.T) {
 				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(tt) })
+				defer test.afterFunc(tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc

@@ -212,11 +212,11 @@ func TestOpen(t *testing.T) {
 			}
 
 			got, err := Open(test.args.path, test.args.flg, test.args.perm)
+			defer test.afterFunc(tt, test.args, got)
+
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
-			tt.Cleanup(func() { test.afterFunc(tt, test.args, got) })
 		})
 	}
 }
