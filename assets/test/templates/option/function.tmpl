@@ -126,7 +126,7 @@ func {{ .TestName }}(t *testing.T) {
                     test.beforeFunc({{- if .TestParameters }} test.args {{- end }})
                 }
                 if test.afterFunc != nil {
-                    defer test.afterFunc({{- if .TestParameters }} test.args {{- end }})
+                    tt.Cleanup(func() { test.afterFunc({{- if .TestParameters }} test.args {{- end }}) })
                 }
 
                 // Uncomment this block if the option returns an error, otherwise delete it
