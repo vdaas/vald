@@ -27,6 +27,7 @@ import (
 )
 
 func TestDiscoverer_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		Name              string
 		Namespace         string
@@ -159,6 +160,7 @@ func TestDiscoverer_Bind(t *testing.T) {
 }
 
 func TestDiscovererClient_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		Duration           string
 		Client             *GRPCClient

@@ -2,6 +2,7 @@
 {{- $f := . }}
 
 func {{ .TestName }}(t *testing.T) {
+    t.Parallel()
     {{- if .TestParameters }}
     type args struct {
         {{- range .TestParameters }}

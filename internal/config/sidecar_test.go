@@ -98,9 +98,8 @@ func TestAgentSidecar_Bind(t *testing.T) {
 						Filename:           filename,
 						FilenameSuffix:     filenameSuffix,
 						BlobStorage: &Blob{
-							StorageType:  blobStorageType,
-							S3:           new(S3Config),
-							CloudStorage: new(CloudStorageConfig),
+							StorageType: blobStorageType,
+							S3:          new(S3Config),
 						},
 						Compress: &CompressCore{
 							CompressAlgorithm: compressAlgorithm,

@@ -28,6 +28,7 @@ import (
 )
 
 func TestMeta_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		Host                      string
 		Port                      uint16

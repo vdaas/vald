@@ -397,6 +397,7 @@ func TestCollector_Bind(t *testing.T) {
 }
 
 func TestStackdriver_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		ProjectID string
 		Client    *StackdriverClient

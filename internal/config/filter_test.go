@@ -27,6 +27,7 @@ import (
 )
 
 func TestEgressFilter_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		Client          *GRPCClient
 		DistanceFilters []string
@@ -179,6 +180,7 @@ func TestEgressFilter_Bind(t *testing.T) {
 }
 
 func TestIngressFilter_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		Client        *GRPCClient
 		Vectorizer    string

@@ -30,6 +30,7 @@ import (
 )
 
 func TestRedis_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		Addrs                []string
 		DB                   int
@@ -429,6 +430,7 @@ func TestRedis_Bind(t *testing.T) {
 }
 
 func TestRedis_Opts(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		Addrs                []string
 		DB                   int

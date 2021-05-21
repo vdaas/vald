@@ -26,6 +26,8 @@ import (
 )
 
 func TestClient_Bind(t *testing.T) {
+	t.Parallel()
+
 	type fields struct {
 		Net       *Net
 		Transport *Transport

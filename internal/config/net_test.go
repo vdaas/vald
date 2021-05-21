@@ -30,6 +30,7 @@ import (
 )
 
 func TestDNS_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		CacheEnabled    bool
 		RefreshDuration string
@@ -152,6 +153,7 @@ func TestDNS_Bind(t *testing.T) {
 }
 
 func TestDialer_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		Timeout          string
 		KeepAlive        string
@@ -280,6 +282,7 @@ func TestDialer_Bind(t *testing.T) {
 }
 
 func TestSocketOption_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		ReusePort                bool
 		ReuseAddr                bool
@@ -393,6 +396,7 @@ func TestSocketOption_Bind(t *testing.T) {
 }
 
 func TestSocketOption_ToSocketFlag(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		socketOpts *SocketOption
 	}
@@ -575,6 +579,7 @@ func TestSocketOption_ToSocketFlag(t *testing.T) {
 }
 
 func TestNet_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		DNS          *DNS
 		Dialer       *Dialer
@@ -684,6 +689,7 @@ func TestNet_Bind(t *testing.T) {
 }
 
 func TestNet_Opts(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		DNS          *DNS
 		Dialer       *Dialer

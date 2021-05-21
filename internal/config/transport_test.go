@@ -27,6 +27,7 @@ import (
 )
 
 func TestRoundTripper_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		TLSHandshakeTimeout   string
 		MaxIdleConns          int
@@ -197,6 +198,7 @@ func TestRoundTripper_Bind(t *testing.T) {
 }
 
 func TestTransport_Bind(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		RoundTripper *RoundTripper
 		Backoff      *Backoff
