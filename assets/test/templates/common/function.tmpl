@@ -2,7 +2,6 @@
 {{- $f := . }}
 
 func {{ .TestName }}(t *testing.T) {
-    t.Parallel()
     {{- if .TestParameters }}
     type args struct {
         {{- range .TestParameters }}
@@ -107,6 +106,7 @@ func {{ .TestName }}(t *testing.T) {
         */
     }
 
+    t.Parallel()
     for {{- if (or .Subtests (not .IsNaked)) }} _, tc := {{- end }} range tests {
         {{- if .Subtests }}
             test := tc
@@ -117,7 +117,7 @@ func {{ .TestName }}(t *testing.T) {
                     test.beforeFunc({{- if .TestParameters }} test.args {{- end }})
                 }
                 if test.afterFunc != nil {
-                    defer test.afterFunc({{- if .TestParameters }} test.args {{- end }})
+                    tt.Cleanup(func() { test.afterFunc({{- if .TestParameters }} test.args {{- end }}) })
                 }
                 if test.checkFunc == nil {
                     test.checkFunc = defaultCheckFunc
