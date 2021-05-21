@@ -117,7 +117,7 @@ func {{ .TestName }}(t *testing.T) {
                     test.beforeFunc({{- if .TestParameters }} test.args {{- end }})
                 }
                 if test.afterFunc != nil {
-                    tt.Cleanup(func() { test.afterFunc({{- if .TestParameters }} test.args {{- end }}) })
+                    defer test.afterFunc({{- if .TestParameters }} test.args {{- end }})
                 }
                 if test.checkFunc == nil {
                     test.checkFunc = defaultCheckFunc
