@@ -26,7 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/db/kvs/redis"
 	"github.com/vdaas/vald/internal/errors"
 	testdata "github.com/vdaas/vald/internal/test"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestRedis_Bind(t *testing.T) {

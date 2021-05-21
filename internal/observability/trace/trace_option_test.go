@@ -20,7 +20,7 @@ package trace
 import (
 	"testing"
 
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestWithSamplingRate(t *testing.T) {

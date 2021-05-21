@@ -34,7 +34,7 @@ import (
 	"github.com/vdaas/vald/internal/net"
 	htr "github.com/vdaas/vald/internal/net/http/transport"
 	"github.com/vdaas/vald/internal/test/comparator"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 	"golang.org/x/net/http2"
 )
 

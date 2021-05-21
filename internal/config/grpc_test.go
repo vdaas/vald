@@ -28,7 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	testdata "github.com/vdaas/vald/internal/test"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func Test_newGRPCClientConfig(t *testing.T) {

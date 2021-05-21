@@ -26,7 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/control"
 	testdata "github.com/vdaas/vald/internal/test"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestDNS_Bind(t *testing.T) {

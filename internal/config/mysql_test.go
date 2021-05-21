@@ -28,7 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/db/rdb/mysql"
 	"github.com/vdaas/vald/internal/errors"
 	testdata "github.com/vdaas/vald/internal/test"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestMySQL_Bind(t *testing.T) {

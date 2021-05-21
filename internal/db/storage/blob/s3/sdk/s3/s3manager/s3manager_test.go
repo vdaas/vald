@@ -21,7 +21,7 @@ import (
 
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/sdk/s3/s3iface"
 	"github.com/vdaas/vald/internal/errors"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestNew(t *testing.T) {
