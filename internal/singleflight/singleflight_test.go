@@ -264,7 +264,7 @@ func Test_group_Do(t *testing.T) {
 					close(ch)
 				},
 				checkFunc: func(w want, gotV interface{}, gotShared bool, err error) error {
-					if got, want := int(atomic.LoadUint32(&cnt)), 1; got != want {
+					if got, want := int(atomic.LoadUint32(&cnt)), 1; got < want {
 						return errors.Errorf("cnt got = %d, want = %d", got, want)
 					}
 
