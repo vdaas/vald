@@ -25,7 +25,7 @@ k3d/install: $(BINDIR)/k3d
 $(BINDIR)/k3d:
 	mkdir -p $(BINDIR)
 	wget -q -O - "https://raw.githubusercontent.com/rancher/k3d/main/install.sh" | bash
-	chmod a+x $(BINDIR)/k3d
+	chmod a+x $(BINDIR)/$(K3D_COMMAND)
 
 .PHONY: k3d/start
 ## start k3d (kubernetes in docker) cluster
@@ -36,15 +36,10 @@ k3d/start:
 	kubectl apply -f https://projectcontour.io/quickstart/operator.yaml
 	kubectl apply -f https://projectcontour.io/quickstart/contour-custom-resource.yaml
 
-.PHONY: k3d/stop
-## stop k3d (kubernetes in docker) cluster
-k3d/stop:
-	$(K3D_COMMAND) cluster delete $(K3D_CLUSTER_NAME) --keep-registry-volume
-
 .PHONY: k3d/restart
 ## restart k3d (kubernetes in docker) cluster
 k3d/restart: \
-	k3d/stop \
+	k3d/delete \
 	k3d/start
 
 
