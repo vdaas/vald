@@ -325,8 +325,9 @@ k8s/external/minio/delete:
 ## deploy metrics-serrver
 k8s/metrics/metrics-server/deploy:
 	kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+	kubectl patch deployment metrics-server -n kube-system -p '{"spec":{"template":{"spec":{"containers":[{"name":"metrics-server","args":["--cert-dir=/tmp", "--secure-port=4443", "--kubelet-insecure-tls","--kubelet-preferred-address-types=InternalIP"]}]}}}}'
 	sleep $(K8S_SLEEP_DURATION_FOR_WAIT_COMMAND)
-	kubectl wait -n kube-system --for=condition=ready pod -l k8s-app=metrics-server --timeout=600s
+	# kubectl wait -n kube-system --for=condition=ready pod -l k8s-app=metrics-server --timeout=600s
 
 .PHONY: k8s/metrics/metrics-server/delete
 ## delete metrics-serrver

@@ -55,15 +55,15 @@ kind/restart: \
 .PHONY: kind/cluster/start
 ## start kind (kubernetes in docker) multi node cluster
 kind/cluster/start:
+	sudo sysctl net/netfilter/nf_conntrack_max=524288
 	kind create cluster --name $(NAME)-cluster --config $(ROOTDIR)/k8s/debug/kind/config.yaml
-	kubectl apply -f https://projectcontour.io/quickstart/contour.yaml
-	kubectl patch daemonsets -n projectcontour envoy -p '{"spec":{"template":{"spec":{"nodeSelector":{"ingress-ready":"true"},"tolerations":[{"key":"node-role.kubernetes.io/master","operator":"Equal","effect":"NoSchedule"}]}}}}'
+	kubectl apply -f https://projectcontour.io/quickstart/operator.yaml
+	kubectl apply -f https://projectcontour.io/quickstart/contour-custom-resource.yaml
 
 
 .PHONY: kind/cluster/stop
 ## stop kind (kubernetes in docker) multi node cluster
 kind/cluster/stop:
-	kubectl delete -f https://projectcontour.io/quickstart/contour.yaml
 	kind delete cluster --name $(NAME)-cluster
 
 .PHONY: kind/cluster/login

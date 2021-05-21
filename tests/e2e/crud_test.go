@@ -259,9 +259,9 @@ func getClient(ctx context.Context) (vald.Client, error) {
 }
 
 func sleep(t *testing.T, dur time.Duration) {
-	t.Logf("sleep for %s", dur)
+	t.Logf("%v sleep for %s.", time.Now(), dur)
 	time.Sleep(dur)
-	t.Log("sleep finished.")
+	t.Logf("%v sleep finished.", time.Now())
 }
 
 func TestE2EInsert(t *testing.T) {

@@ -30,8 +30,11 @@ $(BINDIR)/k3d:
 .PHONY: k3d/start
 ## start k3d (kubernetes in docker) cluster
 k3d/start:
-	$(K3D_COMMAND) cluster create $(K3D_CLUSTER_NAME) -p "8081:80@loadbalancer" --agents $(K3D_NODES)
-	export KUBECONFIG="$(sudo $(K3D_COMMAND) kubeconfig merge -o $(TEMP_DIR)/k3d_$(K3D_CLUSTER_NAME)_kubeconfig.yaml $(K3D_CLUSTER_NAME))"
+	sudo sysctl net/netfilter/nf_conntrack_max=524288
+	$(K3D_COMMAND) cluster create $(K3D_CLUSTER_NAME) -p "8081:80@loadbalancer" --agents $(K3D_NODES) --k3s-server-arg '--no-deploy=traefik'
+	export KUBECONFIG="$(shell sudo $(K3D_COMMAND) kubeconfig merge -o $(TEMP_DIR)/k3d_$(K3D_CLUSTER_NAME)_kubeconfig.yaml $(K3D_CLUSTER_NAME))"
+	kubectl apply -f https://projectcontour.io/quickstart/operator.yaml
+	kubectl apply -f https://projectcontour.io/quickstart/contour-custom-resource.yaml
 
 .PHONY: k3d/stop
 ## stop k3d (kubernetes in docker) cluster
