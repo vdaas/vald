@@ -208,7 +208,7 @@ func Test_retry_Out(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args, tt) })
+				defer test.afterFunc(test.args, tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -355,7 +355,7 @@ func Test_retry_Outf(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				tt.Cleanup(func() { test.afterFunc(test.args, tt) })
+				defer test.afterFunc(test.args, tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
