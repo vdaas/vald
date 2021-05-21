@@ -8,6 +8,7 @@ type (
 
 var (
 	defaultGoleakOptions = []goleak.Option{
+		// ignore conflict with testing.T.Parallel()
 		goleak.IgnoreTopFunction("testing.(*testContext).waitParallel"),
 	}
 
