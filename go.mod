@@ -6,7 +6,7 @@ replace (
 	cloud.google.com/go => cloud.google.com/go v0.82.1-0.20210520180002-258980a039db
 	cloud.google.com/go/storage => cloud.google.com/go/storage v1.15.1-0.20210520180002-258980a039db
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20210210161804-c7f947c0610d+incompatible
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.38.44
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.38.45
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
@@ -22,7 +22,7 @@ replace (
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.17.0
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.2
 	github.com/hailocab/go-hostpool => github.com/kpango/go-hostpool v0.0.0-20210303030322-aab80263dcd0
-	github.com/klauspost/compress => github.com/klauspost/compress v1.12.3-0.20210519103437-216f3e54a95c
+	github.com/klauspost/compress => github.com/klauspost/compress v1.12.3-0.20210521105228-b5e94846a1d8
 	github.com/kpango/glg => github.com/kpango/glg v1.5.1
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.2+incompatible
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
@@ -77,17 +77,17 @@ require (
 	go.uber.org/goleak v1.1.10
 	go.uber.org/zap v1.16.0
 	gocloud.dev v0.23.0
-	golang.org/x/net v0.0.0-20210520170846-37e1c6afe023
+	golang.org/x/net v0.0.0-20210521195947-fe42d452be8f
 	golang.org/x/oauth2 v0.0.0-20210514164344-f6687ab2804c
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys v0.0.0-20210514084401-e8d321eab015
+	golang.org/x/sys v0.0.0-20210521203332-0cec03c779c1
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/plot v0.9.0
 	google.golang.org/api v0.47.0
-	google.golang.org/genproto v0.0.0-20210520160233-290a1ae68a05
+	google.golang.org/genproto v0.0.0-20210521181308-5ccab8a35a9a
 	google.golang.org/grpc v1.37.1
 	gopkg.in/yaml.v2 v2.4.0
-	inet.af/netaddr v0.0.0-20210521030521-f0b6b1eb602d
+	inet.af/netaddr v0.0.0-20210521171555-9ee55bc0c50b
 	k8s.io/api v0.20.7
 	k8s.io/apimachinery v0.20.7
 	k8s.io/cli-runtime v0.0.0-00010101000000-000000000000
