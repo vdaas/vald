@@ -53,7 +53,11 @@ type run struct {
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
-	dialer, err := net.NewDialer(cfg.Rebalancer.Client.Net.Opts()...)
+	netOpts, err := cfg.Rebalancer.Client.Net.Opts()
+	if err != nil {
+		return nil, err
+	}
+	dialer, err := net.NewDialer(netOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -76,38 +80,41 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 
+	s3SessionOpts := []session.Option{
+		session.WithEndpoint(cfg.Rebalancer.BlobStorage.S3.Endpoint),
+		session.WithRegion(cfg.Rebalancer.BlobStorage.S3.Region),
+		session.WithAccessKey(cfg.Rebalancer.BlobStorage.S3.AccessKey),
+		session.WithSecretAccessKey(cfg.Rebalancer.BlobStorage.S3.SecretAccessKey),
+		session.WithToken(cfg.Rebalancer.BlobStorage.S3.Token),
+		session.WithMaxRetries(cfg.Rebalancer.BlobStorage.S3.MaxRetries),
+		session.WithForcePathStyle(cfg.Rebalancer.BlobStorage.S3.ForcePathStyle),
+		session.WithUseAccelerate(cfg.Rebalancer.BlobStorage.S3.UseAccelerate),
+		session.WithUseARNRegion(cfg.Rebalancer.BlobStorage.S3.UseARNRegion),
+		session.WithUseDualStack(cfg.Rebalancer.BlobStorage.S3.UseDualStack),
+		session.WithEnableSSL(cfg.Rebalancer.BlobStorage.S3.EnableSSL),
+		session.WithEnableParamValidation(cfg.Rebalancer.BlobStorage.S3.EnableParamValidation),
+		session.WithEnable100Continue(cfg.Rebalancer.BlobStorage.S3.Enable100Continue),
+		session.WithEnableContentMD5Validation(cfg.Rebalancer.BlobStorage.S3.EnableContentMD5Validation),
+		session.WithEnableEndpointDiscovery(cfg.Rebalancer.BlobStorage.S3.EnableEndpointDiscovery),
+		session.WithEnableEndpointHostPrefix(cfg.Rebalancer.BlobStorage.S3.EnableEndpointHostPrefix),
+		session.WithHTTPClient(client),
+	}
+	s3Opts := []s3.Option{
+		s3.WithMaxPartSize(cfg.Rebalancer.BlobStorage.S3.MaxPartSize),
+		s3.WithMaxChunkSize(cfg.Rebalancer.BlobStorage.S3.MaxChunkSize),
+		// TODO: backoff opts
+		// s3.WithReaderBackoff(cfg.Rebalancer.RestoreBackoffEnabled),
+		// s3.WithReaderBackoffOpts(cfg.Rebalancer.RestoreBackoff.Opts()...),
+	}
+
 	st, err := storage.New(
 		storage.WithErrGroup(eg),
 		storage.WithType(cfg.Rebalancer.BlobStorage.StorageType),
 		storage.WithBucketName(cfg.Rebalancer.BlobStorage.Bucket),
 		storage.WithFilename(cfg.Rebalancer.TargetAgentName),
 		storage.WithFilenameSuffix(cfg.Rebalancer.FilenameSuffix),
-		storage.WithS3SessionOpts(
-			session.WithEndpoint(cfg.Rebalancer.BlobStorage.S3.Endpoint),
-			session.WithRegion(cfg.Rebalancer.BlobStorage.S3.Region),
-			session.WithAccessKey(cfg.Rebalancer.BlobStorage.S3.AccessKey),
-			session.WithSecretAccessKey(cfg.Rebalancer.BlobStorage.S3.SecretAccessKey),
-			session.WithToken(cfg.Rebalancer.BlobStorage.S3.Token),
-			session.WithMaxRetries(cfg.Rebalancer.BlobStorage.S3.MaxRetries),
-			session.WithForcePathStyle(cfg.Rebalancer.BlobStorage.S3.ForcePathStyle),
-			session.WithUseAccelerate(cfg.Rebalancer.BlobStorage.S3.UseAccelerate),
-			session.WithUseARNRegion(cfg.Rebalancer.BlobStorage.S3.UseARNRegion),
-			session.WithUseDualStack(cfg.Rebalancer.BlobStorage.S3.UseDualStack),
-			session.WithEnableSSL(cfg.Rebalancer.BlobStorage.S3.EnableSSL),
-			session.WithEnableParamValidation(cfg.Rebalancer.BlobStorage.S3.EnableParamValidation),
-			session.WithEnable100Continue(cfg.Rebalancer.BlobStorage.S3.Enable100Continue),
-			session.WithEnableContentMD5Validation(cfg.Rebalancer.BlobStorage.S3.EnableContentMD5Validation),
-			session.WithEnableEndpointDiscovery(cfg.Rebalancer.BlobStorage.S3.EnableEndpointDiscovery),
-			session.WithEnableEndpointHostPrefix(cfg.Rebalancer.BlobStorage.S3.EnableEndpointHostPrefix),
-			session.WithHTTPClient(client),
-		),
-		storage.WithS3Opts(
-			s3.WithMaxPartSize(cfg.Rebalancer.BlobStorage.S3.MaxPartSize),
-			s3.WithMaxChunkSize(cfg.Rebalancer.BlobStorage.S3.MaxChunkSize),
-			// TODO: backoff opts
-			// s3.WithReaderBackoff(cfg.Rebalancer.RestoreBackoffEnabled),
-			// s3.WithReaderBackoffOpts(cfg.Rebalancer.RestoreBackoff.Opts()...),
-		),
+		storage.WithS3SessionOpts(s3SessionOpts...),
+		storage.WithS3Opts(s3Opts...),
 		storage.WithCompressAlgorithm(cfg.Rebalancer.Compress.CompressAlgorithm),
 		storage.WithCompressionLevel(cfg.Rebalancer.Compress.CompressionLevel),
 	)
@@ -115,7 +122,25 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 
-	copts := cfg.Rebalancer.GatewayClient.Opts()
+	kvsdbSt, err := storage.New(
+		storage.WithErrGroup(eg),
+		storage.WithType(cfg.Rebalancer.BlobStorage.StorageType),
+		storage.WithBucketName(cfg.Rebalancer.BlobStorage.Bucket),
+		storage.WithFilename(cfg.Rebalancer.TargetAgentName),
+		storage.WithFilenameSuffix(cfg.Rebalancer.KvsdbFilenameSuffix),
+		storage.WithS3SessionOpts(s3SessionOpts...),
+		storage.WithS3Opts(s3Opts...),
+		storage.WithCompressAlgorithm(cfg.Rebalancer.Compress.CompressAlgorithm),
+		storage.WithCompressionLevel(cfg.Rebalancer.Compress.CompressionLevel),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	copts, err := cfg.Rebalancer.GatewayClient.Opts()
+	if err != nil {
+		return nil, err
+	}
 
 	c, err := vald.New(
 		vald.WithAddrs(cfg.Rebalancer.GatewayClient.Addrs...),
@@ -128,6 +153,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	rb, err := job.New(
 		job.WithErrGroup(eg),
 		job.WithStorage(st),
+		job.WithKvsdbStorage(kvsdbSt),
 		job.WithValdClient(c),
 		job.WithRate(cfg.Rebalancer.Rate),
 		job.WithParallelism(cfg.Rebalancer.Parallelism),

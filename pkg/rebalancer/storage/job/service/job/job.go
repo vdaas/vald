@@ -47,6 +47,7 @@ type rebalancer struct {
 	targetAgentName string
 	rate            float64
 	storage         storage.Storage
+	kvsdbStorage    storage.Storage
 	client          vald.Client
 	parallelism     int
 }
@@ -115,7 +116,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 			}()
 
 			log.Info("[job debug] read buffer from download s3 backup file")
-			sr, err := r.storage.Reader(ctx)
+			sr, err := r.kvsdbStorage.Reader(ctx)
 			if err != nil {
 				return err
 			}
@@ -228,17 +229,12 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 		// rename backup file
 		if r.rate == float64(1) {
 			log.Info("Start create backup file")
-			err = r.storage.Backup(ctx)
-			if err != nil {
-				log.Errorf("failed to create backup file: %s", err.Error())
+			if err := renameBackupFile(ctx, r.storage); err != nil {
+				log.Error("Failed to rename full backup file: %s", err.Error())
 				return err
 			}
-			log.Info("Finish create backup file")
-
-			log.Info("Start delete original backup file")
-			err = r.storage.Delete(ctx)
-			if err != nil {
-				log.Errorf("failed to delete original backup file: %s", err.Error())
+			if err := renameBackupFile(ctx, r.kvsdbStorage); err != nil {
+				log.Error("Failed to rename kvsdb backup file: %s", err.Error())
 				return err
 			}
 			log.Info("Finish delete original backup file")
@@ -251,6 +247,23 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 	})
 
 	return ech, nil
+}
+
+func renameBackupFile(ctx context.Context, storage storage.Storage) (err error) {
+	err = storage.Backup(ctx)
+	if err != nil {
+		log.Errorf("failed to create backup file: %s", err.Error())
+		return err
+	}
+	log.Info("Finish create backup file")
+
+	log.Info("Start delete original backup file")
+	err = storage.Delete(ctx)
+	if err != nil {
+		log.Errorf("failed to delete original backup file: %s", err.Error())
+		return err
+	}
+	return nil
 }
 
 func (r *rebalancer) loadKVS(ctx context.Context, reader io.Reader) (map[string]uint32, error) {

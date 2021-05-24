@@ -39,6 +39,13 @@ func WithStorage(st storage.Storage) Option {
 	}
 }
 
+func WithKvsdbStorage(st storage.Storage) Option {
+	return func(r *rebalancer) error {
+		r.kvsdbStorage = st
+		return nil
+	}
+}
+
 func WithTargetAgentName(name string) Option {
 	return func(r *rebalancer) error {
 		r.targetAgentName = name

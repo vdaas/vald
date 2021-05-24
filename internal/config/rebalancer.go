@@ -48,6 +48,8 @@ type RebalanceJob struct {
 	Compress *CompressCore `yaml:"compress" json:"compress"`
 	// FilenameSuffix represent suffix of backup filename
 	FilenameSuffix string `yaml:"filename_suffix" json:"filename_suffix"`
+	// KvsdbFilenameSuffix represent suffix of kvsdb backup filename
+	KvsdbFilenameSuffix string `yaml:"kvsdb_filename_suffix" json:"kvsdb_filename_suffix"`
 	// TargetAgentName represent the target agent name
 	TargetAgentName string `yaml:"target_agent_name" json:"target_agent_name"`
 	// Rate represent rate of rebalance data.
@@ -71,6 +73,7 @@ func (r *RebalanceJob) Bind() *RebalanceJob {
 	}
 
 	r.FilenameSuffix = GetActualValue(r.FilenameSuffix)
+	r.KvsdbFilenameSuffix = GetActualValue(r.KvsdbFilenameSuffix)
 	r.TargetAgentName = GetActualValue(r.TargetAgentName)
 	r.Rate = GetActualValue(r.Rate)
 
