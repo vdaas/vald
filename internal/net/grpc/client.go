@@ -396,7 +396,7 @@ func (g *gRPCClient) OrderedRange(ctx context.Context,
 }
 
 func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
-	orders []string, concurrency int, f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) (err error) {
+	orders []string, concurrency int, f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) (rerr error) {
 	sctx, span := trace.StartSpan(ctx, apiName+"/Client.OrderedRangeConcurrent")
 	defer func() {
 		if span != nil {
@@ -407,6 +407,7 @@ func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
 		log.Warn("no order found for OrderedRangeConcurrent")
 		return g.RangeConcurrent(sctx, concurrency, f)
 	}
+	var mu sync.Mutex
 	eg, egctx := errgroup.New(sctx)
 	eg.Limitation(concurrency)
 	for _, order := range orders {
@@ -432,11 +433,20 @@ func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
 					conn *ClientConn, copts ...CallOption) (interface{}, error) {
 					return nil, f(ictx, addr, conn, copts...)
 				})
-				return err
+				if err != nil {
+					mu.Lock()
+					rerr = errors.Wrap(rerr, errors.ErrRPCCallFailed(addr, err).Error())
+					mu.Unlock()
+				}
+				return nil
 			}
 		}))
 	}
-	return eg.Wait()
+	err := eg.Wait()
+	if err != nil {
+		rerr = errors.Wrap(rerr, errors.ErrRPCCallFailed(addr, err).Error())
+	}
+	return rerr
 }
 
 func (g *gRPCClient) RoundRobin(ctx context.Context, f func(ctx context.Context,

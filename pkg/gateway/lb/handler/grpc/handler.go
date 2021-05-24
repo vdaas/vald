@@ -865,7 +865,11 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 			}
 			if err != nil {
 				emu.Lock()
-				errs = errors.Wrap(errs, err.Error())
+				if errs == nil {
+					errs = err
+				} else {
+					errs = errors.Wrap(errs, err.Error())
+				}
 				emu.Unlock()
 			}
 			return nil
@@ -877,7 +881,11 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 		return nil
 	})
 	if err != nil {
-		errs = errors.Wrap(errs, err.Error())
+		if errs == nil {
+			errs = err
+		} else {
+			errs = errors.Wrap(errs, err.Error())
+		}
 	}
 	if errs != nil {
 		st, msg, err := status.ParseError(errs, codes.Internal,
@@ -1067,7 +1075,11 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 
 			if err != nil {
 				emu.Lock()
-				errs = errors.Wrap(errs, err.Error())
+				if errs == nil {
+					errs = err
+				} else {
+					errs = errors.Wrap(errs, err.Error())
+				}
 				emu.Unlock()
 			}
 			return nil
@@ -1078,7 +1090,11 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 		return nil
 	})
 	if err != nil {
-		errs = errors.Wrap(errs, err.Error())
+		if errs == nil {
+			errs = err
+		} else {
+			errs = errors.Wrap(errs, err.Error())
+		}
 	}
 
 	if errs != nil {
