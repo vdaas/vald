@@ -228,7 +228,12 @@ func TestWithNGT(t *testing.T) {
 					Dimension:    1024,
 					DistanceType: "cos",
 					ObjectType:   "uint8",
-					VQueue:       &config.VQueue{},
+					VQueue: &config.VQueue{
+						InsertBufferSize:     100,
+						InsertBufferPoolSize: 50,
+						DeleteBufferSize:     100,
+						DeleteBufferPoolSize: 50,
+					},
 				})
 				if err != nil {
 					t.Fatal(err)

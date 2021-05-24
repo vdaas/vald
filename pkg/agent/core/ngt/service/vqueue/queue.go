@@ -27,6 +27,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 )
 
@@ -83,7 +84,14 @@ func New(opts ...Option) (Queue, error) {
 	vq := new(vqueue)
 	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(vq); err != nil {
-			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+			werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+
+			e := new(errors.ErrCriticalOption)
+			if errors.As(err, &e) {
+				log.Error(werr)
+				return nil, werr
+			}
+			log.Warn(werr)
 		}
 	}
 	vq.ich = make(chan index, vq.ichSize)
