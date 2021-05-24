@@ -2621,3 +2621,295 @@ func Test_vqueue_DVCLen(t *testing.T) {
 		})
 	}
 }
+
+func Test_vqueue_IVExists(t *testing.T) {
+	type args struct {
+		uuid string
+	}
+	type fields struct {
+		ich              chan index
+		uii              []index
+		imu              sync.Mutex
+		uiim             map[string]index
+		dch              chan key
+		udk              []key
+		dmu              sync.Mutex
+		udim             map[string]int64
+		eg               errgroup.Group
+		finalizingInsert atomic.Value
+		finalizingDelete atomic.Value
+		closed           atomic.Value
+		ichSize          int
+		dchSize          int
+		iBufSize         int
+		dBufSize         int
+	}
+	type want struct {
+		want bool
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, bool) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got bool) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           uuid: "",
+		       },
+		       fields: fields {
+		           ich: nil,
+		           uii: nil,
+		           imu: nil,
+		           uiim: nil,
+		           dch: nil,
+		           udk: nil,
+		           dmu: nil,
+		           udim: nil,
+		           eg: nil,
+		           finalizingInsert: nil,
+		           finalizingDelete: nil,
+		           closed: nil,
+		           ichSize: 0,
+		           dchSize: 0,
+		           iBufSize: 0,
+		           dBufSize: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           uuid: "",
+		           },
+		           fields: fields {
+		           ich: nil,
+		           uii: nil,
+		           imu: nil,
+		           uiim: nil,
+		           dch: nil,
+		           udk: nil,
+		           dmu: nil,
+		           udim: nil,
+		           eg: nil,
+		           finalizingInsert: nil,
+		           finalizingDelete: nil,
+		           closed: nil,
+		           ichSize: 0,
+		           dchSize: 0,
+		           iBufSize: 0,
+		           dBufSize: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			v := &vqueue{
+				ich:              test.fields.ich,
+				uii:              test.fields.uii,
+				imu:              test.fields.imu,
+				uiim:             test.fields.uiim,
+				dch:              test.fields.dch,
+				udk:              test.fields.udk,
+				dmu:              test.fields.dmu,
+				udim:             test.fields.udim,
+				eg:               test.fields.eg,
+				finalizingInsert: test.fields.finalizingInsert,
+				finalizingDelete: test.fields.finalizingDelete,
+				closed:           test.fields.closed,
+				ichSize:          test.fields.ichSize,
+				dchSize:          test.fields.dchSize,
+				iBufSize:         test.fields.iBufSize,
+				dBufSize:         test.fields.dBufSize,
+			}
+
+			got := v.IVExists(test.args.uuid)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_vqueue_DVExists(t *testing.T) {
+	type args struct {
+		uuid string
+	}
+	type fields struct {
+		ich              chan index
+		uii              []index
+		imu              sync.Mutex
+		uiim             map[string]index
+		dch              chan key
+		udk              []key
+		dmu              sync.Mutex
+		udim             map[string]int64
+		eg               errgroup.Group
+		finalizingInsert atomic.Value
+		finalizingDelete atomic.Value
+		closed           atomic.Value
+		ichSize          int
+		dchSize          int
+		iBufSize         int
+		dBufSize         int
+	}
+	type want struct {
+		want bool
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, bool) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got bool) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           uuid: "",
+		       },
+		       fields: fields {
+		           ich: nil,
+		           uii: nil,
+		           imu: nil,
+		           uiim: nil,
+		           dch: nil,
+		           udk: nil,
+		           dmu: nil,
+		           udim: nil,
+		           eg: nil,
+		           finalizingInsert: nil,
+		           finalizingDelete: nil,
+		           closed: nil,
+		           ichSize: 0,
+		           dchSize: 0,
+		           iBufSize: 0,
+		           dBufSize: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           uuid: "",
+		           },
+		           fields: fields {
+		           ich: nil,
+		           uii: nil,
+		           imu: nil,
+		           uiim: nil,
+		           dch: nil,
+		           udk: nil,
+		           dmu: nil,
+		           udim: nil,
+		           eg: nil,
+		           finalizingInsert: nil,
+		           finalizingDelete: nil,
+		           closed: nil,
+		           ichSize: 0,
+		           dchSize: 0,
+		           iBufSize: 0,
+		           dBufSize: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			v := &vqueue{
+				ich:              test.fields.ich,
+				uii:              test.fields.uii,
+				imu:              test.fields.imu,
+				uiim:             test.fields.uiim,
+				dch:              test.fields.dch,
+				udk:              test.fields.udk,
+				dmu:              test.fields.dmu,
+				udim:             test.fields.udim,
+				eg:               test.fields.eg,
+				finalizingInsert: test.fields.finalizingInsert,
+				finalizingDelete: test.fields.finalizingDelete,
+				closed:           test.fields.closed,
+				ichSize:          test.fields.ichSize,
+				dchSize:          test.fields.dchSize,
+				iBufSize:         test.fields.iBufSize,
+				dBufSize:         test.fields.dBufSize,
+			}
+
+			got := v.DVExists(test.args.uuid)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
