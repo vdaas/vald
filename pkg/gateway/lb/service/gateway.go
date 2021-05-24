@@ -115,23 +115,19 @@ func (g *gateway) DoMulti(ctx context.Context, num int,
 		return nil
 	})
 	if err != nil && cur < limit {
-		addrs := make([]string, 0, len(addrs)-int(cur))
-		for _, addr := range addrs {
-			_, ok := visited.Load(addr)
-			if !ok {
-				addrs = append(addrs, addr)
-			}
-		}
 		err = g.client.GetClient().OrderedRange(sctx, addrs, func(ictx context.Context,
 			addr string,
 			conn *grpc.ClientConn,
 			copts ...grpc.CallOption) (err error) {
 			if atomic.LoadUint32(&cur) < limit {
-				err = f(ictx, addr, vald.NewValdClient(conn), copts...)
-				if err != nil {
-					return err
+				_, ok := visited.Load(addr)
+				if !ok {
+					err = f(ictx, addr, vald.NewValdClient(conn), copts...)
+					if err != nil {
+						return err
+					}
+					atomic.AddUint32(&cur, 1)
 				}
-				atomic.AddUint32(&cur, 1)
 			}
 			return nil
 		})
