@@ -19,8 +19,10 @@ package vqueue
 
 import (
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/errors"
 )
 
+// Option represents the functional option for vqueue.
 type Option func(n *vqueue) error
 
 var defaultOptions = []Option{
@@ -31,51 +33,61 @@ var defaultOptions = []Option{
 	WithInsertBufferSize(100),
 }
 
+// WithErrGroup returns the option to set the errgroup.
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(v *vqueue) error {
-		if eg != nil {
-			v.eg = eg
+		if eg == nil {
+			return errors.NewErrInvalidOption("errgroup", eg)
 		}
+		v.eg = eg
 
 		return nil
 	}
 }
 
+// WithInsertBufferSize returns the option to set the size of the insert buffer.
 func WithInsertBufferSize(size int) Option {
 	return func(v *vqueue) error {
-		if size > 0 {
-			v.ichSize = size
+		if size <= 0 {
+			return errors.NewErrInvalidOption("insertBufferSize", size)
 		}
+		v.ichSize = size
 
 		return nil
 	}
 }
 
+// WithDeleteBufferSize returns the option to set the size of the delete buffer.
 func WithDeleteBufferSize(size int) Option {
 	return func(v *vqueue) error {
-		if size > 0 {
-			v.dchSize = size
+		if size <= 0 {
+			return errors.NewErrInvalidOption("deleteBufferSize", size)
 		}
+		v.dchSize = size
 
 		return nil
 	}
 }
 
+// WithInsertBufferPoolSize returns the option to set the pool size of the insert buffer.
 func WithInsertBufferPoolSize(size int) Option {
 	return func(v *vqueue) error {
-		if size > 0 {
-			v.iBufSize = size
+		if size <= 0 {
+			return errors.NewErrInvalidOption("insertBufferPoolSize", size)
 		}
+		v.iBufSize = size
 
 		return nil
 	}
 }
 
+// WithDeleteBufferPoolSize returns the option to set the pool size of the delete buffer.
 func WithDeleteBufferPoolSize(size int) Option {
 	return func(v *vqueue) error {
-		if size > 0 {
-			v.dBufSize = size
+		if size <= 0 {
+			return errors.NewErrInvalidOption("deleteBufferPoolSize", size)
 		}
+		v.dBufSize = size
 
 		return nil
 	}

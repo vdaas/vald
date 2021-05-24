@@ -49,6 +49,8 @@ agent:
     requests:
       cpu: 100m
       memory: 50Mi
+  ngt:
+    dimension: 784
 
 discoverer:
   podAnnotations:
