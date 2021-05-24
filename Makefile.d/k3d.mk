@@ -25,23 +25,21 @@ k3d/install: $(BINDIR)/k3d
 $(BINDIR)/k3d:
 	mkdir -p $(BINDIR)
 	wget -q -O - "https://raw.githubusercontent.com/rancher/k3d/main/install.sh" | bash
-	chmod a+x $(BINDIR)/k3d
+	chmod a+x $(BINDIR)/$(K3D_COMMAND)
 
 .PHONY: k3d/start
 ## start k3d (kubernetes in docker) cluster
 k3d/start:
-	$(K3D_COMMAND) cluster create $(K3D_CLUSTER_NAME) -p "8081:80@loadbalancer" --agents $(K3D_NODES)
-	export KUBECONFIG="$(sudo $(K3D_COMMAND) kubeconfig merge -o $(TEMP_DIR)/k3d_$(K3D_CLUSTER_NAME)_kubeconfig.yaml $(K3D_CLUSTER_NAME))"
-
-.PHONY: k3d/stop
-## stop k3d (kubernetes in docker) cluster
-k3d/stop:
-	$(K3D_COMMAND) cluster delete $(K3D_CLUSTER_NAME) --keep-registry-volume
+	sudo sysctl net/netfilter/nf_conntrack_max=524288
+	$(K3D_COMMAND) cluster create $(K3D_CLUSTER_NAME) -p "8081:80@loadbalancer" --agents $(K3D_NODES) --k3s-server-arg '--no-deploy=traefik'
+	export KUBECONFIG="$(shell sudo $(K3D_COMMAND) kubeconfig merge -o $(TEMP_DIR)/k3d_$(K3D_CLUSTER_NAME)_kubeconfig.yaml $(K3D_CLUSTER_NAME))"
+	kubectl apply -f https://projectcontour.io/quickstart/operator.yaml
+	kubectl apply -f https://projectcontour.io/quickstart/contour-custom-resource.yaml
 
 .PHONY: k3d/restart
 ## restart k3d (kubernetes in docker) cluster
 k3d/restart: \
-	k3d/stop \
+	k3d/delete \
 	k3d/start
 
 
