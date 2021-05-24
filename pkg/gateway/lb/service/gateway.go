@@ -114,7 +114,7 @@ func (g *gateway) DoMulti(ctx context.Context, num int,
 		}
 		return nil
 	})
-	if err != nil && cur < limit {
+	if err != nil || cur < limit {
 		err = g.client.GetClient().OrderedRange(sctx, addrs, func(ictx context.Context,
 			addr string,
 			conn *grpc.ClientConn,
