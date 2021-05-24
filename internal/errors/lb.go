@@ -17,6 +17,4 @@
 // Package errors provides error types and function
 package errors
 
-var (
-	ErrEmptySearchResult = New("search result is empty")
-)
+var ErrEmptySearchResult = New("search result is empty")

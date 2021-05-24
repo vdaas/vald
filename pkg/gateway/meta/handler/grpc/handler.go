@@ -1300,7 +1300,11 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 			updateLocs = loc.GetLocations()
 		} else {
 			mu.Lock()
-			errs = errors.Wrap(errs, err.Error())
+			if errs == nil {
+				errs = err
+			} else {
+				errs = errors.Wrap(errs, err.Error())
+			}
 			mu.Unlock()
 		}
 		return nil
@@ -1324,7 +1328,11 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 			insertLocs = loc.GetLocations()
 		} else {
 			mu.Lock()
-			errs = errors.Wrap(errs, err.Error())
+			if errs == nil {
+				errs = err
+			} else {
+				errs = errors.Wrap(errs, err.Error())
+			}
 			mu.Unlock()
 		}
 		return nil
@@ -1332,7 +1340,11 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 
 	err = eg.Wait()
 	if err != nil {
-		errs = errors.Wrap(errs, err.Error())
+		if errs == nil {
+			errs = err
+		} else {
+			errs = errors.Wrap(errs, err.Error())
+		}
 	}
 	if errs != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,
