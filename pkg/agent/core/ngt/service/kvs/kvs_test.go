@@ -718,9 +718,7 @@ func Test_bidi_Set(t *testing.T) {
 				fields.uo[i] = new(uo)
 			}
 
-			var (
-				oldVal uint32 = 10000
-			)
+			var oldVal uint32 = 10000
 
 			var (
 				key        = "45637ec4-c85f-11ea-87d0"
@@ -753,9 +751,7 @@ func Test_bidi_Set(t *testing.T) {
 				fields.uo[i] = new(uo)
 			}
 
-			var (
-				key = "45637ec4-c85f-11ea-87d0"
-			)
+			key := "45637ec4-c85f-11ea-87d0"
 
 			return test{
 				name: "set success when the val is 0",
@@ -779,9 +775,7 @@ func Test_bidi_Set(t *testing.T) {
 				fields.uo[i] = new(uo)
 			}
 
-			var (
-				val uint32 = 14438
-			)
+			var val uint32 = 14438
 
 			return test{
 				name: "set success when the key is empty string",
@@ -1023,9 +1017,7 @@ func Test_bidi_Delete(t *testing.T) {
 				fields.uo[i] = new(uo)
 			}
 
-			var (
-				val uint32 = 14438
-			)
+			var val uint32 = 14438
 
 			return test{
 				name:   "return val and true when the delete successes and the key is empty string",
@@ -1293,9 +1285,7 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 				fields.uo[i] = new(uo)
 			}
 
-			var (
-				key = "45637ec4-c85f-11ea-87d0"
-			)
+			key := "45637ec4-c85f-11ea-87d0"
 
 			return test{
 				name: "return key and true when the delete successes and the val is 0",
