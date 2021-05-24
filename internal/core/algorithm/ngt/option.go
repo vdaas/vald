@@ -30,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
+// Option represents the functional option for NGT.
 type Option func(*ngt) error
 
 var (
@@ -51,6 +52,7 @@ var (
 	}
 )
 
+// WithInMemoryMode represents the option to set to start in memory mode or not for NGT.
 func WithInMemoryMode(flg bool) Option {
 	return func(n *ngt) error {
 		n.inMemory = flg
@@ -58,6 +60,7 @@ func WithInMemoryMode(flg bool) Option {
 	}
 }
 
+// WithIndexPath represents the option to set the index path for NGT.
 func WithIndexPath(path string) Option {
 	return func(n *ngt) error {
 		if len(path) == 0 {
@@ -68,6 +71,7 @@ func WithIndexPath(path string) Option {
 	}
 }
 
+// WithBulkInsertChunkSize represents the option to set the bulk insert chunk size for NGT.
 func WithBulkInsertChunkSize(size int) Option {
 	return func(n *ngt) error {
 		if size < 0 {
@@ -78,6 +82,7 @@ func WithBulkInsertChunkSize(size int) Option {
 	}
 }
 
+// WithDimension represents the option to set the dimension for NGT.
 func WithDimension(size int) Option {
 	return func(n *ngt) error {
 		if size > ngtVectorDimensionSizeLimit || size < minimumDimensionSize {
@@ -96,6 +101,7 @@ func WithDimension(size int) Option {
 	}
 }
 
+// WithDistanceTypeByString represents the option to set the distance type for NGT.
 func WithDistanceTypeByString(dt string) Option {
 	var d distanceType
 	switch strings.NewReplacer("-", "", "_", "", " ", "").Replace(strings.ToLower(dt)) {
@@ -119,6 +125,7 @@ func WithDistanceTypeByString(dt string) Option {
 	return WithDistanceType(d)
 }
 
+// WithDistanceType represents the option to set the distance type for NGT.
 func WithDistanceType(t distanceType) Option {
 	return func(n *ngt) error {
 		switch t {
@@ -170,6 +177,7 @@ func WithDistanceType(t distanceType) Option {
 	}
 }
 
+// WithObjectTypeByString represents the option to set the object type for NGT.
 func WithObjectTypeByString(ot string) Option {
 	var o objectType
 	switch strings.NewReplacer("-", "", "_", "", " ", "", "double", "float").Replace(strings.ToLower(ot)) {
@@ -181,6 +189,7 @@ func WithObjectTypeByString(ot string) Option {
 	return WithObjectType(o)
 }
 
+// WithObjectType represents the option to set the object type for NGT.
 func WithObjectType(t objectType) Option {
 	return func(n *ngt) error {
 		switch t {
@@ -203,6 +212,7 @@ func WithObjectType(t objectType) Option {
 	}
 }
 
+// WithCreationEdgeSize represents the option to set the creation edge size for NGT.
 func WithCreationEdgeSize(size int) Option {
 	return func(n *ngt) error {
 		if C.ngt_set_property_edge_size_for_creation(n.prop, C.int16_t(size), n.ebuf) == ErrorCode {
@@ -213,6 +223,7 @@ func WithCreationEdgeSize(size int) Option {
 	}
 }
 
+// WithSearchEdgeSize represents the option to set the search edge size for NGT.
 func WithSearchEdgeSize(size int) Option {
 	return func(n *ngt) error {
 		if C.ngt_set_property_edge_size_for_search(n.prop, C.int16_t(size), n.ebuf) == ErrorCode {
@@ -223,6 +234,7 @@ func WithSearchEdgeSize(size int) Option {
 	}
 }
 
+// WithDefaultPoolSize represents the option to set the default pool size for NGT.
 func WithDefaultPoolSize(poolSize uint32) Option {
 	return func(n *ngt) error {
 		if poolSize == 0 {
@@ -233,6 +245,7 @@ func WithDefaultPoolSize(poolSize uint32) Option {
 	}
 }
 
+// WithDefaultRadius represents the option to set the default radius for NGT.
 func WithDefaultRadius(radius float32) Option {
 	return func(n *ngt) error {
 		if radius == 0 {
@@ -243,6 +256,7 @@ func WithDefaultRadius(radius float32) Option {
 	}
 }
 
+// WithDefaultEpsilon represents the option to set the default epsilon for NGT.
 func WithDefaultEpsilon(epsilon float32) Option {
 	return func(n *ngt) error {
 		if epsilon == 0 {
