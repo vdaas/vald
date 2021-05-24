@@ -431,8 +431,7 @@ func (n *ngt) insert(uuid string, vec []float32, t int64, validation bool) (err 
 		// if delete schedule exists we can insert new vector
 		_, ok := n.kvs.Get(uuid)
 		if ok || n.vq.IVExists(uuid) {
-			err = errors.ErrUUIDAlreadyExists(uuid)
-			return err
+			return errors.ErrUUIDAlreadyExists(uuid)
 		}
 	}
 	return n.vq.PushInsert(uuid, vec, t)

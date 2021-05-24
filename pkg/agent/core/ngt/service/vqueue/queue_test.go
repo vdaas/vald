@@ -19,6 +19,7 @@ package vqueue
 
 import (
 	"context"
+	"os"
 	"reflect"
 	"sync"
 	"sync/atomic"
@@ -26,8 +27,15 @@ import (
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/log/logger"
 	"go.uber.org/goleak"
 )
+
+func TestMain(m *testing.M) {
+	log.Init(log.WithLoggerType(logger.NOP.String()))
+	os.Exit(m.Run())
+}
 
 func TestNew(t *testing.T) {
 	t.Parallel()

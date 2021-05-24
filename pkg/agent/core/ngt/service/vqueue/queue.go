@@ -27,6 +27,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 )
 
@@ -83,7 +84,14 @@ func New(opts ...Option) (Queue, error) {
 	vq := new(vqueue)
 	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(vq); err != nil {
-			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+			werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+
+			e := new(errors.ErrCriticalOption)
+			if errors.As(err, &e) {
+				log.Error(werr)
+				return nil, werr
+			}
+			log.Warn(werr)
 		}
 	}
 	vq.ich = make(chan index, vq.ichSize)
@@ -369,10 +377,10 @@ func (v *vqueue) flushAndLoadDelete() (udk []key) {
 	sort.Sort(sort.Reverse(sort.IntSlice(dl)))
 	for _, i := range dl {
 		v.imu.Lock()
-		// remove unnecessary insert vector queue data
-		v.uii = append(v.uii[:i], v.uii[i+1:]...)
 		// remove from existing map
 		delete(v.uiim, v.uii[i].uuid)
+		// remove unnecessary insert vector queue data
+		v.uii = append(v.uii[:i], v.uii[i+1:]...)
 		v.imu.Unlock()
 	}
 	return udk

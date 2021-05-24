@@ -26,6 +26,7 @@ import (
 	xxhash "github.com/cespare/xxhash/v2"
 )
 
+// BidiMap represents an interface for operating kvs.
 type BidiMap interface {
 	Get(string) (uint32, bool)
 	GetInverse(uint32) (string, bool)
@@ -51,6 +52,7 @@ const (
 	// mask = 0xFFF.
 )
 
+// New returns the bidi that satisfies the BidiMap interface.
 func New() BidiMap {
 	b := &bidi{
 		l: 0,
@@ -64,20 +66,27 @@ func New() BidiMap {
 	return b
 }
 
+// Get returns the value and boolean from the given key.
+// If the value does not exist, it returns nil and false.
 func (b *bidi) Get(key string) (uint32, bool) {
 	return b.uo[xxhash.Sum64(stringToBytes(key))&mask].Load(key)
 }
 
+// GetInverse returns the key and the boolean from the given val.
+// If the key does not exist, it returns nil and false.
 func (b *bidi) GetInverse(val uint32) (string, bool) {
 	return b.ou[val&mask].Load(val)
 }
 
+// Set sets the key and val to the bidi.
 func (b *bidi) Set(key string, val uint32) {
 	b.uo[xxhash.Sum64(stringToBytes(key))&mask].Store(key, val)
 	b.ou[val&mask].Store(val, key)
 	atomic.AddUint64(&b.l, 1)
 }
 
+// Delete deletes the key and the value from the bidi by the given key and returns val and true.
+// If the value for the key does not exist, it returns nil and false.
 func (b *bidi) Delete(key string) (val uint32, ok bool) {
 	idx := xxhash.Sum64(stringToBytes(key)) & mask
 	val, ok = b.uo[idx].Load(key)
@@ -90,6 +99,8 @@ func (b *bidi) Delete(key string) (val uint32, ok bool) {
 	return val, true
 }
 
+// DeleteInverse deletes the key and the value from the bidi by the given val and returns the key and true.
+// If the key for the val does not exist, it returns nil and false.
 func (b *bidi) DeleteInverse(val uint32) (key string, ok bool) {
 	idx := val & mask
 	key, ok = b.ou[idx].Load(val)
@@ -102,6 +113,7 @@ func (b *bidi) DeleteInverse(val uint32) (key string, ok bool) {
 	return key, true
 }
 
+// Range retrieves all set keys and values and calls the callback function f.
 func (b *bidi) Range(ctx context.Context, f func(string, uint32) bool) {
 	wg := new(sync.WaitGroup)
 	for i := range b.uo {
@@ -122,6 +134,7 @@ func (b *bidi) Range(ctx context.Context, f func(string, uint32) bool) {
 	wg.Wait()
 }
 
+// Len returns the length of the cache that is set in the bidi.
 func (b *bidi) Len() uint64 {
 	return atomic.LoadUint64(&b.l)
 }
