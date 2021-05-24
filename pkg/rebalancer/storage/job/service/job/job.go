@@ -184,7 +184,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 					},
 				})
 				if gerr != nil {
-					log.Error(gerr)
+					log.Errorf("failed to send GetObject request, uuid: %s, err: %s", id, gerr.Error())
 					mu.Lock()
 					err = errors.Wrap(err, gerr.Error())
 					mu.Unlock()
@@ -201,7 +201,7 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 					},
 				})
 				if uerr != nil {
-					log.Error(uerr)
+					log.Errorf("failed to send Update request, uuid: %s, err: %s", id, uerr.Error())
 					mu.Lock()
 					err = errors.Wrap(err, uerr.Error())
 					mu.Unlock()
