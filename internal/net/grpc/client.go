@@ -30,7 +30,9 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/pool"
+	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/singleflight"
@@ -466,7 +468,17 @@ func (g *gRPCClient) RoundRobin(ctx context.Context, f func(ctx context.Context,
 			}
 			r, err = g.do(ictx, p, addr, false, f)
 			if err != nil {
-				return nil, true, err
+				st, ok := status.FromError(err)
+				if !ok {
+					return nil, err != nil, err
+				}
+				switch st.Code() {
+				case codes.Internal,
+					codes.Unavailable,
+					codes.ResourceExhausted:
+					return nil, err != nil, err
+				}
+				return nil, false, err
 			}
 			return r, false, nil
 		})
@@ -522,7 +534,17 @@ func (g *gRPCClient) do(ctx context.Context, p pool.Conn, addr string, enableBac
 				return err
 			})
 			if err != nil {
-				return nil, err != nil, err
+				st, ok := status.FromError(err)
+				if !ok {
+					return nil, err != nil, err
+				}
+				switch st.Code() {
+				case codes.Internal,
+					codes.Unavailable,
+					codes.ResourceExhausted:
+					return nil, err != nil, err
+				}
+				return nil, false, err
 			}
 			return r, false, nil
 		})
