@@ -24,4 +24,6 @@ var (
 	ErrStorageWriterNotOpened = New("writer not opened")
 
 	ErrBucketNotOpened = New("bucket not opened")
+
+	ErrUnsupportedStorageMethod = New("unsupported storage method")
 )
