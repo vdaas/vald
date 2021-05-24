@@ -1019,8 +1019,8 @@ honnef.co/go/tools v0.0.0-20190523083050-ea95bdfd59fc/go.mod h1:rf3lG4BRIbNafJWh
 honnef.co/go/tools v0.0.1-2019.2.3/go.mod h1:a3bituU0lyd329TUQxRnasdCoJDkEUEAqEt0JzvZhAg=
 honnef.co/go/tools v0.0.1-2020.1.4 h1:UoveltGrhghAA7ePc+e+QYDHXrBps2PqFZiHkGR/xK8=
 honnef.co/go/tools v0.0.1-2020.1.4/go.mod h1:X/FiERA/W4tHapMX5mGpAtMSVEeEUOyHaw9vFzvIQ3k=
-inet.af/netaddr v0.0.0-20210521171555-9ee55bc0c50b h1:GoOAHwQKK/dkkO/DgT/NQCSNZuXS6tlgLsHiXRakEiY=
-inet.af/netaddr v0.0.0-20210521171555-9ee55bc0c50b/go.mod h1:z0nx+Dh+7N7CC8V5ayHtHGpZpxLQZZxkIaaz6HN65Ls=
+inet.af/netaddr v0.0.0-20210523191804-d57edf19c517 h1:gieHAlViNfjNt0m6gKr4aazCMXQobPMOqeyQ1ZN5ekw=
+inet.af/netaddr v0.0.0-20210523191804-d57edf19c517/go.mod h1:z0nx+Dh+7N7CC8V5ayHtHGpZpxLQZZxkIaaz6HN65Ls=
 k8s.io/api v0.20.7 h1:wOEPJ3NoimUfR9v9sAO2JosPiEP9IGFNplf7zZvYzPU=
 k8s.io/api v0.20.7/go.mod h1:4x0yErUkcEWYG+O0S4QdrYa2+PLEeY2M7aeQe++2nmk=
 k8s.io/apiextensions-apiserver v0.20.7 h1:bAFRPfYpUvs7U2+SdCZuNFThZm8ZbQhUpEKMe1H2BYw=

@@ -87,7 +87,7 @@ require (
 	google.golang.org/genproto v0.0.0-20210521181308-5ccab8a35a9a
 	google.golang.org/grpc v1.37.1
 	gopkg.in/yaml.v2 v2.4.0
-	inet.af/netaddr v0.0.0-20210521171555-9ee55bc0c50b
+	inet.af/netaddr v0.0.0-20210523191804-d57edf19c517
 	k8s.io/api v0.20.7
 	k8s.io/apimachinery v0.20.7
 	k8s.io/cli-runtime v0.0.0-00010101000000-000000000000
