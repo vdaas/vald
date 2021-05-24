@@ -99,9 +99,8 @@ func (g *gateway) DoMulti(ctx context.Context, num int,
 	} else {
 		limit = uint32(num)
 	}
-	cctx, cancel := context.WithCancel(sctx)
 	var visited sync.Map
-	err = g.client.GetClient().OrderedRangeConcurrent(cctx, addrs, int(limit), func(ictx context.Context,
+	err = g.client.GetClient().OrderedRange(sctx, addrs, func(ictx context.Context,
 		addr string,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption) (err error) {
@@ -110,9 +109,7 @@ func (g *gateway) DoMulti(ctx context.Context, num int,
 			if err != nil {
 				return err
 			}
-			if atomic.AddUint32(&cur, 1) >= limit {
-				cancel()
-			}
+			atomic.AddUint32(&cur, 1)
 			visited.Store(addr, struct{}{})
 		}
 		return nil
@@ -125,7 +122,7 @@ func (g *gateway) DoMulti(ctx context.Context, num int,
 				addrs = append(addrs, addr)
 			}
 		}
-		err = g.client.GetClient().OrderedRange(cctx, addrs, func(ictx context.Context,
+		err = g.client.GetClient().OrderedRange(sctx, addrs, func(ictx context.Context,
 			addr string,
 			conn *grpc.ClientConn,
 			copts ...grpc.CallOption) (err error) {
@@ -134,10 +131,7 @@ func (g *gateway) DoMulti(ctx context.Context, num int,
 				if err != nil {
 					return err
 				}
-				if atomic.AddUint32(&cur, 1) >= limit {
-					cancel()
-				}
-				visited.Store(addr, struct{}{})
+				atomic.AddUint32(&cur, 1)
 			}
 			return nil
 		})
