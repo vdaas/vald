@@ -1301,31 +1301,138 @@ func Test_vqueue_addInsert(t *testing.T) {
 		iBufSize         int
 		dBufSize         int
 	}
-	type want struct{}
+	type want struct {
+		wantUii  []index
+		wantUiim map[string]index
+	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want) error
+		checkFunc  func(want, []index, map[string]index) error
 		beforeFunc func(args, *vqueue)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func(w want, gotUii []index, gotUiim map[string]index) error {
+		if !reflect.DeepEqual(gotUii, w.wantUii) {
+			return errors.Errorf("uii got: \"%#v\",\n\t\t\t\tuii want: \"%#v\"", gotUii, w.wantUii)
+		}
+		if !reflect.DeepEqual(gotUiim, w.wantUiim) {
+			return errors.Errorf("uiim got: \"%#v\",\n\t\t\t\tuiim want: \"%#v\"", gotUiim, w.wantUiim)
+		}
 		return nil
 	}
 	tests := []test{
 		func() test {
+			idx := index{
+				uuid:   "9d2091e2-b864-11eb-8529-0242ac130003",
+				vector: []float32{1, 2, 3},
+			}
 			return test{
 				name: "insert success",
 				args: args{
-					i: index{},
+					i: idx,
 				},
 				fields: fields{
-					uii:  nil,
-					uiim: nil,
+					uii:  make([]index, 0),
+					uiim: make(map[string]index),
 				},
-				want: want{},
+				want: want{
+					wantUii: []index{idx},
+					wantUiim: map[string]index{
+						idx.uuid: idx,
+					},
+				},
+			}
+		}(),
+		func() test {
+			idx := index{
+				uuid:   "9d2091e2-b864-11eb-8529-0242ac130003",
+				vector: []float32{1, 2, 3},
+			}
+			preInsertedIdx := index{
+				uuid:   "1d2091e2-b864-11eb-8529-0242ac130003",
+				vector: []float32{1, 2, 3},
+			}
+			uii := []index{
+				preInsertedIdx,
+			}
+			uiim := map[string]index{
+				preInsertedIdx.uuid: preInsertedIdx,
+			}
+			return test{
+				name: "insert success when there is already data",
+				args: args{
+					i: idx,
+				},
+				fields: fields{
+					uii:  uii,
+					uiim: uiim,
+				},
+				want: want{
+					wantUii: []index{
+						preInsertedIdx,
+						idx,
+					},
+					wantUiim: map[string]index{
+						preInsertedIdx.uuid: preInsertedIdx,
+						idx.uuid:            idx,
+					},
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "insert success when the idx is empty",
+				args: args{},
+				fields: fields{
+					uii:  make([]index, 0),
+					uiim: make(map[string]index),
+				},
+				want: want{
+					wantUii: []index{
+						index{},
+					},
+					wantUiim: map[string]index{
+						"": index{},
+					},
+				},
+			}
+		}(),
+		func() test {
+			idx := index{
+				uuid:   "9d2091e2-b864-11eb-8529-0242ac130003",
+				vector: []float32{1, 2, 3},
+			}
+			preInsertedIdx := index{
+				uuid:   "9d2091e2-b864-11eb-8529-0242ac130003",
+				vector: []float32{1, 2, 3},
+			}
+			uii := []index{
+				preInsertedIdx,
+			}
+			uiim := map[string]index{
+				preInsertedIdx.uuid: preInsertedIdx,
+			}
+			return test{
+				name: "insert success when the same uuid exits",
+				args: args{
+					i: idx,
+				},
+				fields: fields{
+					uii:  uii,
+					uiim: uiim,
+				},
+				want: want{
+					wantUii: []index{
+						preInsertedIdx,
+						idx,
+					},
+					wantUiim: map[string]index{
+						idx.uuid: idx,
+					},
+				},
 			}
 		}(),
 	}
@@ -1365,7 +1472,7 @@ func Test_vqueue_addInsert(t *testing.T) {
 			}
 
 			v.addInsert(test.args.i)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := test.checkFunc(test.want, v.uii, v.uiim); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1383,6 +1490,7 @@ func Test_vqueue_addDelete(t *testing.T) {
 		uiim             uiim
 		dch              chan key
 		udk              []key
+		udim             map[string]int64
 		dmu              sync.Mutex
 		udim             udim
 		eg               errgroup.Group
@@ -1394,81 +1502,145 @@ func Test_vqueue_addDelete(t *testing.T) {
 		iBufSize         int
 		dBufSize         int
 	}
-	type want struct{}
+	type want struct {
+		wantUdk  []key
+		wantUdim map[string]int64
+	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want) error
-		beforeFunc func(args)
+		checkFunc  func(want, []key, map[string]int64) error
+		beforeFunc func(args, *vqueue)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func(w want, gotUdk []key, gotUdim map[string]int64) error {
+		if !reflect.DeepEqual(gotUdk, w.wantUdk) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotUdk, w.wantUdk)
+		}
+		if !reflect.DeepEqual(gotUdim, w.wantUdim) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotUdim, w.wantUdim)
+		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           d: key{},
-		       },
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           d: key{},
-		           },
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			k := key{
+				uuid:   "9d2091e2-b864-11eb-8529-0242ac130003",
+				vector: []float32{1, 2, 3},
+				date:   1419933529,
+			}
+			return test{
+				name: "delete success",
+				args: args{
+					d: k,
+				},
+				fields: fields{
+					udk:  make([]key, 0),
+					udim: make(map[string]int64),
+				},
+				want: want{
+					wantUdk: []key{k},
+					wantUdim: map[string]int64{
+						k.uuid: k.date,
+					},
+				},
+			}
+		}(),
+		func() test {
+			k := key{
+				uuid:   "9d2091e2-b864-11eb-8529-0242ac130003",
+				vector: []float32{1, 2, 3},
+				date:   1419933529,
+			}
+			preK := key{
+				uuid:   "fabc74ae-b915-11eb-8529-0242ac130003",
+				vector: []float32{4, 5, 6},
+				date:   1019933529,
+			}
+			udk := []key{
+				preK,
+			}
+			udim := map[string]int64{
+				preK.uuid: preK.date,
+			}
+			return test{
+				name: "delete success when there is already data",
+				args: args{
+					d: k,
+				},
+				fields: fields{
+					udk:  udk,
+					udim: udim,
+				},
+				want: want{
+					wantUdk: []key{
+						preK,
+						k,
+					},
+					wantUdim: map[string]int64{
+						k.uuid:    k.date,
+						preK.uuid: preK.date,
+					},
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "delete success when the key is empty",
+				args: args{},
+				fields: fields{
+					udk:  make([]key, 0),
+					udim: make(map[string]int64),
+				},
+				want: want{
+					wantUdk: []key{
+						{},
+					},
+					wantUdim: map[string]int64{
+						"": 0,
+					},
+				},
+			}
+		}(),
+		func() test {
+			k := key{
+				uuid:   "9d2091e2-b864-11eb-8529-0242ac130003",
+				vector: []float32{1, 2, 3},
+				date:   1419933529,
+			}
+			preK := key{
+				uuid:   "9d2091e2-b864-11eb-8529-0242ac130003",
+				vector: []float32{4, 5, 6},
+				date:   1019933529,
+			}
+			udk := []key{
+				preK,
+			}
+			udim := map[string]int64{
+				preK.uuid: preK.date,
+			}
+			return test{
+				name: "delete success when the same uuid exits",
+				args: args{
+					d: k,
+				},
+				fields: fields{
+					udk:  udk,
+					udim: udim,
+				},
+				want: want{
+					wantUdk: []key{
+						preK,
+						k,
+					},
+					wantUdim: map[string]int64{
+						k.uuid: k.date,
+					},
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -1476,15 +1648,6 @@ func Test_vqueue_addDelete(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
 			v := &vqueue{
 				ich:              test.fields.ich,
 				uii:              test.fields.uii,
@@ -1492,6 +1655,7 @@ func Test_vqueue_addDelete(t *testing.T) {
 				uiim:             test.fields.uiim,
 				dch:              test.fields.dch,
 				udk:              test.fields.udk,
+				udim:             test.fields.udim,
 				dmu:              test.fields.dmu,
 				udim:             test.fields.udim,
 				eg:               test.fields.eg,
@@ -1503,9 +1667,18 @@ func Test_vqueue_addDelete(t *testing.T) {
 				iBufSize:         test.fields.iBufSize,
 				dBufSize:         test.fields.dBufSize,
 			}
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args, v)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
 
 			v.addDelete(test.args.d)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := test.checkFunc(test.want, v.udk, v.udim); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1532,78 +1705,165 @@ func Test_vqueue_flushAndLoadInsert(t *testing.T) {
 		dBufSize         int
 	}
 	type want struct {
-		wantUii []index
+		wantUii  []index
+		wantUiim map[string]index
 	}
 	type test struct {
 		name       string
 		fields     fields
 		want       want
-		checkFunc  func(want, []index) error
+		checkFunc  func(want, []index, *vqueue) error
 		beforeFunc func()
 		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want, gotUii []index) error {
+	defaultCheckFunc := func(w want, gotUii []index, v *vqueue) error {
 		if !reflect.DeepEqual(gotUii, w.wantUii) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotUii, w.wantUii)
+			return errors.Errorf("uii got: \"%#v\",\n\t\t\t\tuii want: \"%#v\"", gotUii, w.wantUii)
+		}
+		if !reflect.DeepEqual(v.uiim, w.wantUiim) {
+			return errors.Errorf("uiim got: \"%#v\",\n\t\t\t\tuiim want: \"%#v\"", v.uiim, w.wantUiim)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			uii := []index{
+				{
+					uuid: "109c5c86-bc35-11eb-8529-0242ac130003",
+					date: 2000000000,
+				},
+				{
+					uuid: "109c583a-bc35-11eb-8529-0242ac130003",
+					date: 1000000000,
+				},
+				{
+					uuid: "109c5d9e-bc35-11eb-8529-0242ac130003",
+					date: 3000000000,
+				},
+				{
+					uuid: "109c5f24-bc35-11eb-8529-0242ac130003",
+					date: 5000000000,
+				},
+				{
+					uuid: "109c5e66-bc35-11eb-8529-0242ac130003",
+					date: 4000000000,
+				},
+			}
+			uiim := make(map[string]index)
+			for _, idx := range uii {
+				uiim[idx.uuid] = idx
+			}
+			return test{
+				name: "return indexes when there is no duplicate data in uii",
+				fields: fields{
+					uii:  uii,
+					uiim: uiim,
+				},
+				want: want{
+					wantUii: []index{
+						{
+							uuid: "109c583a-bc35-11eb-8529-0242ac130003",
+							date: 1000000000,
+						},
+						{
+							uuid: "109c5c86-bc35-11eb-8529-0242ac130003",
+							date: 2000000000,
+						},
+						{
+							uuid: "109c5d9e-bc35-11eb-8529-0242ac130003",
+							date: 3000000000,
+						},
+						{
+							uuid: "109c5e66-bc35-11eb-8529-0242ac130003",
+							date: 4000000000,
+						},
+						{
+							uuid: "109c5f24-bc35-11eb-8529-0242ac130003",
+							date: 5000000000,
+						},
+					},
+					wantUiim: make(map[string]index),
+				},
+			}
+		}(),
+		func() test {
+			uii := []index{
+				{
+					uuid: "109c5c86-bc35-11eb-8529-0242ac130003",
+					date: 2000000000,
+				},
+				{
+					uuid: "109c583a-bc35-11eb-8529-0242ac130003",
+					date: 1000000000,
+				},
+				{
+					uuid: "109c5d9e-bc35-11eb-8529-0242ac130003",
+					date: 3000000000,
+				},
+				{
+					uuid: "109c5f24-bc35-11eb-8529-0242ac130003",
+					date: 5000000000,
+				},
+				// The following data are duplicate data with uii.
+				{
+					uuid: "109c5e66-bc35-11eb-8529-0242ac130003",
+					date: 4000000000,
+				},
+				{
+					uuid: "109c5e66-bc35-11eb-8529-0242ac130003",
+					date: 6000000000,
+				},
+			}
+			uiim := make(map[string]index)
+			for _, idx := range uii {
+				uiim[idx.uuid] = idx
+			}
+			return test{
+				name: "return indexes when there is duplicate data in uii",
+				fields: fields{
+					uii:  uii,
+					uiim: uiim,
+				},
+				want: want{
+					wantUii: []index{
+						{
+							uuid: "109c583a-bc35-11eb-8529-0242ac130003",
+							date: 1000000000,
+						},
+						{
+							uuid: "109c5c86-bc35-11eb-8529-0242ac130003",
+							date: 2000000000,
+						},
+						{
+							uuid: "109c5d9e-bc35-11eb-8529-0242ac130003",
+							date: 3000000000,
+						},
+						{
+							uuid: "109c5f24-bc35-11eb-8529-0242ac130003",
+							date: 5000000000,
+						},
+						{
+							uuid: "109c5e66-bc35-11eb-8529-0242ac130003",
+							date: 6000000000,
+						},
+					},
+					wantUiim: make(map[string]index),
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return indexes when the all of data are empty",
+				fields: fields{
+					uii:  make([]index, 0),
+					uiim: make(map[string]index),
+				},
+				want: want{
+					wantUii:  make([]index, 0),
+					wantUiim: make(map[string]index),
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -1640,7 +1900,7 @@ func Test_vqueue_flushAndLoadInsert(t *testing.T) {
 			}
 
 			gotUii := v.flushAndLoadInsert()
-			if err := test.checkFunc(test.want, gotUii); err != nil {
+			if err := test.checkFunc(test.want, gotUii, v); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1655,6 +1915,7 @@ func Test_vqueue_flushAndLoadDelete(t *testing.T) {
 		uiim             uiim
 		dch              chan key
 		udk              []key
+		udim             map[string]int64
 		dmu              sync.Mutex
 		udim             udim
 		eg               errgroup.Group
@@ -1667,78 +1928,273 @@ func Test_vqueue_flushAndLoadDelete(t *testing.T) {
 		dBufSize         int
 	}
 	type want struct {
-		wantUdk []key
+		wantUdk  []key
+		wantUdim map[string]int64
+		wantUii  []index
+		wantUiim map[string]index
 	}
 	type test struct {
 		name       string
 		fields     fields
 		want       want
-		checkFunc  func(want, []key) error
+		checkFunc  func(want, []key, *vqueue) error
 		beforeFunc func()
 		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want, gotUdk []key) error {
+	defaultCheckFunc := func(w want, gotUdk []key, v *vqueue) error {
 		if !reflect.DeepEqual(gotUdk, w.wantUdk) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotUdk, w.wantUdk)
+			return errors.Errorf("udk got: \"%#v\",\n\t\t\t\tudk want: \"%#v\"", gotUdk, w.wantUdk)
+		}
+		if !reflect.DeepEqual(v.udim, w.wantUdim) {
+			return errors.Errorf("uiim got: \"%#v\",\n\t\t\t\tudim want: \"%#v\"", v.udim, w.wantUdim)
+		}
+		if !reflect.DeepEqual(v.uii, w.wantUii) {
+			return errors.Errorf("uii got: \"%#v\",\n\t\t\t\tuii want: \"%#v\"", v.uii, w.wantUii)
+		}
+		if !reflect.DeepEqual(v.uiim, w.wantUiim) {
+			return errors.Errorf("uiim got: \"%#v\",\n\t\t\t\tuiim want: \"%#v\"", v.uiim, w.wantUiim)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			udk := []key{
+				{
+					uuid: "109c5c86-bc35-11eb-8529-0242ac130003",
+					date: 2000000000,
+				},
+				{
+					uuid: "109c583a-bc35-11eb-8529-0242ac130003",
+					date: 1000000000,
+				},
+				{
+					uuid: "109c5d9e-bc35-11eb-8529-0242ac130003",
+					date: 3000000000,
+				},
+				{
+					uuid: "109c5f24-bc35-11eb-8529-0242ac130003",
+					date: 5000000000,
+				},
+				{
+					uuid: "109c5e66-bc35-11eb-8529-0242ac130003",
+					date: 4000000000,
+				},
+			}
+			udim := make(map[string]int64)
+			for _, key := range udk {
+				udim[key.uuid] = key.date
+			}
+			return test{
+				name: "return keys when there is no duplicate data in udk",
+				fields: fields{
+					udk:  udk,
+					udim: udim,
+				},
+				want: want{
+					wantUdk: []key{
+						{
+							uuid: "109c583a-bc35-11eb-8529-0242ac130003",
+							date: 1000000000,
+						},
+						{
+							uuid: "109c5c86-bc35-11eb-8529-0242ac130003",
+							date: 2000000000,
+						},
+						{
+							uuid: "109c5d9e-bc35-11eb-8529-0242ac130003",
+							date: 3000000000,
+						},
+						{
+							uuid: "109c5e66-bc35-11eb-8529-0242ac130003",
+							date: 4000000000,
+						},
+						{
+							uuid: "109c5f24-bc35-11eb-8529-0242ac130003",
+							date: 5000000000,
+						},
+					},
+					wantUdim: make(map[string]int64),
+				},
+			}
+		}(),
+		func() test {
+			udk := []key{
+				{
+					uuid: "109c5c86-bc35-11eb-8529-0242ac130003",
+					date: 2000000000,
+				},
+				{
+					uuid: "109c583a-bc35-11eb-8529-0242ac130003",
+					date: 1000000000,
+				},
+				{
+					uuid: "109c5d9e-bc35-11eb-8529-0242ac130003",
+					date: 3000000000,
+				},
+				{
+					uuid: "109c5f24-bc35-11eb-8529-0242ac130003",
+					date: 5000000000,
+				},
+				// The following data are duplicate data with udk.
+				{
+					uuid: "109c5e66-bc35-11eb-8529-0242ac130003",
+					date: 4000000000,
+				},
+				{
+					uuid: "109c5e66-bc35-11eb-8529-0242ac130003",
+					date: 6000000000,
+				},
+			}
+			udim := make(map[string]int64)
+			for _, key := range udk {
+				udim[key.uuid] = key.date
+			}
+			return test{
+				name: "return keys when there is duplicate data in udk",
+				fields: fields{
+					udk:  udk,
+					udim: udim,
+				},
+				want: want{
+					wantUdk: []key{
+						{
+							uuid: "109c583a-bc35-11eb-8529-0242ac130003",
+							date: 1000000000,
+						},
+						{
+							uuid: "109c5c86-bc35-11eb-8529-0242ac130003",
+							date: 2000000000,
+						},
+						{
+							uuid: "109c5d9e-bc35-11eb-8529-0242ac130003",
+							date: 3000000000,
+						},
+						{
+							uuid: "109c5f24-bc35-11eb-8529-0242ac130003",
+							date: 5000000000,
+						},
+						{
+							uuid: "109c5e66-bc35-11eb-8529-0242ac130003",
+							date: 6000000000,
+						},
+					},
+					wantUdim: make(map[string]int64),
+				},
+			}
+		}(),
+		func() test {
+			udk := []key{
+				{
+					uuid: "109c5c86-bc35-11eb-8529-0242ac130003",
+					date: 2000000000,
+				},
+				{
+					uuid: "109c583a-bc35-11eb-8529-0242ac130003",
+					date: 1000000000,
+				},
+				{
+					uuid: "109c5d9e-bc35-11eb-8529-0242ac130003",
+					date: 3000000000,
+				},
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+				// The following data is duplicate data with udk.
+				{
+					uuid: "109c5d9e-bc35-11eb-8529-0242ac130003",
+					date: 3500000000,
+				},
+				// The following data are duplicate data with uii.
+				{
+					uuid: "109c5f24-bc35-11eb-8529-0242ac130003",
+					date: 5000000000,
+				},
+				{
+					uuid: "109c5e66-bc35-11eb-8529-0242ac130003",
+					date: 4000000000,
+				},
+			}
+			udim := make(map[string]int64)
+			for _, key := range udk {
+				udim[key.uuid] = key.date
+			}
+
+			uii := []index{
+				{
+					uuid: udk[4].uuid,
+					date: 4500000000,
+				},
+				{
+					uuid: udk[5].uuid,
+					date: 3500000000,
+				},
+				{
+					uuid: "746bbe1a-bc48-11eb-8529-0242ac130003",
+					date: 1500000000,
+				},
+			}
+			uiim := make(map[string]index)
+			for _, idx := range uii {
+				uiim[idx.uuid] = idx
+			}
+			return test{
+				name: "return keys when there is duplicate data in uii and delete it",
+				fields: fields{
+					udk:  udk,
+					udim: udim,
+					uii:  uii,
+					uiim: uiim,
+				},
+				want: want{
+					wantUdk: []key{
+						{
+							uuid: "109c583a-bc35-11eb-8529-0242ac130003",
+							date: 1000000000,
+						},
+						{
+							uuid: "109c5c86-bc35-11eb-8529-0242ac130003",
+							date: 2000000000,
+						},
+						{
+							uuid: "109c5d9e-bc35-11eb-8529-0242ac130003",
+							date: 3500000000,
+						},
+						{
+							uuid: "109c5e66-bc35-11eb-8529-0242ac130003",
+							date: 4000000000,
+						},
+						{
+							uuid: "109c5f24-bc35-11eb-8529-0242ac130003",
+							date: 5000000000,
+						},
+					},
+					wantUdim: make(map[string]int64),
+					wantUii: []index{
+						{
+							uuid: "746bbe1a-bc48-11eb-8529-0242ac130003",
+							date: 1500000000,
+						},
+					},
+					wantUiim: map[string]index{
+						"746bbe1a-bc48-11eb-8529-0242ac130003": index{
+							uuid: "746bbe1a-bc48-11eb-8529-0242ac130003",
+							date: 1500000000,
+						},
+					},
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return keys when the all of data are empty",
+				fields: fields{
+					udk:  make([]key, 0),
+					udim: make(map[string]int64),
+				},
+				want: want{
+					wantUdk:  make([]key, 0),
+					wantUdim: make(map[string]int64),
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -1762,6 +2218,7 @@ func Test_vqueue_flushAndLoadDelete(t *testing.T) {
 				uiim:             test.fields.uiim,
 				dch:              test.fields.dch,
 				udk:              test.fields.udk,
+				udim:             test.fields.udim,
 				dmu:              test.fields.dmu,
 				udim:             test.fields.udim,
 				eg:               test.fields.eg,
@@ -1775,7 +2232,7 @@ func Test_vqueue_flushAndLoadDelete(t *testing.T) {
 			}
 
 			gotUdk := v.flushAndLoadDelete()
-			if err := test.checkFunc(test.want, gotUdk); err != nil {
+			if err := test.checkFunc(test.want, gotUdk, v); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
