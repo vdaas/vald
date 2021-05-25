@@ -2653,7 +2653,7 @@ func Test_vqueue_IVExists(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, bool) error
-		beforeFunc func(args)
+		beforeFunc func(args, *vqueue)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got bool) error {
@@ -2663,67 +2663,163 @@ func Test_vqueue_IVExists(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           uuid: "",
-		       },
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: nil,
-		           uiim: nil,
-		           dch: nil,
-		           udk: nil,
-		           dmu: nil,
-		           udim: nil,
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           uuid: "",
-		           },
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: nil,
-		           uiim: nil,
-		           dch: nil,
-		           udk: nil,
-		           dmu: nil,
-		           udim: nil,
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			m := []struct {
+				i index
+				k key
+			}{
+				{
+					i: index{
+						uuid: "5047ecac-bcfc-11eb-8529-0242ac130003",
+					},
+					k: key{
+						uuid: "5047ecac-bcfc-11eb-8529-0242ac130003",
+					},
+				},
+			}
+			return test{
+				name: "return false when the uuid not exits in uiim",
+				args: args{
+					uuid: "5047f026-bcfc-11eb-8529-0242ac130003",
+				},
+				fields: fields{
+					uiim: make(map[string]index),
+					udim: make(map[string]int64),
+				},
+				beforeFunc: func(a args, v *vqueue) {
+					for _, val := range m {
+						v.addInsert(val.i)
+						v.addDelete(val.k)
+					}
+				},
+				want: want{
+					want: false,
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return false when the uuid not exits in uiim and the uiim and udim are empty",
+				args: args{
+					uuid: "5047f026-bcfc-11eb-8529-0242ac130003",
+				},
+				fields: fields{
+					uiim: make(map[string]index),
+					udim: make(map[string]int64),
+				},
+				want: want{
+					want: false,
+				},
+			}
+		}(),
+		func() test {
+			uuid := "5047ecac-bcfc-11eb-8529-0242ac130003"
+			idxs := []index{
+				{
+					uuid: uuid,
+				},
+			}
+			return test{
+				name: "return true when the uuid exits in uiim but not in udim",
+				args: args{
+					uuid: uuid,
+				},
+				fields: fields{
+					uiim: make(map[string]index),
+					udim: make(map[string]int64),
+				},
+				beforeFunc: func(a args, v *vqueue) {
+					for _, idx := range idxs {
+						v.addInsert(idx)
+					}
+				},
+				want: want{
+					want: true,
+				},
+			}
+		}(),
+		func() test {
+			uuid := "5047ecac-bcfc-11eb-8529-0242ac130003"
+			vals := []struct {
+				idx index
+				k   key
+			}{
+				{
+					idx: index{
+						uuid: uuid,
+						date: 1500000000,
+					},
+					k: key{
+						uuid: uuid,
+						date: 1000000000,
+					},
+				},
+				{
+					idx: index{},
+					k:   key{},
+				},
+			}
+			return test{
+				name: "return true when the inserted index is the latest than the deleted index",
+				args: args{
+					uuid: uuid,
+				},
+				fields: fields{
+					uiim: make(map[string]index),
+					udim: make(map[string]int64),
+				},
+				beforeFunc: func(a args, v *vqueue) {
+					for _, val := range vals {
+						v.addInsert(val.idx)
+						v.addDelete(val.k)
+					}
+				},
+				want: want{
+					want: true,
+				},
+			}
+		}(),
+		func() test {
+			uuid := "5047ecac-bcfc-11eb-8529-0242ac130003"
+			vals := []struct {
+				idx index
+				k   key
+			}{
+				{
+					idx: index{
+						uuid: uuid,
+						date: 1000000000,
+					},
+					k: key{
+						uuid: uuid,
+						date: 1500000000,
+					},
+				},
+				{
+					idx: index{},
+					k:   key{},
+				},
+			}
+			return test{
+				name: "return true when the inserted index is not the latest than the deleted index",
+				args: args{
+					uuid: uuid,
+				},
+				fields: fields{
+					uiim: make(map[string]index),
+					udim: make(map[string]int64),
+				},
+				beforeFunc: func(a args, v *vqueue) {
+					for _, val := range vals {
+						v.addInsert(val.idx)
+						v.addDelete(val.k)
+					}
+				},
+				want: want{
+					want: false,
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -2731,15 +2827,6 @@ func Test_vqueue_IVExists(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
 			v := &vqueue{
 				ich:              test.fields.ich,
 				uii:              test.fields.uii,
@@ -2757,6 +2844,15 @@ func Test_vqueue_IVExists(t *testing.T) {
 				dchSize:          test.fields.dchSize,
 				iBufSize:         test.fields.iBufSize,
 				dBufSize:         test.fields.dBufSize,
+			}
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args, v)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
 			}
 
 			got := v.IVExists(test.args.uuid)
@@ -2799,7 +2895,7 @@ func Test_vqueue_DVExists(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, bool) error
-		beforeFunc func(args)
+		beforeFunc func(args, *vqueue)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got bool) error {
@@ -2809,67 +2905,163 @@ func Test_vqueue_DVExists(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           uuid: "",
-		       },
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: nil,
-		           uiim: nil,
-		           dch: nil,
-		           udk: nil,
-		           dmu: nil,
-		           udim: nil,
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           uuid: "",
-		           },
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: nil,
-		           uiim: nil,
-		           dch: nil,
-		           udk: nil,
-		           dmu: nil,
-		           udim: nil,
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			m := []struct {
+				i index
+				k key
+			}{
+				{
+					i: index{
+						uuid: "5047ecac-bcfc-11eb-8529-0242ac130003",
+					},
+					k: key{
+						uuid: "5047ecac-bcfc-11eb-8529-0242ac130003",
+					},
+				},
+			}
+			return test{
+				name: "return false when the uuid not exits in udim",
+				args: args{
+					uuid: "5047f026-bcfc-11eb-8529-0242ac130003",
+				},
+				fields: fields{
+					uiim: make(map[string]index),
+					udim: make(map[string]int64),
+				},
+				beforeFunc: func(a args, v *vqueue) {
+					for _, val := range m {
+						v.addInsert(val.i)
+						v.addDelete(val.k)
+					}
+				},
+				want: want{
+					want: false,
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return false when the uuid not exits in udim and the uiim and udim are empty",
+				args: args{
+					uuid: "5047f026-bcfc-11eb-8529-0242ac130003",
+				},
+				fields: fields{
+					uiim: make(map[string]index),
+					udim: make(map[string]int64),
+				},
+				want: want{
+					want: false,
+				},
+			}
+		}(),
+		func() test {
+			uuid := "5047ecac-bcfc-11eb-8529-0242ac130003"
+			keys := []key{
+				{
+					uuid: uuid,
+				},
+			}
+			return test{
+				name: "return true when the uuid exits in udim but not in uiim",
+				args: args{
+					uuid: uuid,
+				},
+				fields: fields{
+					uiim: make(map[string]index),
+					udim: make(map[string]int64),
+				},
+				beforeFunc: func(a args, v *vqueue) {
+					for _, k := range keys {
+						v.addDelete(k)
+					}
+				},
+				want: want{
+					want: true,
+				},
+			}
+		}(),
+		func() test {
+			uuid := "5047ecac-bcfc-11eb-8529-0242ac130003"
+			vals := []struct {
+				idx index
+				k   key
+			}{
+				{
+					idx: index{
+						uuid: uuid,
+						date: 1000000000,
+					},
+					k: key{
+						uuid: uuid,
+						date: 1500000000,
+					},
+				},
+				{
+					idx: index{},
+					k:   key{},
+				},
+			}
+			return test{
+				name: "return true when the deleted index is the latest than the inserted index",
+				args: args{
+					uuid: uuid,
+				},
+				fields: fields{
+					uiim: make(map[string]index),
+					udim: make(map[string]int64),
+				},
+				beforeFunc: func(a args, v *vqueue) {
+					for _, val := range vals {
+						v.addInsert(val.idx)
+						v.addDelete(val.k)
+					}
+				},
+				want: want{
+					want: true,
+				},
+			}
+		}(),
+		func() test {
+			uuid := "5047ecac-bcfc-11eb-8529-0242ac130003"
+			vals := []struct {
+				idx index
+				k   key
+			}{
+				{
+					idx: index{
+						uuid: uuid,
+						date: 1500000000,
+					},
+					k: key{
+						uuid: uuid,
+						date: 1000000000,
+					},
+				},
+				{
+					idx: index{},
+					k:   key{},
+				},
+			}
+			return test{
+				name: "return true when the deleted index is not the latest than the inserted index",
+				args: args{
+					uuid: uuid,
+				},
+				fields: fields{
+					uiim: make(map[string]index),
+					udim: make(map[string]int64),
+				},
+				beforeFunc: func(a args, v *vqueue) {
+					for _, val := range vals {
+						v.addInsert(val.idx)
+						v.addDelete(val.k)
+					}
+				},
+				want: want{
+					want: false,
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -2877,15 +3069,6 @@ func Test_vqueue_DVExists(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
 			v := &vqueue{
 				ich:              test.fields.ich,
 				uii:              test.fields.uii,
@@ -2903,6 +3086,16 @@ func Test_vqueue_DVExists(t *testing.T) {
 				dchSize:          test.fields.dchSize,
 				iBufSize:         test.fields.iBufSize,
 				dBufSize:         test.fields.dBufSize,
+			}
+
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args, v)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
 			}
 
 			got := v.DVExists(test.args.uuid)
