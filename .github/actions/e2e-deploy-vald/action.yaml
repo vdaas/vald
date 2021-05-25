@@ -121,7 +121,7 @@ runs:
       id: deploy_vald
       run: |
         helm install \
-          --values ${VALUES}
+          --values ${VALUES} \
           --set defaults.image.tag=nightly \
           ${HELM_EXTRA_OPTIONS} \
           --generate-name charts/vald
