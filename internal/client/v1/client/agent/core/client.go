@@ -26,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/observability/trace"
 )
 
 // Client represents agent NGT client interface.
@@ -40,6 +41,15 @@ type agentClient struct {
 	addrs []string
 	c     grpc.Client
 }
+
+type singleAgentClient struct {
+	vald.Client
+	ac agent.AgentClient
+}
+
+const (
+	apiName = "vald/internal/client/v1/client/agent/core"
+)
 
 // New returns Client implementation if no error occurs.
 func New(opts ...Option) (Client, error) {
@@ -76,12 +86,30 @@ func New(opts ...Option) (Client, error) {
 	return c, nil
 }
 
+func NewAgentClient(cc *grpc.ClientConn) interface {
+	vald.Client
+	client.ObjectReader
+	client.Indexer
+} {
+	return &singleAgentClient{
+		Client: vald.NewValdClient(cc),
+		ac:     agent.NewAgentClient(cc),
+	}
+}
+
 func (c *agentClient) CreateIndex(
 	ctx context.Context,
 	req *client.ControlCreateIndexRequest,
 	opts ...grpc.CallOption,
 ) (*client.Empty, error) {
-	_, err := c.c.RoundRobin(ctx, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/agentClient.CreateIndex")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	_, err := c.c.RoundRobin(ctx, func(ctx context.Context,
+		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		return agent.NewAgentClient(conn).CreateIndex(ctx, req, copts...)
 	})
 	return nil, err
@@ -92,7 +120,14 @@ func (c *agentClient) SaveIndex(
 	req *client.Empty,
 	opts ...grpc.CallOption,
 ) (*client.Empty, error) {
-	_, err := c.c.RoundRobin(ctx, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/agentClient.SaveIndex")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	_, err := c.c.RoundRobin(ctx, func(ctx context.Context,
+		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		return agent.NewAgentClient(conn).SaveIndex(ctx, new(client.Empty), copts...)
 	})
 	return nil, err
@@ -103,7 +138,14 @@ func (c *agentClient) CreateAndSaveIndex(
 	req *client.ControlCreateIndexRequest,
 	opts ...grpc.CallOption,
 ) (*client.Empty, error) {
-	_, err := c.c.RoundRobin(ctx, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/agentClient.CreateAndSaveIndex")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	_, err := c.c.RoundRobin(ctx, func(ctx context.Context,
+		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		return agent.NewAgentClient(conn).CreateAndSaveIndex(ctx, req, copts...)
 	})
 	return nil, err
@@ -114,7 +156,14 @@ func (c *agentClient) IndexInfo(
 	req *client.Empty,
 	opts ...grpc.CallOption,
 ) (res *client.InfoIndexCount, err error) {
-	_, err = c.c.RoundRobin(ctx, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/agentClient.IndexInfo")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
+		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 		res, err := agent.NewAgentClient(conn).IndexInfo(ctx, new(client.Empty), copts...)
 		if err != nil {
 			return nil, err
@@ -125,4 +174,60 @@ func (c *agentClient) IndexInfo(
 		return nil, err
 	}
 	return res, nil
+}
+
+func (c *singleAgentClient) CreateIndex(
+	ctx context.Context,
+	req *client.ControlCreateIndexRequest,
+	opts ...grpc.CallOption,
+) (*client.Empty, error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/agentClient.CreateIndex")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.ac.CreateIndex(ctx, req, opts...)
+}
+
+func (c *singleAgentClient) SaveIndex(
+	ctx context.Context,
+	req *client.Empty,
+	opts ...grpc.CallOption,
+) (*client.Empty, error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/agentClient.SaveIndex")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.ac.SaveIndex(ctx, new(client.Empty), opts...)
+}
+
+func (c *singleAgentClient) CreateAndSaveIndex(
+	ctx context.Context,
+	req *client.ControlCreateIndexRequest,
+	opts ...grpc.CallOption,
+) (*client.Empty, error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/agentClient.CreateAndSaveIndex")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.ac.CreateAndSaveIndex(ctx, req, opts...)
+}
+
+func (c *singleAgentClient) IndexInfo(
+	ctx context.Context,
+	req *client.Empty,
+	opts ...grpc.CallOption,
+) (res *client.InfoIndexCount, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/agentClient.IndexInfo")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.ac.IndexInfo(ctx, new(client.Empty), opts...)
 }
