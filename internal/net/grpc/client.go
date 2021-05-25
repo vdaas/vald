@@ -108,6 +108,10 @@ type gRPCClient struct {
 	mcd                 time.Duration   // minimum connection timeout duration
 	group               singleflight.Group
 	crl                 sync.Map // connection request list
+
+	ech            <-chan error
+	monitorRunning atomic.Value
+	stopMonitor    context.CancelFunc
 }
 
 const apiName = "vald/internal/net/grpc"
@@ -133,10 +137,16 @@ func New(opts ...Option) (c Client) {
 			MinConnectTimeout: g.mcd,
 		},
 	))
+	g.monitorRunning.Store(false)
 	return g
 }
 
 func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, error) {
+	if r, ok := g.monitorRunning.Load().(bool); ok && r {
+		return g.ech, nil
+	}
+	g.monitorRunning.Store(true)
+
 	addrs, ok := g.atomicAddrs.GetAll()
 	if !ok {
 		return nil, errors.ErrGRPCTargetAddrNotFound
@@ -161,7 +171,9 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 		return nil, errors.ErrGRPCClientConnNotFound(strings.Join(addrs, ",\t"))
 	}
 
+	ctx, g.stopMonitor = context.WithCancel(ctx)
 	g.eg.Go(safety.RecoverFunc(func() (err error) {
+		defer g.monitorRunning.Store(false)
 		prTick := &time.Ticker{
 			C: make(chan time.Time),
 		}
@@ -285,6 +297,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 			disconnectTargets = disconnectTargets[:0]
 		}
 	}))
+	g.ech = ech
 	return ech, nil
 }
 
@@ -745,6 +758,9 @@ func (g *gRPCClient) ConnectedAddrs() []string {
 }
 
 func (g *gRPCClient) Close(ctx context.Context) (err error) {
+	if g.stopMonitor != nil {
+		g.stopMonitor()
+	}
 	g.conns.Range(func(addr string, p pool.Conn) bool {
 		derr := g.Disconnect(ctx, addr)
 		if derr != nil && !errors.Is(derr, errors.ErrGRPCClientConnNotFound(addr)) {
