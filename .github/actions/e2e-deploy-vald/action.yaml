@@ -32,6 +32,10 @@ inputs:
     description: "If Scylla is required, set this to true."
     required: false
     default: "false"
+  require_minio:
+    description: "If Minio is required, set this to true."
+    required: false
+    default: "false"
   helm_extra_options:
     description: "extra options that passed to Helm command."
     required: false
@@ -100,6 +104,15 @@ runs:
       run: |
         if [[ "${{ inputs.requrie_scylla }}" == "true" ]]; then
           make K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 k8s/external/scylla/deploy
+        else
+          echo "skipped."
+        fi
+    - name: deploy Minio
+      id: deploy_minio
+      shell: bash
+      run: |
+        if [[ "${{ inputs.requrie_minio }}" == "true" ]]; then
+          make K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 k8s/external/minio/deploy
         else
           echo "skipped."
         fi
