@@ -26,6 +26,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/test/comparator"
 	"go.uber.org/goleak"
 )
 
@@ -286,82 +287,188 @@ func Test_vqueue_PushInsert(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(args)
+		checkFunc  func(want, error, *vqueue) error
+		beforeFunc func(args, *vqueue)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
+	defaultCheckFunc := func(w want, err error, _ *vqueue) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           uuid: "",
-		           vector: nil,
-		           date: 0,
-		       },
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			return test{
+				name: "return error when the finalizingInsert is true",
+				args: args{
+					uuid:   "5047f42c-bcfc-11eb-8529-0242ac130003",
+					vector: []float32{1, 2, 3},
+					date:   1000000000,
+				},
+				fields: fields{
+					finalizingInsert: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					ich: make(chan index),
+				},
+				want: want{
+					err: errors.ErrVQueueFinalizing,
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return error when the closed is true",
+				args: args{
+					uuid:   "5047f42c-bcfc-11eb-8529-0242ac130003",
+					vector: []float32{1, 2, 3},
+					date:   1000000000,
+				},
+				fields: fields{
+					finalizingInsert: func() (v atomic.Value) {
+						v.Store(false)
+						return
+					}(),
+					closed: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					ich: make(chan index),
+				},
+				want: want{
+					err: errors.ErrVQueueFinalizing,
+				},
+			}
+		}(),
+		func() test {
+			idx := index{
+				uuid:   "5047f42c-bcfc-11eb-8529-0242ac130003",
+				vector: []float32{1, 2, 3},
+				date:   1000000000,
+			}
+			return test{
+				name: "return nil when the push insert successes",
+				args: args{
+					uuid:   idx.uuid,
+					vector: idx.vector,
+					date:   idx.date,
+				},
+				fields: fields{
+					finalizingInsert: func() (v atomic.Value) {
+						v.Store(false)
+						return
+					}(),
+					closed: func() (v atomic.Value) {
+						v.Store(false)
+						return
+					}(),
+					ich: make(chan index, 1),
+				},
+				checkFunc: func(w want, e error, v *vqueue) error {
+					if err := defaultCheckFunc(w, e, v); err != nil {
+						return err
+					}
+					got := <-v.ich
+					if !reflect.DeepEqual(got, idx) {
+						return errors.Errorf("got_index: \"%#v\",\n\t\t\t\tgot_index: \"%#v\"", got, idx)
+					}
+					return nil
+				},
+				want: want{
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			idx := index{}
+			return test{
+				name: "return nil when the push insert successes and the arguments are empty",
+				args: args{},
+				fields: fields{
+					finalizingInsert: func() (v atomic.Value) {
+						v.Store(false)
+						return
+					}(),
+					closed: func() (v atomic.Value) {
+						v.Store(false)
+						return
+					}(),
+					ich: make(chan index, 1),
+				},
+				checkFunc: func(w want, e error, v *vqueue) error {
+					if err := defaultCheckFunc(w, e, v); err != nil {
+						return err
+					}
+					got := <-v.ich
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           uuid: "",
-		           vector: nil,
-		           date: 0,
-		           },
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+					opts := []comparator.Option{
+						comparator.AllowUnexported(idx),
+						comparator.IgnoreFields(idx, "date"),
+					}
+					if diff := comparator.Diff(idx, got, opts...); diff != "" {
+						return errors.Errorf("got_index diff: %s", diff)
+					}
+					return nil
+				},
+				want: want{
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			preIdx := index{
+				uuid:   "5047f738-bcfc-11eb-8529-0242ac130003",
+				vector: []float32{1, 2, 3},
+				date:   900000000,
+			}
+			idx := index{
+				uuid:   "5047f42c-bcfc-11eb-8529-0242ac130003",
+				vector: []float32{1, 2, 3},
+				date:   1000000000,
+			}
+			return test{
+				name: "return nil when the pre-insert successes and push insert successes",
+				args: args{
+					uuid:   idx.uuid,
+					vector: idx.vector,
+					date:   idx.date,
+				},
+				fields: fields{
+					finalizingInsert: func() (v atomic.Value) {
+						v.Store(false)
+						return
+					}(),
+					closed: func() (v atomic.Value) {
+						v.Store(false)
+						return
+					}(),
+					ich: make(chan index, 2),
+				},
+				beforeFunc: func(a args, v *vqueue) {
+					v.ich <- preIdx
+				},
+				checkFunc: func(w want, e error, v *vqueue) error {
+					if err := defaultCheckFunc(w, e, v); err != nil {
+						return err
+					}
+					got := <-v.ich
+					if !reflect.DeepEqual(got, preIdx) {
+						return errors.Errorf("got_pre-index: \"%#v\",\n\t\t\t\tgot_pre-index: \"%#v\"", got, idx)
+					}
+
+					got = <-v.ich
+					if !reflect.DeepEqual(got, idx) {
+						return errors.Errorf("got_index: \"%#v\",\n\t\t\t\tgot_index: \"%#v\"", got, idx)
+					}
+					return nil
+				},
+				want: want{
+					err: nil,
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -369,15 +476,6 @@ func Test_vqueue_PushInsert(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
 			v := &vqueue{
 				ich:              test.fields.ich,
 				uii:              test.fields.uii,
@@ -397,8 +495,18 @@ func Test_vqueue_PushInsert(t *testing.T) {
 				dBufSize:         test.fields.dBufSize,
 			}
 
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args, v)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
 			err := v.PushInsert(test.args.uuid, test.args.vector, test.args.date)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := test.checkFunc(test.want, err, v); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
