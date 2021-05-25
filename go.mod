@@ -3,10 +3,10 @@ module github.com/vdaas/vald
 go 1.16
 
 replace (
-	cloud.google.com/go => cloud.google.com/go v0.82.1-0.20210520180002-258980a039db
-	cloud.google.com/go/storage => cloud.google.com/go/storage v1.15.1-0.20210520180002-258980a039db
+	cloud.google.com/go => cloud.google.com/go v0.82.1-0.20210525054938-8bd87cbfee00
+	cloud.google.com/go/storage => cloud.google.com/go/storage v1.15.1-0.20210525054938-8bd87cbfee00
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20210210161804-c7f947c0610d+incompatible
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.38.45
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.38.46
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
@@ -16,7 +16,7 @@ replace (
 	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20210515062232-b7ef815b4556
 	github.com/gogo/googleapis => github.com/gogo/googleapis v1.4.1
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
-	github.com/google/go-cmp => github.com/google/go-cmp v0.5.5
+	github.com/google/go-cmp => github.com/google/go-cmp v0.5.6
 	github.com/google/pprof => github.com/google/pprof v0.0.0-20210506205249-923b5ab0fc1a
 	github.com/googleapis/gnostic => github.com/googleapis/gnostic v0.5.5
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.17.0
@@ -38,9 +38,9 @@ replace (
 )
 
 require (
-	cloud.google.com/go v0.81.0
+	cloud.google.com/go v0.82.0
 	cloud.google.com/go/storage v1.15.0
-	code.cloudfoundry.org/bytefmt v0.0.0-20210519212014-d85d569ae74a
+	code.cloudfoundry.org/bytefmt v0.0.0-20210524144015-27119551aaea
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
 	contrib.go.opencensus.io/exporter/prometheus v0.3.0
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.6
@@ -77,15 +77,15 @@ require (
 	go.uber.org/goleak v1.1.10
 	go.uber.org/zap v1.16.0
 	gocloud.dev v0.23.0
-	golang.org/x/net v0.0.0-20210521195947-fe42d452be8f
+	golang.org/x/net v0.0.0-20210525063256-abc453219eb5
 	golang.org/x/oauth2 v0.0.0-20210514164344-f6687ab2804c
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/sys v0.0.0-20210521203332-0cec03c779c1
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/plot v0.9.0
 	google.golang.org/api v0.47.0
-	google.golang.org/genproto v0.0.0-20210521181308-5ccab8a35a9a
-	google.golang.org/grpc v1.37.1
+	google.golang.org/genproto v0.0.0-20210524171403-669157292da3
+	google.golang.org/grpc v1.38.0
 	gopkg.in/yaml.v2 v2.4.0
 	inet.af/netaddr v0.0.0-20210523191804-d57edf19c517
 	k8s.io/api v0.20.7

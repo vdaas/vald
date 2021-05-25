@@ -375,7 +375,7 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 					}
 					mu.Unlock()
 				}
-				return err
+				return nil
 			}
 		}))
 		return true
