@@ -229,7 +229,7 @@ func (rc *redisClient) newClusterClient(ctx context.Context) (c *redis.ClusterCl
 		}).WithContext(ctx)
 	} else {
 		c = redis.NewClusterClient(&redis.ClusterOptions{
-			Addrs: rc.addrs,
+			Addrs:              rc.addrs,
 			Dialer:             rc.dialerFunc,
 			MaxRedirects:       rc.maxRedirects,
 			ReadOnly:           rc.readOnly,
