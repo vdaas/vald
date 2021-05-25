@@ -863,10 +863,16 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 			if span != nil {
 				span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 			}
-			emu.Lock()
-			errs = errors.Wrap(errs, msg)
-			emu.Unlock()
-			return err
+			if err != nil {
+				emu.Lock()
+				if errs == nil {
+					errs = err
+				} else {
+					errs = errors.Wrap(errs, err.Error())
+				}
+				emu.Unlock()
+			}
+			return nil
 		}
 		mu.Lock()
 		ce.Ips = append(ce.GetIps(), loc.GetIps()...)
@@ -875,7 +881,11 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 		return nil
 	})
 	if err != nil {
-		errs = errors.Wrap(errs, err.Error())
+		if errs == nil {
+			errs = err
+		} else {
+			errs = errors.Wrap(errs, err.Error())
+		}
 	}
 	if errs != nil {
 		st, msg, err := status.ParseError(errs, codes.Internal,
@@ -1063,10 +1073,16 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 			}
 
-			emu.Lock()
-			errs = errors.Wrap(errs, msg)
-			emu.Unlock()
-			return err
+			if err != nil {
+				emu.Lock()
+				if errs == nil {
+					errs = err
+				} else {
+					errs = errors.Wrap(errs, err.Error())
+				}
+				emu.Unlock()
+			}
+			return nil
 		}
 		mu.Lock()
 		locs.Locations = append(locs.Locations, loc.Locations...)
@@ -1074,7 +1090,11 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 		return nil
 	})
 	if err != nil {
-		errs = errors.Wrap(errs, err.Error())
+		if errs == nil {
+			errs = err
+		} else {
+			errs = errors.Wrap(errs, err.Error())
+		}
 	}
 
 	if errs != nil {
@@ -1625,7 +1645,11 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 			updateLocs = loc.GetLocations()
 		} else {
 			mu.Lock()
-			errs = errors.Wrap(errs, err.Error())
+			if errs == nil {
+				errs = err
+			} else {
+				errs = errors.Wrap(errs, err.Error())
+			}
 			mu.Unlock()
 		}
 		return nil
@@ -1649,7 +1673,11 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 			insertLocs = loc.GetLocations()
 		} else {
 			mu.Lock()
-			errs = errors.Wrap(errs, err.Error())
+			if errs == nil {
+				errs = err
+			} else {
+				errs = errors.Wrap(errs, err.Error())
+			}
 			mu.Unlock()
 		}
 		return nil
@@ -1657,7 +1685,11 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 
 	err = eg.Wait()
 	if err != nil {
-		errs = errors.Wrap(errs, err.Error())
+		if errs == nil {
+			errs = err
+		} else {
+			errs = errors.Wrap(errs, err.Error())
+		}
 	}
 	if errs != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,

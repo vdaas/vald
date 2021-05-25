@@ -30,7 +30,9 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/pool"
+	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/singleflight"
@@ -310,7 +312,12 @@ func (g *gRPCClient) Range(ctx context.Context,
 				return nil, f(ictx, addr, conn, copts...)
 			})
 			if err != nil {
-				rerr = errors.Wrap(rerr, errors.ErrRPCCallFailed(addr, err).Error())
+				err = errors.ErrRPCCallFailed(addr, err)
+				if rerr == nil {
+					rerr = err
+				} else {
+					rerr = errors.Wrap(rerr, err.Error())
+				}
 			}
 		}
 		return true
@@ -319,13 +326,14 @@ func (g *gRPCClient) Range(ctx context.Context,
 }
 
 func (g *gRPCClient) RangeConcurrent(ctx context.Context,
-	concurrency int, f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) error {
+	concurrency int, f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) (rerr error) {
 	sctx, span := trace.StartSpan(ctx, apiName+"/Client.RangeConcurrent")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
+	var mu sync.Mutex
 	eg, egctx := errgroup.New(sctx)
 	eg.Limitation(concurrency)
 	g.conns.Range(func(addr string, p pool.Conn) bool {
@@ -344,12 +352,32 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 					conn *ClientConn, copts ...CallOption) (interface{}, error) {
 					return nil, f(ictx, addr, conn, copts...)
 				})
+				if err != nil {
+					err = errors.ErrRPCCallFailed(addr, err)
+					mu.Lock()
+					if rerr == nil {
+						rerr = err
+					} else {
+						rerr = errors.Wrap(rerr, err.Error())
+					}
+					mu.Unlock()
+				}
 				return err
 			}
 		}))
 		return true
 	})
-	return eg.Wait()
+	err := eg.Wait()
+	if err != nil {
+		mu.Lock()
+		if rerr == nil {
+			rerr = err
+		} else {
+			rerr = errors.Wrap(rerr, err.Error())
+		}
+		mu.Unlock()
+	}
+	return rerr
 }
 
 func (g *gRPCClient) OrderedRange(ctx context.Context,
@@ -386,7 +414,12 @@ func (g *gRPCClient) OrderedRange(ctx context.Context,
 				return nil, f(ictx, addr, conn, copts...)
 			})
 			if err != nil {
-				rerr = errors.Wrap(rerr, errors.ErrRPCCallFailed(addr, err).Error())
+				err = errors.ErrRPCCallFailed(addr, err)
+				if rerr == nil {
+					rerr = err
+				} else {
+					rerr = errors.Wrap(rerr, err.Error())
+				}
 			}
 		}
 	}
@@ -394,7 +427,7 @@ func (g *gRPCClient) OrderedRange(ctx context.Context,
 }
 
 func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
-	orders []string, concurrency int, f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) (err error) {
+	orders []string, concurrency int, f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) (rerr error) {
 	sctx, span := trace.StartSpan(ctx, apiName+"/Client.OrderedRangeConcurrent")
 	defer func() {
 		if span != nil {
@@ -405,6 +438,7 @@ func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
 		log.Warn("no order found for OrderedRangeConcurrent")
 		return g.RangeConcurrent(sctx, concurrency, f)
 	}
+	var mu sync.Mutex
 	eg, egctx := errgroup.New(sctx)
 	eg.Limitation(concurrency)
 	for _, order := range orders {
@@ -430,11 +464,31 @@ func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
 					conn *ClientConn, copts ...CallOption) (interface{}, error) {
 					return nil, f(ictx, addr, conn, copts...)
 				})
-				return err
+				if err != nil {
+					err = errors.ErrRPCCallFailed(addr, err)
+					mu.Lock()
+					if rerr == nil {
+						rerr = err
+					} else {
+						rerr = errors.Wrap(rerr, err.Error())
+					}
+					mu.Unlock()
+				}
+				return nil
 			}
 		}))
 	}
-	return eg.Wait()
+	err := eg.Wait()
+	if err != nil {
+		mu.Lock()
+		if rerr == nil {
+			rerr = err
+		} else {
+			rerr = errors.Wrap(rerr, err.Error())
+		}
+		mu.Unlock()
+	}
+	return rerr
 }
 
 func (g *gRPCClient) RoundRobin(ctx context.Context, f func(ctx context.Context,
@@ -466,7 +520,17 @@ func (g *gRPCClient) RoundRobin(ctx context.Context, f func(ctx context.Context,
 			}
 			r, err = g.do(ictx, p, addr, false, f)
 			if err != nil {
-				return nil, true, err
+				st, ok := status.FromError(err)
+				if !ok {
+					return nil, err != nil, err
+				}
+				switch st.Code() {
+				case codes.Internal,
+					codes.Unavailable,
+					codes.ResourceExhausted:
+					return nil, err != nil, err
+				}
+				return nil, false, err
 			}
 			return r, false, nil
 		})
@@ -522,7 +586,17 @@ func (g *gRPCClient) do(ctx context.Context, p pool.Conn, addr string, enableBac
 				return err
 			})
 			if err != nil {
-				return nil, err != nil, err
+				st, ok := status.FromError(err)
+				if !ok {
+					return nil, err != nil, err
+				}
+				switch st.Code() {
+				case codes.Internal,
+					codes.Unavailable,
+					codes.ResourceExhausted:
+					return nil, err != nil, err
+				}
+				return nil, false, err
 			}
 			return r, false, nil
 		})
