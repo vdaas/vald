@@ -93,7 +93,8 @@ func NewAgentClient(cc *grpc.ClientConn) interface {
 } {
 	return &singleAgentClient{
 		Client: vald.NewValdClient(cc),
-		ac:     agent.NewAgentClient(cc)}
+		ac:     agent.NewAgentClient(cc),
+	}
 }
 
 func (c *agentClient) CreateIndex(

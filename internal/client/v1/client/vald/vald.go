@@ -640,7 +640,6 @@ func (c *singleClient) StreamUpsert(ctx context.Context, opts ...grpc.CallOption
 		}
 	}()
 	return c.vc.StreamUpsert(ctx, opts...)
-
 }
 
 func (c *singleClient) MultiUpsert(ctx context.Context, in *payload.Upsert_MultiRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
@@ -671,7 +670,6 @@ func (c *singleClient) StreamRemove(ctx context.Context, opts ...grpc.CallOption
 		}
 	}()
 	return c.vc.StreamRemove(ctx, opts...)
-
 }
 
 func (c *singleClient) MultiRemove(ctx context.Context, in *payload.Remove_MultiRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
