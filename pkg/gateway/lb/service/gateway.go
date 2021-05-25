@@ -20,6 +20,7 @@ package service
 import (
 	"context"
 	"reflect"
+	"sync"
 	"sync/atomic"
 
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
@@ -91,8 +92,14 @@ func (g *gateway) DoMulti(ctx context.Context, num int,
 		}
 	}()
 	var cur uint32 = 0
-	limit := uint32(num)
 	addrs := g.client.GetAddrs(sctx)
+	var limit uint32
+	if len(addrs) < num {
+		limit = uint32(len(addrs))
+	} else {
+		limit = uint32(num)
+	}
+	var visited sync.Map
 	err = g.client.GetClient().OrderedRange(sctx, addrs, func(ictx context.Context,
 		addr string,
 		conn *grpc.ClientConn,
@@ -103,11 +110,30 @@ func (g *gateway) DoMulti(ctx context.Context, num int,
 				return err
 			}
 			atomic.AddUint32(&cur, 1)
+			visited.Store(addr, struct{}{})
 		}
 		return nil
 	})
-	if err != nil && cur < limit {
-		return err
+	if err != nil || cur < limit {
+		err = g.client.GetClient().OrderedRange(sctx, addrs, func(ictx context.Context,
+			addr string,
+			conn *grpc.ClientConn,
+			copts ...grpc.CallOption) (err error) {
+			if atomic.LoadUint32(&cur) < limit {
+				_, ok := visited.Load(addr)
+				if !ok {
+					err = f(ictx, addr, vald.NewValdClient(conn), copts...)
+					if err != nil {
+						return err
+					}
+					atomic.AddUint32(&cur, 1)
+				}
+			}
+			return nil
+		})
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

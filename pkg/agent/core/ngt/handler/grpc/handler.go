@@ -570,7 +570,8 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (res *
 					ResourceType: ngtResourceType + "/ngt.Insert",
 					ResourceName: s.ip,
 					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error()})
+					Description:  err.Error(),
+				})
 			log.Warn(err)
 			code = trace.StatusCodeAlreadyExists(err.Error())
 		} else if errors.Is(err, errors.ErrUUIDNotFound(0)) {
