@@ -234,13 +234,34 @@ func TestWithBulkInsertChunkSize(t *testing.T) {
 			},
 		},
 		{
-			name: "set success when the size is -100",
+			name: "set success when the size is MaxInt32",
+			args: args{
+				size: math.MaxInt32,
+			},
+			want: want{
+				obj: &T{
+					bulkInsertChunkSize: math.MaxInt32,
+				},
+			},
+		},
+		{
+			name: "return error when the size is -100",
 			args: args{
 				size: -100,
 			},
 			want: want{
 				obj: &T{},
 				err: errors.New("invalid option, name: BulkInsertChunkSize, val: -100"),
+			},
+		},
+		{
+			name: "return error when the size is MinInt32",
+			args: args{
+				size: math.MinInt32,
+			},
+			want: want{
+				obj: &T{},
+				err: errors.New("invalid option, name: BulkInsertChunkSize, val: -2147483648"),
 			},
 		},
 	}
@@ -367,6 +388,26 @@ func TestWithDimension(t *testing.T) {
 			want: want{
 				obj: &T{},
 				err: errors.New("invalid critical option, name: dimension, val: 65537: dimension size 65537 is invalid, the supporting dimension size must be between 2 ~ 65536"),
+			},
+		},
+		{
+			name: "return error when the size is MaxInt32",
+			args: args{
+				size: math.MaxInt32,
+			},
+			want: want{
+				obj: &T{},
+				err: errors.New("invalid critical option, name: dimension, val: 2147483647: dimension size 2147483647 is invalid, the supporting dimension size must be between 2 ~ 65536"),
+			},
+		},
+		{
+			name: "return error when the size is MinInt32",
+			args: args{
+				size: math.MinInt32,
+			},
+			want: want{
+				obj: &T{},
+				err: errors.New("invalid critical option, name: dimension, val: -2147483648: dimension size -2147483648 is invalid, the supporting dimension size must be between 2 ~ 65536"),
 			},
 		},
 	}
@@ -572,6 +613,16 @@ func TestWithDistanceTypeByString(t *testing.T) {
 			name: "return error when distance type is invalid",
 			args: args{
 				dt: "invalid type",
+			},
+			want: want{
+				err: errors.ErrUnsupportedDistanceType,
+				obj: &T{},
+			},
+		},
+		{
+			name: "return error when distance type is empty string",
+			args: args{
+				dt: "",
 			},
 			want: want{
 				err: errors.ErrUnsupportedDistanceType,
@@ -848,6 +899,16 @@ func TestWithObjectTypeByString(t *testing.T) {
 			name: "return error when object type is invalid",
 			args: args{
 				ot: "invalid",
+			},
+			want: want{
+				obj: &T{},
+				err: errors.New("invalid critical option, name: objectType, val: 0: unsupported ObjectType"),
+			},
+		},
+		{
+			name: "return error when object type is empty string",
+			args: args{
+				ot: "",
 			},
 			want: want{
 				obj: &T{},
