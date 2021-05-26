@@ -705,7 +705,9 @@ func (n *ngt) CreateAndSaveIndex(ctx context.Context, poolSize uint32) (err erro
 func (n *ngt) Exists(uuid string) (oid uint32, ok bool) {
 	oid, ok = n.kvs.Get(uuid)
 	if !ok {
-		_, ok = n.vq.GetVector(uuid)
+		ok = n.vq.IVExists(uuid)
+	} else {
+		ok = !n.vq.DVExists(uuid)
 	}
 	return oid, ok
 }

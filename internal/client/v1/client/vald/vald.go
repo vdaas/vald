@@ -40,6 +40,10 @@ type client struct {
 	c     grpc.Client
 }
 
+type singleClient struct {
+	vc vald.Client
+}
+
 const (
 	apiName = "vald/internal/client/v1/client/vald"
 )
@@ -59,6 +63,10 @@ func New(opts ...Option) (Client, error) {
 		c.c = grpc.New(grpc.WithAddrs(c.addrs...))
 	}
 	return c, nil
+}
+
+func NewValdClient(cc *grpc.ClientConn) Client {
+	return &singleClient{vc: vald.NewValdClient(cc)}
 }
 
 func (c *client) Start(ctx context.Context) (<-chan error, error) {
@@ -470,4 +478,226 @@ func (c *client) StreamGetObject(ctx context.Context, opts ...grpc.CallOption) (
 		return nil, err
 	}
 	return res, nil
+}
+
+func (c *singleClient) Start(ctx context.Context) (<-chan error, error) {
+	return nil, nil
+}
+
+func (c *singleClient) Stop(ctx context.Context) error {
+	return nil
+}
+
+func (c *singleClient) GRPCClient() grpc.Client {
+	return nil
+}
+
+func (c *singleClient) Exists(ctx context.Context, in *payload.Object_ID, opts ...grpc.CallOption) (oid *payload.Object_ID, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/singleClient.Exists")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.Exists(ctx, in, opts...)
+}
+
+func (c *singleClient) Search(ctx context.Context, in *payload.Search_Request, opts ...grpc.CallOption) (res *payload.Search_Response, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/singleClient.Search")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.Search(ctx, in, opts...)
+}
+
+func (c *singleClient) SearchByID(ctx context.Context, in *payload.Search_IDRequest, opts ...grpc.CallOption) (res *payload.Search_Response, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/singleClient.SearchByID")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.SearchByID(ctx, in, opts...)
+}
+
+func (c *singleClient) StreamSearch(ctx context.Context, opts ...grpc.CallOption) (res vald.Search_StreamSearchClient, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/singleClient.StreamSearch")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.StreamSearch(ctx, opts...)
+}
+
+func (c *singleClient) StreamSearchByID(ctx context.Context, opts ...grpc.CallOption) (res vald.Search_StreamSearchByIDClient, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/singleClient.StreamSearchByID")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.StreamSearchByID(ctx, opts...)
+}
+
+func (c *singleClient) MultiSearch(ctx context.Context, in *payload.Search_MultiRequest, opts ...grpc.CallOption) (res *payload.Search_Responses, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/singleClient.MultiSearch")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.MultiSearch(ctx, in, opts...)
+}
+
+func (c *singleClient) MultiSearchByID(ctx context.Context, in *payload.Search_MultiIDRequest, opts ...grpc.CallOption) (res *payload.Search_Responses, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/singleClient.MultiSearchByID")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.MultiSearchByID(ctx, in, opts...)
+}
+
+func (c *singleClient) Insert(ctx context.Context, in *payload.Insert_Request, opts ...grpc.CallOption) (res *payload.Object_Location, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/singleClient.Insert")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.Insert(ctx, in, opts...)
+}
+
+func (c *singleClient) StreamInsert(ctx context.Context, opts ...grpc.CallOption) (res vald.Insert_StreamInsertClient, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/singleClient.StreamInsert")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.StreamInsert(ctx, opts...)
+}
+
+func (c *singleClient) MultiInsert(ctx context.Context, in *payload.Insert_MultiRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/singleClient.MultiInsert")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.MultiInsert(ctx, in, opts...)
+}
+
+func (c *singleClient) Update(ctx context.Context, in *payload.Update_Request, opts ...grpc.CallOption) (res *payload.Object_Location, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/singleClient.Update")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.Update(ctx, in, opts...)
+}
+
+func (c *singleClient) StreamUpdate(ctx context.Context, opts ...grpc.CallOption) (res vald.Update_StreamUpdateClient, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/singleClient.StreamUpdate")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.StreamUpdate(ctx, opts...)
+}
+
+func (c *singleClient) MultiUpdate(ctx context.Context, in *payload.Update_MultiRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/singleClient.MultiUpdate")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.MultiUpdate(ctx, in, opts...)
+}
+
+func (c *singleClient) Upsert(ctx context.Context, in *payload.Upsert_Request, opts ...grpc.CallOption) (res *payload.Object_Location, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/singleClient.Upsert")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.Upsert(ctx, in, opts...)
+}
+
+func (c *singleClient) StreamUpsert(ctx context.Context, opts ...grpc.CallOption) (res vald.Upsert_StreamUpsertClient, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/singleClient.StreamUpsert")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.StreamUpsert(ctx, opts...)
+}
+
+func (c *singleClient) MultiUpsert(ctx context.Context, in *payload.Upsert_MultiRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/singleClient.MultiUpsert")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.MultiUpsert(ctx, in, opts...)
+}
+
+func (c *singleClient) Remove(ctx context.Context, in *payload.Remove_Request, opts ...grpc.CallOption) (res *payload.Object_Location, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/singleClient.Remove")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.Remove(ctx, in, opts...)
+}
+
+func (c *singleClient) StreamRemove(ctx context.Context, opts ...grpc.CallOption) (res vald.Remove_StreamRemoveClient, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/singleClient.StreamRemove")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.StreamRemove(ctx, opts...)
+}
+
+func (c *singleClient) MultiRemove(ctx context.Context, in *payload.Remove_MultiRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/singleClient.MultiRemove")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.MultiRemove(ctx, in, opts...)
+}
+
+func (c *singleClient) GetObject(ctx context.Context, in *payload.Object_VectorRequest, opts ...grpc.CallOption) (res *payload.Object_Vector, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/singleClient.GetObject")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.GetObject(ctx, in, opts...)
+}
+
+func (c *singleClient) StreamGetObject(ctx context.Context, opts ...grpc.CallOption) (res vald.Object_StreamGetObjectClient, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/singleClient.StreamGetObject")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.StreamGetObject(ctx, opts...)
 }

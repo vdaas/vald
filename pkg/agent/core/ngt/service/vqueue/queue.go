@@ -233,7 +233,22 @@ func (v *vqueue) GetVector(uuid string) ([]float32, bool) {
 	v.imu.Lock()
 	vec, ok := v.uiim[uuid]
 	v.imu.Unlock()
-	return vec.vector, ok
+	if !ok {
+		// data not in the insert queue then return not exists(false)
+		return nil, false
+	}
+	v.dmu.Lock()
+	di, ok := v.udim[uuid]
+	v.dmu.Unlock()
+	if !ok {
+		// data not in the delete queue but exists in insert queue then return exists(true)
+		return vec.vector, true
+	}
+	// data exists both queue, compare data timestamp if insert queue timestamp is newer than delete one, this function returns exists(true)
+	if di < vec.date {
+		return vec.vector, true
+	}
+	return nil, false
 }
 
 func (v *vqueue) IVExists(uuid string) bool {

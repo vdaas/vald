@@ -229,14 +229,7 @@ func (rc *redisClient) newClusterClient(ctx context.Context) (c *redis.ClusterCl
 		}).WithContext(ctx)
 	} else {
 		c = redis.NewClusterClient(&redis.ClusterOptions{
-			Addrs: rc.addrs,
-			NewClient: func(opt *redis.Options) *redis.Client {
-				c, err := rc.newClient(ctx)
-				if err != nil {
-					return redis.NewClient(opt)
-				}
-				return c
-			},
+			Addrs:              rc.addrs,
 			Dialer:             rc.dialerFunc,
 			MaxRedirects:       rc.maxRedirects,
 			ReadOnly:           rc.readOnly,
