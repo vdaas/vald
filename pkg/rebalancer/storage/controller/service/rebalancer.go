@@ -59,6 +59,7 @@ var (
 // Rebalancer represents the rebalancer interface.
 type Rebalancer interface {
 	Start(ctx context.Context) (<-chan error, error)
+	Close(ctx context.Context) error
 }
 
 type rebalancer struct {
@@ -90,6 +91,8 @@ type rebalancer struct {
 	decoder       *decoder.Decoder
 
 	prevDesiredPods int // prev desired replica number in statefulset
+
+	agentClient grpc.Client
 }
 
 // NewRebalancer initialize job, configmap, pod, podMetrics, statefulset, replicaset, daemonset reconciler.
@@ -118,6 +121,8 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 	if err != nil {
 		return nil, errors.ErrFailedToDecodeJobTemplate(err)
 	}
+
+	r.agentClient = grpc.New() //fix me
 
 	return r, nil
 }
@@ -194,6 +199,16 @@ func (r *rebalancer) podReconcile(podList map[string][]pod.Pod) {
 		log.Infof("pod not found: %s", r.agentName)
 		return
 	}
+
+	for _, pod := range pods {
+		addr := net.JoinHostPort(pod.IP, uint16(r.agentPort))
+		if !r.agentClient.IsConnected(context.Background(), addr) { // TODO
+			_, err := r.agentClient.Connect(context.Background(), addr)
+			if err != nil {
+				// error handling
+			}
+		}
+	}
 	r.pods.Store(pods)
 }
 
@@ -262,9 +277,18 @@ func (r *rebalancer) podMetricsReconcile(podList map[string]mpod.Pod) {
 	log.Info("pod metrics not found")
 }
 
+func (r *rebalancer) Close(ctx context.Context) error {
+	return r.agentClient.Close(ctx)
+}
+
 // Start starts the rebalancer controller loop for the Vald agent index rebalancer.
 func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
-	cech, err := r.ctrl.Start(ctx)
+	cech, err := r.ctrl.Start(ctx) // close
+	if err != nil {
+		return nil, err
+	}
+
+	gech, err := r.agentClient.StartConnectionMonitor(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -279,6 +303,8 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
+			case err := <-gech:
+				ech <- err
 			case <-dt.C:
 				podsByNamespace, err := r.podsByNamespace()
 				if err != nil {
@@ -366,30 +392,20 @@ func (r *rebalancer) getPodByAgentName(agentName string) (*pod.Pod, error) {
 	return nil, errors.New("pod not found")
 }
 
-func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, reason config.RebalanceReason, agentName, agentNs string, rate float64) error {
+func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, reason config.RebalanceReason, agentName, agentNs string, rate float64) (err error) {
 	if reason == config.DEVIATION {
 		p, err := r.getPodByAgentName(agentName)
 		if err != nil {
 			return err
 		}
 
-		ctx, cancel := context.WithCancel(ctx)
-		defer cancel()
-
 		agentAddr := net.JoinHostPort(p.IP, uint16(r.agentPort))
+		var res *payload.Info_Index_Count
 
-		gc := grpc.New(append(defaultGRPCOps, grpc.WithAddrs(agentAddr))...)
-		_, err = gc.StartConnectionMonitor(ctx)
-		if err != nil {
-			return err
-		}
-		defer gc.Close(ctx)
-
-		c, err := agent.New(agent.WithAddrs(agentAddr), agent.WithGRPCClient(gc))
-		if err != nil {
-			return err
-		}
-		res, err := c.IndexInfo(ctx, new(payload.Empty))
+		_, err = r.agentClient.Do(ctx, agentAddr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+			res, err = agent.NewAgentClient(conn).IndexInfo(ctx, new(payload.Empty))
+			return res, err
+		})
 		if err != nil {
 			return err
 		}
