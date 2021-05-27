@@ -19,12 +19,12 @@ package transport
 
 import (
 	"context"
-	"io"
 	"io/ioutil"
 	"net/http"
 
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
 )
 
