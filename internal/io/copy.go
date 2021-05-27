@@ -81,6 +81,7 @@ func (c *copier) Copy(dst io.Writer, src io.Reader) (written int64, err error) {
 	)
 	if l, ok = src.(*io.LimitedReader); ok && l.N >= 1 && size > l.N {
 		limit = l.N
+		size = limit
 	}
 	buf, ok = c.pool.Get().(*bytes.Buffer)
 	if !ok || buf == nil {
@@ -94,11 +95,14 @@ func (c *copier) Copy(dst io.Writer, src io.Reader) (written int64, err error) {
 		buf.Reset()
 		c.pool.Put(buf)
 	}()
+	if size > int64(buf.Cap()) {
+		size = int64(buf.Cap())
+	}
 	var nr, nw int
 	for err != io.EOF {
-		nr, err = src.Read(buf.Bytes()[:buf.Cap()])
+		nr, err = src.Read(buf.Bytes()[:size])
 		if nr > 0 {
-			if size < int64(nr) {
+			if int64(nr) > size {
 				if int64(nr) >= limit {
 					size = limit
 				} else {
