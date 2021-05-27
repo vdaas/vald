@@ -17,11 +17,11 @@ package json
 
 import (
 	"bytes"
-	"io"
 	"reflect"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/io"
 	"go.uber.org/goleak"
 )
 

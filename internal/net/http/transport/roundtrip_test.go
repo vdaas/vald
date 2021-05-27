@@ -20,7 +20,6 @@ package transport
 import (
 	"bytes"
 	"context"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -30,6 +29,7 @@ import (
 
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
 	"go.uber.org/goleak"
 )

@@ -20,7 +20,7 @@ package observer
 import (
 	"archive/tar"
 	"context"
-	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -30,8 +30,9 @@ import (
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/file/watch"
-	ctxio "github.com/vdaas/vald/internal/io"
+	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
@@ -464,7 +465,7 @@ func (o *observer) backup(ctx context.Context) (err error) {
 			}
 		}()
 
-		return filepath.Walk(o.dir, func(file string, fi os.FileInfo, err error) error {
+		return filepath.Walk(o.dir, func(path string, fi os.FileInfo, err error) error {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
@@ -475,12 +476,12 @@ func (o *observer) backup(ctx context.Context) (err error) {
 				return err
 			}
 
-			header, err := tar.FileInfoHeader(fi, file)
+			header, err := tar.FileInfoHeader(fi, path)
 			if err != nil {
 				return err
 			}
 
-			rel, err := filepath.Rel(o.dir, file)
+			rel, err := filepath.Rel(o.dir, path)
 			if err != nil {
 				return err
 			}
@@ -492,24 +493,24 @@ func (o *observer) backup(ctx context.Context) (err error) {
 				return err
 			}
 
-			log.Debug("writing: ", file)
+			log.Debug("writing: ", path)
 
 			if fi.IsDir() {
 				return nil
 			}
 
-			data, err := os.OpenFile(file, os.O_RDONLY, os.ModePerm)
+			data, err := file.Open(path, os.O_RDONLY, fs.ModePerm)
 			if err != nil {
 				return err
 			}
 			defer func() {
 				e := data.Close()
 				if e != nil {
-					log.Errorf("failed to close %s: %s", file, e)
+					log.Errorf("failed to close %s: %s", path, e)
 				}
 			}()
 
-			d, err := ctxio.NewReaderWithContext(ctx, data)
+			d, err := io.NewReaderWithContext(ctx, data)
 			if err != nil {
 				return err
 			}
@@ -522,7 +523,7 @@ func (o *observer) backup(ctx context.Context) (err error) {
 		})
 	}))
 
-	prr, err := ctxio.NewReaderWithContext(ctx, pr)
+	prr, err := io.NewReaderWithContext(ctx, pr)
 	if err != nil {
 		return err
 	}

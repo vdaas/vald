@@ -19,6 +19,7 @@ package pool
 
 import (
 	"context"
+	"math"
 	"sort"
 	"strings"
 	"sync/atomic"
@@ -254,13 +255,12 @@ func (p *pool) Disconnect() (err error) {
 
 func (p *pool) dial(ctx context.Context, addr string) (conn *ClientConn, err error) {
 	if p.bo != nil {
-		var res interface{}
 		retry := 0
-		res, err = p.bo.Do(ctx, func(ctx context.Context) (r interface{}, ret bool, err error) {
+		_, err = p.bo.Do(ctx, func(ctx context.Context) (r interface{}, ret bool, err error) {
 			log.Debugf("dialing to %s with backoff, retry: %d", addr, retry)
 			ctx, cancel := context.WithTimeout(ctx, p.dialTimeout)
 			defer cancel()
-			conn, err := grpc.DialContext(ctx, addr, append(p.dopts, grpc.WithBlock())...)
+			conn, err = grpc.DialContext(ctx, addr, append(p.dopts, grpc.WithBlock())...)
 			if err != nil {
 				if conn != nil {
 					err = errors.Wrap(conn.Close(), err.Error())
@@ -271,25 +271,26 @@ func (p *pool) dial(ctx context.Context, addr string) (conn *ClientConn, err err
 			}
 			if !isHealthy(conn) {
 				if conn != nil {
-					err = errors.Wrap(conn.Close(), err.Error())
+					err = conn.Close()
+				}
+				if err != nil {
+					err = errors.Wrapf(err, errors.ErrGRPCClientConnNotFound(addr).Error())
+				} else {
+					err = errors.ErrGRPCClientConnNotFound(addr)
 				}
 				log.Debugf("connection for %s is unhealthy: %s", addr, err)
 				retry++
-				return nil, true, errors.ErrGRPCClientConnNotFound(addr)
+				return nil, err != nil, err
 			}
 			return conn, false, nil
 		})
-		var ok bool
-		conn, ok = res.(*ClientConn)
-		if !ok {
-			return nil, errors.ErrGRPCClientConnNotFound(addr)
-		}
-	} else {
-		log.Debugf("dialing to %s", addr)
-		ctx, cancel := context.WithTimeout(ctx, p.dialTimeout)
-		defer cancel()
-		conn, err = grpc.DialContext(ctx, addr, append(p.dopts, grpc.WithBlock())...)
+		return conn, nil
 	}
+
+	log.Debugf("dialing to %s", addr)
+	ctx, cancel := context.WithTimeout(ctx, p.dialTimeout)
+	defer cancel()
+	conn, err = grpc.DialContext(ctx, addr, append(p.dopts, grpc.WithBlock())...)
 	if err != nil || !isHealthy(conn) {
 		log.Debugf("failed to dial pool connection addr = %s\terror = %v", addr, err)
 		if conn != nil {
@@ -339,7 +340,7 @@ func (p *pool) Get() (*ClientConn, bool) {
 }
 
 func (p *pool) get(retry uint64) (*ClientConn, bool) {
-	if retry <= 0 || p.Len() <= 0 {
+	if retry <= 0 || retry > math.MaxUint64-p.Len() || p.Len() <= 0 {
 		log.Warnf("failed to find grpc pool connection for %s", p.addr)
 		if p.isIP {
 			log.Debugf("failure connection is IP connection trying to disconnect grpc connection for %s", p.addr)
@@ -473,7 +474,21 @@ func isGRPCPort(ctx context.Context, host string, port uint16) bool {
 }
 
 func isHealthy(conn *ClientConn) bool {
-	return conn != nil &&
-		conn.GetState() != connectivity.Shutdown &&
-		conn.GetState() != connectivity.TransientFailure
+	if conn == nil {
+		log.Warnf("grpc target %s's connection is nil", conn.Target())
+		return false
+	}
+	state := conn.GetState()
+	switch state {
+	case connectivity.Ready:
+		return true
+	case connectivity.Idle, connectivity.Connecting:
+		log.Debug("grpc target %s's connection status will be Ready soon:\tstatus: %s", conn.Target(), state.String())
+		return true
+	case connectivity.Shutdown, connectivity.TransientFailure:
+		log.Error("grpc target %s's connection status is unhealthy:\tstatus: %s", conn.Target(), state.String())
+		return false
+	}
+	log.Error("grpc target %s's connection status is unknown:\tstatus: %s", conn.Target(), state.String())
+	return false
 }

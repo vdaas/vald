@@ -19,13 +19,13 @@ package json
 import (
 	"bytes"
 	"context"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 
 	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/http/dump"
 	"github.com/vdaas/vald/internal/net/http/rest"
