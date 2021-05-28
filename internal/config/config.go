@@ -26,6 +26,7 @@ import (
 
 	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/io/ioutil"
 	"github.com/vdaas/vald/internal/log"
 	yaml "gopkg.in/yaml.v2"
@@ -61,7 +62,7 @@ func (c *GlobalConfig) Bind() *GlobalConfig {
 
 // Read returns config struct or error when decoding the configuration file to actually *Config struct.
 func Read(path string, cfg interface{}) (err error) {
-	f, err := os.OpenFile(path, os.O_RDONLY, 0o600)
+	f, err := file.Open(path, os.O_RDONLY, 0o600)
 	if err != nil {
 		return err
 	}
@@ -72,11 +73,13 @@ func Read(path string, cfg interface{}) (err error) {
 		}
 		err = f.Close()
 	}()
-	switch filepath.Ext(path) {
-	case ".yaml":
+	switch ext := filepath.Ext(path); ext {
+	case ".yaml", ".yml":
 		err = yaml.NewDecoder(f).Decode(cfg)
 	case ".json":
 		err = json.Decode(f, cfg)
+	default:
+		err = errors.ErrUnsupportedConfigFileType(ext)
 	}
 	return err
 }

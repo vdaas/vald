@@ -19,7 +19,6 @@ package storage
 
 import (
 	"context"
-	"io"
 	"reflect"
 	"testing"
 
@@ -29,6 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/session"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/io"
 	"go.uber.org/goleak"
 )
 

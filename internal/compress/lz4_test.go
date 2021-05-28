@@ -18,12 +18,12 @@
 package compress
 
 import (
-	"io"
 	"reflect"
 	"testing"
 
 	"github.com/vdaas/vald/internal/compress/lz4"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/io"
 	"go.uber.org/goleak"
 )
 

@@ -18,6 +18,7 @@
 package file
 
 import (
+	"io/fs"
 	"os"
 	"path/filepath"
 
@@ -27,13 +28,17 @@ import (
 // Open opens the file with the given path, flag and permission.
 // If the folder does not exists, create the folder.
 // If the file does not exist, create the file.
-func Open(path string, flg int, perm os.FileMode) (*os.File, error) {
+func Open(path string, flg int, perm fs.FileMode) (file *os.File, err error) {
 	if path == "" {
 		return nil, errors.ErrPathNotSpecified
 	}
 
-	var err error
-	var file *os.File
+	defer func() {
+		if err != nil && file != nil {
+			err = errors.Wrap(file.Close(), err.Error())
+			file = nil
+		}
+	}()
 	if _, err = os.Stat(path); err != nil {
 		if _, err = os.Stat(filepath.Dir(path)); err != nil {
 			err = os.MkdirAll(filepath.Dir(path), perm)
@@ -45,21 +50,21 @@ func Open(path string, flg int, perm os.FileMode) (*os.File, error) {
 		if flg&(os.O_CREATE|os.O_APPEND) > 0 {
 			file, err = os.Create(path)
 			if err != nil {
-				return nil, err
+				return file, err
 			}
 		}
 
 		if file != nil {
 			err = file.Close()
 			if err != nil {
-				return nil, err
+				return file, err
 			}
 		}
 	}
 
 	file, err = os.OpenFile(path, flg, perm)
 	if err != nil {
-		return nil, err
+		return file, err
 	}
 
 	return file, nil

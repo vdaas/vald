@@ -20,7 +20,7 @@ package restorer
 import (
 	"archive/tar"
 	"context"
-	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -31,7 +31,7 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
-	ctxio "github.com/vdaas/vald/internal/io"
+	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
@@ -178,7 +178,7 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 			return err
 		}
 
-		sr, err = ctxio.NewReadCloserWithContext(ctx, sr)
+		sr, err = io.NewReadCloserWithContext(ctx, sr)
 		if err != nil {
 			return err
 		}
@@ -234,34 +234,12 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 				}
 			}
 		case tar.TypeReg:
-			if _, err := os.Stat(target); err == nil {
-				log.Warn(errors.ErrFileAlreadyExists(target))
-				return nil
-			} else if !os.IsNotExist(err) {
-				return err
-			}
-
-			f, err := file.Open(
-				target,
-				os.O_CREATE|os.O_RDWR,
-				os.FileMode(header.Mode),
-			)
+			err = copyFile(ctx, target, tr, fs.FileMode(header.Mode))
 			if err != nil {
-				return err
-			}
-
-			fw, err := ctxio.NewWriterWithContext(ctx, f)
-			if err != nil {
-				return errors.Wrap(f.Close(), err.Error())
-			}
-
-			_, err = io.Copy(fw, tr)
-			if err != nil {
-				return errors.Wrap(f.Close(), err.Error())
-			}
-
-			err = f.Close()
-			if err != nil {
+				if errors.Is(err, errors.ErrFileAlreadyExists(target)) {
+					log.Warn(err)
+					return nil
+				}
 				return err
 			}
 		}
@@ -269,5 +247,45 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 
 	log.Infof("finished to restore directory %s finished", r.dir)
 
+	return nil
+}
+
+func copyFile(ctx context.Context, target string, tr io.Reader, mode fs.FileMode) (err error) {
+	if _, err = os.Stat(target); err == nil {
+		return errors.ErrFileAlreadyExists(target)
+	} else if !os.IsNotExist(err) {
+		return err
+	}
+
+	f, err := file.Open(
+		target,
+		os.O_CREATE|os.O_RDWR,
+		os.FileMode(mode),
+	)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if f != nil {
+			derr := f.Close()
+			if derr != nil {
+				err = errors.Wrap(err, derr.Error())
+			}
+		}
+	}()
+
+	fw, err := io.NewWriterWithContext(ctx, f)
+	if err != nil {
+		return err
+	}
+
+	_, err = io.Copy(fw, tr)
+	if err != nil {
+		return err
+	}
+	err = f.Sync()
+	if err != nil {
+		return err
+	}
 	return nil
 }

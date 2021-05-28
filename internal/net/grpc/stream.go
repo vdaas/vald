@@ -20,13 +20,13 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"io"
 	"runtime"
 	"sync"
 	"sync/atomic"
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
