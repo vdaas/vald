@@ -705,7 +705,7 @@ func (o *observer) kvsBackup(ctx context.Context) (err error) {
 			}
 		}()
 
-		d, err := ctxio.NewReaderWithContext(ctx, data)
+		d, err := io.NewReaderWithContext(ctx, data)
 		if err != nil {
 			return err
 		}
@@ -717,7 +717,7 @@ func (o *observer) kvsBackup(ctx context.Context) (err error) {
 		return nil
 	}))
 
-	prr, err := ctxio.NewReaderWithContext(ctx, pr)
+	prr, err := io.NewReaderWithContext(ctx, pr)
 	if err != nil {
 		return err
 	}
