@@ -20,6 +20,7 @@ package service
 import (
 	"context"
 	"encoding/gob"
+	"io/fs"
 	"math"
 	"os"
 	"path/filepath"
@@ -292,8 +293,14 @@ func (n *ngt) loadKVS() error {
 	if err != nil {
 		return err
 	}
-
-	defer f.Close()
+	defer func() {
+		if f != nil {
+			derr := f.Close()
+			if derr != nil {
+				err = errors.Wrap(err, derr.Error())
+			}
+		}
+	}()
 
 	m := make(map[string]uint32)
 	err = gob.NewDecoder(f).Decode(&m)
@@ -632,7 +639,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 
 	eg, ctx := errgroup.New(ctx)
 
-	eg.Go(safety.RecoverFunc(func() error {
+	eg.Go(safety.RecoverFunc(func() (err error) {
 		if n.path != "" {
 			log.Infof("[rebalance controller] gob area. kvs length: %d", n.kvs.Len())
 			m := make(map[string]uint32, n.kvs.Len())
@@ -643,21 +650,33 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 				mu.Unlock()
 				return true
 			})
-			f, err := file.Open(
+			var f *os.File
+			f, err = file.Open(
 				filepath.Join(n.path, kvsFileName),
 				os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
-				os.ModePerm,
+				fs.ModePerm,
 			)
 			if err != nil {
 				return err
 			}
 			defer func() {
-				if err := f.Close(); err != nil {
-					log.Errorf("[rebalance controller] failed to close kvsdb file: %v", err)
+				if f != nil {
+					derr := f.Close()
+					if derr != nil {
+						err = errors.Wrap(err, derr.Error())
+            log.Errorf("[rebalance controller] failed to close kvsdb file: %v", err)
+					}
 				}
 			}()
 			gob.Register(map[string]uint32{})
-			return gob.NewEncoder(f).Encode(&m)
+			err = gob.NewEncoder(f).Encode(&m)
+			if err != nil {
+				return err
+			}
+			err = f.Sync()
+			if err != nil {
+				return err
+			}
 		}
 		return nil
 	}))

@@ -18,12 +18,13 @@
 package metadata
 
 import (
-	"io"
+	"io/fs"
 	"os"
 
 	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
+	"github.com/vdaas/vald/internal/io"
 )
 
 const (
@@ -48,26 +49,49 @@ func Load(path string) (meta *Metadata, err error) {
 		return nil, errors.ErrMetadataFileEmpty
 	}
 
-	f, err := file.Open(path, os.O_RDONLY|os.O_SYNC, os.ModePerm)
+	f, err := file.Open(path, os.O_RDONLY|os.O_SYNC, fs.ModePerm)
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer func() {
+		if f != nil {
+			derr := f.Close()
+			if derr != nil {
+				err = errors.Wrap(err, derr.Error())
+			}
+		}
+	}()
 
 	err = json.Decode(f, &meta)
 	if err != nil && err != io.EOF {
 		return nil, err
 	}
-
 	return meta, nil
 }
 
-func Store(path string, meta *Metadata) error {
-	f, err := file.Open(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
+func Store(path string, meta *Metadata) (err error) {
+	var f *os.File
+	f, err = file.Open(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() {
+		if f != nil {
+			derr := f.Close()
+			if derr != nil {
+				err = errors.Wrap(err, derr.Error())
+			}
+		}
+	}()
 
-	return json.Encode(f, &meta)
+	err = json.Encode(f, &meta)
+	if err != nil {
+		return err
+	}
+
+	err = f.Sync()
+	if err != nil {
+		return err
+	}
+	return nil
 }

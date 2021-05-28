@@ -24,6 +24,19 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
+type (
+	Reader      = io.Reader
+	Writer      = io.Writer
+	Closer      = io.Closer
+	ReadCloser  = io.ReadCloser
+	WriteCloser = io.WriteCloser
+)
+
+var (
+	Pipe = io.Pipe
+	EOF  = io.EOF
+)
+
 type ctxReader struct {
 	ctx context.Context
 	r   io.Reader
