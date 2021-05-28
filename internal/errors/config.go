@@ -17,4 +17,10 @@
 // Package errors provides error types and function
 package errors
 
-var ErrInvalidConfig = New("component config is invalid")
+var (
+	ErrInvalidConfig = New("component config is invalid")
+
+	ErrUnsupportedConfigFileType = func(ext string) error {
+		return Errorf("unsupported file type: %s", ext)
+	}
+)

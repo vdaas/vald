@@ -413,7 +413,7 @@ func (g *gRPCClient) OrderedRange(ctx context.Context,
 			p, ok := g.conns.Load(addr)
 			if !ok || p == nil {
 				g.crl.Store(addr, true)
-				log.Warn(errors.ErrGRPCClientConnNotFound(addr))
+				log.Warnf("gRPCClient.OrderedRange operation failed, grpc pool connection for %s is invalid,\terror: %v", addr, errors.ErrGRPCClientConnNotFound(addr))
 				continue
 			}
 			ssctx, span := trace.StartSpan(sctx, apiName+"/Client.OrderedRange/"+addr)
@@ -460,7 +460,7 @@ func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
 			p, ok := g.conns.Load(addr)
 			if !ok || p == nil {
 				g.crl.Store(addr, true)
-				log.Warn(errors.ErrGRPCClientConnNotFound(addr))
+				log.Warnf("gRPCClient.OrderedRangeConcurrent operation failed, grpc pool connection for %s is invalid,\terror: %v", addr, errors.ErrGRPCClientConnNotFound(addr))
 				return nil
 			}
 			ssctx, sspan := trace.StartSpan(sctx, apiName+"/Client.OrderedRangeConcurrent/"+addr)
@@ -568,7 +568,7 @@ func (g *gRPCClient) Do(ctx context.Context, addr string,
 	if !ok || p == nil {
 		g.crl.Store(addr, true)
 		err = errors.ErrGRPCClientConnNotFound(addr)
-		log.Warn(err)
+		log.Warnf("gRPCClient.Do operation failed, grpc pool connection for %s is invalid,\terror: %v", addr, err)
 		return nil, err
 	}
 	return g.do(sctx, p, addr, true, f)
@@ -580,7 +580,7 @@ func (g *gRPCClient) do(ctx context.Context, p pool.Conn, addr string, enableBac
 	if p == nil {
 		g.crl.Store(addr, true)
 		err = errors.ErrGRPCClientConnNotFound(addr)
-		log.Warn(err)
+		log.Warnf("gRPCClient.do operation failed, grpc pool connection for %s is invalid,\terror: %v", addr, err)
 		return nil, err
 	}
 	sctx, span := trace.StartSpan(ctx, apiName+"/Client.do/"+addr)
@@ -733,6 +733,7 @@ func (g *gRPCClient) Disconnect(ctx context.Context, addr string) error {
 	_, _, err := g.group.Do(ctx, "disconnect-"+addr, func() (interface{}, error) {
 		p, ok := g.conns.Load(addr)
 		if !ok {
+			log.Debugf("disconnection target %s's grpc pool conn is already unavailable", addr)
 			return nil, errors.ErrGRPCClientConnNotFound(addr)
 		}
 		g.conns.Delete(addr)

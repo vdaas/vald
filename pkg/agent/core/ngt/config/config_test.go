@@ -18,7 +18,6 @@
 package config
 
 import (
-	"io"
 	"io/fs"
 	"os"
 	"syscall"
@@ -26,6 +25,8 @@ import (
 
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/file"
+	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"go.uber.org/goleak"
 )
@@ -397,7 +398,7 @@ func TestNewConfig(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T, a args) {
 					t.Helper()
-					f, err := os.OpenFile(a.path, os.O_CREATE, fs.ModeIrregular)
+					f, err := file.Open(a.path, os.O_CREATE, fs.ModeIrregular)
 					if err != nil {
 						t.Fatal(err)
 					}
@@ -422,7 +423,7 @@ func TestNewConfig(t *testing.T) {
 				},
 				want: want{
 					wantCfg: nil,
-					err:     errors.ErrInvalidConfig,
+					err:     errors.ErrUnsupportedConfigFileType(".txt"),
 				},
 			}
 		}(),

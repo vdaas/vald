@@ -15,7 +15,7 @@
 //
 package gzip
 
-import "io"
+import "github.com/vdaas/vald/internal/io"
 
 // MockReader represents mock of Reader.
 type MockReader struct {

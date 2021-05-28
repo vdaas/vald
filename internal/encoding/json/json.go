@@ -17,9 +17,8 @@
 package json
 
 import (
-	"io"
-
 	jsoniter "github.com/json-iterator/go"
+	"github.com/vdaas/vald/internal/io"
 )
 
 func Encode(w io.Writer, data interface{}) (err error) {

@@ -18,10 +18,9 @@
 package tensorflow
 
 import (
-	"io"
-
 	tf "github.com/tensorflow/tensorflow/tensorflow/go"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/io"
 )
 
 // SessionOptions is a type alias for tensorflow.SessionOptions.
