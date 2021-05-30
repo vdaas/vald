@@ -3,10 +3,10 @@ module github.com/vdaas/vald
 go 1.16
 
 replace (
-	cloud.google.com/go => cloud.google.com/go v0.82.1-0.20210527170402-901cf67943dd
-	cloud.google.com/go/storage => cloud.google.com/go/storage v1.15.1-0.20210527170402-901cf67943dd
+	cloud.google.com/go => cloud.google.com/go v0.82.1-0.20210527184357-8a28ff6cebf2
+	cloud.google.com/go/storage => cloud.google.com/go/storage v1.15.1-0.20210527184357-8a28ff6cebf2
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20210527163351-82fc42f340ce+incompatible
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.38.49
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.38.51
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
@@ -22,7 +22,7 @@ replace (
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.17.0
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.2
 	github.com/hailocab/go-hostpool => github.com/kpango/go-hostpool v0.0.0-20210303030322-aab80263dcd0
-	github.com/klauspost/compress => github.com/klauspost/compress v1.12.4-0.20210526072301-e95c3005ef71
+	github.com/klauspost/compress => github.com/klauspost/compress v1.12.4-0.20210528085627-d172db789e89
 	github.com/kpango/glg => github.com/kpango/glg v1.5.1
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.2+incompatible
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
