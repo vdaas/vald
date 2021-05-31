@@ -17,15 +17,13 @@
 // Package grpc provides grpc server logic
 package grpc
 
-import (
-	"github.com/vdaas/vald/pkg/rebalancer/storage/job/service"
-)
+import "github.com/vdaas/vald/pkg/rebalancer/storage/job/service/job"
 
 type Option func(*server) error
 
 var defaultOpts = []Option{}
 
-func WithDiscoverer(rb service.Rebalancer) Option {
+func WithDiscoverer(rb job.Rebalancer) Option {
 	return func(s *server) error {
 		if rb != nil {
 			s.rb = rb

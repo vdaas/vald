@@ -22,7 +22,7 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/rebalancer"
 	"github.com/vdaas/vald/internal/singleflight"
-	"github.com/vdaas/vald/pkg/rebalancer/storage/job/service"
+	"github.com/vdaas/vald/pkg/rebalancer/storage/job/service/job"
 )
 
 type Rebalancer interface {
@@ -31,7 +31,7 @@ type Rebalancer interface {
 }
 
 type server struct {
-	rb    service.Rebalancer
+	rb    job.Rebalancer
 	group singleflight.Group
 }
 

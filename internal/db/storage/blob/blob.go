@@ -19,6 +19,9 @@ package blob
 import (
 	"context"
 	"io"
+
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/copier"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/deleter"
 )
 
 type Bucket interface {
@@ -26,4 +29,6 @@ type Bucket interface {
 	Close() error
 	Reader(ctx context.Context, key string) (io.ReadCloser, error)
 	Writer(ctx context.Context, key string) (io.WriteCloser, error)
+	Deleter(ctx context.Context) (deleter.Deleter, error)
+	Copier(ctx context.Context) (copier.Copier, error)
 }
