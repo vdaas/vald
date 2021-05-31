@@ -887,7 +887,29 @@ func TestWithObjectTypeByString(t *testing.T) {
 		{
 			name: "set success when object type is uint8-",
 			args: args{
-				ot: "uint8",
+				ot: "uint8-",
+			},
+			want: want{
+				obj: &T{
+					objectType: Uint8,
+				},
+			},
+		},
+		{
+			name: "set success when object type is uint8_",
+			args: args{
+				ot: "uint8_",
+			},
+			want: want{
+				obj: &T{
+					objectType: Uint8,
+				},
+			},
+		},
+		{
+			name: "set success when object type is _uint8-",
+			args: args{
+				ot: "_uint8-",
 			},
 			want: want{
 				obj: &T{
