@@ -25,6 +25,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/db/storage/blob"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/copier"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/deleter"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/reader"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/writer"
 	"github.com/vdaas/vald/internal/errgroup"
@@ -40,8 +42,10 @@ type client struct {
 	maxPartSize  int64
 	maxChunkSize int64
 
-	reader reader.Reader
-	writer writer.Writer
+	reader  reader.Reader
+	writer  writer.Writer
+	deleter deleter.Deleter
+	copier  copier.Copier
 
 	readerBackoffEnabled bool
 	readerBackoffOpts    []backoff.Option
@@ -85,6 +89,26 @@ func New(opts ...Option) (b blob.Bucket, err error) {
 		}
 	}
 
+	if c.deleter == nil {
+		c.deleter, err = deleter.New(
+			deleter.WithService(c.service),
+			deleter.WithBucket(c.bucket),
+		)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if c.copier == nil {
+		c.copier, err = copier.New(
+			copier.WithService(c.service),
+			copier.WithBucket(c.bucket),
+		)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return c, nil
 }
 
@@ -116,4 +140,12 @@ func (c *client) Writer(ctx context.Context, key string) (wc io.WriteCloser, err
 		return nil, err
 	}
 	return c.writer, nil
+}
+
+func (c *client) Deleter(ctx context.Context) (d deleter.Deleter, err error) {
+	return c.deleter, nil
+}
+
+func (c *client) Copier(ctx context.Context) (co copier.Copier, err error) {
+	return c.copier, nil
 }
