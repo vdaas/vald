@@ -374,12 +374,13 @@ func (v *vqueue) flushAndLoadDelete() (udk []key) {
 	v.imu.Unlock()
 	sort.Sort(sort.Reverse(sort.IntSlice(dl)))
 	for _, i := range dl {
-		// remove from existing map
 		v.imu.Lock()
+		// load removal target uuid
 		uuid := v.uii[i].uuid
 		// remove unnecessary insert vector queue data
 		v.uii = append(v.uii[:i], v.uii[i+1:]...)
 		v.imu.Unlock()
+		// remove from existing map
 		v.uiim.Delete(uuid)
 	}
 	return udk
