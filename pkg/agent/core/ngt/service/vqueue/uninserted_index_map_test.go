@@ -94,7 +94,6 @@ func Test_newEntryUiim(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -196,7 +195,6 @@ func Test_uiim_Load(t *testing.T) {
 			if err := test.checkFunc(test.want, gotValue, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -276,7 +274,6 @@ func Test_entryUiim_load(t *testing.T) {
 			if err := test.checkFunc(test.want, gotValue, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -292,8 +289,7 @@ func Test_uiim_Store(t *testing.T) {
 		dirty  map[string]*entryUiim
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -458,7 +454,6 @@ func Test_entryUiim_tryStore(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -534,7 +529,6 @@ func Test_entryUiim_unexpungeLocked(t *testing.T) {
 			if err := test.checkFunc(test.want, gotWasExpunged); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -546,8 +540,7 @@ func Test_entryUiim_storeLocked(t *testing.T) {
 	type fields struct {
 		p unsafe.Pointer
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -720,7 +713,6 @@ func Test_uiim_LoadOrStore(t *testing.T) {
 			if err := test.checkFunc(test.want, gotActual, gotLoaded); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -814,7 +806,6 @@ func Test_entryUiim_tryLoadOrStore(t *testing.T) {
 			if err := test.checkFunc(test.want, gotActual, gotLoaded, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -916,7 +907,6 @@ func Test_uiim_LoadAndDelete(t *testing.T) {
 			if err := test.checkFunc(test.want, gotValue, gotLoaded); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -931,8 +921,7 @@ func Test_uiim_Delete(t *testing.T) {
 		dirty  map[string]*entryUiim
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1089,7 +1078,6 @@ func Test_entryUiim_delete(t *testing.T) {
 			if err := test.checkFunc(test.want, gotValue, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1104,8 +1092,7 @@ func Test_uiim_Range(t *testing.T) {
 		dirty  map[string]*entryUiim
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1194,8 +1181,7 @@ func Test_uiim_missLocked(t *testing.T) {
 		dirty  map[string]*entryUiim
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields
@@ -1277,8 +1263,7 @@ func Test_uiim_dirtyLocked(t *testing.T) {
 		dirty  map[string]*entryUiim
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields
@@ -1424,7 +1409,6 @@ func Test_entryUiim_tryExpungeLocked(t *testing.T) {
 			if err := test.checkFunc(test.want, gotIsExpunged); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

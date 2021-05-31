@@ -98,7 +98,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -196,7 +195,6 @@ func Test_urlOpener_URLOpener(t *testing.T) {
 			if err := test.checkFunc(test.want, gotGuo, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
