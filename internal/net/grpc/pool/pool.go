@@ -483,12 +483,12 @@ func isHealthy(conn *ClientConn) bool {
 	case connectivity.Ready:
 		return true
 	case connectivity.Idle, connectivity.Connecting:
-		log.Debug("grpc target %s's connection status will be Ready soon:\tstatus: %s", conn.Target(), state.String())
+		log.Debugf("grpc target %s's connection status will be Ready soon:\tstatus: %s", conn.Target(), state.String())
 		return true
 	case connectivity.Shutdown, connectivity.TransientFailure:
-		log.Error("grpc target %s's connection status is unhealthy:\tstatus: %s", conn.Target(), state.String())
+		log.Errorf("grpc target %s's connection status is unhealthy:\tstatus: %s", conn.Target(), state.String())
 		return false
 	}
-	log.Error("grpc target %s's connection status is unknown:\tstatus: %s", conn.Target(), state.String())
+	log.Errorf("grpc target %s's connection status is unknown:\tstatus: %s", conn.Target(), state.String())
 	return false
 }

@@ -49,6 +49,8 @@ type server struct {
 	gateway           client.Client
 	copts             []grpc.CallOption
 	streamConcurrency int
+	name              string
+	ip                string
 }
 
 const apiName = "vald/gateway/meta"
@@ -81,7 +83,7 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (*payload.
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta.v1.GetUUID",
-				ResourceName: strings.Join(s.metadata.GRPCClient().ConnectedAddrs(), ", "),
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.metadata.GRPCClient().ConnectedAddrs()),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			})
@@ -135,7 +137,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Search",
-				ResourceName: strings.Join(s.gateway.GRPCClient().ConnectedAddrs(), ", "),
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.GRPCClient().ConnectedAddrs()),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
@@ -166,7 +168,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta.v1.GetUUID",
-				ResourceName: strings.Join(s.metadata.GRPCClient().ConnectedAddrs(), ", "),
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.metadata.GRPCClient().ConnectedAddrs()),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
@@ -186,7 +188,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.SearchByID",
-				ResourceName: strings.Join(s.gateway.GRPCClient().ConnectedAddrs(), ", "),
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.GRPCClient().ConnectedAddrs()),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
@@ -231,7 +233,7 @@ func (s *server) search(ctx context.Context,
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta.v1.GetMetas",
-					ResourceName: strings.Join(s.metadata.GRPCClient().ConnectedAddrs(), ", "),
+					ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.metadata.GRPCClient().ConnectedAddrs()),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				})
@@ -422,7 +424,7 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.MultiSearch",
-				ResourceName: strings.Join(s.gateway.GRPCClient().ConnectedAddrs(), ", "),
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.GRPCClient().ConnectedAddrs()),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  errs.Error(),
 			})
@@ -494,7 +496,7 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.MultiSearchByID",
-				ResourceName: strings.Join(s.gateway.GRPCClient().ConnectedAddrs(), ", "),
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.GRPCClient().ConnectedAddrs()),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  errs.Error(),
 			})
@@ -547,7 +549,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta.v1.GetMetaInverse",
-					ResourceName: strings.Join(s.metadata.GRPCClient().ConnectedAddrs(), ", "),
+					ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.metadata.GRPCClient().ConnectedAddrs()),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				}, info.Get())
@@ -565,7 +567,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Exists",
-					ResourceName: strings.Join(s.metadata.GRPCClient().ConnectedAddrs(), ", "),
+					ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.metadata.GRPCClient().ConnectedAddrs()),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				}, info.Get())
@@ -602,7 +604,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Insert",
-				ResourceName: strings.Join(s.gateway.GRPCClient().ConnectedAddrs(), ", "),
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.GRPCClient().ConnectedAddrs()),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			})
@@ -625,7 +627,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta.v1.SetUUIDandMeta",
-				ResourceName: strings.Join(s.metadata.GRPCClient().ConnectedAddrs(), ", "),
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.metadata.GRPCClient().ConnectedAddrs()),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			})
@@ -646,7 +648,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Remove",
-					ResourceName: strings.Join(s.gateway.GRPCClient().ConnectedAddrs(), ", "),
+					ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.GRPCClient().ConnectedAddrs()),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  rerr.Error(),
 				})
@@ -751,7 +753,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 					},
 					&errdetails.ResourceInfo{
 						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta.v1.GetMetaInverse",
-						ResourceName: strings.Join(s.metadata.GRPCClient().ConnectedAddrs(), ", "),
+						ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.metadata.GRPCClient().ConnectedAddrs()),
 						Owner:        errdetails.ValdResourceOwner,
 						Description:  err.Error(),
 					}, info.Get())
@@ -769,7 +771,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 					},
 					&errdetails.ResourceInfo{
 						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Exists",
-						ResourceName: strings.Join(s.metadata.GRPCClient().ConnectedAddrs(), ", "),
+						ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.metadata.GRPCClient().ConnectedAddrs()),
 						Owner:        errdetails.ValdResourceOwner,
 						Description:  err.Error(),
 					}, info.Get())
@@ -810,7 +812,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.MultiInsert",
-				ResourceName: strings.Join(s.gateway.GRPCClient().ConnectedAddrs(), ", "),
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.GRPCClient().ConnectedAddrs()),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			})
@@ -834,7 +836,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta.v1.SetUUIDandMeta",
-				ResourceName: strings.Join(s.metadata.GRPCClient().ConnectedAddrs(), ", "),
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.metadata.GRPCClient().ConnectedAddrs()),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			})
@@ -858,7 +860,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.MultiRemove",
-					ResourceName: strings.Join(s.gateway.GRPCClient().ConnectedAddrs(), ", "),
+					ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.GRPCClient().ConnectedAddrs()),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  rerr.Error(),
 				})
@@ -913,7 +915,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta.v1.GetUUID",
-				ResourceName: strings.Join(s.metadata.GRPCClient().ConnectedAddrs(), ", "),
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.metadata.GRPCClient().ConnectedAddrs()),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
@@ -943,7 +945,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Update",
-				ResourceName: strings.Join(s.gateway.GRPCClient().ConnectedAddrs(), ", "),
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.GRPCClient().ConnectedAddrs()),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
@@ -1045,7 +1047,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta.v1.GetUUIDs",
-				ResourceName: strings.Join(s.metadata.GRPCClient().ConnectedAddrs(), ", "),
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.metadata.GRPCClient().ConnectedAddrs()),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
@@ -1076,7 +1078,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.MultiUpdate",
-				ResourceName: strings.Join(s.gateway.GRPCClient().ConnectedAddrs(), ", "),
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.GRPCClient().ConnectedAddrs()),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
@@ -1156,7 +1158,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Upsert." + operation,
-				ResourceName: strings.Join(s.gateway.GRPCClient().ConnectedAddrs(), ", "),
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.GRPCClient().ConnectedAddrs()),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
@@ -1355,7 +1357,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.MultiUpsert",
-				ResourceName: strings.Join(s.gateway.GRPCClient().ConnectedAddrs(), ", "),
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.GRPCClient().ConnectedAddrs()),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
@@ -1387,7 +1389,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta.v1.GetUUID",
-				ResourceName: strings.Join(s.metadata.GRPCClient().ConnectedAddrs(), ", "),
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.metadata.GRPCClient().ConnectedAddrs()),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			})
@@ -1428,7 +1430,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Remove",
-				ResourceName: strings.Join(s.gateway.GRPCClient().ConnectedAddrs(), ", "),
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.GRPCClient().ConnectedAddrs()),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
@@ -1447,7 +1449,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta.v1.DeleteMeta",
-				ResourceName: strings.Join(s.metadata.GRPCClient().ConnectedAddrs(), ", "),
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.metadata.GRPCClient().ConnectedAddrs()),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
@@ -1527,7 +1529,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta.v1.GetUUIDs",
-				ResourceName: strings.Join(s.metadata.GRPCClient().ConnectedAddrs(), ", "),
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.metadata.GRPCClient().ConnectedAddrs()),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			})
@@ -1574,7 +1576,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.MultiRemove",
-				ResourceName: strings.Join(s.gateway.GRPCClient().ConnectedAddrs(), ", "),
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.GRPCClient().ConnectedAddrs()),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			})
@@ -1593,7 +1595,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta.v1.GetUUIDs",
-				ResourceName: strings.Join(s.metadata.GRPCClient().ConnectedAddrs(), ", "),
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.metadata.GRPCClient().ConnectedAddrs()),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			})
@@ -1623,7 +1625,7 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta.v1.GetUUID",
-				ResourceName: strings.Join(s.metadata.GRPCClient().ConnectedAddrs(), ", "),
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.metadata.GRPCClient().ConnectedAddrs()),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			})
@@ -1647,7 +1649,7 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.GetObject",
-				ResourceName: strings.Join(s.gateway.GRPCClient().ConnectedAddrs(), ", "),
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.GRPCClient().ConnectedAddrs()),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())

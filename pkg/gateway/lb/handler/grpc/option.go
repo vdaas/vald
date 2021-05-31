@@ -18,9 +18,12 @@
 package grpc
 
 import (
+	"os"
 	"time"
 
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/timeutil"
 	"github.com/vdaas/vald/pkg/gateway/lb/service"
 )
@@ -32,6 +35,32 @@ var defaultOptions = []Option{
 	WithReplicationCount(3),
 	WithStreamConcurrency(20),
 	WithTimeout("5s"),
+	WithName(func() string {
+		name, err := os.Hostname()
+		if err != nil {
+			log.Warn(err)
+		}
+		return name
+	}()),
+	WithIP(net.LoadLocalIP()),
+}
+
+// WithIP returns the option to set the IP for server.
+func WithIP(ip string) Option {
+	return func(s *server) {
+		if len(ip) != 0 {
+			s.ip = ip
+		}
+	}
+}
+
+// WithName returns the option to set the name for server.
+func WithName(name string) Option {
+	return func(s *server) {
+		if len(name) != 0 {
+			s.name = name
+		}
+	}
 }
 
 func WithGateway(g service.Gateway) Option {

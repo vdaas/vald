@@ -131,7 +131,7 @@ func Do(ctx context.Context, opts ...Option) error {
 		return err
 	}
 
-	log.Infof("service %s %s starting...", r.name, ccfg.Version)
+	log.Infof("service %s(version: %s)starting...", r.name, ccfg.Version)
 
 	// reset timelocation to override external libs & running logging
 	location.Set(ccfg.TZ)
