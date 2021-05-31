@@ -684,7 +684,9 @@ func Test_vqueue_RangePopInsert(t *testing.T) {
 		iBufSize         int
 		dBufSize         int
 	}
-	type want struct{}
+	type want struct {
+		vectors map[string][]float32
+	}
 	type test struct {
 		name       string
 		args       args
@@ -698,69 +700,145 @@ func Test_vqueue_RangePopInsert(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           f: nil,
-		       },
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			var finalizingInsert atomic.Value
+			finalizingInsert.Store(false)
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           f: nil,
-		           },
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			uii := []index{
+				{
+					uuid:   "109c5c86-bc35-11eb-8529-0242ac130003",
+					vector: []float32{1, 2},
+					date:   2000000000,
+				},
+				{
+					uuid:   "209c583a-bc35-11eb-8529-0242ac130003",
+					vector: []float32{3, 4},
+					date:   1000000000,
+				},
+				{
+					uuid:   "309c5d9e-bc35-11eb-8529-0242ac130003",
+					vector: []float32{5, 6},
+					date:   3000000000,
+				},
+				{
+					uuid:   "409c5f24-bc35-11eb-8529-0242ac130003",
+					vector: []float32{7, 8},
+					date:   5000000000,
+				},
+				{
+					uuid:   "509c5e66-bc35-11eb-8529-0242ac130003",
+					vector: []float32{9, 10},
+					date:   4000000000,
+				},
+			}
+			uiim := make(map[string]index)
+			for _, idx := range uii {
+				uiim[idx.uuid] = idx
+			}
+			gotVectors := make(map[string][]float32)
+			return test{
+				name: "range pop insert success when there is no duplicate data in uii",
+				args: args{
+					ctx: context.Background(),
+					f: func(uuid string, vector []float32) bool {
+						gotVectors[uuid] = vector
+						return true
+					},
+				},
+				checkFunc: func(w want) error {
+					if got, want := len(gotVectors), len(w.vectors); got != want {
+						return errors.Errorf("length got: \"%#v\",\n\t\t\t\tlength want: \"%#v\"", got, want)
+					}
+					if got, want := gotVectors, w.vectors; !reflect.DeepEqual(got, want) {
+						return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, want)
+					}
+					return nil
+				},
+				fields: fields{
+					uii:              uii,
+					uiim:             uiim,
+					finalizingInsert: finalizingInsert,
+				},
+				want: want{
+					vectors: map[string][]float32{
+						"209c583a-bc35-11eb-8529-0242ac130003": {3, 4},
+						"109c5c86-bc35-11eb-8529-0242ac130003": {1, 2},
+						"309c5d9e-bc35-11eb-8529-0242ac130003": {5, 6},
+						"409c5f24-bc35-11eb-8529-0242ac130003": {7, 8},
+						"509c5e66-bc35-11eb-8529-0242ac130003": {9, 10},
+					},
+				},
+			}
+		}(),
+		func() test {
+			var finalizingInsert atomic.Value
+			finalizingInsert.Store(false)
+
+			uii := []index{
+				{
+					uuid:   "109c5c86-bc35-11eb-8529-0242ac130003",
+					vector: []float32{1, 2},
+					date:   2000000000,
+				},
+				{
+					uuid:   "209c583a-bc35-11eb-8529-0242ac130003",
+					vector: []float32{3, 4},
+					date:   1000000000,
+				},
+				{
+					uuid:   "309c5d9e-bc35-11eb-8529-0242ac130003",
+					vector: []float32{5, 6},
+					date:   3000000000,
+				},
+				{
+					uuid:   "409c5f24-bc35-11eb-8529-0242ac130003",
+					vector: []float32{7, 8},
+					date:   5000000000,
+				},
+				{
+					uuid:   "509c5e66-bc35-11eb-8529-0242ac130003",
+					vector: []float32{9, 10},
+					date:   4000000000,
+				},
+			}
+			uiim := make(map[string]index)
+			for _, idx := range uii {
+				uiim[idx.uuid] = idx
+			}
+			gotVectors := make(map[string][]float32)
+
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "can not range pop when the context canceled",
+				args: args{
+					ctx: ctx,
+					f: func(uuid string, vector []float32) bool {
+						gotVectors[uuid] = vector
+						return true
+					},
+				},
+				checkFunc: func(w want) error {
+					if got, want := len(gotVectors), len(w.vectors); got != want {
+						return errors.Errorf("length got: \"%#v\",\n\t\t\t\tlength want: \"%#v\"", got, want)
+					}
+					if got, want := gotVectors, w.vectors; !reflect.DeepEqual(got, want) {
+						return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, want)
+					}
+					return nil
+				},
+				beforeFunc: func(a args) {
+					cancel()
+				},
+				fields: fields{
+					uii:              uii,
+					uiim:             uiim,
+					finalizingInsert: finalizingInsert,
+				},
+				want: want{
+					vectors: map[string][]float32{},
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -816,6 +894,7 @@ func Test_vqueue_RangePopDelete(t *testing.T) {
 		uiim             uiim
 		dch              chan key
 		udk              []key
+		udim             map[string]int64
 		dmu              sync.Mutex
 		udim             udim
 		eg               errgroup.Group
@@ -827,7 +906,9 @@ func Test_vqueue_RangePopDelete(t *testing.T) {
 		iBufSize         int
 		dBufSize         int
 	}
-	type want struct{}
+	type want struct {
+		uuids map[string]bool
+	}
 	type test struct {
 		name       string
 		args       args
@@ -841,69 +922,217 @@ func Test_vqueue_RangePopDelete(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           f: nil,
-		       },
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			var finalizingInsert atomic.Value
+			finalizingInsert.Store(false)
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           f: nil,
-		           },
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			var finalizingDelete atomic.Value
+			finalizingDelete.Store(false)
+
+			udk := []key{
+				{
+					uuid: "109c5c86-bc35-11eb-8529-0242ac130003",
+					date: 2000000000,
+				},
+				{
+					uuid: "209c583a-bc35-11eb-8529-0242ac130003",
+					date: 1000000000,
+				},
+				{
+					uuid: "309c5d9e-bc35-11eb-8529-0242ac130003",
+					date: 3000000000,
+				},
+				{
+					uuid: "409c5f24-bc35-11eb-8529-0242ac130003",
+					date: 5000000000,
+				},
+				{
+					uuid: "509c5e66-bc35-11eb-8529-0242ac130003",
+					date: 4000000000,
+				},
+			}
+			udim := make(map[string]int64)
+			for _, key := range udk {
+				udim[key.uuid] = key.date
+			}
+
+			gotUuids := make(map[string]bool)
+
+			return test{
+				name: "range pop delete success when there is no duplicate data in udk",
+				args: args{
+					ctx: context.Background(),
+					f: func(uuid string) bool {
+						gotUuids[uuid] = true
+						return true
+					},
+				},
+				fields: fields{
+					udk:              udk,
+					udim:             udim,
+					finalizingInsert: finalizingInsert,
+					finalizingDelete: finalizingDelete,
+				},
+				checkFunc: func(w want) error {
+					if got, want := len(gotUuids), len(w.uuids); got != want {
+						return errors.Errorf("length got: \"%#v\",\n\t\t\t\tlength want: \"%#v\"", got, want)
+					}
+					if got, want := gotUuids, w.uuids; !reflect.DeepEqual(got, want) {
+						return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, want)
+					}
+					return nil
+				},
+				want: want{
+					uuids: map[string]bool{
+						"209c583a-bc35-11eb-8529-0242ac130003": true,
+						"109c5c86-bc35-11eb-8529-0242ac130003": true,
+						"309c5d9e-bc35-11eb-8529-0242ac130003": true,
+						"409c5f24-bc35-11eb-8529-0242ac130003": true,
+						"509c5e66-bc35-11eb-8529-0242ac130003": true,
+					},
+				},
+			}
+		}(),
+		func() test {
+			var finalizingInsert atomic.Value
+			finalizingInsert.Store(false)
+
+			var finalizingDelete atomic.Value
+			finalizingDelete.Store(true)
+
+			udk := []key{
+				{
+					uuid: "109c5c86-bc35-11eb-8529-0242ac130003",
+					date: 2000000000,
+				},
+				{
+					uuid: "209c583a-bc35-11eb-8529-0242ac130003",
+					date: 1000000000,
+				},
+				{
+					uuid: "309c5d9e-bc35-11eb-8529-0242ac130003",
+					date: 3000000000,
+				},
+				{
+					uuid: "409c5f24-bc35-11eb-8529-0242ac130003",
+					date: 5000000000,
+				},
+				{
+					uuid: "509c5e66-bc35-11eb-8529-0242ac130003",
+					date: 4000000000,
+				},
+			}
+			udim := make(map[string]int64)
+			for _, key := range udk {
+				udim[key.uuid] = key.date
+			}
+
+			gotUuids := make(map[string]bool)
+
+			ctx, cancel := context.WithCancel(context.Background())
+
+			return test{
+				name: "can not pop delete success when the finalizingDelete is true and the context canceled",
+				args: args{
+					ctx: ctx,
+					f: func(uuid string) bool {
+						gotUuids[uuid] = true
+						return true
+					},
+				},
+				beforeFunc: func(a args) {
+					cancel()
+				},
+				fields: fields{
+					udk:              udk,
+					udim:             udim,
+					finalizingInsert: finalizingInsert,
+					finalizingDelete: finalizingDelete,
+				},
+				checkFunc: func(w want) error {
+					if got, want := len(gotUuids), len(w.uuids); got != want {
+						return errors.Errorf("length got: \"%#v\",\n\t\t\t\tlength want: \"%#v\"", got, want)
+					}
+					if got, want := gotUuids, w.uuids; !reflect.DeepEqual(got, want) {
+						return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, want)
+					}
+					return nil
+				},
+				want: want{
+					uuids: map[string]bool{},
+				},
+			}
+		}(),
+		func() test {
+			var finalizingInsert atomic.Value
+			finalizingInsert.Store(true)
+
+			var finalizingDelete atomic.Value
+			finalizingDelete.Store(false)
+
+			udk := []key{
+				{
+					uuid: "109c5c86-bc35-11eb-8529-0242ac130003",
+					date: 2000000000,
+				},
+				{
+					uuid: "209c583a-bc35-11eb-8529-0242ac130003",
+					date: 1000000000,
+				},
+				{
+					uuid: "309c5d9e-bc35-11eb-8529-0242ac130003",
+					date: 3000000000,
+				},
+				{
+					uuid: "409c5f24-bc35-11eb-8529-0242ac130003",
+					date: 5000000000,
+				},
+				{
+					uuid: "509c5e66-bc35-11eb-8529-0242ac130003",
+					date: 4000000000,
+				},
+			}
+			udim := make(map[string]int64)
+			for _, key := range udk {
+				udim[key.uuid] = key.date
+			}
+
+			gotUuids := make(map[string]bool)
+
+			ctx, cancel := context.WithCancel(context.Background())
+
+			return test{
+				name: "can not pop delete success when the finalizingInsert is true and the context canceled",
+				args: args{
+					ctx: ctx,
+					f: func(uuid string) bool {
+						gotUuids[uuid] = true
+						return true
+					},
+				},
+				beforeFunc: func(a args) {
+					cancel()
+				},
+				fields: fields{
+					udk:              udk,
+					udim:             udim,
+					finalizingInsert: finalizingInsert,
+					finalizingDelete: finalizingDelete,
+				},
+				checkFunc: func(w want) error {
+					if got, want := len(gotUuids), len(w.uuids); got != want {
+						return errors.Errorf("length got: \"%#v\",\n\t\t\t\tlength want: \"%#v\"", got, want)
+					}
+					if got, want := gotUuids, w.uuids; !reflect.DeepEqual(got, want) {
+						return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, want)
+					}
+					return nil
+				},
+				want: want{
+					uuids: map[string]bool{},
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -927,6 +1156,7 @@ func Test_vqueue_RangePopDelete(t *testing.T) {
 				uiim:             test.fields.uiim,
 				dch:              test.fields.dch,
 				udk:              test.fields.udk,
+				udim:             test.fields.udim,
 				dmu:              test.fields.dmu,
 				udim:             test.fields.udim,
 				eg:               test.fields.eg,
