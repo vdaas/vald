@@ -13,42 +13,39 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
-// Package restorer provides restorer service
-package restorer
+package cloudstorage
 
 import (
 	"context"
-	"io/fs"
+	"io"
+	"net/url"
 	"reflect"
 	"testing"
 
-	"github.com/vdaas/vald/internal/backoff"
-	"github.com/vdaas/vald/internal/errgroup"
+	iblob "github.com/vdaas/vald/internal/db/storage/blob"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/io"
-	"github.com/vdaas/vald/pkg/agent/sidecar/service/storage"
 	"go.uber.org/goleak"
+	"gocloud.dev/blob"
+	"gocloud.dev/blob/gcsblob"
 )
 
 func TestNew(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		opts []Option
 	}
 	type want struct {
-		want Restorer
+		want iblob.Bucket
 		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, Restorer, error) error
+		checkFunc  func(want, iblob.Bucket, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got Restorer, err error) error {
+	defaultCheckFunc := func(w want, got iblob.Bucket, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -104,25 +101,219 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
-func Test_restorer_Start(t *testing.T) {
-	t.Parallel()
+func Test_client_Open(t *testing.T) {
 	type args struct {
 		ctx context.Context
 	}
 	type fields struct {
-		dir            string
-		eg             errgroup.Group
-		storage        storage.Storage
-		backoffEnabled bool
-		backoffOpts    []backoff.Option
-		bo             backoff.Backoff
+		url        *url.URL
+		urlOpener  *gcsblob.URLOpener
+		bucket     *blob.Bucket
+		readerOpts *blob.ReaderOptions
+		writerOpts *blob.WriterOptions
 	}
 	type want struct {
-		want <-chan error
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		       },
+		       fields: fields {
+		           url: nil,
+		           urlOpener: nil,
+		           bucket: nil,
+		           readerOpts: nil,
+		           writerOpts: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           },
+		           fields: fields {
+		           url: nil,
+		           urlOpener: nil,
+		           bucket: nil,
+		           readerOpts: nil,
+		           writerOpts: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			c := &client{
+				url:        test.fields.url,
+				urlOpener:  test.fields.urlOpener,
+				bucket:     test.fields.bucket,
+				readerOpts: test.fields.readerOpts,
+				writerOpts: test.fields.writerOpts,
+			}
+
+			err := c.Open(test.args.ctx)
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_client_Close(t *testing.T) {
+	type fields struct {
+		url        *url.URL
+		urlOpener  *gcsblob.URLOpener
+		bucket     *blob.Bucket
+		readerOpts *blob.ReaderOptions
+		writerOpts *blob.WriterOptions
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           url: nil,
+		           urlOpener: nil,
+		           bucket: nil,
+		           readerOpts: nil,
+		           writerOpts: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           url: nil,
+		           urlOpener: nil,
+		           bucket: nil,
+		           readerOpts: nil,
+		           writerOpts: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			c := &client{
+				url:        test.fields.url,
+				urlOpener:  test.fields.urlOpener,
+				bucket:     test.fields.bucket,
+				readerOpts: test.fields.readerOpts,
+				writerOpts: test.fields.writerOpts,
+			}
+
+			err := c.Close()
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_client_Reader(t *testing.T) {
+	type args struct {
+		ctx context.Context
+		key string
+	}
+	type fields struct {
+		url        *url.URL
+		urlOpener  *gcsblob.URLOpener
+		bucket     *blob.Bucket
+		readerOpts *blob.ReaderOptions
+		writerOpts *blob.WriterOptions
+	}
+	type want struct {
+		want io.ReadCloser
 		err  error
 	}
 	type test struct {
@@ -130,11 +321,11 @@ func Test_restorer_Start(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, <-chan error, error) error
+		checkFunc  func(want, io.ReadCloser, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got <-chan error, err error) error {
+	defaultCheckFunc := func(w want, got io.ReadCloser, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -150,14 +341,14 @@ func Test_restorer_Start(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
+		           key: "",
 		       },
 		       fields: fields {
-		           dir: "",
-		           eg: nil,
-		           storage: nil,
-		           backoffEnabled: false,
-		           backoffOpts: nil,
-		           bo: nil,
+		           url: nil,
+		           urlOpener: nil,
+		           bucket: nil,
+		           readerOpts: nil,
+		           writerOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -171,14 +362,14 @@ func Test_restorer_Start(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
+		           key: "",
 		           },
 		           fields: fields {
-		           dir: "",
-		           eg: nil,
-		           storage: nil,
-		           backoffEnabled: false,
-		           backoffOpts: nil,
-		           bo: nil,
+		           url: nil,
+		           urlOpener: nil,
+		           bucket: nil,
+		           readerOpts: nil,
+		           writerOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -201,38 +392,37 @@ func Test_restorer_Start(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			r := &restorer{
-				dir:            test.fields.dir,
-				eg:             test.fields.eg,
-				storage:        test.fields.storage,
-				backoffEnabled: test.fields.backoffEnabled,
-				backoffOpts:    test.fields.backoffOpts,
-				bo:             test.fields.bo,
+			c := &client{
+				url:        test.fields.url,
+				urlOpener:  test.fields.urlOpener,
+				bucket:     test.fields.bucket,
+				readerOpts: test.fields.readerOpts,
+				writerOpts: test.fields.writerOpts,
 			}
 
-			got, err := r.Start(test.args.ctx)
+			got, err := c.Reader(test.args.ctx, test.args.key)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
-func Test_restorer_startRestore(t *testing.T) {
-	t.Parallel()
+func Test_client_Writer(t *testing.T) {
 	type args struct {
 		ctx context.Context
+		key string
 	}
 	type fields struct {
-		dir            string
-		eg             errgroup.Group
-		storage        storage.Storage
-		backoffEnabled bool
-		backoffOpts    []backoff.Option
-		bo             backoff.Backoff
+		url        *url.URL
+		urlOpener  *gcsblob.URLOpener
+		bucket     *blob.Bucket
+		readerOpts *blob.ReaderOptions
+		writerOpts *blob.WriterOptions
 	}
 	type want struct {
-		want <-chan error
+		want io.WriteCloser
 		err  error
 	}
 	type test struct {
@@ -240,11 +430,11 @@ func Test_restorer_startRestore(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, <-chan error, error) error
+		checkFunc  func(want, io.WriteCloser, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got <-chan error, err error) error {
+	defaultCheckFunc := func(w want, got io.WriteCloser, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -260,14 +450,14 @@ func Test_restorer_startRestore(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx: nil,
+		           key: "",
 		       },
 		       fields: fields {
-		           dir: "",
-		           eg: nil,
-		           storage: nil,
-		           backoffEnabled: false,
-		           backoffOpts: nil,
-		           bo: nil,
+		           url: nil,
+		           urlOpener: nil,
+		           bucket: nil,
+		           readerOpts: nil,
+		           writerOpts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -281,14 +471,14 @@ func Test_restorer_startRestore(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx: nil,
+		           key: "",
 		           },
 		           fields: fields {
-		           dir: "",
-		           eg: nil,
-		           storage: nil,
-		           backoffEnabled: false,
-		           backoffOpts: nil,
-		           bo: nil,
+		           url: nil,
+		           urlOpener: nil,
+		           bucket: nil,
+		           readerOpts: nil,
+		           writerOpts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -311,310 +501,16 @@ func Test_restorer_startRestore(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			r := &restorer{
-				dir:            test.fields.dir,
-				eg:             test.fields.eg,
-				storage:        test.fields.storage,
-				backoffEnabled: test.fields.backoffEnabled,
-				backoffOpts:    test.fields.backoffOpts,
-				bo:             test.fields.bo,
+			c := &client{
+				url:        test.fields.url,
+				urlOpener:  test.fields.urlOpener,
+				bucket:     test.fields.bucket,
+				readerOpts: test.fields.readerOpts,
+				writerOpts: test.fields.writerOpts,
 			}
 
-			got, err := r.startRestore(test.args.ctx)
+			got, err := c.Writer(test.args.ctx, test.args.key)
 			if err := test.checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_restorer_restore(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx context.Context
-	}
-	type fields struct {
-		dir            string
-		eg             errgroup.Group
-		storage        storage.Storage
-		backoffEnabled bool
-		backoffOpts    []backoff.Option
-		bo             backoff.Backoff
-	}
-	type want struct {
-		err error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		       },
-		       fields: fields {
-		           dir: "",
-		           eg: nil,
-		           storage: nil,
-		           backoffEnabled: false,
-		           backoffOpts: nil,
-		           bo: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           },
-		           fields: fields {
-		           dir: "",
-		           eg: nil,
-		           storage: nil,
-		           backoffEnabled: false,
-		           backoffOpts: nil,
-		           bo: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			r := &restorer{
-				dir:            test.fields.dir,
-				eg:             test.fields.eg,
-				storage:        test.fields.storage,
-				backoffEnabled: test.fields.backoffEnabled,
-				backoffOpts:    test.fields.backoffOpts,
-				bo:             test.fields.bo,
-			}
-
-			err := r.restore(test.args.ctx)
-			if err := test.checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_restorer_PreStop(t *testing.T) {
-	type args struct {
-		ctx context.Context
-	}
-	type fields struct {
-		dir            string
-		eg             errgroup.Group
-		storage        storage.Storage
-		backoffEnabled bool
-		backoffOpts    []backoff.Option
-		bo             backoff.Backoff
-	}
-	type want struct {
-		err error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		       },
-		       fields: fields {
-		           dir: "",
-		           eg: nil,
-		           storage: nil,
-		           backoffEnabled: false,
-		           backoffOpts: nil,
-		           bo: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           },
-		           fields: fields {
-		           dir: "",
-		           eg: nil,
-		           storage: nil,
-		           backoffEnabled: false,
-		           backoffOpts: nil,
-		           bo: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			r := &restorer{
-				dir:            test.fields.dir,
-				eg:             test.fields.eg,
-				storage:        test.fields.storage,
-				backoffEnabled: test.fields.backoffEnabled,
-				backoffOpts:    test.fields.backoffOpts,
-				bo:             test.fields.bo,
-			}
-
-			err := r.PreStop(test.args.ctx)
-			if err := test.checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_copyFile(t *testing.T) {
-	type args struct {
-		ctx    context.Context
-		target string
-		tr     io.Reader
-		mode   fs.FileMode
-	}
-	type want struct {
-		err error
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           target: "",
-		           tr: nil,
-		           mode: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           target: "",
-		           tr: nil,
-		           mode: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-
-			err := copyFile(test.args.ctx, test.args.target, test.args.tr, test.args.mode)
-			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
