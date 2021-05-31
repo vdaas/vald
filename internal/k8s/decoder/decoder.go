@@ -13,25 +13,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
-// Package rest provides rest api logic
-package rest
+package decoder
 
 import (
-	"github.com/vdaas/vald/apis/grpc/v1/rebalancer"
+	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/conversion"
 )
 
-type Handler interface{}
+// Decoder represents a type alias of conversion.Decoder.
+type Decoder = conversion.Decoder
 
-type handler struct {
-	rcs rebalancer.ControllerServer
-}
-
-func New(opts ...Option) Handler {
-	h := new(handler)
-
-	for _, opt := range append(defaultOpts, opts...) {
-		opt(h)
-	}
-	return h
+// NewDecoder creates a Decoder given the runtime.Scheme.
+// It will return an error when NewDecoder method failed.
+func NewDecoder(scheme *runtime.Scheme) (*Decoder, error) {
+	return conversion.NewDecoder(scheme)
 }

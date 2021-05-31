@@ -19,11 +19,13 @@ import (
 	"context"
 	"reflect"
 	"strings"
+	"sync"
 	"time"
 
 	batchv1 "k8s.io/api/batch/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -38,20 +40,27 @@ import (
 type JobWatcher k8s.ResourceController
 
 type reconciler struct {
-	ctx         context.Context
-	mgr         manager.Manager
-	name        string
-	namespance  string
-	onError     func(err error)
-	onReconcile func(jobList map[string][]Job)
+	mgr               manager.Manager
+	name              string
+	namespaces        []string
+	onError           func(err error)
+	onReconcile       func(jobList map[string][]Job)
+	listOpts          []client.ListOption
+	jobsByAppNamePool sync.Pool // map[app][]Job
 }
 
 // Job is a type alias for the k8s job definition.
 type Job = batchv1.Job
 
-// New returns the JobWatcher that implements reconciliation loop, or any error occurred.
+// New returns the JobWatcher that implements reconciliation loop, or any errors occurred.
 func New(opts ...Option) (JobWatcher, error) {
-	r := new(reconciler)
+	r := &reconciler{
+		jobsByAppNamePool: sync.Pool{
+			New: func() interface{} {
+				return make(map[string][]Job)
+			},
+		},
+	}
 
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(r); err != nil {
@@ -59,14 +68,21 @@ func New(opts ...Option) (JobWatcher, error) {
 		}
 	}
 
-	return nil, nil
+	if len(r.namespaces) != 0 {
+		r.listOpts = make([]client.ListOption, 0, len(r.namespaces))
+		for _, ns := range r.namespaces {
+			r.listOpts = append(r.listOpts, client.InNamespace(ns))
+		}
+	}
+
+	return r, nil
 }
 
 // Reconcile implements k8s reconciliation loop to retrieve the Job information from k8s.
-func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err error) {
+func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
 	js := new(batchv1.JobList)
 
-	err = r.mgr.GetClient().List(r.ctx, js)
+	err = r.mgr.GetClient().List(ctx, js, r.listOpts...)
 	if err != nil {
 		if r.onError != nil {
 			r.onError(err)
@@ -85,8 +101,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 		return
 	}
 
-	jobs := make(map[string][]Job)
-
+	jobs := r.jobsByAppNamePool.Get().(map[string][]Job)
 	for _, job := range js.Items {
 		name, ok := job.GetObjectMeta().GetLabels()["app"]
 		if !ok {
@@ -97,18 +112,19 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 		if _, ok := jobs[name]; !ok {
 			jobs[name] = make([]Job, 0, len(js.Items))
 		}
-
 		jobs[name] = append(jobs[name], job)
-	}
-
-	for name := range jobs {
-		l := len(jobs[name])
-		jobs[name] = jobs[name][:l:l]
 	}
 
 	if r.onReconcile != nil {
 		r.onReconcile(jobs)
 	}
+
+	for name := range jobs {
+		jobs[name] = jobs[name][:0:len(jobs[name])]
+	}
+
+	r.jobsByAppNamePool.Put(jobs)
+
 	return
 }
 
@@ -118,10 +134,7 @@ func (r *reconciler) GetName() string {
 }
 
 // NewReconciler returns the reconciler for the Job.
-func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler {
-	if r.ctx == nil && ctx != nil {
-		r.ctx = ctx
-	}
+func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
 	if r.mgr == nil && mgr != nil {
 		r.mgr = mgr
 	}
@@ -131,19 +144,19 @@ func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) rec
 }
 
 // For returns the runtime.Object which is job.
-func (r *reconciler) For() runtime.Object {
-	return new(batchv1.Job)
+func (r *reconciler) For() (client.Object, []builder.ForOption) {
+	return new(batchv1.Job), nil
 }
 
 // Owns returns the owner of the job watcher.
 // It will always return nil.
-func (r *reconciler) Owns() runtime.Object {
-	return nil
+func (r *reconciler) Owns() (client.Object, []builder.OwnsOption) {
+	return nil, nil
 }
 
 // Watches returns the kind of the job and the event handler.
 // It will always return nil.
-func (r *reconciler) Watches() (*source.Kind, handler.EventHandler) {
+func (r *reconciler) Watches() (*source.Kind, handler.EventHandler, []builder.WatchesOption) {
 	// return &source.Kind{Type: new(corev1.Pod)}, &handler.EnqueueRequestForObject{}
-	return nil, nil
+	return nil, nil, nil
 }

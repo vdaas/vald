@@ -17,6 +17,16 @@
 // Package rest provides rest api logic
 package rest
 
+import "github.com/vdaas/vald/apis/grpc/v1/rebalancer"
+
 type Option func(*handler)
 
-var defaultOpts = []Option{}
+var (
+	defaultOpts = []Option{}
+)
+
+func WithRebalancer(rcs rebalancer.ControllerServer) Option {
+	return func(h *handler) {
+		h.rcs = rcs
+	}
+}

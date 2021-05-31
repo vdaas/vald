@@ -19,9 +19,11 @@ package usecase
 import (
 	"context"
 
+	"github.com/vdaas/vald/apis/grpc/v1/rebalancer"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/recover"
 	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/observability"
 	"github.com/vdaas/vald/internal/runner"
@@ -46,14 +48,28 @@ type run struct {
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
-	rb, err := service.New(
-	// TODO set service option from config
+	rb, err := service.NewRebalancer(
+		service.WithPodName(cfg.Rebalancer.PodName),
+		service.WithPodNamespace(cfg.Rebalancer.PodNamespace),
+		service.WithJobName(cfg.Rebalancer.RebalanceJobName),
+		service.WithJobNamespace(cfg.Rebalancer.RebalanceJobNamespace),
+		service.WithJobTemplate(cfg.Rebalancer.RebalanceJobTemplate),
+		service.WithAgentName(cfg.Rebalancer.AgentName),
+		service.WithAgentPort(cfg.Rebalancer.AgentPort),
+		service.WithAgentNamespace(cfg.Rebalancer.AgentNamespace),
+		service.WithAgentResourceType(cfg.Rebalancer.AgentResourceType),
+		service.WithReconcileCheckDuration(cfg.Rebalancer.ReconcileCheckDuration),
+		service.WithTolerance(cfg.Rebalancer.Tolerance),
+		service.WithRateThreshold(cfg.Rebalancer.RateThreshold),
+		service.WithErrorGroup(eg),
+		service.WithLeaderElectionID(cfg.Rebalancer.LeaderElectionID),
 	)
 	if err != nil {
 		return nil, err
 	}
+
 	h, err := handler.New(
-		handler.WithDiscoverer(rb),
+		handler.WithRebalancer(rb),
 	)
 	if err != nil {
 		return nil, err
@@ -61,18 +77,16 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	grpcServerOptions := []server.Option{
 		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
-			// TODO register grpc server handler here
+			rebalancer.RegisterControllerServer(srv, h)
 		}),
 		server.WithGRPCOption(
-			grpc.ChainUnaryInterceptor(grpc.RecoverInterceptor()),
-			grpc.ChainStreamInterceptor(grpc.RecoverStreamInterceptor()),
+			grpc.ChainUnaryInterceptor(recover.RecoverInterceptor()),
+			grpc.ChainStreamInterceptor(recover.RecoverStreamInterceptor()),
 		),
 		server.WithPreStartFunc(func() error {
-			// TODO check unbackupped upstream
 			return nil
 		}),
 		server.WithPreStopFunction(func() error {
-			// TODO backup all index data here
 			return nil
 		}),
 	}
@@ -101,7 +115,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 						router.WithErrGroup(eg),
 						router.WithHandler(
 							rest.New(
-							// TODO pass grpc handler to REST option
+								rest.WithRebalancer(h),
 							),
 						),
 					)),

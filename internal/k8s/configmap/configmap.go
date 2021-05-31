@@ -13,68 +13,77 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-package replicaset
+package configmap
 
 import (
 	"context"
 	"reflect"
-	"strings"
 	"sync"
 	"time"
 
-	appsv1 "k8s.io/api/apps/v1"
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/k8s"
+	"github.com/vdaas/vald/internal/log"
+	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
-
-	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/k8s"
-	"github.com/vdaas/vald/internal/log"
 )
 
-// ReplicaSetWatcher is a type alias for k8s resource controller.
-type ReplicaSetWatcher k8s.ResourceController
+// ConfigMapWatcher is a type alias for k8s resource controller
+type ConfigMapWatcher k8s.ResourceController
 
 type reconciler struct {
-	mgr         manager.Manager
-	name        string
-	namespace   string
-	onError     func(err error)
-	onReconcile func(rs map[string][]ReplicaSet)
-	pool        sync.Pool
+	mgr              manager.Manager
+	name             string
+	namespaces       []string
+	onError          func(err error)
+	onReconcile      func(rs map[string][]ConfigMap) // map[namespace][]configmap
+	listOpts         []client.ListOption
+	nsConfigmapsPool sync.Pool
 }
 
-// ReplicaSet is a type alias for the k8s replica set definition.
-type ReplicaSet = appsv1.ReplicaSet
+// ConfigMap is a type alias for the k8s configmap definition.
+type ConfigMap = corev1.ConfigMap
 
-// New returns the ReplicaSetWatcher that implements reconciliation loop, or any error occurred.
-func New(opts ...Option) (ReplicaSetWatcher, error) {
+// New returns the ConfigMapWather that implements reconciliation loop, or any error occured.
+func New(opts ...Option) (ConfigMapWatcher, error) {
 	r := &reconciler{
-		pool: sync.Pool{
+		nsConfigmapsPool: sync.Pool{
 			New: func() interface{} {
-				return make(map[string][]ReplicaSet)
+				return make(map[string][]ConfigMap)
 			},
 		},
 	}
 
-	for _, opt := range opts {
+	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(r); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+		}
+	}
+
+	if len(r.namespaces) != 0 {
+		r.listOpts = make([]client.ListOption, 0, len(r.namespaces))
+		for _, ns := range r.namespaces {
+			r.listOpts = append(r.listOpts, client.InNamespace(ns))
 		}
 	}
 
 	return r, nil
 }
 
-// Reconcile implements k8s reconciliation loop to retrieve the ReplicaSet information from k8s.
+// Reconcile implements k8s reconciliation loop to retrive the ConfigMap information from k8s.
 func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
-	rsl := new(appsv1.ReplicaSetList)
+	cml := new(corev1.ConfigMapList)
 
-	err = r.mgr.GetClient().List(ctx, rsl)
+	// TODO: add option for config map name.
+
+	err = r.mgr.GetClient().List(ctx, cml, r.listOpts...)
 	if err != nil {
 		if r.onError != nil {
 			r.onError(err)
@@ -84,45 +93,31 @@ func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res 
 			RequeueAfter: time.Millisecond * 100,
 		}
 		if k8serrors.IsNotFound(err) {
-			log.Warn(errors.ErrK8sResourceNotFound(err))
+			log.Errorf("not found: %v", err)
 			res.RequeueAfter = time.Second
 			return res, nil
 		}
 		return
 	}
 
-	// reset the last result cache
-	lrr := r.pool.Get().(map[string][]ReplicaSet)
+	cmm := r.nsConfigmapsPool.Get().(map[string][]ConfigMap)
 
-	// append the new result to the cache
-	for _, replicaset := range rsl.Items {
-		name, ok := replicaset.GetObjectMeta().GetLabels()["app"]
-		if !ok {
-			pns := strings.Split(replicaset.GetName(), "-")
-			name = strings.Join(pns[:len(pns)-1], "-")
+	for _, configmap := range cml.Items {
+		if _, ok := cmm[configmap.Namespace]; !ok {
+			cmm[configmap.Namespace] = make([]ConfigMap, 0)
 		}
-
-		if _, ok := lrr[name]; !ok {
-			lrr[name] = make([]ReplicaSet, 0)
-		}
-
-		lrr[name] = append(lrr[name], replicaset)
-	}
-
-	for name := range lrr {
-		l := len(lrr[name])
-		lrr[name] = lrr[name][:l:l]
+		cmm[configmap.Namespace] = append(cmm[configmap.Namespace], configmap)
 	}
 
 	if r.onReconcile != nil {
-		r.onReconcile(lrr)
+		r.onReconcile(cmm)
 	}
 
-	for name := range lrr {
-		lrr[name] = lrr[name][:0]
+	for name := range cmm {
+		cmm[name] = cmm[name][:0:len(cmm[name])]
 	}
+	r.nsConfigmapsPool.Put(cmm)
 
-	r.pool.Put(lrr)
 	return
 }
 
@@ -131,29 +126,30 @@ func (r *reconciler) GetName() string {
 	return r.name
 }
 
-// NewReconciler returns the reconciler for the ReplicaSet.
+// NewReconciler returns the reconciler for the ConfigMap.
 func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
 	if r.mgr == nil && mgr != nil {
 		r.mgr = mgr
 	}
-	appsv1.AddToScheme(r.mgr.GetScheme())
+
+	corev1.AddToScheme(r.mgr.GetScheme())
 	return r
 }
 
-// For returns the runtime.Object which is replica set.
+// For returns the runtime.Object which is ConfigMap.
 func (r *reconciler) For() (client.Object, []builder.ForOption) {
-	return new(appsv1.ReplicaSet), nil
+	return new(corev1.ConfigMap), nil
 }
 
-// Owns returns the owner of the replica set watcher.
+// Owns returns the owner of the ConfigMap wathcer.
 // It will always return nil.
 func (r *reconciler) Owns() (client.Object, []builder.OwnsOption) {
 	return nil, nil
 }
 
-// Watches returns the kind of the replica set and the event handler.
-// It will always return nil.
+// Watches returns the kind of the ConfigMap and the event handler.
+// It will always retrun nil.
 func (r *reconciler) Watches() (*source.Kind, handler.EventHandler, []builder.WatchesOption) {
-	// return &source.Kind{Type: new(corev1.Pod)}, &handler.EnqueueRequestForObject{}
+	// return &source.kind{Type: new(corev1.Pod)}, &handler.EnqueueRequestForObject{}
 	return nil, nil, nil
 }

@@ -16,6 +16,7 @@
 package statefulset
 
 import (
+	"context"
 	"testing"
 
 	"go.uber.org/goleak"
@@ -23,6 +24,7 @@ import (
 )
 
 func TestWithControllerName(t *testing.T) {
+	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
@@ -97,9 +99,11 @@ func TestWithControllerName(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -137,6 +141,7 @@ func TestWithControllerName(t *testing.T) {
 }
 
 func TestWithManager(t *testing.T) {
+	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
@@ -211,9 +216,11 @@ func TestWithManager(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -250,11 +257,12 @@ func TestWithManager(t *testing.T) {
 	}
 }
 
-func TestWithNamespace(t *testing.T) {
+func TestWithNamespaces(t *testing.T) {
+	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		ns string
+		nss []string
 	}
 	type want struct {
 		obj *T
@@ -301,7 +309,7 @@ func TestWithNamespace(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           ns: "",
+		           nss: nil,
 		       },
 		       want: want {
 		           obj: new(T),
@@ -315,7 +323,7 @@ func TestWithNamespace(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           ns: "",
+		           nss: nil,
 		           },
 		           want: want {
 		               obj: new(T),
@@ -325,9 +333,11 @@ func TestWithNamespace(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -341,7 +351,7 @@ func TestWithNamespace(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithNamespace(test.args.ns)
+			   got := WithNamespaces(test.args.nss...)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -353,7 +363,7 @@ func TestWithNamespace(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithNamespace(test.args.ns)
+			   got := WithNamespaces(test.args.nss...)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(test.want, obj); err != nil {
@@ -365,6 +375,7 @@ func TestWithNamespace(t *testing.T) {
 }
 
 func TestWithOnErrorFunc(t *testing.T) {
+	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
@@ -439,9 +450,11 @@ func TestWithOnErrorFunc(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -479,10 +492,11 @@ func TestWithOnErrorFunc(t *testing.T) {
 }
 
 func TestWithOnReconcileFunc(t *testing.T) {
+	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		f func(statefulSetList map[string][]StatefulSet)
+		f func(ctx context.Context, statefulSetList map[string][]StatefulSet)
 	}
 	type want struct {
 		obj *T
@@ -553,9 +567,11 @@ func TestWithOnReconcileFunc(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

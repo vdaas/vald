@@ -13,25 +13,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+package errors
 
-// Package rest provides rest api logic
-package rest
-
-import (
-	"github.com/vdaas/vald/apis/grpc/v1/rebalancer"
-)
-
-type Handler interface{}
-
-type handler struct {
-	rcs rebalancer.ControllerServer
-}
-
-func New(opts ...Option) Handler {
-	h := new(handler)
-
-	for _, opt := range append(defaultOpts, opts...) {
-		opt(h)
+var (
+	ErrInvalidAgentResourceType = func(art string) error {
+		return Errorf("invalid agent resource type: %s", art)
 	}
-	return h
-}
+
+	ErrJobTemplateNotFound = func() error {
+		return New("job template not found")
+	}
+
+	ErrFailedToDecodeJobTemplate = func(err error) error {
+		return Wrap(err, "failed to decode job template")
+	}
+)

@@ -23,4 +23,12 @@ var (
 	ErrK8sResourceNotFound = func(err error) error {
 		return Wrap(err, "k8s resource not found")
 	}
+
+	ErrK8sFailedToCreateJob = func(err error) error {
+		return Wrap(err, "failed to create k8s job")
+	}
+
+	ErrEmptyReconcileResult = func(resType string) error {
+		return Errorf("reconcile result is empty: %s", resType)
+	}
 )

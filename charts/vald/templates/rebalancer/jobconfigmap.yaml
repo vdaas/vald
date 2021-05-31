@@ -1,0 +1,112 @@
+#
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+{{- if .Values.rebalancer.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.rebalancer.rebalancer.rebalance_job_configmap_name }}
+  labels:
+    app.kubernetes.io/name: {{ include "vald.name" . }}
+    helm.sh/chart: {{ include "vald.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.Version }}
+    app.kubernetes.io/component: rebalancer
+data:
+  job.tpl: |
+    ---
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: {{ .Values.rebalancer.rebalancer.rebalance_job_name }}
+      namespace: vald
+      labels:
+        app: {{ .Values.rebalancer.rebalancer.rebalance_job_name }}
+    spec:
+      failedJobsHistoryLimit: 2
+      successfulJobsHistoryLimit: 2
+      template:
+        spec:
+          containers:
+            - name: vald-rebalancer-job
+              image: {{ .Values.rebalancer.rebalancer.rebalance_job_image }}
+              imagePullPolicy: Always
+              {{- if .Values.rebalancer.env }}
+              env:
+                {{- toYaml .Values.rebalancer.env | nindent 16 }}
+              {{- end }}
+              volumeMounts:
+                - name: {{ .Values.rebalancer.rebalancer.rebalance_job_configmap_name }}
+                  mountPath: /etc/server/
+          restartPolicy: Never
+          volumes:
+            - name: {{ .Values.rebalancer.rebalancer.rebalance_job_configmap_name }}
+              configMap:
+                defaultMode: 420
+                name: {{ .Values.rebalancer.rebalancer.rebalance_job_configmap_name }}
+  config.yaml: |
+    ---
+    version: {{ .Values.rebalancer.version }}
+    time_zone: {{ default .Values.defaults.time_zone .Values.rebalancer.time_zone }}
+    logging:
+      {{- $logging := dict "Values" .Values.rebalancer.logging "default" .Values.defaults.logging }}
+      {{- include "vald.logging" $logging | nindent 6 }}
+    server_config:
+      {{- $servers := dict "Values" .Values.rebalancer.server_config "default" .Values.defaults.server_config }}
+      {{- include "vald.servers" $servers | nindent 6 }}
+    observability:
+      {{- $observability := dict "Values" .Values.rebalancer.observability "default" .Values.defaults.observability }}
+      {{- include "vald.observability" $observability | nindent 6 }}
+    rebalancer_job:
+      {{- $sidecar := .Values.agent.sidecar.config }}
+      blob_storage:
+        {{- toYaml $sidecar.blob_storage | nindent 8 }}
+      compress:
+        {{- toYaml $sidecar.compress | nindent 8 }}
+      filename_suffix:
+        {{- toYaml $sidecar.filename_suffix | nindent 8 }}
+      kvsdb_filename_suffix:
+        {{- toYaml $sidecar.kvsdb_filename_suffix | nindent 8 }}
+      target_agent_name: {{ .Values.rebalancer.rebalancer.job.target_agent_name }}
+      rate: {{ .Values.rebalancer.rebalancer.job.rate }}
+      parallelism: {{ .Values.rebalancer.rebalancer.job.parallelism }}
+      gateway_client:
+        {{- $client := .Values.rebalancer.rebalancer.job.grpc.client }}
+        {{- $gRPCClient := dict "Values" $client "default" .Values.defaults.grpc.client }}
+        {{- include "vald.grpc.client" $gRPCClient | nindent 8 }}
+        {{- if .Values.gateway.backup.enabled }}
+          {{- $gateway := .Values.gateway.backup -}}
+          {{- $serverPort := $gateway.server_config.servers.grpc.port }}
+          {{- $defaultHost := printf "%s.%s.svc.cluster.local" $gateway.name .Release.Namespace }}
+          {{- $defaultPort := default .Values.defaults.server_config.servers.grpc.port $serverPort }}
+          {{- $defaultAddr := (list (printf "%s:%d" $defaultHost (int64 $defaultPort))) }}
+          {{- $addrs := dict "Values" $client.addrs "default" $defaultAddr }}
+          {{- include "vald.grpc.client.addrs" $addrs | nindent 8 }}
+        {{- else if .Values.gateway.lb.enabled }}
+          {{- $gateway := .Values.gateway.lb -}}
+          {{- $serverPort := $gateway.server_config.servers.grpc.port }}
+          {{- $defaultHost := printf "%s.%s.svc.cluster.local" $gateway.name .Release.Namespace }}
+          {{- $defaultPort := default .Values.defaults.server_config.servers.grpc.port $serverPort }}
+          {{- $defaultAddr := (list (printf "%s:%d" $defaultHost (int64 $defaultPort))) }}
+          {{- $addrs := dict "Values" $client.addrs "default" $defaultAddr }}
+          {{- include "vald.grpc.client.addrs" $addrs | nindent 8 }}
+        {{- end }}
+      client:
+        net:
+          {{- toYaml .Values.rebalancer.rebalancer.job.client.net | nindent 10 }}
+        transport:
+          {{- toYaml .Values.rebalancer.rebalancer.job.client.transport | nindent 10 }}
+{{- end }}

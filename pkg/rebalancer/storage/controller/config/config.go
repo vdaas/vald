@@ -18,10 +18,68 @@
 package config
 
 import (
+	"strings"
+
 	"github.com/vdaas/vald/internal/config"
 )
 
 type GlobalConfig = config.GlobalConfig
+
+type RebalanceReason uint8
+
+const (
+	DEVIATION RebalanceReason = iota
+	RECOVERY
+	MANUAL
+)
+
+func (r RebalanceReason) String() string {
+	switch r {
+	case DEVIATION:
+		return "deviation"
+	case RECOVERY:
+		return "recovery"
+	case MANUAL:
+		return "manual"
+	default:
+		return "unknown"
+	}
+}
+
+type AgentResourceType uint8
+
+const (
+	UNKNOWN_RESOURCE_TYPE AgentResourceType = iota
+	STATEFULSET
+	DAEMONSET
+	REPLICASET
+)
+
+func (t AgentResourceType) String() string {
+	switch t {
+	case STATEFULSET:
+		return "statefulset"
+	case REPLICASET:
+		return "replicaset"
+	case DAEMONSET:
+		return "daemonset"
+	default:
+		return "unknown"
+	}
+}
+
+func AToAgentResourceType(t string) AgentResourceType {
+	switch strings.ToLower(t) {
+	case "statefulset":
+		return STATEFULSET
+	case "replicaset":
+		return REPLICASET
+	case "daemonset":
+		return DAEMONSET
+	default:
+		return UNKNOWN_RESOURCE_TYPE
+	}
+}
 
 // Config represent a application setting data content (config.yaml).
 // In K8s environment, this configuration is stored in K8s ConfigMap.
@@ -35,7 +93,7 @@ type Data struct {
 	Observability *config.Observability `json:"observability" yaml:"observability"`
 
 	// Rebalancer represents rebalance controller configurations
-	Rebalancer *config.RebalanceController
+	Rebalancer *config.RebalanceController `json:"rebalancer" yaml:"rebalancer"`
 }
 
 func NewConfig(path string) (cfg *Data, err error) {
@@ -139,14 +197,19 @@ func NewConfig(path string) (cfg *Data, err error) {
 // 				CA:      "/path/to/ca",
 // 			},
 // 		},
-// 		NGT: &config.NGT{
-// 			IndexPath:           "/path/to/index",
-// 			Dimension:           4096,
-// 			BulkInsertChunkSize: 10,
-// 			DistanceType:        "l2",
-// 			ObjectType:          "float",
-// 			CreationEdgeSize:    20,
-// 			SearchEdgeSize:      10,
+// 		Rebalancer: &config.RebalanceController{
+// 			RebalanceJobName:        "agent-rebalance-job",
+// 			RebalanceJobNamespace:   "vald",
+// 			RebalanceJobTemplateKey: "job.tpl",
+// 			ConfigMapName:           "agent-rebalance-job-template",
+// 			ConfigMapNamespace:      "vald",
+// 			AgentName:               "vald-agent-ngt",
+// 			AgentNamespace:          "vald",
+// 			AgentResourceType:       "statefulset",
+// 			ReconcileCheckDuration:  "5m",
+// 			Tolerance:               0.1,
+// 			RateThreshold:           0.1,
+// 			LeaderElectionID:        "agent-rebalance-controller",
 // 		},
 // 	}
 // 	fmt.Println(config.ToRawYaml(d))

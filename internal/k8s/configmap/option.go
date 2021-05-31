@@ -13,11 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-package job
+package configmap
 
 import "sigs.k8s.io/controller-runtime/pkg/manager"
 
-// Option represents functional option for reconciler.
+// Option represents functional option for reconcile ConfigMap.
 type Option func(*reconciler) error
 
 var defaultOpts = []Option{}
@@ -38,7 +38,7 @@ func WithManager(mgr manager.Manager) Option {
 	}
 }
 
-// WithNamespaces returns Option to set the namespace.
+// WithNamespaces returns Option that sets r.namaspaces.
 func WithNamespaces(nss ...string) Option {
 	return func(r *reconciler) error {
 		r.namespaces = nss
@@ -55,7 +55,7 @@ func WithOnErrorFunc(f func(err error)) Option {
 }
 
 // WithOnReconcileFunc returns Option that sets r.onReconcile.
-func WithOnReconcileFunc(f func(jobList map[string][]Job)) Option {
+func WithOnReconcileFunc(f func(configMapList map[string][]ConfigMap)) Option {
 	return func(r *reconciler) error {
 		r.onReconcile = f
 		return nil

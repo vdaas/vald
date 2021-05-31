@@ -28,8 +28,8 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 
-	"k8s.io/apimachinery/pkg/runtime"
-
+	"sigs.k8s.io/controller-runtime/pkg/builder"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -40,12 +40,11 @@ import (
 type StatefulSetWatcher k8s.ResourceController
 
 type reconciler struct {
-	ctx         context.Context
 	mgr         manager.Manager
 	name        string
-	namespace   string
+	namespaces  []string
 	onError     func(err error)
-	onReconcile func(rs map[string][]StatefulSet)
+	onReconcile func(ctx context.Context, rs map[string][]StatefulSet)
 	pool        sync.Pool
 }
 
@@ -72,10 +71,16 @@ func New(opts ...Option) (StatefulSetWatcher, error) {
 }
 
 // Reconcile implements k8s reconciliation loop to retrive the StatefulSet information from k8s.
-func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err error) {
+func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
 	ssl := new(appsv1.StatefulSetList)
 
-	err = r.mgr.GetClient().List(r.ctx, ssl)
+	listOpts := make([]client.ListOption, 0, len(r.namespaces))
+
+	for _, ns := range r.namespaces {
+		listOpts = append(listOpts, client.InNamespace(ns))
+	}
+
+	err = r.mgr.GetClient().List(ctx, ssl, listOpts...)
 	if err != nil {
 		if r.onError != nil {
 			r.onError(err)
@@ -92,7 +97,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 		return
 	}
 
-	ssm := make(map[string][]StatefulSet)
+	ssm := r.pool.Get().(map[string][]StatefulSet)
 	appList := make(map[string]bool)
 
 	for _, statefulset := range ssl.Items {
@@ -102,7 +107,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 			name = strings.Join(pns[:len(pns)-1], "-")
 		}
 		if _, ok := ssm[name]; !ok {
-			ssm[name] = make([]StatefulSet, 1)
+			ssm[name] = make([]StatefulSet, 0, 1)
 		}
 		if !appList[name] {
 			appList[name] = true
@@ -111,7 +116,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err
 	}
 
 	if r.onReconcile != nil {
-		r.onReconcile(ssm)
+		r.onReconcile(ctx, ssm)
 	}
 
 	for name := range ssm {
@@ -132,11 +137,7 @@ func (r *reconciler) GetName() string {
 }
 
 // NewReconciler returns the reconciler for the StatefulSet.
-func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler {
-	if r.ctx == nil && ctx != nil {
-		r.ctx = ctx
-	}
-
+func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
 	if r.mgr == nil && mgr != nil {
 		r.mgr = mgr
 	}
@@ -146,19 +147,19 @@ func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) rec
 }
 
 // For returns the runtime.Object which is StatefulSet.
-func (r *reconciler) For() runtime.Object {
-	return new(appsv1.StatefulSet)
+func (r *reconciler) For() (client.Object, []builder.ForOption) {
+	return new(appsv1.StatefulSet), nil
 }
 
 // Owns returns the owner of the StatefulSet wathcer.
 // It will always return nil.
-func (r *reconciler) Owns() runtime.Object {
-	return nil
+func (r *reconciler) Owns() (client.Object, []builder.OwnsOption) {
+	return nil, nil
 }
 
 // Watches returns the kind of the StatefulSet and the event handler.
 // It will always retrun nil.
-func (r *reconciler) Watches() (*source.Kind, handler.EventHandler) {
+func (r *reconciler) Watches() (*source.Kind, handler.EventHandler, []builder.WatchesOption) {
 	// return &source.kind{Type: new(corev1.Pod)}, &handler.EnqueueRequestForObject{}
-	return nil, nil
+	return nil, nil, nil
 }

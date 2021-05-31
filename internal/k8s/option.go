@@ -83,6 +83,13 @@ func WithDisableLeaderElection() Option {
 	}
 }
 
+func WithLeaderElectionID(id string) Option {
+	return func(c *controller) error {
+		c.leaderElectionID = id
+		return nil
+	}
+}
+
 func WithDialer(der net.Dialer) Option {
 	return func(c *controller) error {
 		if der != nil {

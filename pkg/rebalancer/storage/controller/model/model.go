@@ -13,10 +13,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+package model
 
-// Package service
-package service
+// Pod & PodMetrics
+type Pod struct {
+	Name        string
+	Namespace   string
+	MemoryLimit float64
+	MemoryUsage float64
+}
 
-type Option func(r *rebalancer) error
-
-var defaultOpts = []Option{}
+type StatefulSet struct {
+	Name            string
+	Namespace       string
+	DesiredReplicas *int32 // StatefulSetSpec.Replicas
+	Replicas        int32  // StatefulSetStatus.Replicas
+}

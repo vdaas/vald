@@ -641,6 +641,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 
 	eg.Go(safety.RecoverFunc(func() (err error) {
 		if n.path != "" {
+			log.Infof("[rebalance controller] gob area. kvs length: %d", n.kvs.Len())
 			m := make(map[string]uint32, n.kvs.Len())
 			var mu sync.Mutex
 			n.kvs.Range(ctx, func(key string, id uint32) bool {
@@ -663,6 +664,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 					derr := f.Close()
 					if derr != nil {
 						err = errors.Wrap(err, derr.Error())
+            log.Errorf("[rebalance controller] failed to close kvsdb file: %v", err)
 					}
 				}
 			}()
@@ -687,6 +689,11 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 	if err != nil {
 		return err
 	}
+
+	// TODO: delete this code
+	time.Sleep(10 * time.Second)
+
+	log.Infof("[rebalance controller] metadata area. kvs length: %d", n.kvs.Len())
 
 	return metadata.Store(
 		filepath.Join(n.path, metadata.AgentMetadataFileName),

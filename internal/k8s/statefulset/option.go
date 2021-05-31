@@ -15,7 +15,11 @@
 //
 package statefulset
 
-import "sigs.k8s.io/controller-runtime/pkg/manager"
+import (
+	"context"
+
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+)
 
 // Option represents functional option for reconsile StatefulSet.
 type Option func(*reconciler) error
@@ -38,10 +42,10 @@ func WithManager(mgr manager.Manager) Option {
 	}
 }
 
-// WithNamaspace returns Option that sets r.namaspace.
-func WithNamespace(ns string) Option {
+// WithNamespaces returns Option that sets r.namaspaces.
+func WithNamespaces(nss ...string) Option {
 	return func(r *reconciler) error {
-		r.namespace = ns
+		r.namespaces = nss
 		return nil
 	}
 }
@@ -55,7 +59,7 @@ func WithOnErrorFunc(f func(err error)) Option {
 }
 
 // WithOnReconcileFunc returns Option that sets r.onReconcile.
-func WithOnReconcileFunc(f func(statefulSetList map[string][]StatefulSet)) Option {
+func WithOnReconcileFunc(f func(ctx context.Context, statefulSetList map[string][]StatefulSet)) Option {
 	return func(r *reconciler) error {
 		r.onReconcile = f
 		return nil
