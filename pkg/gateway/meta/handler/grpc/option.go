@@ -18,8 +18,12 @@
 package grpc
 
 import (
+	"os"
+
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/pkg/gateway/meta/service"
 )
 
@@ -28,6 +32,32 @@ type Option func(*server)
 var defaultOptions = []Option{
 	WithErrGroup(errgroup.Get()),
 	WithStreamConcurrency(20),
+	WithName(func() string {
+		name, err := os.Hostname()
+		if err != nil {
+			log.Warn(err)
+		}
+		return name
+	}()),
+	WithIP(net.LoadLocalIP()),
+}
+
+// WithIP returns the option to set the IP for server.
+func WithIP(ip string) Option {
+	return func(s *server) {
+		if len(ip) != 0 {
+			s.ip = ip
+		}
+	}
+}
+
+// WithName returns the option to set the name for server.
+func WithName(name string) Option {
+	return func(s *server) {
+		if len(name) != 0 {
+			s.name = name
+		}
+	}
 }
 
 func WithValdClient(g vald.Client) Option {
