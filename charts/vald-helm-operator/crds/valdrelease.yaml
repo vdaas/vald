@@ -1215,6 +1215,8 @@ spec:
                               type: string
                             filename_suffix:
                               type: string
+                            kvsdb_filename_suffix:
+                              type: string
                             post_stop_timeout:
                               type: string
                             restore_backoff:
@@ -15804,6 +15806,8 @@ spec:
                           type: string
                         agent_namespace:
                           type: string
+                        agent_port:
+                          type: number
                         agent_resource_type:
                           type: string
                         job:

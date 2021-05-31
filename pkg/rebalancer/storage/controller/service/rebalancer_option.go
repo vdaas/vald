@@ -71,6 +71,13 @@ func WithAgentName(an string) RebalancerOption {
 	}
 }
 
+func WithAgentPort(port int) RebalancerOption {
+	return func(r *rebalancer) error {
+		r.agentPort = port
+		return nil
+	}
+}
+
 func WithAgentNamespace(ans string) RebalancerOption {
 	return func(r *rebalancer) error {
 		r.agentNamespace = ans

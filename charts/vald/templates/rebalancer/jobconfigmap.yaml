@@ -78,6 +78,8 @@ data:
         {{- toYaml $sidecar.compress | nindent 8 }}
       filename_suffix:
         {{- toYaml $sidecar.filename_suffix | nindent 8 }}
+      kvsdb_filename_suffix:
+        {{- toYaml $sidecar.kvsdb_filename_suffix | nindent 8 }}
       target_agent_name: {{ .Values.rebalancer.rebalancer.job.target_agent_name }}
       rate: {{ .Values.rebalancer.rebalancer.job.rate }}
       parallelism: {{ .Values.rebalancer.rebalancer.job.parallelism }}

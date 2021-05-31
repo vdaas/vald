@@ -24,7 +24,8 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -39,7 +40,6 @@ import (
 type ReplicaSetWatcher k8s.ResourceController
 
 type reconciler struct {
-	ctx         context.Context
 	mgr         manager.Manager
 	name        string
 	namespace   string
@@ -71,10 +71,10 @@ func New(opts ...Option) (ReplicaSetWatcher, error) {
 }
 
 // Reconcile implements k8s reconciliation loop to retrieve the ReplicaSet information from k8s.
-func (r *reconciler) Reconcile(req reconcile.Request) (res reconcile.Result, err error) {
+func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
 	rsl := new(appsv1.ReplicaSetList)
 
-	err = r.mgr.GetClient().List(r.ctx, rsl)
+	err = r.mgr.GetClient().List(ctx, rsl)
 	if err != nil {
 		if r.onError != nil {
 			r.onError(err)
@@ -132,10 +132,7 @@ func (r *reconciler) GetName() string {
 }
 
 // NewReconciler returns the reconciler for the ReplicaSet.
-func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler {
-	if r.ctx == nil && ctx != nil {
-		r.ctx = ctx
-	}
+func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
 	if r.mgr == nil && mgr != nil {
 		r.mgr = mgr
 	}
@@ -144,19 +141,19 @@ func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) rec
 }
 
 // For returns the runtime.Object which is replica set.
-func (r *reconciler) For() runtime.Object {
-	return new(appsv1.ReplicaSet)
+func (r *reconciler) For() (client.Object, []builder.ForOption) {
+	return new(appsv1.ReplicaSet), nil
 }
 
 // Owns returns the owner of the replica set watcher.
 // It will always return nil.
-func (r *reconciler) Owns() runtime.Object {
-	return nil
+func (r *reconciler) Owns() (client.Object, []builder.OwnsOption) {
+	return nil, nil
 }
 
 // Watches returns the kind of the replica set and the event handler.
 // It will always return nil.
-func (r *reconciler) Watches() (*source.Kind, handler.EventHandler) {
+func (r *reconciler) Watches() (*source.Kind, handler.EventHandler, []builder.WatchesOption) {
 	// return &source.Kind{Type: new(corev1.Pod)}, &handler.EnqueueRequestForObject{}
-	return nil, nil
+	return nil, nil, nil
 }

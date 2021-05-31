@@ -25,6 +25,7 @@ type RebalanceController struct {
 	RebalanceJobNamespace  string  `yaml:"rebalance_job_namespace" json:"rebalance_job_namespace"`
 	RebalanceJobTemplate   string  `yaml:"rebalance_job_template" json:"rebalance_job_template"`
 	AgentName              string  `yaml:"agent_name" json:"agent_name"`
+	AgentPort              int     `yaml:"agent_port" json:"agent_port"`
 	AgentNamespace         string  `yaml:"agent_namespace" json:"agent_namespace"`
 	AgentResourceType      string  `yaml:"agent_resource_type" json:"agent_resource_type"`
 	ReconcileCheckDuration string  `yaml:"reconcile_check_duration" json:"reconcile_check_duration"`
