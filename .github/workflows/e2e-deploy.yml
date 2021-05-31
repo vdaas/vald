@@ -111,7 +111,6 @@ jobs:
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
           POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
-
   e2e-deploy-redis-mysql:
     name: "E2E deploy test (Redis, MySQL)"
     runs-on: ubuntu-latest
@@ -368,6 +367,7 @@ jobs:
   slack-notification:
     name: "Slack notification"
     needs:
+      - e2e-deploy-lb
       - e2e-deploy-redis-mysql
       - e2e-deploy-cassandra
       - e2e-deploy-sidecar
