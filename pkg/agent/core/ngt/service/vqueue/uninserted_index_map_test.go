@@ -13,40 +13,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
-// Package grpc provides grpc server logic
-package grpc
+package vqueue
 
 import (
-	"context"
 	"reflect"
+	"sync"
+	"sync/atomic"
 	"testing"
+	"unsafe"
 
-	"github.com/vdaas/vald/apis/grpc/v1/meta"
-	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/net/grpc/errdetails"
-	"github.com/vdaas/vald/pkg/meta/cassandra/service"
 	"go.uber.org/goleak"
 )
 
-func TestNew(t *testing.T) {
-	t.Parallel()
+func Test_newEntryUiim(t *testing.T) {
 	type args struct {
-		opts []Option
+		i index
 	}
 	type want struct {
-		want meta.MetaServer
+		want *entryUiim
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, meta.MetaServer) error
+		checkFunc  func(want, *entryUiim) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got meta.MetaServer) error {
+	defaultCheckFunc := func(w want, got *entryUiim) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -58,7 +53,7 @@ func TestNew(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           opts: nil,
+		           i: index{},
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -71,7 +66,7 @@ func TestNew(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           opts: nil,
+		           i: index{},
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -95,42 +90,44 @@ func TestNew(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got := New(test.args.opts...)
+			got := newEntryUiim(test.args.i)
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
-func Test_server_GetMeta(t *testing.T) {
-	t.Parallel()
+func Test_uiim_Load(t *testing.T) {
 	type args struct {
-		ctx context.Context
-		key *payload.Meta_Key
+		key string
 	}
 	type fields struct {
-		cassandra service.Cassandra
+		mu     sync.Mutex
+		read   atomic.Value
+		dirty  map[string]*entryUiim
+		misses int
 	}
 	type want struct {
-		want *payload.Meta_Val
-		err  error
+		wantValue index
+		wantOk    bool
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Meta_Val, error) error
+		checkFunc  func(want, index, bool) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *payload.Meta_Val, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+	defaultCheckFunc := func(w want, gotValue index, gotOk bool) error {
+		if !reflect.DeepEqual(gotValue, w.wantValue) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotValue, w.wantValue)
 		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		if !reflect.DeepEqual(gotOk, w.wantOk) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOk, w.wantOk)
 		}
 		return nil
 	}
@@ -140,11 +137,13 @@ func Test_server_GetMeta(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           ctx: nil,
-		           key: nil,
+		           key: "",
 		       },
 		       fields: fields {
-		           cassandra: nil,
+		           mu: sync.Mutex{},
+		           read: nil,
+		           dirty: nil,
+		           misses: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -157,11 +156,13 @@ func Test_server_GetMeta(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           ctx: nil,
-		           key: nil,
+		           key: "",
 		           },
 		           fields: fields {
-		           cassandra: nil,
+		           mu: sync.Mutex{},
+		           read: nil,
+		           dirty: nil,
+		           misses: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -184,46 +185,44 @@ func Test_server_GetMeta(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			s := &server{
-				cassandra: test.fields.cassandra,
+			m := &uiim{
+				mu:     test.fields.mu,
+				read:   test.fields.read,
+				dirty:  test.fields.dirty,
+				misses: test.fields.misses,
 			}
 
-			got, err := s.GetMeta(test.args.ctx, test.args.key)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			gotValue, gotOk := m.Load(test.args.key)
+			if err := test.checkFunc(test.want, gotValue, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
-func Test_server_GetMetas(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx  context.Context
-		keys *payload.Meta_Keys
-	}
+func Test_entryUiim_load(t *testing.T) {
 	type fields struct {
-		cassandra service.Cassandra
+		p unsafe.Pointer
 	}
 	type want struct {
-		wantMv *payload.Meta_Vals
-		err    error
+		wantValue index
+		wantOk    bool
 	}
 	type test struct {
 		name       string
-		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Meta_Vals, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		checkFunc  func(want, index, bool) error
+		beforeFunc func()
+		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want, gotMv *payload.Meta_Vals, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+	defaultCheckFunc := func(w want, gotValue index, gotOk bool) error {
+		if !reflect.DeepEqual(gotValue, w.wantValue) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotValue, w.wantValue)
 		}
-		if !reflect.DeepEqual(gotMv, w.wantMv) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotMv, w.wantMv)
+		if !reflect.DeepEqual(gotOk, w.wantOk) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOk, w.wantOk)
 		}
 		return nil
 	}
@@ -232,12 +231,95 @@ func Test_server_GetMetas(t *testing.T) {
 		/*
 		   {
 		       name: "test_case_1",
+		       fields: fields {
+		           p: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           p: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			e := &entryUiim{
+				p: test.fields.p,
+			}
+
+			gotValue, gotOk := e.load()
+			if err := test.checkFunc(test.want, gotValue, gotOk); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_uiim_Store(t *testing.T) {
+	type args struct {
+		key   string
+		value index
+	}
+	type fields struct {
+		mu     sync.Mutex
+		read   atomic.Value
+		dirty  map[string]*entryUiim
+		misses int
+	}
+	type want struct {
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want) error {
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
 		       args: args {
-		           ctx: nil,
-		           keys: nil,
+		           key: "",
+		           value: index{},
 		       },
 		       fields: fields {
-		           cassandra: nil,
+		           mu: sync.Mutex{},
+		           read: nil,
+		           dirty: nil,
+		           misses: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -250,11 +332,14 @@ func Test_server_GetMetas(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           ctx: nil,
-		           keys: nil,
+		           key: "",
+		           value: index{},
 		           },
 		           fields: fields {
-		           cassandra: nil,
+		           mu: sync.Mutex{},
+		           read: nil,
+		           dirty: nil,
+		           misses: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -277,765 +362,27 @@ func Test_server_GetMetas(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			s := &server{
-				cassandra: test.fields.cassandra,
+			m := &uiim{
+				mu:     test.fields.mu,
+				read:   test.fields.read,
+				dirty:  test.fields.dirty,
+				misses: test.fields.misses,
 			}
 
-			gotMv, err := s.GetMetas(test.args.ctx, test.args.keys)
-			if err := test.checkFunc(test.want, gotMv, err); err != nil {
+			m.Store(test.args.key, test.args.value)
+			if err := test.checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
 	}
 }
 
-func Test_server_GetMetaInverse(t *testing.T) {
-	t.Parallel()
+func Test_entryUiim_tryStore(t *testing.T) {
 	type args struct {
-		ctx context.Context
-		val *payload.Meta_Val
+		i *index
 	}
 	type fields struct {
-		cassandra service.Cassandra
-	}
-	type want struct {
-		want *payload.Meta_Key
-		err  error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Meta_Key, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got *payload.Meta_Key, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           val: nil,
-		       },
-		       fields: fields {
-		           cassandra: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           val: nil,
-		           },
-		           fields: fields {
-		           cassandra: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				cassandra: test.fields.cassandra,
-			}
-
-			got, err := s.GetMetaInverse(test.args.ctx, test.args.val)
-			if err := test.checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_GetMetasInverse(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx  context.Context
-		vals *payload.Meta_Vals
-	}
-	type fields struct {
-		cassandra service.Cassandra
-	}
-	type want struct {
-		wantMk *payload.Meta_Keys
-		err    error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Meta_Keys, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, gotMk *payload.Meta_Keys, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotMk, w.wantMk) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotMk, w.wantMk)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           vals: nil,
-		       },
-		       fields: fields {
-		           cassandra: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           vals: nil,
-		           },
-		           fields: fields {
-		           cassandra: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				cassandra: test.fields.cassandra,
-			}
-
-			gotMk, err := s.GetMetasInverse(test.args.ctx, test.args.vals)
-			if err := test.checkFunc(test.want, gotMk, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_SetMeta(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx context.Context
-		kv  *payload.Meta_KeyVal
-	}
-	type fields struct {
-		cassandra service.Cassandra
-	}
-	type want struct {
-		want *payload.Empty
-		err  error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Empty, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got *payload.Empty, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           kv: nil,
-		       },
-		       fields: fields {
-		           cassandra: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           kv: nil,
-		           },
-		           fields: fields {
-		           cassandra: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				cassandra: test.fields.cassandra,
-			}
-
-			got, err := s.SetMeta(test.args.ctx, test.args.kv)
-			if err := test.checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_SetMetas(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx context.Context
-		kvs *payload.Meta_KeyVals
-	}
-	type fields struct {
-		cassandra service.Cassandra
-	}
-	type want struct {
-		want *payload.Empty
-		err  error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Empty, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got *payload.Empty, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           kvs: nil,
-		       },
-		       fields: fields {
-		           cassandra: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           kvs: nil,
-		           },
-		           fields: fields {
-		           cassandra: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				cassandra: test.fields.cassandra,
-			}
-
-			got, err := s.SetMetas(test.args.ctx, test.args.kvs)
-			if err := test.checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_DeleteMeta(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx context.Context
-		key *payload.Meta_Key
-	}
-	type fields struct {
-		cassandra service.Cassandra
-	}
-	type want struct {
-		want *payload.Meta_Val
-		err  error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Meta_Val, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got *payload.Meta_Val, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           key: nil,
-		       },
-		       fields: fields {
-		           cassandra: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           key: nil,
-		           },
-		           fields: fields {
-		           cassandra: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				cassandra: test.fields.cassandra,
-			}
-
-			got, err := s.DeleteMeta(test.args.ctx, test.args.key)
-			if err := test.checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_DeleteMetas(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx  context.Context
-		keys *payload.Meta_Keys
-	}
-	type fields struct {
-		cassandra service.Cassandra
-	}
-	type want struct {
-		wantMv *payload.Meta_Vals
-		err    error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Meta_Vals, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, gotMv *payload.Meta_Vals, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotMv, w.wantMv) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotMv, w.wantMv)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           keys: nil,
-		       },
-		       fields: fields {
-		           cassandra: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           keys: nil,
-		           },
-		           fields: fields {
-		           cassandra: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				cassandra: test.fields.cassandra,
-			}
-
-			gotMv, err := s.DeleteMetas(test.args.ctx, test.args.keys)
-			if err := test.checkFunc(test.want, gotMv, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_DeleteMetaInverse(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx context.Context
-		val *payload.Meta_Val
-	}
-	type fields struct {
-		cassandra service.Cassandra
-	}
-	type want struct {
-		want *payload.Meta_Key
-		err  error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Meta_Key, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got *payload.Meta_Key, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           val: nil,
-		       },
-		       fields: fields {
-		           cassandra: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           val: nil,
-		           },
-		           fields: fields {
-		           cassandra: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				cassandra: test.fields.cassandra,
-			}
-
-			got, err := s.DeleteMetaInverse(test.args.ctx, test.args.val)
-			if err := test.checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_DeleteMetasInverse(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx  context.Context
-		vals *payload.Meta_Vals
-	}
-	type fields struct {
-		cassandra service.Cassandra
-	}
-	type want struct {
-		wantMk *payload.Meta_Keys
-		err    error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Meta_Keys, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, gotMk *payload.Meta_Keys, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotMk, w.wantMk) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotMk, w.wantMk)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           vals: nil,
-		       },
-		       fields: fields {
-		           cassandra: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           vals: nil,
-		           },
-		           fields: fields {
-		           cassandra: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				cassandra: test.fields.cassandra,
-			}
-
-			gotMk, err := s.DeleteMetasInverse(test.args.ctx, test.args.vals)
-			if err := test.checkFunc(test.want, gotMk, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_isInternalError(t *testing.T) {
-	type args struct {
-		err error
+		p unsafe.Pointer
 	}
 	type want struct {
 		want bool
@@ -1043,6 +390,7 @@ func Test_isInternalError(t *testing.T) {
 	type test struct {
 		name       string
 		args       args
+		fields     fields
 		want       want
 		checkFunc  func(want, bool) error
 		beforeFunc func(args)
@@ -1060,7 +408,10 @@ func Test_isInternalError(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           err: nil,
+		           i: index{},
+		       },
+		       fields: fields {
+		           p: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1073,7 +424,10 @@ func Test_isInternalError(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           err: nil,
+		           i: index{},
+		           },
+		           fields: fields {
+		           p: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1096,8 +450,11 @@ func Test_isInternalError(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
+			e := &entryUiim{
+				p: test.fields.p,
+			}
 
-			got := isInternalError(test.args.err)
+			got := e.tryStore(test.args.i)
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1106,24 +463,24 @@ func Test_isInternalError(t *testing.T) {
 	}
 }
 
-func Test_isFailedPrecondition(t *testing.T) {
-	type args struct {
-		err error
+func Test_entryUiim_unexpungeLocked(t *testing.T) {
+	type fields struct {
+		p unsafe.Pointer
 	}
 	type want struct {
-		want bool
+		wantWasExpunged bool
 	}
 	type test struct {
 		name       string
-		args       args
+		fields     fields
 		want       want
 		checkFunc  func(want, bool) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func()
+		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want, got bool) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+	defaultCheckFunc := func(w want, gotWasExpunged bool) error {
+		if !reflect.DeepEqual(gotWasExpunged, w.wantWasExpunged) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotWasExpunged, w.wantWasExpunged)
 		}
 		return nil
 	}
@@ -1132,8 +489,8 @@ func Test_isFailedPrecondition(t *testing.T) {
 		/*
 		   {
 		       name: "test_case_1",
-		       args: args {
-		           err: nil,
+		       fields: fields {
+		           p: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1145,8 +502,8 @@ func Test_isFailedPrecondition(t *testing.T) {
 		   func() test {
 		       return test {
 		           name: "test_case_2",
-		           args: args {
-		           err: nil,
+		           fields: fields {
+		           p: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1161,17 +518,20 @@ func Test_isFailedPrecondition(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc()
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
+			e := &entryUiim{
+				p: test.fields.p,
+			}
 
-			got := isFailedPrecondition(test.args.err)
-			if err := test.checkFunc(test.want, got); err != nil {
+			gotWasExpunged := e.unexpungeLocked()
+			if err := test.checkFunc(test.want, gotWasExpunged); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -1179,25 +539,25 @@ func Test_isFailedPrecondition(t *testing.T) {
 	}
 }
 
-func Test_getPreconditionFailureDetails(t *testing.T) {
+func Test_entryUiim_storeLocked(t *testing.T) {
 	type args struct {
-		err error
+		i *index
+	}
+	type fields struct {
+		p unsafe.Pointer
 	}
 	type want struct {
-		wantRes []*errdetails.PreconditionFailureViolation
 	}
 	type test struct {
 		name       string
 		args       args
+		fields     fields
 		want       want
-		checkFunc  func(want, []*errdetails.PreconditionFailureViolation) error
+		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotRes []*errdetails.PreconditionFailureViolation) error {
-		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
-		}
+	defaultCheckFunc := func(w want) error {
 		return nil
 	}
 	tests := []test{
@@ -1206,7 +566,10 @@ func Test_getPreconditionFailureDetails(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           err: nil,
+		           i: index{},
+		       },
+		       fields: fields {
+		           p: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1219,7 +582,10 @@ func Test_getPreconditionFailureDetails(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           err: nil,
+		           i: index{},
+		           },
+		           fields: fields {
+		           p: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1242,9 +608,820 @@ func Test_getPreconditionFailureDetails(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
+			e := &entryUiim{
+				p: test.fields.p,
+			}
 
-			gotRes := getPreconditionFailureDetails(test.args.err)
-			if err := test.checkFunc(test.want, gotRes); err != nil {
+			e.storeLocked(test.args.i)
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_uiim_LoadOrStore(t *testing.T) {
+	type args struct {
+		key   string
+		value index
+	}
+	type fields struct {
+		mu     sync.Mutex
+		read   atomic.Value
+		dirty  map[string]*entryUiim
+		misses int
+	}
+	type want struct {
+		wantActual index
+		wantLoaded bool
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, index, bool) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotActual index, gotLoaded bool) error {
+		if !reflect.DeepEqual(gotActual, w.wantActual) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotActual, w.wantActual)
+		}
+		if !reflect.DeepEqual(gotLoaded, w.wantLoaded) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLoaded, w.wantLoaded)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           key: "",
+		           value: index{},
+		       },
+		       fields: fields {
+		           mu: sync.Mutex{},
+		           read: nil,
+		           dirty: nil,
+		           misses: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           key: "",
+		           value: index{},
+		           },
+		           fields: fields {
+		           mu: sync.Mutex{},
+		           read: nil,
+		           dirty: nil,
+		           misses: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			m := &uiim{
+				mu:     test.fields.mu,
+				read:   test.fields.read,
+				dirty:  test.fields.dirty,
+				misses: test.fields.misses,
+			}
+
+			gotActual, gotLoaded := m.LoadOrStore(test.args.key, test.args.value)
+			if err := test.checkFunc(test.want, gotActual, gotLoaded); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_entryUiim_tryLoadOrStore(t *testing.T) {
+	type args struct {
+		i index
+	}
+	type fields struct {
+		p unsafe.Pointer
+	}
+	type want struct {
+		wantActual index
+		wantLoaded bool
+		wantOk     bool
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, index, bool, bool) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotActual index, gotLoaded bool, gotOk bool) error {
+		if !reflect.DeepEqual(gotActual, w.wantActual) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotActual, w.wantActual)
+		}
+		if !reflect.DeepEqual(gotLoaded, w.wantLoaded) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLoaded, w.wantLoaded)
+		}
+		if !reflect.DeepEqual(gotOk, w.wantOk) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOk, w.wantOk)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           i: index{},
+		       },
+		       fields: fields {
+		           p: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           i: index{},
+		           },
+		           fields: fields {
+		           p: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			e := &entryUiim{
+				p: test.fields.p,
+			}
+
+			gotActual, gotLoaded, gotOk := e.tryLoadOrStore(test.args.i)
+			if err := test.checkFunc(test.want, gotActual, gotLoaded, gotOk); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_uiim_LoadAndDelete(t *testing.T) {
+	type args struct {
+		key string
+	}
+	type fields struct {
+		mu     sync.Mutex
+		read   atomic.Value
+		dirty  map[string]*entryUiim
+		misses int
+	}
+	type want struct {
+		wantValue  index
+		wantLoaded bool
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, index, bool) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotValue index, gotLoaded bool) error {
+		if !reflect.DeepEqual(gotValue, w.wantValue) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotValue, w.wantValue)
+		}
+		if !reflect.DeepEqual(gotLoaded, w.wantLoaded) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLoaded, w.wantLoaded)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           key: "",
+		       },
+		       fields: fields {
+		           mu: sync.Mutex{},
+		           read: nil,
+		           dirty: nil,
+		           misses: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           key: "",
+		           },
+		           fields: fields {
+		           mu: sync.Mutex{},
+		           read: nil,
+		           dirty: nil,
+		           misses: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			m := &uiim{
+				mu:     test.fields.mu,
+				read:   test.fields.read,
+				dirty:  test.fields.dirty,
+				misses: test.fields.misses,
+			}
+
+			gotValue, gotLoaded := m.LoadAndDelete(test.args.key)
+			if err := test.checkFunc(test.want, gotValue, gotLoaded); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_uiim_Delete(t *testing.T) {
+	type args struct {
+		key string
+	}
+	type fields struct {
+		mu     sync.Mutex
+		read   atomic.Value
+		dirty  map[string]*entryUiim
+		misses int
+	}
+	type want struct {
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want) error {
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           key: "",
+		       },
+		       fields: fields {
+		           mu: sync.Mutex{},
+		           read: nil,
+		           dirty: nil,
+		           misses: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           key: "",
+		           },
+		           fields: fields {
+		           mu: sync.Mutex{},
+		           read: nil,
+		           dirty: nil,
+		           misses: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			m := &uiim{
+				mu:     test.fields.mu,
+				read:   test.fields.read,
+				dirty:  test.fields.dirty,
+				misses: test.fields.misses,
+			}
+
+			m.Delete(test.args.key)
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_entryUiim_delete(t *testing.T) {
+	type fields struct {
+		p unsafe.Pointer
+	}
+	type want struct {
+		wantValue index
+		wantOk    bool
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, index, bool) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, gotValue index, gotOk bool) error {
+		if !reflect.DeepEqual(gotValue, w.wantValue) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotValue, w.wantValue)
+		}
+		if !reflect.DeepEqual(gotOk, w.wantOk) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOk, w.wantOk)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           p: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           p: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			e := &entryUiim{
+				p: test.fields.p,
+			}
+
+			gotValue, gotOk := e.delete()
+			if err := test.checkFunc(test.want, gotValue, gotOk); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_uiim_Range(t *testing.T) {
+	type args struct {
+		f func(key string, value index) bool
+	}
+	type fields struct {
+		mu     sync.Mutex
+		read   atomic.Value
+		dirty  map[string]*entryUiim
+		misses int
+	}
+	type want struct {
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want) error {
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           f: nil,
+		       },
+		       fields: fields {
+		           mu: sync.Mutex{},
+		           read: nil,
+		           dirty: nil,
+		           misses: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           f: nil,
+		           },
+		           fields: fields {
+		           mu: sync.Mutex{},
+		           read: nil,
+		           dirty: nil,
+		           misses: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			m := &uiim{
+				mu:     test.fields.mu,
+				read:   test.fields.read,
+				dirty:  test.fields.dirty,
+				misses: test.fields.misses,
+			}
+
+			m.Range(test.args.f)
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_uiim_missLocked(t *testing.T) {
+	type fields struct {
+		mu     sync.Mutex
+		read   atomic.Value
+		dirty  map[string]*entryUiim
+		misses int
+	}
+	type want struct {
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want) error {
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           mu: sync.Mutex{},
+		           read: nil,
+		           dirty: nil,
+		           misses: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           mu: sync.Mutex{},
+		           read: nil,
+		           dirty: nil,
+		           misses: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			m := &uiim{
+				mu:     test.fields.mu,
+				read:   test.fields.read,
+				dirty:  test.fields.dirty,
+				misses: test.fields.misses,
+			}
+
+			m.missLocked()
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_uiim_dirtyLocked(t *testing.T) {
+	type fields struct {
+		mu     sync.Mutex
+		read   atomic.Value
+		dirty  map[string]*entryUiim
+		misses int
+	}
+	type want struct {
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want) error {
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           mu: sync.Mutex{},
+		           read: nil,
+		           dirty: nil,
+		           misses: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           mu: sync.Mutex{},
+		           read: nil,
+		           dirty: nil,
+		           misses: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			m := &uiim{
+				mu:     test.fields.mu,
+				read:   test.fields.read,
+				dirty:  test.fields.dirty,
+				misses: test.fields.misses,
+			}
+
+			m.dirtyLocked()
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_entryUiim_tryExpungeLocked(t *testing.T) {
+	type fields struct {
+		p unsafe.Pointer
+	}
+	type want struct {
+		wantIsExpunged bool
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, bool) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, gotIsExpunged bool) error {
+		if !reflect.DeepEqual(gotIsExpunged, w.wantIsExpunged) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotIsExpunged, w.wantIsExpunged)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           p: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           p: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			e := &entryUiim{
+				p: test.fields.p,
+			}
+
+			gotIsExpunged := e.tryExpungeLocked()
+			if err := test.checkFunc(test.want, gotIsExpunged); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 

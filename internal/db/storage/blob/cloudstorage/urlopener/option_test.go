@@ -13,23 +13,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
-// Package grpc provides grpc server logic
-package grpc
+package urlopener
 
 import (
+	"net/http"
 	"testing"
 
-	"github.com/vdaas/vald/pkg/discoverer/k8s/service"
 	"go.uber.org/goleak"
 )
 
-func TestWithDiscoverer(t *testing.T) {
-	t.Parallel()
+func TestWithCredentialsFile(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		dsc service.Discoverer
+		path string
 	}
 	type want struct {
 		obj *T
@@ -76,7 +73,7 @@ func TestWithDiscoverer(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           dsc: nil,
+		           path: "",
 		       },
 		       want: want {
 		           obj: new(T),
@@ -90,7 +87,7 @@ func TestWithDiscoverer(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           dsc: nil,
+		           path: "",
 		           },
 		           want: want {
 		               obj: new(T),
@@ -118,7 +115,7 @@ func TestWithDiscoverer(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithDiscoverer(test.args.dsc)
+			   got := WithCredentialsFile(test.args.path)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -130,7 +127,7 @@ func TestWithDiscoverer(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithDiscoverer(test.args.dsc)
+			   got := WithCredentialsFile(test.args.path)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(test.want, obj); err != nil {
@@ -141,11 +138,11 @@ func TestWithDiscoverer(t *testing.T) {
 	}
 }
 
-func TestWithName(t *testing.T) {
+func TestWithCredentialsJSON(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		name string
+		str string
 	}
 	type want struct {
 		obj *T
@@ -192,7 +189,7 @@ func TestWithName(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           name: "",
+		           str: "",
 		       },
 		       want: want {
 		           obj: new(T),
@@ -206,7 +203,7 @@ func TestWithName(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           name: "",
+		           str: "",
 		           },
 		           want: want {
 		               obj: new(T),
@@ -234,7 +231,7 @@ func TestWithName(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithName(test.args.name)
+			   got := WithCredentialsJSON(test.args.str)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -246,7 +243,7 @@ func TestWithName(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithName(test.args.name)
+			   got := WithCredentialsJSON(test.args.str)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(test.want, obj); err != nil {
@@ -257,11 +254,11 @@ func TestWithName(t *testing.T) {
 	}
 }
 
-func TestWithIP(t *testing.T) {
+func TestWithHTTPClient(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		ip string
+		c *http.Client
 	}
 	type want struct {
 		obj *T
@@ -308,7 +305,7 @@ func TestWithIP(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           ip: "",
+		           c: nil,
 		       },
 		       want: want {
 		           obj: new(T),
@@ -322,7 +319,7 @@ func TestWithIP(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           ip: "",
+		           c: nil,
 		           },
 		           want: want {
 		               obj: new(T),
@@ -350,7 +347,7 @@ func TestWithIP(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithIP(test.args.ip)
+			   got := WithHTTPClient(test.args.c)
 			   obj := new(T)
 			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -362,7 +359,7 @@ func TestWithIP(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithIP(test.args.ip)
+			   got := WithHTTPClient(test.args.c)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(test.want, obj); err != nil {

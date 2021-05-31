@@ -714,7 +714,7 @@ func TestNew(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			wantErr := errors.New("error is occurred")
+			wantErr := New("error is occurred")
 			return test{
 				name: "return a New error when msg is not empty.",
 				args: args{
