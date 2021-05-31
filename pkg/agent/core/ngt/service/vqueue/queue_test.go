@@ -56,31 +56,36 @@ func TestNew(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           opts: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           opts: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			err := errors.NewErrCriticalOption("eg", nil)
+			opt := func(n *vqueue) error {
+				return err
+			}
+			return test{
+				name: "return error whan the option apply failed",
+				args: args{
+					opts: []Option{opt},
+				},
+				want: want{
+					want: nil,
+					err:  errors.ErrOptionFailed(err, reflect.ValueOf(opt)),
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return queue whan the option apply failed but this error is not ErrCriticalOption",
+				args: args{
+					opts: []Option{
+						WithErrGroup(nil),
+					},
+				},
+				want: want{
+					want: nil,
+					err:  nil,
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -139,6 +144,7 @@ func Test_vqueue_Start(t *testing.T) {
 		want       want
 		checkFunc  func(want, <-chan error, error) error
 		beforeFunc func(args)
+		hookFunc   func(*testing.T, args, Queue)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got <-chan error, err error) error {
@@ -151,67 +157,51 @@ func Test_vqueue_Start(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		       },
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, egctx := errgroup.New(ctx)
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           },
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: sync.Mutex{},
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: sync.Mutex{},
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			// TODO:
+			idxs := []index{}
+
+			keys := []key{}
+
+			size := 10
+
+			return test{
+				name: "test_case_2",
+				args: args{
+					ctx: egctx,
+				},
+				afterFunc: func(a args) {
+					cancel()
+				},
+				hookFunc: func(t *testing.T, a args, v Queue) {
+					t.Helper()
+					for _, idx := range idxs {
+						if err := v.PushInsert(idx.uuid, idx.vector, idx.date); err != nil {
+							t.Fatal(err)
+						}
+					}
+					for _, key := range keys {
+						if err := v.PushDelete(key.uuid, key.date); err != nil {
+							t.Fatal(err)
+						}
+					}
+				},
+				fields: fields{
+					ich:  make(chan index, size),
+					uii:  make([]index, 0),
+					imu:  sync.Mutex{},
+					uiim: make(map[string]index),
+					dch:  make(chan key, size),
+					udk:  make([]key, 0),
+					dmu:  sync.Mutex{},
+					eg:   eg,
+				},
+				want: want{},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -248,6 +238,9 @@ func Test_vqueue_Start(t *testing.T) {
 			}
 
 			got, err := v.Start(test.args.ctx)
+			if test.hookFunc != nil {
+				test.hookFunc(tt, test.args, v)
+			}
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
