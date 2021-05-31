@@ -121,7 +121,7 @@ func (s *server) Exists(ctx context.Context, uid *payload.Object_ID) (res *paylo
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.Exists",
-				ResourceName: s.ip,
+				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			},
@@ -161,7 +161,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.Search",
-				ResourceName: s.ip,
+				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			})
@@ -187,7 +187,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Search",
-					ResourceName: s.ip,
+					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				})
@@ -200,7 +200,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Search",
-					ResourceName: s.ip,
+					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				}, info.Get())
@@ -239,7 +239,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.SearchByID",
-					ResourceName: s.ip,
+					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				})
@@ -252,7 +252,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.SearchByID",
-					ResourceName: s.ip,
+					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				}, info.Get())
@@ -435,7 +435,7 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.MultiSearch",
-				ResourceName: s.ip,
+				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  errs.Error(),
 			})
@@ -507,7 +507,7 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.MultiSearchByID",
-				ResourceName: s.ip,
+				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  errs.Error(),
 			})
@@ -545,7 +545,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (res *
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.Insert",
-				ResourceName: s.ip,
+				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			})
@@ -568,7 +568,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (res *
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Insert",
-					ResourceName: s.ip,
+					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				})
@@ -590,7 +590,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (res *
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Insert",
-					ResourceName: s.ip,
+					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				})
@@ -609,7 +609,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (res *
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Insert",
-					ResourceName: s.ip,
+					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				}, info.Get())
@@ -698,7 +698,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiInsert",
-					ResourceName: s.ip,
+					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				})
@@ -730,7 +730,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiInsert",
-					ResourceName: s.ip,
+					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				})
@@ -752,7 +752,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiInsert",
-					ResourceName: s.ip,
+					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				})
@@ -766,7 +766,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiInsert",
-					ResourceName: s.ip,
+					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				}, info.Get())
@@ -807,7 +807,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.Update",
-				ResourceName: s.ip,
+				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			})
@@ -828,7 +828,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Update",
-					ResourceName: s.ip,
+					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				})
@@ -850,7 +850,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Update",
-					ResourceName: s.ip,
+					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				})
@@ -864,7 +864,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Update",
-					ResourceName: s.ip,
+					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				})
@@ -878,7 +878,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Update",
-					ResourceName: s.ip,
+					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				}, info.Get())
@@ -969,7 +969,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiUpdate",
-					ResourceName: s.ip,
+					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				})
@@ -1002,7 +1002,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiUpdate",
-					ResourceName: s.ip,
+					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				})
@@ -1032,7 +1032,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiUpdate",
-					ResourceName: s.ip,
+					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				})
@@ -1054,7 +1054,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiUpdate",
-					ResourceName: s.ip,
+					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				})
@@ -1068,7 +1068,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Update",
-					ResourceName: s.ip,
+					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				}, info.Get())
@@ -1109,7 +1109,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.Upsert",
-				ResourceName: s.ip,
+				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			})
@@ -1141,7 +1141,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + rtName,
-				ResourceName: s.ip,
+				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			})
@@ -1233,7 +1233,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiUpsert",
-					ResourceName: s.ip,
+					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				})
@@ -1287,7 +1287,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.MultiUpsert",
-				ResourceName: s.ip,
+				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			})
@@ -1323,7 +1323,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (res *
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Remove",
-					ResourceName: s.ip,
+					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				})
@@ -1345,7 +1345,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (res *
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Remove",
-					ResourceName: s.ip,
+					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				})
@@ -1359,7 +1359,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (res *
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Remove",
-					ResourceName: s.ip,
+					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				}, info.Get())
@@ -1451,7 +1451,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiRemove",
-					ResourceName: s.ip,
+					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				})
@@ -1473,7 +1473,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiRemove",
-					ResourceName: s.ip,
+					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				})
@@ -1487,7 +1487,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiRemove",
-					ResourceName: s.ip,
+					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				}, info.Get())
@@ -1520,7 +1520,7 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_VectorRequest
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.GetObject",
-				ResourceName: s.ip,
+				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
@@ -1601,7 +1601,7 @@ func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndex
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.CreateIndex",
-					ResourceName: s.ip,
+					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				},
@@ -1624,7 +1624,7 @@ func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndex
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.CreateIndex",
-				ResourceName: s.ip,
+				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
@@ -1650,7 +1650,7 @@ func (s *server) SaveIndex(ctx context.Context, _ *payload.Empty) (res *payload.
 		err = status.WrapWithInternal("SaveIndex API failed to save indices", err,
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.SaveIndex",
-				ResourceName: s.ip,
+				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())
@@ -1680,7 +1680,7 @@ func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_Crea
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.CreateAndSaveIndex",
-					ResourceName: s.ip,
+					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
 				},
@@ -1703,7 +1703,7 @@ func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_Crea
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.CreateAndSaveIndex",
-				ResourceName: s.ip,
+				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
 			}, info.Get())

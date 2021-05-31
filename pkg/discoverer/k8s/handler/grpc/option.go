@@ -18,18 +18,54 @@
 package grpc
 
 import (
+	"os"
+
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/pkg/discoverer/k8s/service"
 )
 
 type Option func(*server) error
 
-var defaultOptions = []Option{}
+var defaultOptions = []Option{
+	WithName(func() string {
+		name, err := os.Hostname()
+		if err != nil {
+			log.Warn(err)
+		}
+		return name
+	}()),
+	WithIP(net.LoadLocalIP()),
+}
 
 func WithDiscoverer(dsc service.Discoverer) Option {
 	return func(s *server) error {
 		if dsc != nil {
 			s.dsc = dsc
 		}
+		return nil
+	}
+}
+
+// WithName returns the option to set the name for server.
+func WithName(name string) Option {
+	return func(s *server) error {
+		if len(name) == 0 {
+			return errors.NewErrInvalidOption("name", name)
+		}
+		s.name = name
+		return nil
+	}
+}
+
+// WithIP returns the option to set the IP for server.
+func WithIP(ip string) Option {
+	return func(s *server) error {
+		if len(ip) == 0 {
+			return errors.NewErrInvalidOption("ip", ip)
+		}
+		s.ip = ip
 		return nil
 	}
 }
