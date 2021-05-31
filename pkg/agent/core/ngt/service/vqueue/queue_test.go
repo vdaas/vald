@@ -101,7 +101,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -251,7 +250,6 @@ func Test_vqueue_Start(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -403,7 +401,6 @@ func Test_vqueue_PushInsert(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -552,7 +549,6 @@ func Test_vqueue_PushDelete(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -580,8 +576,7 @@ func Test_vqueue_RangePopInsert(t *testing.T) {
 		iBufSize         int
 		dBufSize         int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -724,8 +719,7 @@ func Test_vqueue_RangePopDelete(t *testing.T) {
 		iBufSize         int
 		dBufSize         int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -990,7 +984,6 @@ func Test_vqueue_GetVector(t *testing.T) {
 			if err := test.checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1136,7 +1129,6 @@ func Test_vqueue_IVExists(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1282,7 +1274,6 @@ func Test_vqueue_DVExists(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1309,8 +1300,7 @@ func Test_vqueue_addInsert(t *testing.T) {
 		iBufSize         int
 		dBufSize         int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1450,8 +1440,7 @@ func Test_vqueue_addDelete(t *testing.T) {
 		iBufSize         int
 		dBufSize         int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1700,7 +1689,6 @@ func Test_vqueue_flushAndLoadInsert(t *testing.T) {
 			if err := test.checkFunc(test.want, gotUii); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1836,7 +1824,6 @@ func Test_vqueue_flushAndLoadDelete(t *testing.T) {
 			if err := test.checkFunc(test.want, gotUdk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1972,7 +1959,6 @@ func Test_vqueue_IVQLen(t *testing.T) {
 			if err := test.checkFunc(test.want, gotL); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -2108,7 +2094,6 @@ func Test_vqueue_DVQLen(t *testing.T) {
 			if err := test.checkFunc(test.want, gotL); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -2244,7 +2229,6 @@ func Test_vqueue_IVCLen(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -2380,7 +2364,6 @@ func Test_vqueue_DVCLen(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
