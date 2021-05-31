@@ -380,7 +380,7 @@ func (v *vqueue) flushAndLoadDelete() (udk []key) {
 		// remove unnecessary insert vector queue data
 		v.uii = append(v.uii[:i], v.uii[i+1:]...)
 		v.imu.Unlock()
-		v.uiim.Load(uuid)
+		v.uiim.Delete(uuid)
 	}
 	return udk
 }
