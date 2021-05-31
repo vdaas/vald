@@ -16,7 +16,6 @@
 package errors
 
 import (
-	"errors"
 	"fmt"
 	"math"
 	"reflect"
