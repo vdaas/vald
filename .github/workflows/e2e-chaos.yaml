@@ -120,7 +120,7 @@ jobs:
           POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
       - name: deploy Chaos Mesh
         run: |
-          curl -sSL https://mirrors.chaos-mesh.org/v1.0.3/install.sh | bash -s -- --k3s
+          curl -sSL https://mirrors.chaos-mesh.org/v1.2.1/install.sh | bash -s -- --k3s
           helm install \
             --set podChaos.failure.enabled=true \
             vald-chaos-test tests/chaos/chart
@@ -240,7 +240,7 @@ jobs:
           POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
       - name: deploy Chaos Mesh
         run: |
-          curl -sSL https://mirrors.chaos-mesh.org/v1.0.3/install.sh | bash -s -- --k3s
+          curl -sSL https://mirrors.chaos-mesh.org/v1.2.1/install.sh | bash -s -- --k3s
           helm install \
             --set podChaos.failure.enabled=true \
             --set podChaos.failure.selector.labelSelectors."app\.kubernetes\.io/component"=null \
@@ -340,7 +340,7 @@ jobs:
           wait_for_selector: app=vald-meta-gateway
       - name: deploy Chaos Mesh
         run: |
-          curl -sSL https://mirrors.chaos-mesh.org/v1.0.3/install.sh | bash -s -- --k3s
+          curl -sSL https://mirrors.chaos-mesh.org/v1.2.1/install.sh | bash -s -- --k3s
           helm install \
             --set networkChaos.partition.enabled=true \
             vald-chaos-test tests/chaos/chart
