@@ -15802,6 +15802,12 @@ spec:
                     rebalancer:
                       type: object
                       properties:
+                        agent_client:
+                          type: object
+                          properties:
+                            client:
+                              type: object
+                              x-kubernetes-preserve-unknown-fields: true
                         agent_name:
                           type: string
                         agent_namespace:
