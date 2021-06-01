@@ -1,5 +1,118 @@
 # CHANGELOG
 
+## v1.1.1
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.1.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.1.1</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.1.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.1.1</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.1.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.1.1</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-gateway:v1.1.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-gateway:v1.1.1</code><br/>
+      <code>docker pull vdaas/vald-backup-gateway:v1.1.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-backup-gateway:v1.1.1</code><br/>
+      <code>docker pull vdaas/vald-lb-gateway:v1.1.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.1.1</code><br/>
+      <code>docker pull vdaas/vald-meta-gateway:v1.1.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-gateway:v1.1.1</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Backup managers</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-backup-mysql:v1.1.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-backup-mysql:v1.1.1</code><br/>
+      <code>docker pull vdaas/vald-manager-backup-cassandra:v1.1.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-backup-cassandra:v1.1.1</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Compressor</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-compressor:v1.1.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-compressor:v1.1.1</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Metas</td>
+    <td>
+      <code>docker pull vdaas/vald-meta-redis:v1.1.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-redis:v1.1.1</code><br/>
+      <code>docker pull vdaas/vald-meta-cassandra:v1.1.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-cassandra:v1.1.1</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.1.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.1.1</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.1.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.1.1</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.1.1)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.1.1/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.1.1/charts/vald-helm-operator/README.md)
+
+### Changes
+- [patch] release Vald v1.1.1 ([#1268](https://github.com/vdaas/vald/pull/1268))
+- fix copy CI error ([#1269](https://github.com/vdaas/vald/pull/1269))
+- bugfix nil internal/net/grpc.Client.Reconnect nil pointer fix ([#1270](https://github.com/vdaas/vald/pull/1270))
+- Docs/readme/replace architecture overview ([#1267](https://github.com/vdaas/vald/pull/1267))
+- format code ([#1266](https://github.com/vdaas/vald/pull/1266))
+- :robot: Update license headers / Format Go codes and YAML files ([#1265](https://github.com/vdaas/vald/pull/1265))
+- [bugfix] append timing of vqueue existing map ([#1264](https://github.com/vdaas/vald/pull/1264))
+- add resource type infos to grpc error response ([#1262](https://github.com/vdaas/vald/pull/1262))
+- :wrench: Fix clusterrole of scylla-cluster member ([#1263](https://github.com/vdaas/vald/pull/1263))
+- refactor file I/O & replace io.Copy to vald original faster Copy function ([#1261](https://github.com/vdaas/vald/pull/1261))
+- [bugfix] change exists cheking for agent vqueue ([#1256](https://github.com/vdaas/vald/pull/1256))
+- :robot: Update license headers / Format Go codes and YAML files ([#1255](https://github.com/vdaas/vald/pull/1255))
+- :fire: Remove invalid initialization option ([#1252](https://github.com/vdaas/vald/pull/1252))
+- add single connection client for agent & vald ([#1254](https://github.com/vdaas/vald/pull/1254))
+- bugfix remove unneccessary error return & add grpc status code handling for backoff ([#1253](https://github.com/vdaas/vald/pull/1253))
+- bugfix agent vqueue & refactor tools/deps ([#1250](https://github.com/vdaas/vald/pull/1250))
+- Add test for pkg/agent/core/ngt/service/vqueue/option ([#1233](https://github.com/vdaas/vald/pull/1233))
+- Add config agent core ngt service kvs test ([#1223](https://github.com/vdaas/vald/pull/1223))
+- Fix update-helm-chart workflow ([#1249](https://github.com/vdaas/vald/pull/1249))
+- :robot: Automatically update k8s manifests ([#1248](https://github.com/vdaas/vald/pull/1248))
+- Fix path to the yq binary ([#1247](https://github.com/vdaas/vald/pull/1247))
+
+
 ## v1.1.0
 
 ### Docker images
