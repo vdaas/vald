@@ -27,6 +27,7 @@ import (
 	"unsafe"
 
 	payload "github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/internal/backoff"
 	agent "github.com/vdaas/vald/internal/client/v1/client/agent/core"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -122,7 +123,11 @@ func NewRebalancer(opts ...RebalancerOption) (Rebalancer, error) {
 		return nil, errors.ErrFailedToDecodeJobTemplate(err)
 	}
 
-	r.agentClient = grpc.New() //fix me
+	if r.agentClient == nil {
+		r.agentClient = grpc.New(
+			grpc.WithBackoff(backoff.New()),
+		)
+	}
 
 	return r, nil
 }

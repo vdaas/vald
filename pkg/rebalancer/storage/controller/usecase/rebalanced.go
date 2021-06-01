@@ -48,6 +48,12 @@ type run struct {
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
+
+	acOpts, err := cfg.Rebalancer.AgentClient.Opts()
+	if err != nil {
+		return nil, err
+	}
+
 	rb, err := service.NewRebalancer(
 		service.WithPodName(cfg.Rebalancer.PodName),
 		service.WithPodNamespace(cfg.Rebalancer.PodNamespace),
@@ -63,6 +69,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithRateThreshold(cfg.Rebalancer.RateThreshold),
 		service.WithErrorGroup(eg),
 		service.WithLeaderElectionID(cfg.Rebalancer.LeaderElectionID),
+		service.WithAgentClient(grpc.New(acOpts...)),
 	)
 	if err != nil {
 		return nil, err

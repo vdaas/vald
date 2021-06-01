@@ -5000,6 +5000,10 @@ rebalancer:
     # @schema {"name": "rebalancer.rebalancer.leader_election_id", "type": "string"}
     # rebalancer.rebalancer.leader_election_id -- leader_election_id for rebalancer controller
     leader_election_id: "vald-rebalancer-storage-controller"
+    # @schema {"name": "rebalancer.rebalancer.agent_client", "type": "object"}
+    agent_client:
+      # @schema {"name": "rebalancer.rebalancer.agent_client.client", "type": "object"}
+      client: {}
     # @schema {"name": "rebalancer.rebalancer.job", "type": "object"}
     job:
       # @schema {"name": "rebalancer.rebalancer.job.parallelism", "type": "number"}

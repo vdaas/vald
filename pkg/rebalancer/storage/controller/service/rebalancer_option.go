@@ -20,6 +20,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/pkg/rebalancer/storage/controller/config"
 )
 
@@ -130,6 +131,15 @@ func WithErrorGroup(eg errgroup.Group) RebalancerOption {
 func WithLeaderElectionID(id string) RebalancerOption {
 	return func(r *rebalancer) error {
 		r.leaderElectionID = id
+		return nil
+	}
+}
+
+func WithAgentClient(c grpc.Client) RebalancerOption {
+	return func(r *rebalancer) error {
+		if c != nil {
+			r.agentClient = c
+		}
 		return nil
 	}
 }
