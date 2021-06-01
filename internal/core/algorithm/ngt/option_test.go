@@ -428,7 +428,9 @@ func TestWithDimension(t *testing.T) {
 
 			got := WithDimension(test.args.size)
 			obj := new(T)
-			obj.setup()
+			if err := obj.setup(); err != nil {
+				t.Fatal(err)
+			}
 			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -599,11 +601,19 @@ func TestWithDistanceTypeByString(t *testing.T) {
 				obj: &T{},
 			},
 		},
-
 		{
 			name: "set success when distance type includes _ character",
 			args: args{
 				dt: "normalized_angle",
+			},
+			want: want{
+				obj: &T{},
+			},
+		},
+		{
+			name: "set success when distance type includes space character",
+			args: args{
+				dt: "normalized cos",
 			},
 			want: want{
 				obj: &T{},
@@ -646,7 +656,9 @@ func TestWithDistanceTypeByString(t *testing.T) {
 
 			got := WithDistanceTypeByString(test.args.dt)
 			obj := new(T)
-			obj.setup()
+			if err := obj.setup(); err != nil {
+				t.Fatal(err)
+			}
 			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -782,7 +794,9 @@ func TestWithDistanceType(t *testing.T) {
 
 			got := WithDistanceType(test.args.t)
 			obj := new(T)
-			obj.setup()
+			if err := obj.setup(); err != nil {
+				t.Fatal(err)
+			}
 			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -955,7 +969,9 @@ func TestWithObjectTypeByString(t *testing.T) {
 
 			got := WithObjectTypeByString(test.args.ot)
 			obj := new(T)
-			obj.setup()
+			if err := obj.setup(); err != nil {
+				t.Fatal(err)
+			}
 			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1041,7 +1057,9 @@ func TestWithObjectType(t *testing.T) {
 
 			got := WithObjectType(test.args.t)
 			obj := new(T)
-			obj.setup()
+			if err := obj.setup(); err != nil {
+				t.Fatal(err)
+			}
 			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1140,7 +1158,9 @@ func TestWithCreationEdgeSize(t *testing.T) {
 
 			got := WithCreationEdgeSize(test.args.size)
 			obj := new(T)
-			obj.setup()
+			if err := obj.setup(); err != nil {
+				t.Fatal(err)
+			}
 			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1239,7 +1259,9 @@ func TestWithSearchEdgeSize(t *testing.T) {
 
 			got := WithSearchEdgeSize(test.args.size)
 			obj := new(T)
-			obj.setup()
+			if err := obj.setup(); err != nil {
+				t.Fatal(err)
+			}
 			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
