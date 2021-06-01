@@ -20,10 +20,10 @@ metadata:
   name: vald-agent-ngt-config
   labels:
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.1.0
+    helm.sh/chart: vald-v1.1.1
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v1.1.0
+    app.kubernetes.io/version: v1.1.1
     app.kubernetes.io/component: agent
 data:
   config.yaml: |
@@ -219,7 +219,7 @@ data:
       default_epsilon: 0.01
       default_pool_size: 10000
       default_radius: -1
-      dimension: 4096
+      dimension: 784
       distance_type: l2
       enable_in_memory_mode: true
       enable_proactive_gc: true
