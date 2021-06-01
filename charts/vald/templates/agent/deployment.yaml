@@ -168,7 +168,7 @@ spec:
           configMap:
             defaultMode: 420
             name: {{ $agent.name }}-config
-        {{- if $agent.sidecar.enabled }}
+        {{- if or $agent.sidecar.enabled $agent.sidecar.initContainerEnabled }}
         - name: {{ $agent.sidecar.name }}-config
           configMap:
             defaultMode: 420

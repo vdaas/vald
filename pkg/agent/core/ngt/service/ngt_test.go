@@ -5755,3 +5755,174 @@ func Test_ngt_Close(t *testing.T) {
 		})
 	}
 }
+
+func Test_ngt_GetDimensionSize(t *testing.T) {
+	type fields struct {
+		core              core.NGT
+		eg                errgroup.Group
+		kvs               kvs.BidiMap
+		vq                vqueue.Queue
+		indexing          atomic.Value
+		saving            atomic.Value
+		lastNoice         uint64
+		nocie             uint64
+		nogce             uint64
+		inMem             bool
+		dim               int
+		alen              int
+		lim               time.Duration
+		dur               time.Duration
+		sdur              time.Duration
+		minLit            time.Duration
+		maxLit            time.Duration
+		litFactor         time.Duration
+		enableProactiveGC bool
+		path              string
+		poolSize          uint32
+		radius            float32
+		epsilon           float32
+		idelay            time.Duration
+		dcd               bool
+	}
+	type want struct {
+		want int
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, int) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got int) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           core: nil,
+		           eg: nil,
+		           kvs: nil,
+		           vq: nil,
+		           indexing: nil,
+		           saving: nil,
+		           lastNoice: 0,
+		           nocie: 0,
+		           nogce: 0,
+		           inMem: false,
+		           dim: 0,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
+		           enableProactiveGC: false,
+		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
+		           dcd: false,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           core: nil,
+		           eg: nil,
+		           kvs: nil,
+		           vq: nil,
+		           indexing: nil,
+		           saving: nil,
+		           lastNoice: 0,
+		           nocie: 0,
+		           nogce: 0,
+		           inMem: false,
+		           dim: 0,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
+		           enableProactiveGC: false,
+		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
+		           dcd: false,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			n := &ngt{
+				core:              test.fields.core,
+				eg:                test.fields.eg,
+				kvs:               test.fields.kvs,
+				vq:                test.fields.vq,
+				indexing:          test.fields.indexing,
+				saving:            test.fields.saving,
+				lastNoice:         test.fields.lastNoice,
+				nocie:             test.fields.nocie,
+				nogce:             test.fields.nogce,
+				inMem:             test.fields.inMem,
+				dim:               test.fields.dim,
+				alen:              test.fields.alen,
+				lim:               test.fields.lim,
+				dur:               test.fields.dur,
+				sdur:              test.fields.sdur,
+				minLit:            test.fields.minLit,
+				maxLit:            test.fields.maxLit,
+				litFactor:         test.fields.litFactor,
+				enableProactiveGC: test.fields.enableProactiveGC,
+				path:              test.fields.path,
+				poolSize:          test.fields.poolSize,
+				radius:            test.fields.radius,
+				epsilon:           test.fields.epsilon,
+				idelay:            test.fields.idelay,
+				dcd:               test.fields.dcd,
+			}
+
+			got := n.GetDimensionSize()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
