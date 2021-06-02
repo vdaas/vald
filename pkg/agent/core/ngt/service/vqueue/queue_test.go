@@ -1956,12 +1956,12 @@ func Test_vqueue_flushAndLoadDelete(t *testing.T) {
 
 			uii := []index{
 				{
-					uuid: udk[6].uuid,
+					uuid: udk[5].uuid,
 					date: 2200000000,
 				},
 				{
-					uuid: udk[5].uuid,
-					date: 1200000000,
+					uuid: udk[6].uuid,
+					date: 1600000000,
 				},
 				{
 					uuid: "746bbe1a-bc48-11eb-8529-0242ac130003",
@@ -1973,8 +1973,20 @@ func Test_vqueue_flushAndLoadDelete(t *testing.T) {
 				uiim.Store(idx.uuid, idx)
 			}
 
+			var (
+				wantUdim = make(map[string]int64)
+				wantUii  = []index{
+					uii[1], uii[2],
+				}
+				wantUiim = make(map[string]index)
+			)
+
+			for _, idx := range wantUii {
+				wantUiim[idx.uuid] = idx
+			}
+
 			return test{
-				name: "return keys when there is duplicate data in uii",
+				name: "return keys when there is duplicate data in udk and uii",
 				fields: fields{
 					udk:  udk,
 					udim: udim,
@@ -1999,15 +2011,14 @@ func Test_vqueue_flushAndLoadDelete(t *testing.T) {
 							uuid: "409c5e66-bc35-11eb-8529-0242ac130003",
 							date: 4000000000,
 						},
-
 						{
 							uuid: "509c5f24-bc35-11eb-8529-0242ac130003",
 							date: 5000000000,
 						},
 					},
-					wantUdim: make(map[string]int64),
-					// wantUii:  uii[2:],
-					wantUiim: make(map[string]index),
+					wantUdim: wantUdim,
+					wantUii:  wantUii,
+					wantUiim: wantUiim,
 				},
 			}
 		}(),
