@@ -230,11 +230,11 @@ This chapter shows how to perform a search action in Vald with fashion-mnist dat
 
 ## Cleanup
 
-    Remove the Vald pods by executing:
+Remove the Vald pods by executing:
 
-    ```bash
-    helm uninstall vald
-    ```
+```bash
+helm uninstall vald
+```
 
 ## Recommended Documents
 
