@@ -1310,81 +1310,94 @@ func Test_vqueue_addInsert(t *testing.T) {
 		dBufSize         int
 	}
 	type want struct {
+		uii []index
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want) error
+		checkFunc  func(want, *vqueue) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func(w want, v *vqueue) error {
+		if !reflect.DeepEqual(v.uii, w.uii) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", v.uii, w.uii)
+		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           i: index{},
-		       },
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           i: index{},
-		           },
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			idx := index{
+				uuid: "109c5c86-bc35-11eb-8529-0242ac130003",
+				date: 1000000000,
+			}
+			wantUii := []index{
+				idx,
+			}
+			return test{
+				name: "add insert successes",
+				args: args{
+					i: idx,
+				},
+				fields: fields{
+					uii: make([]index, 0),
+				},
+				want: want{
+					uii: wantUii,
+				},
+			}
+		}(),
+		func() test {
+			preIdx := index{
+				uuid: "109c5c86-bc35-11eb-8529-0242ac130003",
+				date: 1000000000,
+			}
+			idx := index{
+				uuid: "209c583a-bc35-11eb-8529-0242ac130003",
+				date: 2000000000,
+			}
+			wantUii := []index{
+				preIdx, idx,
+			}
+			return test{
+				name: "add insert successes when there is already data",
+				args: args{
+					i: idx,
+				},
+				fields: fields{
+					uii: []index{
+						preIdx,
+					},
+				},
+				want: want{
+					uii: wantUii,
+				},
+			}
+		}(),
+		func() test {
+			preIdx := index{
+				uuid: "109c5c86-bc35-11eb-8529-0242ac130003",
+				date: 1000000000,
+			}
+			idx := index{}
+			wantUii := []index{
+				preIdx, idx,
+			}
+			return test{
+				name: "add insert successes when i is empty",
+				args: args{},
+				fields: fields{
+					uii: []index{
+						preIdx,
+					},
+				},
+				want: want{
+					uii: wantUii,
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -1421,7 +1434,7 @@ func Test_vqueue_addInsert(t *testing.T) {
 			}
 
 			v.addInsert(test.args.i)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := test.checkFunc(test.want, v); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
