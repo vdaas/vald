@@ -1451,81 +1451,94 @@ func Test_vqueue_addDelete(t *testing.T) {
 		dBufSize         int
 	}
 	type want struct {
+		udk []key
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want) error
+		checkFunc  func(want, *vqueue) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func(w want, v *vqueue) error {
+		if !reflect.DeepEqual(v.udk, w.udk) {
+			return errors.Errorf("udk got: \"%#v\",\n\t\t\t\tudk want: \"%#v\"", v.udk, w.udk)
+		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           d: key{},
-		       },
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           d: key{},
-		           },
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			k := key{
+				uuid: "109c5c86-bc35-11eb-8529-0242ac130003",
+				date: 1000000000,
+			}
+			wantUdk := []key{
+				k,
+			}
+			return test{
+				name: "add delete successes",
+				args: args{
+					d: k,
+				},
+				fields: fields{
+					udk: make([]key, 0),
+				},
+				want: want{
+					udk: wantUdk,
+				},
+			}
+		}(),
+		func() test {
+			preK := key{
+				uuid: "109c5c86-bc35-11eb-8529-0242ac130003",
+				date: 1000000000,
+			}
+			k := key{
+				uuid: "209c583a-bc35-11eb-8529-0242ac130003",
+				date: 2000000000,
+			}
+			wantUdk := []key{
+				preK, k,
+			}
+			return test{
+				name: "add delete successes when there is already data",
+				args: args{
+					d: k,
+				},
+				fields: fields{
+					udk: []key{
+						preK,
+					},
+				},
+				want: want{
+					udk: wantUdk,
+				},
+			}
+		}(),
+		func() test {
+			preK := key{
+				uuid: "109c5c86-bc35-11eb-8529-0242ac130003",
+				date: 1000000000,
+			}
+			k := key{}
+			wantUdk := []key{
+				preK, k,
+			}
+			return test{
+				name: "add delete successes when d is empty",
+				args: args{},
+				fields: fields{
+					udk: []key{
+						preK,
+					},
+				},
+				want: want{
+					udk: wantUdk,
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -1562,7 +1575,7 @@ func Test_vqueue_addDelete(t *testing.T) {
 			}
 
 			v.addDelete(test.args.d)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := test.checkFunc(test.want, v); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
