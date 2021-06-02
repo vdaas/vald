@@ -17,25 +17,24 @@
 .PHONY: e2e
 ## run e2e
 e2e:
-	$(call run-e2e-test)
+	$(call run-e2e-crud-test,-run TestE2EStandardCRUD)
 
 .PHONY: e2e/insert
 ## run insert e2e
 e2e/insert:
-	$(call run-e2e-test,-run TestE2EInsert)
-
+	$(call run-e2e-crud-test,-run TestE2EInsertOnly)
 
 .PHONY: e2e/update
 ## run update e2e
 e2e/update:
-	$(call run-e2e-test,-run TestE2EUpdate)
+	$(call run-e2e-crud-test,-run TestE2EUpdateOnly)
 
 .PHONY: e2e/search
 ## run search e2e
 e2e/search:
-	$(call run-e2e-test,-run TestE2ESearch)
+	$(call run-e2e-crud-test,-run TestE2ESearchOnly)
 
 .PHONY: e2e/remove
 ## run remove e2e
 e2e/remove:
-	$(call run-e2e-test,-run TestE2ERemove)
+	$(call run-e2e-crud-test,-run TestE2ERemoveOnly)
