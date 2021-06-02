@@ -169,7 +169,7 @@ This chapter will use NGT for the core engine of Vald Agent.
     
     We use [`example/client/agent/main.go`](https://github.com/vdaas/vald/blob/master/example/client/agent/main.go) to run the example.
     The example code is the same as running an example only Vald agent on Kubernetes.
-    If you want to learn the detail of running an example, please refer to the tutorial of [standalone Vald Agent on kubernetes](../tutorial/get-started.md/#run-using-example-code-1).
+    If you want to learn the detail of running an example, please refer to the tutorial of [Vald Agent Standalone on kubernetes](../tutorial/get-started.md/#run-using-example-code).
 
     ```bash
     # run example
@@ -188,7 +188,7 @@ This chapter will use NGT for the core engine of Vald Agent.
 Congratulation! You achieved this tutorial!
 
 If you want, you can try other tutorials such as:
-- [Vald Agent Standalone on k8s](../tutorial/vald-agent-standalone-on-k8s.md)
+- [Vald Agent Standalone on Kubernetes](../tutorial/vald-agent-standalone-on-k8s.md)
 
 For more information, we recommend you to check:
 - [Architecture](../overview/architecture.md)

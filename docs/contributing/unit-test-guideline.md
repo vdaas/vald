@@ -182,7 +182,7 @@ One of the features is the Go will convert a single value to a slice value when 
 
 And we apply the table-driven test for running unit tests.
 For example, when we create the unit test of `func getMeta(...[]int)`, the test code will be more complex than other functions' test which don't use variadic argument as the input if we create the test for all input patterns.
-Considering those, we define the basic unit case which is a little diffrent from [the basic test case](#Basic).
+Considering those, we define the basic unit case which is a little different from [the basic test case](#Basic).
 
 This change is very clear and you can apply it easily.
 Our basic test case depends on the type of 2 variadic argument.
@@ -203,4 +203,4 @@ Summarize Vald unit test guideline:
 
 ## Coding Style
 
-Please refer [here](../../docs/contributing/coding-style.md#Test)
+Please refer [here](../contributing/coding-style.md#Test)
