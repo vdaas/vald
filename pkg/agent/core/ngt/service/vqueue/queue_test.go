@@ -1182,67 +1182,196 @@ func Test_vqueue_DVExists(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           uuid: "",
-		       },
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			uuid := "109c5c86-bc35-11eb-8529-0242ac130003"
+			keys := []key{
+				{
+					uuid: "209c5c86-bc35-11eb-8529-0242ac130003",
+					date: 2000000000,
+				},
+				{
+					uuid: "309c5c86-bc35-11eb-8529-0242ac130003",
+					date: 3000000000,
+				},
+			}
+			var m udim
+			for _, k := range keys {
+				m.Store(k.uuid, k.date)
+			}
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           uuid: "",
-		           },
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			return test{
+				name: "return false when the uuid does not exits in udim",
+				args: args{
+					uuid: uuid,
+				},
+				fields: fields{
+					udim: m,
+				},
+				want: want{
+					want: false,
+				},
+			}
+		}(),
+		func() test {
+			uuid := "109c5c86-bc35-11eb-8529-0242ac130003"
+
+			return test{
+				name: "return false when udim and uiim are empty",
+				args: args{
+					uuid: uuid,
+				},
+				fields: fields{},
+				want: want{
+					want: false,
+				},
+			}
+		}(),
+		func() test {
+			uuid := "109c5c86-bc35-11eb-8529-0242ac130003"
+			keys := []key{
+				{
+					uuid: uuid,
+					date: 1000000000,
+				},
+				{
+					uuid: "209c5c86-bc35-11eb-8529-0242ac130003",
+					date: 2000000000,
+				},
+			}
+			var m udim
+			for _, k := range keys {
+				m.Store(k.uuid, k.date)
+			}
+
+			idxs := []index{
+				{
+					uuid: "209c5c86-bc35-11eb-8529-0242ac130003",
+					date: 2000000000,
+				},
+				{
+					uuid: "309c5c86-bc35-11eb-8529-0242ac130003",
+					date: 3000000000,
+				},
+			}
+			var uiim uiim
+			for _, idx := range idxs {
+				uiim.Store(idx.uuid, idx)
+			}
+
+			return test{
+				name: "return true when the uuid does not exits in uiim",
+				args: args{
+					uuid: uuid,
+				},
+				fields: fields{
+					udim: m,
+					uiim: uiim,
+				},
+				want: want{
+					want: true,
+				},
+			}
+		}(),
+		func() test {
+			uuid := "109c5c86-bc35-11eb-8529-0242ac130003"
+			keys := []key{
+				{
+					uuid: uuid,
+					date: 1000000000,
+				},
+				{
+					uuid: "209c5c86-bc35-11eb-8529-0242ac130003",
+					date: 2000000000,
+				},
+			}
+			var m udim
+			for _, k := range keys {
+				m.Store(k.uuid, k.date)
+			}
+
+			idxs := []index{
+				{
+					uuid: uuid,
+					date: 2000000000,
+				},
+				{
+					uuid: "309c5c86-bc35-11eb-8529-0242ac130003",
+					date: 3000000000,
+				},
+			}
+			var uiim uiim
+			for _, idx := range idxs {
+				uiim.Store(idx.uuid, idx)
+			}
+
+			return test{
+				name: "return false when the un deleted index is older than the un inserted index",
+				args: args{
+					uuid: uuid,
+				},
+				fields: fields{
+					udim: m,
+					uiim: uiim,
+				},
+				want: want{
+					want: false,
+				},
+			}
+		}(),
+		func() test {
+			uuid := "109c5c86-bc35-11eb-8529-0242ac130003"
+			keys := []key{
+				{
+					uuid: uuid,
+					date: 1000000001,
+				},
+				{
+					uuid: "209c5c86-bc35-11eb-8529-0242ac130003",
+					date: 2000000000,
+				},
+				{
+					uuid: "309c5c86-bc35-11eb-8529-0242ac130003",
+					date: 3000000000,
+				},
+			}
+			var m udim
+			for _, k := range keys {
+				m.Store(k.uuid, k.date)
+			}
+
+			idxs := []index{
+				{
+					uuid: uuid,
+					date: 100000000,
+				},
+				{
+					uuid: "209c5c86-bc35-11eb-8529-0242ac130003",
+					date: 2000000000,
+				},
+				{
+					uuid: "309c5c86-bc35-11eb-8529-0242ac130003",
+					date: 3000000000,
+				},
+			}
+			var uiim uiim
+			for _, idx := range idxs {
+				uiim.Store(idx.uuid, idx)
+			}
+
+			return test{
+				name: "return true when the un deleted index is newer than the un inserted index",
+				args: args{
+					uuid: uuid,
+				},
+				fields: fields{
+					udim: m,
+					uiim: uiim,
+				},
+				want: want{
+					want: true,
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
