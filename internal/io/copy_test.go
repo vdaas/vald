@@ -17,11 +17,12 @@ package io
 
 import (
 	"bytes"
-	"errors"
 	"io"
 	"reflect"
 	"sync"
 	"testing"
+
+	"github.com/vdaas/vald/internal/errors"
 
 	"go.uber.org/goleak"
 )
@@ -236,7 +237,6 @@ func TestNewCopier(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -332,10 +332,9 @@ func Test_copier_Copy(t *testing.T) {
 			dst := &bytes.Buffer{}
 
 			gotWritten, err := c.Copy(dst, test.args.src)
-			if err := test.checkFunc(test.want, gotWritten, err, dst.String()); err != nil {
+			if err := test.checkFunc(test.want, gotWritten, dst.String(), err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
