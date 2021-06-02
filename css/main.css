@@ -536,6 +536,10 @@ details > summary  {
   display: block;
 }
 
+.page ul li.withchild:hover {
+  cursor: pointer;
+}
+
 .page li.view {
   margin-left: 0;
   padding-left: 20px;
