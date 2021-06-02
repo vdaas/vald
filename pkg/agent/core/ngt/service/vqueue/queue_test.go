@@ -1589,78 +1589,178 @@ func Test_vqueue_flushAndLoadInsert(t *testing.T) {
 		dBufSize         int
 	}
 	type want struct {
-		wantUii []index
+		wantUii  []index
+		wantUiim map[string]index
 	}
 	type test struct {
 		name       string
 		fields     fields
 		want       want
-		checkFunc  func(want, []index) error
+		checkFunc  func(want, []index, *vqueue) error
 		beforeFunc func()
 		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want, gotUii []index) error {
+	defaultCheckFunc := func(w want, gotUii []index, v *vqueue) error {
 		if !reflect.DeepEqual(gotUii, w.wantUii) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotUii, w.wantUii)
+		}
+
+		gotUiim := make(map[string]index)
+		v.uiim.Range(func(key string, value index) bool {
+			gotUiim[key] = value
+			return true
+		})
+		if !reflect.DeepEqual(gotUiim, w.wantUiim) {
+			return errors.Errorf("uiim got: \"%#v\",\n\t\t\t\tuiim want: \"%#v\"", gotUiim, w.wantUiim)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			uii := []index{
+				{
+					uuid: "109c5c86-bc35-11eb-8529-0242ac130003",
+					date: 1000000000,
+				},
+				{
+					uuid: "209c583a-bc35-11eb-8529-0242ac130003",
+					date: 2000000000,
+				},
+				{
+					uuid: "309c5d9e-bc35-11eb-8529-0242ac130003",
+					date: 3000000000,
+				},
+				{
+					uuid: "409c5e66-bc35-11eb-8529-0242ac130003",
+					date: 4000000000,
+				},
+				{
+					uuid: "509c5f24-bc35-11eb-8529-0242ac130003",
+					date: 5000000000,
+				},
+			}
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			var m uiim
+			for _, idx := range uii {
+				m.Store(idx.uuid, idx)
+			}
+
+			var (
+				wantUii  = uii
+				wantUiim = make(map[string]index)
+			)
+
+			return test{
+				name: "return keys when there is no duplicate data in uii",
+				fields: fields{
+					uii:  uii,
+					uiim: m,
+				},
+				want: want{
+					wantUii:  wantUii,
+					wantUiim: wantUiim,
+				},
+			}
+		}(),
+		func() test {
+			uii := []index{
+				{
+					uuid: "109c5c86-bc35-11eb-8529-0242ac130003",
+					date: 1000000000,
+				},
+				{
+					uuid: "209c583a-bc35-11eb-8529-0242ac130003",
+					date: 2000000000,
+				},
+				{
+					uuid: "309c5d9e-bc35-11eb-8529-0242ac130003",
+					date: 3000000000,
+				},
+				{
+					uuid: "409c5e66-bc35-11eb-8529-0242ac130003",
+					date: 4000000000,
+				},
+				{
+					uuid: "509c5f24-bc35-11eb-8529-0242ac130003",
+					date: 5000000000,
+				},
+				// The following data are duplicate data.
+				{
+					uuid: "209c583a-bc35-11eb-8529-0242ac130003",
+					date: 2500000000,
+				},
+				{
+					uuid: "109c5c86-bc35-11eb-8529-0242ac130003",
+					date: 1500000000,
+				},
+			}
+
+			var m uiim
+			for _, idx := range uii {
+				m.Store(idx.uuid, idx)
+			}
+
+			var (
+				wantUii = []index{
+					{
+						uuid: "109c5c86-bc35-11eb-8529-0242ac130003",
+						date: 1500000000,
+					},
+					{
+						uuid: "209c583a-bc35-11eb-8529-0242ac130003",
+						date: 2500000000,
+					},
+					{
+						uuid: "309c5d9e-bc35-11eb-8529-0242ac130003",
+						date: 3000000000,
+					},
+					{
+						uuid: "409c5e66-bc35-11eb-8529-0242ac130003",
+						date: 4000000000,
+					},
+					{
+						uuid: "509c5f24-bc35-11eb-8529-0242ac130003",
+						date: 5000000000,
+					},
+				}
+				wantUiim = make(map[string]index)
+			)
+
+			return test{
+				name: "return keys when there is duplicate data in uii",
+				fields: fields{
+					uii:  uii,
+					uiim: m,
+				},
+				want: want{
+					wantUii:  wantUii,
+					wantUiim: wantUiim,
+				},
+			}
+		}(),
+		func() test {
+			var (
+				uii = make([]index, 0)
+				m   uiim
+			)
+
+			var (
+				wantUii  = make([]index, len(uii))
+				wantUiim = make(map[string]index)
+			)
+
+			return test{
+				name: "return keys when uii is empty",
+				fields: fields{
+					uii:  uii,
+					uiim: m,
+				},
+				want: want{
+					wantUii:  wantUii,
+					wantUiim: wantUiim,
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -1697,7 +1797,7 @@ func Test_vqueue_flushAndLoadInsert(t *testing.T) {
 			}
 
 			gotUii := v.flushAndLoadInsert()
-			if err := test.checkFunc(test.want, gotUii); err != nil {
+			if err := test.checkFunc(test.want, gotUii, v); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
