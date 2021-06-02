@@ -96,28 +96,6 @@ jobs:
           helm_extra_options: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-chaos.yaml
           wait_for_selector: app=vald-meta-gateway
-      - name: run Insert job
-        run: |
-          make hack/benchmark/assets/dataset/${DATASET}
-          go test \
-            -v tests/e2e/crud/crud_test.go \
-            -tags "e2e" \
-            -timeout 30m \
-            -run "TestE2EInsertOnly" \
-            -timeout 15m \
-            -host=localhost \
-            -port=8081 \
-            -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
-            -insert-num=100 \
-            -wait-after-insert=2m \
-            -portforward \
-            -portforward-pod-name=${POD_NAME} \
-            -portforward-pod-port=8081 \
-            -kubeconfig=${KUBECONFIG} \
-            -namespace=default
-        env:
-          DATASET: fashion-mnist-784-euclidean.hdf5
-          POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
       - name: deploy Chaos Mesh
         run: |
           curl -sSL https://mirrors.chaos-mesh.org/v1.2.1/install.sh | bash -s -- --k3s
@@ -135,9 +113,8 @@ jobs:
             -host=localhost \
             -port=8081 \
             -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
-            -insert-from=100 \
-            -insert-num=1000 \
-            -search-num=1000 \
+            -insert-num=10000 \
+            -search-num=10000 \
             -wait-after-insert=2m \
             -portforward \
             -portforward-pod-name=${POD_NAME} \
@@ -217,27 +194,6 @@ jobs:
           helm_extra_options: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-chaos.yaml
           wait_for_selector: app=vald-meta-gateway
-      - name: run Insert job
-        run: |
-          make hack/benchmark/assets/dataset/${DATASET}
-          go test \
-            -v tests/e2e/crud/crud_test.go \
-            -tags "e2e" \
-            -run "TestE2EInsertOnly" \
-            -timeout 15m \
-            -host=localhost \
-            -port=8081 \
-            -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
-            -insert-num=100 \
-            -wait-after-insert=2m \
-            -portforward \
-            -portforward-pod-name=${POD_NAME} \
-            -portforward-pod-port=8081 \
-            -kubeconfig=${KUBECONFIG} \
-            -namespace=default
-        env:
-          DATASET: fashion-mnist-784-euclidean.hdf5
-          POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
       - name: deploy Chaos Mesh
         run: |
           curl -sSL https://mirrors.chaos-mesh.org/v1.2.1/install.sh | bash -s -- --k3s
@@ -257,9 +213,8 @@ jobs:
             -host=localhost \
             -port=8081 \
             -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
-            -insert-from=100 \
-            -insert-num=1000 \
-            -search-num=1000 \
+            -insert-num=10000 \
+            -search-num=10000 \
             -wait-after-insert=2m \
             -portforward \
             -portforward-pod-name=${podname} \
@@ -355,8 +310,8 @@ jobs:
             -host=localhost \
             -port=8081 \
             -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
-            -insert-num=1000 \
-            -search-num=1000 \
+            -insert-num=10000 \
+            -search-num=10000 \
             -wait-after-insert=2m \
             -portforward \
             -portforward-pod-name=${POD_NAME} \
