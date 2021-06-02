@@ -110,11 +110,9 @@ jobs:
         run: |
           make K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 k8s/external/scylla/deploy
 
-          helm repo add vald https://vald.vdaas.org/charts
-          tag=$(cat versions/VALD_VERSION)
           helm install \
             --values .github/helm/values/values-chaos.yaml \
-            --set defaults.image.tag=${tag} \
+            --set defaults.image.tag=nightly \
             ${HELM_EXTRA_OPTIONS} \
             vald-cluster charts/vald
 
@@ -128,9 +126,10 @@ jobs:
           make hack/benchmark/assets/dataset/${DATASET}
           podname=`kubectl get pods --selector=app=vald-meta-gateway | tail -1 | awk '{print $1}'`
           go test \
-            -v tests/e2e/crud_test.go \
+            -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
-            -run "TestE2EInsert" \
+            -timeout 30m \
+            -run "TestE2EInsertOnly" \
             -timeout 15m \
             -host=localhost \
             -port=8081 \
@@ -138,10 +137,10 @@ jobs:
             -insert-num=100 \
             -wait-after-insert=2m \
             -portforward \
-            -portforward-ns=default \
             -portforward-pod-name=${podname} \
             -portforward-pod-port=8081 \
-            -kubeconfig=${KUBECONFIG}
+            -kubeconfig=${KUBECONFIG} \
+            -namespace=default
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
       - name: deploy Chaos Mesh
@@ -155,9 +154,9 @@ jobs:
           make hack/benchmark/assets/dataset/${DATASET}
           podname=`kubectl get pods --selector=app=vald-meta-gateway | tail -1 | awk '{print $1}'`
           go test \
-            -v tests/e2e/crud_test.go \
+            -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
-            -run "TestE2EInsert|TestE2ESearch" \
+            -run "TestE2EInsertAndSearch" \
             -timeout 15m \
             -host=localhost \
             -port=8081 \
@@ -167,10 +166,10 @@ jobs:
             -search-num=1000 \
             -wait-after-insert=2m \
             -portforward \
-            -portforward-ns=default \
             -portforward-pod-name=${podname} \
             -portforward-pod-port=8081 \
-            -kubeconfig=${KUBECONFIG}
+            -kubeconfig=${KUBECONFIG} \
+            -namespace=default
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
   random-pod-failure:
@@ -257,11 +256,9 @@ jobs:
         run: |
           make K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 k8s/external/scylla/deploy
 
-          helm repo add vald https://vald.vdaas.org/charts
-          tag=$(cat versions/VALD_VERSION)
           helm install \
             --values .github/helm/values/values-chaos.yaml \
-            --set defaults.image.tag=${tag} \
+            --set defaults.image.tag=nightly \
             ${HELM_EXTRA_OPTIONS} \
             vald-cluster charts/vald
 
@@ -275,9 +272,9 @@ jobs:
           make hack/benchmark/assets/dataset/${DATASET}
           podname=`kubectl get pods --selector=app=vald-meta-gateway | tail -1 | awk '{print $1}'`
           go test \
-            -v tests/e2e/crud_test.go \
+            -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
-            -run "TestE2EInsert" \
+            -run "TestE2EInsertOnly" \
             -timeout 15m \
             -host=localhost \
             -port=8081 \
@@ -285,10 +282,10 @@ jobs:
             -insert-num=100 \
             -wait-after-insert=2m \
             -portforward \
-            -portforward-ns=default \
             -portforward-pod-name=${podname} \
             -portforward-pod-port=8081 \
-            -kubeconfig=${KUBECONFIG}
+            -kubeconfig=${KUBECONFIG} \
+            -namespace=default
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
       - name: deploy Chaos Mesh
@@ -303,9 +300,9 @@ jobs:
           make hack/benchmark/assets/dataset/${DATASET}
           podname=`kubectl get pods --selector=app=vald-meta-gateway | tail -1 | awk '{print $1}'`
           go test \
-            -v tests/e2e/crud_test.go \
+            -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
-            -run "TestE2EInsert|TestE2ESearch" \
+            -run "TestE2EInsertAndSearch" \
             -timeout 15m \
             -host=localhost \
             -port=8081 \
@@ -315,10 +312,10 @@ jobs:
             -search-num=1000 \
             -wait-after-insert=2m \
             -portforward \
-            -portforward-ns=default \
             -portforward-pod-name=${podname} \
             -portforward-pod-port=8081 \
-            -kubeconfig=${KUBECONFIG}
+            -kubeconfig=${KUBECONFIG} \
+            -namespace=default
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
   meta-network-partition:
@@ -405,11 +402,9 @@ jobs:
         run: |
           make K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 k8s/external/scylla/deploy
 
-          helm repo add vald https://vald.vdaas.org/charts
-          tag=$(cat versions/VALD_VERSION)
           helm install \
             --values .github/helm/values/values-chaos.yaml \
-            --set defaults.image.tag=${tag} \
+            --set defaults.image.tag=nightly \
             ${HELM_EXTRA_OPTIONS} \
             vald-cluster charts/vald
 
@@ -429,9 +424,9 @@ jobs:
           make hack/benchmark/assets/dataset/${DATASET}
           podname=`kubectl get pods --selector=app=vald-meta-gateway | tail -1 | awk '{print $1}'`
           go test \
-            -v tests/e2e/crud_test.go \
+            -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
-            -run "TestE2EInsert|TestE2ESearch" \
+            -run "TestE2EInsertAndSearch" \
             -timeout 15m \
             -host=localhost \
             -port=8081 \
@@ -440,10 +435,10 @@ jobs:
             -search-num=1000 \
             -wait-after-insert=2m \
             -portforward \
-            -portforward-ns=default \
             -portforward-pod-name=${podname} \
             -portforward-pod-port=8081 \
-            -kubeconfig=${KUBECONFIG}
+            -kubeconfig=${KUBECONFIG} \
+            -namespace=default
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
   slack-notification:
