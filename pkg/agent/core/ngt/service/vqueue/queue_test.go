@@ -1178,7 +1178,7 @@ func Test_vqueue_IVExists(t *testing.T) {
 			idxs := []index{
 				{
 					uuid: uuid,
-					date: 100000001,
+					date: 1000000001,
 				},
 				{
 					uuid: "209c5c86-bc35-11eb-8529-0242ac130003",
@@ -1214,7 +1214,7 @@ func Test_vqueue_IVExists(t *testing.T) {
 			}
 
 			return test{
-				name: "return true when the un inserted index is newer than the un inserted index",
+				name: "return true when the un inserted index is newer than the un deleted index",
 				args: args{
 					uuid: uuid,
 				},
