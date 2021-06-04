@@ -538,6 +538,7 @@ func Test_watch_Start(t *testing.T) {
 					}
 				},
 				afterFunc: func(t *testing.T, args args, w Watcher) {
+					t.Helper()
 					defaultAfterFunc(t, args, w)
 					cancel()
 				},
@@ -585,6 +586,7 @@ func Test_watch_Start(t *testing.T) {
 					}
 				},
 				afterFunc: func(t *testing.T, args args, w Watcher) {
+					t.Helper()
 					defaultAfterFunc(t, args, w)
 					cancel()
 				},
@@ -632,6 +634,7 @@ func Test_watch_Start(t *testing.T) {
 					}
 				},
 				afterFunc: func(t *testing.T, args args, w Watcher) {
+					t.Helper()
 					defaultAfterFunc(t, args, w)
 					cancel()
 				},
