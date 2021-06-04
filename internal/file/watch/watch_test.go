@@ -170,7 +170,7 @@ func Test_watch_init(t *testing.T) {
 		if w == nil {
 			return
 		}
-		
+
 		err := w.Stop(context.Background())
 		if err != nil {
 			t.Error(err)
