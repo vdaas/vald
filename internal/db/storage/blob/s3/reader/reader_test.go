@@ -427,7 +427,7 @@ func Test_reader_Open(t *testing.T) {
 										return
 									}
 								} else {
-									if _, err := r.Read(bytes[1]); error.Is(err, io.EOF) {
+									if _, err := r.Read(bytes[1]); errors.Is(err, io.EOF) {
 										return
 									}
 								}
