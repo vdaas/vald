@@ -2,6 +2,7 @@
 {{- $f := . }}
 
 func {{ .TestName }}(t *testing.T) {
+    t.Parallel()
     // Change interface type to the type of object you are testing
     type T = interface{}
     {{- if .TestParameters }}
@@ -115,7 +116,6 @@ func {{ .TestName }}(t *testing.T) {
         */
     }
 
-    t.Parallel()
     for {{- if (or .Subtests (not .IsNaked)) }} _, tc := {{- end }} range tests {
         {{- if .Subtests }}
             test := tc
@@ -126,7 +126,7 @@ func {{ .TestName }}(t *testing.T) {
                     test.beforeFunc({{- if .TestParameters }} test.args {{- end }})
                 }
                 if test.afterFunc != nil {
-                    tt.Cleanup(func() { test.afterFunc({{- if .TestParameters }} test.args {{- end }}) })
+                    defer test.afterFunc({{- if .TestParameters }} test.args {{- end }})
                 }
 
                 // Uncomment this block if the option returns an error, otherwise delete it
