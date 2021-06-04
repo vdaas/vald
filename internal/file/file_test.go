@@ -63,6 +63,7 @@ func TestOpen(t *testing.T) {
 	}
 	defaultAfterFunc := func(t *testing.T, args args, f *os.File) {
 		t.Helper()
+
 		if f != nil {
 			if err := f.Close(); err != nil {
 				t.Error(err)

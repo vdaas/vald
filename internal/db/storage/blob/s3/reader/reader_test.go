@@ -423,11 +423,11 @@ func Test_reader_Open(t *testing.T) {
 								return
 							default:
 								if roopCnt == 0 {
-									if _, err := r.Read(bytes[0]); err == io.EOF {
+									if _, err := r.Read(bytes[0]); errors.Is(err, io.EOF) {
 										return
 									}
 								} else {
-									if _, err := r.Read(bytes[1]); err == io.EOF {
+									if _, err := r.Read(bytes[1]); error.Is(err, io.EOF) {
 										return
 									}
 								}
