@@ -19,6 +19,7 @@ package ngt
 
 import (
 	//"C"
+	"math"
 	"os"
 	"reflect"
 	"strings"
@@ -187,6 +188,7 @@ func Test_ngt_Search(t *testing.T) {
 		inMemory            bool
 		bulkInsertChunkSize int
 		//	dimension           C.int32_t
+		dimension  int
 		objectType objectType
 		radius     float32
 		epsilon    float32
@@ -212,6 +214,8 @@ func Test_ngt_Search(t *testing.T) {
 		afterFunc  func(args)
 	}
 	defaultCreateFunc := func(t *testing.T, fields fields) (NGT, error) {
+		t.Helper()
+
 		return New(WithInMemoryMode(true),
 			WithIndexPath(fields.idxPath),
 			WithBulkInsertChunkSize(fields.bulkInsertChunkSize),
@@ -219,25 +223,53 @@ func Test_ngt_Search(t *testing.T) {
 			WithDefaultRadius(fields.radius),
 			WithDefaultEpsilon(fields.epsilon),
 			WithDefaultPoolSize(fields.poolSize),
-			WithDimension(9),
+			WithDimension(int(fields.dimension)),
 		)
 	}
 	defaultCheckFunc := func(w want, got []SearchResult, n NGT, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if diff := comparator.Diff(got, w.want); diff != "" {
+		comparators := []comparator.Option{
+			comparator.CompareField("Distance", cmp.Comparer(func(s1, s2 float32) bool {
+				if s1 == 0 { // if vec1 is same as vec2, the distance should be same
+					return s2 == 0
+				}
+				// by setting non-zero value in test case, it will only check if both got/want is non-zero
+				return s1 != 0 && s2 != 0
+			}))}
+
+		if diff := comparator.Diff(got, w.want, comparators...); diff != "" {
 			return errors.Errorf("diff: %s", diff)
 		}
 
 		return nil
+	}
+	insertCreateFunc := func(t *testing.T, fields fields, vecs [][]float32, poolSize uint32) (NGT, error) { // create func with insert/index
+		t.Helper()
+
+		ngt, err := defaultCreateFunc(t, fields)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, vec := range vecs {
+			if _, err := ngt.Insert(vec); err != nil {
+				return nil, err
+			}
+		}
+		if err := ngt.CreateIndex(poolSize); err != nil {
+			return nil, err
+		}
+
+		return ngt, nil
 	}
 	tests := []test{
 		func() test {
 			vec := []float32{0, 1, 2, 3, 4, 5, 6, 7, 8}
 
 			return test{
-				name: "search success after insert with same vec",
+				name: "return result after insert with same vec",
 				args: args{
 					vec:     vec,
 					size:    5,
@@ -245,99 +277,132 @@ func Test_ngt_Search(t *testing.T) {
 					radius:  0,
 				},
 				fields: fields{
-					// idxPath:             "",
 					inMemory:            false,
 					bulkInsertChunkSize: 100,
-					// dimension:           nil,
-					objectType: Uint8,
-					radius:     float32(-1.0),
-					epsilon:    float32(0.01),
-					// poolSize:            0,
-					// prop:                nil,
-					// ebuf:                nil,
-					// index:               nil,
-					// ospace:              nil,
-					// mu: nil,
+					dimension:           9,
+					objectType:          Uint8,
+					radius:              float32(-1.0),
+					epsilon:             float32(0.01),
 				},
 				createFunc: func(t *testing.T, fields fields) (NGT, error) {
 					t.Helper()
 
-					ngt, err := defaultCreateFunc(t, fields)
-					if err != nil {
-						return nil, err
-					}
-
-					if _, err := ngt.Insert(vec); err != nil {
-						return nil, err
-					}
-					if err := ngt.CreateIndex(1); err != nil {
-						return nil, err
-					}
-
-					return ngt, nil
+					return insertCreateFunc(t, fields, [][]float32{vec}, 1)
 				},
 				want: want{
 					want: []SearchResult{
-						{
-							ID:       uint32(1),
-							Distance: 0,
-						},
+						{ID: uint32(1), Distance: 0},
 					},
 				},
 			}
 		}(),
 		func() test {
-			iv := [][]float32{ // insert vec
-				{0, 1, 2, 3, 4, 5, 6, 7, 8},
-			}
-			vec := []float32{0, 1, 2, 3, 4, 5, 6, 7, 8} // search vec
+			iv := []float32{0, 1, 2, 3, 4, 5, 6, 7, 8}  // insert vec
+			vec := []float32{1, 2, 3, 4, 5, 6, 7, 8, 9} // search vec
 
 			return test{
-				name: "search success after insert with nearby vec",
+				name: "resturn result after insert with nearby vec",
 				args: args{
 					vec:  vec,
 					size: 5,
 				},
 				fields: fields{
-					// idxPath:             "",
 					inMemory:            false,
 					bulkInsertChunkSize: 100,
-					// dimension:           nil,
-					objectType: Uint8,
-					radius:     float32(-1.0),
-					epsilon:    float32(0.01),
-					// poolSize:            0,
-					// prop:                nil,
-					// ebuf:                nil,
-					// index:               nil,
-					// ospace:              nil,
-					// mu: nil,
+					dimension:           9,
+					objectType:          Uint8,
+					radius:              float32(-1.0),
+					epsilon:             float32(0.01),
 				},
 				createFunc: func(t *testing.T, fields fields) (NGT, error) {
 					t.Helper()
 
-					ngt, err := defaultCreateFunc(t, fields)
-					if err != nil {
-						return nil, err
-					}
-
-					for _, v := range iv {
-						if _, err := ngt.Insert(v); err != nil {
-							return nil, err
-						}
-					}
-					if err := ngt.CreateIndex(1); err != nil {
-						return nil, err
-					}
-
-					return ngt, nil
+					return insertCreateFunc(t, fields, [][]float32{iv}, 1)
 				},
 				want: want{
 					want: []SearchResult{
-						{
-							ID:       uint32(1),
-							Distance: 0,
-						},
+						{ID: uint32(1), Distance: 1},
+					},
+				},
+			}
+		}(),
+		func() test {
+			ivs := [][]float32{ // insert vec
+				{0, 1, 2, 3, 4, 5, 6, 7, 8},
+				{2, 3, 4, 5, 6, 7, 8, 9, 10},
+				{2, 3, 4, 5, math.MaxFloat32 / 2, 7, 8, 9, math.MaxFloat32},
+			}
+			vec := []float32{1, 2, 3, 4, 5, 6, 7, 8, 9} // search vec
+
+			return test{
+				name: "return result after insert with multiple vecs",
+				args: args{
+					vec:  vec,
+					size: 5,
+				},
+				fields: fields{
+					inMemory:            false,
+					bulkInsertChunkSize: 100,
+					dimension:           9,
+					objectType:          Uint8,
+					radius:              float32(-1.0),
+					epsilon:             float32(0.01),
+				},
+				createFunc: func(t *testing.T, fields fields) (NGT, error) {
+					t.Helper()
+
+					return insertCreateFunc(t, fields, ivs, 1)
+				},
+				want: want{
+					want: []SearchResult{
+						{ID: uint32(1), Distance: 3},
+						{ID: uint32(2), Distance: 3},
+						{ID: uint32(3), Distance: 3},
+					},
+				},
+			}
+		}(),
+		func() test {
+			ivs := [][]float32{ // insert 10 vec
+				{0, 1, 2, 3, 4, 5, 6, 7, 8},
+				{2, 3, 4, 5, 6, 7, 8, 9, 10},
+				{0, 1, 2, 3, 4, 5, 6, 7, 8},
+				{2, 3, 4, 5, 6, 7, 8, 9, 10},
+				{0, 1, 2, 3, 4, 5, 6, 7, 8},
+				{2, 3, 4, 5, 6, 7, 8, 9, 10},
+				{0, 1, 2, 3, 4, 5, 6, 7, 8},
+				{2, 3, 4, 5, 6, 7, 8, 9, 10},
+				{2, 3, 4, 5, 6, 7, 8, 9, 10},
+				{2, 3, 4, 5, 6, 7, 8, 9, math.MaxFloat32},
+			}
+			vec := []float32{1, 2, 3, 4, 5, 6, 7, 8, 9} // search vec
+
+			return test{
+				name: "return limited result after insert 10 vecs with limited size 5",
+				args: args{
+					vec:  vec,
+					size: 5,
+				},
+				fields: fields{
+					inMemory:            false,
+					bulkInsertChunkSize: 100,
+					dimension:           9,
+					objectType:          Uint8,
+					radius:              float32(-1.0),
+					epsilon:             float32(0.01),
+				},
+				createFunc: func(t *testing.T, fields fields) (NGT, error) {
+					t.Helper()
+
+					return insertCreateFunc(t, fields, ivs, 1)
+				},
+				want: want{
+					want: []SearchResult{
+						{ID: uint32(1), Distance: 3},
+						{ID: uint32(2), Distance: 3},
+						{ID: uint32(3), Distance: 3},
+						{ID: uint32(4), Distance: 3},
+						{ID: uint32(5), Distance: 3},
 					},
 				},
 			}
