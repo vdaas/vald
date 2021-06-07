@@ -432,87 +432,180 @@ func Test_vqueue_PushDelete(t *testing.T) {
 		dBufSize         int
 	}
 	type want struct {
-		err error
+		err   error
+		wantK key
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(args)
+		checkFunc  func(want, *vqueue, error) error
+		beforeFunc func(args, *vqueue)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
+	defaultCheckFunc := func(w want, _ *vqueue, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           uuid: "",
-		           date: 0,
-		       },
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			var finalizingDelete atomic.Value
+			finalizingDelete.Store(true)
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           uuid: "",
-		           date: 0,
-		           },
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			uuid := "246bbe1a-bc48-11eb-8529-0242ac130003"
+			var date int64 = 2000000000
+			return test{
+				name: "return vqueue finalizing error when the finalizingDelete is true",
+				args: args{
+					uuid: uuid,
+					date: date,
+				},
+				fields: fields{
+					finalizingDelete: finalizingDelete,
+				},
+				want: want{
+					err: errors.ErrVQueueFinalizing,
+				},
+			}
+		}(),
+		func() test {
+			var finalizingDelete atomic.Value
+			finalizingDelete.Store(false)
+
+			var closed atomic.Value
+			closed.Store(true)
+
+			uuid := "246bbe1a-bc48-11eb-8529-0242ac130003"
+			var date int64 = 2000000000
+			return test{
+				name: "return vqueue finalizing error when the closed is true",
+				args: args{
+					uuid: uuid,
+					date: date,
+				},
+				fields: fields{
+					finalizingDelete: finalizingDelete,
+					closed:           closed,
+				},
+				want: want{
+					err: errors.ErrVQueueFinalizing,
+				},
+			}
+		}(),
+		func() test {
+			var finalizingDelete atomic.Value
+			finalizingDelete.Store(false)
+
+			var closed atomic.Value
+			closed.Store(false)
+
+			uuid := "246bbe1a-bc48-11eb-8529-0242ac130003"
+			var date int64 = 2000000000
+
+			wantK := key{
+				uuid: uuid,
+				date: date,
+			}
+			return test{
+				name: "return nil when the push delete successes",
+				args: args{
+					uuid: uuid,
+					date: date,
+				},
+				fields: fields{
+					finalizingDelete: finalizingDelete,
+					closed:           closed,
+					dch:              make(chan key, 1),
+				},
+				checkFunc: func(w want, v *vqueue, e error) error {
+					if err := defaultCheckFunc(w, v, e); err != nil {
+						return err
+					}
+					date, ok := v.udim.Load(w.wantK.uuid)
+					if !ok {
+						return errors.Errorf("the uuid dose not exit is udim: %s", w.wantK.uuid)
+					}
+					if date != w.wantK.date {
+						return errors.Errorf("date stored in udim is wrong. want: %d, but got: %d", w.wantK.date, date)
+					}
+					if got, want := <-v.dch, w.wantK; !reflect.DeepEqual(got, want) {
+						return errors.Errorf("got_key: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, want)
+					}
+					return nil
+				},
+				want: want{
+					err:   nil,
+					wantK: wantK,
+				},
+			}
+		}(),
+		func() test {
+			var finalizingDelete atomic.Value
+			finalizingDelete.Store(false)
+
+			var closed atomic.Value
+			closed.Store(false)
+
+			uuid := "246bbe1a-bc48-11eb-8529-0242ac130003"
+			var date int64 = 2000000000
+
+			preK := key{
+				uuid: uuid,
+				date: 3000000000,
+			}
+
+			var udim udim
+
+			wantKeys := []key{
+				preK,
+				{
+					uuid: uuid,
+					date: date,
+				},
+			}
+
+			return test{
+				name: "return nil when override udim and the push delete successes",
+				args: args{
+					uuid: uuid,
+					date: date,
+				},
+				fields: fields{
+					finalizingDelete: finalizingDelete,
+					closed:           closed,
+					dch:              make(chan key, 2),
+					udim:             udim,
+				},
+				beforeFunc: func(a args, v *vqueue) {
+					v.udim.Store(preK.uuid, preK.date)
+					v.dch <- preK
+				},
+				checkFunc: func(w want, v *vqueue, e error) error {
+					if err := defaultCheckFunc(w, v, e); err != nil {
+						return err
+					}
+					date, ok := v.udim.Load(w.wantK.uuid)
+					if !ok {
+						return errors.Errorf("the uuid dose not exit is udim: %s", w.wantK.uuid)
+					}
+					if date == 0 {
+						return errors.New("date stored in udim is 0")
+					}
+					gotKeys := make([]key, 0, 2)
+					gotKeys = append(append(gotKeys, <-v.dch), <-v.dch)
+					if !reflect.DeepEqual(gotKeys, wantKeys) {
+						return errors.Errorf("got_keys: \"%#v\",\n\t\t\t\twant_keys: \"%#v\"", gotKeys, wantKeys)
+					}
+					return nil
+				},
+				want: want{
+					err: nil,
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -520,15 +613,6 @@ func Test_vqueue_PushDelete(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
 			v := &vqueue{
 				ich:              test.fields.ich,
 				uii:              test.fields.uii,
@@ -548,8 +632,18 @@ func Test_vqueue_PushDelete(t *testing.T) {
 				dBufSize:         test.fields.dBufSize,
 			}
 
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args, v)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
 			err := v.PushDelete(test.args.uuid, test.args.date)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := test.checkFunc(test.want, v, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
