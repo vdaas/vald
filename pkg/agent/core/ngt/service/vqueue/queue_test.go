@@ -587,7 +587,7 @@ func Test_vqueue_PushDelete(t *testing.T) {
 					if err := defaultCheckFunc(w, v, e); err != nil {
 						return err
 					}
-					date, ok := v.udim.Load(w.wantK.uuid)
+					date, ok := v.udim.Load(uuid)
 					if !ok {
 						return errors.Errorf("the uuid dose not exit is udim: %s", w.wantK.uuid)
 					}
