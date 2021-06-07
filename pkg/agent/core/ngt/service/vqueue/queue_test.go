@@ -889,68 +889,119 @@ func Test_vqueue_GetVector(t *testing.T) {
 		}
 		return nil
 	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           uuid: "",
-		       },
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+	/**
+			uii := []index{
+				{
+					uuid: udk[5].uuid,
+					date: 2200000000,
+				},
+				{
+					uuid: udk[6].uuid,
+					date: 1600000000,
+				},
+				{
+					uuid: "746bbe1a-bc48-11eb-8529-0242ac130003",
+					date: 1500000000,
+				},
+			}
+			var uiim uiim
+			for _, idx := range uii {
+				uiim.Store(idx.uuid, idx)
+			}
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           uuid: "",
-		           },
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			udk := []key{
+				{
+					uuid: "509c5f24-bc35-11eb-8529-0242ac130003",
+					date: 5000000000,
+				},
+				{
+					uuid: "409c5e66-bc35-11eb-8529-0242ac130003",
+					date: 4000000000,
+				},
+				{
+					uuid: "309c5d9e-bc35-11eb-8529-0242ac130003",
+					date: 3000000000,
+				},
+				{
+					uuid: "209c583a-bc35-11eb-8529-0242ac130003",
+					date: 2000000000,
+				},
+				{
+					uuid: "109c5c86-bc35-11eb-8529-0242ac130003",
+					date: 1000000000,
+				},
+				// The following data are duplicate data.
+				{
+					uuid: "209c583a-bc35-11eb-8529-0242ac130003",
+					date: 2500000000,
+				},
+				{
+					uuid: "109c5c86-bc35-11eb-8529-0242ac130003",
+					date: 1500000000,
+				},
+			}
+			var udim udim
+			for _, key := range udk {
+				udim.Store(key.uuid, key.date)
+			}
+
+
+	**/
+	tests := []test{
+		func() test {
+			uiid := "146bbe1a-bc48-11eb-8529-0242ac130003"
+			uii := []index{
+				{
+					uuid: "246bbe1a-bc48-11eb-8529-0242ac130003",
+					date: 2000000000,
+				},
+				{
+					uuid: "346bbe1a-bc48-11eb-8529-0242ac130003",
+					date: 3000000000,
+				},
+			}
+			var uiim uiim
+			for _, idx := range uii {
+				uiim.Store(idx.uuid, idx)
+			}
+
+			return test{
+				name: "return (nil, false) when the uiid dose not exit in uiim",
+				args: args{
+					uuid: uiid,
+				},
+				fields: fields{
+					uiim: uiim,
+				},
+				want: want{
+					want:  nil,
+					want1: false,
+				},
+			}
+		}(),
+		func() test {
+			uiid := "146bbe1a-bc48-11eb-8529-0242ac130003"
+			uii := []index{}
+
+			var uiim uiim
+			for _, idx := range uii {
+				uiim.Store(idx.uuid, idx)
+			}
+
+			return test{
+				name: "return (nil, false) when the uiim is empty and the uiid dose not exit in uiim",
+				args: args{
+					uuid: uiid,
+				},
+				fields: fields{
+					uiim: uiim,
+				},
+				want: want{
+					want:  nil,
+					want1: false,
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
