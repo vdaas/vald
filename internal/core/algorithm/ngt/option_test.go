@@ -327,7 +327,9 @@ func TestWithDimension(t *testing.T) {
 					t := &T{
 						dimension: 100,
 					}
-					t.setup()
+					if err := t.setup(); err != nil {
+						return nil
+					}
 					return t
 				}(),
 			},
@@ -640,6 +642,7 @@ func TestWithDistanceTypeByString(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
