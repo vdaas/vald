@@ -19,6 +19,7 @@ package ngt
 
 import (
 	//"C"
+	"os"
 	"reflect"
 	"strings"
 	"sync"
@@ -27,6 +28,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"go.uber.org/goleak"
 )
@@ -40,6 +43,11 @@ var (
 		comparator.RWMutexComparer,
 	}
 )
+
+func TestMain(m *testing.M) {
+	log.Init(log.WithLoggerType(logger.NOP.String()))
+	os.Exit(m.Run())
+}
 
 func TestNew(t *testing.T) {
 	type args struct {
@@ -55,7 +63,7 @@ func TestNew(t *testing.T) {
 		want       want
 		checkFunc  func(want, NGT, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(t *testing.T, args args, w want, got NGT)
 	}
 	defaultCheckFunc := func(w want, got NGT, err error) error {
 		if !errors.Is(err, w.err) {
@@ -64,15 +72,34 @@ func TestNew(t *testing.T) {
 
 		// comparator for idxPath
 		comparators := append(ngtComparator, comparator.CompareField("idxPath", cmp.Comparer(func(s1, s2 string) bool {
-			// check file is created in idxPath
-			
 			return strings.HasPrefix(s1, "/tmp/ngt-") || strings.HasPrefix(s1, "/tmp/ngt-")
 		})))
 
 		if diff := comparator.Diff(got, w.want, comparators...); diff != "" {
 			return errors.Errorf("diff: %s", diff)
 		}
+
+		// check file is created in idxPath
+		if got != nil {
+			if ngt, ok := got.(*ngt); ok {
+				if _, err := os.Stat(ngt.idxPath); err == os.ErrNotExist {
+					return errors.Errorf("index file not exists, path: %s", ngt.idxPath)
+				}
+			}
+		}
+
 		return nil
+	}
+	defaultAfterFunc := func(t *testing.T, args args, w want, got NGT) {
+		if got == nil {
+			return
+		}
+
+		if ngt, ok := got.(*ngt); ok {
+			if _, err := os.Stat(ngt.idxPath); err != os.ErrNotExist {
+				_ = os.RemoveAll(ngt.idxPath)
+			}
+		}
 	}
 	tests := []test{
 		{
@@ -131,8 +158,8 @@ func TestNew(t *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+			if test.afterFunc == nil {
+				test.afterFunc = defaultAfterFunc
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -142,6 +169,8 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
+			test.afterFunc(tt, test.args, test.want, got)
 		})
 	}
 }
@@ -176,82 +205,143 @@ func Test_ngt_Search(t *testing.T) {
 		name       string
 		args       args
 		fields     fields
+		createFunc func(t *testing.T, fields fields) (NGT, error)
 		want       want
-		checkFunc  func(want, []SearchResult, error) error
+		checkFunc  func(want, []SearchResult, NGT, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got []SearchResult, err error) error {
+	defaultCreateFunc := func(t *testing.T, fields fields) (NGT, error) {
+		return New(WithInMemoryMode(true),
+			WithIndexPath(fields.idxPath),
+			WithBulkInsertChunkSize(fields.bulkInsertChunkSize),
+			WithObjectType(fields.objectType),
+			WithDefaultRadius(fields.radius),
+			WithDefaultEpsilon(fields.epsilon),
+			WithDefaultPoolSize(fields.poolSize),
+			WithDimension(9),
+		)
+	}
+	defaultCheckFunc := func(w want, got []SearchResult, n NGT, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		if diff := comparator.Diff(got, w.want); diff != "" {
+			return errors.Errorf("diff: %s", diff)
 		}
+
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           vec: nil,
-		           size: 0,
-		           epsilon: 0,
-		           radius: 0,
-		       },
-		       fields: fields {
-		           idxPath: "",
-		           inMemory: false,
-		           bulkInsertChunkSize: 0,
-		           dimension: nil,
-		           objectType: nil,
-		           radius: 0,
-		           epsilon: 0,
-		           poolSize: 0,
-		           prop: nil,
-		           ebuf: nil,
-		           index: nil,
-		           ospace: nil,
-		           mu: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			vec := []float32{0, 1, 2, 3, 4, 5, 6, 7, 8}
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           vec: nil,
-		           size: 0,
-		           epsilon: 0,
-		           radius: 0,
-		           },
-		           fields: fields {
-		           idxPath: "",
-		           inMemory: false,
-		           bulkInsertChunkSize: 0,
-		           dimension: nil,
-		           objectType: nil,
-		           radius: 0,
-		           epsilon: 0,
-		           poolSize: 0,
-		           prop: nil,
-		           ebuf: nil,
-		           index: nil,
-		           ospace: nil,
-		           mu: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			return test{
+				name: "search success after insert with same vec",
+				args: args{
+					vec:     vec,
+					size:    5,
+					epsilon: 0,
+					radius:  0,
+				},
+				fields: fields{
+					// idxPath:             "",
+					inMemory:            false,
+					bulkInsertChunkSize: 100,
+					// dimension:           nil,
+					objectType: Uint8,
+					radius:     float32(-1.0),
+					epsilon:    float32(0.01),
+					// poolSize:            0,
+					// prop:                nil,
+					// ebuf:                nil,
+					// index:               nil,
+					// ospace:              nil,
+					// mu: nil,
+				},
+				createFunc: func(t *testing.T, fields fields) (NGT, error) {
+					t.Helper()
+
+					ngt, err := defaultCreateFunc(t, fields)
+					if err != nil {
+						return nil, err
+					}
+
+					if _, err := ngt.Insert(vec); err != nil {
+						return nil, err
+					}
+					if err := ngt.CreateIndex(1); err != nil {
+						return nil, err
+					}
+
+					return ngt, nil
+				},
+				want: want{
+					want: []SearchResult{
+						{
+							ID:       uint32(1),
+							Distance: 0,
+						},
+					},
+				},
+			}
+		}(),
+		func() test {
+			iv := [][]float32{ // insert vec
+				{0, 1, 2, 3, 4, 5, 6, 7, 8},
+			}
+			vec := []float32{0, 1, 2, 3, 4, 5, 6, 7, 8} // search vec
+
+			return test{
+				name: "search success after insert with nearby vec",
+				args: args{
+					vec:  vec,
+					size: 5,
+				},
+				fields: fields{
+					// idxPath:             "",
+					inMemory:            false,
+					bulkInsertChunkSize: 100,
+					// dimension:           nil,
+					objectType: Uint8,
+					radius:     float32(-1.0),
+					epsilon:    float32(0.01),
+					// poolSize:            0,
+					// prop:                nil,
+					// ebuf:                nil,
+					// index:               nil,
+					// ospace:              nil,
+					// mu: nil,
+				},
+				createFunc: func(t *testing.T, fields fields) (NGT, error) {
+					t.Helper()
+
+					ngt, err := defaultCreateFunc(t, fields)
+					if err != nil {
+						return nil, err
+					}
+
+					for _, v := range iv {
+						if _, err := ngt.Insert(v); err != nil {
+							return nil, err
+						}
+					}
+					if err := ngt.CreateIndex(1); err != nil {
+						return nil, err
+					}
+
+					return ngt, nil
+				},
+				want: want{
+					want: []SearchResult{
+						{
+							ID:       uint32(1),
+							Distance: 0,
+						},
+					},
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -268,27 +358,19 @@ func Test_ngt_Search(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			n := &ngt{
-				idxPath:             test.fields.idxPath,
-				inMemory:            test.fields.inMemory,
-				bulkInsertChunkSize: test.fields.bulkInsertChunkSize,
-				// dimension:           test.fields.dimension,
-				objectType: test.fields.objectType,
-				radius:     test.fields.radius,
-				epsilon:    test.fields.epsilon,
-				poolSize:   test.fields.poolSize,
-				// prop:                test.fields.prop,
-				// ebuf:                test.fields.ebuf,
-				// index:               test.fields.index,
-				// ospace:              test.fields.ospace,
-				mu: test.fields.mu,
+			if test.createFunc == nil {
+				test.createFunc = defaultCreateFunc
+			}
+
+			n, err := test.createFunc(tt, test.fields)
+			if err != nil {
+				tt.Fatal(err)
 			}
 
 			got, err := n.Search(test.args.vec, test.args.size, test.args.epsilon, test.args.radius)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := test.checkFunc(test.want, got, n, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
