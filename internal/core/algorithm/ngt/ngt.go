@@ -223,7 +223,6 @@ func (n *ngt) loadOptions(opts ...Option) (err error) {
 		err = opt(n)
 		if err != nil {
 			werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
-
 			e := new(errors.ErrCriticalOption)
 			if errors.As(err, &e) {
 				log.Error(werr)

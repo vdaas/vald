@@ -177,7 +177,7 @@ func WithDistanceType(t distanceType) Option {
 	}
 }
 
-// WithObjectTypeByString represents the option to set the object type for NGT.
+// WithObjectTypeByString represents the option to set the object type by string for NGT.
 func WithObjectTypeByString(ot string) Option {
 	var o objectType
 	switch strings.NewReplacer("-", "", "_", "", " ", "", "double", "float").Replace(strings.ToLower(ot)) {
