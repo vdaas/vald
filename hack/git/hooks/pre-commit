@@ -19,12 +19,6 @@ TMPDIR=`mktemp -d`
 if git diff HEAD^ --name-only | grep ".go$" > /dev/null; then
     cp go.mod ${TMPDIR}
     cp go.sum ${TMPDIR}
-
-    # gofumpt
-    echo "Run gofumpt..."
-    find ./ -type f -regex ".*\.go" | xargs gofumpt -w
-    echo "gofumpt finished."
-
     # goimports
     echo "Run goimports..."
     find ./ -type f -regex ".*\.go" | xargs goimports -w
