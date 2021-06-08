@@ -496,6 +496,57 @@ func Test_vqueue_PushInsert(t *testing.T) {
 			var closed atomic.Value
 			closed.Store(false)
 
+			wantIdx := index{
+				date: 100000000,
+			}
+			return test{
+				name: "return nil when the arguments are empty and the push insert successes",
+				args: args{},
+				fields: fields{
+					finalizingInsert: finalizingInsert,
+					closed:           closed,
+					ich:              make(chan index, 1),
+				},
+				checkFunc: func(w want, v *vqueue, e error) error {
+					if err := defaultCheckFunc(w, v, e); err != nil {
+						return err
+					}
+					idx, ok := v.uiim.Load(w.wantIdx.uuid)
+					if !ok {
+						return errors.Errorf("the uuid dose not exit is uiim: %s", w.wantIdx.uuid)
+					}
+
+					cmpOpts := []cmp.Option{
+						comparator.AllowUnexported(index{}),
+						comparator.Comparer(func(x, y int64) bool {
+							return x != 0 && y != 0
+						}),
+					}
+
+					if diff := cmp.Diff(idx, w.wantIdx, cmpOpts...); len(diff) != 0 {
+						return errors.Errorf("index stored in uiim is wrong. diff: %s", diff)
+					}
+
+					got := <-v.ich
+
+					if diff := cmp.Diff(got, w.wantIdx, cmpOpts...); len(diff) != 0 {
+						return errors.Errorf("index diff: %s", diff)
+					}
+					return nil
+				},
+				want: want{
+					err:     nil,
+					wantIdx: wantIdx,
+				},
+			}
+		}(),
+		func() test {
+			var finalizingInsert atomic.Value
+			finalizingInsert.Store(false)
+
+			var closed atomic.Value
+			closed.Store(false)
+
 			uuid := "246bbe1a-bc48-11eb-8529-0242ac130003"
 			var date int64 = 2000000000
 
@@ -722,6 +773,55 @@ func Test_vqueue_PushDelete(t *testing.T) {
 					}
 					if got, want := <-v.dch, w.wantK; !reflect.DeepEqual(got, want) {
 						return errors.Errorf("got_key: \"%#v\",\n\t\t\t\twant_key: \"%#v\"", got, want)
+					}
+					return nil
+				},
+				want: want{
+					err:   nil,
+					wantK: wantK,
+				},
+			}
+		}(),
+		func() test {
+			var finalizingDelete atomic.Value
+			finalizingDelete.Store(false)
+
+			var closed atomic.Value
+			closed.Store(false)
+
+			wantK := key{
+				date: 1000000,
+			}
+			return test{
+				name: "return nil when the arguments are empty and the push delete successes",
+				args: args{},
+				fields: fields{
+					finalizingDelete: finalizingDelete,
+					closed:           closed,
+					dch:              make(chan key, 1),
+				},
+				checkFunc: func(w want, v *vqueue, e error) error {
+					if err := defaultCheckFunc(w, v, e); err != nil {
+						return err
+					}
+					date, ok := v.udim.Load(w.wantK.uuid)
+					if !ok {
+						return errors.Errorf("the uuid dose not exit is udim: %s", w.wantK.uuid)
+					}
+					if date == 0 {
+						return errors.New("date stored in udim is 0")
+					}
+
+					got := <-v.dch
+
+					cmpOpts := []cmp.Option{
+						comparator.AllowUnexported(key{}),
+						comparator.Comparer(func(x, y int64) bool {
+							return x != 0 && y != 0
+						}),
+					}
+					if diff := cmp.Diff(got, w.wantK, cmpOpts...); len(diff) != 0 {
+						return errors.Errorf("key diff: %s", diff)
 					}
 					return nil
 				},
