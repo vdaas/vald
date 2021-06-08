@@ -19,15 +19,25 @@ package vqueue
 
 import (
 	"context"
+	"os"
 	"reflect"
 	"sync"
 	"sync/atomic"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/log/logger"
+	"github.com/vdaas/vald/internal/test/comparator"
 	"go.uber.org/goleak"
 )
+
+func TestMain(m *testing.M) {
+	log.Init(log.WithLoggerType(logger.NOP.String()))
+	os.Exit(m.Run())
+}
 
 func TestNew(t *testing.T) {
 	type args struct {
@@ -49,37 +59,125 @@ func TestNew(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		cmpOpts := []cmp.Option{
+			comparator.Comparer(func(x, y chan index) bool {
+				return len(x) == len(y)
+			}),
+			comparator.Comparer(func(x, y chan key) bool {
+				return len(x) == len(y)
+			}),
+			comparator.Comparer(func(x, y atomic.Value) bool {
+				return x.Load().(bool) == y.Load().(bool)
+			}),
+			comparator.Comparer(func(x, y errgroup.Group) bool {
+				return reflect.DeepEqual(x, y)
+			}),
+			comparator.Comparer(func(x, y uiim) bool {
+				return reflect.DeepEqual(x, y)
+			}),
+			comparator.Comparer(func(x, y udim) bool {
+				return reflect.DeepEqual(x, y)
+			}),
+			comparator.Comparer(func(x, y sync.Mutex) bool {
+				return reflect.DeepEqual(x, y)
+			}),
+			cmp.AllowUnexported(vqueue{}),
+		}
+		if diff := cmp.Diff(got, w.want, cmpOpts...); len(diff) != 0 {
+			return errors.Errorf("diff: %s", diff)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           opts: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			err := errors.NewErrCriticalOption("errgroup", nil)
+			opt := func(*vqueue) error {
+				return err
+			}
+			return test{
+				name: "return option failed error when the option apply failed",
+				args: args{
+					opts: []Option{
+						opt,
+					},
+				},
+				want: want{
+					want: nil,
+					err:  errors.ErrOptionFailed(err, reflect.ValueOf(opt)),
+				},
+			}
+		}(),
+		func() test {
+			var finalizingInsert atomic.Value
+			finalizingInsert.Store(false)
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           opts: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			var finalizingDelete atomic.Value
+			finalizingDelete.Store(false)
+
+			var closed atomic.Value
+			closed.Store(true)
+
+			wantV := &vqueue{
+				finalizingInsert: finalizingInsert,
+				finalizingDelete: finalizingDelete,
+				closed:           closed,
+				eg:               errgroup.Get(),
+				ich:              make(chan index, 100),
+				ichSize:          100,
+				dch:              make(chan key, 100),
+				dchSize:          100,
+				iBufSize:         1000,
+				uii:              make([]index, 0, 1000),
+				dBufSize:         1000,
+				udk:              make([]key, 0, 1000),
+			}
+			return test{
+				name: "return (Queue, nil) when the option is empty",
+				args: args{},
+				want: want{
+					want: wantV,
+				},
+			}
+		}(),
+		func() test {
+			var finalizingInsert atomic.Value
+			finalizingInsert.Store(false)
+
+			var finalizingDelete atomic.Value
+			finalizingDelete.Store(false)
+
+			var closed atomic.Value
+			closed.Store(true)
+
+			wantV := &vqueue{
+				finalizingInsert: finalizingInsert,
+				finalizingDelete: finalizingDelete,
+				closed:           closed,
+				eg:               errgroup.Get(),
+				ich:              make(chan index, 100),
+				ichSize:          100,
+				dch:              make(chan key, 100),
+				dchSize:          100,
+				iBufSize:         1000,
+				uii:              make([]index, 0, 1000),
+				dBufSize:         1000,
+				udk:              make([]key, 0, 1000),
+			}
+			opt := func(*vqueue) error {
+				return errors.NewErrInvalidOption("errgroup", nil)
+			}
+			return test{
+				name: "return (Queue, nil) when the option apply error occurs",
+				args: args{
+					opts: []Option{
+						opt,
+					},
+				},
+				want: want{
+					want: wantV,
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
