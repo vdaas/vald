@@ -237,79 +237,128 @@ func Test_vqueue_Start(t *testing.T) {
 		want       want
 		checkFunc  func(want, <-chan error, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		hookFunc   func(*testing.T, *vqueue)
+		afterFunc  func(*testing.T, args, *vqueue)
 	}
 	defaultCheckFunc := func(w want, got <-chan error, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
+		if w.want != nil && err != nil {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		       },
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			var finalizingInsert atomic.Value
+			finalizingInsert.Store(false)
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           },
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			var finalizingDelete atomic.Value
+			finalizingDelete.Store(false)
+
+			var closed atomic.Value
+			closed.Store(false)
+
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, egctx := errgroup.New(ctx)
+
+			isrtIdxs := []index{
+				{
+					uuid:   "146bbe1a-bc48-11eb-8529-0242ac130003",
+					date:   1000000000,
+					vector: []float32{1},
+				},
+				{
+					uuid:   "246bbe1a-bc48-11eb-8529-0242ac130003",
+					date:   2000000000,
+					vector: []float32{2},
+				},
+				{
+					uuid:   "346bbe1a-bc48-11eb-8529-0242ac130003",
+					date:   3000000000,
+					vector: []float32{2},
+				},
+			}
+
+			delKeys := []key{
+				{
+					uuid:   "146bbe1a-bc48-11eb-8529-0242ac130003",
+					date:   1000000000,
+					vector: []float32{1},
+				},
+				{
+					uuid:   "246bbe1a-bc48-11eb-8529-0242ac130003",
+					date:   2000000000,
+					vector: []float32{2},
+				},
+				{
+					uuid:   "346bbe1a-bc48-11eb-8529-0242ac130003",
+					date:   3000000000,
+					vector: []float32{2},
+				},
+			}
+			wantDelKeys := make([]key, 0, len(delKeys))
+			for _, k := range delKeys {
+				k.vector = nil
+				wantDelKeys = append(wantDelKeys, k)
+			}
+
+			var hookWg sync.WaitGroup
+			return test{
+				name: "test_case_2",
+				args: args{
+					ctx: egctx,
+				},
+				fields: fields{
+					ich:              make(chan index, 100),
+					uii:              make([]index, 0),
+					dch:              make(chan key, 100),
+					udk:              make([]key, 0),
+					eg:               eg,
+					finalizingInsert: finalizingInsert,
+					finalizingDelete: finalizingDelete,
+					closed:           closed,
+				},
+				afterFunc: func(t *testing.T, a args, v *vqueue) {
+					t.Helper()
+
+					hookWg.Wait()
+					cancel()
+					eg.Wait()
+
+					if got, want := v.uii, isrtIdxs; !reflect.DeepEqual(got, want) {
+						t.Errorf("got_uii: \"%#v\",\n\t\t\t\twant_uii: \"%#v\"", got, want)
+					}
+					if got, want := v.udk, wantDelKeys; !reflect.DeepEqual(got, want) {
+						t.Errorf("got_udk: \"%#v\",\n\t\t\t\twant_udk: \"%#v\"", got, want)
+					}
+				},
+				hookFunc: func(t *testing.T, v *vqueue) {
+					t.Helper()
+					hookWg.Add(1)
+					go func() {
+						defer hookWg.Done()
+						for _, idx := range isrtIdxs {
+							err := v.PushInsert(idx.uuid, idx.vector, idx.date)
+							if err != nil {
+								t.Fatal(err)
+							}
+						}
+						for _, key := range delKeys {
+							err := v.PushDelete(key.uuid, key.date)
+							if err != nil {
+								t.Fatal(err)
+							}
+						}
+					}()
+				},
+				want: want{
+					err:  nil,
+					want: make(chan error, 1),
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -317,15 +366,7 @@ func Test_vqueue_Start(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
+
 			v := &vqueue{
 				ich:              test.fields.ich,
 				uii:              test.fields.uii,
@@ -344,8 +385,20 @@ func Test_vqueue_Start(t *testing.T) {
 				iBufSize:         test.fields.iBufSize,
 				dBufSize:         test.fields.dBufSize,
 			}
-
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt, test.args, v)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
 			got, err := v.Start(test.args.ctx)
+
+			if test.hookFunc != nil {
+				test.hookFunc(tt, v)
+			}
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
