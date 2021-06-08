@@ -281,89 +281,180 @@ func Test_vqueue_PushInsert(t *testing.T) {
 		dBufSize         int
 	}
 	type want struct {
-		err error
+		err     error
+		wantIdx index
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(args)
+		checkFunc  func(want, *vqueue, error) error
+		beforeFunc func(args, *vqueue)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
+	defaultCheckFunc := func(w want, _ *vqueue, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           uuid: "",
-		           vector: nil,
-		           date: 0,
-		       },
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			var finalizingInsert atomic.Value
+			finalizingInsert.Store(true)
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           uuid: "",
-		           vector: nil,
-		           date: 0,
-		           },
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			uuid := "246bbe1a-bc48-11eb-8529-0242ac130003"
+			var date int64 = 2000000000
+			return test{
+				name: "return vqueue finalizing error when the finalizingInsert is true",
+				args: args{
+					uuid: uuid,
+					date: date,
+				},
+				fields: fields{
+					finalizingInsert: finalizingInsert,
+				},
+				want: want{
+					err: errors.ErrVQueueFinalizing,
+				},
+			}
+		}(),
+		func() test {
+			var finalizingInsert atomic.Value
+			finalizingInsert.Store(false)
+
+			var closed atomic.Value
+			closed.Store(true)
+
+			uuid := "246bbe1a-bc48-11eb-8529-0242ac130003"
+			var date int64 = 2000000000
+			return test{
+				name: "return vqueue finalizing error when the closed is true",
+				args: args{
+					uuid: uuid,
+					date: date,
+				},
+				fields: fields{
+					finalizingInsert: finalizingInsert,
+					closed:           closed,
+				},
+				want: want{
+					err: errors.ErrVQueueFinalizing,
+				},
+			}
+		}(),
+		func() test {
+			var finalizingInsert atomic.Value
+			finalizingInsert.Store(false)
+
+			var closed atomic.Value
+			closed.Store(false)
+
+			uuid := "246bbe1a-bc48-11eb-8529-0242ac130003"
+			var date int64 = 2000000000
+
+			wantIdx := index{
+				uuid: uuid,
+				date: date,
+			}
+			return test{
+				name: "return nil when the push insert successes",
+				args: args{
+					uuid: uuid,
+					date: date,
+				},
+				fields: fields{
+					finalizingInsert: finalizingInsert,
+					closed:           closed,
+					ich:              make(chan index, 1),
+				},
+				checkFunc: func(w want, v *vqueue, e error) error {
+					if err := defaultCheckFunc(w, v, e); err != nil {
+						return err
+					}
+					idx, ok := v.uiim.Load(w.wantIdx.uuid)
+					if !ok {
+						return errors.Errorf("the uuid dose not exit is uiim: %s", w.wantIdx.uuid)
+					}
+					if !reflect.DeepEqual(idx, w.wantIdx) {
+						return errors.Errorf("index stored in uiim is wrong. want: %#v, but got: %#v", w.wantIdx, idx)
+					}
+					if got, want := <-v.ich, w.wantIdx; !reflect.DeepEqual(got, want) {
+						return errors.Errorf("got_index: \"%#v\",\n\t\t\t\twant_index: \"%#v\"", got, want)
+					}
+					return nil
+				},
+				want: want{
+					err:     nil,
+					wantIdx: wantIdx,
+				},
+			}
+		}(),
+		func() test {
+			var finalizingInsert atomic.Value
+			finalizingInsert.Store(false)
+
+			var closed atomic.Value
+			closed.Store(false)
+
+			uuid := "246bbe1a-bc48-11eb-8529-0242ac130003"
+			var date int64 = 2000000000
+
+			preIdx := index{
+				uuid: uuid,
+				date: 3000000000,
+			}
+
+			var uiim uiim
+
+			wantIdxs := []index{
+				preIdx,
+				{
+					uuid: uuid,
+					date: date,
+				},
+			}
+			return test{
+				name: "return nil when override uiim and the push insert successes",
+				args: args{
+					uuid: uuid,
+					date: date,
+				},
+				fields: fields{
+					finalizingInsert: finalizingInsert,
+					closed:           closed,
+					ich:              make(chan index, 2),
+					uiim:             uiim,
+				},
+				beforeFunc: func(a args, v *vqueue) {
+					v.uiim.Store(preIdx.uuid, preIdx)
+					v.ich <- preIdx
+				},
+				checkFunc: func(w want, v *vqueue, e error) error {
+					if err := defaultCheckFunc(w, v, e); err != nil {
+						return err
+					}
+					idx, ok := v.uiim.Load(uuid)
+					if !ok {
+						return errors.Errorf("the uuid dose not exit is uiim: %s", w.wantIdx.uuid)
+					}
+					if got, want := idx, wantIdxs[1]; !reflect.DeepEqual(got, want) {
+						return errors.Errorf("got_index: \"%#v\",\n\t\t\t\twant_index: \"%#v\"", got, want)
+					}
+
+					gotIdxs := make([]index, 0, 2)
+					gotIdxs = append(append(gotIdxs, <-v.ich), <-v.ich)
+					if !reflect.DeepEqual(gotIdxs, wantIdxs) {
+						return errors.Errorf("got_indexes: \"%#v\",\n\t\t\t\twant_indexes: \"%#v\"", gotIdxs, wantIdxs)
+					}
+					return nil
+				},
+				want: want{
+					err: nil,
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -371,15 +462,6 @@ func Test_vqueue_PushInsert(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
 			v := &vqueue{
 				ich:              test.fields.ich,
 				uii:              test.fields.uii,
@@ -398,9 +480,18 @@ func Test_vqueue_PushInsert(t *testing.T) {
 				iBufSize:         test.fields.iBufSize,
 				dBufSize:         test.fields.dBufSize,
 			}
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args, v)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
 
 			err := v.PushInsert(test.args.uuid, test.args.vector, test.args.date)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := test.checkFunc(test.want, v, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -532,7 +623,7 @@ func Test_vqueue_PushDelete(t *testing.T) {
 						return errors.Errorf("date stored in udim is wrong. want: %d, but got: %d", w.wantK.date, date)
 					}
 					if got, want := <-v.dch, w.wantK; !reflect.DeepEqual(got, want) {
-						return errors.Errorf("got_key: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, want)
+						return errors.Errorf("got_key: \"%#v\",\n\t\t\t\twant_key: \"%#v\"", got, want)
 					}
 					return nil
 				},
