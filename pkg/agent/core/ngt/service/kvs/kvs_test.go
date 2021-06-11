@@ -738,7 +738,7 @@ func Test_bidi_Set(t *testing.T) {
 				want: want{
 					key: key,
 					val: val,
-					l:   2,
+					l:   1,
 				},
 			}
 		}(),

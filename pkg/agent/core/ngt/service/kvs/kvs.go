@@ -80,9 +80,13 @@ func (b *bidi) GetInverse(val uint32) (string, bool) {
 
 // Set sets the key and val to the bidi.
 func (b *bidi) Set(key string, val uint32) {
+	_, ok := b.Get(key)
 	b.uo[xxhash.Sum64(stringToBytes(key))&mask].Store(key, val)
 	b.ou[val&mask].Store(val, key)
-	atomic.AddUint64(&b.l, 1)
+
+	if !ok { // increase the count only if the key is not exists before
+		atomic.AddUint64(&b.l, 1)
+	}
 }
 
 // Delete deletes the key and the value from the bidi by the given key and returns val and true.
