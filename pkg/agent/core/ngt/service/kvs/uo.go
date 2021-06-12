@@ -116,7 +116,64 @@ func (e *entryUo) storeLocked(i *uint32) {
 	atomic.StorePointer(&e.p, unsafe.Pointer(i))
 }
 
-func (m *uo) Delete(key string) {
+func (m *uo) LoadOrStore(key string, value uint32) (actual uint32, loaded bool) {
+	read, _ := m.read.Load().(readOnlyUo)
+	if e, ok := read.m[key]; ok {
+		actual, loaded, ok := e.tryLoadOrStore(value)
+		if ok {
+			return actual, loaded
+		}
+	}
+
+	m.mu.Lock()
+	read, _ = m.read.Load().(readOnlyUo)
+	if e, ok := read.m[key]; ok {
+		if e.unexpungeLocked() {
+			m.dirty[key] = e
+		}
+		actual, loaded, _ = e.tryLoadOrStore(value)
+	} else if e, ok := m.dirty[key]; ok {
+		actual, loaded, _ = e.tryLoadOrStore(value)
+		m.missLocked()
+	} else {
+		if !read.amended {
+
+			m.dirtyLocked()
+			m.read.Store(readOnlyUo{m: read.m, amended: true})
+		}
+		m.dirty[key] = newEntryUo(value)
+		actual, loaded = value, false
+	}
+	m.mu.Unlock()
+
+	return actual, loaded
+}
+
+func (e *entryUo) tryLoadOrStore(i uint32) (actual uint32, loaded, ok bool) {
+	p := atomic.LoadPointer(&e.p)
+	if p == expungedUo {
+		return actual, false, false
+	}
+	if p != nil {
+		return *(*uint32)(p), true, true
+	}
+
+	ic := i
+	for {
+		if atomic.CompareAndSwapPointer(&e.p, nil, unsafe.Pointer(&ic)) {
+			return i, false, true
+		}
+		p = atomic.LoadPointer(&e.p)
+		if p == expungedUo {
+			return actual, false, false
+		}
+		if p != nil {
+			return *(*uint32)(p), true, true
+		}
+	}
+}
+
+func (m *uo) LoadAndDelete(key string) (value uint32, loaded bool) {
 	read, _ := m.read.Load().(readOnlyUo)
 	e, ok := read.m[key]
 	if !ok && read.amended {
@@ -124,28 +181,36 @@ func (m *uo) Delete(key string) {
 		read, _ = m.read.Load().(readOnlyUo)
 		e, ok = read.m[key]
 		if !ok && read.amended {
+			e, ok = m.dirty[key]
 			delete(m.dirty, key)
+
+			m.missLocked()
 		}
 		m.mu.Unlock()
 	}
 	if ok {
-		e.delete()
+		return e.delete()
 	}
+	return value, false
 }
 
-func (e *entryUo) delete() (hadValue bool) {
+func (m *uo) Delete(key string) {
+	m.LoadAndDelete(key)
+}
+
+func (e *entryUo) delete() (value uint32, ok bool) {
 	for {
 		p := atomic.LoadPointer(&e.p)
 		if p == nil || p == expungedUo {
-			return false
+			return value, false
 		}
 		if atomic.CompareAndSwapPointer(&e.p, p, nil) {
-			return true
+			return *(*uint32)(p), true
 		}
 	}
 }
 
-func (m *uo) Range(f func(uuid string, oid uint32) bool) {
+func (m *uo) Range(f func(key string, value uint32) bool) {
 	read, _ := m.read.Load().(readOnlyUo)
 	if read.amended {
 		m.mu.Lock()

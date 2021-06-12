@@ -80,27 +80,26 @@ func (b *bidi) GetInverse(val uint32) (string, bool) {
 
 // Set sets the key and val to the bidi.
 func (b *bidi) Set(key string, val uint32) {
-	_, ok := b.Get(key)
-	b.uo[xxhash.Sum64(stringToBytes(key))&mask].Store(key, val)
-	b.ou[val&mask].Store(val, key)
-
-	if !ok { // increase the count only if the key is not exists before
+	id := xxhash.Sum64(stringToBytes(key)) & mask
+	old, loaded := b.uo[id].LoadOrStore(key, val)
+	if !loaded { // increase the count only if the key is not exists before
 		atomic.AddUint64(&b.l, 1)
+	} else {
+		b.ou[val&mask].Delete(old) // delete paired map value using old value_key
+		b.uo[id].Store(key, val)   // store if loaded for overwrite new value
 	}
+	b.ou[val&mask].Store(val, key) // store anytime
 }
 
 // Delete deletes the key and the value from the bidi by the given key and returns val and true.
 // If the value for the key does not exist, it returns nil and false.
 func (b *bidi) Delete(key string) (val uint32, ok bool) {
-	idx := xxhash.Sum64(stringToBytes(key)) & mask
-	val, ok = b.uo[idx].Load(key)
-	if !ok {
-		return 0, false
+	val, ok = b.uo[xxhash.Sum64(stringToBytes(key))&mask].LoadAndDelete(key)
+	if ok {
+		b.ou[val&mask].Delete(val)
+		atomic.AddUint64(&b.l, ^uint64(0))
 	}
-	b.uo[idx].Delete(key)
-	b.ou[val&mask].Delete(val)
-	atomic.AddUint64(&b.l, ^uint64(0))
-	return val, true
+	return val, ok
 }
 
 // DeleteInverse deletes the key and the value from the bidi by the given val and returns the key and true.
