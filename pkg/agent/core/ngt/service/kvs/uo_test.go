@@ -28,7 +28,6 @@ import (
 )
 
 func Test_newEntryUo(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		i uint32
 	}
@@ -96,12 +95,12 @@ func Test_newEntryUo(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
 func Test_uo_Load(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		key string
 	}
@@ -142,7 +141,7 @@ func Test_uo_Load(t *testing.T) {
 		           key: "",
 		       },
 		       fields: fields {
-		           mu: sync.Mutex{},
+		           mu: nil,
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -161,7 +160,7 @@ func Test_uo_Load(t *testing.T) {
 		           key: "",
 		           },
 		           fields: fields {
-		           mu: sync.Mutex{},
+		           mu: nil,
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -198,12 +197,12 @@ func Test_uo_Load(t *testing.T) {
 			if err := test.checkFunc(test.want, gotValue, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
 func Test_entryUo_load(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		p unsafe.Pointer
 	}
@@ -278,12 +277,12 @@ func Test_entryUo_load(t *testing.T) {
 			if err := test.checkFunc(test.want, gotValue, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
 func Test_uo_Store(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		key   string
 		value uint32
@@ -294,7 +293,8 @@ func Test_uo_Store(t *testing.T) {
 		dirty  map[string]*entryUo
 		misses int
 	}
-	type want struct{}
+	type want struct {
+	}
 	type test struct {
 		name       string
 		args       args
@@ -317,7 +317,7 @@ func Test_uo_Store(t *testing.T) {
 		           value: 0,
 		       },
 		       fields: fields {
-		           mu: sync.Mutex{},
+		           mu: nil,
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -337,7 +337,7 @@ func Test_uo_Store(t *testing.T) {
 		           value: 0,
 		           },
 		           fields: fields {
-		           mu: sync.Mutex{},
+		           mu: nil,
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -379,7 +379,6 @@ func Test_uo_Store(t *testing.T) {
 }
 
 func Test_entryUo_tryStore(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		i *uint32
 	}
@@ -460,12 +459,12 @@ func Test_entryUo_tryStore(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
 func Test_entryUo_unexpungeLocked(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		p unsafe.Pointer
 	}
@@ -536,19 +535,20 @@ func Test_entryUo_unexpungeLocked(t *testing.T) {
 			if err := test.checkFunc(test.want, gotWasExpunged); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
 func Test_entryUo_storeLocked(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		i *uint32
 	}
 	type fields struct {
 		p unsafe.Pointer
 	}
-	type want struct{}
+	type want struct {
+	}
 	type test struct {
 		name       string
 		args       args
@@ -621,8 +621,206 @@ func Test_entryUo_storeLocked(t *testing.T) {
 	}
 }
 
-func Test_uo_Delete(t *testing.T) {
-	t.Parallel()
+func Test_uo_LoadOrStore(t *testing.T) {
+	type args struct {
+		key   string
+		value uint32
+	}
+	type fields struct {
+		mu     sync.Mutex
+		read   atomic.Value
+		dirty  map[string]*entryUo
+		misses int
+	}
+	type want struct {
+		wantActual uint32
+		wantLoaded bool
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, uint32, bool) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotActual uint32, gotLoaded bool) error {
+		if !reflect.DeepEqual(gotActual, w.wantActual) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotActual, w.wantActual)
+		}
+		if !reflect.DeepEqual(gotLoaded, w.wantLoaded) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLoaded, w.wantLoaded)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           key: "",
+		           value: 0,
+		       },
+		       fields: fields {
+		           mu: nil,
+		           read: nil,
+		           dirty: nil,
+		           misses: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           key: "",
+		           value: 0,
+		           },
+		           fields: fields {
+		           mu: nil,
+		           read: nil,
+		           dirty: nil,
+		           misses: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			m := &uo{
+				mu:     test.fields.mu,
+				read:   test.fields.read,
+				dirty:  test.fields.dirty,
+				misses: test.fields.misses,
+			}
+
+			gotActual, gotLoaded := m.LoadOrStore(test.args.key, test.args.value)
+			if err := test.checkFunc(test.want, gotActual, gotLoaded); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_entryUo_tryLoadOrStore(t *testing.T) {
+	type args struct {
+		i uint32
+	}
+	type fields struct {
+		p unsafe.Pointer
+	}
+	type want struct {
+		wantActual uint32
+		wantLoaded bool
+		wantOk     bool
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, uint32, bool, bool) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotActual uint32, gotLoaded bool, gotOk bool) error {
+		if !reflect.DeepEqual(gotActual, w.wantActual) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotActual, w.wantActual)
+		}
+		if !reflect.DeepEqual(gotLoaded, w.wantLoaded) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLoaded, w.wantLoaded)
+		}
+		if !reflect.DeepEqual(gotOk, w.wantOk) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOk, w.wantOk)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           i: 0,
+		       },
+		       fields: fields {
+		           p: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           i: 0,
+		           },
+		           fields: fields {
+		           p: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			e := &entryUo{
+				p: test.fields.p,
+			}
+
+			gotActual, gotLoaded, gotOk := e.tryLoadOrStore(test.args.i)
+			if err := test.checkFunc(test.want, gotActual, gotLoaded, gotOk); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_uo_LoadAndDelete(t *testing.T) {
 	type args struct {
 		key string
 	}
@@ -632,7 +830,110 @@ func Test_uo_Delete(t *testing.T) {
 		dirty  map[string]*entryUo
 		misses int
 	}
-	type want struct{}
+	type want struct {
+		wantValue  uint32
+		wantLoaded bool
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, uint32, bool) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotValue uint32, gotLoaded bool) error {
+		if !reflect.DeepEqual(gotValue, w.wantValue) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotValue, w.wantValue)
+		}
+		if !reflect.DeepEqual(gotLoaded, w.wantLoaded) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLoaded, w.wantLoaded)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           key: "",
+		       },
+		       fields: fields {
+		           mu: nil,
+		           read: nil,
+		           dirty: nil,
+		           misses: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           key: "",
+		           },
+		           fields: fields {
+		           mu: nil,
+		           read: nil,
+		           dirty: nil,
+		           misses: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			m := &uo{
+				mu:     test.fields.mu,
+				read:   test.fields.read,
+				dirty:  test.fields.dirty,
+				misses: test.fields.misses,
+			}
+
+			gotValue, gotLoaded := m.LoadAndDelete(test.args.key)
+			if err := test.checkFunc(test.want, gotValue, gotLoaded); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_uo_Delete(t *testing.T) {
+	type args struct {
+		key string
+	}
+	type fields struct {
+		mu     sync.Mutex
+		read   atomic.Value
+		dirty  map[string]*entryUo
+		misses int
+	}
+	type want struct {
+	}
 	type test struct {
 		name       string
 		args       args
@@ -654,7 +955,7 @@ func Test_uo_Delete(t *testing.T) {
 		           key: "",
 		       },
 		       fields: fields {
-		           mu: sync.Mutex{},
+		           mu: nil,
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -673,7 +974,7 @@ func Test_uo_Delete(t *testing.T) {
 		           key: "",
 		           },
 		           fields: fields {
-		           mu: sync.Mutex{},
+		           mu: nil,
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -715,24 +1016,27 @@ func Test_uo_Delete(t *testing.T) {
 }
 
 func Test_entryUo_delete(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		p unsafe.Pointer
 	}
 	type want struct {
-		wantHadValue bool
+		wantValue uint32
+		wantOk    bool
 	}
 	type test struct {
 		name       string
 		fields     fields
 		want       want
-		checkFunc  func(want, bool) error
+		checkFunc  func(want, uint32, bool) error
 		beforeFunc func()
 		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want, gotHadValue bool) error {
-		if !reflect.DeepEqual(gotHadValue, w.wantHadValue) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotHadValue, w.wantHadValue)
+	defaultCheckFunc := func(w want, gotValue uint32, gotOk bool) error {
+		if !reflect.DeepEqual(gotValue, w.wantValue) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotValue, w.wantValue)
+		}
+		if !reflect.DeepEqual(gotOk, w.wantOk) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOk, w.wantOk)
 		}
 		return nil
 	}
@@ -782,18 +1086,18 @@ func Test_entryUo_delete(t *testing.T) {
 				p: test.fields.p,
 			}
 
-			gotHadValue := e.delete()
-			if err := test.checkFunc(test.want, gotHadValue); err != nil {
+			gotValue, gotOk := e.delete()
+			if err := test.checkFunc(test.want, gotValue, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
 func Test_uo_Range(t *testing.T) {
-	t.Parallel()
 	type args struct {
-		f func(uuid string, oid uint32) bool
+		f func(key string, value uint32) bool
 	}
 	type fields struct {
 		mu     sync.Mutex
@@ -801,7 +1105,8 @@ func Test_uo_Range(t *testing.T) {
 		dirty  map[string]*entryUo
 		misses int
 	}
-	type want struct{}
+	type want struct {
+	}
 	type test struct {
 		name       string
 		args       args
@@ -823,7 +1128,7 @@ func Test_uo_Range(t *testing.T) {
 		           f: nil,
 		       },
 		       fields: fields {
-		           mu: sync.Mutex{},
+		           mu: nil,
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -842,7 +1147,7 @@ func Test_uo_Range(t *testing.T) {
 		           f: nil,
 		           },
 		           fields: fields {
-		           mu: sync.Mutex{},
+		           mu: nil,
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -884,14 +1189,14 @@ func Test_uo_Range(t *testing.T) {
 }
 
 func Test_uo_missLocked(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		mu     sync.Mutex
 		read   atomic.Value
 		dirty  map[string]*entryUo
 		misses int
 	}
-	type want struct{}
+	type want struct {
+	}
 	type test struct {
 		name       string
 		fields     fields
@@ -909,7 +1214,7 @@ func Test_uo_missLocked(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
-		           mu: sync.Mutex{},
+		           mu: nil,
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -925,7 +1230,7 @@ func Test_uo_missLocked(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
-		           mu: sync.Mutex{},
+		           mu: nil,
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -967,14 +1272,14 @@ func Test_uo_missLocked(t *testing.T) {
 }
 
 func Test_uo_dirtyLocked(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		mu     sync.Mutex
 		read   atomic.Value
 		dirty  map[string]*entryUo
 		misses int
 	}
-	type want struct{}
+	type want struct {
+	}
 	type test struct {
 		name       string
 		fields     fields
@@ -992,7 +1297,7 @@ func Test_uo_dirtyLocked(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
-		           mu: sync.Mutex{},
+		           mu: nil,
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -1008,7 +1313,7 @@ func Test_uo_dirtyLocked(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
-		           mu: sync.Mutex{},
+		           mu: nil,
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -1050,7 +1355,6 @@ func Test_uo_dirtyLocked(t *testing.T) {
 }
 
 func Test_entryUo_tryExpungeLocked(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		p unsafe.Pointer
 	}
@@ -1121,6 +1425,7 @@ func Test_entryUo_tryExpungeLocked(t *testing.T) {
 			if err := test.checkFunc(test.want, gotIsExpunged); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }

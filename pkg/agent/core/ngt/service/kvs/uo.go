@@ -137,7 +137,6 @@ func (m *uo) LoadOrStore(key string, value uint32) (actual uint32, loaded bool) 
 		m.missLocked()
 	} else {
 		if !read.amended {
-
 			m.dirtyLocked()
 			m.read.Store(readOnlyUo{m: read.m, amended: true})
 		}
