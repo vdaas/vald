@@ -37,7 +37,7 @@ data:
       "editable": true,
       "gnetId": null,
       "graphTooltip": 0,
-      "iteration": 1615338053004,
+      "iteration": 1623650558243,
       "links": [],
       "panels": [
         {
@@ -45,14 +45,15 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "mappings": [
                 {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "special"
                 }
               ],
               "thresholds": {
@@ -97,7 +98,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.4.3",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
@@ -118,14 +119,15 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "mappings": [
                 {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "special"
                 }
               ],
               "thresholds": {
@@ -170,7 +172,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.4.3",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "expr": "label_replace(vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}, \"go_version\", \"v$1\", \"go_version\", \"([^v].*)\")",
@@ -191,14 +193,15 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "mappings": [
                 {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "special"
                 }
               ],
               "thresholds": {
@@ -243,7 +246,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.4.3",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "expr": "label_replace(vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}, \"ngt_version\", \"v$1\", \"ngt_version\", \"([^v].*)\")",
@@ -264,14 +267,15 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "mappings": [
                 {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "special"
                 }
               ],
               "thresholds": {
@@ -320,7 +324,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.4.3",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "expr": "count(up{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance!=\"\"})",
@@ -342,15 +346,16 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "decimals": 2,
               "mappings": [
                 {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "special"
                 }
               ],
               "thresholds": {
@@ -399,10 +404,11 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.4.3",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
-              "expr": "sum(container_memory_working_set_bytes{namespace=\"$Namespace\", container=\"$ReplicaSet\"})",
+              "exemplar": true,
+              "expr": "sum(container_memory_working_set_bytes{namespace=\"$Namespace\", pod=~\"$ReplicaSet.*\"})",
               "format": "time_series",
               "interval": "",
               "legendFormat": "",
@@ -419,14 +425,15 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "mappings": [
                 {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "special"
                 }
               ],
               "thresholds": {
@@ -471,7 +478,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.4.3",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
@@ -492,14 +499,15 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "mappings": [
                 {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "special"
                 }
               ],
               "thresholds": {
@@ -544,7 +552,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.4.3",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
@@ -565,14 +573,15 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "mappings": [
                 {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "special"
                 }
               ],
               "thresholds": {
@@ -621,7 +630,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.4.3",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "expr": "sum(vald_agent_core_ngt_index_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
@@ -641,14 +650,15 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "mappings": [
                 {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "special"
                 }
               ],
               "thresholds": {
@@ -697,7 +707,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.4.3",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "expr": "sum(vald_agent_core_ngt_is_indexing{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
@@ -718,14 +728,15 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "mappings": [
                 {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "special"
                 }
               ],
               "thresholds": {
@@ -774,7 +785,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.4.3",
+          "pluginVersion": "8.0.1",
           "repeat": null,
           "repeatDirection": "h",
           "targets": [
@@ -796,14 +807,15 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "mappings": [
                 {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "special"
                 }
               ],
               "thresholds": {
@@ -852,7 +864,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.4.3",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "expr": "sum(vald_agent_core_ngt_insert_vqueue_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
@@ -872,14 +884,15 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "mappings": [
                 {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "special"
                 }
               ],
               "thresholds": {
@@ -928,7 +941,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.4.3",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "expr": "sum(vald_agent_core_ngt_delete_vqueue_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
@@ -948,14 +961,15 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "mappings": [
                 {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "special"
                 }
               ],
               "thresholds": {
@@ -1004,7 +1018,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.4.3",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "expr": "sum(vald_agent_core_ngt_insert_vqueue_channel_buffer_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
@@ -1024,14 +1038,15 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "mappings": [
                 {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "special"
                 }
               ],
               "thresholds": {
@@ -1080,7 +1095,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.4.3",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "expr": "sum(vald_agent_core_ngt_delete_vqueue_channel_buffer_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
@@ -1103,7 +1118,6 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "links": []
             },
             "overrides": []
@@ -1134,7 +1148,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.4.3",
+          "pluginVersion": "8.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1144,7 +1158,8 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(irate(container_cpu_usage_seconds_total{namespace=\"$Namespace\", container=\"$ReplicaSet\", pod=~\"$PodName\"}[$interval])) by (pod)",
+              "exemplar": true,
+              "expr": "sum(irate(container_cpu_usage_seconds_total{namespace=\"$Namespace\", pod=~\"$ReplicaSet.*\"}[$interval])) by (pod)",
               "interval": "",
               "legendFormat": "{{pod}}",
               "refId": "A"
@@ -1170,6 +1185,7 @@ data:
           },
           "yaxes": [
             {
+              "$$hashKey": "object:416",
               "format": "short",
               "label": null,
               "logBase": 1,
@@ -1178,6 +1194,7 @@ data:
               "show": true
             },
             {
+              "$$hashKey": "object:417",
               "format": "short",
               "label": null,
               "logBase": 1,
@@ -1199,7 +1216,6 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "links": []
             },
             "overrides": []
@@ -1230,7 +1246,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.4.3",
+          "pluginVersion": "8.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1240,7 +1256,8 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(container_memory_working_set_bytes{namespace=\"$Namespace\", container=\"$ReplicaSet\", pod=~\"$PodName\"}) by (pod)",
+              "exemplar": true,
+              "expr": "sum(container_memory_working_set_bytes{namespace=\"$Namespace\", pod=~\"$ReplicaSet.*\"}) by (pod)",
               "interval": "",
               "legendFormat": "{{pod}}",
               "refId": "A"
@@ -1266,6 +1283,7 @@ data:
           },
           "yaxes": [
             {
+              "$$hashKey": "object:494",
               "format": "decbytes",
               "label": null,
               "logBase": 1,
@@ -1274,6 +1292,7 @@ data:
               "show": true
             },
             {
+              "$$hashKey": "object:495",
               "format": "short",
               "label": null,
               "logBase": 1,
@@ -1295,7 +1314,6 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "links": []
             },
             "overrides": []
@@ -1326,7 +1344,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.4.3",
+          "pluginVersion": "8.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1362,6 +1380,7 @@ data:
           },
           "yaxes": [
             {
+              "$$hashKey": "object:572",
               "format": "short",
               "label": null,
               "logBase": 1,
@@ -1370,6 +1389,7 @@ data:
               "show": true
             },
             {
+              "$$hashKey": "object:573",
               "format": "short",
               "label": null,
               "logBase": 1,
@@ -1391,7 +1411,6 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "links": []
             },
             "overrides": []
@@ -1422,7 +1441,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.4.3",
+          "pluginVersion": "8.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1500,7 +1519,6 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "links": []
             },
             "overrides": []
@@ -1532,7 +1550,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.4.3",
+          "pluginVersion": "8.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1606,7 +1624,6 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "links": []
             },
             "overrides": []
@@ -1637,7 +1654,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.4.3",
+          "pluginVersion": "8.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1703,7 +1720,6 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "links": []
             },
             "overrides": []
@@ -1735,7 +1751,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.4.3",
+          "pluginVersion": "8.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1808,7 +1824,6 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "links": []
             },
             "overrides": []
@@ -1840,7 +1855,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.4.3",
+          "pluginVersion": "8.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1912,7 +1927,7 @@ data:
         }
       ],
       "refresh": "",
-      "schemaVersion": 27,
+      "schemaVersion": 30,
       "style": "dark",
       "tags": [],
       "templating": {
@@ -1925,7 +1940,7 @@ data:
               "value": "default"
             },
             "datasource": "Prometheus",
-            "definition": "label_values(vald_app_version_info, namespace)",
+            "definition": "label_values(up, namespace)",
             "description": null,
             "error": null,
             "hide": 0,
@@ -1935,15 +1950,14 @@ data:
             "name": "Namespace",
             "options": [],
             "query": {
-              "query": "label_values(vald_app_version_info, namespace)",
-              "refId": "Prometheus-Namespace-Variable-Query"
+              "query": "label_values(up, namespace)",
+              "refId": "StandardVariableQuery"
             },
             "refresh": 1,
             "regex": "",
             "skipUrlSync": false,
             "sort": 0,
             "tagValuesQuery": "",
-            "tags": [],
             "tagsQuery": "",
             "type": "query",
             "useTags": false
@@ -1956,7 +1970,7 @@ data:
               "value": "vald-agent-ngt"
             },
             "datasource": "Prometheus",
-            "definition": "label_values(vald_agent_core_ngt_is_indexing{namespace=~\"$Namespace\"}, app)",
+            "definition": "label_values(vald_app_version_info{server_name=~\"agent.*\", namespace=~\"$Namespace\"}, app)",
             "description": null,
             "error": null,
             "hide": 0,
@@ -1966,15 +1980,14 @@ data:
             "name": "ReplicaSet",
             "options": [],
             "query": {
-              "query": "label_values(vald_agent_core_ngt_is_indexing{namespace=~\"$Namespace\"}, app)",
-              "refId": "Prometheus-ReplicaSet-Variable-Query"
+              "query": "label_values(vald_app_version_info{server_name=~\"agent.*\", namespace=~\"$Namespace\"}, app)",
+              "refId": "StandardVariableQuery"
             },
             "refresh": 1,
             "regex": "",
             "skipUrlSync": false,
             "sort": 0,
             "tagValuesQuery": "",
-            "tags": [],
             "tagsQuery": "",
             "type": "query",
             "useTags": false
@@ -1987,7 +2000,7 @@ data:
               "value": "$__all"
             },
             "datasource": "Prometheus",
-            "definition": "label_values(vald_agent_core_ngt_is_indexing{namespace=~\"$Namespace\", app=~\"$ReplicaSet\"}, instance)",
+            "definition": "label_values(vald_app_version_info{server_name=~\"agent.*\", namespace=~\"$Namespace\", app=\"$ReplicaSet\"}, instance)",
             "description": null,
             "error": null,
             "hide": 0,
@@ -1997,15 +2010,14 @@ data:
             "name": "PodName",
             "options": [],
             "query": {
-              "query": "label_values(vald_agent_core_ngt_is_indexing{namespace=~\"$Namespace\", app=~\"$ReplicaSet\"}, instance)",
-              "refId": "Prometheus-PodName-Variable-Query"
+              "query": "label_values(vald_app_version_info{server_name=~\"agent.*\", namespace=~\"$Namespace\", app=\"$ReplicaSet\"}, instance)",
+              "refId": "StandardVariableQuery"
             },
             "refresh": 1,
             "regex": "",
             "skipUrlSync": false,
             "sort": 0,
             "tagValuesQuery": "",
-            "tags": [],
             "tagsQuery": "",
             "type": "query",
             "useTags": false
