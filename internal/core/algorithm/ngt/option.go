@@ -64,7 +64,7 @@ func WithInMemoryMode(flg bool) Option {
 func WithIndexPath(path string) Option {
 	return func(n *ngt) error {
 		if len(path) == 0 {
-			return errors.NewErrInvalidOption("indexPath", path)
+			return errors.NewErrUnsetOption("indexPath")
 		}
 		n.idxPath = path
 		return nil

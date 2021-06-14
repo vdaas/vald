@@ -228,7 +228,12 @@ func (n *ngt) loadOptions(opts ...Option) (err error) {
 				log.Error(werr)
 				return werr
 			}
-			log.Warn(werr)
+			ue := new(errors.ErrUnsetOption)
+			if errors.As(err, &ue) {
+				log.Debug(werr)
+			} else {
+				log.Warn(werr)
+			}
 		}
 	}
 	return nil

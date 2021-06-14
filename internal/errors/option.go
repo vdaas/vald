@@ -105,3 +105,48 @@ func (e *ErrCriticalOption) Error() string {
 func (e *ErrCriticalOption) Unwrap() error {
 	return e.origin
 }
+
+// ErrUnsetOption represents the unset option error.
+type ErrUnsetOption struct {
+	err    error
+	origin error
+}
+
+// NewErrUnsetOption represents a function to generate a new error of ErrUnsetOption that option unset.
+func NewErrUnsetOption(name string, errs ...error) error {
+	if len(errs) == 0 {
+		return &ErrUnsetOption{
+			err: Errorf("unset option, name: %s", name),
+		}
+	}
+	var e error
+	for _, err := range errs {
+		if err == nil {
+			continue
+		}
+
+		if e != nil {
+			e = Wrap(err, e.Error())
+		} else {
+			e = err
+		}
+	}
+
+	return &ErrUnsetOption{
+		err:    Wrapf(e, "unset option, name: %s", name),
+		origin: e,
+	}
+}
+
+// Error returns a string of ErrUnsetOption.err.
+func (e *ErrUnsetOption) Error() string {
+	if e.err == nil {
+		e.err = errExpectedErrIsNil("ErrUnsetOption")
+	}
+	return e.err.Error()
+}
+
+// Unwrap returns an origin error of ErrUnsetOption.
+func (e *ErrUnsetOption) Unwrap() error {
+	return e.origin
+}
