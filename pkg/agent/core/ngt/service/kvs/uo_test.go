@@ -95,7 +95,6 @@ func Test_newEntryUo(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -197,7 +196,6 @@ func Test_uo_Load(t *testing.T) {
 			if err := test.checkFunc(test.want, gotValue, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -277,7 +275,6 @@ func Test_entryUo_load(t *testing.T) {
 			if err := test.checkFunc(test.want, gotValue, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -293,8 +290,7 @@ func Test_uo_Store(t *testing.T) {
 		dirty  map[string]*entryUo
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -459,7 +455,6 @@ func Test_entryUo_tryStore(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -481,7 +476,11 @@ func Test_entryUo_unexpungeLocked(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotWasExpunged bool) error {
 		if !reflect.DeepEqual(gotWasExpunged, w.wantWasExpunged) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotWasExpunged, w.wantWasExpunged)
+			return errors.Errorf(
+				"got: \"%#v\",\n\t\t\t\twant: \"%#v\"",
+				gotWasExpunged,
+				w.wantWasExpunged,
+			)
 		}
 		return nil
 	}
@@ -535,7 +534,6 @@ func Test_entryUo_unexpungeLocked(t *testing.T) {
 			if err := test.checkFunc(test.want, gotWasExpunged); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -547,8 +545,7 @@ func Test_entryUo_storeLocked(t *testing.T) {
 	type fields struct {
 		p unsafe.Pointer
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -721,7 +718,6 @@ func Test_uo_LoadOrStore(t *testing.T) {
 			if err := test.checkFunc(test.want, gotActual, gotLoaded); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -815,7 +811,6 @@ func Test_entryUo_tryLoadOrStore(t *testing.T) {
 			if err := test.checkFunc(test.want, gotActual, gotLoaded, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -917,7 +912,6 @@ func Test_uo_LoadAndDelete(t *testing.T) {
 			if err := test.checkFunc(test.want, gotValue, gotLoaded); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -932,8 +926,7 @@ func Test_uo_Delete(t *testing.T) {
 		dirty  map[string]*entryUo
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1090,7 +1083,6 @@ func Test_entryUo_delete(t *testing.T) {
 			if err := test.checkFunc(test.want, gotValue, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1105,8 +1097,7 @@ func Test_uo_Range(t *testing.T) {
 		dirty  map[string]*entryUo
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1195,8 +1186,7 @@ func Test_uo_missLocked(t *testing.T) {
 		dirty  map[string]*entryUo
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields
@@ -1278,8 +1268,7 @@ func Test_uo_dirtyLocked(t *testing.T) {
 		dirty  map[string]*entryUo
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields
@@ -1371,7 +1360,11 @@ func Test_entryUo_tryExpungeLocked(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotIsExpunged bool) error {
 		if !reflect.DeepEqual(gotIsExpunged, w.wantIsExpunged) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotIsExpunged, w.wantIsExpunged)
+			return errors.Errorf(
+				"got: \"%#v\",\n\t\t\t\twant: \"%#v\"",
+				gotIsExpunged,
+				w.wantIsExpunged,
+			)
 		}
 		return nil
 	}
@@ -1425,7 +1418,6 @@ func Test_entryUo_tryExpungeLocked(t *testing.T) {
 			if err := test.checkFunc(test.want, gotIsExpunged); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
