@@ -182,7 +182,6 @@ func (m *uo) LoadAndDelete(key string) (value uint32, loaded bool) {
 		if !ok && read.amended {
 			e, ok = m.dirty[key]
 			delete(m.dirty, key)
-
 			m.missLocked()
 		}
 		m.mu.Unlock()
