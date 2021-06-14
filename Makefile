@@ -350,7 +350,7 @@ tools/install: \
 	telepresence/install
 
 .PHONY: update
-## update deps, license, and run goimports
+## update deps, license, and run gofumpt, goimports
 update: \
 	clean \
 	proto/all \
@@ -362,13 +362,14 @@ update: \
 ## format go codes
 format: \
 	license \
-	update/goimports \
+	format/go \
 	format/yaml
 
-.PHONY: update/goimports
-## run goimports for all go files
-update/goimports:
-	find ./ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs goimports -w
+.PHONY: format/go
+## run gofumpt, goimports for all go files
+format/go:
+	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs gofumpt -w
+	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs goimports -w
 
 .PHONY: format/yaml
 format/yaml:
@@ -388,6 +389,7 @@ deps: \
 .PHONY: deps/install
 ## install dependencies
 deps/install: \
+	gofumpt/install \
 	goimports/install \
 	prettier/install \
 	go/deps
@@ -408,8 +410,11 @@ go/deps:
 
 .PHONY: goimports/install
 goimports/install:
-	go get -u golang.org/x/tools/cmd/goimports
-	# GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports
+	go install golang.org/x/tools/cmd/goimports@latest
+
+.PHONY: gofumpt/install
+gofumpt/install:
+	go install mvdan.cc/gofumpt@latest
 
 .PHONY: prettier/install
 prettier/install:
