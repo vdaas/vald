@@ -155,7 +155,7 @@ func TestWithIndexPath(t *testing.T) {
 				path: "",
 			},
 			want: want{
-				err: errors.New("invalid option, name: indexPath, val: "),
+				err: errors.New("unset option, name: indexPath"),
 				obj: &T{},
 			},
 		},
