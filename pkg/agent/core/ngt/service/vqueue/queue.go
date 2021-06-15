@@ -242,7 +242,7 @@ func (v *vqueue) GetVector(uuid string) ([]float32, bool) {
 		return vec.vector, true
 	}
 	// data exists both queue, compare data timestamp if insert queue timestamp is newer than delete one, this function returns exists(true)
-	if di < vec.date {
+	if di <= vec.date {
 		return vec.vector, true
 	}
 	return nil, false
