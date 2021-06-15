@@ -987,14 +987,14 @@ func TestWithProxyConnectHeader(t *testing.T) {
 			name: "set header success",
 			args: args{
 				header: http.Header(
-					map[string][]string{"dummy": []string{"val"}},
+					map[string][]string{"dummy": {"val"}},
 				),
 			},
 			want: want{
 				obj: &T{
 					Transport: &http.Transport{
 						ProxyConnectHeader: http.Header(
-							map[string][]string{"dummy": []string{"val"}},
+							map[string][]string{"dummy": {"val"}},
 						),
 					},
 				},

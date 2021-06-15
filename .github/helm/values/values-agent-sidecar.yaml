@@ -54,6 +54,7 @@ agent:
         memory: 100Mi
     config:
       filename: vald-agent-ngt-index
+      post_stop_timeout: 20s
       blob_storage:
         storage_type: "s3"
         bucket: "vald-minio"

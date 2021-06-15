@@ -445,9 +445,12 @@ func (n *ngt) insert(uuid string, vec []float32, t int64, validation bool) (err 
 }
 
 func (n *ngt) InsertMultiple(vecs map[string][]float32) (err error) {
-	t := time.Now().UnixNano()
+	return n.insertMultiple(vecs, time.Now().UnixNano())
+}
+
+func (n *ngt) insertMultiple(vecs map[string][]float32, now int64) (err error) {
 	for uuid, vec := range vecs {
-		ierr := n.insert(uuid, vec, t, true)
+		ierr := n.insert(uuid, vec, now, true)
 		if ierr != nil {
 			if err != nil {
 				err = errors.Wrap(ierr, err.Error())
@@ -481,11 +484,13 @@ func (n *ngt) UpdateMultiple(vecs map[string][]float32) (err error) {
 			uuids = append(uuids, uuid)
 		}
 	}
-	err = n.DeleteMultiple(uuids...)
+	now := time.Now().UnixNano()
+	err = n.deleteMultiple(uuids, now)
 	if err != nil {
 		return err
 	}
-	return n.InsertMultiple(vecs)
+	now++
+	return n.insertMultiple(vecs, now)
 }
 
 func (n *ngt) Delete(uuid string) (err error) {
@@ -505,9 +510,12 @@ func (n *ngt) delete(uuid string, t int64) (err error) {
 }
 
 func (n *ngt) DeleteMultiple(uuids ...string) (err error) {
-	t := time.Now().UnixNano()
+	return n.deleteMultiple(uuids, time.Now().UnixNano())
+}
+
+func (n *ngt) deleteMultiple(uuids []string, now int64) (err error) {
 	for _, uuid := range uuids {
-		ierr := n.delete(uuid, t)
+		ierr := n.delete(uuid, now)
 		if ierr != nil {
 			if err != nil {
 				err = errors.Wrap(ierr, err.Error())
