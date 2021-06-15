@@ -197,16 +197,7 @@ func (v *vqueue) RangePopInsert(ctx context.Context, f func(uuid string, vector 
 		case <-time.After(time.Millisecond * 100):
 		}
 	}
-	for _, idx := range v.flushAndLoadInsert() {
-		select {
-		case <-ctx.Done():
-			return
-		default:
-			if !f(idx.uuid, idx.vector) {
-				return
-			}
-		}
-	}
+	v.flushAndRangeInsert(f)
 }
 
 func (v *vqueue) RangePopDelete(ctx context.Context, f func(uuid string) bool) {
@@ -218,16 +209,7 @@ func (v *vqueue) RangePopDelete(ctx context.Context, f func(uuid string) bool) {
 		case <-time.After(time.Millisecond * 100):
 		}
 	}
-	for _, key := range v.flushAndLoadDelete() {
-		select {
-		case <-ctx.Done():
-			return
-		default:
-			if !f(key.uuid) {
-				return
-			}
-		}
-	}
+	v.flushAndRangeDelete(f)
 }
 
 func (v *vqueue) GetVector(uuid string) ([]float32, bool) {
@@ -291,9 +273,9 @@ func (v *vqueue) addDelete(d key) {
 	v.dmu.Unlock()
 }
 
-func (v *vqueue) flushAndLoadInsert() (uii []index) {
+func (v *vqueue) flushAndRangeInsert(f func(uuid string, vector []float32) bool) {
 	v.imu.Lock()
-	uii = make([]index, len(v.uii))
+	uii := make([]index, len(v.uii))
 	copy(uii, v.uii)
 	v.uii = v.uii[:0]
 	v.imu.Unlock()
@@ -304,30 +286,21 @@ func (v *vqueue) flushAndLoadInsert() (uii []index) {
 	dup := make(map[string]bool, len(uii)/2)
 	dl := make([]int, 0, len(uii)/2)
 	for i, idx := range uii {
-		v.uiim.Delete(idx.uuid)
 		// if duplicated data exists current loop's data is old due to the uii's sort order
 		if dup[idx.uuid] {
 			// if duplicated add id to delete wait list
 			dl = append(dl, i)
 		} else {
 			dup[idx.uuid] = true
+			v.uiim.Delete(idx.uuid)
+			f(idx.uuid, idx.vector)
 		}
 	}
-	// delete from large index number of slice
-	sort.Sort(sort.Reverse(sort.IntSlice(dl)))
-	for _, i := range dl {
-		uii = append(uii[:i], uii[i+1:]...)
-	}
-	// finally we should sort uii by date order from oldest to newest
-	sort.Slice(uii, func(i, j int) bool {
-		return uii[i].date < uii[j].date
-	})
-	return uii
 }
 
-func (v *vqueue) flushAndLoadDelete() (udk []key) {
+func (v *vqueue) flushAndRangeDelete(f func(uuid string) bool) {
 	v.dmu.Lock()
-	udk = make([]key, len(v.udk))
+	udk := make([]key, len(v.udk))
 	copy(udk, v.udk)
 	v.udk = v.udk[:0]
 	v.dmu.Unlock()
@@ -337,11 +310,12 @@ func (v *vqueue) flushAndLoadDelete() (udk []key) {
 	dup := make(map[string]bool, len(udk)/2)
 	dl := make([]int, 0, len(udk)/2)
 	for i, idx := range udk {
-		v.udim.Delete(idx.uuid)
 		if dup[idx.uuid] {
 			dl = append(dl, i)
 		} else {
 			dup[idx.uuid] = true
+			v.udim.Delete(idx.uuid)
+			f(idx.uuid)
 		}
 	}
 	sort.Sort(sort.Reverse(sort.IntSlice(dl)))
@@ -384,7 +358,6 @@ func (v *vqueue) flushAndLoadDelete() (udk []key) {
 		// remove from existing map
 		v.uiim.Delete(uuid)
 	}
-	return udk
 }
 
 func (v *vqueue) IVQLen() (l int) {
