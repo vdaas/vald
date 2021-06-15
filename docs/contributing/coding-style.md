@@ -455,8 +455,9 @@ We provide the following errors to describe the error to apply the option.
 
 | Error | Description |
 |----|----|
-| errors.ErrInvalidOption | Error to apply the option, and the error is ignorable |
+| errors.ErrInvalidOption | Error to apply the option, and the error is ignorable and the warning log will be printed |
 | errors.ErrCriticalOption | Critical error to apply the option, the error cannot be ignored and should be handled |
+| errors.ErrUnsetOption | The option is not set, and the error is ignorable and the debug log will be printed |
 
 We strongly recommend the following implementation to set the value using functional option.
 
@@ -581,7 +582,12 @@ func func New(opts ...Option) (Server, error) {
                 log.Error(werr)
                 return nil, werr
             }
-            log.Warn(werr)
+            ue := new(errors.ErrUnsetOption)
+            if errors.As(err, &ue) {
+                log.Debug(werr)
+            } else {
+                log.Warn(werr)
+            }
         }
     }
 
