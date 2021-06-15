@@ -1217,6 +1217,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 		}
 		return nil, err
 	}
+	now++
 	ireq := &payload.Insert_Request{
 		Vector: req.GetVector(),
 		Config: &payload.Insert_Config{
@@ -1375,6 +1376,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 				Timestamp:            n,
 			},
 		})
+		n++
 		rreqs = append(rreqs, &payload.Remove_Request{
 			Id: &payload.Object_ID{
 				Id: vec.GetVector().GetId(),
