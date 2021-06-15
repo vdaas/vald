@@ -260,7 +260,8 @@ func (v *vqueue) IVExists(uuid string) bool {
 		return true
 	}
 	// data exists both queue, compare data timestamp if insert queue timestamp is newer than delete one, this function returns exists(true)
-	return di < vec.date
+	// However, if insert and delete are sent by the update instruction, the timestamp will be the same
+	return di <= vec.date
 }
 
 func (v *vqueue) DVExists(uuid string) bool {
