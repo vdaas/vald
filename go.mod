@@ -61,7 +61,7 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/go-version v1.3.0
 	github.com/json-iterator/go v1.1.11
-	github.com/klauspost/compress v1.12.2
+	github.com/klauspost/compress v1.13.1
 	github.com/kpango/fastime v1.0.16
 	github.com/kpango/fuid v0.0.0-20210407064122-2990e29e1ea5
 	github.com/kpango/gache v1.2.5
