@@ -43,7 +43,7 @@ require (
 	code.cloudfoundry.org/bytefmt v0.0.0-20210524144015-27119551aaea
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
 	contrib.go.opencensus.io/exporter/prometheus v0.3.0
-	contrib.go.opencensus.io/exporter/stackdriver v0.13.6
+	contrib.go.opencensus.io/exporter/stackdriver v0.13.8
 	github.com/aws/aws-sdk-go v1.38.35
 	github.com/cespare/xxhash/v2 v2.1.1
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
