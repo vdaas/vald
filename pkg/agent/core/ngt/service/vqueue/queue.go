@@ -284,16 +284,17 @@ func (v *vqueue) flushAndRangeInsert(f func(uuid string, vector []float32) bool)
 		return uii[i].date > uii[j].date
 	})
 	dup := make(map[string]bool, len(uii)/2)
-	dl := make([]int, 0, len(uii)/2)
 	for i, idx := range uii {
 		// if duplicated data exists current loop's data is old due to the uii's sort order
-		if dup[idx.uuid] {
-			// if duplicated add id to delete wait list
-			dl = append(dl, i)
-		} else {
+		if !dup[idx.uuid] {
 			dup[idx.uuid] = true
+			if !f(idx.uuid, idx.vector) {
+				v.imu.Lock()
+				v.uii = append(uii[i:], v.uii...)
+				v.imu.Unlock()
+				return
+			}
 			v.uiim.Delete(idx.uuid)
-			f(idx.uuid, idx.vector)
 		}
 	}
 }
