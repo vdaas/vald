@@ -143,7 +143,7 @@ The important parameters are the followings:
 - `agent.ngt.distance_type`
 - `agent.ngt.object_type`
 
-Users should configure these parameters first for their use case.
+Users should configure these parameters first to fit to their use case.
 
 For further details, please read [NGT wiki][yj-ngt-wiki].
 
@@ -210,9 +210,25 @@ Ingress for gateways can be configured by `gateway.{backup,filter,lb,meta}.ingre
 It is important to set your host to `gateway.{backup,filter,lb,meta}.ingress.host` field.
 `gateway.{backup,filter,lb,meta}.ingress.servicePort` should be `grpc` or `rest`.
 
+```yaml
+gateway:
+  lb:
+    ingress:
+      enabled: true
+      host: vald.vdaas.org # Set correct hostname here
+      servicePort: grpc
+```
+
 #### Index replica
 
 `gateway.lb.gateway_config.index_replica` means how many agent pods that a vector will be inserted.
+
+```yaml
+gateway:
+  lb:
+    gateway_config:
+      index_replica: 3
+```
 
 #### Resource requests and limits
 
@@ -223,6 +239,14 @@ If the request traffic varies largely, it is recommended to enable HPA for gatew
 
 `gateway.lb.gateway_config.discoverer.duration` represents a frequency to send requests to discoverer.
 If discoverer's CPU utilization is too high, try to make this value longer or reduce the number of LB gateway pods.
+
+```yaml
+gateway:
+  lb:
+    gateway_config:
+      discoverer:
+        duration: 2s
+```
 
 ### Discoverer
 
