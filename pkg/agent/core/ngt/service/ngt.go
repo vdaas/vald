@@ -647,14 +647,16 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 
 	eg, ctx := errgroup.New(ctx)
 
-	kvsLen := n.Len()
+	var kvsLen uint64
+
 	eg.Go(safety.RecoverFunc(func() (err error) {
 		if n.path != "" {
-			m := make(map[string]uint32, kvsLen)
+			m := make(map[string]uint32, n.Len())
 			var mu sync.Mutex
 			n.kvs.Range(ctx, func(key string, id uint32) bool {
 				mu.Lock()
 				m[key] = id
+				kvsLen++
 				mu.Unlock()
 				return true
 			})
