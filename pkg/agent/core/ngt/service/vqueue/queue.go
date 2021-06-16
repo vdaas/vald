@@ -309,29 +309,22 @@ func (v *vqueue) flushAndRangeDelete(f func(uuid string) bool) {
 		return udk[i].date > udk[j].date
 	})
 	dup := make(map[string]bool, len(udk)/2)
-	dl := make([]int, 0, len(udk)/2)
+	udm := make(map[string]int64, len(udk))
 	for i, idx := range udk {
-		if dup[idx.uuid] {
-			dl = append(dl, i)
-		} else {
+		if !dup[idx.uuid] {
 			dup[idx.uuid] = true
+			if !f(idx.uuid) {
+				v.dmu.Lock()
+				v.udk = append(udk[i:], v.udk...)
+				v.dmu.Unlock()
+				return
+			}
 			v.udim.Delete(idx.uuid)
-			f(idx.uuid)
+			udm[idx.uuid] = idx.date
 		}
 	}
-	sort.Sort(sort.Reverse(sort.IntSlice(dl)))
-	for _, i := range dl {
-		udk = append(udk[:i], udk[i+1:]...)
-	}
-	sort.Slice(udk, func(i, j int) bool {
-		return udk[i].date < udk[j].date
-	})
 
-	udm := make(map[string]int64, len(udk))
-	for _, d := range udk {
-		udm[d.uuid] = d.date
-	}
-	dl = dl[:0]
+	dl := make([]int, 0, len(udk)/2)
 
 	// In the CreateIndex operation of the NGT Service, the Delete Queue is processed first, and then the Insert Queue is processed,
 	// so the Insert Queue still contains the old Insert Operation older than the Delete Queue,
