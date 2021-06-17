@@ -287,6 +287,13 @@ func (v *vqueue) flushAndRangeInsert(f func(uuid string, vector []float32) bool)
 	dup := make(map[string]bool, len(uii)/2)
 	for i, idx := range uii {
 		log.Debugf("[rebalancer] flushAndRangeInsert Insert to ngt, udim, uuid: %s, date: %d", idx.uuid, idx.date)
+		if _, ok := v.udim.Load(idx.uuid); ok {
+			v.imu.Lock()
+			v.uii = append(v.uii, idx)
+			v.imu.Unlock()
+			continue
+		}
+
 		// if duplicated data exists current loop's data is old due to the uii's sort order
 		if !dup[idx.uuid] {
 			dup[idx.uuid] = true
