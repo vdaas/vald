@@ -162,7 +162,15 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 			_, err := g.Connect(ctx, addr, grpc.WithBlock())
 			if err != nil {
 				log.Error(err)
-				ech <- err
+				select {
+				case <-ctx.Done():
+					close(ech)
+					if err != nil {
+						return nil, errors.Wrap(ctx.Err(), err.Error())
+					}
+					return nil, ctx.Err()
+				case ech <- err:
+				}
 			}
 		}
 	}
@@ -213,7 +221,11 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 						p, err = p.Reconnect(ctx, true)
 						if err != nil {
 							log.Error(err)
-							ech <- err
+							select {
+							case <-ctx.Done():
+								return false
+							case ech <- err:
+							}
 						}
 						// if rebalanced connection pool is nil even error is nil we should disconnect and delete it
 						if err == nil && p == nil {
@@ -245,7 +257,11 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 					p, err = p.Reconnect(ctx, false)
 					if err != nil {
 						log.Error(err)
-						ech <- err
+						select {
+						case <-ctx.Done():
+							return false
+						case ech <- err:
+						}
 					}
 					// if rebalanced connection pool is nil even error is nil we should disconnect and delete it
 					if err == nil && p == nil {
@@ -291,7 +307,14 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 				err = g.Disconnect(ctx, addr)
 				if err != nil {
 					log.Error(err)
-					ech <- err
+					select {
+					case <-ctx.Done():
+						if err != nil {
+							return errors.Wrap(ctx.Err(), err.Error())
+						}
+						return ctx.Err()
+					case ech <- err:
+					}
 				}
 			}
 			disconnectTargets = disconnectTargets[:0]
@@ -669,15 +692,10 @@ func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOpti
 				return conn, nil
 			}
 			log.Warnf("failed to reconnect unhealthy pool addr= %s\tconn= %v\terror= %v\t trying to disconnect", addr, conn, err)
-			err = g.Disconnect(ctx, addr)
-			if err != nil {
-				log.Warnf("failed to disconnect unhealthy pool addr= %s\terror= %s", addr, err.Error())
-			}
-		} else {
-			err = g.Disconnect(ctx, addr)
-			if err != nil {
-				log.Warnf("failed to disconnect unhealthy pool addr= %s\terror= %s", addr, err.Error())
-			}
+		}
+		err = g.Disconnect(ctx, addr)
+		if err != nil {
+			log.Warnf("failed to disconnect unhealthy pool addr= %s\terror= %s", addr, err.Error())
 		}
 
 		log.Warnf("creating new connection pool for addr = %s", addr)
@@ -694,7 +712,7 @@ func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOpti
 		if err != nil || conn == nil {
 			derr := g.Disconnect(ctx, addr)
 			if derr != nil {
-				log.Warnf("failed to disconnect unhealthy pool addr= %s\terror= %s", addr, err.Error())
+				log.Warnf("failed to disconnect unhealthy pool addr= %s\terror= %s", addr, derr.Error())
 				err = errors.Wrap(err, derr.Error())
 			}
 			return nil, err
@@ -704,7 +722,7 @@ func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOpti
 		if err != nil {
 			derr := g.Disconnect(ctx, addr)
 			if derr != nil {
-				log.Warnf("failed to disconnect unhealthy pool addr= %s\terror= %s", addr, err.Error())
+				log.Warnf("failed to disconnect unhealthy pool addr= %s\terror= %s", addr, derr.Error())
 				err = errors.Wrap(err, derr.Error())
 			}
 			return nil, err

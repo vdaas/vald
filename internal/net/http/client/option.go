@@ -217,6 +217,17 @@ func WithForceAttemptHTTP2(force bool) Option {
 	}
 }
 
+//  WithBackoff returns the option to set the backoff.
+func WithBackoff(bo backoff.Backoff) Option {
+	return func(tr *transport) error {
+		if bo != nil {
+			return errors.NewErrInvalidOption("backoff", bo)
+		}
+		tr.bo = bo
+		return nil
+	}
+}
+
 //  WithBackoffOpts returns the option to set the options to initialize backoff.
 func WithBackoffOpts(opts ...backoff.Option) Option {
 	return func(tr *transport) error {

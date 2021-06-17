@@ -17,6 +17,8 @@
 // Package errors provides error types and function
 package errors
 
+import "fmt"
+
 var (
 	ErrInvalidStorageType = New("invalid storage type")
 
@@ -25,3 +27,50 @@ var (
 
 	ErrBucketNotOpened = New("bucket not opened")
 )
+
+func NewErrS3ReadingBody(err error) error {
+	return &ErrS3ReadingBody{
+		err: err,
+	}
+}
+
+type ErrS3ReadingBody struct {
+	err error
+}
+
+func (e *ErrS3ReadingBody) Error() string {
+	return fmt.Sprintf("failed to read part body: %v", e.err)
+}
+
+func (e *ErrS3ReadingBody) Unwrap() error {
+	return e.err
+}
+
+func NewErrMultiUpload(uploadID string, err error) error {
+	return &ErrMultiUpload{
+		err:      err,
+		uploadID: uploadID,
+	}
+}
+
+type ErrMultiUpload struct {
+	err      error
+	uploadID string
+}
+
+func (m *ErrMultiUpload) Error() string {
+	var extra string
+	if m.err != nil {
+		extra = fmt.Sprintf(", cause: %s", m.err.Error())
+	}
+	return fmt.Sprintf("upload multipart failed, upload id: %s%s", m.uploadID, extra)
+}
+
+func (m *ErrMultiUpload) Unwrap() error {
+	return m.err
+}
+
+// UploadID returns the id of the S3 upload which failed.
+func (m *ErrMultiUpload) UploadID() string {
+	return m.uploadID
+}

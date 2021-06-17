@@ -203,7 +203,12 @@ func (c *client) dnsDiscovery(ctx context.Context, ech chan<- error) (addrs []st
 	for _, ip := range ips {
 		addr := net.JoinHostPort(ip.String(), uint16(c.port))
 		if err = c.connect(ctx, addr); err != nil {
-			ech <- err
+			err = errors.ErrAddrCouldNotDiscover(err, ip.String())
+			select {
+			case <-ctx.Done():
+				return addrs, err
+			case ech <- err:
+			}
 		} else {
 			addrs = append(addrs, addr)
 		}

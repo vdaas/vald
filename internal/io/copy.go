@@ -19,26 +19,30 @@ package io
 
 import (
 	"bytes"
-	"errors"
-	"io"
+	"context"
 	"math"
-	"sync"
-	"sync/atomic"
+
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/pool"
 )
 
 var cio = NewCopier(0)
 
-func Copy(dst io.Writer, src io.Reader) (written int64, err error) {
+func Copy(dst Writer, src Reader) (written int64, err error) {
 	return cio.Copy(dst, src)
 }
 
+func CopyWithContext(ctx context.Context, dst Writer, src Reader) (written int64, err error) {
+	return cio.CopyWithContext(ctx, dst, src)
+}
+
 type Copier interface {
-	Copy(dst io.Writer, src io.Reader) (written int64, err error)
+	Copy(dst Writer, src Reader) (written int64, err error)
+	CopyWithContext(ctx context.Context, dst Writer, src Reader) (written int64, err error)
 }
 
 type copier struct {
-	pool    sync.Pool
-	bufSize int64
+	buffer pool.Buffer
 }
 
 const (
@@ -46,60 +50,61 @@ const (
 )
 
 func NewCopier(size int) Copier {
-	c := new(copier)
-	if size > 0 {
-		atomic.StoreInt64(&c.bufSize, int64(size))
-	} else {
-		atomic.StoreInt64(&c.bufSize, int64(defaultBufferSize))
+	if size <= 0 {
+		size = defaultBufferSize
 	}
-	c.pool = sync.Pool{
-		New: func() interface{} {
-			return bytes.NewBuffer(make([]byte, int(atomic.LoadInt64(&c.bufSize))))
-		},
+	return &copier{
+		buffer: pool.New(context.TODO(),
+			pool.WithSize(uint64(size)),
+		),
 	}
-	return c
 }
 
-func (c *copier) Copy(dst io.Writer, src io.Reader) (written int64, err error) {
+func (c *copier) CopyWithContext(ctx context.Context, dst Writer, src Reader) (written int64, err error) {
+	csrc, err := NewReaderWithContext(ctx, src)
+	if err != nil {
+		return 0, err
+	}
+	return c.Copy(dst, csrc)
+}
+
+func (c *copier) Copy(dst Writer, src Reader) (written int64, err error) {
+	return c.copyContext(context.TODO(), dst, src)
+}
+
+func (c *copier) copyContext(ctx context.Context, dst Writer, src Reader) (written int64, err error) {
 	var (
-		wt io.WriterTo
-		rf io.ReaderFrom
+		wt WriterTo
+		rf ReaderFrom
 		ok bool
 	)
-	if wt, ok = src.(io.WriterTo); ok {
+	if wt, ok = src.(WriterTo); ok {
 		return wt.WriteTo(dst)
 	}
-	if rf, ok = dst.(io.ReaderFrom); ok {
+	if rf, ok = dst.(ReaderFrom); ok {
 		return rf.ReadFrom(src)
 	}
 
 	var (
 		limit int64 = math.MaxInt64
-		size  int64 = atomic.LoadInt64(&c.bufSize)
-		l     *io.LimitedReader
+		size        = int64(c.buffer.Size(ctx))
+		l     *LimitedReader
 		buf   *bytes.Buffer
 	)
-	if l, ok = src.(*io.LimitedReader); ok && l.N >= 1 && size > l.N {
+	if l, ok = src.(*LimitedReader); ok && l.N >= 1 && size > l.N {
 		limit = l.N
 		size = limit
 	}
-	buf, ok = c.pool.Get().(*bytes.Buffer)
+	buf, ok = c.buffer.Get(ctx).(*bytes.Buffer)
 	if !ok || buf == nil {
 		buf = bytes.NewBuffer(make([]byte, size))
 	}
-	defer func() {
-		if atomic.LoadInt64(&c.bufSize) < size {
-			atomic.StoreInt64(&c.bufSize, size)
-			buf.Grow(int(size))
-		}
-		buf.Reset()
-		c.pool.Put(buf)
-	}()
 	if size > int64(buf.Cap()) {
 		size = int64(buf.Cap())
 	}
+	defer c.buffer.PutWithResize(ctx, buf, uint64(size))
 	var nr, nw int
-	for err != io.EOF {
+	for err != EOF {
 		nr, err = src.Read(buf.Bytes()[:size])
 		if nr > 0 {
 			if int64(nr) > size {
@@ -112,7 +117,7 @@ func (c *copier) Copy(dst io.Writer, src io.Reader) (written int64, err error) {
 			nw, err = dst.Write(buf.Bytes()[0:nr])
 			if nw < 0 || nr < int(nw) {
 				if err == nil {
-					return written, errors.New("invalid write result")
+					return written, errors.ErrInvalidWriteResult
 				}
 				nw = 0
 			}
@@ -121,10 +126,10 @@ func (c *copier) Copy(dst io.Writer, src io.Reader) (written int64, err error) {
 				return written, err
 			}
 			if nr != int(nw) {
-				return written, io.ErrShortWrite
+				return written, errors.ErrShortWrite
 			}
 		}
-		if err != nil && err != io.EOF {
+		if err != nil && err != EOF {
 			return written, err
 		}
 	}

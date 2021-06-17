@@ -17,6 +17,8 @@
 // Package errors provides error types and function
 package errors
 
+import "io"
+
 var (
 	// NewErrContextNotProvided represents a function to generate an error that the context is not provided.
 	NewErrContextNotProvided = func() error {
@@ -32,4 +34,8 @@ var (
 	NewErrWriterNotProvided = func() error {
 		return New("io.Writer not provided")
 	}
+
+	ErrInvalidWriteResult = New("invalid write result")
+
+	ErrShortWrite = io.ErrShortWrite
 )

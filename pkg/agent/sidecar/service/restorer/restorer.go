@@ -281,12 +281,7 @@ func copyFile(ctx context.Context, target string, tr io.Reader, mode fs.FileMode
 		}
 	}()
 
-	fw, err := io.NewWriterWithContext(ctx, f)
-	if err != nil {
-		return err
-	}
-
-	_, err = io.Copy(fw, tr)
+	_, err = io.CopyWithContext(f, tr)
 	if err != nil {
 		return err
 	}

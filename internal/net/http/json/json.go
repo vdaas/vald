@@ -59,7 +59,7 @@ func DecodeResponse(res *http.Response, data interface{}) (err error) {
 			return err
 		}
 
-		_, err := io.Copy(ioutil.Discard, res.Body)
+		_, err := io.Copy(io.Discard, res.Body)
 		if err != nil {
 			return errors.ErrRequestBodyFlush(err)
 		}
@@ -97,7 +97,7 @@ func DecodeRequest(r *http.Request, data interface{}) (err error) {
 		if err != nil {
 			return err
 		}
-		_, err := io.Copy(ioutil.Discard, r.Body)
+		_, err := io.Copy(io.Discard, r.Body)
 		if err != nil {
 			return errors.ErrRequestBodyFlush(err)
 		}

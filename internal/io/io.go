@@ -25,24 +25,39 @@ import (
 )
 
 type (
-	Reader      = io.Reader
-	Writer      = io.Writer
-	Closer      = io.Closer
-	ReadCloser  = io.ReadCloser
-	WriteCloser = io.WriteCloser
+	Reader        = io.Reader
+	ReaderAt      = io.ReaderAt
+	ReaderFrom    = io.ReaderFrom
+	ReadSeeker    = io.ReadSeeker
+	LimitedReader = io.LimitedReader
+	Writer        = io.Writer
+	WriterAt      = io.WriterAt
+	WriterTo      = io.WriterTo
+	Seeker        = io.Seeker
+	Closer        = io.Closer
+	ReadCloser    = io.ReadCloser
+	WriteCloser   = io.WriteCloser
+)
+
+const (
+	SeekStart   = io.SeekStart
+	SeekCurrent = io.SeekCurrent
+	SeekEnd     = io.SeekEnd
 )
 
 var (
-	Pipe = io.Pipe
-	EOF  = io.EOF
+	Pipe             = io.Pipe
+	EOF              = io.EOF
+	Discard          = io.Discard
+	NewSectionReader = io.NewSectionReader
 )
 
 type ctxReader struct {
 	ctx context.Context
-	r   io.Reader
+	r   Reader
 }
 
-func NewReaderWithContext(ctx context.Context, r io.Reader) (io.Reader, error) {
+func NewReaderWithContext(ctx context.Context, r Reader) (Reader, error) {
 	if ctx == nil {
 		return nil, errors.NewErrContextNotProvided()
 	}
@@ -57,7 +72,7 @@ func NewReaderWithContext(ctx context.Context, r io.Reader) (io.Reader, error) {
 	}, nil
 }
 
-func NewReadCloserWithContext(ctx context.Context, r io.ReadCloser) (io.ReadCloser, error) {
+func NewReadCloserWithContext(ctx context.Context, r ReadCloser) (ReadCloser, error) {
 	if ctx == nil {
 		return nil, errors.NewErrContextNotProvided()
 	}
@@ -88,7 +103,7 @@ func (r *ctxReader) Close() error {
 	default:
 	}
 
-	if c, ok := r.r.(io.Closer); ok {
+	if c, ok := r.r.(Closer); ok {
 		return c.Close()
 	}
 
@@ -97,10 +112,10 @@ func (r *ctxReader) Close() error {
 
 type ctxWriter struct {
 	ctx context.Context
-	w   io.Writer
+	w   Writer
 }
 
-func NewWriterWithContext(ctx context.Context, w io.Writer) (io.Writer, error) {
+func NewWriterWithContext(ctx context.Context, w Writer) (Writer, error) {
 	if ctx == nil {
 		return nil, errors.NewErrContextNotProvided()
 	}
@@ -115,7 +130,7 @@ func NewWriterWithContext(ctx context.Context, w io.Writer) (io.Writer, error) {
 	}, nil
 }
 
-func NewWriteCloserWithContext(ctx context.Context, w io.WriteCloser) (io.WriteCloser, error) {
+func NewWriteCloserWithContext(ctx context.Context, w WriteCloser) (WriteCloser, error) {
 	if ctx == nil {
 		return nil, errors.NewErrContextNotProvided()
 	}
@@ -146,7 +161,7 @@ func (w *ctxWriter) Close() error {
 	default:
 	}
 
-	if c, ok := w.w.(io.Closer); ok {
+	if c, ok := w.w.(Closer); ok {
 		return c.Close()
 	}
 
