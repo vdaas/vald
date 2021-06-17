@@ -321,18 +321,22 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 		return nil
 	}
 	ech := make(chan error, 2)
+	vqech, err := n.vq.Start(ctx)
+	if err != nil {
+		return nil
+	}
 	n.eg.Go(safety.RecoverFunc(func() (err error) {
-		vqech, err := n.vq.Start(ctx)
-		if err != nil {
-			return err
-		}
-		if n.sdur == 0 {
-			n.sdur = n.dur + time.Second
-		}
-		if n.lim == 0 {
-			n.lim = n.dur * 2
-		}
+
 		defer close(ech)
+		if n.dur <= 0 {
+			n.dur = math.MaxInt64
+		}
+		if n.sdur <= 0 {
+			n.sdur = math.MaxInt64
+		}
+		if n.lim <= 0 {
+			n.lim = math.MaxInt64
+		}
 
 		timer := time.NewTimer(n.idelay)
 		select {
