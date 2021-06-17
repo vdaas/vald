@@ -285,6 +285,8 @@ func (v *vqueue) flushAndRangeInsert(f func(uuid string, vector []float32) bool)
 	})
 	dup := make(map[string]bool, len(uii)/2)
 	for i, idx := range uii {
+		// if the same uuid is detected in the delete map during insert phase, which means the data is not processed in the delete phase.
+		// we need to add it back to insert map to process it in next create index process.
 		if _, ok := v.udim.Load(idx.uuid); ok {
 			v.imu.Lock()
 			v.uii = append(v.uii, idx)
