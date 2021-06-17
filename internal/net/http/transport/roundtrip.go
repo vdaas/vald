@@ -19,7 +19,6 @@ package transport
 
 import (
 	"context"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/vdaas/vald/internal/backoff"
@@ -101,7 +100,7 @@ func retryableStatusCode(status int) bool {
 
 func closeBody(rc io.ReadCloser) {
 	if rc != nil {
-		if _, err := io.Copy(ioutil.Discard, rc); err != nil {
+		if _, err := io.Copy(io.Discard, rc); err != nil {
 			log.Error(err)
 		}
 		if err := rc.Close(); err != nil {

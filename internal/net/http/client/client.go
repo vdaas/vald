@@ -29,18 +29,19 @@ import (
 
 type transport struct {
 	*http.Transport
+	bo          backoff.Backoff
 	backoffOpts []backoff.Option
 }
 
 // New initializes the HTTP2 transport with exponential backoff and returns the HTTP client for it, or returns any error occurred.
-func New(opts ...Option) (*http.Client, error) {
+func New(opts ...Option) (c *http.Client, err error) {
 	tr := new(transport)
 	tr.Transport = new(http.Transport)
 
+	e := new(errors.ErrCriticalOption)
 	for _, opt := range append(defaultOptions, opts...) {
-		if err := opt(tr); err != nil {
+		if err = opt(tr); err != nil {
 			werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
-			e := new(errors.ErrCriticalOption)
 			if errors.As(err, &e) {
 				log.Error(werr)
 				return nil, werr
@@ -49,16 +50,22 @@ func New(opts ...Option) (*http.Client, error) {
 		}
 	}
 
-	if err := http2.ConfigureTransport(tr.Transport); err != nil {
-		return nil, err
+	if _, err = http2.ConfigureTransports(tr.Transport); err != nil {
+		// ConfigureTransports configures a net/http HTTP/1 Transport to use HTTP/2.
+		// It returns an error if transport has already been HTTP/2-enabled.
+		// so we can ignore this error
+		log.Warnf("failed to configure http2 transport: %v", err)
 	}
 
 	return &http.Client{
 		Transport: htr.NewExpBackoff(
 			htr.WithRoundTripper(tr.Transport),
-			htr.WithBackoff(
-				backoff.New(tr.backoffOpts...),
-			),
+			htr.WithBackoff(func() backoff.Backoff {
+				if tr.bo != nil {
+					return tr.bo
+				}
+				return backoff.New(tr.backoffOpts...)
+			}()),
 		),
 	}, nil
 }

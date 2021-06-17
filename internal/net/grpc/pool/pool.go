@@ -137,6 +137,7 @@ func (p *pool) Connect(ctx context.Context) (c Conn, err error) {
 	if err != nil {
 		return p.connect(ctx)
 	}
+	sort.Strings(ips)
 	p.reconnectHash = strings.Join(ips, "-")
 
 	for i := range p.pool {
@@ -434,6 +435,7 @@ func (p *pool) Reconnect(ctx context.Context, force bool) (c Conn, err error) {
 		}
 		return p, nil
 	}
+	sort.Strings(ips)
 	if !healthy || p.reconnectHash != strings.Join(ips, "-") || force {
 		return p.Connect(ctx)
 	}

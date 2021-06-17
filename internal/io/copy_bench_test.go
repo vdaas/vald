@@ -20,6 +20,8 @@ package io
 import (
 	"io"
 	"testing"
+
+	"github.com/vdaas/vald/internal/log"
 )
 
 const (
@@ -53,6 +55,10 @@ func (r *reader) Read(p []byte) (n int, err error) {
 
 	r.pos += read
 	return read, nil
+}
+
+func init() {
+	log.Init()
 }
 
 func BenchmarkStandardIOCopy(b *testing.B) {

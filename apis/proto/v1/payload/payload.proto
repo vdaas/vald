@@ -38,17 +38,13 @@ message Search {
     repeated float vector = 1 [ (validate.rules).repeated .min_items = 2 ];
     Config config = 2;
   }
-  message MultiRequest {
-    repeated Request requests = 1;
-  }
+  message MultiRequest { repeated Request requests = 1; }
 
   message IDRequest {
     string id = 1;
     Config config = 2;
   }
-  message MultiIDRequest {
-    repeated IDRequest requests = 1;
-  }
+  message MultiIDRequest { repeated IDRequest requests = 1; }
 
   message ObjectRequest {
     bytes object = 1;
@@ -56,9 +52,7 @@ message Search {
     Filter.Target vectorizer = 3;
   }
 
-  message MultiObjectRequest {
-    repeated ObjectRequest requests = 1;
-  }
+  message MultiObjectRequest { repeated ObjectRequest requests = 1; }
 
   message Config {
     string request_id = 1;
@@ -70,17 +64,15 @@ message Search {
     Filter.Config egress_filters = 7;
   }
 
-  message Response { 
+  message Response {
     string request_id = 1;
-    repeated Object.Distance results = 2; 
+    repeated Object.Distance results = 2;
   }
 
-  message Responses { 
-    repeated Response responses = 1; 
-  }
+  message Responses { repeated Response responses = 1; }
 
-  message StreamResponse { 
-    oneof payload{
+  message StreamResponse {
+    oneof payload {
       Response response = 1;
       google.rpc.Status status = 2;
     }
@@ -93,9 +85,7 @@ message Filter {
     uint32 port = 2;
   }
 
-  message Config{
-    repeated Target targets = 1;
-  }
+  message Config { repeated Target targets = 1; }
 }
 
 message Insert {
@@ -103,17 +93,13 @@ message Insert {
     Object.Vector vector = 1 [ (validate.rules).repeated .min_items = 2 ];
     Config config = 2;
   }
-  message MultiRequest {
-    repeated Request requests = 1;
-  }
+  message MultiRequest { repeated Request requests = 1; }
   message ObjectRequest {
     Object.Blob object = 1;
     Config config = 2;
     Filter.Target vectorizer = 3;
   }
-  message MultiObjectRequest {
-    repeated ObjectRequest requests = 1;
-  }
+  message MultiObjectRequest { repeated ObjectRequest requests = 1; }
   message Config {
     bool skip_strict_exist_check = 1;
     Filter.Config filters = 2;
@@ -126,21 +112,18 @@ message Update {
     Object.Vector vector = 1 [ (validate.rules).repeated .min_items = 2 ];
     Config config = 2;
   }
-  message MultiRequest {
-    repeated Request requests = 1;
-  }
+  message MultiRequest { repeated Request requests = 1; }
   message ObjectRequest {
     Object.Blob object = 1;
     Config config = 2;
     Filter.Target vectorizer = 3;
   }
-  message MultiObjectRequest {
-    repeated ObjectRequest requests = 1;
-  }
+  message MultiObjectRequest { repeated ObjectRequest requests = 1; }
   message Config {
     bool skip_strict_exist_check = 1;
-    Filter.Config filters = 2;
-    int64 timestamp = 3;
+    bool skip_vector_duplication_check = 2;
+    Filter.Config filters = 3;
+    int64 timestamp = 4;
   }
 }
 
@@ -149,21 +132,18 @@ message Upsert {
     Object.Vector vector = 1 [ (validate.rules).repeated .min_items = 2 ];
     Config config = 2;
   }
-  message MultiRequest {
-    repeated Request requests = 1;
-  }
+  message MultiRequest { repeated Request requests = 1; }
   message ObjectRequest {
     Object.Blob object = 1;
     Config config = 2;
     Filter.Target vectorizer = 3;
   }
-  message MultiObjectRequest {
-    repeated ObjectRequest requests = 1;
-  }
+  message MultiObjectRequest { repeated ObjectRequest requests = 1; }
   message Config {
     bool skip_strict_exist_check = 1;
-    Filter.Config filters = 2;
-    int64 timestamp = 3;
+    bool skip_vector_duplication_check = 2;
+    Filter.Config filters = 3;
+    int64 timestamp = 4;
   }
 }
 
@@ -172,9 +152,7 @@ message Remove {
     Object.ID id = 1;
     Config config = 2;
   }
-  message MultiRequest {
-    repeated Request requests = 1;
-  }
+  message MultiRequest { repeated Request requests = 1; }
   message Config {
     bool skip_strict_exist_check = 1;
     int64 timestamp = 3;
@@ -192,8 +170,8 @@ message Object {
     float distance = 2;
   }
 
-  message StreamDistance { 
-    oneof payload{
+  message StreamDistance {
+    oneof payload {
       Distance distance = 1;
       google.rpc.Status status = 2;
     }
@@ -208,8 +186,8 @@ message Object {
   }
   message Vectors { repeated Vector vectors = 1; }
 
-  message StreamVector { 
-    oneof payload{
+  message StreamVector {
+    oneof payload {
       Vector vector = 1;
       google.rpc.Status status = 2;
     }
@@ -220,8 +198,8 @@ message Object {
     bytes object = 2;
   }
 
-  message StreamBlob { 
-    oneof payload{
+  message StreamBlob {
+    oneof payload {
       Blob blob = 1;
       google.rpc.Status status = 2;
     }
@@ -233,16 +211,14 @@ message Object {
     repeated string ips = 3;
   }
 
-  message StreamLocation { 
-    oneof payload{
+  message StreamLocation {
+    oneof payload {
       Location location = 1;
       google.rpc.Status status = 2;
     }
   }
 
-  message Locations {
-    repeated Location locations = 1;
-  }
+  message Locations { repeated Location locations = 1; }
 }
 
 message Meta {
@@ -264,9 +240,7 @@ message Control {
 }
 
 message Replication {
-  message Recovery {
-    repeated string deleted_agents = 1;
-  }
+  message Recovery { repeated string deleted_agents = 1; }
 
   message Rebalance {
     repeated string high_usage_agents = 1;
@@ -346,12 +320,8 @@ message Info {
       bool saving = 4;
     }
     message UUID {
-      message Committed {
-        string uuid = 1;
-      }
-      message Uncommitted {
-        string uuid = 1;
-      }
+      message Committed { string uuid = 1; }
+      message Uncommitted { string uuid = 1; }
     }
   }
 
