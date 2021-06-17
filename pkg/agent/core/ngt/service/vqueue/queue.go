@@ -275,6 +275,7 @@ func (v *vqueue) addDelete(d key) {
 
 func (v *vqueue) flushAndRangeInsert(f func(uuid string, vector []float32) bool) {
 	v.imu.Lock()
+	log.Debugf("[rebalancer] flushAndRangeInsert uii len: %d", len(v.uii))
 	uii := make([]index, len(v.uii))
 	copy(uii, v.uii)
 	v.uii = v.uii[:0]
@@ -285,6 +286,7 @@ func (v *vqueue) flushAndRangeInsert(f func(uuid string, vector []float32) bool)
 	})
 	dup := make(map[string]bool, len(uii)/2)
 	for i, idx := range uii {
+		log.Debugf("[rebalancer] flushAndRangeInsert Insert to ngt, udim, uuid: %s, date: %d", idx.uuid, idx.date)
 		// if duplicated data exists current loop's data is old due to the uii's sort order
 		if !dup[idx.uuid] {
 			dup[idx.uuid] = true
@@ -301,6 +303,7 @@ func (v *vqueue) flushAndRangeInsert(f func(uuid string, vector []float32) bool)
 
 func (v *vqueue) flushAndRangeDelete(f func(uuid string) bool) {
 	v.dmu.Lock()
+	log.Debugf("[rebalancer] flushAndRangeDelete udk len: %d", len(v.udk))
 	udk := make([]key, len(v.udk))
 	copy(udk, v.udk)
 	v.udk = v.udk[:0]
@@ -311,6 +314,7 @@ func (v *vqueue) flushAndRangeDelete(f func(uuid string) bool) {
 	dup := make(map[string]bool, len(udk)/2)
 	udm := make(map[string]int64, len(udk))
 	for i, idx := range udk {
+		log.Debugf("[rebalancer] flushAndRangeDelete Delete from ngt, udim, uuid: %s, date: %d", idx.uuid, idx.date)
 		if !dup[idx.uuid] {
 			dup[idx.uuid] = true
 			if !f(idx.uuid) {
@@ -332,12 +336,14 @@ func (v *vqueue) flushAndRangeDelete(f func(uuid string) bool) {
 	// For this reason, the data is deleted from the Insert Queue only when retrieving data from the Delete Queue.
 	// we should check insert vqueue if insert vqueue exists and delete operation date is newer than insert operation date then we should remove insert vqueue's data.
 	v.imu.Lock()
+	log.Debugf("[rebalancer] flushAndRangeDelete uii len: %d", len(v.uii))
 	for i, idx := range v.uii {
 		// check same uuid & operation date
 		// if date is equal, it may update operation we shouldn't remove at that time
 		date, exists := udm[idx.uuid]
 		if exists && date > idx.date {
 			dl = append(dl, i)
+			log.Debugf("[rebalancer] flushAndRangeDelete delete from insert queue, uuid: %s , i: %d", idx.uuid, i)
 		}
 	}
 	v.imu.Unlock()

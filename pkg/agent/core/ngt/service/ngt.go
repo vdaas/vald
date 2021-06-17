@@ -434,6 +434,7 @@ func (n *ngt) insert(uuid string, vec []float32, t int64, validation bool) (err 
 		err = errors.ErrUUIDNotFound(0)
 		return err
 	}
+	log.Debugf("[rebalancer] Insert vector, uuid: %s", uuid)
 	if validation && !n.vq.DVExists(uuid) {
 		// if delete schedule exists we can insert new vector
 		_, ok := n.kvs.Get(uuid)
@@ -502,6 +503,7 @@ func (n *ngt) delete(uuid string, t int64) (err error) {
 		err = errors.ErrUUIDNotFound(0)
 		return err
 	}
+	log.Debugf("[rebalancer] Delete vector, uuid: %s", uuid)
 	_, ok := n.kvs.Get(uuid)
 	if !ok && !n.vq.IVExists(uuid) {
 		return errors.ErrObjectIDNotFound(uuid)
@@ -558,6 +560,7 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	if n.IsIndexing() || n.IsSaving() {
 		return nil
 	}
+	log.Debugf("[rebalancer] IVQLen: %d, DVQLen: %d, IVCLen: %d, DVCLen: %d", n.vq.IVQLen(), n.vq.DVQLen(), n.vq.IVCLen(), n.vq.DVCLen())
 	ic := n.vq.IVQLen() + n.vq.DVQLen()
 	if ic == 0 {
 		return errors.ErrUncommittedIndexNotFound
