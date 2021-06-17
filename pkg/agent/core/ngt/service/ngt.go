@@ -326,7 +326,6 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 		return nil
 	}
 	n.eg.Go(safety.RecoverFunc(func() (err error) {
-
 		defer close(ech)
 		if n.dur <= 0 {
 			n.dur = math.MaxInt64

@@ -41,7 +41,7 @@ type Indexer struct {
 	AutoSaveIndexDurationLimit string `yaml:"auto_save_index_duration_limit" json:"auto_save_index_duration_limit"`
 
 	// AutoSaveIndexWaitDuration represents auto save index wait for next duration
-	AutoSaveIndexWaitDuration string `yaml:"auto_save_index_wait_for_next_duration" json:"auto_save_index_wait_for_next_duration"`
+	AutoSaveIndexWaitDuration string `yaml:"auto_save_index_wait_duration" json:"auto_save_index_wait_duration"`
 
 	// AutoIndexCheckDuration represent checking loop duration about auto indexing execution
 	AutoIndexCheckDuration string `yaml:"auto_index_check_duration" json:"auto_index_check_duration"`
