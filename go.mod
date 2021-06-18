@@ -3,10 +3,10 @@ module github.com/vdaas/vald
 go 1.16
 
 replace (
-	cloud.google.com/go => cloud.google.com/go v0.84.1-0.20210615224420-0232e6f22478
-	cloud.google.com/go/storage => cloud.google.com/go/storage v1.15.1-0.20210615224420-0232e6f22478
+	cloud.google.com/go => cloud.google.com/go v0.84.1-0.20210618001628-24c4451404cd
+	cloud.google.com/go/storage => cloud.google.com/go/storage v1.15.1-0.20210618001628-24c4451404cd
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20210602190049-10e0b31633f1+incompatible
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.38.63
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.38.64
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
@@ -22,7 +22,7 @@ replace (
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.18.0
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.2
 	github.com/hailocab/go-hostpool => github.com/kpango/go-hostpool v0.0.0-20210303030322-aab80263dcd0
-	github.com/klauspost/compress => github.com/klauspost/compress v1.13.2-0.20210615124607-5fa6c071b1a9
+	github.com/klauspost/compress => github.com/klauspost/compress v1.13.2-0.20210618164912-7cf5f14c70d5
 	github.com/kpango/glg => github.com/kpango/glg v1.5.1
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.2+incompatible
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e
@@ -51,7 +51,7 @@ require (
 	github.com/go-redis/redis/v8 v8.10.0
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/gocql/gocql v0.0.0-20200131111108-92af2e088537
-	github.com/gocraft/dbr/v2 v2.7.1
+	github.com/gocraft/dbr/v2 v2.7.2
 	github.com/gogo/googleapis v0.0.0-20180223154316-0cd9801be74a
 	github.com/gogo/protobuf v1.3.2
 	github.com/gogo/status v1.1.0
@@ -84,7 +84,7 @@ require (
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/plot v0.9.0
 	google.golang.org/api v0.48.0
-	google.golang.org/genproto v0.0.0-20210614182748-5b3b54cad159
+	google.golang.org/genproto v0.0.0-20210617175327-b9e0b3197ced
 	google.golang.org/grpc v1.38.0
 	gopkg.in/yaml.v2 v2.4.0
 	inet.af/netaddr v0.0.0-20210603230628-bf05d8b52dda
