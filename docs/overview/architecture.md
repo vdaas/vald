@@ -8,6 +8,24 @@ Vald uses a cloud-native architecture focusing on [Kubernetes](https://kubernete
 Some components in Vald use Kubernetes API to control the behavior of distributed vector indexes.
 Before reading this document, you need to have some understanding of the basic idea of cloud-native architecture and Kubernetes.
 
+### The technology used by Vald
+
+Vald is based on the following techologies.
+
+- [Kubernetes](https://kubernetes.io/)
+
+To easily scale and manage Vald, we deploy and run Vald on [Kubernetes](https://kubernetes.io/).
+Vald takes all of the advantages of using Kuberenetes. For more details please read the next section.
+
+- [Helm](https://helm.sh/)
+
+Helm help you to deploy and configure Vald. 
+Vald contains multiple components and configuration, Helm help us to manage those manifest and provide a better and easy way to deploy and configure Vald.
+
+- [NGT](https://github.com/yahoojapan/NGT)
+
+NGT is the core component of Vald. NGT is the vector search engine and 
+
 ### Concept
 
 Here are the concepts of Vald.
