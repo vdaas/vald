@@ -7,8 +7,8 @@ import (
 func CheckPayloadObjectAccess(m dsl.Matcher) {
 	m.Import("github.com/vdaas/vald/apis/grpc/v1/payload")
 
-	m.Match(`$x.$y`).
-		Where(!m["y"].Text.Matches(`Get.+`) && (m["x"].Type.Is(`*payload.Search_Request`) ||
+	m.Match(`$x.$y`).Where(!m["y"].Text.Matches(`Get.+`) &&
+		(m["x"].Type.Is(`*payload.Search_Request`) ||
 			m["x"].Type.Is(`*payload.Search_MultiRequest`) ||
 			m["x"].Type.Is(`*payload.Search_IDRequest`) ||
 			m["x"].Type.Is(`*payload.Search_MultiIDRequest`) ||
@@ -89,8 +89,9 @@ func CheckPayloadObjectAccess(m dsl.Matcher) {
 			m["x"].Type.Is(`*payload.Info_Pods`) ||
 			m["x"].Type.Is(`*payload.Info_Nodes`) ||
 			m["x"].Type.Is(`*payload.Info_IPs`))).
+		At(m["y"]).
 		Report("Avoid to access struct fields directly").
-		Suggest(`$x.Get$y()`)
+		Suggest(`Get$y()`)
 }
 
 // from Ruleguard by example
