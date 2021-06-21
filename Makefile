@@ -371,7 +371,8 @@ format: \
 ## run gofumpt, goimports for all go files
 format/go:
 	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs gofumpt -w
-	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs goimports -w
+	find ./ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs goimports -w
+	# find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs goimports -w
 
 .PHONY: format/yaml
 format/yaml:

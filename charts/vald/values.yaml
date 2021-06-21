@@ -4183,6 +4183,12 @@ manager:
       # @schema {"name": "manager.index.indexer.auto_index_check_duration", "type": "string"}
       # manager.index.indexer.auto_index_check_duration -- check duration of automatic indexing
       auto_index_check_duration: 1m
+      # @schema {"name": "manager.index.indexer.auto_save_index_duration_limit", "type": "string"}
+      # manager.index.indexer.auto_save_index_duration_limit -- limit duration of automatic index saving
+      auto_save_index_duration_limit: 3h
+      # @schema {"name": "manager.index.indexer.auto_save_index_wait_duration", "type": "string"}
+      # manager.index.indexer.auto_save_index_wait_duration -- duration of automatic index saving wait duration for next saving
+      auto_save_index_wait_duration: 10m
       # @schema {"name": "manager.index.indexer.auto_index_length", "type": "integer"}
       # manager.index.indexer.auto_index_length -- number of cache to trigger automatic indexing
       auto_index_length: 100

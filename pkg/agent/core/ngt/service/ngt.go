@@ -321,18 +321,21 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 		return nil
 	}
 	ech := make(chan error, 2)
+	vqech, err := n.vq.Start(ctx)
+	if err != nil {
+		return nil
+	}
 	n.eg.Go(safety.RecoverFunc(func() (err error) {
-		vqech, err := n.vq.Start(ctx)
-		if err != nil {
-			return err
-		}
-		if n.sdur == 0 {
-			n.sdur = n.dur + time.Second
-		}
-		if n.lim == 0 {
-			n.lim = n.dur * 2
-		}
 		defer close(ech)
+		if n.dur <= 0 {
+			n.dur = math.MaxInt64
+		}
+		if n.sdur <= 0 {
+			n.sdur = math.MaxInt64
+		}
+		if n.lim <= 0 {
+			n.lim = math.MaxInt64
+		}
 
 		timer := time.NewTimer(n.idelay)
 		select {
@@ -647,14 +650,18 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 
 	eg, ctx := errgroup.New(ctx)
 
+	// we want to ensure the acutal kvs size between kvsdb and metadata,
+	// so we create thie counter to count the actual kvs size instead of using kvs.Len()
+	var kvsLen uint64
+
 	eg.Go(safety.RecoverFunc(func() (err error) {
 		if n.path != "" {
-			log.Infof("[rebalance controller] gob area. kvs length: %d", n.kvs.Len())
-			m := make(map[string]uint32, n.kvs.Len())
+			m := make(map[string]uint32, n.Len())
 			var mu sync.Mutex
 			n.kvs.Range(ctx, func(key string, id uint32) bool {
 				mu.Lock()
 				m[key] = id
+				kvsLen++
 				mu.Unlock()
 				return true
 			})
@@ -672,7 +679,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 					derr := f.Close()
 					if derr != nil {
 						err = errors.Wrap(err, derr.Error())
-            log.Errorf("[rebalance controller] failed to close kvsdb file: %v", err)
+						log.Errorf("[rebalance controller] failed to close kvsdb file: %v", err)
 					}
 				}
 			}()
@@ -708,7 +715,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 		&metadata.Metadata{
 			IsInvalid: false,
 			NGT: &metadata.NGT{
-				IndexCount: n.Len(),
+				IndexCount: kvsLen,
 			},
 		},
 	)

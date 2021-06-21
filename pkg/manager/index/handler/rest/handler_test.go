@@ -28,7 +28,6 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		opts []Option
 	}
@@ -101,7 +100,6 @@ func TestNew(t *testing.T) {
 }
 
 func Test_handler_Index(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		w http.ResponseWriter
 		r *http.Request
@@ -194,7 +192,6 @@ func Test_handler_Index(t *testing.T) {
 }
 
 func Test_handler_IndexInfo(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		w http.ResponseWriter
 		r *http.Request
