@@ -101,6 +101,7 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -160,11 +161,11 @@ func Test_vqueue_Start(t *testing.T) {
 		       fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: sync.Mutex{},
+		           imu: nil,
 		           uiim: uiim{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: sync.Mutex{},
+		           dmu: nil,
 		           udim: udim{},
 		           eg: nil,
 		           finalizingInsert: nil,
@@ -191,11 +192,11 @@ func Test_vqueue_Start(t *testing.T) {
 		           fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: sync.Mutex{},
+		           imu: nil,
 		           uiim: uiim{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: sync.Mutex{},
+		           dmu: nil,
 		           udim: udim{},
 		           eg: nil,
 		           finalizingInsert: nil,
@@ -250,6 +251,7 @@ func Test_vqueue_Start(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -309,11 +311,11 @@ func Test_vqueue_PushInsert(t *testing.T) {
 		       fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: sync.Mutex{},
+		           imu: nil,
 		           uiim: uiim{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: sync.Mutex{},
+		           dmu: nil,
 		           udim: udim{},
 		           eg: nil,
 		           finalizingInsert: nil,
@@ -342,11 +344,11 @@ func Test_vqueue_PushInsert(t *testing.T) {
 		           fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: sync.Mutex{},
+		           imu: nil,
 		           uiim: uiim{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: sync.Mutex{},
+		           dmu: nil,
 		           udim: udim{},
 		           eg: nil,
 		           finalizingInsert: nil,
@@ -401,6 +403,7 @@ func Test_vqueue_PushInsert(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -458,11 +461,11 @@ func Test_vqueue_PushDelete(t *testing.T) {
 		       fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: sync.Mutex{},
+		           imu: nil,
 		           uiim: uiim{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: sync.Mutex{},
+		           dmu: nil,
 		           udim: udim{},
 		           eg: nil,
 		           finalizingInsert: nil,
@@ -490,11 +493,11 @@ func Test_vqueue_PushDelete(t *testing.T) {
 		           fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: sync.Mutex{},
+		           imu: nil,
 		           uiim: uiim{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: sync.Mutex{},
+		           dmu: nil,
 		           udim: udim{},
 		           eg: nil,
 		           finalizingInsert: nil,
@@ -549,6 +552,7 @@ func Test_vqueue_PushDelete(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -576,7 +580,8 @@ func Test_vqueue_RangePopInsert(t *testing.T) {
 		iBufSize         int
 		dBufSize         int
 	}
-	type want struct{}
+	type want struct {
+	}
 	type test struct {
 		name       string
 		args       args
@@ -601,11 +606,11 @@ func Test_vqueue_RangePopInsert(t *testing.T) {
 		       fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: sync.Mutex{},
+		           imu: nil,
 		           uiim: uiim{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: sync.Mutex{},
+		           dmu: nil,
 		           udim: udim{},
 		           eg: nil,
 		           finalizingInsert: nil,
@@ -633,11 +638,11 @@ func Test_vqueue_RangePopInsert(t *testing.T) {
 		           fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: sync.Mutex{},
+		           imu: nil,
 		           uiim: uiim{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: sync.Mutex{},
+		           dmu: nil,
 		           udim: udim{},
 		           eg: nil,
 		           finalizingInsert: nil,
@@ -719,7 +724,8 @@ func Test_vqueue_RangePopDelete(t *testing.T) {
 		iBufSize         int
 		dBufSize         int
 	}
-	type want struct{}
+	type want struct {
+	}
 	type test struct {
 		name       string
 		args       args
@@ -744,11 +750,11 @@ func Test_vqueue_RangePopDelete(t *testing.T) {
 		       fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: sync.Mutex{},
+		           imu: nil,
 		           uiim: uiim{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: sync.Mutex{},
+		           dmu: nil,
 		           udim: udim{},
 		           eg: nil,
 		           finalizingInsert: nil,
@@ -776,11 +782,11 @@ func Test_vqueue_RangePopDelete(t *testing.T) {
 		           fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: sync.Mutex{},
+		           imu: nil,
 		           uiim: uiim{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: sync.Mutex{},
+		           dmu: nil,
 		           udim: udim{},
 		           eg: nil,
 		           finalizingInsert: nil,
@@ -894,11 +900,11 @@ func Test_vqueue_GetVector(t *testing.T) {
 		       fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: sync.Mutex{},
+		           imu: nil,
 		           uiim: uiim{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: sync.Mutex{},
+		           dmu: nil,
 		           udim: udim{},
 		           eg: nil,
 		           finalizingInsert: nil,
@@ -925,11 +931,11 @@ func Test_vqueue_GetVector(t *testing.T) {
 		           fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: sync.Mutex{},
+		           imu: nil,
 		           uiim: uiim{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: sync.Mutex{},
+		           dmu: nil,
 		           udim: udim{},
 		           eg: nil,
 		           finalizingInsert: nil,
@@ -984,6 +990,7 @@ func Test_vqueue_GetVector(t *testing.T) {
 			if err := test.checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -1039,11 +1046,11 @@ func Test_vqueue_IVExists(t *testing.T) {
 		       fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: sync.Mutex{},
+		           imu: nil,
 		           uiim: uiim{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: sync.Mutex{},
+		           dmu: nil,
 		           udim: udim{},
 		           eg: nil,
 		           finalizingInsert: nil,
@@ -1070,11 +1077,11 @@ func Test_vqueue_IVExists(t *testing.T) {
 		           fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: sync.Mutex{},
+		           imu: nil,
 		           uiim: uiim{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: sync.Mutex{},
+		           dmu: nil,
 		           udim: udim{},
 		           eg: nil,
 		           finalizingInsert: nil,
@@ -1129,6 +1136,7 @@ func Test_vqueue_IVExists(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -1184,11 +1192,11 @@ func Test_vqueue_DVExists(t *testing.T) {
 		       fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: sync.Mutex{},
+		           imu: nil,
 		           uiim: uiim{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: sync.Mutex{},
+		           dmu: nil,
 		           udim: udim{},
 		           eg: nil,
 		           finalizingInsert: nil,
@@ -1215,11 +1223,11 @@ func Test_vqueue_DVExists(t *testing.T) {
 		           fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: sync.Mutex{},
+		           imu: nil,
 		           uiim: uiim{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: sync.Mutex{},
+		           dmu: nil,
 		           udim: udim{},
 		           eg: nil,
 		           finalizingInsert: nil,
@@ -1274,6 +1282,7 @@ func Test_vqueue_DVExists(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -1300,7 +1309,8 @@ func Test_vqueue_addInsert(t *testing.T) {
 		iBufSize         int
 		dBufSize         int
 	}
-	type want struct{}
+	type want struct {
+	}
 	type test struct {
 		name       string
 		args       args
@@ -1324,11 +1334,11 @@ func Test_vqueue_addInsert(t *testing.T) {
 		       fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: sync.Mutex{},
+		           imu: nil,
 		           uiim: uiim{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: sync.Mutex{},
+		           dmu: nil,
 		           udim: udim{},
 		           eg: nil,
 		           finalizingInsert: nil,
@@ -1355,11 +1365,11 @@ func Test_vqueue_addInsert(t *testing.T) {
 		           fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: sync.Mutex{},
+		           imu: nil,
 		           uiim: uiim{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: sync.Mutex{},
+		           dmu: nil,
 		           udim: udim{},
 		           eg: nil,
 		           finalizingInsert: nil,
@@ -1440,7 +1450,8 @@ func Test_vqueue_addDelete(t *testing.T) {
 		iBufSize         int
 		dBufSize         int
 	}
-	type want struct{}
+	type want struct {
+	}
 	type test struct {
 		name       string
 		args       args
@@ -1464,11 +1475,11 @@ func Test_vqueue_addDelete(t *testing.T) {
 		       fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: sync.Mutex{},
+		           imu: nil,
 		           uiim: uiim{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: sync.Mutex{},
+		           dmu: nil,
 		           udim: udim{},
 		           eg: nil,
 		           finalizingInsert: nil,
@@ -1495,11 +1506,11 @@ func Test_vqueue_addDelete(t *testing.T) {
 		           fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: sync.Mutex{},
+		           imu: nil,
 		           uiim: uiim{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: sync.Mutex{},
+		           dmu: nil,
 		           udim: udim{},
 		           eg: nil,
 		           finalizingInsert: nil,
@@ -1558,7 +1569,10 @@ func Test_vqueue_addDelete(t *testing.T) {
 	}
 }
 
-func Test_vqueue_flushAndLoadInsert(t *testing.T) {
+func Test_vqueue_flushAndRangeInsert(t *testing.T) {
+	type args struct {
+		f func(uuid string, vector []float32) bool
+	}
 	type fields struct {
 		ich              chan index
 		uii              []index
@@ -1578,20 +1592,17 @@ func Test_vqueue_flushAndLoadInsert(t *testing.T) {
 		dBufSize         int
 	}
 	type want struct {
-		wantUii []index
 	}
 	type test struct {
 		name       string
+		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, []index) error
-		beforeFunc func()
-		afterFunc  func()
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotUii []index) error {
-		if !reflect.DeepEqual(gotUii, w.wantUii) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotUii, w.wantUii)
-		}
+	defaultCheckFunc := func(w want) error {
 		return nil
 	}
 	tests := []test{
@@ -1599,14 +1610,17 @@ func Test_vqueue_flushAndLoadInsert(t *testing.T) {
 		/*
 		   {
 		       name: "test_case_1",
+		       args: args {
+		           f: nil,
+		       },
 		       fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: sync.Mutex{},
+		           imu: nil,
 		           uiim: uiim{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: sync.Mutex{},
+		           dmu: nil,
 		           udim: udim{},
 		           eg: nil,
 		           finalizingInsert: nil,
@@ -1627,14 +1641,17 @@ func Test_vqueue_flushAndLoadInsert(t *testing.T) {
 		   func() test {
 		       return test {
 		           name: "test_case_2",
+		           args: args {
+		           f: nil,
+		           },
 		           fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: sync.Mutex{},
+		           imu: nil,
 		           uiim: uiim{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: sync.Mutex{},
+		           dmu: nil,
 		           udim: udim{},
 		           eg: nil,
 		           finalizingInsert: nil,
@@ -1658,10 +1675,10 @@ func Test_vqueue_flushAndLoadInsert(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -1685,15 +1702,18 @@ func Test_vqueue_flushAndLoadInsert(t *testing.T) {
 				dBufSize:         test.fields.dBufSize,
 			}
 
-			gotUii := v.flushAndLoadInsert()
-			if err := test.checkFunc(test.want, gotUii); err != nil {
+			v.flushAndRangeInsert(test.args.f)
+			if err := test.checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
 	}
 }
 
-func Test_vqueue_flushAndLoadDelete(t *testing.T) {
+func Test_vqueue_flushAndRangeDelete(t *testing.T) {
+	type args struct {
+		f func(uuid string) bool
+	}
 	type fields struct {
 		ich              chan index
 		uii              []index
@@ -1713,20 +1733,17 @@ func Test_vqueue_flushAndLoadDelete(t *testing.T) {
 		dBufSize         int
 	}
 	type want struct {
-		wantUdk []key
 	}
 	type test struct {
 		name       string
+		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, []key) error
-		beforeFunc func()
-		afterFunc  func()
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotUdk []key) error {
-		if !reflect.DeepEqual(gotUdk, w.wantUdk) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotUdk, w.wantUdk)
-		}
+	defaultCheckFunc := func(w want) error {
 		return nil
 	}
 	tests := []test{
@@ -1734,14 +1751,17 @@ func Test_vqueue_flushAndLoadDelete(t *testing.T) {
 		/*
 		   {
 		       name: "test_case_1",
+		       args: args {
+		           f: nil,
+		       },
 		       fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: sync.Mutex{},
+		           imu: nil,
 		           uiim: uiim{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: sync.Mutex{},
+		           dmu: nil,
 		           udim: udim{},
 		           eg: nil,
 		           finalizingInsert: nil,
@@ -1762,14 +1782,17 @@ func Test_vqueue_flushAndLoadDelete(t *testing.T) {
 		   func() test {
 		       return test {
 		           name: "test_case_2",
+		           args: args {
+		           f: nil,
+		           },
 		           fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: sync.Mutex{},
+		           imu: nil,
 		           uiim: uiim{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: sync.Mutex{},
+		           dmu: nil,
 		           udim: udim{},
 		           eg: nil,
 		           finalizingInsert: nil,
@@ -1793,10 +1816,10 @@ func Test_vqueue_flushAndLoadDelete(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -1820,8 +1843,8 @@ func Test_vqueue_flushAndLoadDelete(t *testing.T) {
 				dBufSize:         test.fields.dBufSize,
 			}
 
-			gotUdk := v.flushAndLoadDelete()
-			if err := test.checkFunc(test.want, gotUdk); err != nil {
+			v.flushAndRangeDelete(test.args.f)
+			if err := test.checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1872,11 +1895,11 @@ func Test_vqueue_IVQLen(t *testing.T) {
 		       fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: sync.Mutex{},
+		           imu: nil,
 		           uiim: uiim{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: sync.Mutex{},
+		           dmu: nil,
 		           udim: udim{},
 		           eg: nil,
 		           finalizingInsert: nil,
@@ -1900,11 +1923,11 @@ func Test_vqueue_IVQLen(t *testing.T) {
 		           fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: sync.Mutex{},
+		           imu: nil,
 		           uiim: uiim{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: sync.Mutex{},
+		           dmu: nil,
 		           udim: udim{},
 		           eg: nil,
 		           finalizingInsert: nil,
@@ -1959,6 +1982,7 @@ func Test_vqueue_IVQLen(t *testing.T) {
 			if err := test.checkFunc(test.want, gotL); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -2007,11 +2031,11 @@ func Test_vqueue_DVQLen(t *testing.T) {
 		       fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: sync.Mutex{},
+		           imu: nil,
 		           uiim: uiim{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: sync.Mutex{},
+		           dmu: nil,
 		           udim: udim{},
 		           eg: nil,
 		           finalizingInsert: nil,
@@ -2035,11 +2059,11 @@ func Test_vqueue_DVQLen(t *testing.T) {
 		           fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: sync.Mutex{},
+		           imu: nil,
 		           uiim: uiim{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: sync.Mutex{},
+		           dmu: nil,
 		           udim: udim{},
 		           eg: nil,
 		           finalizingInsert: nil,
@@ -2094,6 +2118,7 @@ func Test_vqueue_DVQLen(t *testing.T) {
 			if err := test.checkFunc(test.want, gotL); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -2142,11 +2167,11 @@ func Test_vqueue_IVCLen(t *testing.T) {
 		       fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: sync.Mutex{},
+		           imu: nil,
 		           uiim: uiim{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: sync.Mutex{},
+		           dmu: nil,
 		           udim: udim{},
 		           eg: nil,
 		           finalizingInsert: nil,
@@ -2170,11 +2195,11 @@ func Test_vqueue_IVCLen(t *testing.T) {
 		           fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: sync.Mutex{},
+		           imu: nil,
 		           uiim: uiim{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: sync.Mutex{},
+		           dmu: nil,
 		           udim: udim{},
 		           eg: nil,
 		           finalizingInsert: nil,
@@ -2229,6 +2254,7 @@ func Test_vqueue_IVCLen(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -2277,11 +2303,11 @@ func Test_vqueue_DVCLen(t *testing.T) {
 		       fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: sync.Mutex{},
+		           imu: nil,
 		           uiim: uiim{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: sync.Mutex{},
+		           dmu: nil,
 		           udim: udim{},
 		           eg: nil,
 		           finalizingInsert: nil,
@@ -2305,11 +2331,11 @@ func Test_vqueue_DVCLen(t *testing.T) {
 		           fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: sync.Mutex{},
+		           imu: nil,
 		           uiim: uiim{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: sync.Mutex{},
+		           dmu: nil,
 		           udim: udim{},
 		           eg: nil,
 		           finalizingInsert: nil,
@@ -2364,6 +2390,7 @@ func Test_vqueue_DVCLen(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
