@@ -44,14 +44,10 @@ spec:
               mountPath: /var/lib/grafana/dashboards-vald/01
             - name: grafana-dashboards-vald-discoverer
               mountPath: /var/lib/grafana/dashboards-vald/02
-            - name: grafana-dashboards-vald-backup-manager
-              mountPath: /var/lib/grafana/dashboards-vald/03
-            - name: grafana-dashboards-vald-compressor
-              mountPath: /var/lib/grafana/dashboards-vald/04
             - name: grafana-dashboards-vald-index-manager
               mountPath: /var/lib/grafana/dashboards-vald/05
-            - name: grafana-dashboards-vald-meta
-              mountPath: /var/lib/grafana/dashboards-vald/06
+            - name: grafana-dashboards-vald-helm-operator
+              mountPath: /var/lib/grafana/dashboards-vald/07
       volumes:
         - name: grafana-datasource-provider
           configMap:
@@ -73,19 +69,11 @@ spec:
           configMap:
             defaultMode: 420
             name: grafana-dashboards-vald-discoverer
-        - name: grafana-dashboards-vald-backup-manager
-          configMap:
-            defaultMode: 420
-            name: grafana-dashboards-vald-backup-manager
-        - name: grafana-dashboards-vald-compressor
-          configMap:
-            defaultMode: 420
-            name: grafana-dashboards-vald-compressor
         - name: grafana-dashboards-vald-index-manager
           configMap:
             defaultMode: 420
             name: grafana-dashboards-vald-index-manager
-        - name: grafana-dashboards-vald-meta
+        - name: grafana-dashboards-vald-helm-operator
           configMap:
             defaultMode: 420
-            name: grafana-dashboards-vald-meta
+            name: grafana-dashboards-vald-helm-operator
