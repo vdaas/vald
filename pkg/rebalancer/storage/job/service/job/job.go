@@ -200,6 +200,9 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 						Id:     vec.GetId(),
 						Vector: vec.GetVector(),
 					},
+					Config: &payload.Update_Config{
+						SkipStrictExistCheck: true,
+					},
 				})
 				if uerr != nil {
 					log.Errorf("failed to send Update request, uuid: %s, err: %s", id, uerr.Error())
