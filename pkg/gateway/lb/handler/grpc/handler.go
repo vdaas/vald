@@ -25,6 +25,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+	"unsafe"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
@@ -1152,10 +1153,12 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 	}
 
 	if !req.GetConfig().GetSkipStrictExistCheck() {
-		id, err := s.Exists(ctx, &payload.Object_ID{
-			Id: uuid,
+		vec, err := s.GetObject(ctx, &payload.Object_VectorRequest{
+			Id: &payload.Object_ID{
+				Id: uuid,
+			},
 		})
-		if err != nil || id == nil || len(id.GetId()) == 0 {
+		if err != nil || vec == nil || len(vec.GetId()) == 0 {
 			if err == nil {
 				err = errors.ErrObjectIDNotFound(uuid)
 			}
@@ -1166,7 +1169,28 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 					ServingData: errdetails.Serialize(req),
 				},
 				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Update.Exists",
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Update.GetObject",
+					ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				}, info.Get())
+			if span != nil {
+				span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			}
+			return nil, err
+		}
+		if f32stos(vec.GetVector()) == f32stos(req.GetVector().GetVector()) {
+			if err == nil {
+				err = errors.ErrSameVectorAlreadyExists(uuid, vec.GetVector(), req.GetVector().GetVector())
+			}
+			st, msg, err := status.ParseError(err, codes.AlreadyExists,
+				fmt.Sprintf("error Update API ID = %v's same vector data already exists", uuid),
+				&errdetails.RequestInfo{
+					RequestId:   uuid,
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.GetObject",
 					ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
@@ -2078,4 +2102,13 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 		return err
 	}
 	return nil
+}
+
+func f32stos(fs []float32) string {
+	lf := 4 * len(fs)
+	buf := (*(*[1]byte)(unsafe.Pointer(&(fs[0]))))[:]
+	addr := unsafe.Pointer(&buf)
+	(*(*int)(unsafe.Pointer(uintptr(addr) + uintptr(8)))) = lf
+	(*(*int)(unsafe.Pointer(uintptr(addr) + uintptr(16)))) = lf
+	return *(*string)(unsafe.Pointer(&buf))
 }

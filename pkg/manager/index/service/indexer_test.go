@@ -20,6 +20,7 @@ package service
 import (
 	"context"
 	"reflect"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -31,7 +32,6 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		opts []Option
 	}
@@ -108,22 +108,25 @@ func TestNew(t *testing.T) {
 }
 
 func Test_index_Start(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
 	type fields struct {
-		client                discoverer.Client
-		eg                    errgroup.Group
-		creationPoolSize      uint32
-		indexDuration         time.Duration
-		indexDurationLimit    time.Duration
-		concurrency           int
-		indexInfos            indexInfos
-		indexing              atomic.Value
-		minUncommitted        uint32
-		uuidsCount            uint32
-		uncommittedUUIDsCount uint32
+		client                 discoverer.Client
+		eg                     errgroup.Group
+		creationPoolSize       uint32
+		indexDuration          time.Duration
+		indexDurationLimit     time.Duration
+		saveIndexDurationLimit time.Duration
+		saveIndexWaitDuration  time.Duration
+		saveIndexTargetAddrCh  chan string
+		schMap                 sync.Map
+		concurrency            int
+		indexInfos             indexInfos
+		indexing               atomic.Value
+		minUncommitted         uint32
+		uuidsCount             uint32
+		uncommittedUUIDsCount  uint32
 	}
 	type want struct {
 		want <-chan error
@@ -161,6 +164,10 @@ func Test_index_Start(t *testing.T) {
 		           creationPoolSize: 0,
 		           indexDuration: nil,
 		           indexDurationLimit: nil,
+		           saveIndexDurationLimit: nil,
+		           saveIndexWaitDuration: nil,
+		           saveIndexTargetAddrCh: nil,
+		           schMap: sync.Map{},
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -187,6 +194,10 @@ func Test_index_Start(t *testing.T) {
 		           creationPoolSize: 0,
 		           indexDuration: nil,
 		           indexDurationLimit: nil,
+		           saveIndexDurationLimit: nil,
+		           saveIndexWaitDuration: nil,
+		           saveIndexTargetAddrCh: nil,
+		           schMap: sync.Map{},
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -216,17 +227,21 @@ func Test_index_Start(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			idx := &index{
-				client:                test.fields.client,
-				eg:                    test.fields.eg,
-				creationPoolSize:      test.fields.creationPoolSize,
-				indexDuration:         test.fields.indexDuration,
-				indexDurationLimit:    test.fields.indexDurationLimit,
-				concurrency:           test.fields.concurrency,
-				indexInfos:            test.fields.indexInfos,
-				indexing:              test.fields.indexing,
-				minUncommitted:        test.fields.minUncommitted,
-				uuidsCount:            test.fields.uuidsCount,
-				uncommittedUUIDsCount: test.fields.uncommittedUUIDsCount,
+				client:                 test.fields.client,
+				eg:                     test.fields.eg,
+				creationPoolSize:       test.fields.creationPoolSize,
+				indexDuration:          test.fields.indexDuration,
+				indexDurationLimit:     test.fields.indexDurationLimit,
+				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
+				saveIndexWaitDuration:  test.fields.saveIndexWaitDuration,
+				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
+				schMap:                 test.fields.schMap,
+				concurrency:            test.fields.concurrency,
+				indexInfos:             test.fields.indexInfos,
+				indexing:               test.fields.indexing,
+				minUncommitted:         test.fields.minUncommitted,
+				uuidsCount:             test.fields.uuidsCount,
+				uncommittedUUIDsCount:  test.fields.uncommittedUUIDsCount,
 			}
 
 			got, err := idx.Start(test.args.ctx)
@@ -238,23 +253,27 @@ func Test_index_Start(t *testing.T) {
 }
 
 func Test_index_execute(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		ctx                context.Context
 		enableLowIndexSkip bool
+		immediateSaving    bool
 	}
 	type fields struct {
-		client                discoverer.Client
-		eg                    errgroup.Group
-		creationPoolSize      uint32
-		indexDuration         time.Duration
-		indexDurationLimit    time.Duration
-		concurrency           int
-		indexInfos            indexInfos
-		indexing              atomic.Value
-		minUncommitted        uint32
-		uuidsCount            uint32
-		uncommittedUUIDsCount uint32
+		client                 discoverer.Client
+		eg                     errgroup.Group
+		creationPoolSize       uint32
+		indexDuration          time.Duration
+		indexDurationLimit     time.Duration
+		saveIndexDurationLimit time.Duration
+		saveIndexWaitDuration  time.Duration
+		saveIndexTargetAddrCh  chan string
+		schMap                 sync.Map
+		concurrency            int
+		indexInfos             indexInfos
+		indexing               atomic.Value
+		minUncommitted         uint32
+		uuidsCount             uint32
+		uncommittedUUIDsCount  uint32
 	}
 	type want struct {
 		err error
@@ -282,6 +301,7 @@ func Test_index_execute(t *testing.T) {
 		       args: args {
 		           ctx: nil,
 		           enableLowIndexSkip: false,
+		           immediateSaving: false,
 		       },
 		       fields: fields {
 		           client: nil,
@@ -289,6 +309,10 @@ func Test_index_execute(t *testing.T) {
 		           creationPoolSize: 0,
 		           indexDuration: nil,
 		           indexDurationLimit: nil,
+		           saveIndexDurationLimit: nil,
+		           saveIndexWaitDuration: nil,
+		           saveIndexTargetAddrCh: nil,
+		           schMap: sync.Map{},
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -309,6 +333,7 @@ func Test_index_execute(t *testing.T) {
 		           args: args {
 		           ctx: nil,
 		           enableLowIndexSkip: false,
+		           immediateSaving: false,
 		           },
 		           fields: fields {
 		           client: nil,
@@ -316,6 +341,10 @@ func Test_index_execute(t *testing.T) {
 		           creationPoolSize: 0,
 		           indexDuration: nil,
 		           indexDurationLimit: nil,
+		           saveIndexDurationLimit: nil,
+		           saveIndexWaitDuration: nil,
+		           saveIndexTargetAddrCh: nil,
+		           schMap: sync.Map{},
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -345,20 +374,24 @@ func Test_index_execute(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			idx := &index{
-				client:                test.fields.client,
-				eg:                    test.fields.eg,
-				creationPoolSize:      test.fields.creationPoolSize,
-				indexDuration:         test.fields.indexDuration,
-				indexDurationLimit:    test.fields.indexDurationLimit,
-				concurrency:           test.fields.concurrency,
-				indexInfos:            test.fields.indexInfos,
-				indexing:              test.fields.indexing,
-				minUncommitted:        test.fields.minUncommitted,
-				uuidsCount:            test.fields.uuidsCount,
-				uncommittedUUIDsCount: test.fields.uncommittedUUIDsCount,
+				client:                 test.fields.client,
+				eg:                     test.fields.eg,
+				creationPoolSize:       test.fields.creationPoolSize,
+				indexDuration:          test.fields.indexDuration,
+				indexDurationLimit:     test.fields.indexDurationLimit,
+				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
+				saveIndexWaitDuration:  test.fields.saveIndexWaitDuration,
+				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
+				schMap:                 test.fields.schMap,
+				concurrency:            test.fields.concurrency,
+				indexInfos:             test.fields.indexInfos,
+				indexing:               test.fields.indexing,
+				minUncommitted:         test.fields.minUncommitted,
+				uuidsCount:             test.fields.uuidsCount,
+				uncommittedUUIDsCount:  test.fields.uncommittedUUIDsCount,
 			}
 
-			err := idx.execute(test.args.ctx, test.args.enableLowIndexSkip)
+			err := idx.execute(test.args.ctx, test.args.enableLowIndexSkip, test.args.immediateSaving)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -366,23 +399,162 @@ func Test_index_execute(t *testing.T) {
 	}
 }
 
-func Test_index_loadInfos(t *testing.T) {
-	t.Parallel()
+func Test_index_waitForNextSaving(t *testing.T) {
 	type args struct {
 		ctx context.Context
 	}
 	type fields struct {
-		client                discoverer.Client
-		eg                    errgroup.Group
-		creationPoolSize      uint32
-		indexDuration         time.Duration
-		indexDurationLimit    time.Duration
-		concurrency           int
-		indexInfos            indexInfos
-		indexing              atomic.Value
-		minUncommitted        uint32
-		uuidsCount            uint32
-		uncommittedUUIDsCount uint32
+		client                 discoverer.Client
+		eg                     errgroup.Group
+		creationPoolSize       uint32
+		indexDuration          time.Duration
+		indexDurationLimit     time.Duration
+		saveIndexDurationLimit time.Duration
+		saveIndexWaitDuration  time.Duration
+		saveIndexTargetAddrCh  chan string
+		schMap                 sync.Map
+		concurrency            int
+		indexInfos             indexInfos
+		indexing               atomic.Value
+		minUncommitted         uint32
+		uuidsCount             uint32
+		uncommittedUUIDsCount  uint32
+	}
+	type want struct{}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want) error {
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		       },
+		       fields: fields {
+		           client: nil,
+		           eg: nil,
+		           creationPoolSize: 0,
+		           indexDuration: nil,
+		           indexDurationLimit: nil,
+		           saveIndexDurationLimit: nil,
+		           saveIndexWaitDuration: nil,
+		           saveIndexTargetAddrCh: nil,
+		           schMap: sync.Map{},
+		           concurrency: 0,
+		           indexInfos: indexInfos{},
+		           indexing: nil,
+		           minUncommitted: 0,
+		           uuidsCount: 0,
+		           uncommittedUUIDsCount: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           },
+		           fields: fields {
+		           client: nil,
+		           eg: nil,
+		           creationPoolSize: 0,
+		           indexDuration: nil,
+		           indexDurationLimit: nil,
+		           saveIndexDurationLimit: nil,
+		           saveIndexWaitDuration: nil,
+		           saveIndexTargetAddrCh: nil,
+		           schMap: sync.Map{},
+		           concurrency: 0,
+		           indexInfos: indexInfos{},
+		           indexing: nil,
+		           minUncommitted: 0,
+		           uuidsCount: 0,
+		           uncommittedUUIDsCount: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			idx := &index{
+				client:                 test.fields.client,
+				eg:                     test.fields.eg,
+				creationPoolSize:       test.fields.creationPoolSize,
+				indexDuration:          test.fields.indexDuration,
+				indexDurationLimit:     test.fields.indexDurationLimit,
+				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
+				saveIndexWaitDuration:  test.fields.saveIndexWaitDuration,
+				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
+				schMap:                 test.fields.schMap,
+				concurrency:            test.fields.concurrency,
+				indexInfos:             test.fields.indexInfos,
+				indexing:               test.fields.indexing,
+				minUncommitted:         test.fields.minUncommitted,
+				uuidsCount:             test.fields.uuidsCount,
+				uncommittedUUIDsCount:  test.fields.uncommittedUUIDsCount,
+			}
+
+			idx.waitForNextSaving(test.args.ctx)
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_index_loadInfos(t *testing.T) {
+	type args struct {
+		ctx context.Context
+	}
+	type fields struct {
+		client                 discoverer.Client
+		eg                     errgroup.Group
+		creationPoolSize       uint32
+		indexDuration          time.Duration
+		indexDurationLimit     time.Duration
+		saveIndexDurationLimit time.Duration
+		saveIndexWaitDuration  time.Duration
+		saveIndexTargetAddrCh  chan string
+		schMap                 sync.Map
+		concurrency            int
+		indexInfos             indexInfos
+		indexing               atomic.Value
+		minUncommitted         uint32
+		uuidsCount             uint32
+		uncommittedUUIDsCount  uint32
 	}
 	type want struct {
 		err error
@@ -416,6 +588,10 @@ func Test_index_loadInfos(t *testing.T) {
 		           creationPoolSize: 0,
 		           indexDuration: nil,
 		           indexDurationLimit: nil,
+		           saveIndexDurationLimit: nil,
+		           saveIndexWaitDuration: nil,
+		           saveIndexTargetAddrCh: nil,
+		           schMap: sync.Map{},
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -442,6 +618,10 @@ func Test_index_loadInfos(t *testing.T) {
 		           creationPoolSize: 0,
 		           indexDuration: nil,
 		           indexDurationLimit: nil,
+		           saveIndexDurationLimit: nil,
+		           saveIndexWaitDuration: nil,
+		           saveIndexTargetAddrCh: nil,
+		           schMap: sync.Map{},
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -471,17 +651,21 @@ func Test_index_loadInfos(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			idx := &index{
-				client:                test.fields.client,
-				eg:                    test.fields.eg,
-				creationPoolSize:      test.fields.creationPoolSize,
-				indexDuration:         test.fields.indexDuration,
-				indexDurationLimit:    test.fields.indexDurationLimit,
-				concurrency:           test.fields.concurrency,
-				indexInfos:            test.fields.indexInfos,
-				indexing:              test.fields.indexing,
-				minUncommitted:        test.fields.minUncommitted,
-				uuidsCount:            test.fields.uuidsCount,
-				uncommittedUUIDsCount: test.fields.uncommittedUUIDsCount,
+				client:                 test.fields.client,
+				eg:                     test.fields.eg,
+				creationPoolSize:       test.fields.creationPoolSize,
+				indexDuration:          test.fields.indexDuration,
+				indexDurationLimit:     test.fields.indexDurationLimit,
+				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
+				saveIndexWaitDuration:  test.fields.saveIndexWaitDuration,
+				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
+				schMap:                 test.fields.schMap,
+				concurrency:            test.fields.concurrency,
+				indexInfos:             test.fields.indexInfos,
+				indexing:               test.fields.indexing,
+				minUncommitted:         test.fields.minUncommitted,
+				uuidsCount:             test.fields.uuidsCount,
+				uncommittedUUIDsCount:  test.fields.uncommittedUUIDsCount,
 			}
 
 			err := idx.loadInfos(test.args.ctx)
@@ -493,19 +677,22 @@ func Test_index_loadInfos(t *testing.T) {
 }
 
 func Test_index_IsIndexing(t *testing.T) {
-	t.Parallel()
 	type fields struct {
-		client                discoverer.Client
-		eg                    errgroup.Group
-		creationPoolSize      uint32
-		indexDuration         time.Duration
-		indexDurationLimit    time.Duration
-		concurrency           int
-		indexInfos            indexInfos
-		indexing              atomic.Value
-		minUncommitted        uint32
-		uuidsCount            uint32
-		uncommittedUUIDsCount uint32
+		client                 discoverer.Client
+		eg                     errgroup.Group
+		creationPoolSize       uint32
+		indexDuration          time.Duration
+		indexDurationLimit     time.Duration
+		saveIndexDurationLimit time.Duration
+		saveIndexWaitDuration  time.Duration
+		saveIndexTargetAddrCh  chan string
+		schMap                 sync.Map
+		concurrency            int
+		indexInfos             indexInfos
+		indexing               atomic.Value
+		minUncommitted         uint32
+		uuidsCount             uint32
+		uncommittedUUIDsCount  uint32
 	}
 	type want struct {
 		want bool
@@ -535,6 +722,10 @@ func Test_index_IsIndexing(t *testing.T) {
 		           creationPoolSize: 0,
 		           indexDuration: nil,
 		           indexDurationLimit: nil,
+		           saveIndexDurationLimit: nil,
+		           saveIndexWaitDuration: nil,
+		           saveIndexTargetAddrCh: nil,
+		           schMap: sync.Map{},
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -558,6 +749,10 @@ func Test_index_IsIndexing(t *testing.T) {
 		           creationPoolSize: 0,
 		           indexDuration: nil,
 		           indexDurationLimit: nil,
+		           saveIndexDurationLimit: nil,
+		           saveIndexWaitDuration: nil,
+		           saveIndexTargetAddrCh: nil,
+		           schMap: sync.Map{},
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -587,17 +782,21 @@ func Test_index_IsIndexing(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			idx := &index{
-				client:                test.fields.client,
-				eg:                    test.fields.eg,
-				creationPoolSize:      test.fields.creationPoolSize,
-				indexDuration:         test.fields.indexDuration,
-				indexDurationLimit:    test.fields.indexDurationLimit,
-				concurrency:           test.fields.concurrency,
-				indexInfos:            test.fields.indexInfos,
-				indexing:              test.fields.indexing,
-				minUncommitted:        test.fields.minUncommitted,
-				uuidsCount:            test.fields.uuidsCount,
-				uncommittedUUIDsCount: test.fields.uncommittedUUIDsCount,
+				client:                 test.fields.client,
+				eg:                     test.fields.eg,
+				creationPoolSize:       test.fields.creationPoolSize,
+				indexDuration:          test.fields.indexDuration,
+				indexDurationLimit:     test.fields.indexDurationLimit,
+				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
+				saveIndexWaitDuration:  test.fields.saveIndexWaitDuration,
+				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
+				schMap:                 test.fields.schMap,
+				concurrency:            test.fields.concurrency,
+				indexInfos:             test.fields.indexInfos,
+				indexing:               test.fields.indexing,
+				minUncommitted:         test.fields.minUncommitted,
+				uuidsCount:             test.fields.uuidsCount,
+				uncommittedUUIDsCount:  test.fields.uncommittedUUIDsCount,
 			}
 
 			got := idx.IsIndexing()
@@ -609,19 +808,22 @@ func Test_index_IsIndexing(t *testing.T) {
 }
 
 func Test_index_NumberOfUUIDs(t *testing.T) {
-	t.Parallel()
 	type fields struct {
-		client                discoverer.Client
-		eg                    errgroup.Group
-		creationPoolSize      uint32
-		indexDuration         time.Duration
-		indexDurationLimit    time.Duration
-		concurrency           int
-		indexInfos            indexInfos
-		indexing              atomic.Value
-		minUncommitted        uint32
-		uuidsCount            uint32
-		uncommittedUUIDsCount uint32
+		client                 discoverer.Client
+		eg                     errgroup.Group
+		creationPoolSize       uint32
+		indexDuration          time.Duration
+		indexDurationLimit     time.Duration
+		saveIndexDurationLimit time.Duration
+		saveIndexWaitDuration  time.Duration
+		saveIndexTargetAddrCh  chan string
+		schMap                 sync.Map
+		concurrency            int
+		indexInfos             indexInfos
+		indexing               atomic.Value
+		minUncommitted         uint32
+		uuidsCount             uint32
+		uncommittedUUIDsCount  uint32
 	}
 	type want struct {
 		want uint32
@@ -651,6 +853,10 @@ func Test_index_NumberOfUUIDs(t *testing.T) {
 		           creationPoolSize: 0,
 		           indexDuration: nil,
 		           indexDurationLimit: nil,
+		           saveIndexDurationLimit: nil,
+		           saveIndexWaitDuration: nil,
+		           saveIndexTargetAddrCh: nil,
+		           schMap: sync.Map{},
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -674,6 +880,10 @@ func Test_index_NumberOfUUIDs(t *testing.T) {
 		           creationPoolSize: 0,
 		           indexDuration: nil,
 		           indexDurationLimit: nil,
+		           saveIndexDurationLimit: nil,
+		           saveIndexWaitDuration: nil,
+		           saveIndexTargetAddrCh: nil,
+		           schMap: sync.Map{},
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -703,17 +913,21 @@ func Test_index_NumberOfUUIDs(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			idx := &index{
-				client:                test.fields.client,
-				eg:                    test.fields.eg,
-				creationPoolSize:      test.fields.creationPoolSize,
-				indexDuration:         test.fields.indexDuration,
-				indexDurationLimit:    test.fields.indexDurationLimit,
-				concurrency:           test.fields.concurrency,
-				indexInfos:            test.fields.indexInfos,
-				indexing:              test.fields.indexing,
-				minUncommitted:        test.fields.minUncommitted,
-				uuidsCount:            test.fields.uuidsCount,
-				uncommittedUUIDsCount: test.fields.uncommittedUUIDsCount,
+				client:                 test.fields.client,
+				eg:                     test.fields.eg,
+				creationPoolSize:       test.fields.creationPoolSize,
+				indexDuration:          test.fields.indexDuration,
+				indexDurationLimit:     test.fields.indexDurationLimit,
+				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
+				saveIndexWaitDuration:  test.fields.saveIndexWaitDuration,
+				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
+				schMap:                 test.fields.schMap,
+				concurrency:            test.fields.concurrency,
+				indexInfos:             test.fields.indexInfos,
+				indexing:               test.fields.indexing,
+				minUncommitted:         test.fields.minUncommitted,
+				uuidsCount:             test.fields.uuidsCount,
+				uncommittedUUIDsCount:  test.fields.uncommittedUUIDsCount,
 			}
 
 			got := idx.NumberOfUUIDs()
@@ -725,19 +939,22 @@ func Test_index_NumberOfUUIDs(t *testing.T) {
 }
 
 func Test_index_NumberOfUncommittedUUIDs(t *testing.T) {
-	t.Parallel()
 	type fields struct {
-		client                discoverer.Client
-		eg                    errgroup.Group
-		creationPoolSize      uint32
-		indexDuration         time.Duration
-		indexDurationLimit    time.Duration
-		concurrency           int
-		indexInfos            indexInfos
-		indexing              atomic.Value
-		minUncommitted        uint32
-		uuidsCount            uint32
-		uncommittedUUIDsCount uint32
+		client                 discoverer.Client
+		eg                     errgroup.Group
+		creationPoolSize       uint32
+		indexDuration          time.Duration
+		indexDurationLimit     time.Duration
+		saveIndexDurationLimit time.Duration
+		saveIndexWaitDuration  time.Duration
+		saveIndexTargetAddrCh  chan string
+		schMap                 sync.Map
+		concurrency            int
+		indexInfos             indexInfos
+		indexing               atomic.Value
+		minUncommitted         uint32
+		uuidsCount             uint32
+		uncommittedUUIDsCount  uint32
 	}
 	type want struct {
 		want uint32
@@ -767,6 +984,10 @@ func Test_index_NumberOfUncommittedUUIDs(t *testing.T) {
 		           creationPoolSize: 0,
 		           indexDuration: nil,
 		           indexDurationLimit: nil,
+		           saveIndexDurationLimit: nil,
+		           saveIndexWaitDuration: nil,
+		           saveIndexTargetAddrCh: nil,
+		           schMap: sync.Map{},
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -790,6 +1011,10 @@ func Test_index_NumberOfUncommittedUUIDs(t *testing.T) {
 		           creationPoolSize: 0,
 		           indexDuration: nil,
 		           indexDurationLimit: nil,
+		           saveIndexDurationLimit: nil,
+		           saveIndexWaitDuration: nil,
+		           saveIndexTargetAddrCh: nil,
+		           schMap: sync.Map{},
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -819,17 +1044,21 @@ func Test_index_NumberOfUncommittedUUIDs(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			idx := &index{
-				client:                test.fields.client,
-				eg:                    test.fields.eg,
-				creationPoolSize:      test.fields.creationPoolSize,
-				indexDuration:         test.fields.indexDuration,
-				indexDurationLimit:    test.fields.indexDurationLimit,
-				concurrency:           test.fields.concurrency,
-				indexInfos:            test.fields.indexInfos,
-				indexing:              test.fields.indexing,
-				minUncommitted:        test.fields.minUncommitted,
-				uuidsCount:            test.fields.uuidsCount,
-				uncommittedUUIDsCount: test.fields.uncommittedUUIDsCount,
+				client:                 test.fields.client,
+				eg:                     test.fields.eg,
+				creationPoolSize:       test.fields.creationPoolSize,
+				indexDuration:          test.fields.indexDuration,
+				indexDurationLimit:     test.fields.indexDurationLimit,
+				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
+				saveIndexWaitDuration:  test.fields.saveIndexWaitDuration,
+				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
+				schMap:                 test.fields.schMap,
+				concurrency:            test.fields.concurrency,
+				indexInfos:             test.fields.indexInfos,
+				indexing:               test.fields.indexing,
+				minUncommitted:         test.fields.minUncommitted,
+				uuidsCount:             test.fields.uuidsCount,
+				uncommittedUUIDsCount:  test.fields.uncommittedUUIDsCount,
 			}
 
 			got := idx.NumberOfUncommittedUUIDs()
