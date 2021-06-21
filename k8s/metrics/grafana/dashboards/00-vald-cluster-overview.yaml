@@ -37,7 +37,7 @@ data:
       "editable": true,
       "gnetId": null,
       "graphTooltip": 0,
-      "iteration": 1607306546843,
+      "iteration": 1623652791152,
       "links": [],
       "panels": [
         {
@@ -45,17 +45,17 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "mappings": [
                 {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "special"
                 }
               ],
-              "nullValueMode": "connected",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -95,9 +95,10 @@ data:
               "fields": "/^vald_version$/",
               "values": false
             },
+            "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\"}",
@@ -118,17 +119,17 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "mappings": [
                 {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "special"
                 }
               ],
-              "nullValueMode": "connected",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -168,9 +169,10 @@ data:
               "fields": "/^go_version$/",
               "values": false
             },
+            "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "expr": "label_replace(vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\"}, \"go_version\", \"v$1\", \"go_version\", \"([^v].*)\")",
@@ -191,17 +193,17 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "mappings": [
                 {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "special"
                 }
               ],
-              "nullValueMode": "connected",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -241,9 +243,10 @@ data:
               "fields": "/^go_os$/",
               "values": false
             },
+            "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\"}",
@@ -264,18 +267,18 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "decimals": 2,
               "mappings": [
                 {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "special"
                 }
               ],
-              "nullValueMode": "connected",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -319,12 +322,14 @@ data:
               "fields": "",
               "values": false
             },
+            "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
-              "expr": "sum(container_memory_working_set_bytes{namespace=\"$Namespace\", container=~\"$ReplicaSet\"})",
+              "exemplar": true,
+              "expr": "sum(container_memory_working_set_bytes{namespace=\"$Namespace\", pod=~\"$ReplicaSet.*\"})",
               "format": "time_series",
               "interval": "",
               "intervalFactor": 1,
@@ -342,17 +347,17 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "mappings": [
                 {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "special"
                 }
               ],
-              "nullValueMode": "connected",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -392,9 +397,10 @@ data:
               "fields": "/^git_commit$/",
               "values": false
             },
+            "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\"}",
@@ -415,17 +421,17 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "mappings": [
                 {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "special"
                 }
               ],
-              "nullValueMode": "connected",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -465,9 +471,10 @@ data:
               "fields": "/^build_time$/",
               "values": false
             },
+            "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\"}",
@@ -491,7 +498,6 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "links": []
             },
             "overrides": []
@@ -522,7 +528,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "8.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -588,7 +594,6 @@ data:
           "decimals": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "links": []
             },
             "overrides": []
@@ -619,7 +624,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "8.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -655,6 +660,7 @@ data:
           },
           "yaxes": [
             {
+              "$$hashKey": "object:837",
               "format": "bytes",
               "label": null,
               "logBase": 1,
@@ -663,6 +669,7 @@ data:
               "show": true
             },
             {
+              "$$hashKey": "object:838",
               "format": "short",
               "label": null,
               "logBase": 1,
@@ -679,6 +686,10 @@ data:
         {
           "collapsed": false,
           "datasource": null,
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
           "gridPos": {
             "h": 1,
             "w": 24,
@@ -688,13 +699,6 @@ data:
           "id": 57,
           "panels": [],
           "repeat": "ReplicaSet",
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-agent-ngt",
-              "value": "vald-agent-ngt"
-            }
-          },
           "title": "$ReplicaSet",
           "type": "row"
         },
@@ -703,17 +707,17 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "mappings": [
                 {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "special"
                 }
               ],
-              "nullValueMode": "connected",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -753,18 +757,12 @@ data:
               "fields": "",
               "values": false
             },
+            "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "8.0.1",
           "repeat": null,
           "repeatDirection": "v",
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-agent-ngt",
-              "value": "vald-agent-ngt"
-            }
-          },
           "targets": [
             {
               "expr": "count(up{namespace=\"$Namespace\", app=~\"$ReplicaSet\", app!=\"\"})",
@@ -789,7 +787,6 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "links": []
             },
             "overrides": []
@@ -820,25 +817,19 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "8.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
           "repeat": null,
           "repeatDirection": "v",
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-agent-ngt",
-              "value": "vald-agent-ngt"
-            }
-          },
           "seriesOverrides": [],
           "spaceLength": 10,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
+              "exemplar": true,
               "expr": "max(kube_deployment_status_replicas{namespace=\"$Namespace\", deployment=\"$ReplicaSet\"}) and on() count(kube_deployment_created{deployment=~\"$ReplicaSet\"}) >= 1",
               "interval": "",
               "intervalFactor": 2,
@@ -943,6 +934,7 @@ data:
           },
           "yaxes": [
             {
+              "$$hashKey": "object:746",
               "format": "short",
               "label": null,
               "logBase": 1,
@@ -951,6 +943,7 @@ data:
               "show": true
             },
             {
+              "$$hashKey": "object:747",
               "format": "short",
               "label": null,
               "logBase": 1,
@@ -972,7 +965,6 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "links": []
             },
             "overrides": []
@@ -1003,26 +995,20 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "8.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
           "repeat": null,
           "repeatDirection": "v",
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-agent-ngt",
-              "value": "vald-agent-ngt"
-            }
-          },
           "seriesOverrides": [],
           "spaceLength": 10,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(irate(container_cpu_usage_seconds_total{namespace=\"$Namespace\", container=\"$ReplicaSet\"}[$interval])) by (pod)",
+              "exemplar": true,
+              "expr": "sum(irate(container_cpu_usage_seconds_total{namespace=\"$Namespace\", pod=~\"$ReplicaSet.*\"}[$interval])) by (pod)",
               "interval": "",
               "legendFormat": "{{pod}}",
               "refId": "A"
@@ -1048,6 +1034,7 @@ data:
           },
           "yaxes": [
             {
+              "$$hashKey": "object:1004",
               "format": "short",
               "label": null,
               "logBase": 1,
@@ -1056,6 +1043,7 @@ data:
               "show": true
             },
             {
+              "$$hashKey": "object:1005",
               "format": "short",
               "label": null,
               "logBase": 1,
@@ -1077,7 +1065,6 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "links": []
             },
             "overrides": []
@@ -1108,26 +1095,20 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "8.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
           "repeat": null,
           "repeatDirection": "v",
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-agent-ngt",
-              "value": "vald-agent-ngt"
-            }
-          },
           "seriesOverrides": [],
           "spaceLength": 10,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(container_memory_working_set_bytes{namespace=\"$Namespace\", container=\"$ReplicaSet\"}) by (pod)",
+              "exemplar": true,
+              "expr": "sum(container_memory_working_set_bytes{namespace=\"$Namespace\", pod=~\"$ReplicaSet.*\"}) by (pod)",
               "interval": "",
               "legendFormat": "{{pod}}",
               "refId": "A"
@@ -1153,6 +1134,7 @@ data:
           },
           "yaxes": [
             {
+              "$$hashKey": "object:1195",
               "format": "decbytes",
               "label": null,
               "logBase": 1,
@@ -1161,3072 +1143,7 @@ data:
               "show": true
             },
             {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "collapsed": false,
-          "datasource": null,
-          "gridPos": {
-            "h": 1,
-            "w": 24,
-            "x": 0,
-            "y": 21
-          },
-          "id": 122,
-          "panels": [],
-          "repeatIteration": 1607306546843,
-          "repeatPanelId": 57,
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-discoverer",
-              "value": "vald-discoverer"
-            }
-          },
-          "title": "$ReplicaSet",
-          "type": "row"
-        },
-        {
-          "cacheTimeout": null,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {
-              "custom": {},
-              "mappings": [
-                {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
-                }
-              ],
-              "nullValueMode": "connected",
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "none"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 3,
-            "x": 0,
-            "y": 22
-          },
-          "id": 123,
-          "interval": null,
-          "links": [],
-          "maxDataPoints": 100,
-          "options": {
-            "colorMode": "value",
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "orientation": "horizontal",
-            "reduceOptions": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "textMode": "auto"
-          },
-          "pluginVersion": "7.3.4",
-          "repeat": null,
-          "repeatDirection": "v",
-          "repeatIteration": 1607306546843,
-          "repeatPanelId": 14,
-          "repeatedByRow": true,
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-discoverer",
-              "value": "vald-discoverer"
-            }
-          },
-          "targets": [
-            {
-              "expr": "count(up{namespace=\"$Namespace\", app=~\"$ReplicaSet\", app!=\"\"})",
-              "format": "time_series",
-              "hide": false,
-              "instant": false,
-              "interval": "",
-              "legendFormat": "",
-              "refId": "A"
-            }
-          ],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Pods",
-          "type": "stat"
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {
-              "custom": {},
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 5,
-            "x": 3,
-            "y": 22
-          },
-          "hiddenSeries": false,
-          "id": 124,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "7.3.4",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "repeat": null,
-          "repeatDirection": "v",
-          "repeatIteration": 1607306546843,
-          "repeatPanelId": 31,
-          "repeatedByRow": true,
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-discoverer",
-              "value": "vald-discoverer"
-            }
-          },
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "max(kube_deployment_status_replicas{namespace=\"$Namespace\", deployment=\"$ReplicaSet\"}) and on() count(kube_deployment_created{deployment=~\"$ReplicaSet\"}) >= 1",
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Replicas",
-              "refId": "A"
-            },
-            {
-              "expr": "max(kube_deployment_status_replicas_available{namespace=\"$Namespace\", deployment=\"$ReplicaSet\"}) and on() count(kube_deployment_created{deployment=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Available",
-              "refId": "B"
-            },
-            {
-              "expr": "max(kube_deployment_status_replicas_unavailable{namespace=\"$Namespace\", deployment=\"$ReplicaSet\"}) and on() count(kube_deployment_created{deployment=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Unavailable",
-              "refId": "C"
-            },
-            {
-              "expr": "max(kube_deployment_status_replicas_updated{namespace=\"$Namespace\", deployment=\"$ReplicaSet\"}) and on() count(kube_deployment_created{deployment=~\"$ReplicaSet\"}) >= 1\n",
-              "intervalFactor": 2,
-              "legendFormat": "Updated",
-              "refId": "D"
-            },
-            {
-              "expr": "max(kube_daemonset_status_current_number_scheduled{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Current number scheduled",
-              "refId": "E"
-            },
-            {
-              "expr": "max(kube_daemonset_status_desired_number_scheduled{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Desired number scheduled",
-              "refId": "F"
-            },
-            {
-              "expr": "max(kube_daemonset_status_number_available{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Available",
-              "refId": "G"
-            },
-            {
-              "expr": "max(kube_daemonset_status_number_misscheduled{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Misscheduled",
-              "refId": "H"
-            },
-            {
-              "expr": "max(kube_daemonset_status_number_ready{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Ready",
-              "refId": "I"
-            },
-            {
-              "expr": "max(kube_daemonset_status_number_unavailable{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "hide": false,
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Unavailable",
-              "refId": "J"
-            },
-            {
-              "expr": "max(kube_statefulset_status_replicas_current{namespace=\"$Namespace\", statefulset=\"$ReplicaSet\"}) and on() count(kube_statefulset_created{statefulset=~\"$ReplicaSet\"}) >= 1",
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Current",
-              "refId": "K"
-            },
-            {
-              "expr": "max(kube_statefulset_status_replicas_ready{namespace=\"$Namespace\", statefulset=\"$ReplicaSet\"}) and on() count(kube_statefulset_created{statefulset=~\"$ReplicaSet\"}) >= 1",
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Ready",
-              "refId": "L"
-            },
-            {
-              "expr": "max(kube_statefulset_status_replicas_updated{namespace=\"$Namespace\", statefulset=\"$ReplicaSet\"}) and on() count(kube_statefulset_created{statefulset=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Updated",
-              "refId": "M"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "Pod status",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {
-              "custom": {},
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 0,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 8,
-            "x": 8,
-            "y": 22
-          },
-          "hiddenSeries": false,
-          "id": 125,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "7.3.4",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "repeat": null,
-          "repeatDirection": "v",
-          "repeatIteration": 1607306546843,
-          "repeatPanelId": 24,
-          "repeatedByRow": true,
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-discoverer",
-              "value": "vald-discoverer"
-            }
-          },
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(irate(container_cpu_usage_seconds_total{namespace=\"$Namespace\", container=\"$ReplicaSet\"}[$interval])) by (pod)",
-              "interval": "",
-              "legendFormat": "{{pod}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "CPU",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {
-              "custom": {},
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 0,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 8,
-            "x": 16,
-            "y": 22
-          },
-          "hiddenSeries": false,
-          "id": 126,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "7.3.4",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "repeat": null,
-          "repeatDirection": "v",
-          "repeatIteration": 1607306546843,
-          "repeatPanelId": 28,
-          "repeatedByRow": true,
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-discoverer",
-              "value": "vald-discoverer"
-            }
-          },
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(container_memory_working_set_bytes{namespace=\"$Namespace\", container=\"$ReplicaSet\"}) by (pod)",
-              "interval": "",
-              "legendFormat": "{{pod}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "Memory working set",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "decbytes",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "collapsed": false,
-          "datasource": null,
-          "gridPos": {
-            "h": 1,
-            "w": 24,
-            "x": 0,
-            "y": 30
-          },
-          "id": 127,
-          "panels": [],
-          "repeatIteration": 1607306546843,
-          "repeatPanelId": 57,
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-gateway",
-              "value": "vald-gateway"
-            }
-          },
-          "title": "$ReplicaSet",
-          "type": "row"
-        },
-        {
-          "cacheTimeout": null,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {
-              "custom": {},
-              "mappings": [
-                {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
-                }
-              ],
-              "nullValueMode": "connected",
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "none"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 3,
-            "x": 0,
-            "y": 31
-          },
-          "id": 128,
-          "interval": null,
-          "links": [],
-          "maxDataPoints": 100,
-          "options": {
-            "colorMode": "value",
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "orientation": "horizontal",
-            "reduceOptions": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "textMode": "auto"
-          },
-          "pluginVersion": "7.3.4",
-          "repeat": null,
-          "repeatDirection": "v",
-          "repeatIteration": 1607306546843,
-          "repeatPanelId": 14,
-          "repeatedByRow": true,
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-gateway",
-              "value": "vald-gateway"
-            }
-          },
-          "targets": [
-            {
-              "expr": "count(up{namespace=\"$Namespace\", app=~\"$ReplicaSet\", app!=\"\"})",
-              "format": "time_series",
-              "hide": false,
-              "instant": false,
-              "interval": "",
-              "legendFormat": "",
-              "refId": "A"
-            }
-          ],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Pods",
-          "type": "stat"
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {
-              "custom": {},
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 5,
-            "x": 3,
-            "y": 31
-          },
-          "hiddenSeries": false,
-          "id": 129,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "7.3.4",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "repeat": null,
-          "repeatDirection": "v",
-          "repeatIteration": 1607306546843,
-          "repeatPanelId": 31,
-          "repeatedByRow": true,
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-gateway",
-              "value": "vald-gateway"
-            }
-          },
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "max(kube_deployment_status_replicas{namespace=\"$Namespace\", deployment=\"$ReplicaSet\"}) and on() count(kube_deployment_created{deployment=~\"$ReplicaSet\"}) >= 1",
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Replicas",
-              "refId": "A"
-            },
-            {
-              "expr": "max(kube_deployment_status_replicas_available{namespace=\"$Namespace\", deployment=\"$ReplicaSet\"}) and on() count(kube_deployment_created{deployment=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Available",
-              "refId": "B"
-            },
-            {
-              "expr": "max(kube_deployment_status_replicas_unavailable{namespace=\"$Namespace\", deployment=\"$ReplicaSet\"}) and on() count(kube_deployment_created{deployment=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Unavailable",
-              "refId": "C"
-            },
-            {
-              "expr": "max(kube_deployment_status_replicas_updated{namespace=\"$Namespace\", deployment=\"$ReplicaSet\"}) and on() count(kube_deployment_created{deployment=~\"$ReplicaSet\"}) >= 1\n",
-              "intervalFactor": 2,
-              "legendFormat": "Updated",
-              "refId": "D"
-            },
-            {
-              "expr": "max(kube_daemonset_status_current_number_scheduled{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Current number scheduled",
-              "refId": "E"
-            },
-            {
-              "expr": "max(kube_daemonset_status_desired_number_scheduled{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Desired number scheduled",
-              "refId": "F"
-            },
-            {
-              "expr": "max(kube_daemonset_status_number_available{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Available",
-              "refId": "G"
-            },
-            {
-              "expr": "max(kube_daemonset_status_number_misscheduled{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Misscheduled",
-              "refId": "H"
-            },
-            {
-              "expr": "max(kube_daemonset_status_number_ready{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Ready",
-              "refId": "I"
-            },
-            {
-              "expr": "max(kube_daemonset_status_number_unavailable{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "hide": false,
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Unavailable",
-              "refId": "J"
-            },
-            {
-              "expr": "max(kube_statefulset_status_replicas_current{namespace=\"$Namespace\", statefulset=\"$ReplicaSet\"}) and on() count(kube_statefulset_created{statefulset=~\"$ReplicaSet\"}) >= 1",
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Current",
-              "refId": "K"
-            },
-            {
-              "expr": "max(kube_statefulset_status_replicas_ready{namespace=\"$Namespace\", statefulset=\"$ReplicaSet\"}) and on() count(kube_statefulset_created{statefulset=~\"$ReplicaSet\"}) >= 1",
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Ready",
-              "refId": "L"
-            },
-            {
-              "expr": "max(kube_statefulset_status_replicas_updated{namespace=\"$Namespace\", statefulset=\"$ReplicaSet\"}) and on() count(kube_statefulset_created{statefulset=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Updated",
-              "refId": "M"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "Pod status",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {
-              "custom": {},
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 0,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 8,
-            "x": 8,
-            "y": 31
-          },
-          "hiddenSeries": false,
-          "id": 130,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "7.3.4",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "repeat": null,
-          "repeatDirection": "v",
-          "repeatIteration": 1607306546843,
-          "repeatPanelId": 24,
-          "repeatedByRow": true,
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-gateway",
-              "value": "vald-gateway"
-            }
-          },
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(irate(container_cpu_usage_seconds_total{namespace=\"$Namespace\", container=\"$ReplicaSet\"}[$interval])) by (pod)",
-              "interval": "",
-              "legendFormat": "{{pod}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "CPU",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {
-              "custom": {},
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 0,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 8,
-            "x": 16,
-            "y": 31
-          },
-          "hiddenSeries": false,
-          "id": 131,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "7.3.4",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "repeat": null,
-          "repeatDirection": "v",
-          "repeatIteration": 1607306546843,
-          "repeatPanelId": 28,
-          "repeatedByRow": true,
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-gateway",
-              "value": "vald-gateway"
-            }
-          },
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(container_memory_working_set_bytes{namespace=\"$Namespace\", container=\"$ReplicaSet\"}) by (pod)",
-              "interval": "",
-              "legendFormat": "{{pod}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "Memory working set",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "decbytes",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "collapsed": false,
-          "datasource": null,
-          "gridPos": {
-            "h": 1,
-            "w": 24,
-            "x": 0,
-            "y": 39
-          },
-          "id": 132,
-          "panels": [],
-          "repeatIteration": 1607306546843,
-          "repeatPanelId": 57,
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-manager-backup",
-              "value": "vald-manager-backup"
-            }
-          },
-          "title": "$ReplicaSet",
-          "type": "row"
-        },
-        {
-          "cacheTimeout": null,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {
-              "custom": {},
-              "mappings": [
-                {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
-                }
-              ],
-              "nullValueMode": "connected",
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "none"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 3,
-            "x": 0,
-            "y": 40
-          },
-          "id": 133,
-          "interval": null,
-          "links": [],
-          "maxDataPoints": 100,
-          "options": {
-            "colorMode": "value",
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "orientation": "horizontal",
-            "reduceOptions": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "textMode": "auto"
-          },
-          "pluginVersion": "7.3.4",
-          "repeat": null,
-          "repeatDirection": "v",
-          "repeatIteration": 1607306546843,
-          "repeatPanelId": 14,
-          "repeatedByRow": true,
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-manager-backup",
-              "value": "vald-manager-backup"
-            }
-          },
-          "targets": [
-            {
-              "expr": "count(up{namespace=\"$Namespace\", app=~\"$ReplicaSet\", app!=\"\"})",
-              "format": "time_series",
-              "hide": false,
-              "instant": false,
-              "interval": "",
-              "legendFormat": "",
-              "refId": "A"
-            }
-          ],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Pods",
-          "type": "stat"
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {
-              "custom": {},
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 5,
-            "x": 3,
-            "y": 40
-          },
-          "hiddenSeries": false,
-          "id": 134,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "7.3.4",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "repeat": null,
-          "repeatDirection": "v",
-          "repeatIteration": 1607306546843,
-          "repeatPanelId": 31,
-          "repeatedByRow": true,
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-manager-backup",
-              "value": "vald-manager-backup"
-            }
-          },
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "max(kube_deployment_status_replicas{namespace=\"$Namespace\", deployment=\"$ReplicaSet\"}) and on() count(kube_deployment_created{deployment=~\"$ReplicaSet\"}) >= 1",
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Replicas",
-              "refId": "A"
-            },
-            {
-              "expr": "max(kube_deployment_status_replicas_available{namespace=\"$Namespace\", deployment=\"$ReplicaSet\"}) and on() count(kube_deployment_created{deployment=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Available",
-              "refId": "B"
-            },
-            {
-              "expr": "max(kube_deployment_status_replicas_unavailable{namespace=\"$Namespace\", deployment=\"$ReplicaSet\"}) and on() count(kube_deployment_created{deployment=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Unavailable",
-              "refId": "C"
-            },
-            {
-              "expr": "max(kube_deployment_status_replicas_updated{namespace=\"$Namespace\", deployment=\"$ReplicaSet\"}) and on() count(kube_deployment_created{deployment=~\"$ReplicaSet\"}) >= 1\n",
-              "intervalFactor": 2,
-              "legendFormat": "Updated",
-              "refId": "D"
-            },
-            {
-              "expr": "max(kube_daemonset_status_current_number_scheduled{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Current number scheduled",
-              "refId": "E"
-            },
-            {
-              "expr": "max(kube_daemonset_status_desired_number_scheduled{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Desired number scheduled",
-              "refId": "F"
-            },
-            {
-              "expr": "max(kube_daemonset_status_number_available{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Available",
-              "refId": "G"
-            },
-            {
-              "expr": "max(kube_daemonset_status_number_misscheduled{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Misscheduled",
-              "refId": "H"
-            },
-            {
-              "expr": "max(kube_daemonset_status_number_ready{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Ready",
-              "refId": "I"
-            },
-            {
-              "expr": "max(kube_daemonset_status_number_unavailable{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "hide": false,
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Unavailable",
-              "refId": "J"
-            },
-            {
-              "expr": "max(kube_statefulset_status_replicas_current{namespace=\"$Namespace\", statefulset=\"$ReplicaSet\"}) and on() count(kube_statefulset_created{statefulset=~\"$ReplicaSet\"}) >= 1",
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Current",
-              "refId": "K"
-            },
-            {
-              "expr": "max(kube_statefulset_status_replicas_ready{namespace=\"$Namespace\", statefulset=\"$ReplicaSet\"}) and on() count(kube_statefulset_created{statefulset=~\"$ReplicaSet\"}) >= 1",
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Ready",
-              "refId": "L"
-            },
-            {
-              "expr": "max(kube_statefulset_status_replicas_updated{namespace=\"$Namespace\", statefulset=\"$ReplicaSet\"}) and on() count(kube_statefulset_created{statefulset=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Updated",
-              "refId": "M"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "Pod status",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {
-              "custom": {},
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 0,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 8,
-            "x": 8,
-            "y": 40
-          },
-          "hiddenSeries": false,
-          "id": 135,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "7.3.4",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "repeat": null,
-          "repeatDirection": "v",
-          "repeatIteration": 1607306546843,
-          "repeatPanelId": 24,
-          "repeatedByRow": true,
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-manager-backup",
-              "value": "vald-manager-backup"
-            }
-          },
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(irate(container_cpu_usage_seconds_total{namespace=\"$Namespace\", container=\"$ReplicaSet\"}[$interval])) by (pod)",
-              "interval": "",
-              "legendFormat": "{{pod}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "CPU",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {
-              "custom": {},
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 0,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 8,
-            "x": 16,
-            "y": 40
-          },
-          "hiddenSeries": false,
-          "id": 136,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "7.3.4",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "repeat": null,
-          "repeatDirection": "v",
-          "repeatIteration": 1607306546843,
-          "repeatPanelId": 28,
-          "repeatedByRow": true,
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-manager-backup",
-              "value": "vald-manager-backup"
-            }
-          },
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(container_memory_working_set_bytes{namespace=\"$Namespace\", container=\"$ReplicaSet\"}) by (pod)",
-              "interval": "",
-              "legendFormat": "{{pod}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "Memory working set",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "decbytes",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "collapsed": false,
-          "datasource": null,
-          "gridPos": {
-            "h": 1,
-            "w": 24,
-            "x": 0,
-            "y": 48
-          },
-          "id": 137,
-          "panels": [],
-          "repeatIteration": 1607306546843,
-          "repeatPanelId": 57,
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-manager-compressor",
-              "value": "vald-manager-compressor"
-            }
-          },
-          "title": "$ReplicaSet",
-          "type": "row"
-        },
-        {
-          "cacheTimeout": null,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {
-              "custom": {},
-              "mappings": [
-                {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
-                }
-              ],
-              "nullValueMode": "connected",
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "none"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 3,
-            "x": 0,
-            "y": 49
-          },
-          "id": 138,
-          "interval": null,
-          "links": [],
-          "maxDataPoints": 100,
-          "options": {
-            "colorMode": "value",
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "orientation": "horizontal",
-            "reduceOptions": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "textMode": "auto"
-          },
-          "pluginVersion": "7.3.4",
-          "repeat": null,
-          "repeatDirection": "v",
-          "repeatIteration": 1607306546843,
-          "repeatPanelId": 14,
-          "repeatedByRow": true,
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-manager-compressor",
-              "value": "vald-manager-compressor"
-            }
-          },
-          "targets": [
-            {
-              "expr": "count(up{namespace=\"$Namespace\", app=~\"$ReplicaSet\", app!=\"\"})",
-              "format": "time_series",
-              "hide": false,
-              "instant": false,
-              "interval": "",
-              "legendFormat": "",
-              "refId": "A"
-            }
-          ],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Pods",
-          "type": "stat"
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {
-              "custom": {},
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 5,
-            "x": 3,
-            "y": 49
-          },
-          "hiddenSeries": false,
-          "id": 139,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "7.3.4",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "repeat": null,
-          "repeatDirection": "v",
-          "repeatIteration": 1607306546843,
-          "repeatPanelId": 31,
-          "repeatedByRow": true,
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-manager-compressor",
-              "value": "vald-manager-compressor"
-            }
-          },
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "max(kube_deployment_status_replicas{namespace=\"$Namespace\", deployment=\"$ReplicaSet\"}) and on() count(kube_deployment_created{deployment=~\"$ReplicaSet\"}) >= 1",
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Replicas",
-              "refId": "A"
-            },
-            {
-              "expr": "max(kube_deployment_status_replicas_available{namespace=\"$Namespace\", deployment=\"$ReplicaSet\"}) and on() count(kube_deployment_created{deployment=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Available",
-              "refId": "B"
-            },
-            {
-              "expr": "max(kube_deployment_status_replicas_unavailable{namespace=\"$Namespace\", deployment=\"$ReplicaSet\"}) and on() count(kube_deployment_created{deployment=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Unavailable",
-              "refId": "C"
-            },
-            {
-              "expr": "max(kube_deployment_status_replicas_updated{namespace=\"$Namespace\", deployment=\"$ReplicaSet\"}) and on() count(kube_deployment_created{deployment=~\"$ReplicaSet\"}) >= 1\n",
-              "intervalFactor": 2,
-              "legendFormat": "Updated",
-              "refId": "D"
-            },
-            {
-              "expr": "max(kube_daemonset_status_current_number_scheduled{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Current number scheduled",
-              "refId": "E"
-            },
-            {
-              "expr": "max(kube_daemonset_status_desired_number_scheduled{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Desired number scheduled",
-              "refId": "F"
-            },
-            {
-              "expr": "max(kube_daemonset_status_number_available{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Available",
-              "refId": "G"
-            },
-            {
-              "expr": "max(kube_daemonset_status_number_misscheduled{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Misscheduled",
-              "refId": "H"
-            },
-            {
-              "expr": "max(kube_daemonset_status_number_ready{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Ready",
-              "refId": "I"
-            },
-            {
-              "expr": "max(kube_daemonset_status_number_unavailable{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "hide": false,
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Unavailable",
-              "refId": "J"
-            },
-            {
-              "expr": "max(kube_statefulset_status_replicas_current{namespace=\"$Namespace\", statefulset=\"$ReplicaSet\"}) and on() count(kube_statefulset_created{statefulset=~\"$ReplicaSet\"}) >= 1",
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Current",
-              "refId": "K"
-            },
-            {
-              "expr": "max(kube_statefulset_status_replicas_ready{namespace=\"$Namespace\", statefulset=\"$ReplicaSet\"}) and on() count(kube_statefulset_created{statefulset=~\"$ReplicaSet\"}) >= 1",
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Ready",
-              "refId": "L"
-            },
-            {
-              "expr": "max(kube_statefulset_status_replicas_updated{namespace=\"$Namespace\", statefulset=\"$ReplicaSet\"}) and on() count(kube_statefulset_created{statefulset=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Updated",
-              "refId": "M"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "Pod status",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {
-              "custom": {},
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 0,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 8,
-            "x": 8,
-            "y": 49
-          },
-          "hiddenSeries": false,
-          "id": 140,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "7.3.4",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "repeat": null,
-          "repeatDirection": "v",
-          "repeatIteration": 1607306546843,
-          "repeatPanelId": 24,
-          "repeatedByRow": true,
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-manager-compressor",
-              "value": "vald-manager-compressor"
-            }
-          },
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(irate(container_cpu_usage_seconds_total{namespace=\"$Namespace\", container=\"$ReplicaSet\"}[$interval])) by (pod)",
-              "interval": "",
-              "legendFormat": "{{pod}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "CPU",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {
-              "custom": {},
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 0,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 8,
-            "x": 16,
-            "y": 49
-          },
-          "hiddenSeries": false,
-          "id": 141,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "7.3.4",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "repeat": null,
-          "repeatDirection": "v",
-          "repeatIteration": 1607306546843,
-          "repeatPanelId": 28,
-          "repeatedByRow": true,
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-manager-compressor",
-              "value": "vald-manager-compressor"
-            }
-          },
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(container_memory_working_set_bytes{namespace=\"$Namespace\", container=\"$ReplicaSet\"}) by (pod)",
-              "interval": "",
-              "legendFormat": "{{pod}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "Memory working set",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "decbytes",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "collapsed": false,
-          "datasource": null,
-          "gridPos": {
-            "h": 1,
-            "w": 24,
-            "x": 0,
-            "y": 57
-          },
-          "id": 142,
-          "panels": [],
-          "repeatIteration": 1607306546843,
-          "repeatPanelId": 57,
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-manager-index",
-              "value": "vald-manager-index"
-            }
-          },
-          "title": "$ReplicaSet",
-          "type": "row"
-        },
-        {
-          "cacheTimeout": null,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {
-              "custom": {},
-              "mappings": [
-                {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
-                }
-              ],
-              "nullValueMode": "connected",
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "none"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 3,
-            "x": 0,
-            "y": 58
-          },
-          "id": 143,
-          "interval": null,
-          "links": [],
-          "maxDataPoints": 100,
-          "options": {
-            "colorMode": "value",
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "orientation": "horizontal",
-            "reduceOptions": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "textMode": "auto"
-          },
-          "pluginVersion": "7.3.4",
-          "repeat": null,
-          "repeatDirection": "v",
-          "repeatIteration": 1607306546843,
-          "repeatPanelId": 14,
-          "repeatedByRow": true,
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-manager-index",
-              "value": "vald-manager-index"
-            }
-          },
-          "targets": [
-            {
-              "expr": "count(up{namespace=\"$Namespace\", app=~\"$ReplicaSet\", app!=\"\"})",
-              "format": "time_series",
-              "hide": false,
-              "instant": false,
-              "interval": "",
-              "legendFormat": "",
-              "refId": "A"
-            }
-          ],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Pods",
-          "type": "stat"
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {
-              "custom": {},
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 5,
-            "x": 3,
-            "y": 58
-          },
-          "hiddenSeries": false,
-          "id": 144,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "7.3.4",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "repeat": null,
-          "repeatDirection": "v",
-          "repeatIteration": 1607306546843,
-          "repeatPanelId": 31,
-          "repeatedByRow": true,
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-manager-index",
-              "value": "vald-manager-index"
-            }
-          },
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "max(kube_deployment_status_replicas{namespace=\"$Namespace\", deployment=\"$ReplicaSet\"}) and on() count(kube_deployment_created{deployment=~\"$ReplicaSet\"}) >= 1",
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Replicas",
-              "refId": "A"
-            },
-            {
-              "expr": "max(kube_deployment_status_replicas_available{namespace=\"$Namespace\", deployment=\"$ReplicaSet\"}) and on() count(kube_deployment_created{deployment=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Available",
-              "refId": "B"
-            },
-            {
-              "expr": "max(kube_deployment_status_replicas_unavailable{namespace=\"$Namespace\", deployment=\"$ReplicaSet\"}) and on() count(kube_deployment_created{deployment=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Unavailable",
-              "refId": "C"
-            },
-            {
-              "expr": "max(kube_deployment_status_replicas_updated{namespace=\"$Namespace\", deployment=\"$ReplicaSet\"}) and on() count(kube_deployment_created{deployment=~\"$ReplicaSet\"}) >= 1\n",
-              "intervalFactor": 2,
-              "legendFormat": "Updated",
-              "refId": "D"
-            },
-            {
-              "expr": "max(kube_daemonset_status_current_number_scheduled{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Current number scheduled",
-              "refId": "E"
-            },
-            {
-              "expr": "max(kube_daemonset_status_desired_number_scheduled{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Desired number scheduled",
-              "refId": "F"
-            },
-            {
-              "expr": "max(kube_daemonset_status_number_available{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Available",
-              "refId": "G"
-            },
-            {
-              "expr": "max(kube_daemonset_status_number_misscheduled{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Misscheduled",
-              "refId": "H"
-            },
-            {
-              "expr": "max(kube_daemonset_status_number_ready{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Ready",
-              "refId": "I"
-            },
-            {
-              "expr": "max(kube_daemonset_status_number_unavailable{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "hide": false,
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Unavailable",
-              "refId": "J"
-            },
-            {
-              "expr": "max(kube_statefulset_status_replicas_current{namespace=\"$Namespace\", statefulset=\"$ReplicaSet\"}) and on() count(kube_statefulset_created{statefulset=~\"$ReplicaSet\"}) >= 1",
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Current",
-              "refId": "K"
-            },
-            {
-              "expr": "max(kube_statefulset_status_replicas_ready{namespace=\"$Namespace\", statefulset=\"$ReplicaSet\"}) and on() count(kube_statefulset_created{statefulset=~\"$ReplicaSet\"}) >= 1",
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Ready",
-              "refId": "L"
-            },
-            {
-              "expr": "max(kube_statefulset_status_replicas_updated{namespace=\"$Namespace\", statefulset=\"$ReplicaSet\"}) and on() count(kube_statefulset_created{statefulset=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Updated",
-              "refId": "M"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "Pod status",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {
-              "custom": {},
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 0,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 8,
-            "x": 8,
-            "y": 58
-          },
-          "hiddenSeries": false,
-          "id": 145,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "7.3.4",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "repeat": null,
-          "repeatDirection": "v",
-          "repeatIteration": 1607306546843,
-          "repeatPanelId": 24,
-          "repeatedByRow": true,
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-manager-index",
-              "value": "vald-manager-index"
-            }
-          },
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(irate(container_cpu_usage_seconds_total{namespace=\"$Namespace\", container=\"$ReplicaSet\"}[$interval])) by (pod)",
-              "interval": "",
-              "legendFormat": "{{pod}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "CPU",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {
-              "custom": {},
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 0,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 8,
-            "x": 16,
-            "y": 58
-          },
-          "hiddenSeries": false,
-          "id": 146,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "7.3.4",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "repeat": null,
-          "repeatDirection": "v",
-          "repeatIteration": 1607306546843,
-          "repeatPanelId": 28,
-          "repeatedByRow": true,
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-manager-index",
-              "value": "vald-manager-index"
-            }
-          },
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(container_memory_working_set_bytes{namespace=\"$Namespace\", container=\"$ReplicaSet\"}) by (pod)",
-              "interval": "",
-              "legendFormat": "{{pod}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "Memory working set",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "decbytes",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "collapsed": false,
-          "datasource": null,
-          "gridPos": {
-            "h": 1,
-            "w": 24,
-            "x": 0,
-            "y": 66
-          },
-          "id": 147,
-          "panels": [],
-          "repeatIteration": 1607306546843,
-          "repeatPanelId": 57,
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-meta",
-              "value": "vald-meta"
-            }
-          },
-          "title": "$ReplicaSet",
-          "type": "row"
-        },
-        {
-          "cacheTimeout": null,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {
-              "custom": {},
-              "mappings": [
-                {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
-                }
-              ],
-              "nullValueMode": "connected",
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "none"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 3,
-            "x": 0,
-            "y": 67
-          },
-          "id": 148,
-          "interval": null,
-          "links": [],
-          "maxDataPoints": 100,
-          "options": {
-            "colorMode": "value",
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "orientation": "horizontal",
-            "reduceOptions": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "textMode": "auto"
-          },
-          "pluginVersion": "7.3.4",
-          "repeat": null,
-          "repeatDirection": "v",
-          "repeatIteration": 1607306546843,
-          "repeatPanelId": 14,
-          "repeatedByRow": true,
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-meta",
-              "value": "vald-meta"
-            }
-          },
-          "targets": [
-            {
-              "expr": "count(up{namespace=\"$Namespace\", app=~\"$ReplicaSet\", app!=\"\"})",
-              "format": "time_series",
-              "hide": false,
-              "instant": false,
-              "interval": "",
-              "legendFormat": "",
-              "refId": "A"
-            }
-          ],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Pods",
-          "type": "stat"
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {
-              "custom": {},
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 5,
-            "x": 3,
-            "y": 67
-          },
-          "hiddenSeries": false,
-          "id": 149,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "7.3.4",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "repeat": null,
-          "repeatDirection": "v",
-          "repeatIteration": 1607306546843,
-          "repeatPanelId": 31,
-          "repeatedByRow": true,
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-meta",
-              "value": "vald-meta"
-            }
-          },
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "max(kube_deployment_status_replicas{namespace=\"$Namespace\", deployment=\"$ReplicaSet\"}) and on() count(kube_deployment_created{deployment=~\"$ReplicaSet\"}) >= 1",
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Replicas",
-              "refId": "A"
-            },
-            {
-              "expr": "max(kube_deployment_status_replicas_available{namespace=\"$Namespace\", deployment=\"$ReplicaSet\"}) and on() count(kube_deployment_created{deployment=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Available",
-              "refId": "B"
-            },
-            {
-              "expr": "max(kube_deployment_status_replicas_unavailable{namespace=\"$Namespace\", deployment=\"$ReplicaSet\"}) and on() count(kube_deployment_created{deployment=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Unavailable",
-              "refId": "C"
-            },
-            {
-              "expr": "max(kube_deployment_status_replicas_updated{namespace=\"$Namespace\", deployment=\"$ReplicaSet\"}) and on() count(kube_deployment_created{deployment=~\"$ReplicaSet\"}) >= 1\n",
-              "intervalFactor": 2,
-              "legendFormat": "Updated",
-              "refId": "D"
-            },
-            {
-              "expr": "max(kube_daemonset_status_current_number_scheduled{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Current number scheduled",
-              "refId": "E"
-            },
-            {
-              "expr": "max(kube_daemonset_status_desired_number_scheduled{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Desired number scheduled",
-              "refId": "F"
-            },
-            {
-              "expr": "max(kube_daemonset_status_number_available{namespace\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Available",
-              "refId": "G"
-            },
-            {
-              "expr": "max(kube_daemonset_status_number_misscheduled{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Misscheduled",
-              "refId": "H"
-            },
-            {
-              "expr": "max(kube_daemonset_status_number_ready{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Ready",
-              "refId": "I"
-            },
-            {
-              "expr": "max(kube_daemonset_status_number_unavailable{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) >= 1",
-              "hide": false,
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Unavailable",
-              "refId": "J"
-            },
-            {
-              "expr": "max(kube_statefulset_status_replicas_current{namespace=\"$Namespace\", statefulset=\"$ReplicaSet\"}) and on() count(kube_statefulset_created{statefulset=~\"$ReplicaSet\"}) >= 1",
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Current",
-              "refId": "K"
-            },
-            {
-              "expr": "max(kube_statefulset_status_replicas_ready{namespace=\"$Namespace\", statefulset=\"$ReplicaSet\"}) and on() count(kube_statefulset_created{statefulset=~\"$ReplicaSet\"}) >= 1",
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Ready",
-              "refId": "L"
-            },
-            {
-              "expr": "max(kube_statefulset_status_replicas_updated{namespace=\"$Namespace\", statefulset=\"$ReplicaSet\"}) and on() count(kube_statefulset_created{statefulset=~\"$ReplicaSet\"}) >= 1",
-              "intervalFactor": 2,
-              "legendFormat": "Updated",
-              "refId": "M"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "Pod status",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {
-              "custom": {},
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 0,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 8,
-            "x": 8,
-            "y": 67
-          },
-          "hiddenSeries": false,
-          "id": 150,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "7.3.4",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "repeat": null,
-          "repeatDirection": "v",
-          "repeatIteration": 1607306546843,
-          "repeatPanelId": 24,
-          "repeatedByRow": true,
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-meta",
-              "value": "vald-meta"
-            }
-          },
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(irate(container_cpu_usage_seconds_total{namespace=\"$Namespace\", container=\"$ReplicaSet\"}[$interval])) by (pod)",
-              "interval": "",
-              "legendFormat": "{{pod}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "CPU",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {
-              "custom": {},
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 0,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 8,
-            "x": 16,
-            "y": 67
-          },
-          "hiddenSeries": false,
-          "id": 151,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "7.3.4",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "repeat": null,
-          "repeatDirection": "v",
-          "repeatIteration": 1607306546843,
-          "repeatPanelId": 28,
-          "repeatedByRow": true,
-          "scopedVars": {
-            "ReplicaSet": {
-              "selected": false,
-              "text": "vald-meta",
-              "value": "vald-meta"
-            }
-          },
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(container_memory_working_set_bytes{namespace=\"$Namespace\", container=\"$ReplicaSet\"}) by (pod)",
-              "interval": "",
-              "legendFormat": "{{pod}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "Memory working set",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "decbytes",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
+              "$$hashKey": "object:1196",
               "format": "short",
               "label": null,
               "logBase": 1,
@@ -4242,7 +1159,7 @@ data:
         }
       ],
       "refresh": false,
-      "schemaVersion": 26,
+      "schemaVersion": 30,
       "style": "dark",
       "tags": [],
       "templating": {
@@ -4255,7 +1172,8 @@ data:
               "value": "default"
             },
             "datasource": "Prometheus",
-            "definition": "label_values(vald_app_version_info, namespace)",
+            "definition": "label_values(up, namespace)",
+            "description": null,
             "error": null,
             "hide": 0,
             "includeAll": false,
@@ -4263,13 +1181,15 @@ data:
             "multi": false,
             "name": "Namespace",
             "options": [],
-            "query": "label_values(vald_app_version_info, namespace)",
+            "query": {
+              "query": "label_values(up, namespace)",
+              "refId": "StandardVariableQuery"
+            },
             "refresh": 1,
             "regex": "",
             "skipUrlSync": false,
             "sort": 0,
             "tagValuesQuery": "",
-            "tags": [],
             "tagsQuery": "",
             "type": "query",
             "useTags": false
@@ -4278,7 +1198,6 @@ data:
             "allValue": "vald-.*",
             "current": {
               "selected": true,
-              "tags": [],
               "text": [
                 "All"
               ],
@@ -4287,7 +1206,8 @@ data:
               ]
             },
             "datasource": "Prometheus",
-            "definition": "label_values(vald_app_version_info, app)",
+            "definition": "label_values(vald_app_version_info{namespace=~\"$Namespace\"}, app)",
+            "description": null,
             "error": null,
             "hide": 0,
             "includeAll": true,
@@ -4295,13 +1215,15 @@ data:
             "multi": true,
             "name": "ReplicaSet",
             "options": [],
-            "query": "label_values(vald_app_version_info, app)",
+            "query": {
+              "query": "label_values(vald_app_version_info{namespace=~\"$Namespace\"}, app)",
+              "refId": "StandardVariableQuery"
+            },
             "refresh": 1,
             "regex": "",
             "skipUrlSync": false,
             "sort": 0,
             "tagValuesQuery": "",
-            "tags": [],
             "tagsQuery": "",
             "type": "query",
             "useTags": false
@@ -4315,6 +1237,7 @@ data:
             },
             "datasource": "Prometheus",
             "definition": "label_values(vald_app_version_info{server_name=\"agent ngt\"}, app)",
+            "description": null,
             "error": null,
             "hide": 2,
             "includeAll": false,
@@ -4322,13 +1245,15 @@ data:
             "multi": false,
             "name": "ValdAgentNGT",
             "options": [],
-            "query": "label_values(vald_app_version_info{server_name=\"agent ngt\"}, app)",
+            "query": {
+              "query": "label_values(vald_app_version_info{server_name=\"agent ngt\"}, app)",
+              "refId": "Prometheus-ValdAgentNGT-Variable-Query"
+            },
             "refresh": 1,
             "regex": "",
             "skipUrlSync": false,
             "sort": 0,
             "tagValuesQuery": "",
-            "tags": [],
             "tagsQuery": "",
             "type": "query",
             "useTags": false
@@ -4342,6 +1267,7 @@ data:
             },
             "datasource": "Prometheus",
             "definition": "label_values(vald_app_version_info{server_name=~\"discoverer.*\"}, app)",
+            "description": null,
             "error": null,
             "hide": 2,
             "includeAll": false,
@@ -4349,13 +1275,15 @@ data:
             "multi": false,
             "name": "ValdDiscovererK8s",
             "options": [],
-            "query": "label_values(vald_app_version_info{server_name=~\"discoverer.*\"}, app)",
+            "query": {
+              "query": "label_values(vald_app_version_info{server_name=~\"discoverer.*\"}, app)",
+              "refId": "Prometheus-ValdDiscovererK8s-Variable-Query"
+            },
             "refresh": 1,
             "regex": "",
             "skipUrlSync": false,
             "sort": 0,
             "tagValuesQuery": "",
-            "tags": [],
             "tagsQuery": "",
             "type": "query",
             "useTags": false
@@ -4363,12 +1291,14 @@ data:
           {
             "allValue": null,
             "current": {
+              "isNone": true,
               "selected": false,
-              "text": "vald-gateway",
-              "value": "vald-gateway"
+              "text": "None",
+              "value": ""
             },
             "datasource": "Prometheus",
             "definition": "label_values(vald_app_version_info{server_name=\"gateway vald\"}, app)",
+            "description": null,
             "error": null,
             "hide": 2,
             "includeAll": false,
@@ -4376,13 +1306,15 @@ data:
             "multi": false,
             "name": "ValdGateway",
             "options": [],
-            "query": "label_values(vald_app_version_info{server_name=\"gateway vald\"}, app)",
+            "query": {
+              "query": "label_values(vald_app_version_info{server_name=\"gateway vald\"}, app)",
+              "refId": "Prometheus-ValdGateway-Variable-Query"
+            },
             "refresh": 1,
             "regex": "",
             "skipUrlSync": false,
             "sort": 0,
             "tagValuesQuery": "",
-            "tags": [],
             "tagsQuery": "",
             "type": "query",
             "useTags": false
@@ -4390,12 +1322,14 @@ data:
           {
             "allValue": null,
             "current": {
+              "isNone": true,
               "selected": false,
-              "text": "vald-manager-backup",
-              "value": "vald-manager-backup"
+              "text": "None",
+              "value": ""
             },
             "datasource": "Prometheus",
             "definition": "label_values(vald_app_version_info{server_name=~\"manager backup .*\"}, app)",
+            "description": null,
             "error": null,
             "hide": 2,
             "includeAll": false,
@@ -4403,13 +1337,15 @@ data:
             "multi": false,
             "name": "ValdManagerBackup",
             "options": [],
-            "query": "label_values(vald_app_version_info{server_name=~\"manager backup .*\"}, app)",
+            "query": {
+              "query": "label_values(vald_app_version_info{server_name=~\"manager backup .*\"}, app)",
+              "refId": "Prometheus-ValdManagerBackup-Variable-Query"
+            },
             "refresh": 1,
             "regex": "",
             "skipUrlSync": false,
             "sort": 0,
             "tagValuesQuery": "",
-            "tags": [],
             "tagsQuery": "",
             "type": "query",
             "useTags": false
@@ -4417,12 +1353,14 @@ data:
           {
             "allValue": null,
             "current": {
+              "isNone": true,
               "selected": false,
-              "text": "vald-manager-compressor",
-              "value": "vald-manager-compressor"
+              "text": "None",
+              "value": ""
             },
             "datasource": "Prometheus",
             "definition": "label_values(vald_app_version_info{server_name=\"manager compressor\"}, app)",
+            "description": null,
             "error": null,
             "hide": 2,
             "includeAll": false,
@@ -4430,13 +1368,15 @@ data:
             "multi": false,
             "name": "ValdManagerCompressor",
             "options": [],
-            "query": "label_values(vald_app_version_info{server_name=\"manager compressor\"}, app)",
+            "query": {
+              "query": "label_values(vald_app_version_info{server_name=\"manager compressor\"}, app)",
+              "refId": "Prometheus-ValdManagerCompressor-Variable-Query"
+            },
             "refresh": 1,
             "regex": "",
             "skipUrlSync": false,
             "sort": 0,
             "tagValuesQuery": "",
-            "tags": [],
             "tagsQuery": "",
             "type": "query",
             "useTags": false
@@ -4450,6 +1390,7 @@ data:
             },
             "datasource": "Prometheus",
             "definition": "label_values(vald_app_version_info{server_name=\"index manager\"}, app)",
+            "description": null,
             "error": null,
             "hide": 2,
             "includeAll": false,
@@ -4457,13 +1398,15 @@ data:
             "multi": false,
             "name": "ValdManagerIndex",
             "options": [],
-            "query": "label_values(vald_app_version_info{server_name=\"index manager\"}, app)",
+            "query": {
+              "query": "label_values(vald_app_version_info{server_name=\"index manager\"}, app)",
+              "refId": "Prometheus-ValdManagerIndex-Variable-Query"
+            },
             "refresh": 1,
             "regex": "",
             "skipUrlSync": false,
             "sort": 0,
             "tagValuesQuery": "",
-            "tags": [],
             "tagsQuery": "",
             "type": "query",
             "useTags": false
@@ -4471,12 +1414,14 @@ data:
           {
             "allValue": null,
             "current": {
+              "isNone": true,
               "selected": false,
-              "text": "vald-meta",
-              "value": "vald-meta"
+              "text": "None",
+              "value": ""
             },
             "datasource": "Prometheus",
             "definition": "label_values(vald_app_version_info{server_name=~\"meta .*\"}, app)",
+            "description": null,
             "error": null,
             "hide": 2,
             "includeAll": false,
@@ -4484,13 +1429,15 @@ data:
             "multi": false,
             "name": "ValdMeta",
             "options": [],
-            "query": "label_values(vald_app_version_info{server_name=~\"meta .*\"}, app)",
+            "query": {
+              "query": "label_values(vald_app_version_info{server_name=~\"meta .*\"}, app)",
+              "refId": "Prometheus-ValdMeta-Variable-Query"
+            },
             "refresh": 1,
             "regex": "",
             "skipUrlSync": false,
             "sort": 0,
             "tagValuesQuery": "",
-            "tags": [],
             "tagsQuery": "",
             "type": "query",
             "useTags": false
@@ -4504,6 +1451,7 @@ data:
               "text": "30m",
               "value": "30m"
             },
+            "description": null,
             "error": null,
             "hide": 0,
             "label": "interval",
@@ -4584,4 +1532,4 @@ data:
       "title": "Vald Cluster Overview",
       "uid": "ZQxyaOlWk",
       "version": 1
-    }=
+    }

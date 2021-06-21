@@ -36,7 +36,7 @@ data:
             - __meta_kubernetes_pod_node_name
             target_label: __host__
           - action: keep
-            regex: vald
+            regex: (vald|vald-helm-operator)
             source_labels:
               - __meta_kubernetes_pod_label_app_kubernetes_io_name
           - action: labelmap
