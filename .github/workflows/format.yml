@@ -41,7 +41,7 @@ jobs:
           echo "::set-output name=BRANCH_NAME::${BRANCH_NAME}"
       - name: Run formatter and license.go
         run: |
-          make update/goimports
+          make format/go
           make format/yaml
           make license
           git checkout go.mod go.sum

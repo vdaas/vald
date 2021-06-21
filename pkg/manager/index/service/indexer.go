@@ -19,7 +19,9 @@ package service
 
 import (
 	"context"
+	"math"
 	"reflect"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -44,17 +46,21 @@ type Indexer interface {
 }
 
 type index struct {
-	client                discoverer.Client
-	eg                    errgroup.Group
-	creationPoolSize      uint32
-	indexDuration         time.Duration
-	indexDurationLimit    time.Duration
-	concurrency           int
-	indexInfos            indexInfos
-	indexing              atomic.Value // bool
-	minUncommitted        uint32
-	uuidsCount            uint32
-	uncommittedUUIDsCount uint32
+	client                 discoverer.Client
+	eg                     errgroup.Group
+	creationPoolSize       uint32
+	indexDuration          time.Duration
+	indexDurationLimit     time.Duration
+	saveIndexDurationLimit time.Duration
+	saveIndexWaitDuration  time.Duration
+	saveIndexTargetAddrCh  chan string
+	schMap                 sync.Map
+	concurrency            int
+	indexInfos             indexInfos
+	indexing               atomic.Value // bool
+	minUncommitted         uint32
+	uuidsCount             uint32
+	uncommittedUUIDsCount  uint32
 }
 
 func New(opts ...Option) (idx Indexer, err error) {
@@ -65,6 +71,9 @@ func New(opts ...Option) (idx Indexer, err error) {
 		}
 	}
 	i.indexing.Store(false)
+	if i.indexDuration+i.indexDurationLimit+i.saveIndexDurationLimit == 0 {
+		return nil, errors.ErrInvalidConfig
+	}
 	return i, nil
 }
 
@@ -78,12 +87,24 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 		return nil, err
 	}
 	ech := make(chan error, 100)
+	idx.saveIndexTargetAddrCh = make(chan string, len(idx.client.GetAddrs(ctx))*2)
 	idx.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
+		if idx.indexDuration <= 0 {
+			idx.indexDuration = math.MaxInt64
+		}
+		if idx.indexDurationLimit <= 0 {
+			idx.indexDurationLimit = math.MaxInt64
+		}
+		if idx.saveIndexDurationLimit <= 0 {
+			idx.saveIndexDurationLimit = math.MaxInt64
+		}
 		it := time.NewTicker(idx.indexDuration)
-		defer it.Stop()
 		itl := time.NewTicker(idx.indexDurationLimit)
+		stl := time.NewTicker(idx.saveIndexDurationLimit)
+		defer it.Stop()
 		defer itl.Stop()
+		defer stl.Stop()
 		finalize := func() (err error) {
 			err = ctx.Err()
 			if err != nil && err != context.Canceled {
@@ -97,19 +118,29 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 				return finalize()
 			case err = <-dech:
 			case <-it.C:
-				err = idx.execute(ctx, true)
+				err = idx.execute(ctx, true, false)
 				if err != nil {
 					ech <- err
 					log.Error("an error occurred during indexing", err)
 					err = nil
 				}
+				it.Reset(idx.indexDuration)
 			case <-itl.C:
-				err = idx.execute(ctx, false)
+				err = idx.execute(ctx, false, false)
 				if err != nil {
 					ech <- err
 					log.Error("an error occurred during indexing", err)
 					err = nil
 				}
+				itl.Reset(idx.indexDurationLimit)
+			case <-stl.C:
+				err = idx.execute(ctx, false, true)
+				if err != nil {
+					ech <- err
+					log.Error("an error occurred during indexing and saving", err)
+					err = nil
+				}
+				stl.Reset(idx.saveIndexDurationLimit)
 			}
 			if err != nil {
 				log.Error(err)
@@ -121,10 +152,33 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 			}
 		}
 	}))
+	idx.eg.Go(safety.RecoverFunc(func() (err error) {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case addr := <-idx.saveIndexTargetAddrCh:
+				idx.schMap.Delete(addr)
+				_, err = idx.client.GetClient().Do(ctx, addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (_ interface{}, err error) {
+					return agent.NewAgentClient(conn).SaveIndex(ctx, &payload.Empty{}, copts...)
+				})
+				if err != nil {
+					log.Warnf("an error occurred while calling SaveIndex of %s: %s", addr, err)
+					select {
+					case <-ctx.Done():
+						return nil
+					case ech <- err:
+					}
+				}
+			}
+
+			idx.waitForNextSaving(ctx)
+		}
+	}))
 	return ech, nil
 }
 
-func (idx *index) execute(ctx context.Context, enableLowIndexSkip bool) (err error) {
+func (idx *index) execute(ctx context.Context, enableLowIndexSkip, immediateSaving bool) (err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-index/service/Indexer.execute")
 	defer func() {
 		if span != nil {
@@ -137,7 +191,8 @@ func (idx *index) execute(ctx context.Context, enableLowIndexSkip bool) (err err
 	}
 	idx.indexing.Store(true)
 	defer idx.indexing.Store(false)
-	err = idx.client.GetClient().OrderedRangeConcurrent(ctx, idx.client.GetAddrs(ctx),
+	addrs := idx.client.GetAddrs(ctx)
+	err = idx.client.GetClient().OrderedRangeConcurrent(ctx, addrs,
 		idx.concurrency,
 		func(ctx context.Context,
 			addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
@@ -145,16 +200,17 @@ func (idx *index) execute(ctx context.Context, enableLowIndexSkip bool) (err err
 			case <-ctx.Done():
 				return nil
 			default:
-				if enableLowIndexSkip {
-					info, ok := idx.indexInfos.Load(addr)
-					if ok && info.GetUncommitted() < idx.minUncommitted {
-						return nil
-					}
-				}
-				ac := agent.NewAgentClient(conn)
-				_, err = ac.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
-					PoolSize: idx.creationPoolSize,
-				}, copts...)
+			}
+			info, ok := idx.indexInfos.Load(addr)
+			if ok && (info.GetUncommitted() == 0 || (enableLowIndexSkip && info.GetUncommitted() < idx.minUncommitted)) {
+				return nil
+			}
+			ac := agent.NewAgentClient(conn)
+			req := &payload.Control_CreateIndexRequest{
+				PoolSize: idx.creationPoolSize,
+			}
+			if !immediateSaving {
+				_, err = ac.CreateIndex(ctx, req, copts...)
 				if err != nil {
 					if status.Code(err) == codes.FailedPrecondition {
 						log.Debugf("CreateIndex of %s skipped: %s", addr, err)
@@ -163,18 +219,43 @@ func (idx *index) execute(ctx context.Context, enableLowIndexSkip bool) (err err
 					log.Warnf("an error occurred while calling CreateIndex of %s: %s", addr, err)
 					return err
 				}
-				_, err = ac.SaveIndex(ctx, &payload.Empty{}, copts...)
-				if err != nil {
-					log.Warnf("an error occurred while calling SaveIndex of %s: %s", addr, err)
-					return err
+				_, ok := idx.schMap.Load(addr)
+				if !ok {
+					select {
+					case <-ctx.Done():
+					case idx.saveIndexTargetAddrCh <- addr:
+						idx.schMap.Store(addr, struct{}{})
+					}
 				}
+				return nil
 			}
+			_, err = ac.CreateAndSaveIndex(ctx, req, copts...)
+			if err != nil {
+				if status.Code(err) == codes.FailedPrecondition {
+					log.Debugf("CreateAndSaveIndex of %s skipped: %s", addr, err)
+					return nil
+				}
+				log.Warnf("an error occurred while calling CreateAndSaveIndex of %s: %s", addr, err)
+				return err
+			}
+			idx.waitForNextSaving(ctx)
 			return nil
 		})
 	if err != nil {
 		return err
 	}
 	return idx.loadInfos(ctx)
+}
+
+func (idx *index) waitForNextSaving(ctx context.Context) {
+	if idx.saveIndexWaitDuration > 0 {
+		timer := time.NewTimer(idx.saveIndexWaitDuration)
+		select {
+		case <-ctx.Done():
+		case <-timer.C:
+		}
+		timer.Stop()
+	}
 }
 
 func (idx *index) loadInfos(ctx context.Context) (err error) {

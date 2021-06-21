@@ -331,7 +331,7 @@ func TestServers_GetGRPCStreamConcurrency(t *testing.T) {
 	tests := []test{
 		func() test {
 			servers := []*Server{
-				&Server{
+				{
 					Name:          "vald-agent-ngt",
 					Network:       "tcp",
 					Host:          "0.0.0.0",
@@ -408,7 +408,7 @@ func TestServers_GetGRPCStreamConcurrency(t *testing.T) {
 		}(),
 		func() test {
 			servers := []*Server{
-				&Server{
+				{
 					Name:          "vald-agent-ngt",
 					Network:       "tcp",
 					Host:          "0.0.0.0",
