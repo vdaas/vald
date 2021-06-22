@@ -810,7 +810,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 			return nil, err
 		}
 		if req.GetConfig() != nil {
-			req.Config.SkipStrictExistCheck = true
+			req.GetConfig().SkipStrictExistCheck = true
 		} else {
 			req.Config = &payload.Insert_Config{SkipStrictExistCheck: true}
 		}
@@ -828,7 +828,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 				Timestamp: now,
 			}
 		} else {
-			req.Config.Timestamp = now
+			req.GetConfig().Timestamp = now
 		}
 	}
 	emu := new(sync.Mutex)
@@ -1018,7 +1018,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				return nil, err
 			}
 			if req.GetConfig() != nil {
-				reqs.Requests[i].Config.SkipStrictExistCheck = true
+				reqs.Requests[i].GetConfig().SkipStrictExistCheck = true
 			} else {
 				reqs.Requests[i].Config = &payload.Insert_Config{SkipStrictExistCheck: true}
 			}
@@ -1029,7 +1029,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 					Timestamp: now,
 				}
 			} else {
-				reqs.Requests[i].Config.Timestamp = now
+				reqs.Requests[i].GetConfig().Timestamp = now
 			}
 		}
 		ids = append(ids, uuid)
@@ -1201,7 +1201,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 			return nil, err
 		}
 		if req.GetConfig() != nil {
-			req.Config.SkipStrictExistCheck = true
+			req.GetConfig().SkipStrictExistCheck = true
 		} else {
 			req.Config = &payload.Update_Config{SkipStrictExistCheck: true}
 		}
@@ -1380,7 +1380,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 				return nil, err
 			}
 			if vec.GetConfig() != nil {
-				vec.Config.SkipStrictExistCheck = true
+				vec.GetConfig().SkipStrictExistCheck = true
 			} else {
 				vec.Config = &payload.Update_Config{SkipStrictExistCheck: true}
 			}
@@ -1775,7 +1775,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs 
 			return nil, err
 		}
 		if req.GetConfig() != nil {
-			req.Config.SkipStrictExistCheck = true
+			req.GetConfig().SkipStrictExistCheck = true
 		} else {
 			req.Config = &payload.Remove_Config{SkipStrictExistCheck: true}
 		}
@@ -1787,7 +1787,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs 
 				Timestamp: now,
 			}
 		} else {
-			req.Config.Timestamp = now
+			req.GetConfig().Timestamp = now
 		}
 	}
 	var mu sync.Mutex
@@ -1930,7 +1930,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 				return nil, err
 			}
 			if reqs.Requests[i].GetConfig() != nil {
-				reqs.Requests[i].Config.SkipStrictExistCheck = true
+				reqs.Requests[i].GetConfig().SkipStrictExistCheck = true
 			} else {
 				reqs.Requests[i].Config = &payload.Remove_Config{SkipStrictExistCheck: true}
 			}
@@ -1942,7 +1942,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 					Timestamp: now,
 				}
 			} else {
-				reqs.Requests[i].Config.Timestamp = now
+				reqs.Requests[i].GetConfig().Timestamp = now
 			}
 		}
 	}

@@ -407,7 +407,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 			return nil, err
 		}
 		if req.GetConfig() != nil {
-			req.Config.SkipStrictExistCheck = true
+			req.GetConfig().SkipStrictExistCheck = true
 		} else {
 			req.Config = &payload.Insert_Config{SkipStrictExistCheck: true}
 		}
@@ -585,7 +585,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				return nil, err
 			}
 			if req.GetConfig() != nil {
-				reqs.Requests[i].Config.SkipStrictExistCheck = true
+				reqs.Requests[i].GetConfig().SkipStrictExistCheck = true
 			} else {
 				reqs.Requests[i].Config = &payload.Insert_Config{SkipStrictExistCheck: true}
 			}
@@ -726,7 +726,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 			return nil, err
 		}
 		if req.GetConfig() != nil {
-			req.Config.SkipStrictExistCheck = true
+			req.GetConfig().SkipStrictExistCheck = true
 		} else {
 			req.Config = &payload.Update_Config{SkipStrictExistCheck: true}
 		}
@@ -897,7 +897,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 				return nil, err
 			}
 			if vec.GetConfig() != nil {
-				vec.Config.SkipStrictExistCheck = true
+				vec.GetConfig().SkipStrictExistCheck = true
 			} else {
 				vec.Config = &payload.Update_Config{SkipStrictExistCheck: true}
 			}
@@ -1254,7 +1254,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 			return nil, err
 		}
 		if req.GetConfig() != nil {
-			req.Config.SkipStrictExistCheck = true
+			req.GetConfig().SkipStrictExistCheck = true
 		} else {
 			req.Config = &payload.Remove_Config{SkipStrictExistCheck: true}
 		}
@@ -1386,7 +1386,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 				return nil, err
 			}
 			if reqs.Requests[i].GetConfig() != nil {
-				reqs.Requests[i].Config.SkipStrictExistCheck = true
+				reqs.Requests[i].GetConfig().SkipStrictExistCheck = true
 			} else {
 				reqs.Requests[i].Config = &payload.Remove_Config{SkipStrictExistCheck: true}
 			}

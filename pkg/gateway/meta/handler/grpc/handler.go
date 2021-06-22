@@ -577,13 +577,13 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 			return nil, err
 		}
 		if req.GetConfig() != nil {
-			req.Config.SkipStrictExistCheck = true
+			req.GetConfig().SkipStrictExistCheck = true
 		} else {
 			req.Config = &payload.Insert_Config{SkipStrictExistCheck: true}
 		}
 	}
 	uuid := fuid.String()
-	req.Vector.Id = uuid
+	req.GetVector().Id = uuid
 	if req.GetConfig().GetTimestamp() == 0 {
 		now := time.Now().UnixNano()
 		if req.GetConfig() == nil {
@@ -591,7 +591,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 				Timestamp: now,
 			}
 		} else {
-			req.Config.Timestamp = now
+			req.GetConfig().Timestamp = now
 		}
 	}
 	loc, err = s.gateway.Insert(ctx, req, s.copts...)
@@ -781,7 +781,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				return nil, err
 			}
 			if req.GetConfig() != nil {
-				reqs.Requests[i].Config.SkipStrictExistCheck = true
+				reqs.Requests[i].GetConfig().SkipStrictExistCheck = true
 			} else {
 				reqs.Requests[i].Config = &payload.Insert_Config{SkipStrictExistCheck: true}
 			}
@@ -790,14 +790,14 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 		uuid := fuid.String()
 		metaMap[uuid] = meta
 		metas = append(metas, meta)
-		reqs.Requests[i].Vector.Id = uuid
+		reqs.Requests[i].GetVector().Id = uuid
 		if reqs.Requests[i].GetConfig().GetTimestamp() == 0 {
 			if reqs.Requests[i].GetConfig() == nil {
 				reqs.Requests[i].Config = &payload.Insert_Config{
 					Timestamp: now,
 				}
 			} else {
-				reqs.Requests[i].Config.Timestamp = now
+				reqs.Requests[i].GetConfig().Timestamp = now
 			}
 		}
 	}
@@ -924,7 +924,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 		}
 		return nil, err
 	}
-	req.Vector.Id = uuid
+	req.GetVector().Id = uuid
 	if req.GetConfig().GetTimestamp() == 0 {
 		now := time.Now().UnixNano()
 		if req.GetConfig() == nil {
@@ -932,7 +932,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 				Timestamp: now,
 			}
 		} else {
-			req.Config.Timestamp = now
+			req.GetConfig().Timestamp = now
 		}
 	}
 	res, err = s.gateway.Update(ctx, req, s.copts...)
@@ -1057,14 +1057,14 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 		return nil, err
 	}
 	for i, uuid := range uuids {
-		reqs.Requests[i].Vector.Id = uuid
+		reqs.Requests[i].GetVector().Id = uuid
 		if reqs.Requests[i].GetConfig().GetTimestamp() == 0 {
 			if reqs.GetRequests()[i].GetConfig() == nil {
 				reqs.Requests[i].Config = &payload.Update_Config{
 					Timestamp: now,
 				}
 			} else {
-				reqs.Requests[i].Config.Timestamp = now
+				reqs.Requests[i].GetConfig().Timestamp = now
 			}
 		}
 	}
@@ -1400,13 +1400,13 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 	}
 
 	if req.GetConfig() != nil {
-		req.Config.SkipStrictExistCheck = true
+		req.GetConfig().SkipStrictExistCheck = true
 	} else {
 		req.Config = &payload.Remove_Config{SkipStrictExistCheck: true}
 	}
 
 	if req.GetId() != nil {
-		req.Id.Id = uuid
+		req.GetId().Id = uuid
 	} else {
 		req.Id = &payload.Object_ID{Id: uuid}
 	}
@@ -1417,7 +1417,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 				Timestamp: now,
 			}
 		} else {
-			req.Config.Timestamp = now
+			req.GetConfig().Timestamp = now
 		}
 	}
 	loc, err = s.gateway.Remove(ctx, req, s.copts...)
@@ -1540,19 +1540,19 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 	}
 	for i, id := range uuids {
 		if reqs.Requests[i].GetId() != nil {
-			reqs.Requests[i].Id.Id = id
+			reqs.Requests[i].GetId().Id = id
 		} else {
 			reqs.Requests[i].Id = &payload.Object_ID{Id: id}
 		}
 		req := reqs.Requests[i]
 		if req.GetConfig() != nil {
-			reqs.Requests[i].Config.SkipStrictExistCheck = true
+			reqs.Requests[i].GetConfig().SkipStrictExistCheck = true
 		} else {
 			reqs.Requests[i].Config = &payload.Remove_Config{SkipStrictExistCheck: true}
 		}
 
 		if req.GetId() != nil {
-			reqs.Requests[i].Id.Id = id
+			reqs.Requests[i].GetId().Id = id
 		} else {
 			reqs.Requests[i].Id = &payload.Object_ID{Id: id}
 		}
@@ -1562,7 +1562,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 					Timestamp: now,
 				}
 			} else {
-				reqs.Requests[i].Config.Timestamp = now
+				reqs.Requests[i].GetConfig().Timestamp = now
 			}
 		}
 	}
@@ -1635,7 +1635,7 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 		return nil, err
 	}
 	if req.GetId() != nil {
-		req.Id.Id = uuid
+		req.GetId().Id = uuid
 	} else {
 		req.Id = &payload.Object_ID{Id: uuid}
 	}
