@@ -7,7 +7,10 @@ import (
 func CheckPayloadObjectAccess(m dsl.Matcher) {
 	m.Import("github.com/vdaas/vald/apis/grpc/v1/payload")
 
-	m.Match(`$x.$y`).Where(!m["y"].Text.Matches(`Get.+`) &&
+	m.Match(
+		`$*_ = $*_, $x.$y, $*_`,
+		`$*_, $x.$y, $*_`,
+	).Where(!m["y"].Text.Matches(`Get.+`) &&
 		(m["x"].Type.Is(`*payload.Search_Request`) ||
 			m["x"].Type.Is(`*payload.Search_MultiRequest`) ||
 			m["x"].Type.Is(`*payload.Search_IDRequest`) ||

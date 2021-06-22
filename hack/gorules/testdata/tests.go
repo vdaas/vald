@@ -8,8 +8,12 @@ import (
 
 func payloadObjectAccesses() {
 	sc := &payload.Search_Config{}
-	_ = sc.Radius      // want `\QAvoid to access struct fields directly`
-	_ = sc.GetRadius() // OK: use function to access the field
+	_ = sc.Radius                  // want `\QAvoid to access struct fields directly`
+	_, _ = sc.Epsilon, "test"      // want `\QAvoid to access struct fields directly`
+	_, _ = "test", sc.Timeout      // want `\QAvoid to access struct fields directly`
+	_ = sc.GetRadius()             // OK: use function to access the field
+	_, _ = sc.GetEpsilon(), "test" // OK: use function to access the field
+	_, _ = "test", sc.GetTimeout() // OK: use function to access the field
 
 	loc := &payload.Object_Location{}
 	_ = loc.Ips         // want `\QAvoid to access struct fields directly`
@@ -19,16 +23,22 @@ func payloadObjectAccesses() {
 	_ = loc.GetIps()    // OK: use function to access the field
 	_ = loc.GetName()   // OK: use function to access the field
 
+	fmt.Printf("%s, %%", "test: ", loc.Uuid) // want `\QAvoid to access struct fields directly`
+	_, _, _ = "test", "test", loc.Uuid       // want `\QAvoid to access struct fields directly`
+	_, _, _ = "test", "test", loc.GetUuid()  // OK: use function to access the field
+
 	ireq := &payload.Insert_Request{}
 	_ = ireq.Config      // want `\QAvoid to access struct fields directly`
 	_ = ireq.Vector      // want `\QAvoid to access struct fields directly`
 	_ = ireq.GetConfig() // OK: use function to access the field
 	_ = ireq.GetVector() // OK: use function to access the field
 
-	// TODO: these cases should be ignored.
-	// loc.Name = "newname" // OK: it is used in LHS
-	// ic := &payload.Insert_Config{}
-	// ireq.Config = ic // OK: it is used in LHS
+	loc.Name = "newname" // OK: it is used in LHS
+	ic := &payload.Insert_Config{}
+	ireq.Config = ic // OK: it is used in LHS
+
+	ireq.Config, _ = ic, "test" // OK: it is used in LHS
+	ireq.Config.Timestamp = 0   // OK: it is used in LHS
 }
 
 func printFmts() {
