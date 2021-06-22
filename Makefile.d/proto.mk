@@ -103,7 +103,7 @@ $(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate:
 $(GOPATH)/src/google.golang.org/protobuf:
 	git clone \
 		--depth 1 \
-		https://google.golang.org/protobuf \
+		https://go.googlesource.com/protobuf \
 		$(GOPATH)/src/google.golang.org/protobuf
 
 $(GOPATH)/src/google.golang.org/genproto:
