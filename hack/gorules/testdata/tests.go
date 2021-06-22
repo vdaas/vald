@@ -76,6 +76,7 @@ func payloadObjectAccesses() {
 	locs := &payload.Object_Locations{}
 	_ = append([]*payload.Object_Location{}, locs.Locations...)          // want `\QAvoid to access struct fields directly`
 	_ = append(locs.GetLocations(), locs.Locations...)                   // want `\QAvoid to access struct fields directly`
+	locs.Locations = append(locs.GetLocations(), locs.Locations...)      // want `\QAvoid to access struct fields directly`
 	_ = append([]*payload.Object_Location{}, locs.GetLocations()...)     // OK: use function to access the field
 	locs.Locations = append(locs.GetLocations(), locs.GetLocations()...) // OK: use function to access the field
 
