@@ -10,6 +10,8 @@ func CheckPayloadObjectAccess(m dsl.Matcher) {
 	m.Match(
 		`$*_ = $*_, $x.$y, $*_`,
 		`$*_, $x.$y, $*_`,
+		`$x.$y != $_`,
+		`$x.$y == $_`,
 	).Where(!m["y"].Text.Matches(`Get.+`) &&
 		(m["x"].Type.Is(`*payload.Search_Request`) ||
 			m["x"].Type.Is(`*payload.Search_MultiRequest`) ||

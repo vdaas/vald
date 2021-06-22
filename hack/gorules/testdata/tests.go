@@ -39,6 +39,19 @@ func payloadObjectAccesses() {
 
 	ireq.Config, _ = ic, "test" // OK: it is used in LHS
 	ireq.Config.Timestamp = 0   // OK: it is used in LHS
+
+	if loc.Name != "" { // want `\QAvoid to access struct fields directly`
+	}
+
+	if loc.Name == "" { // want `\QAvoid to access struct fields directly`
+	} else {
+	}
+
+	if loc != nil && loc.Name != "" { // want `\QAvoid to access struct fields directly`
+	}
+
+	if ireq != nil && ireq.Vector.Id != "" { // want `\QAvoid to access struct fields directly`
+	}
 }
 
 func printFmts() {
