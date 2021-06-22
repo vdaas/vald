@@ -6,6 +6,10 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 )
 
+type dummy struct {
+	field1 string
+}
+
 func payloadObjectAccesses() {
 	sc := &payload.Search_Config{}
 	_ = sc.Radius                  // want `\QAvoid to access struct fields directly`
@@ -52,6 +56,16 @@ func payloadObjectAccesses() {
 
 	if ireq != nil && ireq.Vector.Id != "" { // want `\QAvoid to access struct fields directly`
 	}
+
+	// TODO: detect it later...
+	// if ireq != nil && ireq.Vector.GetId() != "" {
+	// }
+
+	locs := &payload.Object_Locations{}
+	_ = append([]*payload.Object_Location{}, locs.Locations...) // want `\QAvoid to access struct fields directly`
+
+	dmy := &dummy{}
+	_ = dmy.field1 // OK: dummy is not a gRPC payload object
 }
 
 func printFmts() {

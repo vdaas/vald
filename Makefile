@@ -308,6 +308,7 @@ clean:
 	rm -rf vendor
 	go clean -cache -modcache -testcache -i -r
 	mv ./apis/grpc/v1/vald/vald.go $(TEMP_DIR)/vald.go
+	mv ./apis/grpc/v1/payload/interface.go $(TEMP_DIR)/interface.go
 	rm -rf \
 		/go/pkg \
 		./*.log \
@@ -323,6 +324,8 @@ clean:
 		./go.mod
 	mkdir -p ./apis/grpc/v1/vald
 	mv $(TEMP_DIR)/vald.go ./apis/grpc/v1/vald/vald.go
+	mkdir -p ./apis/grpc/v1/payload
+	mv $(TEMP_DIR)/interface.go ./apis/grpc/v1/payload/interface.go
 	cp ./hack/go.mod.default ./go.mod
 
 .PHONY: license
