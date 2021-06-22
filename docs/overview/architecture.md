@@ -8,7 +8,7 @@ Vald uses a cloud-native architecture focusing on [Kubernetes](https://kubernete
 Some components in Vald use Kubernetes API to control the behavior of distributed vector indexes.
 Before reading this document, you need to have some understanding of the basic idea of cloud-native architecture and Kubernetes.
 
-### The technology used by Vald
+### Technologies used by Vald
 
 Vald is based on the following techologies.
 
@@ -24,7 +24,7 @@ Vald contains multiple components and configuration, Helm help us to manage thos
 
 - [NGT](https://github.com/yahoojapan/NGT)
 
-NGT is the core component of Vald. NGT is the vector search engine and 
+NGT is one of the core component of Vald. NGT is a super fast vector search engine used by Vald to guarantee the performance of Vald.
 
 ### Concept
 
@@ -69,3 +69,31 @@ Here are the concepts of Vald.
   - Easy to manage
 
     Vald can be deployed easily on your Kubernetes cluster by using Helm charts. The custom resources and custom controllers are useful to manage your Vald cluster.
+
+## Basic Architecture
+
+Vald is base on micro service, which means Vald is composited by multiple components, you can deploy part of the components to your cluster depending on your needs.
+In this section, we will introduce the minimal architecture of Vald.
+
+<img src="../../assets/docs/minimal_architecture.png" />
+
+We will introduce each component and why it is needed in Vald.
+
+### Vald Agent
+
+Vald Agent is the core engine of Vald, the approximate nearest neighbor search engine. Agent-NGT uses yahoojapan/NGT as a core library.
+
+### Vald LB Gateway
+
+Vald LB Gateway is a gateway to load balance the user request and forward user request to the Vald-Agent base on the resource usage of the Vald-Agent and the corresponding cluster node.
+
+### Vald Discoverer
+
+Vald Discoverer provide Vald Agent discovery service to discover active Vald Agents in the Kubernetes cluster.
+It also retrieve the corresponding Vald Agent resources usage for Vald LB gateway to determine the priority of which Vald Agent to handle the user request.
+
+### Vald Index Manager
+
+Vald Index Manager controls the timing of the indexing of the Vald Agent. The index is used to increase the performance of the search action.
+
+It retrieves the active Vald Agent pods from the Vald Discoverer and triggers the indexing action on each Vald Agent.
