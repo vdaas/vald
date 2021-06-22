@@ -1018,18 +1018,18 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				return nil, err
 			}
 			if req.GetConfig() != nil {
-				reqs.Requests[i].GetConfig().SkipStrictExistCheck = true
+				reqs.GetRequests()[i].GetConfig().SkipStrictExistCheck = true
 			} else {
-				reqs.Requests[i].Config = &payload.Insert_Config{SkipStrictExistCheck: true}
+				reqs.GetRequests()[i].Config = &payload.Insert_Config{SkipStrictExistCheck: true}
 			}
 		}
-		if reqs.Requests[i].GetConfig().GetTimestamp() == 0 {
-			if reqs.Requests[i].GetConfig() == nil {
-				reqs.Requests[i].Config = &payload.Insert_Config{
+		if reqs.GetRequests()[i].GetConfig().GetTimestamp() == 0 {
+			if reqs.GetRequests()[i].GetConfig() == nil {
+				reqs.GetRequests()[i].Config = &payload.Insert_Config{
 					Timestamp: now,
 				}
 			} else {
-				reqs.Requests[i].GetConfig().Timestamp = now
+				reqs.GetRequests()[i].GetConfig().Timestamp = now
 			}
 		}
 		ids = append(ids, uuid)
@@ -1929,20 +1929,20 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 				}
 				return nil, err
 			}
-			if reqs.Requests[i].GetConfig() != nil {
-				reqs.Requests[i].GetConfig().SkipStrictExistCheck = true
+			if reqs.GetRequests()[i].GetConfig() != nil {
+				reqs.GetRequests()[i].GetConfig().SkipStrictExistCheck = true
 			} else {
-				reqs.Requests[i].Config = &payload.Remove_Config{SkipStrictExistCheck: true}
+				reqs.GetRequests()[i].Config = &payload.Remove_Config{SkipStrictExistCheck: true}
 			}
 
 		}
 		if req.GetConfig().GetTimestamp() == 0 {
 			if req.GetConfig() == nil {
-				reqs.Requests[i].Config = &payload.Remove_Config{
+				reqs.GetRequests()[i].Config = &payload.Remove_Config{
 					Timestamp: now,
 				}
 			} else {
-				reqs.Requests[i].GetConfig().Timestamp = now
+				reqs.GetRequests()[i].GetConfig().Timestamp = now
 			}
 		}
 	}

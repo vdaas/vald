@@ -585,9 +585,9 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				return nil, err
 			}
 			if req.GetConfig() != nil {
-				reqs.Requests[i].GetConfig().SkipStrictExistCheck = true
+				reqs.GetRequests()[i].GetConfig().SkipStrictExistCheck = true
 			} else {
-				reqs.Requests[i].Config = &payload.Insert_Config{SkipStrictExistCheck: true}
+				reqs.GetRequests()[i].Config = &payload.Insert_Config{SkipStrictExistCheck: true}
 			}
 		}
 		ids = append(ids, uuid)
@@ -622,7 +622,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 		mvecs.Vectors = append(mvecs.GetVectors(), &payload.Backup_Vector{
 			Uuid:   uuid,
 			Vector: vec.GetVector(),
-			Ips:    res.Locations[i].GetIps(),
+			Ips:    res.GetLocations()[i].GetIps(),
 		})
 	}
 	err = s.backup.RegisterMultiple(ctx, mvecs)
@@ -1385,10 +1385,10 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 				}
 				return nil, err
 			}
-			if reqs.Requests[i].GetConfig() != nil {
-				reqs.Requests[i].GetConfig().SkipStrictExistCheck = true
+			if reqs.GetRequests()[i].GetConfig() != nil {
+				reqs.GetRequests()[i].GetConfig().SkipStrictExistCheck = true
 			} else {
-				reqs.Requests[i].Config = &payload.Remove_Config{SkipStrictExistCheck: true}
+				reqs.GetRequests()[i].Config = &payload.Remove_Config{SkipStrictExistCheck: true}
 			}
 		}
 	}
