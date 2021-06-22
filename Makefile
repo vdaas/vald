@@ -193,6 +193,7 @@ GO_SOURCES = $(eval GO_SOURCES := $(shell find \
 		-not -path './hack/benchmark/internal/starter/agent/*' \
 		-not -path './hack/benchmark/internal/starter/external/*' \
 		-not -path './hack/benchmark/internal/starter/gateway/*' \
+		-not -path './hack/gorules/*' \
 		-not -path './hack/license/*' \
 		-not -path './hack/swagger/*' \
 		-not -path './hack/tools/*' \
@@ -222,6 +223,7 @@ GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell find \
 		-not -path './hack/benchmark/internal/starter/agent/*' \
 		-not -path './hack/benchmark/internal/starter/external/*' \
 		-not -path './hack/benchmark/internal/starter/gateway/*' \
+		-not -path './hack/gorules/*' \
 		-not -path './hack/license/*' \
 		-not -path './hack/swagger/*' \
 		-not -path './hack/tools/*' \
