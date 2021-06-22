@@ -13,6 +13,7 @@ func CheckPayloadObjectAccess(m dsl.Matcher) {
 		`$x.$y != $_`,
 		`$x.$y == $_`,
 		`$x.$y.$_`,
+		`$x.$y[$_].$_`,
 	).Where(!m["y"].Text.Matches(`Get.+`) &&
 		m["x"].Type.Implements(`payload.Payload`)).
 		At(m["y"]).

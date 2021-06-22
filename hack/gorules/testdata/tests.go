@@ -54,15 +54,30 @@ func payloadObjectAccesses() {
 
 	if loc != nil && loc.Name != "" { // want `\QAvoid to access struct fields directly`
 	}
+	if loc != nil && loc.GetName() != "" { // OK: use function to access the field
+	}
 
 	if ireq != nil && ireq.Vector.Id != "" { // want `\QAvoid to access struct fields directly` `\QAvoid to access struct fields directly`
 	}
 
 	if ireq != nil && ireq.Vector.GetId() != "" { // want `\QAvoid to access struct fields directly`
 	}
+	if ireq != nil && ireq.GetVector().GetId() != "" { // OK: use function to access the field
+	}
+
+	pods := &payload.Info_Pods{}
+	if pods.Pods[0].GetNode() != nil { // want `\QAvoid to access struct fields directly`
+		pods.Pods[0].GetNode().Pods = nil // want `\QAvoid to access struct fields directly`
+	}
+	if pods.GetPods()[0].GetNode() != nil { // OK: use function to access the field
+		pods.GetPods()[0].GetNode().Pods = nil // OK: use function to access the field
+	}
 
 	locs := &payload.Object_Locations{}
-	_ = append([]*payload.Object_Location{}, locs.Locations...) // want `\QAvoid to access struct fields directly`
+	_ = append([]*payload.Object_Location{}, locs.Locations...)          // want `\QAvoid to access struct fields directly`
+	_ = append(locs.GetLocations(), locs.Locations...)                   // want `\QAvoid to access struct fields directly`
+	_ = append([]*payload.Object_Location{}, locs.GetLocations()...)     // OK: use function to access the field
+	locs.Locations = append(locs.GetLocations(), locs.GetLocations()...) // OK: use function to access the field
 
 	dmy := &dummy{}
 	_ = dmy.field1 // OK: dummy is not a gRPC payload object
