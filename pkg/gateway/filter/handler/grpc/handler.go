@@ -113,7 +113,7 @@ func (s *server) MultiSearchObject(ctx context.Context, reqs *payload.Search_Mul
 	}()
 
 	res = &payload.Search_Responses{
-		Responses: make([]*payload.Search_Response, len(reqs.Requests)),
+		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
 	}
 	var wg sync.WaitGroup
 	var mu sync.Mutex
@@ -259,7 +259,7 @@ func (s *server) MultiInsertObject(ctx context.Context, reqs *payload.Insert_Mul
 	}()
 
 	locs = &payload.Object_Locations{
-		Locations: make([]*payload.Object_Location, len(reqs.Requests)),
+		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
 	}
 	var wg sync.WaitGroup
 	var mu sync.Mutex
@@ -374,7 +374,7 @@ func (s *server) MultiUpdateObject(ctx context.Context, reqs *payload.Update_Mul
 	}()
 
 	locs = &payload.Object_Locations{
-		Locations: make([]*payload.Object_Location, len(reqs.Requests)),
+		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
 	}
 	var wg sync.WaitGroup
 	var mu sync.Mutex
@@ -488,7 +488,7 @@ func (s *server) MultiUpsertObject(ctx context.Context, reqs *payload.Upsert_Mul
 	}()
 
 	locs = &payload.Object_Locations{
-		Locations: make([]*payload.Object_Location, len(reqs.Requests)),
+		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
 	}
 	var wg sync.WaitGroup
 	var mu sync.Mutex
@@ -716,7 +716,7 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 		}
 	}()
 	res = &payload.Search_Responses{
-		Responses: make([]*payload.Search_Response, len(reqs.Requests)),
+		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
 	}
 	var wg sync.WaitGroup
 	var mu sync.Mutex
@@ -760,7 +760,7 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 		}
 	}()
 	res = &payload.Search_Responses{
-		Responses: make([]*payload.Search_Response, len(reqs.Requests)),
+		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
 	}
 	var wg sync.WaitGroup
 	var mu sync.Mutex
@@ -920,7 +920,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 		}
 	}()
 	locs = &payload.Object_Locations{
-		Locations: make([]*payload.Object_Location, len(reqs.Requests)),
+		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
 	}
 	var wg sync.WaitGroup
 	var mu sync.Mutex
@@ -1080,7 +1080,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 		}
 	}()
 	locs = &payload.Object_Locations{
-		Locations: make([]*payload.Object_Location, len(reqs.Requests)),
+		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
 	}
 	var wg sync.WaitGroup
 	var mu sync.Mutex
@@ -1240,7 +1240,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 		}
 	}()
 	locs = &payload.Object_Locations{
-		Locations: make([]*payload.Object_Location, len(reqs.Requests)),
+		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
 	}
 	var wg sync.WaitGroup
 	var mu sync.Mutex
@@ -1344,7 +1344,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 		}
 	}()
 	locs = &payload.Object_Locations{
-		Locations: make([]*payload.Object_Location, len(reqs.Requests)),
+		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
 	}
 	var wg sync.WaitGroup
 	var mu sync.Mutex

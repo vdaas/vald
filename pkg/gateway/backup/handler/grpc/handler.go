@@ -619,7 +619,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 	for i, req := range reqs.GetRequests() {
 		vec := req.GetVector()
 		uuid := vec.GetId()
-		mvecs.Vectors = append(mvecs.Vectors, &payload.Backup_Vector{
+		mvecs.Vectors = append(mvecs.GetVectors(), &payload.Backup_Vector{
 			Uuid:   uuid,
 			Vector: vec.GetVector(),
 			Ips:    res.Locations[i].GetIps(),
@@ -643,7 +643,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 			Requests: make([]*payload.Remove_Request, 0, len(reqs.GetRequests())),
 		}
 		for _, req := range reqs.GetRequests() {
-			rmr.Requests = append(rmr.Requests, &payload.Remove_Request{
+			rmr.Requests = append(rmr.GetRequests(), &payload.Remove_Request{
 				Id: &payload.Object_ID{
 					Id: req.GetVector().GetId(),
 				},

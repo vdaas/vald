@@ -218,7 +218,7 @@ func (s *server) search(ctx context.Context,
 		}
 		return nil, err
 	}
-	uuids := make([]string, 0, len(res.Results))
+	uuids := make([]string, 0, len(res.GetResults()))
 	for _, r := range res.Results {
 		uuids = append(uuids, r.GetId())
 	}
@@ -354,7 +354,7 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 	}()
 
 	res = &payload.Search_Responses{
-		Responses: make([]*payload.Search_Response, len(reqs.Requests)),
+		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
 	}
 	var wg sync.WaitGroup
 	var mu sync.Mutex
@@ -445,7 +445,7 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 	}()
 
 	res = &payload.Search_Responses{
-		Responses: make([]*payload.Search_Response, len(reqs.Requests)),
+		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
 	}
 	var wg sync.WaitGroup
 	var mu sync.Mutex
@@ -844,7 +844,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 			Requests: make([]*payload.Remove_Request, 0, len(reqs.GetRequests())),
 		}
 		for _, req := range reqs.GetRequests() {
-			rmr.Requests = append(rmr.Requests, &payload.Remove_Request{
+			rmr.Requests = append(rmr.GetRequests(), &payload.Remove_Request{
 				Id: &payload.Object_ID{
 					Id: req.GetVector().GetId(),
 				},

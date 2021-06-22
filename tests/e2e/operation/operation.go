@@ -107,7 +107,7 @@ func (c *client) Search(t *testing.T, ctx context.Context, ds Dataset) error {
 
 			topKIDs := make([]string, 0, len(resp.GetResults()))
 			for _, d := range resp.GetResults() {
-				topKIDs = append(topKIDs, d.Id)
+				topKIDs = append(topKIDs, d.GetId())
 			}
 
 			if len(topKIDs) == 0 {
@@ -194,7 +194,7 @@ func (c *client) SearchByID(t *testing.T, ctx context.Context, ds Dataset) error
 
 			topKIDs := make([]string, 0, len(resp.GetResults()))
 			for _, d := range resp.GetResults() {
-				topKIDs = append(topKIDs, d.Id)
+				topKIDs = append(topKIDs, d.GetId())
 			}
 
 			if len(topKIDs) == 0 {

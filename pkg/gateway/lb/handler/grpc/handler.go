@@ -600,7 +600,7 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 	}()
 
 	res = &payload.Search_Responses{
-		Responses: make([]*payload.Search_Response, len(reqs.Requests)),
+		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
 	}
 	var wg sync.WaitGroup
 	var mu sync.Mutex
@@ -691,7 +691,7 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 	}()
 
 	res = &payload.Search_Responses{
-		Responses: make([]*payload.Search_Response, len(reqs.Requests)),
+		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
 	}
 	var wg sync.WaitGroup
 	var mu sync.Mutex
@@ -1088,7 +1088,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 			return nil
 		}
 		mu.Lock()
-		locs.Locations = append(locs.Locations, loc.Locations...)
+		locs.Locations = append(locs.GetLocations(), loc.Locations...)
 		mu.Unlock()
 		return nil
 	})
@@ -1821,7 +1821,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs 
 			return nil
 		}
 		mu.Lock()
-		locs.Ips = append(locs.Ips, loc.GetIps()...)
+		locs.Ips = append(locs.GetIps(), loc.GetIps()...)
 		locs.Name = loc.GetName()
 		mu.Unlock()
 		return nil
@@ -1966,7 +1966,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 			return nil
 		}
 		mu.Lock()
-		locs.Locations = append(locs.Locations, loc.Locations...)
+		locs.Locations = append(locs.GetLocations(), loc.GetLocations()...)
 		mu.Unlock()
 		return nil
 	})
