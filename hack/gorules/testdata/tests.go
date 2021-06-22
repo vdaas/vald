@@ -41,8 +41,9 @@ func payloadObjectAccesses() {
 	ic := &payload.Insert_Config{}
 	ireq.Config = ic // OK: it is used in LHS
 
-	ireq.Config, _ = ic, "test" // OK: it is used in LHS
-	ireq.Config.Timestamp = 0   // OK: it is used in LHS
+	ireq.Config, _ = ic, "test"    // OK: it is used in LHS
+	ireq.GetConfig().Timestamp = 0 // OK: it is used in LHS
+	ireq.Config.Timestamp = 0      // want `\QAvoid to access struct fields directly`
 
 	if loc.Name != "" { // want `\QAvoid to access struct fields directly`
 	}
@@ -54,12 +55,11 @@ func payloadObjectAccesses() {
 	if loc != nil && loc.Name != "" { // want `\QAvoid to access struct fields directly`
 	}
 
-	if ireq != nil && ireq.Vector.Id != "" { // want `\QAvoid to access struct fields directly`
+	if ireq != nil && ireq.Vector.Id != "" { // want `\QAvoid to access struct fields directly` `\QAvoid to access struct fields directly`
 	}
 
-	// TODO: detect it later...
-	// if ireq != nil && ireq.Vector.GetId() != "" {
-	// }
+	if ireq != nil && ireq.Vector.GetId() != "" { // want `\QAvoid to access struct fields directly`
+	}
 
 	locs := &payload.Object_Locations{}
 	_ = append([]*payload.Object_Location{}, locs.Locations...) // want `\QAvoid to access struct fields directly`
