@@ -491,7 +491,7 @@ func (s *server) MultiInsert(ctx context.Context, vecs *payload.Object_Vectors) 
 		for _, req := range reqs {
 			vec := req.GetVector()
 			uuid := vec.GetId()
-			mvecs.Vectors = append(mvecs.Vectors, &payloadv1.Backup_Vector{
+			mvecs.Vectors = append(mvecs.GetVectors(), &payloadv1.Backup_Vector{
 				Uuid:   uuid,
 				Vector: vec.GetVector(),
 				Ips:    targets,

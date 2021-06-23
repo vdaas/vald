@@ -213,7 +213,7 @@ func (s *server) RegisterIPs(ctx context.Context, req *payload.Backup_IP_Registe
 		}
 	}()
 	uuid := req.GetUuid()
-	err = s.cassandra.SetIPs(ctx, uuid, req.Ips...)
+	err = s.cassandra.SetIPs(ctx, uuid, req.GetIps()...)
 	if err != nil {
 		log.Errorf("[RegisterIPs]\tinternal error\t%+v", err)
 		if span != nil {
