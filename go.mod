@@ -3,17 +3,17 @@ module github.com/vdaas/vald
 go 1.16
 
 replace (
-	cloud.google.com/go => cloud.google.com/go v0.84.1-0.20210618001628-24c4451404cd
-	cloud.google.com/go/storage => cloud.google.com/go/storage v1.15.1-0.20210618001628-24c4451404cd
+	cloud.google.com/go => cloud.google.com/go v0.84.1-0.20210623040247-564102b335db
+	cloud.google.com/go/storage => cloud.google.com/go/storage v1.15.1-0.20210623045725-9bb82c3d5133
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20210602190049-10e0b31633f1+incompatible
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.38.64
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.38.65
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
 	github.com/docker/docker => github.com/moby/moby v20.10.7+incompatible
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.6.1
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.6.0
-	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20210515062232-b7ef815b4556
+	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20210621133426-d83b80dfb480
 	github.com/gogo/googleapis => github.com/gogo/googleapis v1.4.1
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 	github.com/google/go-cmp => github.com/google/go-cmp v0.5.6
@@ -22,8 +22,8 @@ replace (
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.18.0
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.2
 	github.com/hailocab/go-hostpool => github.com/kpango/go-hostpool v0.0.0-20210303030322-aab80263dcd0
-	github.com/klauspost/compress => github.com/klauspost/compress v1.13.2-0.20210618164912-7cf5f14c70d5
-	github.com/kpango/glg => github.com/kpango/glg v1.5.1
+	github.com/klauspost/compress => github.com/klauspost/compress v1.13.2-0.20210622115932-09f13c9b23f1
+	github.com/kpango/glg => github.com/kpango/glg v1.6.0
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.2+incompatible
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e
 	google.golang.org/grpc => google.golang.org/grpc v1.38.0
@@ -78,7 +78,7 @@ require (
 	go.uber.org/zap v1.17.0
 	gocloud.dev v0.23.0
 	golang.org/x/net v0.0.0-20210614182718-04defd469f4e
-	golang.org/x/oauth2 v0.0.0-20210615190721-d04028783cf1
+	golang.org/x/oauth2 v0.0.0-20210622215436-a8dc77f794b6
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/sys v0.0.0-20210616094352-59db8d763f22
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
