@@ -50,6 +50,7 @@ require (
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/go-redis/redis/v8 v8.10.0
 	github.com/go-sql-driver/mysql v1.6.0
+	github.com/go-toolsmith/strparse v1.0.0 // indirect
 	github.com/gocql/gocql v0.0.0-20200131111108-92af2e088537
 	github.com/gocraft/dbr/v2 v2.7.2
 	github.com/gogo/googleapis v0.0.0-20180223154316-0cd9801be74a
@@ -68,6 +69,8 @@ require (
 	github.com/kpango/glg v1.5.4
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/pierrec/lz4/v3 v3.3.2
+	github.com/quasilyte/go-ruleguard v0.3.7
+	github.com/quasilyte/go-ruleguard/dsl v0.3.6
 	github.com/scylladb/gocqlx v1.5.0
 	github.com/tensorflow/tensorflow v0.0.0-00010101000000-000000000000
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
@@ -81,6 +84,7 @@ require (
 	golang.org/x/oauth2 v0.0.0-20210622215436-a8dc77f794b6
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/sys v0.0.0-20210616094352-59db8d763f22
+	golang.org/x/tools v0.1.3
 	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
 	gonum.org/v1/plot v0.9.0
 	google.golang.org/api v0.48.0
