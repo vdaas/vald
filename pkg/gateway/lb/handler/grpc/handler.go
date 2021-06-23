@@ -91,7 +91,11 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 				Id: meta.GetId(),
 			}, copts...)
 			if err != nil && !errors.Is(err, context.Canceled) {
-				st, msg, _ := status.ParseError(err, codes.NotFound, fmt.Sprintf("error Exists API meta %s's uuid not found", meta.GetId()),
+				var (
+					st  *status.Status
+					msg string
+				)
+				st, msg, err = status.ParseError(err, codes.NotFound, fmt.Sprintf("error Exists API meta %s's uuid not found", meta.GetId()),
 					&errdetails.RequestInfo{
 						RequestId:   meta.GetId(),
 						ServingData: errdetails.Serialize(meta),
@@ -105,7 +109,7 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 				if sspan != nil {
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 				}
-				return nil
+				return err
 			}
 			if oid != nil && oid.GetId() != "" {
 				once.Do(func() {
@@ -366,7 +370,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 					sspan.SetStatus(trace.StatusCodeDeadlineExceeded(err.Error()))
 				}
 			case err != nil:
-				st, msg, _ := status.ParseError(err, codes.Internal, "failed to parse Search gRPC error response",
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse Search gRPC error response",
 					&errdetails.ResourceInfo{
 						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Search",
 						ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
@@ -376,6 +380,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 				if sspan != nil {
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 				}
+				return err
 			case r == nil || len(r.GetResults()) == 0:
 				err = errors.ErrEmptySearchResult
 				err = status.WrapWithNotFound("failed to process search request", err,
@@ -888,7 +893,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 				}
 				emu.Unlock()
 			}
-			return nil
+			return err
 		}
 		mu.Lock()
 		ce.Ips = append(ce.GetIps(), loc.GetIps()...)
@@ -1098,7 +1103,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				}
 				emu.Unlock()
 			}
-			return nil
+			return err
 		}
 		mu.Lock()
 		locs.Locations = append(locs.GetLocations(), loc.Locations...)
@@ -1870,7 +1875,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs 
 		}()
 		loc, err := vc.Remove(ctx, req, copts...)
 		if err != nil {
-			st, msg, _ := status.ParseError(err, codes.Internal,
+			st, msg, err := status.ParseError(err, codes.Internal,
 				"failed to parse Remove gRPC error response",
 				&errdetails.RequestInfo{
 					RequestId:   id.GetId(),
@@ -1885,7 +1890,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs 
 			if span != nil {
 				span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 			}
-			return nil
+			return err
 		}
 		mu.Lock()
 		locs.Ips = append(locs.GetIps(), loc.GetIps()...)
@@ -2030,7 +2035,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInternal(err.Error()))
 			}
-			return nil
+			return err
 		}
 		mu.Lock()
 		locs.Locations = append(locs.GetLocations(), loc.GetLocations()...)
@@ -2083,7 +2088,7 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 			ovec, err := vc.GetObject(sctx, req, copts...)
 			if err != nil && !errors.Is(err, context.Canceled) {
 				uuid := req.GetId().GetId()
-				st, msg, _ := status.ParseError(err, codes.NotFound,
+				st, msg, err := status.ParseError(err, codes.NotFound,
 					fmt.Sprintf("GetObject API ID = %s not found", uuid),
 					&errdetails.RequestInfo{
 						RequestId:   uuid,
@@ -2098,7 +2103,7 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 				if span != nil {
 					span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 				}
-				return nil
+				return err
 			}
 			if ovec != nil && ovec.GetId() != "" && ovec.GetVector() != nil {
 				once.Do(func() {
