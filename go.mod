@@ -3,7 +3,7 @@ module github.com/vdaas/vald
 go 1.16
 
 replace (
-	cloud.google.com/go => cloud.google.com/go v0.84.1-0.20210623040247-564102b335db
+	cloud.google.com/go => cloud.google.com/go v0.84.1-0.20210623045725-9bb82c3d5133
 	cloud.google.com/go/storage => cloud.google.com/go/storage v1.15.1-0.20210623045725-9bb82c3d5133
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20210602190049-10e0b31633f1+incompatible
 	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.38.65
@@ -28,13 +28,13 @@ replace (
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e
 	google.golang.org/grpc => google.golang.org/grpc v1.38.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.26.0
-	k8s.io/api => k8s.io/api v0.20.7
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.20.7
-	k8s.io/apimachinery => k8s.io/apimachinery v0.20.7
-	k8s.io/cli-runtime => k8s.io/cli-runtime v0.20.7
-	k8s.io/client-go => k8s.io/client-go v0.20.7
-	k8s.io/metrics => k8s.io/metrics v0.20.7
-	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.8.3
+	k8s.io/api => k8s.io/api v0.21.2
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.21.2
+	k8s.io/apimachinery => k8s.io/apimachinery v0.21.2
+	k8s.io/cli-runtime => k8s.io/cli-runtime v0.21.2
+	k8s.io/client-go => k8s.io/client-go v0.21.2
+	k8s.io/metrics => k8s.io/metrics v0.21.2
+	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.9.1
 )
 
 require (
@@ -88,10 +88,10 @@ require (
 	google.golang.org/grpc v1.38.0
 	gopkg.in/yaml.v2 v2.4.0
 	inet.af/netaddr v0.0.0-20210603230628-bf05d8b52dda
-	k8s.io/api v0.20.7
-	k8s.io/apimachinery v0.20.7
+	k8s.io/api v0.21.2
+	k8s.io/apimachinery v0.21.2
 	k8s.io/cli-runtime v0.0.0-00010101000000-000000000000
-	k8s.io/client-go v0.20.7
+	k8s.io/client-go v0.21.2
 	k8s.io/metrics v0.0.0-00010101000000-000000000000
 	sigs.k8s.io/controller-runtime v0.0.0-00010101000000-000000000000
 )
