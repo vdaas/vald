@@ -49,6 +49,7 @@ type Client interface {
 	SearchByID(t *testing.T, ctx context.Context, ds Dataset) error
 	Insert(t *testing.T, ctx context.Context, ds Dataset) error
 	Update(t *testing.T, ctx context.Context, ds Dataset) error
+	Upsert(t *testing.T, ctx context.Context, ds Dataset) error
 	Remove(t *testing.T, ctx context.Context, ds Dataset) error
 	GetObject(t *testing.T, ctx context.Context, ds Dataset) error
 	CreateIndex(t *testing.T, ctx context.Context) error
@@ -367,6 +368,77 @@ func (c *client) Update(t *testing.T, ctx context.Context, ds Dataset) error {
 	wg.Wait()
 
 	t.Log("update operation finished")
+
+	return nil
+}
+
+func (c *client) Upsert(t *testing.T, ctx context.Context, ds Dataset) error {
+	t.Log("upsert operation started")
+
+	client, err := c.getClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	sc, err := client.StreamUpsert(ctx)
+	if err != nil {
+		return err
+	}
+
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		for {
+			res, err := sc.Recv()
+			if err == io.EOF {
+				return
+			}
+
+			if err != nil {
+				st, serr := status.FromError(err)
+				t.Errorf("error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s", err, serr, st.Code().String(), errdetails.Serialize(st.Details()), st.Message(), st.Err().Error(), errdetails.Serialize(st.Proto()))
+				continue
+			}
+
+			loc := res.GetLocation()
+			if loc == nil {
+				err := res.GetStatus()
+				if err != nil {
+					t.Errorf("an error returned:\tcode: %d\tmessage: %s\tdetails: %s", err.GetCode(), err.GetMessage(), errdetails.Serialize(err.GetDetails()))
+					continue
+				}
+
+				t.Error("returned loc is nil")
+			}
+
+			t.Logf("returned: %s", loc)
+		}
+	}()
+
+	for i := 0; i < len(ds.Train); i++ {
+		id := strconv.Itoa(i)
+		v := ds.Train[i]
+		err := sc.Send(&payload.Upsert_Request{
+			Vector: &payload.Object_Vector{
+				Id:     id,
+				Vector: append(v[1:], v[0]),
+			},
+			Config: &payload.Upsert_Config{
+				SkipStrictExistCheck: false,
+			},
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	sc.CloseSend()
+
+	wg.Wait()
+
+	t.Log("upsert operation finished")
 
 	return nil
 }
