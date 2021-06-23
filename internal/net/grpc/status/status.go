@@ -59,11 +59,11 @@ func newStatus(code codes.Code, msg string, err error, details ...interface{}) (
 				strings.Join(v.BuildCPUInfoFlags, ", "),
 			),
 		}
-		if debug.StackEntries == nil {
+		if debug.GetStackEntries() == nil {
 			debug.StackEntries = make([]string, 0, len(v.StackTrace))
 		}
 		for i, stack := range v.StackTrace {
-			debug.StackEntries = append(debug.StackEntries, fmt.Sprintf("id: %d stack_trace: %s", i, stack.String()))
+			debug.StackEntries = append(debug.GetStackEntries(), fmt.Sprintf("id: %d stack_trace: %s", i, stack.String()))
 		}
 		return debug
 	}

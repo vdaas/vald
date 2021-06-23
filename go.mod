@@ -6,7 +6,7 @@ replace (
 	cloud.google.com/go => cloud.google.com/go v0.84.1-0.20210623045725-9bb82c3d5133
 	cloud.google.com/go/storage => cloud.google.com/go/storage v1.15.1-0.20210623045725-9bb82c3d5133
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20210602190049-10e0b31633f1+incompatible
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.38.65
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.38.66
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
@@ -50,6 +50,7 @@ require (
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/go-redis/redis/v8 v8.10.0
 	github.com/go-sql-driver/mysql v1.6.0
+	github.com/go-toolsmith/strparse v1.0.0 // indirect
 	github.com/gocql/gocql v0.0.0-20200131111108-92af2e088537
 	github.com/gocraft/dbr/v2 v2.7.2
 	github.com/gogo/googleapis v0.0.0-20180223154316-0cd9801be74a
@@ -68,6 +69,8 @@ require (
 	github.com/kpango/glg v1.5.4
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/pierrec/lz4/v3 v3.3.2
+	github.com/quasilyte/go-ruleguard v0.3.7
+	github.com/quasilyte/go-ruleguard/dsl v0.3.6
 	github.com/scylladb/gocqlx v1.5.0
 	github.com/tensorflow/tensorflow v0.0.0-00010101000000-000000000000
 	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
@@ -81,9 +84,10 @@ require (
 	golang.org/x/oauth2 v0.0.0-20210622215436-a8dc77f794b6
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/sys v0.0.0-20210616094352-59db8d763f22
-	gonum.org/v1/hdf5 v0.0.0-20200504100616-496fefe91614
+	golang.org/x/tools v0.1.4
+	gonum.org/v1/hdf5 v0.0.0-20210623100833-4dd8a5a777f9
 	gonum.org/v1/plot v0.9.0
-	google.golang.org/api v0.48.0
+	google.golang.org/api v0.49.0
 	google.golang.org/genproto v0.0.0-20210617175327-b9e0b3197ced
 	google.golang.org/grpc v1.38.0
 	gopkg.in/yaml.v2 v2.4.0
