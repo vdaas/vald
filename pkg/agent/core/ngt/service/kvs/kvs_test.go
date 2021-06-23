@@ -20,6 +20,7 @@ import (
 	"context"
 	"math"
 	"reflect"
+	"sync"
 	"sync/atomic"
 	"testing"
 
@@ -738,7 +739,7 @@ func Test_bidi_Set(t *testing.T) {
 				want: want{
 					key: key,
 					val: val,
-					l:   2,
+					l:   1,
 				},
 			}
 		}(),
@@ -1422,13 +1423,16 @@ func Test_bidi_Range(t *testing.T) {
 					"4ec4-c85f-11ea-87d0": 10003,
 				}
 			)
+			var mu sync.Mutex
 
 			return test{
 				name: "rage get successes",
 				args: args{
 					ctx: context.Background(),
 					f: func(s string, u uint32) bool {
+						mu.Lock()
 						got[s] = u
+						mu.Unlock()
 						return true
 					},
 				},
@@ -1471,13 +1475,16 @@ func Test_bidi_Range(t *testing.T) {
 					"4ec4-c85f-11ea-87d0": 10003,
 				}
 			)
+			var mu sync.Mutex
 
 			return test{
 				name: "rage get successes when l of fields is 100",
 				args: args{
 					ctx: context.Background(),
 					f: func(s string, u uint32) bool {
+						mu.Lock()
 						got[s] = u
+						mu.Unlock()
 						return true
 					},
 				},
@@ -1520,13 +1527,16 @@ func Test_bidi_Range(t *testing.T) {
 					"4ec4-c85f-11ea-87d0": 10003,
 				}
 			)
+			var mu sync.Mutex
 
 			return test{
 				name: "rage get successes when l of fields is maximun value of uint64",
 				args: args{
 					ctx: context.Background(),
 					f: func(s string, u uint32) bool {
+						mu.Lock()
 						got[s] = u
+						mu.Unlock()
 						return true
 					},
 				},

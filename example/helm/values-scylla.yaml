@@ -18,6 +18,14 @@ defaults:
     level: debug
   image:
     tag: "latest"
+  server_config:
+    healths:
+      liveness:
+        livenessProbe:
+          initialDelaySeconds: 60
+      readiness:
+        readinessProbe:
+          initialDelaySeconds: 60
 
 gateway:
   lb:

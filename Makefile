@@ -193,6 +193,7 @@ GO_SOURCES = $(eval GO_SOURCES := $(shell find \
 		-not -path './hack/benchmark/internal/starter/agent/*' \
 		-not -path './hack/benchmark/internal/starter/external/*' \
 		-not -path './hack/benchmark/internal/starter/gateway/*' \
+		-not -path './hack/gorules/*' \
 		-not -path './hack/license/*' \
 		-not -path './hack/swagger/*' \
 		-not -path './hack/tools/*' \
@@ -222,6 +223,7 @@ GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell find \
 		-not -path './hack/benchmark/internal/starter/agent/*' \
 		-not -path './hack/benchmark/internal/starter/external/*' \
 		-not -path './hack/benchmark/internal/starter/gateway/*' \
+		-not -path './hack/gorules/*' \
 		-not -path './hack/license/*' \
 		-not -path './hack/swagger/*' \
 		-not -path './hack/tools/*' \
@@ -308,6 +310,7 @@ clean:
 	rm -rf vendor
 	go clean -cache -modcache -testcache -i -r
 	mv ./apis/grpc/v1/vald/vald.go $(TEMP_DIR)/vald.go
+	mv ./apis/grpc/v1/payload/interface.go $(TEMP_DIR)/interface.go
 	rm -rf \
 		/go/pkg \
 		./*.log \
@@ -323,6 +326,8 @@ clean:
 		./go.mod
 	mkdir -p ./apis/grpc/v1/vald
 	mv $(TEMP_DIR)/vald.go ./apis/grpc/v1/vald/vald.go
+	mkdir -p ./apis/grpc/v1/payload
+	mv $(TEMP_DIR)/interface.go ./apis/grpc/v1/payload/interface.go
 	cp ./hack/go.mod.default ./go.mod
 
 .PHONY: license
@@ -350,7 +355,7 @@ tools/install: \
 	telepresence/install
 
 .PHONY: update
-## update deps, license, and run goimports
+## update deps, license, and run gofumpt, goimports
 update: \
 	clean \
 	proto/all \
@@ -362,13 +367,15 @@ update: \
 ## format go codes
 format: \
 	license \
-	update/goimports \
+	format/go \
 	format/yaml
 
-.PHONY: update/goimports
-## run goimports for all go files
-update/goimports:
+.PHONY: format/go
+## run gofumpt, goimports for all go files
+format/go:
+	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs gofumpt -w
 	find ./ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs goimports -w
+	# find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs goimports -w
 
 .PHONY: format/yaml
 format/yaml:
@@ -388,6 +395,7 @@ deps: \
 .PHONY: deps/install
 ## install dependencies
 deps/install: \
+	gofumpt/install \
 	goimports/install \
 	prettier/install \
 	go/deps
@@ -408,8 +416,11 @@ go/deps:
 
 .PHONY: goimports/install
 goimports/install:
-	go get -u golang.org/x/tools/cmd/goimports
-	# GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports
+	go install golang.org/x/tools/cmd/goimports@latest
+
+.PHONY: gofumpt/install
+gofumpt/install:
+	go install mvdan.cc/gofumpt@latest
 
 .PHONY: prettier/install
 prettier/install:

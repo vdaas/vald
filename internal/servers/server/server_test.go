@@ -20,6 +20,8 @@ import (
 	"crypto/tls"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
+	"sync"
 	"testing"
 	"time"
 
@@ -27,7 +29,9 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/net/control"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"go.uber.org/goleak"
 )
 
 func TestString(t *testing.T) {
@@ -653,6 +657,828 @@ func TestShutdown(t *testing.T) {
 			got := s.Shutdown(tt.args.ctx)
 			if err := tt.checkFunc(s, got, tt.want); err != nil {
 				t.Error(err)
+			}
+		})
+	}
+}
+
+func TestServerMode_String(t *testing.T) {
+	type want struct {
+		want string
+	}
+	type test struct {
+		name       string
+		m          ServerMode
+		want       want
+		checkFunc  func(want, string) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got string) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := test.m.String()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_server_IsRunning(t *testing.T) {
+	type fields struct {
+		mode ServerMode
+		name string
+		mu   sync.RWMutex
+		wg   sync.WaitGroup
+		eg   errgroup.Group
+		http struct {
+			srv     *http.Server
+			h       http.Handler
+			starter func(net.Listener) error
+		}
+		grpc struct {
+			srv       *grpc.Server
+			keepAlive *grpcKeepAlive
+			opts      []grpc.ServerOption
+			regs      []func(*grpc.Server)
+		}
+		lc            *net.ListenConfig
+		tcfg          *tls.Config
+		pwt           time.Duration
+		sddur         time.Duration
+		rht           time.Duration
+		rt            time.Duration
+		wt            time.Duration
+		it            time.Duration
+		ctrl          control.SocketController
+		sockFlg       control.SocketFlag
+		network       net.NetworkType
+		socketPath    string
+		port          uint16
+		host          string
+		enableRestart bool
+		shuttingDown  bool
+		running       bool
+		preStartFunc  func() error
+		preStopFunc   func() error
+	}
+	type want struct {
+		want bool
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, bool) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got bool) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           mode: nil,
+		           name: "",
+		           mu: sync.RWMutex{},
+		           wg: sync.WaitGroup{},
+		           eg: nil,
+		           http: nil,
+		           grpc: nil,
+		           lc: nil,
+		           tcfg: nil,
+		           pwt: nil,
+		           sddur: nil,
+		           rht: nil,
+		           rt: nil,
+		           wt: nil,
+		           it: nil,
+		           ctrl: nil,
+		           sockFlg: nil,
+		           network: nil,
+		           socketPath: "",
+		           port: 0,
+		           host: "",
+		           enableRestart: false,
+		           shuttingDown: false,
+		           running: false,
+		           preStartFunc: nil,
+		           preStopFunc: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           mode: nil,
+		           name: "",
+		           mu: sync.RWMutex{},
+		           wg: sync.WaitGroup{},
+		           eg: nil,
+		           http: nil,
+		           grpc: nil,
+		           lc: nil,
+		           tcfg: nil,
+		           pwt: nil,
+		           sddur: nil,
+		           rht: nil,
+		           rt: nil,
+		           wt: nil,
+		           it: nil,
+		           ctrl: nil,
+		           sockFlg: nil,
+		           network: nil,
+		           socketPath: "",
+		           port: 0,
+		           host: "",
+		           enableRestart: false,
+		           shuttingDown: false,
+		           running: false,
+		           preStartFunc: nil,
+		           preStopFunc: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			s := &server{
+				mode:          test.fields.mode,
+				name:          test.fields.name,
+				mu:            test.fields.mu,
+				wg:            test.fields.wg,
+				eg:            test.fields.eg,
+				http:          test.fields.http,
+				grpc:          test.fields.grpc,
+				lc:            test.fields.lc,
+				tcfg:          test.fields.tcfg,
+				pwt:           test.fields.pwt,
+				sddur:         test.fields.sddur,
+				rht:           test.fields.rht,
+				rt:            test.fields.rt,
+				wt:            test.fields.wt,
+				it:            test.fields.it,
+				ctrl:          test.fields.ctrl,
+				sockFlg:       test.fields.sockFlg,
+				network:       test.fields.network,
+				socketPath:    test.fields.socketPath,
+				port:          test.fields.port,
+				host:          test.fields.host,
+				enableRestart: test.fields.enableRestart,
+				shuttingDown:  test.fields.shuttingDown,
+				running:       test.fields.running,
+				preStartFunc:  test.fields.preStartFunc,
+				preStopFunc:   test.fields.preStopFunc,
+			}
+
+			got := s.IsRunning()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_server_Name(t *testing.T) {
+	type fields struct {
+		mode ServerMode
+		name string
+		mu   sync.RWMutex
+		wg   sync.WaitGroup
+		eg   errgroup.Group
+		http struct {
+			srv     *http.Server
+			h       http.Handler
+			starter func(net.Listener) error
+		}
+		grpc struct {
+			srv       *grpc.Server
+			keepAlive *grpcKeepAlive
+			opts      []grpc.ServerOption
+			regs      []func(*grpc.Server)
+		}
+		lc            *net.ListenConfig
+		tcfg          *tls.Config
+		pwt           time.Duration
+		sddur         time.Duration
+		rht           time.Duration
+		rt            time.Duration
+		wt            time.Duration
+		it            time.Duration
+		ctrl          control.SocketController
+		sockFlg       control.SocketFlag
+		network       net.NetworkType
+		socketPath    string
+		port          uint16
+		host          string
+		enableRestart bool
+		shuttingDown  bool
+		running       bool
+		preStartFunc  func() error
+		preStopFunc   func() error
+	}
+	type want struct {
+		want string
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, string) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got string) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           mode: nil,
+		           name: "",
+		           mu: sync.RWMutex{},
+		           wg: sync.WaitGroup{},
+		           eg: nil,
+		           http: nil,
+		           grpc: nil,
+		           lc: nil,
+		           tcfg: nil,
+		           pwt: nil,
+		           sddur: nil,
+		           rht: nil,
+		           rt: nil,
+		           wt: nil,
+		           it: nil,
+		           ctrl: nil,
+		           sockFlg: nil,
+		           network: nil,
+		           socketPath: "",
+		           port: 0,
+		           host: "",
+		           enableRestart: false,
+		           shuttingDown: false,
+		           running: false,
+		           preStartFunc: nil,
+		           preStopFunc: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           mode: nil,
+		           name: "",
+		           mu: sync.RWMutex{},
+		           wg: sync.WaitGroup{},
+		           eg: nil,
+		           http: nil,
+		           grpc: nil,
+		           lc: nil,
+		           tcfg: nil,
+		           pwt: nil,
+		           sddur: nil,
+		           rht: nil,
+		           rt: nil,
+		           wt: nil,
+		           it: nil,
+		           ctrl: nil,
+		           sockFlg: nil,
+		           network: nil,
+		           socketPath: "",
+		           port: 0,
+		           host: "",
+		           enableRestart: false,
+		           shuttingDown: false,
+		           running: false,
+		           preStartFunc: nil,
+		           preStopFunc: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			s := &server{
+				mode:          test.fields.mode,
+				name:          test.fields.name,
+				mu:            test.fields.mu,
+				wg:            test.fields.wg,
+				eg:            test.fields.eg,
+				http:          test.fields.http,
+				grpc:          test.fields.grpc,
+				lc:            test.fields.lc,
+				tcfg:          test.fields.tcfg,
+				pwt:           test.fields.pwt,
+				sddur:         test.fields.sddur,
+				rht:           test.fields.rht,
+				rt:            test.fields.rt,
+				wt:            test.fields.wt,
+				it:            test.fields.it,
+				ctrl:          test.fields.ctrl,
+				sockFlg:       test.fields.sockFlg,
+				network:       test.fields.network,
+				socketPath:    test.fields.socketPath,
+				port:          test.fields.port,
+				host:          test.fields.host,
+				enableRestart: test.fields.enableRestart,
+				shuttingDown:  test.fields.shuttingDown,
+				running:       test.fields.running,
+				preStartFunc:  test.fields.preStartFunc,
+				preStopFunc:   test.fields.preStopFunc,
+			}
+
+			got := s.Name()
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_server_ListenAndServe(t *testing.T) {
+	type args struct {
+		ctx context.Context
+		ech chan<- error
+	}
+	type fields struct {
+		mode ServerMode
+		name string
+		mu   sync.RWMutex
+		wg   sync.WaitGroup
+		eg   errgroup.Group
+		http struct {
+			srv     *http.Server
+			h       http.Handler
+			starter func(net.Listener) error
+		}
+		grpc struct {
+			srv       *grpc.Server
+			keepAlive *grpcKeepAlive
+			opts      []grpc.ServerOption
+			regs      []func(*grpc.Server)
+		}
+		lc            *net.ListenConfig
+		tcfg          *tls.Config
+		pwt           time.Duration
+		sddur         time.Duration
+		rht           time.Duration
+		rt            time.Duration
+		wt            time.Duration
+		it            time.Duration
+		ctrl          control.SocketController
+		sockFlg       control.SocketFlag
+		network       net.NetworkType
+		socketPath    string
+		port          uint16
+		host          string
+		enableRestart bool
+		shuttingDown  bool
+		running       bool
+		preStartFunc  func() error
+		preStopFunc   func() error
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           ech: nil,
+		       },
+		       fields: fields {
+		           mode: nil,
+		           name: "",
+		           mu: sync.RWMutex{},
+		           wg: sync.WaitGroup{},
+		           eg: nil,
+		           http: nil,
+		           grpc: nil,
+		           lc: nil,
+		           tcfg: nil,
+		           pwt: nil,
+		           sddur: nil,
+		           rht: nil,
+		           rt: nil,
+		           wt: nil,
+		           it: nil,
+		           ctrl: nil,
+		           sockFlg: nil,
+		           network: nil,
+		           socketPath: "",
+		           port: 0,
+		           host: "",
+		           enableRestart: false,
+		           shuttingDown: false,
+		           running: false,
+		           preStartFunc: nil,
+		           preStopFunc: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           ech: nil,
+		           },
+		           fields: fields {
+		           mode: nil,
+		           name: "",
+		           mu: sync.RWMutex{},
+		           wg: sync.WaitGroup{},
+		           eg: nil,
+		           http: nil,
+		           grpc: nil,
+		           lc: nil,
+		           tcfg: nil,
+		           pwt: nil,
+		           sddur: nil,
+		           rht: nil,
+		           rt: nil,
+		           wt: nil,
+		           it: nil,
+		           ctrl: nil,
+		           sockFlg: nil,
+		           network: nil,
+		           socketPath: "",
+		           port: 0,
+		           host: "",
+		           enableRestart: false,
+		           shuttingDown: false,
+		           running: false,
+		           preStartFunc: nil,
+		           preStopFunc: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			s := &server{
+				mode:          test.fields.mode,
+				name:          test.fields.name,
+				mu:            test.fields.mu,
+				wg:            test.fields.wg,
+				eg:            test.fields.eg,
+				http:          test.fields.http,
+				grpc:          test.fields.grpc,
+				lc:            test.fields.lc,
+				tcfg:          test.fields.tcfg,
+				pwt:           test.fields.pwt,
+				sddur:         test.fields.sddur,
+				rht:           test.fields.rht,
+				rt:            test.fields.rt,
+				wt:            test.fields.wt,
+				it:            test.fields.it,
+				ctrl:          test.fields.ctrl,
+				sockFlg:       test.fields.sockFlg,
+				network:       test.fields.network,
+				socketPath:    test.fields.socketPath,
+				port:          test.fields.port,
+				host:          test.fields.host,
+				enableRestart: test.fields.enableRestart,
+				shuttingDown:  test.fields.shuttingDown,
+				running:       test.fields.running,
+				preStartFunc:  test.fields.preStartFunc,
+				preStopFunc:   test.fields.preStopFunc,
+			}
+
+			err := s.ListenAndServe(test.args.ctx, test.args.ech)
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_server_Shutdown(t *testing.T) {
+	type args struct {
+		ctx context.Context
+	}
+	type fields struct {
+		mode ServerMode
+		name string
+		mu   sync.RWMutex
+		wg   sync.WaitGroup
+		eg   errgroup.Group
+		http struct {
+			srv     *http.Server
+			h       http.Handler
+			starter func(net.Listener) error
+		}
+		grpc struct {
+			srv       *grpc.Server
+			keepAlive *grpcKeepAlive
+			opts      []grpc.ServerOption
+			regs      []func(*grpc.Server)
+		}
+		lc            *net.ListenConfig
+		tcfg          *tls.Config
+		pwt           time.Duration
+		sddur         time.Duration
+		rht           time.Duration
+		rt            time.Duration
+		wt            time.Duration
+		it            time.Duration
+		ctrl          control.SocketController
+		sockFlg       control.SocketFlag
+		network       net.NetworkType
+		socketPath    string
+		port          uint16
+		host          string
+		enableRestart bool
+		shuttingDown  bool
+		running       bool
+		preStartFunc  func() error
+		preStopFunc   func() error
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		       },
+		       fields: fields {
+		           mode: nil,
+		           name: "",
+		           mu: sync.RWMutex{},
+		           wg: sync.WaitGroup{},
+		           eg: nil,
+		           http: nil,
+		           grpc: nil,
+		           lc: nil,
+		           tcfg: nil,
+		           pwt: nil,
+		           sddur: nil,
+		           rht: nil,
+		           rt: nil,
+		           wt: nil,
+		           it: nil,
+		           ctrl: nil,
+		           sockFlg: nil,
+		           network: nil,
+		           socketPath: "",
+		           port: 0,
+		           host: "",
+		           enableRestart: false,
+		           shuttingDown: false,
+		           running: false,
+		           preStartFunc: nil,
+		           preStopFunc: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           },
+		           fields: fields {
+		           mode: nil,
+		           name: "",
+		           mu: sync.RWMutex{},
+		           wg: sync.WaitGroup{},
+		           eg: nil,
+		           http: nil,
+		           grpc: nil,
+		           lc: nil,
+		           tcfg: nil,
+		           pwt: nil,
+		           sddur: nil,
+		           rht: nil,
+		           rt: nil,
+		           wt: nil,
+		           it: nil,
+		           ctrl: nil,
+		           sockFlg: nil,
+		           network: nil,
+		           socketPath: "",
+		           port: 0,
+		           host: "",
+		           enableRestart: false,
+		           shuttingDown: false,
+		           running: false,
+		           preStartFunc: nil,
+		           preStopFunc: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			s := &server{
+				mode:          test.fields.mode,
+				name:          test.fields.name,
+				mu:            test.fields.mu,
+				wg:            test.fields.wg,
+				eg:            test.fields.eg,
+				http:          test.fields.http,
+				grpc:          test.fields.grpc,
+				lc:            test.fields.lc,
+				tcfg:          test.fields.tcfg,
+				pwt:           test.fields.pwt,
+				sddur:         test.fields.sddur,
+				rht:           test.fields.rht,
+				rt:            test.fields.rt,
+				wt:            test.fields.wt,
+				it:            test.fields.it,
+				ctrl:          test.fields.ctrl,
+				sockFlg:       test.fields.sockFlg,
+				network:       test.fields.network,
+				socketPath:    test.fields.socketPath,
+				port:          test.fields.port,
+				host:          test.fields.host,
+				enableRestart: test.fields.enableRestart,
+				shuttingDown:  test.fields.shuttingDown,
+				running:       test.fields.running,
+				preStartFunc:  test.fields.preStartFunc,
+				preStopFunc:   test.fields.preStopFunc,
+			}
+
+			err := s.Shutdown(test.args.ctx)
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
 			}
 		})
 	}

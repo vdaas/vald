@@ -1680,3 +1680,92 @@ func TestFromError(t *testing.T) {
 		})
 	}
 }
+
+func TestParseError(t *testing.T) {
+	type args struct {
+		err         error
+		defaultCode codes.Code
+		defaultMsg  string
+		details     []interface{}
+	}
+	type want struct {
+		wantSt  *Status
+		wantMsg string
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *Status, string, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotSt *Status, gotMsg string, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotSt, w.wantSt) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotSt, w.wantSt)
+		}
+		if !reflect.DeepEqual(gotMsg, w.wantMsg) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotMsg, w.wantMsg)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           err: nil,
+		           defaultCode: nil,
+		           defaultMsg: "",
+		           details: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           err: nil,
+		           defaultCode: nil,
+		           defaultMsg: "",
+		           details: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			gotSt, gotMsg, err := ParseError(test.args.err, test.args.defaultCode, test.args.defaultMsg, test.args.details...)
+			if err := test.checkFunc(test.want, gotSt, gotMsg, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}

@@ -49,3 +49,18 @@ networkChaos:
         - default
     duration: "100ms"
     cron: "@every 3s"
+  bandwidth:
+    enabled: false
+    name: vald-network-bandwidth
+    selector:
+      labelSelectors:
+        app.kubernetes.io/name: vald
+      namespaces:
+        - default
+    duration: "100ms"
+    cron: "@every 3s"
+    rate: 100kbps
+    limit: 100
+    buffer: 10000
+    peakrate: 1000000
+    minburst: 1000000

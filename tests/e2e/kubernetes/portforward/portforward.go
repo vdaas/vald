@@ -1,3 +1,4 @@
+//go:build e2e
 // +build e2e
 
 //
@@ -24,12 +25,10 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/portforward"
 	"k8s.io/client-go/transport/spdy"
 )
@@ -48,20 +47,7 @@ type Portforward struct {
 	stopCh     chan struct{}
 }
 
-func NewPortforward(kubeConfig, namespace, podName string, localPort, podPort int) (*Portforward, error) {
-	if kubeConfig == "" {
-		if home := os.Getenv("HOME"); home != "" {
-			kubeConfig = filepath.Join(home, ".kube", "config")
-		} else {
-			kubeConfig = os.Getenv("KUBECONFIG")
-		}
-	}
-
-	config, err := clientcmd.BuildConfigFromFlags("", kubeConfig)
-	if err != nil {
-		return nil, err
-	}
-
+func New(config *rest.Config, namespace, podName string, localPort, podPort int) *Portforward {
 	return &Portforward{
 		namespace:  namespace,
 		podName:    podName,
@@ -70,7 +56,7 @@ func NewPortforward(kubeConfig, namespace, podName string, localPort, podPort in
 		restConfig: config,
 		readyCh:    make(chan struct{}),
 		stopCh:     make(chan struct{}, 1),
-	}, nil
+	}
 }
 
 func (p *Portforward) Start() error {

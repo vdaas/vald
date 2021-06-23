@@ -17,9 +17,14 @@ package io
 
 import (
 	"bytes"
-	"errors"
 	"io"
+	"reflect"
+	"sync"
 	"testing"
+
+	"github.com/vdaas/vald/internal/errors"
+
+	"go.uber.org/goleak"
 )
 
 // A version of bytes.Buffer without ReadFrom and WriteTo
@@ -161,5 +166,175 @@ func TestCopyLargeWriter(t *testing.T) {
 	rb.WriteString("hello, world.")
 	if _, err := Copy(wb, rb); err != want {
 		t.Errorf("Copy error: got %v, want %v", err, want)
+	}
+}
+
+func TestNewCopier(t *testing.T) {
+	type args struct {
+		size int
+	}
+	type want struct {
+		want Copier
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, Copier) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got Copier) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           size: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           size: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got := NewCopier(test.args.size)
+			if err := test.checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_copier_Copy(t *testing.T) {
+	type args struct {
+		src io.Reader
+	}
+	type fields struct {
+		pool    sync.Pool
+		bufSize int64
+	}
+	type want struct {
+		wantWritten int64
+		wantDst     string
+		err         error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, int64, string, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotWritten int64, gotDst string, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotWritten, w.wantWritten) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotWritten, w.wantWritten)
+		}
+		if !reflect.DeepEqual(gotDst, w.wantDst) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotDst, w.wantDst)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           src: nil,
+		       },
+		       fields: fields {
+		           pool: sync.Pool{},
+		           bufSize: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           src: nil,
+		           },
+		           fields: fields {
+		           pool: sync.Pool{},
+		           bufSize: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			c := &copier{
+				pool:    test.fields.pool,
+				bufSize: test.fields.bufSize,
+			}
+			dst := &bytes.Buffer{}
+
+			gotWritten, err := c.Copy(dst, test.args.src)
+			if err := test.checkFunc(test.want, gotWritten, dst.String(), err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
 	}
 }

@@ -21,7 +21,7 @@ func ReStructure(uuids []string, locs *payload.Object_Locations) *payload.Object
 	if locs == nil {
 		return nil
 	}
-	lmap := make(map[string]*payload.Object_Location, len(locs.Locations))
+	lmap := make(map[string]*payload.Object_Location, len(locs.GetLocations()))
 	for _, loc := range locs.Locations {
 		uuid := loc.GetUuid()
 		_, ok := lmap[uuid]
@@ -38,7 +38,7 @@ func ReStructure(uuids []string, locs *payload.Object_Locations) *payload.Object
 		if !ok {
 			loc = new(payload.Object_Location)
 		}
-		locs.Locations = append(locs.Locations, loc)
+		locs.Locations = append(locs.GetLocations(), loc)
 	}
 	return locs
 }

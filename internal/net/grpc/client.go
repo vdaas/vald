@@ -272,7 +272,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 					if !ok {
 						return true
 					}
-					if enabled, ok := bo.(bool); enabled && ok {
+					if enabled, ok := bo.(bool); ok && enabled && g.bo != nil {
 						_, err = g.bo.Do(clctx, func(ictx context.Context) (r interface{}, ret bool, err error) {
 							_, err = g.Connect(ictx, addr)
 							return nil, err != nil, err

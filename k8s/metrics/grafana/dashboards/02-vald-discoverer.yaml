@@ -37,7 +37,7 @@ data:
       "editable": true,
       "gnetId": null,
       "graphTooltip": 0,
-      "iteration": 1607330909211,
+      "iteration": 1623650873100,
       "links": [],
       "panels": [
         {
@@ -45,17 +45,17 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "mappings": [
                 {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "special"
                 }
               ],
-              "nullValueMode": "connected",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -95,11 +95,13 @@ data:
               "fields": "/^vald_version$/",
               "values": false
             },
+            "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
+              "exemplar": true,
               "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
               "format": "table",
               "instant": true,
@@ -118,17 +120,17 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "mappings": [
                 {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "special"
                 }
               ],
-              "nullValueMode": "connected",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -168,9 +170,10 @@ data:
               "fields": "/^go_version$/",
               "values": false
             },
+            "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "expr": "label_replace(vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}, \"go_version\", \"v$1\", \"go_version\", \"([^v].*)\")",
@@ -191,17 +194,17 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "mappings": [
                 {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "special"
                 }
               ],
-              "nullValueMode": "connected",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -241,9 +244,10 @@ data:
               "fields": "/^go_os$/",
               "values": false
             },
+            "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
@@ -264,17 +268,17 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "mappings": [
                 {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "special"
                 }
               ],
-              "nullValueMode": "connected",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -318,9 +322,10 @@ data:
               "fields": "",
               "values": false
             },
+            "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "expr": "count(up{namespace=\"$Namespace\", app=~\"$ReplicaSet\", app!=\"\"})",
@@ -342,18 +347,18 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "decimals": 2,
               "mappings": [
                 {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "special"
                 }
               ],
-              "nullValueMode": "connected",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -397,13 +402,17 @@ data:
               "fields": "",
               "values": false
             },
+            "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
-              "expr": "sum(container_memory_working_set_bytes{namespace=\"$Namespace\", container=\"$ReplicaSet\"})",
+              "exemplar": true,
+              "expr": "sum(container_memory_working_set_bytes{namespace=\"$Namespace\", pod=~\"$ReplicaSet.*\"})",
               "format": "time_series",
+              "interval": "",
+              "legendFormat": "",
               "refId": "A"
             }
           ],
@@ -417,17 +426,17 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "mappings": [
                 {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "special"
                 }
               ],
-              "nullValueMode": "connected",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -467,9 +476,10 @@ data:
               "fields": "/^git_commit$/",
               "values": false
             },
+            "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
@@ -490,17 +500,17 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "mappings": [
                 {
-                  "id": 0,
-                  "op": "=",
-                  "text": "N/A",
-                  "type": 1,
-                  "value": "null"
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "special"
                 }
               ],
-              "nullValueMode": "connected",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -540,9 +550,10 @@ data:
               "fields": "/^build_time$/",
               "values": false
             },
+            "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.3.4",
+          "pluginVersin": "8.0.1",
           "targets": [
             {
               "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
@@ -566,7 +577,6 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "links": []
             },
             "overrides": []
@@ -597,7 +607,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "8.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -607,7 +617,8 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(irate(container_cpu_usage_seconds_total{namespace=\"$Namespace\", container=\"$ReplicaSet\", pod=~\"$PodName\"}[$interval])) by (pod)",
+              "exemplar": true,
+              "expr": "sum(irate(container_cpu_usage_seconds_total{namespace=\"$Namespace\", pod=~\"$ReplicaSet.*\"}[$interval])) by (pod)",
               "interval": "",
               "legendFormat": "{{pod}}",
               "refId": "A"
@@ -633,6 +644,7 @@ data:
           },
           "yaxes": [
             {
+              "$$hashKey": "object:76",
               "format": "short",
               "label": null,
               "logBase": 1,
@@ -641,6 +653,7 @@ data:
               "show": true
             },
             {
+              "$$hashKey": "object:77",
               "format": "short",
               "label": null,
               "logBase": 1,
@@ -662,7 +675,6 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "links": []
             },
             "overrides": []
@@ -693,7 +705,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "8.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -703,7 +715,8 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(container_memory_working_set_bytes{namespace=\"$Namespace\", container=\"$ReplicaSet\", pod=~\"$PodName\"}) by (pod)",
+              "exemplar": true,
+              "expr": "sum(container_memory_working_set_bytes{namespace=\"$Namespace\", pod=~\"$ReplicaSet.*\"}) by (pod)",
               "interval": "",
               "legendFormat": "{{pod}}",
               "refId": "A"
@@ -729,6 +742,7 @@ data:
           },
           "yaxes": [
             {
+              "$$hashKey": "object:154",
               "format": "decbytes",
               "label": null,
               "logBase": 1,
@@ -737,6 +751,7 @@ data:
               "show": true
             },
             {
+              "$$hashKey": "object:155",
               "format": "short",
               "label": null,
               "logBase": 1,
@@ -758,7 +773,6 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "links": []
             },
             "overrides": []
@@ -790,7 +804,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "8.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -863,7 +877,6 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "links": []
             },
             "overrides": []
@@ -895,7 +908,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "8.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -975,7 +988,6 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "links": []
             },
             "overrides": []
@@ -1006,7 +1018,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "8.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1072,7 +1084,6 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "links": []
             },
             "overrides": []
@@ -1104,7 +1115,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.3.4",
+          "pluginVersion": "8.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1166,7 +1177,7 @@ data:
         }
       ],
       "refresh": "",
-      "schemaVersion": 26,
+      "schemaVersion": 30,
       "style": "dark",
       "tags": [],
       "templating": {
@@ -1179,7 +1190,8 @@ data:
               "value": "default"
             },
             "datasource": "Prometheus",
-            "definition": "label_values(kube_pod_info, namespace)",
+            "definition": "label_values(up, namespace)",
+            "description": null,
             "error": null,
             "hide": 0,
             "includeAll": false,
@@ -1187,13 +1199,15 @@ data:
             "multi": false,
             "name": "Namespace",
             "options": [],
-            "query": "label_values(kube_pod_info, namespace)",
+            "query": {
+              "query": "label_values(up, namespace)",
+              "refId": "StandardVariableQuery"
+            },
             "refresh": 1,
             "regex": "",
             "skipUrlSync": false,
             "sort": 0,
             "tagValuesQuery": "",
-            "tags": [],
             "tagsQuery": "",
             "type": "query",
             "useTags": false
@@ -1206,7 +1220,8 @@ data:
               "value": "vald-discoverer"
             },
             "datasource": "Prometheus",
-            "definition": "label_values(vald_app_version_info{server_name=~\"discoverer.*\"}, app)",
+            "definition": "label_values(vald_app_version_info{server_name=~\"discoverer.*\", namespace=~\"$Namespace\"}, app)",
+            "description": null,
             "error": null,
             "hide": 0,
             "includeAll": false,
@@ -1214,26 +1229,29 @@ data:
             "multi": false,
             "name": "ReplicaSet",
             "options": [],
-            "query": "label_values(vald_app_version_info{server_name=~\"discoverer.*\"}, app)",
+            "query": {
+              "query": "label_values(vald_app_version_info{server_name=~\"discoverer.*\", namespace=~\"$Namespace\"}, app)",
+              "refId": "StandardVariableQuery"
+            },
             "refresh": 1,
             "regex": "",
             "skipUrlSync": false,
             "sort": 0,
             "tagValuesQuery": "",
-            "tags": [],
             "tagsQuery": "",
             "type": "query",
             "useTags": false
           },
           {
-            "allValue": "",
+            "allValue": ".+",
             "current": {
-              "selected": true,
+              "selected": false,
               "text": "All",
               "value": "$__all"
             },
             "datasource": "Prometheus",
-            "definition": "label_values(vald_app_version_info{namespace=~\"$Namespace\", app=~\"$ReplicaSet\"}, instance)",
+            "definition": "label_values(vald_app_version_info{server_name=~\"discoverer.*\", namespace=~\"$Namespace\", app=~\"$ReplicaSet\"}, instance)",
+            "description": null,
             "error": null,
             "hide": 0,
             "includeAll": true,
@@ -1241,13 +1259,15 @@ data:
             "multi": false,
             "name": "PodName",
             "options": [],
-            "query": "label_values(vald_app_version_info{namespace=~\"$Namespace\", app=~\"$ReplicaSet\"}, instance)",
+            "query": {
+              "query": "label_values(vald_app_version_info{server_name=~\"discoverer.*\", namespace=~\"$Namespace\", app=~\"$ReplicaSet\"}, instance)",
+              "refId": "StandardVariableQuery"
+            },
             "refresh": 1,
             "regex": "",
             "skipUrlSync": false,
             "sort": 0,
             "tagValuesQuery": "",
-            "tags": [],
             "tagsQuery": "",
             "type": "query",
             "useTags": false
@@ -1261,6 +1281,7 @@ data:
               "text": "5m",
               "value": "5m"
             },
+            "description": null,
             "error": null,
             "hide": 0,
             "label": "interval",

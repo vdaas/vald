@@ -33,12 +33,12 @@ jobs:
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-chaos'
     steps:
       - uses: actions/checkout@v2
-      - name: wait for dockers
+      - name: Wait for Docker images
         if: startsWith( github.ref, 'refs/tags/')
-        run: |
-          tag=$(cat versions/VALD_VERSION)
-          for image in \
-            vdaas/vald-agent-ngt \
+        id: wait_for_docker_images
+        uses: ./.github/actions/wait-for-docker-image
+        with:
+          images: "vdaas/vald-agent-ngt \
             vdaas/vald-discoverer-k8s \
             vdaas/vald-manager-compressor \
             vdaas/vald-meta-cassandra \
@@ -46,47 +46,28 @@ jobs:
             vdaas/vald-backup-gateway \
             vdaas/vald-lb-gateway \
             vdaas/vald-meta-gateway \
-            vdaas/vald-manager-index
-          do
-            echo "searching ${image}:${tag}"
-            until curl -s "https://registry.hub.docker.com/v2/repositories/${image}/tags/${tag}" | jq '.name' | grep -v "null"; do
-              echo "waiting for ${image}:${tag} to be uploaded..."
-              sleep 2
-            done
-          done
-      - name: Specify container versions
-        if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-chaos'
+            vdaas/vald-manager-index"
+      - name: Get PR number
+        id: get_pr_number
+        if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
         run: |
           pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
-
-          declare -A images=(
-            ["vdaas/vald-agent-ngt"]="agent.image.tag"
-            ["vdaas/vald-discoverer-k8s"]="discoverer.image.tag"
-            ["vdaas/vald-manager-compressor"]="manager.compressor.image.tag"
-            ["vdaas/vald-meta-cassandra"]="meta.image.tag"
-            ["vdaas/vald-manager-backup-cassandra"]="manager.backup.image.tag"
-            ["vdaas/vald-backup-gateway"]="gateway.backup.image.tag"
-            ["vdaas/vald-lb-gateway"]="gateway.lb.image.tag"
-            ["vdaas/vald-meta-gateway"]="gateway.meta.image.tag"
-            ["vdaas/vald-manager-index"]="manager.index.image.tag"
-          )
-
-          for image in "${!images[@]}"
-          do
-            echo "check for ${image}"
-
-            if curl -s "https://registry.hub.docker.com/v2/repositories/${image}/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
-              echo "${image}:pr-${pr_num} exists. adding a helm option '--set ${images[${image}]}=pr-${pr_num}'."
-              export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set ${images[${image}]}=pr-${pr_num}"
-            fi
-          done
-
-          echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}"
-          echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}" >> $GITHUB_ENV
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libhdf5-dev
+          echo "::set-output name=PR_NUM::${pr_num}"
+      - name: Specify container versions
+        if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
+        id: specify_container_versions
+        uses: ./.github/actions/detect-docker-image-tags
+        with:
+          tag_name: pr-${{ steps.get_pr_number.outputs.PR_NUM }}
+          images: "vdaas/vald-agent-ngt \
+            vdaas/vald-discoverer-k8s \
+            vdaas/vald-manager-compressor \
+            vdaas/vald-meta-cassandra \
+            vdaas/vald-manager-backup-cassandra \
+            vdaas/vald-backup-gateway \
+            vdaas/vald-lb-gateway \
+            vdaas/vald-meta-gateway \
+            vdaas/vald-manager-index"
       - name: Fetch Helm version
         run: |
           HELM_VERSION=`make version/helm`
@@ -106,73 +87,43 @@ jobs:
       - name: Helm version
         run: |
           helm version
-      - name: deploy vald
-        run: |
-          make K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 k8s/external/scylla/deploy
-
-          helm repo add vald https://vald.vdaas.org/charts
-          tag=$(cat versions/VALD_VERSION)
-          helm install \
-            --values .github/helm/values/values-chaos.yaml \
-            --set defaults.image.tag=${tag} \
-            ${HELM_EXTRA_OPTIONS} \
-            vald-cluster charts/vald
-
-          sleep 3
-
-          kubectl wait --for=condition=ready pod -l app=vald-meta-gateway --timeout=600s
-
-          kubectl get pods
-      - name: run Insert job
-        run: |
-          make hack/benchmark/assets/dataset/${DATASET}
-          podname=`kubectl get pods --selector=app=vald-meta-gateway | tail -1 | awk '{print $1}'`
-          go test \
-            -v tests/e2e/crud_test.go \
-            -tags "e2e" \
-            -run "TestE2EInsert" \
-            -timeout 15m \
-            -host=localhost \
-            -port=8081 \
-            -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
-            -insert-num=100 \
-            -wait-after-insert=2m \
-            -portforward \
-            -portforward-ns=default \
-            -portforward-pod-name=${podname} \
-            -portforward-pod-port=8081 \
-            -kubeconfig=${KUBECONFIG}
-        env:
-          DATASET: fashion-mnist-784-euclidean.hdf5
+      - name: deploy Vald
+        id: deploy_vald
+        uses: ./.github/actions/e2e-deploy-vald
+        with:
+          require_libhdf5: "true"
+          require_scylla: "true"
+          helm_extra_options: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
+          values: .github/helm/values/values-chaos.yaml
+          wait_for_selector: app=vald-meta-gateway
       - name: deploy Chaos Mesh
         run: |
-          curl -sSL https://mirrors.chaos-mesh.org/v1.0.3/install.sh | bash -s -- --k3s
+          curl -sSL https://mirrors.chaos-mesh.org/v1.2.1/install.sh | bash -s -- --k3s
           helm install \
             --set podChaos.failure.enabled=true \
             vald-chaos-test tests/chaos/chart
       - name: run Insert and Search jobs
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
-          podname=`kubectl get pods --selector=app=vald-meta-gateway | tail -1 | awk '{print $1}'`
           go test \
-            -v tests/e2e/crud_test.go \
+            -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
-            -run "TestE2EInsert|TestE2ESearch" \
+            -run "TestE2EInsertAndSearch" \
             -timeout 15m \
             -host=localhost \
             -port=8081 \
             -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
-            -insert-from=100 \
-            -insert-num=1000 \
-            -search-num=1000 \
+            -insert-num=10000 \
+            -search-num=10000 \
             -wait-after-insert=2m \
             -portforward \
-            -portforward-ns=default \
-            -portforward-pod-name=${podname} \
+            -portforward-pod-name=${POD_NAME} \
             -portforward-pod-port=8081 \
-            -kubeconfig=${KUBECONFIG}
+            -kubeconfig=${KUBECONFIG} \
+            -namespace=default
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
+          POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
   random-pod-failure:
     name: "E2E chaos test (random Pod failure: to test redundancy)"
     runs-on: ubuntu-latest
@@ -180,12 +131,12 @@ jobs:
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-chaos'
     steps:
       - uses: actions/checkout@v2
-      - name: wait for dockers
+      - name: Wait for Docker images
         if: startsWith( github.ref, 'refs/tags/')
-        run: |
-          tag=$(cat versions/VALD_VERSION)
-          for image in \
-            vdaas/vald-agent-ngt \
+        id: wait_for_docker_images
+        uses: ./.github/actions/wait-for-docker-image
+        with:
+          images: "vdaas/vald-agent-ngt \
             vdaas/vald-discoverer-k8s \
             vdaas/vald-manager-compressor \
             vdaas/vald-meta-cassandra \
@@ -193,47 +144,28 @@ jobs:
             vdaas/vald-backup-gateway \
             vdaas/vald-lb-gateway \
             vdaas/vald-meta-gateway \
-            vdaas/vald-manager-index
-          do
-            echo "searching ${image}:${tag}"
-            until curl -s "https://registry.hub.docker.com/v2/repositories/${image}/tags/${tag}" | jq '.name' | grep -v "null"; do
-              echo "waiting for ${image}:${tag} to be uploaded..."
-              sleep 2
-            done
-          done
-      - name: Specify container versions
-        if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-chaos'
+            vdaas/vald-manager-index"
+      - name: Get PR number
+        id: get_pr_number
+        if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
         run: |
           pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
-
-          declare -A images=(
-            ["vdaas/vald-agent-ngt"]="agent.image.tag"
-            ["vdaas/vald-discoverer-k8s"]="discoverer.image.tag"
-            ["vdaas/vald-manager-compressor"]="manager.compressor.image.tag"
-            ["vdaas/vald-meta-cassandra"]="meta.image.tag"
-            ["vdaas/vald-manager-backup-cassandra"]="manager.backup.image.tag"
-            ["vdaas/vald-backup-gateway"]="gateway.backup.image.tag"
-            ["vdaas/vald-lb-gateway"]="gateway.lb.image.tag"
-            ["vdaas/vald-meta-gateway"]="gateway.meta.image.tag"
-            ["vdaas/vald-manager-index"]="manager.index.image.tag"
-          )
-
-          for image in "${!images[@]}"
-          do
-            echo "check for ${image}"
-
-            if curl -s "https://registry.hub.docker.com/v2/repositories/${image}/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
-              echo "${image}:pr-${pr_num} exists. adding a helm option '--set ${images[${image}]}=pr-${pr_num}'."
-              export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set ${images[${image}]}=pr-${pr_num}"
-            fi
-          done
-
-          echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}"
-          echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}" >> $GITHUB_ENV
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libhdf5-dev
+          echo "::set-output name=PR_NUM::${pr_num}"
+      - name: Specify container versions
+        if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
+        id: specify_container_versions
+        uses: ./.github/actions/detect-docker-image-tags
+        with:
+          tag_name: pr-${{ steps.get_pr_number.outputs.PR_NUM }}
+          images: "vdaas/vald-agent-ngt \
+            vdaas/vald-discoverer-k8s \
+            vdaas/vald-manager-compressor \
+            vdaas/vald-meta-cassandra \
+            vdaas/vald-manager-backup-cassandra \
+            vdaas/vald-backup-gateway \
+            vdaas/vald-lb-gateway \
+            vdaas/vald-meta-gateway \
+            vdaas/vald-manager-index"
       - name: Fetch Helm version
         run: |
           HELM_VERSION=`make version/helm`
@@ -253,47 +185,18 @@ jobs:
       - name: Helm version
         run: |
           helm version
-      - name: deploy vald
-        run: |
-          make K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 k8s/external/scylla/deploy
-
-          helm repo add vald https://vald.vdaas.org/charts
-          tag=$(cat versions/VALD_VERSION)
-          helm install \
-            --values .github/helm/values/values-chaos.yaml \
-            --set defaults.image.tag=${tag} \
-            ${HELM_EXTRA_OPTIONS} \
-            vald-cluster charts/vald
-
-          sleep 3
-
-          kubectl wait --for=condition=ready pod -l app=vald-meta-gateway --timeout=600s
-
-          kubectl get pods
-      - name: run Insert job
-        run: |
-          make hack/benchmark/assets/dataset/${DATASET}
-          podname=`kubectl get pods --selector=app=vald-meta-gateway | tail -1 | awk '{print $1}'`
-          go test \
-            -v tests/e2e/crud_test.go \
-            -tags "e2e" \
-            -run "TestE2EInsert" \
-            -timeout 15m \
-            -host=localhost \
-            -port=8081 \
-            -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
-            -insert-num=100 \
-            -wait-after-insert=2m \
-            -portforward \
-            -portforward-ns=default \
-            -portforward-pod-name=${podname} \
-            -portforward-pod-port=8081 \
-            -kubeconfig=${KUBECONFIG}
-        env:
-          DATASET: fashion-mnist-784-euclidean.hdf5
+      - name: deploy Vald
+        id: deploy_vald
+        uses: ./.github/actions/e2e-deploy-vald
+        with:
+          require_libhdf5: "true"
+          require_scylla: "true"
+          helm_extra_options: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
+          values: .github/helm/values/values-chaos.yaml
+          wait_for_selector: app=vald-meta-gateway
       - name: deploy Chaos Mesh
         run: |
-          curl -sSL https://mirrors.chaos-mesh.org/v1.0.3/install.sh | bash -s -- --k3s
+          curl -sSL https://mirrors.chaos-mesh.org/v1.2.1/install.sh | bash -s -- --k3s
           helm install \
             --set podChaos.failure.enabled=true \
             --set podChaos.failure.selector.labelSelectors."app\.kubernetes\.io/component"=null \
@@ -303,22 +206,21 @@ jobs:
           make hack/benchmark/assets/dataset/${DATASET}
           podname=`kubectl get pods --selector=app=vald-meta-gateway | tail -1 | awk '{print $1}'`
           go test \
-            -v tests/e2e/crud_test.go \
+            -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
-            -run "TestE2EInsert|TestE2ESearch" \
+            -run "TestE2EInsertAndSearch" \
             -timeout 15m \
             -host=localhost \
             -port=8081 \
             -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
-            -insert-from=100 \
-            -insert-num=1000 \
-            -search-num=1000 \
+            -insert-num=10000 \
+            -search-num=10000 \
             -wait-after-insert=2m \
             -portforward \
-            -portforward-ns=default \
             -portforward-pod-name=${podname} \
             -portforward-pod-port=8081 \
-            -kubeconfig=${KUBECONFIG}
+            -kubeconfig=${KUBECONFIG} \
+            -namespace=default
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
   meta-network-partition:
@@ -328,12 +230,12 @@ jobs:
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-chaos'
     steps:
       - uses: actions/checkout@v2
-      - name: wait for dockers
+      - name: Wait for Docker images
         if: startsWith( github.ref, 'refs/tags/')
-        run: |
-          tag=$(cat versions/VALD_VERSION)
-          for image in \
-            vdaas/vald-agent-ngt \
+        id: wait_for_docker_images
+        uses: ./.github/actions/wait-for-docker-image
+        with:
+          images: "vdaas/vald-agent-ngt \
             vdaas/vald-discoverer-k8s \
             vdaas/vald-manager-compressor \
             vdaas/vald-meta-cassandra \
@@ -341,47 +243,28 @@ jobs:
             vdaas/vald-backup-gateway \
             vdaas/vald-lb-gateway \
             vdaas/vald-meta-gateway \
-            vdaas/vald-manager-index
-          do
-            echo "searching ${image}:${tag}"
-            until curl -s "https://registry.hub.docker.com/v2/repositories/${image}/tags/${tag}" | jq '.name' | grep -v "null"; do
-              echo "waiting for ${image}:${tag} to be uploaded..."
-              sleep 2
-            done
-          done
-      - name: Specify container versions
-        if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-chaos'
+            vdaas/vald-manager-index"
+      - name: Get PR number
+        id: get_pr_number
+        if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
         run: |
           pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
-
-          declare -A images=(
-            ["vdaas/vald-agent-ngt"]="agent.image.tag"
-            ["vdaas/vald-discoverer-k8s"]="discoverer.image.tag"
-            ["vdaas/vald-manager-compressor"]="manager.compressor.image.tag"
-            ["vdaas/vald-meta-cassandra"]="meta.image.tag"
-            ["vdaas/vald-manager-backup-cassandra"]="manager.backup.image.tag"
-            ["vdaas/vald-backup-gateway"]="gateway.backup.image.tag"
-            ["vdaas/vald-lb-gateway"]="gateway.lb.image.tag"
-            ["vdaas/vald-meta-gateway"]="gateway.meta.image.tag"
-            ["vdaas/vald-manager-index"]="manager.index.image.tag"
-          )
-
-          for image in "${!images[@]}"
-          do
-            echo "check for ${image}"
-
-            if curl -s "https://registry.hub.docker.com/v2/repositories/${image}/tags/pr-${pr_num}" | jq '.name' | grep -v "null"; then
-              echo "${image}:pr-${pr_num} exists. adding a helm option '--set ${images[${image}]}=pr-${pr_num}'."
-              export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set ${images[${image}]}=pr-${pr_num}"
-            fi
-          done
-
-          echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}"
-          echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}" >> $GITHUB_ENV
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libhdf5-dev
+          echo "::set-output name=PR_NUM::${pr_num}"
+      - name: Specify container versions
+        if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
+        id: specify_container_versions
+        uses: ./.github/actions/detect-docker-image-tags
+        with:
+          tag_name: pr-${{ steps.get_pr_number.outputs.PR_NUM }}
+          images: "vdaas/vald-agent-ngt \
+            vdaas/vald-discoverer-k8s \
+            vdaas/vald-manager-compressor \
+            vdaas/vald-meta-cassandra \
+            vdaas/vald-manager-backup-cassandra \
+            vdaas/vald-backup-gateway \
+            vdaas/vald-lb-gateway \
+            vdaas/vald-meta-gateway \
+            vdaas/vald-manager-index"
       - name: Fetch Helm version
         run: |
           HELM_VERSION=`make version/helm`
@@ -401,57 +284,156 @@ jobs:
       - name: Helm version
         run: |
           helm version
-      - name: deploy vald
-        run: |
-          make K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 k8s/external/scylla/deploy
-
-          helm repo add vald https://vald.vdaas.org/charts
-          tag=$(cat versions/VALD_VERSION)
-          helm install \
-            --values .github/helm/values/values-chaos.yaml \
-            --set defaults.image.tag=${tag} \
-            ${HELM_EXTRA_OPTIONS} \
-            vald-cluster charts/vald
-
-          sleep 3
-
-          kubectl wait --for=condition=ready pod -l app=vald-meta-gateway --timeout=600s
-
-          kubectl get pods
+      - name: deploy Vald
+        id: deploy_vald
+        uses: ./.github/actions/e2e-deploy-vald
+        with:
+          require_libhdf5: "true"
+          require_scylla: "true"
+          helm_extra_options: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
+          values: .github/helm/values/values-chaos.yaml
+          wait_for_selector: app=vald-meta-gateway
       - name: deploy Chaos Mesh
         run: |
-          curl -sSL https://mirrors.chaos-mesh.org/v1.0.3/install.sh | bash -s -- --k3s
+          curl -sSL https://mirrors.chaos-mesh.org/v1.2.1/install.sh | bash -s -- --k3s
           helm install \
             --set networkChaos.partition.enabled=true \
             vald-chaos-test tests/chaos/chart
       - name: run Insert and Search jobs
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
-          podname=`kubectl get pods --selector=app=vald-meta-gateway | tail -1 | awk '{print $1}'`
           go test \
-            -v tests/e2e/crud_test.go \
+            -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
-            -run "TestE2EInsert|TestE2ESearch" \
+            -run "TestE2EInsertAndSearch" \
             -timeout 15m \
             -host=localhost \
             -port=8081 \
             -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
-            -insert-num=1000 \
-            -search-num=1000 \
+            -insert-num=10000 \
+            -search-num=10000 \
             -wait-after-insert=2m \
             -portforward \
-            -portforward-ns=default \
-            -portforward-pod-name=${podname} \
+            -portforward-pod-name=${POD_NAME} \
             -portforward-pod-port=8081 \
-            -kubeconfig=${KUBECONFIG}
+            -kubeconfig=${KUBECONFIG} \
+            -namespace=default
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
+          POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
+  clusterwide-network-bandwidth:
+    name: "E2E chaos test (network bandwidth: to test it works properly under bandwidth limitation)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-chaos'
+    steps:
+      - uses: actions/checkout@v2
+      - name: Wait for Docker images
+        if: startsWith( github.ref, 'refs/tags/')
+        id: wait_for_docker_images
+        uses: ./.github/actions/wait-for-docker-image
+        with:
+          images: "vdaas/vald-agent-ngt \
+            vdaas/vald-discoverer-k8s \
+            vdaas/vald-lb-gateway \
+            vdaas/vald-manager-index"
+      - name: Get PR number
+        id: get_pr_number
+        if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
+        run: |
+          pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
+          echo "::set-output name=PR_NUM::${pr_num}"
+      - name: Specify container versions
+        if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
+        id: specify_container_versions
+        uses: ./.github/actions/detect-docker-image-tags
+        with:
+          tag_name: pr-${{ steps.get_pr_number.outputs.PR_NUM }}
+          images: "vdaas/vald-agent-ngt \
+            vdaas/vald-discoverer-k8s \
+            vdaas/vald-lb-gateway \
+            vdaas/vald-manager-index"
+      - name: Fetch Helm version
+        run: |
+          HELM_VERSION=`make version/helm`
+          echo "::set-output name=helm::${HELM_VERSION}"
+        id: version
+      - uses: rinx/setup-k3d@v0.0.2
+        with:
+          version: latest
+          name: vald
+          agents: 3
+      - name: check k3d
+        run: |
+          kubectl cluster-info
+      - uses: azure/setup-helm@v1
+        with:
+          version: ${{ steps.version.outputs.helm }}
+      - name: Helm version
+        run: |
+          helm version
+      - name: deploy Vald
+        id: deploy_vald
+        uses: ./.github/actions/e2e-deploy-vald
+        with:
+          require_libhdf5: "true"
+          helm_extra_options: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
+          values: .github/helm/values/values-lb.yaml
+          wait_for_selector: app=vald-lb-gateway
+      - name: deploy Chaos Mesh
+        run: |
+          curl -sSL https://mirrors.chaos-mesh.org/v1.2.1/install.sh | bash -s -- --k3s
+          helm install \
+            --set networkChaos.bandwidth.enabled=true \
+            vald-chaos-test tests/chaos/chart
+      - name: run Insert jobs
+        run: |
+          make hack/benchmark/assets/dataset/${DATASET}
+          go test \
+            -v tests/e2e/crud/crud_test.go \
+            -tags "e2e" \
+            -run "TestE2EInsertOnly" \
+            -timeout 15m \
+            -host=localhost \
+            -port=8081 \
+            -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
+            -insert-num=10000 \
+            -wait-after-insert=2m \
+            -portforward \
+            -portforward-pod-name=${POD_NAME} \
+            -portforward-pod-port=8081 \
+            -kubeconfig=${KUBECONFIG} \
+            -namespace=default
+        env:
+          DATASET: fashion-mnist-784-euclidean.hdf5
+          POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
+      - name: run Search jobs
+        run: |
+          make hack/benchmark/assets/dataset/${DATASET}
+          go test \
+            -v tests/e2e/crud/crud_test.go \
+            -tags "e2e" \
+            -run "TestE2ESearchOnly" \
+            -timeout 15m \
+            -host=localhost \
+            -port=8081 \
+            -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
+            -search-num=10000 \
+            -portforward \
+            -portforward-pod-name=${POD_NAME} \
+            -portforward-pod-port=8081 \
+            -kubeconfig=${KUBECONFIG} \
+            -namespace=default
+        env:
+          DATASET: fashion-mnist-784-euclidean.hdf5
+          POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
   slack-notification:
     name: "Slack notification"
     needs:
       - agent-failure
       - random-pod-failure
       - meta-network-partition
+      - clusterwide-network-bandwidth
     runs-on: ubuntu-latest
     if: startsWith( github.ref, 'refs/tags/')
     steps:

@@ -114,6 +114,8 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithIndexingConcurrency(cfg.Indexer.Concurrency),
 		service.WithIndexingDuration(cfg.Indexer.AutoIndexCheckDuration),
 		service.WithIndexingDurationLimit(cfg.Indexer.AutoIndexDurationLimit),
+		service.WithSaveIndexDurationLimit(cfg.Indexer.AutoSaveIndexDurationLimit),
+		service.WithSaveIndexWaitDuration(cfg.Indexer.AutoSaveIndexWaitDuration),
 		service.WithCreationPoolSize(cfg.Indexer.CreationPoolSize),
 		service.WithMinUncommitted(cfg.Indexer.AutoIndexLength),
 	)

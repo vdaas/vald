@@ -23,6 +23,11 @@ var (
 		return Errorf("vald metadata:\t%s\talready exists ", meta)
 	}
 
+	// ErrSameVectorAlreadyExists represents a function to generate an error that vald already has same features vector data.
+	ErrSameVectorAlreadyExists = func(meta string, n, o []float32) error {
+		return Errorf("vald metadata:\t%s\talready exists reqested: %v, stored: %v", meta, n, o)
+	}
+
 	// ErrMetaDataCannotFetch represents a function to generate an error that vald metadata cannot fetch.
 	ErrMetaDataCannotFetch = func() error {
 		return Errorf("vald metadata cannot fetch")

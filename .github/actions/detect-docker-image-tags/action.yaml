@@ -1,0 +1,75 @@
+#
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+name: "Detect Docker image tags"
+description: "Detect Docker image tags"
+inputs:
+  tag_name:
+    description: "tag name to check whether exists or not"
+    required: true
+    default: ""
+  images:
+    description: "image names"
+    required: false
+    default: "vdaas/vald-agent-ngt \
+      vdaas/vald-discoverer-k8s \
+      vdaas/vald-manager-compressor \
+      vdaas/vald-meta-redis \
+      vdaas/vald-manager-backup-mysql \
+      vdaas/vald-backup-gateway \
+      vdaas/vald-lb-gateway \
+      vdaas/vald-meta-gateway \
+      vdaas/vald-manager-index"
+outputs:
+  HELM_EXTRA_OPTIONS:
+    description: "helm extra options that specifies image tags"
+    value: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
+runs:
+  using: "composite"
+  steps:
+    - name: Specify container versions
+      shell: bash
+      id: specify_container_versions
+      run: |
+        declare -A m=(
+          ["vdaas/vald-agent-ngt"]="agent.image.tag"
+          ["vdaas/vald-agent-sidecar"]="agent.sidecar.image.tag"
+          ["vdaas/vald-discoverer-k8s"]="discoverer.image.tag"
+          ["vdaas/vald-manager-compressor"]="manager.compressor.image.tag"
+          ["vdaas/vald-meta-redis"]="meta.image.tag"
+          ["vdaas/vald-meta-cassandra"]="meta.image.tag"
+          ["vdaas/vald-manager-backup-mysql"]="manager.backup.image.tag"
+          ["vdaas/vald-manager-backup-cassandra"]="manager.backup.image.tag"
+          ["vdaas/vald-backup-gateway"]="gateway.backup.image.tag"
+          ["vdaas/vald-lb-gateway"]="gateway.lb.image.tag"
+          ["vdaas/vald-meta-gateway"]="gateway.meta.image.tag"
+          ["vdaas/vald-manager-index"]="manager.index.image.tag"
+        )
+
+        for image in ${IMAGES}
+        do
+          echo "check for ${image}"
+
+          if curl -s "https://registry.hub.docker.com/v2/repositories/${image}/tags/${TAG_NAME}" | jq '.name' | grep -v "null"; then
+            echo "${image}:${TAG_NAME} exists. adding a helm option '--set ${m[${image}]}=${TAG_NAME}'."
+            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set ${m[${image}]}=${TAG_NAME}"
+          fi
+        done
+
+        echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}"
+        echo "::set-output name=HELM_EXTRA_OPTIONS::${HELM_EXTRA_OPTIONS}"
+      env:
+        IMAGES: ${{ inputs.images }}
+        TAG_NAME: ${{ inputs.tag_name }}

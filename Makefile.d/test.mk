@@ -57,12 +57,21 @@ test/pkg/tparse:
 .PHONY: test/hack
 ## run tests for hack
 test/hack:
-	go test -cover ./hack/...
+	go test -cover \
+		./hack/gorules... \
+		./hack/helm/... \
+		./hack/license/...\
+		./hack/tools/...
 
 .PHONY: test/hack/tparse
 ## run tests for hack and show table
 test/hack/tparse:
-	go test -json -cover ./hack/... | tparse -pass -notests
+	go test -json -cover
+		./hack/gorules/... \
+		./hack/helm/... \
+		./hack/license/... \
+		./hack/tools/... \
+		| tparse -pass -notests
 
 .PHONY: test/all
 ## run tests for all Go codes
