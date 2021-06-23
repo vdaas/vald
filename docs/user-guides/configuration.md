@@ -48,6 +48,8 @@ gateway:
       format: json
 ```
 
+The logging level is defined in [the Coding Style Guide][logging-level].
+
 #### Servers
 
 Each Vald component has several types of servers.
@@ -99,7 +101,7 @@ The swagger specs are placed in [apis/swagger][vald-swagger-specs].
 
 There are two types of built-in health check servers, liveness and readiness.
 They are used as servers for [Kubernetes liveness and readiness probe][kubernetes-liveness-readiness].
-By default, liveness servers are disabled for agent and compressor, because the liveness probes may accidentally kill these components.
+By default, liveness servers are disabled for agent, because the liveness probes may accidentally kill it.
 
 ```yaml
 agent:
@@ -221,7 +223,7 @@ gateway:
 
 #### Index replica
 
-`gateway.lb.gateway_config.index_replica` means how many agent pods that a vector will be inserted.
+`gateway.lb.gateway_config.index_replica` represents how many agent pods that a vector will be inserted into.
 
 ```yaml
 gateway:
@@ -238,7 +240,7 @@ If the request traffic varies largely, it is recommended to enable HPA for gatew
 #### Discoverer request duration
 
 `gateway.lb.gateway_config.discoverer.duration` represents a frequency to send requests to discoverer.
-If discoverer's CPU utilization is too high, try to make this value longer or reduce the number of LB gateway pods.
+If discoverer's CPU utilization is too high, make this value longer or reduce the number of LB gateway pods.
 
 ```yaml
 gateway:
@@ -252,8 +254,8 @@ gateway:
 
 #### Resource requests and limits
 
-The number of discoverer pods and resource limits can be determined by the configurations of your LB gateways and index managers because its APIs are called by them.
-Discoverer CPU loads depend on API request traffic = (the number of LB gateways x its request frequency) + (the number of index managers x its request frequency).
+The number of discoverer pods and resource limits can be estimated by the configurations of your LB gateways and index managers because its APIs are called by them.
+Discoverer CPU loads almost depend on API request traffic = (the number of LB gateways x its request frequency) + (the number of index managers x its request frequency).
 
 ### Index Manager
 
@@ -276,6 +278,7 @@ For further details, there are references of Helm values in GitHub Vald reposito
 
 [vald-apis-docs]: https://github.com/vdaas/vald/tree/master/apis/docs
 [vald-swagger-specs]: https://github.com/vdaas/vald/tree/master/apis/swagger
+[logging-level]: https://github.com/vdaas/vald/blob/master/docs/contributing/coding-style.md#logging
 [google-pprof]: https://github.com/google/pprof
 [prometheus-io]: https://prometheus.io/
 [kubernetes-liveness-readiness]: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
