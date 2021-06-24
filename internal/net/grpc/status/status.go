@@ -120,7 +120,8 @@ func newStatus(code codes.Code, msg string, err error, details ...interface{}) (
 	err = st.Err()
 	if err != nil {
 		switch st.Code() {
-		case codes.Internal:
+		case codes.Internal,
+			codes.DataLoss:
 			log.Error(err.Error())
 		case codes.Unavailable,
 			codes.ResourceExhausted:
@@ -130,8 +131,7 @@ func newStatus(code codes.Code, msg string, err error, details ...interface{}) (
 			codes.OutOfRange,
 			codes.Unauthenticated,
 			codes.PermissionDenied,
-			codes.Unknown,
-			codes.DataLoss:
+			codes.Unknown:
 			log.Debug(err.Error())
 		case codes.Aborted,
 			codes.Canceled,
