@@ -211,8 +211,8 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 						}
 						nm, ok := d.nodeMetrics.Load(nodeName)
 						if ok {
-							ni.Cpu.Usage = nm.CPU
-							ni.Memory.Usage = nm.Mem
+							ni.GetCpu().Usage = nm.CPU
+							ni.GetMemory().Usage = nm.Mem
 						}
 						nodeByName[nodeName] = ni
 						return true
@@ -244,8 +244,8 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 								}
 								pm, ok := d.podMetrics.Load(p.Name)
 								if ok {
-									pi.Cpu.Usage = pm.CPU
-									pi.Memory.Usage = pm.Mem
+									pi.GetCpu().Usage = pm.CPU
+									pi.GetMemory().Usage = pm.Mem
 								}
 								n, ok := nodeByName[p.NodeName]
 								if ok {
@@ -302,25 +302,25 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 										continue
 									}
 								}
-								if nn.Pods == nil {
+								if nn.GetPods() == nil {
 									nodeByName[nodeName].Pods = new(payload.Info_Pods)
 								}
-								if nn.Pods.Pods == nil {
-									nodeByName[nodeName].Pods.Pods = make([]*payload.Info_Pod, 0, len(p))
+								if nn.GetPods().GetPods() == nil {
+									nodeByName[nodeName].GetPods().Pods = make([]*payload.Info_Pod, 0, len(p))
 								}
 								nn, ok = nodeByName[nodeName]
-								if ok && nn.Pods != nil && nn.Pods.Pods != nil {
-									nodeByName[nodeName].Pods.Pods = append(nodeByName[nodeName].Pods.Pods, p...)
+								if ok && nn.GetPods() != nil && nn.GetPods().GetPods() != nil {
+									nodeByName[nodeName].GetPods().Pods = append(nodeByName[nodeName].GetPods().GetPods(), p...)
 								}
 							}
 						}
 						nn, ok := nodeByName[nodeName]
-						if ok && nn.Pods != nil && nn.Pods.Pods != nil {
-							p := nn.Pods.Pods
+						if ok && nn.GetPods() != nil && nn.GetPods().GetPods() != nil {
+							p := nn.GetPods().Pods
 							sort.Slice(p, func(i, j int) bool {
 								return p[i].GetMemory().GetUsage() < p[j].GetMemory().GetUsage()
 							})
-							nodeByName[nodeName].Pods.Pods = p
+							nodeByName[nodeName].GetPods().Pods = p
 						}
 					}
 					d.nodeByName.Store(nodeByName)
@@ -415,12 +415,12 @@ func (d *discoverer) GetPods(req *payload.Discoverer_Request) (pods *payload.Inf
 		}
 	} else {
 		for _, ps := range podsByName {
-			pods.Pods = append(pods.Pods, ps...)
+			pods.Pods = append(pods.GetPods(), ps...)
 		}
 	}
 	for i := range pods.GetPods() {
-		if pods.Pods[i].Node != nil {
-			pods.Pods[i].Node.Pods = nil
+		if pods.GetPods()[i].GetNode() != nil {
+			pods.GetPods()[i].GetNode().Pods = nil
 		}
 	}
 	return pods, nil
@@ -441,18 +441,18 @@ func (d *discoverer) GetNodes(req *payload.Discoverer_Request) (nodes *payload.I
 		if err == nil {
 			n.Pods = ps
 		}
-		nodes.Nodes = append(nodes.Nodes, n)
+		nodes.Nodes = append(nodes.GetNodes(), n)
 		return nodes, nil
 	}
 	ns := nodes.Nodes
 	for name, n := range nbn {
 		req.Node = name
-		if n.Pods != nil {
-			n.Pods.Pods = nil
+		if n.GetPods() != nil {
+			n.GetPods().Pods = nil
 			ps, err := d.GetPods(req)
 			if err == nil && ps != nil {
 				for i := range ps.Pods {
-					ps.Pods[i].Node = nil
+					ps.GetPods()[i].Node = nil
 				}
 				n.Pods = ps
 			}

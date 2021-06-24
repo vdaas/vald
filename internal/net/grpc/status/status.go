@@ -59,11 +59,11 @@ func newStatus(code codes.Code, msg string, err error, details ...interface{}) (
 				strings.Join(v.BuildCPUInfoFlags, ", "),
 			),
 		}
-		if debug.StackEntries == nil {
+		if debug.GetStackEntries() == nil {
 			debug.StackEntries = make([]string, 0, len(v.StackTrace))
 		}
 		for i, stack := range v.StackTrace {
-			debug.StackEntries = append(debug.StackEntries, fmt.Sprintf("id: %d stack_trace: %s", i, stack.String()))
+			debug.StackEntries = append(debug.GetStackEntries(), fmt.Sprintf("id: %d stack_trace: %s", i, stack.String()))
 		}
 		return debug
 	}
@@ -115,6 +115,34 @@ func newStatus(code codes.Code, msg string, err error, details ...interface{}) (
 	st, err = st.WithDetails(messages...)
 	if err != nil {
 		log.Warn("failed to set error details:", err)
+	}
+
+	err = st.Err()
+	if err != nil {
+		switch st.Code() {
+		case codes.Internal,
+			codes.DataLoss:
+			log.Error(err.Error())
+		case codes.Unavailable,
+			codes.ResourceExhausted:
+			log.Warn(err.Error())
+		case codes.FailedPrecondition,
+			codes.InvalidArgument,
+			codes.OutOfRange,
+			codes.Unauthenticated,
+			codes.PermissionDenied,
+			codes.Unknown:
+			log.Debug(err.Error())
+		case codes.Aborted,
+			codes.Canceled,
+			codes.DeadlineExceeded,
+			codes.AlreadyExists,
+			codes.NotFound,
+			codes.OK,
+			codes.Unimplemented:
+		default:
+			log.Warn(err.Error())
+		}
 	}
 
 	return st
@@ -208,35 +236,43 @@ func ParseError(err error, defaultCode codes.Code, defaultMsg string, details ..
 			defaultMsg = "failed to parse grpc status from error"
 		}
 		st = newStatus(defaultCode, defaultMsg, err, details...)
-		err = errors.Wrap(st.Err(), err.Error())
-		msg = err.Error()
-	} else {
-		pms := make([]proto.Message, 0, len(details))
-		for _, detail := range details {
-			pm, ok := detail.(proto.Message)
-			if ok {
-				pms = append(pms, pm)
-			}
-		}
-		sst, err := st.WithDetails(pms...)
-		if err == nil {
-			st = sst
-		}
-		err = st.Err()
-		if err == nil {
+		rerr = errors.Wrap(st.Err(), err.Error())
+		if st == nil || st.Message() == "" {
+			msg = rerr.Error()
+		} else {
 			msg = st.Message()
-		} else {
-			msg = st.Err().Error()
+		}
+		return st, msg, errors.Wrap(st.Err(), err.Error())
+	}
+
+	pms := make([]proto.Message, 0, len(details))
+	for _, detail := range details {
+		pm, ok := detail.(proto.Message)
+		if ok {
+			pms = append(pms, pm)
 		}
 	}
-	if err != nil {
-		if st.Code() == codes.Internal {
-			log.Error(err)
-		} else {
-			log.Warn(err)
+	sst, err := st.WithDetails(pms...)
+	if err == nil {
+		st = sst
+		err = st.Err()
+	} else {
+		log.Error(err)
+	}
+	err = st.Err()
+	if err == nil {
+		msg = st.Message()
+	} else {
+		msg = st.Err().Error()
+		rerr = err
+		switch st.Code() {
+		case codes.Internal:
+			log.Error(rerr.Error())
+		case codes.Unavailable,
+			codes.ResourceExhausted:
+			log.Warn(rerr.Error())
 		}
 	}
-	rerr = err
 	return st, msg, rerr
 }
 

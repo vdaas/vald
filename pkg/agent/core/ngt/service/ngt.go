@@ -321,18 +321,21 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 		return nil
 	}
 	ech := make(chan error, 2)
+	vqech, err := n.vq.Start(ctx)
+	if err != nil {
+		return nil
+	}
 	n.eg.Go(safety.RecoverFunc(func() (err error) {
-		vqech, err := n.vq.Start(ctx)
-		if err != nil {
-			return err
-		}
-		if n.sdur == 0 {
-			n.sdur = n.dur + time.Second
-		}
-		if n.lim == 0 {
-			n.lim = n.dur * 2
-		}
 		defer close(ech)
+		if n.dur <= 0 {
+			n.dur = math.MaxInt64
+		}
+		if n.sdur <= 0 {
+			n.sdur = math.MaxInt64
+		}
+		if n.lim <= 0 {
+			n.lim = math.MaxInt64
+		}
 
 		timer := time.NewTimer(n.idelay)
 		select {
@@ -445,9 +448,12 @@ func (n *ngt) insert(uuid string, vec []float32, t int64, validation bool) (err 
 }
 
 func (n *ngt) InsertMultiple(vecs map[string][]float32) (err error) {
-	t := time.Now().UnixNano()
+	return n.insertMultiple(vecs, time.Now().UnixNano())
+}
+
+func (n *ngt) insertMultiple(vecs map[string][]float32, now int64) (err error) {
 	for uuid, vec := range vecs {
-		ierr := n.insert(uuid, vec, t, true)
+		ierr := n.insert(uuid, vec, now, true)
 		if ierr != nil {
 			if err != nil {
 				err = errors.Wrap(ierr, err.Error())
@@ -481,11 +487,13 @@ func (n *ngt) UpdateMultiple(vecs map[string][]float32) (err error) {
 			uuids = append(uuids, uuid)
 		}
 	}
-	err = n.DeleteMultiple(uuids...)
+	now := time.Now().UnixNano()
+	err = n.deleteMultiple(uuids, now)
 	if err != nil {
 		return err
 	}
-	return n.InsertMultiple(vecs)
+	now++
+	return n.insertMultiple(vecs, now)
 }
 
 func (n *ngt) Delete(uuid string) (err error) {
@@ -505,9 +513,12 @@ func (n *ngt) delete(uuid string, t int64) (err error) {
 }
 
 func (n *ngt) DeleteMultiple(uuids ...string) (err error) {
-	t := time.Now().UnixNano()
+	return n.deleteMultiple(uuids, time.Now().UnixNano())
+}
+
+func (n *ngt) deleteMultiple(uuids []string, now int64) (err error) {
 	for _, uuid := range uuids {
-		ierr := n.delete(uuid, t)
+		ierr := n.delete(uuid, now)
 		if ierr != nil {
 			if err != nil {
 				err = errors.Wrap(ierr, err.Error())
@@ -639,13 +650,18 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 
 	eg, ctx := errgroup.New(ctx)
 
+	// we want to ensure the acutal kvs size between kvsdb and metadata,
+	// so we create thie counter to count the actual kvs size instead of using kvs.Len()
+	var kvsLen uint64
+
 	eg.Go(safety.RecoverFunc(func() (err error) {
 		if n.path != "" {
-			m := make(map[string]uint32, n.kvs.Len())
+			m := make(map[string]uint32, n.Len())
 			var mu sync.Mutex
 			n.kvs.Range(ctx, func(key string, id uint32) bool {
 				mu.Lock()
 				m[key] = id
+				kvsLen++
 				mu.Unlock()
 				return true
 			})
@@ -693,7 +709,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 		&metadata.Metadata{
 			IsInvalid: false,
 			NGT: &metadata.NGT{
-				IndexCount: n.Len(),
+				IndexCount: kvsLen,
 			},
 		},
 	)
