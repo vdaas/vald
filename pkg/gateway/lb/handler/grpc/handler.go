@@ -90,8 +90,32 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 			oid, err := vc.Exists(sctx, &payload.Object_ID{
 				Id: meta.GetId(),
 			}, copts...)
-			if err != nil && !errors.Is(err, context.Canceled) {
-				st, msg, _ := status.ParseError(err, codes.NotFound, fmt.Sprintf("error Exists API meta %s's uuid not found", meta.GetId()),
+			if err != nil {
+				switch {
+				case errors.Is(err, context.Canceled),
+					errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
+					if sspan != nil {
+						sspan.SetStatus(trace.StatusCodeCancelled(
+							errdetails.ValdGRPCResourceTypePrefix +
+								"/vald.v1.Exists.BroadCast/" +
+								target + " canceled: " + err.Error()))
+					}
+					return nil
+				case errors.Is(err, context.DeadlineExceeded),
+					errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
+					if sspan != nil {
+						sspan.SetStatus(trace.StatusCodeDeadlineExceeded(
+							errdetails.ValdGRPCResourceTypePrefix +
+								"/vald.v1.Exists.BroadCast/" +
+								target + " deadline_exceeded: " + err.Error()))
+					}
+					return nil
+				}
+				var (
+					st  *status.Status
+					msg string
+				)
+				st, msg, err = status.ParseError(err, codes.NotFound, fmt.Sprintf("error Exists API meta %s's uuid not found", meta.GetId()),
 					&errdetails.RequestInfo{
 						RequestId:   meta.GetId(),
 						ServingData: errdetails.Serialize(meta),
@@ -104,6 +128,9 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 					})
 				if sspan != nil {
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+				}
+				if err != nil && st.Code() != codes.NotFound {
+					return err
 				}
 				return nil
 			}
@@ -357,16 +384,24 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 			}()
 			r, err := f(sctx, vc, copts...)
 			switch {
-			case errors.Is(err, context.Canceled):
+			case errors.Is(err, context.Canceled),
+				errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
 				if sspan != nil {
-					sspan.SetStatus(trace.StatusCodeCancelled(err.Error()))
+					sspan.SetStatus(trace.StatusCodeCancelled(
+						errdetails.ValdGRPCResourceTypePrefix +
+							"/vald.v1.search.BroadCast/" +
+							target + " canceled: " + err.Error()))
 				}
-			case errors.Is(err, context.DeadlineExceeded):
+			case errors.Is(err, context.DeadlineExceeded),
+				errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
 				if sspan != nil {
-					sspan.SetStatus(trace.StatusCodeDeadlineExceeded(err.Error()))
+					sspan.SetStatus(trace.StatusCodeDeadlineExceeded(
+						errdetails.ValdGRPCResourceTypePrefix +
+							"/vald.v1.search.BroadCast/" +
+							target + " deadline_exceeded: " + err.Error()))
 				}
 			case err != nil:
-				st, msg, _ := status.ParseError(err, codes.Internal, "failed to parse Search gRPC error response",
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse Search gRPC error response",
 					&errdetails.ResourceInfo{
 						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Search",
 						ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
@@ -376,6 +411,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 				if sspan != nil {
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 				}
+				return err
 			case r == nil || len(r.GetResults()) == 0:
 				err = errors.ErrEmptySearchResult
 				err = status.WrapWithNotFound("failed to process search request", err,
@@ -855,12 +891,23 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 		}()
 		loc, err := vc.Insert(ctx, req, copts...)
 		if err != nil {
-			if errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)) {
+			switch {
+			case errors.Is(err, context.Canceled),
+				errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
 				if span != nil {
 					span.SetStatus(trace.StatusCodeCancelled(
 						errdetails.ValdGRPCResourceTypePrefix +
 							"/vald.v1.Insert.DoMulti/" +
 							target + " canceled: " + err.Error()))
+				}
+				return nil
+			case errors.Is(err, context.DeadlineExceeded),
+				errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
+				if span != nil {
+					span.SetStatus(trace.StatusCodeDeadlineExceeded(
+						errdetails.ValdGRPCResourceTypePrefix +
+							"/vald.v1.Insert.DoMulti/" +
+							target + " deadline_exceeded: " + err.Error()))
 				}
 				return nil
 			}
@@ -879,7 +926,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 			if span != nil {
 				span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 			}
-			if err != nil {
+			if err != nil && st.Code() != codes.AlreadyExists {
 				emu.Lock()
 				if errs == nil {
 					errs = err
@@ -887,6 +934,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 					errs = errors.Wrap(errs, err.Error())
 				}
 				emu.Unlock()
+				return err
 			}
 			return nil
 		}
@@ -1064,12 +1112,23 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 		}()
 		loc, err := vc.MultiInsert(ctx, reqs, copts...)
 		if err != nil {
-			if errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)) {
+			switch {
+			case errors.Is(err, context.Canceled),
+				errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
 				if span != nil {
 					span.SetStatus(trace.StatusCodeCancelled(
 						errdetails.ValdGRPCResourceTypePrefix +
 							"/vald.v1.MultiInsert.DoMulti/" +
 							target + " canceled: " + err.Error()))
+				}
+				return nil
+			case errors.Is(err, context.DeadlineExceeded),
+				errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
+				if span != nil {
+					span.SetStatus(trace.StatusCodeDeadlineExceeded(
+						errdetails.ValdGRPCResourceTypePrefix +
+							"/vald.v1.MultiInsert.DoMulti/" +
+							target + " deadline_exceeded: " + err.Error()))
 				}
 				return nil
 			}
@@ -1098,7 +1157,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				}
 				emu.Unlock()
 			}
-			return nil
+			return err
 		}
 		mu.Lock()
 		locs.Locations = append(locs.GetLocations(), loc.Locations...)
@@ -1870,7 +1929,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs 
 		}()
 		loc, err := vc.Remove(ctx, req, copts...)
 		if err != nil {
-			st, msg, _ := status.ParseError(err, codes.Internal,
+			st, msg, err := status.ParseError(err, codes.Internal,
 				"failed to parse Remove gRPC error response",
 				&errdetails.RequestInfo{
 					RequestId:   id.GetId(),
@@ -1885,7 +1944,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs 
 			if span != nil {
 				span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 			}
-			return nil
+			return err
 		}
 		mu.Lock()
 		locs.Ips = append(locs.GetIps(), loc.GetIps()...)
@@ -2026,9 +2085,45 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 		}()
 		loc, err := vc.MultiRemove(ctx, reqs, copts...)
 		if err != nil {
-			log.Error(err)
+			switch {
+			case errors.Is(err, context.Canceled),
+				errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
+				if span != nil {
+					span.SetStatus(trace.StatusCodeCancelled(
+						errdetails.ValdGRPCResourceTypePrefix +
+							"/vald.v1.MultiRemove.BroadCast/" +
+							target + " canceled: " + err.Error()))
+				}
+				return nil
+			case errors.Is(err, context.DeadlineExceeded),
+				errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
+				if span != nil {
+					span.SetStatus(trace.StatusCodeDeadlineExceeded(
+						errdetails.ValdGRPCResourceTypePrefix +
+							"/vald.v1.MultiRemove.BroadCast/" +
+							target + " deadline_exceeded: " + err.Error()))
+				}
+				return nil
+			}
+			st, msg, err := status.ParseError(err, codes.Internal,
+				"failed to parse MultiRemove gRPC error response",
+				&errdetails.RequestInfo{
+					RequestId:   strings.Join(ids, ","),
+					ServingData: errdetails.Serialize(reqs),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.MultiRemove",
+					ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				})
 			if span != nil {
-				span.SetStatus(trace.StatusCodeInternal(err.Error()))
+				span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			}
+
+			if err != nil && st.Code() != codes.NotFound {
+				log.Error(err)
+				return err
 			}
 			return nil
 		}
@@ -2081,9 +2176,29 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 				}
 			}()
 			ovec, err := vc.GetObject(sctx, req, copts...)
-			if err != nil && !errors.Is(err, context.Canceled) {
+			if err != nil {
+				switch {
+				case errors.Is(err, context.Canceled),
+					errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
+					if sspan != nil {
+						sspan.SetStatus(trace.StatusCodeCancelled(
+							errdetails.ValdGRPCResourceTypePrefix +
+								"/vald.v1.GetObject.BroadCast/" +
+								target + " canceled: " + err.Error()))
+					}
+					return nil
+				case errors.Is(err, context.DeadlineExceeded),
+					errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
+					if sspan != nil {
+						sspan.SetStatus(trace.StatusCodeDeadlineExceeded(
+							errdetails.ValdGRPCResourceTypePrefix +
+								"/vald.v1.GetObject.BroadCast/" +
+								target + " deadline_exceeded: " + err.Error()))
+					}
+					return nil
+				}
 				uuid := req.GetId().GetId()
-				st, msg, _ := status.ParseError(err, codes.NotFound,
+				st, msg, err := status.ParseError(err, codes.NotFound,
 					fmt.Sprintf("GetObject API ID = %s not found", uuid),
 					&errdetails.RequestInfo{
 						RequestId:   uuid,
@@ -2097,6 +2212,9 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 					}, info.Get())
 				if span != nil {
 					span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+				}
+				if err != nil && st.Code() != codes.NotFound {
+					return err
 				}
 				return nil
 			}
