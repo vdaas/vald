@@ -609,7 +609,7 @@ func TestErrCriticalOption_Unwrap(t *testing.T) {
 	}
 }
 
-func TestNewErrUnsetOption(t *testing.T) {
+func TestNewErrIgnoredOption(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		name string
@@ -638,13 +638,13 @@ func TestNewErrUnsetOption(t *testing.T) {
 		func() test {
 			name := "WithPort"
 			return test{
-				name: "return ErrUnsetOption when name and val have a value and errs is empty.",
+				name: "return ErrIgnoredOption when name and val have a value and errs is empty.",
 				args: args{
 					name: name,
 				},
 				want: want{
-					want: &ErrUnsetOption{
-						err: Errorf("unset option, name: %s", name),
+					want: &ErrIgnoredOption{
+						err: Errorf("ignored option, name: %s", name),
 					},
 				},
 			}
@@ -656,14 +656,14 @@ func TestNewErrUnsetOption(t *testing.T) {
 			}
 			e := errs[0]
 			return test{
-				name: "return ErrUnsetOption when all of parameter has value.",
+				name: "return ErrIgnoredOption when all of parameter has value.",
 				args: args{
 					name: name,
 					errs: errs,
 				},
 				want: want{
-					want: &ErrUnsetOption{
-						err:    Wrapf(e, "unset option, name: %s", name),
+					want: &ErrIgnoredOption{
+						err:    Wrapf(e, "ignored option, name: %s", name),
 						origin: e,
 					},
 				},
@@ -677,14 +677,14 @@ func TestNewErrUnsetOption(t *testing.T) {
 			}
 			e := errs[1]
 			return test{
-				name: "return ErrUnsetOption when all of parameter has value and errs has nil as value.",
+				name: "return ErrIgnoredOption when all of parameter has value and errs has nil as value.",
 				args: args{
 					name: name,
 					errs: errs,
 				},
 				want: want{
-					want: &ErrUnsetOption{
-						err:    Wrapf(e, "unset option, name: %s", name),
+					want: &ErrIgnoredOption{
+						err:    Wrapf(e, "ignored option, name: %s", name),
 						origin: e,
 					},
 				},
@@ -697,13 +697,13 @@ func TestNewErrUnsetOption(t *testing.T) {
 			}
 			e := Wrap(errs[1], errs[0].Error())
 			return test{
-				name: "return ErrUnsetOption when name is nil and val and errs have values.",
+				name: "return ErrIgnoredOption when name is nil and val and errs have values.",
 				args: args{
 					errs: errs,
 				},
 				want: want{
-					want: &ErrUnsetOption{
-						err:    Wrapf(e, "unset option, name: "),
+					want: &ErrIgnoredOption{
+						err:    Wrapf(e, "ignored option, name: "),
 						origin: e,
 					},
 				},
@@ -717,14 +717,14 @@ func TestNewErrUnsetOption(t *testing.T) {
 			}
 			e := Wrap(errs[1], errs[0].Error())
 			return test{
-				name: "return ErrUnsetOption when val is nil and name and errs have values.",
+				name: "return ErrIgnoredOption when val is nil and name and errs have values.",
 				args: args{
 					name: name,
 					errs: errs,
 				},
 				want: want{
-					want: &ErrUnsetOption{
-						err:    Wrapf(e, "unset option, name: %s", name),
+					want: &ErrIgnoredOption{
+						err:    Wrapf(e, "ignored option, name: %s", name),
 						origin: e,
 					},
 				},
@@ -746,7 +746,7 @@ func TestNewErrUnsetOption(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			got := NewErrUnsetOption(test.args.name, test.args.errs...)
+			got := NewErrIgnoredOption(test.args.name, test.args.errs...)
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -754,7 +754,7 @@ func TestNewErrUnsetOption(t *testing.T) {
 	}
 }
 
-func TestErrUnsetOption_Error(t *testing.T) {
+func TestErrIgnoredOption_Error(t *testing.T) {
 	t.Parallel()
 	type T = string
 	type fields struct {
@@ -784,17 +784,17 @@ func TestErrUnsetOption_Error(t *testing.T) {
 		{
 			name: "return string when e.err is not nil.",
 			fields: fields{
-				err: New("unset option. name: WithPort"),
+				err: New("ignored option. name: WithPort"),
 			},
 			want: want{
-				want: "unset option. name: WithPort",
+				want: "ignored option. name: WithPort",
 			},
 		},
 		{
 			name:   "return string when e.err is nil.",
 			fields: fields{},
 			want: want{
-				want: "expected err is nil: ErrUnsetOption",
+				want: "expected err is nil: ErrIgnoredOption",
 			},
 		},
 	}
@@ -813,7 +813,7 @@ func TestErrUnsetOption_Error(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			e := &ErrUnsetOption{
+			e := &ErrIgnoredOption{
 				err:    test.fields.err,
 				origin: test.fields.origin,
 			}
@@ -825,7 +825,7 @@ func TestErrUnsetOption_Error(t *testing.T) {
 	}
 }
 
-func TestErrUnsetOption_Unwrap(t *testing.T) {
+func TestErrIgnoredOption_Unwrap(t *testing.T) {
 	t.Parallel()
 	type T = error
 	type fields struct {
@@ -860,10 +860,10 @@ func TestErrUnsetOption_Unwrap(t *testing.T) {
 		{
 			name: "return nil when origin is not nil.",
 			fields: fields{
-				origin: Wrap(New("unset options"), "WithHost"),
+				origin: Wrap(New("ignored options"), "WithHost"),
 			},
 			want: want{
-				want: New("WithHost: unset options"),
+				want: New("WithHost: ignored options"),
 			},
 		},
 	}
@@ -882,7 +882,7 @@ func TestErrUnsetOption_Unwrap(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			e := &ErrUnsetOption{
+			e := &ErrIgnoredOption{
 				err:    test.fields.err,
 				origin: test.fields.origin,
 			}

@@ -106,17 +106,17 @@ func (e *ErrCriticalOption) Unwrap() error {
 	return e.origin
 }
 
-// ErrUnsetOption represents the unset option error.
-type ErrUnsetOption struct {
+// ErrIgnoredOption represents the ignored option error.
+type ErrIgnoredOption struct {
 	err    error
 	origin error
 }
 
-// NewErrUnsetOption represents a function to generate a new error of ErrUnsetOption that option unset.
-func NewErrUnsetOption(name string, errs ...error) error {
+// NewErrIgnoredOption represents a function to generate a new error of ErrIgnoredOption that option is ignored.
+func NewErrIgnoredOption(name string, errs ...error) error {
 	if len(errs) == 0 {
-		return &ErrUnsetOption{
-			err: Errorf("unset option, name: %s", name),
+		return &ErrIgnoredOption{
+			err: Errorf("ignored option, name: %s", name),
 		}
 	}
 	var e error
@@ -132,21 +132,21 @@ func NewErrUnsetOption(name string, errs ...error) error {
 		}
 	}
 
-	return &ErrUnsetOption{
-		err:    Wrapf(e, "unset option, name: %s", name),
+	return &ErrIgnoredOption{
+		err:    Wrapf(e, "ignored option, name: %s", name),
 		origin: e,
 	}
 }
 
-// Error returns a string of ErrUnsetOption.err.
-func (e *ErrUnsetOption) Error() string {
+// Error returns a string of ErrIgnoredOption.err.
+func (e *ErrIgnoredOption) Error() string {
 	if e.err == nil {
-		e.err = errExpectedErrIsNil("ErrUnsetOption")
+		e.err = errExpectedErrIsNil("ErrIgnoredOption")
 	}
 	return e.err.Error()
 }
 
-// Unwrap returns an origin error of ErrUnsetOption.
-func (e *ErrUnsetOption) Unwrap() error {
+// Unwrap returns an origin error of ErrIgnoredOption.
+func (e *ErrIgnoredOption) Unwrap() error {
 	return e.origin
 }
