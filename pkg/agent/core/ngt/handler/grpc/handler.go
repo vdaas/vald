@@ -86,7 +86,7 @@ func (s *server) newLocations(uuids ...string) (locs *payload.Object_Locations) 
 		Locations: make([]*payload.Object_Location, 0, len(uuids)),
 	}
 	for _, uuid := range uuids {
-		locs.Locations = append(locs.Locations, &payload.Object_Location{
+		locs.Locations = append(locs.GetLocations(), &payload.Object_Location{
 			Name: s.name,
 			Uuid: uuid,
 			Ips:  []string{s.ip},
@@ -97,7 +97,7 @@ func (s *server) newLocations(uuids ...string) (locs *payload.Object_Locations) 
 
 func (s *server) newLocation(uuid string) *payload.Object_Location {
 	locs := s.newLocations(uuid)
-	if locs != nil && locs.Locations != nil && len(locs.Locations) > 0 {
+	if locs != nil && locs.GetLocations() != nil && len(locs.GetLocations()) > 0 {
 		return locs.Locations[0]
 	}
 	return nil
@@ -275,7 +275,7 @@ func toSearchResponse(dists []model.Distance, err error) (res *payload.Search_Re
 	}
 	res.Results = make([]*payload.Object_Distance, 0, len(dists))
 	for _, dist := range dists {
-		res.Results = append(res.Results, &payload.Object_Distance{
+		res.Results = append(res.GetResults(), &payload.Object_Distance{
 			Id:       dist.ID,
 			Distance: dist.Distance,
 		})
@@ -384,7 +384,7 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 	}()
 
 	res = &payload.Search_Responses{
-		Responses: make([]*payload.Search_Response, len(reqs.Requests)),
+		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
 	}
 	var wg sync.WaitGroup
 	var mu sync.Mutex
@@ -456,7 +456,7 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 	}()
 
 	res = &payload.Search_Responses{
-		Responses: make([]*payload.Search_Response, len(reqs.Requests)),
+		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
 	}
 	var wg sync.WaitGroup
 	var mu sync.Mutex
@@ -1299,7 +1299,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 	}
 
 	return &payload.Object_Locations{
-		Locations: append(ures.Locations, ires.Locations...),
+		Locations: append(ures.GetLocations(), ires.Locations...),
 	}, nil
 }
 
