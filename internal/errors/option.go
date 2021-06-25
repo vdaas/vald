@@ -105,3 +105,48 @@ func (e *ErrCriticalOption) Error() string {
 func (e *ErrCriticalOption) Unwrap() error {
 	return e.origin
 }
+
+// ErrIgnoredOption represents the ignored option error.
+type ErrIgnoredOption struct {
+	err    error
+	origin error
+}
+
+// NewErrIgnoredOption represents a function to generate a new error of ErrIgnoredOption that option is ignored.
+func NewErrIgnoredOption(name string, errs ...error) error {
+	if len(errs) == 0 {
+		return &ErrIgnoredOption{
+			err: Errorf("ignored option, name: %s", name),
+		}
+	}
+	var e error
+	for _, err := range errs {
+		if err == nil {
+			continue
+		}
+
+		if e != nil {
+			e = Wrap(err, e.Error())
+		} else {
+			e = err
+		}
+	}
+
+	return &ErrIgnoredOption{
+		err:    Wrapf(e, "ignored option, name: %s", name),
+		origin: e,
+	}
+}
+
+// Error returns a string of ErrIgnoredOption.err.
+func (e *ErrIgnoredOption) Error() string {
+	if e.err == nil {
+		e.err = errExpectedErrIsNil("ErrIgnoredOption")
+	}
+	return e.err.Error()
+}
+
+// Unwrap returns an origin error of ErrIgnoredOption.
+func (e *ErrIgnoredOption) Unwrap() error {
+	return e.origin
+}
