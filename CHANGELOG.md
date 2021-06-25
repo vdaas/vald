@@ -1,5 +1,119 @@
 # CHANGELOG
 
+## v1.1.2
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.1.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.1.2</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.1.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.1.2</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.1.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.1.2</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-gateway:v1.1.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-gateway:v1.1.2</code><br/>
+      <code>docker pull vdaas/vald-backup-gateway:v1.1.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-backup-gateway:v1.1.2</code><br/>
+      <code>docker pull vdaas/vald-lb-gateway:v1.1.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.1.2</code><br/>
+      <code>docker pull vdaas/vald-meta-gateway:v1.1.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-gateway:v1.1.2</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Backup managers</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-backup-mysql:v1.1.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-backup-mysql:v1.1.2</code><br/>
+      <code>docker pull vdaas/vald-manager-backup-cassandra:v1.1.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-backup-cassandra:v1.1.2</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Compressor</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-compressor:v1.1.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-compressor:v1.1.2</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Metas</td>
+    <td>
+      <code>docker pull vdaas/vald-meta-redis:v1.1.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-redis:v1.1.2</code><br/>
+      <code>docker pull vdaas/vald-meta-cassandra:v1.1.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-cassandra:v1.1.2</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.1.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.1.2</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.1.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.1.2</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.1.2)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.1.2/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.1.2/charts/vald-helm-operator/README.md)
+
+### Changes
+- bugfix remove api return wrong error of non exsiting replicas (#1318)
+- update go modules and update go version to 1.16.5 from 1.16.4 (#1306)
+- Implement test for internal/core/alogrithm/ngt/option and refactor (#1251)
+- fix build error due to e2e benchmark invalid creating new client (#1221)
+- bugfix correct error backoff handling for lb gateway (#1309)
+- Apply ruleguard fixes (#1302)
+- Add ruleguard rules (#1301)
+- bugfix add feature vector duplication checking for LB-GW Upsert operation. (#1303)
+- fix fails race condition test (#1299)
+- Update dashboards, add operator dashboard and several panels (#1280)
+- Add composite actions for E2E tests (#1257)
+- add save index wait duration to index-manager for multiple agent index upload delay (#1292)
+- Bugfix index count problem of ngt (#1288)
+- fix example/helm/values.yaml (#1290)
+- Fix time condition of agent & lb gateway (#1285)
+- Use gofumpt for format workflow (#1281)
+- [bugfix] kvsdb: do not increment the counter if key exists (#1282)
+- Revert ":art: Use gofumpt as a default formatter (#1278)" (#1279)
+- :art: Use gofumpt as a default formatter (#1278)
+- :pencil: fix some wrongs (#1274)
+- Refactor E2E tests: split operations into a new package (#1220)
+- :bug: Fix the chart: agent-sidecar initContainer mode (#1271)
+
+
 ## v1.1.1
 
 ### Docker images
