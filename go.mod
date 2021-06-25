@@ -3,10 +3,10 @@ module github.com/vdaas/vald
 go 1.16
 
 replace (
-	cloud.google.com/go => cloud.google.com/go v0.84.1-0.20210623045725-9bb82c3d5133
-	cloud.google.com/go/storage => cloud.google.com/go/storage v1.15.1-0.20210623045725-9bb82c3d5133
+	cloud.google.com/go => cloud.google.com/go v0.84.1-0.20210624210647-267787eb245d
+	cloud.google.com/go/storage => cloud.google.com/go/storage v1.15.1-0.20210624210647-267787eb245d
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20210602190049-10e0b31633f1+incompatible
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.38.66
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.38.67
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
@@ -88,7 +88,7 @@ require (
 	gonum.org/v1/hdf5 v0.0.0-20210623100833-4dd8a5a777f9
 	gonum.org/v1/plot v0.9.0
 	google.golang.org/api v0.49.0
-	google.golang.org/genproto v0.0.0-20210617175327-b9e0b3197ced
+	google.golang.org/genproto v0.0.0-20210624195500-8bfb893ecb84
 	google.golang.org/grpc v1.38.0
 	gopkg.in/yaml.v2 v2.4.0
 	inet.af/netaddr v0.0.0-20210603230628-bf05d8b52dda
