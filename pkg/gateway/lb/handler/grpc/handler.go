@@ -1919,6 +1919,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs 
 	var mu sync.Mutex
 	locs = &payload.Object_Location{
 		Uuid: id.GetId(),
+		Ips:  make([]string, 0, s.replica),
 	}
 	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
 		ctx, span := trace.StartSpan(ctx, apiName+".Remove/"+target)
@@ -1944,7 +1945,11 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs 
 			if span != nil {
 				span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 			}
-			return err
+			if err != nil && st.Code() != codes.NotFound {
+				log.Error(err)
+				return err
+			}
+			return nil
 		}
 		mu.Lock()
 		locs.Ips = append(locs.GetIps(), loc.GetIps()...)
@@ -1967,6 +1972,24 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs 
 			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+		}
+		return nil, err
+	}
+	if len(locs.Ips) <= 0 {
+		err = errors.ErrIndexNotFound
+		err = status.WrapWithNotFound("Remove API remove target not found", err,
+			&errdetails.RequestInfo{
+				RequestId:   id.GetId(),
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Remove",
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
+			})
+		if span != nil {
+			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
 		return nil, err
 	}
@@ -2147,6 +2170,24 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+		}
+		return nil, err
+	}
+	if len(locs.Locations) <= 0 {
+		err = errors.ErrIndexNotFound
+		err = status.WrapWithNotFound("MultiRemove API remove target not found", err,
+			&errdetails.RequestInfo{
+				RequestId:   strings.Join(ids, ","),
+				ServingData: errdetails.Serialize(reqs),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.MultiRemove",
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
+			})
+		if span != nil {
+			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
 		return nil, err
 	}
