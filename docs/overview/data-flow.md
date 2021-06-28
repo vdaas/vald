@@ -19,7 +19,7 @@ When the user inserts data into Vald:
 2. Vald Ingress will forward the request to the Vald LB Gateway to process the request. Vald LB Gateway will determine which Vald Agent(s) to process the request based on the resource usage of the nodes and pods, and the number of vector replicas.
 3. Vald LB Gateway will forward the UUID and the vector data to the selected Vald Agents in parallel. Vald Agent will insert the vector and UUID in an on-memory vector queue. A vector queue will be committed to an ANN graph index by a `CreateIndex` instruction executed by the Vald Index Manager.
 4. If Vald Agent successfully inserts the request data, it will return success to the Vald LB Gateway.
-5. After Vald LB Gateway receives success from the selected Vald Agents, it will respond the IP addresses of all selected Vald Agents to the Vald LB Gateway, and return success to the Vald Ingress.
+5. Vald LB Gateway will return success to the Vald Ingress.
 
 ## Search
 
@@ -52,14 +52,14 @@ When the user updates a vector from Vald:
 <img src="../../assets/docs/upsert_flow_v2.png" />
 
 Upsert request updates the existing vector if the same vector ID exists, or inserts the vector into Vald.
-When the user upsert a vector to Vald:
+When the user upserts a vector to Vald:
 
 1. Vald Ingress receives the request from the user. The request includes the vector ID(s) and the vector(s).
 2. Vald Ingress will forward the request to the Vald LB Gateway to process the request.
-3. Vald LB Gateway will boardcast a exist check request to Vald Agent(s) to check if the vector exists.
-4. Vald Agent returns the exist check result to Vald LB Gateway.
-5. If the vector with the same vector ID exists, Vald LB Gateway will send a update request to Vald Agent(s) same as the update flow step 3 to step 5. If the vector does not exist, Vald LB Gateway will process the insert flow from step 3 to step 4.
-6. Vald Agent(s) return sucess to Vald LB Gateway.
+3. Vald LB Gateway will broadcast an existing check request to Vald Agent(s) to check if the vector exists.
+4. Vald Agent returns the existing check result to Vald LB Gateway.
+5. If the vector with the same vector ID exists, Vald LB Gateway will send an update request to Vald Agent(s) same as the update flow step 3 to step 5. If the vector does not exist, Vald LB Gateway will process the insert flow from step 3 to step 4.
+6. Vald Agent(s) return success to Vald LB Gateway.
 7. Vald Filter Gateway will return success to the Vald Ingress.
 
 ## Delete
