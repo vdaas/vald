@@ -67,11 +67,12 @@ type rebalancer struct {
 	podName      string
 	podNamespace string
 
-	jobs         atomic.Value
-	jobName      string
-	jobNamespace string
-	jobTemplate  string   // row manifest template data of rebalance job.
-	jobObject    *job.Job // object generated from template.
+	jobs                    atomic.Value
+	jobName                 string
+	jobNamespace            string
+	jobTemplate             string   // row manifest template data of rebalance job.
+	jobObject               *job.Job // object generated from template.
+	currentDeviationJobName atomic.Value
 
 	agentName         string
 	agentPort         int
@@ -264,6 +265,10 @@ func (r *rebalancer) statefulsetReconcile(ctx context.Context, statefulSetList m
 		// vald-agent-2 <- deteced
 		for i := r.prevDesiredPods; i > currentReplica; i-- {
 			name := r.agentName + "-" + strconv.Itoa(i-1)
+
+			if err := r.deleteDeviationJob(ctx); err != nil {
+				log.Error(err)
+			}
 			log.Debugf("[recovery] creating job for pod %s", name)
 			if err := r.createJob(ctx, *r.jobObject, config.RECOVERY, name, r.agentNamespace, 1); err != nil {
 				log.Errorf("[recovery] failed to create job: %s", err)
@@ -397,6 +402,34 @@ func (r *rebalancer) getPodByAgentName(agentName string) (*pod.Pod, error) {
 	return nil, errors.New("pod not found")
 }
 
+func (r *rebalancer) deleteDeviationJob(ctx context.Context) error {
+	jobName, ok := r.currentDeviationJobName.Load().(string)
+	if !ok || jobName == "" {
+		return nil
+	}
+	job := new(job.Job)
+
+	c := r.ctrl.GetManager().GetClient()
+	err := c.Get(ctx, k8s.ObjectKey{
+		Namespace: r.jobNamespace,
+		Name:      jobName,
+	}, job)
+	if err != nil {
+		return err
+	}
+
+	// if the deviation job is not running, skip
+	if job.Status.Active == 0 {
+		return nil
+	}
+
+	if err := c.Delete(ctx, job); err != nil {
+		return errors.ErrK8sFailedToDeleteJob(err)
+	}
+	r.currentDeviationJobName.Store("")
+	return nil
+}
+
 func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, reason config.RebalanceReason, agentName, agentNs string, rate float64) (err error) {
 	if reason == config.DEVIATION {
 		p, err := r.getPodByAgentName(agentName)
@@ -459,6 +492,10 @@ func (r *rebalancer) createJob(ctx context.Context, jobTpl job.Job, reason confi
 	c := r.ctrl.GetManager().GetClient()
 	if err := c.Create(ctx, &jobTpl); err != nil {
 		return errors.ErrK8sFailedToCreateJob(err)
+	}
+
+	if reason == config.DEVIATION {
+		r.currentDeviationJobName.Store(jobTpl.Name)
 	}
 
 	return nil
