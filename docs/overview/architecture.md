@@ -72,7 +72,7 @@ Here are the concepts of Vald.
 
 ## Basic Architecture
 
-Vald is base on micro service, which means Vald is composited by multiple components, you can deploy part of the components to your cluster depending on your needs.
+Vald is base on microservice, which means Vald is composited by multiple components, you can deploy part of the components to your cluster depending on your needs.
 In this section, we will introduce the minimal architecture of Vald.
 
 <img src="../../assets/docs/minimal_architecture.png" />
@@ -89,8 +89,8 @@ Vald LB Gateway is a gateway to load balance the user request and forward user r
 
 ### Vald Discoverer
 
-Vald Discoverer provide Vald Agent discovery service to discover active Vald Agents in the Kubernetes cluster.
-It also retrieve the corresponding Vald Agent resources usage for Vald LB gateway to determine the priority of which Vald Agent to handle the user request.
+Vald Discoverer provides Vald Agent discovery service to discover active Vald Agents in the Kubernetes cluster.
+It also retrieves the corresponding Vald Agent resources usage for Vald LB gateway to determine the priority of which Vald Agent handles the user request.
 
 ### Vald Index Manager
 
