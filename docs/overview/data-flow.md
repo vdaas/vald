@@ -23,7 +23,7 @@ When the user inserts data into Vald:
 
 ## Search
 
-<img src="../../assets/docs/search_flow_v2.png" />
+<img src="../../assets/docs/overview/search_flow_v2.png" />
 
 When the user searches a vector from Vald:
 
@@ -35,7 +35,7 @@ When the user searches a vector from Vald:
 
 ## Update
 
-<img src="../../assets/docs/update_flow_v2.png" />
+<img src="../../assets/docs/overview/update_flow_v2.png" />
 
 When the user updates a vector from Vald:
 
@@ -49,7 +49,7 @@ When the user updates a vector from Vald:
 
 ## Upsert
 
-<img src="../../assets/docs/upsert_flow_v2.png" />
+<img src="../../assets/docs/overview/upsert_flow_v2.png" />
 
 Upsert request updates the existing vector if the same vector ID exists, or inserts the vector into Vald.
 When the user upserts a vector to Vald:
@@ -64,7 +64,7 @@ When the user upserts a vector to Vald:
 
 ## Delete
 
-<img src="../../assets/docs/delete_flow_v2.png" />
+<img src="../../assets/docs/overview/delete_flow_v2.png" />
 
 When the user deletes a vector which is indexed in Vald Agent:
 
