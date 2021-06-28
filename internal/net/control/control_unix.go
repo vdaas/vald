@@ -1,3 +1,4 @@
+//go:build linux && !windows && !wasm && !js && !darwin
 // +build linux,!windows,!wasm,!js,!darwin
 
 //

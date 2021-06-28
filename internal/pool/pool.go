@@ -19,26 +19,25 @@ package pool
 
 import (
 	"bytes"
-	"context"
 	"sync"
 	"sync/atomic"
 )
 
 type Buffer interface {
-	Get(ctx context.Context) interface{}
-	Put(ctx context.Context, data interface{})
-	PutWithResize(ctx context.Context, data interface{}, size uint64)
-	Size(ctx context.Context) (size uint64)
-	Limit(ctx context.Context) (size uint64)
-	Len(ctx context.Context) (size uint64)
+	Get() interface{}
+	Put(data interface{})
+	PutWithResize(data interface{}, size uint64)
+	Size() (size uint64)
+	Limit() (size uint64)
+	Len() (size uint64)
 }
 
 type Extender interface {
-	Extend(ctx context.Context, size uint64) (edata interface{})
+	Extend(size uint64) (data interface{})
 }
 
 type Flusher interface {
-	Flush(ctx context.Context) (fdata interface{})
+	Flush() (data interface{})
 }
 
 type pool struct {
@@ -49,13 +48,13 @@ type pool struct {
 	pool   sync.Pool
 }
 
-func New(ctx context.Context, opts ...Option) Buffer {
+func New(opts ...Option) Buffer {
 	p := new(pool)
 	for _, opt := range append(defaultOptions, opts...) {
 		opt(p)
 	}
 	alloc := func() interface{} {
-		size := p.Size(ctx)
+		size := p.Size()
 		if p.new == nil {
 			return bytes.NewBuffer(make([]byte, 0, size))
 		}
@@ -64,45 +63,45 @@ func New(ctx context.Context, opts ...Option) Buffer {
 	p.pool = sync.Pool{
 		New: alloc,
 	}
-	for i := p.Limit(ctx) - p.Len(ctx); i > 0; i-- {
-		p.Put(ctx, alloc())
+	for i := p.Limit() - p.Len(); i > 0; i-- {
+		p.Put(alloc())
 	}
 	return p
 }
 
-func (p *pool) Get(ctx context.Context) interface{} {
+func (p *pool) Get() interface{} {
 	p.decrementLength(ctx)
 	return p.pool.Get()
 }
 
-func (p *pool) Put(ctx context.Context, data interface{}) {
-	if p.Limit(ctx) < p.incrementLength(ctx) && p.Limit(ctx) > 0 {
-		p.decrementLength(ctx)
+func (p *pool) Put(data interface{}) {
+	if p.Limit() < p.incrementLength() && p.Limit() > 0 {
+		p.decrementLength()
 		return
 	}
 	if flusher, ok := data.(Flusher); ok {
-		data = flusher.Flush(ctx)
+		data = flusher.Flush()
 	}
 	p.pool.Put(data)
 }
 
-func (p *pool) PutWithResize(ctx context.Context, data interface{}, size uint64) {
+func (p *pool) PutWithResize(data interface{}, size uint64) {
 	if size <= 1 || p.extender == nil {
-		p.Put(ctx, data)
+		p.Put(data)
 		return
 	}
 	if extender, ok := data.(Extender); ok {
-		data = extender.Extend(ctx, p.extendSize(ctx, size))
+		data = extender.Extend(p.extendSize(ctx, size))
 	}
-	p.Put(ctx, data)
+	p.Put(data)
 }
 
-func (p *pool) Size(ctx context.Context) (size uint64) {
+func (p *pool) Size() (size uint64) {
 	return atomic.LoadUint64(&p.size)
 }
 
-func (p *pool) extendSize(ctx context.Context, size uint64) (ret uint64) {
-	ret = p.Size(ctx)
+func (p *pool) extendSize(size uint64) (ret uint64) {
+	ret = p.Size()
 	if ret < size {
 		atomic.StoreUint64(&p.size, size)
 		return size
@@ -110,18 +109,18 @@ func (p *pool) extendSize(ctx context.Context, size uint64) (ret uint64) {
 	return ret
 }
 
-func (p *pool) incrementLength(ctx context.Context) (size uint64) {
+func (p *pool) incrementLength() (size uint64) {
 	return atomic.AddUint64(&p.length, 1)
 }
 
-func (p *pool) decrementLength(ctx context.Context) (size uint64) {
+func (p *pool) decrementLength() (size uint64) {
 	return atomic.AddUint64(&p.length, ^uint64(0))
 }
 
-func (p *pool) Len(ctx context.Context) (size uint64) {
+func (p *pool) Len() (size uint64) {
 	return atomic.LoadUint64(&p.length)
 }
 
-func (p *pool) Limit(ctx context.Context) (size uint64) {
+func (p *pool) Limit() (size uint64) {
 	return atomic.LoadUint64(&p.limit)
 }
