@@ -1,13 +1,13 @@
 # Data Flow
 
-This section describes the data flow inside Vald and how Vald's vector indexes are stored.
-This is the most important part for the users to understand Vald.
+On this page, we describe the data flow inside Vald and how vector indexes are stored in the Vald Cluster.
+It will help you to understand what Vald does from users' requests.
 
-The below image is the overview of Vald's architecture.
+The below image is the basic Vald architecture.
 
 <img src="../../assets/image/svg/Vald Architecture Overview.svg" />
 
-We will explain this image in the following sections.
+We will explain using this image in the following sections.
 
 ## Insert
 
