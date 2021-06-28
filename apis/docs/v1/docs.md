@@ -18,15 +18,6 @@
 - [apis/proto/v1/filter/ingress/ingress_filter.proto](#apis/proto/v1/filter/ingress/ingress_filter.proto)
     - [Filter](#filter.ingress.v1.Filter)
   
-- [apis/proto/v1/gateway/vald/vald.proto](#apis/proto/v1/gateway/vald/vald.proto)
-    - [Vald](#vald.v1.Vald)
-  
-- [apis/proto/v1/manager/backup/backup_manager.proto](#apis/proto/v1/manager/backup/backup_manager.proto)
-    - [Backup](#manager.backup.v1.Backup)
-  
-- [apis/proto/v1/manager/compressor/compressor.proto](#apis/proto/v1/manager/compressor/compressor.proto)
-    - [Backup](#manager.compressor.v1.Backup)
-  
 - [apis/proto/v1/manager/index/index_manager.proto](#apis/proto/v1/manager/index/index_manager.proto)
     - [Index](#manager.index.v1.Index)
   
@@ -36,8 +27,11 @@
 - [apis/proto/v1/manager/replication/controller/replication_manager.proto](#apis/proto/v1/manager/replication/controller/replication_manager.proto)
     - [ReplicationController](#manager.replication.controller.v1.ReplicationController)
   
-- [apis/proto/v1/meta/meta.proto](#apis/proto/v1/meta/meta.proto)
-    - [Meta](#meta.v1.Meta)
+- [apis/proto/v1/manager/backup/backup_manager.proto](#apis/proto/v1/manager/backup/backup_manager.proto)
+    - [Backup](#manager.backup.v1.Backup)
+  
+- [apis/proto/v1/manager/compressor/compressor.proto](#apis/proto/v1/manager/compressor/compressor.proto)
+    - [Backup](#manager.compressor.v1.Backup)
   
 - [apis/proto/v1/payload/payload.proto](#apis/proto/v1/payload/payload.proto)
     - [Backup](#payload.v1.Backup)
@@ -159,6 +153,12 @@
   
 - [apis/proto/v1/vald/upsert.proto](#apis/proto/v1/vald/upsert.proto)
     - [Upsert](#vald.v1.Upsert)
+  
+- [apis/proto/v1/gateway/vald/vald.proto](#apis/proto/v1/gateway/vald/vald.proto)
+    - [Vald](#vald.v1.Vald)
+  
+- [apis/proto/v1/meta/meta.proto](#apis/proto/v1/meta/meta.proto)
+    - [Meta](#meta.v1.Meta)
   
 - [Scalar Value Types](#scalar-value-types)
 
@@ -299,116 +299,6 @@
 
 
 
-<a name="apis/proto/v1/gateway/vald/vald.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## apis/proto/v1/gateway/vald/vald.proto
-
-
- 
-
- 
-
- 
-
-
-<a name="vald.v1.Vald"></a>
-
-### Vald
-
-
-| Method Name | Request Type | Response Type | Description |
-| ----------- | ------------ | ------------- | ------------|
-| Exists | [.payload.v1.Object.ID](#payload.v1.Object.ID) | [.payload.v1.Object.ID](#payload.v1.Object.ID) |  |
-| Search | [.payload.v1.Search.Request](#payload.v1.Search.Request) | [.payload.v1.Search.Response](#payload.v1.Search.Response) |  |
-| SearchByID | [.payload.v1.Search.IDRequest](#payload.v1.Search.IDRequest) | [.payload.v1.Search.Response](#payload.v1.Search.Response) |  |
-| StreamSearch | [.payload.v1.Search.Request](#payload.v1.Search.Request) stream | [.payload.v1.Search.Response](#payload.v1.Search.Response) stream |  |
-| StreamSearchByID | [.payload.v1.Search.IDRequest](#payload.v1.Search.IDRequest) stream | [.payload.v1.Search.Response](#payload.v1.Search.Response) stream |  |
-| Insert | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
-| StreamInsert | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
-| MultiInsert | [.payload.v1.Object.Vectors](#payload.v1.Object.Vectors) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
-| Update | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
-| StreamUpdate | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
-| MultiUpdate | [.payload.v1.Object.Vectors](#payload.v1.Object.Vectors) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
-| Upsert | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
-| StreamUpsert | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
-| MultiUpsert | [.payload.v1.Object.Vectors](#payload.v1.Object.Vectors) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
-| Remove | [.payload.v1.Object.ID](#payload.v1.Object.ID) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
-| StreamRemove | [.payload.v1.Object.ID](#payload.v1.Object.ID) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
-| MultiRemove | [.payload.v1.Object.IDs](#payload.v1.Object.IDs) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
-| GetObject | [.payload.v1.Object.ID](#payload.v1.Object.ID) | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) |  |
-| StreamGetObject | [.payload.v1.Object.ID](#payload.v1.Object.ID) stream | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) stream |  |
-
- 
-
-
-
-<a name="apis/proto/v1/manager/backup/backup_manager.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## apis/proto/v1/manager/backup/backup_manager.proto
-
-
- 
-
- 
-
- 
-
-
-<a name="manager.backup.v1.Backup"></a>
-
-### Backup
-
-
-| Method Name | Request Type | Response Type | Description |
-| ----------- | ------------ | ------------- | ------------|
-| GetVector | [.payload.v1.Backup.GetVector.Request](#payload.v1.Backup.GetVector.Request) | [.payload.v1.Backup.Compressed.Vector](#payload.v1.Backup.Compressed.Vector) |  |
-| Locations | [.payload.v1.Backup.Locations.Request](#payload.v1.Backup.Locations.Request) | [.payload.v1.Info.IPs](#payload.v1.Info.IPs) |  |
-| Register | [.payload.v1.Backup.Compressed.Vector](#payload.v1.Backup.Compressed.Vector) | [.payload.v1.Empty](#payload.v1.Empty) |  |
-| RegisterMulti | [.payload.v1.Backup.Compressed.Vectors](#payload.v1.Backup.Compressed.Vectors) | [.payload.v1.Empty](#payload.v1.Empty) |  |
-| Remove | [.payload.v1.Backup.Remove.Request](#payload.v1.Backup.Remove.Request) | [.payload.v1.Empty](#payload.v1.Empty) |  |
-| RemoveMulti | [.payload.v1.Backup.Remove.RequestMulti](#payload.v1.Backup.Remove.RequestMulti) | [.payload.v1.Empty](#payload.v1.Empty) |  |
-| RegisterIPs | [.payload.v1.Backup.IP.Register.Request](#payload.v1.Backup.IP.Register.Request) | [.payload.v1.Empty](#payload.v1.Empty) |  |
-| RemoveIPs | [.payload.v1.Backup.IP.Remove.Request](#payload.v1.Backup.IP.Remove.Request) | [.payload.v1.Empty](#payload.v1.Empty) |  |
-
- 
-
-
-
-<a name="apis/proto/v1/manager/compressor/compressor.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## apis/proto/v1/manager/compressor/compressor.proto
-
-
- 
-
- 
-
- 
-
-
-<a name="manager.compressor.v1.Backup"></a>
-
-### Backup
-
-
-| Method Name | Request Type | Response Type | Description |
-| ----------- | ------------ | ------------- | ------------|
-| GetVector | [.payload.v1.Backup.GetVector.Request](#payload.v1.Backup.GetVector.Request) | [.payload.v1.Backup.Vector](#payload.v1.Backup.Vector) |  |
-| Locations | [.payload.v1.Backup.Locations.Request](#payload.v1.Backup.Locations.Request) | [.payload.v1.Info.IPs](#payload.v1.Info.IPs) |  |
-| Register | [.payload.v1.Backup.Vector](#payload.v1.Backup.Vector) | [.payload.v1.Empty](#payload.v1.Empty) |  |
-| RegisterMulti | [.payload.v1.Backup.Vectors](#payload.v1.Backup.Vectors) | [.payload.v1.Empty](#payload.v1.Empty) |  |
-| Remove | [.payload.v1.Backup.Remove.Request](#payload.v1.Backup.Remove.Request) | [.payload.v1.Empty](#payload.v1.Empty) |  |
-| RemoveMulti | [.payload.v1.Backup.Remove.RequestMulti](#payload.v1.Backup.Remove.RequestMulti) | [.payload.v1.Empty](#payload.v1.Empty) |  |
-| RegisterIPs | [.payload.v1.Backup.IP.Register.Request](#payload.v1.Backup.IP.Register.Request) | [.payload.v1.Empty](#payload.v1.Empty) |  |
-| RemoveIPs | [.payload.v1.Backup.IP.Remove.Request](#payload.v1.Backup.IP.Remove.Request) | [.payload.v1.Empty](#payload.v1.Empty) |  |
-
- 
-
-
-
 <a name="apis/proto/v1/manager/index/index_manager.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
@@ -489,10 +379,10 @@
 
 
 
-<a name="apis/proto/v1/meta/meta.proto"></a>
+<a name="apis/proto/v1/manager/backup/backup_manager.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## apis/proto/v1/meta/meta.proto
+## apis/proto/v1/manager/backup/backup_manager.proto
 
 
  
@@ -502,23 +392,54 @@
  
 
 
-<a name="meta.v1.Meta"></a>
+<a name="manager.backup.v1.Backup"></a>
 
-### Meta
+### Backup
 
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| GetMeta | [.payload.v1.Meta.Key](#payload.v1.Meta.Key) | [.payload.v1.Meta.Val](#payload.v1.Meta.Val) |  |
-| GetMetas | [.payload.v1.Meta.Keys](#payload.v1.Meta.Keys) | [.payload.v1.Meta.Vals](#payload.v1.Meta.Vals) |  |
-| GetMetaInverse | [.payload.v1.Meta.Val](#payload.v1.Meta.Val) | [.payload.v1.Meta.Key](#payload.v1.Meta.Key) |  |
-| GetMetasInverse | [.payload.v1.Meta.Vals](#payload.v1.Meta.Vals) | [.payload.v1.Meta.Keys](#payload.v1.Meta.Keys) |  |
-| SetMeta | [.payload.v1.Meta.KeyVal](#payload.v1.Meta.KeyVal) | [.payload.v1.Empty](#payload.v1.Empty) |  |
-| SetMetas | [.payload.v1.Meta.KeyVals](#payload.v1.Meta.KeyVals) | [.payload.v1.Empty](#payload.v1.Empty) |  |
-| DeleteMeta | [.payload.v1.Meta.Key](#payload.v1.Meta.Key) | [.payload.v1.Meta.Val](#payload.v1.Meta.Val) |  |
-| DeleteMetas | [.payload.v1.Meta.Keys](#payload.v1.Meta.Keys) | [.payload.v1.Meta.Vals](#payload.v1.Meta.Vals) |  |
-| DeleteMetaInverse | [.payload.v1.Meta.Val](#payload.v1.Meta.Val) | [.payload.v1.Meta.Key](#payload.v1.Meta.Key) |  |
-| DeleteMetasInverse | [.payload.v1.Meta.Vals](#payload.v1.Meta.Vals) | [.payload.v1.Meta.Keys](#payload.v1.Meta.Keys) |  |
+| GetVector | [.payload.v1.Backup.GetVector.Request](#payload.v1.Backup.GetVector.Request) | [.payload.v1.Backup.Compressed.Vector](#payload.v1.Backup.Compressed.Vector) |  |
+| Locations | [.payload.v1.Backup.Locations.Request](#payload.v1.Backup.Locations.Request) | [.payload.v1.Info.IPs](#payload.v1.Info.IPs) |  |
+| Register | [.payload.v1.Backup.Compressed.Vector](#payload.v1.Backup.Compressed.Vector) | [.payload.v1.Empty](#payload.v1.Empty) |  |
+| RegisterMulti | [.payload.v1.Backup.Compressed.Vectors](#payload.v1.Backup.Compressed.Vectors) | [.payload.v1.Empty](#payload.v1.Empty) |  |
+| Remove | [.payload.v1.Backup.Remove.Request](#payload.v1.Backup.Remove.Request) | [.payload.v1.Empty](#payload.v1.Empty) |  |
+| RemoveMulti | [.payload.v1.Backup.Remove.RequestMulti](#payload.v1.Backup.Remove.RequestMulti) | [.payload.v1.Empty](#payload.v1.Empty) |  |
+| RegisterIPs | [.payload.v1.Backup.IP.Register.Request](#payload.v1.Backup.IP.Register.Request) | [.payload.v1.Empty](#payload.v1.Empty) |  |
+| RemoveIPs | [.payload.v1.Backup.IP.Remove.Request](#payload.v1.Backup.IP.Remove.Request) | [.payload.v1.Empty](#payload.v1.Empty) |  |
+
+ 
+
+
+
+<a name="apis/proto/v1/manager/compressor/compressor.proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## apis/proto/v1/manager/compressor/compressor.proto
+
+
+ 
+
+ 
+
+ 
+
+
+<a name="manager.compressor.v1.Backup"></a>
+
+### Backup
+
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ------------|
+| GetVector | [.payload.v1.Backup.GetVector.Request](#payload.v1.Backup.GetVector.Request) | [.payload.v1.Backup.Vector](#payload.v1.Backup.Vector) |  |
+| Locations | [.payload.v1.Backup.Locations.Request](#payload.v1.Backup.Locations.Request) | [.payload.v1.Info.IPs](#payload.v1.Info.IPs) |  |
+| Register | [.payload.v1.Backup.Vector](#payload.v1.Backup.Vector) | [.payload.v1.Empty](#payload.v1.Empty) |  |
+| RegisterMulti | [.payload.v1.Backup.Vectors](#payload.v1.Backup.Vectors) | [.payload.v1.Empty](#payload.v1.Empty) |  |
+| Remove | [.payload.v1.Backup.Remove.Request](#payload.v1.Backup.Remove.Request) | [.payload.v1.Empty](#payload.v1.Empty) |  |
+| RemoveMulti | [.payload.v1.Backup.Remove.RequestMulti](#payload.v1.Backup.Remove.RequestMulti) | [.payload.v1.Empty](#payload.v1.Empty) |  |
+| RegisterIPs | [.payload.v1.Backup.IP.Register.Request](#payload.v1.Backup.IP.Register.Request) | [.payload.v1.Empty](#payload.v1.Empty) |  |
+| RemoveIPs | [.payload.v1.Backup.IP.Remove.Request](#payload.v1.Backup.IP.Remove.Request) | [.payload.v1.Empty](#payload.v1.Empty) |  |
 
  
 
@@ -2167,6 +2088,85 @@
 | Upsert | [.payload.v1.Upsert.Request](#payload.v1.Upsert.Request) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
 | StreamUpsert | [.payload.v1.Upsert.Request](#payload.v1.Upsert.Request) stream | [.payload.v1.Object.StreamLocation](#payload.v1.Object.StreamLocation) stream |  |
 | MultiUpsert | [.payload.v1.Upsert.MultiRequest](#payload.v1.Upsert.MultiRequest) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
+
+ 
+
+
+
+<a name="apis/proto/v1/gateway/vald/vald.proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## apis/proto/v1/gateway/vald/vald.proto
+
+
+ 
+
+ 
+
+ 
+
+
+<a name="vald.v1.Vald"></a>
+
+### Vald
+
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ------------|
+| Exists | [.payload.v1.Object.ID](#payload.v1.Object.ID) | [.payload.v1.Object.ID](#payload.v1.Object.ID) |  |
+| Search | [.payload.v1.Search.Request](#payload.v1.Search.Request) | [.payload.v1.Search.Response](#payload.v1.Search.Response) |  |
+| SearchByID | [.payload.v1.Search.IDRequest](#payload.v1.Search.IDRequest) | [.payload.v1.Search.Response](#payload.v1.Search.Response) |  |
+| StreamSearch | [.payload.v1.Search.Request](#payload.v1.Search.Request) stream | [.payload.v1.Search.Response](#payload.v1.Search.Response) stream |  |
+| StreamSearchByID | [.payload.v1.Search.IDRequest](#payload.v1.Search.IDRequest) stream | [.payload.v1.Search.Response](#payload.v1.Search.Response) stream |  |
+| Insert | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
+| StreamInsert | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
+| MultiInsert | [.payload.v1.Object.Vectors](#payload.v1.Object.Vectors) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
+| Update | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
+| StreamUpdate | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
+| MultiUpdate | [.payload.v1.Object.Vectors](#payload.v1.Object.Vectors) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
+| Upsert | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
+| StreamUpsert | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
+| MultiUpsert | [.payload.v1.Object.Vectors](#payload.v1.Object.Vectors) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
+| Remove | [.payload.v1.Object.ID](#payload.v1.Object.ID) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
+| StreamRemove | [.payload.v1.Object.ID](#payload.v1.Object.ID) stream | [.payload.v1.Object.Location](#payload.v1.Object.Location) stream |  |
+| MultiRemove | [.payload.v1.Object.IDs](#payload.v1.Object.IDs) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
+| GetObject | [.payload.v1.Object.ID](#payload.v1.Object.ID) | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) |  |
+| StreamGetObject | [.payload.v1.Object.ID](#payload.v1.Object.ID) stream | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) stream |  |
+
+ 
+
+
+
+<a name="apis/proto/v1/meta/meta.proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## apis/proto/v1/meta/meta.proto
+
+
+ 
+
+ 
+
+ 
+
+
+<a name="meta.v1.Meta"></a>
+
+### Meta
+
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ------------|
+| GetMeta | [.payload.v1.Meta.Key](#payload.v1.Meta.Key) | [.payload.v1.Meta.Val](#payload.v1.Meta.Val) |  |
+| GetMetas | [.payload.v1.Meta.Keys](#payload.v1.Meta.Keys) | [.payload.v1.Meta.Vals](#payload.v1.Meta.Vals) |  |
+| GetMetaInverse | [.payload.v1.Meta.Val](#payload.v1.Meta.Val) | [.payload.v1.Meta.Key](#payload.v1.Meta.Key) |  |
+| GetMetasInverse | [.payload.v1.Meta.Vals](#payload.v1.Meta.Vals) | [.payload.v1.Meta.Keys](#payload.v1.Meta.Keys) |  |
+| SetMeta | [.payload.v1.Meta.KeyVal](#payload.v1.Meta.KeyVal) | [.payload.v1.Empty](#payload.v1.Empty) |  |
+| SetMetas | [.payload.v1.Meta.KeyVals](#payload.v1.Meta.KeyVals) | [.payload.v1.Empty](#payload.v1.Empty) |  |
+| DeleteMeta | [.payload.v1.Meta.Key](#payload.v1.Meta.Key) | [.payload.v1.Meta.Val](#payload.v1.Meta.Val) |  |
+| DeleteMetas | [.payload.v1.Meta.Keys](#payload.v1.Meta.Keys) | [.payload.v1.Meta.Vals](#payload.v1.Meta.Vals) |  |
+| DeleteMetaInverse | [.payload.v1.Meta.Val](#payload.v1.Meta.Val) | [.payload.v1.Meta.Key](#payload.v1.Meta.Key) |  |
+| DeleteMetasInverse | [.payload.v1.Meta.Vals](#payload.v1.Meta.Vals) | [.payload.v1.Meta.Keys](#payload.v1.Meta.Keys) |  |
 
  
 

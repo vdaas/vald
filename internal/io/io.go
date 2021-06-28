@@ -25,18 +25,24 @@ import (
 )
 
 type (
+	ByteReader    = io.ByteReader
+	ByteScanner   = io.ByteScanner
+	ByteWriter    = io.ByteWriter
+	Closer        = io.Closer
+	LimitedReader = io.LimitedReader
+	ReadCloser    = io.ReadCloser
+	ReadSeeker    = io.ReadSeeker
 	Reader        = io.Reader
 	ReaderAt      = io.ReaderAt
 	ReaderFrom    = io.ReaderFrom
-	ReadSeeker    = io.ReadSeeker
-	LimitedReader = io.LimitedReader
+	RuneReader    = io.RuneReader
+	RuneScanner   = io.RuneScanner
+	Seeker        = io.Seeker
+	StringWriter  = io.StringWriter
+	WriteCloser   = io.WriteCloser
 	Writer        = io.Writer
 	WriterAt      = io.WriterAt
 	WriterTo      = io.WriterTo
-	Seeker        = io.Seeker
-	Closer        = io.Closer
-	ReadCloser    = io.ReadCloser
-	WriteCloser   = io.WriteCloser
 )
 
 const (

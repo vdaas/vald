@@ -19,10 +19,8 @@ package bytes
 
 import (
 	"bytes"
-	"context"
-	"io"
 
-	// "github.com/vdaas/vald/internal/io"
+	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/pool"
 )
 
@@ -53,26 +51,50 @@ type Buffer interface {
 }
 
 type Pool interface {
-	Get(ctx context.Context) Buffer
-	Put(ctx context.Context, buf Buffer)
+	Get() Buffer
+	Put(buf Buffer)
 }
 
 type bytesBuffer struct {
 	*bytes.Buffer
 }
 
-func New(size int) Pool {
-	return &buffer{
-		Buffer: bytes.NewBuffer(make([]byte, 0, int(size))),
+type bufferPool struct {
+	p pool.Buffer
+}
+
+func New(poolSize, bufferSize int) Pool {
+	return &bufferPool{
+		p: pool.New(
+			pool.WithConstructor(func(size uint64) interface{} {
+				return &bytesBuffer{
+					Buffer: bytes.NewBuffer(make([]byte, 0, size)),
+				}
+			}),
+			pool.WithLimit(uint64(poolSize)),
+			pool.WithSize(uint64(bufferSize)),
+		),
 	}
 }
 
-func (b *bytesBuffer) Extend(ctx context.Context, size uint64) (data interface{}) {
+func (b *bufferPool) Get() Buffer {
+	buf, ok := b.p.Get().(Buffer)
+	if ok {
+		return buf
+	}
+	return nil
+}
+
+func (b *bufferPool) Put(buf Buffer) {
+	b.p.PutWithResize(buf, uint64(buf.Cap()))
+}
+
+func (b *bytesBuffer) Extend(size uint64) (data interface{}) {
 	b.Grow(int(size))
 	return b
 }
 
-func (b *bytesBuffer) Flush(ctx context.Context) (data interface{}) {
+func (b *bytesBuffer) Flush() (data interface{}) {
 	b.Reset()
-	return b
+	return
 }
