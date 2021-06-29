@@ -39,7 +39,7 @@ replace (
 
 require (
 	cloud.google.com/go v0.84.0
-	cloud.google.com/go/storage v1.15.0
+	cloud.google.com/go/storage v1.16.0
 	code.cloudfoundry.org/bytefmt v0.0.0-20210608160410-67692ebc98de
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
 	contrib.go.opencensus.io/exporter/prometheus v0.3.0
