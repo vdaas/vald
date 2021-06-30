@@ -8,6 +8,11 @@ The below image is the basic Vald architecture.
 <img src="../../assets/image/svg/Vald Architecture Overview.svg" />
 
 We will explain using this image in the following sections.
+- [Insert](#Insert)
+- [Search](#Search)
+- [Insert](#Update)
+- [Upsert](#Upsert)
+- [Delete](#Delete)
 
 ## Insert
 

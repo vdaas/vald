@@ -15,16 +15,19 @@ Vald is based on the following techologies.
 - [Kubernetes](https://kubernetes.io/)
 
 To easily scale and manage Vald, we deploy and run Vald on [Kubernetes](https://kubernetes.io/).
-Vald takes all of the advantages of using Kuberenetes. For more details please read the next section.
+    Vald takes all of the advantages of using Kuberenetes.
+    For more details please read the next section.
 
 - [Helm](https://helm.sh/)
 
 Helm help you to deploy and configure Vald. 
-Vald contains multiple components and configuration, Helm help us to manage those manifest and provide a better and easy way to deploy and configure Vald.
+    Vald contains multiple components and configuration�.
+    Helm helps us to manage those manifest and provides a better and easy way to deploy and configure Vald.
 
 - [NGT](https://github.com/yahoojapan/NGT)
 
-NGT is one of the core component of Vald. NGT is a super fast vector search engine used by Vald to guarantee the performance of Vald.
+    NGT is one of the core component of Vald.
+    NGT is a super fast vector search engine used by Vald to guarantee the performance of Vald.
 
 ### Concept
 
@@ -72,8 +75,8 @@ Here are the concepts of Vald.
 
 ## Basic Architecture
 
-Vald is base on microservice, which means Vald is composited by multiple components, you can deploy part of the components to your cluster depending on your needs.
-In this section, we will introduce the minimal architecture of Vald.
+Vald is based on microservice, which means Vald is composited by multiple components, you can deploy part of the components to your cluster depending on your needs.
+In this section, we will introduce the basic architecture of Vald.
 
 <img src="../../assets/docs/overview/minimal_architecture.png" />
 
@@ -81,19 +84,21 @@ We will introduce each component and why it is needed in Vald.
 
 ### Vald Agent
 
-Vald Agent is the core engine of Vald, the approximate nearest neighbor search engine. Agent-NGT uses yahoojapan/NGT as a core library.
+Vald Agent is the core component of Vald, the approximate nearest neighbor search engine, and stores the graph tree construction on memory for indexing the vectors.
+Agent-NGT uses [yahoojapan/NGT](https://github.com/yahoojapan/ngt) as a core library.
 
 ### Vald LB Gateway
 
-Vald LB Gateway is a gateway to load balance the user request and forward user request to the Vald-Agent base on the resource usage of the Vald-Agent and the corresponding cluster node.
+Vald LB Gateway is a gateway to load balance the user request and forward user request to the Vald-Agent based on the resource usage of the Vald-Agent and the corresponding cluster node.
 
 ### Vald Discoverer
 
-Vald Discoverer provides Vald Agent discovery service to discover active Vald Agents in the Kubernetes cluster.
-It also retrieves the corresponding Vald Agent resources usage for Vald LB gateway to determine the priority of which Vald Agent handles the user request.
+Vald Discoverer provides Vald Agent discovery service to discover active Vald Agent pods in the Kubernetes cluster.
+It also retrieves the corresponding Vald Agent resource usage for Vald LB gateway to determine the priority of which Vald Agent handles the user request.
 
 ### Vald Index Manager
 
-Vald Index Manager controls the timing of the indexing of the Vald Agent. The index is used to increase the performance of the search action.
+Vald Index Manager controls the timing of the indexing of the Vald Agent.
+The index is used to increase the performance of the search action.
 
 It retrieves the active Vald Agent pods from the Vald Discoverer and triggers the indexing action on each Vald Agent.
