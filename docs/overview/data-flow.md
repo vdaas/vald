@@ -10,7 +10,7 @@ The below image is the basic Vald architecture.
 We will explain using this image in the following sections.
 - [Insert](#Insert)
 - [Search](#Search)
-- [Insert](#Update)
+- [Update](#Update)
 - [Upsert](#Upsert)
 - [Delete](#Delete)
 
