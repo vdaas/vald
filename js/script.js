@@ -1,11 +1,14 @@
 // initial sidebar
 window.onload = () => {
   initSidebar();
-  window.scroll(0, 0);
   if (location.hash.length > 0) {
+    const height = document.getElementsByClassName('header__nav')[0].offsetHeight;
+    window.scrollBy(0, -height);
     setTimeout(() => {
       scrollTocNav(location.hash.replace('#', ''));
     }, 100)
+  } else {
+    window.scroll(0, 0);
   }
 }
 
@@ -14,6 +17,12 @@ window.onclick = (event) => {
   let elem = getElemByEvent(event);
   if (elem.id === 'current') {
     toggleTocNav();
+  } else if (elem.className.includes('version__') || elem.className.includes('__version')) {
+    if (elem.className == 'header__version' || elem.className == 'version__current') {
+      toggleVersion();
+    } else {
+      setVersion(elem);
+    }
   } else {
     if (elem.id === 'list-button') {
       toggleSideAll();
@@ -234,5 +243,54 @@ const getElemByEvent = (event) => {
 }
 
 const getParentByElem = (elem) => {
-  return elem.parentNode;
+    return elem.parentNode;
+}
+
+function toggleVersion() {
+  if (document.getElementById('version_details').open) {
+    document.getElementById('version_details').setAttribute('open', true);
+  } else {
+    document.getElementById('version_details').open = false;
+  }
+}
+
+
+const setVersion = (elem) => {
+  if (elem.text === '' || elem.text === undefined) {
+    document.getElementById('version_details').removeAttribute('open');
+  } else if (elem.text.startsWith('v')) {
+    const beforeVersion = document.getElementById('current_version').textContent.trim();
+    document.getElementById('current_version').textContent = elem.text;
+    document.getElementById('version_details').removeAttribute('open');
+    let url = location.href;
+    const nextVersion = elem.className.includes('latest') ? '' : elem.text + '/';
+    if (url.includes('/docs/')) {
+      // move to new document url .
+      if (url.includes(beforeVersion)) {
+        url = url.replace(beforeVersion + '/', nextVersion);
+      } else {
+        url = url.replace('/docs/', '/docs/' + nextVersion);
+      }
+      window.location.href = url;
+    }
+    // update link url
+    const urls = {
+      header: document.getElementsByClassName('header__link'),
+      footer: document.getElementsByClassName('footer__link'),
+      lp: document.getElementsByClassName('mdl-link'),
+    };
+    for (const links in urls) {
+      if (urls[links] != undefined || urls[links] != null) {
+        for (var link of urls[links]) {
+          if (link.href.includes(beforeVersion)) {
+            link.href = link.href.replace('/' + beforeVersion, '');
+          }
+          if (!elem.className.includes('latest') && link.href.includes('/docs')) {
+            link.href = link.href.replace('/docs', '/docs/' + elem.text);
+          }
+        }
+      }
+    }
+  }
+  document.getElementById('version_details').removeAttribute('open');
 }

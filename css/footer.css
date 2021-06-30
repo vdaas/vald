@@ -45,6 +45,31 @@
   color: #cccccc;
 }
 
+.footer__icon {
+  margin-top: 10px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon__image{
+  width: 24px;
+  height: 24px;
+  margin-top: 10px;
+}
+
+@media screen and (min-width: 768px) {
+  .footer__icon {
+    position: absolute;
+    margin-left: 12px;
+    margin-top: -18px;
+  }
+  .icon__image{
+    width: 24px;
+    height: 24px;
+    margin-top: 0;
+  }
+}
+
 @media screen and (min-width: 768px) {
   .footer__item {
     display: inline-block;
