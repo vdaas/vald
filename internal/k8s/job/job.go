@@ -44,7 +44,7 @@ type reconciler struct {
 	name              string
 	namespaces        []string
 	onError           func(err error)
-	onReconcile       func(jobList map[string][]Job)
+	onReconcile       func(ctx context.Context, jobList map[string][]Job)
 	listOpts          []client.ListOption
 	jobsByAppNamePool sync.Pool // map[app][]Job
 }
@@ -116,7 +116,7 @@ func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res 
 	}
 
 	if r.onReconcile != nil {
-		r.onReconcile(jobs)
+		r.onReconcile(ctx, jobs)
 	}
 
 	for name := range jobs {

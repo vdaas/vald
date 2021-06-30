@@ -77,6 +77,7 @@ type rebalancer struct {
 	jobTemplate             string   // row manifest template data of rebalance job.
 	jobObject               *job.Job // object generated from template.
 	currentDeviationJobName atomic.Value
+	recoveryJobQueue        []string // TODO: race condition occur
 
 	agentName         string
 	agentPort         int
@@ -222,16 +223,41 @@ func (r *rebalancer) podReconcile(podList map[string][]pod.Pod) {
 	r.pods.Store(pods)
 }
 
-func (r *rebalancer) jobReconcile(jobList map[string][]job.Job) {
+func (r *rebalancer) jobReconcile(ctx context.Context, jobList map[string][]job.Job) {
 	log.Debugf("[reconcile Job] length Joblist: %d", len(jobList))
 	jobs, ok := jobList[r.jobName]
-	if ok {
-		r.jobs.Store(jobs)
+	if !ok {
+		r.jobs.Store(make([]job.Job, 0))
+		log.Infof("job not found: %s", r.jobName)
 		return
 	}
 
-	r.jobs.Store(make([]job.Job, 0))
-	log.Infof("job not found: %s", r.jobName)
+	r.jobs.Store(jobs)
+
+	if len(r.recoveryJobQueue) > 0 {
+		// check if recovery job is finished ( or check if any recovery job is running)
+		// if not running, create job
+		if !r.isRecoveryJobRunning(r.jobNamespace) {
+			name := r.recoveryJobQueue[0]
+
+			// if agent pod is running, remove from the queue and stop create job
+			if _, err := r.getPodByAgentName(name); err == nil {
+				r.recoveryJobQueue = r.recoveryJobQueue[1:]
+				return
+			}
+
+			if err := r.deleteDeviationJob(ctx); err != nil {
+				log.Error(err)
+			}
+
+			log.Debugf("[recovery] creating job for pod %s", name)
+			if err := r.createJob(ctx, *r.jobObject, config.RECOVERY, name, r.agentNamespace, 1); err != nil {
+				log.Errorf("[recovery] failed to create job: %s", err)
+			} else {
+				r.recoveryJobQueue = r.recoveryJobQueue[1:]
+			}
+		}
+	}
 }
 
 func (r *rebalancer) statefulsetReconcile(ctx context.Context, statefulSetList map[string][]statefulset.StatefulSet) {
@@ -263,6 +289,8 @@ func (r *rebalancer) statefulsetReconcile(ctx context.Context, statefulSetList m
 
 	// if current desired replica number is less than previous desired replica number, create recovery job
 	if currentReplica < r.prevDesiredPods {
+		created := false
+
 		// If the number of replicas is reduced from 3 to 2, get the name of the pod below.
 		// vald-agent-0
 		// vald-agent-1
@@ -270,12 +298,19 @@ func (r *rebalancer) statefulsetReconcile(ctx context.Context, statefulSetList m
 		for i := r.prevDesiredPods; i > currentReplica; i-- {
 			name := r.agentName + "-" + strconv.Itoa(i-1)
 
+			if created || r.isRecoveryJobRunning(r.jobNamespace) {
+				r.recoveryJobQueue = append(r.recoveryJobQueue, name)
+				continue
+			}
+
 			if err := r.deleteDeviationJob(ctx); err != nil {
 				log.Error(err)
 			}
 			log.Debugf("[recovery] creating job for pod %s", name)
 			if err := r.createJob(ctx, *r.jobObject, config.RECOVERY, name, r.agentNamespace, 1); err != nil {
 				log.Errorf("[recovery] failed to create job: %s", err)
+			} else {
+				created = true
 			}
 		}
 	}
@@ -644,6 +679,22 @@ func (r *rebalancer) isJobRunning(jobsByNamespace map[string][]job.Job, ns strin
 	for _, jobs := range jobsByNamespace {
 		for _, job := range jobs {
 			if job.Labels[qualifiedNamePrefix+"reason"] != config.MANUAL.String() && job.Status.Active != 0 && job.Labels[qualifiedNamePrefix+"target_agent_namespace"] == ns {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func (r *rebalancer) isRecoveryJobRunning(ns string) bool {
+	jobsByNamespace, err := r.getJobsByNamespace()
+	if err != nil {
+		log.Infof("error generating job models: %s", err.Error())
+	}
+
+	for _, jobs := range jobsByNamespace {
+		for _, job := range jobs {
+			if job.Labels[qualifiedNamePrefix+"reason"] == config.RECOVERY.String() && job.Status.Active != 0 && job.Labels[qualifiedNamePrefix+"target_agent_namespace"] == ns {
 				return true
 			}
 		}
