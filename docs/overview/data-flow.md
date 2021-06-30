@@ -17,6 +17,8 @@ To obtain the memory usage of Vald Agent and the node, Vald Discoverer is requir
 
 To make the insert command effective, the `CreateIndex` instruction is required by the Vald Index Manager or Vald Agent itself to update the index to provide extremely high searching performance to users.
 
+Please note that only one embedding space is supported in a single Vald Cluster, if you want to support multiple embedded spaces, you may need to consider to deploy multiple Vald cluster to support this use case.
+
 <img src="../../assets/docs/overview/insert_flow_v2.png" />
 
 When the user inserts data into Vald:
