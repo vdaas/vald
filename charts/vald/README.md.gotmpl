@@ -12,8 +12,6 @@ Table of Contents
 - [Configuration](#configuration)
     - [Overview](#overview)
     - [Parameters](#parameters)
-- [Miscellaneous](#miscellaneous)
-    - [Standalone Vald agent NGT deployment](#standalone-vald-agent-ngt-deployment)
 
 Install
 ---
@@ -38,17 +36,20 @@ Configuration
     - default configurations of common parts
     - be overridden by the fields in each components' configurations
 - `gateway`
-    - configurations of vald-gateway
+    - configurations of gateways
+        - `backup`
+        - `filter`
+        - `meta`
+        - `lb`
 - `agent`
     - configurations of vald-agent
 - `discoverer`
     - configurations of vald-discoverer
-- `compressor`
-    - configurations of vald-manager-compressor
-- `backupManager`
-    - configurations of vald-manager-backup
-- `indexManager`
-    - configurations of vald-manager-index
+- `manager`
+    - configurations of manager components
+        - `backup`
+        - `compressor`
+        - `index`
 - `meta`
     - configurations of vald-meta
 - `initializer`
@@ -57,23 +58,3 @@ Configuration
 ### Parameters
 
 {{ template "chart.valuesTable" . }}
-
-
-Miscellaneous
----
-
-### Standalone Vald agent NGT deployment
-
-Each component can be disabled by setting the value `false` to the `[component].enabled` field.
-This is useful for deploying only Vald agent NGT pods.
-
-There is an example yaml [agent-ngt-standalone.yaml][agent-ngt-standalone-yaml] to deploy standalone agent NGT.
-Please run the following command to install the chart with this values yaml,
-
-    $ helm repo add vald https://vald.vdaas.org/charts
-    $ helm install --values values/agent-ngt-standalone.yaml vald-agent-ngt vald/vald
-
-If you'd like to access the agents from out of the Kubernetes cluster, it is recommended to create an [Ingress][kubernetes-ingress].
-
-[agent-ngt-standalone-yaml]: ./values/agent-ngt-standalone.yaml
-[kubernetes-ingress]: https://kubernetes.io/docs/concepts/services-networking/ingress/
