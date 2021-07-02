@@ -386,7 +386,7 @@ func Test_watch_Start(t *testing.T) {
 				},
 				afterFunc: func(t *testing.T, args args, w Watcher) {
 					t.Helper()
-					w.Remove("vald")
+					_ = w.Remove("vald")
 					defaultAfterFunc(t, args, w)
 					cancel()
 				},
@@ -869,7 +869,7 @@ func Test_watch_Add(t *testing.T) {
 				},
 			},
 			afterFunc: func(t *testing.T, args args, w Watcher) {
-				w.Remove("./watch_test.go")
+				_ = w.Remove("./watch_test.go")
 				defaultAfterFunc(t, args, w)
 			},
 			want: want{
