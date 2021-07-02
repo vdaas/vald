@@ -4,7 +4,7 @@
 package {{.Package}}
 
 import (
-    "go.uber.org/goleak"
+    "github.com/vdaas/vald/internal/test/goleak"
 {{range .Imports}}{{.Name}} {{.Path}}
 {{end}}
 )
