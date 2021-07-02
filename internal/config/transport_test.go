@@ -27,7 +27,6 @@ import (
 )
 
 func TestRoundTripper_Bind(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		TLSHandshakeTimeout   string
 		MaxIdleConns          int
@@ -164,7 +163,6 @@ func TestRoundTripper_Bind(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)
@@ -198,7 +196,6 @@ func TestRoundTripper_Bind(t *testing.T) {
 }
 
 func TestTransport_Bind(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		RoundTripper *RoundTripper
 		Backoff      *Backoff
@@ -306,7 +303,6 @@ func TestTransport_Bind(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)

@@ -27,7 +27,6 @@ import (
 )
 
 func TestDiscoverer_Bind(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		Name              string
 		Namespace         string
@@ -134,7 +133,6 @@ func TestDiscoverer_Bind(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)
@@ -160,7 +158,6 @@ func TestDiscoverer_Bind(t *testing.T) {
 }
 
 func TestDiscovererClient_Bind(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		Duration           string
 		Client             *GRPCClient
@@ -281,7 +278,6 @@ func TestDiscovererClient_Bind(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)

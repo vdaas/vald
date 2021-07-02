@@ -32,7 +32,6 @@ import (
 )
 
 func Test_newGRPCClientConfig(t *testing.T) {
-	t.Parallel()
 	type want struct {
 		want *GRPCClient
 	}
@@ -65,7 +64,6 @@ func Test_newGRPCClientConfig(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -86,7 +84,6 @@ func Test_newGRPCClientConfig(t *testing.T) {
 }
 
 func TestGRPCClient_Bind(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		Addrs               []string
 		HealthCheckDuration string
@@ -285,7 +282,6 @@ func TestGRPCClient_Bind(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)
@@ -315,7 +311,6 @@ func TestGRPCClient_Bind(t *testing.T) {
 }
 
 func TestGRPCClientKeepalive_Bind(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		Time                string
 		Timeout             string
@@ -409,7 +404,6 @@ func TestGRPCClientKeepalive_Bind(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)
@@ -435,7 +429,6 @@ func TestGRPCClientKeepalive_Bind(t *testing.T) {
 }
 
 func TestCallOption_Bind(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		WaitForReady          bool
 		MaxRetryRPCBufferSize int
@@ -497,7 +490,6 @@ func TestCallOption_Bind(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -524,7 +516,6 @@ func TestCallOption_Bind(t *testing.T) {
 }
 
 func TestDialOption_Bind(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		WriteBufferSize             int
 		ReadBufferSize              int
@@ -670,7 +661,6 @@ func TestDialOption_Bind(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)
@@ -708,7 +698,6 @@ func TestDialOption_Bind(t *testing.T) {
 }
 
 func TestGRPCClient_Opts(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		Addrs               []string
 		HealthCheckDuration string
@@ -1063,7 +1052,6 @@ func TestGRPCClient_Opts(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()

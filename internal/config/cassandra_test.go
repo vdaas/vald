@@ -30,7 +30,6 @@ import (
 )
 
 func TestCassandra_Bind(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		Hosts                    []string
 		CQLVersion               string
@@ -327,7 +326,6 @@ func TestCassandra_Bind(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)
@@ -387,7 +385,6 @@ func TestCassandra_Bind(t *testing.T) {
 }
 
 func TestCassandra_Opts(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		Hosts                    []string
 		CQLVersion               string
@@ -859,7 +856,6 @@ func TestCassandra_Opts(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)

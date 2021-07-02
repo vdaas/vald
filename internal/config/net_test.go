@@ -30,7 +30,6 @@ import (
 )
 
 func TestDNS_Bind(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		CacheEnabled    bool
 		RefreshDuration string
@@ -127,7 +126,6 @@ func TestDNS_Bind(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)
@@ -153,7 +151,6 @@ func TestDNS_Bind(t *testing.T) {
 }
 
 func TestDialer_Bind(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		Timeout          string
 		KeepAlive        string
@@ -255,7 +252,6 @@ func TestDialer_Bind(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)
@@ -282,7 +278,6 @@ func TestDialer_Bind(t *testing.T) {
 }
 
 func TestSocketOption_Bind(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		ReusePort                bool
 		ReuseAddr                bool
@@ -364,7 +359,6 @@ func TestSocketOption_Bind(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -396,7 +390,6 @@ func TestSocketOption_Bind(t *testing.T) {
 }
 
 func TestSocketOption_ToSocketFlag(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		socketOpts *SocketOption
 	}
@@ -557,7 +550,6 @@ func TestSocketOption_ToSocketFlag(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -579,7 +571,6 @@ func TestSocketOption_ToSocketFlag(t *testing.T) {
 }
 
 func TestNet_Bind(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		DNS          *DNS
 		Dialer       *Dialer
@@ -662,7 +653,6 @@ func TestNet_Bind(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -689,7 +679,6 @@ func TestNet_Bind(t *testing.T) {
 }
 
 func TestNet_Opts(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		DNS          *DNS
 		Dialer       *Dialer
@@ -866,7 +855,6 @@ func TestNet_Opts(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
