@@ -94,14 +94,12 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 				return
 			}
 			if err != nil {
-				select {
-				case <-ctx.Done():
-					ech <- errors.Wrap(err, ctx.Err().Error())
-				case ech <- err:
-				}
+				log.Info("send SIGKILL to the process")
+				p.Signal(syscall.SIGKILL) // TODO: #403
+			} else {
+				log.Info("send SIGTERM to the process")
+				p.Signal(syscall.SIGTERM)
 			}
-			log.Info("send SIGTERM to the process")
-			p.Signal(syscall.SIGTERM)
 		}()
 
 		// Download tar gz file
