@@ -49,13 +49,11 @@ const (
 	qualifiedNamePrefix string = "rebalancer.vald.vdaas.org/"
 )
 
-var (
-	defaultGRPCOps = []grpc.Option{
-		grpc.WithConnectionPoolSize(1),
-		grpc.WithInsecure(true),
-		grpc.WithResolveDNS(false),
-	}
-)
+var defaultGRPCOps = []grpc.Option{
+	grpc.WithConnectionPoolSize(1),
+	grpc.WithInsecure(true),
+	grpc.WithResolveDNS(false),
+}
 
 // Rebalancer represents the rebalancer interface.
 type Rebalancer interface {

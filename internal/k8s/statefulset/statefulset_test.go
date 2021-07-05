@@ -104,7 +104,6 @@ func TestNew(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -218,7 +217,6 @@ func Test_reconciler_Reconcile(t *testing.T) {
 			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -315,7 +313,6 @@ func Test_reconciler_GetName(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -422,7 +419,6 @@ func Test_reconciler_NewReconciler(t *testing.T) {
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -523,7 +519,6 @@ func Test_reconciler_For(t *testing.T) {
 			if err := test.checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -624,7 +619,6 @@ func Test_reconciler_Owns(t *testing.T) {
 			if err := test.checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -729,7 +723,6 @@ func Test_reconciler_Watches(t *testing.T) {
 			if err := test.checkFunc(test.want, got, got1, got2); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

@@ -26,9 +26,7 @@ import (
 
 type RebalancerOption func(r *rebalancer) error
 
-var (
-	defaultRebalancerOpts = []RebalancerOption{}
-)
+var defaultRebalancerOpts = []RebalancerOption{}
 
 func WithPodName(name string) RebalancerOption {
 	return func(r *rebalancer) error {
