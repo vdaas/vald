@@ -694,9 +694,7 @@ func (r *rebalancer) isRecoveryJobRunning(ns string) bool {
 
 	for _, jobs := range jobsByNamespace {
 		for _, job := range jobs {
-			if job.Labels[qualifiedNamePrefix+"reason"] == config.RECOVERY.String() &&
-				(job.Status.Active != 0 || (job.Status.Succeeded == 0 && job.Status.Failed == 0)) &&
-				job.Labels[qualifiedNamePrefix+"target_agent_namespace"] == ns {
+			if job.Labels[qualifiedNamePrefix+"reason"] == config.RECOVERY.String() && job.Status.Active != 0 && job.Labels[qualifiedNamePrefix+"target_agent_namespace"] == ns {
 				return true
 			}
 		}
