@@ -15,11 +15,7 @@
 //
 package job
 
-import (
-	"context"
-
-	"sigs.k8s.io/controller-runtime/pkg/manager"
-)
+import "sigs.k8s.io/controller-runtime/pkg/manager"
 
 // Option represents functional option for reconciler.
 type Option func(*reconciler) error
@@ -59,7 +55,7 @@ func WithOnErrorFunc(f func(err error)) Option {
 }
 
 // WithOnReconcileFunc returns Option that sets r.onReconcile.
-func WithOnReconcileFunc(f func(ctx context.Context, jobList map[string][]Job)) Option {
+func WithOnReconcileFunc(f func(jobList map[string][]Job)) Option {
 	return func(r *reconciler) error {
 		r.onReconcile = f
 		return nil
