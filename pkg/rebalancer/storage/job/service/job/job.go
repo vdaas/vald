@@ -94,10 +94,8 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 				return
 			}
 			if err != nil {
-				log.Info("send SIGKILL to the process")
 				p.Signal(syscall.SIGKILL) // TODO: #403
 			} else {
-				log.Info("send SIGTERM to the process")
 				p.Signal(syscall.SIGTERM)
 			}
 		}()
