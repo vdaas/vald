@@ -36,7 +36,6 @@ import (
 )
 
 type Manager = manager.Manager
-type ObjectKey = client.ObjectKey
 
 type Controller interface {
 	Start(ctx context.Context) (<-chan error, error)

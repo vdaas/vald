@@ -28,10 +28,6 @@ var (
 		return Wrap(err, "failed to create k8s job")
 	}
 
-	ErrK8sFailedToDeleteJob = func(err error) error {
-		return Wrap(err, "failed to delete k8s job")
-	}
-
 	ErrEmptyReconcileResult = func(resType string) error {
 		return Errorf("reconcile result is empty: %s", resType)
 	}
